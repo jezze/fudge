@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include "util.h"
 #include "widget.h"
 #include "pool.h"
 
@@ -497,6 +498,112 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
     }
 
     return oldstate != state;
+
+}
+
+unsigned int widget_intersectsx(struct widget *widget, int x)
+{
+
+    struct list_item *current = 0;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
+    case WIDGET_TYPE_FILL:
+    case WIDGET_TYPE_IMAGE:
+    case WIDGET_TYPE_TEXT:
+    case WIDGET_TYPE_TEXTBOX:
+    case WIDGET_TYPE_WINDOW:
+        return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
+
+    case WIDGET_TYPE_SELECT:
+        switch (widget->state)
+        {
+
+        case WIDGET_STATE_FOCUS:
+            if (util_intersects(x, widget->position.x, widget->position.x + widget->size.w))
+                return 1;
+
+            if (widget->state == WIDGET_STATE_FOCUS)
+            {
+
+                while ((current = pool_nextin(current, widget)))
+                {
+
+                    struct widget *child = current->data;
+
+                    if (util_intersects(x, child->position.x, child->position.x + child->size.w))
+                        return 1;
+
+                }
+
+            }
+
+            break;
+
+        default:
+            return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int widget_intersectsy(struct widget *widget, int y)
+{
+
+    struct list_item *current = 0;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
+    case WIDGET_TYPE_FILL:
+    case WIDGET_TYPE_IMAGE:
+    case WIDGET_TYPE_TEXT:
+    case WIDGET_TYPE_TEXTBOX:
+    case WIDGET_TYPE_WINDOW:
+        return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
+
+    case WIDGET_TYPE_SELECT:
+        switch (widget->state)
+        {
+
+        case WIDGET_STATE_FOCUS:
+            if (util_intersects(y, widget->position.y, widget->position.y + widget->size.h))
+                return 1;
+
+            if (widget->state == WIDGET_STATE_FOCUS)
+            {
+
+                while ((current = pool_nextin(current, widget)))
+                {
+
+                    struct widget *child = current->data;
+
+                    if (util_intersects(y, child->position.y, child->position.y + child->size.h))
+                        return 1;
+
+                }
+
+            }
+
+            break;
+
+        default:
+            return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
+
+        }
+
+    }
+
+    return 0;
 
 }
 

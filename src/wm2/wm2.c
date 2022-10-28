@@ -122,7 +122,7 @@ static struct widget *gethoverwidgetat(struct widget *parent, int x, int y)
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_TEXTBOX:
     case WIDGET_TYPE_WINDOW:
-        if (util_intersects(x, parent->position.x, parent->position.x + parent->size.w) && util_intersects(y, parent->position.y, parent->position.y + parent->size.h))
+        if (widget_intersectsx(parent, x) && widget_intersectsy(parent, y))
             return parent;
 
         break;
@@ -156,7 +156,7 @@ static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned 
     if (!type || type == parent->type)
     {
 
-        if (util_intersects(x, parent->position.x, parent->position.x + parent->size.w) && util_intersects(y, parent->position.y, parent->position.y + parent->size.h))
+        if (widget_intersectsx(parent, x) && widget_intersectsy(parent, y))
             return parent;
 
     }

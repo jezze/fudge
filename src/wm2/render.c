@@ -100,7 +100,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
     if (text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
     {
 
-        int rx = text_getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
+        int rx = text_getrowx(&rowinfo, WIDGET_TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
         int ry = text_getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.height))
@@ -334,59 +334,6 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 
 }
 
-static unsigned int intersectswidget(struct widget *widget, int line)
-{
-
-    struct list_item *current = 0;
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHOICE:
-    case WIDGET_TYPE_FILL:
-    case WIDGET_TYPE_IMAGE:
-    case WIDGET_TYPE_TEXT:
-    case WIDGET_TYPE_TEXTBOX:
-    case WIDGET_TYPE_WINDOW:
-        return util_intersects(line, widget->position.y, widget->position.y + widget->size.h);
-
-    case WIDGET_TYPE_SELECT:
-        switch (widget->state)
-        {
-
-        case WIDGET_STATE_FOCUS:
-            if (util_intersects(line, widget->position.y, widget->position.y + widget->size.h))
-                return 1;
-
-            if (widget->state == WIDGET_STATE_FOCUS)
-            {
-
-                while ((current = pool_nextin(current, widget)))
-                {
-
-                    struct widget *child = current->data;
-
-                    if (util_intersects(line, child->position.y, child->position.y + child->size.h))
-                        return 1;
-
-                }
-
-            }
-
-            break;
-
-        default:
-            return util_intersects(line, widget->position.y, widget->position.y + widget->size.h);
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 static void renderwidget(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -486,7 +433,7 @@ void render(struct blit_display *display, struct blit_damage *damage)
 
                 struct widget *widget = current->data;
 
-                if (intersectswidget(widget, line))
+                if (widget_intersectsy(widget, line))
                 {
 
                     int x0 = util_max(widget->position.x, damage->position0.x);
