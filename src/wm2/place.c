@@ -341,6 +341,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_select *select = widget->data;
     struct render_rowinfo rowinfo;
+    struct list_item *current = 0;
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
     int mw;
     int mh;
@@ -359,6 +360,46 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     if (maxh < mh)
         widget->size.h = 0;
+
+    if (widget->state == WIDGET_STATE_FOCUS)
+    {
+
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+            int childx = widget->position.x; 
+            int childy = widget->position.y + widget->size.h; 
+            int childminw = widget->size.w;
+            int childminh = 0;
+            int childmaxw = widget->size.w;
+            int childmaxh = 512;
+
+            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+
+        }
+
+    }
+
+    else
+    {
+
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+            int childx = widget->position.x; 
+            int childy = widget->position.y + widget->size.h; 
+            int childminw = 0;
+            int childminh = 0;
+            int childmaxw = 0;
+            int childmaxh = 0;
+
+            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+
+        }
+
+    }
 
 }
 

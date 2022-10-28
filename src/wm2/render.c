@@ -71,6 +71,45 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
 }
 
+static void renderchoice(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct widget_choice *choice = widget->data;
+    struct render_rowinfo rowinfo;
+    static unsigned int cmapnormal[3] = {
+        0xE8101010,
+        0xE8484848,
+        0xE8888888,
+    };
+    static unsigned int cmaphover[3] = {
+        0xE8101010,
+        0xE8505050,
+        0xE8888888,
+    };
+    static unsigned int cmapfocus[3] = {
+        0xE8101010,
+        0xE8585858,
+        0xE8888888,
+    };
+    static unsigned int cmaptext[1] = {
+        0xE8FFFFFF,
+    };
+
+    blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+
+    if (text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &rowinfo, WIDGET_TEXT_WRAP_NONE, 0, 0))
+    {
+
+        int rx = text_getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
+        int ry = text_getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+
+        if (util_intersects(line, ry, ry + rowinfo.height))
+            blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label), rowinfo.chars, rx, ry, line, x0, x2);
+
+    }
+
+}
+
 static void renderfill(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -159,8 +198,8 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     };
     static unsigned int cmapfocus[3] = {
         0xE8101010,
-        0xE8585858,
-        0xE8888888,
+        0xE8805050,
+        0xE8E0B0B0,
     };
     static unsigned int cmaptext[1] = {
         0xE8FFFFFF,
@@ -181,13 +220,6 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
         if (util_intersects(line, ry, ry + rowinfo.height))
             blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x2);
-
-    }
-
-    if (widget->state == WIDGET_STATE_FOCUS)
-    {
-
-        blit_panel(display, widget->position.x, widget->position.y + widget->size.h, widget->size.w, 120, line, x0, x2, cmapnormal);
 
     }
 
@@ -305,10 +337,13 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 static unsigned int intersectswidget(struct widget *widget, int line)
 {
 
+    struct list_item *current = 0;
+
     switch (widget->type)
     {
 
     case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_FILL:
     case WIDGET_TYPE_IMAGE:
     case WIDGET_TYPE_TEXT:
@@ -321,7 +356,25 @@ static unsigned int intersectswidget(struct widget *widget, int line)
         {
 
         case WIDGET_STATE_FOCUS:
-            return util_intersects(line, widget->position.y, widget->position.y + widget->size.h + 120);
+            if (util_intersects(line, widget->position.y, widget->position.y + widget->size.h))
+                return 1;
+
+            if (widget->state == WIDGET_STATE_FOCUS)
+            {
+
+                while ((current = pool_nextin(current, widget)))
+                {
+
+                    struct widget *child = current->data;
+
+                    if (util_intersects(line, child->position.y, child->position.y + child->size.h))
+                        return 1;
+
+                }
+
+            }
+
+            break;
 
         default:
             return util_intersects(line, widget->position.y, widget->position.y + widget->size.h);
@@ -342,6 +395,11 @@ static void renderwidget(struct blit_display *display, struct widget *widget, in
 
     case WIDGET_TYPE_BUTTON:
         renderbutton(display, widget, line, x0, x2);
+
+        break;
+
+    case WIDGET_TYPE_CHOICE:
+        renderchoice(display, widget, line, x0, x2);
 
         break;
 

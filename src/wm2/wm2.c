@@ -118,6 +118,7 @@ static struct widget *gethoverwidgetat(struct widget *parent, int x, int y)
     {
 
     case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_TEXTBOX:
     case WIDGET_TYPE_WINDOW:
@@ -210,6 +211,22 @@ static void setfocus(struct widget *widget)
         state.focusedwidget = widget;
 
         damage(state.focusedwidget);
+
+        if (widget->type == WIDGET_TYPE_SELECT)
+        {
+
+            struct list_item *current = 0;
+
+            while ((current = pool_nextin(current, widget)))
+            {
+
+                struct widget *child = current->data;
+
+                bump(child);
+
+            }
+
+        }
 
     }
 
