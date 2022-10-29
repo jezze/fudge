@@ -10,28 +10,40 @@
 #include "place.h"
 #include "render.h"
 
+static void resize(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh)
+{
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = util_clamp(w, minw, maxw);
+    widget->size.h = util_clamp(h, minh, maxh);
+
+}
+
+static void resize2(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh)
+{
+
+    widget->position.x = x;
+    widget->position.y = y;
+    widget->size.w = util_clamp(w, minw, maxw);
+    widget->size.h = util_clamp(h, minh, maxh);
+
+    if (maxw < w)
+        widget->size.w = 0;
+
+    if (maxh < h)
+        widget->size.h = 0;
+
+}
+
 static void placebutton(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_button *button = widget->data;
     struct render_rowinfo rowinfo;
-    int mw;
-    int mh;
 
     text_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &rowinfo, 0, 0, 0);
-
-    mw = rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2;
-    mh = rowinfo.height + CONFIG_BUTTON_PADDING_HEIGHT * 2;
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(mw, minw, maxw);
-    widget->size.h = util_clamp(mh, minh, maxh);
-
-    if (maxw < mw)
-        widget->size.w = 0;
-
-    if (maxh < mh)
-        widget->size.h = 0;
+    resize2(widget, x, y, rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, rowinfo.height + CONFIG_BUTTON_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
 }
 
@@ -42,11 +54,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
     struct render_rowinfo rowinfo;
 
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &rowinfo, 0, 0, 0);
-
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(rowinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, minw, maxw);
-    widget->size.h = util_clamp(rowinfo.height + CONFIG_CHOICE_PADDING_HEIGHT * 2, minh, maxh);
+    resize(widget, x, y, rowinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, rowinfo.height + CONFIG_CHOICE_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
 }
 
@@ -64,10 +72,7 @@ static void placecontainerfloat(struct widget *widget, int x, int y, unsigned in
 
     }
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(0, minw, maxw);
-    widget->size.h = util_clamp(0, minh, maxh);
+    resize(widget, x, y, 0, 0, minw, minh, maxw, maxh);
 
 }
 
@@ -104,10 +109,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
     }
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(offw, minw, maxw);
-    widget->size.h = util_clamp(toth, minh, maxh);
+    resize(widget, x, y, offw, toth, minw, minh, maxw, maxh);
 
 }
 
@@ -134,10 +136,7 @@ static void placecontainermaximize(struct widget *widget, int x, int y, unsigned
 
     }
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(maxw, minw, maxw);
-    widget->size.h = util_clamp(maxh, minh, maxh);
+    resize(widget, x, y, maxw, maxh, minw, minh, maxw, maxh);
 
 }
 
@@ -174,10 +173,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 
     }
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(totw, minw, maxw);
-    widget->size.h = util_clamp(offh, minh, maxh);
+    resize(widget, x, y, totw, offh, minw, minh, maxw, maxh);
 
 }
 
@@ -216,10 +212,7 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int min
 static void placefill(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(maxw, minw, maxw);
-    widget->size.h = util_clamp(maxh, minh, maxh);
+    resize(widget, x, y, maxw, maxh, minw, minh, maxw, maxh);
 
 }
 
@@ -283,10 +276,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 
     }
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(totw, minw, maxw);
-    widget->size.h = util_clamp(toth, minh, maxh);
+    resize(widget, x, y, totw, toth, minw, minh, maxw, maxh);
 
 }
 
@@ -309,10 +299,7 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
 
     }
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(w, minw, maxw);
-    widget->size.h = util_clamp(h, minh, maxh);
+    resize(widget, x, y, w, h, minw, minh, maxw, maxh);
 
 }
 
@@ -341,28 +328,15 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_select *select = widget->data;
     struct render_rowinfo rowinfo;
-    struct list_item *current = 0;
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
-    int mw;
-    int mh;
 
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &rowinfo, 0, 0, 0);
-
-    mw = rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra;
-    mh = rowinfo.height + CONFIG_SELECT_PADDING_HEIGHT * 2;
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(mw, minw, maxw);
-    widget->size.h = util_clamp(mh, minh, maxh);
-
-    if (maxw < mw)
-        widget->size.w = 0;
-
-    if (maxh < mh)
-        widget->size.h = 0;
+    resize2(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, rowinfo.height + CONFIG_SELECT_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
     if (widget->state == WIDGET_STATE_FOCUS)
     {
+
+        struct list_item *current = 0;
 
         while ((current = pool_nextin(current, widget)))
         {
@@ -383,6 +357,8 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     else
     {
+
+        struct list_item *current = 0;
 
         while ((current = pool_nextin(current, widget)))
         {
@@ -411,11 +387,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
 
     text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, maxw);
-
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(textinfo.width + 1, minw, maxw); /* Need +1 for some reason */
-    widget->size.h = util_clamp(textinfo.rows * textinfo.lineheight, minh, maxh);
+    resize(widget, x, y, textinfo.width + 1, textinfo.rows * textinfo.lineheight, minw, minh, maxw, maxh);
 
 }
 
@@ -495,10 +467,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     }
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(totw, minw, maxw);
-    widget->size.h = util_clamp(offy, minh, maxh);
+    resize(widget, x, y, totw, offy, minw, minh, maxw, maxh);
 
 }
 
