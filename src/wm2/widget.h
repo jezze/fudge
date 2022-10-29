@@ -43,7 +43,7 @@
 #define WIDGET_CONTAINER_PLACEMENT_STRETCHED    1
 #define WIDGET_GRID_PLACEMENT_NORMAL            0
 #define WIDGET_GRID_PLACEMENT_STRETCHED         1
-#define WIDGET_IMAGE_TYPE_INTERNAL              1
+#define WIDGET_IMAGE_TYPE_FUDGEMOUSE            1
 #define WIDGET_IMAGE_TYPE_PCX                   2
 #define WIDGET_TEXT_HALIGN_LEFT                 0
 #define WIDGET_TEXT_HALIGN_CENTER               1

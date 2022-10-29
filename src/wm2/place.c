@@ -324,7 +324,7 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
     switch (image->type)
     {
 
-    case WIDGET_IMAGE_TYPE_INTERNAL:
+    case WIDGET_IMAGE_TYPE_FUDGEMOUSE:
         break;
 
     case WIDGET_IMAGE_TYPE_PCX:

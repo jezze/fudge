@@ -77,7 +77,7 @@ static struct token gridplacements[] =
 
 static struct token imagetypes[] =
 {
-    {WIDGET_IMAGE_TYPE_INTERNAL, "internal"},
+    {WIDGET_IMAGE_TYPE_FUDGEMOUSE, "image/fudge-icon-mouse"},
     {WIDGET_IMAGE_TYPE_PCX, "image/pcx"}
 };
 

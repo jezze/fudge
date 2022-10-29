@@ -639,6 +639,15 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
             current = current->prev;
 
+            if (state.hoverwidget == child)
+                state.hoverwidget = 0;
+
+            if (state.focusedwidget == child)
+                state.focusedwidget = 0;
+
+            if (state.focusedwindow == child)
+                state.focusedwindow = 0;
+
             damage(child);
             pool_destroy(child);
 
@@ -654,7 +663,7 @@ static void setupwidgets(void)
     char *data =
         "+ container id \"root\" layout \"float\"\n"
         "+ fill in \"root\" color \"FF202020\"\n"
-        "+ image id \"mouse\" in \"root\" type \"internal\"\n";
+        "+ image id \"mouse\" in \"root\" type \"image/fudge-icon-mouse\"\n";
 
     parser_parse(0, "", cstring_length(data), data);
 

@@ -156,7 +156,7 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
     switch (image->type)
     {
 
-    case WIDGET_IMAGE_TYPE_INTERNAL:
+    case WIDGET_IMAGE_TYPE_FUDGEMOUSE:
         {
 
         static unsigned int cmap[3] = {
