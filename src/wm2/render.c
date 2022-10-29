@@ -104,7 +104,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
         int ry = text_getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
         if (util_intersects(line, ry, ry + rowinfo.lineheight))
-            blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label), rowinfo.chars, rx, ry, line, x0, x2);
+            blit_textnormal(display, pool_getfont(POOL_FONTNORMAL), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label), rowinfo.chars, rx, ry, line, x0, x2);
 
     }
 
