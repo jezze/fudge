@@ -29,15 +29,17 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Filesystem Explorer\"\n"
-        "+ container id \"base\" in \"window\" layout \"vertical\" padding \"8\"\n"
-        "+ container id \"top\" in \"base\" layout \"horizontal\" padding \"8\"\n"
-        "+ select id \"drive\" in \"top\" label \"Drives\"\n"
+        "+ container id \"base\" in \"window\" layout \"vertical\" padding \"12\"\n"
+        "+ container id \"top\" in \"base\" layout \"horizontal\"\n"
+        "+ container id \"top1\" in \"top\" layout \"vertical\" padding \"4\"\n"
+        "+ select id \"drive\" in \"top1\" label \"Drives\"\n"
         "+ container id \"drivelist\" in \"drive\" layout \"vertical\" placement \"stretched\"\n"
         "+ choice id \"initrd\" in \"drivelist\" label \"initrd:\"\n"
         "+ choice id \"system\" in \"drivelist\" label \"system:\"\n"
-        "+ textbox id \"path\" in \"top\" mode \"readonly\"\n"
+        "+ container id \"top2\" in \"top\" layout \"vertical\" placement \"stretched\" padding \"4\"\n"
+        "+ textbox id \"path\" in \"top2\"\n"
         "+ text in \"path\" content \"/home\"\n"
-        "+ container id \"main\" in \"base\" layout \"maximize\" padding \"8\"\n"
+        "+ container id \"main\" in \"base\" layout \"maximize\" padding \"4\"\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);

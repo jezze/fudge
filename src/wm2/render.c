@@ -64,7 +64,7 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
         int rx = text_getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
         int ry = text_getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
-        if (util_intersects(line, ry, ry + rowinfo.height))
+        if (util_intersects(line, ry, ry + rowinfo.lineheight))
             blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), rowinfo.chars, rx, ry, line, x0, x2);
 
     }
@@ -103,7 +103,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
         int rx = text_getrowx(&rowinfo, WIDGET_TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
         int ry = text_getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
-        if (util_intersects(line, ry, ry + rowinfo.height))
+        if (util_intersects(line, ry, ry + rowinfo.lineheight))
             blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label), rowinfo.chars, rx, ry, line, x0, x2);
 
     }
@@ -218,7 +218,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
         int rx = text_getrowx(&rowinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
         int ry = text_getrowy(&rowinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
 
-        if (util_intersects(line, ry, ry + rowinfo.height))
+        if (util_intersects(line, ry, ry + rowinfo.lineheight))
             blit_textnormal(display, pool_getfont(POOL_FONTBOLD), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), rowinfo.chars, rx, ry, line, x0, x2);
 
     }
