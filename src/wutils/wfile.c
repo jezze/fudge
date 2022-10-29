@@ -1,6 +1,50 @@
 #include <fudge.h>
 #include <abi.h>
 
+static char *path = "system:";
+
+static void updatepath(void)
+{
+
+    char buffer[BUFFER_SIZE];
+    unsigned int count = 0;
+
+    count += cstring_write(buffer, BUFFER_SIZE, "= path content \"", count);
+    count += cstring_write(buffer, BUFFER_SIZE, path, count);
+    count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
+
+    file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+
+}
+
+static void updatecontent(void)
+{
+
+    file_walk2(FILE_PW, path);
+
+    do
+    {
+
+        struct record record;
+
+        if (file_readall(FILE_PW, &record, sizeof (struct record)))
+        {
+
+            char buffer[BUFFER_SIZE];
+            unsigned int count = 0;
+
+            count += cstring_write(buffer, BUFFER_SIZE, "+ text in \"content\" content \"", count);
+            count += buffer_write(buffer, BUFFER_SIZE, record.name, record.length, count);
+            count += cstring_write(buffer, BUFFER_SIZE, "\n\"\n", count);
+
+            file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+
+        }
+
+    } while (file_step(FILE_PW));
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -37,12 +81,14 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ choice id \"initrd\" in \"drivelist\" label \"initrd:\"\n"
         "+ choice id \"system\" in \"drivelist\" label \"system:\"\n"
         "+ container id \"top2\" in \"top\" layout \"vertical\" placement \"stretched\" padding \"4\"\n"
-        "+ textbox id \"path\" in \"top2\"\n"
-        "+ text in \"path\" content \"/home\"\n"
+        "+ textbox id \"pathbox\" in \"top2\"\n"
+        "+ text id \"path\" in \"pathbox\"\n"
         "+ container id \"main\" in \"base\" layout \"maximize\" padding \"4\"\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
+    updatepath();
+    updatecontent();
 
 }
 
