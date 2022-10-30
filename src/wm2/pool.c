@@ -41,6 +41,8 @@ static char strdata[0x4000];
 static unsigned int strdataoffset;
 static struct strindex strindex[512];
 static struct blit_font fonts[32];
+static unsigned char fontnormal[0x8000];
+static unsigned char fontbold[0x8000];
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -378,6 +380,48 @@ void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsig
     font->bitmapalign = pcf_getbitmapalign(font->data);
     font->lineheight = lineheight;
     font->padding = padding;
+
+}
+
+void pool_loadfont(unsigned int factor)
+{
+
+    unsigned int lineheight = 12 + factor * 4;
+    unsigned int padding = 4 + factor * 2;
+
+    switch (factor)
+    {
+
+    case 0:
+        file_walk2(FILE_L0, "/data/font/ter-112n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-112b.pcf");
+
+        break;
+
+    case 1:
+        file_walk2(FILE_L0, "/data/font/ter-114n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-114b.pcf");
+
+        break;
+
+    case 2:
+        file_walk2(FILE_L0, "/data/font/ter-116n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-116b.pcf");
+
+        break;
+
+    default:
+        file_walk2(FILE_L0, "/data/font/ter-118n.pcf");
+        file_walk2(FILE_L1, "/data/font/ter-118b.pcf");
+
+        break;
+
+    }
+
+    file_read(FILE_L0, fontnormal, 0x8000);
+    pool_setfont(POOL_FONTNORMAL, fontnormal, lineheight, padding);
+    file_read(FILE_L1, fontbold, 0x8000);
+    pool_setfont(POOL_FONTBOLD, fontbold, lineheight, padding);
 
 }
 

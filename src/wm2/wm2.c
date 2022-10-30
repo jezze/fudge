@@ -31,8 +31,6 @@ static struct blit_display display;
 static struct blit_damage displaydamage;
 static struct state state;
 static unsigned int numwindows;
-static unsigned char fontnormal[0x8000];
-static unsigned char fontbold[0x8000];
 
 static void setupvideo(void)
 {
@@ -54,43 +52,6 @@ static void setupvideo(void)
 
     file_seekwriteall(FILE_L1, black, 768, 0);
     file_seekwriteall(FILE_L0, &settings, sizeof (struct ctrl_videosettings), 0);
-
-}
-
-static void loadfont(unsigned int factor)
-{
-
-    switch (factor)
-    {
-
-    case 0:
-        file_walk2(FILE_L0, "/data/font/ter-112n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-112b.pcf");
-
-        break;
-
-    case 1:
-        file_walk2(FILE_L0, "/data/font/ter-114n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-114b.pcf");
-
-        break;
-
-    case 2:
-        file_walk2(FILE_L0, "/data/font/ter-116n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-116b.pcf");
-
-        break;
-
-    default:
-        file_walk2(FILE_L0, "/data/font/ter-118n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-118b.pcf");
-
-        break;
-
-    }
-
-    file_read(FILE_L0, fontnormal, 0x8000);
-    file_read(FILE_L1, fontbold, 0x8000);
 
 }
 
@@ -542,8 +503,6 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
-    unsigned int lineheight = 12 + factor * 4;
-    unsigned int padding = 4 + factor * 2;
 
     blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
     render_damage(&displaydamage, 0, 0, videomode->w, videomode->h);
@@ -551,9 +510,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.x = videomode->w / 4;
     state.mouseposition.y = videomode->h / 4;
 
-    loadfont(factor);
-    pool_setfont(POOL_FONTNORMAL, fontnormal, lineheight, padding);
-    pool_setfont(POOL_FONTBOLD, fontbold, lineheight, padding);
+    pool_loadfont(factor);
 
     switch (factor)
     {
