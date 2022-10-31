@@ -505,6 +505,7 @@ unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
     struct list_item *current = 0;
+    struct widget *parent;
 
     switch (widget->type)
     {
@@ -513,10 +514,14 @@ unsigned int widget_intersectsx(struct widget *widget, int x)
     case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_FILL:
     case WIDGET_TYPE_IMAGE:
-    case WIDGET_TYPE_TEXT:
     case WIDGET_TYPE_TEXTBOX:
     case WIDGET_TYPE_WINDOW:
         return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
+
+    case WIDGET_TYPE_TEXT:
+        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
+
+        return util_intersects(x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(x, parent->position.x, parent->position.x + parent->size.w);
 
     case WIDGET_TYPE_SELECT:
         switch (widget->state)
@@ -558,6 +563,7 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
 {
 
     struct list_item *current = 0;
+    struct widget *parent;
 
     switch (widget->type)
     {
@@ -566,10 +572,14 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
     case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_FILL:
     case WIDGET_TYPE_IMAGE:
-    case WIDGET_TYPE_TEXT:
     case WIDGET_TYPE_TEXTBOX:
     case WIDGET_TYPE_WINDOW:
         return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
+
+    case WIDGET_TYPE_TEXT:
+        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
+
+        return util_intersects(y, widget->position.y, widget->position.y + widget->size.h) && util_intersects(y, parent->position.y, parent->position.y + parent->size.h);
 
     case WIDGET_TYPE_SELECT:
         switch (widget->state)
