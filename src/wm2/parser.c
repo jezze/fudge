@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include "text.h"
 #include "widget.h"
 #include "pool.h"
 #include "parser.h"

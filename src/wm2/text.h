@@ -1,3 +1,14 @@
+struct blit_font
+{
+
+    unsigned char *data;
+    unsigned char *bitmapdata;
+    unsigned int bitmapalign;
+    unsigned int lineheight;
+    unsigned int padding;
+
+};
+
 struct render_rowinfo
 {
 

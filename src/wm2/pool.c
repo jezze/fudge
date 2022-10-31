@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 #include <image.h>
+#include "text.h"
 #include "widget.h"
 #include "blit.h"
 #include "pool.h"

@@ -16,17 +16,6 @@ struct blit_display
 
 };
 
-struct blit_font
-{
-
-    unsigned char *data;
-    unsigned char *bitmapdata;
-    unsigned int bitmapalign;
-    unsigned int lineheight;
-    unsigned int padding;
-
-};
-
 void blit_line(struct blit_display *display, unsigned int color, int x0, int x2);
 void blit_alphaline(struct blit_display *display, unsigned int color, int x0, int x2);
 void blit_textnormal(struct blit_display *display, struct blit_font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2);

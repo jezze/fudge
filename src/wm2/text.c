@@ -1,9 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 #include "util.h"
-#include "widget.h"
-#include "blit.h"
 #include "text.h"
+#include "widget.h"
 
 int text_getrowx(struct render_rowinfo *rowinfo, unsigned int halign, int x, int w)
 {
@@ -156,6 +155,11 @@ unsigned int text_gettextinfo(struct blit_font *font, char *text, unsigned int l
 {
 
     unsigned int offset = 0;
+
+    textinfo->lineheight = 0;
+    textinfo->width = 0;
+    textinfo->height = 0;
+    textinfo->rows = 0;
 
     if ((offset = text_getrowinfo(font, text, length, &textinfo->last, wrap, maxw - offw, offset)))
     {
