@@ -472,6 +472,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
         struct widget *child = current->data;
 
+        textbox->scroll = util_clamp(textbox->scroll, -100, 100);
+
         child->position.y -= textbox->scroll;
 
     }
