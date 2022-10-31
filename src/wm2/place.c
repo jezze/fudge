@@ -417,7 +417,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         int childminw = 0;
         int childminh = 0;
         int childmaxw = maxw - offw;
-        int childmaxh = maxh - offh;
+        int childmaxh = 5000;
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
@@ -452,7 +452,6 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             }
 
             childy = y + soffy; 
-            childmaxh = maxh - soffh;
 
             text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
 

@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include "config.h"
 #include "util.h"
 #include "widget.h"
 #include "pool.h"
@@ -501,27 +502,49 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 
 }
 
+static void getclipping(struct widget *widget, struct widget_position *position, struct widget_size *size)
+{
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_TEXTBOX:
+        position->x = widget->position.x + CONFIG_TEXTBOX_PADDING_WIDTH;
+        position->y = widget->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT;
+        size->w = widget->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
+        size->h = widget->size.h - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
+
+        break;
+
+    default:
+        position->x = widget->position.x;
+        position->y = widget->position.y;
+        size->w = widget->size.w;
+        size->h = widget->size.h;
+
+        break;
+
+    }
+
+}
+
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
     struct list_item *current = 0;
     struct widget *parent;
+    struct widget_position position;
+    struct widget_size size;
 
     switch (widget->type)
     {
 
-    case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHOICE:
-    case WIDGET_TYPE_FILL:
-    case WIDGET_TYPE_IMAGE:
-    case WIDGET_TYPE_TEXTBOX:
-    case WIDGET_TYPE_WINDOW:
-        return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
-
     case WIDGET_TYPE_TEXT:
         parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
 
-        return util_intersects(x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(x, parent->position.x, parent->position.x + parent->size.w);
+        getclipping(parent, &position, &size);
+
+        return util_intersects(x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(x, position.x, position.x + size.w);
 
     case WIDGET_TYPE_SELECT:
         switch (widget->state)
@@ -553,6 +576,9 @@ unsigned int widget_intersectsx(struct widget *widget, int x)
 
         }
 
+    default:
+        return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
+
     }
 
     return 0;
@@ -564,22 +590,18 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
 
     struct list_item *current = 0;
     struct widget *parent;
+    struct widget_position position;
+    struct widget_size size;
 
     switch (widget->type)
     {
 
-    case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHOICE:
-    case WIDGET_TYPE_FILL:
-    case WIDGET_TYPE_IMAGE:
-    case WIDGET_TYPE_TEXTBOX:
-    case WIDGET_TYPE_WINDOW:
-        return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
-
     case WIDGET_TYPE_TEXT:
         parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
 
-        return util_intersects(y, widget->position.y, widget->position.y + widget->size.h) && util_intersects(y, parent->position.y, parent->position.y + parent->size.h);
+        getclipping(parent, &position, &size);
+
+        return util_intersects(y, widget->position.y, widget->position.y + widget->size.h) && util_intersects(y, position.y, position.y + size.h);
 
     case WIDGET_TYPE_SELECT:
         switch (widget->state)
@@ -610,6 +632,9 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
             return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
 
         }
+
+    default:
+        return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
 
     }
 
