@@ -400,7 +400,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     int offy = CONFIG_TEXTBOX_PADDING_HEIGHT;
     int offw = CONFIG_TEXTBOX_PADDING_WIDTH * 2;
     int offh = CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
-    int soffy = offy - textbox->scroll;
+    int soffy = offy;
     int soffh = offh;
     int totw = 0;
     unsigned int lasttype = 0;
@@ -464,6 +464,15 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         offy += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT;
         offh += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT;
         totw = util_max(totw, child->size.w);
+
+    }
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        child->position.y -= textbox->scroll;
 
     }
 
