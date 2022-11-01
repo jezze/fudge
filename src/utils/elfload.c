@@ -117,7 +117,7 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
     if (!address)
     {
 
-        file_reset(FILE_G1);
+        file_seek(FILE_G1, 0);
 
         address = findsymbol(FILE_G1, count, symbolname);
 

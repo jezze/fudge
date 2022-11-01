@@ -141,42 +141,64 @@ static unsigned int service_destroy(unsigned int id)
 
 }
 
-static unsigned int stepdirectory(unsigned int id, unsigned int current)
+static unsigned int getlist(unsigned int id, unsigned int cid, unsigned int count, struct record *records)
 {
+
+    struct cpio_header *header = getheader(id);
+    unsigned int n = 0;
+
+    cid = (cid) ? getnext(cid) : address;
 
     do
     {
 
-        struct cpio_header *cheader = getheader(current);
+        struct cpio_header *cheader = getheader(cid);
 
         if (!cheader)
-            return 0;
+            break;
 
-        if (current == id)
-            return 0;
+        if (cid == id)
+            break;
 
-        if (parent(cheader, current) == id)
-            return current;
+        if (parent(cheader, cid) == id)
+        {
 
-    } while ((current = getnext(current)));
+            struct record *record = &records[n];
 
-    return 0;
+            record->id = cid;
+            record->size = cpio_filesize(cheader);
+            record->type = RECORD_TYPE_NORMAL;
+            record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(cid), cheader->namesize - 1, header->namesize);
+
+            if ((cheader->mode & 0xF000) == 0x4000)
+                record->type = RECORD_TYPE_DIRECTORY;
+
+            if (++n >= count)
+                break;
+
+        }
+
+    } while ((cid = getnext(cid)));
+
+    return n;
 
 }
 
-static unsigned int service_step(unsigned int id, unsigned int current)
+static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int count, struct record *record)
 {
 
     struct cpio_header *header = getheader(id);
 
-    if (!header)
-        return 0;
-
-    switch (header->mode & 0xF000)
+    if (header)
     {
 
-    case 0x4000:
-        return stepdirectory(id, (current) ? getnext(current) : address);
+        switch (header->mode & 0xF000)
+        {
+
+        case 0x4000:
+            return getlist(id, cid, count, record);
+
+        }
 
     }
 
@@ -184,29 +206,7 @@ static unsigned int service_step(unsigned int id, unsigned int current)
 
 }
 
-static unsigned int readdirectory(void *buffer, unsigned int count, unsigned int offset, unsigned int current, struct cpio_header *header)
-{
-
-    struct cpio_header *cheader = getheader(current);
-
-    if (cheader)
-    {
-
-        struct record record;
-
-        record.id = current;
-        record.size = cpio_filesize(cheader);
-        record.length = buffer_read(record.name, RECORD_NAMESIZE, getname(current), cheader->namesize - 1, header->namesize);
-
-        return buffer_read(buffer, count, &record, sizeof (struct record), offset);
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int service_read(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int service_read(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -220,9 +220,6 @@ static unsigned int service_read(unsigned int id, unsigned int current, void *bu
         case 0x8000:
             return buffer_read(buffer, count, (void *)(id + cpio_filedata(header)), cpio_filesize(header), offset);
 
-        case 0x4000:
-            return readdirectory(buffer, count, offset, current, header);
-
         }
 
     }
@@ -231,7 +228,7 @@ static unsigned int service_read(unsigned int id, unsigned int current, void *bu
 
 }
 
-static unsigned int service_write(unsigned int id, unsigned int current, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int service_write(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -296,7 +293,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_step, service_read, service_write, service_seek, service_map, service_link, service_unlink, service_notify);
+    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_list, service_read, service_write, service_seek, service_map, service_link, service_unlink, service_notify);
     resource_register(&service.resource);
 
 }

@@ -5,8 +5,8 @@
 .set CALL_INDEX_WALK,                   0x01
 .set CALL_INDEX_CREATE,                 0x02
 .set CALL_INDEX_DESTROY,                0x03
-.set CALL_INDEX_RESET,                  0x04
-.set CALL_INDEX_STEP,                   0x05
+.set CALL_INDEX_KILL,                   0x04
+.set CALL_INDEX_LIST,                   0x05
 .set CALL_INDEX_READ,                   0x06
 .set CALL_INDEX_WRITE,                  0x07
 .set CALL_INDEX_SEEK,                   0x08
@@ -19,7 +19,6 @@
 .set CALL_INDEX_LINK,                   0x0F
 .set CALL_INDEX_UNLINK,                 0x10
 .set CALL_INDEX_NOTIFY,                 0x11
-.set CALL_INDEX_KILL,                   0x12
 
 .section .text
 
@@ -59,6 +58,12 @@ call_link:
     int $CALL_INTERRUPT
     ret
 
+.global call_list
+call_list:
+    movl $CALL_INDEX_LIST, %eax
+    int $CALL_INTERRUPT
+    ret
+
 .global call_load
 call_load:
     movl $CALL_INDEX_LOAD, %eax
@@ -89,12 +94,6 @@ call_read:
     int $CALL_INTERRUPT
     ret
 
-.global call_reset
-call_reset:
-    movl $CALL_INDEX_RESET, %eax
-    int $CALL_INTERRUPT
-    ret
-
 .global call_seek
 call_seek:
     movl $CALL_INDEX_SEEK, %eax
@@ -104,12 +103,6 @@ call_seek:
 .global call_spawn
 call_spawn:
     movl $CALL_INDEX_SPAWN, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_step
-call_step:
-    movl $CALL_INDEX_STEP, %eax
     int $CALL_INTERRUPT
     ret
 

@@ -20,28 +20,35 @@ static void updatepath(void)
 static void updatecontent(void)
 {
 
+    struct record records[4];
+    unsigned int nrecords;
+    unsigned int cid;
+
     file_walk2(FILE_PW, path);
 
-    do
+    for (cid = 0; (nrecords = file_list(FILE_PW, cid, 4, records)); cid = records[nrecords - 1].id)
     {
 
-        struct record record;
+        char buffer[BUFFER_SIZE];
+        unsigned int count = 0;
+        unsigned int i;
 
-        if (file_readall(FILE_PW, &record, sizeof (struct record)))
+        for (i = 0; i < nrecords; i++)
         {
 
-            char buffer[BUFFER_SIZE];
-            unsigned int count = 0;
+            struct record *record = &records[i];
 
             count += cstring_write(buffer, BUFFER_SIZE, "+ text in \"content\" content \"", count);
-            count += buffer_write(buffer, BUFFER_SIZE, record.name, record.length, count);
+            count += buffer_write(buffer, BUFFER_SIZE, record->name, record->length, count);
             count += cstring_write(buffer, BUFFER_SIZE, "\n\"\n", count);
-
-            file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
 
         }
 
-    } while (file_step(FILE_PW));
+        file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+
+    }
+
+    channel_close();
 
 }
 

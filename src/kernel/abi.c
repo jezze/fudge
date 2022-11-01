@@ -78,7 +78,6 @@ static unsigned int walk(struct task *task, void *stack)
     }
 
     descriptor->id = findpath(descriptor->service, descriptor->id, args->path, args->length);
-    descriptor->current = descriptor->service->step(descriptor->id, 0);
     descriptor->offset = descriptor->service->seek(descriptor->id, 0);
 
     return descriptor->id;
@@ -121,35 +120,27 @@ static unsigned int destroy(struct task *task, void *stack)
 
 }
 
-static unsigned int reset(struct task *task, void *stack)
+static unsigned int kill(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int id;} *args = stack;
 
-    if (!descriptor_check(descriptor))
-        return 0;
+    kernel_kill(task->id, args->id);
 
-    descriptor->current = descriptor->service->step(descriptor->id, 0);
-    descriptor->offset = descriptor->service->seek(descriptor->id, 0);
-
-    return descriptor->id;
+    return 0;
 
 }
 
-static unsigned int step(struct task *task, void *stack)
+static unsigned int list(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int cid; unsigned int count; struct record *records;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!descriptor_check(descriptor))
         return 0;
 
-    descriptor->current = descriptor->service->step(descriptor->id, descriptor->current);
-    descriptor->offset = descriptor->service->seek(descriptor->id, 0);
-
-    return descriptor->current;
+    return descriptor->service->list(descriptor->id, args->cid, args->count, args->records);
 
 }
 
@@ -165,7 +156,7 @@ static unsigned int read(struct task *task, void *stack)
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->count = descriptor->service->read(descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
+    descriptor->count = descriptor->service->read(descriptor->id, args->buffer, args->count, descriptor->offset);
     descriptor->offset = descriptor->service->seek(descriptor->id, descriptor->offset + descriptor->count);
 
     return descriptor->count;
@@ -184,7 +175,7 @@ static unsigned int write(struct task *task, void *stack)
     if (!args->buffer || !args->count)
         return 0;
 
-    descriptor->count = descriptor->service->write(descriptor->id, descriptor->current, args->buffer, args->count, descriptor->offset);
+    descriptor->count = descriptor->service->write(descriptor->id, args->buffer, args->count, descriptor->offset);
     descriptor->offset = descriptor->service->seek(descriptor->id, descriptor->offset + descriptor->count);
 
     return descriptor->count;
@@ -350,17 +341,6 @@ static unsigned int notify(struct task *task, void *stack)
 
 }
 
-static unsigned int kill(struct task *task, void *stack)
-{
-
-    struct {void *caller; unsigned int id;} *args = stack;
-
-    kernel_kill(task->id, args->id);
-
-    return 0;
-
-}
-
 unsigned int abi_call(unsigned int index, struct task *task, void *stack)
 {
 
@@ -382,8 +362,8 @@ void abi_setup(void)
     abi_setcallback(0x01, walk);
     abi_setcallback(0x02, create);
     abi_setcallback(0x03, destroy);
-    abi_setcallback(0x04, reset);
-    abi_setcallback(0x05, step);
+    abi_setcallback(0x04, kill);
+    abi_setcallback(0x05, list);
     abi_setcallback(0x06, read);
     abi_setcallback(0x07, write);
     abi_setcallback(0x08, seek);
@@ -396,7 +376,7 @@ void abi_setup(void)
     abi_setcallback(0x0F, link);
     abi_setcallback(0x10, unlink);
     abi_setcallback(0x11, notify);
-    abi_setcallback(0x12, kill);
+    abi_setcallback(0x12, debug);
     abi_setcallback(0x13, debug);
     abi_setcallback(0x14, debug);
     abi_setcallback(0x15, debug);
