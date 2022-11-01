@@ -224,14 +224,18 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     };
 
     /* Rudimentary caching */
-    if (text->rownum != rownum)
+    if (text->rownum < rownum)
     {
 
-        if (rownum > text->rownum)
-            text->rowstart = text_getrowinfo(font, pool_getstring(text->content), pool_getcstringlength(text->content), &text->rowinfo, text->wrap, rw, text->rowstart);
-        else
-            text->rowstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), rownum, text->wrap, widget->size.w);
+        text->rowstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), rownum, text->wrap, widget->size.w, 1, 0);
+        text->rownum = rownum;
 
+    }
+
+    else if (text->rownum > rownum)
+    {
+
+        text->rowstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), rownum, text->wrap, widget->size.w, text->rownum, text->rowstart);
         text->rownum = rownum;
 
     }

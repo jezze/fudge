@@ -46,17 +46,16 @@ int text_getrowy(struct render_rowinfo *rowinfo, unsigned int valign, int y, int
 
 }
 
-unsigned int text_getrowstart(struct blit_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw)
+unsigned int text_getrowstart(struct blit_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw, int crow, int offset)
 {
 
-    unsigned int offset = 0;
     unsigned int rows;
     struct render_rowinfo rowinfo;
 
     if (!rownum)
         return 0;
 
-    for (rows = 1; (offset = text_getrowinfo(font, text, length, &rowinfo, wrap, maxw, offset)); rows++)
+    for (rows = crow; (offset = text_getrowinfo(font, text, length, &rowinfo, wrap, maxw, offset)); rows++)
     {
 
         if (rows == rownum)
