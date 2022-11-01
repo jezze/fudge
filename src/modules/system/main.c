@@ -103,87 +103,77 @@ static unsigned int service_destroy(unsigned int id)
 
 }
 
-static unsigned int getlist(unsigned int id, unsigned int cid, unsigned int count, struct record *records)
-{
-
-    struct system_node *node = getnode(id);
-    struct list_item *current;
-    struct list_item *first = 0;
-    unsigned int n = 0;
-
-    spinlock_acquire(&node->children.spinlock);
-
-    if (cid)
-    {
-
-        struct system_node *c = getnode(cid);
-
-        if (c)
-        {
-
-            first = &c->item;
-            first = first->next;
-
-        }
-
-    }
-
-    else
-    {
-
-        first = node->children.head;
-
-    }
-
-    for (current = first; current; current = current->next)
-    {
-
-        struct system_node *child = current->data;
-        struct record *record = &records[n];
-
-        record->id = (unsigned int)child;
-        record->size = 0;
-        record->type = RECORD_TYPE_NORMAL;
-        record->length = buffer_read(record->name, RECORD_NAMESIZE, child->name, cstring_length(child->name), 0);
-
-        if (child->type == SYSTEM_NODETYPE_GROUP)
-        {
-
-            record->type = RECORD_TYPE_DIRECTORY;
-
-        }
-
-        if (child->type == SYSTEM_NODETYPE_MULTIGROUP)
-        {
-
-            record->type = RECORD_TYPE_DIRECTORY;
-            record->length += cstring_write(record->name, RECORD_NAMESIZE, ":", record->length);
-            record->length += cstring_writevalue(record->name, RECORD_NAMESIZE, child->index, 10, 0, record->length);
-
-        }
-
-        if (++n >= count)
-            break;
-
-    }
-
-    spinlock_release(&node->children.spinlock);
-
-    return n;
-
-}
-
-static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int count, struct record *record)
+static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int count, struct record *records)
 {
 
     struct system_node *node = getnode(id);
 
-    switch (node->type)
+    if (node->type == SYSTEM_NODETYPE_GROUP || node->type == SYSTEM_NODETYPE_MULTIGROUP)
     {
 
-    case SYSTEM_NODETYPE_GROUP:
-    case SYSTEM_NODETYPE_MULTIGROUP:
-        return getlist(id, cid, count, record);
+        struct list_item *current;
+        struct list_item *first = 0;
+        unsigned int n = 0;
+
+        spinlock_acquire(&node->children.spinlock);
+
+        if (cid)
+        {
+
+            struct system_node *c = getnode(cid);
+
+            if (c)
+            {
+
+                first = &c->item;
+                first = first->next;
+
+            }
+
+        }
+
+        else
+        {
+
+            first = node->children.head;
+
+        }
+
+        for (current = first; current; current = current->next)
+        {
+
+            struct system_node *child = current->data;
+            struct record *record = &records[n];
+
+            record->id = (unsigned int)child;
+            record->size = 0;
+            record->type = RECORD_TYPE_NORMAL;
+            record->length = buffer_read(record->name, RECORD_NAMESIZE, child->name, cstring_length(child->name), 0);
+
+            if (child->type == SYSTEM_NODETYPE_GROUP)
+            {
+
+                record->type = RECORD_TYPE_DIRECTORY;
+
+            }
+
+            if (child->type == SYSTEM_NODETYPE_MULTIGROUP)
+            {
+
+                record->type = RECORD_TYPE_DIRECTORY;
+                record->length += cstring_write(record->name, RECORD_NAMESIZE, ":", record->length);
+                record->length += cstring_writevalue(record->name, RECORD_NAMESIZE, child->index, 10, 0, record->length);
+
+            }
+
+            if (++n >= count)
+                break;
+
+        }
+
+        spinlock_release(&node->children.spinlock);
+
+        return n;
 
     }
 
@@ -196,15 +186,6 @@ static unsigned int service_read(unsigned int id, void *buffer, unsigned int cou
 
     struct system_node *node = getnode(id);
 
-    switch (node->type)
-    {
-
-    case SYSTEM_NODETYPE_GROUP:
-    case SYSTEM_NODETYPE_MULTIGROUP:
-        return 0;
-
-    }
-
     return (node->operations.read) ? node->operations.read(buffer, count, offset) : 0;
 
 }
@@ -213,15 +194,6 @@ static unsigned int service_write(unsigned int id, void *buffer, unsigned int co
 {
 
     struct system_node *node = getnode(id);
-
-    switch (node->type)
-    {
-
-    case SYSTEM_NODETYPE_GROUP:
-    case SYSTEM_NODETYPE_MULTIGROUP:
-        return 0;
-
-    }
 
     return (node->operations.write) ? node->operations.write(buffer, count, offset) : 0;
 
