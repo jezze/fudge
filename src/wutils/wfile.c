@@ -40,6 +40,10 @@ static void updatecontent(void)
 
             count += cstring_write(buffer, BUFFER_SIZE, "+ text in \"content\" content \"", count);
             count += buffer_write(buffer, BUFFER_SIZE, record->name, record->length, count);
+
+            if (record->type == RECORD_TYPE_DIRECTORY)
+                count += cstring_write(buffer, BUFFER_SIZE, "/", count);
+
             count += cstring_write(buffer, BUFFER_SIZE, "\n\"\n", count);
 
         }
