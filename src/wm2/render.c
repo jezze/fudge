@@ -209,7 +209,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
     struct widget_text *text = widget->data;
     unsigned int fontindex = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
-    struct blit_font *font = pool_getfont(fontindex);
+    struct text_font *font = pool_getfont(fontindex);
     unsigned int rownum = (line - widget->position.y) / font->lineheight;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
     unsigned int rw = widget->size.w - roff;

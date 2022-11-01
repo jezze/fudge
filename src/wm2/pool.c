@@ -41,7 +41,7 @@ static unsigned int nwidgets;
 static char strdata[0x4000];
 static unsigned int strdataoffset;
 static struct strindex strindex[512];
-static struct blit_font fonts[32];
+static struct text_font fonts[32];
 static unsigned char fontnormal[0x8000];
 static unsigned char fontbold[0x8000];
 
@@ -364,7 +364,7 @@ void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, uns
 
 }
 
-struct blit_font *pool_getfont(unsigned int index)
+struct text_font *pool_getfont(unsigned int index)
 {
 
     return &fonts[index];
@@ -374,7 +374,7 @@ struct blit_font *pool_getfont(unsigned int index)
 void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding)
 {
 
-    struct blit_font *font = pool_getfont(index);
+    struct text_font *font = pool_getfont(index);
 
     font->data = data;
     font->bitmapdata = pcf_getbitmapdata(font->data);

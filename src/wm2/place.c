@@ -52,7 +52,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
     struct widget_choice *choice = widget->data;
 
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &choice->labelinfo, WIDGET_TEXT_WRAP_NONE, 0, 0);
-    resize(widget, x, y, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.height + CONFIG_CHOICE_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
+    resize(widget, x, y, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
 }
 
@@ -403,7 +403,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     int soffh = offh;
     int totw = 0;
     unsigned int lasttype = 0;
-    struct render_textinfo textinfo;
+    struct text_info textinfo;
 
     while ((current = pool_nextin(current, widget)))
     {

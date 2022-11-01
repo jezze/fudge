@@ -95,7 +95,7 @@ struct widget_button
 {
 
     unsigned int label;
-    struct render_rowinfo labelinfo;
+    struct text_rowinfo labelinfo;
 
 };
 
@@ -103,7 +103,7 @@ struct widget_choice
 {
 
     unsigned int label;
-    struct render_rowinfo labelinfo;
+    struct text_rowinfo labelinfo;
 
 };
 
@@ -146,7 +146,7 @@ struct widget_select
 {
 
     unsigned int label;
-    struct render_rowinfo labelinfo;
+    struct text_rowinfo labelinfo;
 
 };
 
@@ -162,8 +162,8 @@ struct widget_text
     unsigned int firstrowoffset;
     unsigned int rownum;
     unsigned int rowstart;
-    struct render_rowinfo rowinfo;
-    struct render_textinfo textinfo;
+    struct text_rowinfo rowinfo;
+    struct text_info textinfo;
 
 };
 
