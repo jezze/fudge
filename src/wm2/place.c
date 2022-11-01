@@ -382,6 +382,9 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct widget_text *text = widget->data;
     unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
 
+    text->rownum = 0;
+    text->rowstart = text_getrowstart(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), text->rownum, text->wrap, maxw);
+
     text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &text->textinfo, text->wrap, text->firstrowoffset, maxw);
     resize(widget, x, y, text->textinfo.width + 1, text->textinfo.rows * text->textinfo.lineheight, minw, minh, maxw, maxh);
 
@@ -420,8 +423,6 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
 
             text->firstrowoffset = 0;
-            text->rownum = 0x00FFFFFF;
-            text->rowstart = 0;
 
             if (lasttype == WIDGET_TYPE_TEXT)
             {

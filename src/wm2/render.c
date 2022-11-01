@@ -224,7 +224,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     };
 
     /* Rudimentary caching */
-    if (text->rownum == 0x00FFFFFF || text->rownum != rownum)
+    if (text->rownum != rownum)
     {
 
         if (rownum > text->rownum)
