@@ -136,7 +136,7 @@ static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, 
 
 }
 
-static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
@@ -162,7 +162,7 @@ static void driver_init(unsigned int id)
     console_initinterface(&consoleinterface, id);
 
     consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
-    consoleinterface.transmit.operations.write = consoleinterface_writetransmit;
+    consoleinterface.data.operations.write = consoleinterface_writedata;
 
 }
 

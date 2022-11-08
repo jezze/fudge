@@ -433,7 +433,7 @@ void init(void)
 
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if:0/event");
-    option_add("output", "system:console/if:0/transmit");
+    option_add("output", "system:console/if:0/data");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

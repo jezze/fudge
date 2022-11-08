@@ -39,11 +39,26 @@ static unsigned int findpath(struct service *service, unsigned int id, char *pat
         unsigned int cl = buffer_findbyte(cp, length - offset, '/');
 
         if (cl == 0)
+        {
+
             id = service->root();
+
+        }
+
         else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
-            id = service->parent(id);
+        {
+
+            if (id != service->root())
+                id = service->parent(id);
+
+        }
+
         else
+        {
+
             id = service->child(id, cp, cl);
+
+        }
 
         if (!id)
             return 0;

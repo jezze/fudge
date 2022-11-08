@@ -52,7 +52,7 @@ static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, 
 
 }
 
-static unsigned int consoleinterface_writetransmit(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int total = videointerface.width * videointerface.height;
@@ -237,7 +237,7 @@ static void driver_init(unsigned int id)
     clear(0);
 
     consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
-    consoleinterface.transmit.operations.write = consoleinterface_writetransmit;
+    consoleinterface.data.operations.write = consoleinterface_writedata;
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
