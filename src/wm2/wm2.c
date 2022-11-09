@@ -56,74 +56,60 @@ static void setupvideo(void)
 
 }
 
-static struct widget *gethoverwidgetat(struct widget *parent, int x, int y)
+static struct widget *getwidgettypeat(int x, int y, unsigned int type)
 {
 
     struct list_item *current = 0;
     struct widget *last = 0;
 
-    while ((current = pool_nextin(current, parent)))
+    while ((current = pool_next(current)))
     {
  
         struct widget *child = current->data;
-        struct widget *match = gethoverwidgetat(child, x, y);
 
-        if (match)
-            last = match;
+        if (!type || child->type == type)
+        {
 
-    }
+            if (widget_intersectsx(child, x) && widget_intersectsy(child, y))
+                last = child;
 
-    if (last)
-        return last;
-
-    switch (parent->type)
-    {
-
-    case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHOICE:
-    case WIDGET_TYPE_SELECT:
-    case WIDGET_TYPE_TEXTBOX:
-    case WIDGET_TYPE_WINDOW:
-        if (widget_intersectsx(parent, x) && widget_intersectsy(parent, y))
-            return parent;
-
-        break;
+        }
 
     }
 
-    return 0;
+    return last;
 
 }
 
-static struct widget *getwidgetat(struct widget *parent, int x, int y, unsigned int type)
+static struct widget *gethoverwidgetat(int x, int y)
 {
 
     struct list_item *current = 0;
     struct widget *last = 0;
 
-    while ((current = pool_nextin(current, parent)))
+    while ((current = pool_next(current)))
     {
  
         struct widget *child = current->data;
-        struct widget *match = getwidgetat(child, x, y, type);
 
-        if (match)
-            last = match;
+        switch (child->type)
+        {
+
+        case WIDGET_TYPE_BUTTON:
+        case WIDGET_TYPE_CHOICE:
+        case WIDGET_TYPE_SELECT:
+        case WIDGET_TYPE_TEXTBOX:
+        case WIDGET_TYPE_WINDOW:
+            if (widget_intersectsx(child, x) && widget_intersectsy(child, y))
+                last = child;
+
+            break;
+
+        }
 
     }
 
-    if (last)
-        return last;
-
-    if (!type || type == parent->type)
-    {
-
-        if (widget_intersectsx(parent, x) && widget_intersectsy(parent, y))
-            return parent;
-
-    }
-
-    return 0;
+    return last;
 
 }
 
@@ -363,7 +349,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     struct event_mousemove *mousemove = mdata;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
-    struct widget *hoverwidget = gethoverwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y);
+    struct widget *hoverwidget = gethoverwidgetat(state.mouseposition.x, state.mouseposition.y);
 
     if (hoverwidget)
         sethover(hoverwidget);
@@ -420,8 +406,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct widget *clickedwindow = getwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
-    struct widget *clickedwidget = gethoverwidgetat(state.rootwidget, state.mouseposition.x, state.mouseposition.y);
+    struct widget *clickedwindow = getwidgettypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *clickedwidget = gethoverwidgetat(state.mouseposition.x, state.mouseposition.y);
 
     switch (mousepress->button)
     {
