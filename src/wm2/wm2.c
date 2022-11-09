@@ -153,7 +153,7 @@ static void bump(struct widget *widget)
 
 }
 
-static void setfocus(struct widget *widget)
+static void setfocuswidget(struct widget *widget)
 {
 
     if (state.focusedwidget)
@@ -430,19 +430,16 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         state.mousebuttonleft = 1;
 
         if (clickedwindow)
-        {
-
             setfocuswindow(clickedwindow);
-            damage(state.mousewidget);
 
-        }
+        if (clickedwidget)
+            setfocuswidget(clickedwidget);
 
         if (clickedwidget)
         {
 
             struct event_wmclick wmclick;
 
-            setfocus(clickedwidget);
             cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(clickedwidget->id), 0));
             channel_sendbufferto(clickedwidget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
 
