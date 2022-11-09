@@ -241,7 +241,7 @@ static void parsedelete(struct state *state, unsigned int source)
         struct widget *widget = pool_getwidgetbyid(source, strbuffer);
 
         if (widget)
-            pool_destroy(widget);
+            widget_setstate(widget, WIDGET_STATE_DESTROYED);
         else
             fail(state);
 

@@ -463,6 +463,11 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
     switch (state)
     {
 
+    case WIDGET_STATE_DESTROYED:
+        widget->state = state;
+
+        break;
+
     case WIDGET_STATE_FOCUS:
         widget->state = state;
 

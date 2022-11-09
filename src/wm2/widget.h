@@ -18,6 +18,7 @@
 #define WIDGET_STATE_HOVEROFF                   2
 #define WIDGET_STATE_FOCUS                      3
 #define WIDGET_STATE_FOCUSOFF                   4
+#define WIDGET_STATE_DESTROYED                  5
 #define WIDGET_ATTR_COLOR                       1
 #define WIDGET_ATTR_COLUMNS                     2
 #define WIDGET_ATTR_CONTENT                     3

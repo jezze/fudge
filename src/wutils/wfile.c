@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char *path = "system:";
+static char *path = "initrd:";
 
 static void updatepath(void)
 {
@@ -23,7 +23,11 @@ static void updatecontent(void)
     struct record records[4];
     unsigned int nrecords;
     unsigned int cid;
+    char *data =
+        "- content\n"
+        "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
+    file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
     file_walk2(FILE_PW, path);
 
     for (cid = 0; (nrecords = file_list(FILE_PW, cid, 4, records)); cid = records[nrecords - 1].id)
@@ -52,8 +56,6 @@ static void updatecontent(void)
 
     }
 
-    channel_close();
-
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
@@ -80,12 +82,22 @@ static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
     struct event_wmclick *wmclick = mdata;
 
     if (cstring_match(wmclick->clicked, "initrd"))
-        path = "initrd:";
-    else if (cstring_match(wmclick->clicked, "system"))
-        path = "system:";
+    {
 
-    updatepath();
-    updatecontent();
+        path = "initrd:";
+        updatepath();
+        updatecontent();
+
+    }
+
+    else if (cstring_match(wmclick->clicked, "system"))
+    {
+
+        path = "system:";
+        updatepath();
+        updatecontent();
+
+    }
 
 }
 
