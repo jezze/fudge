@@ -77,6 +77,16 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    struct event_wmclick *wmclick = mdata;
+
+    if (cstring_match(wmclick->clicked, "initrd"))
+        path = "initrd:";
+    else if (cstring_match(wmclick->clicked, "system"))
+        path = "system:";
+
+    updatepath();
+    updatecontent();
+
 }
 
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)

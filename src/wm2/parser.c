@@ -230,10 +230,29 @@ static void parsecomment(struct state *state)
 
 }
 
-static void parsedelete(struct state *state)
+static void parsedelete(struct state *state, unsigned int source)
 {
 
-    fail(state);
+    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+
+    if (count)
+    {
+
+        struct widget *widget = pool_getwidgetbyid(source, strbuffer);
+
+        if (widget)
+            pool_destroy(widget);
+        else
+            fail(state);
+
+    }
+
+    else
+    {
+
+        fail(state);
+
+    }
 
 }
 
@@ -307,7 +326,7 @@ static void parse(struct state *state, unsigned int source, char *in)
             break;
 
         case WIDGET_COMMAND_DELETE:
-            parsedelete(state);
+            parsedelete(state, source);
 
             break;
 
