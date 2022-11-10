@@ -148,7 +148,7 @@ static void setattributebutton(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_LABEL:
-        button->label = pool_replacecstring(button->label, value);
+        button->label = pool_updatestring(button->label, value);
 
         break;
 
@@ -165,7 +165,7 @@ static void setattributechoice(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_LABEL:
-        choice->label = pool_replacecstring(choice->label, value);
+        choice->label = pool_updatestring(choice->label, value);
 
         break;
 
@@ -253,7 +253,7 @@ static void setattributeimage(struct widget *widget, unsigned int attribute, cha
     {
 
     case WIDGET_ATTR_SOURCE:
-        image->source = pool_replacecstring(image->source, value);
+        image->source = pool_updatestring(image->source, value);
 
         break;
 
@@ -275,7 +275,7 @@ static void setattributeselect(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_LABEL:
-        select->label = pool_replacecstring(select->label, value);
+        select->label = pool_updatestring(select->label, value);
 
         break;
 
@@ -297,7 +297,7 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
         break;
 
     case WIDGET_ATTR_CONTENT:
-        text->content = pool_replacecstring(text->content, value);
+        text->content = pool_updatestring(text->content, value);
 
         break;
 
@@ -351,7 +351,7 @@ static void setattributewindow(struct widget *widget, unsigned int attribute, ch
     {
 
     case WIDGET_ATTR_TITLE:
-        window->title = pool_replacecstring(window->title, value);
+        window->title = pool_updatestring(window->title, value);
 
         break;
 
@@ -366,12 +366,12 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     {
 
     case WIDGET_ATTR_ID:
-        widget->id = pool_replacecstring(widget->id, value);
+        widget->id = pool_updatestring(widget->id, value);
 
         break;
 
     case WIDGET_ATTR_IN:
-        widget->in = pool_replacecstring(widget->in, value);
+        widget->in = pool_updatestring(widget->in, value);
 
         break;
 
@@ -436,6 +436,9 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
 void widget_unsetattributes(struct widget *widget)
 {
+
+    widget->id = pool_updatestring(widget->id, 0);
+    widget->in = pool_updatestring(widget->in, 0);
 
     switch (widget->type)
     {
@@ -693,8 +696,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
     widget->source = source;
     widget->type = type;
-    widget->id = pool_replacecstring(widget->id, id);
-    widget->in = pool_replacecstring(widget->in, in);
+    widget->id = pool_updatestring(widget->id, id);
+    widget->in = pool_updatestring(widget->in, in);
     widget->data = data;
     widget->position.x = 0;
     widget->position.y = 0;

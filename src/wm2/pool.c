@@ -227,7 +227,9 @@ static unsigned int findslot(void)
     for (i = 1; i < MAX_STRINGS; i++)
     {
 
-        if (strindex[i].offset == 0 && strindex[i].length == 0)
+        struct strindex *s = &strindex[i];
+
+        if (s->offset == 0 && s->length == 0)
             return i;
 
     }
@@ -239,14 +241,18 @@ static unsigned int findslot(void)
 char *pool_getstring(unsigned int index)
 {
 
-    return strdata + strindex[index].offset;
+    struct strindex *s = &strindex[index];
+
+    return strdata + s->offset;
 
 }
 
 unsigned int pool_getcstringlength(unsigned int index)
 {
 
-    return (strindex[index].length) ? strindex[index].length - 1 : 0;
+    struct strindex *s = &strindex[index];
+
+    return (s->length) ? s->length - 1 : 0;
 
 }
 
@@ -258,11 +264,11 @@ static unsigned int savedata(unsigned int count, void *data)
     if (slot)
     {
 
-        struct strindex *index = &strindex[slot];
+        struct strindex *s = &strindex[slot];
 
-        index->offset = strdataoffset;
-        index->length = count;
-        strdataoffset += buffer_write(strdata, STRINGDATA_SIZE, data, index->length, index->offset);
+        s->offset = strdataoffset;
+        s->length = count;
+        strdataoffset += buffer_write(strdata, STRINGDATA_SIZE, data, s->length, s->offset);
 
     }
 
@@ -300,7 +306,7 @@ static unsigned int freedata(unsigned int index)
 
 }
 
-unsigned int pool_replacecstring(unsigned int index, char *cstring)
+unsigned int pool_updatestring(unsigned int index, char *cstring)
 {
 
     if (index)

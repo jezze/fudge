@@ -23,7 +23,7 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 void pool_destroy(struct widget *widget);
 char *pool_getstring(unsigned int index);
 unsigned int pool_getcstringlength(unsigned int index);
-unsigned int pool_replacecstring(unsigned int index, char *cstring);
+unsigned int pool_updatestring(unsigned int index, char *cstring);
 void pool_pcxload(struct pool_pcxresource *pcxresource, char *source);
 void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer);
 struct text_font *pool_getfont(unsigned int index);
