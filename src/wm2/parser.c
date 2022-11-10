@@ -230,6 +230,23 @@ static void parsecomment(struct state *state)
 
 }
 
+static void deletechildren(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        widget_setstate(child, WIDGET_STATE_DESTROYED);
+        deletechildren(child);
+
+    }
+
+}
+
 static void parsedelete(struct state *state, unsigned int source)
 {
 
@@ -241,9 +258,19 @@ static void parsedelete(struct state *state, unsigned int source)
         struct widget *widget = pool_getwidgetbyid(source, strbuffer);
 
         if (widget)
+        {
+
             widget_setstate(widget, WIDGET_STATE_DESTROYED);
+            deletechildren(widget);
+
+        }
+
         else
+        {
+
             fail(state);
+
+        }
 
     }
 

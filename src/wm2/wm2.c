@@ -563,6 +563,33 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->state == WIDGET_STATE_DESTROYED)
+        {
+
+            current = current->prev;
+
+            damage(widget);
+            pool_destroy(widget);
+
+        }
+
+    }
+
+    if (state.mousewidget)
+    {
+
+        pool_bump(state.mousewidget);
+        damage(state.mousewidget);
+
+    }
+
 }
 
 static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
