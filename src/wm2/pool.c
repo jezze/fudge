@@ -94,9 +94,8 @@ struct list_item *pool_nextsource(struct list_item *current, unsigned int source
     {
 
         struct entry *entry = current->data;
-        struct widget *widget = &entry->widget;
 
-        if (widget->source == source)
+        if (entry->widget.source == source)
             return current;
 
     }
@@ -114,13 +113,12 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
     {
 
         struct entry *entry = current->data;
-        struct widget *widget = &entry->widget;
 
-        if (widget->source != source)
+        if (entry->widget.source != source)
             continue;
 
-        if (cstring_match(pool_getstring(widget->id), id))
-            return widget;
+        if (cstring_match(pool_getstring(entry->widget.id), id))
+            return &entry->widget;
 
     }
 
@@ -151,12 +149,11 @@ static void bump(struct list_item *item)
 {
 
     struct entry *entry = item->data;
-    struct widget *widget = &entry->widget;
     struct list_item *current = item->prev;
 
     list_move(&bumplist, &widgetlist, item);
 
-    while ((current = pool_nextin(current, widget)))
+    while ((current = pool_nextin(current, &entry->widget)))
     {
 
         struct list_item *prev = current->prev;
@@ -191,12 +188,11 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
     {
 
         struct entry *entry = item->data;
-        struct widget *widget = &entry->widget;
 
-        widget_init(widget, source, type, id, in, &entry->payload);
+        widget_init(&entry->widget, source, type, id, in, &entry->payload);
         list_move(&widgetlist, &freelist, item);
 
-        return widget;
+        return &entry->widget;
 
     }
 
@@ -329,8 +325,8 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
     {
 
         struct pcx_header header;
-        unsigned char magic;
         unsigned int filesize = 31467;
+        unsigned char magic;
 
         file_readall(FILE_L0, &header, sizeof (struct pcx_header));
         file_seekread(FILE_L0, pcxresource->data, FONTDATA_SIZE, 128);
