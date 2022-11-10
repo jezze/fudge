@@ -257,7 +257,7 @@ unsigned int pool_getcstringlengthzero(unsigned int index)
 
 }
 
-unsigned int pool_savedata(unsigned int count, void *data)
+static unsigned int savedata(unsigned int count, void *data)
 {
 
     unsigned int slot = findslot();
@@ -277,14 +277,7 @@ unsigned int pool_savedata(unsigned int count, void *data)
 
 }
 
-unsigned int pool_savecstring(char *cstring)
-{
-
-    return pool_savedata(cstring_lengthzero(cstring), cstring);
-
-}
-
-unsigned int pool_freedata(unsigned int index)
+static unsigned int freedata(unsigned int index)
 {
 
     struct strindex *s = &strindex[index];
@@ -318,10 +311,10 @@ unsigned int pool_replacecstring(unsigned int index, char *cstring)
 {
 
     if (index)
-        index = pool_freedata(index);
+        index = freedata(index);
 
     if (cstring)
-        index = pool_savecstring(cstring);
+        index = savedata(cstring_lengthzero(cstring), cstring);
 
     return index;
 
