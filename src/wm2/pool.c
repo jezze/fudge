@@ -7,6 +7,10 @@
 #include "pool.h"
 
 #define MAX_WIDGETS                     1024
+#define MAX_STRINGS                     512
+#define MAX_FONTS                       32
+#define STRINGDATA_SIZE                 0x4000
+#define FONTDATA_SIZE                   0x8000
 
 struct strindex
 {
@@ -43,12 +47,12 @@ static struct list bumplist;
 static struct list freelist;
 static struct entry entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
-static char strdata[0x4000];
+static char strdata[STRINGDATA_SIZE];
 static unsigned int strdataoffset;
-static struct strindex strindex[512];
-static struct text_font fonts[32];
-static unsigned char fontnormal[0x8000];
-static unsigned char fontbold[0x8000];
+static struct strindex strindex[MAX_STRINGS];
+static struct text_font fonts[MAX_FONTS];
+static unsigned char fontnormal[FONTDATA_SIZE];
+static unsigned char fontbold[FONTDATA_SIZE];
 
 struct list_item *pool_next(struct list_item *current)
 {
@@ -220,7 +224,7 @@ static unsigned int findslot(void)
 
     unsigned int i;
 
-    for (i = 1; i < 512; i++)
+    for (i = 1; i < MAX_STRINGS; i++)
     {
 
         if (strindex[i].offset == 0 && strindex[i].length == 0)
@@ -265,7 +269,7 @@ unsigned int pool_savedata(unsigned int count, void *data)
 
         index->offset = strdataoffset;
         index->length = count;
-        strdataoffset += buffer_write(strdata, 0x4000, data, index->length, index->offset);
+        strdataoffset += buffer_write(strdata, STRINGDATA_SIZE, data, index->length, index->offset);
 
     }
 
@@ -290,13 +294,13 @@ unsigned int pool_freedata(unsigned int index)
     unsigned int count = strdataoffset - next;
     unsigned int i;
 
-    buffer_write(strdata, 0x4000, strdata + next, count, offset);
+    buffer_write(strdata, STRINGDATA_SIZE, strdata + next, count, offset);
     strdataoffset -= length;
 
     s->offset = 0;
     s->length = 0;
 
-    for (i = 0; i < 512; i++)
+    for (i = 0; i < MAX_STRINGS; i++)
     {
 
         struct strindex *current = &strindex[i];
@@ -337,7 +341,7 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
         unsigned int filesize = 31467;
 
         file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-        file_seekread(FILE_L0, pcxresource->data, 0x8000, 128);
+        file_seekread(FILE_L0, pcxresource->data, FONTDATA_SIZE, 128);
 
         pcxresource->width = header.xend - header.xstart + 1;
         pcxresource->height = header.yend - header.ystart + 1;
@@ -435,9 +439,9 @@ void pool_loadfont(unsigned int factor)
 
     }
 
-    file_read(FILE_L0, fontnormal, 0x8000);
+    file_read(FILE_L0, fontnormal, FONTDATA_SIZE);
     pool_setfont(POOL_FONTNORMAL, fontnormal, lineheight, padding);
-    file_read(FILE_L1, fontbold, 0x8000);
+    file_read(FILE_L1, fontbold, FONTDATA_SIZE);
     pool_setfont(POOL_FONTBOLD, fontbold, lineheight, padding);
 
 }
