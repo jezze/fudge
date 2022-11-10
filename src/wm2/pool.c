@@ -8,22 +8,6 @@
 
 #define MAX_WIDGETS                     1024
 
-union payloads
-{
-
-    struct widget_button button;
-    struct widget_choice choice;
-    struct widget_container container;
-    struct widget_fill fill;
-    struct widget_grid grid;
-    struct widget_image image;
-    struct widget_select select;
-    struct widget_text text;
-    struct widget_textbox textbox;
-    struct widget_window window;
-
-};
-
 struct strindex
 {
 
@@ -32,12 +16,33 @@ struct strindex
 
 };
 
+struct entry
+{
+
+    struct widget widget;
+    union
+    {
+
+        struct widget_button button;
+        struct widget_choice choice;
+        struct widget_container container;
+        struct widget_fill fill;
+        struct widget_grid grid;
+        struct widget_image image;
+        struct widget_select select;
+        struct widget_text text;
+        struct widget_textbox textbox;
+        struct widget_window window;
+
+    } payload;
+
+};
+
 static struct list widgetlist;
 static struct list bumplist;
-static struct list_item widgetitems[MAX_WIDGETS];
-static struct widget widgets[MAX_WIDGETS];
-static union payloads payloads[MAX_WIDGETS];
-static unsigned int nwidgets;
+static struct list freelist;
+static struct entry entries[MAX_WIDGETS];
+static struct list_item items[MAX_WIDGETS];
 static char strdata[0x4000];
 static unsigned int strdataoffset;
 static struct strindex strindex[512];
@@ -61,7 +66,8 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
     while ((current = pool_next(current)))
     {
 
-        struct widget *widget = current->data;
+        struct entry *entry = current->data;
+        struct widget *widget = &entry->widget;
 
         if (!parent->source || widget->source == parent->source)
         {
@@ -83,7 +89,8 @@ struct list_item *pool_nextsource(struct list_item *current, unsigned int source
     while ((current = pool_next(current)))
     {
 
-        struct widget *widget = current->data;
+        struct entry *entry = current->data;
+        struct widget *widget = &entry->widget;
 
         if (widget->source == source)
             return current;
@@ -102,7 +109,8 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
     while ((current = pool_next(current)))
     {
 
-        struct widget *widget = current->data;
+        struct entry *entry = current->data;
+        struct widget *widget = &entry->widget;
 
         if (widget->source != source)
             continue;
@@ -124,7 +132,9 @@ static struct list_item *finditem(struct widget *widget)
     while ((current = pool_next(current)))
     {
 
-        if (current->data == widget)
+        struct entry *entry = current->data;
+
+        if (&entry->widget == widget)
             return current;
 
     }
@@ -136,7 +146,8 @@ static struct list_item *finditem(struct widget *widget)
 static void bump(struct list_item *item)
 {
 
-    struct widget *widget = item->data;
+    struct entry *entry = item->data;
+    struct widget *widget = &entry->widget;
     struct list_item *current = item->prev;
 
     list_move(&bumplist, &widgetlist, item);
@@ -170,17 +181,16 @@ void pool_bump(struct widget *widget)
 struct widget *pool_create(unsigned int source, unsigned int type, char *id, char *in)
 {
 
-    if (nwidgets < MAX_WIDGETS)
+    struct list_item *item = list_pickhead(&freelist);
+
+    if (item)
     {
 
-        struct widget *widget = &widgets[nwidgets];
-        struct list_item *item = &widgetitems[nwidgets];
+        struct entry *entry = item->data;
+        struct widget *widget = &entry->widget;
 
-        widget_init(widget, source, type, id, in, &payloads[nwidgets]);
-        list_inititem(item, widget);
-        list_add(&widgetlist, item);
-
-        nwidgets++;
+        widget_init(widget, source, type, id, in, &entry->payload);
+        list_move(&widgetlist, &freelist, item);
 
         return widget;
 
@@ -199,7 +209,7 @@ void pool_destroy(struct widget *widget)
     {
 
         widget_unsetattributes(widget);
-        list_remove(&widgetlist, item);
+        list_move(&freelist, &widgetlist, item);
 
     }
 
@@ -435,8 +445,21 @@ void pool_loadfont(unsigned int factor)
 void pool_setup(void)
 {
 
+    unsigned int i;
+
     list_init(&widgetlist);
     list_init(&bumplist);
+    list_init(&freelist);
+
+    for (i = 0; i < MAX_WIDGETS; i++)
+    {
+
+        struct list_item *item = &items[i];
+
+        list_inititem(item, &entries[i]);
+        list_add(&freelist, item);
+
+    }
 
 }
 
