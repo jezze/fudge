@@ -195,7 +195,13 @@ void pool_destroy(struct widget *widget)
 
     struct list_item *item = finditem(widget);
 
-    list_remove(&widgetlist, item);
+    if (item)
+    {
+
+        widget_unsetattributes(widget);
+        list_remove(&widgetlist, item);
+
+    }
 
 }
 

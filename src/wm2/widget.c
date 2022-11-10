@@ -434,6 +434,46 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
 }
 
+void widget_unsetattributes(struct widget *widget)
+{
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+        setattributebutton(widget, WIDGET_ATTR_LABEL, 0);
+
+        break;
+
+    case WIDGET_TYPE_CHOICE:
+        setattributechoice(widget, WIDGET_ATTR_LABEL, 0);
+
+        break;
+
+    case WIDGET_TYPE_IMAGE:
+        setattributeimage(widget, WIDGET_ATTR_SOURCE, 0);
+
+        break;
+
+    case WIDGET_TYPE_SELECT:
+        setattributeselect(widget, WIDGET_ATTR_LABEL, 0);
+
+        break;
+
+    case WIDGET_TYPE_TEXT:
+        setattributetext(widget, WIDGET_ATTR_CONTENT, 0);
+
+        break;
+
+    case WIDGET_TYPE_WINDOW:
+        setattributewindow(widget, WIDGET_ATTR_TITLE, 0);
+
+        break;
+
+    }
+
+}
+
 unsigned int widget_getattribute(char *value)
 {
 

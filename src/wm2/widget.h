@@ -184,6 +184,7 @@ struct widget_window
 };
 
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
+void widget_unsetattributes(struct widget *widget);
 unsigned int widget_getattribute(char *value);
 unsigned int widget_getcommand(char *value);
 unsigned int widget_gettype(char *value);
