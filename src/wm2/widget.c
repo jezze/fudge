@@ -59,67 +59,67 @@ static struct token attributes[] =
 
 static struct token containerlayouts[] =
 {
-    {WIDGET_CONTAINER_LAYOUT_FLOAT, "float"},
-    {WIDGET_CONTAINER_LAYOUT_MAXIMIZE, "maximize"},
-    {WIDGET_CONTAINER_LAYOUT_HORIZONTAL, "horizontal"},
-    {WIDGET_CONTAINER_LAYOUT_VERTICAL, "vertical"}
+    {CONTAINER_LAYOUT_FLOAT, "float"},
+    {CONTAINER_LAYOUT_MAXIMIZE, "maximize"},
+    {CONTAINER_LAYOUT_HORIZONTAL, "horizontal"},
+    {CONTAINER_LAYOUT_VERTICAL, "vertical"}
 };
 
 static struct token containerplacements[] =
 {
-    {WIDGET_CONTAINER_PLACEMENT_NORMAL, "normal"},
-    {WIDGET_CONTAINER_PLACEMENT_STRETCHED, "stretched"}
+    {CONTAINER_PLACEMENT_NORMAL, "normal"},
+    {CONTAINER_PLACEMENT_STRETCHED, "stretched"}
 };
 
 static struct token gridplacements[] =
 {
-    {WIDGET_GRID_PLACEMENT_NORMAL, "normal"},
-    {WIDGET_GRID_PLACEMENT_STRETCHED, "stretched"}
+    {GRID_PLACEMENT_NORMAL, "normal"},
+    {GRID_PLACEMENT_STRETCHED, "stretched"}
 };
 
 static struct token imagetypes[] =
 {
-    {WIDGET_IMAGE_TYPE_FUDGEMOUSE, "image/fudge-icon-mouse"},
-    {WIDGET_IMAGE_TYPE_PCX, "image/pcx"}
+    {IMAGE_TYPE_FUDGEMOUSE, "image/fudge-icon-mouse"},
+    {IMAGE_TYPE_PCX, "image/pcx"}
 };
 
 static struct token texthaligns[] =
 {
-    {WIDGET_TEXT_HALIGN_LEFT, "left"},
-    {WIDGET_TEXT_HALIGN_CENTER, "center"},
-    {WIDGET_TEXT_HALIGN_RIGHT, "right"}
+    {TEXT_HALIGN_LEFT, "left"},
+    {TEXT_HALIGN_CENTER, "center"},
+    {TEXT_HALIGN_RIGHT, "right"}
 };
 
 static struct token textweights[] =
 {
-    {WIDGET_TEXT_WEIGHT_NORMAL, "normal"},
-    {WIDGET_TEXT_WEIGHT_BOLD, "bold"}
+    {TEXT_WEIGHT_NORMAL, "normal"},
+    {TEXT_WEIGHT_BOLD, "bold"}
 };
 
 static struct token textvaligns[] =
 {
-    {WIDGET_TEXT_VALIGN_TOP, "top"},
-    {WIDGET_TEXT_VALIGN_MIDDLE, "middle"},
-    {WIDGET_TEXT_VALIGN_BOTTOM, "bottom"}
+    {TEXT_VALIGN_TOP, "top"},
+    {TEXT_VALIGN_MIDDLE, "middle"},
+    {TEXT_VALIGN_BOTTOM, "bottom"}
 };
 
 static struct token textwraps[] =
 {
-    {WIDGET_TEXT_WRAP_NONE, "none"},
-    {WIDGET_TEXT_WRAP_CHAR, "char"},
-    {WIDGET_TEXT_WRAP_WORD, "word"}
+    {TEXT_WRAP_NONE, "none"},
+    {TEXT_WRAP_CHAR, "char"},
+    {TEXT_WRAP_WORD, "word"}
 };
 
 static struct token textmodes[] =
 {
-    {WIDGET_TEXT_MODE_NORMAL, "normal"},
-    {WIDGET_TEXT_MODE_INVERTED, "inverted"}
+    {TEXT_MODE_NORMAL, "normal"},
+    {TEXT_MODE_INVERTED, "inverted"}
 };
 
 static struct token textboxmodes[] =
 {
-    {WIDGET_TEXTBOX_MODE_NORMAL, "normal"},
-    {WIDGET_TEXTBOX_MODE_READONLY, "readonly"}
+    {TEXTBOX_MODE_NORMAL, "normal"},
+    {TEXTBOX_MODE_READONLY, "readonly"}
 };
 
 static unsigned int getkey(struct token *tokens, unsigned int n, char *value)

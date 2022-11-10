@@ -36,31 +36,18 @@
 #define WIDGET_ATTR_WEIGHT                      15
 #define WIDGET_ATTR_VALIGN                      16
 #define WIDGET_ATTR_WRAP                        17
-#define WIDGET_CONTAINER_LAYOUT_FLOAT           0
-#define WIDGET_CONTAINER_LAYOUT_HORIZONTAL      1
-#define WIDGET_CONTAINER_LAYOUT_MAXIMIZE        2
-#define WIDGET_CONTAINER_LAYOUT_VERTICAL        3
-#define WIDGET_CONTAINER_PLACEMENT_NORMAL       0
-#define WIDGET_CONTAINER_PLACEMENT_STRETCHED    1
-#define WIDGET_GRID_PLACEMENT_NORMAL            0
-#define WIDGET_GRID_PLACEMENT_STRETCHED         1
-#define WIDGET_IMAGE_TYPE_FUDGEMOUSE            1
-#define WIDGET_IMAGE_TYPE_PCX                   2
-#define WIDGET_TEXT_HALIGN_LEFT                 0
-#define WIDGET_TEXT_HALIGN_CENTER               1
-#define WIDGET_TEXT_HALIGN_RIGHT                2
-#define WIDGET_TEXT_MODE_NORMAL                 0
-#define WIDGET_TEXT_MODE_INVERTED               1
-#define WIDGET_TEXT_WEIGHT_NORMAL               0
-#define WIDGET_TEXT_WEIGHT_BOLD                 1
-#define WIDGET_TEXT_VALIGN_TOP                  0
-#define WIDGET_TEXT_VALIGN_MIDDLE               1
-#define WIDGET_TEXT_VALIGN_BOTTOM               2
-#define WIDGET_TEXT_WRAP_NONE                   0
-#define WIDGET_TEXT_WRAP_CHAR                   1
-#define WIDGET_TEXT_WRAP_WORD                   2
-#define WIDGET_TEXTBOX_MODE_NORMAL              0
-#define WIDGET_TEXTBOX_MODE_READONLY            1
+#define CONTAINER_LAYOUT_FLOAT                  0
+#define CONTAINER_LAYOUT_HORIZONTAL             1
+#define CONTAINER_LAYOUT_MAXIMIZE               2
+#define CONTAINER_LAYOUT_VERTICAL               3
+#define CONTAINER_PLACEMENT_NORMAL              0
+#define CONTAINER_PLACEMENT_STRETCHED           1
+#define GRID_PLACEMENT_NORMAL                   0
+#define GRID_PLACEMENT_STRETCHED                1
+#define IMAGE_TYPE_FUDGEMOUSE                   1
+#define IMAGE_TYPE_PCX                          2
+#define TEXTBOX_MODE_NORMAL                     0
+#define TEXTBOX_MODE_READONLY                   1
 
 struct widget_position
 {

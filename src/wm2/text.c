@@ -2,7 +2,6 @@
 #include <abi.h>
 #include "util.h"
 #include "text.h"
-#include "widget.h"
 
 int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w)
 {
@@ -10,13 +9,13 @@ int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w
     switch (halign)
     {
 
-    case WIDGET_TEXT_HALIGN_LEFT:
+    case TEXT_HALIGN_LEFT:
         return x;
 
-    case WIDGET_TEXT_HALIGN_CENTER:
+    case TEXT_HALIGN_CENTER:
         return x + w / 2 - rowinfo->width / 2;
 
-    case WIDGET_TEXT_HALIGN_RIGHT:
+    case TEXT_HALIGN_RIGHT:
         return x + w - rowinfo->width;
 
     }
@@ -31,13 +30,13 @@ int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, int y, int h
     switch (valign)
     {
 
-    case WIDGET_TEXT_VALIGN_TOP:
+    case TEXT_VALIGN_TOP:
         return y;
 
-    case WIDGET_TEXT_VALIGN_MIDDLE:
+    case TEXT_VALIGN_MIDDLE:
         return y + h / 2 - rowinfo->height / 2 - (rowinfo->lineheight - rowinfo->height) / 2;
 
-    case WIDGET_TEXT_VALIGN_BOTTOM:
+    case TEXT_VALIGN_BOTTOM:
         return y + h - rowinfo->height;
 
     }
@@ -114,10 +113,10 @@ unsigned int text_getrowinfo(struct text_font *font, char *text, unsigned int le
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        if (wrap != WIDGET_TEXT_WRAP_NONE && w + metricsdata.width >= maxw)
+        if (wrap != TEXT_WRAP_NONE && w + metricsdata.width >= maxw)
         {
 
-            if (wrap == WIDGET_TEXT_WRAP_WORD && si)
+            if (wrap == TEXT_WRAP_WORD && si)
             {
 
                 i = si;

@@ -39,7 +39,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_button *button = widget->data;
 
-    text_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &button->labelinfo, WIDGET_TEXT_WRAP_NONE, 0, 0);
+    text_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &button->labelinfo, TEXT_WRAP_NONE, 0, 0);
     resize2(widget, x, y, button->labelinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, button->labelinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
 }
@@ -49,7 +49,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_choice *choice = widget->data;
 
-    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &choice->labelinfo, WIDGET_TEXT_WRAP_NONE, 0, 0);
+    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &choice->labelinfo, TEXT_WRAP_NONE, 0, 0);
     resize(widget, x, y, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
 }
@@ -94,7 +94,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
         int childmaxw = maxw - offw;
         int childmaxh = maxh - offh;
 
-        if (container->placement == WIDGET_CONTAINER_PLACEMENT_STRETCHED)
+        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
             childminh = childmaxh;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
@@ -158,7 +158,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
         int childmaxw = maxw - offw;
         int childmaxh = maxh - offh;
 
-        if (container->placement == WIDGET_CONTAINER_PLACEMENT_STRETCHED)
+        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
             childminw = childmaxw;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
@@ -181,22 +181,22 @@ static void placecontainer(struct widget *widget, int x, int y, unsigned int min
     switch (container->layout)
     {
 
-    case WIDGET_CONTAINER_LAYOUT_FLOAT:
+    case CONTAINER_LAYOUT_FLOAT:
         placecontainerfloat(widget, x, y, minw, minh, maxw, maxh);
         
         break;
 
-    case WIDGET_CONTAINER_LAYOUT_HORIZONTAL:
+    case CONTAINER_LAYOUT_HORIZONTAL:
         placecontainerhorizontal(widget, x, y, minw, minh, maxw, maxh);
 
         break;
 
-    case WIDGET_CONTAINER_LAYOUT_MAXIMIZE:
+    case CONTAINER_LAYOUT_MAXIMIZE:
         placecontainermaximize(widget, x, y, minw, minh, maxw, maxh);
 
         break;
 
-    case WIDGET_CONTAINER_LAYOUT_VERTICAL:
+    case CONTAINER_LAYOUT_VERTICAL:
         placecontainervertical(widget, x, y, minw, minh, maxw, maxh);
 
         break;
@@ -239,7 +239,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         int childmaxw = maxw - offw;
         int childmaxh = maxh - offh;
 
-        if (grid->placement == WIDGET_GRID_PLACEMENT_STRETCHED)
+        if (grid->placement == GRID_PLACEMENT_STRETCHED)
         {
 
             childminw = colw;
@@ -307,10 +307,10 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
     switch (image->type)
     {
 
-    case WIDGET_IMAGE_TYPE_FUDGEMOUSE:
+    case IMAGE_TYPE_FUDGEMOUSE:
         break;
 
-    case WIDGET_IMAGE_TYPE_PCX:
+    case IMAGE_TYPE_PCX:
         placeimagepcx(widget, x, y, minw, minh, maxw, maxh);
 
         break;
@@ -325,7 +325,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     struct widget_select *select = widget->data;
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
 
-    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &select->labelinfo, WIDGET_TEXT_WRAP_NONE, 0, 0);
+    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &select->labelinfo, TEXT_WRAP_NONE, 0, 0);
     resize2(widget, x, y, select->labelinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, select->labelinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
     if (widget->state == WIDGET_STATE_FOCUS)
@@ -378,7 +378,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 {
 
     struct widget_text *text = widget->data;
-    unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
+    unsigned int index = (text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
 
     text->rownum = 0;
     text->rowstart = text_getrowstart(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), text->rownum, text->wrap, maxw, 0, 0);
@@ -418,7 +418,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         {
 
             struct widget_text *text = child->data;
-            unsigned int index = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
+            unsigned int index = (text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
 
             text->firstrowoffset = 0;
 

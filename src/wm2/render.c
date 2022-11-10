@@ -36,8 +36,8 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_button *button = widget->data;
-    int rx = text_getrowx(&button->labelinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
-    int ry = text_getrowy(&button->labelinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    int rx = text_getrowx(&button->labelinfo, TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
+    int ry = text_getrowy(&button->labelinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -68,8 +68,8 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_choice *choice = widget->data;
-    int rx = text_getrowx(&choice->labelinfo, WIDGET_TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
-    int ry = text_getrowy(&choice->labelinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    int rx = text_getrowx(&choice->labelinfo, TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
+    int ry = text_getrowy(&choice->labelinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -142,7 +142,7 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
     switch (image->type)
     {
 
-    case WIDGET_IMAGE_TYPE_FUDGEMOUSE:
+    case IMAGE_TYPE_FUDGEMOUSE:
         {
 
         static unsigned int cmap[3] = {
@@ -157,7 +157,7 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
         break;
 
-    case WIDGET_IMAGE_TYPE_PCX:
+    case IMAGE_TYPE_PCX:
         blit_pcx(display, line, pool_getstring(image->source), widget->position.x, widget->position.y, x0, x2);
 
         break;
@@ -171,8 +171,8 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     struct widget_select *select = widget->data;
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
-    int rx = text_getrowx(&select->labelinfo, WIDGET_TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
-    int ry = text_getrowy(&select->labelinfo, WIDGET_TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    int rx = text_getrowx(&select->labelinfo, TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
+    int ry = text_getrowy(&select->labelinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -208,7 +208,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct widget_text *text = widget->data;
-    unsigned int fontindex = (text->weight == WIDGET_TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
+    unsigned int fontindex = (text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
     struct text_font *font = pool_getfont(fontindex);
     unsigned int rownum = (line - widget->position.y) / font->lineheight;
     unsigned int roff = (rownum) ? 0 : text->firstrowoffset;
@@ -249,12 +249,12 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         switch (text->mode)
         {
 
-        case WIDGET_TEXT_MODE_NORMAL:
+        case TEXT_MODE_NORMAL:
             blit_textnormal(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, text->rowinfo.chars, rx, ry, line, x0, x2);
 
             break;
 
-        case WIDGET_TEXT_MODE_INVERTED:
+        case TEXT_MODE_INVERTED:
             blit_textinverted(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rowstart, text->rowinfo.chars, rx, ry, line, x0, x2);
 
             break;
@@ -285,7 +285,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
         0xE8888888,
     };
 
-    if (textbox->mode == WIDGET_TEXTBOX_MODE_READONLY)
+    if (textbox->mode == TEXTBOX_MODE_READONLY)
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
     else
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
