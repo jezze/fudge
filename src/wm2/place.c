@@ -6,9 +6,7 @@
 #include "text.h"
 #include "widget.h"
 #include "pool.h"
-#include "blit.h"
 #include "place.h"
-#include "render.h"
 
 static void resize(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh)
 {

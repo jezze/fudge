@@ -3,7 +3,6 @@
 #include <image.h>
 #include "text.h"
 #include "widget.h"
-#include "blit.h"
 #include "pool.h"
 
 #define MAX_WIDGETS                     1024
