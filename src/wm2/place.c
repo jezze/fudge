@@ -481,6 +481,16 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
 }
 
+static void placetextbutton(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+{
+
+    struct widget_textbutton *textbutton = widget->data;
+
+    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), &textbutton->labelinfo, TEXT_WRAP_NONE, 0, 0);
+    resize2(widget, x, y, textbutton->labelinfo.width + 8, textbutton->labelinfo.lineheight + 8, minw, minh, maxw, maxh);
+
+}
+
 static void placewindow(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -555,6 +565,11 @@ void place_widget(struct widget *widget, int x, int y, unsigned int minw, unsign
 
     case WIDGET_TYPE_TEXTBOX:
         placetextbox(widget, x, y, minw, minh, maxw, maxh);
+
+        break;
+
+    case WIDGET_TYPE_TEXTBUTTON:
+        placetextbutton(widget, x, y, minw, minh, maxw, maxh);
 
         break;
 

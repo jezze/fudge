@@ -42,7 +42,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            count += cstring_write(buffer, BUFFER_SIZE, "+ text in \"content\" content \"", count);
+            count += cstring_write(buffer, BUFFER_SIZE, "+ textbutton in \"content\" label \"", count);
             count += buffer_write(buffer, BUFFER_SIZE, record->name, record->length, count);
 
             if (record->type == RECORD_TYPE_DIRECTORY)

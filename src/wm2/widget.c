@@ -33,6 +33,7 @@ static struct token types[] =
     {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_TEXT, "text"},
     {WIDGET_TYPE_TEXTBOX, "textbox"},
+    {WIDGET_TYPE_TEXTBUTTON, "textbutton"},
     {WIDGET_TYPE_WINDOW, "window"}
 };
 
@@ -342,6 +343,23 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
 }
 
+static void setattributetextbutton(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_textbutton *textbutton = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_LABEL:
+        textbutton->label = pool_updatestring(textbutton->label, value);
+
+        break;
+
+    }
+
+}
+
 static void setattributewindow(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -425,6 +443,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case WIDGET_TYPE_TEXTBUTTON:
+        setattributetextbutton(widget, attribute, value);
+
+        break;
+
     case WIDGET_TYPE_WINDOW:
         setattributewindow(widget, attribute, value);
 
@@ -468,6 +491,11 @@ void widget_unsetattributes(struct widget *widget)
 
         break;
 
+    case WIDGET_TYPE_TEXTBUTTON:
+        setattributetextbutton(widget, WIDGET_ATTR_LABEL, 0);
+
+        break;
+
     case WIDGET_TYPE_WINDOW:
         setattributewindow(widget, WIDGET_ATTR_TITLE, 0);
 
@@ -494,7 +522,7 @@ unsigned int widget_getcommand(char *value)
 unsigned int widget_gettype(char *value)
 {
 
-    return getkey(types, 10, value);
+    return getkey(types, 11, value);
 
 }
 

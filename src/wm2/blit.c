@@ -19,7 +19,8 @@
 #define CMAP_MOUSE_SHADOW               0
 #define CMAP_MOUSE_NORMAL               1
 #define CMAP_MOUSE_HIGHLIGHT            2
-#define CMAP_ICON_NORMAL                0
+#define CMAP_ICON_COLOR                 0
+#define CMAP_RECT_COLOR                 0
 
 struct linesegment
 {
@@ -235,7 +236,7 @@ void blit_iconhamburger(struct blit_display *display, int x, int y, int w, int h
 {
 
     static struct linesegment line0[1] = {
-        {REL1, REL1, -8, 8, CMAP_ICON_NORMAL}
+        {REL1, REL1, -8, 8, CMAP_ICON_COLOR}
     };
     static struct rowsegment rows[3] = {
         {REL1, REL1, -8, -4, line0, 1},
@@ -253,7 +254,7 @@ void blit_iconminimize(struct blit_display *display, int x, int y, int w, int h,
 {
 
     static struct linesegment line0[1] = {
-        {REL1, REL1, -8, 8, CMAP_ICON_NORMAL}
+        {REL1, REL1, -8, 8, CMAP_ICON_COLOR}
     };
     static struct rowsegment rows[1] = {
         {REL1, REL1, 4, 8, line0, 1}
@@ -269,33 +270,33 @@ void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int li
 {
 
     static struct linesegment line0[1] = {
-        {REL1, REL1, -3, 3, CMAP_ICON_NORMAL}
+        {REL1, REL1, -3, 3, CMAP_ICON_COLOR}
     };
     static struct linesegment line1[1] = {
-        {REL1, REL1, -4, 4, CMAP_ICON_NORMAL}
+        {REL1, REL1, -4, 4, CMAP_ICON_COLOR}
     };
     static struct linesegment line2[1] = {
-        {REL1, REL1, -5, 5, CMAP_ICON_NORMAL}
+        {REL1, REL1, -5, 5, CMAP_ICON_COLOR}
     };
     static struct linesegment line3[2] = {
-        {REL1, REL1, -6, -1, CMAP_ICON_NORMAL},
-        {REL1, REL1, 1, 6, CMAP_ICON_NORMAL}
+        {REL1, REL1, -6, -1, CMAP_ICON_COLOR},
+        {REL1, REL1, 1, 6, CMAP_ICON_COLOR}
     };
     static struct linesegment line4[2] = {
-        {REL1, REL1, -7, -2, CMAP_ICON_NORMAL},
-        {REL1, REL1, 2, 7, CMAP_ICON_NORMAL}
+        {REL1, REL1, -7, -2, CMAP_ICON_COLOR},
+        {REL1, REL1, 2, 7, CMAP_ICON_COLOR}
     };
     static struct linesegment line5[2] = {
-        {REL1, REL1, -8, -3, CMAP_ICON_NORMAL},
-        {REL1, REL1, 3, 8, CMAP_ICON_NORMAL}
+        {REL1, REL1, -8, -3, CMAP_ICON_COLOR},
+        {REL1, REL1, 3, 8, CMAP_ICON_COLOR}
     };
     static struct linesegment line6[2] = {
-        {REL1, REL1, -7, -4, CMAP_ICON_NORMAL},
-        {REL1, REL1, 4, 7, CMAP_ICON_NORMAL}
+        {REL1, REL1, -7, -4, CMAP_ICON_COLOR},
+        {REL1, REL1, 4, 7, CMAP_ICON_COLOR}
     };
     static struct linesegment line7[2] = {
-        {REL1, REL1, -6, -5, CMAP_ICON_NORMAL},
-        {REL1, REL1, 5, 6, CMAP_ICON_NORMAL}
+        {REL1, REL1, -6, -5, CMAP_ICON_COLOR},
+        {REL1, REL1, 5, 6, CMAP_ICON_COLOR}
     };
     static struct rowsegment rows[15] = {
         {REL1, REL1, -8, -7, line7, 2},
@@ -535,6 +536,22 @@ void blit_panel(struct blit_display *display, int x, int y, int w, int h, int li
         {REL2, REL2, -2, 0, line0, 1}
     };
     struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
+
+    if (rs)
+        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+
+}
+
+void blit_rect(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    static struct linesegment line0[1] = {
+        {REL0, REL2, 0, 0, CMAP_RECT_COLOR}
+    };
+    static struct rowsegment rows[1] = {
+        {REL0, REL2, 0, 0, line0, 1}
+    };
+    struct rowsegment *rs = findrowsegment(rows, 1, line, y, h);
 
     if (rs)
         blitrowsegment(display, rs, x, w, x0, x2, cmap);

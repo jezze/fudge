@@ -292,6 +292,32 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 
 }
 
+static void rendertextbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct widget_textbutton *textbutton = widget->data;
+    int rx = text_getrowx(&textbutton->labelinfo, TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
+    int ry = text_getrowy(&textbutton->labelinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    static unsigned int cmapnormal[1] = {
+        0x00101010,
+    };
+    static unsigned int cmaphover[1] = {
+        0xE8101010,
+    };
+    static unsigned int cmapfocus[1] = {
+        0xE8101010,
+    };
+    static unsigned int cmaptext[1] = {
+        0xE8FFFFFF,
+    };
+
+    blit_rect(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+
+    if (util_intersects(line, ry, ry + textbutton->labelinfo.lineheight))
+        blit_textnormal(display, pool_getfont(POOL_FONTNORMAL), getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(textbutton->label), textbutton->labelinfo.chars, rx, ry, line, x0, x2);
+
+}
+
 static void renderwindow(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -358,6 +384,11 @@ static void renderwidget(struct blit_display *display, struct widget *widget, in
 
     case WIDGET_TYPE_TEXTBOX:
         rendertextbox(display, widget, line, x0, x2);
+
+        break;
+
+    case WIDGET_TYPE_TEXTBUTTON:
+        rendertextbutton(display, widget, line, x0, x2);
 
         break;
 

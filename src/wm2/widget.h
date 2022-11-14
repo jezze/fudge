@@ -12,7 +12,8 @@
 #define WIDGET_TYPE_SELECT                      7
 #define WIDGET_TYPE_TEXT                        8
 #define WIDGET_TYPE_TEXTBOX                     9
-#define WIDGET_TYPE_WINDOW                      10
+#define WIDGET_TYPE_TEXTBUTTON                  10
+#define WIDGET_TYPE_WINDOW                      11
 #define WIDGET_STATE_NORMAL                     0
 #define WIDGET_STATE_HOVER                      1
 #define WIDGET_STATE_HOVEROFF                   2
@@ -160,6 +161,14 @@ struct widget_textbox
 
     unsigned int mode;
     int scroll;
+
+};
+
+struct widget_textbutton
+{
+
+    unsigned int label;
+    struct text_rowinfo labelinfo;
 
 };
 

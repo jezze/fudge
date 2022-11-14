@@ -99,6 +99,7 @@ static struct widget *gethoverwidgetat(int x, int y)
         case WIDGET_TYPE_CHOICE:
         case WIDGET_TYPE_SELECT:
         case WIDGET_TYPE_TEXTBOX:
+        case WIDGET_TYPE_TEXTBUTTON:
         case WIDGET_TYPE_WINDOW:
             if (widget_intersectsx(child, x) && widget_intersectsy(child, y))
                 last = child;
