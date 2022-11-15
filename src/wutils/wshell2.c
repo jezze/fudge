@@ -171,6 +171,144 @@ static void interpret(void)
 
 }
 
+static void complete(void)
+{
+
+    char buffer[INPUTSIZE];
+    char prefix[INPUTSIZE];
+    char resultdata[BUFFER_SIZE];
+    struct ring result;
+    struct message message;
+    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
+
+    ring_init(&result, BUFFER_SIZE, resultdata);
+    job_init(&job, workers, JOBSIZE);
+
+    job.workers[0].program = "/bin/ls";
+    job.count = 1;
+
+    if (count)
+    {
+
+        unsigned int lastwordoffset = buffer_lastbyte(buffer, count, ' ');
+        unsigned int searchoffset = lastwordoffset + buffer_lastbyte(buffer + lastwordoffset, count - lastwordoffset, '/');
+        unsigned int searchcount = count - searchoffset;
+
+        if (lastwordoffset)
+        {
+
+            if (searchoffset > lastwordoffset)
+            {
+
+                char path[INPUTSIZE];
+
+                cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0));
+
+                job.workers[0].paths[0] = path;
+                job.workers[0].npaths = 1;
+
+            }
+
+        }
+
+        else
+        {
+
+            job.workers[0].paths[0] = "/bin";
+            job.workers[0].npaths = 1;
+
+        }
+
+        if (searchcount)
+        {
+
+            unsigned int prefixcount = cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0));
+
+            if (prefixcount)
+            {
+
+                job.workers[1].program = "/bin/grep";
+                job.workers[1].options[0].key = "prefix";
+                job.workers[1].options[0].value = prefix;
+                job.workers[1].noptions = 1;
+                job.count = 2;
+
+            }
+
+        }
+
+    }
+
+    if (job_spawn(&job))
+    {
+
+        job_listen(&job, EVENT_CLOSE);
+        job_listen(&job, EVENT_DATA);
+        job_listen(&job, EVENT_ERROR);
+        job_pipe(&job, EVENT_DATA);
+        job_run(&job);
+
+        while (job_pick(&job, &message))
+        {
+
+            switch (message.header.event)
+            {
+
+            case EVENT_CLOSE:
+                job_close(&job, message.header.source);
+
+                break;
+
+            case EVENT_ERROR:
+                channel_dispatch(&message);
+
+                break;
+
+            case EVENT_DATA:
+                ring_write(&result, message.data.buffer, message_datasize(&message.header));
+
+                break;
+
+            }
+
+        }
+
+        if (ring_count(&result))
+        {
+
+            if (ring_each(&result, '\n') == ring_count(&result))
+            {
+
+                char *resultbuffer = resultdata + cstring_length(prefix);
+                unsigned int resultcount = ring_count(&result) - cstring_lengthzero(prefix);
+
+                ring_write(&input1, resultbuffer, resultcount);
+
+            }
+
+            else
+            {
+
+                printprompt();
+                print(buffer, ring_readcopy(&input1, buffer, INPUTSIZE));
+                print("\n", 1);
+                print(resultdata, ring_count(&result));
+
+            }
+
+        }
+
+    }
+
+    else
+    {
+
+        job_killall(&job);
+
+    }
+
+}
+
 static void onerror(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -260,7 +398,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
         case 0x0F:
             ring_move(&input1, &input2);
-            /* complete(&input1); */
+            complete();
 
             break;
 

@@ -232,7 +232,7 @@ static void complete(void)
                 print("\n", 1);
                 print(resultdata, ring_count(&result));
                 printprompt();
-                print(resultdata, ring_readcopy(&input, resultdata, BUFFER_SIZE));
+                print(buffer, ring_readcopy(&input, buffer, INPUTSIZE));
 
             }
 
