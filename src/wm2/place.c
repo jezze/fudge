@@ -77,35 +77,28 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
     struct widget_container *container = widget->data;
     struct list_item *current = 0;
-    int offx = container->padding;
-    int offy = container->padding;
-    int offw = container->padding * 2;
-    int offh = container->padding * 2;
+    int totw = 0;
     int toth = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        int childx = x + offx; 
-        int childy = y + offy; 
+        int childx = x + container->padding + totw;
+        int childy = y + container->padding;
+        int childmaxw = util_max(0, maxw - totw - container->padding * 2);
+        int childmaxh = maxh - container->padding * 2;
         int childminw = 0;
-        int childminh = 0;
-        int childmaxw = maxw - offw;
-        int childmaxh = maxh - offh;
-
-        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
-            childminh = childmaxh;
+        int childminh = (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? childmaxh : 0;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
-        offx += child->size.w + container->padding;
-        offw += child->size.w + container->padding;
-        toth = util_max(toth, child->size.h);
+        totw += child->size.w + container->padding * 2;
+        toth = util_max(toth, child->size.h + container->padding * 2);
 
     }
 
-    resize(widget, x, y, offw, toth, minw, minh, maxw, maxh);
+    resize(widget, x, y, totw, toth, minw, minh, maxw, maxh);
 
 }
 
@@ -114,19 +107,15 @@ static void placecontainermaximize(struct widget *widget, int x, int y, unsigned
 
     struct widget_container *container = widget->data;
     struct list_item *current = 0;
-    int offx = container->padding;
-    int offy = container->padding;
-    int offw = container->padding * 2;
-    int offh = container->padding * 2;
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        int childx = x + offx; 
-        int childy = y + offy; 
-        int childmaxw = maxw - offw;
-        int childmaxh = maxh - offh;
+        int childx = x + container->padding; 
+        int childy = y + container->padding; 
+        int childmaxw = util_max(0, maxw - container->padding * 2);
+        int childmaxh = util_max(0, maxh - container->padding * 2);
 
         place_widget(child, childx, childy, childmaxw, childmaxh, childmaxw, childmaxh);
 
@@ -141,35 +130,28 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 
     struct widget_container *container = widget->data;
     struct list_item *current = 0;
-    int offx = container->padding;
-    int offy = container->padding;
-    int offw = container->padding * 2;
-    int offh = container->padding * 2;
     int totw = 0;
+    int toth = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        int childx = x + offx; 
-        int childy = y + offy; 
-        int childminw = 0;
+        int childx = x + container->padding; 
+        int childy = y + container->padding + toth;
+        int childmaxw = maxw - container->padding * 2;
+        int childmaxh = util_max(0, maxh - toth - container->padding * 2);
+        int childminw = (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? childmaxw : 0;
         int childminh = 0;
-        int childmaxw = maxw - offw;
-        int childmaxh = maxh - offh;
-
-        if (container->placement == CONTAINER_PLACEMENT_STRETCHED)
-            childminw = childmaxw;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
-        offy += child->size.h + container->padding;
-        offh += child->size.h + container->padding;
-        totw = util_max(totw, child->size.w);
+        totw = util_max(totw, child->size.w + container->padding * 2);
+        toth += child->size.h + container->padding * 2;
 
     }
 
-    resize(widget, x, y, totw, offh, minw, minh, maxw, maxh);
+    resize(widget, x, y, totw, toth, minw, minh, maxw, maxh);
 
 }
 

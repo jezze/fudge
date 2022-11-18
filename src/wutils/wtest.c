@@ -57,7 +57,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Test\"\n"
-        "+ container id \"base\" in \"window\" layout \"vertical\" padding \"16\"\n"
+        "+ container id \"base\" in \"window\" layout \"vertical\" padding \"8\"\n"
         "+ text in \"base\" wrap \"word\" content \"Hello World! How are we today?\nI am very good thank you for asking!\nThat is very good.\"\n"
         "+ select id \"country\" in \"base\" label \"Select country\"\n"
         "+ container id \"countrylist\" in \"country\" layout \"vertical\" placement \"stretched\"\n"
