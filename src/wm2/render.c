@@ -335,14 +335,14 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
         0xE8FFFFFF,
     };
 
-    blit_panel(display, widget->position.x + CONFIG_ICON_WIDTH * 0, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_iconhamburger(display, widget->position.x + CONFIG_ICON_WIDTH * 0, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, cmapicon);
-    blit_panel(display, widget->position.x + CONFIG_ICON_WIDTH * 1, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_iconminimize(display, widget->position.x + CONFIG_ICON_WIDTH * 1, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, cmapicon);
-    blit_panel(display, widget->position.x + CONFIG_ICON_WIDTH * 2, widget->position.y, widget->size.w - CONFIG_ICON_WIDTH * 3, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_panel(display, widget->position.x + widget->size.w - CONFIG_ICON_WIDTH * 1, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
-    blit_iconx(display, widget->position.x + widget->size.w - CONFIG_ICON_WIDTH * 1, widget->position.y, CONFIG_ICON_WIDTH, CONFIG_ICON_HEIGHT, line, x0, x2, cmapicon);
-    blit_panel(display, widget->position.x, widget->position.y + CONFIG_ICON_HEIGHT, widget->size.w, widget->size.h - CONFIG_ICON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
+    blit_panel(display, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_iconhamburger(display, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 0, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmapicon);
+    blit_panel(display, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_iconminimize(display, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmapicon);
+    blit_panel(display, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->position.y, widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_panel(display, widget->position.x + widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, cmaptop, cmaptop));
+    blit_iconx(display, widget->position.x + widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH * 1, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmapicon);
+    blit_panel(display, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapmain, cmapmain, cmapmain));
 
 }
 
