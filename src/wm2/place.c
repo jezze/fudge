@@ -477,23 +477,17 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct list_item *current = 0;
-    int offx = CONFIG_WINDOW_BORDER_WIDTH;
-    int offy = CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_ICON_HEIGHT;
-    int offw = CONFIG_WINDOW_BORDER_WIDTH * 2;
-    int offh = CONFIG_WINDOW_BORDER_HEIGHT * 2 + CONFIG_ICON_HEIGHT;
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        int childx = widget->position.x + offx;
-        int childy = widget->position.y + offy;
-        int childminw = 0;
-        int childminh = 0;
-        int childmaxw = widget->size.w - offw;
-        int childmaxh = widget->size.h - offh;
+        int childx = widget->position.x + CONFIG_WINDOW_BORDER_WIDTH;
+        int childy = widget->position.y + CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_ICON_HEIGHT;
+        int childmaxw = util_max(0, widget->size.w - CONFIG_WINDOW_BORDER_WIDTH * 2);
+        int childmaxh = util_max(0, widget->size.h - CONFIG_WINDOW_BORDER_HEIGHT * 2 - CONFIG_ICON_HEIGHT);
 
-        place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+        place_widget(child, childx, childy, 0, 0, childmaxw, childmaxh);
 
     }
 
