@@ -1,3 +1,5 @@
+#define OPTION_MAX                      32
+
 struct option
 {
 
@@ -6,6 +8,7 @@ struct option
 
 };
 
+struct option *option_get(unsigned int i);
 int option_getdecimal(char *key);
 char *option_getstring(char *key);
 unsigned int option_set(char *key, char *value);

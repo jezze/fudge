@@ -30,6 +30,34 @@ static void onredirect(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onstatus(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < OPTION_MAX; i++)
+    {
+
+        struct option *option = option_get(i);
+
+        if (option)
+        {
+
+            struct message message;
+
+            message_init(&message, EVENT_DATA);
+            message_putstring(&message, option->key);
+            message_putstring(&message, ": ");
+            message_putstring(&message, option->value);
+            message_putstring(&message, "\n");
+            channel_sendmessage(&message);
+
+        }
+
+    }
+
+}
+
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -44,6 +72,7 @@ void main(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_REDIRECT, onredirect);
+    channel_bind(EVENT_STATUS, onstatus);
     channel_bind(EVENT_TERM, onterm);
     init();
 

@@ -1,16 +1,14 @@
 #include <fudge.h>
 #include "option.h"
 
-#define NUMOPTIONS                      32
-
-static struct option options[NUMOPTIONS];
+static struct option options[OPTION_MAX];
 
 static struct option *find(char *key)
 {
 
     unsigned int i;
 
-    for (i = 0; i < NUMOPTIONS; i++)
+    for (i = 0; i < OPTION_MAX; i++)
     {
 
         struct option *option = &options[i];
@@ -29,7 +27,7 @@ static struct option *findfree(char *key)
 
     unsigned int i;
 
-    for (i = 0; i < NUMOPTIONS; i++)
+    for (i = 0; i < OPTION_MAX; i++)
     {
 
         struct option *option = &options[i];
@@ -40,6 +38,13 @@ static struct option *findfree(char *key)
     }
 
     return 0;
+
+}
+
+struct option *option_get(unsigned int i)
+{
+
+    return (i < OPTION_MAX && options[i].key) ? &options[i] : 0;
 
 }
 
