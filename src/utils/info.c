@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void showcores(void)
 {
 
     if (file_walk2(FILE_L0, "system:info/cores"))
@@ -37,6 +37,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Cores not found.");
 
     }
+
+}
+
+static void showtasks(void)
+{
 
     if (file_walk2(FILE_L0, "system:info/tasks"))
     {
@@ -90,6 +95,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+}
+
+static void showmailboxes(void)
+{
+
     if (file_walk2(FILE_L0, "system:info/mailboxes"))
     {
 
@@ -124,6 +134,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+}
+
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    showcores();
+    showtasks();
+    showmailboxes();
     channel_close();
 
 }
