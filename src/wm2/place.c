@@ -203,7 +203,6 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
     int rowh = 0;
     int totw = 0;
     int toth = 0;
-    int colw = (maxw - (grid->columns * grid->padding * 2)) / grid->columns;
     unsigned int column = 0;
 
     while ((current = pool_nextin(current, widget)))
@@ -212,7 +211,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         struct widget *child = current->data;
         int childx = x + grid->padding + roww;
         int childy = y + grid->padding + toth;
-        int childmaxw = colw;
+        int childmaxw = util_max(0, (maxw / grid->columns) - grid->padding * 2);
         int childmaxh = util_max(0, maxh - toth - grid->padding * 2);
         int childminw = (grid->placement == GRID_PLACEMENT_STRETCHED) ? childmaxw : 0;
         int childminh = 0;
