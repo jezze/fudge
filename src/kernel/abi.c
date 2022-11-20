@@ -152,7 +152,7 @@ static unsigned int list(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; unsigned int cdescriptor; unsigned int count; struct record *records;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct descriptor *cdescriptor = kernel_getdescriptor(task, args->cdescriptor);
-    unsigned int n;
+    unsigned int count;
 
     if (!descriptor_check(descriptor) || !descriptor_check(cdescriptor))
         return 0;
@@ -160,12 +160,10 @@ static unsigned int list(struct task *task, void *stack)
     if (descriptor->id == cdescriptor->id)
         cdescriptor->id = 0;
 
-    n = descriptor->service->list(descriptor->id, cdescriptor->id, args->count, args->records);
+    count = descriptor->service->list(descriptor->id, cdescriptor->id, args->count, args->records);
+    cdescriptor->id = (count) ? args->records[count - 1].id : 0;
 
-    if (n)
-        cdescriptor->id = args->records[n - 1].id;
-
-    return n;
+    return count;
 
 }
 
