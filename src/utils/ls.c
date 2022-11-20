@@ -28,9 +28,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             message_putbuffer(&message, record->length, record->name);
 
             if (record->type == RECORD_TYPE_DIRECTORY)
-                message_putstring(&message, "/");
-
-            message_putstring(&message, "\n");
+                message_putstring(&message, "/\n");
+            else
+                message_putstring(&message, "\n");
 
         }
 
