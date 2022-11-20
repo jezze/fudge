@@ -22,15 +22,15 @@ static void updatecontent(void)
 
     struct record records[4];
     unsigned int nrecords;
-    unsigned int cid;
     char *data =
         "- content\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
     file_walk2(FILE_PW, path);
+    file_duplicate(FILE_L0, FILE_PW);
 
-    for (cid = 0; (nrecords = file_list(FILE_PW, cid, 4, records)); cid = records[nrecords - 1].id)
+    while ((nrecords = file_list(FILE_PW, FILE_L0, 4, records)))
     {
 
         char buffer[BUFFER_SIZE];

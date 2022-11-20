@@ -4,7 +4,7 @@ unsigned int call_destroy(unsigned int descriptor);
 unsigned int call_despawn(void);
 unsigned int call_kill(unsigned int id);
 unsigned int call_link(unsigned int descriptor);
-unsigned int call_list(unsigned int descriptor, unsigned int cid, unsigned int count, struct record *records);
+unsigned int call_list(unsigned int descriptor, unsigned int cdescriptor, unsigned int count, struct record *records);
 unsigned int call_load(unsigned int descriptor);
 unsigned int call_notify(unsigned int descriptor, unsigned int event, unsigned int count, void *data);
 unsigned int call_pick(struct message_header *header, void *data);

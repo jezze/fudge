@@ -149,13 +149,23 @@ static unsigned int kill(struct task *task, void *stack)
 static unsigned int list(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int cid; unsigned int count; struct record *records;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int cdescriptor; unsigned int count; struct record *records;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct descriptor *cdescriptor = kernel_getdescriptor(task, args->cdescriptor);
+    unsigned int n;
 
-    if (!descriptor_check(descriptor))
+    if (!descriptor_check(descriptor) || !descriptor_check(cdescriptor))
         return 0;
 
-    return descriptor->service->list(descriptor->id, args->cid, args->count, args->records);
+    if (descriptor->id == cdescriptor->id)
+        cdescriptor->id = 0;
+
+    n = descriptor->service->list(descriptor->id, cdescriptor->id, args->count, args->records);
+
+    if (n)
+        cdescriptor->id = args->records[n - 1].id;
+
+    return n;
 
 }
 

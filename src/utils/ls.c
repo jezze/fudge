@@ -7,13 +7,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct record records[8];
     struct message message;
     unsigned int nrecords;
-    unsigned int cid;
 
+    file_duplicate(FILE_L0, FILE_G0);
     message_init(&message, EVENT_DATA);
     message_putstring(&message, "../\n");
     channel_sendmessage(&message);
 
-    for (cid = 0; (nrecords = file_list(FILE_G0, cid, 8, records)); cid = records[nrecords - 1].id)
+    while ((nrecords = file_list(FILE_G0, FILE_L0, 8, records)))
     {
 
         unsigned int i;
