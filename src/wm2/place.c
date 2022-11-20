@@ -204,7 +204,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
     int totw = 0;
     int toth = 0;
     int colw = (maxw - (grid->columns * grid->padding * 2)) / grid->columns;
-    unsigned int numchildren = 0;
+    unsigned int column = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -222,7 +222,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         roww += child->size.w + grid->padding * 2;
         rowh = util_max(rowh, child->size.h + grid->padding * 2);
 
-        if (++numchildren % grid->columns == 0)
+        if (++column % grid->columns == 0)
         {
 
             totw += util_max(totw, roww);
