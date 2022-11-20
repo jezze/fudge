@@ -212,7 +212,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         struct widget *child = current->data;
         int childx = x + grid->padding + roww;
         int childy = y + grid->padding + toth;
-        int childmaxw = (grid->placement == GRID_PLACEMENT_STRETCHED) ? colw : util_max(0, maxw - roww - grid->padding * 2);
+        int childmaxw = colw;
         int childmaxh = util_max(0, maxh - toth - grid->padding * 2);
         int childminw = (grid->placement == GRID_PLACEMENT_STRETCHED) ? childmaxw : 0;
         int childminh = 0;
