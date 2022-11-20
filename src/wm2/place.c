@@ -87,7 +87,7 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
         int childx = x + container->padding + totw;
         int childy = y + container->padding;
         int childmaxw = util_max(0, maxw - totw - container->padding * 2);
-        int childmaxh = maxh - container->padding * 2;
+        int childmaxh = util_max(0, maxh - container->padding * 2);
         int childminw = 0;
         int childminh = (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? childmaxh : 0;
 
@@ -139,7 +139,7 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
         struct widget *child = current->data;
         int childx = x + container->padding;
         int childy = y + container->padding + toth;
-        int childmaxw = maxw - container->padding * 2;
+        int childmaxw = util_max(0, maxw - container->padding * 2);
         int childmaxh = util_max(0, maxh - toth - container->padding * 2);
         int childminw = (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? childmaxw : 0;
         int childminh = 0;
@@ -203,8 +203,8 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
     int rowh = 0;
     int totw = 0;
     int toth = 0;
-    unsigned int numchildren = 0;
     int colw = (maxw - (grid->columns * grid->padding * 2)) / grid->columns;
+    unsigned int numchildren = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -214,16 +214,15 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         int childy = y + grid->padding + toth;
         int childmaxw = (grid->placement == GRID_PLACEMENT_STRETCHED) ? colw : util_max(0, maxw - roww - grid->padding * 2);
         int childmaxh = util_max(0, maxh - toth - grid->padding * 2);
-        int childminw = (grid->placement == GRID_PLACEMENT_STRETCHED) ? colw : 0;
+        int childminw = (grid->placement == GRID_PLACEMENT_STRETCHED) ? childmaxw : 0;
         int childminh = 0;
 
         place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
 
         roww += child->size.w + grid->padding * 2;
         rowh = util_max(rowh, child->size.h + grid->padding * 2);
-        numchildren++;
 
-        if (numchildren % grid->columns == 0)
+        if (++numchildren % grid->columns == 0)
         {
 
             totw += util_max(totw, roww);
