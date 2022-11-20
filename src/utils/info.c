@@ -52,37 +52,39 @@ static void showtasks(void)
         for (n = 0; file_read(FILE_L0, &ctrl, sizeof (struct ctrl_task)); n++)
         {
 
-            struct message message;
+            if (ctrl.state)
+            {
 
-            message_init(&message, EVENT_DATA);
-            message_putstring(&message, "task[");
-            message_putvalue(&message, n, 10, 0);
-            message_putstring(&message, "] {");
-            message_putstring(&message, "id=");
-            message_putvalue(&message, ctrl.id, 10, 0);
-            message_putstring(&message, ", ");
-            message_putstring(&message, "state=");
-            message_putvalue(&message, ctrl.state, 10, 0);
-            message_putstring(&message, ", ");
-            message_putstring(&message, "thread.ip=0x");
-            message_putvalue(&message, ctrl.thread_ip, 16, 8);
-            message_putstring(&message, ", ");
-            message_putstring(&message, "thread.sp=0x");
-            message_putvalue(&message, ctrl.thread_sp, 16, 8);
-            message_putstring(&message, ", ");
-            message_putstring(&message, "signals.kills=");
-            message_putvalue(&message, ctrl.signals_kills, 10, 0);
-            message_putstring(&message, ", ");
-            message_putstring(&message, "signals.blocks=");
-            message_putvalue(&message, ctrl.signals_blocks, 10, 0);
-            message_putstring(&message, ", ");
-            message_putstring(&message, "signals.unblocks=");
-            message_putvalue(&message, ctrl.signals_unblocks, 10, 0);
-            message_putstring(&message, "}\n");
-            channel_sendmessage(&message);
+                struct message message;
 
-            if (n >= 9)
-                break;
+                message_init(&message, EVENT_DATA);
+                message_putstring(&message, "task[");
+                message_putvalue(&message, n, 10, 0);
+                message_putstring(&message, "] {");
+                message_putstring(&message, "id=");
+                message_putvalue(&message, ctrl.id, 10, 0);
+                message_putstring(&message, ", ");
+                message_putstring(&message, "state=");
+                message_putvalue(&message, ctrl.state, 10, 0);
+                message_putstring(&message, ", ");
+                message_putstring(&message, "thread.ip=0x");
+                message_putvalue(&message, ctrl.thread_ip, 16, 8);
+                message_putstring(&message, ", ");
+                message_putstring(&message, "thread.sp=0x");
+                message_putvalue(&message, ctrl.thread_sp, 16, 8);
+                message_putstring(&message, ", ");
+                message_putstring(&message, "signals.kills=");
+                message_putvalue(&message, ctrl.signals_kills, 10, 0);
+                message_putstring(&message, ", ");
+                message_putstring(&message, "signals.blocks=");
+                message_putvalue(&message, ctrl.signals_blocks, 10, 0);
+                message_putstring(&message, ", ");
+                message_putstring(&message, "signals.unblocks=");
+                message_putvalue(&message, ctrl.signals_unblocks, 10, 0);
+                message_putstring(&message, "}\n");
+                channel_sendmessage(&message);
+
+            }
 
         }
 
