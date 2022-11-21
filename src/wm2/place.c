@@ -19,7 +19,13 @@ static void resize(struct widget *widget, int x, int y, int w, int h, int minw, 
 static void resize2(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh)
 {
 
-    resize(widget, x, y, (maxw < w) ? 0 : w, (maxh < h) ? 0 : h, minw, minh, maxw, maxh);
+    resize(widget, x, y, w, h, minw, minh, maxw, maxh);
+
+    if (maxw < w)
+        widget->size.w = 0;
+
+    if (maxh < h)
+        widget->size.h = 0;
 
 }
 
@@ -82,7 +88,12 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
         widget_initsize(&cmax, util_max(0, maxw - total.w - container->padding * 2), util_max(0, maxh - container->padding * 2));
         widget_initsize(&cmin, 0, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.h : 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
-        widget_initsize(&total, total.w + child->size.w + container->padding * 2, util_max(total.h, child->size.h + container->padding * 2));
+
+        if (child->size.w)
+            total.w += child->size.w + container->padding * 2;
+
+        if (child->size.h)
+            total.h = util_max(total.h, child->size.h + container->padding * 2);
 
     }
 
@@ -134,7 +145,12 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
         widget_initsize(&cmax, util_max(0, maxw - container->padding * 2), util_max(0, maxh - total.h - container->padding * 2));
         widget_initsize(&cmin, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
-        widget_initsize(&total, util_max(total.w, child->size.w + container->padding * 2), total.h + child->size.h + container->padding * 2);
+
+        if (child->size.w)
+            total.w = util_max(total.w, child->size.w + container->padding * 2);
+
+        if (child->size.h)
+            total.h += child->size.h + container->padding * 2;
 
     }
 
@@ -205,7 +221,11 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         widget_initsize(&cmax, util_max(0, (maxw / grid->columns) - grid->padding * 2), util_max(0, maxh - total.h - grid->padding * 2));
         widget_initsize(&cmin, (grid->placement == GRID_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
-        widget_initsize(&row, row.w + child->size.w + grid->padding * 2, util_max(row.h, child->size.h + grid->padding * 2));
+
+        row.w += (maxw / grid->columns);
+
+        if (child->size.h)
+            row.h = util_max(row.h, child->size.h + grid->padding * 2);
 
         if (++column % grid->columns == 0)
         {
@@ -226,9 +246,9 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
 {
 
     struct widget_image *image = widget->data;
-    struct widget_size size;
+    struct widget_size total;
 
-    widget_initsize(&size, 0, 0);
+    widget_initsize(&total, 0, 0);
 
     if (file_walk2(FILE_L0, pool_getstring(image->source)))
     {
@@ -236,11 +256,11 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
         struct pcx_header header;
 
         file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-        widget_initsize(&size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
+        widget_initsize(&total, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
 
     }
 
-    resize(widget, x, y, size.w, size.h, minw, minh, maxw, maxh);
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
