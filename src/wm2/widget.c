@@ -719,18 +719,33 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
 
 }
 
+void widget_initposition(struct widget_position *position, int x, int y)
+{
+
+    position->x = x;
+    position->y = y;
+
+}
+
+void widget_initsize(struct widget_size *size, int w, int h)
+{
+
+    size->w = w;
+    size->h = h;
+
+}
+
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
 {
+
+    widget_initposition(&widget->position, 0, 0);
+    widget_initsize(&widget->size, 0, 0);
 
     widget->source = source;
     widget->type = type;
     widget->id = pool_updatestring(widget->id, id);
     widget->in = pool_updatestring(widget->in, in);
     widget->data = data;
-    widget->position.x = 0;
-    widget->position.y = 0;
-    widget->size.w = 0;
-    widget->size.h = 0;
 
 }
 

@@ -84,14 +84,14 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
     {
 
         struct widget *child = current->data;
-        int childx = x + container->padding + totw;
-        int childy = y + container->padding;
-        int childmaxw = util_max(0, maxw - totw - container->padding * 2);
-        int childmaxh = util_max(0, maxh - container->padding * 2);
-        int childminw = 0;
-        int childminh = (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? childmaxh : 0;
+        struct widget_position cpos;
+        struct widget_size cmax;
+        struct widget_size cmin;
 
-        place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+        widget_initposition(&cpos, x + container->padding + totw, y + container->padding);
+        widget_initsize(&cmax, util_max(0, maxw - totw - container->padding * 2), util_max(0, maxh - container->padding * 2));
+        widget_initsize(&cmin, 0, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.h : 0);
+        place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
 
         totw += child->size.w + container->padding * 2;
         toth = util_max(toth, child->size.h + container->padding * 2);
@@ -112,12 +112,12 @@ static void placecontainermaximize(struct widget *widget, int x, int y, unsigned
     {
 
         struct widget *child = current->data;
-        int childx = x + container->padding;
-        int childy = y + container->padding;
-        int childmaxw = util_max(0, maxw - container->padding * 2);
-        int childmaxh = util_max(0, maxh - container->padding * 2);
+        struct widget_position cpos;
+        struct widget_size cmax;
 
-        place_widget(child, childx, childy, childmaxw, childmaxh, childmaxw, childmaxh);
+        widget_initposition(&cpos, x + container->padding, y + container->padding);
+        widget_initsize(&cmax, util_max(0, maxw - container->padding * 2), util_max(0, maxh - container->padding * 2));
+        place_widget(child, cpos.x, cpos.y, cmax.w, cmax.h, cmax.w, cmax.h);
 
     }
 
@@ -137,14 +137,14 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
     {
 
         struct widget *child = current->data;
-        int childx = x + container->padding;
-        int childy = y + container->padding + toth;
-        int childmaxw = util_max(0, maxw - container->padding * 2);
-        int childmaxh = util_max(0, maxh - toth - container->padding * 2);
-        int childminw = (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? childmaxw : 0;
-        int childminh = 0;
+        struct widget_position cpos;
+        struct widget_size cmax;
+        struct widget_size cmin;
 
-        place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+        widget_initposition(&cpos, x + container->padding, y + container->padding + toth);
+        widget_initsize(&cmax, util_max(0, maxw - container->padding * 2), util_max(0, maxh - toth - container->padding * 2));
+        widget_initsize(&cmin, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
+        place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
 
         totw = util_max(totw, child->size.w + container->padding * 2);
         toth += child->size.h + container->padding * 2;
@@ -209,14 +209,14 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
     {
 
         struct widget *child = current->data;
-        int childx = x + grid->padding + roww;
-        int childy = y + grid->padding + toth;
-        int childmaxw = util_max(0, (maxw / grid->columns) - grid->padding * 2);
-        int childmaxh = util_max(0, maxh - toth - grid->padding * 2);
-        int childminw = (grid->placement == GRID_PLACEMENT_STRETCHED) ? childmaxw : 0;
-        int childminh = 0;
+        struct widget_position cpos;
+        struct widget_size cmax;
+        struct widget_size cmin;
 
-        place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+        widget_initposition(&cpos, x + grid->padding + roww, y + grid->padding + toth);
+        widget_initsize(&cmax, util_max(0, (maxw / grid->columns) - grid->padding * 2), util_max(0, maxh - toth - grid->padding * 2));
+        widget_initsize(&cmin, (grid->placement == GRID_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
+        place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
 
         roww += child->size.w + grid->padding * 2;
         rowh = util_max(rowh, child->size.h + grid->padding * 2);
