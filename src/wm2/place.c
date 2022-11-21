@@ -66,8 +66,9 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
 
     struct widget_container *container = widget->data;
     struct list_item *current = 0;
-    int totw = 0;
-    int toth = 0;
+    struct widget_size total;
+
+    widget_initsize(&total, 0, 0);
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -77,17 +78,15 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
         struct widget_size cmax;
         struct widget_size cmin;
 
-        widget_initposition(&cpos, x + container->padding + totw, y + container->padding);
-        widget_initsize(&cmax, util_max(0, maxw - totw - container->padding * 2), util_max(0, maxh - container->padding * 2));
+        widget_initposition(&cpos, x + container->padding + total.w, y + container->padding);
+        widget_initsize(&cmax, util_max(0, maxw - total.w - container->padding * 2), util_max(0, maxh - container->padding * 2));
         widget_initsize(&cmin, 0, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.h : 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
-
-        totw += child->size.w + container->padding * 2;
-        toth = util_max(toth, child->size.h + container->padding * 2);
+        widget_initsize(&total, total.w + child->size.w + container->padding * 2, util_max(total.h, child->size.h + container->padding * 2));
 
     }
 
-    resize(widget, x, y, totw, toth, minw, minh, maxw, maxh);
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
@@ -119,8 +118,9 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
 
     struct widget_container *container = widget->data;
     struct list_item *current = 0;
-    int totw = 0;
-    int toth = 0;
+    struct widget_size total;
+
+    widget_initsize(&total, 0, 0);
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -130,17 +130,15 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
         struct widget_size cmax;
         struct widget_size cmin;
 
-        widget_initposition(&cpos, x + container->padding, y + container->padding + toth);
-        widget_initsize(&cmax, util_max(0, maxw - container->padding * 2), util_max(0, maxh - toth - container->padding * 2));
+        widget_initposition(&cpos, x + container->padding, y + container->padding + total.h);
+        widget_initsize(&cmax, util_max(0, maxw - container->padding * 2), util_max(0, maxh - total.h - container->padding * 2));
         widget_initsize(&cmin, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
-
-        totw = util_max(totw, child->size.w + container->padding * 2);
-        toth += child->size.h + container->padding * 2;
+        widget_initsize(&total, util_max(total.w, child->size.w + container->padding * 2), total.h + child->size.h + container->padding * 2);
 
     }
 
-    resize(widget, x, y, totw, toth, minw, minh, maxw, maxh);
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
@@ -188,11 +186,12 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 
     struct widget_grid *grid = widget->data;
     struct list_item *current = 0;
-    int roww = 0;
-    int rowh = 0;
-    int totw = 0;
-    int toth = 0;
+    struct widget_size row;
+    struct widget_size total;
     unsigned int column = 0;
+
+    widget_initsize(&row, 0, 0);
+    widget_initsize(&total, 0, 0);
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -202,30 +201,24 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         struct widget_size cmax;
         struct widget_size cmin;
 
-        widget_initposition(&cpos, x + grid->padding + roww, y + grid->padding + toth);
-        widget_initsize(&cmax, util_max(0, (maxw / grid->columns) - grid->padding * 2), util_max(0, maxh - toth - grid->padding * 2));
+        widget_initposition(&cpos, x + grid->padding + row.w, y + grid->padding + total.h);
+        widget_initsize(&cmax, util_max(0, (maxw / grid->columns) - grid->padding * 2), util_max(0, maxh - total.h - grid->padding * 2));
         widget_initsize(&cmin, (grid->placement == GRID_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
-
-        roww += child->size.w + grid->padding * 2;
-        rowh = util_max(rowh, child->size.h + grid->padding * 2);
+        widget_initsize(&row, row.w + child->size.w + grid->padding * 2, util_max(row.h, child->size.h + grid->padding * 2));
 
         if (++column % grid->columns == 0)
         {
 
-            totw += util_max(totw, roww);
-            toth += rowh;
-            roww = 0;
-            rowh = 0;
+            widget_initsize(&total, total.w + util_max(total.w, row.w), total.h + row.h);
+            widget_initsize(&row, 0, 0);
 
         }
 
     }
 
-    totw += util_max(totw, roww);
-    toth += rowh;
-
-    resize(widget, x, y, totw, toth, minw, minh, maxw, maxh);
+    widget_initsize(&total, total.w + util_max(total.w, row.w), total.h + row.h);
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
@@ -233,8 +226,9 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
 {
 
     struct widget_image *image = widget->data;
-    unsigned int w = 0;
-    unsigned int h = 0;
+    struct widget_size size;
+
+    widget_initsize(&size, 0, 0);
 
     if (file_walk2(FILE_L0, pool_getstring(image->source)))
     {
@@ -242,13 +236,11 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
         struct pcx_header header;
 
         file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-
-        w = header.xend - header.xstart + 1;
-        h = header.yend - header.ystart + 1;
+        widget_initsize(&size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
 
     }
 
-    resize(widget, x, y, w, h, minw, minh, maxw, maxh);
+    resize(widget, x, y, size.w, size.h, minw, minh, maxw, maxh);
 
 }
 
