@@ -11,26 +11,15 @@
 static void resize(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh)
 {
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(w, minw, maxw);
-    widget->size.h = util_clamp(h, minh, maxh);
+    widget_initposition(&widget->position, x, y);
+    widget_initsize(&widget->size, util_clamp(w, minw, maxw), util_clamp(h, minh, maxh));
 
 }
 
 static void resize2(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh)
 {
 
-    widget->position.x = x;
-    widget->position.y = y;
-    widget->size.w = util_clamp(w, minw, maxw);
-    widget->size.h = util_clamp(h, minh, maxh);
-
-    if (maxw < w)
-        widget->size.w = 0;
-
-    if (maxh < h)
-        widget->size.h = 0;
+    resize(widget, x, y, (maxw < w) ? 0 : w, (maxh < h) ? 0 : h, minw, minh, maxw, maxh);
 
 }
 
@@ -301,14 +290,14 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
         {
 
             struct widget *child = current->data;
-            int childx = widget->position.x;
-            int childy = widget->position.y + widget->size.h;
-            int childminw = widget->size.w;
-            int childminh = 0;
-            int childmaxw = widget->size.w;
-            int childmaxh = 512;
+            struct widget_position cpos;
+            struct widget_size cmax;
+            struct widget_size cmin;
 
-            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+            widget_initposition(&cpos, widget->position.x, widget->position.y + widget->size.h);
+            widget_initsize(&cmax, widget->size.w, 512);
+            widget_initsize(&cmin, widget->size.w, 0);
+            place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
 
         }
 
@@ -323,14 +312,10 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
         {
 
             struct widget *child = current->data;
-            int childx = widget->position.x;
-            int childy = widget->position.y + widget->size.h;
-            int childminw = 0;
-            int childminh = 0;
-            int childmaxw = 0;
-            int childmaxh = 0;
+            struct widget_position cpos;
 
-            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+            widget_initposition(&cpos, widget->position.x, widget->position.y + widget->size.h);
+            place_widget(child, cpos.x, cpos.y, 0, 0, 0, 0);
 
         }
 
@@ -371,12 +356,11 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     {
 
         struct widget *child = current->data;
-        int childx = x + offx;
-        int childy = y + offy;
-        int childminw = 0;
-        int childminh = 0;
-        int childmaxw = maxw - offw;
-        int childmaxh = 5000;
+        struct widget_position cpos;
+        struct widget_size cmax;
+
+        widget_initposition(&cpos, x + offx, y + offy);
+        widget_initsize(&cmax, maxw - offw, 5000);
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
@@ -408,18 +392,17 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
             }
 
-            childy = y + soffy;
+            cpos.y = y + soffy;
 
-            text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, childmaxw);
-
-            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+            text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, cmax.w);
+            place_widget(child, cpos.x, cpos.y, 0, 0, cmax.w, cmax.h);
 
         }
 
         else
         {
 
-            place_widget(child, childx, childy, childminw, childminh, childmaxw, childmaxh);
+            place_widget(child, cpos.x, cpos.y, 0, 0, cmax.w, cmax.h);
 
         }
 
@@ -464,12 +447,12 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
     {
 
         struct widget *child = current->data;
-        int childx = widget->position.x + CONFIG_WINDOW_BORDER_WIDTH;
-        int childy = widget->position.y + CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_WINDOW_BUTTON_HEIGHT;
-        int childmaxw = util_max(0, widget->size.w - CONFIG_WINDOW_BORDER_WIDTH * 2);
-        int childmaxh = util_max(0, widget->size.h - CONFIG_WINDOW_BORDER_HEIGHT * 2 - CONFIG_WINDOW_BUTTON_HEIGHT);
+        struct widget_position cpos;
+        struct widget_size cmax;
 
-        place_widget(child, childx, childy, 0, 0, childmaxw, childmaxh);
+        widget_initposition(&cpos, widget->position.x + CONFIG_WINDOW_BORDER_WIDTH, widget->position.y + CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_WINDOW_BUTTON_HEIGHT);
+        widget_initsize(&cmax, util_max(0, widget->size.w - CONFIG_WINDOW_BORDER_WIDTH * 2), util_max(0, widget->size.h - CONFIG_WINDOW_BORDER_HEIGHT * 2 - CONFIG_WINDOW_BUTTON_HEIGHT));
+        place_widget(child, cpos.x, cpos.y, 0, 0, cmax.w, cmax.h);
 
     }
 
