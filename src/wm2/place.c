@@ -293,9 +293,11 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     struct widget_select *select = widget->data;
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
+    struct widget_size total;
 
+    widget_initsize(&total, select->labelinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, select->labelinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &select->labelinfo, TEXT_WRAP_NONE, 0, 0);
-    resize2(widget, x, y, select->labelinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, select->labelinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
+    resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (widget->state == WIDGET_STATE_FOCUS)
     {
