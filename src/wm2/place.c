@@ -33,9 +33,11 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_button *button = widget->data;
+    struct widget_size total;
 
+    widget_initsize(&total, button->labelinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, button->labelinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
     text_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &button->labelinfo, TEXT_WRAP_NONE, 0, 0);
-    resize2(widget, x, y, button->labelinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, button->labelinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
+    resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
@@ -43,9 +45,11 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_choice *choice = widget->data;
+    struct widget_size total;
 
+    widget_initsize(&total, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
     text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &choice->labelinfo, TEXT_WRAP_NONE, 0, 0);
-    resize(widget, x, y, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
