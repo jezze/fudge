@@ -33,10 +33,11 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_button *button = widget->data;
+    struct text_font *font = pool_getfont(POOL_FONTBOLD);
     struct widget_size total;
 
     widget_initsize(&total, button->labelinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, button->labelinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
-    text_getrowinfo(pool_getfont(POOL_FONTBOLD), pool_getstring(button->label), pool_getcstringlength(button->label), &button->labelinfo, TEXT_WRAP_NONE, 0, 0);
+    text_getrowinfo(&button->labelinfo, font, pool_getstring(button->label), pool_getcstringlength(button->label), TEXT_WRAP_NONE, 0, 0);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
@@ -45,10 +46,11 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_choice *choice = widget->data;
+    struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct widget_size total;
 
     widget_initsize(&total, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
-    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(choice->label), pool_getcstringlength(choice->label), &choice->labelinfo, TEXT_WRAP_NONE, 0, 0);
+    text_getrowinfo(&choice->labelinfo, font, pool_getstring(choice->label), pool_getcstringlength(choice->label), TEXT_WRAP_NONE, 0, 0);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
@@ -292,11 +294,12 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_select *select = widget->data;
+    struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
     struct widget_size total;
 
     widget_initsize(&total, select->labelinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, select->labelinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
-    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(select->label), pool_getcstringlength(select->label), &select->labelinfo, TEXT_WRAP_NONE, 0, 0);
+    text_getrowinfo(&select->labelinfo, font, pool_getstring(select->label), pool_getcstringlength(select->label), TEXT_WRAP_NONE, 0, 0);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (widget->state == WIDGET_STATE_FOCUS)
@@ -345,13 +348,12 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 {
 
     struct widget_text *text = widget->data;
-    unsigned int index = (text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
+    struct text_font *font = pool_getfont((text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
 
-    text->rownum = 0;
-    text->rowstart = text_getrowstart(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), text->rownum, text->wrap, maxw, 0, 0);
+    text->cache.exist = 0;
 
-    text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &text->textinfo, text->wrap, text->firstrowoffset, maxw);
-    resize(widget, x, y, text->textinfo.width + 1, text->textinfo.rows * text->textinfo.lineheight, minw, minh, maxw, maxh);
+    text_gettextinfo(&text->textinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, text->firstrowoffset, maxw);
+    resize(widget, x, y, text->textinfo.width + 1, text->textinfo.rows * font->lineheight, minw, minh, maxw, maxh);
 
 }
 
@@ -360,15 +362,10 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
-    int offx = CONFIG_TEXTBOX_PADDING_WIDTH;
-    int offy = CONFIG_TEXTBOX_PADDING_HEIGHT;
-    int offw = CONFIG_TEXTBOX_PADDING_WIDTH * 2;
-    int offh = CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
-    int soffy = offy;
-    int soffh = offh;
-    int totw = 0;
-    unsigned int lasttype = 0;
-    struct text_info textinfo;
+    struct widget_size total;
+    unsigned int lastrowoffset = 0;
+
+    widget_initsize(&total, 0, 0);
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -377,43 +374,19 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         struct widget_position cpos;
         struct widget_size cmax;
 
-        widget_initposition(&cpos, x + offx, y + offy);
-        widget_initsize(&cmax, maxw - offw, 5000);
+        widget_initposition(&cpos, x + CONFIG_TEXTBOX_PADDING_WIDTH, y + CONFIG_TEXTBOX_PADDING_HEIGHT + total.h);
+        widget_initsize(&cmax, util_max(0, maxw - CONFIG_TEXTBOX_PADDING_WIDTH * 2), 50000);
 
-        if (child->type == WIDGET_TYPE_TEXT)
+        if (widget->type == WIDGET_TYPE_TEXT)
         {
 
             struct widget_text *text = child->data;
-            unsigned int index = (text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL;
 
-            text->firstrowoffset = 0;
+            text->firstrowoffset = lastrowoffset;
 
-            if (lasttype == WIDGET_TYPE_TEXT)
-            {
-
-                if (textinfo.last.newline)
-                {
-
-                    soffy += textinfo.rows * textinfo.lineheight;
-                    soffh += textinfo.rows * textinfo.lineheight;
-
-                }
-
-                else
-                {
-
-                    text->firstrowoffset = textinfo.last.width;
-                    soffy += (textinfo.rows - 1) * textinfo.lineheight;
-                    soffh += (textinfo.rows - 1) * textinfo.lineheight;
-
-                }
-
-            }
-
-            cpos.y = y + soffy;
-
-            text_gettextinfo(pool_getfont(index), pool_getstring(text->content), pool_getcstringlength(text->content), &textinfo, text->wrap, text->firstrowoffset, cmax.w);
             place_widget(child, cpos.x, cpos.y, 0, 0, cmax.w, cmax.h);
+
+            lastrowoffset = text->textinfo.lastrowoffset;
 
         }
 
@@ -424,25 +397,26 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
         }
 
-        lasttype = child->type;
-        offy += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT;
-        offh += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT;
-        totw = util_max(totw, child->size.w);
+        if (child->size.w)
+            total.w = util_max(total.w, child->size.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2);
+
+        if (child->size.h)
+            total.h += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
 
     }
+
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
+
+    textbox->scroll = util_clamp(textbox->scroll, 0, total.h - 60);
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
 
-        textbox->scroll = util_clamp(textbox->scroll, -100, 100);
-
         child->position.y -= textbox->scroll;
 
     }
-
-    resize(widget, x, y, totw, offy, minw, minh, maxw, maxh);
 
 }
 
@@ -450,8 +424,9 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
 {
 
     struct widget_textbutton *textbutton = widget->data;
+    struct text_font *font = pool_getfont(POOL_FONTNORMAL);
 
-    text_getrowinfo(pool_getfont(POOL_FONTNORMAL), pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), &textbutton->labelinfo, TEXT_WRAP_NONE, 0, 0);
+    text_getrowinfo(&textbutton->labelinfo, font, pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), TEXT_WRAP_NONE, 0, 0);
     resize2(widget, x, y, textbutton->labelinfo.width + 8, textbutton->labelinfo.lineheight + 8, minw, minh, maxw, maxh);
 
 }

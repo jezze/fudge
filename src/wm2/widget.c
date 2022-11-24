@@ -727,6 +727,13 @@ void widget_initposition(struct widget_position *position, int x, int y)
 
 }
 
+unsigned int widget_intersects(struct widget *widget, int x, int y)
+{
+
+    return widget_intersectsx(widget, x) && widget_intersectsy(widget, y);
+
+}
+
 void widget_initsize(struct widget_size *size, int w, int h)
 {
 

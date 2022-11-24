@@ -54,7 +54,7 @@ unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int l
     if (!rownum)
         return 0;
 
-    for (rows = crow; (offset = text_getrowinfo(font, text, length, &rowinfo, wrap, maxw, offset)); rows++)
+    for (rows = crow; (offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)); rows++)
     {
 
         if (rows == rownum)
@@ -66,7 +66,7 @@ unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int l
 
 }
 
-unsigned int text_getrowinfo(struct text_font *font, char *text, unsigned int length, struct text_rowinfo *rowinfo, unsigned int wrap, unsigned int maxw, unsigned int offset)
+unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
     unsigned int si = 0;
@@ -149,33 +149,33 @@ unsigned int text_getrowinfo(struct text_font *font, char *text, unsigned int le
 
 }
 
-unsigned int text_gettextinfo(struct text_font *font, char *text, unsigned int length, struct text_info *textinfo, unsigned int wrap, unsigned int offw, unsigned int maxw)
+unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int firstrowoffset, unsigned int maxw)
 {
 
+    struct text_rowinfo rowinfo;
     unsigned int offset = 0;
 
-    textinfo->lineheight = 0;
     textinfo->width = 0;
     textinfo->height = 0;
     textinfo->rows = 0;
 
-    if ((offset = text_getrowinfo(font, text, length, &textinfo->last, wrap, maxw - offw, offset)))
+    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowoffset, offset)))
     {
 
-        textinfo->last.width += offw;
-        textinfo->lineheight = textinfo->last.lineheight;
-        textinfo->width = textinfo->last.width;
-        textinfo->height = textinfo->last.height;
+        textinfo->width = rowinfo.width + firstrowoffset;
+        textinfo->height = rowinfo.height;
         textinfo->rows = 1;
 
-        while ((offset = text_getrowinfo(font, text, length, &textinfo->last, wrap, maxw, offset)))
+        while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
         {
 
-            textinfo->width = util_max(textinfo->width, textinfo->last.width);
-            textinfo->height += textinfo->last.height;
+            textinfo->width = util_max(textinfo->width, rowinfo.width);
+            textinfo->height += rowinfo.height;
             textinfo->rows++;
 
         }
+
+        textinfo->lastrowoffset = rowinfo.width;
 
     }
 

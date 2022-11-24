@@ -149,11 +149,17 @@ struct widget_text
     unsigned int weight;
     unsigned int wrap;
     unsigned int firstrowoffset;
-    unsigned int rownum;
-    unsigned int rowstart;
-    struct text_rowinfo rowinfo;
     struct text_info textinfo;
+    struct
+    {
 
+        unsigned int exist;
+        unsigned int rownum;
+        unsigned int rowstart;
+        unsigned int rowlength;
+        struct text_rowinfo rowinfo;
+
+    } cache;
 };
 
 struct widget_textbox
@@ -187,6 +193,7 @@ unsigned int widget_gettype(char *value);
 unsigned int widget_setstate(struct widget *widget, unsigned int state);
 unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
+unsigned int widget_intersects(struct widget *widget, int x, int y);
 void widget_initposition(struct widget_position *position, int x, int y);
 void widget_initsize(struct widget_size *size, int w, int h);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data);

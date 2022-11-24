@@ -70,7 +70,7 @@ static struct widget *getwidgettypeat(int x, int y, unsigned int type)
         if (!type || child->type == type)
         {
 
-            if (widget_intersectsx(child, x) && widget_intersectsy(child, y))
+            if (widget_intersects(child, x, y))
                 last = child;
 
         }
@@ -101,7 +101,7 @@ static struct widget *gethoverwidgetat(int x, int y)
         case WIDGET_TYPE_TEXTBOX:
         case WIDGET_TYPE_TEXTBUTTON:
         case WIDGET_TYPE_WINDOW:
-            if (widget_intersectsx(child, x) && widget_intersectsy(child, y))
+            if (widget_intersects(child, x, y))
                 last = child;
 
             break;
@@ -453,7 +453,7 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
         struct widget_textbox *textbox = state.focusedwidget->data;
 
-        textbox->scroll += mousescroll->relz * 8;
+        textbox->scroll += mousescroll->relz * 16;
 
         damage(state.focusedwidget);
 
