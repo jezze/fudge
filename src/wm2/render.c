@@ -301,7 +301,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 
     struct widget_textbutton *textbutton = widget->data;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
-    int rx = text_getrowx(&textbutton->labelinfo, TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
+    int rx = text_getrowx(&textbutton->labelinfo, TEXT_HALIGN_LEFT, widget->position.x, widget->size.w);
     int ry = text_getrowy(&textbutton->labelinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[1] = {
         0x00101010,

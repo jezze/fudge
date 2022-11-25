@@ -36,8 +36,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     struct widget_size total;
 
-    widget_initsize(&total, button->labelinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, button->labelinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
     text_getrowinfo(&button->labelinfo, font, pool_getstring(button->label), pool_getcstringlength(button->label), TEXT_WRAP_NONE, 0, 0);
+    widget_initsize(&total, button->labelinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, button->labelinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
@@ -49,8 +49,8 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct widget_size total;
 
-    widget_initsize(&total, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
     text_getrowinfo(&choice->labelinfo, font, pool_getstring(choice->label), pool_getcstringlength(choice->label), TEXT_WRAP_NONE, 0, 0);
+    widget_initsize(&total, choice->labelinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, choice->labelinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
@@ -298,8 +298,8 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
     struct widget_size total;
 
-    widget_initsize(&total, select->labelinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, select->labelinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
     text_getrowinfo(&select->labelinfo, font, pool_getstring(select->label), pool_getcstringlength(select->label), TEXT_WRAP_NONE, 0, 0);
+    widget_initsize(&total, select->labelinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, select->labelinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (widget->state == WIDGET_STATE_FOCUS)
@@ -374,34 +374,41 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         struct widget_position cpos;
         struct widget_size cmax;
 
-        widget_initposition(&cpos, x + CONFIG_TEXTBOX_PADDING_WIDTH, y + CONFIG_TEXTBOX_PADDING_HEIGHT + total.h);
-        widget_initsize(&cmax, util_max(0, maxw - CONFIG_TEXTBOX_PADDING_WIDTH * 2), 50000);
-
-        if (widget->type == WIDGET_TYPE_TEXT)
+        if (child->type == WIDGET_TYPE_TEXT)
         {
 
             struct widget_text *text = child->data;
 
             text->firstrowoffset = lastrowoffset;
 
-            place_widget(child, cpos.x, cpos.y, 0, 0, cmax.w, cmax.h);
+            widget_initposition(&cpos, x + CONFIG_TEXTBOX_PADDING_WIDTH, y + CONFIG_TEXTBOX_PADDING_HEIGHT + total.h);
+            widget_initsize(&cmax, util_max(0, maxw - CONFIG_TEXTBOX_PADDING_WIDTH * 2), 50000);
+            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
 
             lastrowoffset = text->textinfo.lastrowoffset;
+
+            if (child->size.w)
+                total.w = util_max(total.w, child->size.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2);
+
+            if (child->size.h)
+                total.h += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
 
         }
 
         else
         {
 
-            place_widget(child, cpos.x, cpos.y, 0, 0, cmax.w, cmax.h);
+            widget_initposition(&cpos, x + 4, y + 4 + total.h);
+            widget_initsize(&cmax, util_max(0, maxw - 4 * 2), 50000);
+            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
+
+            if (child->size.w)
+                total.w = util_max(total.w, child->size.w + 4 * 2);
+
+            if (child->size.h)
+                total.h += child->size.h;
 
         }
-
-        if (child->size.w)
-            total.w = util_max(total.w, child->size.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2);
-
-        if (child->size.h)
-            total.h += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
 
     }
 
@@ -425,9 +432,11 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
 
     struct widget_textbutton *textbutton = widget->data;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
+    struct widget_size total;
 
     text_getrowinfo(&textbutton->labelinfo, font, pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), TEXT_WRAP_NONE, 0, 0);
-    resize2(widget, x, y, textbutton->labelinfo.width + 8, textbutton->labelinfo.lineheight + 8, minw, minh, maxw, maxh);
+    widget_initsize(&total, textbutton->labelinfo.width + 16 * 2, textbutton->labelinfo.lineheight + 8 * 2);
+    resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
