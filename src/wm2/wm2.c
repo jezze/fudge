@@ -130,6 +130,22 @@ static void damage(struct widget *widget)
 
 }
 
+static void scrollwidget(int amount)
+{
+
+    if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX)
+    {
+
+        struct widget_textbox *textbox = state.focusedwidget->data;
+
+        textbox->scroll += amount;
+
+        damage(state.focusedwidget);
+
+    }
+
+}
+
 static void bump(struct widget *widget)
 {
 
@@ -267,6 +283,16 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                     channel_sendto(id, EVENT_MAIN);
 
             }
+
+            break;
+
+        case 0x49:
+            scrollwidget(-16);
+
+            break;
+
+        case 0x51:
+            scrollwidget(16);
 
             break;
 
@@ -448,16 +474,7 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousescroll *mousescroll = mdata;
 
-    if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX)
-    {
-
-        struct widget_textbox *textbox = state.focusedwidget->data;
-
-        textbox->scroll += mousescroll->relz * 16;
-
-        damage(state.focusedwidget);
-
-    }
+    scrollwidget(mousescroll->relz * 16);
 
 }
 
