@@ -161,25 +161,25 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     textinfo->height = 0;
     textinfo->rows = 0;
 
-    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowoffset, offset)))
+    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - textinfo->lastrowx, offset)))
     {
 
-        textinfo->lastrowx = rowinfo.width + firstrowoffset;
+        textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + textinfo->lastrowx;
         textinfo->lastrowy += rowinfo.height;
-        textinfo->width = util_max(textinfo->width, rowinfo.width + firstrowoffset);
-        textinfo->height = rowinfo.height;
-        textinfo->rows = 1;
-
-    }
-
-    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
-    {
-
-        textinfo->lastrowx = rowinfo.width;
-        textinfo->lastrowy += rowinfo.height;
-        textinfo->width = util_max(textinfo->width, rowinfo.width);
+        textinfo->width = util_max(textinfo->width, rowinfo.width + textinfo->lastrowx);
         textinfo->height += rowinfo.height;
         textinfo->rows++;
+
+        while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - textinfo->lastrowx, offset)))
+        {
+
+            textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + textinfo->lastrowx;
+            textinfo->lastrowy += rowinfo.height;
+            textinfo->width = util_max(textinfo->width, rowinfo.width + textinfo->lastrowx);
+            textinfo->height += rowinfo.height;
+            textinfo->rows++;
+
+        }
 
     }
 
