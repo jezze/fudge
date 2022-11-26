@@ -161,7 +161,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     textinfo->height = 0;
     textinfo->rows = 0;
 
-    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - textinfo->lastrowx, offset)))
+    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, util_max(0, maxw - textinfo->lastrowx), offset)))
     {
 
         textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + textinfo->lastrowx;
@@ -170,7 +170,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
         textinfo->height += rowinfo.height;
         textinfo->rows++;
 
-        while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - textinfo->lastrowx, offset)))
+        while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, util_max(0, maxw - textinfo->lastrowx), offset)))
         {
 
             textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + textinfo->lastrowx;
