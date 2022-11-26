@@ -158,6 +158,8 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     textinfo->width = 0;
     textinfo->height = 0;
     textinfo->rows = 0;
+    textinfo->lastrowx = 0;
+    textinfo->lastrowy = 0;
 
     if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowoffset, offset)))
     {
