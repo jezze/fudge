@@ -352,7 +352,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 
     text->cache.exist = 0;
 
-    text_gettextinfo(&text->textinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, text->firstrowoffset, maxw);
+    text_gettextinfo(&text->textinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, text->firstrowx, maxw);
     resize(widget, x, y, text->textinfo.width + 1, text->textinfo.rows * font->lineheight, minw, minh, maxw, maxh);
 
 }
@@ -363,7 +363,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
     struct widget_size total;
-    unsigned int lastrowoffset = 0;
+    unsigned int lastrowx = 0;
+    unsigned int lastrowy = 0;
 
     widget_initsize(&total, 0, 0);
 
@@ -379,13 +380,17 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
             struct widget_text *text = child->data;
 
-            text->firstrowoffset = lastrowoffset;
+            text->firstrowx = lastrowx;
 
-            widget_initposition(&cpos, x + CONFIG_TEXTBOX_PADDING_WIDTH, y + CONFIG_TEXTBOX_PADDING_HEIGHT + total.h);
+            widget_initposition(&cpos, x + CONFIG_TEXTBOX_PADDING_WIDTH, y + CONFIG_TEXTBOX_PADDING_HEIGHT + lastrowy);
             widget_initsize(&cmax, util_max(0, maxw - CONFIG_TEXTBOX_PADDING_WIDTH * 2), 50000);
             place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
 
-            lastrowoffset = text->textinfo.lastrowoffset;
+            lastrowx = text->textinfo.lastrowx;
+            /*
+            lastrowy = y + text->textinfo.lastrowy;
+            */
+            lastrowy += child->size.h;
 
             if (child->size.w)
                 total.w = util_max(total.w, child->size.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2);

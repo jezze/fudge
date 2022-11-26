@@ -226,7 +226,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     if (rownum < text->textinfo.rows)
     {
 
-        unsigned int rowx = (rownum) ? 0 : text->firstrowoffset;
+        unsigned int rowx = (rownum) ? 0 : text->firstrowx;
         unsigned int roww = widget->size.w - rowx;
 
         if (text->cache.rownum != rownum)

@@ -175,7 +175,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
 
         }
 
-        textinfo->lastrowoffset = rowinfo.width;
+        textinfo->lastrowx = rowinfo.width;
 
     }
 

@@ -148,7 +148,7 @@ struct widget_text
     unsigned int mode;
     unsigned int weight;
     unsigned int wrap;
-    unsigned int firstrowoffset;
+    unsigned int firstrowx;
     struct text_info textinfo;
     struct
     {

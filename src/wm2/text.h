@@ -40,7 +40,8 @@ struct text_info
     unsigned int rows;
     unsigned int width;
     unsigned int height;
-    unsigned int lastrowoffset;
+    unsigned int lastrowx;
+    unsigned int lastrowy;
 
 };
 
