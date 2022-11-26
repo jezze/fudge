@@ -158,7 +158,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     textinfo->width = 0;
     textinfo->height = 0;
     textinfo->rows = 0;
-    textinfo->lastrowx = 0;
+    textinfo->lastrowx = firstrowoffset;
     textinfo->lastrowy = 0;
 
     if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowoffset, offset)))
@@ -167,6 +167,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
         textinfo->width = rowinfo.width + firstrowoffset;
         textinfo->height = rowinfo.height;
         textinfo->rows = 1;
+        textinfo->lastrowx = rowinfo.width + firstrowoffset;
 
         while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
         {
@@ -174,10 +175,11 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
             textinfo->width = util_max(textinfo->width, rowinfo.width);
             textinfo->height += rowinfo.height;
             textinfo->rows++;
+            textinfo->lastrowx = rowinfo.width;
+            textinfo->lastrowy += rowinfo.height;
 
         }
 
-        textinfo->lastrowx = rowinfo.width;
 
     }
 
