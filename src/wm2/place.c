@@ -387,10 +387,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
 
             lastrowx = text->textinfo.lastrowx;
-            /*
-            lastrowy = y + text->textinfo.lastrowy;
-            */
-            lastrowy += child->size.h;
+            lastrowy += text->textinfo.lastrowy;
 
             if (child->size.w)
                 total.w = util_max(total.w, child->size.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2);
