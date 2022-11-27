@@ -227,7 +227,6 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     {
 
         unsigned int rowx = (rownum) ? 0 : text->firstrowx;
-        unsigned int roww = widget->size.w - rowx;
 
         if (text->cache.rownum != rownum)
             text->cache.exist = 0;
@@ -236,8 +235,8 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         {
 
             text->cache.rownum = rownum;
-            text->cache.rowstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), text->cache.rownum, text->wrap, roww, 0, 0);
-            text->cache.rowlength = text_getrowinfo(&text->cache.rowinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, roww, text->cache.rowstart);
+            text->cache.rowstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), text->cache.rownum, text->wrap, widget->size.w, 0, 0);
+            text->cache.rowlength = text_getrowinfo(&text->cache.rowinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, text->cache.rowstart);
             text->cache.exist = 1;
 
         }
@@ -245,7 +244,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         if (text->cache.rowlength)
         {
 
-            int rx = text_getrowx(&text->cache.rowinfo, text->halign, widget->position.x + rowx, roww);
+            int rx = text_getrowx(&text->cache.rowinfo, text->halign, widget->position.x + rowx, widget->size.w - rowx);
             int ry = text_getrowy(&text->cache.rowinfo, text->valign, widget->position.y + text->cache.rownum * text->cache.rowinfo.lineheight, widget->size.h);
 
             switch (text->mode)

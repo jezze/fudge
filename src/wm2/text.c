@@ -165,18 +165,18 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     {
 
         textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + textinfo->lastrowx;
-        textinfo->lastrowy += rowinfo.height;
+        textinfo->lastrowy += rowinfo.lineheight;
         textinfo->width = util_max(textinfo->width, rowinfo.width + textinfo->lastrowx);
-        textinfo->height += rowinfo.height;
+        textinfo->height += rowinfo.lineheight;
         textinfo->rows++;
 
         while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
         {
 
             textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width;
-            textinfo->lastrowy += rowinfo.height;
+            textinfo->lastrowy += rowinfo.lineheight;
             textinfo->width = util_max(textinfo->width, rowinfo.width);
-            textinfo->height += rowinfo.height;
+            textinfo->height += rowinfo.lineheight;
             textinfo->rows++;
 
         }
