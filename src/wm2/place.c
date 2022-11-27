@@ -393,7 +393,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
                 total.w = util_max(total.w, child->size.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2);
 
             if (child->size.h)
-                total.h += child->size.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
+                total.h = ((cpos.y + child->size.h) - y) + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
 
         }
 
