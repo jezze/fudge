@@ -165,7 +165,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     {
 
         textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + textinfo->lastrowx;
-        textinfo->lastrowy += rowinfo.lineheight;
+        textinfo->lastrowy += (rowinfo.newline) ? rowinfo.lineheight : 0;
         textinfo->width = util_max(textinfo->width, rowinfo.width + textinfo->lastrowx);
         textinfo->height += rowinfo.lineheight;
         textinfo->rows++;
