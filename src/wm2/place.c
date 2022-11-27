@@ -353,7 +353,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     text->cache.exist = 0;
 
     text_gettextinfo(&text->textinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, text->firstrowx, maxw);
-    resize(widget, x, y, text->textinfo.width + 1, text->textinfo.rows * font->lineheight, minw, minh, maxw, maxh);
+    resize(widget, x, y, text->textinfo.width + 1, text->textinfo.height, minw, minh, maxw, maxh);
 
 }
 
