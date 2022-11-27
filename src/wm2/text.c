@@ -89,7 +89,12 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     {
 
         struct pcf_metricsdata metricsdata;
-        unsigned short index;
+        unsigned short index = pcf_getindex(font->data, text[i]);
+
+        pcf_readmetricsdata(font->data, index, &metricsdata);
+
+        w += metricsdata.width;
+        h = util_max(h, metricsdata.ascent + metricsdata.descent);
 
         if (text[i] == ' ')
         {
@@ -108,10 +113,6 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             break;
 
         }
-
-        index = pcf_getindex(font->data, text[i]);
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
 
         if (wrap != TEXT_WRAP_NONE && w + metricsdata.width >= maxw)
         {
@@ -135,9 +136,6 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             break;
 
         }
-
-        w += metricsdata.width;
-        h = util_max(h, metricsdata.ascent + metricsdata.descent);
 
     }
 
