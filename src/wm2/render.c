@@ -303,13 +303,13 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     int rx = text_getrowx(&textbutton->labelinfo, TEXT_HALIGN_LEFT, widget->position.x, widget->size.w);
     int ry = text_getrowy(&textbutton->labelinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[1] = {
-        0x00101010,
+        0x00000000,
     };
     static unsigned int cmaphover[1] = {
-        0xE8101010,
+        0xE8242424,
     };
     static unsigned int cmapfocus[1] = {
-        0xE8101010,
+        0xE8202020,
     };
     static unsigned int cmaptext[1] = {
         0xE8FFFFFF,
