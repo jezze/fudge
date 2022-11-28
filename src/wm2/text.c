@@ -156,24 +156,24 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
 }
 
-unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int firstrowoffset, unsigned int maxw)
+unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int firstrowx, unsigned int maxw)
 {
 
     struct text_rowinfo rowinfo;
     unsigned int offset = 0;
 
-    textinfo->lastrowx = firstrowoffset;
+    textinfo->lastrowx = firstrowx;
     textinfo->lastrowy = 0;
     textinfo->width = 0;
     textinfo->height = 0;
     textinfo->rows = 0;
 
-    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - textinfo->lastrowx, offset)))
+    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
-        textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + textinfo->lastrowx;
+        textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + firstrowx;
         textinfo->lastrowy += (rowinfo.newline) ? rowinfo.lineheight : 0;
-        textinfo->width = util_max(textinfo->width, rowinfo.width + textinfo->lastrowx);
+        textinfo->width = util_max(textinfo->width, rowinfo.width + firstrowx);
         textinfo->height += rowinfo.lineheight;
         textinfo->rows++;
 
