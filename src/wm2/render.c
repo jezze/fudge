@@ -235,7 +235,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         {
 
             text->cache.rownum = rownum;
-            text->cache.rowstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), text->cache.rownum, text->wrap, widget->size.w, 0, 0);
+            text->cache.rowstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), text->cache.rownum, text->wrap, widget->size.w, text->firstrowx);
             text->cache.rowlength = text_getrowinfo(&text->cache.rowinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, text->cache.rowstart);
             text->cache.exist = 1;
 

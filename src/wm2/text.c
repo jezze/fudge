@@ -45,20 +45,29 @@ int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, int y, int h
 
 }
 
-unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw, int crow, int offset)
+unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw, unsigned int firstrowx)
 {
 
-    unsigned int rows;
     struct text_rowinfo rowinfo;
+    unsigned int offset = 0;
+    unsigned int row = 0;
 
     if (!rownum)
         return 0;
 
-    for (rows = crow; (offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)); rows++)
+    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
-        if (rows == rownum)
+        if (++row == rownum)
             return offset;
+
+        while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
+        {
+
+            if (++row == rownum)
+                return offset;
+
+        }
 
     }
 
