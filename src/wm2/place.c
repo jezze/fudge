@@ -8,6 +8,20 @@
 #include "pool.h"
 #include "place.h"
 
+static int getw(struct widget *widget, int x, int w, int pw)
+{
+
+    return (widget->size.w) ? util_max(w, ((widget->position.x + widget->size.w) - x) + pw * 2) : w;
+
+}
+
+static int geth(struct widget *widget, int y, int h, int ph)
+{
+
+    return (widget->size.h) ? util_max(h, ((widget->position.y + widget->size.h) - y) + ph * 2) : h;
+
+}
+
 static void resize(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh)
 {
 
@@ -95,11 +109,8 @@ static void placecontainerhorizontal(struct widget *widget, int x, int y, unsign
         widget_initsize(&cmin, 0, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.h : 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
 
-        if (child->size.w)
-            total.w += child->size.w + container->padding * 2;
-
-        if (child->size.h)
-            total.h = util_max(total.h, child->size.h + container->padding * 2);
+        total.w = getw(child, x, total.w, container->padding);
+        total.h = geth(child, y, total.h, container->padding);
 
     }
 
@@ -152,11 +163,8 @@ static void placecontainervertical(struct widget *widget, int x, int y, unsigned
         widget_initsize(&cmin, (container->placement == CONTAINER_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
         place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
 
-        if (child->size.w)
-            total.w = util_max(total.w, child->size.w + container->padding * 2);
-
-        if (child->size.h)
-            total.h += child->size.h + container->padding * 2;
+        total.w = getw(child, x, total.w, container->padding);
+        total.h = geth(child, y, total.h, container->padding);
 
     }
 
@@ -386,14 +394,10 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             widget_initsize(&cmax, util_max(0, maxw - CONFIG_TEXTBOX_PADDING_WIDTH * 2), 50000);
             place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
 
+            total.w = getw(child, x, total.w, CONFIG_TEXTBOX_PADDING_WIDTH);
+            total.h = geth(child, y, total.h, CONFIG_TEXTBOX_PADDING_HEIGHT);
             lastrowx = text->textinfo.lastrowx;
             lastrowy += text->textinfo.lastrowy;
-
-            if (child->size.w)
-                total.w = util_max(total.w, child->size.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2);
-
-            if (child->size.h)
-                total.h = ((cpos.y + child->size.h) - y) + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
 
         }
 
@@ -404,11 +408,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             widget_initsize(&cmax, util_max(0, maxw - 4 * 2), 50000);
             place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
 
-            if (child->size.w)
-                total.w = util_max(total.w, child->size.w + 4 * 2);
-
-            if (child->size.h)
-                total.h += child->size.h;
+            total.w = getw(child, x, total.w, 4);
+            total.h = geth(child, y, total.h, 0);
 
         }
 
