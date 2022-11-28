@@ -156,7 +156,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
 }
 
-unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int firstrowx, unsigned int maxw)
+unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int firstrowx)
 {
 
     struct text_rowinfo rowinfo;
