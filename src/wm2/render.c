@@ -38,8 +38,8 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
     struct widget_button *button = widget->data;
     struct widget_cache *cache = &button->cache;
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
-    int rx = text_getrowx(&cache->textrow.info, TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
-    int ry = text_getrowy(&cache->textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
+    int ry = text_getrowy(&cache->payload.textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -61,8 +61,8 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (util_intersects(line, ry, ry + cache->textrow.info.lineheight))
-        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), cache->textrow.info.chars, rx, ry, line, x0, x2);
+    if (util_intersects(line, ry, ry + cache->payload.textrow.info.lineheight))
+        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label), cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
 
 }
 
@@ -72,8 +72,8 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
     struct widget_choice *choice = widget->data;
     struct widget_cache *cache = &choice->cache;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
-    int rx = text_getrowx(&cache->textrow.info, TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
-    int ry = text_getrowy(&cache->textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
+    int ry = text_getrowy(&cache->payload.textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -95,8 +95,8 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
 
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (util_intersects(line, ry, ry + cache->textrow.info.lineheight))
-        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label), cache->textrow.info.chars, rx, ry, line, x0, x2);
+    if (util_intersects(line, ry, ry + cache->payload.textrow.info.lineheight))
+        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label), cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
 
 }
 
@@ -177,8 +177,8 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     struct widget_cache *cache = &select->cache;
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
-    int rx = text_getrowx(&cache->textrow.info, TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
-    int ry = text_getrowy(&cache->textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
+    int ry = text_getrowy(&cache->payload.textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -205,8 +205,8 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     blit_iconhamburger(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, cmapicon);
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (util_intersects(line, ry, ry + cache->textrow.info.lineheight))
-        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), cache->textrow.info.chars, rx, ry, line, x0, x2);
+    if (util_intersects(line, ry, ry + cache->payload.textrow.info.lineheight))
+        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
 
 }
 
@@ -232,35 +232,35 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
         unsigned int rowx = (rownum) ? 0 : text->firstrowx;
 
-        if (cache->textrow.num != rownum)
+        if (cache->payload.textrow.num != rownum)
             cache->exist = 0;
 
         if (!cache->exist)
         {
 
-            cache->textrow.num = rownum;
-            cache->textrow.start = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), cache->textrow.num, text->wrap, widget->size.w, text->firstrowx);
-            cache->textrow.length = text_getrowinfo(&cache->textrow.info, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, cache->textrow.start);
+            cache->payload.textrow.num = rownum;
+            cache->payload.textrow.start = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), cache->payload.textrow.num, text->wrap, widget->size.w, text->firstrowx);
+            cache->payload.textrow.length = text_getrowinfo(&cache->payload.textrow.info, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, cache->payload.textrow.start);
             cache->exist = 1;
 
         }
 
-        if (cache->textrow.length)
+        if (cache->payload.textrow.length)
         {
 
-            int rx = text_getrowx(&cache->textrow.info, text->halign, widget->position.x + rowx, widget->size.w - rowx);
-            int ry = text_getrowy(&cache->textrow.info, text->valign, widget->position.y + cache->textrow.num * cache->textrow.info.lineheight, widget->size.h);
+            int rx = text_getrowx(&cache->payload.textrow.info, text->halign, widget->position.x + rowx, widget->size.w - rowx);
+            int ry = text_getrowy(&cache->payload.textrow.info, text->valign, widget->position.y + cache->payload.textrow.num * cache->payload.textrow.info.lineheight, widget->size.h);
 
             switch (text->mode)
             {
 
             case TEXT_MODE_NORMAL:
-                blit_textnormal(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + cache->textrow.start, cache->textrow.info.chars, rx, ry, line, x0, x2);
+                blit_textnormal(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + cache->payload.textrow.start, cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
 
                 break;
 
             case TEXT_MODE_INVERTED:
-                blit_textinverted(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + cache->textrow.start, cache->textrow.info.chars, rx, ry, line, x0, x2);
+                blit_textinverted(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + cache->payload.textrow.start, cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
 
                 break;
 
@@ -305,8 +305,8 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     struct widget_textbutton *textbutton = widget->data;
     struct widget_cache *cache = &textbutton->cache;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
-    int rx = text_getrowx(&cache->textrow.info, TEXT_HALIGN_LEFT, widget->position.x, widget->size.w);
-    int ry = text_getrowy(&cache->textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_LEFT, widget->position.x, widget->size.w);
+    int ry = text_getrowy(&cache->payload.textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     static unsigned int cmapnormal[1] = {
         0x00000000,
     };
@@ -322,8 +322,8 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 
     blit_rect(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
-    if (util_intersects(line, ry, ry + cache->textrow.info.lineheight))
-        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(textbutton->label), cache->textrow.info.chars, rx, ry, line, x0, x2);
+    if (util_intersects(line, ry, ry + cache->payload.textrow.info.lineheight))
+        blit_textnormal(display, font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(textbutton->label), cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
 
 }
 

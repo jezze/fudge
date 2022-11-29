@@ -83,15 +83,24 @@ struct widget_cache
 {
 
     unsigned int exist;
-    struct
+    union
     {
 
-        unsigned int num;
-        unsigned int start;
-        unsigned int length;
-        struct text_rowinfo info;
+        struct
+        {
 
-    } textrow;
+            unsigned int num;
+            unsigned int start;
+            unsigned int length;
+            struct text_rowinfo info;
+
+        } textrow;
+        struct
+        {
+            struct widget_size size;
+        } image;
+
+    } payload;
 
 };
 
@@ -141,8 +150,7 @@ struct widget_image
 
     unsigned int type;
     unsigned int source;
-    void *data;
-    void *cmap;
+    struct widget_cache cache;
 
 };
 

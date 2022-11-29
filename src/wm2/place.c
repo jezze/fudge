@@ -45,8 +45,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     struct widget_size total;
 
-    text_getrowinfo(&cache->textrow.info, font, pool_getstring(button->label), pool_getcstringlength(button->label), TEXT_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
-    widget_initsize(&total, cache->textrow.info.width + CONFIG_BUTTON_PADDING_WIDTH * 2, cache->textrow.info.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
+    text_getrowinfo(&cache->payload.textrow.info, font, pool_getstring(button->label), pool_getcstringlength(button->label), TEXT_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
+    widget_initsize(&total, cache->payload.textrow.info.width + CONFIG_BUTTON_PADDING_WIDTH * 2, cache->payload.textrow.info.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
@@ -59,8 +59,8 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct widget_size total;
 
-    text_getrowinfo(&cache->textrow.info, font, pool_getstring(choice->label), pool_getcstringlength(choice->label), TEXT_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
-    widget_initsize(&total, cache->textrow.info.width + CONFIG_CHOICE_PADDING_WIDTH * 2, cache->textrow.info.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
+    text_getrowinfo(&cache->payload.textrow.info, font, pool_getstring(choice->label), pool_getcstringlength(choice->label), TEXT_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
+    widget_initsize(&total, cache->payload.textrow.info.width + CONFIG_CHOICE_PADDING_WIDTH * 2, cache->payload.textrow.info.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
@@ -252,21 +252,26 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
 {
 
     struct widget_image *image = widget->data;
-    struct widget_size total;
+    struct widget_cache *cache = &image->cache;
 
-    widget_initsize(&total, 0, 0);
-
-    if (file_walk2(FILE_L0, pool_getstring(image->source)))
+    if (!cache->exist)
     {
 
-        struct pcx_header header;
+        if (file_walk2(FILE_L0, pool_getstring(image->source)))
+        {
 
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-        widget_initsize(&total, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
+            struct pcx_header header;
+
+            file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+            widget_initsize(&cache->payload.image.size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
+
+            cache->exist = 1;
+
+        }
 
     }
 
-    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
+    resize(widget, x, y, cache->payload.image.size.w, cache->payload.image.size.h, minw, minh, maxw, maxh);
 
 }
 
@@ -299,8 +304,8 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
     struct widget_size total;
 
-    text_getrowinfo(&cache->textrow.info, font, pool_getstring(select->label), pool_getcstringlength(select->label), TEXT_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
-    widget_initsize(&total, cache->textrow.info.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, cache->textrow.info.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
+    text_getrowinfo(&cache->payload.textrow.info, font, pool_getstring(select->label), pool_getcstringlength(select->label), TEXT_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
+    widget_initsize(&total, cache->payload.textrow.info.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, cache->payload.textrow.info.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (widget->state == WIDGET_STATE_FOCUS)
@@ -434,8 +439,8 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct widget_size total;
 
-    text_getrowinfo(&cache->textrow.info, font, pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), TEXT_WRAP_NONE, maxw - 16 * 2, 0);
-    widget_initsize(&total, cache->textrow.info.width + 16 * 2, cache->textrow.info.lineheight + 8 * 2);
+    text_getrowinfo(&cache->payload.textrow.info, font, pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), TEXT_WRAP_NONE, maxw - 16 * 2, 0);
+    widget_initsize(&total, cache->payload.textrow.info.width + 16 * 2, cache->payload.textrow.info.lineheight + 8 * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
