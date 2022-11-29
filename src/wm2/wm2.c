@@ -58,7 +58,27 @@ static void setupvideo(void)
 
 }
 
-static struct widget *getwidgettypeat(int x, int y, unsigned int type)
+static struct widget *getinteractivewidgetat(int x, int y)
+{
+
+    struct list_item *current = 0;
+    struct widget *last = 0;
+
+    while ((current = pool_next(current)))
+    {
+ 
+        struct widget *child = current->data;
+
+        if (widget_isinteractive(child) && widget_intersects(child, x, y))
+            last = child;
+
+    }
+
+    return last;
+
+}
+
+static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
 {
 
     struct list_item *current = 0;
@@ -74,39 +94,6 @@ static struct widget *getwidgettypeat(int x, int y, unsigned int type)
 
             if (widget_intersects(child, x, y))
                 last = child;
-
-        }
-
-    }
-
-    return last;
-
-}
-
-static struct widget *gethoverwidgetat(int x, int y)
-{
-
-    struct list_item *current = 0;
-    struct widget *last = 0;
-
-    while ((current = pool_next(current)))
-    {
- 
-        struct widget *child = current->data;
-
-        switch (child->type)
-        {
-
-        case WIDGET_TYPE_BUTTON:
-        case WIDGET_TYPE_CHOICE:
-        case WIDGET_TYPE_SELECT:
-        case WIDGET_TYPE_TEXTBOX:
-        case WIDGET_TYPE_TEXTBUTTON:
-        case WIDGET_TYPE_WINDOW:
-            if (widget_intersects(child, x, y))
-                last = child;
-
-            break;
 
         }
 
@@ -472,7 +459,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     struct event_mousemove *mousemove = mdata;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
-    struct widget *hoverwidget = gethoverwidgetat(state.mouseposition.x, state.mouseposition.y);
+    struct widget *hoverwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     if (hoverwidget)
         sethover(hoverwidget);
@@ -503,9 +490,9 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct widget *clickedwindow = getwidgettypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *clickedwindow = getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
 
-    state.clickedwidget = gethoverwidgetat(state.mouseposition.x, state.mouseposition.y);
+    state.clickedwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
     state.mouseclicked.x = state.mouseposition.x;
     state.mouseclicked.y = state.mouseposition.y;
 

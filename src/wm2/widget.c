@@ -725,6 +725,26 @@ unsigned int widget_intersects(struct widget *widget, int x, int y)
 
 }
 
+unsigned int widget_isinteractive(struct widget *widget)
+{
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
+    case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_TEXTBOX:
+    case WIDGET_TYPE_TEXTBUTTON:
+    case WIDGET_TYPE_WINDOW:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 void widget_initposition(struct widget_position *position, int x, int y)
 {
 
