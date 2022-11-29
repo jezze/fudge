@@ -17,6 +17,7 @@ struct state
 
     struct widget_position mouseposition;
     struct widget_position mousemovement;
+    struct widget_position mouseclicked;
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
     struct widget *rootwidget;
@@ -24,6 +25,7 @@ struct state
     struct widget *hoverwidget;
     struct widget *focusedwindow;
     struct widget *focusedwidget;
+    struct widget *clickedwidget;
     unsigned int keymod;
 
 };
@@ -255,12 +257,74 @@ static void clickwidget(struct widget *widget)
     switch (widget->type)
     {
 
+    case WIDGET_TYPE_WINDOW:
+        break;
+
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_TEXTBUTTON:
-        cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
-        channel_sendbufferto(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+        if (state.mousebuttonleft)
+        {
+
+            cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
+            channel_sendbufferto(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+
+        }
+
+        break;
+
+    }
+
+}
+
+static void dragwidget(struct widget *widget)
+{
+
+    unsigned int valid = 0;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_WINDOW:
+/*
+        if (state.keymod & KEYMOD_ALT)
+            valid = 1;
+
+        if (util_intersects(state.mouseclicked.x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(state.mouseclicked.y, widget->position.y, widget->position.y + 40))
+            valid = 1;
+*/
+
+        valid = 1;
+
+        if (valid)
+        {
+
+            if (state.mousebuttonleft)
+            {
+
+                damage(widget);
+
+                widget->position.x += state.mousemovement.x;
+                widget->position.y += state.mousemovement.y;
+
+                damage(widget);
+
+            }
+
+            if (state.mousebuttonright)
+            {
+
+                damage(widget);
+
+                widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
+                widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
+
+                damage(widget);
+
+            }
+
+        }
 
         break;
 
@@ -430,34 +494,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    if (state.focusedwindow)
-    {
-
-        if (state.mousebuttonleft && (state.keymod & KEYMOD_ALT))
-        {
-
-            damage(state.focusedwindow);
-
-            state.focusedwindow->position.x += state.mousemovement.x;
-            state.focusedwindow->position.y += state.mousemovement.y;
-
-            damage(state.focusedwindow);
-
-        }
-
-        if (state.mousebuttonright && (state.keymod & KEYMOD_ALT))
-        {
-
-            damage(state.focusedwindow);
-
-            state.focusedwindow->size.w = util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
-            state.focusedwindow->size.h = util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
-
-            damage(state.focusedwindow);
-
-        }
-
-    }
+    if (state.clickedwidget)
+        dragwidget(state.clickedwidget);
 
 }
 
@@ -466,7 +504,10 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousepress *mousepress = mdata;
     struct widget *clickedwindow = getwidgettypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
-    struct widget *clickedwidget = gethoverwidgetat(state.mouseposition.x, state.mouseposition.y);
+
+    state.clickedwidget = gethoverwidgetat(state.mouseposition.x, state.mouseposition.y);
+    state.mouseclicked.x = state.mouseposition.x;
+    state.mouseclicked.y = state.mouseposition.y;
 
     switch (mousepress->button)
     {
@@ -477,16 +518,19 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (clickedwindow)
             setfocuswindow(clickedwindow);
 
-        if (clickedwidget)
-            setfocuswidget(clickedwidget);
+        if (state.clickedwidget)
+            setfocuswidget(state.clickedwidget);
 
-        if (clickedwidget)
-            clickwidget(clickedwidget);
+        if (state.clickedwidget)
+            clickwidget(state.clickedwidget);
 
         break;
 
     case 2:
         state.mousebuttonright = 1;
+
+        if (state.clickedwidget)
+            clickwidget(state.clickedwidget);
 
         break;
 
@@ -522,6 +566,8 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     }
+
+    state.clickedwidget = 0;
 
 }
 
