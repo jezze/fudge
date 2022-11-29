@@ -79,11 +79,27 @@ struct widget
 
 };
 
+struct widget_cache
+{
+
+    unsigned int exist;
+    struct
+    {
+
+        unsigned int num;
+        unsigned int start;
+        unsigned int length;
+        struct text_rowinfo info;
+
+    } textrow;
+
+};
+
 struct widget_button
 {
 
     unsigned int label;
-    struct text_rowinfo labelinfo;
+    struct widget_cache cache;
 
 };
 
@@ -91,7 +107,7 @@ struct widget_choice
 {
 
     unsigned int label;
-    struct text_rowinfo labelinfo;
+    struct widget_cache cache;
 
 };
 
@@ -134,7 +150,7 @@ struct widget_select
 {
 
     unsigned int label;
-    struct text_rowinfo labelinfo;
+    struct widget_cache cache;
 
 };
 
@@ -149,16 +165,8 @@ struct widget_text
     unsigned int wrap;
     unsigned int firstrowx;
     struct text_info textinfo;
-    struct
-    {
+    struct widget_cache cache;
 
-        unsigned int exist;
-        unsigned int rownum;
-        unsigned int rowstart;
-        unsigned int rowlength;
-        struct text_rowinfo rowinfo;
-
-    } cache;
 };
 
 struct widget_textbox
@@ -173,7 +181,7 @@ struct widget_textbutton
 {
 
     unsigned int label;
-    struct text_rowinfo labelinfo;
+    struct widget_cache cache;
 
 };
 
