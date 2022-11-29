@@ -247,6 +247,50 @@ static void sethover(struct widget *widget)
 
 }
 
+static void clickwidget(struct widget *widget)
+{
+
+    struct event_wmclick wmclick;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
+    case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_TEXTBUTTON:
+        cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
+        channel_sendbufferto(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+
+        break;
+
+    }
+
+}
+
+static void keypresswidget(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod)
+{
+
+    struct event_wmkeypress2 wmkeypress;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_TEXTBOX:
+        wmkeypress.scancode = scancode;
+        wmkeypress.unicode = unicode;
+        wmkeypress.length = length;
+        wmkeypress.keymod = keymod;
+
+        cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(widget->id), 0));
+        channel_sendbufferto(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
+
+        break;
+
+    }
+
+}
+
 static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -304,7 +348,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
     {
 
         if (state.focusedwidget)
-            widget_onkeypress(state.focusedwidget, keypress->scancode, keycode->value[0], keycode->length, state.keymod);
+            keypresswidget(state.focusedwidget, keypress->scancode, keycode->value[0], keycode->length, state.keymod);
 
     }
 
@@ -437,7 +481,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
             setfocuswidget(clickedwidget);
 
         if (clickedwidget)
-            widget_onclick(clickedwidget);
+            clickwidget(clickedwidget);
 
         break;
 

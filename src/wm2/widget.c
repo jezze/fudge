@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <abi.h>
 #include "config.h"
 #include "util.h"
 #include "text.h"
@@ -723,50 +722,6 @@ unsigned int widget_intersects(struct widget *widget, int x, int y)
 {
 
     return widget_intersectsx(widget, x) && widget_intersectsy(widget, y);
-
-}
-
-void widget_onclick(struct widget *widget)
-{
-
-    struct event_wmclick wmclick;
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHOICE:
-    case WIDGET_TYPE_SELECT:
-    case WIDGET_TYPE_TEXTBUTTON:
-        cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
-        channel_sendbufferto(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
-
-        break;
-
-    }
-
-}
-
-void widget_onkeypress(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod)
-{
-
-    struct event_wmkeypress2 wmkeypress;
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_TEXTBOX:
-        wmkeypress.scancode = scancode;
-        wmkeypress.unicode = unicode;
-        wmkeypress.length = length;
-        wmkeypress.keymod = keymod;
-
-        cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(widget->id), 0));
-        channel_sendbufferto(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
-
-        break;
-
-    }
 
 }
 
