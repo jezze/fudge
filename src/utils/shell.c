@@ -249,6 +249,19 @@ static void complete(void)
 
 }
 
+static void clear(void)
+{
+
+    char sequence[2] = {0x1B, 'c'};
+    char buffer[INPUTSIZE];
+    unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
+
+    print(sequence, 2);
+    printprompt();
+    print(buffer, count);
+
+}
+
 static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -284,6 +297,8 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
             break;
 
         case '\f':
+            clear();
+
             break;
 
         case '\t':

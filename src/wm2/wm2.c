@@ -449,14 +449,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
             setfocuswidget(clickedwidget);
 
         if (clickedwidget)
-        {
-
-            struct event_wmclick wmclick;
-
-            cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(clickedwidget->id), 0));
-            channel_sendbufferto(clickedwidget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
-
-        }
+            widget_onclick(clickedwidget);
 
         break;
 
@@ -647,7 +640,7 @@ static void setupwidgets(void)
 {
 
     char *data =
-        "+ container id \"root\" layout \"float\"\n"
+        "+ layout id \"root\" type \"float\"\n"
         "+ fill in \"root\" color \"FF202020\"\n"
         "+ image id \"mouse\" in \"root\" type \"image/fudge-icon-mouse\"\n";
 

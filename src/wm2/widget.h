@@ -8,7 +8,7 @@
 #define WIDGET_TYPE_GRID                        3
 #define WIDGET_TYPE_IMAGE                       4
 #define WIDGET_TYPE_CHOICE                      5
-#define WIDGET_TYPE_CONTAINER                   6
+#define WIDGET_TYPE_LAYOUT                      6
 #define WIDGET_TYPE_SELECT                      7
 #define WIDGET_TYPE_TEXT                        8
 #define WIDGET_TYPE_TEXTBOX                     9
@@ -27,26 +27,25 @@
 #define WIDGET_ATTR_ID                          5
 #define WIDGET_ATTR_IN                          6
 #define WIDGET_ATTR_LABEL                       7
-#define WIDGET_ATTR_LAYOUT                      8
-#define WIDGET_ATTR_MODE                        9
-#define WIDGET_ATTR_PADDING                     10
-#define WIDGET_ATTR_PLACEMENT                   11
-#define WIDGET_ATTR_SOURCE                      12
-#define WIDGET_ATTR_TITLE                       13
-#define WIDGET_ATTR_TYPE                        14
-#define WIDGET_ATTR_WEIGHT                      15
-#define WIDGET_ATTR_VALIGN                      16
-#define WIDGET_ATTR_WRAP                        17
-#define CONTAINER_LAYOUT_FLOAT                  0
-#define CONTAINER_LAYOUT_HORIZONTAL             1
-#define CONTAINER_LAYOUT_MAXIMIZE               2
-#define CONTAINER_LAYOUT_VERTICAL               3
-#define CONTAINER_PLACEMENT_NORMAL              0
-#define CONTAINER_PLACEMENT_STRETCHED           1
+#define WIDGET_ATTR_MODE                        8
+#define WIDGET_ATTR_PADDING                     9
+#define WIDGET_ATTR_PLACEMENT                   10
+#define WIDGET_ATTR_SOURCE                      11
+#define WIDGET_ATTR_TITLE                       12
+#define WIDGET_ATTR_TYPE                        13
+#define WIDGET_ATTR_WEIGHT                      14
+#define WIDGET_ATTR_VALIGN                      15
+#define WIDGET_ATTR_WRAP                        16
 #define GRID_PLACEMENT_NORMAL                   0
 #define GRID_PLACEMENT_STRETCHED                1
 #define IMAGE_TYPE_FUDGEMOUSE                   1
 #define IMAGE_TYPE_PCX                          2
+#define LAYOUT_TYPE_FLOAT                       0
+#define LAYOUT_TYPE_HORIZONTAL                  1
+#define LAYOUT_TYPE_MAXIMIZE                    2
+#define LAYOUT_TYPE_VERTICAL                    3
+#define LAYOUT_PLACEMENT_NORMAL                 0
+#define LAYOUT_PLACEMENT_STRETCHED              1
 #define TEXTBOX_MODE_NORMAL                     0
 #define TEXTBOX_MODE_READONLY                   1
 
@@ -96,10 +95,10 @@ struct widget_choice
 
 };
 
-struct widget_container
+struct widget_layout
 {
 
-    unsigned int layout;
+    unsigned int type;
     unsigned int placement;
     unsigned int padding;
 
@@ -194,6 +193,7 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state);
 unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);
+void widget_onclick(struct widget *widget);
 void widget_initposition(struct widget_position *position, int x, int y);
 void widget_initsize(struct widget_size *size, int w, int h);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data);

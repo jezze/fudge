@@ -106,17 +106,17 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Filesystem Explorer\"\n"
-        "+ container id \"base\" in \"window\" layout \"vertical\"\n"
-        "+ container id \"top\" in \"base\" layout \"horizontal\"\n"
-        "+ container id \"top1\" in \"top\" layout \"vertical\" padding \"8\"\n"
+        "+ layout id \"base\" in \"window\" type \"vertical\"\n"
+        "+ layout id \"top\" in \"base\" type \"horizontal\"\n"
+        "+ layout id \"top1\" in \"top\" type \"vertical\" padding \"8\"\n"
         "+ select id \"drive\" in \"top1\" label \"Drives\"\n"
-        "+ container id \"drivelist\" in \"drive\" layout \"vertical\" placement \"stretched\"\n"
+        "+ layout id \"drivelist\" in \"drive\" type \"vertical\" placement \"stretched\"\n"
         "+ choice id \"initrd\" in \"drivelist\" label \"initrd:\"\n"
         "+ choice id \"system\" in \"drivelist\" label \"system:\"\n"
-        "+ container id \"top2\" in \"top\" layout \"vertical\" padding \"8\" placement \"stretched\"\n"
+        "+ layout id \"top2\" in \"top\" type \"vertical\" padding \"8\" placement \"stretched\"\n"
         "+ textbox id \"pathbox\" in \"top2\"\n"
         "+ text id \"path\" in \"pathbox\"\n"
-        "+ container id \"main\" in \"base\" layout \"maximize\" padding \"8\"\n"
+        "+ layout id \"main\" in \"base\" type \"maximize\" padding \"8\"\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
     file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);

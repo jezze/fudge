@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <abi.h>
 #include "config.h"
 #include "util.h"
 #include "text.h"
@@ -29,7 +30,7 @@ static struct token types[] =
     {WIDGET_TYPE_GRID, "grid"},
     {WIDGET_TYPE_IMAGE, "image"},
     {WIDGET_TYPE_CHOICE, "choice"},
-    {WIDGET_TYPE_CONTAINER, "container"},
+    {WIDGET_TYPE_LAYOUT, "layout"},
     {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_TEXT, "text"},
     {WIDGET_TYPE_TEXTBOX, "textbox"},
@@ -46,7 +47,6 @@ static struct token attributes[] =
     {WIDGET_ATTR_ID, "id"},
     {WIDGET_ATTR_IN, "in"},
     {WIDGET_ATTR_LABEL, "label"},
-    {WIDGET_ATTR_LAYOUT, "layout"},
     {WIDGET_ATTR_MODE, "mode"},
     {WIDGET_ATTR_PADDING, "padding"},
     {WIDGET_ATTR_PLACEMENT, "placement"},
@@ -58,18 +58,18 @@ static struct token attributes[] =
     {WIDGET_ATTR_WRAP, "wrap"}
 };
 
-static struct token containerlayouts[] =
+static struct token layouttypes[] =
 {
-    {CONTAINER_LAYOUT_FLOAT, "float"},
-    {CONTAINER_LAYOUT_MAXIMIZE, "maximize"},
-    {CONTAINER_LAYOUT_HORIZONTAL, "horizontal"},
-    {CONTAINER_LAYOUT_VERTICAL, "vertical"}
+    {LAYOUT_TYPE_FLOAT, "float"},
+    {LAYOUT_TYPE_MAXIMIZE, "maximize"},
+    {LAYOUT_TYPE_HORIZONTAL, "horizontal"},
+    {LAYOUT_TYPE_VERTICAL, "vertical"}
 };
 
-static struct token containerplacements[] =
+static struct token layoutplacements[] =
 {
-    {CONTAINER_PLACEMENT_NORMAL, "normal"},
-    {CONTAINER_PLACEMENT_STRETCHED, "stretched"}
+    {LAYOUT_PLACEMENT_NORMAL, "normal"},
+    {LAYOUT_PLACEMENT_STRETCHED, "stretched"}
 };
 
 static struct token gridplacements[] =
@@ -174,26 +174,26 @@ static void setattributechoice(struct widget *widget, unsigned int attribute, ch
 
 }
 
-static void setattributecontainer(struct widget *widget, unsigned int attribute, char *value)
+static void setattributelayout(struct widget *widget, unsigned int attribute, char *value)
 {
 
-    struct widget_container *container = widget->data;
+    struct widget_layout *layout = widget->data;
 
     switch (attribute)
     {
 
-    case WIDGET_ATTR_LAYOUT:
-        container->layout = getkey(containerlayouts, 4, value);
+    case WIDGET_ATTR_TYPE:
+        layout->type = getkey(layouttypes, 4, value);
 
         break;
 
     case WIDGET_ATTR_PADDING:
-        container->padding = cstring_readvalue(value, cstring_length(value), 10);
+        layout->padding = cstring_readvalue(value, cstring_length(value), 10);
 
         break;
 
     case WIDGET_ATTR_PLACEMENT:
-        container->placement = getkey(containerplacements, 2, value);
+        layout->placement = getkey(layoutplacements, 2, value);
 
         break;
 
@@ -408,8 +408,8 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case WIDGET_TYPE_CONTAINER:
-        setattributecontainer(widget, attribute, value);
+    case WIDGET_TYPE_LAYOUT:
+        setattributelayout(widget, attribute, value);
 
         break;
 
@@ -508,7 +508,7 @@ void widget_unsetattributes(struct widget *widget)
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 17, value);
+    return getkey(attributes, 16, value);
 
 }
 
@@ -719,18 +719,39 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
 
 }
 
+unsigned int widget_intersects(struct widget *widget, int x, int y)
+{
+
+    return widget_intersectsx(widget, x) && widget_intersectsy(widget, y);
+
+}
+
+void widget_onclick(struct widget *widget)
+{
+
+    struct event_wmclick wmclick;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
+    case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_TEXTBUTTON:
+        cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
+        channel_sendbufferto(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+
+        break;
+
+    }
+
+}
+
 void widget_initposition(struct widget_position *position, int x, int y)
 {
 
     position->x = x;
     position->y = y;
-
-}
-
-unsigned int widget_intersects(struct widget *widget, int x, int y)
-{
-
-    return widget_intersectsx(widget, x) && widget_intersectsy(widget, y);
 
 }
 
