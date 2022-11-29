@@ -489,11 +489,10 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
     render_damage(&displaydamage, 0, 0, videomode->w, videomode->h);
+    pool_loadfont(factor);
 
     state.mouseposition.x = videomode->w / 4;
     state.mouseposition.y = videomode->h / 4;
-
-    pool_loadfont(factor);
 
     switch (factor)
     {
