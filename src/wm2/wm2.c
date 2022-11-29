@@ -304,19 +304,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
     {
 
         if (state.focusedwidget)
-        {
-
-            struct event_wmkeypress2 wmkeypress;
-
-            wmkeypress.scancode = keypress->scancode;
-            wmkeypress.unicode = keycode->value[0];
-            wmkeypress.length = keycode->length;
-            wmkeypress.keymod = state.keymod;
-
-            cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(state.focusedwidget->id), 0));
-            channel_sendbufferto(state.focusedwidget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
-
-        }
+            widget_onkeypress(state.focusedwidget, keypress->scancode, keycode->value[0], keycode->length, state.keymod);
 
     }
 

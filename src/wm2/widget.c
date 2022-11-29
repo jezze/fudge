@@ -747,6 +747,29 @@ void widget_onclick(struct widget *widget)
 
 }
 
+void widget_onkeypress(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod)
+{
+
+    struct event_wmkeypress2 wmkeypress;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_TEXTBOX:
+        wmkeypress.scancode = scancode;
+        wmkeypress.unicode = unicode;
+        wmkeypress.length = length;
+        wmkeypress.keymod = keymod;
+
+        cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(widget->id), 0));
+        channel_sendbufferto(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
+
+        break;
+
+    }
+
+}
+
 void widget_initposition(struct widget_position *position, int x, int y)
 {
 

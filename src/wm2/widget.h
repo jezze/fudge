@@ -194,6 +194,7 @@ unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);
 void widget_onclick(struct widget *widget);
+void widget_onkeypress(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod);
 void widget_initposition(struct widget_position *position, int x, int y);
 void widget_initsize(struct widget_size *size, int w, int h);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data);
