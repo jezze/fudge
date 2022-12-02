@@ -36,7 +36,7 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_button *button = widget->data;
-    struct widget_cache *cache = &button->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
     int ry = text_getrowy(&cache->payload.textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
@@ -70,7 +70,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_choice *choice = widget->data;
-    struct widget_cache *cache = &choice->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
     int ry = text_getrowy(&cache->payload.textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
@@ -174,7 +174,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_select *select = widget->data;
-    struct widget_cache *cache = &select->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
     int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_CENTER, widget->position.x + extra, widget->size.w - extra);
@@ -214,7 +214,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct widget_text *text = widget->data;
-    struct widget_cache *cache = &text->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont((text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
     unsigned int rownum = (line - widget->position.y) / font->lineheight;
     static unsigned int cmapnormal[1] = {
@@ -303,7 +303,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 {
 
     struct widget_textbutton *textbutton = widget->data;
-    struct widget_cache *cache = &textbutton->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     int rx = text_getrowx(&cache->payload.textrow.info, TEXT_HALIGN_LEFT, widget->position.x, widget->size.w);
     int ry = text_getrowy(&cache->payload.textrow.info, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);

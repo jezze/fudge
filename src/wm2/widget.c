@@ -725,6 +725,21 @@ unsigned int widget_intersects(struct widget *widget, int x, int y)
 
 }
 
+unsigned int widget_isdragable(struct widget *widget)
+{
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_WINDOW:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int widget_isinteractive(struct widget *widget)
 {
 

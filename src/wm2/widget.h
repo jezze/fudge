@@ -65,50 +65,10 @@ struct widget_size
 
 };
 
-struct widget
-{
-
-    unsigned int source;
-    unsigned int type;
-    unsigned int state;
-    unsigned int id;
-    unsigned int in;
-    void *data;
-    struct widget_position position;
-    struct widget_size size;
-
-};
-
-struct widget_cache
-{
-
-    unsigned int exist;
-    union
-    {
-
-        struct
-        {
-
-            unsigned int num;
-            unsigned int start;
-            unsigned int length;
-            struct text_rowinfo info;
-
-        } textrow;
-        struct
-        {
-            struct widget_size size;
-        } image;
-
-    } payload;
-
-};
-
 struct widget_button
 {
 
     unsigned int label;
-    struct widget_cache cache;
 
 };
 
@@ -116,7 +76,6 @@ struct widget_choice
 {
 
     unsigned int label;
-    struct widget_cache cache;
 
 };
 
@@ -150,7 +109,6 @@ struct widget_image
 
     unsigned int type;
     unsigned int source;
-    struct widget_cache cache;
 
 };
 
@@ -158,7 +116,6 @@ struct widget_select
 {
 
     unsigned int label;
-    struct widget_cache cache;
 
 };
 
@@ -173,7 +130,6 @@ struct widget_text
     unsigned int wrap;
     unsigned int firstrowx;
     struct text_info textinfo;
-    struct widget_cache cache;
 
 };
 
@@ -189,7 +145,6 @@ struct widget_textbutton
 {
 
     unsigned int label;
-    struct widget_cache cache;
 
 };
 
@@ -197,6 +152,46 @@ struct widget_window
 {
 
     unsigned int title;
+
+};
+
+struct widget_cache
+{
+
+    unsigned int exist;
+    union
+    {
+
+        struct
+        {
+
+            unsigned int num;
+            unsigned int start;
+            unsigned int length;
+            struct text_rowinfo info;
+
+        } textrow;
+        struct
+        {
+            struct widget_size size;
+        } image;
+
+    } payload;
+
+};
+
+struct widget
+{
+
+    unsigned int source;
+    unsigned int type;
+    unsigned int state;
+    unsigned int id;
+    unsigned int in;
+    void *data;
+    struct widget_position position;
+    struct widget_size size;
+    struct widget_cache cache;
 
 };
 
@@ -209,6 +204,7 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state);
 unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);
+unsigned int widget_isdragable(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
 void widget_initposition(struct widget_position *position, int x, int y);
 void widget_initsize(struct widget_size *size, int w, int h);

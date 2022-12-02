@@ -268,12 +268,11 @@ static void clickwidget(struct widget *widget)
 static void dragwidget(struct widget *widget)
 {
 
-    unsigned int valid = 0;
-
-    switch (widget->type)
+    if (widget_isdragable(widget))
     {
 
-    case WIDGET_TYPE_WINDOW:
+        unsigned int valid = 0;
+
 /*
         if (state.keymod & KEYMOD_ALT)
             valid = 1;
@@ -313,8 +312,6 @@ static void dragwidget(struct widget *widget)
 
         }
 
-        break;
-
     }
 
 }
@@ -322,12 +319,11 @@ static void dragwidget(struct widget *widget)
 static void keypresswidget(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod)
 {
 
-    struct event_wmkeypress2 wmkeypress;
-
-    switch (widget->type)
+    if (widget_isinteractive(widget))
     {
 
-    case WIDGET_TYPE_TEXTBOX:
+        struct event_wmkeypress2 wmkeypress;
+
         wmkeypress.scancode = scancode;
         wmkeypress.unicode = unicode;
         wmkeypress.length = length;
@@ -335,8 +331,6 @@ static void keypresswidget(struct widget *widget, unsigned char scancode, unsign
 
         cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(widget->id), 0));
         channel_sendbufferto(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
-
-        break;
 
     }
 

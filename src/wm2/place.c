@@ -41,7 +41,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_button *button = widget->data;
-    struct widget_cache *cache = &button->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     struct widget_size total;
 
@@ -55,7 +55,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_choice *choice = widget->data;
-    struct widget_cache *cache = &choice->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct widget_size total;
 
@@ -252,7 +252,7 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
 {
 
     struct widget_image *image = widget->data;
-    struct widget_cache *cache = &image->cache;
+    struct widget_cache *cache = &widget->cache;
 
     if (!cache->exist)
     {
@@ -299,7 +299,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_select *select = widget->data;
-    struct widget_cache *cache = &select->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     unsigned int extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
     struct widget_size total;
@@ -354,7 +354,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 {
 
     struct widget_text *text = widget->data;
-    struct widget_cache *cache = &text->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont((text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
 
     cache->exist = 0;
@@ -435,7 +435,7 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
 {
 
     struct widget_textbutton *textbutton = widget->data;
-    struct widget_cache *cache = &textbutton->cache;
+    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct widget_size total;
 
