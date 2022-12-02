@@ -89,13 +89,8 @@ static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
  
         struct widget *child = current->data;
 
-        if (!type || child->type == type)
-        {
-
-            if (widget_intersects(child, x, y))
-                last = child;
-
-        }
+        if (child->type == type && widget_intersects(child, x, y))
+            last = child;
 
     }
 
