@@ -153,8 +153,6 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
     unsigned int x;
     unsigned int y;
 
-    file_walk(FILE_L0, FILE_G0, "data");
-
     for (y = 0; y < settings->height; y++)
     {
 
@@ -207,7 +205,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
         }
 
-        file_seekwriteall(FILE_L0, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
+        file_seekwriteall(FILE_G2, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
 
     }
 
@@ -216,10 +214,18 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_walk(FILE_L0, FILE_G0, "ctrl");
-    file_seekreadall(FILE_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
-    file_seekwriteall(FILE_L0, &newsettings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(FILE_L0, &newsettings, sizeof (struct ctrl_videosettings), 0);
+    if (!file_walk2(FILE_L0, option_getstring("video")))
+        channel_error("Could not find video device");
+
+    if (!file_walk(FILE_G1, FILE_L0, "ctrl"))
+        channel_error("Could not find video device ctrl");
+
+    if (!file_walk(FILE_G2, FILE_L0, "data"))
+        channel_error("Could not find video device data");
+
+    file_seekreadall(FILE_G1, &oldsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(FILE_G1, &newsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(FILE_G1, &newsettings, sizeof (struct ctrl_videosettings), 0);
 
     if (newsettings.bpp == 1)
     {
@@ -236,7 +242,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        file_walk(FILE_L1, FILE_G0, "colormap");
+        if (!file_walk(FILE_L1, FILE_L0, "colormap"))
+            channel_error("Could not find video device colormap");
+
         file_seekwriteall(FILE_L1, colormap, 768, 0);
 
     }
@@ -248,8 +256,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_walk(FILE_L0, FILE_G0, "ctrl");
-    file_seekwriteall(FILE_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(FILE_G1, &oldsettings, sizeof (struct ctrl_videosettings), 0);
     channel_close();
 
 }
@@ -261,7 +268,7 @@ void init(void)
     newsettings.height = 480;
     newsettings.bpp = 4;
 
-    file_walk2(FILE_G0, "system:video/if:0");
+    option_add("video", "system:video/if:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
 

@@ -8,7 +8,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct message message;
 
-    file_link(FILE_G0);
+    if (!file_walk2(FILE_L0, option_getstring("timer")))
+        channel_error("Could not find timer device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "event100"))
+        channel_error("Could not find timer device event100");
+
+    file_link(FILE_L1);
 
     while (channel_kpollevent(EVENT_TIMERTICK, &message))
     {
@@ -23,7 +29,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_G0);
+    file_unlink(FILE_L1);
     channel_close();
 
 }
@@ -31,7 +37,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:timer/if:0/event100");
+    option_add("timer", "system:timer/if:0");
     channel_bind(EVENT_MAIN, onmain);
 
 }
