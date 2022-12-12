@@ -9,6 +9,7 @@ static struct ring input;
 static struct job_worker workers[JOBSIZE];
 static struct job job;
 static unsigned int keymod = KEYMOD_NONE;
+static unsigned int escaped;
 
 static void print(void *buffer, unsigned int count)
 {
@@ -290,44 +291,86 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        switch (consoledata->data)
+        switch (escaped)
         {
 
-        case '\0':
-            break;
-
-        case '\f':
-            clear();
+        case 1:
+            escaped = (consoledata->data == '[') ? 2 : 0;
 
             break;
 
-        case '\t':
-            complete();
+        case 2:
+            if (consoledata->data >= 0x20 && consoledata->data <= 0x2F)
+            {
 
-            break;
+                /* intermediate bytes */
 
-        case '\b':
-        case 0x7F:
-            if (!ring_skipreverse(&input, 1))
-                break;
+            }
 
-            print("\b \b", 3);
+            if (consoledata->data >= 0x30 && consoledata->data <= 0x3F)
+            {
 
-            break;
+                /* parameter bytes */
 
-        case '\r':
-            consoledata->data = '\n';
+            }
 
-        case '\n':
-            print(&consoledata->data, 1);
-            ring_write(&input, &consoledata->data, 1);
-            interpret();
+            if (consoledata->data >= 0x40 && consoledata->data <= 0x7E)
+            {
+
+                escaped = 0;
+
+            }
 
             break;
 
         default:
-            ring_write(&input, &consoledata->data, 1);
-            print(&consoledata->data, 1);
+            switch (consoledata->data)
+            {
+
+            case '\0':
+                break;
+
+            case 0x1B:
+                escaped = 1;
+
+                break;
+
+            case '\f':
+                clear();
+
+                break;
+
+            case '\t':
+                complete();
+
+                break;
+
+            case '\b':
+            case 0x7F:
+                if (!ring_skipreverse(&input, 1))
+                    break;
+
+                print("\b \b", 3);
+
+                break;
+
+            case '\r':
+                consoledata->data = '\n';
+
+            case '\n':
+                print(&consoledata->data, 1);
+                ring_write(&input, &consoledata->data, 1);
+                interpret();
+
+                break;
+
+            default:
+                ring_write(&input, &consoledata->data, 1);
+                print(&consoledata->data, 1);
+
+                break;
+
+            }
 
             break;
 
