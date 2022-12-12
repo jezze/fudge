@@ -224,6 +224,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find video device data");
 
     file_seekreadall(FILE_G1, &oldsettings, sizeof (struct ctrl_videosettings), 0);
+
+    newsettings.width = option_getdecimal("width");
+    newsettings.height = option_getdecimal("height");
+    newsettings.bpp = option_getdecimal("bpp");
+
     file_seekwriteall(FILE_G1, &newsettings, sizeof (struct ctrl_videosettings), 0);
     file_seekreadall(FILE_G1, &newsettings, sizeof (struct ctrl_videosettings), 0);
 
@@ -264,10 +269,9 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    newsettings.width = 640;
-    newsettings.height = 480;
-    newsettings.bpp = 4;
-
+    option_add("width", "640");
+    option_add("height", "480");
+    option_add("bpp", "4");
     option_add("video", "system:video/if:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
