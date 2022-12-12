@@ -6,36 +6,154 @@
 #define fpabs(_a)                       ((_a < 0) ? -_a : _a)
 #define mulfp(_a)                       (((_a) * (_a)) >> fpshift)
 
-static void setup(struct ctrl_videosettings *settings)
+static struct ctrl_videosettings oldsettings;
+static struct ctrl_videosettings newsettings;
+
+struct rgb
 {
 
-    unsigned char colormap[768];
-    unsigned int i;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
 
-    for (i = 0; i < 768; i += 3)
+};
+
+struct hsv
+{
+
+    unsigned char h;
+    unsigned char s;
+    unsigned char v;
+
+};
+
+struct rgb hsv2rgb(struct hsv hsv)
+{
+
+    struct rgb rgb;
+    unsigned char region;
+    unsigned char remainder;
+    unsigned char p, q, t;
+
+    if (hsv.s == 0)
     {
 
-        colormap[i + 0] = i;
-        colormap[i + 1] = i;
-        colormap[i + 2] = i;
+        rgb.r = hsv.v;
+        rgb.g = hsv.v;
+        rgb.b = hsv.v;
+
+        return rgb;
+
+    }
+    
+    region = hsv.h / 43;
+    remainder = (hsv.h - (region * 43)) * 6; 
+    p = (hsv.v * (255 - hsv.s)) >> 8;
+    q = (hsv.v * (255 - ((hsv.s * remainder) >> 8))) >> 8;
+    t = (hsv.v * (255 - ((hsv.s * (255 - remainder)) >> 8))) >> 8;
+    
+    switch (region)
+    {
+
+        case 0:
+            rgb.r = hsv.v;
+            rgb.g = t;
+            rgb.b = p;
+
+            break;
+
+        case 1:
+            rgb.r = q;
+            rgb.g = hsv.v;
+            rgb.b = p;
+
+            break;
+
+        case 2:
+            rgb.r = p;
+            rgb.g = hsv.v;
+            rgb.b = t;
+
+            break;
+
+        case 3:
+            rgb.r = p;
+            rgb.g = q;
+            rgb.b = hsv.v;
+
+            break;
+
+        case 4:
+            rgb.r = t;
+            rgb.g = p;
+            rgb.b = hsv.v;
+
+            break;
+
+        default:
+            rgb.r = hsv.v;
+            rgb.g = p;
+            rgb.b = q;
+
+            break;
+
+    }
+    
+    return rgb;
+
+}
+
+struct hsv rgb2hsv(struct rgb rgb)
+{
+
+    unsigned char rgbmin = rgb.r < rgb.g ? (rgb.r < rgb.b ? rgb.r : rgb.b) : (rgb.g < rgb.b ? rgb.g : rgb.b);
+    unsigned char rgbmax = rgb.r > rgb.g ? (rgb.r > rgb.b ? rgb.r : rgb.b) : (rgb.g > rgb.b ? rgb.g : rgb.b);
+    struct hsv hsv;
+    
+    hsv.v = rgbmax;
+
+    if (hsv.v == 0)
+    {
+
+        hsv.h = 0;
+        hsv.s = 0;
+
+        return hsv;
 
     }
 
-    file_walk(FILE_L1, FILE_L0, "colormap");
-    file_seekwriteall(FILE_L1, colormap, 768, 0);
+    hsv.s = 255 * (rgbmax - rgbmin) / hsv.v;
+
+    if (hsv.s == 0)
+    {
+
+        hsv.h = 0;
+
+        return hsv;
+
+    }
+
+    if (rgbmax == rgb.r)
+        hsv.h = 0 + 43 * (rgb.g - rgb.b) / (rgbmax - rgbmin);
+    else if (rgbmax == rgb.g)
+        hsv.h = 85 + 43 * (rgb.b - rgb.r) / (rgbmax - rgbmin);
+    else
+        hsv.h = 171 + 43 * (rgb.r - rgb.g) / (rgbmax - rgbmin);
+
+    return hsv;
 
 }
 
 static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
 
-    char buffer[4096];
+    char buffer[7680];
     int xs = (x2 - x1) / settings->width;
     int ys = (y2 - y1) / settings->height;
     unsigned int x;
     unsigned int y;
 
-    file_walk(FILE_L1, FILE_L0, "data");
+    file_walk(FILE_L0, FILE_G0, "data");
 
     for (y = 0; y < settings->height; y++)
     {
@@ -60,11 +178,36 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
             }
 
-            buffer[x] = c % 16;
+            if (settings->bpp == 4)
+            {
+
+                unsigned char *p = (unsigned char *)(buffer + x * 4);
+                struct hsv hsv;
+                struct rgb rgb;
+
+                hsv.h = (255 * c) / 64;
+                hsv.s = 255;
+                hsv.v = (c < 64) ? 255 : 0;
+
+                rgb = hsv2rgb(hsv);
+
+                p[0] = rgb.b;
+                p[1] = rgb.g;
+                p[2] = rgb.r;
+                p[3] = 255;
+
+            }
+
+            else
+            {
+
+                buffer[x] = c % 16;
+
+            }
 
         }
 
-        file_seekwriteall(FILE_L1, buffer, settings->width, settings->width * y);
+        file_seekwriteall(FILE_L0, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
 
     }
 
@@ -73,18 +216,40 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct ctrl_videosettings settings;
+    file_walk(FILE_L0, FILE_G0, "ctrl");
+    file_seekreadall(FILE_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(FILE_L0, &newsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(FILE_L0, &newsettings, sizeof (struct ctrl_videosettings), 0);
 
-    settings.width = 320;
-    settings.height = 200;
-    settings.bpp = 1;
+    if (newsettings.bpp == 1)
+    {
 
-    file_walk2(FILE_L0, "system:video/if:0");
-    file_walk(FILE_L1, FILE_L0, "ctrl");
-    file_seekwriteall(FILE_L1, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(FILE_L1, &settings, sizeof (struct ctrl_videosettings), 0);
-    setup(&settings);
-    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+        unsigned char colormap[768];
+        unsigned int i;
+
+        for (i = 0; i < 768; i += 3)
+        {
+
+            colormap[i + 0] = i;
+            colormap[i + 1] = i;
+            colormap[i + 2] = i;
+
+        }
+
+        file_walk(FILE_L1, FILE_G0, "colormap");
+        file_seekwriteall(FILE_L1, colormap, 768, 0);
+
+    }
+
+    draw(&newsettings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+
+}
+
+static void onterm(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    file_walk(FILE_L0, FILE_G0, "ctrl");
+    file_seekwriteall(FILE_L0, &oldsettings, sizeof (struct ctrl_videosettings), 0);
     channel_close();
 
 }
@@ -92,7 +257,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    newsettings.width = 640;
+    newsettings.height = 480;
+    newsettings.bpp = 4;
+
+    file_walk2(FILE_G0, "system:video/if:0");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_TERM, onterm);
 
 }
 
