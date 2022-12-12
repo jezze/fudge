@@ -26,6 +26,7 @@ static void memset(char *buffer, int value, unsigned int length)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char sequence[2] = {0x1B, 'c'};
     int sA = 1024;
     int cA = 0;
     int sB = 1024;
@@ -90,6 +91,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         R(5, 7, cA, sA)
         R(5, 8, cB, sB)
+
+        channel_sendbuffer(EVENT_DATA, 2, sequence);
 
         for (k = 0; k < 1760; k += 80)
         {
