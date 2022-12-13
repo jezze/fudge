@@ -147,7 +147,7 @@ struct hsv rgb2hsv(struct rgb rgb)
 static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
 
-    char buffer[7680];
+    unsigned char buffer[7680];
     int xs = (x2 - x1) / settings->width;
     int ys = (y2 - y1) / settings->height;
     unsigned int x;
@@ -161,16 +161,23 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
         for (x = 0; x < settings->width; x++)
         {
 
+            unsigned int c;
             int xx = x1 + x * xs;
-            unsigned char c;
             int r = 0;
             int i = 0;
 
-            for (c = 0; (c < iterations) && (fpabs(r) < tofp(2)) && (fpabs(i) < tofp(2)); c++)
+            for (c = 0; c < iterations; c++)
             {
 
-                int t = mulfp(r) - mulfp(i) + xx;
+                int t;
 
+                if (fpabs(r) > tofp(2))
+                    break;
+
+                if (fpabs(i) > tofp(2))
+                    break;
+
+                t = mulfp(r) - mulfp(i) + xx;
                 i = ((r * i) >> (fpshift - 1)) + yy;
                 r = t;
 
@@ -179,16 +186,14 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
             if (settings->bpp == 4)
             {
 
-                unsigned char *p = (unsigned char *)(buffer + x * 4);
+                unsigned char *p = buffer + x * 4;
                 struct hsv hsv;
                 struct rgb rgb;
 
                 hsv.h = (255 * c) / 64;
                 hsv.s = 255;
                 hsv.v = (c < 64) ? 255 : 0;
-
                 rgb = hsv2rgb(hsv);
-
                 p[0] = rgb.b;
                 p[1] = rgb.g;
                 p[2] = rgb.r;
@@ -199,7 +204,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
             else
             {
 
-                buffer[x] = c % 16;
+                buffer[x] = (c < 64) ? (255 * c) / 64 : 0;
 
             }
 
@@ -238,12 +243,23 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         unsigned char colormap[768];
         unsigned int i;
 
-        for (i = 0; i < 768; i += 3)
+        colormap[0] = 0;
+        colormap[1] = 0;
+        colormap[2] = 0;
+
+        for (i = 3; i < 768; i += 3)
         {
 
-            colormap[i + 0] = i;
-            colormap[i + 1] = i;
-            colormap[i + 2] = i;
+            struct hsv hsv;
+            struct rgb rgb;
+
+            hsv.h = (64 * (i / 3)) / 256;
+            hsv.s = 255;
+            hsv.v = 255;
+            rgb = hsv2rgb(hsv);
+            colormap[i + 0] = rgb.r;
+            colormap[i + 1] = rgb.g;
+            colormap[i + 2] = rgb.b;
 
         }
 
