@@ -6,19 +6,27 @@
 
 .global vbe_getinfo
 vbe_getinfo:
+    mov eax, 0xC000
     pushad
     mov edx, VBE_CODE + (getinfo_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_getvideomode
 vbe_getvideomode:
+    mov eax, 0xD000
     pushad
+    mov eax, VBE_MODENUM
+    mov ebx, [esp + 32 + 4]
+    mov [eax], ebx
     mov edx, VBE_CODE + (getvideomode_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_setvideomode
 vbe_setvideomode:
     pushad
+    mov eax, VBE_MODENUM
+    mov ebx, [esp + 32 + 4]
+    mov [eax], ebx
     mov edx, VBE_CODE + (setvideomode_real - vbe_begin16)
     jmp switch_16
 

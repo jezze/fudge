@@ -74,54 +74,41 @@ static unsigned int framebuffer;
 static void run(unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    unsigned short *modenum = (unsigned short *)0x6000;
-    struct vbe_info *info = (struct vbe_info *)0xC000;
-    struct vbe_mode *mode = (struct vbe_mode *)0xD000;
+    struct vbe_info *info;
+    struct vbe_mode *mode;
+    unsigned short modenum = 0xFFFF;
     unsigned short *modes;
     unsigned int i;
 
-    debug_logs(DEBUG_INFO, "vbe loaded");
     buffer_copy((void *)0x9000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
 
+    /* Not used right now */
     vbe_getedid();
-    vbe_getinfo();
-    debug_logs(DEBUG_INFO, "vbe worked!");
-    debug_log16(DEBUG_INFO, "vbe version", info->version);
-    debug_log16(DEBUG_INFO, "vbe video segment", info->video_modes_segment);
-    debug_log16(DEBUG_INFO, "vbe video offset", info->video_modes_offset);
 
+    info = vbe_getinfo();
     modes = (unsigned short *)((info->video_modes_segment * 16) + info->video_modes_offset);
 
     for (i = 0; modes[i] != 0xFFFF; i++)
     {
 
-        *modenum = modes[i];
+        modenum = modes[i];
+        mode = vbe_getvideomode(modenum);
 
-        vbe_getvideomode();
+        if ((mode->attributes & 0x90) != 0x90)
+            continue;
+
+        if (mode->memory_model != 4 && mode->memory_model != 6)
+            continue;
 
         if (mode->width == w && mode->height == h && mode->bpp == bpp)
-        {
-
-            debug_log16(DEBUG_INFO, "vbe modenum", *modenum);
-            debug_log16(DEBUG_INFO, "vbe width", mode->width);
-            debug_log16(DEBUG_INFO, "vbe height", mode->height);
-            debug_log8(DEBUG_INFO, "vbe bpp", mode->bpp);
-            debug_log32(DEBUG_INFO, "vbe framebuffer", mode->framebuffer);
-            debug_log8(DEBUG_INFO, "vbe memory_model", mode->memory_model);
-
             break;
-
-        }
 
     }
 
-    if (*modenum != 0xFFFF)
+    if (modenum != 0xFFFF)
     {
 
-        /* Set mode */
-        *modenum |= 0x4000;
-
-        vbe_setvideomode();
+        vbe_setvideomode(modenum | 0x4000);
 
         if (mode->framebuffer)
         {
