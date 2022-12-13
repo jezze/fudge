@@ -70,23 +70,15 @@ struct vbe_mode
 static struct base_driver driver;
 static struct video_interface videointerface;
 static unsigned int framebuffer;
+static struct vbe_mode *mode;
 
-static void run(unsigned int w, unsigned int h, unsigned int bpp)
+static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    struct vbe_info *info;
-    struct vbe_mode *mode;
+    struct vbe_info *info = vbe_getinfo();
+    unsigned short *modes = (unsigned short *)((info->video_modes_segment * 16) + info->video_modes_offset);
     unsigned short modenum = 0xFFFF;
-    unsigned short *modes;
     unsigned int i;
-
-    buffer_copy((void *)0x9000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
-
-    /* Not used right now */
-    vbe_getedid();
-
-    info = vbe_getinfo();
-    modes = (unsigned short *)((info->video_modes_segment * 16) + info->video_modes_offset);
 
     for (i = 0; modes[i] != 0xFFFF; i++)
     {
@@ -104,6 +96,22 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
             break;
 
     }
+
+    return modenum;
+
+}
+
+static void run(unsigned int w, unsigned int h, unsigned int bpp)
+{
+
+    unsigned short modenum;
+
+    buffer_copy((void *)0x9000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
+
+    /* Not used right now */
+    vbe_getedid();
+
+    modenum = find(w, h, bpp);
 
     if (modenum != 0xFFFF)
     {
