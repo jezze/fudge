@@ -1,19 +1,22 @@
 .set VBE_MODENUM,                       0x6000
 .set VBE_STACK,                         0x7000
 .set VBE_CODE,                          0x9000
+.set VBE_INFO,                          0xC000
+.set VBE_MODE,                          0xD000
+.set VBE_EDID,                          0xE000
 
 .intel_syntax noprefix
 
 .global vbe_getinfo
 vbe_getinfo:
-    mov eax, 0xC000
+    mov eax, VBE_INFO
     pushad
     mov edx, VBE_CODE + (getinfo_real - vbe_begin16)
     jmp switch_16
 
 .global vbe_getvideomode
 vbe_getvideomode:
-    mov eax, 0xD000
+    mov eax, VBE_MODE
     pushad
     mov eax, VBE_MODENUM
     mov ebx, [esp + 32 + 4]
@@ -82,7 +85,7 @@ getinfo_real:
     xor bx, bx
     xor cx, cx
     xor dx, dx
-    mov di, 0xC000
+    mov di, VBE_INFO
     int 0x10
     jmp leave_real
 
@@ -98,7 +101,7 @@ getvideomode_real:
     xor bx, bx
     mov cx, [VBE_MODENUM]
     xor dx, dx
-    mov di, 0xD000
+    mov di, VBE_MODE
     int 0x10
     jmp leave_real
 
@@ -130,7 +133,7 @@ getedid_real:
     mov bx, 0x0001
     xor cx, cx
     xor dx, dx
-    mov di, 0xE000
+    mov di, VBE_EDID
     int 0x10
     jmp leave_real
 
