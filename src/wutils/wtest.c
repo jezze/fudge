@@ -4,17 +4,20 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, "system:service/wm"))
+    if (!file_walk2(FILE_L0, "system:service/wm"))
         channel_warning("Could not open window manager service");
 
-    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
+    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
+    if (!file_walk2(FILE_L0, "system:service/wm"))
+        channel_warning("Could not open window manager service");
+
+    file_notify(FILE_L0, EVENT_WMUNMAP, 0, 0);
     channel_close();
 
 }
@@ -29,7 +32,7 @@ static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 
         char *data0 = "= text1 content \"Button 0 clicked\"\n";
 
-        file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data0), data0);
+        channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data0), data0);
 
     }
 
@@ -38,7 +41,8 @@ static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 
         char *data1 = "= text1 content \"Button 1 clicked\"\n";
 
-        file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data1), data1);
+        channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data1), data1);
+
     }
 
     else
@@ -46,7 +50,7 @@ static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 
         char *data2 = "= text1 content \"No button clicked\"\n";
 
-        file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data2), data2);
+        channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data2), data2);
 
     }
 
@@ -69,7 +73,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ button id \"button1\" in \"base\" label \"Click Me Too\"\n"
         "+ image in \"base\" type \"image/pcx\" source \"initrd:data/mi.pcx\"\n";
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
+    channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data), data);
 
 }
 

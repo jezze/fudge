@@ -25,7 +25,7 @@ static void update(void)
     count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
     count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+    channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
 
     count = 0;
     count += cstring_write(buffer, BUFFER_SIZE, "= input1 content \"", count);
@@ -35,7 +35,7 @@ static void update(void)
     count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
     count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+    channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
 
 }
 
@@ -322,17 +322,20 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, "system:service/wm"))
+    if (!file_walk2(FILE_L0, "system:service/wm"))
         channel_warning("Could not open window manager service");
 
-    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
+    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
+    if (!file_walk2(FILE_L0, "system:service/wm"))
+        channel_warning("Could not open window manager service");
+
+    file_notify(FILE_L0, EVENT_WMUNMAP, 0, 0);
     channel_close();
 
 }
@@ -350,7 +353,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ text id \"cursor\" in \"output\" wrap \"char\" mode \"inverted\" content \" \"\n"
         "+ text id \"input2\" in \"output\" wrap \"char\"\n";
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
+    channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data), data);
 
 }
 

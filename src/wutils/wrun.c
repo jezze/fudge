@@ -25,7 +25,7 @@ static void handlehttppacket(void)
         {
 
             channel_sendbuffer(EVENT_DATA, count, buffer);
-            file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+            channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
 
         }
 
@@ -134,17 +134,20 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, "system:service/wm"))
+    if (!file_walk2(FILE_L0, "system:service/wm"))
         channel_warning("Could not open window manager service");
 
-    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
+    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
+    if (!file_walk2(FILE_L0, "system:service/wm"))
+        channel_warning("Could not open window manager service");
+
+    file_notify(FILE_L0, EVENT_WMUNMAP, 0, 0);
     channel_close();
 
 }
@@ -167,7 +170,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_L1, FILE_L0, "addr"))
         channel_error("Could not find ethernet device addr");
 
-    if (!file_walk(FILE_G1, FILE_L0, "data"))
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
         channel_error("Could not find ethernet device data");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
@@ -187,12 +190,12 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     count = buildrequest(BUFFER_SIZE, buffer, &url);
 
-    file_link(FILE_G1);
-    socket_resolveremote(FILE_G1, &local, &router);
-    socket_connect_tcp(FILE_G1, &local, &remote, &router);
-    socket_send_tcp(FILE_G1, &local, &remote, &router, count, buffer);
+    file_link(FILE_G0);
+    socket_resolveremote(FILE_G0, &local, &router);
+    socket_connect_tcp(FILE_G0, &local, &remote, &router);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
 
-    while ((count = socket_receive(FILE_G1, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
     {
 
         if (ring_write(&input, buffer, count))
@@ -200,7 +203,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_G1);
+    file_unlink(FILE_G0);
 
 }
 

@@ -13,7 +13,7 @@ static void updatepath(void)
     count += cstring_write(buffer, BUFFER_SIZE, path, count);
     count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+    channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
 
 }
 
@@ -26,7 +26,7 @@ static void updatecontent(void)
         "- content\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
+    channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data), data);
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
@@ -52,7 +52,7 @@ static void updatecontent(void)
 
         }
 
-        file_notify(FILE_G0, EVENT_WMRENDERDATA, count, buffer);
+        channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
 
     }
 
@@ -61,17 +61,20 @@ static void updatecontent(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, "system:service/wm"))
+    if (!file_walk2(FILE_L0, "system:service/wm"))
         channel_warning("Could not open window manager service");
 
-    file_notify(FILE_G0, EVENT_WMMAP, 0, 0);
+    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_notify(FILE_G0, EVENT_WMUNMAP, 0, 0);
+    if (!file_walk2(FILE_L0, "system:service/wm"))
+        channel_warning("Could not open window manager service");
+
+    file_notify(FILE_L0, EVENT_WMUNMAP, 0, 0);
     channel_close();
 
 }
@@ -119,7 +122,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ layout id \"main\" in \"base\" type \"maximize\" padding \"8\"\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
-    file_notify(FILE_G0, EVENT_WMRENDERDATA, cstring_length(data), data);
+    channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data), data);
     updatepath();
     updatecontent();
 

@@ -597,6 +597,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_redirectback(source, EVENT_WMRENDERDATA);
     channel_sendto(source, EVENT_WMINIT);
 
 }
