@@ -243,11 +243,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         unsigned char colormap[768];
         unsigned int i;
 
-        colormap[0] = 0;
-        colormap[1] = 0;
-        colormap[2] = 0;
-
-        for (i = 3; i < 768; i += 3)
+        for (i = 0; i < 768; i += 3)
         {
 
             struct hsv hsv;
@@ -255,7 +251,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             hsv.h = (64 * (i / 3)) / 256;
             hsv.s = 255;
-            hsv.v = 255;
+            hsv.v = (i) ? 255 : 0;
             rgb = hsv2rgb(hsv);
             colormap[i + 0] = rgb.r;
             colormap[i + 1] = rgb.g;
