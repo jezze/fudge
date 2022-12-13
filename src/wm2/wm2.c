@@ -47,14 +47,17 @@ static void setupvideo(void)
 
     buffer_clear(black, 768);
 
-    if (!file_walk(FILE_L0, FILE_G3, "ctrl"))
+    if (!file_walk2(FILE_L0, option_getstring("video")))
+        channel_warning("Could not open video");
+
+    if (!file_walk(FILE_L1, FILE_L0, "colormap"))
         return;
 
-    if (!file_walk(FILE_L1, FILE_G3, "colormap"))
+    if (!file_walk(FILE_L2, FILE_L0, "ctrl"))
         return;
 
     file_seekwriteall(FILE_L1, black, 768, 0);
-    file_seekwriteall(FILE_L0, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(FILE_L2, &settings, sizeof (struct ctrl_videosettings), 0);
 
 }
 
@@ -409,22 +412,28 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk2(FILE_G0, option_getstring("wm")))
         channel_warning("Could not open window manager service");
 
-    if (!file_walk2(FILE_G1, option_getstring("keyboard")))
+    if (!file_walk2(FILE_L0, option_getstring("keyboard")))
         channel_warning("Could not open keyboard");
 
-    if (!file_walk2(FILE_G2, option_getstring("mouse")))
+    if (!file_walk(FILE_G1, FILE_L0, "event"))
+        channel_warning("Could not open keyboard event");
+
+    if (!file_walk2(FILE_L0, option_getstring("mouse")))
         channel_warning("Could not open mouse");
 
-    if (!file_walk2(FILE_G3, option_getstring("video")))
+    if (!file_walk(FILE_G2, FILE_L0, "event"))
+        channel_warning("Could not open mouse event");
+
+    if (!file_walk2(FILE_L0, option_getstring("video")))
         channel_warning("Could not open video");
 
-    if (!file_walk(FILE_G4, FILE_G3, "event"))
+    if (!file_walk(FILE_G3, FILE_L0, "event"))
         channel_warning("Could not open video event");
 
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
-    file_link(FILE_G4);
+    file_link(FILE_G3);
     setupvideo();
 
     while (channel_process())
@@ -435,7 +444,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_G4);
+    file_unlink(FILE_G3);
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
     file_unlink(FILE_G0);
@@ -713,8 +722,8 @@ void init(void)
     option_add("height", "1080");
     option_add("bpp", "4");
     option_add("wm", "system:service/wm");
-    option_add("keyboard", "system:keyboard/event");
-    option_add("mouse", "system:mouse/event");
+    option_add("keyboard", "system:keyboard");
+    option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
