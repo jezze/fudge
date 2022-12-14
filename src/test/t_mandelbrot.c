@@ -6,9 +6,6 @@
 #define fpabs(_a)                       ((_a < 0) ? -_a : _a)
 #define mulfp(_a)                       (((_a) * (_a)) >> fpshift)
 
-static struct ctrl_videosettings oldsettings;
-static struct ctrl_videosettings newsettings;
-
 struct rgb
 {
 
@@ -248,6 +245,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    struct ctrl_videosettings settings;
+
     if (!file_walk2(FILE_L0, option_getstring("mouse")))
         channel_warning("Could not open mouse");
 
@@ -263,17 +262,16 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_G2, FILE_L0, "data"))
         channel_error("Could not find video device data");
 
-    file_seekreadall(FILE_G1, &oldsettings, sizeof (struct ctrl_videosettings), 0);
     channel_send(EVENT_WMGRAB);
 
-    newsettings.width = option_getdecimal("width");
-    newsettings.height = option_getdecimal("height");
-    newsettings.bpp = option_getdecimal("bpp");
+    settings.width = option_getdecimal("width");
+    settings.height = option_getdecimal("height");
+    settings.bpp = option_getdecimal("bpp");
 
-    file_seekwriteall(FILE_G1, &newsettings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(FILE_G1, &newsettings, sizeof (struct ctrl_videosettings), 0);
+    file_seekwriteall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_seekreadall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
 
-    if (newsettings.bpp == 1)
+    if (settings.bpp == 1)
     {
 
         unsigned char colormap[768];
@@ -302,14 +300,13 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    draw(&newsettings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
     file_link(FILE_G0);
 
     while (channel_process());
 
     file_unlink(FILE_G0);
     channel_send(EVENT_WMUNGRAB);
-    file_seekwriteall(FILE_G1, &oldsettings, sizeof (struct ctrl_videosettings), 0);
 
 }
 

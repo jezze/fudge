@@ -701,6 +701,7 @@ static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
+    setupvideo();
 
 }
 
