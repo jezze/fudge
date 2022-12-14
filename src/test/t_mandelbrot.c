@@ -231,6 +231,7 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
     else
         channel_warning("Could not open window manager service");
 
+    channel_send(EVENT_WMUNGRAB);
     channel_close();
 
 }
@@ -238,6 +239,7 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_send(EVENT_WMUNGRAB);
     channel_close();
 
 }
@@ -306,7 +308,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     while (channel_process());
 
     file_unlink(FILE_G0);
-    channel_send(EVENT_WMUNGRAB);
 
 }
 

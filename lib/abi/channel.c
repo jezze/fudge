@@ -13,7 +13,7 @@ static struct channel_callback
 
 } callbacks[CHANNEL_CALLBACKS];
 
-static unsigned int poll;
+static unsigned int active;
 
 static unsigned int send(unsigned int target, unsigned int event, unsigned int count, void *data)
 {
@@ -21,6 +21,9 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
     struct message_header header;
     unsigned int offset = 0;
     char *buffer = data;
+
+    if (!active)
+        return 0;
 
     if (!target)
         target = callbacks[event].target;
@@ -178,7 +181,7 @@ unsigned int channel_redirectback(unsigned int target, unsigned int event)
 unsigned int channel_pick(struct message *message)
 {
 
-    while (poll)
+    while (active)
     {
 
         if (call_pick(&message->header, &message->data))
@@ -331,17 +334,16 @@ void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsig
 void channel_open(void)
 {
 
-    poll = 1;
+    active = 1;
 
 }
 
 void channel_close(void)
 {
 
-    if (poll)
-        channel_send(EVENT_CLOSE);
+    channel_send(EVENT_CLOSE);
 
-    poll = 0;
+    active = 0;
 
 }
 
