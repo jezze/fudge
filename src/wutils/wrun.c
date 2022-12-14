@@ -134,20 +134,21 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (file_walk2(FILE_L0, "system:service/wm"))
+        file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    else
         channel_warning("Could not open window manager service");
-
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (file_walk2(FILE_L0, "system:service/wm"))
+        file_notify(FILE_L0, EVENT_WMUNMAP, 0, 0);
+    else
         channel_warning("Could not open window manager service");
 
-    file_notify(FILE_L0, EVENT_WMUNMAP, 0, 0);
     channel_close();
 
 }
