@@ -34,6 +34,7 @@ static struct blit_display display;
 static struct blit_damage displaydamage;
 static struct state state;
 static unsigned int numwindows;
+static unsigned int paused;
 
 static void setupvideo(void)
 {
@@ -439,8 +440,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_process())
     {
 
-        place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
-        render(&display, &displaydamage);
+        if (!paused)
+        {
+
+            place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
+            render(&display, &displaydamage);
+
+        }
 
     }
 
@@ -594,9 +600,26 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    paused = 1;
+
+    channel_bind(EVENT_KEYPRESS, 0);
+    channel_bind(EVENT_KEYRELEASE, 0);
+    channel_bind(EVENT_MOUSEMOVE, 0);
+    channel_bind(EVENT_MOUSEPRESS, 0);
+    channel_bind(EVENT_MOUSESCROLL, 0);
+    channel_bind(EVENT_MOUSERELEASE, 0);
+    channel_bind(EVENT_VIDEOMODE, 0);
+
+}
+
 static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    channel_redirectback(source, EVENT_WMGRAB);
+    channel_redirectback(source, EVENT_WMUNGRAB);
     channel_redirectback(source, EVENT_WMRENDERDATA);
     channel_sendto(source, EVENT_WMINIT);
 
@@ -663,6 +686,21 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
         damage(state.mousewidget);
 
     }
+
+}
+
+static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    paused = 0;
+
+    channel_bind(EVENT_KEYPRESS, onkeypress);
+    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
+    channel_bind(EVENT_MOUSEMOVE, onmousemove);
+    channel_bind(EVENT_MOUSEPRESS, onmousepress);
+    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
+    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
+    channel_bind(EVENT_VIDEOMODE, onvideomode);
 
 }
 
@@ -734,8 +772,10 @@ void init(void)
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMMAP, onwmmap);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
+    channel_bind(EVENT_WMUNGRAB, onwmungrab);
     channel_bind(EVENT_WMUNMAP, onwmunmap);
 
 }

@@ -338,7 +338,8 @@ void channel_open(void)
 void channel_close(void)
 {
 
-    channel_send(EVENT_CLOSE);
+    if (poll)
+        channel_send(EVENT_CLOSE);
 
     poll = 0;
 

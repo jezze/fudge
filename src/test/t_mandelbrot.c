@@ -219,6 +219,41 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    if (file_walk2(FILE_L0, "system:service/wm"))
+        file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    else
+        channel_warning("Could not open window manager service");
+
+}
+
+static void onterm(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    if (file_walk2(FILE_L0, "system:service/wm"))
+        file_notify(FILE_L0, EVENT_WMUNMAP, 0, 0);
+    else
+        channel_warning("Could not open window manager service");
+
+    channel_close();
+
+}
+
+static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_close();
+
+}
+
+static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    if (!file_walk2(FILE_L0, option_getstring("mouse")))
+        channel_warning("Could not open mouse");
+
+    if (!file_walk(FILE_G0, FILE_L0, "event"))
+        channel_warning("Could not open mouse event");
+
     if (!file_walk2(FILE_L0, option_getstring("video")))
         channel_error("Could not find video device");
 
@@ -229,6 +264,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find video device data");
 
     file_seekreadall(FILE_G1, &oldsettings, sizeof (struct ctrl_videosettings), 0);
+    channel_send(EVENT_WMGRAB);
 
     newsettings.width = option_getdecimal("width");
     newsettings.height = option_getdecimal("height");
@@ -267,14 +303,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     }
 
     draw(&newsettings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    file_link(FILE_G0);
 
-}
+    while (channel_process());
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
-
+    file_unlink(FILE_G0);
+    channel_send(EVENT_WMUNGRAB);
     file_seekwriteall(FILE_G1, &oldsettings, sizeof (struct ctrl_videosettings), 0);
-    channel_close();
 
 }
 
@@ -284,9 +319,12 @@ void init(void)
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
+    option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
+    channel_bind(EVENT_MOUSEPRESS, onmousepress);
+    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 
