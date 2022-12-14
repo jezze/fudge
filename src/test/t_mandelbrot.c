@@ -236,6 +236,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send(EVENT_WMUNGRAB);
+    channel_send(EVENT_WMUNMAP);
     channel_close();
 
 }
