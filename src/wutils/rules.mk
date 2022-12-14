@@ -37,10 +37,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/wutils/wshell2 \
+    $(DIR_SRC)/wutils/wshell \
 
 O:=\
-    $(DIR_SRC)/wutils/wshell2.o \
+    $(DIR_SRC)/wutils/wshell.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

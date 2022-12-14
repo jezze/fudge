@@ -123,26 +123,34 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (wrap != TEXT_WRAP_NONE && w + metricsdata.width >= maxw)
+        if (w + metricsdata.width >= maxw)
         {
 
-            if (wrap == TEXT_WRAP_WORD && si)
+            switch (wrap)
             {
 
-                i = si;
-                w = sw;
-                h = sh;
+            case TEXT_WRAP_WORD:
+                if (si)
+                {
+
+                    rowinfo->width = sw;
+                    rowinfo->height = sh;
+                    rowinfo->chars = si - offset;
+
+                    return si + 1;
+
+                }
+
+                break;
+
+            case TEXT_WRAP_CHAR:
+                rowinfo->width = w;
+                rowinfo->height = h;
+                rowinfo->chars = i - offset;
+
+                return i;
 
             }
-
-            else
-            {
-
-                i--;
-
-            }
-
-            break;
 
         }
 

@@ -1,301 +1,40 @@
 #include <fudge.h>
 #include <abi.h>
-#include <widget.h>
+#include "util.h"
+#include "text.h"
+#include "widget.h"
+#include "pool.h"
+#include "blit.h"
+#include "place.h"
+#include "render.h"
+#include "parser.h"
 
-#define REMOTES                         64
-#define VIEWS                           6
+#define WINDOW_MIN_WIDTH                128
+#define WINDOW_MIN_HEIGHT               128
 
-static struct remote
+struct state
 {
 
-    struct list_item item;
-    struct widget_window window;
-    unsigned int source;
+    struct widget_position mouseposition;
+    struct widget_position mousemovement;
+    struct widget_position mouseclicked;
+    unsigned int mousebuttonleft;
+    unsigned int mousebuttonright;
+    struct widget *rootwidget;
+    struct widget *mousewidget;
+    struct widget *hoverwidget;
+    struct widget *focusedwindow;
+    struct widget *focusedwidget;
+    struct widget *clickedwidget;
+    unsigned int keymod;
 
-} remotes[REMOTES];
-
-static struct view
-{
-
-    struct list_item item;
-    struct list remotes;
-    unsigned int center;
-    struct widget_panel panel;
-    char numberstring;
-    struct remote *currentremote;
-
-} views[VIEWS];
-
-static unsigned int keymod = KEYMOD_NONE;
-static char outputdata[BUFFER_SIZE];
-static struct ring output;
-static struct box screen;
-static struct box body;
-static struct list viewlist;
-static struct list remotelist;
-static struct widget_fill background;
-static struct widget_mouse mouse;
-static struct view *currentview = &views[0];
-static unsigned int padding;
-static unsigned int lineheight;
-static unsigned int steplength;
-static unsigned char fontdata[0x8000];
-static unsigned char canvasdata[0x10000];
-static unsigned char layerdata0[0x10000];
-static unsigned char layerdata1[0x200];
-static struct event_videomode vmode;
-static unsigned char colormap8[] = {
-    0x00, 0x00, 0x00,
-    0x3F, 0x3F, 0x3F,
-    0x04, 0x02, 0x02,
-    0x06, 0x04, 0x04,
-    0x08, 0x06, 0x06,
-    0x08, 0x10, 0x18,
-    0x0C, 0x14, 0x1C,
-    0x28, 0x10, 0x18,
-    0x38, 0x20, 0x28,
-    0x1C, 0x18, 0x18,
-    0x3F, 0x3F, 0x3F
 };
 
-static void draw(void *data, unsigned int count, unsigned int offset)
-{
-
-    if (vmode.framebuffer)
-        buffer_write((void *)vmode.framebuffer, vmode.w * vmode.h * vmode.bpp, data, count, offset);
-    else
-        file_seekwriteall(FILE_G5, data, count, offset);
-
-}
-
-static void updateremote(struct remote *remote)
-{
-
-    widget_update(&output, &remote->window, WIDGET_Z_BOTTOM, WIDGET_TYPE_WINDOW, sizeof (struct widget_window));
-    ring_write(&output, &remote->window, sizeof (struct widget_window));
-
-}
-
-static void updateview(struct view *view)
-{
-
-    widget_update(&output, &view->panel, WIDGET_Z_BOTTOM, WIDGET_TYPE_PANEL, sizeof (struct widget_panel) + view->panel.length);
-    ring_write(&output, &view->panel, sizeof (struct widget_panel));
-    ring_write(&output, &view->numberstring, view->panel.length);
-
-}
-
-static void updatemouse(void)
-{
-
-    widget_update(&output, &mouse, WIDGET_Z_TOP, WIDGET_TYPE_MOUSE, sizeof (struct widget_mouse));
-    ring_write(&output, &mouse, sizeof (struct widget_mouse));
-
-}
-
-static void updatebackground(void)
-{
-
-    widget_update(&output, &background, WIDGET_Z_BOTTOM, WIDGET_TYPE_FILL, sizeof (struct widget_fill));
-    ring_write(&output, &background, sizeof (struct widget_fill));
-
-}
-
-static void removeremote(struct remote *remote)
-{
-
-    widget_remove(&output, &remote->window, WIDGET_Z_BOTTOM);
-    render_clean(remote->source);
-
-}
-
-static void activateview(struct view *view)
-{
-
-    view->panel.active = 1;
-
-}
-
-static void activateremote(struct remote *remote)
-{
-
-    remote->window.active = 1;
-
-}
-
-static void deactivateview(struct view *view)
-{
-
-    view->panel.active = 0;
-
-}
-
-static void deactivateremote(struct remote *remote)
-{
-
-    remote->window.active = 0;
-
-}
-
-static void showremotes(struct list *remotes)
-{
-
-    struct list_item *current;
-
-    for (current = remotes->head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-
-        channel_sendto(remote->source, EVENT_WMSHOW);
-        updateremote(remote);
-
-    }
-
-}
-
-static void hideremotes(struct list *remotes)
-{
-
-    struct list_item *current;
-
-    for (current = remotes->head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-
-        channel_sendto(remote->source, EVENT_WMHIDE);
-        removeremote(remote);
-
-    }
-
-}
-
-static void closeremotes(struct list *remotes)
-{
-
-    struct list_item *current;
-
-    for (current = remotes->head; current; current = current->next)
-    {
-
-        struct remote *remote = current->data;
-
-        channel_sendto(remote->source, EVENT_TERM);
-
-    }
-
-}
-
-static void flipview(struct view *view)
-{
-
-    deactivateview(currentview);
-    hideremotes(&currentview->remotes);
-    updateview(currentview);
-
-    currentview = view;
-
-    activateview(currentview);
-    showremotes(&currentview->remotes);
-    updateview(currentview);
-
-}
-
-static void arrangesingle(struct view *view)
-{
-
-    struct remote *remote = view->remotes.tail->data;
-
-    box_setsize(&remote->window.size, body.x, body.y, body.w, body.h);
-
-}
-
-static void arrangetiled(struct view *view)
-{
-
-    unsigned int y = body.y;
-    unsigned int h = body.h / (view->remotes.count - 1);
-    struct list_item *current;
-    struct remote *master = view->remotes.tail->data;
-
-    box_setsize(&master->window.size, body.x, body.y, view->center, body.h);
-
-    for (current = view->remotes.tail->prev; current; current = current->prev)
-    {
-
-        struct remote *remote = current->data;
-
-        box_setsize(&remote->window.size, body.x + view->center, y, body.w - view->center, h);
-
-        y += h;
-
-    }
-
-}
-
-static void arrangeview(struct view *view)
-{
-
-    switch (view->remotes.count)
-    {
-
-    case 0:
-        break;
-
-    case 1:
-        arrangesingle(view);
-
-        break;
-
-    default:
-        arrangetiled(view);
-
-        break;
-
-    }
-
-}
-
-static void setupviews(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < VIEWS; i++)
-    {
-
-        struct view *view = &views[i];
-
-        list_init(&view->remotes);
-        list_inititem(&view->item, view);
-        widget_initpanel(&view->panel, 0);
-        list_add(&viewlist, &view->item);
-
-        view->numberstring = '1' + i;
-        view->panel.length = 1;
-
-    }
-
-}
-
-static void setupremotes(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < REMOTES; i++)
-    {
-
-        struct remote *remote = &remotes[i];
-
-        list_inititem(&remote->item, remote);
-        widget_initwindow(&remote->window, 0);
-        list_add(&remotelist, &remote->item);
-
-    }
-
-}
+static struct blit_display display;
+static struct blit_damage displaydamage;
+static struct state state;
+static unsigned int numwindows;
+static unsigned int paused;
 
 static void setupvideo(void)
 {
@@ -309,33 +48,215 @@ static void setupvideo(void)
 
     buffer_clear(black, 768);
 
-    if (!file_walk(FILE_L0, FILE_G3, "ctrl"))
+    if (!file_walk2(FILE_L0, option_getstring("video")))
+        channel_warning("Could not open video");
+
+    if (!file_walk(FILE_L1, FILE_L0, "colormap"))
         return;
 
-    if (!file_walk(FILE_L1, FILE_G3, "colormap"))
+    if (!file_walk(FILE_L2, FILE_L0, "ctrl"))
         return;
 
     file_seekwriteall(FILE_L1, black, 768, 0);
-    file_seekwriteall(FILE_L0, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekwriteall(FILE_L1, colormap8, 3 * 11, 0);
+    file_seekwriteall(FILE_L2, &settings, sizeof (struct ctrl_videosettings), 0);
 
 }
 
-static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
+static struct widget *getinteractivewidgetat(int x, int y)
 {
 
-    switch (factor)
+    struct list_item *current = 0;
+    struct widget *last = 0;
+
+    while ((current = pool_next(current)))
+    {
+ 
+        struct widget *child = current->data;
+
+        if (widget_isinteractive(child) && widget_intersects(child, x, y))
+            last = child;
+
+    }
+
+    return last;
+
+}
+
+static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
+{
+
+    struct list_item *current = 0;
+    struct widget *last = 0;
+
+    while ((current = pool_next(current)))
+    {
+ 
+        struct widget *child = current->data;
+
+        if (child->type == type && widget_intersects(child, x, y))
+            last = child;
+
+    }
+
+    return last;
+
+}
+
+static void damage(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+    int x0 = util_clamp(widget->position.x, 0, display.size.w);
+    int y0 = util_clamp(widget->position.y, 0, display.size.h);
+    int x2 = util_clamp(widget->position.x + widget->size.w, 0, display.size.w);
+    int y2 = util_clamp(widget->position.y + widget->size.h, 0, display.size.h);
+
+    render_damage(&displaydamage, x0, y0, x2, y2);
+
+    while ((current = pool_nextin(current, widget)))
+        damage(current->data);
+
+}
+
+static void scrollwidget(int amount)
+{
+
+    if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX)
     {
 
-    case 0:
-    case 1:
-        box_setsize(&mouse.size, x, y, 12, 16);
+        struct widget_textbox *textbox = state.focusedwidget->data;
 
+        textbox->scroll += amount;
+
+        damage(state.focusedwidget);
+
+    }
+
+}
+
+static void bump(struct widget *widget)
+{
+
+    pool_bump(widget);
+    pool_bump(state.mousewidget);
+    damage(widget);
+    damage(state.mousewidget);
+
+}
+
+static void setfocuswidget(struct widget *widget)
+{
+
+    if (state.focusedwidget)
+    {
+
+        widget_setstate(state.focusedwidget, WIDGET_STATE_FOCUSOFF);
+        widget_setstate(state.focusedwidget, WIDGET_STATE_NORMAL);
+        damage(state.focusedwidget);
+
+        state.focusedwidget = 0;
+
+    }
+
+    if (widget_setstate(widget, WIDGET_STATE_FOCUS))
+    {
+
+        state.focusedwidget = widget;
+
+        damage(state.focusedwidget);
+
+        if (widget->type == WIDGET_TYPE_SELECT)
+        {
+
+            struct list_item *current = 0;
+
+            while ((current = pool_nextin(current, widget)))
+            {
+
+                struct widget *child = current->data;
+
+                bump(child);
+
+            }
+
+        }
+
+    }
+
+}
+
+static void setfocuswindow(struct widget *widget)
+{
+
+    if (state.focusedwindow)
+    {
+
+        widget_setstate(state.focusedwindow, WIDGET_STATE_FOCUSOFF);
+        widget_setstate(state.focusedwindow, WIDGET_STATE_NORMAL);
+        damage(state.focusedwindow);
+
+        state.focusedwindow = 0;
+
+    }
+
+    if (widget_setstate(widget, WIDGET_STATE_FOCUS))
+    {
+
+        state.focusedwindow = widget;
+
+        bump(state.focusedwindow);
+
+    }
+
+}
+
+static void sethover(struct widget *widget)
+{
+
+    if (state.hoverwidget)
+    {
+
+        widget_setstate(state.hoverwidget, WIDGET_STATE_HOVEROFF);
+        widget_setstate(state.hoverwidget, WIDGET_STATE_NORMAL);
+        damage(state.hoverwidget);
+
+        state.hoverwidget = 0;
+
+    }
+
+    if (widget_setstate(widget, WIDGET_STATE_HOVER))
+    {
+
+        state.hoverwidget = widget;
+
+        damage(state.hoverwidget);
+
+    }
+
+}
+
+static void clickwidget(struct widget *widget)
+{
+
+    struct event_wmclick wmclick;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_WINDOW:
         break;
 
-    case 2:
-    default:
-        box_setsize(&mouse.size, x, y, 18, 24);
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHOICE:
+    case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_TEXTBUTTON:
+        if (state.mousebuttonleft)
+        {
+
+            cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
+            channel_sendbufferto(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+
+        }
 
         break;
 
@@ -343,35 +264,74 @@ static void setmouse(unsigned int x, unsigned int y, unsigned int factor)
 
 }
 
-static void loadfont(unsigned int factor)
+static void dragwidget(struct widget *widget)
 {
 
-    switch (factor)
+    if (widget_isdragable(widget))
     {
 
-    case 0:
-        file_walk2(FILE_L0, "/data/font/ter-112n.pcf");
+        unsigned int valid = 0;
 
-        break;
+/*
+        if (state.keymod & KEYMOD_ALT)
+            valid = 1;
 
-    case 1:
-        file_walk2(FILE_L0, "/data/font/ter-114n.pcf");
+        if (util_intersects(state.mouseclicked.x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(state.mouseclicked.y, widget->position.y, widget->position.y + 40))
+            valid = 1;
+*/
 
-        break;
+        valid = 1;
 
-    case 2:
-        file_walk2(FILE_L0, "/data/font/ter-116n.pcf");
+        if (valid)
+        {
 
-        break;
+            if (state.mousebuttonleft)
+            {
 
-    default:
-        file_walk2(FILE_L0, "/data/font/ter-118n.pcf");
+                damage(widget);
 
-        break;
+                widget->position.x += state.mousemovement.x;
+                widget->position.y += state.mousemovement.y;
+
+                damage(widget);
+
+            }
+
+            if (state.mousebuttonright)
+            {
+
+                damage(widget);
+
+                widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
+                widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
+
+                damage(widget);
+
+            }
+
+        }
 
     }
 
-    file_read(FILE_L0, fontdata, 0x8000);
+}
+
+static void keypresswidget(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod)
+{
+
+    if (widget_isinteractive(widget))
+    {
+
+        struct event_wmkeypress2 wmkeypress;
+
+        wmkeypress.scancode = scancode;
+        wmkeypress.unicode = unicode;
+        wmkeypress.length = length;
+        wmkeypress.keymod = keymod;
+
+        cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(widget->id), 0));
+        channel_sendbufferto(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
+
+    }
 
 }
 
@@ -380,184 +340,59 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keypress *keypress = mdata;
     struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
-    struct remote *nextremote;
-    struct view *nextview;
-    unsigned int id;
+    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, state.keymod);
 
-    keymod = keymap_modkey(keypress->scancode, keymod);
+    state.keymod = keymap_modkey(keypress->scancode, state.keymod);
 
-    if (!(keymod & KEYMOD_ALT))
+    if ((state.keymod & KEYMOD_ALT))
     {
 
-        if (currentview->currentremote)
+        switch (keypress->scancode)
         {
 
-            struct event_wmkeypress wmkeypress;
-
-            wmkeypress.scancode = keypress->scancode;
-            wmkeypress.unicode = keycode->value[0];
-            wmkeypress.length = keycode->length;
-            wmkeypress.keymod = keymod;
-
-            channel_sendbufferto(currentview->currentremote->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
-
-        }
-
-        return;
-
-    }
-
-    switch (keypress->scancode)
-    {
-
-    case 0x02:
-    case 0x03:
-    case 0x04:
-    case 0x05:
-    case 0x06:
-    case 0x07:
-    case 0x08:
-    case 0x09:
-        nextview = &views[keypress->scancode - 0x02];
-
-        if (nextview == currentview)
-            break;
-
-        if (currentview->currentremote && keymod & KEYMOD_SHIFT)
-        {
-
-            list_move(&nextview->remotes, &currentview->remotes, &currentview->currentremote->item);
-
-            currentview->currentremote = (currentview->remotes.tail) ? currentview->remotes.tail->data : 0;
-
-            if (currentview->currentremote)
-                activateremote(currentview->currentremote);
-
-            arrangeview(currentview);
-            arrangeview(nextview);
-
-            if (nextview->currentremote)
-                deactivateremote(nextview->currentremote);
-
-            nextview->currentremote = (nextview->remotes.tail) ? nextview->remotes.tail->data : 0;
-
-        }
-
-        flipview(nextview);
-
-        break;
-
-    case 0x10:
-        if (!currentview->currentremote)
-            break;
-
-        if ((keymod & KEYMOD_SHIFT))
-            channel_sendto(currentview->currentremote->source, EVENT_TERM);
-
-        break;
-
-    case 0x19:
-        if (!(keymod & KEYMOD_SHIFT))
-            break;
-
-        id = file_spawn("/bin/wshell");
-
-        if (id)
-            channel_sendto(id, EVENT_MAIN);
-
-        break;
-
-    case 0x1C:
-        if (!currentview->currentremote)
-            break;
-
-        list_move(&currentview->remotes, &currentview->remotes, &currentview->currentremote->item);
-        arrangeview(currentview);
-        showremotes(&currentview->remotes);
-
-        break;
-
-    case 0x23:
-        if (currentview->center <= steplength)
-            break;
-
-        currentview->center -= steplength;
-
-        arrangeview(currentview);
-        showremotes(&currentview->remotes);
-
-        break;
-
-    case 0x24:
-        if (!currentview->currentremote)
-            break;
-
-        nextremote = currentview->currentremote->item.next ? currentview->currentremote->item.next->data : currentview->remotes.head;
-
-        if (!nextremote || nextremote == currentview->currentremote)
-            break;
-
-        deactivateremote(currentview->currentremote);
-        updateremote(currentview->currentremote);
-
-        currentview->currentremote = nextremote;
-
-        activateremote(currentview->currentremote);
-        updateremote(currentview->currentremote);
-
-        break;
-
-    case 0x25:
-        if (!currentview->currentremote)
-            break;
-
-        nextremote = currentview->currentremote->item.prev ? currentview->currentremote->item.prev->data : currentview->remotes.tail;
-
-        if (!nextremote || nextremote == currentview->currentremote)
-            break;
-
-        deactivateremote(currentview->currentremote);
-        updateremote(currentview->currentremote);
-
-        currentview->currentremote = nextremote;
-
-        activateremote(currentview->currentremote);
-        updateremote(currentview->currentremote);
-
-        break;
-
-    case 0x26:
-        if (currentview->center >= steplength * 11)
-            break;
-
-        currentview->center += steplength;
-
-        arrangeview(currentview);
-        showremotes(&currentview->remotes);
-
-        break;
-
-    case 0x2C:
-        if ((keymod & KEYMOD_SHIFT))
-        {
-
-            struct list_item *current;
-
-            for (current = viewlist.head; current; current = current->next)
+        case 0x10:
+            if ((state.keymod & KEYMOD_SHIFT))
             {
 
-                struct view *view = current->data;
-
-                closeremotes(&view->remotes);
+                if (state.focusedwindow)
+                    channel_sendto(state.focusedwindow->source, EVENT_TERM);
 
             }
 
-            channel_close();
+            break;
+
+        case 0x19:
+            if ((state.keymod & KEYMOD_SHIFT))
+            {
+
+                unsigned int id = file_spawn("/bin/wshell2");
+
+                if (id)
+                    channel_sendto(id, EVENT_MAIN);
+
+            }
+
+            break;
+
+        case 0x49:
+            scrollwidget(-16);
+
+            break;
+
+        case 0x51:
+            scrollwidget(16);
+
+            break;
 
         }
 
-        break;
+    }
+
+    else
+    {
+
+        if (state.focusedwidget)
+            keypresswidget(state.focusedwidget, keypress->scancode, keycode->value[0], keycode->length, state.keymod);
 
     }
 
@@ -567,31 +402,8 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keyrelease *keyrelease = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keyrelease->scancode, keymod);
 
-    keymod = keymap_modkey(keyrelease->scancode, keymod);
-
-    if (!(keymod & KEYMOD_ALT))
-    {
-
-        if (currentview->currentremote)
-        {
-
-            struct event_wmkeyrelease wmkeyrelease;
-
-            wmkeyrelease.scancode = keyrelease->scancode;
-            wmkeyrelease.unicode = keycode->value[0];
-            wmkeyrelease.length = keycode->length;
-            wmkeyrelease.keymod = keymod;
-
-            channel_sendbufferto(currentview->currentremote->source, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
-
-        }
-
-        return;
-
-    }
+    state.keymod = keymap_modkey(keyrelease->scancode, state.keymod);
 
 }
 
@@ -601,46 +413,44 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk2(FILE_G0, option_getstring("wm")))
         channel_warning("Could not open window manager service");
 
-    if (!file_walk2(FILE_G1, option_getstring("keyboard")))
+    if (!file_walk2(FILE_L0, option_getstring("keyboard")))
         channel_warning("Could not open keyboard");
 
-    if (!file_walk2(FILE_G2, option_getstring("mouse")))
+    if (!file_walk(FILE_G1, FILE_L0, "event"))
+        channel_warning("Could not open keyboard event");
+
+    if (!file_walk2(FILE_L0, option_getstring("mouse")))
         channel_warning("Could not open mouse");
 
-    if (!file_walk2(FILE_G3, option_getstring("video")))
+    if (!file_walk(FILE_G2, FILE_L0, "event"))
+        channel_warning("Could not open mouse event");
+
+    if (!file_walk2(FILE_L0, option_getstring("video")))
         channel_warning("Could not open video");
 
-    if (!file_walk(FILE_G4, FILE_G3, "event"))
+    if (!file_walk(FILE_G3, FILE_L0, "event"))
         channel_warning("Could not open video event");
 
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
-    file_link(FILE_G4);
+    file_link(FILE_G3);
     setupvideo();
-    setupviews();
-    setupremotes();
-    activateview(currentview);
 
     while (channel_process())
     {
 
-        if (ring_count(&output))
+        if (!paused)
         {
 
-            char buffer[BUFFER_SIZE];
-            unsigned int count = ring_read(&output, buffer, BUFFER_SIZE);
-
-            render_write(0, buffer, count);
-            render_resize(0, screen.x, screen.y, screen.w, screen.h, padding, lineheight, steplength);
-            render_flush(canvasdata, 0x10000, draw);
-            render_complete();
+            place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
+            render(&display, &displaydamage);
 
         }
 
     }
 
-    file_unlink(FILE_G4);
+    file_unlink(FILE_G3);
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
     file_unlink(FILE_G0);
@@ -651,29 +461,32 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
+    int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
+    int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
+    struct widget *hoverwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    mouse.size.x += mousemove->relx;
-    mouse.size.y += mousemove->rely;
+    if (hoverwidget)
+        sethover(hoverwidget);
 
-    if (mouse.size.x < screen.x || mouse.size.x >= screen.x + screen.w)
-        mouse.size.x = (mousemove->relx < 0) ? screen.x : screen.x + screen.w - 1;
+    state.mousemovement.x = x - state.mouseposition.x;
+    state.mousemovement.y = y - state.mouseposition.y;
+    state.mouseposition.x = x;
+    state.mouseposition.y = y;
 
-    if (mouse.size.y < screen.y || mouse.size.y >= screen.y + screen.h)
-        mouse.size.y = (mousemove->rely < 0) ? screen.y : screen.y + screen.h - 1;
-
-    updatemouse();
-
-    if (currentview->currentremote)
+    if (state.mousewidget)
     {
 
-        struct event_wmmousemove wmmousemove;
+        damage(state.mousewidget);
 
-        wmmousemove.relx = mousemove->relx;
-        wmmousemove.rely = mousemove->rely;
+        state.mousewidget->position.x = state.mouseposition.x;
+        state.mousewidget->position.y = state.mouseposition.y;
 
-        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSEMOVE, sizeof (struct event_wmmousemove), &wmmousemove);
+        damage(state.mousewidget);
 
     }
+
+    if (state.clickedwidget)
+        dragwidget(state.clickedwidget);
 
 }
 
@@ -681,86 +494,36 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct list_item *current;
+    struct widget *clickedwindow = getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+
+    state.clickedwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
+    state.mouseclicked.x = state.mouseposition.x;
+    state.mouseclicked.y = state.mouseposition.y;
 
     switch (mousepress->button)
     {
 
-    case 0x01:
-        for (current = viewlist.head; current; current = current->next)
-        {
+    case 1:
+        state.mousebuttonleft = 1;
 
-            struct view *view = current->data;
+        if (clickedwindow)
+            setfocuswindow(clickedwindow);
 
-            if (view == currentview)
-                continue;
+        if (state.clickedwidget)
+            setfocuswidget(state.clickedwidget);
 
-            if (box_isinside(&view->panel.size, mouse.size.x, mouse.size.y))
-            {
-
-                flipview(view);
-
-                break;
-
-            }
-
-        }
-
-        for (current = currentview->remotes.head; current; current = current->next)
-        {
-
-            struct remote *remote = current->data;
-
-            if (remote == currentview->currentremote)
-                continue;
-
-            if (box_isinside(&remote->window.size, mouse.size.x, mouse.size.y))
-            {
-
-                deactivateremote(currentview->currentremote);
-                updateremote(currentview->currentremote);
-
-                currentview->currentremote = remote;
-
-                activateremote(currentview->currentremote);
-                updateremote(currentview->currentremote);
-
-                break;
-
-            }
-
-        }
+        if (state.clickedwidget)
+            clickwidget(state.clickedwidget);
 
         break;
 
-    }
+    case 2:
+        state.mousebuttonright = 1;
 
-    if (currentview->currentremote)
-    {
+        if (state.clickedwidget)
+            clickwidget(state.clickedwidget);
 
-        struct event_wmmousepress wmmousepress;
-
-        wmmousepress.button = mousepress->button;
-
-        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSEPRESS, sizeof (struct event_wmmousepress), &wmmousepress);
-
-    }
-
-}
-
-static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_mouserelease *mouserelease = mdata;
-
-    if (currentview->currentremote)
-    {
-
-        struct event_wmmouserelease wmmouserelease;
-
-        wmmouserelease.button = mouserelease->button;
-
-        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSERELEASE, sizeof (struct event_wmmouserelease), &wmmouserelease);
+        break;
 
     }
 
@@ -771,20 +534,31 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousescroll *mousescroll = mdata;
 
-    render_scroll(mouse.size.x, mouse.size.y, mousescroll->relz);
-    render_flush(canvasdata, 0x10000, draw);
-    render_complete();
+    scrollwidget(mousescroll->relz * 16);
 
-    if (currentview->currentremote)
+}
+
+static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_mouserelease *mouserelease = mdata;
+
+    switch (mouserelease->button)
     {
 
-        struct event_wmmousescroll wmmousescroll;
+    case 1:
+        state.mousebuttonleft = 0;
 
-        wmmousescroll.relz = mousescroll->relz;
+        break;
 
-        channel_sendbufferto(currentview->currentremote->source, EVENT_WMMOUSESCROLL, sizeof (struct event_wmmousescroll), &wmmousescroll);
+    case 2:
+        state.mousebuttonright = 0;
+
+        break;
 
     }
+
+    state.clickedwidget = 0;
 
 }
 
@@ -793,121 +567,172 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
-    struct list_item *current;
-    unsigned int i = 0;
 
-    vmode.framebuffer = videomode->framebuffer;
-    vmode.w = videomode->w;
-    vmode.h = videomode->h;
-    vmode.bpp = videomode->bpp;
+    blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
+    render_damage(&displaydamage, 0, 0, videomode->w, videomode->h);
+    pool_loadfont(factor);
 
-    lineheight = 12 + factor * 4;
-    padding = 4 + factor * 2;
-    steplength = videomode->w / 12;
+    state.mouseposition.x = videomode->w / 4;
+    state.mouseposition.y = videomode->h / 4;
 
-    loadfont(factor);
-    box_setsize(&screen, 0, 0, videomode->w, videomode->h);
-    box_setsize(&body, 0, (lineheight + padding * 2), videomode->w, videomode->h - (lineheight + padding * 2));
-    box_setsize(&background.size, 0, 0, videomode->w, videomode->h);
-    setmouse(videomode->w / 4, videomode->h / 4, factor);
-    render_setdraw(videomode->w, videomode->h, videomode->bpp);
-    render_setfont(0, fontdata, lineheight, padding);
-
-    for (current = viewlist.head; current; current = current->next)
+    switch (factor)
     {
 
-        struct view *view = current->data;
+    case 0:
+    case 1:
+        state.mousewidget->position.x = state.mouseposition.x;
+        state.mousewidget->position.y = state.mouseposition.y;
+        state.mousewidget->size.w = 12;
+        state.mousewidget->size.h = 16;
 
-        view->center = steplength * 7;
+        break;
 
-        box_setsize(&view->panel.size, i * videomode->w / viewlist.count, 0, videomode->w / viewlist.count, (lineheight + padding * 2));
-        arrangeview(view);
+    case 2:
+    default:
+        state.mousewidget->position.x = state.mouseposition.x;
+        state.mousewidget->position.y = state.mouseposition.y;
+        state.mousewidget->size.w = 18;
+        state.mousewidget->size.h = 24;
 
-        i++;
+        break;
 
     }
 
-    updatebackground();
-    updatemouse();
+}
 
-    for (current = viewlist.head; current; current = current->next)
-        updateview(current->data);
+static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
+{
 
-    showremotes(&currentview->remotes);
+    paused = 1;
+
+    channel_bind(EVENT_KEYPRESS, 0);
+    channel_bind(EVENT_KEYRELEASE, 0);
+    channel_bind(EVENT_MOUSEMOVE, 0);
+    channel_bind(EVENT_MOUSEPRESS, 0);
+    channel_bind(EVENT_MOUSESCROLL, 0);
+    channel_bind(EVENT_MOUSERELEASE, 0);
+    channel_bind(EVENT_VIDEOMODE, 0);
 
 }
 
 static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (currentview->currentremote)
-        deactivateremote(currentview->currentremote);
-
-    currentview->currentremote = remotelist.head->data;
-    currentview->currentremote->source = source;
-
-    list_move(&currentview->remotes, &remotelist, &currentview->currentremote->item);
-    activateremote(currentview->currentremote);
-    arrangeview(currentview);
-    showremotes(&currentview->remotes);
+    channel_redirectback(source, EVENT_WMMAP);
+    channel_redirectback(source, EVENT_WMUNMAP);
+    channel_redirectback(source, EVENT_WMGRAB);
+    channel_redirectback(source, EVENT_WMUNGRAB);
+    channel_redirectback(source, EVENT_WMRENDERDATA);
+    channel_sendto(source, EVENT_WMINIT);
 
 }
 
 static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct list_item *current;
+    struct list_item *current = 0;
 
-    for (current = currentview->remotes.head; current; current = current->next)
+    parser_parse(source, "root", msize, mdata);
+
+    while ((current = pool_nextsource(current, source)))
     {
 
-        struct remote *remote = current->data;
+        struct widget *widget = current->data;
 
-        if (remote->source == source)
+        if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
-            render_write(source, mdata, msize);
-            render_resize(source, remote->window.size.x, remote->window.size.y, remote->window.size.w, remote->window.size.h, padding, lineheight, steplength);
-            render_flush(canvasdata, 0x10000, draw);
-            render_complete();
+            if (widget->size.w == 0 && widget->size.h == 0)
+            {
+
+                widget->position.x = 64 + 128 * numwindows;
+                widget->position.y = 64 + 64 * numwindows;
+                widget->size.w = 640;
+                widget->size.h = 640;
+
+                bump(widget);
+
+                numwindows++;
+
+            }
+
+            damage(widget);
 
         }
 
     }
+
+    current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->state == WIDGET_STATE_DESTROYED)
+        {
+
+            current = current->prev;
+
+            damage(widget);
+            pool_destroy(widget);
+
+        }
+
+    }
+
+    if (state.mousewidget)
+    {
+
+        pool_bump(state.mousewidget);
+        damage(state.mousewidget);
+
+    }
+
+}
+
+static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    paused = 0;
+
+    channel_bind(EVENT_KEYPRESS, onkeypress);
+    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
+    channel_bind(EVENT_MOUSEMOVE, onmousemove);
+    channel_bind(EVENT_MOUSEPRESS, onmousepress);
+    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
+    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
+    channel_bind(EVENT_VIDEOMODE, onvideomode);
+    setupvideo();
 
 }
 
 static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct list_item *current;
+    struct list_item *current = 0;
 
-    for (current = viewlist.head; current; current = current->next)
+    while ((current = pool_next(current)))
     {
+ 
+        struct widget *child = current->data;
 
-        struct view *view = current->data;
-        struct list_item *current2;
-
-        for (current2 = view->remotes.head; current2; current2 = current2->next)
+        if (child->source == source)
         {
 
-            struct remote *remote = current2->data;
+            current = current->prev;
 
-            if (source != remote->source)
-                continue;
+            if (state.hoverwidget == child)
+                state.hoverwidget = 0;
 
-            removeremote(remote);
-            list_move(&remotelist, &view->remotes, &remote->item);
+            if (state.focusedwidget == child)
+                state.focusedwidget = 0;
 
-            view->currentremote = (view->remotes.tail) ? view->remotes.tail->data : 0;
+            if (state.focusedwindow == child)
+                state.focusedwindow = 0;
 
-            if (view->currentremote)
-                activateremote(view->currentremote);
-
-            arrangeview(view);
-
-            if (view == currentview)
-                showremotes(&view->remotes);
+            damage(child);
+            pool_destroy(child);
 
         }
 
@@ -915,34 +740,45 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void setupwidgets(void)
+{
+
+    char *data =
+        "+ layout id \"root\" type \"float\"\n"
+        "+ fill in \"root\" color \"FF202020\"\n"
+        "+ image id \"mouse\" in \"root\" type \"image/fudge-icon-mouse\"\n";
+
+    parser_parse(0, "", cstring_length(data), data);
+
+    state.rootwidget = pool_getwidgetbyid(0, "root");
+    state.mousewidget = pool_getwidgetbyid(0, "mouse");
+
+}
+
 void init(void)
 {
 
-    list_init(&viewlist);
-    list_init(&remotelist);
-    ring_init(&output, BUFFER_SIZE, outputdata);
-    widget_initfill(&background, 2);
-    widget_initmouse(&mouse, WIDGET_MOUSETYPE_DEFAULT);
-    render_init();
-    render_setlayer(0, layerdata0, 0x10000);
-    render_setlayer(1, layerdata1, 0x200);
-    option_add("width", "1024");
-    option_add("height", "768");
+    pool_setup();
+    setupwidgets();
+    option_add("width", "1920");
+    option_add("height", "1080");
     option_add("bpp", "4");
     option_add("wm", "system:service/wm");
-    option_add("keyboard", "system:keyboard/event");
-    option_add("mouse", "system:mouse/event");
+    option_add("keyboard", "system:keyboard");
+    option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEMOVE, onmousemove);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
-    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
+    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMMAP, onwmmap);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
+    channel_bind(EVENT_WMUNGRAB, onwmungrab);
     channel_bind(EVENT_WMUNMAP, onwmunmap);
 
 }

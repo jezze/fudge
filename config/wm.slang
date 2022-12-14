@@ -1,5 +1,6 @@
 touch system:service/wm
 wm
+wcalc
 wshell
-wshell
-wedit /data/wm-man.txt
+wtest
+wfile
