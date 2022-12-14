@@ -26,7 +26,7 @@ static void updatecontent(void)
         "- content\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
-    channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data), data);
+    channel_sendstring(EVENT_WMRENDERDATA, data);
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
@@ -119,7 +119,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ layout id \"main\" in \"base\" type \"maximize\" padding \"8\"\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
-    channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data), data);
+    channel_sendstring(EVENT_WMRENDERDATA, data);
     updatepath();
     updatecontent();
 

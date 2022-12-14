@@ -25,31 +25,11 @@ static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
     struct event_wmclick *wmclick = mdata;
 
     if (cstring_match(wmclick->clicked, "button0"))
-    {
-
-        char *data0 = "= text1 content \"Button 0 clicked\"\n";
-
-        channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data0), data0);
-
-    }
-
+        channel_sendstring(EVENT_WMRENDERDATA, "= text1 content \"Button 0 clicked\"\n");
     else if (cstring_match(wmclick->clicked, "button1"))
-    {
-
-        char *data1 = "= text1 content \"Button 1 clicked\"\n";
-
-        channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data1), data1);
-
-    }
-
+        channel_sendstring(EVENT_WMRENDERDATA, "= text1 content \"Button 1 clicked\"\n");
     else
-    {
-
-        char *data2 = "= text1 content \"No button clicked\"\n";
-
-        channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data2), data2);
-
-    }
+        channel_sendstring(EVENT_WMRENDERDATA, "= text1 content \"No button clicked\"\n");
 
 }
 
@@ -70,7 +50,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ button id \"button1\" in \"base\" label \"Click Me Too\"\n"
         "+ image in \"base\" type \"image/pcx\" source \"initrd:data/mi.pcx\"\n";
 
-    channel_sendbuffer(EVENT_WMRENDERDATA, cstring_length(data), data);
+    channel_sendstring(EVENT_WMRENDERDATA, data);
 
 }
 
