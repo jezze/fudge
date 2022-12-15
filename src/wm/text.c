@@ -150,6 +150,14 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
                 return i;
 
+            case TEXT_WRAP_NONE:
+            default:
+                rowinfo->width = w;
+                rowinfo->height = h;
+                rowinfo->chars = i - offset;
+
+                return i + 1;
+
             }
 
         }
