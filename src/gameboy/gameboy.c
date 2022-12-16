@@ -6,8 +6,7 @@
 static unsigned char rom[0x40000];
 static unsigned char cart_ram[0x20000];
 static void *framebuffer;
-static unsigned int escapedpress;
-static unsigned int escapedrelease;
+static unsigned int escaped;
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
 {
@@ -125,7 +124,7 @@ static void keypress(struct gb_s *gb, void *data)
 
     struct event_keypress *keypress = data;
 
-    if (escapedpress)
+    if (escaped)
     {
 
         switch (keypress->scancode)
@@ -153,7 +152,7 @@ static void keypress(struct gb_s *gb, void *data)
 
         }
 
-        escapedpress = 0;
+        escaped = 0;
 
     }
 
@@ -164,6 +163,8 @@ static void keypress(struct gb_s *gb, void *data)
         {
 
         case 0x01:
+            channel_send(EVENT_WMUNGRAB);
+            channel_send(EVENT_WMUNMAP);
             channel_close();
 
             break;
@@ -179,7 +180,6 @@ static void keypress(struct gb_s *gb, void *data)
             break;
 
         case 0x2C:
-            channel_sendstring(EVENT_DATA, "Press\n");
             gb->direct.joypad_bits.a = 0;
 
             break;
@@ -200,7 +200,7 @@ static void keyrelease(struct gb_s *gb, void *data)
 
     struct event_keyrelease *keyrelease = data;
 
-    if (escapedrelease)
+    if (escaped)
     {
 
         switch (keyrelease->scancode)
@@ -228,7 +228,7 @@ static void keyrelease(struct gb_s *gb, void *data)
 
         }
 
-        escapedrelease = 0;
+        escaped = 0;
 
     }
 
@@ -237,11 +237,6 @@ static void keyrelease(struct gb_s *gb, void *data)
 
         switch (keyrelease->scancode)
         {
-
-        case 0x01 | 0x80:
-            channel_close();
-
-            break;
 
         case 0x1C | 0x80:
             gb->direct.joypad_bits.start = 1;
@@ -254,13 +249,17 @@ static void keyrelease(struct gb_s *gb, void *data)
             break;
 
         case 0x2C | 0x80:
-            channel_sendstring(EVENT_DATA, "Release\n");
             gb->direct.joypad_bits.a = 1;
 
             break;
 
         case 0x2D | 0x80:
             gb->direct.joypad_bits.b = 1;
+
+            break;
+
+        case 0xE0:
+            escaped = 1;
 
             break;
 
