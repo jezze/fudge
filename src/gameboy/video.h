@@ -7,4 +7,4 @@
 
 void video_setpalette(void);
 void video_drawline(const unsigned char pixels[160], const unsigned char line);
-unsigned short *video_getfb(void);
+unsigned int *video_getfb(void);

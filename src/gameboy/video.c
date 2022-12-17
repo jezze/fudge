@@ -1,18 +1,18 @@
 #include <fudge.h>
 #include "video.h"
 
-static unsigned short fb[LCD_HEIGHT][LCD_WIDTH];
-static unsigned short selected_palette[3][4];
-static unsigned short palette[3][4] = {
-    { 0x7FFF, 0x5294, 0x294A, 0x0000 },
-    { 0x7FFF, 0x5294, 0x294A, 0x0000 },
-    { 0x7FFF, 0x5294, 0x294A, 0x0000 }
+static unsigned int fb[LCD_HEIGHT][LCD_WIDTH];
+static unsigned int selected_palette[3][4];
+static unsigned int palette[3][4] = {
+    { 0x00FFFFFF, 0x00A0A0A0, 0x00606060, 0x00000000 },
+    { 0x00FFFFFF, 0x00A0A0A0, 0x00606060, 0x00000000 },
+    { 0x00FFFFFF, 0x00A0A0A0, 0x00606060, 0x00000000 }
 };
 
 void video_setpalette(void)
 {
 
-    buffer_copy(selected_palette, palette, 3 * 4 * sizeof(unsigned short));
+    buffer_copy(selected_palette, palette, 3 * 4 * sizeof(unsigned int));
 
 }
 
@@ -26,10 +26,10 @@ void video_drawline(const unsigned char pixels[160], const unsigned char line)
 
 }
 
-unsigned short *video_getfb(void)
+unsigned int *video_getfb(void)
 {
 
-    return (unsigned short *)fb;
+    return (unsigned int *)fb;
 
 }
 

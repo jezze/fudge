@@ -5,7 +5,7 @@
 
 static unsigned char rom[0x80000];
 static unsigned char cart_ram[0x20000];
-static unsigned short *framebuffer;
+static unsigned int *framebuffer;
 static unsigned int w, h, scalew, scaleh, totw, toth, offx, offy;
 static unsigned int escaped;
 
@@ -84,8 +84,8 @@ static void render(void)
     if (framebuffer)
     {
 
-        unsigned short *ptarget = framebuffer;
-        unsigned short *psource = video_getfb();
+        unsigned int *ptarget = framebuffer;
+        unsigned int *psource = video_getfb();
         unsigned int y;
 
         for (y = 0; y < toth; y++)
@@ -417,7 +417,7 @@ void init(void)
 
     option_add("width", "1024");
     option_add("height", "768");
-    option_add("bpp", "2");
+    option_add("bpp", "4");
     option_add("keyboard", "system:keyboard");
     option_add("timer", "system:timer/if:0");
     option_add("video", "system:video/if:0");
