@@ -78,39 +78,6 @@ static void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const unsign
 
 }
 
-static void render(void)
-{
-
-    if (framebuffer)
-    {
-
-        unsigned int *ptarget = framebuffer;
-        unsigned int *psource = video_getfb();
-        unsigned int y;
-
-        for (y = 0; y < toth; y++)
-        {
-
-            unsigned int ytarget = (y + offy) * w;
-            unsigned int ysource = (y / scaleh) * LCD_WIDTH;
-            unsigned int x;
-
-            for (x = 0; x < totw; x++)
-            {
-
-                unsigned int xtarget = x + offx;
-                unsigned int xsource = x / scalew;
-
-                ptarget[ytarget + xtarget] = psource[ysource + xsource];
-
-            }
-
-        }
-
-    }
-
-}
-
 static void keypress(struct gb_s *gb, void *data)
 {
 
@@ -308,7 +275,9 @@ static void run(void)
 
         case EVENT_TIMERTICK:
             gb_run_frame(&gb);
-            render();
+
+            if (framebuffer)
+                video_render(framebuffer, w, scalew, scaleh, totw, toth, offx, offy);
 
             break;
 

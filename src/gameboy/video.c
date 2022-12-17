@@ -26,10 +26,31 @@ void video_drawline(const unsigned char pixels[160], const unsigned char line)
 
 }
 
-unsigned int *video_getfb(void)
+void video_render(void *framebuffer, unsigned int w, unsigned int scalew, unsigned int scaleh, unsigned int totw, unsigned int toth, unsigned int offx, unsigned int offy)
 {
 
-    return (unsigned int *)fb;
+    unsigned int *ptarget = framebuffer;
+    unsigned int *psource = (unsigned int *)fb;
+    unsigned int y;
+
+    for (y = 0; y < toth; y++)
+    {
+
+        unsigned int ytarget = (y + offy) * w;
+        unsigned int ysource = (y / scaleh) * LCD_WIDTH;
+        unsigned int x;
+
+        for (x = 0; x < totw; x++)
+        {
+
+            unsigned int xtarget = x + offx;
+            unsigned int xsource = x / scalew;
+
+            ptarget[ytarget + xtarget] = psource[ysource + xsource];
+
+        }
+
+    }
 
 }
 
