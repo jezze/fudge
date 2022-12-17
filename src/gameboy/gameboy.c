@@ -71,24 +71,6 @@ static char *getromname(struct gb_s* gb, char title_str[16])
 
 }
 
-static unsigned char *read_rom_to_ram(char *filename)
-{
-
-    if (file_walk2(FILE_L0, filename))
-        file_read(FILE_L0, rom, 0x80000);
-
-    return rom;
-
-}
-
-static void read_cart_ram_file(char *filename, unsigned int len)
-{
-
-    if (file_walk2(FILE_L0, filename))
-        file_read(FILE_L0, cart_ram, len);
-
-}
-
 static void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const unsigned short val)
 {
 
@@ -288,7 +270,8 @@ static void run(void)
     struct gb_s gb;
     struct message message;
 
-    read_rom_to_ram(romfile);
+    if (file_walk2(FILE_L0, romfile))
+        file_read(FILE_L0, rom, 0x80000);
 
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
 
@@ -309,7 +292,9 @@ static void run(void)
 
     }
 
-    read_cart_ram_file(romfile, getsavesize(&gb));
+    if (file_walk2(FILE_L0, romfile))
+        file_read(FILE_L0, cart_ram, getsavesize(&gb));
+
     channel_sendstring(EVENT_DATA, "ROM: ");
     channel_sendstring(EVENT_DATA, getromname(&gb, romname));
     channel_sendstring(EVENT_DATA, "\n");
