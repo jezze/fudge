@@ -265,7 +265,6 @@ static void run(void)
     channel_sendstring(EVENT_DATA, "ROM: ");
     channel_sendstring(EVENT_DATA, getromname(&gb, romname));
     channel_sendstring(EVENT_DATA, "\n");
-    video_setpalette();
 
     while (channel_pick(&message))
     {
