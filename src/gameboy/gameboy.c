@@ -6,7 +6,7 @@
 static unsigned char rom[0x40000];
 static unsigned char cart_ram[0x20000];
 static unsigned char *framebuffer;
-static unsigned int w, h, scalew, scaleh;
+static unsigned int w, h, scalew, scaleh, totw, toth;
 static unsigned int escaped;
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
@@ -107,16 +107,16 @@ static void render(void)
         unsigned short *fp = (unsigned short *)framebuffer;
         unsigned short *pp = (unsigned short *)panel;
 
-        for (y = 0; y < 288; y++)
+        for (y = 0; y < toth; y++)
         {
 
             unsigned int x;
 
-            for (x = 0; x < 640; x++)
+            for (x = 0; x < totw; x++)
             {
 
-                unsigned short *p = fp + (y * 640) + x;
-                unsigned short *t = pp + ((y / 2) * 160) + x / 4;
+                unsigned short *p = fp + (y * w) + x;
+                unsigned short *t = pp + ((y / scaleh) * 160) + x / scalew;
 
                 *p = *t;
 
@@ -376,6 +376,8 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     h = videomode->h;
     scalew = videomode->w / 160;
     scaleh = videomode->h / 144;
+    totw = 160 * scalew;
+    toth = 144 * scaleh;
 
 }
 
