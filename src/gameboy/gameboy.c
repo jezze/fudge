@@ -5,7 +5,8 @@
 
 static unsigned char rom[0x40000];
 static unsigned char cart_ram[0x20000];
-static void *framebuffer;
+static unsigned char *framebuffer;
+static unsigned int w, h, scalew, scaleh;
 static unsigned int escaped;
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
@@ -103,15 +104,23 @@ static void render(void)
 
         void *panel = video_getfb();
         unsigned int y;
+        unsigned short *fp = (unsigned short *)framebuffer;
+        unsigned short *pp = (unsigned short *)panel;
 
-        for (y = 0; y < 144; y++)
+        for (y = 0; y < 288; y++)
         {
 
-            unsigned int ystart = y * 640 * 2;
-            unsigned int panelstart = y * 160 * 2;
-            unsigned int size = 160 * 2;
+            unsigned int x;
 
-            buffer_copy(framebuffer + ystart, panel + panelstart, size);
+            for (x = 0; x < 640; x++)
+            {
+
+                unsigned short *p = fp + (y * 640) + x;
+                unsigned short *t = pp + ((y / 2) * 160) + x / 4;
+
+                *p = *t;
+
+            }
 
         }
 
@@ -363,6 +372,10 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     struct event_videomode *videomode = mdata;
 
     framebuffer = videomode->framebuffer;
+    w = videomode->w;
+    h = videomode->h;
+    scalew = videomode->w / 160;
+    scaleh = videomode->h / 144;
 
 }
 
