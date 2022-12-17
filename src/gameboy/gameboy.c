@@ -5,7 +5,7 @@
 
 static unsigned char rom[0x80000];
 static unsigned char cart_ram[0x20000];
-static unsigned char *framebuffer;
+static unsigned short *framebuffer;
 static unsigned int w, h, scalew, scaleh, totw, toth, offx, offy;
 static unsigned int escaped;
 
@@ -102,10 +102,7 @@ static void render(void)
     if (framebuffer)
     {
 
-        void *panel = video_getfb();
         unsigned int y;
-        unsigned short *fp = (unsigned short *)framebuffer;
-        unsigned short *pp = (unsigned short *)panel;
 
         for (y = 0; y < toth; y++)
         {
@@ -115,8 +112,8 @@ static void render(void)
             for (x = 0; x < totw; x++)
             {
 
-                unsigned short *p = fp + ((y + offy) * w) + (x + offx);
-                unsigned short *t = pp + ((y / scaleh) * 160) + x / scalew;
+                unsigned short *p = framebuffer + ((y + offy) * w) + (x + offx);
+                unsigned short *t = video_getfb() + ((y / scaleh) * LCD_WIDTH) + x / scalew;
 
                 *p = *t;
 
@@ -374,10 +371,10 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     framebuffer = videomode->framebuffer;
     w = videomode->w;
     h = videomode->h;
-    scalew = videomode->w / 160;
-    scaleh = videomode->h / 144;
-    totw = 160 * scalew;
-    toth = 144 * scaleh;
+    scalew = videomode->w / LCD_WIDTH;
+    scaleh = videomode->h / LCD_HEIGHT;
+    totw = LCD_WIDTH * scalew;
+    toth = LCD_HEIGHT * scaleh;
     offx = (w - totw) / 2;
     offy = (h - toth) / 2;
 
