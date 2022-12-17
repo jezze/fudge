@@ -102,20 +102,24 @@ static void render(void)
     if (framebuffer)
     {
 
+        unsigned short *ptarget = framebuffer;
+        unsigned short *psource = video_getfb();
         unsigned int y;
 
         for (y = 0; y < toth; y++)
         {
 
+            unsigned int ytarget = (y + offy) * w;
+            unsigned int ysource = (y / scaleh) * LCD_WIDTH;
             unsigned int x;
 
             for (x = 0; x < totw; x++)
             {
 
-                unsigned short *p = framebuffer + ((y + offy) * w) + (x + offx);
-                unsigned short *t = video_getfb() + ((y / scaleh) * LCD_WIDTH) + x / scalew;
+                unsigned int xtarget = x + offx;
+                unsigned int xsource = x / scalew;
 
-                *p = *t;
+                ptarget[ytarget + xtarget] = psource[ysource + xsource];
 
             }
 
