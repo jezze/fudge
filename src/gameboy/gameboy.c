@@ -3,10 +3,10 @@
 #include "cpu.h"
 #include "video.h"
 
-static unsigned char rom[0x40000];
+static unsigned char rom[0x80000];
 static unsigned char cart_ram[0x20000];
 static unsigned char *framebuffer;
-static unsigned int w, h, scalew, scaleh, totw, toth;
+static unsigned int w, h, scalew, scaleh, totw, toth, offx, offy;
 static unsigned int escaped;
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
@@ -115,7 +115,7 @@ static void render(void)
             for (x = 0; x < totw; x++)
             {
 
-                unsigned short *p = fp + (y * w) + x;
+                unsigned short *p = fp + ((y + offy) * w) + (x + offx);
                 unsigned short *t = pp + ((y / scaleh) * 160) + x / scalew;
 
                 *p = *t;
@@ -378,6 +378,8 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     scaleh = videomode->h / 144;
     totw = 160 * scalew;
     toth = 144 * scaleh;
+    offx = (w - totw) / 2;
+    offy = (h - toth) / 2;
 
 }
 
@@ -427,8 +429,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("width", "640");
-    option_add("height", "480");
+    option_add("width", "1024");
+    option_add("height", "768");
     option_add("bpp", "2");
     option_add("keyboard", "system:keyboard");
     option_add("timer", "system:timer/if:0");

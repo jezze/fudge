@@ -12,7 +12,7 @@
 #define ARCH_TASKMMUPHYSICAL            0x00600000
 #define ARCH_TASKMMUSIZE                0x00004000
 #define ARCH_TASKCODEPHYSICAL           0x04000000
-#define ARCH_TASKCODESIZE               0x00078000
+#define ARCH_TASKCODESIZE               0x000F8000
 #define ARCH_TASKSTACKSIZE              0x00008000
 #define ARCH_TASKSTACKVIRTUAL           0x80000000
 #define ARCH_KCODE                      0x01
