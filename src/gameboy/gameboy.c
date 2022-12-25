@@ -231,14 +231,12 @@ static void keyrelease(struct gb_s *gb, void *data)
 static void run(void)
 {
 
-    char *romfile = "/data/pocket.gb";
     char romname[16];
     enum gb_init_error_e gb_ret;
     struct gb_s gb;
     struct message message;
 
-    if (file_walk2(FILE_L0, romfile))
-        file_read(FILE_L0, rom, 0x80000);
+    file_read(FILE_G5, rom, 0x80000);
 
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
 
@@ -259,9 +257,7 @@ static void run(void)
 
     }
 
-    if (file_walk2(FILE_L0, romfile))
-        file_read(FILE_L0, cart_ram, getsavesize(&gb));
-
+    file_read(FILE_G5, cart_ram, getsavesize(&gb));
     channel_sendstring(EVENT_DATA, "ROM: ");
     channel_sendstring(EVENT_DATA, getromname(&gb, romname));
     channel_sendstring(EVENT_DATA, "\n");
@@ -380,6 +376,16 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onpath(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    if (!file_walk2(FILE_L0, mdata))
+        channel_error("Could not find path");
+
+    file_duplicate(FILE_G5, FILE_L0);
+
+}
+
 void init(void)
 {
 
@@ -390,6 +396,7 @@ void init(void)
     option_add("timer", "system:timer/if:0");
     option_add("video", "system:video/if:0");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
     channel_bind(EVENT_WMINIT, onwminit);
