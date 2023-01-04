@@ -1,101 +1,14 @@
 #include <fudge.h>
+#include <math.h>
 #include <abi.h>
-
-#define PI 3.1415926
 
 static unsigned int *framebuffer;
 static unsigned int w, h;
 
-struct vector2
-{
-
-    double x;
-    double y;
-
-};
-
-double abs(double x)
-{
-
-    return x > 0 ? x : -x;
-
-}
-
-double pow(double a, double b)
-{
-
-    double c = 1;
-    unsigned int i;
-
-    for (i = 0; i < b; i++)
-        c *= a;
-
-    return c;
-
-}
-
-double fact(double x)
-{
-
-    double ret = 1;
-    unsigned int i;
-
-    for (i = 1; i <= x; i++)
-        ret *= i;
-
-    return ret;
-
-}
-
-double sin(double x)
-{
-
-    double y = x;
-    double s = -1;
-    unsigned int i;
-
-    for (i = 3; i <= 100; i += 2)
-    {
-
-        y += s * (pow(x, i) / fact(i));
-        s *= -1;
-
-    }
-
-    return y;
-
-}
-
-double cos(double x)
-{
-
-    double y = 1;
-    double s = -1;
-    unsigned int i;
-
-    for (i = 2; i <= 100; i += 2)
-    {
-
-        y += s * (pow(x, i) / fact(i));
-        s *= -1;
-
-    }
-
-    return y;
-
-}
-
-double tan(double x)
-{
-
-    return (sin(x) / cos(x));
-
-}
-
 double restrain(double x)
 {
 
-    double g = 2 * PI;
+    double g = 2 * MATH_PI;
 
     if (x > g)
         x -= g;
@@ -129,11 +42,12 @@ void putpixel(int x, int y, unsigned int color)
 void putline(int x0, int y0, int x1, int y1, unsigned int color)
 {
 
-    int dx = abs(x1 - x0);
+    int dx = math_abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
-    int dy = -abs(y1 - y0);
+    int dy = -math_abs(y1 - y0);
     int sy = y0 < y1 ? 1 : -1;
-    int err = dx + dy, e2;
+    int err = dx + dy;
+    int e2;
 
     for (;;)
     {
@@ -214,6 +128,14 @@ void putcircle(int xm, int ym, int r, unsigned int color)
 
 }
 
+struct vector2
+{
+
+    double x;
+    double y;
+
+};
+
 struct vector2 vector2_create(double x, double y)
 {
 
@@ -286,7 +208,7 @@ static void setup(void)
 
     pp0.position = vector2_create(280, 200);
     pp0.radius = vector2_create(180, 100);
-    pp0.angle = PI;
+    pp0.angle = MATH_PI;
     pp0.speed = 0.05;
     pp1.position = vector2_create(360, 220);
     pp1.radius = vector2_create(80, 80);
@@ -299,10 +221,10 @@ static void render_scene1(unsigned int frame)
 {
 
     pp0.angle = restrain(pp0.angle + pp0.speed);
-    t0 = vector2_mul(&pp0.radius, cos(pp0.angle), sin(pp0.angle));
+    t0 = vector2_mul(&pp0.radius, math_cos(pp0.angle), math_sin(pp0.angle));
     c0 = vector2_add2(&pp0.position, &t0);
     pp1.angle = restrain(pp1.angle + pp1.speed);
-    t1 = vector2_mul(&pp1.radius, cos(pp1.angle), sin(pp1.angle));
+    t1 = vector2_mul(&pp1.radius, math_cos(pp1.angle), math_sin(pp1.angle));
     c1 = vector2_add2(&pp1.position, &t1);
 
     clearscreen(0xFF001020);
