@@ -57,8 +57,8 @@ static void setupvideo(void)
     if (!file_walk(FILE_L2, FILE_L0, "ctrl"))
         return;
 
-    file_seekwriteall(FILE_L1, black, 768, 0);
-    file_seekwriteall(FILE_L2, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_writeall(FILE_L1, black, 768);
+    file_writeall(FILE_L2, &settings, sizeof (struct ctrl_videosettings));
 
 }
 

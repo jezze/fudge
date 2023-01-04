@@ -338,6 +338,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     struct ctrl_videosettings settings;
 
+    settings.width = option_getdecimal("width");
+    settings.height = option_getdecimal("height");
+    settings.bpp = option_getdecimal("bpp");
+
     if (!file_walk2(FILE_L0, option_getstring("keyboard")))
         channel_warning("Could not open keyboard");
 
@@ -360,15 +364,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         channel_warning("Could not open timer event");
 
     channel_send(EVENT_WMGRAB);
-
-    settings.width = option_getdecimal("width");
-    settings.height = option_getdecimal("height");
-    settings.bpp = option_getdecimal("bpp");
-
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
-    file_seekwriteall(FILE_L1, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
     run();
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);

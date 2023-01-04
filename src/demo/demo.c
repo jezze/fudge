@@ -5,7 +5,6 @@
 
 static unsigned int *framebuffer;
 static unsigned int w, h;
-static int counter;
 
 struct vector2
 {
@@ -275,25 +274,61 @@ struct point
 
 };
 
+static struct point pp0;
+static struct point pp1;
+static struct vector2 t0;
+static struct vector2 c0;
+static struct vector2 t1;
+static struct vector2 c1;
+
+static void setup(void)
+{
+
+    pp0.position = vector2_create(280, 200);
+    pp0.radius = vector2_create(180, 100);
+    pp0.angle = PI;
+    pp0.speed = 0.05;
+    pp1.position = vector2_create(360, 220);
+    pp1.radius = vector2_create(80, 80);
+    pp1.angle = 0;
+    pp1.speed = 0.07;
+
+}
+
+static void render_scene1(unsigned int frame)
+{
+
+    pp0.angle = restrain(pp0.angle + pp0.speed);
+    t0 = vector2_mul(&pp0.radius, cos(pp0.angle), sin(pp0.angle));
+    c0 = vector2_add2(&pp0.position, &t0);
+    pp1.angle = restrain(pp1.angle + pp1.speed);
+    t1 = vector2_mul(&pp1.radius, cos(pp1.angle), sin(pp1.angle));
+    c1 = vector2_add2(&pp1.position, &t1);
+
+    clearscreen(0xFF001020);
+    putline(c0.x, c0.y, c1.x, c1.y, 0xFFFFFFFF);
+    putsquare(c0.x - 4, c0.y - 4, 8, 8, 0xFFFFFFFF);
+    putcircle(c1.x, c1.y, 8, 0xFFFFFFFF);
+
+}
+
+static void render(unsigned int frame)
+{
+
+    if (frame < 10000)
+        render_scene1(frame);
+    else
+        render_scene1(frame);
+
+}
+
 static void run(void)
 {
 
     struct message message;
-    struct point pp0;
-    struct point pp1;
-    struct vector2 t0;
-    struct vector2 c0;
-    struct vector2 t1;
-    struct vector2 c1;
+    unsigned int frame = 0;
 
-    pp0.position = vector2_create(160, 160);
-    pp0.radius = vector2_create(100, 100);
-    pp0.angle = PI;
-    pp0.speed = 0.05;
-    pp1.position = vector2_create(300, 220);
-    pp1.radius = vector2_create(80, 80);
-    pp1.angle = 0;
-    pp1.speed = 0.07;
+    setup();
 
     while (channel_pick(&message))
     {
@@ -302,18 +337,7 @@ static void run(void)
         {
 
         case EVENT_TIMERTICK:
-            counter++;
-            pp0.angle = restrain(pp0.angle + pp0.speed);
-            t0 = vector2_mul(&pp0.radius, cos(pp0.angle), sin(pp0.angle));
-            c0 = vector2_add2(&pp0.position, &t0);
-            pp1.angle = restrain(pp1.angle + pp1.speed);
-            t1 = vector2_mul(&pp1.radius, cos(pp1.angle), sin(pp1.angle));
-            c1 = vector2_add2(&pp1.position, &t1);
-
-            clearscreen(0xFF001020);
-            putline(c0.x, c0.y, c1.x, c1.y, 0xFFFFFFFF);
-            putsquare(c0.x - 4, c0.y - 4, 8, 8, 0xFFFFFFFF);
-            putcircle(c1.x, c1.y, 8, 0xFFFFFFFF);
+            render(frame++);
 
             break;
 
@@ -369,6 +393,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     struct ctrl_videosettings settings;
 
+    settings.width = option_getdecimal("width");
+    settings.height = option_getdecimal("height");
+    settings.bpp = option_getdecimal("bpp");
+
     if (!file_walk2(FILE_L0, option_getstring("keyboard")))
         channel_warning("Could not open keyboard");
 
@@ -391,15 +419,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         channel_warning("Could not open timer event");
 
     channel_send(EVENT_WMGRAB);
-
-    settings.width = option_getdecimal("width");
-    settings.height = option_getdecimal("height");
-    settings.bpp = option_getdecimal("bpp");
-
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
-    file_seekwriteall(FILE_L1, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
     run();
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
