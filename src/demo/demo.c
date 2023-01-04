@@ -7,7 +7,7 @@ static unsigned int *framebuffer;
 static unsigned int w, h;
 static int counter;
 
-struct vertex
+struct vector2
 {
 
     double x;
@@ -215,33 +215,85 @@ void putcircle(int xm, int ym, int r, unsigned int color)
 
 }
 
+struct vector2 vector2_create(double x, double y)
+{
+
+    struct vector2 n;
+
+    n.x = x;
+    n.y = y;
+
+    return n;
+
+}
+
+struct vector2 vector2_add(struct vector2 *v, double x, double y)
+{
+
+    struct vector2 n;
+
+    n.x = v->x + x;
+    n.y = v->y + y;
+
+    return n;
+
+}
+
+struct vector2 vector2_add2(struct vector2 *v1, struct vector2 *v2)
+{
+
+    return vector2_add(v1, v2->x, v2->y);
+
+}
+
+struct vector2 vector2_mul(struct vector2 *v, double x, double y)
+{
+
+    struct vector2 n;
+
+    n.x = v->x * x;
+    n.y = v->y * y;
+
+    return n;
+
+}
+
+struct vector2 vector2_mul2(struct vector2 *v1, struct vector2 *v2)
+{
+
+    return vector2_mul(v1, v2->x, v2->y);
+
+}
+
+struct point
+{
+
+    struct vector2 position;
+    struct vector2 radius;
+    double angle;
+    double speed;
+
+};
+
 static void run(void)
 {
 
     struct message message;
-    struct vertex p0;
-    struct vertex d0;
-    struct vertex c0;
-    double r0;
-    double s0;
-    struct vertex p1;
-    struct vertex d1;
-    struct vertex c1;
-    double r1;
-    double s1;
+    struct point pp0;
+    struct point pp1;
+    struct vector2 t0;
+    struct vector2 c0;
+    struct vector2 t1;
+    struct vector2 c1;
 
-    p0.x = 160;
-    p0.y = 160;
-    d0.x = PI;
-    d0.y = PI;
-    r0 = 100;
-    s0 = 0.05;
-    p1.x = 300;
-    p1.y = 220;
-    d1.x = 0;
-    d1.y = 0;
-    r1 = 80;
-    s1 = 0.07;
+    pp0.position = vector2_create(160, 160);
+    pp0.radius = vector2_create(100, 100);
+    pp0.angle = PI;
+    pp0.speed = 0.05;
+    pp1.position = vector2_create(300, 220);
+    pp1.radius = vector2_create(80, 80);
+    pp1.angle = 0;
+    pp1.speed = 0.07;
 
     while (channel_pick(&message))
     {
@@ -251,14 +303,12 @@ static void run(void)
 
         case EVENT_TIMERTICK:
             counter++;
-            d0.x = restrain(d0.x + s0);
-            d0.y = restrain(d0.y + s0);
-            c0.x = p0.x + (r0 * cos(d0.x));
-            c0.y = p0.y + (r0 * sin(d0.y));
-            d1.x = restrain(d1.x + s1);
-            d1.y = restrain(d1.y + s1);
-            c1.x = p1.x + (r1 * cos(d1.x));
-            c1.y = p1.y + (r1 * sin(d1.y));
+            pp0.angle = restrain(pp0.angle + pp0.speed);
+            t0 = vector2_mul(&pp0.radius, cos(pp0.angle), sin(pp0.angle));
+            c0 = vector2_add2(&pp0.position, &t0);
+            pp1.angle = restrain(pp1.angle + pp1.speed);
+            t1 = vector2_mul(&pp1.radius, cos(pp1.angle), sin(pp1.angle));
+            c1 = vector2_add2(&pp1.position, &t1);
 
             clearscreen(0xFF001020);
             putline(c0.x, c0.y, c1.x, c1.y, 0xFFFFFFFF);
