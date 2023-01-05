@@ -300,6 +300,7 @@ static double size = 0;
 static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
 static unsigned int ecolor = 0xFF8090A0;
+static unsigned int ccolor = 0xFF203040;
 
 static void translate(double x, double y, double z)
 {
@@ -357,6 +358,16 @@ static void projectnode(struct vector3 *v, unsigned int color)
 
 }
 
+static void projectnode2(struct vector3 *v, unsigned int color)
+{
+
+    double x = (v->x - cam.x) * (cam.z / (cam.z + v->z));
+    double y = (v->y - cam.y) * (cam.z / (cam.z + v->z));
+
+    putcircle(x + wmid, y + hmid, math_abs(v->z) * 0.8, color);
+
+}
+
 static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
 {
 
@@ -410,6 +421,14 @@ static void render_scene2(unsigned int frame)
     rotatez(rz);
     translate(0, 0, math_sin(size) * 100 + 100);
     clearscreen(bcolor);
+    projectnode2(&nodes[0], ccolor);
+    projectnode2(&nodes[1], ccolor);
+    projectnode2(&nodes[2], ccolor);
+    projectnode2(&nodes[3], ccolor);
+    projectnode2(&nodes[4], ccolor);
+    projectnode2(&nodes[5], ccolor);
+    projectnode2(&nodes[6], ccolor);
+    projectnode2(&nodes[7], ccolor);
     projectedge(&nodes[0], &nodes[1], ecolor);
     projectedge(&nodes[1], &nodes[3], ecolor);
     projectedge(&nodes[3], &nodes[2], ecolor);
