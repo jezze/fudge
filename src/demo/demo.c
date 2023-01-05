@@ -290,8 +290,9 @@ static double rz = MATH_PI / 4;
 static double sx = MATH_PI / 64;
 static double sy = MATH_PI / 64;
 static double sz = MATH_PI / 64;
+static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
-static unsigned int ecolor = 0xFFFFFFFF;
+static unsigned int ecolor = 0xFF8090A0;
 
 static void translate(double x, double y)
 {
@@ -375,7 +376,7 @@ static void setup_scene2(void)
 static void render_scene1(unsigned int frame)
 {
 
-    clearscreen(0xFF001020);
+    clearscreen(bcolor);
 
 }
 
@@ -390,8 +391,8 @@ static void render_scene2(unsigned int frame)
     rotatex(rx);
     rotatey(ry);
     rotatez(rz);
-    translate(320, 240);
-    clearscreen(0xFF001020);
+    translate(w / 2, h / 2);
+    clearscreen(bcolor);
     putedge(&nodes[0], &nodes[1], ecolor);
     putedge(&nodes[1], &nodes[3], ecolor);
     putedge(&nodes[3], &nodes[2], ecolor);
