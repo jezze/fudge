@@ -1,59 +1,46 @@
 #!/bin/bash
 
+qemu_bin="qemu-system-x86_64"
+qemu_flags="-nodefaults -enable-kvm"
+qemu_flags_run="-smp 4 -kernel fudge -initrd fudge.cpio -vga std -serial stdio"
+qemu_flags_runiso="-smp 4 -cdrom fudge.iso -vga std -serial stdio"
+
+getdisk() {
+    if test -f "disks/node-$1-sda.qcow2"
+    then
+        echo "-drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
+    fi
+}
+
+getnetwork() {
+    echo "-device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
+}
+
 run() {
     sttybak=$(stty -g)
 
+    echo "Running: $qemu_bin $qemu_flags $2"
     echo "Use ctrl+] to kill node-$1"
 
     stty intr ^]
-    qemu-system-x86_64 -nodefaults -enable-kvm $2
+    $qemu_bin $qemu_flags $2
     stty $sttybak
 }
 
 cmd_run() {
-    devices="-smp 4 -kernel fudge -initrd fudge.cpio -vga std -serial stdio"
-    devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
-
-    if test -f "disks/node-$1-sda.qcow2"
-    then
-        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
-    fi
-
-    run $1 "$devices"
+    run $1 "$qemu_flags_run $(getnetwork $1) $(getdisk $1)"
 }
 
 cmd_runsimple() {
-    devices="-smp 4 -kernel fudge -initrd fudge.cpio -vga std -serial stdio"
-
-    if test -f "disks/node-$1-sda.qcow2"
-    then
-        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
-    fi
-
-    run $1 "$devices"
+    run $1 "$qemu_flags_run $(getdisk $1)"
 }
 
 cmd_runiso() {
-    devices="-smp 4 -cdrom fudge.iso -vga std -serial stdio"
-    devices="$devices -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
-
-    if test -f "disks/node-$1-sda.qcow2"
-    then
-        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
-    fi
-
-    run $1 "$devices"
+    run $1 "$qemu_flags_runiso $(getnetwork $1) $(getdisk $1)"
 }
 
 cmd_runisosimple() {
-    devices="-smp 4 -cdrom fudge.iso -vga std -serial stdio"
-
-    if test -f "disks/node-$1-sda.qcow2"
-    then
-        devices="$devices -drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
-    fi
-
-    run $1 "$devices"
+    run $1 "$qemu_flags_runiso $(getdisk $1)"
 }
 
 cmd_nat() {
