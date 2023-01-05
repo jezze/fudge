@@ -4,6 +4,6 @@ L:=\
 O:=\
     $(DIR_LIB)/math/math.o \
 
-$(DIR_LIB)/math/math.o: CC=$(TARGET)-cc -Wall -Werror -Wno-overlength-strings -ffreestanding -fno-asynchronous-unwind-tables -std=c89 -O2 -S -o
+$(DIR_LIB)/math/math.o: CC_FLAGS:=$(filter-out -msoft-float, $(CC_FLAGS))
 
 include $(DIR_MK)/lib.mk

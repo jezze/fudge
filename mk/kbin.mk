@@ -1,6 +1,6 @@
 $(B): $(O) $(L)
 	@echo LD $@
-	@$(LD_KBIN) $@ $^
+	@$(LD) $(LD_FLAGS_KBIN) -o $@ $^
 
 KBIN:=$(KBIN) $(B)
 KMAP:=$(KMAP) $(N)

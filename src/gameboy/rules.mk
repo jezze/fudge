@@ -11,8 +11,8 @@ L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
 
-$(DIR_SRC)/gameboy/audio.o: CC=$(TARGET)-cc -Wall -Werror -Wno-overlength-strings -ffreestanding -fno-asynchronous-unwind-tables -std=c89 -O2 -S -o
-$(DIR_SRC)/gameboy/cpu.o: CC=$(TARGET)-cc -Wall -Werror -Wno-overlength-strings -msoft-float -ffreestanding -fno-asynchronous-unwind-tables -std=c89 -O2 -S -o
-$(DIR_SRC)/gameboy/gameboy.o: CC=$(TARGET)-cc -Wall -Werror -Wno-overlength-strings -msoft-float -ffreestanding -fno-asynchronous-unwind-tables -std=c89 -O2 -S -o
+$(DIR_SRC)/gameboy/audio.o: CC_FLAGS:=$(filter-out -msoft-float, $(CC_FLAGS))
+$(DIR_SRC)/gameboy/cpu.o: CC_FLAGS:=$(filter-out -pedantic, $(CC_FLAGS))
+$(DIR_SRC)/gameboy/gameboy.o: CC_FLAGS:=$(filter-out -pedantic, $(CC_FLAGS))
 
 include $(DIR_MK)/bin.mk

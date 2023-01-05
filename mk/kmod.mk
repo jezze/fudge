@@ -1,6 +1,6 @@
 $(M): $(O) $(L)
 	@echo LD $@
-	@$(LD_KMOD) $@ $^
+	@$(LD) $(LD_FLAGS_KMOD) -o $@ $^
 
 KMOD:=$(KMOD) $(M)
 KMAP:=$(KMAP) $(N)

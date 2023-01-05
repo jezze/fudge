@@ -1,12 +1,19 @@
-AR=$(TARGET)-ar rcs
-AS=$(TARGET)-as -c -o
-CC=$(TARGET)-gcc -Wall -Werror -Wno-overlength-strings -ffreestanding -fno-asynchronous-unwind-tables -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -std=c89 -pedantic -O2 -S -o
-NM=$(TARGET)-nm -gp
-PP=$(TARGET)-gcc -Wall -Werror -nostdinc -std=c89 -pedantic -E -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -o
-DP=$(TARGET)-gcc -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -MM -MT
-LD_BIN=$(TARGET)-ld -s -static -nostdlib -o
-LD_KBIN=$(TARGET)-ld -static -nostdlib -T$(DIR_SRC)/kernel/$(ARCH)/$(LOADER)/linker.ld -o
-LD_KMOD=$(TARGET)-ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
+AR=$(TARGET)-ar
+AS=$(TARGET)-as
+CC=$(TARGET)-gcc
+LD=$(TARGET)-ld
+NM=$(TARGET)-nm
+PP=$(TARGET)-gcc
+DP=$(TARGET)-gcc
+AR_FLAGS=rcs
+AS_FLAGS=-c
+CC_FLAGS=-Wall -Werror -Wno-overlength-strings -ffreestanding -fno-asynchronous-unwind-tables -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -std=c89 -pedantic -O2 -S
+DP_FLAGS=-I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -MM -MT
+NM_FLAGS=-gp
+PP_FLAGS=-Wall -Werror -nostdinc -std=c89 -pedantic -E -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC)
+LD_FLAGS_BIN=-s -static -nostdlib
+LD_FLAGS_KBIN=-static -nostdlib -T$(DIR_SRC)/kernel/$(ARCH)/$(LOADER)/linker.ld
+LD_FLAGS_KMOD=-static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r
 
 %.d: %.s
 	@echo DP $@
@@ -14,21 +21,21 @@ LD_KMOD=$(TARGET)-ld -static -nostdlib -T$(DIR_SRC)/modules/linker.ld -r -o
 
 %.d: %.c
 	@echo DP $@
-	@$(DP) $*.o $*.c > $*.d
+	@$(DP) $(DP_FLAGS) $*.o $*.c > $*.d
 
 %.i: %.c
 	@echo PP $@
-	@$(PP) $@ $^
+	@$(PP) $(PP_FLAGS) -o $@ $^
 
 %.s: %.i
 	@echo CC $@
-	@$(CC) $@ $^
+	@$(CC) $(CC_FLAGS) -o $@ $^
 
 %.o: %.s
 	@echo AS $@
-	@$(AS) $@ $^
+	@$(AS) $(AS_FLAGS) -o $@ $^
 
 %.map: %
 	@echo NM $@
-	@$(NM) $^ > $@
+	@$(NM) $(NM_FLAGS) $^ > $@
 
