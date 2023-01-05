@@ -5,15 +5,13 @@
 static unsigned int *framebuffer;
 static unsigned int wmax, hmax, wmid, hmid;
 
-double restrain(double x)
+double constrain(double x, double min, double max)
 {
 
-    double g = 2 * MATH_PI;
+    x = math_mod(x, max);
 
-    if (x > g)
-        x -= g;
-    else if (x < -g)
-        x += g;
+    if (x < 0)
+        x += max;
 
     return x;
 
@@ -408,17 +406,49 @@ static void setup_scene2(void)
 static void render_scene1(unsigned int frame)
 {
 
-    clearscreen(bcolor);
+    unsigned int x;
+    unsigned int y;
+    double sec = MATH_PI / 2;
+
+    for (y = 0; y < hmax; y++)
+    {
+
+        for (x = 0; x < wmax; x++)
+        {
+
+/*
+            double dx = x + 0.5 * math_sin(sec / 5.0);
+            double dy = y + 0.5 * math_cos(sec / 3.0);
+            double dv = math_sin(x * 10 + sec) + math_sin(10 * (x * math_sin(sec / 2.0) + y * math_cos(sec / 3.0)) + sec) + math_sin(math_sqrt(100 * (dx * dx + dy * dy) + 1) + sec);
+            unsigned char r = 255 * math_abs(math_sin(dv * MATH_PI));
+            unsigned char g = 255 * math_abs(math_sin(dv * 2 * MATH_PI / 3));
+            unsigned char b = 255 * math_abs(math_sin(dv * 4 * MATH_PI / 3));
+            unsigned int color = 0xFF000000 | (r << 16) | (g << 8) | b;
+*/
+
+            double ar = math_sin(sec);
+            double ag = math_sin(sec);
+            double ab = math_sin(sec);
+            unsigned char r = (255.0 * math_abs(ar));
+            unsigned char g = (255.0 * math_abs(ag));
+            unsigned char b = (255.0 * math_abs(ab));
+            unsigned int color = 0xFF000000 | (r << 16) | (g << 8) | b;
+
+            putpixel(x, y, color);
+
+        }
+
+    }
 
 }
 
 static void render_scene2(unsigned int frame)
 {
 
-    rx = restrain(rx + sx);
-    ry = restrain(ry + sy);
-    rz = restrain(rz + sz);
-    size = restrain(size + 0.02); 
+    rx = constrain(rx + sx, 0, 2 * MATH_PI);
+    ry = constrain(ry + sy, 0, 2 * MATH_PI);
+    rz = constrain(rz + sz, 0, 2 * MATH_PI);
+    size = constrain(size + 0.02, 0, 2 * MATH_PI); 
 
     buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
     rotatex(rx);
@@ -457,20 +487,56 @@ static void render_scene2(unsigned int frame)
 
 }
 
-static void render(unsigned int frame)
+struct scene
 {
 
-    if (frame < 60)
+    unsigned int used;
+    unsigned int framestart;
+    unsigned int framestop;
+    void (*setup)(void);
+    void (*render)(unsigned int frame);
+
+};
+
+static struct scene scenelist[] = {
+    {0, 0, 6000, setup_scene1, render_scene1},
+    {1, 0, 6000, setup_scene2, render_scene2}
+};
+
+static void setup(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 2; i++)
     {
 
-        render_scene1(frame);
+        struct scene *scene = &scenelist[i];
+
+        if (!scene->used)
+            continue;
+
+        scene->setup();
 
     }
 
-    else
+}
+
+static void render(unsigned int frame)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 2; i++)
     {
 
-        render_scene2(frame);
+        struct scene *scene = &scenelist[i];
+
+        if (!scene->used)
+            continue;
+
+        if (frame >= scene->framestart && frame < scene->framestop)
+            scene->render(frame);
 
     }
 
@@ -482,8 +548,7 @@ static void run(void)
     struct message message;
     unsigned int frame = 0;
 
-    setup_scene1();
-    setup_scene2();
+    setup();
 
     while (channel_pick(&message))
     {
