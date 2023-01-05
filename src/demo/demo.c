@@ -208,11 +208,9 @@ struct vector3 vector3_create(double x, double y, double z)
 
 }
 
-struct vector3 vector3_rotatex(struct vector3 *v, double theta)
+struct vector3 vector3_arotatex(struct vector3 *v, double s, double c)
 {
 
-    double s = math_sin(theta);
-    double c = math_cos(theta);
     struct vector3 n;
 
     n.x = v->x;
@@ -223,11 +221,17 @@ struct vector3 vector3_rotatex(struct vector3 *v, double theta)
 
 }
 
-struct vector3 vector3_rotatey(struct vector3 *v, double theta)
+
+struct vector3 vector3_rotatex(struct vector3 *v, double theta)
 {
 
-    double s = math_sin(theta);
-    double c = math_cos(theta);
+    return vector3_arotatex(v, math_sin(theta), math_cos(theta));
+
+}
+
+struct vector3 vector3_arotatey(struct vector3 *v, double s, double c)
+{
+
     struct vector3 n;
 
     n.x = v->x * c + v->z * s;
@@ -238,11 +242,16 @@ struct vector3 vector3_rotatey(struct vector3 *v, double theta)
 
 }
 
-struct vector3 vector3_rotatez(struct vector3 *v, double theta)
+struct vector3 vector3_rotatey(struct vector3 *v, double theta)
 {
 
-    double s = math_sin(theta);
-    double c = math_cos(theta);
+    return vector3_arotatey(v, math_sin(theta), math_cos(theta));
+
+}
+
+struct vector3 vector3_arotatez(struct vector3 *v, double s, double c)
+{
+
     struct vector3 n;
 
     n.x = v->x * c - v->y * s;
@@ -250,6 +259,13 @@ struct vector3 vector3_rotatez(struct vector3 *v, double theta)
     n.z = v->z;
 
     return n;
+
+}
+
+struct vector3 vector3_rotatez(struct vector3 *v, double theta)
+{
+
+    return vector3_arotatez(v, math_sin(theta), math_cos(theta));
 
 }
 
@@ -266,24 +282,16 @@ struct vector3 vector3_add(struct vector3 *v, double x, double y, double z)
 
 }
 
-struct point
-{
-
-    struct vector2 position;
-    struct vector2 radius;
-    double angle;
-    double speed;
-
-};
-
-static struct point pp0;
-static struct point pp1;
-static struct vector2 t0;
-static struct vector2 c0;
-static struct vector2 t1;
-static struct vector2 c1;
 static struct vector3 nodeslocal[8];
 static struct vector3 nodes[8];
+static double rx = MATH_PI / 4;
+static double ry = MATH_PI / 4;
+static double rz = MATH_PI / 4;
+static double sx = MATH_PI / 64;
+static double sy = MATH_PI / 64;
+static double sz = MATH_PI / 64;
+static unsigned int ncolor = 0xFFFFFF00;
+static unsigned int ecolor = 0xFFFFFFFF;
 
 static void translate(double x, double y)
 {
@@ -298,44 +306,55 @@ static void translate(double x, double y)
 static void rotatex(double theta)
 {
 
+    double s = math_sin(theta);
+    double c = math_cos(theta);
     unsigned int i;
 
     for (i = 0; i < 8; i++)
-        nodes[i] = vector3_rotatex(&nodes[i], theta);
+        nodes[i] = vector3_arotatex(&nodes[i], s, c);
 
 }
 
 static void rotatey(double theta)
 {
 
+    double s = math_sin(theta);
+    double c = math_cos(theta);
     unsigned int i;
 
     for (i = 0; i < 8; i++)
-        nodes[i] = vector3_rotatey(&nodes[i], theta);
+        nodes[i] = vector3_arotatey(&nodes[i], s, c);
 
 }
 
 static void rotatez(double theta)
 {
 
+    double s = math_sin(theta);
+    double c = math_cos(theta);
     unsigned int i;
 
     for (i = 0; i < 8; i++)
-        nodes[i] = vector3_rotatez(&nodes[i], theta);
+        nodes[i] = vector3_arotatez(&nodes[i], s, c);
+
+}
+
+static void putvertex(struct vector3 *v, unsigned int color)
+{
+
+    putcircle(v->x, v->y, 8, color);
+
+}
+
+static void putedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
+{
+
+    putline(v1->x, v1->y, v2->x, v2->y, color);
 
 }
 
 static void setup_scene1(void)
 {
-
-    pp0.position = vector2_create(280, 200);
-    pp0.radius = vector2_create(180, 100);
-    pp0.angle = MATH_PI;
-    pp0.speed = 0.05;
-    pp1.position = vector2_create(360, 220);
-    pp1.radius = vector2_create(80, 80);
-    pp1.angle = 0;
-    pp1.speed = 0.07;
 
 }
 
@@ -356,79 +375,50 @@ static void setup_scene2(void)
 static void render_scene1(unsigned int frame)
 {
 
-    pp0.angle = restrain(pp0.angle + pp0.speed);
-    t0 = vector2_mul(&pp0.radius, math_cos(pp0.angle), math_sin(pp0.angle));
-    c0 = vector2_add2(&pp0.position, &t0);
-    pp1.angle = restrain(pp1.angle + pp1.speed);
-    t1 = vector2_mul(&pp1.radius, math_cos(pp1.angle), math_sin(pp1.angle));
-    c1 = vector2_add2(&pp1.position, &t1);
-
     clearscreen(0xFF001020);
-    putline(c0.x, c0.y, c1.x, c1.y, 0xFFFFFFFF);
-    putsquare(c0.x - 4, c0.y - 4, 8, 8, 0xFFFFFFFF);
-    putcircle(c1.x, c1.y, 8, 0xFFFFFFFF);
 
 }
-
-static void putvertex(struct vector3 *v, unsigned int color)
-{
-
-    putcircle(v->x, v->y, 8, color);
-
-}
-
-static void putedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
-{
-
-    putline(v1->x, v1->y, v2->x, v2->y, color);
-
-}
-
-static double rx = MATH_PI / 4;
-static double ry = MATH_PI / 4;
-static double rz = MATH_PI / 4;
 
 static void render_scene2(unsigned int frame)
 {
 
+    rx = restrain(rx + sx);
+    ry = restrain(ry + sy);
+    rz = restrain(rz + sz);
+
     buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
-
-    rx = restrain(rx + 0.05);
-    ry = restrain(ry + 0.05);
-    rz = restrain(rz + 0.05);
-
     rotatex(rx);
     rotatey(ry);
     rotatez(rz);
     translate(320, 240);
-
-    putedge(&nodes[0], &nodes[1], 0xFFFFFFFF);
-    putedge(&nodes[1], &nodes[3], 0xFFFFFFFF);
-    putedge(&nodes[3], &nodes[2], 0xFFFFFFFF);
-    putedge(&nodes[2], &nodes[0], 0xFFFFFFFF);
-    putedge(&nodes[4], &nodes[5], 0xFFFFFFFF);
-    putedge(&nodes[5], &nodes[7], 0xFFFFFFFF);
-    putedge(&nodes[7], &nodes[6], 0xFFFFFFFF);
-    putedge(&nodes[6], &nodes[4], 0xFFFFFFFF);
-    putedge(&nodes[0], &nodes[4], 0xFFFFFFFF);
-    putedge(&nodes[1], &nodes[5], 0xFFFFFFFF);
-    putedge(&nodes[2], &nodes[6], 0xFFFFFFFF);
-    putedge(&nodes[3], &nodes[7], 0xFFFFFFFF);
-    putvertex(&nodes[0], 0xFFFFFFFF);
-    putvertex(&nodes[1], 0xFFFFFFFF);
-    putvertex(&nodes[2], 0xFFFFFFFF);
-    putvertex(&nodes[3], 0xFFFFFFFF);
-    putvertex(&nodes[4], 0xFFFFFFFF);
-    putvertex(&nodes[5], 0xFFFFFFFF);
-    putvertex(&nodes[6], 0xFFFFFFFF);
-    putvertex(&nodes[7], 0xFFFFFFFF);
+    clearscreen(0xFF001020);
+    putedge(&nodes[0], &nodes[1], ecolor);
+    putedge(&nodes[1], &nodes[3], ecolor);
+    putedge(&nodes[3], &nodes[2], ecolor);
+    putedge(&nodes[2], &nodes[0], ecolor);
+    putedge(&nodes[4], &nodes[5], ecolor);
+    putedge(&nodes[5], &nodes[7], ecolor);
+    putedge(&nodes[7], &nodes[6], ecolor);
+    putedge(&nodes[6], &nodes[4], ecolor);
+    putedge(&nodes[0], &nodes[4], ecolor);
+    putedge(&nodes[1], &nodes[5], ecolor);
+    putedge(&nodes[2], &nodes[6], ecolor);
+    putedge(&nodes[3], &nodes[7], ecolor);
+    putvertex(&nodes[0], ncolor);
+    putvertex(&nodes[1], ncolor);
+    putvertex(&nodes[2], ncolor);
+    putvertex(&nodes[3], ncolor);
+    putvertex(&nodes[4], ncolor);
+    putvertex(&nodes[5], ncolor);
+    putvertex(&nodes[6], ncolor);
+    putvertex(&nodes[7], ncolor);
 
 }
 
 static void render(unsigned int frame)
 {
 
-    if (frame < 10)
+    if (frame < 60)
     {
 
         render_scene1(frame);
@@ -438,7 +428,6 @@ static void render(unsigned int frame)
     else
     {
 
-        render_scene1(frame);
         render_scene2(frame);
 
     }
