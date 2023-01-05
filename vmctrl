@@ -101,6 +101,31 @@ cmd_mkdisk() {
     echo "done"
 }
 
+cmd_nbd_connect() {
+    device="$1"
+    disk="disks/node-$2-sda.qcow2"
+
+    modprobe nbd
+    qemu-nbd --connect $device $disk
+}
+
+cmd_nbd_disconnect() {
+    device="$1"
+
+    modprobe nbd
+    qemu-nbd --disconnect $device
+}
+
+cmd_prepdisk() {
+    device="/dev/nbd0"
+    part="/dev/nbd0p1"
+
+    cmd_nbd_connect $device $1
+    echo -e "o\nn\n\n\n\n\nw\n" | fdisk $device
+    mkfs.ext2 $part
+    cmd_nbd_disconnect $device
+}
+
 cmd_help() {
     echo "Commands:"
     echo "    run <id>"
@@ -111,10 +136,13 @@ cmd_help() {
     echo "    connect"
     echo "    disconnect"
     echo "    mkdisk <id>"
+    echo "    nbd_connect <dev> <id>"
+    echo "    nbd_disconnect <dev>"
+    echo "    prepdisk <id>"
 }
 
 case "$1" in
-run|runiso|runsimple|runisosimple|nat|connect|disconnect|mkdisk)
+run|runiso|runsimple|runisosimple|nat|connect|disconnect|mkdisk|nbd_connect|nbd_disconnect|prepdisk)
     "cmd_$@"
     ;;
 *)
