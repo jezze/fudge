@@ -136,6 +136,15 @@ struct vector2
 
 };
 
+struct vector3
+{
+
+    double x;
+    double y;
+    double z;
+
+};
+
 struct vector2 vector2_create(double x, double y)
 {
 
@@ -186,6 +195,77 @@ struct vector2 vector2_mul2(struct vector2 *v1, struct vector2 *v2)
 
 }
 
+struct vector3 vector3_create(double x, double y, double z)
+{
+
+    struct vector3 n;
+
+    n.x = x;
+    n.y = y;
+    n.z = z;
+
+    return n;
+
+}
+
+struct vector3 vector3_rotatex(struct vector3 *v, double theta)
+{
+
+    double s = math_sin(theta);
+    double c = math_cos(theta);
+    struct vector3 n;
+
+    n.x = v->x;
+    n.y = v->y * c - v->z * s;
+    n.z = v->z * c + v->y * s;
+
+    return n;
+
+}
+
+struct vector3 vector3_rotatey(struct vector3 *v, double theta)
+{
+
+    double s = math_sin(theta);
+    double c = math_cos(theta);
+    struct vector3 n;
+
+    n.x = v->x * c + v->z * s;
+    n.y = v->y;
+    n.z = v->z * c - v->x * s;
+
+    return n;
+
+}
+
+struct vector3 vector3_rotatez(struct vector3 *v, double theta)
+{
+
+    double s = math_sin(theta);
+    double c = math_cos(theta);
+    struct vector3 n;
+
+    n.x = v->x * c - v->y * s;
+    n.y = v->y * c + v->x * s;
+    n.z = v->z;
+
+    return n;
+
+}
+
+struct vector3 vector3_add(struct vector3 *v, double x, double y, double z)
+{
+
+    struct vector3 n;
+
+    n.x = v->x + x;
+    n.y = v->y + y;
+    n.z = v->z + z;
+
+    return n;
+
+}
+
 struct point
 {
 
@@ -202,8 +282,49 @@ static struct vector2 t0;
 static struct vector2 c0;
 static struct vector2 t1;
 static struct vector2 c1;
+static struct vector3 nodes[8];
 
-static void setup(void)
+static void translate(double x, double y)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+        nodes[i] = vector3_add(&nodes[i], x, y, 0);
+
+}
+
+static void rotatex(double theta)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+        nodes[i] = vector3_rotatex(&nodes[i], theta);
+
+}
+
+static void rotatey(double theta)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+        nodes[i] = vector3_rotatey(&nodes[i], theta);
+
+}
+
+static void rotatez(double theta)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 8; i++)
+        nodes[i] = vector3_rotatez(&nodes[i], theta);
+
+}
+
+static void setup_scene1(void)
 {
 
     pp0.position = vector2_create(280, 200);
@@ -214,6 +335,25 @@ static void setup(void)
     pp1.radius = vector2_create(80, 80);
     pp1.angle = 0;
     pp1.speed = 0.07;
+
+}
+
+static void setup_scene2(void)
+{
+
+    nodes[0] = vector3_create(-100, -100, -100);
+    nodes[1] = vector3_create(-100, -100, 100);
+    nodes[2] = vector3_create(-100, 100, -100);
+    nodes[3] = vector3_create(-100, 100, 100);
+    nodes[4] = vector3_create(100, -100, -100);
+    nodes[5] = vector3_create(100, -100, 100);
+    nodes[6] = vector3_create(100, 100, -100);
+    nodes[7] = vector3_create(100, 100, 100);
+
+    rotatez(MATH_PI / 4);
+    rotatey(MATH_PI / 4);
+    rotatex(MATH_PI / 4);
+    translate(320, 240);
 
 }
 
@@ -234,13 +374,63 @@ static void render_scene1(unsigned int frame)
 
 }
 
+static void putvertex(struct vector3 *v, unsigned int color)
+{
+
+    putcircle(v->x, v->y, 8, color);
+
+}
+
+static void putedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
+{
+
+    putline(v1->x, v1->y, v2->x, v2->y, color);
+
+}
+
+static void render_scene2(unsigned int frame)
+{
+
+    putedge(&nodes[0], &nodes[1], 0xFFFFFFFF);
+    putedge(&nodes[1], &nodes[3], 0xFFFFFFFF);
+    putedge(&nodes[3], &nodes[2], 0xFFFFFFFF);
+    putedge(&nodes[2], &nodes[0], 0xFFFFFFFF);
+    putedge(&nodes[4], &nodes[5], 0xFFFFFFFF);
+    putedge(&nodes[5], &nodes[7], 0xFFFFFFFF);
+    putedge(&nodes[7], &nodes[6], 0xFFFFFFFF);
+    putedge(&nodes[6], &nodes[4], 0xFFFFFFFF);
+    putedge(&nodes[0], &nodes[4], 0xFFFFFFFF);
+    putedge(&nodes[1], &nodes[5], 0xFFFFFFFF);
+    putedge(&nodes[2], &nodes[6], 0xFFFFFFFF);
+    putedge(&nodes[3], &nodes[7], 0xFFFFFFFF);
+    putvertex(&nodes[0], 0xFFFFFFFF);
+    putvertex(&nodes[1], 0xFFFFFFFF);
+    putvertex(&nodes[2], 0xFFFFFFFF);
+    putvertex(&nodes[3], 0xFFFFFFFF);
+    putvertex(&nodes[4], 0xFFFFFFFF);
+    putvertex(&nodes[5], 0xFFFFFFFF);
+    putvertex(&nodes[6], 0xFFFFFFFF);
+    putvertex(&nodes[7], 0xFFFFFFFF);
+
+}
+
 static void render(unsigned int frame)
 {
 
-    if (frame < 10000)
+    if (frame < 10)
+    {
+
         render_scene1(frame);
+
+    }
+
     else
+    {
+
         render_scene1(frame);
+        render_scene2(frame);
+
+    }
 
 }
 
@@ -250,7 +440,8 @@ static void run(void)
     struct message message;
     unsigned int frame = 0;
 
-    setup();
+    setup_scene1();
+    setup_scene2();
 
     while (channel_pick(&message))
     {
