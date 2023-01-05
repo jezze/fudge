@@ -33,9 +33,14 @@ static void clearscreen(unsigned int color)
 void putpixel(int x, int y, unsigned int color)
 {
 
-    unsigned int offset = y * w + x;
+    if (x < w && y < h)
+    {
 
-    framebuffer[offset] = color;
+        unsigned int offset = y * w + x;
+
+        framebuffer[offset] = color;
+
+    }
 
 }
 
@@ -282,6 +287,7 @@ struct vector3 vector3_add(struct vector3 *v, double x, double y, double z)
 
 }
 
+static struct vector3 cam;
 static struct vector3 nodeslocal[8];
 static struct vector3 nodes[8];
 static double rx = MATH_PI / 4;
@@ -290,17 +296,18 @@ static double rz = MATH_PI / 4;
 static double sx = MATH_PI / 64;
 static double sy = MATH_PI / 64;
 static double sz = MATH_PI / 64;
+static double size = 0;
 static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
 static unsigned int ecolor = 0xFF8090A0;
 
-static void translate(double x, double y)
+static void translate(double x, double y, double z)
 {
 
     unsigned int i;
 
     for (i = 0; i < 8; i++)
-        nodes[i] = vector3_add(&nodes[i], x, y, 0);
+        nodes[i] = vector3_add(&nodes[i], x, y, z);
 
 }
 
@@ -340,17 +347,25 @@ static void rotatez(double theta)
 
 }
 
-static void putvertex(struct vector3 *v, unsigned int color)
+static void projectnode(struct vector3 *v, unsigned int color)
 {
 
-    putcircle(v->x, v->y, 8, color);
+    double x = (v->x - cam.x) * (cam.z / (cam.z + v->z));
+    double y = (v->y - cam.y) * (cam.z / (cam.z + v->z));
+
+    putcircle(x + w / 2, y + h / 2, 8, color);
 
 }
 
-static void putedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
+static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
 {
 
-    putline(v1->x, v1->y, v2->x, v2->y, color);
+    double x1 = (v1->x - cam.x) * (cam.z / (cam.z + v1->z));
+    double y1 = (v1->y - cam.y) * (cam.z / (cam.z + v1->z));
+    double x2 = (v2->x - cam.x) * (cam.z / (cam.z + v2->z));
+    double y2 = (v2->y - cam.y) * (cam.z / (cam.z + v2->z));
+
+    putline(x1 + w / 2, y1 + h / 2, x2 + w / 2, y2 + h / 2, color);
 
 }
 
@@ -362,6 +377,7 @@ static void setup_scene1(void)
 static void setup_scene2(void)
 {
 
+    cam = vector3_create(0, 0, 180);
     nodeslocal[0] = vector3_create(-100, -100, -100);
     nodeslocal[1] = vector3_create(-100, -100, 100);
     nodeslocal[2] = vector3_create(-100, 100, -100);
@@ -386,33 +402,34 @@ static void render_scene2(unsigned int frame)
     rx = restrain(rx + sx);
     ry = restrain(ry + sy);
     rz = restrain(rz + sz);
+    size = restrain(size + 0.02); 
 
     buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
     rotatex(rx);
     rotatey(ry);
     rotatez(rz);
-    translate(w / 2, h / 2);
+    translate(0, 0, math_sin(size) * 100 + 100);
     clearscreen(bcolor);
-    putedge(&nodes[0], &nodes[1], ecolor);
-    putedge(&nodes[1], &nodes[3], ecolor);
-    putedge(&nodes[3], &nodes[2], ecolor);
-    putedge(&nodes[2], &nodes[0], ecolor);
-    putedge(&nodes[4], &nodes[5], ecolor);
-    putedge(&nodes[5], &nodes[7], ecolor);
-    putedge(&nodes[7], &nodes[6], ecolor);
-    putedge(&nodes[6], &nodes[4], ecolor);
-    putedge(&nodes[0], &nodes[4], ecolor);
-    putedge(&nodes[1], &nodes[5], ecolor);
-    putedge(&nodes[2], &nodes[6], ecolor);
-    putedge(&nodes[3], &nodes[7], ecolor);
-    putvertex(&nodes[0], ncolor);
-    putvertex(&nodes[1], ncolor);
-    putvertex(&nodes[2], ncolor);
-    putvertex(&nodes[3], ncolor);
-    putvertex(&nodes[4], ncolor);
-    putvertex(&nodes[5], ncolor);
-    putvertex(&nodes[6], ncolor);
-    putvertex(&nodes[7], ncolor);
+    projectedge(&nodes[0], &nodes[1], ecolor);
+    projectedge(&nodes[1], &nodes[3], ecolor);
+    projectedge(&nodes[3], &nodes[2], ecolor);
+    projectedge(&nodes[2], &nodes[0], ecolor);
+    projectedge(&nodes[4], &nodes[5], ecolor);
+    projectedge(&nodes[5], &nodes[7], ecolor);
+    projectedge(&nodes[7], &nodes[6], ecolor);
+    projectedge(&nodes[6], &nodes[4], ecolor);
+    projectedge(&nodes[0], &nodes[4], ecolor);
+    projectedge(&nodes[1], &nodes[5], ecolor);
+    projectedge(&nodes[2], &nodes[6], ecolor);
+    projectedge(&nodes[3], &nodes[7], ecolor);
+    projectnode(&nodes[0], ncolor);
+    projectnode(&nodes[1], ncolor);
+    projectnode(&nodes[2], ncolor);
+    projectnode(&nodes[3], ncolor);
+    projectnode(&nodes[4], ncolor);
+    projectnode(&nodes[5], ncolor);
+    projectnode(&nodes[6], ncolor);
+    projectnode(&nodes[7], ncolor);
 
 }
 
