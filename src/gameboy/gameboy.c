@@ -122,7 +122,6 @@ static void keypress(struct gb_s *gb, void *data)
         {
 
         case 0x01:
-            channel_send(EVENT_WMUNGRAB);
             channel_send(EVENT_WMUNMAP);
             channel_close();
 
@@ -310,7 +309,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNGRAB);
     channel_send(EVENT_WMUNMAP);
     channel_close();
 
@@ -372,6 +370,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
     file_unlink(FILE_G0);
+    channel_send(EVENT_WMUNGRAB);
 
 }
 

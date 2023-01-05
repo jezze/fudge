@@ -22,18 +22,23 @@ double restrain(double x)
 static void clearscreen(unsigned int color)
 {
 
-    unsigned int total = wmax * hmax;
-    unsigned int i;
+    if (framebuffer)
+    {
 
-    for (i = 0; i < total; i++)
-        framebuffer[i] = color;
+        unsigned int total = wmax * hmax;
+        unsigned int i;
+
+        for (i = 0; i < total; i++)
+            framebuffer[i] = color;
+
+    }
 
 }
 
 void putpixel(int x, int y, unsigned int color)
 {
 
-    if (x < wmax && y < hmax)
+    if (framebuffer && x < wmax && y < hmax)
     {
 
         unsigned int offset = y * wmax + x;
@@ -521,7 +526,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNGRAB);
     channel_send(EVENT_WMUNMAP);
     channel_close();
 
@@ -579,6 +583,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
     file_unlink(FILE_G0);
+    channel_send(EVENT_WMUNGRAB);
 
 }
 

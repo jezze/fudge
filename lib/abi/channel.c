@@ -22,9 +22,6 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
     unsigned int offset = 0;
     char *buffer = data;
 
-    if (!active)
-        return 0;
-
     if (!target)
         target = callbacks[event].target;
 
