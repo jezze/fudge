@@ -3,7 +3,7 @@
 #include <abi.h>
 
 static unsigned int *framebuffer;
-static unsigned int w, h;
+static unsigned int wmax, hmax, wmid, hmid;
 
 double restrain(double x)
 {
@@ -22,7 +22,7 @@ double restrain(double x)
 static void clearscreen(unsigned int color)
 {
 
-    unsigned int total = w * h;
+    unsigned int total = wmax * hmax;
     unsigned int i;
 
     for (i = 0; i < total; i++)
@@ -33,10 +33,10 @@ static void clearscreen(unsigned int color)
 void putpixel(int x, int y, unsigned int color)
 {
 
-    if (x < w && y < h)
+    if (x < wmax && y < hmax)
     {
 
-        unsigned int offset = y * w + x;
+        unsigned int offset = y * wmax + x;
 
         framebuffer[offset] = color;
 
@@ -89,8 +89,8 @@ void putsquare(int x, int y, int w, int h, unsigned int color)
 
     int cx;
     int cy;
-    int cw = x + w;
-    int ch = y + h;
+    int cw = x + wmax;
+    int ch = y + hmax;
 
     for (cy = y; cy < ch; cy++)
     {
@@ -353,7 +353,7 @@ static void projectnode(struct vector3 *v, unsigned int color)
     double x = (v->x - cam.x) * (cam.z / (cam.z + v->z));
     double y = (v->y - cam.y) * (cam.z / (cam.z + v->z));
 
-    putcircle(x + w / 2, y + h / 2, 8, color);
+    putcircle(x + wmid, y + hmid, 8, color);
 
 }
 
@@ -365,7 +365,7 @@ static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int col
     double x2 = (v2->x - cam.x) * (cam.z / (cam.z + v2->z));
     double y2 = (v2->y - cam.y) * (cam.z / (cam.z + v2->z));
 
-    putline(x1 + w / 2, y1 + h / 2, x2 + w / 2, y2 + h / 2, color);
+    putline(x1 + wmid, y1 + hmid, x2 + wmid, y2 + hmid, color);
 
 }
 
@@ -377,7 +377,7 @@ static void setup_scene1(void)
 static void setup_scene2(void)
 {
 
-    cam = vector3_create(0, 0, 180);
+    cam = vector3_create(0, 0, 200);
     nodeslocal[0] = vector3_create(-100, -100, -100);
     nodeslocal[1] = vector3_create(-100, -100, 100);
     nodeslocal[2] = vector3_create(-100, 100, -100);
@@ -514,8 +514,10 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     struct event_videomode *videomode = mdata;
 
     framebuffer = videomode->framebuffer;
-    w = videomode->w;
-    h = videomode->h;
+    wmax = videomode->w;
+    hmax = videomode->h;
+    wmid = wmax / 2;
+    hmid = hmax / 2;
 
 }
 
