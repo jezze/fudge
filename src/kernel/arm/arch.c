@@ -19,20 +19,20 @@ static struct core *coreget(void)
 
 }
 
-static void coreassign(struct task *task)
+static void coreassign(struct list_item *item)
 {
 
-    list_add(&core0.tasks, &task->item);
+    list_add(&core0.tasks, item);
 
 }
 
 static void debugnum(unsigned int value, unsigned int base)
 {
 
-    char num[ASCII_NUMSIZE];
+    char num[32];
 
-    buffer_clear(num, ASCII_NUMSIZE);
-    ascii_wvalue(num, ASCII_NUMSIZE, value, base, 0);
+    buffer_clear(num, 32);
+    cstring_writevalue(num, 32, value, base, 0, 0);
     uart_puts(num);
     uart_puts("\n");
 
