@@ -282,6 +282,7 @@ static struct vector2 t0;
 static struct vector2 c0;
 static struct vector2 t1;
 static struct vector2 c1;
+static struct vector3 nodeslocal[8];
 static struct vector3 nodes[8];
 
 static void translate(double x, double y)
@@ -341,19 +342,14 @@ static void setup_scene1(void)
 static void setup_scene2(void)
 {
 
-    nodes[0] = vector3_create(-100, -100, -100);
-    nodes[1] = vector3_create(-100, -100, 100);
-    nodes[2] = vector3_create(-100, 100, -100);
-    nodes[3] = vector3_create(-100, 100, 100);
-    nodes[4] = vector3_create(100, -100, -100);
-    nodes[5] = vector3_create(100, -100, 100);
-    nodes[6] = vector3_create(100, 100, -100);
-    nodes[7] = vector3_create(100, 100, 100);
-
-    rotatez(MATH_PI / 4);
-    rotatey(MATH_PI / 4);
-    rotatex(MATH_PI / 4);
-    translate(320, 240);
+    nodeslocal[0] = vector3_create(-100, -100, -100);
+    nodeslocal[1] = vector3_create(-100, -100, 100);
+    nodeslocal[2] = vector3_create(-100, 100, -100);
+    nodeslocal[3] = vector3_create(-100, 100, 100);
+    nodeslocal[4] = vector3_create(100, -100, -100);
+    nodeslocal[5] = vector3_create(100, -100, 100);
+    nodeslocal[6] = vector3_create(100, 100, -100);
+    nodeslocal[7] = vector3_create(100, 100, 100);
 
 }
 
@@ -388,8 +384,23 @@ static void putedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
 
 }
 
+static double rx = MATH_PI / 4;
+static double ry = MATH_PI / 4;
+static double rz = MATH_PI / 4;
+
 static void render_scene2(unsigned int frame)
 {
+
+    buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
+
+    rx = restrain(rx + 0.05);
+    ry = restrain(ry + 0.05);
+    rz = restrain(rz + 0.05);
+
+    rotatex(rx);
+    rotatey(ry);
+    rotatez(rz);
+    translate(320, 240);
 
     putedge(&nodes[0], &nodes[1], 0xFFFFFFFF);
     putedge(&nodes[1], &nodes[3], 0xFFFFFFFF);
