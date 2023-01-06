@@ -11,6 +11,7 @@
 #define NEGATE_BIT  (1 << (TABLE_BITS + 1))
 #define INTERP_BITS (INT16_BITS - 1 - LOOKUP_BITS)
 #define INTERP_MASK ((1 << INTERP_BITS) - 1)
+#define Q15         (1.0 / (double)((1 << 15) - 1))
 
 static short sin90[TABLE_SIZE + 1] = {
     0x0000, 0x0647, 0x0c8b, 0x12c7, 0x18f8, 0x1f19, 0x2527, 0x2b1e,
@@ -186,14 +187,14 @@ double math_fact(double x)
 double math_sin(double x)
 {
 
-    return math_sin16(math_rad2turn(x) * 32768.0) * MATH_Q15;
+    return math_sin16(math_rad2turn(x) * 32768.0) * Q15;
 
 }
 
 double math_cos(double x)
 {
 
-    return math_cos16(math_rad2turn(x) * 32768.0) * MATH_Q15;
+    return math_cos16(math_rad2turn(x) * 32768.0) * Q15;
 
 }
 
