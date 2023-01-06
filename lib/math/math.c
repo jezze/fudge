@@ -29,7 +29,8 @@ short math_sin16(short angle)
     if (angle < 0)
     {
 
-        angle += INT16_MAX; angle += 1;
+        angle += INT16_MAX;
+        angle += 1;
 
     }
 
@@ -51,7 +52,7 @@ short math_sin16(short angle)
     }
 
     v0 &= TABLE_MASK;
-    v1 = sin90[v0] + (short)(((int)(sin90[v0+1]-sin90[v0]) * (v1 & INTERP_MASK)) >> INTERP_BITS);
+    v1 = sin90[v0] + (short)(((int)(sin90[v0 + 1] - sin90[v0]) * (v1 & INTERP_MASK)) >> INTERP_BITS);
 
     if ((angle >> INTERP_BITS) & NEGATE_BIT)
         v1 = -v1;
