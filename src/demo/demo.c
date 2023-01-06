@@ -293,12 +293,12 @@ struct vector3 vector3_add(struct vector3 *v, double x, double y, double z)
 static struct vector3 cam;
 static struct vector3 nodeslocal[8];
 static struct vector3 nodes[8];
-static double rx = MATH_PI / 4;
-static double ry = MATH_PI / 4;
-static double rz = MATH_PI / 4;
-static double sx = MATH_PI / 64;
-static double sy = MATH_PI / 64;
-static double sz = MATH_PI / 64;
+static double rx = 0.1;
+static double ry = 0.2;
+static double rz = 0.3;
+static double sx = 0.01;
+static double sy = 0.02;
+static double sz = 0.03;
 static double size = 0;
 static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
@@ -367,7 +367,7 @@ static void projectnode2(struct vector3 *v, unsigned int color)
     double x = (v->x - cam.x) * (cam.z / (cam.z + v->z));
     double y = (v->y - cam.y) * (cam.z / (cam.z + v->z));
 
-    putcircle(x + wmid, y + hmid, math_abs(v->z) * 0.8, color);
+    putcircle(x + wmid, y + hmid, math_abs(100 - v->z * 0.4), color);
 
 }
 
@@ -457,7 +457,7 @@ static void render_scene2(unsigned int frame)
     rx = constrain(rx + sx, 0, 2 * MATH_PI);
     ry = constrain(ry + sy, 0, 2 * MATH_PI);
     rz = constrain(rz + sz, 0, 2 * MATH_PI);
-    size = constrain(size + 0.02, 0, 2 * MATH_PI); 
+    size = constrain(size + 0.06, 0, 2 * MATH_PI); 
 
     buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
     rotatex(rx);
