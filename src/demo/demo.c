@@ -302,8 +302,8 @@ static double sz = 0.03;
 static double size = 0;
 static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
-static unsigned int ecolor = 0xFF8090A0;
-static unsigned int ccolor = 0xFF203040;
+static unsigned int ecolor = 0xFFFFFF00;
+static unsigned int ccolor = 0xFFFF00FF;
 
 static void translate(double x, double y, double z)
 {
@@ -419,7 +419,7 @@ static double qcos(double x)
 }
 */
 
-static void render_scene1(unsigned int frame)
+static void render_scene1(unsigned int frame, unsigned int localframe)
 {
 
     unsigned int x;
@@ -451,7 +451,7 @@ static void render_scene1(unsigned int frame)
 
 }
 
-static void render_scene2(unsigned int frame)
+static void render_scene2(unsigned int frame, unsigned int localframe)
 {
 
     rx = constrain(rx + sx, 0, 2 * MATH_PI);
@@ -465,34 +465,52 @@ static void render_scene2(unsigned int frame)
     rotatez(rz);
     translate(0, 0, math_sin(size) * 100 + 100);
     clearscreen(bcolor);
-    projectnode2(&nodes[0], ccolor);
-    projectnode2(&nodes[1], ccolor);
-    projectnode2(&nodes[2], ccolor);
-    projectnode2(&nodes[3], ccolor);
-    projectnode2(&nodes[4], ccolor);
-    projectnode2(&nodes[5], ccolor);
-    projectnode2(&nodes[6], ccolor);
-    projectnode2(&nodes[7], ccolor);
-    projectedge(&nodes[0], &nodes[1], ecolor);
-    projectedge(&nodes[1], &nodes[3], ecolor);
-    projectedge(&nodes[3], &nodes[2], ecolor);
-    projectedge(&nodes[2], &nodes[0], ecolor);
-    projectedge(&nodes[4], &nodes[5], ecolor);
-    projectedge(&nodes[5], &nodes[7], ecolor);
-    projectedge(&nodes[7], &nodes[6], ecolor);
-    projectedge(&nodes[6], &nodes[4], ecolor);
-    projectedge(&nodes[0], &nodes[4], ecolor);
-    projectedge(&nodes[1], &nodes[5], ecolor);
-    projectedge(&nodes[2], &nodes[6], ecolor);
-    projectedge(&nodes[3], &nodes[7], ecolor);
-    projectnode(&nodes[0], ncolor);
-    projectnode(&nodes[1], ncolor);
-    projectnode(&nodes[2], ncolor);
-    projectnode(&nodes[3], ncolor);
-    projectnode(&nodes[4], ncolor);
-    projectnode(&nodes[5], ncolor);
-    projectnode(&nodes[6], ncolor);
-    projectnode(&nodes[7], ncolor);
+
+    if (localframe >= 60 * 0)
+    {
+
+        projectnode2(&nodes[0], ccolor);
+        projectnode2(&nodes[1], ccolor);
+        projectnode2(&nodes[2], ccolor);
+        projectnode2(&nodes[3], ccolor);
+        projectnode2(&nodes[4], ccolor);
+        projectnode2(&nodes[5], ccolor);
+        projectnode2(&nodes[6], ccolor);
+        projectnode2(&nodes[7], ccolor);
+
+    }
+
+    if (localframe >= 60 * 8)
+    {
+
+        projectedge(&nodes[0], &nodes[1], ecolor);
+        projectedge(&nodes[1], &nodes[3], ecolor);
+        projectedge(&nodes[3], &nodes[2], ecolor);
+        projectedge(&nodes[2], &nodes[0], ecolor);
+        projectedge(&nodes[4], &nodes[5], ecolor);
+        projectedge(&nodes[5], &nodes[7], ecolor);
+        projectedge(&nodes[7], &nodes[6], ecolor);
+        projectedge(&nodes[6], &nodes[4], ecolor);
+        projectedge(&nodes[0], &nodes[4], ecolor);
+        projectedge(&nodes[1], &nodes[5], ecolor);
+        projectedge(&nodes[2], &nodes[6], ecolor);
+        projectedge(&nodes[3], &nodes[7], ecolor);
+
+    }
+
+    if (localframe >= 60 * 4)
+    {
+
+        projectnode(&nodes[0], ncolor);
+        projectnode(&nodes[1], ncolor);
+        projectnode(&nodes[2], ncolor);
+        projectnode(&nodes[3], ncolor);
+        projectnode(&nodes[4], ncolor);
+        projectnode(&nodes[5], ncolor);
+        projectnode(&nodes[6], ncolor);
+        projectnode(&nodes[7], ncolor);
+
+    }
 
 }
 
@@ -503,7 +521,7 @@ struct scene
     unsigned int framestart;
     unsigned int framestop;
     void (*setup)(void);
-    void (*render)(unsigned int frame);
+    void (*render)(unsigned int frame, unsigned int localframe);
 
 };
 
@@ -545,7 +563,7 @@ static void render(unsigned int frame)
             continue;
 
         if (frame >= scene->framestart && frame < scene->framestop)
-            scene->render(frame);
+            scene->render(frame, frame - scene->framestart);
 
     }
 
