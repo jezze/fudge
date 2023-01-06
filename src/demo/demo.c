@@ -403,12 +403,28 @@ static void setup_scene2(void)
 
 }
 
+static double qsin(double x)
+{
+
+    return math_sin(constrain(x, 0, 2 * MATH_PI));
+
+}
+
+/*
+static double qcos(double x)
+{
+
+    return math_cos(constrain(x, 0, 2 * MATH_PI));
+
+}
+*/
+
 static void render_scene1(unsigned int frame)
 {
 
     unsigned int x;
     unsigned int y;
-    double sec = MATH_PI / 2;
+    double dv = 0.1;
 
     for (y = 0; y < hmax; y++)
     {
@@ -417,22 +433,15 @@ static void render_scene1(unsigned int frame)
         {
 
 /*
-            double dx = x + 0.5 * math_sin(sec / 5.0);
-            double dy = y + 0.5 * math_cos(sec / 3.0);
-            double dv = math_sin(x * 10 + sec) + math_sin(10 * (x * math_sin(sec / 2.0) + y * math_cos(sec / 3.0)) + sec) + math_sin(math_sqrt(100 * (dx * dx + dy * dy) + 1) + sec);
-            unsigned char r = 255 * math_abs(math_sin(dv * MATH_PI));
-            unsigned char g = 255 * math_abs(math_sin(dv * 2 * MATH_PI / 3));
-            unsigned char b = 255 * math_abs(math_sin(dv * 4 * MATH_PI / 3));
-            unsigned int color = 0xFF000000 | (r << 16) | (g << 8) | b;
+            double dx = x + 0.5 * qsin(sec / 5.0);
+            double dy = y + 0.5 * qcos(sec / 3.0);
+            double dv = qsin(x * 10 + sec) + qsin(10 * (x * qsin(sec / 2.0) + y * qcos(sec / 3.0)) + sec) + qsin(math_sqrt(100 * (dx * dx + dy * dy) + 1) + sec);
 */
 
-            double ar = math_sin(sec);
-            double ag = math_sin(sec);
-            double ab = math_sin(sec);
-            unsigned char r = (255.0 * math_abs(ar));
-            unsigned char g = (255.0 * math_abs(ag));
-            unsigned char b = (255.0 * math_abs(ab));
-            unsigned int color = 0xFF000000 | (r << 16) | (g << 8) | b;
+            unsigned char r = (unsigned char)(255.0 * math_abs(qsin(dv * MATH_PI)));
+            unsigned char g = (unsigned char)(255.0 * math_abs(qsin(dv * MATH_PI + 2.0 * MATH_PI / 3.0)));
+            unsigned char b = (unsigned char)(255.0 * math_abs(qsin(dv * MATH_PI + 4.0 * MATH_PI / 3.0)));
+            unsigned int color = 0xFF000000 | ((unsigned int)r << 16) | ((unsigned int)g << 8) | (unsigned int)b;
 
             putpixel(x, y, color);
 
@@ -499,8 +508,8 @@ struct scene
 };
 
 static struct scene scenelist[] = {
-    {0, 0, 6000, setup_scene1, render_scene1},
-    {1, 0, 6000, setup_scene2, render_scene2}
+    {1, 0, 10, setup_scene1, render_scene1},
+    {1, 10, 6000, setup_scene2, render_scene2}
 };
 
 static void setup(void)

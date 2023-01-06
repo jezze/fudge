@@ -74,6 +74,34 @@ short math_cos16(short angle)
 
 }
 
+double math_deg2rad(double angle)
+{
+
+    return angle * (MATH_PI / 180.0);
+
+}
+
+double math_deg2turn(double angle)
+{
+
+    return angle / 360.0;
+
+}
+
+double math_rad2deg(double angle)
+{
+
+    return angle * (180.0 / MATH_PI);
+
+}
+
+double math_rad2turn(double angle)
+{
+
+    return angle / (2.0 * MATH_PI);
+
+}
+
 double math_abs(double x)
 {
 
@@ -158,38 +186,14 @@ double math_fact(double x)
 double math_sin(double x)
 {
 
-    double y = x;
-    double s = -1;
-    unsigned int i;
-
-    for (i = 3; i <= 100; i += 2)
-    {
-
-        y += s * (math_pow(x, i) / math_fact(i));
-        s *= -1;
-
-    }
-
-    return y;
+    return math_sin16(math_rad2turn(x) * 32768.0) * MATH_Q15;
 
 }
 
 double math_cos(double x)
 {
 
-    double y = 1;
-    double s = -1;
-    unsigned int i;
-
-    for (i = 2; i <= 100; i += 2)
-    {
-
-        y += s * (math_pow(x, i) / math_fact(i));
-        s *= -1;
-
-    }
-
-    return y;
+    return math_cos16(math_rad2turn(x) * 32768.0) * MATH_Q15;
 
 }
 

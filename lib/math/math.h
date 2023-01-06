@@ -1,7 +1,12 @@
 #define MATH_PI 3.1415926
+#define MATH_Q15 (1.0 / (double)((1 << 15) - 1))
 
 short math_sin16(short angle);
 short math_cos16(short angle);
+double math_deg2rad(double angle);
+double math_deg2turn(double angle);
+double math_rad2deg(double angle);
+double math_rad2turn(double angle);
 double math_abs(double x);
 double math_floor(double x);
 double math_ceil(double x);
