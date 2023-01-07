@@ -129,8 +129,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct message message;
 
-    request_send(0, 1);
+    file_walk2(FILE_G5, option_getstring("volume"));
     file_link(FILE_G5);
+    request_send(0, 1);
 
     if (channel_kpollevent(EVENT_DATA, &message))
     {
@@ -152,7 +153,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_walk2(FILE_G5, "system:block/if:0/data");
+    option_add("volume", "system:block/if:0/data");
     channel_bind(EVENT_MAIN, onmain);
 
 }
