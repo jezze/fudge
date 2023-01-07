@@ -39,11 +39,13 @@ static unsigned int spawn(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int wdescriptor;} *args = stack;
-    struct task *ntask = kernel_createtask(task, args->pdescriptor, args->wdescriptor);
+    struct task *ntask = kernel_createtask();
 
     if (ntask)
     {
 
+        descriptor_copy(kernel_getdescriptor(ntask, FILE_PP), kernel_getdescriptor(task, args->pdescriptor));
+        descriptor_copy(kernel_getdescriptor(ntask, FILE_PW), kernel_getdescriptor(task, args->wdescriptor));
         kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
 
@@ -418,7 +420,7 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    struct task *ntask = kernel_createtask(0, FILE_PP, FILE_PW);
+    struct task *ntask = kernel_createtask();
 
     if (ntask)
     {

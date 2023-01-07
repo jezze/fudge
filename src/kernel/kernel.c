@@ -267,7 +267,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
 }
 
-struct task *kernel_createtask(struct task *parent, unsigned int pdescriptor, unsigned int wdescriptor)
+struct task *kernel_createtask(void)
 {
 
     struct list_item *taskitem = list_picktail(&killedtasks);
@@ -284,14 +284,6 @@ struct task *kernel_createtask(struct task *parent, unsigned int pdescriptor, un
 
         for (i = 0; i < KERNEL_DESCRIPTORS; i++)
             descriptor_reset(kernel_getdescriptor(task, i));
-
-        if (parent)
-        {
-
-            descriptor_copy(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(parent, pdescriptor));
-            descriptor_copy(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(parent, wdescriptor));
-
-        }
 
         return task;
 
