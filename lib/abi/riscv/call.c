@@ -91,7 +91,7 @@ unsigned int call_seek(unsigned int descriptor, unsigned int offset)
 
 }
 
-unsigned int call_spawn(void)
+unsigned int call_spawn(unsigned int pdescriptor, unsigned int wdescriptor)
 {
 
     return 0;

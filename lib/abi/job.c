@@ -98,7 +98,7 @@ unsigned int job_spawn(struct job *job)
         if (!(file_walk(FILE_CP, FILE_L0, worker->program) || file_walk2(FILE_CP, worker->program)))
             return 0;
 
-        worker->id = call_spawn();
+        worker->id = call_spawn(FILE_CP, FILE_CW);
 
         if (!worker->id)
             return 0;

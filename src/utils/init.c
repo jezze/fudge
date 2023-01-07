@@ -35,7 +35,11 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    unsigned int id = file_spawn("/bin/slang");
+    unsigned int id;
+
+    file_duplicate(FILE_CW, FILE_PW);
+
+    id = file_spawn("/bin/slang");
 
     if (id)
     {
