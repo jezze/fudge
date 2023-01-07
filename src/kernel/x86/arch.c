@@ -38,7 +38,7 @@ static struct mmu_table *gettable(struct mmu_directory *directory, unsigned int 
 static unsigned int spawn(struct task *task, void *stack)
 {
 
-    struct task *ntask = kernel_createtask(task);
+    struct task *ntask = kernel_createtask(task, FILE_CP, FILE_CW);
 
     if (ntask)
     {
@@ -417,7 +417,7 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    struct task *ntask = kernel_createtask(0);
+    struct task *ntask = kernel_createtask(0, FILE_PP, FILE_PW);
 
     if (ntask)
     {

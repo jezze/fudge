@@ -13,6 +13,6 @@ void kernel_kill(unsigned int source, unsigned int target);
 unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data);
 void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count);
-struct task *kernel_createtask(struct task *parent);
-void kernel_setuptask(struct task *task, unsigned int sp, unsigned int descriptor);
+struct task *kernel_createtask(struct task *parent, unsigned int pdescriptor, unsigned int wdescriptor);
+void kernel_setuptask(struct task *task, unsigned int sp, unsigned int pdescriptor);
 void kernel_setup(unsigned int mbaddress, unsigned int mbsize);

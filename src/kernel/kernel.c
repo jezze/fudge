@@ -267,7 +267,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
 }
 
-struct task *kernel_createtask(struct task *parent)
+struct task *kernel_createtask(struct task *parent, unsigned int pdescriptor, unsigned int wdescriptor)
 {
 
     struct list_item *taskitem = list_picktail(&killedtasks);
@@ -288,13 +288,12 @@ struct task *kernel_createtask(struct task *parent)
         if (parent)
         {
 
-            descriptor_copy(kernel_getdescriptor(task, FILE_CP), kernel_getdescriptor(parent, FILE_CP));
-            descriptor_copy(kernel_getdescriptor(task, FILE_CW), kernel_getdescriptor(parent, FILE_CW));
+            descriptor_copy(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(parent, pdescriptor));
+            descriptor_copy(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(parent, wdescriptor));
+            descriptor_copy(kernel_getdescriptor(task, FILE_CP), kernel_getdescriptor(parent, pdescriptor));
+            descriptor_copy(kernel_getdescriptor(task, FILE_CW), kernel_getdescriptor(parent, wdescriptor));
 
         }
-
-        descriptor_copy(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(task, FILE_CP));
-        descriptor_copy(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(task, FILE_CW));
 
         return task;
 
@@ -304,10 +303,10 @@ struct task *kernel_createtask(struct task *parent)
 
 }
 
-void kernel_setuptask(struct task *task, unsigned int sp, unsigned int descriptor)
+void kernel_setuptask(struct task *task, unsigned int sp, unsigned int pdescriptor)
 {
 
-    struct descriptor *prog = kernel_getdescriptor(task, descriptor);
+    struct descriptor *prog = kernel_getdescriptor(task, pdescriptor);
 
     if (setupbinary(task, sp, prog->service, prog->id))
     {
