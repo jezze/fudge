@@ -424,12 +424,12 @@ void arch_setup2(void)
     {
 
         struct descriptor *prog = kernel_getdescriptor(ntask, FILE_PP);
-        struct descriptor *pwork = kernel_getdescriptor(ntask, FILE_PW);
+        struct descriptor *work = kernel_getdescriptor(ntask, FILE_PW);
 
-        pwork->service = service_find(6, "initrd");
-        pwork->id = pwork->service->root();
+        work->service = service_find(6, "initrd");
+        work->id = work->service->root();
 
-        descriptor_copy(prog, pwork);
+        descriptor_copy(prog, work);
 
         prog->id = prog->service->child(prog->id, "bin", 3);
         prog->id = prog->service->child(prog->id, "init", 4);
