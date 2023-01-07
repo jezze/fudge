@@ -35,15 +35,10 @@ static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
 
-static unsigned int setupbinary(struct task *task, unsigned int sp, unsigned int descriptor)
+static unsigned int setupbinary(struct task *task, unsigned int sp, struct service *service, unsigned int id)
 {
 
-    struct descriptor *prog = kernel_getdescriptor(task, descriptor);
-
-    if (!prog)
-        return 0;
-
-    task->node.address = prog->service->map(prog->id);
+    task->node.address = service->map(id);
 
     if (!task->node.address)
         return 0;
@@ -272,7 +267,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
 }
 
-struct task *kernel_loadtask(struct task *parent, unsigned int sp)
+struct task *kernel_createtask(struct task *parent)
 {
 
     struct list_item *taskitem = list_picktail(&killedtasks);
@@ -298,48 +293,37 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
 
         }
 
-        else
-        {
-
-            struct descriptor *prog = kernel_getdescriptor(task, FILE_CP);
-            struct descriptor *work = kernel_getdescriptor(task, FILE_CW);
-
-            work->service = service_find(6, "initrd");
-            work->id = work->service->root();
-
-            descriptor_copy(prog, work);
-
-            prog->id = prog->service->child(prog->id, "bin", 3);
-            prog->id = prog->service->child(prog->id, "init", 4);
-
-        }
-
         descriptor_copy(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(task, FILE_CP));
         descriptor_copy(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(task, FILE_CW));
 
-        if (setupbinary(task, sp, FILE_CP))
-        {
-
-            if (task_transition(task, TASK_STATE_ASSIGNED))
-                coreassign(taskitem);
-
-            return task;
-
-        }
-
-        else
-        {
-
-            if (task_transition(task, TASK_STATE_KILLED))
-                list_add(&killedtasks, taskitem);
-
-            return 0;
-
-        }
+        return task;
 
     }
 
     return 0;
+
+}
+
+void kernel_setuptask(struct task *task, unsigned int sp, unsigned int descriptor)
+{
+
+    struct descriptor *prog = kernel_getdescriptor(task, descriptor);
+
+    if (setupbinary(task, sp, prog->service, prog->id))
+    {
+
+        if (task_transition(task, TASK_STATE_ASSIGNED))
+            coreassign(&taskdata[task->id].item);
+
+    }
+
+    else
+    {
+
+        if (task_transition(task, TASK_STATE_KILLED))
+            list_add(&killedtasks, &taskdata[task->id].item);
+
+    }
 
 }
 

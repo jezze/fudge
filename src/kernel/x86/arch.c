@@ -38,11 +38,12 @@ static struct mmu_table *gettable(struct mmu_directory *directory, unsigned int 
 static unsigned int spawn(struct task *task, void *stack)
 {
 
-    struct task *ntask = kernel_loadtask(task, ARCH_TASKSTACKVIRTUAL);
+    struct task *ntask = kernel_createtask(task);
 
     if (ntask)
     {
 
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_CP);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
 
         return ntask->id;
@@ -416,10 +417,28 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    struct task *ntask = kernel_loadtask(0, ARCH_TASKSTACKVIRTUAL);
+    struct task *ntask = kernel_createtask(0);
 
     if (ntask)
+    {
+
+        struct descriptor *prog = kernel_getdescriptor(ntask, FILE_PP);
+        struct descriptor *pwork = kernel_getdescriptor(ntask, FILE_PW);
+        struct descriptor *cwork = kernel_getdescriptor(ntask, FILE_CW);
+
+        cwork->service = service_find(6, "initrd");
+        cwork->id = cwork->service->root();
+
+        descriptor_copy(pwork, cwork);
+        descriptor_copy(prog, pwork);
+
+        prog->id = prog->service->child(prog->id, "bin", 3);
+        prog->id = prog->service->child(prog->id, "init", 4);
+
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
+
+    }
 
     arch_leave(&core0);
 
