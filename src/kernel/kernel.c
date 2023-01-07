@@ -290,8 +290,6 @@ struct task *kernel_createtask(struct task *parent, unsigned int pdescriptor, un
 
             descriptor_copy(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(parent, pdescriptor));
             descriptor_copy(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(parent, wdescriptor));
-            descriptor_copy(kernel_getdescriptor(task, FILE_CP), kernel_getdescriptor(parent, pdescriptor));
-            descriptor_copy(kernel_getdescriptor(task, FILE_CW), kernel_getdescriptor(parent, wdescriptor));
 
         }
 

@@ -44,7 +44,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (ntask)
     {
 
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, args->pdescriptor);
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
 
         return ntask->id;
