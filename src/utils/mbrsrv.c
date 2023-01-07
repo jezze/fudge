@@ -26,8 +26,6 @@ struct mbr
 
 };
 
-static unsigned char block[1024];
-
 static void request_send(unsigned int sector, unsigned int count)
 {
 
@@ -38,6 +36,27 @@ static void request_send(unsigned int sector, unsigned int count)
 
     message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
     file_writeall(FILE_G5, &message, message.header.length);
+
+}
+
+static void request_readblocks(void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks)
+{
+
+    unsigned int total = nblocks * 512;
+    unsigned int read = 0;
+    struct message message;
+
+    request_send(sector, nblocks);
+
+    while (channel_kpollevent(EVENT_DATA, &message))
+    {
+
+        read += buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), read);
+
+        if (read == total)
+            break;
+
+    }
 
 }
 
@@ -127,23 +146,15 @@ static void print(struct mbr *mbr)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message message;
+    unsigned char block[1024];
+    struct mbr *mbr = (struct mbr *)block;
 
     file_walk2(FILE_G5, option_getstring("volume"));
     file_link(FILE_G5);
-    request_send(0, 1);
+    request_readblocks(block, 1024, 0, 1);
 
-    if (channel_kpollevent(EVENT_DATA, &message))
-    {
-
-        struct mbr *mbr = (struct mbr *)block;
-
-        buffer_write(block, 1024, message.data.buffer, message_datasize(&message.header), 0);
-
-        if (isvalid(mbr))
-            print(mbr);
-
-    }
+    if (isvalid(mbr))
+        print(mbr);
 
     file_unlink(FILE_G5);
     channel_close();
