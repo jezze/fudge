@@ -220,6 +220,18 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/mbrsrv \
+
+O:=\
+    $(DIR_SRC)/utils/mbrsrv.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/md5 \
 
 O:=\
