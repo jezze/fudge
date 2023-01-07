@@ -35,10 +35,10 @@ static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
 
-static unsigned int setupbinary(struct task *task, unsigned int sp)
+static unsigned int setupbinary(struct task *task, unsigned int sp, unsigned int descriptor)
 {
 
-    struct descriptor *prog = kernel_getdescriptor(task, FILE_CP);
+    struct descriptor *prog = kernel_getdescriptor(task, descriptor);
 
     if (!prog)
         return 0;
@@ -317,7 +317,7 @@ struct task *kernel_loadtask(struct task *parent, unsigned int sp)
         descriptor_copy(kernel_getdescriptor(task, FILE_PP), kernel_getdescriptor(task, FILE_CP));
         descriptor_copy(kernel_getdescriptor(task, FILE_PW), kernel_getdescriptor(task, FILE_CW));
 
-        if (setupbinary(task, sp))
+        if (setupbinary(task, sp, FILE_CP))
         {
 
             if (task_transition(task, TASK_STATE_ASSIGNED))
