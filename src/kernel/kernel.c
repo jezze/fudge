@@ -301,10 +301,10 @@ struct task *kernel_createtask(struct task *parent, unsigned int pdescriptor, un
 
 }
 
-void kernel_setuptask(struct task *task, unsigned int sp, unsigned int pdescriptor)
+void kernel_setuptask(struct task *task, unsigned int sp)
 {
 
-    struct descriptor *prog = kernel_getdescriptor(task, pdescriptor);
+    struct descriptor *prog = kernel_getdescriptor(task, FILE_PP);
 
     if (setupbinary(task, sp, prog->service, prog->id))
     {

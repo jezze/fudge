@@ -44,7 +44,7 @@ static unsigned int spawn(struct task *task, void *stack)
     if (ntask)
     {
 
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
 
         return ntask->id;
@@ -434,7 +434,7 @@ void arch_setup2(void)
         prog->id = prog->service->child(prog->id, "bin", 3);
         prog->id = prog->service->child(prog->id, "init", 4);
 
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
 
     }
