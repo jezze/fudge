@@ -62,7 +62,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 static void dnsresolve(char *domain)
 {
 
-    unsigned int id = file_spawn(FILE_CP, "/bin/dns");
+    unsigned int id = file_spawn(FILE_L0, "/bin/dns");
     struct message message;
 
     if (!id)

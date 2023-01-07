@@ -96,7 +96,7 @@ static void interpret(void)
     if (count)
     {
 
-        unsigned int id = file_spawn2(FILE_CP, FILE_CW, "/bin/slang");
+        unsigned int id = file_spawn2(FILE_L0, FILE_G8, "/bin/slang");
         struct message message;
 
         if (!id)
@@ -114,7 +114,7 @@ static void interpret(void)
             job_init(&job, workers, JOBSIZE);
             job_parse(&job, message.data.buffer, message_datasize(&message.header));
 
-            if (job_spawn(&job, FILE_CP, FILE_CW))
+            if (job_spawn(&job, FILE_L0, FILE_G8))
             {
 
                 job_listen(&job, EVENT_CLOSE);
@@ -147,8 +147,8 @@ static void interpret(void)
                         break;
 
                     case EVENT_PATH:
-                        if (file_walk(FILE_L0, FILE_CW, message.data.buffer))
-                            file_duplicate(FILE_CW, FILE_L0);
+                        if (file_walk(FILE_L0, FILE_G8, message.data.buffer))
+                            file_duplicate(FILE_G8, FILE_L0);
 
                         break;
 
@@ -239,7 +239,7 @@ static void complete(void)
 
     }
 
-    if (job_spawn(&job, FILE_CP, FILE_CW))
+    if (job_spawn(&job, FILE_L0, FILE_G8))
     {
 
         job_listen(&job, EVENT_CLOSE);
@@ -494,7 +494,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_duplicate(FILE_CW, FILE_PW);
+    file_duplicate(FILE_G8, FILE_PW);
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, TEXTSIZE, resultdata);

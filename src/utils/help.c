@@ -11,7 +11,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = file_spawn(FILE_CP, "/bin/echo");
+    unsigned int id = file_spawn(FILE_L0, "/bin/echo");
 
     if (!id)
         channel_error("Could not spawn process");
