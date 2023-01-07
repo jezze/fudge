@@ -96,7 +96,7 @@ static void interpret(void)
     if (count)
     {
 
-        unsigned int id = file_spawn("/bin/slang");
+        unsigned int id = file_spawn2(FILE_CP, FILE_CW, "/bin/slang");
         struct message message;
 
         if (!id)
@@ -114,7 +114,7 @@ static void interpret(void)
             job_init(&job, workers, JOBSIZE);
             job_parse(&job, message.data.buffer, message_datasize(&message.header));
 
-            if (job_spawn(&job))
+            if (job_spawn(&job, FILE_CP, FILE_CW))
             {
 
                 job_listen(&job, EVENT_CLOSE);
@@ -239,7 +239,7 @@ static void complete(void)
 
     }
 
-    if (job_spawn(&job))
+    if (job_spawn(&job, FILE_CP, FILE_CW))
     {
 
         job_listen(&job, EVENT_CLOSE);
@@ -494,6 +494,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    file_duplicate(FILE_CW, FILE_PW);
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, TEXTSIZE, resultdata);

@@ -461,7 +461,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         if (!(keymod & KEYMOD_SHIFT))
             break;
 
-        id = file_spawn("/bin/wshell");
+        id = file_spawn(FILE_CP, "/bin/wshell");
 
         if (id)
             channel_sendto(id, EVENT_MAIN);

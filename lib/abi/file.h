@@ -15,4 +15,5 @@ unsigned int file_seekwriteall(unsigned int descriptor, void *buffer, unsigned i
 unsigned int file_link(unsigned int descriptor);
 unsigned int file_unlink(unsigned int descriptor);
 unsigned int file_notify(unsigned int descriptor, unsigned int event, unsigned int count, void *data);
-unsigned int file_spawn(char *path);
+unsigned int file_spawn(unsigned int pdescriptor, char *path);
+unsigned int file_spawn2(unsigned int pdescriptor, unsigned int wdescriptor, char *path);

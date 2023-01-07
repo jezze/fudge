@@ -12,7 +12,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, mdata, msize);
 
-    if (job_spawn(&job))
+    if (job_spawn(&job, FILE_CP, FILE_PW))
     {
 
         job_listen(&job, EVENT_CLOSE);
@@ -35,11 +35,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    unsigned int id;
-
-    file_duplicate(FILE_CW, FILE_PW);
-
-    id = file_spawn("/bin/slang");
+    unsigned int id = file_spawn(FILE_CP, "/bin/slang");
 
     if (id)
     {

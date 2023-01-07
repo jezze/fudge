@@ -82,7 +82,7 @@ static void activatenext(struct job *job, unsigned int startindex)
 
 }
 
-unsigned int job_spawn(struct job *job)
+unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int wdescriptor)
 {
 
     unsigned int i;
@@ -95,10 +95,10 @@ unsigned int job_spawn(struct job *job)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (!(file_walk(FILE_CP, FILE_L0, worker->program) || file_walk2(FILE_CP, worker->program)))
+        if (!(file_walk(pdescriptor, FILE_L0, worker->program) || file_walk2(pdescriptor, worker->program)))
             return 0;
 
-        worker->id = call_spawn(FILE_CP, FILE_CW);
+        worker->id = call_spawn(pdescriptor, wdescriptor);
 
         if (!worker->id)
             return 0;
