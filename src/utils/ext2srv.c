@@ -47,7 +47,7 @@ struct ext2_superblock
     unsigned int journalDevice;
     unsigned int firstOrphan;
 
-};
+} __attribute__((packed));
 
 struct ext2_blockgroup
 {
@@ -60,7 +60,7 @@ struct ext2_blockgroup
     unsigned short directoryCount;
     unsigned char unused[14];
 
-};
+} __attribute__((packed));
 
 struct ext2_node
 {
@@ -97,7 +97,7 @@ struct ext2_node
     unsigned int sizeHigh;
     unsigned int fragmentBlockAddress;
 
-};
+} __attribute__((packed));
 
 struct ext2_entry
 {
@@ -107,7 +107,7 @@ struct ext2_entry
     unsigned char length;
     unsigned char type;
 
-};
+} __attribute__((packed));
 
 static void request_send(unsigned int sector, unsigned int count)
 {
@@ -150,7 +150,21 @@ static unsigned int isvalid(struct ext2_superblock *superblock)
 
 }
 
-static void printsb(struct ext2_superblock *superblock)
+static void printvalue(char *name, int value, int base, int padding)
+{
+
+    struct message message;
+
+    message_init(&message, EVENT_DATA);
+    message_putstring(&message, name);
+    message_putstring(&message, ": ");
+    message_putvalue(&message, value, base, padding);
+    message_putstring(&message, "\n");
+    channel_sendmessage(&message);
+
+}
+
+static void printsuperblock(struct ext2_superblock *superblock)
 {
 
     struct message message;
@@ -159,8 +173,11 @@ static void printsb(struct ext2_superblock *superblock)
     message_putstring(&message, "Signature: 0x");
     message_putvalue(&message, superblock->signature, 16, 4);
     message_putstring(&message, "\n");
-    message_putstring(&message, "NodeCount: ");
-    message_putvalue(&message, superblock->nodeCount, 10, 0);
+    message_putstring(&message, "SuperblockIndex: ");
+    message_putvalue(&message, superblock->superblockIndex, 10, 0);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "SuperblockGroup: ");
+    message_putvalue(&message, superblock->superblockGroup, 10, 0);
     message_putstring(&message, "\n");
     message_putstring(&message, "BlockSize: ");
     message_putvalue(&message, superblock->blockSize, 10, 0);
@@ -168,11 +185,29 @@ static void printsb(struct ext2_superblock *superblock)
     message_putstring(&message, "BlockCount: ");
     message_putvalue(&message, superblock->blockCount, 10, 0);
     message_putstring(&message, "\n");
+    message_putstring(&message, "BlockCountSuper: ");
+    message_putvalue(&message, superblock->blockCountSuper, 10, 0);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "NodeSize: ");
+    message_putvalue(&message, superblock->nodeSize, 10, 0);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "NodeCount: ");
+    message_putvalue(&message, superblock->nodeCount, 10, 0);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "NodeCountGroup: ");
+    message_putvalue(&message, superblock->nodeCountGroup, 10, 0);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "FragmentSize: ");
+    message_putvalue(&message, superblock->fragmentSize, 10, 0);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "FragmentCountGroup: ");
+    message_putvalue(&message, superblock->fragmentCountGroup, 10, 0);
+    message_putstring(&message, "\n");
     channel_sendmessage(&message);
 
 }
 
-static void printbg(struct ext2_blockgroup *blockgroup)
+static void printblockgroup(struct ext2_blockgroup *blockgroup)
 {
 
     struct message message;
@@ -188,7 +223,26 @@ static void printbg(struct ext2_blockgroup *blockgroup)
 
 }
 
-static void readsb(struct ext2_superblock *sb)
+static void printnode(struct ext2_node *node)
+{
+
+    struct message message;
+
+    message_init(&message, EVENT_DATA);
+    message_putstring(&message, "Type: ");
+    message_putvalue(&message, node->type, 16, 4);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "Flags: ");
+    message_putvalue(&message, node->flags, 16, 8);
+    message_putstring(&message, "\n");
+    message_putstring(&message, "User Id: ");
+    message_putvalue(&message, node->userId, 10, 0);
+    message_putstring(&message, "\n");
+    channel_sendmessage(&message);
+
+}
+
+static void readsuperblock(struct ext2_superblock *sb)
 {
 
     unsigned char block[1024];
@@ -198,13 +252,23 @@ static void readsb(struct ext2_superblock *sb)
 
 }
 
-static void readbg(struct ext2_blockgroup *bgs, struct ext2_superblock *sb, unsigned int nbgs, unsigned int i)
+static void readblockgroups(struct ext2_blockgroup *bg, struct ext2_superblock *sb, unsigned int index, unsigned int offset)
 {
 
     unsigned char block[1024];
 
-    request_readblocks(block, 1024, option_getdecimal("partoffset") + 2 + sb->blockSize + i * sb->blockSize, sb->blockSize);
-    buffer_copy(bgs, block, sizeof (struct ext2_blockgroup) * nbgs);
+    request_readblocks(block, 1024, option_getdecimal("partoffset") + 2 + offset * sb->blockSize, sb->blockSize);
+    buffer_copy(bg, block + index * 32, sizeof (struct ext2_blockgroup));
+
+}
+
+static void readnode(struct ext2_node *node, struct ext2_superblock *sb, unsigned int index, unsigned int offset)
+{
+
+    unsigned char block[1024];
+
+    request_readblocks(block, 1024, option_getdecimal("partoffset") + 2 + offset * sb->blockSize, sb->blockSize);
+    buffer_copy(node, block + index * sb->nodeSize, sizeof (struct ext2_node));
 
 }
 
@@ -212,23 +276,31 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct ext2_superblock sb;
+    unsigned int rootid = 2;
 
     file_walk2(FILE_G5, option_getstring("volume"));
     file_link(FILE_G5);
-    readsb(&sb);
+    readsuperblock(&sb);
 
     if (isvalid(&sb))
     {
 
-        struct ext2_blockgroup bgs[32];
-        unsigned int nbgs = 32;
-        unsigned int i;
+        struct ext2_blockgroup bg;
+        struct ext2_node node;
+        unsigned int blockgroup = (rootid - 1) / sb.nodeCountGroup;
+        unsigned int nodeindex = (rootid - 1) % sb.nodeCountGroup;
+        unsigned int blockindex = (rootid * sb.nodeSize) / sb.blockSize;
 
-        printsb(&sb);
-        readbg(bgs, &sb, nbgs, 2);
+        printsuperblock(&sb);
 
-        for (i = 0; i < nbgs; i++)
-            printbg(&bgs[i]);
+        printvalue("BlockGroup", blockgroup, 10, 0);
+        printvalue("NodeIndex", nodeindex, 10, 0);
+        printvalue("blockIndex", blockindex, 10, 0);
+
+        readblockgroups(&bg, &sb, 0, 3 + blockgroup); /* add blockgroup here */
+        printblockgroup(&bg);
+        readnode(&node, &sb, nodeindex, bg.blockTableAddress + blockindex);
+        printnode(&node);
 
     }
 
