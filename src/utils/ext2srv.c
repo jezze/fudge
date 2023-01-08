@@ -58,6 +58,7 @@ struct ext2_blockgroup
     unsigned short blockCountUnalloc;
     unsigned short nodeCountUnalloc;
     unsigned short directoryCount;
+    unsigned char unused[14];
 
 };
 
@@ -219,12 +220,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        struct ext2_blockgroup bgs[16];
-        unsigned int nbgs = 16;
+        struct ext2_blockgroup bgs[32];
+        unsigned int nbgs = 32;
         unsigned int i;
 
         printsb(&sb);
-        readbg(bgs, &sb, nbgs, 0);
+        readbg(bgs, &sb, nbgs, 2);
 
         for (i = 0; i < nbgs; i++)
             printbg(&bgs[i]);
