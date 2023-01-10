@@ -468,7 +468,7 @@ static void setup_scene1(void)
 static void setup_scene2(void)
 {
 
-    cam = vector3_create(0.0, 0.0, 2.0);
+    cam = vector3_create(0.0, 0.0, 1.0);
     r = vector3_create(0.1, 0.2, 0.3);
     dr = vector3_create(0.02, 0.02, 0.02);
     nodeslocal[0] = vector3_create(-0.5, -0.5, -0.5);
@@ -541,7 +541,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
     buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
     rotate(nodes, 8, &r);
-    translate(nodes, 8, 0, 0, 1.0 + math_sin(size) * 1.2);
+    translate(nodes, 8, 0, 0, 1.5 + math_sin(size) * 1.5);
 
     clearscreen(bcolor);
 
