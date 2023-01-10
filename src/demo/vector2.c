@@ -34,7 +34,7 @@ struct vector2 vector2_add(struct vector2 *v, double x, double y)
 
 }
 
-struct vector2 vector2_add2(struct vector2 *v1, struct vector2 *v2)
+struct vector2 vector2_add_vector2(struct vector2 *v1, struct vector2 *v2)
 {
 
     return vector2_add(v1, v2->x, v2->y);
@@ -53,7 +53,7 @@ struct vector2 vector2_mul(struct vector2 *v, double x, double y)
 
 }
 
-struct vector2 vector2_mul2(struct vector2 *v1, struct vector2 *v2)
+struct vector2 vector2_mul_vector2(struct vector2 *v1, struct vector2 *v2)
 {
 
     return vector2_mul(v1, v2->x, v2->y);
