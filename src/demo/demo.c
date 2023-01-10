@@ -1,6 +1,10 @@
 #include <fudge.h>
 #include <math.h>
 #include <abi.h>
+#include "types.h"
+#include "vector2.h"
+#include "vector3.h"
+#include "matrix3x3.h"
 
 static unsigned int *framebuffer;
 static unsigned int wmax, hmax, wmid, hmid;
@@ -131,245 +135,6 @@ void putcircle(int xm, int ym, int r, unsigned int color)
 
 }
 
-struct vector2
-{
-
-    double x;
-    double y;
-
-};
-
-struct vector3
-{
-
-    double x;
-    double y;
-    double z;
-
-};
-
-struct matrix3x3
-{
-
-    double x0;
-    double y0;
-    double z0;
-    double x1;
-    double y1;
-    double z1;
-    double x2;
-    double y2;
-    double z2;
-
-};
-
-struct matrix3x3 matrix3x3_create(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2)
-{
-
-    struct matrix3x3 m;
-
-    m.x0 = x0;
-    m.y0 = y0;
-    m.z0 = z0;
-    m.x1 = x1;
-    m.y1 = y1;
-    m.z1 = z1;
-    m.x2 = x2;
-    m.y2 = y2;
-    m.z2 = z2;
-
-    return m;
-
-}
-
-struct matrix3x3 matrix3x3_zero(void)
-{
-
-    struct matrix3x3 m;
-
-    m.x0 = 0;
-    m.y0 = 0;
-    m.z0 = 0;
-    m.x1 = 0;
-    m.y1 = 0;
-    m.z1 = 0;
-    m.x2 = 0;
-    m.y2 = 0;
-    m.z2 = 0;
-
-    return m;
-
-}
-
-struct matrix3x3 matrix3x3_identity(void)
-{
-
-    struct matrix3x3 m;
-
-    m.x0 = 1;
-    m.y0 = 0;
-    m.z0 = 0;
-    m.x1 = 0;
-    m.y1 = 1;
-    m.z1 = 0;
-    m.x2 = 0;
-    m.y2 = 0;
-    m.z2 = 1;
-
-    return m;
-
-}
-
-struct vector2 vector2_create(double x, double y)
-{
-
-    struct vector2 n;
-
-    n.x = x;
-    n.y = y;
-
-    return n;
-
-}
-
-struct vector2 vector2_add(struct vector2 *v, double x, double y)
-{
-
-    struct vector2 n;
-
-    n.x = v->x + x;
-    n.y = v->y + y;
-
-    return n;
-
-}
-
-struct vector2 vector2_add2(struct vector2 *v1, struct vector2 *v2)
-{
-
-    return vector2_add(v1, v2->x, v2->y);
-
-}
-
-struct vector2 vector2_mul(struct vector2 *v, double x, double y)
-{
-
-    struct vector2 n;
-
-    n.x = v->x * x;
-    n.y = v->y * y;
-
-    return n;
-
-}
-
-struct vector2 vector2_mul2(struct vector2 *v1, struct vector2 *v2)
-{
-
-    return vector2_mul(v1, v2->x, v2->y);
-
-}
-
-struct vector3 vector3_create(double x, double y, double z)
-{
-
-    struct vector3 n;
-
-    n.x = x;
-    n.y = y;
-    n.z = z;
-
-    return n;
-
-}
-
-struct vector3 vector3_mul_matrix3x3(struct vector3 *v, struct matrix3x3 *m)
-{
-
-    struct vector3 n;
-
-    n.x = v->x * m->x0 + v->y * m->y0 + v->z * m->z0;
-    n.y = v->x * m->x1 + v->y * m->y1 + v->z * m->z1;
-    n.z = v->x * m->x2 + v->y * m->y2 + v->z * m->z2;
-
-    return n;
-
-}
-
-struct matrix3x3 matrix3x3_getrotationx(double s, double c)
-{
-
-    return matrix3x3_create(1, 0, 0, 0, c, -s, 0, s, c);
-
-}
-
-struct matrix3x3 matrix3x3_getrotationy(double s, double c)
-{
-
-    return matrix3x3_create(c, 0, s, 0, 1, 0, -s, 0, c);
-
-}
-
-struct matrix3x3 matrix3x3_getrotationz(double s, double c)
-{
-
-    return matrix3x3_create(c, -s, 0, s, c, 0, 0, 0, 1);
-
-}
-
-struct vector3 vector3_rotatex(struct vector3 *v, double theta)
-{
-
-    struct matrix3x3 m = matrix3x3_getrotationx(math_sin(theta), math_cos(theta));
-
-    return vector3_mul_matrix3x3(v, &m);
-
-}
-
-struct vector3 vector3_rotatey(struct vector3 *v, double theta)
-{
-
-    struct matrix3x3 m = matrix3x3_getrotationy(math_sin(theta), math_cos(theta));
-
-    return vector3_mul_matrix3x3(v, &m);
-
-}
-
-struct vector3 vector3_rotatez(struct vector3 *v, double theta)
-{
-
-    struct matrix3x3 m = matrix3x3_getrotationz(math_sin(theta), math_cos(theta));
-
-    return vector3_mul_matrix3x3(v, &m);
-
-}
-
-struct vector3 vector3_add(struct vector3 *v, double x, double y, double z)
-{
-
-    struct vector3 n;
-
-    n.x = v->x + x;
-    n.y = v->y + y;
-    n.z = v->z + z;
-
-    return n;
-
-}
-
-struct vector3 vector3_add_vector3(struct vector3 *v1, struct vector3 *v2)
-{
-
-    struct vector3 n;
-
-    n.x = v1->x + v2->x;
-    n.y = v1->y + v2->y;
-    n.z = v1->z + v2->z;
-
-    return n;
-
-}
-
 struct model
 {
 
@@ -400,12 +165,12 @@ static void model_init(struct model *model)
     model->lvertices = 0;
     model->gvertices = 0;
     model->vcount = 0;
-    model->rotation = vector3_create(0.0, 0.0, 0.0);
-    model->drotation = vector3_create(0.0, 0.0, 0.0);
+    model->rotation = vector3_zero();
+    model->drotation = vector3_zero();
     model->scale = vector3_create(1.0, 1.0, 1.0);
-    model->dscale = vector3_create(0.0, 0.0, 0.0);
-    model->translate = vector3_create(0.0, 0.0, 0.0);
-    model->dtranslate = vector3_create(0.0, 0.0, 0.0);
+    model->dscale = vector3_zero();
+    model->translate = vector3_zero();
+    model->dtranslate = vector3_zero();
 
 }
 
@@ -434,7 +199,7 @@ static void model_translate(struct model *model, struct vector3 *v)
     unsigned int i;
 
     for (i = 0; i < model->vcount; i++)
-        model->gvertices[i] = vector3_add(&model->gvertices[i], v->x, v->y, v->z);
+        model->gvertices[i] = vector3_add_vector3(&model->gvertices[i], v);
 
 }
 
