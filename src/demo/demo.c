@@ -441,7 +441,7 @@ static void projectnode2(struct vector3 *v, unsigned int color)
     double x = (v->x - cam.x) * z;
     double y = (v->y - cam.y) * z;
 
-    putcircle(x * scale + wmid, y * scale + hmid, (-v->z + cam.z) * 40, color);
+    putcircle(x * scale + wmid, y * scale + hmid, (-v->z + cam.z) * scale / 8, color);
 
 }
 
