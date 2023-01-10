@@ -424,28 +424,31 @@ static void rotate(struct vector3 *vs, unsigned int count, struct vector3 *r)
 static void projectnode(struct vector3 *v, unsigned int color)
 {
 
+    double scale = hmid;
     double z = (cam.z / (cam.z + v->z));
     double x = (v->x - cam.x) * z;
     double y = (v->y - cam.y) * z;
 
-    putcircle(x * wmid + wmid, y * hmid + hmid, 8, color);
+    putcircle(x * scale + wmid, y * scale + hmid, 8, color);
 
 }
 
 static void projectnode2(struct vector3 *v, unsigned int color)
 {
 
+    double scale = hmid;
     double z = (cam.z / (cam.z + v->z));
     double x = (v->x - cam.x) * z;
     double y = (v->y - cam.y) * z;
 
-    putcircle(x * wmid + wmid, y * hmid + hmid, (-v->z + cam.z) * 40, color);
+    putcircle(x * scale + wmid, y * scale + hmid, (-v->z + cam.z) * 40, color);
 
 }
 
 static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
 {
 
+    double scale = hmid;
     double z1 = (cam.z / (cam.z + v1->z));
     double x1 = (v1->x - cam.x) * z1;
     double y1 = (v1->y - cam.y) * z1;
@@ -453,7 +456,7 @@ static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int col
     double x2 = (v2->x - cam.x) * z2;
     double y2 = (v2->y - cam.y) * z2;
 
-    putline(x1 * wmid + wmid, y1 * hmid + hmid, x2 * wmid + wmid, y2 * hmid + hmid, color);
+    putline(x1 * scale + wmid, y1 * scale + hmid, x2 * scale + wmid, y2 * hmid + hmid, color);
 
 }
 
