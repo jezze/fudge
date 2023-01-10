@@ -271,7 +271,7 @@ static void projectnode(struct vector3 *v, unsigned int color)
 
     double scale = hmid;
 
-    putcircle(v->x * scale + wmid, v->y * scale + hmid, 8, color);
+    putcircle(v->x * scale + wmid, v->y * scale + hmid, math_abs(v->z) * scale / 8, color);
 
 }
 
@@ -369,7 +369,7 @@ static void render_scene1(unsigned int frame, unsigned int localframe)
 static void render_scene2(unsigned int frame, unsigned int localframe)
 {
 
-    zmotion = wrapradian(zmotion + 0.04);
+    zmotion = wrapradian(zmotion + MATH_PI / 60);
     cube.rotation = vector3_add_vector3(&cube.rotation, &cube.drotation);
     cube.rotation.x = wrapradian(cube.rotation.x);
     cube.rotation.y = wrapradian(cube.rotation.y);
