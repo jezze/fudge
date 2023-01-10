@@ -5,15 +5,10 @@
 static unsigned int *framebuffer;
 static unsigned int wmax, hmax, wmid, hmid;
 
-double constrain(double x, double min, double max)
+double constrain(double x)
 {
 
-    x = math_mod(x, max);
-
-    if (x < 0)
-        x += max;
-
-    return x;
+    return math_mod(x, 2 * MATH_PI);
 
 }
 
@@ -153,6 +148,78 @@ struct vector3
 
 };
 
+struct matrix3x3
+{
+
+    double x0;
+    double y0;
+    double z0;
+    double x1;
+    double y1;
+    double z1;
+    double x2;
+    double y2;
+    double z2;
+
+};
+
+struct matrix3x3 matrix3x3_create(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2)
+{
+
+    struct matrix3x3 m;
+
+    m.x0 = x0;
+    m.y0 = y0;
+    m.z0 = z0;
+    m.x1 = x1;
+    m.y1 = y1;
+    m.z1 = z1;
+    m.x2 = x2;
+    m.y2 = y2;
+    m.z2 = z2;
+
+    return m;
+
+}
+
+struct matrix3x3 matrix3x3_zero(void)
+{
+
+    struct matrix3x3 m;
+
+    m.x0 = 0;
+    m.y0 = 0;
+    m.z0 = 0;
+    m.x1 = 0;
+    m.y1 = 0;
+    m.z1 = 0;
+    m.x2 = 0;
+    m.y2 = 0;
+    m.z2 = 0;
+
+    return m;
+
+}
+
+struct matrix3x3 matrix3x3_identity(void)
+{
+
+    struct matrix3x3 m;
+
+    m.x0 = 1;
+    m.y0 = 0;
+    m.z0 = 0;
+    m.x1 = 0;
+    m.y1 = 1;
+    m.z1 = 0;
+    m.x2 = 0;
+    m.y2 = 0;
+    m.z2 = 1;
+
+    return m;
+
+}
+
 struct vector2 vector2_create(double x, double y)
 {
 
@@ -216,19 +283,27 @@ struct vector3 vector3_create(double x, double y, double z)
 
 }
 
-struct vector3 vector3_arotatex(struct vector3 *v, double s, double c)
+struct vector3 vector3_mul_matrix3x3(struct vector3 *v, struct matrix3x3 *m)
 {
 
     struct vector3 n;
 
-    n.x = v->x;
-    n.y = v->y * c - v->z * s;
-    n.z = v->z * c + v->y * s;
+    n.x = v->x * m->x0 + v->y * m->y0 + v->z * m->z0;
+    n.y = v->x * m->x1 + v->y * m->y1 + v->z * m->z1;
+    n.z = v->x * m->x2 + v->y * m->y2 + v->z * m->z2;
 
     return n;
 
 }
 
+struct vector3 vector3_arotatex(struct vector3 *v, double s, double c)
+{
+
+    struct matrix3x3 m = matrix3x3_create(1, 0, 0, 0, c, -s, 0, s, c);
+
+    return vector3_mul_matrix3x3(v, &m);
+
+}
 
 struct vector3 vector3_rotatex(struct vector3 *v, double theta)
 {
@@ -240,13 +315,9 @@ struct vector3 vector3_rotatex(struct vector3 *v, double theta)
 struct vector3 vector3_arotatey(struct vector3 *v, double s, double c)
 {
 
-    struct vector3 n;
+    struct matrix3x3 m = matrix3x3_create(c, 0, s, 0, 1, 0, -s, 0, c);
 
-    n.x = v->x * c + v->z * s;
-    n.y = v->y;
-    n.z = v->z * c - v->x * s;
-
-    return n;
+    return vector3_mul_matrix3x3(v, &m);
 
 }
 
@@ -260,13 +331,9 @@ struct vector3 vector3_rotatey(struct vector3 *v, double theta)
 struct vector3 vector3_arotatez(struct vector3 *v, double s, double c)
 {
 
-    struct vector3 n;
+    struct matrix3x3 m = matrix3x3_create(c, -s, 0, s, c, 0, 0, 0, 1);
 
-    n.x = v->x * c - v->y * s;
-    n.y = v->y * c + v->x * s;
-    n.z = v->z;
-
-    return n;
+    return vector3_mul_matrix3x3(v, &m);
 
 }
 
@@ -290,64 +357,67 @@ struct vector3 vector3_add(struct vector3 *v, double x, double y, double z)
 
 }
 
+struct vector3 vector3_add_vector3(struct vector3 *v1, struct vector3 *v2)
+{
+
+    struct vector3 n;
+
+    n.x = v1->x + v2->x;
+    n.y = v1->y + v2->y;
+    n.z = v1->z + v2->z;
+
+    return n;
+
+}
+
 static struct vector3 cam;
 static struct vector3 nodeslocal[8];
 static struct vector3 nodes[8];
-static double rx = 0.1;
-static double ry = 0.2;
-static double rz = 0.3;
-static double sx = 0.01;
-static double sy = 0.02;
-static double sz = 0.03;
+static struct vector3 r;
+static struct vector3 dr;
 static double size = 0;
 static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
 static unsigned int ecolor = 0xFFFFFF00;
 static unsigned int ccolor = 0xFFFF00FF;
 
-static void translate(double x, double y, double z)
+static void translate(struct vector3 *vs, unsigned int count, double x, double y, double z)
 {
 
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
-        nodes[i] = vector3_add(&nodes[i], x, y, z);
+    for (i = 0; i < count; i++)
+    {
+
+        struct vector3 *v = &vs[i];
+
+        vs[i] = vector3_add(v, x, y, z);
+
+    }
 
 }
 
-static void rotatex(double theta)
+static void rotate(struct vector3 *vs, unsigned int count, struct vector3 *r)
 {
 
-    double s = math_sin(theta);
-    double c = math_cos(theta);
+    double sx = math_sin(r->x);
+    double cx = math_cos(r->x);
+    double sy = math_sin(r->y);
+    double cy = math_cos(r->y);
+    double sz = math_sin(r->z);
+    double cz = math_cos(r->z);
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
-        nodes[i] = vector3_arotatex(&nodes[i], s, c);
+    for (i = 0; i < count; i++)
+    {
 
-}
+        struct vector3 *v = &vs[i];
 
-static void rotatey(double theta)
-{
+        vs[i] = vector3_arotatex(v, sx, cx);
+        vs[i] = vector3_arotatey(v, sy, cy);
+        vs[i] = vector3_arotatez(v, sz, cz);
 
-    double s = math_sin(theta);
-    double c = math_cos(theta);
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-        nodes[i] = vector3_arotatey(&nodes[i], s, c);
-
-}
-
-static void rotatez(double theta)
-{
-
-    double s = math_sin(theta);
-    double c = math_cos(theta);
-    unsigned int i;
-
-    for (i = 0; i < 8; i++)
-        nodes[i] = vector3_arotatez(&nodes[i], s, c);
+    }
 
 }
 
@@ -358,7 +428,7 @@ static void projectnode(struct vector3 *v, unsigned int color)
     double x = (v->x - cam.x) * z;
     double y = (v->y - cam.y) * z;
 
-    putcircle(x + wmid, y + hmid, 8, color);
+    putcircle(x * wmid + wmid, y * hmid + hmid, 8, color);
 
 }
 
@@ -369,7 +439,7 @@ static void projectnode2(struct vector3 *v, unsigned int color)
     double x = (v->x - cam.x) * z;
     double y = (v->y - cam.y) * z;
 
-    putcircle(x + wmid, y + hmid, math_abs(100 - v->z * 0.4), color);
+    putcircle(x * wmid + wmid, y * hmid + hmid, (-v->z + cam.z) * 40, color);
 
 }
 
@@ -383,7 +453,7 @@ static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int col
     double x2 = (v2->x - cam.x) * z2;
     double y2 = (v2->y - cam.y) * z2;
 
-    putline(x1 + wmid, y1 + hmid, x2 + wmid, y2 + hmid, color);
+    putline(x1 * wmid + wmid, y1 * hmid + hmid, x2 * wmid + wmid, y2 * hmid + hmid, color);
 
 }
 
@@ -395,22 +465,24 @@ static void setup_scene1(void)
 static void setup_scene2(void)
 {
 
-    cam = vector3_create(0, 0, 200);
-    nodeslocal[0] = vector3_create(-100, -100, -100);
-    nodeslocal[1] = vector3_create(-100, -100, 100);
-    nodeslocal[2] = vector3_create(-100, 100, -100);
-    nodeslocal[3] = vector3_create(-100, 100, 100);
-    nodeslocal[4] = vector3_create(100, -100, -100);
-    nodeslocal[5] = vector3_create(100, -100, 100);
-    nodeslocal[6] = vector3_create(100, 100, -100);
-    nodeslocal[7] = vector3_create(100, 100, 100);
+    cam = vector3_create(0.0, 0.0, 2.0);
+    r = vector3_create(0.1, 0.2, 0.3);
+    dr = vector3_create(0.02, 0.02, 0.02);
+    nodeslocal[0] = vector3_create(-0.5, -0.5, -0.5);
+    nodeslocal[1] = vector3_create(-0.5, -0.5, 0.5);
+    nodeslocal[2] = vector3_create(-0.5, 0.5, -0.5);
+    nodeslocal[3] = vector3_create(-0.5, 0.5, 0.5);
+    nodeslocal[4] = vector3_create(0.5, -0.5, -0.5);
+    nodeslocal[5] = vector3_create(0.5, -0.5, 0.5);
+    nodeslocal[6] = vector3_create(0.5, 0.5, -0.5);
+    nodeslocal[7] = vector3_create(0.5, 0.5, 0.5);
 
 }
 
 static double qsin(double x)
 {
 
-    return math_sin(constrain(x, 0, 2 * MATH_PI));
+    return math_sin(constrain(x));
 
 }
 
@@ -418,7 +490,7 @@ static double qsin(double x)
 static double qcos(double x)
 {
 
-    return math_cos(constrain(x, 0, 2 * MATH_PI));
+    return math_cos(constrain(x));
 
 }
 */
@@ -458,16 +530,16 @@ static void render_scene1(unsigned int frame, unsigned int localframe)
 static void render_scene2(unsigned int frame, unsigned int localframe)
 {
 
-    rx = constrain(rx + sx, 0, 2 * MATH_PI);
-    ry = constrain(ry + sy, 0, 2 * MATH_PI);
-    rz = constrain(rz + sz, 0, 2 * MATH_PI);
-    size = constrain(size + 0.06, 0, 2 * MATH_PI); 
+    r = vector3_add_vector3(&r, &dr);
+    r.x = constrain(r.x);
+    r.y = constrain(r.y);
+    r.z = constrain(r.z);
+    size = constrain(size + 0.04);
 
     buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
-    rotatex(rx);
-    rotatey(ry);
-    rotatez(rz);
-    translate(0, 0, math_sin(size) * 100 + 100);
+    rotate(nodes, 8, &r);
+    translate(nodes, 8, 0, 0, 1.0 + math_sin(size) * 1.2);
+
     clearscreen(bcolor);
 
     if (localframe >= 60 * 0)
@@ -484,7 +556,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
     }
 
-    if (localframe >= 60 * 8)
+    if (localframe >= 60 * 0)
     {
 
         projectedge(&nodes[0], &nodes[1], ecolor);
@@ -502,7 +574,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
     }
 
-    if (localframe >= 60 * 4)
+    if (localframe >= 60 * 0)
     {
 
         projectnode(&nodes[0], ncolor);
