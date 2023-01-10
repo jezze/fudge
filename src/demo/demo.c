@@ -266,10 +266,20 @@ static void putcircle(int xm, int ym, int r, unsigned int color)
 
 }
 
-static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int color, double scale, double offx, double offy)
+static void putpolygon(unsigned int *polygon, unsigned int psize, struct vector3 *vs, unsigned int color, double scale, double offx, double offy)
 {
 
-    putline(v1->x * scale + offx, v1->y * scale + offy, v2->x * scale + offx, v2->y * scale + offy, color);
+    unsigned int i;
+
+    for (i = 0; i < psize - 1; i++)
+    {
+
+        struct vector3 *v1 = &vs[polygon[i]];
+        struct vector3 *v2 = &vs[polygon[i + 1]];
+
+        putline(v1->x * scale + offx, v1->y * scale + offy, v2->x * scale + offx, v2->y * scale + offy, color);
+
+    }
 
 }
 
@@ -387,17 +397,11 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
         unsigned int polygon1[] = {4, 0, 3, 7};
         unsigned int polygon2[] = {5, 4, 7, 6};
         unsigned int polygon3[] = {1, 5, 6, 2};
-        unsigned int i;
 
-        for (i = 0; i < 3; i++)
-        {
-
-            projectedge(&cube.gvertices[polygon0[i]], &cube.gvertices[polygon0[i + 1]], ecolor, scale, offx, offy);
-            projectedge(&cube.gvertices[polygon1[i]], &cube.gvertices[polygon1[i + 1]], ecolor, scale, offx, offy);
-            projectedge(&cube.gvertices[polygon2[i]], &cube.gvertices[polygon2[i + 1]], ecolor, scale, offx, offy);
-            projectedge(&cube.gvertices[polygon3[i]], &cube.gvertices[polygon3[i + 1]], ecolor, scale, offx, offy);
-
-        }
+        putpolygon(polygon0, 4, cube.gvertices, ecolor, scale, offx, offy);
+        putpolygon(polygon1, 4, cube.gvertices, ecolor, scale, offx, offy);
+        putpolygon(polygon2, 4, cube.gvertices, ecolor, scale, offx, offy);
+        putpolygon(polygon3, 4, cube.gvertices, ecolor, scale, offx, offy);
 
     }
 
