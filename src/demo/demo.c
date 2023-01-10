@@ -266,30 +266,10 @@ static void putcircle(int xm, int ym, int r, unsigned int color)
 
 }
 
-static void projectnode(struct vector3 *v, unsigned int color)
+static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int color, double scale, double offx, double offy)
 {
 
-    double scale = hmid;
-
-    putcircle(v->x * scale + wmid, v->y * scale + hmid, math_abs(v->z) * scale / 8, color);
-
-}
-
-static void projectnode2(struct vector3 *v, unsigned int color)
-{
-
-    double scale = hmid;
-
-    putcircle(v->x * scale + wmid, v->y * scale + hmid, math_abs(v->z) * scale / 2, color);
-
-}
-
-static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
-{
-
-    double scale = hmid;
-
-    putline(v1->x * scale + wmid, v1->y * scale + hmid, v2->x * scale + wmid, v2->y * hmid + hmid, color);
+    putline(v1->x * scale + offx, v1->y * scale + offy, v2->x * scale + offx, v2->y * scale + offy, color);
 
 }
 
@@ -369,6 +349,10 @@ static void render_scene1(unsigned int frame, unsigned int localframe)
 static void render_scene2(unsigned int frame, unsigned int localframe)
 {
 
+    double scale = hmid;
+    double offx = wmid;
+    double offy = hmid;
+
     zmotion = wrapradian(zmotion + MATH_PI / 60);
     cube.rotation = vector3_add_vector3(&cube.rotation, &cube.drotation);
     cube.rotation.x = wrapradian(cube.rotation.x);
@@ -385,7 +369,14 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
         unsigned int i;
 
         for (i = 0; i < cube.vcount; i++)
-            projectnode2(&cube.gvertices[i], ccolor);
+        {
+
+            struct vector3 *v = &cube.gvertices[i];
+
+            putcircle(v->x * scale + offx, v->y * scale + offy, math_abs(v->z) * scale / 2, ccolor);
+
+        }
+
 
     }
 
@@ -401,10 +392,10 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
         for (i = 0; i < 3; i++)
         {
 
-            projectedge(&cube.gvertices[polygon0[i]], &cube.gvertices[polygon0[i + 1]], ecolor);
-            projectedge(&cube.gvertices[polygon1[i]], &cube.gvertices[polygon1[i + 1]], ecolor);
-            projectedge(&cube.gvertices[polygon2[i]], &cube.gvertices[polygon2[i + 1]], ecolor);
-            projectedge(&cube.gvertices[polygon3[i]], &cube.gvertices[polygon3[i + 1]], ecolor);
+            projectedge(&cube.gvertices[polygon0[i]], &cube.gvertices[polygon0[i + 1]], ecolor, scale, offx, offy);
+            projectedge(&cube.gvertices[polygon1[i]], &cube.gvertices[polygon1[i + 1]], ecolor, scale, offx, offy);
+            projectedge(&cube.gvertices[polygon2[i]], &cube.gvertices[polygon2[i + 1]], ecolor, scale, offx, offy);
+            projectedge(&cube.gvertices[polygon3[i]], &cube.gvertices[polygon3[i + 1]], ecolor, scale, offx, offy);
 
         }
 
@@ -416,7 +407,13 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
         unsigned int i;
 
         for (i = 0; i < cube.vcount; i++)
-            projectnode(&cube.gvertices[i], ncolor);
+        {
+
+            struct vector3 *v = &cube.gvertices[i];
+
+            putcircle(v->x * scale + offx, v->y * scale + offy, math_abs(v->z) * scale / 8, ncolor);
+
+        }
 
     }
 
