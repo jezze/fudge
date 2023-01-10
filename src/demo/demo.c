@@ -354,8 +354,9 @@ static void rotatez(double theta)
 static void projectnode(struct vector3 *v, unsigned int color)
 {
 
-    double x = (v->x - cam.x) * (cam.z / (cam.z + v->z));
-    double y = (v->y - cam.y) * (cam.z / (cam.z + v->z));
+    double z = (cam.z / (cam.z + v->z));
+    double x = (v->x - cam.x) * z;
+    double y = (v->y - cam.y) * z;
 
     putcircle(x + wmid, y + hmid, 8, color);
 
@@ -364,8 +365,9 @@ static void projectnode(struct vector3 *v, unsigned int color)
 static void projectnode2(struct vector3 *v, unsigned int color)
 {
 
-    double x = (v->x - cam.x) * (cam.z / (cam.z + v->z));
-    double y = (v->y - cam.y) * (cam.z / (cam.z + v->z));
+    double z = (cam.z / (cam.z + v->z));
+    double x = (v->x - cam.x) * z;
+    double y = (v->y - cam.y) * z;
 
     putcircle(x + wmid, y + hmid, math_abs(100 - v->z * 0.4), color);
 
@@ -374,10 +376,12 @@ static void projectnode2(struct vector3 *v, unsigned int color)
 static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int color)
 {
 
-    double x1 = (v1->x - cam.x) * (cam.z / (cam.z + v1->z));
-    double y1 = (v1->y - cam.y) * (cam.z / (cam.z + v1->z));
-    double x2 = (v2->x - cam.x) * (cam.z / (cam.z + v2->z));
-    double y2 = (v2->y - cam.y) * (cam.z / (cam.z + v2->z));
+    double z1 = (cam.z / (cam.z + v1->z));
+    double x1 = (v1->x - cam.x) * z1;
+    double y1 = (v1->y - cam.y) * z1;
+    double z2 = (cam.z / (cam.z + v2->z));
+    double x2 = (v2->x - cam.x) * z2;
+    double y2 = (v2->y - cam.y) * z2;
 
     putline(x1 + wmid, y1 + hmid, x2 + wmid, y2 + hmid, color);
 
