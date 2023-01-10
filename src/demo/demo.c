@@ -5,7 +5,7 @@
 static unsigned int *framebuffer;
 static unsigned int wmax, hmax, wmid, hmid;
 
-double constrain(double x)
+double wrapradian(double x)
 {
 
     return math_mod(x, 2 * MATH_PI);
@@ -296,26 +296,31 @@ struct vector3 vector3_mul_matrix3x3(struct vector3 *v, struct matrix3x3 *m)
 
 }
 
-struct vector3 vector3_arotatex(struct vector3 *v, double s, double c)
+struct matrix3x3 matrix3x3_getrotationx(double s, double c)
 {
 
-    struct matrix3x3 m = matrix3x3_create(1, 0, 0, 0, c, -s, 0, s, c);
+    return matrix3x3_create(1, 0, 0, 0, c, -s, 0, s, c);
 
-    return vector3_mul_matrix3x3(v, &m);
+}
+
+struct matrix3x3 matrix3x3_getrotationy(double s, double c)
+{
+
+    return matrix3x3_create(c, 0, s, 0, 1, 0, -s, 0, c);
+
+}
+
+struct matrix3x3 matrix3x3_getrotationz(double s, double c)
+{
+
+    return matrix3x3_create(c, -s, 0, s, c, 0, 0, 0, 1);
 
 }
 
 struct vector3 vector3_rotatex(struct vector3 *v, double theta)
 {
 
-    return vector3_arotatex(v, math_sin(theta), math_cos(theta));
-
-}
-
-struct vector3 vector3_arotatey(struct vector3 *v, double s, double c)
-{
-
-    struct matrix3x3 m = matrix3x3_create(c, 0, s, 0, 1, 0, -s, 0, c);
+    struct matrix3x3 m = matrix3x3_getrotationx(math_sin(theta), math_cos(theta));
 
     return vector3_mul_matrix3x3(v, &m);
 
@@ -324,14 +329,7 @@ struct vector3 vector3_arotatey(struct vector3 *v, double s, double c)
 struct vector3 vector3_rotatey(struct vector3 *v, double theta)
 {
 
-    return vector3_arotatey(v, math_sin(theta), math_cos(theta));
-
-}
-
-struct vector3 vector3_arotatez(struct vector3 *v, double s, double c)
-{
-
-    struct matrix3x3 m = matrix3x3_create(c, -s, 0, s, c, 0, 0, 0, 1);
+    struct matrix3x3 m = matrix3x3_getrotationy(math_sin(theta), math_cos(theta));
 
     return vector3_mul_matrix3x3(v, &m);
 
@@ -340,7 +338,9 @@ struct vector3 vector3_arotatez(struct vector3 *v, double s, double c)
 struct vector3 vector3_rotatez(struct vector3 *v, double theta)
 {
 
-    return vector3_arotatez(v, math_sin(theta), math_cos(theta));
+    struct matrix3x3 m = matrix3x3_getrotationz(math_sin(theta), math_cos(theta));
+
+    return vector3_mul_matrix3x3(v, &m);
 
 }
 
@@ -370,52 +370,88 @@ struct vector3 vector3_add_vector3(struct vector3 *v1, struct vector3 *v2)
 
 }
 
+struct model
+{
+
+    struct vector3 *lvertices;
+    struct vector3 *gvertices;
+    unsigned int vcount;
+    struct vector3 rotation;
+    struct vector3 drotation;
+    struct vector3 scale;
+    struct vector3 dscale;
+    struct vector3 translate;
+    struct vector3 dtranslate;
+
+};
+
 static struct vector3 projection;
-static struct vector3 nodeslocal[8];
-static struct vector3 nodes[8];
-static struct vector3 r;
-static struct vector3 dr;
-static double size = 0;
+static struct vector3 localvertices[8];
+static struct vector3 globalvertices[8];
+static struct model cube;
 static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
 static unsigned int ecolor = 0xFFFFFF00;
 static unsigned int ccolor = 0xFFFF00FF;
 
-static void translate(struct vector3 *vs, unsigned int count, double x, double y, double z)
+static void model_init(struct model *model)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        struct vector3 *v = &vs[i];
-
-        vs[i] = vector3_add(v, x, y, z);
-
-    }
+    model->lvertices = 0;
+    model->gvertices = 0;
+    model->vcount = 0;
+    model->rotation = vector3_create(0.0, 0.0, 0.0);
+    model->drotation = vector3_create(0.0, 0.0, 0.0);
+    model->scale = vector3_create(1.0, 1.0, 1.0);
+    model->dscale = vector3_create(0.0, 0.0, 0.0);
+    model->translate = vector3_create(0.0, 0.0, 0.0);
+    model->dtranslate = vector3_create(0.0, 0.0, 0.0);
 
 }
 
-static void rotate(struct vector3 *vs, unsigned int count, struct vector3 *r)
+static void model_load(struct model *model, struct vector3 *lvertices, struct vector3 *gvertices, unsigned int vcount)
 {
 
-    double sx = math_sin(r->x);
-    double cx = math_cos(r->x);
-    double sy = math_sin(r->y);
-    double cy = math_cos(r->y);
-    double sz = math_sin(r->z);
-    double cz = math_cos(r->z);
+    model->lvertices = lvertices;
+    model->gvertices = gvertices;
+    model->vcount = vcount;
+
+}
+
+static void model_prepare(struct model *model)
+{
+
     unsigned int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < model->vcount; i++)
+        model->gvertices[i] = model->lvertices[i];
+
+}
+
+static void model_translate(struct model *model, struct vector3 *v)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < model->vcount; i++)
+        model->gvertices[i] = vector3_add(&model->gvertices[i], v->x, v->y, v->z);
+
+}
+
+static void model_rotatexyz(struct model *model, struct vector3 *r)
+{
+
+    struct matrix3x3 mx = matrix3x3_getrotationx(math_sin(r->x), math_cos(r->x));
+    struct matrix3x3 my = matrix3x3_getrotationy(math_sin(r->y), math_cos(r->y));
+    struct matrix3x3 mz = matrix3x3_getrotationz(math_sin(r->z), math_cos(r->z));
+    unsigned int i;
+
+    for (i = 0; i < model->vcount; i++)
     {
 
-        struct vector3 *v = &vs[i];
-
-        vs[i] = vector3_arotatex(v, sx, cx);
-        vs[i] = vector3_arotatey(v, sy, cy);
-        vs[i] = vector3_arotatez(v, sz, cz);
+        model->gvertices[i] = vector3_mul_matrix3x3(&model->gvertices[i], &mx);
+        model->gvertices[i] = vector3_mul_matrix3x3(&model->gvertices[i], &my);
+        model->gvertices[i] = vector3_mul_matrix3x3(&model->gvertices[i], &mz);
 
     }
 
@@ -426,8 +462,8 @@ static void projectnode(struct vector3 *v, unsigned int color)
 
     double scale = hmid;
     double z = (projection.z / (projection.z + v->z));
-    double x = (v->x - projection.x) * z;
-    double y = (v->y - projection.y) * z;
+    double x = (v->x + projection.x) * z;
+    double y = (v->y + projection.y) * z;
 
     putcircle(x * scale + wmid, y * scale + hmid, 8, color);
 
@@ -438,8 +474,8 @@ static void projectnode2(struct vector3 *v, unsigned int color)
 
     double scale = hmid;
     double z = (projection.z / (projection.z + v->z));
-    double x = (v->x - projection.x) * z;
-    double y = (v->y - projection.y) * z;
+    double x = (v->x + projection.x) * z;
+    double y = (v->y + projection.y) * z;
 
     putcircle(x * scale + wmid, y * scale + hmid, math_abs(v->z) * scale / 10, color);
 
@@ -450,11 +486,11 @@ static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int col
 
     double scale = hmid;
     double z1 = (projection.z / (projection.z + v1->z));
-    double x1 = (v1->x - projection.x) * z1;
-    double y1 = (v1->y - projection.y) * z1;
+    double x1 = (v1->x + projection.x) * z1;
+    double y1 = (v1->y + projection.y) * z1;
     double z2 = (projection.z / (projection.z + v2->z));
-    double x2 = (v2->x - projection.x) * z2;
-    double y2 = (v2->y - projection.y) * z2;
+    double x2 = (v2->x + projection.x) * z2;
+    double y2 = (v2->y + projection.y) * z2;
 
     putline(x1 * scale + wmid, y1 * scale + hmid, x2 * scale + wmid, y2 * hmid + hmid, color);
 
@@ -469,23 +505,26 @@ static void setup_scene2(void)
 {
 
     projection = vector3_create(0.0, 0.0, 1.0);
-    r = vector3_create(0.0, 0.0, 0.0);
-    dr = vector3_create(0.0, MATH_PI / 60, 0.0);
-    nodeslocal[0] = vector3_create(-0.5, -0.5, -0.5);
-    nodeslocal[1] = vector3_create(-0.5, -0.5, 0.5);
-    nodeslocal[2] = vector3_create(-0.5, 0.5, -0.5);
-    nodeslocal[3] = vector3_create(-0.5, 0.5, 0.5);
-    nodeslocal[4] = vector3_create(0.5, -0.5, -0.5);
-    nodeslocal[5] = vector3_create(0.5, -0.5, 0.5);
-    nodeslocal[6] = vector3_create(0.5, 0.5, -0.5);
-    nodeslocal[7] = vector3_create(0.5, 0.5, 0.5);
+    localvertices[0] = vector3_create(-0.5, -0.5, -0.5);
+    localvertices[1] = vector3_create(0.5, -0.5, -0.5);
+    localvertices[2] = vector3_create(0.5, 0.5, -0.5);
+    localvertices[3] = vector3_create(-0.5, 0.5, -0.5);
+    localvertices[4] = vector3_create(-0.5, -0.5, 0.5);
+    localvertices[5] = vector3_create(0.5, -0.5, 0.5);
+    localvertices[6] = vector3_create(0.5, 0.5, 0.5);
+    localvertices[7] = vector3_create(-0.5, 0.5, 0.5);
+
+    model_init(&cube);
+    model_load(&cube, localvertices, globalvertices, 8);
+
+    cube.drotation.y = MATH_PI / 60;
 
 }
 
 static double qsin(double x)
 {
 
-    return math_sin(constrain(x));
+    return math_sin(wrapradian(x));
 
 }
 
@@ -493,7 +532,7 @@ static double qsin(double x)
 static double qcos(double x)
 {
 
-    return math_cos(constrain(x));
+    return math_cos(wrapradian(x));
 
 }
 */
@@ -533,61 +572,56 @@ static void render_scene1(unsigned int frame, unsigned int localframe)
 static void render_scene2(unsigned int frame, unsigned int localframe)
 {
 
-    r = vector3_add_vector3(&r, &dr);
-    r.x = constrain(r.x);
-    r.y = constrain(r.y);
-    r.z = constrain(r.z);
-    size = constrain(size + 0.04);
+    cube.rotation = vector3_add_vector3(&cube.rotation, &cube.drotation);
+    cube.rotation.x = wrapradian(cube.rotation.x);
+    cube.rotation.y = wrapradian(cube.rotation.y);
+    cube.rotation.z = wrapradian(cube.rotation.z);
+    cube.dtranslate.z = wrapradian(cube.dtranslate.z + 0.04);
+    cube.translate.z = 1.5 + math_sin(cube.dtranslate.z) * 1.5;
 
-    buffer_copy(nodes, nodeslocal, sizeof (struct vector3) * 8);
-    rotate(nodes, 8, &r);
-    translate(nodes, 8, 0, 0, 1.5 + math_sin(size) * 1.5);
-
+    model_prepare(&cube);
+    model_rotatexyz(&cube, &cube.rotation);
+    model_translate(&cube, &cube.translate);
     clearscreen(bcolor);
 
     if (localframe >= 60 * 0)
     {
 
-        projectnode2(&nodes[0], ccolor);
-        projectnode2(&nodes[1], ccolor);
-        projectnode2(&nodes[2], ccolor);
-        projectnode2(&nodes[3], ccolor);
-        projectnode2(&nodes[4], ccolor);
-        projectnode2(&nodes[5], ccolor);
-        projectnode2(&nodes[6], ccolor);
-        projectnode2(&nodes[7], ccolor);
+        unsigned int i;
+
+        for (i = 0; i < cube.vcount; i++)
+            projectnode2(&cube.gvertices[i], ccolor);
 
     }
 
     if (localframe >= 60 * 0)
     {
 
-        projectedge(&nodes[0], &nodes[1], ecolor);
-        projectedge(&nodes[1], &nodes[3], ecolor);
-        projectedge(&nodes[3], &nodes[2], ecolor);
-        projectedge(&nodes[2], &nodes[0], ecolor);
-        projectedge(&nodes[4], &nodes[5], ecolor);
-        projectedge(&nodes[5], &nodes[7], ecolor);
-        projectedge(&nodes[7], &nodes[6], ecolor);
-        projectedge(&nodes[6], &nodes[4], ecolor);
-        projectedge(&nodes[0], &nodes[4], ecolor);
-        projectedge(&nodes[1], &nodes[5], ecolor);
-        projectedge(&nodes[2], &nodes[6], ecolor);
-        projectedge(&nodes[3], &nodes[7], ecolor);
+        unsigned int polygon0[] = {0, 1, 2, 3};
+        unsigned int polygon1[] = {4, 0, 3, 7};
+        unsigned int polygon2[] = {5, 4, 7, 6};
+        unsigned int polygon3[] = {1, 5, 6, 2};
+        unsigned int i;
+
+        for (i = 0; i < 3; i++)
+        {
+
+            projectedge(&cube.gvertices[polygon0[i]], &cube.gvertices[polygon0[i + 1]], ecolor);
+            projectedge(&cube.gvertices[polygon1[i]], &cube.gvertices[polygon1[i + 1]], ecolor);
+            projectedge(&cube.gvertices[polygon2[i]], &cube.gvertices[polygon2[i + 1]], ecolor);
+            projectedge(&cube.gvertices[polygon3[i]], &cube.gvertices[polygon3[i + 1]], ecolor);
+
+        }
 
     }
 
     if (localframe >= 60 * 0)
     {
 
-        projectnode(&nodes[0], ncolor);
-        projectnode(&nodes[1], ncolor);
-        projectnode(&nodes[2], ncolor);
-        projectnode(&nodes[3], ncolor);
-        projectnode(&nodes[4], ncolor);
-        projectnode(&nodes[5], ncolor);
-        projectnode(&nodes[6], ncolor);
-        projectnode(&nodes[7], ncolor);
+        unsigned int i;
+
+        for (i = 0; i < cube.vcount; i++)
+            projectnode(&cube.gvertices[i], ncolor);
 
     }
 
