@@ -370,7 +370,7 @@ struct vector3 vector3_add_vector3(struct vector3 *v1, struct vector3 *v2)
 
 }
 
-static struct vector3 cam;
+static struct vector3 projection;
 static struct vector3 nodeslocal[8];
 static struct vector3 nodes[8];
 static struct vector3 r;
@@ -425,9 +425,9 @@ static void projectnode(struct vector3 *v, unsigned int color)
 {
 
     double scale = hmid;
-    double z = (cam.z / (cam.z + v->z));
-    double x = (v->x - cam.x) * z;
-    double y = (v->y - cam.y) * z;
+    double z = (projection.z / (projection.z + v->z));
+    double x = (v->x - projection.x) * z;
+    double y = (v->y - projection.y) * z;
 
     putcircle(x * scale + wmid, y * scale + hmid, 8, color);
 
@@ -437,11 +437,11 @@ static void projectnode2(struct vector3 *v, unsigned int color)
 {
 
     double scale = hmid;
-    double z = (cam.z / (cam.z + v->z));
-    double x = (v->x - cam.x) * z;
-    double y = (v->y - cam.y) * z;
+    double z = (projection.z / (projection.z + v->z));
+    double x = (v->x - projection.x) * z;
+    double y = (v->y - projection.y) * z;
 
-    putcircle(x * scale + wmid, y * scale + hmid, (-v->z + cam.z) * scale / 8, color);
+    putcircle(x * scale + wmid, y * scale + hmid, math_abs(v->z) * scale / 10, color);
 
 }
 
@@ -449,12 +449,12 @@ static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int col
 {
 
     double scale = hmid;
-    double z1 = (cam.z / (cam.z + v1->z));
-    double x1 = (v1->x - cam.x) * z1;
-    double y1 = (v1->y - cam.y) * z1;
-    double z2 = (cam.z / (cam.z + v2->z));
-    double x2 = (v2->x - cam.x) * z2;
-    double y2 = (v2->y - cam.y) * z2;
+    double z1 = (projection.z / (projection.z + v1->z));
+    double x1 = (v1->x - projection.x) * z1;
+    double y1 = (v1->y - projection.y) * z1;
+    double z2 = (projection.z / (projection.z + v2->z));
+    double x2 = (v2->x - projection.x) * z2;
+    double y2 = (v2->y - projection.y) * z2;
 
     putline(x1 * scale + wmid, y1 * scale + hmid, x2 * scale + wmid, y2 * hmid + hmid, color);
 
@@ -468,9 +468,9 @@ static void setup_scene1(void)
 static void setup_scene2(void)
 {
 
-    cam = vector3_create(0.0, 0.0, 1.0);
-    r = vector3_create(0.1, 0.2, 0.3);
-    dr = vector3_create(0.02, 0.02, 0.02);
+    projection = vector3_create(0.0, 0.0, 1.0);
+    r = vector3_create(0.0, 0.0, 0.0);
+    dr = vector3_create(0.00, 0.04, 0.0);
     nodeslocal[0] = vector3_create(-0.5, -0.5, -0.5);
     nodeslocal[1] = vector3_create(-0.5, -0.5, 0.5);
     nodeslocal[2] = vector3_create(-0.5, 0.5, -0.5);
