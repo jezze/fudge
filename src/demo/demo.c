@@ -32,17 +32,24 @@ struct scene
 
 };
 
+struct color
+{
+
+    double r;
+    double g;
+    double b;
+
+};
+
+static double table[256];
 static struct vector3 projection;
 static struct vector3 localvertices[8];
 static struct vector3 globalvertices[8];
 static struct model cube;
 static double zmotion;
-static unsigned int bcolor = 0xFF001020;
-static unsigned int ncolor = 0xFFFFFF00;
-static unsigned int ecolor = 0xFFFFFF00;
-static unsigned int ccolor = 0xFFFF00FF;
 static unsigned int *framebuffer;
 static unsigned int wmax, hmax, wmid, hmid;
+static struct color palette[256];
 
 static void model_init(struct model *model)
 {
@@ -283,8 +290,78 @@ static void putpolygon(unsigned int *polygon, unsigned int psize, struct vector3
 
 }
 
+static double sine(double x)
+{
+
+    int c = math_mod(x, 256);
+
+    return (c < 0) ? table[-c] : table[c];
+
+}
+
+static void makepalette(struct color *colors, unsigned int ncolors)
+{
+
+    double r[32];
+    double g[32];
+    double b[32];
+    unsigned int max = 255 / ncolors;
+    unsigned int i;
+
+    for (i = 0; i < ncolors; i++)
+    {
+
+        unsigned int j = ((i + 1 == ncolors) ? 0 : i + 1);
+
+        r[i] = ((colors[i].r - colors[j].r) / max);
+        g[i] = ((colors[i].g - colors[j].g) / max);
+        b[i] = ((colors[i].b - colors[j].b) / max);
+
+    }
+
+    for (i = 0; i <= max; i++)
+    {
+
+        unsigned int j;
+
+        for (j = 0; j < ncolors; j++)
+        {
+
+            struct color *p = &palette[j * (max + 1) + i];
+
+            p->r = colors[j].r - r[j] * i;
+            p->g = colors[j].g - g[j] * i;
+            p->b = colors[j].b - b[j] * i;
+
+        }
+
+    }
+
+}
+
 static void setup_scene1(void)
 {
+
+    struct color colors[4];
+    unsigned int i;
+
+    for (i = 0; i < 256; i++)
+        table[i] = math_ceil((((math_sin(i * 2.0 * MATH_PI / 255.0) * 255.0) + 255.0) / 2.0));
+
+    colors[0].r = 255;
+    colors[0].g = 0;
+    colors[0].b = 0;
+    colors[1].r = 0;
+    colors[1].g = 255;
+    colors[1].b = 0;
+    colors[2].r = 0;
+    colors[2].g = 0;
+    colors[2].b = 255;
+    colors[3].r = 0;
+    colors[3].g = 255;
+    colors[3].b = 255;
+
+    makepalette(colors, 4);
 
 }
 
@@ -308,47 +385,57 @@ static void setup_scene2(void)
 
 }
 
-static double qsin(double x)
-{
-
-    return math_sin(wrapradian(x));
-
-}
-
-/*
-static double qcos(double x)
-{
-
-    return math_cos(wrapradian(x));
-
-}
-*/
-
 static void render_scene1(unsigned int frame, unsigned int localframe)
 {
 
     unsigned int x;
     unsigned int y;
-    double dv = 0.1;
+    double vx = 0.0;
+    double vy = 1.0;
+    double scale = 0.4;
+    double speed = 2.0;
 
-    for (y = 0; y < hmax; y++)
+    if (localframe >= 60 * 0 && localframe < 60 * 2)
     {
 
-        for (x = 0; x < wmax; x++)
+        for (y = 0; y < hmax; y++)
         {
 
-/*
-            double dx = x + 0.5 * qsin(sec / 5.0);
-            double dy = y + 0.5 * qcos(sec / 3.0);
-            double dv = qsin(x * 10 + sec) + qsin(10 * (x * qsin(sec / 2.0) + y * qcos(sec / 3.0)) + sec) + qsin(math_sqrt(100 * (dx * dx + dy * dy) + 1) + sec);
-*/
+            for (x = 0; x < wmax; x++)
+            {
 
-            unsigned char r = (unsigned char)(255.0 * math_abs(qsin(dv * MATH_PI)));
-            unsigned char g = (unsigned char)(255.0 * math_abs(qsin(dv * MATH_PI + 2.0 * MATH_PI / 3.0)));
-            unsigned char b = (unsigned char)(255.0 * math_abs(qsin(dv * MATH_PI + 4.0 * MATH_PI / 3.0)));
-            unsigned int color = 0xFF000000 | ((unsigned int)r << 16) | ((unsigned int)g << 8) | (unsigned int)b;
+                double value = sine((vx * (double)x + vy * (double)y) * scale + frame * speed);
+                unsigned char i = (252 * value / 255);
+                struct color *p = &palette[i];
+                unsigned int color = 0xFF000000 | ((unsigned char)p->r << 16) | ((unsigned char)p->g << 8) | (unsigned char)p->b;
 
-            putpixel(x, y, color);
+                putpixel(x, y, color);
+
+            }
+
+        }
+
+    }
+
+    if (localframe >= 60 * 2 && localframe < 60 * 4)
+    {
+
+        for (y = 0; y < hmax; y++)
+        {
+
+            for (x = 0; x < wmax; x++)
+            {
+
+                double dx = (double)x - wmid;
+                double dy = (double)y - hmid;
+                double value = sine(math_sqrt(dx * dx + dy * dy)) * scale + frame * speed;
+                unsigned char i = (252 * value / 255);
+                struct color *p = &palette[i];
+                unsigned int color = 0xFF000000 | ((unsigned char)p->r << 16) | ((unsigned char)p->g << 8) | (unsigned char)p->b;
+
+                putpixel(x, y, color);
+
+            }
 
         }
 
@@ -359,6 +446,10 @@ static void render_scene1(unsigned int frame, unsigned int localframe)
 static void render_scene2(unsigned int frame, unsigned int localframe)
 {
 
+    unsigned int bcolor = 0xFF001020;
+    unsigned int ncolor = 0xFFFFFF00;
+    unsigned int ecolor = 0xFFFFFF00;
+    unsigned int ccolor = 0xFFFF00FF;
     double scale = hmid;
     double offx = wmid;
     double offy = hmid;
@@ -424,8 +515,8 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 }
 
 static struct scene scenelist[] = {
-    {1, 0, 10, setup_scene1, render_scene1},
-    {1, 10, 6000, setup_scene2, render_scene2}
+    {1, 60 * 0, 60 * 4, setup_scene1, render_scene1},
+    {1, 60 * 4, 60 * 1000, setup_scene2, render_scene2}
 };
 
 static void setup(void)
