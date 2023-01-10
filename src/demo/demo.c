@@ -470,7 +470,7 @@ static void setup_scene2(void)
 
     projection = vector3_create(0.0, 0.0, 1.0);
     r = vector3_create(0.0, 0.0, 0.0);
-    dr = vector3_create(0.00, 0.04, 0.0);
+    dr = vector3_create(0.0, MATH_PI / 60, 0.0);
     nodeslocal[0] = vector3_create(-0.5, -0.5, -0.5);
     nodeslocal[1] = vector3_create(-0.5, -0.5, 0.5);
     nodeslocal[2] = vector3_create(-0.5, 0.5, -0.5);
