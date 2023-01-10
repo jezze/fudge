@@ -6,135 +6,6 @@
 #include "vector3.h"
 #include "matrix3x3.h"
 
-static unsigned int *framebuffer;
-static unsigned int wmax, hmax, wmid, hmid;
-
-double wrapradian(double x)
-{
-
-    return math_mod(x, 2 * MATH_PI);
-
-}
-
-static void clearscreen(unsigned int color)
-{
-
-    if (framebuffer)
-    {
-
-        unsigned int total = wmax * hmax;
-        unsigned int i;
-
-        for (i = 0; i < total; i++)
-            framebuffer[i] = color;
-
-    }
-
-}
-
-void putpixel(int x, int y, unsigned int color)
-{
-
-    if (framebuffer && x < wmax && y < hmax)
-    {
-
-        unsigned int offset = y * wmax + x;
-
-        framebuffer[offset] = color;
-
-    }
-
-}
-
-void putline(int x0, int y0, int x1, int y1, unsigned int color)
-{
-
-    int dx = math_abs(x1 - x0);
-    int sx = x0 < x1 ? 1 : -1;
-    int dy = -math_abs(y1 - y0);
-    int sy = y0 < y1 ? 1 : -1;
-    int err = dx + dy;
-    int e2;
-
-    for (;;)
-    {
-
-        putpixel(x0, y0, color);
-
-        if (x0 == x1 && y0 == y1)
-            break;
-
-        e2 = 2 * err;
-
-        if (e2 >= dy)
-        {
-
-            err += dy;
-            x0 += sx;
-
-        }
-
-        if (e2 <= dx)
-        {
-
-            err += dx;
-            y0 += sy;
-
-        }
-
-    }
-
-}
-
-void putsquare(int x, int y, int w, int h, unsigned int color)
-{
-
-    int cx;
-    int cy;
-    int cw = x + wmax;
-    int ch = y + hmax;
-
-    for (cy = y; cy < ch; cy++)
-    {
-
-        for (cx = x; cx < cw; cx++)
-        {
-
-            putpixel(cx, cy, color);
-
-        }
-
-    }
-
-}
-
-void putcircle(int xm, int ym, int r, unsigned int color)
-{
-
-   int x = -r;
-   int y = 0;
-   int err = 2 - 2 * r;
-
-   do
-   {
-
-      putpixel(xm - x, ym + y, color);
-      putpixel(xm - y, ym - x, color);
-      putpixel(xm + x, ym - y, color);
-      putpixel(xm + y, ym + x, color);
-
-      r = err;
-
-      if (r > x)
-        err += ++x * 2 + 1;
-
-      if (r <= y)
-        err += ++y * 2 + 1;
-
-   } while (x < 0);
-
-}
-
 struct model
 {
 
@@ -145,8 +16,19 @@ struct model
     struct vector3 drotation;
     struct vector3 scale;
     struct vector3 dscale;
-    struct vector3 translate;
-    struct vector3 dtranslate;
+    struct vector3 translation;
+    struct vector3 dtranslation;
+
+};
+
+struct scene
+{
+
+    unsigned int used;
+    unsigned int framestart;
+    unsigned int framestop;
+    void (*setup)(void);
+    void (*render)(unsigned int frame, unsigned int localframe);
 
 };
 
@@ -154,10 +36,13 @@ static struct vector3 projection;
 static struct vector3 localvertices[8];
 static struct vector3 globalvertices[8];
 static struct model cube;
+static double zmotion;
 static unsigned int bcolor = 0xFF001020;
 static unsigned int ncolor = 0xFFFFFF00;
 static unsigned int ecolor = 0xFFFFFF00;
 static unsigned int ccolor = 0xFFFF00FF;
+static unsigned int *framebuffer;
+static unsigned int wmax, hmax, wmid, hmid;
 
 static void model_init(struct model *model)
 {
@@ -169,8 +54,8 @@ static void model_init(struct model *model)
     model->drotation = vector3_zero();
     model->scale = vector3_create(1.0, 1.0, 1.0);
     model->dscale = vector3_zero();
-    model->translate = vector3_zero();
-    model->dtranslate = vector3_zero();
+    model->translation = vector3_zero();
+    model->dtranslation = vector3_zero();
 
 }
 
@@ -222,15 +107,171 @@ static void model_rotatexyz(struct model *model, struct vector3 *r)
 
 }
 
+static void model_project(struct model *model)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < model->vcount; i++)
+    {
+
+        struct vector3 *v = &model->gvertices[i];
+        double z = (projection.z / (projection.z + v->z));
+        double x = (v->x + projection.x) * z;
+        double y = (v->y + projection.y) * z;
+
+        v->x = x;
+        v->y = y;
+        v->z = z;
+
+    }
+
+}
+
+static void model_transform(struct model *model)
+{
+
+    model_prepare(model);
+    model_rotatexyz(model, &model->rotation);
+    model_translate(model, &model->translation);
+    model_project(model);
+
+}
+
+static double wrapradian(double x)
+{
+
+    return math_mod(x, 2 * MATH_PI);
+
+}
+
+static void clearscreen(unsigned int color)
+{
+
+    if (framebuffer)
+    {
+
+        unsigned int total = wmax * hmax;
+        unsigned int i;
+
+        for (i = 0; i < total; i++)
+            framebuffer[i] = color;
+
+    }
+
+}
+
+static void putpixel(int x, int y, unsigned int color)
+{
+
+    if (framebuffer && x < wmax && y < hmax)
+    {
+
+        unsigned int offset = y * wmax + x;
+
+        framebuffer[offset] = color;
+
+    }
+
+}
+
+static void putline(int x0, int y0, int x1, int y1, unsigned int color)
+{
+
+    int dx = math_abs(x1 - x0);
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = -math_abs(y1 - y0);
+    int sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    int e2;
+
+    for (;;)
+    {
+
+        putpixel(x0, y0, color);
+
+        if (x0 == x1 && y0 == y1)
+            break;
+
+        e2 = 2 * err;
+
+        if (e2 >= dy)
+        {
+
+            err += dy;
+            x0 += sx;
+
+        }
+
+        if (e2 <= dx)
+        {
+
+            err += dx;
+            y0 += sy;
+
+        }
+
+    }
+
+}
+
+/*
+static void putsquare(int x, int y, int w, int h, unsigned int color)
+{
+
+    int cx;
+    int cy;
+    int cw = x + wmax;
+    int ch = y + hmax;
+
+    for (cy = y; cy < ch; cy++)
+    {
+
+        for (cx = x; cx < cw; cx++)
+        {
+
+            putpixel(cx, cy, color);
+
+        }
+
+    }
+
+}
+*/
+
+static void putcircle(int xm, int ym, int r, unsigned int color)
+{
+
+   int x = -r;
+   int y = 0;
+   int err = 2 - 2 * r;
+
+   do
+   {
+
+      putpixel(xm - x, ym + y, color);
+      putpixel(xm - y, ym - x, color);
+      putpixel(xm + x, ym - y, color);
+      putpixel(xm + y, ym + x, color);
+
+      r = err;
+
+      if (r > x)
+        err += ++x * 2 + 1;
+
+      if (r <= y)
+        err += ++y * 2 + 1;
+
+   } while (x < 0);
+
+}
+
 static void projectnode(struct vector3 *v, unsigned int color)
 {
 
     double scale = hmid;
-    double z = (projection.z / (projection.z + v->z));
-    double x = (v->x + projection.x) * z;
-    double y = (v->y + projection.y) * z;
 
-    putcircle(x * scale + wmid, y * scale + hmid, 8, color);
+    putcircle(v->x * scale + wmid, v->y * scale + hmid, 8, color);
 
 }
 
@@ -238,11 +279,8 @@ static void projectnode2(struct vector3 *v, unsigned int color)
 {
 
     double scale = hmid;
-    double z = (projection.z / (projection.z + v->z));
-    double x = (v->x + projection.x) * z;
-    double y = (v->y + projection.y) * z;
 
-    putcircle(x * scale + wmid, y * scale + hmid, math_abs(v->z) * scale / 10, color);
+    putcircle(v->x * scale + wmid, v->y * scale + hmid, math_abs(v->z) * scale / 2, color);
 
 }
 
@@ -250,14 +288,8 @@ static void projectedge(struct vector3 *v1, struct vector3 *v2, unsigned int col
 {
 
     double scale = hmid;
-    double z1 = (projection.z / (projection.z + v1->z));
-    double x1 = (v1->x + projection.x) * z1;
-    double y1 = (v1->y + projection.y) * z1;
-    double z2 = (projection.z / (projection.z + v2->z));
-    double x2 = (v2->x + projection.x) * z2;
-    double y2 = (v2->y + projection.y) * z2;
 
-    putline(x1 * scale + wmid, y1 * scale + hmid, x2 * scale + wmid, y2 * hmid + hmid, color);
+    putline(v1->x * scale + wmid, v1->y * scale + hmid, v2->x * scale + wmid, v2->y * hmid + hmid, color);
 
 }
 
@@ -337,16 +369,14 @@ static void render_scene1(unsigned int frame, unsigned int localframe)
 static void render_scene2(unsigned int frame, unsigned int localframe)
 {
 
+    zmotion = wrapradian(zmotion + 0.04);
     cube.rotation = vector3_add_vector3(&cube.rotation, &cube.drotation);
     cube.rotation.x = wrapradian(cube.rotation.x);
     cube.rotation.y = wrapradian(cube.rotation.y);
     cube.rotation.z = wrapradian(cube.rotation.z);
-    cube.dtranslate.z = wrapradian(cube.dtranslate.z + 0.04);
-    cube.translate.z = 1.5 + math_sin(cube.dtranslate.z) * 1.5;
+    cube.translation.z = 1.5 + math_sin(zmotion) * 1.5;
 
-    model_prepare(&cube);
-    model_rotatexyz(&cube, &cube.rotation);
-    model_translate(&cube, &cube.translate);
+    model_transform(&cube);
     clearscreen(bcolor);
 
     if (localframe >= 60 * 0)
@@ -391,17 +421,6 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
     }
 
 }
-
-struct scene
-{
-
-    unsigned int used;
-    unsigned int framestart;
-    unsigned int framestop;
-    void (*setup)(void);
-    void (*render)(unsigned int frame, unsigned int localframe);
-
-};
 
 static struct scene scenelist[] = {
     {1, 0, 10, setup_scene1, render_scene1},
