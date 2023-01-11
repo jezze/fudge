@@ -168,7 +168,7 @@ static void clearscreen(unsigned int color)
 
 }
 
-static void putpixel(int x, int y, unsigned int color)
+static void putpixel(unsigned int x, unsigned int y, unsigned int color)
 {
 
     if (framebuffer && x < wmax && y < hmax)
