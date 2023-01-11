@@ -2,6 +2,7 @@
 
 short math_sin16(short angle);
 short math_cos16(short angle);
+unsigned short math_sqrt16(unsigned short value);
 double math_deg2rad(double angle);
 double math_deg2turn(double angle);
 double math_rad2deg(double angle);

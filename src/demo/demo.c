@@ -540,7 +540,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
 static struct scene scenelist[] = {
     {1, 60 * 0, 60 * 8, setup_scene1, render_scene1},
-    {1, 60 * 8, 60 * 1000, setup_scene2, render_scene2}
+    {1, 60 * 8, 60 * 16, setup_scene2, render_scene2}
 };
 
 static void setup(void)
@@ -562,10 +562,17 @@ static void setup(void)
 
 }
 
+static unsigned int loopframe;
+
 static void render(unsigned int frame)
 {
 
     unsigned int i;
+
+    loopframe++;
+
+    if (loopframe > 60 * 16)
+        loopframe = 0;
 
     for (i = 0; i < 2; i++)
     {
@@ -575,8 +582,8 @@ static void render(unsigned int frame)
         if (!scene->used)
             continue;
 
-        if (frame >= scene->framestart && frame < scene->framestop)
-            scene->render(frame, frame - scene->framestart);
+        if (loopframe >= scene->framestart && loopframe < scene->framestop)
+            scene->render(loopframe, loopframe - scene->framestart);
 
     }
 

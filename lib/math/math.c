@@ -76,6 +76,33 @@ short math_cos16(short angle)
 
 }
 
+unsigned short math_sqrt16(unsigned short value)
+{
+
+    unsigned short root = 0;
+    unsigned short bit;
+
+    for (bit = 0x4000; bit > 0; bit >>= 2)
+    {
+
+        unsigned short trial = root + bit;
+
+        root >>= 1;
+
+        if (trial <= value)
+        {
+
+            root += bit;
+            value -= trial;
+
+        }
+
+    }
+
+    return root;
+
+}
+
 double math_deg2rad(double angle)
 {
 
@@ -149,13 +176,7 @@ double math_mod(double x, double y)
 double math_sqrt(double x)
 {
 
-    double z = 1.0;
-    unsigned int i;
-
-    for (i = 0; i < 10; i++)
-        z -= (z * z - x) / (2 * z);
-
-    return z;
+    return math_sqrt16(x);
 
 }
 
