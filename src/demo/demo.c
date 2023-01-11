@@ -27,8 +27,8 @@ struct scene
     unsigned int used;
     unsigned int framestart;
     unsigned int framestop;
-    void (*setup)(void);
-    void (*render)(unsigned int frame, unsigned int localframe);
+    void (*setup)(struct scene *scene);
+    void (*render)(struct scene *scene, unsigned int frame, unsigned int localframe);
 
 };
 
@@ -357,11 +357,11 @@ static void makepalette(struct color *colors, unsigned int ncolors)
 static unsigned int inperiod(unsigned int frame, unsigned int start, unsigned int end)
 {
 
-    return (frame >= 60 * start && frame < 60 * end);
+    return (frame >= start && frame < end);
 
 }
 
-static void setup_scene1(void)
+static void setup_scene1(struct scene *scene)
 {
 
     struct color colors[4];
@@ -387,7 +387,7 @@ static void setup_scene1(void)
 
 }
 
-static void setup_scene2(void)
+static void setup_scene2(struct scene *scene)
 {
 
     projection = vector3_create(0.0, 0.0, 1.0);
@@ -485,6 +485,34 @@ static void render_plasma_radial(double period, double phase)
 
 }
 
+static void render_plasma_mixed(double period, double phase)
+{
+
+    unsigned int x;
+    unsigned int y;
+
+    for (y = 0; y < hmax; y++)
+    {
+
+        for (x = 0; x < wmax; x++)
+        {
+
+            double dx = math_abs((double)x - wmid);
+            double dy = math_abs((double)y - hmid);
+            double value1 = sine((dx + dy) * period + phase) / 2;
+            double value2 = sine(math_max(dx, dy) * period + phase) / 2;
+            double value = value1 + value2;
+            unsigned char i = (252 * value / 255);
+            struct color *p = &palette[i];
+
+            putpixel2(x, y, p->r, p->g, p->b);
+
+        }
+
+    }
+
+}
+
 static void render_plasma_weird(double period, double phase)
 {
 
@@ -511,27 +539,30 @@ static void render_plasma_weird(double period, double phase)
 
 }
 
-static void render_scene1(unsigned int frame, unsigned int localframe)
+static void render_scene1(struct scene *scene, unsigned int frame, unsigned int localframe)
 {
 
     double period = 0.4;
     double phase = frame * 2.0;
 
-    if (inperiod(localframe, 0, 2))
+    if (inperiod(localframe, 0, 120))
         render_plasma_plain(period, phase);
 
-    if (inperiod(localframe, 2, 4))
+    if (inperiod(localframe, 120, 240))
         render_plasma_square(period, phase);
 
-    if (inperiod(localframe, 4, 6))
-        render_plasma_radial(period, phase);
+    if (inperiod(localframe, 240, 240))
+        render_plasma_radial(period, phase); /* not used */
 
-    if (inperiod(localframe, 6, 8))
+    if (inperiod(localframe, 240, 360))
+        render_plasma_mixed(period, phase);
+
+    if (inperiod(localframe, 360, 600))
         render_plasma_weird(period, phase);
 
 }
 
-static void render_scene2(unsigned int frame, unsigned int localframe)
+static void render_scene2(struct scene *scene, unsigned int frame, unsigned int localframe)
 {
 
     unsigned int bcolor = 0xFF001020;
@@ -552,7 +583,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
     model_transform(&cube);
     clearscreen(bcolor);
 
-    if (inperiod(localframe, 0, 8))
+    if (inperiod(localframe, 0, 600))
     {
 
         unsigned int i;
@@ -569,7 +600,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
     }
 
-    if (inperiod(localframe, 0, 8))
+    if (inperiod(localframe, 0, 600))
     {
 
         unsigned int polygon0[] = {0, 1, 2, 3};
@@ -584,7 +615,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
     }
 
-    if (inperiod(localframe, 0, 8))
+    if (inperiod(localframe, 0, 600))
     {
 
         unsigned int i;
@@ -603,8 +634,8 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 }
 
 static struct scene scenelist[] = {
-    {1, 60 * 0, 60 * 8, setup_scene1, render_scene1},
-    {1, 60 * 8, 60 * 16, setup_scene2, render_scene2}
+    {1, 0, 600, setup_scene1, render_scene1},
+    {1, 600, 1200, setup_scene2, render_scene2}
 };
 
 static void setup(void)
@@ -620,7 +651,7 @@ static void setup(void)
         if (!scene->used)
             continue;
 
-        scene->setup();
+        scene->setup(scene);
 
     }
 
@@ -647,7 +678,7 @@ static void render(unsigned int frame)
             continue;
 
         if (loopframe >= scene->framestart && loopframe < scene->framestop)
-            scene->render(loopframe, loopframe - scene->framestart);
+            scene->render(scene, loopframe, loopframe - scene->framestart);
 
     }
 
