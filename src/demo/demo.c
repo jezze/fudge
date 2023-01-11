@@ -182,6 +182,21 @@ static void putpixel(unsigned int x, unsigned int y, unsigned int color)
 
 }
 
+static void putpixel2(unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b)
+{
+
+    if (framebuffer && x < wmax && y < hmax)
+    {
+
+        unsigned int color = 0xFF000000 | (r << 16) | (g << 8) | b;
+        unsigned int offset = y * wmax + x;
+
+        framebuffer[offset] = color;
+
+    }
+
+}
+
 static void putline(int x0, int y0, int x1, int y1, unsigned int color)
 {
 
@@ -339,6 +354,13 @@ static void makepalette(struct color *colors, unsigned int ncolors)
 
 }
 
+static unsigned int inperiod(unsigned int frame, unsigned int start, unsigned int end)
+{
+
+    return (frame >= 60 * start && frame < 60 * end);
+
+}
+
 static void setup_scene1(void)
 {
 
@@ -385,85 +407,127 @@ static void setup_scene2(void)
 
 }
 
-static void render_scene1(unsigned int frame, unsigned int localframe)
+static void render_plasma_plain(double period, double phase)
 {
 
     unsigned int x;
     unsigned int y;
-    double vx = 0.0;
-    double vy = 1.0;
-    double scale = 0.4;
-    double speed = 2.0;
 
-    if (localframe >= 60 * 0 && localframe < 60 * 2)
+    for (y = 0; y < hmax; y++)
     {
 
-        for (y = 0; y < hmax; y++)
+        for (x = 0; x < wmax; x++)
         {
 
-            for (x = 0; x < wmax; x++)
-            {
+            double dx = 0.0 * (double)(x);
+            double dy = 1.0 * (double)(y);
+            double value = sine((dx + dy) * period + phase);
+            unsigned char i = (252 * value / 255);
+            struct color *p = &palette[i];
 
-                double value = sine((vx * (double)x + vy * (double)y) * scale + frame * speed);
-                unsigned char i = (252 * value / 255);
-                struct color *p = &palette[i];
-                unsigned int color = 0xFF000000 | ((unsigned char)p->r << 16) | ((unsigned char)p->g << 8) | (unsigned char)p->b;
-
-                putpixel(x, y, color);
-
-            }
+            putpixel2(x, y, p->r, p->g, p->b);
 
         }
 
     }
 
-    if (localframe >= 60 * 2 && localframe < 60 * 4)
+}
+
+static void render_plasma_square(double period, double phase)
+{
+
+    unsigned int x;
+    unsigned int y;
+
+    for (y = 0; y < hmax; y++)
     {
 
-        for (y = 0; y < hmax; y++)
+        for (x = 0; x < wmax; x++)
         {
 
-            for (x = 0; x < wmax; x++)
-            {
+            double dx = math_abs((double)x - wmid);
+            double dy = math_abs((double)y - hmid);
+            double value = sine(math_max(dx, dy) * period + phase);
+            unsigned char i = (252 * value / 255);
+            struct color *p = &palette[i];
 
-                double dx = (double)x - wmid;
-                double dy = (double)y - hmid;
-                double value = sine(math_sqrt(dx * dx + dy * dy)) * scale + frame * speed;
-                unsigned char i = (252 * value / 255);
-                struct color *p = &palette[i];
-                unsigned int color = 0xFF000000 | ((unsigned char)p->r << 16) | ((unsigned char)p->g << 8) | (unsigned char)p->b;
-
-                putpixel(x, y, color);
-
-            }
+            putpixel2(x, y, p->r, p->g, p->b);
 
         }
 
     }
 
-    if (localframe >= 60 * 4 && localframe < 60 * 8)
+}
+
+static void render_plasma_radial(double period, double phase)
+{
+
+    unsigned int x;
+    unsigned int y;
+
+    for (y = 0; y < hmax; y++)
     {
 
-        for (y = 0; y < hmax; y++)
+        for (x = 0; x < wmax; x++)
         {
 
-            for (x = 0; x < wmax; x++)
-            {
+            double dx = (double)x - wmid;
+            double dy = (double)y - hmid;
+            double value = sine(math_sqrt(dx * dx + dy * dy) * period + phase);
+            unsigned char i = (252 * value / 255);
+            struct color *p = &palette[i];
 
-                double dx = (double)x - wmid;
-                double dy = (double)y - hmid;
-                double value = sine(dx * dx + dy * dy) * scale + frame * speed;
-                unsigned char i = (252 * value / 255);
-                struct color *p = &palette[i];
-                unsigned int color = 0xFF000000 | ((unsigned char)p->r << 16) | ((unsigned char)p->g << 8) | (unsigned char)p->b;
-
-                putpixel(x, y, color);
-
-            }
+            putpixel2(x, y, p->r, p->g, p->b);
 
         }
 
     }
+
+}
+
+static void render_plasma_weird(double period, double phase)
+{
+
+    unsigned int x;
+    unsigned int y;
+
+    for (y = 0; y < hmax; y++)
+    {
+
+        for (x = 0; x < wmax; x++)
+        {
+
+            double dx = (double)x - wmid;
+            double dy = (double)y - hmid;
+            double value = sine(dx * dx + dy * dy) * period + phase;
+            unsigned char i = (252 * value / 255);
+            struct color *p = &palette[i];
+
+            putpixel2(x, y, p->r, p->g, p->b);
+
+        }
+
+    }
+
+}
+
+static void render_scene1(unsigned int frame, unsigned int localframe)
+{
+
+    double period = 0.4;
+    double phase = frame * 2.0;
+
+    if (inperiod(localframe, 0, 2))
+        render_plasma_plain(period, phase);
+
+    if (inperiod(localframe, 2, 4))
+        render_plasma_square(period, phase);
+
+    if (inperiod(localframe, 4, 6))
+        render_plasma_radial(period, phase);
+
+    if (inperiod(localframe, 6, 8))
+        render_plasma_weird(period, phase);
 
 }
 
@@ -488,7 +552,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
     model_transform(&cube);
     clearscreen(bcolor);
 
-    if (localframe >= 60 * 0)
+    if (inperiod(localframe, 0, 8))
     {
 
         unsigned int i;
@@ -505,7 +569,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
     }
 
-    if (localframe >= 60 * 0)
+    if (inperiod(localframe, 0, 8))
     {
 
         unsigned int polygon0[] = {0, 1, 2, 3};
@@ -520,7 +584,7 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 
     }
 
-    if (localframe >= 60 * 0)
+    if (inperiod(localframe, 0, 8))
     {
 
         unsigned int i;

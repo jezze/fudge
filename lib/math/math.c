@@ -131,6 +131,20 @@ double math_rad2turn(double angle)
 
 }
 
+double math_max(double a, double b)
+{
+
+    return a > b ? a : b;
+
+}
+
+double math_min(double a, double b)
+{
+
+    return a < b ? a : b;
+
+}
+
 double math_abs(double x)
 {
 
@@ -166,10 +180,10 @@ double math_trunc(double x)
 
 }
 
-double math_mod(double x, double y)
+double math_mod(double a, double b)
 {
 
-    return x - math_trunc(x / y) * y;
+    return a - math_trunc(a / b) * b;
 
 }
 
