@@ -27,8 +27,9 @@ struct scene
     unsigned int used;
     unsigned int framestart;
     unsigned int framestop;
+    unsigned int duration;
     void (*setup)(struct scene *scene);
-    void (*render)(struct scene *scene, unsigned int frame, unsigned int localframe);
+    void (*render)(struct scene *scene, unsigned int frame, unsigned int loopframe, unsigned int globalframe);
 
 };
 
@@ -539,30 +540,30 @@ static void render_plasma_weird(double period, double phase)
 
 }
 
-static void render_scene1(struct scene *scene, unsigned int frame, unsigned int localframe)
+static void render_scene1(struct scene *scene, unsigned int frame, unsigned int loopframe, unsigned int globalframe)
 {
 
     double period = 0.4;
     double phase = frame * 2.0;
 
-    if (inperiod(localframe, 0, 120))
+    if (inperiod(frame, 0, 120))
         render_plasma_plain(period, phase);
 
-    if (inperiod(localframe, 120, 240))
+    if (inperiod(frame, 120, 240))
         render_plasma_square(period, phase);
 
-    if (inperiod(localframe, 240, 240))
+    if (inperiod(frame, 240, 240))
         render_plasma_radial(period, phase); /* not used */
 
-    if (inperiod(localframe, 240, 360))
+    if (inperiod(frame, 240, 360))
         render_plasma_mixed(period, phase);
 
-    if (inperiod(localframe, 360, 600))
+    if (inperiod(frame, 360, 600))
         render_plasma_weird(period, phase);
 
 }
 
-static void render_scene2(struct scene *scene, unsigned int frame, unsigned int localframe)
+static void render_scene2(struct scene *scene, unsigned int frame, unsigned int loopframe, unsigned int globalframe)
 {
 
     unsigned int bcolor = 0xFF001020;
@@ -583,7 +584,7 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
     model_transform(&cube);
     clearscreen(bcolor);
 
-    if (inperiod(localframe, 0, 600))
+    if (inperiod(frame, 0, scene->duration))
     {
 
         unsigned int i;
@@ -600,7 +601,7 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
 
     }
 
-    if (inperiod(localframe, 0, 600))
+    if (inperiod(frame, 240, scene->duration))
     {
 
         unsigned int polygon0[] = {0, 1, 2, 3};
@@ -615,7 +616,7 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
 
     }
 
-    if (inperiod(localframe, 0, 600))
+    if (inperiod(frame, 120, scene->duration))
     {
 
         unsigned int i;
@@ -634,9 +635,11 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
 }
 
 static struct scene scenelist[] = {
-    {1, 0, 600, setup_scene1, render_scene1},
-    {1, 600, 1200, setup_scene2, render_scene2}
+    {1, 0, 0, 600, setup_scene1, render_scene1},
+    {1, 0, 0, 600, setup_scene2, render_scene2}
 };
+static unsigned int totaltime;
+static unsigned int loopframe;
 
 static void setup(void)
 {
@@ -651,13 +654,15 @@ static void setup(void)
         if (!scene->used)
             continue;
 
+        scene->framestart = totaltime;
+        scene->framestop = scene->framestart + scene->duration;
         scene->setup(scene);
+
+        totaltime += scene->duration;
 
     }
 
 }
-
-static unsigned int loopframe;
 
 static void render(unsigned int frame)
 {
@@ -666,7 +671,7 @@ static void render(unsigned int frame)
 
     loopframe++;
 
-    if (loopframe > 60 * 16)
+    if (loopframe > totaltime)
         loopframe = 0;
 
     for (i = 0; i < 2; i++)
@@ -678,7 +683,7 @@ static void render(unsigned int frame)
             continue;
 
         if (loopframe >= scene->framestart && loopframe < scene->framestop)
-            scene->render(scene, loopframe, loopframe - scene->framestart);
+            scene->render(scene, loopframe - scene->framestart, loopframe, frame);
 
     }
 
