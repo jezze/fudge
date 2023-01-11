@@ -441,6 +441,30 @@ static void render_scene1(unsigned int frame, unsigned int localframe)
 
     }
 
+    if (localframe >= 60 * 4 && localframe < 60 * 8)
+    {
+
+        for (y = 0; y < hmax; y++)
+        {
+
+            for (x = 0; x < wmax; x++)
+            {
+
+                double dx = (double)x - wmid;
+                double dy = (double)y - hmid;
+                double value = sine(dx * dx + dy * dy) * scale + frame * speed;
+                unsigned char i = (252 * value / 255);
+                struct color *p = &palette[i];
+                unsigned int color = 0xFF000000 | ((unsigned char)p->r << 16) | ((unsigned char)p->g << 8) | (unsigned char)p->b;
+
+                putpixel(x, y, color);
+
+            }
+
+        }
+
+    }
+
 }
 
 static void render_scene2(unsigned int frame, unsigned int localframe)
@@ -515,8 +539,8 @@ static void render_scene2(unsigned int frame, unsigned int localframe)
 }
 
 static struct scene scenelist[] = {
-    {1, 60 * 0, 60 * 4, setup_scene1, render_scene1},
-    {1, 60 * 4, 60 * 1000, setup_scene2, render_scene2}
+    {1, 60 * 0, 60 * 8, setup_scene1, render_scene1},
+    {1, 60 * 8, 60 * 1000, setup_scene2, render_scene2}
 };
 
 static void setup(void)
