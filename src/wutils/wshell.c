@@ -138,7 +138,7 @@ static void interpret(void)
             job_init(&job, workers, JOBSIZE);
             job_parse(&job, obuffer, ocount);
 
-            if (job_spawn(&job, FILE_L0, FILE_G8))
+            if (job_spawn(&job, FILE_L1, FILE_G8))
             {
 
                 struct message message;
@@ -265,7 +265,7 @@ static void complete(void)
 
     }
 
-    if (job_spawn(&job, FILE_L0, FILE_G8))
+    if (job_spawn(&job, FILE_L1, FILE_G8))
     {
 
         job_listen(&job, EVENT_CLOSE);
