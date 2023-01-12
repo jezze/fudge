@@ -25,35 +25,61 @@ static void printprompt(void)
 
 }
 
-static void interpret(void)
+static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, unsigned int icount)
 {
 
-    char buffer[INPUTSIZE];
-    unsigned int count = ring_read(&input, buffer, INPUTSIZE);
+    unsigned int id = file_spawn2(FILE_L0, FILE_G8, "/bin/slang");
+    unsigned int offset = 0;
 
-    if (count)
+    if (id)
     {
 
-        unsigned int id = file_spawn2(FILE_L0, FILE_G8, "/bin/slang");
         struct message message;
-
-        if (!id)
-            channel_error("Could not spawn process");
 
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_ERROR);
         channel_redirectback(id, EVENT_CLOSE);
-        channel_sendbufferto(id, EVENT_DATA, count, buffer);
+        channel_sendbufferto(id, EVENT_DATA, icount, ibuffer);
         channel_sendto(id, EVENT_MAIN);
 
         while (channel_readmessagefrom(id, EVENT_DATA, &message))
+            offset += buffer_write(obuffer, ocount, message.data.buffer, message_datasize(&message.header), offset);
+
+    }
+
+    else
+    {
+
+        channel_error("Could not spawn process");
+
+    }
+
+    return offset;
+
+}
+
+static void interpret(void)
+{
+
+    char ibuffer[INPUTSIZE];
+    unsigned int icount = ring_read(&input, ibuffer, INPUTSIZE);
+
+    if (icount)
+    {
+
+        char obuffer[1000];
+        unsigned int ocount = runslang(obuffer, 1000, ibuffer, icount);
+
+        if (ocount)
         {
 
             job_init(&job, workers, JOBSIZE);
-            job_parse(&job, message.data.buffer, message_datasize(&message.header));
+            job_parse(&job, obuffer, ocount);
 
             if (job_spawn(&job, FILE_L0, FILE_G8))
             {
+
+                struct message message;
 
                 job_listen(&job, EVENT_CLOSE);
                 job_listen(&job, EVENT_DATA);
@@ -92,7 +118,6 @@ static void interpret(void)
                     }
 
                 }
-
 
             }
 
