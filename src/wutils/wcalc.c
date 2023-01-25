@@ -170,7 +170,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ button id \"button+\" in \"buttons\" label \"+\"\n"
         "+ button id \"button=\" in \"buttons\" label \"=\"\n";
 
-    channel_sendstring(EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(EVENT_WMRENDERDATA, data);
 
 }
 

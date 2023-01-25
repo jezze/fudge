@@ -8,7 +8,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int nrecords;
 
     file_duplicate(FILE_L0, FILE_G0);
-    channel_sendstring(EVENT_DATA, "../\n");
+    channel_sendfmt0(EVENT_DATA, "../\n");
 
     while ((nrecords = file_list(FILE_G0, FILE_L0, 8, records)))
     {

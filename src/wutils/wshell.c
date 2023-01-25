@@ -376,7 +376,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ text id \"cursor\" in \"output\" wrap \"char\" mode \"inverted\" content \" \"\n"
         "+ text id \"input2\" in \"output\" wrap \"char\"\n";
 
-    channel_sendstring(EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(EVENT_WMRENDERDATA, data);
 
 }
 

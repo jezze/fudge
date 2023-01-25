@@ -119,20 +119,6 @@ unsigned int channel_sendbufferto(unsigned int target, unsigned int event, unsig
 
 }
 
-unsigned int channel_sendstring(unsigned int event, char *string)
-{
-
-    return send(0, event, cstring_length(string), string);
-
-}
-
-unsigned int channel_sendstringto(unsigned int target, unsigned int event, char *string)
-{
-
-    return send(target, event, cstring_length(string), string);
-
-}
-
 unsigned int channel_sendstringz(unsigned int event, char *string)
 {
 
@@ -410,7 +396,7 @@ void channel_close(void)
 void channel_error(char *description)
 {
 
-    channel_sendstring(EVENT_ERROR, description);
+    channel_sendbuffer(EVENT_ERROR, cstring_length(description), description);
     channel_close();
     call_despawn();
 
@@ -419,7 +405,7 @@ void channel_error(char *description)
 void channel_warning(char *description)
 {
 
-    channel_sendstring(EVENT_ERROR, description);
+    channel_sendbuffer(EVENT_ERROR, cstring_length(description), description);
 
 }
 

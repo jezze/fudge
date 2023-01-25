@@ -3,8 +3,6 @@ unsigned int channel_send(unsigned int event);
 unsigned int channel_sendto(unsigned int target, unsigned int event);
 unsigned int channel_sendbuffer(unsigned int event, unsigned int count, void *data);
 unsigned int channel_sendbufferto(unsigned int target, unsigned int event, unsigned int count, void *data);
-unsigned int channel_sendstring(unsigned int event, char *string);
-unsigned int channel_sendstringto(unsigned int target, unsigned int event, char *string);
 unsigned int channel_sendstringz(unsigned int event, char *string);
 unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char *string);
 unsigned int channel_sendfmt0(unsigned int event, char *fmt);
