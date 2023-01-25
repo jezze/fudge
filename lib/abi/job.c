@@ -161,14 +161,15 @@ void job_run(struct job *job)
             for (j = 0; j < worker->noptions; j++)
             {
 
-                struct message message;
+                char buffer[MESSAGE_SIZE];
+                unsigned int count = 0;
 
-                message_init(&message, EVENT_OPTION);
-                message_putstring(&message, worker->options[j].key);
-                message_putzero(&message);
-                message_putstring(&message, worker->options[j].value);
-                message_putzero(&message);
-                channel_sendmessageto(worker->id, &message);
+                count += cstring_write(buffer, MESSAGE_SIZE, worker->options[j].key, count);
+                count += cstring_writezero(buffer, MESSAGE_SIZE, count);
+                count += cstring_write(buffer, MESSAGE_SIZE, worker->options[j].value, count);
+                count += cstring_writezero(buffer, MESSAGE_SIZE, count);
+
+                channel_sendbufferto(worker->id, EVENT_OPTION, count, buffer);
 
             }
 

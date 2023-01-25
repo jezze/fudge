@@ -7,6 +7,20 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
+static unsigned int putfmt4(struct message *message, char *fmt, void *value1, void *value2, void *value3, void *value4)
+{
+
+    void *args[4];
+
+    args[0] = value1;
+    args[1] = value2;
+    args[2] = value3;
+    args[3] = value4;
+
+    return message->header.length += cstring_writefmt(message->data.buffer, MESSAGE_SIZE, fmt, 4, args, message_datasize(&message->header));
+
+}
+
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
 
@@ -44,7 +58,7 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
 
     case 1:
         message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
-        message_putfmt4(&message, " has address %c.%c.%c.%c\n", &addr[0], &addr[1], &addr[2], &addr[3]);
+        putfmt4(&message, " has address %c.%c.%c.%c\n", &addr[0], &addr[1], &addr[2], &addr[3]);
 
         break;
 
@@ -79,7 +93,7 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
     {
 
     case 1:
-        message_putfmt4(&message, "%c.%c.%c.%c", &addr[0], &addr[1], &addr[2], &addr[3]);
+        putfmt4(&message, "%c.%c.%c.%c", &addr[0], &addr[1], &addr[2], &addr[3]);
         message_putzero(&message);
 
         break;

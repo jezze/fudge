@@ -12,34 +12,23 @@ static void print(unsigned int source, unsigned int count, void *buffer)
     for (i = 0; i < count; i += 16)
     {
 
-        struct message message;
+        char buffer[120];
+        unsigned int offset = 0;
         unsigned int j;
 
-        message_init(&message, EVENT_DATA);
-        message_putvalue(&message, page, 16, 8);
-        message_putstring(&message, "  ");
+        offset += cstring_writefmt1(buffer, 120, "%H8u  ", offset, &page);
 
         for (j = i; j < i + 16; j++)
         {
 
             if (j < count)
-            {
-
-                message_putvalue(&message, b[j], 16, 2);
-                message_putstring(&message, " ");
-
-            }
-
+                offset += cstring_writefmt1(buffer, 120, "%H2c ", offset, &b[j]);
             else
-            {
-
-                message_putstring(&message, "   ");
-
-            }
+                offset += cstring_writefmt0(buffer, 120, "   ", offset);
 
         }
 
-        message_putstring(&message, " |");
+        offset += cstring_writefmt0(buffer, 120, " |", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -52,23 +41,23 @@ static void print(unsigned int source, unsigned int count, void *buffer)
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                message_putbuffer(&message, 1, &c);
+                offset += buffer_write(buffer, 120, &c, 1, offset);
 
             }
 
             else
             {
 
-                message_putstring(&message, " ");
+                offset += cstring_writefmt0(buffer, 120, " ", offset);
 
             }
 
         }
 
-        message_putstring(&message, "|\n");
-        channel_sendmessage(&message);
-
+        offset += cstring_writefmt0(buffer, 120, "|\n", offset);
         page += 16;
+
+        channel_sendbuffer(EVENT_DATA, offset, buffer);
 
     }
 

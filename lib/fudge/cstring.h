@@ -10,3 +10,10 @@ unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int
 unsigned int cstring_writezero(char *out, unsigned int count, unsigned int offset);
 unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding, unsigned int offset);
 unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned int nargs, void **args, unsigned int offset);
+unsigned int cstring_writefmt0(void *out, unsigned int count, char *fmt, unsigned int offset);
+unsigned int cstring_writefmt1(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1);
+unsigned int cstring_writefmt2(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2);
+unsigned int cstring_writefmt3(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3);
+unsigned int cstring_writefmt4(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4);
+unsigned int cstring_writefmt6(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6);
+unsigned int cstring_writefmt8(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8);
