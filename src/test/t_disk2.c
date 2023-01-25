@@ -44,7 +44,7 @@ static unsigned int version(unsigned short tag, unsigned int msize, char *name)
     struct message message;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
-    channel_pollevent(EVENT_P9P, &message);
+    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
 
     if (!validate(message.data.buffer, tag))
         return 0;
@@ -68,7 +68,7 @@ static unsigned int attach(unsigned short tag, unsigned int fid, unsigned int af
     struct message message;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_pollevent(EVENT_P9P, &message);
+    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
 
     if (!validate(message.data.buffer, tag))
         return 0;
@@ -92,7 +92,7 @@ static unsigned int walk(unsigned short tag, unsigned int fid, unsigned int newf
     struct message message;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
-    channel_pollevent(EVENT_P9P, &message);
+    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
 
     if (!validate(message.data.buffer, tag))
         return 0;
@@ -116,7 +116,7 @@ static unsigned int read(unsigned short tag, unsigned int fid)
     struct message message;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
-    channel_pollevent(EVENT_P9P, &message);
+    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
 
     if (!validate(message.data.buffer, tag))
         return 0;

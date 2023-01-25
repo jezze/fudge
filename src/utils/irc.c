@@ -78,7 +78,7 @@ static void dnsresolve(char *domain)
     channel_sendmessageto(id, &message);
     channel_sendto(id, EVENT_MAIN);
 
-    while (channel_pollfrom(id, &message) != EVENT_CLOSE)
+    while (channel_pollfrom(id, &message.header, message.data.buffer) != EVENT_CLOSE)
     {
 
         if (message.header.event == EVENT_QUERY)

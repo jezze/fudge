@@ -242,16 +242,16 @@ unsigned int job_exist(struct job *job, unsigned int id)
 
 }
 
-unsigned int job_pick(struct job *job, struct message *message)
+unsigned int job_pick(struct job *job, struct message_header *header, void *data)
 {
 
-    while (job_count(job) && channel_pick(message))
+    while (job_count(job) && channel_pick(header, data))
     {
 
-        if (job_exist(job, message->header.source))
-            return message->header.source;
+        if (job_exist(job, header->source))
+            return header->source;
         else
-            channel_dispatch(message);
+            channel_dispatch(header, data);
 
     }
 

@@ -233,7 +233,8 @@ static void run(void)
     char romname[16];
     enum gb_init_error_e gb_ret;
     struct gb_s gb;
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     file_read(FILE_G5, rom, 0x80000);
 
@@ -259,10 +260,10 @@ static void run(void)
     file_read(FILE_G5, cart_ram, getsavesize(&gb));
     channel_sendfmt1(EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
-    while (channel_pick(&message))
+    while (channel_pick(&header, &data))
     {
 
-        switch (message.header.event)
+        switch (header.event)
         {
 
         case EVENT_TIMERTICK:
@@ -274,17 +275,17 @@ static void run(void)
             break;
 
         case EVENT_KEYPRESS:
-            keypress(&gb, message.data.buffer);
+            keypress(&gb, &data);
 
             break;
 
         case EVENT_KEYRELEASE:
-            keyrelease(&gb, message.data.buffer);
+            keyrelease(&gb, &data);
 
             break;
 
         default:
-            channel_dispatch(&message);
+            channel_dispatch(&header, &data);
 
             break;
 

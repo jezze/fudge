@@ -48,16 +48,16 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
 }
 
-static unsigned int read(unsigned int source, unsigned int event, struct message *message)
+static unsigned int read(unsigned int source, unsigned int event, struct message_header *header, void *data)
 {
 
-    while (channel_pollfrom(source, message) != EVENT_CLOSE)
+    while (channel_pollfrom(source, header, data) != EVENT_CLOSE)
     {
 
-        if (message->header.event == event)
-            return message_datasize(&message->header);
+        if (header->event == event)
+            return message_datasize(header);
         else
-            channel_dispatch(message);
+            channel_dispatch(header, data);
 
     }
 
@@ -78,14 +78,14 @@ static unsigned int redirect(unsigned int target, unsigned int event, unsigned i
 
 }
 
-void channel_dispatch(struct message *message)
+void channel_dispatch(struct message_header *header, void *data)
 {
 
-    if (message->header.event < CHANNEL_CALLBACKS)
+    if (header->event < CHANNEL_CALLBACKS)
     {
 
-        if (callbacks[message->header.event].callback)
-            callbacks[message->header.event].callback(message->header.source, message->data.buffer, message_datasize(&message->header));
+        if (callbacks[header->event].callback)
+            callbacks[header->event].callback(header->source, data, message_datasize(header));
 
     }
 
@@ -224,14 +224,14 @@ unsigned int channel_redirectback(unsigned int target, unsigned int event)
 
 }
 
-unsigned int channel_pick(struct message *message)
+unsigned int channel_pick(struct message_header *header, void *data)
 {
 
     while (active)
     {
 
-        if (call_pick(&message->header, &message->data))
-            return message->header.event;
+        if (call_pick(header, data))
+            return header->event;
 
     }
 
@@ -244,10 +244,10 @@ unsigned int channel_process(void)
 
     struct message message;
 
-    if (channel_pick(&message))
+    if (channel_pick(&message.header, message.data.buffer))
     {
 
-        channel_dispatch(&message);
+        channel_dispatch(&message.header, message.data.buffer);
 
         return message.header.event;
 
@@ -257,16 +257,16 @@ unsigned int channel_process(void)
 
 }
 
-unsigned int channel_pollfrom(unsigned int source, struct message *message)
+unsigned int channel_pollfrom(unsigned int source, struct message_header *header, void *data)
 {
 
-    while (channel_pick(message))
+    while (channel_pick(header, data))
     {
 
-        if (message->header.source == source)
-            return message->header.event;
+        if (header->source == source)
+            return header->event;
 
-        channel_dispatch(message);
+        channel_dispatch(header, data);
 
     }
 
@@ -274,16 +274,16 @@ unsigned int channel_pollfrom(unsigned int source, struct message *message)
 
 }
 
-unsigned int channel_pollevent(unsigned int event, struct message *message)
+unsigned int channel_pollevent(unsigned int event, struct message_header *header, void *data)
 {
 
-    while (channel_pick(message))
+    while (channel_pick(header, data))
     {
 
-        if (message->header.event == event)
-            return message->header.event;
+        if (header->event == event)
+            return header->event;
 
-        channel_dispatch(message);
+        channel_dispatch(header, data);
 
     }
 
@@ -291,16 +291,16 @@ unsigned int channel_pollevent(unsigned int event, struct message *message)
 
 }
 
-unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message)
+unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message_header *header, void *data)
 {
 
-    while (channel_pick(message))
+    while (channel_pick(header, data))
     {
 
-        if (message->header.source == source && message->header.event == event)
-            return message->header.event;
+        if (header->source == source && header->event == event)
+            return header->event;
 
-        channel_dispatch(message);
+        channel_dispatch(header, data);
 
     }
 
@@ -308,31 +308,31 @@ unsigned int channel_polleventfrom(unsigned int source, unsigned int event, stru
 
 }
 
-unsigned int channel_kpoll(struct message *message)
+unsigned int channel_kpoll(struct message_header *header, void *data)
 {
 
-    return channel_pollfrom(0, message);
+    return channel_pollfrom(0, header, data);
 
 }
 
-unsigned int channel_kpollevent(unsigned int event, struct message *message)
+unsigned int channel_kpollevent(unsigned int event, struct message_header *header, void *data)
 {
 
-    return channel_polleventfrom(0, event, message);
+    return channel_polleventfrom(0, event, header, data);
 
 }
 
-unsigned int channel_readmessage(unsigned int event, struct message *message)
+unsigned int channel_read(unsigned int event, struct message_header *header, void *data)
 {
 
-    return read(0, event, message);
+    return read(0, event, header, data);
 
 }
 
-unsigned int channel_readmessagefrom(unsigned int source, unsigned int event, struct message *message)
+unsigned int channel_readfrom(unsigned int source, unsigned int event, struct message_header *header, void *data)
 {
 
-    return read(source, event, message);
+    return read(source, event, header, data);
 
 }
 
@@ -341,7 +341,7 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 
     struct message message;
 
-    return channel_polleventfrom(source, event, &message);
+    return channel_polleventfrom(source, event, &message.header, message.data.buffer);
 
 }
 

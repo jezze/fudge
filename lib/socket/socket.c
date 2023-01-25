@@ -132,7 +132,7 @@ static unsigned int respondarp(unsigned int descriptor, struct socket *local, st
             buffer_copy(answer.haddress, pdata, ETHERNET_ADDRSIZE);
             buffer_copy(answer.paddress, pdata + net_load8(header->hlength), IPV4_ADDRSIZE);
 
-            send(descriptor, data.buffer, buildarp(local, &answer, &answer, data.buffer, ARP_REPLY, local->haddress, local->paddress, pdata, pdata + net_load8(header->hlength)));
+            send(descriptor, &data, buildarp(local, &answer, &answer, &data, ARP_REPLY, local->haddress, local->paddress, pdata, pdata + net_load8(header->hlength)));
 
         }
 
@@ -160,7 +160,7 @@ static unsigned int respondicmp(unsigned int descriptor, struct socket *local, s
     {
 
     case ICMP_ECHOREQUEST:
-        send(descriptor, data.buffer, buildicmp(local, remote, router, data.buffer, ICMP_ECHOREPLY, 0, psize, pdata));
+        send(descriptor, &data, buildicmp(local, remote, router, &data, ICMP_ECHOREPLY, 0, psize, pdata));
 
         break;
 
@@ -185,7 +185,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.remoteseq = net_load32(header->seq) + 1;
 
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -199,7 +199,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.localseq = net_load32(header->ack);
             remote->info.tcp.remoteseq = net_load32(header->seq) + 1;
 
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -209,7 +209,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.remoteseq = net_load32(header->seq) + 1;
 
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -233,7 +233,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.localseq = net_load32(header->ack);
             remote->info.tcp.remoteseq = net_load32(header->seq) + psize;
 
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
             return psize;
 
@@ -246,7 +246,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.localseq = net_load32(header->ack);
             remote->info.tcp.remoteseq = net_load32(header->seq) + psize + 1;
 
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
             return psize;
 
@@ -259,7 +259,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.localseq = net_load32(header->ack);
             remote->info.tcp.remoteseq = net_load32(header->seq) + 1;
 
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -289,7 +289,7 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
             remote->info.tcp.state = TCP_STATE_CLOSING;
             remote->info.tcp.remoteseq = net_load32(header->seq) + 1;
 
-            send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+            send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
         }
 
@@ -499,7 +499,7 @@ unsigned int socket_send_tcp(unsigned int descriptor, struct socket *local, stru
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(descriptor, data.buffer, buildtcp(local, remote, router, data.buffer, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, psize, pdata));
+        send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, psize, pdata));
 
         return psize;
 
@@ -514,7 +514,7 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
     struct message_data data;
 
-    send(descriptor, data.buffer, buildudp(local, remote, router, data.buffer, psize, pdata));
+    send(descriptor, &data, buildudp(local, remote, router, &data, psize, pdata));
 
     return psize;
 
@@ -679,28 +679,29 @@ static struct socket *acceptudp(struct socket *local, struct socket *remotes, un
 unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
 {
 
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
-    while (channel_kpollevent(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &header, &data))
     {
 
         struct socket *remote;
 
-        remote = acceptarp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = acceptarp(local, remotes, nremotes, message_datasize(&header), &data);
 
         if (remote)
         {
 
-            socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
+            socket_handle_arp(descriptor, local, remote, message_datasize(&header), &data);
 
         }
 
-        remote = accepttcp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = accepttcp(local, remotes, nremotes, message_datasize(&header), &data);
 
         if (remote)
         {
 
-            unsigned int payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+            unsigned int payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
             if (payploadcount)
                 return payploadcount;
@@ -715,12 +716,12 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
         }
 
-        remote = acceptudp(local, remotes, nremotes, message_datasize(&message.header), message.data.buffer);
+        remote = acceptudp(local, remotes, nremotes, message_datasize(&header), &data);
 
         if (remote)
         {
 
-            unsigned int payploadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+            unsigned int payploadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
             if (payploadcount)
                 return payploadcount;
@@ -754,19 +755,20 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
 void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
 {
 
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     remote->info.tcp.state = TCP_STATE_SYNSENT;
 
-    send(descriptor, message.data.buffer, buildtcp(local, remote, router, message.data.buffer, TCP_FLAGS1_SYN, remote->info.tcp.localseq, 0, BUFFER_SIZE, 0, 0));
+    send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_SYN, remote->info.tcp.localseq, 0, BUFFER_SIZE, 0, 0));
 
-    while (channel_kpollevent(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &header, &data))
     {
 
         char buffer[BUFFER_SIZE];
 
-        socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
-        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message.header), message.data.buffer, BUFFER_SIZE, buffer);
+        socket_handle_arp(descriptor, local, remote, message_datasize(&header), &data);
+        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&header), &data, BUFFER_SIZE, buffer);
 
         if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
             break;
@@ -779,17 +781,18 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
 {
 
     struct socket multicast;
-    struct message message;
+    struct message_header header;
+    struct message_data data;
     unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
     buffer_copy(&multicast, remote, sizeof (struct socket));
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
-    send(descriptor, message.data.buffer, buildarp(local, remote, &multicast, message.data.buffer, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
+    send(descriptor, &data, buildarp(local, remote, &multicast, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_kpollevent(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &header, &data))
     {
 
-        socket_handle_arp(descriptor, local, remote, message_datasize(&message.header), message.data.buffer);
+        socket_handle_arp(descriptor, local, remote, message_datasize(&header), &data);
 
         if (remote->resolved)
             break;

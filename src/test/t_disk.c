@@ -61,12 +61,13 @@ static void request_send(struct state *state)
 static unsigned int request_poll(struct state *state)
 {
 
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
-    while (channel_kpollevent(EVENT_DATA, &message))
+    while (channel_kpollevent(EVENT_DATA, &header, &data))
     {
 
-        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, message.data.buffer, message_datasize(&message.header), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
+        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, &data, message_datasize(&header), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
         if (state->blockreads == state->blockcount)
             return state->count;
