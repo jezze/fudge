@@ -121,6 +121,19 @@ unsigned int cstring_toint(char c)
 
 }
 
+unsigned int cstring_readvalue(char *in, unsigned int count, unsigned int base)
+{
+
+    unsigned int value = 0;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+        value = value * base + cstring_toint(in[i]);
+
+    return value;
+
+}
+
 unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int offset)
 {
 
@@ -160,16 +173,145 @@ unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsign
 
 }
 
-unsigned int cstring_readvalue(char *in, unsigned int count, unsigned int base)
+unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned int nargs, void **args, unsigned int offset)
 {
 
-    unsigned int value = 0;
+    unsigned int length = cstring_length(fmt);
+    unsigned int escaped = 0;
+    unsigned int cargs = 0;
+    unsigned int base = 10;
+    unsigned int padding = 0;
+    unsigned int start = offset;
     unsigned int i;
 
-    for (i = 0; i < count; i++)
-        value = value * base + cstring_toint(in[i]);
+    for (i = 0; i < length; i++)
+    {
 
-    return value;
+        char q = fmt[i];
+
+        if (escaped)
+        {
+
+            char num[64];
+            unsigned char c;
+            unsigned short h;
+            unsigned int u;
+            int i;
+            char *s;
+
+            switch (q)
+            {
+
+            case '0':
+                padding = 0;
+
+                break;
+
+            case '1':
+                padding = 1;
+
+                break;
+
+            case '2':
+                padding = 2;
+
+                break;
+
+            case '4':
+                padding = 4;
+
+                break;
+
+            case '8':
+                padding = 8;
+
+                break;
+
+            case 'D':
+                base = 10;
+
+                break;
+
+            case 'H':
+                base = 16;
+
+                break;
+
+            case 'c':
+                c = *((unsigned char *)args[cargs++]);
+                offset += buffer_write(out, count, num, writevalue(num, 64, c, base, padding), offset);
+                escaped = 0;
+
+                break;
+
+            case 'h':
+                h = *((unsigned short *)args[cargs++]);
+                offset += buffer_write(out, count, num, writevalue(num, 64, h, base, padding), offset);
+                escaped = 0;
+
+                break;
+
+            case 'u':
+                u = *((unsigned int *)args[cargs++]);
+                offset += buffer_write(out, count, num, writevalue(num, 64, u, base, padding), offset);
+                escaped = 0;
+
+                break;
+
+            case 'i':
+                i = *((int *)args[cargs++]);
+                offset += buffer_write(out, count, num, writevalue(num, 64, i, base, padding), offset);
+                escaped = 0;
+
+                break;
+
+            case 's':
+                s = ((char *)args[cargs++]);
+                offset += buffer_write(out, count, s, cstring_length(s), offset);
+                escaped = 0;
+
+                break;
+
+            case 'w':
+                s = ((char *)args[cargs++]);
+                u = *((unsigned int *)args[cargs++]);
+                offset += buffer_write(out, count, s, u, offset);
+                escaped = 0;
+
+                break;
+
+            default:
+                escaped = 0;
+
+                break;
+
+            }
+
+        }
+
+        else
+        {
+
+            switch (q)
+            {
+
+            case '%':
+                escaped = 1;
+
+                break;
+
+            default:
+                offset += buffer_write(out, count, &q, 1, offset);
+
+                break;
+
+            }
+
+        }
+
+    }
+
+    return offset - start;
 
 }
 

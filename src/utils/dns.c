@@ -44,15 +44,7 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
 
     case 1:
         message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
-        message_putstring(&message, " has address ");
-        message_putvalue(&message, addr[0], 10, 0);
-        message_putstring(&message, ".");
-        message_putvalue(&message, addr[1], 10, 0);
-        message_putstring(&message, ".");
-        message_putvalue(&message, addr[2], 10, 0);
-        message_putstring(&message, ".");
-        message_putvalue(&message, addr[3], 10, 0);
-        message_putstring(&message, "\n");
+        message_putfmt4(&message, " has address %c.%c.%c.%c\n", &addr[0], &addr[1], &addr[2], &addr[3]);
 
         break;
 
@@ -87,13 +79,7 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
     {
 
     case 1:
-        message_putvalue(&message, addr[0], 10, 0);
-        message_putstring(&message, ".");
-        message_putvalue(&message, addr[1], 10, 0);
-        message_putstring(&message, ".");
-        message_putvalue(&message, addr[2], 10, 0);
-        message_putstring(&message, ".");
-        message_putvalue(&message, addr[3], 10, 0);
+        message_putfmt4(&message, "%c.%c.%c.%c", &addr[0], &addr[1], &addr[2], &addr[3]);
         message_putzero(&message);
 
         break;

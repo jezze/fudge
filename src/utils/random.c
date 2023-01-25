@@ -22,11 +22,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct message message;
     struct mtwist_state state;
+    unsigned int value;
 
     seed(&state);
+
+    value = mtwist_rand(&state);
+
     message_init(&message, EVENT_DATA);
-    message_putvalue(&message, mtwist_rand(&state), 10, 0);
-    message_putstring(&message, "\n");
+    message_putfmt1(&message, "%u\n", &value);
     channel_sendmessage(&message);
     channel_close();
 

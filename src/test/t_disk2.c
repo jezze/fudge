@@ -7,9 +7,7 @@ static void error(void *data, unsigned int count)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putstring(&message, "Error occured:\n");
-    message_putbuffer(&message, count, data);
-    message_putstring(&message, "\n");
+    message_putfmt2(&message, "Error occured:\n%w\n", data, &count);
     channel_sendmessage(&message);
 
 }

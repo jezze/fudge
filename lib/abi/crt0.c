@@ -46,10 +46,7 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
             struct message message;
 
             message_init(&message, EVENT_DATA);
-            message_putstring(&message, option->key);
-            message_putstring(&message, ": ");
-            message_putstring(&message, option->value);
-            message_putstring(&message, "\n");
+            message_putfmt2(&message, "%s:%s\n", option->key, option->value);
             channel_sendmessage(&message);
 
         }

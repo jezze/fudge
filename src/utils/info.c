@@ -16,12 +16,7 @@ static void showcores(void)
             struct message message;
 
             message_init(&message, EVENT_DATA);
-            message_putstring(&message, "core[");
-            message_putvalue(&message, n, 10, 0);
-            message_putstring(&message, "] {");
-            message_putstring(&message, "id=");
-            message_putvalue(&message, ctrl.id, 10, 0);
-            message_putstring(&message, "}\n");
+            message_putfmt2(&message, "core[%u] {id=%u}\n", &n, &ctrl.id);
             channel_sendmessage(&message);
 
             if (n >= 9)
@@ -58,30 +53,9 @@ static void showtasks(void)
                 struct message message;
 
                 message_init(&message, EVENT_DATA);
-                message_putstring(&message, "task[");
-                message_putvalue(&message, n, 10, 0);
-                message_putstring(&message, "] {");
-                message_putstring(&message, "id=");
-                message_putvalue(&message, ctrl.id, 10, 0);
-                message_putstring(&message, ", ");
-                message_putstring(&message, "state=");
-                message_putvalue(&message, ctrl.state, 10, 0);
-                message_putstring(&message, ", ");
-                message_putstring(&message, "thread.ip=0x");
-                message_putvalue(&message, ctrl.thread_ip, 16, 8);
-                message_putstring(&message, ", ");
-                message_putstring(&message, "thread.sp=0x");
-                message_putvalue(&message, ctrl.thread_sp, 16, 8);
-                message_putstring(&message, ", ");
-                message_putstring(&message, "signals.kills=");
-                message_putvalue(&message, ctrl.signals_kills, 10, 0);
-                message_putstring(&message, ", ");
-                message_putstring(&message, "signals.blocks=");
-                message_putvalue(&message, ctrl.signals_blocks, 10, 0);
-                message_putstring(&message, ", ");
-                message_putstring(&message, "signals.unblocks=");
-                message_putvalue(&message, ctrl.signals_unblocks, 10, 0);
-                message_putstring(&message, "}\n");
+                message_putfmt3(&message, "task[%u] {id=%u, state=%u, ", &n, &ctrl.id, &ctrl.state);
+                message_putfmt2(&message, "thread.ip=0x%H8u, thread.sp=0x%H8u, ", &ctrl.thread_ip, &ctrl.thread_sp);
+                message_putfmt3(&message, "signals.kills=%u, signals.blocks=%u, signals.unblocks=%u}\n", &ctrl.signals_kills, &ctrl.signals_blocks, &ctrl.signals_unblocks);
                 channel_sendmessage(&message);
 
             }
@@ -114,12 +88,7 @@ static void showmailboxes(void)
             struct message message;
 
             message_init(&message, EVENT_DATA);
-            message_putstring(&message, "mailbox[");
-            message_putvalue(&message, n, 10, 0);
-            message_putstring(&message, "] {");
-            message_putstring(&message, "ring.buffer=0x");
-            message_putvalue(&message, ctrl.address, 16, 8);
-            message_putstring(&message, "}\n");
+            message_putfmt2(&message, "mailbox[%u] {ring.buffer=0x%H8u}\n", &n, &ctrl.address);
             channel_sendmessage(&message);
 
             if (n >= 9)

@@ -170,39 +170,17 @@ static void printsuperblock(struct ext2_superblock *superblock)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putstring(&message, "Signature: 0x");
-    message_putvalue(&message, superblock->signature, 16, 4);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "SuperblockIndex: ");
-    message_putvalue(&message, superblock->superblockIndex, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "SuperblockGroup: ");
-    message_putvalue(&message, superblock->superblockGroup, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "BlockSize: ");
-    message_putvalue(&message, superblock->blockSize, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "BlockCount: ");
-    message_putvalue(&message, superblock->blockCount, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "BlockCountSuper: ");
-    message_putvalue(&message, superblock->blockCountSuper, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "NodeSize: ");
-    message_putvalue(&message, superblock->nodeSize, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "NodeCount: ");
-    message_putvalue(&message, superblock->nodeCount, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "NodeCountGroup: ");
-    message_putvalue(&message, superblock->nodeCountGroup, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "FragmentSize: ");
-    message_putvalue(&message, superblock->fragmentSize, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "FragmentCountGroup: ");
-    message_putvalue(&message, superblock->fragmentCountGroup, 10, 0);
-    message_putstring(&message, "\n");
+    message_putfmt1(&message, "Signature: 0x%H4h\n", &superblock->signature);
+    message_putfmt1(&message, "SuperblockIndex: %u\n", &superblock->superblockIndex);
+    message_putfmt1(&message, "SuperblockGroup: %h\n", &superblock->superblockGroup);
+    message_putfmt1(&message, "BlockSize: %u\n", &superblock->blockSize);
+    message_putfmt1(&message, "BlockCount: %u\n", &superblock->blockCount);
+    message_putfmt1(&message, "BlockCountSuper: %u\n", &superblock->blockCountSuper);
+    message_putfmt1(&message, "NodeSize: %h\n", &superblock->nodeSize);
+    message_putfmt1(&message, "NodeCount: %u\n", &superblock->nodeCount);
+    message_putfmt1(&message, "NodeCountGroup: %u\n", &superblock->nodeCountGroup);
+    message_putfmt1(&message, "FragmentSize: %u\n", &superblock->fragmentSize);
+    message_putfmt1(&message, "FragmentCountGroup: %u\n", &superblock->fragmentCountGroup);
     channel_sendmessage(&message);
 
 }
@@ -213,12 +191,8 @@ static void printblockgroup(struct ext2_blockgroup *blockgroup)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putstring(&message, "Inode table block: ");
-    message_putvalue(&message, blockgroup->blockTableAddress, 10, 0);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "Directory count: ");
-    message_putvalue(&message, blockgroup->directoryCount, 10, 0);
-    message_putstring(&message, "\n");
+    message_putfmt1(&message, "Inode table block: %u\n", &blockgroup->blockTableAddress);
+    message_putfmt1(&message, "Directory count: %h\n", &blockgroup->directoryCount);
     channel_sendmessage(&message);
 
 }
@@ -229,15 +203,9 @@ static void printnode(struct ext2_node *node)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putstring(&message, "Type: ");
-    message_putvalue(&message, node->type, 16, 4);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "Flags: ");
-    message_putvalue(&message, node->flags, 16, 8);
-    message_putstring(&message, "\n");
-    message_putstring(&message, "User Id: ");
-    message_putvalue(&message, node->userId, 10, 0);
-    message_putstring(&message, "\n");
+    message_putfmt1(&message, "Type: 0x%H4h\n", &node->type);
+    message_putfmt1(&message, "Flags: 0x%H8u\n", &node->flags);
+    message_putfmt1(&message, "User Id: %h\n", &node->userId);
     channel_sendmessage(&message);
 
 }
@@ -295,7 +263,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         printvalue("BlockGroup", blockgroup, 10, 0);
         printvalue("NodeIndex", nodeindex, 10, 0);
-        printvalue("blockIndex", blockindex, 10, 0);
+        printvalue("BlockIndex", blockindex, 10, 0);
 
         readblockgroups(&bg, &sb, 0, 3 + blockgroup); /* add blockgroup here */
         printblockgroup(&bg);

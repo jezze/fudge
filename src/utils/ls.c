@@ -25,12 +25,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             struct record *record = &records[i];
 
-            message_putbuffer(&message, record->length, record->name);
-
             if (record->type == RECORD_TYPE_DIRECTORY)
-                message_putstring(&message, "/\n");
+                message_putfmt2(&message, "%w/\n", record->name, &record->length);
             else
-                message_putstring(&message, "\n");
+                message_putfmt2(&message, "%w\n", record->name, &record->length);
 
         }
 

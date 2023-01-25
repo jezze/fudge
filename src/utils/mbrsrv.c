@@ -73,15 +73,14 @@ static void printpartition(struct partition *partition, unsigned int num)
     struct message message;
 
     message_init(&message, EVENT_DATA);
-    message_putstring(&message, "Partition ");
-    message_putvalue(&message, num, 10, 0);
-    message_putstring(&message, ":\n");
+    message_putfmt1(&message, "Partition %u:\n", &num);
 
     if (partition->systemid)
     {
 
         unsigned int start = (partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0]);
         unsigned int sectors = (partition->sectortotal[3] << 24) | (partition->sectortotal[2] << 16) | (partition->sectortotal[1] << 8) | (partition->sectortotal[0]);
+        unsigned int end = start + sectors - 1;
         unsigned int cstart = partition->cylinderbase | ((partition->sectorbase & 0xC0) << 8);
         unsigned int cend = partition->cylinderlimit | ((partition->sectorlimit & 0xC0) << 8);
         unsigned int hstart = partition->headbase;
@@ -89,35 +88,13 @@ static void printpartition(struct partition *partition, unsigned int num)
         unsigned int sstart = partition->sectorbase & 0x2F;
         unsigned int send = partition->sectorlimit & 0x2F;
 
-        message_putstring(&message, "    Boot: 0x");
-        message_putvalue(&message, partition->boot, 16, 2);
-        message_putstring(&message, "\n");
-        message_putstring(&message, "    Id: 0x");
-        message_putvalue(&message, partition->systemid, 16, 2);
-        message_putstring(&message, "\n");
-        message_putstring(&message, "    Start: ");
-        message_putvalue(&message, start, 10, 0);
-        message_putstring(&message, "\n");
-        message_putstring(&message, "    End: ");
-        message_putvalue(&message, start + sectors - 1, 10, 0);
-        message_putstring(&message, "\n");
-        message_putstring(&message, "    Sectors: ");
-        message_putvalue(&message, sectors, 10, 0);
-        message_putstring(&message, "\n");
-        message_putstring(&message, "    Start-C/H/S: ");
-        message_putvalue(&message, cstart, 10, 0);
-        message_putstring(&message, "/");
-        message_putvalue(&message, hstart, 10, 0);
-        message_putstring(&message, "/");
-        message_putvalue(&message, sstart, 10, 0);
-        message_putstring(&message, "\n");
-        message_putstring(&message, "    End-C/H/S: ");
-        message_putvalue(&message, cend, 10, 0);
-        message_putstring(&message, "/");
-        message_putvalue(&message, hend, 10, 0);
-        message_putstring(&message, "/");
-        message_putvalue(&message, send, 10, 0);
-        message_putstring(&message, "\n");
+        message_putfmt1(&message, "    Boot: 0x%H2c\n", &partition->boot);
+        message_putfmt1(&message, "    Id: 0x%H2c\n", &partition->systemid);
+        message_putfmt1(&message, "    Start: %u\n", &start);
+        message_putfmt1(&message, "    End: %u\n", &end);
+        message_putfmt1(&message, "    Sectors: %u\n", &sectors);
+        message_putfmt3(&message, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
+        message_putfmt3(&message, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
 
     }
 
@@ -132,10 +109,7 @@ static void print(struct mbr *mbr)
     unsigned int i;
 
     message_init(&message, EVENT_DATA);
-    message_putstring(&message, "Signature: 0x");
-    message_putvalue(&message, mbr->signature[0], 16, 2);
-    message_putvalue(&message, mbr->signature[1], 16, 2);
-    message_putstring(&message, "\n");
+    message_putfmt2(&message, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
     channel_sendmessage(&message);
 
     for (i = 0; i < 4; i++)

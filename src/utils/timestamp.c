@@ -6,6 +6,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct ctrl_clocksettings settings;
     struct message message;
+    unsigned int timestamp;
 
     if (!file_walk2(FILE_L0, option_getstring("clock")))
         channel_error("Could not find clock device");
@@ -14,9 +15,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find clock device ctrl");
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+
+    timestamp = time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds);
+
     message_init(&message, EVENT_DATA);
-    message_putvalue(&message, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds), 10, 0);
-    message_putstring(&message, "\n");
+    message_putfmt1(&message, "%u\n", &timestamp);
     channel_sendmessage(&message);
     channel_close();
 

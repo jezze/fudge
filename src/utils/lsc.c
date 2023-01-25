@@ -25,16 +25,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             struct record *record = &records[i];
 
-            message_putvalue(&message, record->id, 16, 8);
-            message_putstring(&message, " ");
-            message_putvalue(&message, record->size, 16, 8);
-            message_putstring(&message, " ");
-            message_putbuffer(&message, record->length, record->name);
-
             if (record->type == RECORD_TYPE_DIRECTORY)
-                message_putstring(&message, "/\n");
+                message_putfmt4(&message, "%H8u %H8u %w/\n", &record->id, &record->size, record->name, &record->length);
             else
-                message_putstring(&message, "\n");
+                message_putfmt4(&message, "%H8u %H8u %w\n", &record->id, &record->size, record->name, &record->length);
 
         }
 
