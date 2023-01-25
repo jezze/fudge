@@ -150,63 +150,37 @@ static unsigned int isvalid(struct ext2_superblock *superblock)
 
 }
 
-static void printvalue(char *name, int value, int base, int padding)
-{
-
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putstring(&message, name);
-    message_putstring(&message, ": ");
-    message_putvalue(&message, value, base, padding);
-    message_putstring(&message, "\n");
-    channel_sendmessage(&message);
-
-}
-
 static void printsuperblock(struct ext2_superblock *superblock)
 {
 
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putfmt1(&message, "Signature: 0x%H4h\n", &superblock->signature);
-    message_putfmt1(&message, "SuperblockIndex: %u\n", &superblock->superblockIndex);
-    message_putfmt1(&message, "SuperblockGroup: %h\n", &superblock->superblockGroup);
-    message_putfmt1(&message, "BlockSize: %u\n", &superblock->blockSize);
-    message_putfmt1(&message, "BlockCount: %u\n", &superblock->blockCount);
-    message_putfmt1(&message, "BlockCountSuper: %u\n", &superblock->blockCountSuper);
-    message_putfmt1(&message, "NodeSize: %h\n", &superblock->nodeSize);
-    message_putfmt1(&message, "NodeCount: %u\n", &superblock->nodeCount);
-    message_putfmt1(&message, "NodeCountGroup: %u\n", &superblock->nodeCountGroup);
-    message_putfmt1(&message, "FragmentSize: %u\n", &superblock->fragmentSize);
-    message_putfmt1(&message, "FragmentCountGroup: %u\n", &superblock->fragmentCountGroup);
-    channel_sendmessage(&message);
+    channel_sendfmt1(EVENT_DATA, "Signature: 0x%H4h\n", &superblock->signature);
+    channel_sendfmt1(EVENT_DATA, "SuperblockIndex: %u\n", &superblock->superblockIndex);
+    channel_sendfmt1(EVENT_DATA, "SuperblockGroup: %h\n", &superblock->superblockGroup);
+    channel_sendfmt1(EVENT_DATA, "BlockSize: %u\n", &superblock->blockSize);
+    channel_sendfmt1(EVENT_DATA, "BlockCount: %u\n", &superblock->blockCount);
+    channel_sendfmt1(EVENT_DATA, "BlockCountSuper: %u\n", &superblock->blockCountSuper);
+    channel_sendfmt1(EVENT_DATA, "NodeSize: %h\n", &superblock->nodeSize);
+    channel_sendfmt1(EVENT_DATA, "NodeCount: %u\n", &superblock->nodeCount);
+    channel_sendfmt1(EVENT_DATA, "NodeCountGroup: %u\n", &superblock->nodeCountGroup);
+    channel_sendfmt1(EVENT_DATA, "FragmentSize: %u\n", &superblock->fragmentSize);
+    channel_sendfmt1(EVENT_DATA, "FragmentCountGroup: %u\n", &superblock->fragmentCountGroup);
 
 }
 
 static void printblockgroup(struct ext2_blockgroup *blockgroup)
 {
 
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putfmt1(&message, "Inode table block: %u\n", &blockgroup->blockTableAddress);
-    message_putfmt1(&message, "Directory count: %h\n", &blockgroup->directoryCount);
-    channel_sendmessage(&message);
+    channel_sendfmt1(EVENT_DATA, "Inode table block: %u\n", &blockgroup->blockTableAddress);
+    channel_sendfmt1(EVENT_DATA, "Directory count: %h\n", &blockgroup->directoryCount);
 
 }
 
 static void printnode(struct ext2_node *node)
 {
 
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putfmt1(&message, "Type: 0x%H4h\n", &node->type);
-    message_putfmt1(&message, "Flags: 0x%H8u\n", &node->flags);
-    message_putfmt1(&message, "User Id: %h\n", &node->userId);
-    channel_sendmessage(&message);
+    channel_sendfmt1(EVENT_DATA, "Type: 0x%H4h\n", &node->type);
+    channel_sendfmt1(EVENT_DATA, "Flags: 0x%H8u\n", &node->flags);
+    channel_sendfmt1(EVENT_DATA, "User Id: %h\n", &node->userId);
 
 }
 
@@ -260,11 +234,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         unsigned int blockindex = (rootid * sb.nodeSize) / sb.blockSize;
 
         printsuperblock(&sb);
-
-        printvalue("BlockGroup", blockgroup, 10, 0);
-        printvalue("NodeIndex", nodeindex, 10, 0);
-        printvalue("BlockIndex", blockindex, 10, 0);
-
+        channel_sendfmt1(EVENT_DATA, "BlockGroup: %u\n", &blockgroup);
+        channel_sendfmt1(EVENT_DATA, "NodeIndex: %u\n", &nodeindex);
+        channel_sendfmt1(EVENT_DATA, "BlockIndex: %u\n", &blockindex);
         readblockgroups(&bg, &sb, 0, 3 + blockgroup); /* add blockgroup here */
         printblockgroup(&bg);
         readnode(&node, &sb, nodeindex, bg.blockTableAddress + blockindex);

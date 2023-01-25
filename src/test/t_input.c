@@ -32,11 +32,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            struct message reply;
-
-            message_init(&reply, EVENT_DATA);
-            message_putbuffer(&reply, message_datasize(&message.header), message.data.buffer);
-            channel_sendmessage(&reply);
+            channel_sendbuffer(EVENT_DATA, message_datasize(&message.header), message.data.buffer);
 
         }
 

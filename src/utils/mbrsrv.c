@@ -70,10 +70,7 @@ static unsigned int isvalid(struct mbr *mbr)
 static void printpartition(struct partition *partition, unsigned int num)
 {
 
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putfmt1(&message, "Partition %u:\n", &num);
+    channel_sendfmt1(EVENT_DATA, "Partition %u:\n", &num);
 
     if (partition->systemid)
     {
@@ -88,29 +85,24 @@ static void printpartition(struct partition *partition, unsigned int num)
         unsigned int sstart = partition->sectorbase & 0x2F;
         unsigned int send = partition->sectorlimit & 0x2F;
 
-        message_putfmt1(&message, "    Boot: 0x%H2c\n", &partition->boot);
-        message_putfmt1(&message, "    Id: 0x%H2c\n", &partition->systemid);
-        message_putfmt1(&message, "    Start: %u\n", &start);
-        message_putfmt1(&message, "    End: %u\n", &end);
-        message_putfmt1(&message, "    Sectors: %u\n", &sectors);
-        message_putfmt3(&message, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
-        message_putfmt3(&message, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
+        channel_sendfmt1(EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
+        channel_sendfmt1(EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
+        channel_sendfmt1(EVENT_DATA, "    Start: %u\n", &start);
+        channel_sendfmt1(EVENT_DATA, "    End: %u\n", &end);
+        channel_sendfmt1(EVENT_DATA, "    Sectors: %u\n", &sectors);
+        channel_sendfmt3(EVENT_DATA, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
+        channel_sendfmt3(EVENT_DATA, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
 
     }
-
-    channel_sendmessage(&message);
 
 }
 
 static void print(struct mbr *mbr)
 {
 
-    struct message message;
     unsigned int i;
 
-    message_init(&message, EVENT_DATA);
-    message_putfmt2(&message, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
-    channel_sendmessage(&message);
+    channel_sendfmt2(EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
 
     for (i = 0; i < 4; i++)
         printpartition(&mbr->partition[i], i);
