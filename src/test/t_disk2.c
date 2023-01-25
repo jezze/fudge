@@ -41,15 +41,16 @@ static unsigned int version(unsigned short tag, unsigned int msize, char *name)
 {
 
     char buffer[MESSAGE_SIZE];
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
-    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
+    channel_pollevent(EVENT_P9P, &header, &data);
 
-    if (!validate(message.data.buffer, tag))
+    if (!validate(data.buffer, tag))
         return 0;
 
-    switch (p9p_read1(message.data.buffer, P9P_OFFSET_TYPE))
+    switch (p9p_read1(data.buffer, P9P_OFFSET_TYPE))
     {
 
     case P9P_RVERSION:
@@ -65,15 +66,16 @@ static unsigned int attach(unsigned short tag, unsigned int fid, unsigned int af
 {
 
     char buffer[MESSAGE_SIZE];
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
+    channel_pollevent(EVENT_P9P, &header, &data);
 
-    if (!validate(message.data.buffer, tag))
+    if (!validate(data.buffer, tag))
         return 0;
 
-    switch (p9p_read1(message.data.buffer, P9P_OFFSET_TYPE))
+    switch (p9p_read1(data.buffer, P9P_OFFSET_TYPE))
     {
 
     case P9P_RATTACH:
@@ -89,15 +91,16 @@ static unsigned int walk(unsigned short tag, unsigned int fid, unsigned int newf
 {
 
     char buffer[MESSAGE_SIZE];
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
-    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
+    channel_pollevent(EVENT_P9P, &header, &data);
 
-    if (!validate(message.data.buffer, tag))
+    if (!validate(data.buffer, tag))
         return 0;
 
-    switch (p9p_read1(message.data.buffer, P9P_OFFSET_TYPE))
+    switch (p9p_read1(data.buffer, P9P_OFFSET_TYPE))
     {
 
     case P9P_RWALK:
@@ -113,19 +116,20 @@ static unsigned int read(unsigned short tag, unsigned int fid)
 {
 
     char buffer[MESSAGE_SIZE];
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     file_notify(FILE_G0, EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
-    channel_pollevent(EVENT_P9P, &message.header, message.data.buffer);
+    channel_pollevent(EVENT_P9P, &header, &data);
 
-    if (!validate(message.data.buffer, tag))
+    if (!validate(data.buffer, tag))
         return 0;
 
-    switch (p9p_read1(message.data.buffer, P9P_OFFSET_TYPE))
+    switch (p9p_read1(data.buffer, P9P_OFFSET_TYPE))
     {
 
     case P9P_RREAD:
-        channel_sendbuffer(EVENT_DATA, p9p_read4(message.data.buffer, P9P_OFFSET_DATA), p9p_readbuffer(message.data.buffer, P9P_OFFSET_DATA + 4));
+        channel_sendbuffer(EVENT_DATA, p9p_read4(data.buffer, P9P_OFFSET_DATA), p9p_readbuffer(data.buffer, P9P_OFFSET_DATA + 4));
 
         return 1;
 
