@@ -20,7 +20,6 @@ static void seed(struct mtwist_state *state)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message message;
     struct mtwist_state state;
     unsigned int value;
 
@@ -28,9 +27,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     value = mtwist_rand(&state);
 
-    message_init(&message, EVENT_DATA);
-    message_putfmt1(&message, "%u\n", &value);
-    channel_sendmessage(&message);
+    channel_sendfmt1(EVENT_DATA, "%u\n", &value);
     channel_close();
 
 }

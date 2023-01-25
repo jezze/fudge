@@ -55,11 +55,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putfmt3(&message, "%u\n%u\n%u\n", &lines, &words, &bytes);
-    channel_sendmessage(&message);
+    channel_sendfmt3(EVENT_DATA, "%u\n%u\n%u\n", &lines, &words, &bytes);
     channel_close();
 
 }

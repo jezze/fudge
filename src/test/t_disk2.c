@@ -4,11 +4,7 @@
 static void error(void *data, unsigned int count)
 {
 
-    struct message message;
-
-    message_init(&message, EVENT_DATA);
-    message_putfmt2(&message, "Error occured:\n%w\n", data, &count);
-    channel_sendmessage(&message);
+    channel_sendfmt2(EVENT_ERROR, "Error occured:\n%w\n", data, &count);
 
 }
 

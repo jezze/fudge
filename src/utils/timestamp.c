@@ -5,7 +5,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct ctrl_clocksettings settings;
-    struct message message;
     unsigned int timestamp;
 
     if (!file_walk2(FILE_L0, option_getstring("clock")))
@@ -18,9 +17,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     timestamp = time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds);
 
-    message_init(&message, EVENT_DATA);
-    message_putfmt1(&message, "%u\n", &timestamp);
-    channel_sendmessage(&message);
+    channel_sendfmt1(EVENT_DATA, "%u\n", &timestamp);
     channel_close();
 
 }

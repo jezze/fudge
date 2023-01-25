@@ -168,7 +168,7 @@ void job_run(struct job *job)
                 message_putzero(&message);
                 message_putstring(&message, worker->options[j].value);
                 message_putzero(&message);
-                channel_sendbufferto(worker->id, EVENT_OPTION, message_datasize(&message.header), message.data.buffer);
+                channel_sendmessageto(worker->id, &message);
 
             }
 

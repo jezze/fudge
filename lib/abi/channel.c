@@ -161,6 +161,90 @@ unsigned int channel_sendmessageto(unsigned int target, struct message *message)
 
 }
 
+unsigned int channel_sendfmt0(unsigned int event, char *fmt)
+{
+
+    struct message message;
+
+    message_init(&message, event);
+    message_putfmt0(&message, fmt);
+
+    return channel_sendmessage(&message);
+
+}
+
+unsigned int channel_sendfmt1(unsigned int event, char *fmt, void *arg1)
+{
+
+    struct message message;
+
+    message_init(&message, event);
+    message_putfmt1(&message, fmt, arg1);
+
+    return channel_sendmessage(&message);
+
+}
+
+unsigned int channel_sendfmt2(unsigned int event, char *fmt, void *arg1, void *arg2)
+{
+
+    struct message message;
+
+    message_init(&message, event);
+    message_putfmt2(&message, fmt, arg1, arg2);
+
+    return channel_sendmessage(&message);
+
+}
+
+unsigned int channel_sendfmt3(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3)
+{
+
+    struct message message;
+
+    message_init(&message, event);
+    message_putfmt3(&message, fmt, arg1, arg2, arg3);
+
+    return channel_sendmessage(&message);
+
+}
+
+unsigned int channel_sendfmt4(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4)
+{
+
+    struct message message;
+
+    message_init(&message, event);
+    message_putfmt4(&message, fmt, arg1, arg2, arg3, arg4);
+
+    return channel_sendmessage(&message);
+
+}
+
+unsigned int channel_sendfmt6(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
+{
+
+    struct message message;
+
+    message_init(&message, event);
+    message_putfmt6(&message, fmt, arg1, arg2, arg3, arg4, arg5, arg6);
+
+    return channel_sendmessage(&message);
+
+}
+
+unsigned int channel_sendfmt8(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
+{
+
+    struct message message;
+
+    message_init(&message, event);
+    message_putfmt8(&message, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+
+    return channel_sendmessage(&message);
+
+}
+
 unsigned int channel_redirecttarget(unsigned int target, unsigned int event, unsigned int id)
 {
 

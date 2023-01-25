@@ -19,9 +19,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_kpollevent(EVENT_TIMERTICK, &message))
     {
 
-        message_init(&message, EVENT_DATA);
-        message_putfmt1(&message, "Tick: %u second(s)\n", &counter);
-        channel_sendmessage(&message);
+        channel_sendfmt1(EVENT_DATA, "Tick: %u second(s)\n", &counter);
 
         counter++;
 

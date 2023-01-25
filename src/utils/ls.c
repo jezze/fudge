@@ -5,20 +5,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct record records[8];
-    struct message message;
     unsigned int nrecords;
 
     file_duplicate(FILE_L0, FILE_G0);
-    message_init(&message, EVENT_DATA);
-    message_putstring(&message, "../\n");
-    channel_sendmessage(&message);
+    channel_sendstring(EVENT_DATA, "../\n");
 
     while ((nrecords = file_list(FILE_G0, FILE_L0, 8, records)))
     {
 
         unsigned int i;
-
-        message_init(&message, EVENT_DATA);
 
         for (i = 0; i < nrecords; i++)
         {
@@ -26,13 +21,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             struct record *record = &records[i];
 
             if (record->type == RECORD_TYPE_DIRECTORY)
-                message_putfmt2(&message, "%w/\n", record->name, &record->length);
+                channel_sendfmt2(EVENT_DATA, "%w/\n", record->name, &record->length);
             else
-                message_putfmt2(&message, "%w\n", record->name, &record->length);
+                channel_sendfmt2(EVENT_DATA, "%w\n", record->name, &record->length);
 
         }
-
-        channel_sendmessage(&message);
 
     }
 

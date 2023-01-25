@@ -257,9 +257,7 @@ static void run(void)
     }
 
     file_read(FILE_G5, cart_ram, getsavesize(&gb));
-    channel_sendstring(EVENT_DATA, "ROM: ");
-    channel_sendstring(EVENT_DATA, getromname(&gb, romname));
-    channel_sendstring(EVENT_DATA, "\n");
+    channel_sendfmt1(EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
     while (channel_pick(&message))
     {
