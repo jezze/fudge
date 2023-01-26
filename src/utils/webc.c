@@ -29,21 +29,21 @@ static void dnsresolve(char *domain)
     {
 
         struct message_header header;
-        struct message_data data;
+        char data[MESSAGE_SIZE];
 
         channel_redirectback(id, EVENT_QUERY);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_sendto(id, EVENT_MAIN);
 
-        while (channel_pollfrom(id, &header, MESSAGE_SIZE, &data) != EVENT_CLOSE)
+        while (channel_pollfrom(id, &header, MESSAGE_SIZE, data) != EVENT_CLOSE)
         {
 
             if (header.event == EVENT_QUERY)
             {
 
-                char *key = cstring_tindex(data.buffer, message_datasize(&header), 0);
-                char *value = cstring_tindex(data.buffer, message_datasize(&header), 1);
+                char *key = cstring_tindex(data, message_datasize(&header), 0);
+                char *value = cstring_tindex(data, message_datasize(&header), 1);
 
                 if (cstring_match(key, "data"))
                     option_set("remote-address", value);

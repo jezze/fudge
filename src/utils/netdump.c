@@ -145,7 +145,7 @@ static void print_ethernet(unsigned int source, void *buffer)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_data data;
+    char data[MESSAGE_SIZE];
     unsigned int count;
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
@@ -156,8 +156,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_G0);
 
-    while ((count = channel_read(MESSAGE_SIZE, &data)))
-        print_ethernet(source, data.buffer);
+    while ((count = channel_read(MESSAGE_SIZE, data)))
+        print_ethernet(source, data);
 
     file_unlink(FILE_G0);
     channel_close();

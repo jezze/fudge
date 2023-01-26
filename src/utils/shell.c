@@ -34,7 +34,7 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
     if (id)
     {
 
-        struct message_data data;
+        char data[MESSAGE_SIZE];
         unsigned int count;
 
         channel_redirectback(id, EVENT_DATA);
@@ -43,8 +43,8 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         channel_sendbufferto(id, EVENT_DATA, icount, ibuffer);
         channel_sendto(id, EVENT_MAIN);
 
-        while ((count = channel_readfrom(id, MESSAGE_SIZE, &data)))
-            offset += buffer_write(obuffer, ocount, &data, count, offset);
+        while ((count = channel_readfrom(id, MESSAGE_SIZE, data)))
+            offset += buffer_write(obuffer, ocount, data, count, offset);
 
     }
 
@@ -81,7 +81,7 @@ static void interpret(void)
             {
 
                 struct message_header header;
-                struct message_data data;
+                char data[MESSAGE_SIZE];
 
                 job_listen(&job, EVENT_CLOSE);
                 job_listen(&job, EVENT_DATA);
@@ -90,7 +90,7 @@ static void interpret(void)
                 job_pipe(&job, EVENT_DATA);
                 job_run(&job);
 
-                while (job_pick(&job, &header, MESSAGE_SIZE, &data))
+                while (job_pick(&job, &header, MESSAGE_SIZE, data))
                 {
 
                     switch (header.event)
@@ -102,17 +102,17 @@ static void interpret(void)
                         break;
 
                     case EVENT_ERROR:
-                        channel_dispatch(&header, &data);
+                        channel_dispatch(&header, data);
 
                         break;
 
                     case EVENT_DATA:
-                        print(&data, message_datasize(&header));
+                        print(data, message_datasize(&header));
 
                         break;
 
                     case EVENT_PATH:
-                        if (file_walk(FILE_L0, FILE_G8, data.buffer))
+                        if (file_walk(FILE_L0, FILE_G8, data))
                             file_duplicate(FILE_G8, FILE_L0);
 
                         break;
@@ -146,8 +146,7 @@ static void complete(void)
     char resultdata[BUFFER_SIZE];
     struct ring result;
     struct message_header header;
-    struct message_data data;
-
+    char data[MESSAGE_SIZE];
     unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
 
     ring_init(&result, BUFFER_SIZE, resultdata);
@@ -217,7 +216,7 @@ static void complete(void)
         job_pipe(&job, EVENT_DATA);
         job_run(&job);
 
-        while (job_pick(&job, &header, MESSAGE_SIZE, &data))
+        while (job_pick(&job, &header, MESSAGE_SIZE, data))
         {
 
             switch (header.event)
@@ -229,12 +228,12 @@ static void complete(void)
                 break;
 
             case EVENT_ERROR:
-                channel_dispatch(&header, &data);
+                channel_dispatch(&header, data);
 
                 break;
 
             case EVENT_DATA:
-                ring_write(&result, data.buffer, message_datasize(&header));
+                ring_write(&result, data, message_datasize(&header));
 
                 break;
 

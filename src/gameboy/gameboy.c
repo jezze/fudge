@@ -234,7 +234,7 @@ static void run(void)
     enum gb_init_error_e gb_ret;
     struct gb_s gb;
     struct message_header header;
-    struct message_data data;
+    char data[MESSAGE_SIZE];
 
     file_read(FILE_G5, rom, 0x80000);
 
@@ -260,7 +260,7 @@ static void run(void)
     file_read(FILE_G5, cart_ram, getsavesize(&gb));
     channel_sendfmt1(EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
-    while (channel_pick(&header, MESSAGE_SIZE, &data))
+    while (channel_pick(&header, MESSAGE_SIZE, data))
     {
 
         switch (header.event)
@@ -275,17 +275,17 @@ static void run(void)
             break;
 
         case EVENT_KEYPRESS:
-            keypress(&gb, &data);
+            keypress(&gb, data);
 
             break;
 
         case EVENT_KEYRELEASE:
-            keyrelease(&gb, &data);
+            keyrelease(&gb, data);
 
             break;
 
         default:
-            channel_dispatch(&header, &data);
+            channel_dispatch(&header, data);
 
             break;
 

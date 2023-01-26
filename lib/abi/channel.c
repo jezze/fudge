@@ -242,12 +242,12 @@ unsigned int channel_process(void)
 {
 
     struct message_header header;
-    struct message_data data;
+    char data[MESSAGE_SIZE];
 
-    if (channel_pick(&header, MESSAGE_SIZE, &data))
+    if (channel_pick(&header, MESSAGE_SIZE, data))
     {
 
-        channel_dispatch(&header, &data);
+        channel_dispatch(&header, data);
 
         return header.event;
 
@@ -344,9 +344,9 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 {
 
     struct message_header header;
-    struct message_data data;
+    char data[MESSAGE_SIZE];
 
-    return channel_polleventfrom(source, event, &header, MESSAGE_SIZE, &data);
+    return channel_polleventfrom(source, event, &header, MESSAGE_SIZE, data);
 
 }
 

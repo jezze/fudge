@@ -128,14 +128,14 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
     unsigned int total = nblocks * 512;
     unsigned int read = 0;
     struct message_header header;
-    struct message_data data;
+    char data[MESSAGE_SIZE];
 
     request_send(sector, nblocks);
 
-    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, &data))
+    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, data))
     {
 
-        read += buffer_write(buffer, count, data.buffer, message_datasize(&header), read);
+        read += buffer_write(buffer, count, data, message_datasize(&header), read);
 
         if (read == total)
             break;

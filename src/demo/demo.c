@@ -693,12 +693,12 @@ static void run(void)
 {
 
     struct message_header header;
-    struct message_data data;
+    char data[MESSAGE_SIZE];
     unsigned int frame = 0;
 
     setup();
 
-    while (channel_pick(&header, MESSAGE_SIZE, &data))
+    while (channel_pick(&header, MESSAGE_SIZE, data))
     {
 
         switch (header.event)
@@ -716,7 +716,7 @@ static void run(void)
             break;
 
         default:
-            channel_dispatch(&header, &data);
+            channel_dispatch(&header, data);
 
             break;
 

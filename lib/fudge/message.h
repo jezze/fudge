@@ -9,12 +9,5 @@ struct message_header
 
 };
 
-struct message_data
-{
-
-    char buffer[MESSAGE_SIZE];
-
-};
-
 unsigned int message_datasize(struct message_header *header);
 void message_initheader(struct message_header *header, unsigned int event, unsigned int length);
