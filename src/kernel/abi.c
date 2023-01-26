@@ -310,9 +310,9 @@ static unsigned int despawn(struct task *task, void *stack)
 static unsigned int pick(struct task *task, void *stack)
 {
 
-    struct {void *caller; struct message_header *header; void *data;} *args = stack;
+    struct {void *caller; struct message_header *header; unsigned int count; void *data;} *args = stack;
 
-    return kernel_pick(task->id, args->header, args->data);
+    return kernel_pick(task->id, args->header, args->count, args->data);
 
 }
 

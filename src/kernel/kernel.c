@@ -217,17 +217,17 @@ void kernel_kill(unsigned int source, unsigned int target)
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data)
+unsigned int kernel_pick(unsigned int source, struct message_header *header, unsigned int count, void *data)
 {
 
     struct task *task = &taskdata[source].task;
     struct mailbox *mailbox = &mailboxes[source];
-    unsigned int count = mailbox_pick(mailbox, header, data);
+    unsigned int size = mailbox_pick(mailbox, header, count, data);
 
-    if (!count)
+    if (!size)
         task_signal(task, TASK_SIGNAL_BLOCK);
 
-    return count;
+    return size;
 
 }
 

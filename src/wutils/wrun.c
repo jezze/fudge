@@ -76,7 +76,7 @@ static void dnsresolve(char *domain)
         channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_sendto(id, EVENT_MAIN);
 
-        while (channel_pollfrom(id, &header, &data) != EVENT_CLOSE)
+        while (channel_pollfrom(id, &header, MESSAGE_SIZE, &data) != EVENT_CLOSE)
         {
 
             if (header.event == EVENT_QUERY)

@@ -10,7 +10,7 @@ void kernel_removelink(unsigned int source, struct list *list);
 struct task *kernel_schedule(struct core *core, struct task *coretask);
 struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
 void kernel_kill(unsigned int source, unsigned int target);
-unsigned int kernel_pick(unsigned int source, struct message_header *header, void *data);
+unsigned int kernel_pick(unsigned int source, struct message_header *header, unsigned int count, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data);
 void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count);
 struct task *kernel_createtask(void);

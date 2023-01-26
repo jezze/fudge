@@ -260,7 +260,7 @@ static void run(void)
     file_read(FILE_G5, cart_ram, getsavesize(&gb));
     channel_sendfmt1(EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
-    while (channel_pick(&header, &data))
+    while (channel_pick(&header, MESSAGE_SIZE, &data))
     {
 
         switch (header.event)

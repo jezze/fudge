@@ -48,10 +48,10 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
 }
 
-static unsigned int read(unsigned int source, struct message_header *header, void *data)
+static unsigned int read(unsigned int source, struct message_header *header, unsigned int count, void *data)
 {
 
-    while (channel_pollfrom(source, header, data) != EVENT_CLOSE)
+    while (channel_pollfrom(source, header, count, data) != EVENT_CLOSE)
     {
 
         if (header->event == EVENT_DATA)
@@ -223,13 +223,13 @@ unsigned int channel_redirectback(unsigned int target, unsigned int event)
 
 }
 
-unsigned int channel_pick(struct message_header *header, void *data)
+unsigned int channel_pick(struct message_header *header, unsigned int count, void *data)
 {
 
     while (active)
     {
 
-        if (call_pick(header, data))
+        if (call_pick(header, count, data))
             return header->event;
 
     }
@@ -244,7 +244,7 @@ unsigned int channel_process(void)
     struct message_header header;
     struct message_data data;
 
-    if (channel_pick(&header, &data))
+    if (channel_pick(&header, MESSAGE_SIZE, &data))
     {
 
         channel_dispatch(&header, &data);
@@ -257,10 +257,10 @@ unsigned int channel_process(void)
 
 }
 
-unsigned int channel_pollfrom(unsigned int source, struct message_header *header, void *data)
+unsigned int channel_pollfrom(unsigned int source, struct message_header *header, unsigned int count, void *data)
 {
 
-    while (channel_pick(header, data))
+    while (channel_pick(header, count, data))
     {
 
         if (header->source == source)
@@ -274,10 +274,10 @@ unsigned int channel_pollfrom(unsigned int source, struct message_header *header
 
 }
 
-unsigned int channel_pollevent(unsigned int event, struct message_header *header, void *data)
+unsigned int channel_pollevent(unsigned int event, struct message_header *header, unsigned int count, void *data)
 {
 
-    while (channel_pick(header, data))
+    while (channel_pick(header, count, data))
     {
 
         if (header->event == event)
@@ -291,10 +291,10 @@ unsigned int channel_pollevent(unsigned int event, struct message_header *header
 
 }
 
-unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message_header *header, void *data)
+unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message_header *header, unsigned int count, void *data)
 {
 
-    while (channel_pick(header, data))
+    while (channel_pick(header, count, data))
     {
 
         if (header->source == source && header->event == event)
@@ -308,35 +308,35 @@ unsigned int channel_polleventfrom(unsigned int source, unsigned int event, stru
 
 }
 
-unsigned int channel_kpoll(struct message_header *header, void *data)
+unsigned int channel_kpoll(struct message_header *header, unsigned int count, void *data)
 {
 
-    return channel_pollfrom(0, header, data);
+    return channel_pollfrom(0, header, count, data);
 
 }
 
-unsigned int channel_kpollevent(unsigned int event, struct message_header *header, void *data)
+unsigned int channel_kpollevent(unsigned int event, struct message_header *header, unsigned int count, void *data)
 {
 
-    return channel_polleventfrom(0, event, header, data);
+    return channel_polleventfrom(0, event, header, count, data);
 
 }
 
-unsigned int channel_read(void *data)
+unsigned int channel_read(unsigned int count, void *data)
 {
 
     struct message_header header;
 
-    return read(0, &header, data);
+    return read(0, &header, count, data);
 
 }
 
-unsigned int channel_readfrom(unsigned int source, void *data)
+unsigned int channel_readfrom(unsigned int source, unsigned int count, void *data)
 {
 
     struct message_header header;
 
-    return read(source, &header, data);
+    return read(source, &header, count, data);
 
 }
 
@@ -346,7 +346,7 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
     struct message_header header;
     struct message_data data;
 
-    return channel_polleventfrom(source, event, &header, &data);
+    return channel_polleventfrom(source, event, &header, MESSAGE_SIZE, &data);
 
 }
 

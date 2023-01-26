@@ -12,7 +12,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_L0);
 
-    while ((count = channel_read(&data)))
+    while ((count = channel_read(MESSAGE_SIZE, &data)))
         channel_sendbuffer(EVENT_DATA, count, &data);
 
     file_unlink(FILE_L0);

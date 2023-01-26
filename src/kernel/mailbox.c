@@ -2,45 +2,45 @@
 #include "resource.h"
 #include "mailbox.h"
 
-unsigned int mailbox_pick(struct mailbox *mailbox, struct message_header *header, void *data)
+unsigned int mailbox_pick(struct mailbox *mailbox, struct message_header *header, unsigned int count, void *data)
 {
 
-    unsigned int count = 0;
+    unsigned int length = 0;
 
     spinlock_acquire(&mailbox->spinlock);
 
     if (ring_count(&mailbox->ring))
     {
 
-        count += ring_readall(&mailbox->ring, header, sizeof (struct message_header));
-        count += ring_readall(&mailbox->ring, data, message_datasize(header));
+        length += ring_readall(&mailbox->ring, header, sizeof (struct message_header));
+        length += ring_readall(&mailbox->ring, data, message_datasize(header));
 
     }
 
     spinlock_release(&mailbox->spinlock);
 
-    return count;
+    return length;
 
 }
 
 unsigned int mailbox_place(struct mailbox *mailbox, struct message_header *header, void *data)
 {
 
-    unsigned int count = 0;
+    unsigned int length = 0;
 
     spinlock_acquire(&mailbox->spinlock);
 
     if (ring_avail(&mailbox->ring) > header->length)
     {
 
-        count += ring_writeall(&mailbox->ring, header, sizeof (struct message_header));
-        count += ring_writeall(&mailbox->ring, data, message_datasize(header));
+        length += ring_writeall(&mailbox->ring, header, sizeof (struct message_header));
+        length += ring_writeall(&mailbox->ring, data, message_datasize(header));
 
     }
 
     spinlock_release(&mailbox->spinlock);
 
-    return count;
+    return length;
 
 }
 

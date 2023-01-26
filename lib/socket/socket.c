@@ -682,7 +682,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
     struct message_header header;
     struct message_data data;
 
-    while (channel_kpollevent(EVENT_DATA, &header, &data))
+    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, &data))
     {
 
         struct socket *remote;
@@ -762,7 +762,7 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
 
     send(descriptor, &data, buildtcp(local, remote, router, &data, TCP_FLAGS1_SYN, remote->info.tcp.localseq, 0, BUFFER_SIZE, 0, 0));
 
-    while (channel_kpollevent(EVENT_DATA, &header, &data))
+    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, &data))
     {
 
         char buffer[BUFFER_SIZE];
@@ -789,7 +789,7 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
     send(descriptor, &data, buildarp(local, remote, &multicast, &data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_kpollevent(EVENT_DATA, &header, &data))
+    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, &data))
     {
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&header), &data);
