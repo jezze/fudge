@@ -22,8 +22,8 @@ unsigned int channel_pollevent(unsigned int event, struct message_header *header
 unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message_header *header, void *data);
 unsigned int channel_kpoll(struct message_header *header, void *data);
 unsigned int channel_kpollevent(unsigned int event, struct message_header *header, void *data);
-unsigned int channel_read(unsigned int event, struct message_header *header, void *data);
-unsigned int channel_readfrom(unsigned int source, unsigned int event, struct message_header *header, void *data);
+unsigned int channel_read(void *data);
+unsigned int channel_readfrom(unsigned int source, void *data);
 unsigned int channel_wait(unsigned int source, unsigned int event);
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
 void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsigned int source);

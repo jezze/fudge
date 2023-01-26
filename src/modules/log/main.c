@@ -38,20 +38,10 @@ static void interface_write(unsigned int level, char *string, char *file, unsign
 
     }
 
-    count += cstring_write(buffer, BUFFER_SIZE, string, count);
-
     if (file && line)
-    {
-
-        count += cstring_write(buffer, BUFFER_SIZE, " (", count);
-        count += cstring_write(buffer, BUFFER_SIZE, file, count);
-        count += cstring_write(buffer, BUFFER_SIZE, ":", count);
-        count += cstring_writevalue(buffer, BUFFER_SIZE, line, 10, 0, count);
-        count += cstring_write(buffer, BUFFER_SIZE, ")", count);
-
-    }
-
-    count += cstring_write(buffer, BUFFER_SIZE, "\n", count);
+        count += cstring_writefmt3(buffer, BUFFER_SIZE, "%s (%s:%u)\n", count, string, file, &line);
+    else
+        count += cstring_writefmt1(buffer, BUFFER_SIZE, "%s\n", count, string);
 
     kernel_notify(&messages.links, EVENT_DATA, buffer, count);
 

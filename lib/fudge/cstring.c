@@ -167,9 +167,9 @@ unsigned int cstring_writezero(char *out, unsigned int count, unsigned int offse
 unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding, unsigned int offset)
 {
 
-    char num[1024];
+    char num[64];
 
-    return buffer_write(out, count, num, writevalue(num, 1024, value, base, padding), offset);
+    return buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
 
 }
 
@@ -183,6 +183,7 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
     unsigned int base = 10;
     unsigned int padding = 0;
     unsigned int start = offset;
+    unsigned int isunsigned = 1;
     unsigned int i;
 
     for (i = 0; i < length; i++)
@@ -212,8 +213,6 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
         {
 
             char num[64];
-            unsigned char c;
-            unsigned short h;
             unsigned int u;
             int i;
             char *s;
@@ -246,6 +245,26 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
 
                 break;
 
+            case '>':
+                padding = padding >> 1;
+
+                break;
+
+            case '<':
+                padding = padding << 1;
+
+                break;
+
+            case 'B':
+                base = 2;
+
+                break;
+
+            case 'O':
+                base = 8;
+
+                break;
+
             case 'D':
                 base = 10;
 
@@ -256,17 +275,63 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
 
                 break;
 
+            case '-':
+                isunsigned = 0;
+
+                break;
+
+            case '+':
+                isunsigned = 1;
+
+                break;
+
             case 'c':
-                c = *((unsigned char *)args[cargs++]);
-                offset += buffer_write(out, count, num, writevalue(num, 64, c, base, padding), offset);
+                if (isunsigned)
+                {
+
+                    unsigned char value = *((unsigned char *)args[cargs++]);
+
+                    offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
+
+                }
+
+                else
+                {
+
+                    signed char value = *((signed char *)args[cargs++]);
+
+                    offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
+
+                }
+
                 interpreted = 0;
+                padding = 0;
+                base = 10;
 
                 break;
 
             case 'h':
-                h = *((unsigned short *)args[cargs++]);
-                offset += buffer_write(out, count, num, writevalue(num, 64, h, base, padding), offset);
+                if (isunsigned)
+                {
+
+                    unsigned short value = *((unsigned short *)args[cargs++]);
+
+                    offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
+
+                }
+
+                else
+                {
+
+                    signed short value = *((signed short *)args[cargs++]);
+
+                    offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
+
+                }
+
                 interpreted = 0;
+                padding = 0;
+                base = 10;
 
                 break;
 
@@ -274,6 +339,8 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 u = *((unsigned int *)args[cargs++]);
                 offset += buffer_write(out, count, num, writevalue(num, 64, u, base, padding), offset);
                 interpreted = 0;
+                padding = 0;
+                base = 10;
 
                 break;
 
@@ -281,6 +348,8 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 i = *((int *)args[cargs++]);
                 offset += buffer_write(out, count, num, writevalue(num, 64, i, base, padding), offset);
                 interpreted = 0;
+                padding = 0;
+                base = 10;
 
                 break;
 
@@ -288,6 +357,8 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 s = ((char *)args[cargs++]);
                 offset += buffer_write(out, count, s, cstring_length(s), offset);
                 interpreted = 0;
+                padding = 0;
+                base = 10;
 
                 break;
 
@@ -296,11 +367,15 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 u = *((unsigned int *)args[cargs++]);
                 offset += buffer_write(out, count, s, u, offset);
                 interpreted = 0;
+                padding = 0;
+                base = 10;
 
                 break;
 
             default:
                 interpreted = 0;
+                padding = 0;
+                base = 10;
 
                 break;
 

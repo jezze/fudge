@@ -161,8 +161,7 @@ static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int
             {
 
                 record->type = RECORD_TYPE_DIRECTORY;
-                record->length += cstring_write(record->name, RECORD_NAMESIZE, ":", record->length);
-                record->length += cstring_writevalue(record->name, RECORD_NAMESIZE, child->index, 10, 0, record->length);
+                record->length += cstring_writefmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &child->index);
 
             }
 

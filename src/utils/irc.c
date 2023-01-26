@@ -27,10 +27,7 @@ static void interpret(void *buffer, unsigned int count)
         char outputdata[BUFFER_SIZE];
         unsigned int offset = 0;
 
-        offset += cstring_write(outputdata, BUFFER_SIZE, "PRIVMSG ", offset);
-        offset += cstring_write(outputdata, BUFFER_SIZE, option_getstring("channel"), offset);
-        offset += cstring_write(outputdata, BUFFER_SIZE, " :", offset);
-        offset += buffer_write(outputdata, BUFFER_SIZE, buffer, count, offset);
+        offset += cstring_writefmt3(outputdata, BUFFER_SIZE, "PRIVMSG %s :%w", offset, option_getstring("channel"), buffer, &count);
 
         socket_send_tcp(FILE_G0, &local, &remote, &router, offset, outputdata);
 
@@ -43,17 +40,9 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
     unsigned int offset = 0;
 
-    offset += cstring_write(buffer, count, "NICK ", offset);
-    offset += cstring_write(buffer, count, option_getstring("nick"), offset);
-    offset += cstring_write(buffer, count, "\n", offset);
-    offset += cstring_write(buffer, count, "USER ", offset);
-    offset += cstring_write(buffer, count, option_getstring("nick"), offset);
-    offset += cstring_write(buffer, count, " 0 * :", offset);
-    offset += cstring_write(buffer, count, option_getstring("realname"), offset);
-    offset += cstring_write(buffer, count, "\n", offset);
-    offset += cstring_write(buffer, count, "JOIN ", offset);
-    offset += cstring_write(buffer, count, option_getstring("channel"), offset);
-    offset += cstring_write(buffer, count, "\n", offset);
+    offset += cstring_writefmt1(buffer, count, "NICK %s\n", offset, option_getstring("nick"));
+    offset += cstring_writefmt2(buffer, count, "USER %s 0 * :%s\n", offset, option_getstring("nick"), option_getstring("realname"));
+    offset += cstring_writefmt1(buffer, count, "JOIN %s\n", offset, option_getstring("channel"));
 
     return offset;
 

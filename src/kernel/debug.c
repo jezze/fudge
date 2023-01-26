@@ -29,17 +29,8 @@ void debug_log8(unsigned int level, char *key, unsigned char value)
 {
 
     char string[BUFFER_SIZE];
-    unsigned int c = 0;
 
-    c += cstring_write(string, BUFFER_SIZE, key, c);
-    c += cstring_write(string, BUFFER_SIZE, ": ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 2, 8, c);
-    c += cstring_write(string, BUFFER_SIZE, " ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 16, 2, c);
-    c += cstring_write(string, BUFFER_SIZE, " ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 10, 0, c);
-    c += cstring_writezero(string, BUFFER_SIZE, c);
-
+    cstring_writefmt3(string, BUFFER_SIZE, "%s: %B8c %H2c %c\\0", 0, &value, &value, &value);
     debug_log(level, string, 0, 0);
 
 }
@@ -48,17 +39,8 @@ void debug_log16(unsigned int level, char *key, unsigned short value)
 {
 
     char string[BUFFER_SIZE];
-    unsigned int c = 0;
 
-    c += cstring_write(string, BUFFER_SIZE, key, c);
-    c += cstring_write(string, BUFFER_SIZE, ": ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 2, 16, c);
-    c += cstring_write(string, BUFFER_SIZE, " ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 16, 4, c);
-    c += cstring_write(string, BUFFER_SIZE, " ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 10, 0, c);
-    c += cstring_writezero(string, BUFFER_SIZE, c);
-
+    cstring_writefmt3(string, BUFFER_SIZE, "%s: %B8<c %H4c %c\\0", 0, &value, &value, &value);
     debug_log(level, string, 0, 0);
 
 }
@@ -67,17 +49,8 @@ void debug_log32(unsigned int level, char *key, unsigned int value)
 {
 
     char string[BUFFER_SIZE];
-    unsigned int c = 0;
 
-    c += cstring_write(string, BUFFER_SIZE, key, c);
-    c += cstring_write(string, BUFFER_SIZE, ": ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 2, 32, c);
-    c += cstring_write(string, BUFFER_SIZE, " ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 16, 8, c);
-    c += cstring_write(string, BUFFER_SIZE, " ", c);
-    c += cstring_writevalue(string, BUFFER_SIZE, value, 10, 0, c);
-    c += cstring_writezero(string, BUFFER_SIZE, c);
-
+    cstring_writefmt3(string, BUFFER_SIZE, "%s: %B8<<c %H8c %c\\0", 0, &value, &value, &value);
     debug_log(level, string, 0, 0);
 
 }

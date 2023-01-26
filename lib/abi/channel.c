@@ -48,13 +48,13 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
 }
 
-static unsigned int read(unsigned int source, unsigned int event, struct message_header *header, void *data)
+static unsigned int read(unsigned int source, struct message_header *header, void *data)
 {
 
     while (channel_pollfrom(source, header, data) != EVENT_CLOSE)
     {
 
-        if (header->event == event)
+        if (header->event == EVENT_DATA)
             return message_datasize(header);
         else
             channel_dispatch(header, data);
@@ -322,17 +322,21 @@ unsigned int channel_kpollevent(unsigned int event, struct message_header *heade
 
 }
 
-unsigned int channel_read(unsigned int event, struct message_header *header, void *data)
+unsigned int channel_read(void *data)
 {
 
-    return read(0, event, header, data);
+    struct message_header header;
+
+    return read(0, &header, data);
 
 }
 
-unsigned int channel_readfrom(unsigned int source, unsigned int event, struct message_header *header, void *data)
+unsigned int channel_readfrom(unsigned int source, void *data)
 {
 
-    return read(source, event, header, data);
+    struct message_header header;
+
+    return read(source, &header, data);
 
 }
 
