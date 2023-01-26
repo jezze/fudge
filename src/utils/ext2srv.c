@@ -112,13 +112,13 @@ struct ext2_entry
 static void request_send(unsigned int sector, unsigned int count)
 {
 
-    struct {struct message_header header; struct event_blockrequest blockrequest;} message;
+    struct {struct message message; struct event_blockrequest blockrequest;} message;
 
     message.blockrequest.sector = sector;
     message.blockrequest.count = count;
 
-    message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
-    file_writeall(FILE_G5, &message, message.header.length);
+    message_init(&message.message, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
+    file_writeall(FILE_G5, &message, message.message.length);
 
 }
 
@@ -127,15 +127,15 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
 
     unsigned int total = nblocks * 512;
     unsigned int read = 0;
-    struct message_header header;
+    struct message message;
     char data[MESSAGE_SIZE];
 
     request_send(sector, nblocks);
 
-    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, data))
+    while (channel_kpollevent(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
-        read += buffer_write(buffer, count, data, message_datasize(&header), read);
+        read += buffer_write(buffer, count, data, message_datasize(&message), read);
 
         if (read == total)
             break;

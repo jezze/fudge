@@ -80,7 +80,7 @@ static void interpret(void)
             if (job_spawn(&job, FILE_L1, FILE_G8))
             {
 
-                struct message_header header;
+                struct message message;
                 char data[MESSAGE_SIZE];
 
                 job_listen(&job, EVENT_CLOSE);
@@ -90,24 +90,24 @@ static void interpret(void)
                 job_pipe(&job, EVENT_DATA);
                 job_run(&job);
 
-                while (job_pick(&job, &header, MESSAGE_SIZE, data))
+                while (job_pick(&job, &message, MESSAGE_SIZE, data))
                 {
 
-                    switch (header.event)
+                    switch (message.event)
                     {
 
                     case EVENT_CLOSE:
-                        job_close(&job, header.source);
+                        job_close(&job, message.source);
 
                         break;
 
                     case EVENT_ERROR:
-                        channel_dispatch(&header, data);
+                        channel_dispatch(&message, data);
 
                         break;
 
                     case EVENT_DATA:
-                        print(data, message_datasize(&header));
+                        print(data, message_datasize(&message));
 
                         break;
 
@@ -145,7 +145,7 @@ static void complete(void)
     char prefix[INPUTSIZE];
     char resultdata[BUFFER_SIZE];
     struct ring result;
-    struct message_header header;
+    struct message message;
     char data[MESSAGE_SIZE];
     unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
 
@@ -216,24 +216,24 @@ static void complete(void)
         job_pipe(&job, EVENT_DATA);
         job_run(&job);
 
-        while (job_pick(&job, &header, MESSAGE_SIZE, data))
+        while (job_pick(&job, &message, MESSAGE_SIZE, data))
         {
 
-            switch (header.event)
+            switch (message.event)
             {
 
             case EVENT_CLOSE:
-                job_close(&job, header.source);
+                job_close(&job, message.source);
 
                 break;
 
             case EVENT_ERROR:
-                channel_dispatch(&header, data);
+                channel_dispatch(&message, data);
 
                 break;
 
             case EVENT_DATA:
-                ring_write(&result, data, message_datasize(&header));
+                ring_write(&result, data, message_datasize(&message));
 
                 break;
 

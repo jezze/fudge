@@ -6,7 +6,7 @@ static unsigned int counter = 1;
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
+    struct message message;
 
     if (!file_walk2(FILE_L0, option_getstring("timer")))
         channel_error("Could not find timer device");
@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_L1);
 
-    while (channel_kpollevent(EVENT_TIMERTICK, &header, 0, 0))
+    while (channel_kpollevent(EVENT_TIMERTICK, &message, 0, 0))
     {
 
         channel_sendfmt1(EVENT_DATA, "Tick: %u second(s)\n", &counter);

@@ -56,7 +56,7 @@ static void dnsresolve(char *domain)
     if (id)
     {
 
-        struct message_header header;
+        struct message message;
         char data[MESSAGE_SIZE];
 
         channel_redirectback(id, EVENT_QUERY);
@@ -64,14 +64,14 @@ static void dnsresolve(char *domain)
         channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_sendto(id, EVENT_MAIN);
 
-        while (channel_pollfrom(id, &header, MESSAGE_SIZE, data) != EVENT_CLOSE)
+        while (channel_pollfrom(id, &message, MESSAGE_SIZE, data) != EVENT_CLOSE)
         {
 
-            if (header.event == EVENT_QUERY)
+            if (message.event == EVENT_QUERY)
             {
 
-                char *key = cstring_tindex(data, message_datasize(&header), 0);
-                char *value = cstring_tindex(data, message_datasize(&header), 1);
+                char *key = cstring_tindex(data, message_datasize(&message), 0);
+                char *value = cstring_tindex(data, message_datasize(&message), 1);
 
                 if (cstring_match(key, "data"))
                     option_set("remote-address", value);

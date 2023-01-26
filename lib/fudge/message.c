@@ -1,20 +1,18 @@
-#include "buffer.h"
-#include "cstring.h"
 #include "message.h"
 
-unsigned int message_datasize(struct message_header *header)
+unsigned int message_datasize(struct message *message)
 {
 
-    return header->length - sizeof (struct message_header);
+    return message->length - sizeof (struct message);
 
 }
 
-void message_initheader(struct message_header *header, unsigned int event, unsigned int length)
+void message_init(struct message *message, unsigned int event, unsigned int length)
 {
 
-    header->event = event;
-    header->source = 0;
-    header->length = sizeof (struct message_header) + length;
+    message->event = event;
+    message->source = 0;
+    message->length = sizeof (struct message) + length;
 
 }
 

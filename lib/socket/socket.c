@@ -679,29 +679,29 @@ static struct socket *acceptudp(struct socket *local, struct socket *remotes, un
 unsigned int socket_receive(unsigned int descriptor, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
 {
 
-    struct message_header header;
+    struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, data))
+    while (channel_kpollevent(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         struct socket *remote;
 
-        remote = acceptarp(local, remotes, nremotes, message_datasize(&header), data);
+        remote = acceptarp(local, remotes, nremotes, message_datasize(&message), data);
 
         if (remote)
         {
 
-            socket_handle_arp(descriptor, local, remote, message_datasize(&header), data);
+            socket_handle_arp(descriptor, local, remote, message_datasize(&message), data);
 
         }
 
-        remote = accepttcp(local, remotes, nremotes, message_datasize(&header), data);
+        remote = accepttcp(local, remotes, nremotes, message_datasize(&message), data);
 
         if (remote)
         {
 
-            unsigned int payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&header), data, BUFFER_SIZE, buffer);
+            unsigned int payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
 
             if (payploadcount)
                 return payploadcount;
@@ -716,12 +716,12 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
         }
 
-        remote = acceptudp(local, remotes, nremotes, message_datasize(&header), data);
+        remote = acceptudp(local, remotes, nremotes, message_datasize(&message), data);
 
         if (remote)
         {
 
-            unsigned int payploadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&header), data, BUFFER_SIZE, buffer);
+            unsigned int payploadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
 
             if (payploadcount)
                 return payploadcount;
@@ -755,20 +755,20 @@ void socket_listen_tcp(unsigned int descriptor, struct socket *local, struct soc
 void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct socket *remote, struct socket *router)
 {
 
-    struct message_header header;
+    struct message message;
     char data[MESSAGE_SIZE];
 
     remote->info.tcp.state = TCP_STATE_SYNSENT;
 
     send(descriptor, data, buildtcp(local, remote, router, data, TCP_FLAGS1_SYN, remote->info.tcp.localseq, 0, BUFFER_SIZE, 0, 0));
 
-    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, data))
+    while (channel_kpollevent(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         char buffer[BUFFER_SIZE];
 
-        socket_handle_arp(descriptor, local, remote, message_datasize(&header), data);
-        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&header), data, BUFFER_SIZE, buffer);
+        socket_handle_arp(descriptor, local, remote, message_datasize(&message), data);
+        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
 
         if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
             break;
@@ -781,7 +781,7 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
 {
 
     struct socket multicast;
-    struct message_header header;
+    struct message message;
     char data[MESSAGE_SIZE];
     unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
@@ -789,10 +789,10 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
     send(descriptor, data, buildarp(local, remote, &multicast, data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, data))
+    while (channel_kpollevent(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
-        socket_handle_arp(descriptor, local, remote, message_datasize(&header), data);
+        socket_handle_arp(descriptor, local, remote, message_datasize(&message), data);
 
         if (remote->resolved)
             break;

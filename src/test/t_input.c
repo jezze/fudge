@@ -4,12 +4,12 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message_header header;
+    struct message message;
     struct event_consoledata consoledata;
 
     channel_sendfmt0(EVENT_DATA, "If you press f I will quit\n");
 
-    while (channel_polleventfrom(source, EVENT_CONSOLEDATA, &header, sizeof (struct event_consoledata), &consoledata))
+    while (channel_polleventfrom(source, EVENT_CONSOLEDATA, &message, sizeof (struct event_consoledata), &consoledata))
     {
 
         if (consoledata.data == 'f')
@@ -31,7 +31,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            channel_sendbuffer(EVENT_DATA, message_datasize(&header), &consoledata.data);
+            channel_sendbuffer(EVENT_DATA, message_datasize(&message), &consoledata.data);
 
         }
 

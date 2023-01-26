@@ -1,4 +1,4 @@
-void channel_dispatch(struct message_header *header, void *data);
+void channel_dispatch(struct message *message, void *data);
 unsigned int channel_send(unsigned int event);
 unsigned int channel_sendto(unsigned int target, unsigned int event);
 unsigned int channel_sendbuffer(unsigned int event, unsigned int count, void *data);
@@ -15,13 +15,13 @@ unsigned int channel_sendfmt6(unsigned int event, char *fmt, void *arg1, void *a
 unsigned int channel_sendfmt8(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8);
 unsigned int channel_redirecttarget(unsigned int target, unsigned int event, unsigned int id);
 unsigned int channel_redirectback(unsigned int target, unsigned int event);
-unsigned int channel_pick(struct message_header *header, unsigned int count, void *data);
+unsigned int channel_pick(struct message *message, unsigned int count, void *data);
 unsigned int channel_process(void);
-unsigned int channel_pollfrom(unsigned int source, struct message_header *header, unsigned int count, void *data);
-unsigned int channel_pollevent(unsigned int event, struct message_header *header, unsigned int count, void *data);
-unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message_header *header, unsigned int count, void *data);
-unsigned int channel_kpoll(struct message_header *header, unsigned int count, void *data);
-unsigned int channel_kpollevent(unsigned int event, struct message_header *header, unsigned int count, void *data);
+unsigned int channel_pollfrom(unsigned int source, struct message *message, unsigned int count, void *data);
+unsigned int channel_pollevent(unsigned int event, struct message *message, unsigned int count, void *data);
+unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data);
+unsigned int channel_kpoll(struct message *message, unsigned int count, void *data);
+unsigned int channel_kpollevent(unsigned int event, struct message *message, unsigned int count, void *data);
 unsigned int channel_read(unsigned int count, void *data);
 unsigned int channel_readfrom(unsigned int source, unsigned int count, void *data);
 unsigned int channel_wait(unsigned int source, unsigned int event);

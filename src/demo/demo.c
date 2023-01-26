@@ -692,16 +692,16 @@ static void render(unsigned int frame)
 static void run(void)
 {
 
-    struct message_header header;
+    struct message message;
     char data[MESSAGE_SIZE];
     unsigned int frame = 0;
 
     setup();
 
-    while (channel_pick(&header, MESSAGE_SIZE, data))
+    while (channel_pick(&message, MESSAGE_SIZE, data))
     {
 
-        switch (header.event)
+        switch (message.event)
         {
 
         case EVENT_TIMERTICK:
@@ -716,7 +716,7 @@ static void run(void)
             break;
 
         default:
-            channel_dispatch(&header, data);
+            channel_dispatch(&message, data);
 
             break;
 

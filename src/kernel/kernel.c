@@ -217,12 +217,12 @@ void kernel_kill(unsigned int source, unsigned int target)
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct message_header *header, unsigned int count, void *data)
+unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
     struct task *task = &taskdata[source].task;
     struct mailbox *mailbox = &mailboxes[source];
-    unsigned int size = mailbox_pick(mailbox, header, count, data);
+    unsigned int size = mailbox_pick(mailbox, message, count, data);
 
     if (!size)
         task_signal(task, TASK_SIGNAL_BLOCK);
@@ -231,27 +231,27 @@ unsigned int kernel_pick(unsigned int source, struct message_header *header, uns
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, struct message_header *header, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int target, struct message *message, void *data)
 {
 
     struct task *task = &taskdata[target].task;
     struct mailbox *mailbox = &mailboxes[target];
 
-    header->source = source;
+    message->source = source;
 
     task_signal(task, TASK_SIGNAL_UNBLOCK);
 
-    return mailbox_place(mailbox, header, data);
+    return mailbox_place(mailbox, message, data);
 
 }
 
 void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned int count)
 {
 
-    struct message_header header;
+    struct message message;
     struct list_item *current;
 
-    message_initheader(&header, type, count);
+    message_init(&message, type, count);
     spinlock_acquire(&links->spinlock);
 
     for (current = links->head; current; current = current->next)
@@ -259,7 +259,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
         struct link *link = current->data;
 
-        kernel_place(0, link->source, &header, buffer);
+        kernel_place(0, link->source, &message, buffer);
 
     }
 

@@ -48,26 +48,26 @@ static void request_init(struct state *state, unsigned int offset, unsigned int 
 static void request_send(struct state *state)
 {
 
-    struct {struct message_header header; struct event_blockrequest blockrequest;} message;
+    struct {struct message message; struct event_blockrequest blockrequest;} message;
 
     message.blockrequest.sector = state->blocksector;
     message.blockrequest.count = state->blockcount;
 
-    message_initheader(&message.header, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
-    file_writeall(FILE_G5, &message, message.header.length);
+    message_init(&message.message, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
+    file_writeall(FILE_G5, &message, message.message.length);
 
 }
 
 static unsigned int request_poll(struct state *state)
 {
 
-    struct message_header header;
+    struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_kpollevent(EVENT_DATA, &header, MESSAGE_SIZE, data))
+    while (channel_kpollevent(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
-        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message_datasize(&header), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
+        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message_datasize(&message), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
         if (state->blockreads == state->blockcount)
             return state->count;

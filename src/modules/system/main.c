@@ -238,10 +238,10 @@ static unsigned int service_notify(unsigned int id, unsigned int source, unsigne
 {
 
     struct system_node *node = getnode(id);
-    struct message_header header;
+    struct message message;
     struct list_item *current;
 
-    message_initheader(&header, event, count);
+    message_init(&message, event, count);
     spinlock_acquire(&node->links.spinlock);
 
     for (current = node->links.head; current; current = current->next)
@@ -249,7 +249,7 @@ static unsigned int service_notify(unsigned int id, unsigned int source, unsigne
 
         struct link *target = current->data;
 
-        kernel_place(source, target->source, &header, data);
+        kernel_place(source, target->source, &message, data);
 
     }
 
