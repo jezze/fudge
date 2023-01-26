@@ -34,10 +34,7 @@ static void sendresponse(struct socket *remote)
         count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Content-Type: text/html\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "Content-Length: ", count);
-        count += cstring_writevalue(buffer, BUFFER_SIZE, filesize, 10, 0, count);
-        count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
+        count += cstring_writefmt1(buffer, BUFFER_SIZE, "Content-Length: %u\r\n\r\n", count, &filesize);
         count += buffer_write(buffer, BUFFER_SIZE, file, filesize, count);
 
     }
@@ -47,8 +44,7 @@ static void sendresponse(struct socket *remote)
 
         count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 404 Not Found\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "Content-Length: 0\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "\r\n", count);
+        count += cstring_write(buffer, BUFFER_SIZE, "Content-Length: 0\r\n\r\n", count);
 
     }
 
