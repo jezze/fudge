@@ -7,20 +7,6 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
-static unsigned int putfmt4(struct message *message, char *fmt, void *value1, void *value2, void *value3, void *value4)
-{
-
-    void *args[4];
-
-    args[0] = value1;
-    args[1] = value2;
-    args[2] = value3;
-    args[3] = value4;
-
-    return message->header.length += cstring_writefmt(message->data.buffer, MESSAGE_SIZE, fmt, 4, args, message_datasize(&message->header));
-
-}
-
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
 
@@ -47,72 +33,39 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 static void reply(unsigned short type, char *name, void *rddata, void *buffer)
 {
 
-    unsigned char *addr = rddata;
-    struct message message;
     char fullname[256];
+    unsigned int fullnamelength = dns_writename(fullname, 256, name, buffer);
 
-    message_init(&message, EVENT_DATA);
+    channel_sendfmt1(EVENT_QUERY, "type\\0%u\\0", &type);
+    channel_sendfmt2(EVENT_QUERY, "name\\0%w\\0", fullname, &fullnamelength);
 
-    switch (type)
+    if (type == 1)
     {
 
-    case 1:
-        message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
-        putfmt4(&message, " has address %c.%c.%c.%c\n", &addr[0], &addr[1], &addr[2], &addr[3]);
+        unsigned char *addr = rddata;
 
-        break;
-
-    case 5:
-        message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
-        message_putstring(&message, " is an alias for ");
-        message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
-        message_putstring(&message, "\n");
-
-        break;
+        channel_sendfmt4(EVENT_QUERY, "data\\0%c.%c.%c.%c\\0", &addr[0], &addr[1], &addr[2], &addr[3]);
+        channel_sendfmt6(EVENT_DATA, "%w has address %c.%c.%c.%c\n", fullname, &fullnamelength, &addr[0], &addr[1], &addr[2], &addr[3]);
 
     }
 
-    channel_sendmessage(&message);
-    message_init(&message, EVENT_QUERY);
-    message_putstring(&message, "type");
-    message_putzero(&message);
-    message_putvalue(&message, type, 10, 0);
-    message_putzero(&message);
-    channel_sendmessage(&message);
-    message_init(&message, EVENT_QUERY);
-    message_putstring(&message, "name");
-    message_putzero(&message);
-    message_putbuffer(&message, dns_writename(fullname, 256, name, buffer), fullname);
-    message_putzero(&message);
-    channel_sendmessage(&message);
-    message_init(&message, EVENT_QUERY);
-    message_putstring(&message, "data");
-    message_putzero(&message);
-
-    switch (type)
+    else if (type == 5)
     {
 
-    case 1:
-        putfmt4(&message, "%c.%c.%c.%c", &addr[0], &addr[1], &addr[2], &addr[3]);
-        message_putzero(&message);
+        char alias[256];
+        unsigned int aliaslength = dns_writename(alias, 256, rddata, buffer);
 
-        break;
-
-    case 5:
-        message_putbuffer(&message, dns_writename(fullname, 256, rddata, buffer), fullname);
-        message_putzero(&message);
-
-        break;
-
-    default:
-        message_putstring(&message, "<null>");
-        message_putzero(&message);
-
-        break;
+        channel_sendfmt2(EVENT_QUERY, "data\\0%w\\0", alias, &aliaslength);
+        channel_sendfmt4(EVENT_DATA, "%w is an alias for %w\n", fullname, &fullnamelength, alias, &aliaslength);
 
     }
 
-    channel_sendmessage(&message);
+    else
+    {
+
+        channel_sendfmt0(EVENT_QUERY, "data\\0<null>\\0");
+
+    }
 
 }
 

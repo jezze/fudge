@@ -44,14 +44,15 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
 
     unsigned int total = nblocks * 512;
     unsigned int read = 0;
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     request_send(sector, nblocks);
 
-    while (channel_kpollevent(EVENT_DATA, &message.header, message.data.buffer))
+    while (channel_kpollevent(EVENT_DATA, &header, &data))
     {
 
-        read += buffer_write(buffer, count, message.data.buffer, message_datasize(&message.header), read);
+        read += buffer_write(buffer, count, data.buffer, message_datasize(&header), read);
 
         if (read == total)
             break;

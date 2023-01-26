@@ -133,20 +133,6 @@ unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char
 
 }
 
-unsigned int channel_sendmessage(struct message *message)
-{
-
-    return send(0, message->header.event, message_datasize(&message->header), message->data.buffer);
-
-}
-
-unsigned int channel_sendmessageto(unsigned int target, struct message *message)
-{
-
-    return send(target, message->header.event, message_datasize(&message->header), message->data.buffer);
-
-}
-
 unsigned int channel_sendfmt0(unsigned int event, char *fmt)
 {
 
@@ -156,12 +142,30 @@ unsigned int channel_sendfmt0(unsigned int event, char *fmt)
 
 }
 
+unsigned int channel_sendfmt0to(unsigned int target, unsigned int event, char *fmt)
+{
+
+    char buffer[MESSAGE_SIZE];
+
+    return send(target, event, cstring_writefmt0(buffer, MESSAGE_SIZE, fmt, 0), buffer);
+
+}
+
 unsigned int channel_sendfmt1(unsigned int event, char *fmt, void *arg1)
 {
 
     char buffer[MESSAGE_SIZE];
 
     return send(0, event, cstring_writefmt1(buffer, MESSAGE_SIZE, fmt, 0, arg1), buffer);
+
+}
+
+unsigned int channel_sendfmt1to(unsigned int target, unsigned int event, char *fmt, void *arg1)
+{
+
+    char buffer[MESSAGE_SIZE];
+
+    return send(target, event, cstring_writefmt1(buffer, MESSAGE_SIZE, fmt, 0, arg1), buffer);
 
 }
 
@@ -242,14 +246,15 @@ unsigned int channel_pick(struct message_header *header, void *data)
 unsigned int channel_process(void)
 {
 
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
-    if (channel_pick(&message.header, message.data.buffer))
+    if (channel_pick(&header, &data))
     {
 
-        channel_dispatch(&message.header, message.data.buffer);
+        channel_dispatch(&header, &data);
 
-        return message.header.event;
+        return header.event;
 
     }
 
@@ -339,9 +344,10 @@ unsigned int channel_readfrom(unsigned int source, unsigned int event, struct me
 unsigned int channel_wait(unsigned int source, unsigned int event)
 {
 
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
-    return channel_polleventfrom(source, event, &message.header, message.data.buffer);
+    return channel_polleventfrom(source, event, &header, &data);
 
 }
 

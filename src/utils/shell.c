@@ -145,7 +145,9 @@ static void complete(void)
     char prefix[INPUTSIZE];
     char resultdata[BUFFER_SIZE];
     struct ring result;
-    struct message message;
+    struct message_header header;
+    struct message_data data;
+
     unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
 
     ring_init(&result, BUFFER_SIZE, resultdata);
@@ -215,24 +217,24 @@ static void complete(void)
         job_pipe(&job, EVENT_DATA);
         job_run(&job);
 
-        while (job_pick(&job, &message.header, message.data.buffer))
+        while (job_pick(&job, &header, &data))
         {
 
-            switch (message.header.event)
+            switch (header.event)
             {
 
             case EVENT_CLOSE:
-                job_close(&job, message.header.source);
+                job_close(&job, header.source);
 
                 break;
 
             case EVENT_ERROR:
-                channel_dispatch(&message.header, message.data.buffer);
+                channel_dispatch(&header, &data);
 
                 break;
 
             case EVENT_DATA:
-                ring_write(&result, message.data.buffer, message_datasize(&message.header));
+                ring_write(&result, data.buffer, message_datasize(&header));
 
                 break;
 

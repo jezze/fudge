@@ -15,17 +15,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned char digest[16];
-    struct message message;
+    char output[32];
+    unsigned int l = 32;
     unsigned int i;
 
     md5_write(&sum, digest);
-    message_init(&message, EVENT_DATA);
 
     for (i = 0; i < 16; i++)
-        message_putvalue(&message, digest[i], 16, 2);
+        cstring_writevalue(output, 32, digest[i], 16, 2, i * 2);
 
-    message_putstring(&message, "\n");
-    channel_sendmessage(&message);
+    channel_sendfmt2(EVENT_DATA, "%w\n", output, &l);
     channel_close();
 
 }

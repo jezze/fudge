@@ -14,12 +14,9 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message message;
+    unsigned int crc = crc_finalize(&sum);
 
-    message_init(&message, EVENT_DATA);
-    message_putvalue(&message, crc_finalize(&sum), 10, 0);
-    message_putstring(&message, "\n");
-    channel_sendmessage(&message);
+    channel_sendfmt1(EVENT_DATA, "%u\n", &crc);
     channel_close();
 
 }

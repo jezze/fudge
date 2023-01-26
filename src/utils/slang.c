@@ -250,10 +250,9 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 static void parse(unsigned int source, struct tokenlist *postfix, struct tokenlist *stack)
 {
 
-    struct message message;
+    char buffer[MESSAGE_SIZE];
+    unsigned int count = 0;
     unsigned int i;
-
-    message_init(&message, EVENT_DATA);
 
     for (i = 0; i < postfix->head; i++)
     {
@@ -281,12 +280,7 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
             if (!u)
                 return;
 
-            message_putstring(&message, "O");
-            message_putzero(&message);
-            message_putstring(&message, t->str);
-            message_putzero(&message);
-            message_putstring(&message, u->str);
-            message_putzero(&message);
+            count += cstring_writefmt2(buffer, MESSAGE_SIZE, "O\\0%s\\0%s\\0", count, t->str, u->str);
 
             break;
 
@@ -297,24 +291,9 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 t = tokenlist_pop(stack);
 
                 if (tokenlist_check(stack) == TOKEN_IDENT)
-                {
-
-                    message_putstring(&message, "D");
-                    message_putzero(&message);
-                    message_putstring(&message, t->str);
-                    message_putzero(&message);
-
-                }
-
+                    count += cstring_writefmt1(buffer, MESSAGE_SIZE, "D\\0%s\\0", count, t->str);
                 else
-                {
-
-                    message_putstring(&message, "P");
-                    message_putzero(&message);
-                    message_putstring(&message, t->str);
-                    message_putzero(&message);
-
-                }
+                    count += cstring_writefmt1(buffer, MESSAGE_SIZE, "P\\0%s\\0", count, t->str);
 
             }
 
@@ -327,31 +306,17 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 t = tokenlist_pop(stack);
 
                 if (tokenlist_check(stack) == TOKEN_IDENT)
-                {
-
-                    message_putstring(&message, "D");
-                    message_putzero(&message);
-                    message_putstring(&message, t->str);
-                    message_putzero(&message);
-
-                }
-
+                    count += cstring_writefmt1(buffer, MESSAGE_SIZE, "D\\0%s\\0", count, t->str);
                 else
-                {
-
-                    message_putstring(&message, "P");
-                    message_putzero(&message);
-                    message_putstring(&message, t->str);
-                    message_putzero(&message);
-
-                }
+                    count += cstring_writefmt1(buffer, MESSAGE_SIZE, "P\\0%s\\0", count, t->str);
 
             }
 
-            message_putstring(&message, "E");
-            message_putzero(&message);
-            channel_sendmessage(&message);
-            message_init(&message, EVENT_DATA);
+            count += cstring_writefmt0(buffer, MESSAGE_SIZE, "E\\0", count);
+
+            channel_sendbuffer(EVENT_DATA, count, buffer);
+
+            count = 0;
 
             break;
 

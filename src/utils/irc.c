@@ -63,28 +63,24 @@ static void dnsresolve(char *domain)
 {
 
     unsigned int id = file_spawn(FILE_L0, "/bin/dns");
-    struct message message;
+    struct message_header header;
+    struct message_data data;
 
     if (!id)
         channel_error("Could not spawn process");
 
-    message_init(&message, EVENT_OPTION);
-    message_putstring(&message, "domain");
-    message_putzero(&message);
-    message_putstring(&message, domain);
-    message_putzero(&message);
     channel_redirectback(id, EVENT_QUERY);
     channel_redirectback(id, EVENT_CLOSE);
-    channel_sendmessageto(id, &message);
+    channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
     channel_sendto(id, EVENT_MAIN);
 
-    while (channel_pollfrom(id, &message.header, message.data.buffer) != EVENT_CLOSE)
+    while (channel_pollfrom(id, &header, &data) != EVENT_CLOSE)
     {
 
-        if (message.header.event == EVENT_QUERY)
+        if (header.event == EVENT_QUERY)
         {
 
-            char *key = message.data.buffer;
+            char *key = data.buffer;
             char *value = key + cstring_lengthzero(key);
 
             if (cstring_match(key, "data"))
