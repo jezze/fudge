@@ -64,30 +64,40 @@ static void dnsresolve(char *domain)
 {
 
     unsigned int id = file_spawn(FILE_L0, "/bin/dns");
-    struct message_header header;
-    struct message_data data;
 
-    if (!id)
-        channel_error("Could not spawn process");
-
-    channel_redirectback(id, EVENT_QUERY);
-    channel_redirectback(id, EVENT_CLOSE);
-    channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
-    channel_sendto(id, EVENT_MAIN);
-
-    while (channel_pollfrom(id, &header, &data) != EVENT_CLOSE)
+    if (id)
     {
 
-        if (header.event == EVENT_QUERY)
+        struct message_header header;
+        struct message_data data;
+
+        channel_redirectback(id, EVENT_QUERY);
+        channel_redirectback(id, EVENT_CLOSE);
+        channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_sendto(id, EVENT_MAIN);
+
+        while (channel_pollfrom(id, &header, &data) != EVENT_CLOSE)
         {
 
-            char *key = data.buffer;
-            char *value = key + cstring_lengthzero(key);
+            if (header.event == EVENT_QUERY)
+            {
 
-            if (cstring_match(key, "data"))
-                option_set("remote-address", value);
+                char *key = cstring_tindex(data.buffer, message_datasize(&header), 0);
+                char *value = cstring_tindex(data.buffer, message_datasize(&header), 1);
+
+                if (cstring_match(key, "data"))
+                    option_set("remote-address", value);
+
+            }
 
         }
+
+    }
+
+    else
+    {
+
+        channel_error("Could not spawn process");
 
     }
 

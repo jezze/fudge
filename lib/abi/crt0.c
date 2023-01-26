@@ -13,8 +13,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *key = mdata;
-    char *value = key + cstring_lengthzero(key);
+    char *key = cstring_tindex(mdata, msize, 0);
+    char *value = cstring_tindex(mdata, msize, 1);
 
     if (!option_set(key, value))
         channel_warning("Unrecognized option");

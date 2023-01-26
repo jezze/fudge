@@ -430,3 +430,31 @@ unsigned int cstring_writefmt8(void *out, unsigned int count, char *fmt, unsigne
 
 }
 
+void *cstring_tindex(char *in, unsigned int count, unsigned int index)
+{
+
+    if (index)
+    {
+
+        unsigned int c = 0;
+        unsigned int i;
+
+        for (i = 0; i < count; i++)
+        {
+
+            if (in[i] == '\0')
+            {
+
+                if (++c == index)
+                    return in + i + 1;
+
+            }
+
+        }
+
+    }
+
+    return in;
+
+}
+
