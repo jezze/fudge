@@ -159,19 +159,7 @@ void job_run(struct job *job)
             unsigned int j;
 
             for (j = 0; j < worker->noptions; j++)
-            {
-
-                char buffer[MESSAGE_SIZE];
-                unsigned int count = 0;
-
-                count += cstring_write(buffer, MESSAGE_SIZE, worker->options[j].key, count);
-                count += cstring_writezero(buffer, MESSAGE_SIZE, count);
-                count += cstring_write(buffer, MESSAGE_SIZE, worker->options[j].value, count);
-                count += cstring_writezero(buffer, MESSAGE_SIZE, count);
-
-                channel_sendbufferto(worker->id, EVENT_OPTION, count, buffer);
-
-            }
+                channel_sendfmt2to(worker->id, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
 
         }
 
@@ -188,7 +176,7 @@ void job_run(struct job *job)
             unsigned int j;
 
             for (j = 0; j < worker->npaths; j++)
-                channel_sendstringzto(worker->id, EVENT_PATH, worker->paths[j]);
+                channel_sendfmt1to(worker->id, EVENT_PATH, "%s\\0", worker->paths[j]);
 
         }
 

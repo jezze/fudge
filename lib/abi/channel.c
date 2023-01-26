@@ -119,20 +119,6 @@ unsigned int channel_sendbufferto(unsigned int target, unsigned int event, unsig
 
 }
 
-unsigned int channel_sendstringz(unsigned int event, char *string)
-{
-
-    return send(0, event, cstring_lengthzero(string), string);
-
-}
-
-unsigned int channel_sendstringzto(unsigned int target, unsigned int event, char *string)
-{
-
-    return send(target, event, cstring_lengthzero(string), string);
-
-}
-
 unsigned int channel_sendfmt0(unsigned int event, char *fmt)
 {
 
@@ -175,6 +161,15 @@ unsigned int channel_sendfmt2(unsigned int event, char *fmt, void *arg1, void *a
     char buffer[MESSAGE_SIZE];
 
     return send(0, event, cstring_writefmt2(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2), buffer);
+
+}
+
+unsigned int channel_sendfmt2to(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2)
+{
+
+    char buffer[MESSAGE_SIZE];
+
+    return send(target, event, cstring_writefmt2(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2), buffer);
 
 }
 

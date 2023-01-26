@@ -18,7 +18,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_redirectback(id, EVENT_DATA);
     channel_redirectback(id, EVENT_CLOSE);
-    channel_sendstringzto(id, EVENT_PATH, "/data/motd.txt");
+    channel_sendfmt0to(id, EVENT_PATH, "/data/motd.txt\\0");
     channel_sendto(id, EVENT_MAIN);
     channel_wait(id, EVENT_CLOSE);
     channel_close();
