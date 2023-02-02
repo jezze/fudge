@@ -48,7 +48,7 @@ static void showtasks(void)
 
                 channel_sendfmt3(EVENT_DATA, "task[%u] {id=%u, state=%u, ", &n, &ctrl.id, &ctrl.state);
                 channel_sendfmt2(EVENT_DATA, "thread.ip=0x%H8u, thread.sp=0x%H8u, ", &ctrl.thread_ip, &ctrl.thread_sp);
-                channel_sendfmt3(EVENT_DATA, "signals.kills=%u, signals.blocks=%u, signals.unblocks=%u}\n", &ctrl.signals_kills, &ctrl.signals_blocks, &ctrl.signals_unblocks);
+                channel_sendfmt2(EVENT_DATA, "signals.kills=%u, signals.blocks=%u}\n", &ctrl.signals_kills, &ctrl.signals_blocks);
 
             }
 

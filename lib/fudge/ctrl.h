@@ -41,7 +41,6 @@ struct ctrl_task
     unsigned int state;
     unsigned int signals_kills;
     unsigned int signals_blocks;
-    unsigned int signals_unblocks;
     unsigned int thread_ip;
     unsigned int thread_sp;
 

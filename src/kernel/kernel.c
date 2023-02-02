@@ -35,6 +35,78 @@ static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
 
+static void transitiontask(struct task *task, unsigned int state)
+{
+
+    switch (state)
+    {
+
+    case TASK_STATE_KILLED:
+        if (task_transition(task, TASK_STATE_KILLED))
+        {
+
+            task_unsignal(task, TASK_SIGNAL_KILL);
+            list_add(&killedtasks, &taskdata[task->id].item);
+
+        }
+
+        break;
+
+    case TASK_STATE_BLOCKED:
+        if (task_transition(task, TASK_STATE_BLOCKED))
+        {
+
+            task_unsignal(task, TASK_SIGNAL_BLOCK);
+            list_add(&blockedtasks, &taskdata[task->id].item);
+
+        }
+
+        break;
+
+    case TASK_STATE_ASSIGNED:
+        if (task_transition(task, TASK_STATE_ASSIGNED))
+            coreassign(&taskdata[task->id].item);
+
+        break;
+
+    }
+
+}
+
+static void unblocktasks(void)
+{
+
+    struct list_item *taskitem;
+    struct list_item *next;
+
+    spinlock_acquire(&blockedtasks.spinlock);
+
+    for (taskitem = blockedtasks.head; taskitem; taskitem = next)
+    {
+
+        struct task *task = taskitem->data;
+        struct mailbox *mailbox = &mailboxes[task->id];
+
+        next = taskitem->next;
+
+        spinlock_acquire(&mailbox->spinlock);
+
+        if (ring_count(&mailbox->ring))
+        {
+
+            list_remove_unsafe(&blockedtasks, taskitem);
+            transitiontask(task, TASK_STATE_ASSIGNED);
+
+        }
+
+        spinlock_release(&mailbox->spinlock);
+
+    }
+
+    spinlock_release(&blockedtasks.spinlock);
+
+}
+
 static unsigned int setupbinary(struct task *task, unsigned int sp, struct service *service, unsigned int id)
 {
 
@@ -121,69 +193,20 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
 {
 
     struct list_item *taskitem;
-    struct list_item *next;
 
     if (coretask)
     {
 
         if (coretask->signals.kills)
-        {
-
-            task_unsignal(coretask, TASK_SIGNAL_KILL);
-
-            if (task_transition(coretask, TASK_STATE_KILLED))
-                list_add(&killedtasks, &taskdata[coretask->id].item);
-
-        }
-
+            transitiontask(coretask, TASK_STATE_KILLED);
         else if (coretask->signals.blocks)
-        {
-
-            task_unsignal(coretask, TASK_SIGNAL_BLOCK);
-
-            if (task_transition(coretask, TASK_STATE_BLOCKED))
-                list_add(&blockedtasks, &taskdata[coretask->id].item);
-
-        }
-
+            transitiontask(coretask, TASK_STATE_BLOCKED);
         else
-        {
-
-            if (task_transition(coretask, TASK_STATE_ASSIGNED))
-                coreassign(&taskdata[coretask->id].item);
-
-        }
+            transitiontask(coretask, TASK_STATE_ASSIGNED);
 
     }
 
-    spinlock_acquire(&blockedtasks.spinlock);
-
-    for (taskitem = blockedtasks.head; taskitem; taskitem = next)
-    {
-
-        struct task *task = taskitem->data;
-        struct mailbox *mailbox = &mailboxes[task->id];
-
-        next = taskitem->next;
-
-        spinlock_acquire(&mailbox->spinlock);
-
-        if (ring_count(&mailbox->ring))
-        {
-
-            list_remove_unsafe(&blockedtasks, taskitem);
-            task_unsignal(task, TASK_SIGNAL_UNBLOCK);
-
-            if (task_transition(task, TASK_STATE_ASSIGNED))
-                coreassign(taskitem);
-
-        }
-
-        spinlock_release(&mailbox->spinlock);
-
-    }
-
-    spinlock_release(&blockedtasks.spinlock);
+    unblocktasks();
 
     taskitem = list_picktail(&core->tasks);
 
@@ -234,12 +257,9 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message *message, void *data)
 {
 
-    struct task *task = &taskdata[target].task;
     struct mailbox *mailbox = &mailboxes[target];
 
     message->source = source;
-
-    task_signal(task, TASK_SIGNAL_UNBLOCK);
 
     return mailbox_place(mailbox, message, data);
 
@@ -299,20 +319,9 @@ void kernel_setuptask(struct task *task, unsigned int sp)
     struct descriptor *prog = kernel_getdescriptor(task, FILE_PP);
 
     if (setupbinary(task, sp, prog->service, prog->id))
-    {
-
-        if (task_transition(task, TASK_STATE_ASSIGNED))
-            coreassign(&taskdata[task->id].item);
-
-    }
-
+        transitiontask(task, TASK_STATE_ASSIGNED);
     else
-    {
-
-        if (task_transition(task, TASK_STATE_KILLED))
-            list_add(&killedtasks, &taskdata[task->id].item);
-
-    }
+        transitiontask(task, TASK_STATE_KILLED);
 
 }
 

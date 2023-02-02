@@ -59,7 +59,6 @@ static unsigned int tasks_read(void *buffer, unsigned int count, unsigned int of
             ctrl.thread_sp = task->thread.sp;
             ctrl.signals_kills = task->signals.kills;
             ctrl.signals_blocks = task->signals.blocks;
-            ctrl.signals_unblocks = task->signals.unblocks;
 
             return buffer_read(buffer, count, &ctrl, sizeof (struct task), o);
 
