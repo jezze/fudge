@@ -12,13 +12,14 @@ static char *names[5] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, option_getstring("log")))
+    if (file_walk2(FILE_L0, option_getstring("klog")) && file_walk2(FILE_L1, option_getstring("ulog")))
     {
 
         struct message message;
         struct {struct event_loginfo loginfo; char buffer[200]; } data;
 
         file_link(FILE_L0);
+        file_link(FILE_L1);
 
         while (channel_kpollevent(EVENT_LOGINFO, &message, sizeof (struct event_loginfo) + 200, &data))
         {
@@ -28,6 +29,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
+        file_unlink(FILE_L1);
         file_unlink(FILE_L0);
 
     }
@@ -35,7 +37,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_error("Log not found");
+        channel_error("Logs not found");
 
     }
 
@@ -46,7 +48,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("log", "system:log/messages");
+    option_add("ulog", "system:service/log");
+    option_add("klog", "system:log/messages");
     option_add("level", "4");
     channel_bind(EVENT_MAIN, onmain);
 

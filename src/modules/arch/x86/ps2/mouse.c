@@ -25,13 +25,7 @@ static void handleirq(unsigned int irq)
     status = ps2_getstatus();
 
     if (!(status & 0x20))
-    {
-
-        /*debug_log16(DEBUG_INFO, "mouse status error", status);*/
-
         return;
-
-    }
 
     data = ps2_getdata();
 
@@ -39,19 +33,11 @@ static void handleirq(unsigned int irq)
     {
 
     case 0:
-        /*debug_log8(DEBUG_INFO, "mouse data0", data);*/
-
         oldstate = state;
 
         /* Temp fix for unsync issue */
         if (!(data & 0x08))
-        {
-
-            /*debug_log8(DEBUG_INFO, "mouse incorrect data0", data);*/
-
             return;
-
-        }
 
         state = data;
         sequence = 1;
@@ -59,8 +45,6 @@ static void handleirq(unsigned int irq)
         break;
 
     case 1:
-        /*debug_log8(DEBUG_INFO, "mouse data1", data);*/
-
         if (state & (1 << 6))
             relx = 0;
         else
@@ -71,8 +55,6 @@ static void handleirq(unsigned int irq)
         break;
 
     case 2:
-        /*debug_log8(DEBUG_INFO, "mouse data2", data);*/
-
         if (state & (1 << 7))
             rely = 0;
         else
@@ -83,8 +65,6 @@ static void handleirq(unsigned int irq)
         break;
 
     case 3:
-        /*debug_log8(DEBUG_INFO, "mouse data3", data);*/
-
         switch (type)
         {
 
