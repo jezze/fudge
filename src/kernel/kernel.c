@@ -243,14 +243,9 @@ void kernel_kill(unsigned int source, unsigned int target)
 unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
-    struct task *task = &taskdata[source].task;
     struct mailbox *mailbox = &mailboxes[source];
-    unsigned int size = mailbox_pick(mailbox, message, count, data);
 
-    if (!size)
-        task_signal(task, TASK_SIGNAL_BLOCK);
-
-    return size;
+    return mailbox_pick(mailbox, message, count, data);
 
 }
 
