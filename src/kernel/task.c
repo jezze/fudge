@@ -30,6 +30,8 @@ void task_signal(struct task *task, unsigned int signal)
 unsigned int task_transition(struct task *task, unsigned int state)
 {
 
+    unsigned int valid = 0;
+
     spinlock_acquire(&task->spinlock);
 
     if (task->state != state)
@@ -78,9 +80,11 @@ unsigned int task_transition(struct task *task, unsigned int state)
 
     }
 
+    valid = task->state == state;
+
     spinlock_release(&task->spinlock);
 
-    return task->state == state;
+    return valid;
 
 }
 
