@@ -1,7 +1,9 @@
-#define TASK_STATE_KILLED               0
-#define TASK_STATE_ASSIGNED             1
+#define TASK_STATE_DEAD                 0
+#define TASK_STATE_NEW                  1
 #define TASK_STATE_BLOCKED              2
-#define TASK_STATE_RUNNING              3
+#define TASK_STATE_UNBLOCKED            3
+#define TASK_STATE_ASSIGNED             4
+#define TASK_STATE_RUNNING              5
 #define TASK_SIGNAL_KILL                1
 #define TASK_SIGNAL_BLOCK               2
 

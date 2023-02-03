@@ -32,30 +32,49 @@ unsigned int task_transition(struct task *task, unsigned int state)
 
     spinlock_acquire(&task->spinlock);
 
-    switch (state)
+    if (task->state != state)
     {
 
-    case TASK_STATE_KILLED:
-        task->state = state;
+        switch (state)
+        {
 
-        break;
+        case TASK_STATE_DEAD:
+            if (task->state == TASK_STATE_NEW || task->state == TASK_STATE_UNBLOCKED || task->state == TASK_STATE_RUNNING)
+                task->state = state;
 
-    case TASK_STATE_ASSIGNED:
-        task->state = state;
+            break;
 
-        break;
+        case TASK_STATE_NEW:
+            if (task->state == TASK_STATE_DEAD)
+                task->state = state;
 
-    case TASK_STATE_BLOCKED:
-        if (task->state == TASK_STATE_RUNNING)
-            task->state = state;
+            break;
 
-        break;
+        case TASK_STATE_BLOCKED:
+            if (task->state == TASK_STATE_RUNNING)
+                task->state = state;
 
-    case TASK_STATE_RUNNING:
-        if (task->state == TASK_STATE_ASSIGNED || task->state == TASK_STATE_BLOCKED)
-            task->state = state;
+            break;
 
-        break;
+        case TASK_STATE_UNBLOCKED:
+            if (task->state == TASK_STATE_BLOCKED)
+                task->state = state;
+
+            break;
+
+        case TASK_STATE_ASSIGNED:
+            if (task->state == TASK_STATE_NEW || task->state == TASK_STATE_UNBLOCKED || task->state == TASK_STATE_RUNNING)
+                task->state = state;
+
+            break;
+
+        case TASK_STATE_RUNNING:
+            if (task->state == TASK_STATE_ASSIGNED)
+                task->state = state;
+
+            break;
+
+        }
 
     }
 
@@ -117,7 +136,7 @@ void task_reset(struct task *task)
     task_resetsignals(&task->signals);
     task_resetthread(&task->thread);
 
-    task->state = TASK_STATE_KILLED;
+    task->state = TASK_STATE_DEAD;
 
 }
 
@@ -132,7 +151,7 @@ void task_init(struct task *task, unsigned int id)
 
     task->format = 0;
     task->id = id;
-    task->state = TASK_STATE_KILLED;
+    task->state = TASK_STATE_DEAD;
 
 }
 

@@ -30,36 +30,53 @@ static struct linkdata linkdata[KERNEL_LINKS];
 static struct descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct list freelinks;
-static struct list killedtasks;
+static struct list deadtasks;
 static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
 
-static void transitiontask(struct task *task, unsigned int state)
+static unsigned int transitiontask(struct task *task, unsigned int state)
 {
 
-    switch (state)
+    unsigned int valid = task_transition(task, state);
+
+    if (valid)
     {
 
-    case TASK_STATE_KILLED:
-        if (task_transition(task, TASK_STATE_KILLED))
-            list_add(&killedtasks, &taskdata[task->id].item);
+        switch (state)
+        {
 
-        break;
+        case TASK_STATE_DEAD:
+            list_add(&deadtasks, &taskdata[task->id].item);
 
-    case TASK_STATE_BLOCKED:
-        if (task_transition(task, TASK_STATE_BLOCKED))
+            break;
+
+        case TASK_STATE_NEW:
+            break;
+
+        case TASK_STATE_BLOCKED:
             list_add(&blockedtasks, &taskdata[task->id].item);
 
-        break;
+            break;
 
-    case TASK_STATE_ASSIGNED:
-        if (task_transition(task, TASK_STATE_ASSIGNED))
+        case TASK_STATE_UNBLOCKED:
+            list_remove_unsafe(&blockedtasks, &taskdata[task->id].item);
+
+            break;
+
+        case TASK_STATE_ASSIGNED:
             coreassign(&taskdata[task->id].item);
 
-        break;
+            break;
+
+        case TASK_STATE_RUNNING:
+            break;
+
+        }
 
     }
+
+    return valid;
 
 }
 
@@ -84,7 +101,7 @@ static void unblocktasks(void)
         if (ring_count(&mailbox->ring))
         {
 
-            list_remove_unsafe(&blockedtasks, taskitem);
+            transitiontask(task, TASK_STATE_UNBLOCKED);
             transitiontask(task, TASK_STATE_ASSIGNED);
 
         }
@@ -101,7 +118,7 @@ static void checksignals(struct task *task)
 {
 
     if (task->signals.kills)
-        transitiontask(task, TASK_STATE_KILLED);
+        transitiontask(task, TASK_STATE_DEAD);
     else if (task->signals.blocks)
         transitiontask(task, TASK_STATE_BLOCKED);
     else
@@ -121,8 +138,9 @@ static struct task *picknewtask(struct core *core)
 
         struct task *task = taskitem->data;
 
-        if (task_transition(task, TASK_STATE_RUNNING))
-            return task;
+        transitiontask(task, TASK_STATE_RUNNING);
+
+        return task;
 
     }
 
@@ -285,7 +303,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 struct task *kernel_createtask(void)
 {
 
-    struct list_item *taskitem = list_picktail(&killedtasks);
+    struct list_item *taskitem = list_picktail(&deadtasks);
 
     if (taskitem)
     {
@@ -299,6 +317,8 @@ struct task *kernel_createtask(void)
 
         for (i = 0; i < KERNEL_DESCRIPTORS; i++)
             descriptor_reset(kernel_getdescriptor(task, i));
+
+        transitiontask(task, TASK_STATE_NEW);
 
         return task;
 
@@ -316,7 +336,7 @@ void kernel_setuptask(struct task *task, unsigned int sp)
     if (setupbinary(task, sp, prog->service, prog->id))
         transitiontask(task, TASK_STATE_ASSIGNED);
     else
-        transitiontask(task, TASK_STATE_KILLED);
+        transitiontask(task, TASK_STATE_DEAD);
 
 }
 
@@ -326,7 +346,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     unsigned int i;
 
     list_init(&freelinks);
-    list_init(&killedtasks);
+    list_init(&deadtasks);
     list_init(&blockedtasks);
 
     for (i = 1; i < KERNEL_TASKS; i++)
@@ -338,7 +358,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
         task_init(task, i);
         task_register(task);
         list_inititem(item, task);
-        list_add(&killedtasks, item);
+        list_add(&deadtasks, item);
 
     }
 
