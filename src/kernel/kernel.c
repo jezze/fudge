@@ -212,11 +212,11 @@ void kernel_removelink(unsigned int source, struct list *list)
 
 }
 
-struct task *kernel_schedule(struct core *core, struct task *coretask)
+struct task *kernel_schedule(struct core *core)
 {
 
-    if (coretask)
-        checksignals(coretask);
+    if (core->task)
+        checksignals(core->task);
 
     unblocktasks();
 

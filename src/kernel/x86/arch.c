@@ -84,7 +84,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
     }
 
-    core->task = kernel_schedule(core, core->task);
+    core->task = kernel_schedule(core);
 
     if (core->task)
     {
