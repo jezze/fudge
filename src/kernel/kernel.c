@@ -43,23 +43,13 @@ static void transitiontask(struct task *task, unsigned int state)
 
     case TASK_STATE_KILLED:
         if (task_transition(task, TASK_STATE_KILLED))
-        {
-
-            task_unsignal(task, TASK_SIGNAL_KILL);
             list_add(&killedtasks, &taskdata[task->id].item);
-
-        }
 
         break;
 
     case TASK_STATE_BLOCKED:
         if (task_transition(task, TASK_STATE_BLOCKED))
-        {
-
-            task_unsignal(task, TASK_SIGNAL_BLOCK);
             list_add(&blockedtasks, &taskdata[task->id].item);
-
-        }
 
         break;
 
@@ -179,7 +169,7 @@ void kernel_removelink(unsigned int source, struct list *list)
         {
 
             list_remove_unsafe(list, current);
-            list_add_unsafe(&freelinks, current);
+            list_add(&freelinks, current);
 
         }
 
@@ -203,6 +193,8 @@ struct task *kernel_schedule(struct core *core, struct task *coretask)
             transitiontask(coretask, TASK_STATE_BLOCKED);
         else
             transitiontask(coretask, TASK_STATE_ASSIGNED);
+
+        task_resetsignals(&coretask->signals);
 
     }
 
