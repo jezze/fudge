@@ -9,7 +9,7 @@ static struct system_node messages;
 static void interface_write(unsigned int level, char *string, char *file, unsigned int line)
 {
 
-    struct {struct event_loginfo loginfo; char buffer[200]; } message;
+    struct {struct event_loginfo loginfo; char buffer[200];} message;
 
     message.loginfo.level = level;
     message.loginfo.count = 0;

@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct message message;
-        struct {struct event_loginfo loginfo; char buffer[200]; } data;
+        struct {struct event_loginfo loginfo; char buffer[200];} data;
 
         file_link(FILE_L0);
         file_link(FILE_L1);
