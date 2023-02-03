@@ -97,6 +97,39 @@ static void unblocktasks(void)
 
 }
 
+static void checksignals(struct task *task)
+{
+
+    if (task->signals.kills)
+        transitiontask(task, TASK_STATE_KILLED);
+    else if (task->signals.blocks)
+        transitiontask(task, TASK_STATE_BLOCKED);
+    else
+        transitiontask(task, TASK_STATE_ASSIGNED);
+
+    task_resetsignals(&task->signals);
+
+}
+
+static struct task *picknewtask(struct core *core)
+{
+
+    struct list_item *taskitem = list_picktail(&core->tasks);
+
+    if (taskitem)
+    {
+
+        struct task *task = taskitem->data;
+
+        if (task_transition(task, TASK_STATE_RUNNING))
+            return task;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int setupbinary(struct task *task, unsigned int sp, struct service *service, unsigned int id)
 {
 
@@ -182,37 +215,12 @@ void kernel_removelink(unsigned int source, struct list *list)
 struct task *kernel_schedule(struct core *core, struct task *coretask)
 {
 
-    struct list_item *taskitem;
-
     if (coretask)
-    {
-
-        if (coretask->signals.kills)
-            transitiontask(coretask, TASK_STATE_KILLED);
-        else if (coretask->signals.blocks)
-            transitiontask(coretask, TASK_STATE_BLOCKED);
-        else
-            transitiontask(coretask, TASK_STATE_ASSIGNED);
-
-        task_resetsignals(&coretask->signals);
-
-    }
+        checksignals(coretask);
 
     unblocktasks();
 
-    taskitem = list_picktail(&core->tasks);
-
-    if (taskitem)
-    {
-
-        struct task *task = taskitem->data;
-
-        if (task_transition(task, TASK_STATE_RUNNING))
-            return task;
-
-    }
-
-    return 0;
+    return picknewtask(core);
 
 }
 
