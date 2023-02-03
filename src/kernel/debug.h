@@ -1,9 +1,9 @@
 #define DEBUG_LOG(l, s)                 debug_log(l, s, __FILE__, __LINE__)
 #define DEBUG_ASSERT(l, t)              debug_assert(l, t, __FILE__, __LINE__)
-#define DEBUG_CRITICAL                  0
-#define DEBUG_ERROR                     1
-#define DEBUG_WARNING                   2
-#define DEBUG_INFO                      3
+#define DEBUG_CRITICAL                  1
+#define DEBUG_ERROR                     2
+#define DEBUG_WARNING                   3
+#define DEBUG_INFO                      4
 
 struct debug_interface
 {

@@ -10,40 +10,17 @@ static struct system_node send;
 static void interface_write(unsigned int level, char *string, char *file, unsigned int line)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count = 0;
+    struct {struct event_loginfo loginfo; char buffer[200]; } message;
 
-    switch (level)
-    {
+    message.loginfo.level = level;
+    message.loginfo.count = 0;
 
-    case DEBUG_CRITICAL:
-        count += cstring_write(buffer, BUFFER_SIZE, "[CRIT] ", count);
-
-        break;
-
-    case DEBUG_ERROR:
-        count += cstring_write(buffer, BUFFER_SIZE, "[ERRO] ", count);
-
-        break;
-
-    case DEBUG_WARNING:
-        count += cstring_write(buffer, BUFFER_SIZE, "[WARN] ", count);
-
-        break;
-
-    case DEBUG_INFO:
-        count += cstring_write(buffer, BUFFER_SIZE, "[INFO] ", count);
-
-        break;
-
-    }
-
-    if (file && line)
-        count += cstring_writefmt3(buffer, BUFFER_SIZE, "%s (%s:%u)\n", count, string, file, &line);
+    if (file)
+        message.loginfo.count += cstring_writefmt3(message.buffer, 200, "%s (%s:%u)", message.loginfo.count, string, file, &line);
     else
-        count += cstring_writefmt1(buffer, BUFFER_SIZE, "%s\n", count, string);
+        message.loginfo.count += cstring_writefmt1(message.buffer, 200, "%s", message.loginfo.count, string);
 
-    kernel_notify(&messages.links, EVENT_DATA, buffer, count);
+    kernel_notify(&messages.links, EVENT_LOGINFO, &message, sizeof (struct event_loginfo) + message.loginfo.count);
 
 }
 
