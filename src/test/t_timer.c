@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_link(FILE_L1);
 
-    while (channel_kpollevent(EVENT_TIMERTICK, &message, 0, 0))
+    while (channel_pollevent(EVENT_TIMERTICK, &message, 0, 0))
     {
 
         channel_sendfmt1(EVENT_DATA, "Tick: %u second(s)\n", &counter);

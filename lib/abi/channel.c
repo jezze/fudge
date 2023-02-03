@@ -308,20 +308,6 @@ unsigned int channel_polleventfrom(unsigned int source, unsigned int event, stru
 
 }
 
-unsigned int channel_kpoll(struct message *message, unsigned int count, void *data)
-{
-
-    return channel_pollfrom(0, message, count, data);
-
-}
-
-unsigned int channel_kpollevent(unsigned int event, struct message *message, unsigned int count, void *data)
-{
-
-    return channel_polleventfrom(0, event, message, count, data);
-
-}
-
 unsigned int channel_read(unsigned int count, void *data)
 {
 
