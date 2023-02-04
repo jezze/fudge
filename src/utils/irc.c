@@ -61,8 +61,8 @@ static void dnsresolve(char *domain)
 
         channel_redirectback(id, EVENT_QUERY);
         channel_redirectback(id, EVENT_CLOSE);
-        channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_sendto(id, EVENT_MAIN);
+        channel_sendfmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(id, EVENT_MAIN);
 
         while (channel_pollfrom(id, &message, MESSAGE_SIZE, data) != EVENT_CLOSE)
         {
@@ -138,7 +138,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
     case '\n':
         ring_write(&input, &consoledata->data, 1);
-        channel_sendbuffer(EVENT_DATA, 1, &consoledata->data);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 1, &consoledata->data);
 
         count = ring_read(&input, buffer, BUFFER_SIZE);
 
@@ -149,7 +149,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        channel_sendbuffer(EVENT_DATA, 1, &consoledata->data);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 1, &consoledata->data);
 
         break;
 
@@ -194,7 +194,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
 
     while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
-        channel_sendbuffer(EVENT_DATA, count, buffer);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
     file_unlink(FILE_G0);
     channel_close();

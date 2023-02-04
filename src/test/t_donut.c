@@ -98,13 +98,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         R(5, 7, cA, sA)
         R(5, 8, cB, sB)
 
-        channel_sendbuffer(EVENT_DATA, 2, sequence);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 2, sequence);
 
         for (k = 0; k < 1760; k += 80)
         {
 
-            channel_sendbuffer(EVENT_DATA, 80, b + k);
-            channel_sendbuffer(EVENT_DATA, 1, "\n");
+            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 80, b + k);
+            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 1, "\n");
 
         }
 

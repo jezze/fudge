@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int crc = crc_finalize(&sum);
 
-    channel_sendfmt1(EVENT_DATA, "%u\n", &crc);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "%u\n", &crc);
     channel_close();
 
 }

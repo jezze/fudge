@@ -4,7 +4,7 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_sendbuffer(EVENT_DATA, msize, mdata);
+    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, msize, mdata);
 
 }
 
@@ -18,8 +18,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_redirectback(id, EVENT_DATA);
     channel_redirectback(id, EVENT_CLOSE);
-    channel_sendfmt0to(id, EVENT_PATH, "/data/help.txt\\0");
-    channel_sendto(id, EVENT_MAIN);
+    channel_sendfmt0(id, EVENT_PATH, "/data/help.txt\\0");
+    channel_send(id, EVENT_MAIN);
     channel_wait(id, EVENT_CLOSE);
     channel_close();
 

@@ -226,8 +226,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNGRAB);
-    channel_send(EVENT_WMUNMAP);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
     channel_close();
 
 }
@@ -235,8 +235,8 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNGRAB);
-    channel_send(EVENT_WMUNMAP);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
     channel_close();
 
 }
@@ -261,7 +261,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_G2, FILE_L0, "data"))
         channel_error("Could not find video device data");
 
-    channel_send(EVENT_WMGRAB);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
 
     settings.width = option_getdecimal("width");
     settings.height = option_getdecimal("height");

@@ -16,7 +16,7 @@ static void handlehttppacket(void)
     unsigned int count;
 
     while ((count = ring_read(&input, buffer, MESSAGE_SIZE)))
-        channel_sendbuffer(EVENT_DATA, count, buffer);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
 }
 
@@ -33,8 +33,8 @@ static void dnsresolve(char *domain)
 
         channel_redirectback(id, EVENT_QUERY);
         channel_redirectback(id, EVENT_CLOSE);
-        channel_sendfmt1to(id, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_sendto(id, EVENT_MAIN);
+        channel_sendfmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(id, EVENT_MAIN);
 
         while (channel_pollfrom(id, &message, MESSAGE_SIZE, data) != EVENT_CLOSE)
         {

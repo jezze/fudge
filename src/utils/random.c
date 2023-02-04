@@ -27,7 +27,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     value = mtwist_rand(&state);
 
-    channel_sendfmt1(EVENT_DATA, "%u\n", &value);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "%u\n", &value);
     channel_close();
 
 }

@@ -13,7 +13,7 @@ static void updatepath(void)
     count += cstring_write(buffer, BUFFER_SIZE, path, count);
     count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
-    channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
+    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
 
 }
 
@@ -26,7 +26,7 @@ static void updatecontent(void)
         "- content\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
-    channel_sendfmt0(EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
@@ -52,7 +52,7 @@ static void updatecontent(void)
 
         }
 
-        channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
 
     }
 
@@ -71,7 +71,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNMAP);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
     channel_close();
 
 }
@@ -119,7 +119,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ layout id \"main\" in \"base\" type \"maximize\" padding \"8\"\n"
         "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
-    channel_sendfmt0(EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
     updatepath();
     updatecontent();
 

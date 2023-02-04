@@ -44,10 +44,10 @@ void init(void)
         channel_redirectback(id, EVENT_CLOSE);
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_ERROR);
-        channel_sendfmt0to(id, EVENT_PATH, "/config/base.slang\\0");
-        channel_sendfmt0to(id, EVENT_PATH, "/config/arch.slang\\0");
-        channel_sendfmt0to(id, EVENT_PATH, "/config/init.slang\\0");
-        channel_sendto(id, EVENT_MAIN);
+        channel_sendfmt0(id, EVENT_PATH, "/config/base.slang\\0");
+        channel_sendfmt0(id, EVENT_PATH, "/config/arch.slang\\0");
+        channel_sendfmt0(id, EVENT_PATH, "/config/init.slang\\0");
+        channel_send(id, EVENT_MAIN);
 
     }
 

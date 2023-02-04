@@ -8,7 +8,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int nrecords;
 
     file_duplicate(FILE_L0, FILE_G0);
-    channel_sendfmt0(EVENT_DATA, "../\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
 
     while ((nrecords = file_list(FILE_G0, FILE_L0, 8, records)))
     {
@@ -21,9 +21,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             struct record *record = &records[i];
 
             if (record->type == RECORD_TYPE_DIRECTORY)
-                channel_sendfmt4(EVENT_DATA, "%H8u %H8u %w/\n", &record->id, &record->size, record->name, &record->length);
+                channel_sendfmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w/\n", &record->id, &record->size, record->name, &record->length);
             else
-                channel_sendfmt4(EVENT_DATA, "%H8u %H8u %w\n", &record->id, &record->size, record->name, &record->length);
+                channel_sendfmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w\n", &record->id, &record->size, record->name, &record->length);
 
         }
 

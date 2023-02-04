@@ -41,7 +41,7 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
         struct option *option = option_get(i);
 
         if (option)
-            channel_sendfmt2(EVENT_DATA, "%s:%s\n", option->key, option->value);
+            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%s:%s\n", option->key, option->value);
 
     }
 

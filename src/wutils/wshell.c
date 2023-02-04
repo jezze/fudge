@@ -25,7 +25,7 @@ static void update(void)
     count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
     count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
-    channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
+    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
 
     count = 0;
     count += cstring_write(buffer, BUFFER_SIZE, "= input1 content \"", count);
@@ -35,7 +35,7 @@ static void update(void)
     count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
     count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
-    channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
+    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
 
 }
 
@@ -98,8 +98,8 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_ERROR);
         channel_redirectback(id, EVENT_CLOSE);
-        channel_sendbufferto(id, EVENT_DATA, icount, ibuffer);
-        channel_sendto(id, EVENT_MAIN);
+        channel_sendbuffer(id, EVENT_DATA, icount, ibuffer);
+        channel_send(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, MESSAGE_SIZE, data)))
             offset += buffer_write(obuffer, ocount, data, count, offset);
@@ -361,7 +361,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNMAP);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
     channel_close();
 
 }
@@ -379,7 +379,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ text id \"cursor\" in \"output\" wrap \"char\" mode \"inverted\" content \" \"\n"
         "+ text id \"input2\" in \"output\" wrap \"char\"\n";
 
-    channel_sendfmt0(EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 
 }
 

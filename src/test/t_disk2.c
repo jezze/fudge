@@ -4,7 +4,7 @@
 static void error(void *data, unsigned int count)
 {
 
-    channel_sendfmt2(EVENT_ERROR, "Error occured:\n%w\n", data, &count);
+    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
 
 }
 
@@ -129,7 +129,7 @@ static unsigned int read(unsigned short tag, unsigned int fid)
     {
 
     case P9P_RREAD:
-        channel_sendbuffer(EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
 
         return 1;
 

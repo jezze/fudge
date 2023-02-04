@@ -13,7 +13,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_error("Could not find clock device ctrl");
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
-    channel_sendfmt6(EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
+    channel_sendfmt6(CHANNEL_DEFAULT, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
     channel_close();
 
 }

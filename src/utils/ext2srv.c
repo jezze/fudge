@@ -154,34 +154,34 @@ static unsigned int isvalid(struct ext2_superblock *superblock)
 static void printsuperblock(struct ext2_superblock *superblock)
 {
 
-    channel_sendfmt1(EVENT_DATA, "Signature: 0x%H4h\n", &superblock->signature);
-    channel_sendfmt1(EVENT_DATA, "SuperblockIndex: %u\n", &superblock->superblockIndex);
-    channel_sendfmt1(EVENT_DATA, "SuperblockGroup: %h\n", &superblock->superblockGroup);
-    channel_sendfmt1(EVENT_DATA, "BlockSize: %u\n", &superblock->blockSize);
-    channel_sendfmt1(EVENT_DATA, "BlockCount: %u\n", &superblock->blockCount);
-    channel_sendfmt1(EVENT_DATA, "BlockCountSuper: %u\n", &superblock->blockCountSuper);
-    channel_sendfmt1(EVENT_DATA, "NodeSize: %h\n", &superblock->nodeSize);
-    channel_sendfmt1(EVENT_DATA, "NodeCount: %u\n", &superblock->nodeCount);
-    channel_sendfmt1(EVENT_DATA, "NodeCountGroup: %u\n", &superblock->nodeCountGroup);
-    channel_sendfmt1(EVENT_DATA, "FragmentSize: %u\n", &superblock->fragmentSize);
-    channel_sendfmt1(EVENT_DATA, "FragmentCountGroup: %u\n", &superblock->fragmentCountGroup);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Signature: 0x%H4h\n", &superblock->signature);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "SuperblockIndex: %u\n", &superblock->superblockIndex);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "SuperblockGroup: %h\n", &superblock->superblockGroup);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "BlockSize: %u\n", &superblock->blockSize);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "BlockCount: %u\n", &superblock->blockCount);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "BlockCountSuper: %u\n", &superblock->blockCountSuper);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "NodeSize: %h\n", &superblock->nodeSize);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "NodeCount: %u\n", &superblock->nodeCount);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "NodeCountGroup: %u\n", &superblock->nodeCountGroup);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "FragmentSize: %u\n", &superblock->fragmentSize);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "FragmentCountGroup: %u\n", &superblock->fragmentCountGroup);
 
 }
 
 static void printblockgroup(struct ext2_blockgroup *blockgroup)
 {
 
-    channel_sendfmt1(EVENT_DATA, "Inode table block: %u\n", &blockgroup->blockTableAddress);
-    channel_sendfmt1(EVENT_DATA, "Directory count: %h\n", &blockgroup->directoryCount);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Inode table block: %u\n", &blockgroup->blockTableAddress);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Directory count: %h\n", &blockgroup->directoryCount);
 
 }
 
 static void printnode(struct ext2_node *node)
 {
 
-    channel_sendfmt1(EVENT_DATA, "Type: 0x%H4h\n", &node->type);
-    channel_sendfmt1(EVENT_DATA, "Flags: 0x%H8u\n", &node->flags);
-    channel_sendfmt1(EVENT_DATA, "User Id: %h\n", &node->userId);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Type: 0x%H4h\n", &node->type);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Flags: 0x%H8u\n", &node->flags);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "User Id: %h\n", &node->userId);
 
 }
 
@@ -235,9 +235,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         unsigned int blockindex = (rootid * sb.nodeSize) / sb.blockSize;
 
         printsuperblock(&sb);
-        channel_sendfmt1(EVENT_DATA, "BlockGroup: %u\n", &blockgroup);
-        channel_sendfmt1(EVENT_DATA, "NodeIndex: %u\n", &nodeindex);
-        channel_sendfmt1(EVENT_DATA, "BlockIndex: %u\n", &blockindex);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "BlockGroup: %u\n", &blockgroup);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "NodeIndex: %u\n", &nodeindex);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "BlockIndex: %u\n", &blockindex);
         readblockgroups(&bg, &sb, 0, 3 + blockgroup); /* add blockgroup here */
         printblockgroup(&bg);
         readnode(&node, &sb, nodeindex, bg.blockTableAddress + blockindex);

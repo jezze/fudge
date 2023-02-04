@@ -21,7 +21,7 @@ static void refresh(int value)
     count += cstring_writevalue(buffer, BUFFER_SIZE, value, 10, 0, count);
     count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
 
-    channel_sendbuffer(EVENT_WMRENDERDATA, count, buffer);
+    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
 
 }
 
@@ -100,7 +100,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNMAP);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
     channel_close();
 
 }
@@ -170,7 +170,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ button id \"button+\" in \"buttons\" label \"+\"\n"
         "+ button id \"button=\" in \"buttons\" label \"=\"\n";
 
-    channel_sendfmt0(EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 
 }
 

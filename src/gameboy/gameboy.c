@@ -122,7 +122,7 @@ static void keypress(struct gb_s *gb, void *data)
         {
 
         case 0x01:
-            channel_send(EVENT_WMUNMAP);
+            channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
             channel_close();
 
             break;
@@ -258,7 +258,7 @@ static void run(void)
     }
 
     file_read(FILE_G5, cart_ram, getsavesize(&gb));
-    channel_sendfmt1(EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
     while (channel_pick(&message, MESSAGE_SIZE, data))
     {
@@ -308,7 +308,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(EVENT_WMUNMAP);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
     channel_close();
 
 }
@@ -360,7 +360,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_G2, FILE_L0, "event1"))
         channel_warning("Could not open timer event");
 
-    channel_send(EVENT_WMGRAB);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
@@ -369,7 +369,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
     file_unlink(FILE_G0);
-    channel_send(EVENT_WMUNGRAB);
+    channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
 
 }
 

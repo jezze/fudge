@@ -1,18 +1,15 @@
+#define CHANNEL_DEFAULT                 0
+
 void channel_dispatch(struct message *message, void *data);
-unsigned int channel_send(unsigned int event);
-unsigned int channel_sendto(unsigned int target, unsigned int event);
-unsigned int channel_sendbuffer(unsigned int event, unsigned int count, void *data);
-unsigned int channel_sendbufferto(unsigned int target, unsigned int event, unsigned int count, void *data);
-unsigned int channel_sendfmt0(unsigned int event, char *fmt);
-unsigned int channel_sendfmt0to(unsigned int target, unsigned int event, char *fmt);
-unsigned int channel_sendfmt1(unsigned int event, char *fmt, void *arg1);
-unsigned int channel_sendfmt1to(unsigned int target, unsigned int event, char *fmt, void *arg1);
-unsigned int channel_sendfmt2(unsigned int event, char *fmt, void *arg1, void *arg2);
-unsigned int channel_sendfmt2to(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2);
-unsigned int channel_sendfmt3(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3);
-unsigned int channel_sendfmt4(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4);
-unsigned int channel_sendfmt6(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6);
-unsigned int channel_sendfmt8(unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8);
+unsigned int channel_send(unsigned int target, unsigned int event);
+unsigned int channel_sendbuffer(unsigned int target, unsigned int event, unsigned int count, void *data);
+unsigned int channel_sendfmt0(unsigned int target, unsigned int event, char *fmt);
+unsigned int channel_sendfmt1(unsigned int target, unsigned int event, char *fmt, void *arg1);
+unsigned int channel_sendfmt2(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2);
+unsigned int channel_sendfmt3(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3);
+unsigned int channel_sendfmt4(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4);
+unsigned int channel_sendfmt6(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6);
+unsigned int channel_sendfmt8(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8);
 unsigned int channel_redirecttarget(unsigned int target, unsigned int event, unsigned int id);
 unsigned int channel_redirectback(unsigned int target, unsigned int event);
 unsigned int channel_pick(struct message *message, unsigned int count, void *data);

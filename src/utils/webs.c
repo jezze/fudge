@@ -63,7 +63,7 @@ static void handlehttppacket(struct socket *remote)
         char buffer[BUFFER_SIZE];
         unsigned int count = ring_read(&input, buffer, newline);
 
-        channel_sendbuffer(EVENT_DATA, count, buffer);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
         if (count > 4 && buffer_match(buffer, "GET ", 4))
         {

@@ -40,8 +40,8 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         channel_redirectback(id, EVENT_DATA);
         channel_redirectback(id, EVENT_ERROR);
         channel_redirectback(id, EVENT_CLOSE);
-        channel_sendbufferto(id, EVENT_DATA, icount, ibuffer);
-        channel_sendto(id, EVENT_MAIN);
+        channel_sendbuffer(id, EVENT_DATA, icount, ibuffer);
+        channel_send(id, EVENT_MAIN);
 
         while ((count = channel_readfrom(id, MESSAGE_SIZE, data)))
             offset += buffer_write(obuffer, ocount, data, count, offset);

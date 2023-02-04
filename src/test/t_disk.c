@@ -396,7 +396,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     struct p9p_header *p9p = mdata;
     char buffer[MESSAGE_SIZE];
 
-    channel_sendbufferto(source, EVENT_P9P, handle(buffer, p9p), buffer);
+    channel_sendbuffer(source, EVENT_P9P, handle(buffer, p9p), buffer);
 
 }
 

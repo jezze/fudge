@@ -4,7 +4,7 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_sendbuffer(EVENT_DATA, msize, mdata);
+    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, msize, mdata);
 
 }
 
@@ -14,7 +14,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int id = option_getdecimal("task");
 
     if (id)
-        channel_sendto(id, EVENT_STATUS);
+        channel_send(id, EVENT_STATUS);
 
     /*
     channel_close();

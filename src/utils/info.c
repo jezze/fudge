@@ -13,7 +13,7 @@ static void showcores(void)
         for (n = 0; file_read(FILE_L0, &ctrl, sizeof (struct ctrl_core)); n++)
         {
 
-            channel_sendfmt2(EVENT_DATA, "core[%u] {id=%u}\n", &n, &ctrl.id);
+            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "core[%u] {id=%u}\n", &n, &ctrl.id);
 
             if (n >= 9)
                 break;
@@ -46,9 +46,9 @@ static void showtasks(void)
             if (ctrl.state)
             {
 
-                channel_sendfmt3(EVENT_DATA, "task[%u] {id=%u, state=%u, ", &n, &ctrl.id, &ctrl.state);
-                channel_sendfmt2(EVENT_DATA, "thread.ip=0x%H8u, thread.sp=0x%H8u, ", &ctrl.thread_ip, &ctrl.thread_sp);
-                channel_sendfmt2(EVENT_DATA, "signals.kills=%u, signals.blocks=%u}\n", &ctrl.signals_kills, &ctrl.signals_blocks);
+                channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "task[%u] {id=%u, state=%u, ", &n, &ctrl.id, &ctrl.state);
+                channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "thread.ip=0x%H8u, thread.sp=0x%H8u, ", &ctrl.thread_ip, &ctrl.thread_sp);
+                channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "signals.kills=%u, signals.blocks=%u}\n", &ctrl.signals_kills, &ctrl.signals_blocks);
 
             }
 
@@ -77,7 +77,7 @@ static void showmailboxes(void)
         for (n = 0; file_read(FILE_L0, &ctrl, sizeof (struct ctrl_mailbox)); n++)
         {
 
-            channel_sendfmt2(EVENT_DATA, "mailbox[%u] {ring.buffer=0x%H8u}\n", &n, &ctrl.address);
+            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "mailbox[%u] {ring.buffer=0x%H8u}\n", &n, &ctrl.address);
 
             if (n >= 9)
                 break;

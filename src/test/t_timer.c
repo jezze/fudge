@@ -19,7 +19,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_pollevent(EVENT_TIMERTICK, &message, 0, 0))
     {
 
-        channel_sendfmt1(EVENT_DATA, "Tick: %u second(s)\n", &counter);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Tick: %u second(s)\n", &counter);
 
         counter++;
 

@@ -17,7 +17,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     timestamp = time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds);
 
-    channel_sendfmt1(EVENT_DATA, "%u\n", &timestamp);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "%u\n", &timestamp);
     channel_close();
 
 }

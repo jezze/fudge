@@ -72,7 +72,7 @@ static void activatenext(struct job *job, unsigned int startindex)
         if (worker->id)
         {
 
-            channel_sendto(worker->id, EVENT_MAIN);
+            channel_send(worker->id, EVENT_MAIN);
 
             return;
 
@@ -159,7 +159,7 @@ void job_run(struct job *job)
             unsigned int j;
 
             for (j = 0; j < worker->noptions; j++)
-                channel_sendfmt2to(worker->id, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
+                channel_sendfmt2(worker->id, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
 
         }
 
@@ -176,7 +176,7 @@ void job_run(struct job *job)
             unsigned int j;
 
             for (j = 0; j < worker->npaths; j++)
-                channel_sendfmt1to(worker->id, EVENT_PATH, "%s\\0", worker->paths[j]);
+                channel_sendfmt1(worker->id, EVENT_PATH, "%s\\0", worker->paths[j]);
 
         }
 
@@ -260,7 +260,7 @@ void job_sendfirst(struct job *job, unsigned int event, unsigned int count, void
         if (worker->id)
         {
 
-            channel_sendbufferto(worker->id, event, count, buffer);
+            channel_sendbuffer(worker->id, event, count, buffer);
 
             break;
 
@@ -281,7 +281,7 @@ void job_sendall(struct job *job, unsigned int event, unsigned int count, void *
         struct job_worker *worker = &job->workers[i];
 
         if (worker->id)
-            channel_sendbufferto(worker->id, event, count, buffer);
+            channel_sendbuffer(worker->id, event, count, buffer);
 
     }
 

@@ -314,7 +314,7 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
 
             count += cstring_writefmt0(buffer, MESSAGE_SIZE, "E\\0", count);
 
-            channel_sendbuffer(EVENT_DATA, count, buffer);
+            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
             count = 0;
 

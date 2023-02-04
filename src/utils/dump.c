@@ -57,7 +57,7 @@ static void print(unsigned int source, unsigned int count, void *buffer)
         offset += cstring_writefmt0(buffer, 120, "|\n", offset);
         page += 16;
 
-        channel_sendbuffer(EVENT_DATA, offset, buffer);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, offset, buffer);
 
     }
 

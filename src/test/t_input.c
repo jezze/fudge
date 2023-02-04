@@ -7,7 +7,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct message message;
     struct event_consoledata consoledata;
 
-    channel_sendfmt0(EVENT_DATA, "If you press f I will quit\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "If you press f I will quit\n");
 
     while (channel_polleventfrom(source, EVENT_CONSOLEDATA, &message, sizeof (struct event_consoledata), &consoledata))
     {
@@ -15,7 +15,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (consoledata.data == 'f')
         {
 
-            channel_sendfmt0(EVENT_DATA, "\nYou clicked f, goodbye!\n");
+            channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "\nYou clicked f, goodbye!\n");
 
             break;
 
@@ -24,14 +24,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else if (consoledata.data == '\r')
         {
 
-            channel_sendfmt0(EVENT_DATA, "\n");
+            channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "\n");
 
         }
 
         else
         {
 
-            channel_sendbuffer(EVENT_DATA, message_datasize(&message), &consoledata.data);
+            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, message_datasize(&message), &consoledata.data);
 
         }
 

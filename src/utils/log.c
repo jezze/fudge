@@ -25,7 +25,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             if (option_getdecimal("level") >= data.loginfo.level)
-                channel_sendfmt3(EVENT_DATA, "[%s] %w\n", levels[data.loginfo.level], data.buffer, &data.loginfo.count);
+                channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "[%s] %w\n", levels[data.loginfo.level], data.buffer, &data.loginfo.count);
 
         }
 

@@ -4,7 +4,7 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_sendbuffer(EVENT_DATA, msize, mdata);
+    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, msize, mdata);
 
 }
 
@@ -18,7 +18,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         channel_error("File not found");
 
     while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-        channel_sendbuffer(EVENT_DATA, count, buffer);
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
 }
 

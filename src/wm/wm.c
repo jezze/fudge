@@ -254,7 +254,7 @@ static void clickwidget(struct widget *widget)
         {
 
             cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
-            channel_sendbufferto(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+            channel_sendbuffer(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
 
         }
 
@@ -329,7 +329,7 @@ static void keypresswidget(struct widget *widget, unsigned char scancode, unsign
         wmkeypress.keymod = keymod;
 
         cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(widget->id), 0));
-        channel_sendbufferto(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
+        channel_sendbuffer(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
 
     }
 
@@ -355,7 +355,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
                 if (state.focusedwindow)
-                    channel_sendto(state.focusedwindow->source, EVENT_TERM);
+                    channel_send(state.focusedwindow->source, EVENT_TERM);
 
             }
 
@@ -368,7 +368,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 unsigned int id = file_spawn(FILE_L0, "/bin/wshell");
 
                 if (id)
-                    channel_sendto(id, EVENT_MAIN);
+                    channel_send(id, EVENT_MAIN);
 
             }
 
@@ -623,7 +623,7 @@ static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
     channel_redirectback(source, EVENT_WMGRAB);
     channel_redirectback(source, EVENT_WMUNGRAB);
     channel_redirectback(source, EVENT_WMRENDERDATA);
-    channel_sendto(source, EVENT_WMINIT);
+    channel_send(source, EVENT_WMINIT);
 
 }
 

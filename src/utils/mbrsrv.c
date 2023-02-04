@@ -71,7 +71,7 @@ static unsigned int isvalid(struct mbr *mbr)
 static void printpartition(struct partition *partition, unsigned int num)
 {
 
-    channel_sendfmt1(EVENT_DATA, "Partition %u:\n", &num);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Partition %u:\n", &num);
 
     if (partition->systemid)
     {
@@ -86,13 +86,13 @@ static void printpartition(struct partition *partition, unsigned int num)
         unsigned int sstart = partition->sectorbase & 0x2F;
         unsigned int send = partition->sectorlimit & 0x2F;
 
-        channel_sendfmt1(EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
-        channel_sendfmt1(EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
-        channel_sendfmt1(EVENT_DATA, "    Start: %u\n", &start);
-        channel_sendfmt1(EVENT_DATA, "    End: %u\n", &end);
-        channel_sendfmt1(EVENT_DATA, "    Sectors: %u\n", &sectors);
-        channel_sendfmt3(EVENT_DATA, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
-        channel_sendfmt3(EVENT_DATA, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "    Start: %u\n", &start);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "    End: %u\n", &end);
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "    Sectors: %u\n", &sectors);
+        channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
+        channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
 
     }
 
@@ -103,7 +103,7 @@ static void print(struct mbr *mbr)
 
     unsigned int i;
 
-    channel_sendfmt2(EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
+    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
 
     for (i = 0; i < 4; i++)
         printpartition(&mbr->partition[i], i);

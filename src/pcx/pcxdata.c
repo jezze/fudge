@@ -33,7 +33,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
             offset = pcx_readline(raw, width, buffer);
 
-            channel_sendbuffer(EVENT_DATA, width, buffer);
+            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, width, buffer);
 
         }
 

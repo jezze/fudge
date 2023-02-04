@@ -24,7 +24,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     for (i = 0; i < 20; i++)
         cstring_writevalue(output, 40, digest[i], 16, 2, i * 2);
 
-    channel_sendfmt2(EVENT_DATA, "%w\n", output, &l);
+    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", output, &l);
     channel_close();
 
 }
