@@ -120,7 +120,7 @@ void job_listen(struct job *job, unsigned int event)
         struct job_worker *worker = &job->workers[i];
 
         if (worker->id)
-            channel_redirect(worker->id, event);
+            channel_listen(worker->id, event);
 
     }
 
@@ -137,7 +137,7 @@ void job_pipe(struct job *job, unsigned int event)
         struct job_worker *worker = &job->workers[i];
 
         if (worker->id)
-            channel_redirectto(worker->id, event, job->workers[i + 1].id);
+            channel_forward(worker->id, event, job->workers[i + 1].id);
 
     }
 
