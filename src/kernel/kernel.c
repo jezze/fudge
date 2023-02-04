@@ -330,6 +330,7 @@ void kernel_setuptask(struct task *task, unsigned int sp)
             DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
+
     else
     {
 
