@@ -48,23 +48,6 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
 }
 
-static unsigned int read(unsigned int source, struct message *message, unsigned int count, void *data)
-{
-
-    while (channel_pollfrom(source, message, count, data) != EVENT_CLOSE)
-    {
-
-        if (message->event == EVENT_DATA)
-            return message_datasize(message);
-        else
-            channel_dispatch(message, data);
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int redirect(unsigned int target, unsigned int event, unsigned int mode, unsigned int id)
 {
 
@@ -297,7 +280,7 @@ unsigned int channel_polleventfrom(unsigned int source, unsigned int event, stru
     while (channel_pick(message, count, data))
     {
 
-        if (message->source == source && message->event == event)
+        if (message->event == event && message->source == source)
             return message->event;
 
         channel_dispatch(message, data);
@@ -313,7 +296,17 @@ unsigned int channel_read(unsigned int count, void *data)
 
     struct message message;
 
-    return read(0, &message, count, data);
+    while (channel_pick(&message, count, data) != EVENT_CLOSE)
+    {
+
+        if (message.event == EVENT_DATA)
+            return message_datasize(&message);
+
+        channel_dispatch(&message, data);
+
+    }
+
+    return 0;
 
 }
 
@@ -322,7 +315,17 @@ unsigned int channel_readfrom(unsigned int source, unsigned int count, void *dat
 
     struct message message;
 
-    return read(source, &message, count, data);
+    while (channel_pick(&message, count, data) != EVENT_CLOSE)
+    {
+
+        if (message.event == EVENT_DATA && message.source == source)
+            return message_datasize(&message);
+
+        channel_dispatch(&message, data);
+
+    }
+
+    return 0;
 
 }
 
