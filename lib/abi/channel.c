@@ -305,7 +305,7 @@ void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsig
         break;
 
     default:
-        callbacks[event].target = 0;
+        callbacks[event].target = CHANNEL_DEFAULT;
 
         break;
 
