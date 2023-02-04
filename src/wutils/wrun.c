@@ -76,7 +76,7 @@ static void dnsresolve(char *domain)
         channel_sendfmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(id, EVENT_MAIN);
 
-        while ((count = channel_readeventfrom(id, EVENT_QUERY, MESSAGE_SIZE, data)))
+        while ((count = channel_readfrom(id, EVENT_QUERY, MESSAGE_SIZE, data)))
         {
 
             char *key = cstring_tindex(data, count, 0);

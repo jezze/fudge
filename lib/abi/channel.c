@@ -250,7 +250,7 @@ unsigned int channel_polleventfrom(unsigned int source, unsigned int event, stru
 
 }
 
-unsigned int channel_read(unsigned int count, void *data)
+unsigned int channel_read(unsigned int event, unsigned int count, void *data)
 {
 
     struct message message;
@@ -258,7 +258,7 @@ unsigned int channel_read(unsigned int count, void *data)
     while (channel_pick(&message, count, data) != EVENT_CLOSE)
     {
 
-        if (message.event == EVENT_DATA)
+        if (message.event == event)
             return message_datasize(&message);
 
         channel_dispatch(&message, data);
@@ -269,26 +269,7 @@ unsigned int channel_read(unsigned int count, void *data)
 
 }
 
-unsigned int channel_readfrom(unsigned int source, unsigned int count, void *data)
-{
-
-    struct message message;
-
-    while (channel_pick(&message, count, data) != EVENT_CLOSE)
-    {
-
-        if (message.event == EVENT_DATA && message.source == source)
-            return message_datasize(&message);
-
-        channel_dispatch(&message, data);
-
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_readeventfrom(unsigned int source, unsigned int event, unsigned int count, void *data)
+unsigned int channel_readfrom(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct message message;
