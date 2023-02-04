@@ -238,8 +238,8 @@ unsigned int job_pick(struct job *job, struct message *message, void *data)
 
         if (job_exist(job, message->source))
             return message->source;
-        else
-            channel_dispatch(message, data);
+
+        channel_dispatch(message, data);
 
     }
 
