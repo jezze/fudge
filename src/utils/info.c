@@ -17,17 +17,9 @@ static void showcores(void)
     {
 
         struct ctrl_core ctrl;
-        unsigned int n = 0;
 
-        for (n = 0; file_read(FILE_L0, &ctrl, sizeof (struct ctrl_core)); n++)
-        {
-
-            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "core[%u] {id=%u}\n", &n, &ctrl.id);
-
-            if (n >= 9)
-                break;
-
-        }
+        while (file_read(FILE_L0, &ctrl, sizeof (struct ctrl_core)))
+            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "core\n  id %u\n", &ctrl.id);
 
     }
 
@@ -47,19 +39,12 @@ static void showtasks(void)
     {
 
         struct ctrl_task ctrl;
-        unsigned int n = 0;
 
-        for (n = 0; file_read(FILE_L0, &ctrl, sizeof (struct ctrl_task)); n++)
+        while (file_read(FILE_L0, &ctrl, sizeof (struct ctrl_task)))
         {
 
             if (ctrl.state)
-            {
-
-                channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "task[%u] {id=%u, state=%s, ", &n, &ctrl.id, states[ctrl.state]);
-                channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "thread.ip=0x%H8u, thread.sp=0x%H8u, ", &ctrl.thread_ip, &ctrl.thread_sp);
-                channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "signals.kills=%u, signals.blocks=%u}\n", &ctrl.signals_kills, &ctrl.signals_blocks);
-
-            }
+                channel_sendfmt6(CHANNEL_DEFAULT, EVENT_DATA, "task\n  id %u\n  state %s\n  thread.ip 0x%H8u\n  thread.sp 0x%H8u\n  signals.kills %u\n  signals.blocks %u\n", &ctrl.id, states[ctrl.state], &ctrl.thread_ip, &ctrl.thread_sp, &ctrl.signals_kills, &ctrl.signals_blocks);
 
         }
 
@@ -81,17 +66,9 @@ static void showmailboxes(void)
     {
 
         struct ctrl_mailbox ctrl;
-        unsigned int n = 0;
 
-        for (n = 0; file_read(FILE_L0, &ctrl, sizeof (struct ctrl_mailbox)); n++)
-        {
-
-            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "mailbox[%u] {ring.buffer=0x%H8u}\n", &n, &ctrl.address);
-
-            if (n >= 9)
-                break;
-
-        }
+        while (file_read(FILE_L0, &ctrl, sizeof (struct ctrl_mailbox)))
+            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &ctrl.address);
 
     }
 
