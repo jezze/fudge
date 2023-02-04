@@ -13,7 +13,21 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsi
     {
 
         length += ring_readall(&mailbox->ring, message, sizeof (struct message));
-        length += ring_readall(&mailbox->ring, data, message_datasize(message));
+
+        if (message_datasize(message) <= count)
+        {
+
+            length += ring_readall(&mailbox->ring, data, message_datasize(message));
+
+        }
+
+        else
+        {
+
+            message_dropdata(message);
+            ring_skip(&mailbox->ring, message_datasize(message));
+
+        }
 
     }
 

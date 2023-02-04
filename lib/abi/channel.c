@@ -275,9 +275,8 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 {
 
     struct message message;
-    char data[MESSAGE_SIZE];
 
-    return channel_pollfrom(source, event, &message, MESSAGE_SIZE, data);
+    return channel_pollfrom(source, event, &message, 0, 0);
 
 }
 
