@@ -41,9 +41,9 @@ void init(void)
     {
 
         channel_bind(EVENT_DATA, ondata);
-        channel_redirectback(id, EVENT_CLOSE);
-        channel_redirectback(id, EVENT_DATA);
-        channel_redirectback(id, EVENT_ERROR);
+        channel_redirect(id, EVENT_CLOSE);
+        channel_redirect(id, EVENT_DATA);
+        channel_redirect(id, EVENT_ERROR);
         channel_sendfmt0(id, EVENT_PATH, "/config/base.slang\\0");
         channel_sendfmt0(id, EVENT_PATH, "/config/arch.slang\\0");
         channel_sendfmt0(id, EVENT_PATH, "/config/init.slang\\0");

@@ -151,17 +151,17 @@ unsigned int channel_sendfmt8(unsigned int target, unsigned int event, char *fmt
 
 }
 
-unsigned int channel_redirecttarget(unsigned int target, unsigned int event, unsigned int id)
-{
-
-    return redirect(target, event, EVENT_REDIRECT_TARGET, id);
-
-}
-
-unsigned int channel_redirectback(unsigned int target, unsigned int event)
+unsigned int channel_redirect(unsigned int target, unsigned int event)
 {
 
     return redirect(target, event, EVENT_REDIRECT_SOURCE, CHANNEL_DEFAULT);
+
+}
+
+unsigned int channel_redirectto(unsigned int target, unsigned int event, unsigned int id)
+{
+
+    return redirect(target, event, EVENT_REDIRECT_TARGET, id);
 
 }
 

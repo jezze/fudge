@@ -37,9 +37,9 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         char data[MESSAGE_SIZE];
         unsigned int count;
 
-        channel_redirectback(id, EVENT_DATA);
-        channel_redirectback(id, EVENT_ERROR);
-        channel_redirectback(id, EVENT_CLOSE);
+        channel_redirect(id, EVENT_DATA);
+        channel_redirect(id, EVENT_ERROR);
+        channel_redirect(id, EVENT_CLOSE);
         channel_sendbuffer(id, EVENT_DATA, icount, ibuffer);
         channel_send(id, EVENT_MAIN);
 

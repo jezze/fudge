@@ -31,8 +31,8 @@ static void dnsresolve(char *domain)
         char data[MESSAGE_SIZE];
         unsigned int count;
 
-        channel_redirectback(id, EVENT_QUERY);
-        channel_redirectback(id, EVENT_CLOSE);
+        channel_redirect(id, EVENT_QUERY);
+        channel_redirect(id, EVENT_CLOSE);
         channel_sendfmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(id, EVENT_MAIN);
 

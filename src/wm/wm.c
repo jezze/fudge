@@ -618,11 +618,11 @@ static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
 static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_redirectback(source, EVENT_WMMAP);
-    channel_redirectback(source, EVENT_WMUNMAP);
-    channel_redirectback(source, EVENT_WMGRAB);
-    channel_redirectback(source, EVENT_WMUNGRAB);
-    channel_redirectback(source, EVENT_WMRENDERDATA);
+    channel_redirect(source, EVENT_WMMAP);
+    channel_redirect(source, EVENT_WMUNMAP);
+    channel_redirect(source, EVENT_WMGRAB);
+    channel_redirect(source, EVENT_WMUNGRAB);
+    channel_redirect(source, EVENT_WMRENDERDATA);
     channel_send(source, EVENT_WMINIT);
 
 }

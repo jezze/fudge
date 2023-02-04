@@ -16,8 +16,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!id)
         channel_error("Could not spawn process");
 
-    channel_redirectback(id, EVENT_DATA);
-    channel_redirectback(id, EVENT_CLOSE);
+    channel_redirect(id, EVENT_DATA);
+    channel_redirect(id, EVENT_CLOSE);
     channel_sendfmt0(id, EVENT_PATH, "/data/help.txt\\0");
     channel_send(id, EVENT_MAIN);
     channel_wait(id, EVENT_CLOSE);
