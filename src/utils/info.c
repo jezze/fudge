@@ -1,6 +1,15 @@
 #include <fudge.h>
 #include <abi.h>
 
+static char *states[6] = {
+    "DEAD",
+    "NEW",
+    "BLOCKED",
+    "UNBLOCKED",
+    "ASSIGNED",
+    "RUNNING"
+};
+
 static void showcores(void)
 {
 
@@ -46,7 +55,7 @@ static void showtasks(void)
             if (ctrl.state)
             {
 
-                channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "task[%u] {id=%u, state=%u, ", &n, &ctrl.id, &ctrl.state);
+                channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "task[%u] {id=%u, state=%s, ", &n, &ctrl.id, states[ctrl.state]);
                 channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "thread.ip=0x%H8u, thread.sp=0x%H8u, ", &ctrl.thread_ip, &ctrl.thread_sp);
                 channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "signals.kills=%u, signals.blocks=%u}\n", &ctrl.signals_kills, &ctrl.signals_blocks);
 
