@@ -56,27 +56,22 @@ static void dnsresolve(char *domain)
     if (id)
     {
 
-        struct message message;
         char data[MESSAGE_SIZE];
+        unsigned int count;
 
         channel_redirectback(id, EVENT_QUERY);
         channel_redirectback(id, EVENT_CLOSE);
         channel_sendfmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(id, EVENT_MAIN);
 
-        while (channel_pollfrom(id, &message, MESSAGE_SIZE, data) != EVENT_CLOSE)
+        while ((count = channel_readeventfrom(id, EVENT_QUERY, MESSAGE_SIZE, data)))
         {
 
-            if (message.event == EVENT_QUERY)
-            {
+            char *key = cstring_tindex(data, count, 0);
+            char *value = cstring_tindex(data, count, 1);
 
-                char *key = cstring_tindex(data, message_datasize(&message), 0);
-                char *value = cstring_tindex(data, message_datasize(&message), 1);
-
-                if (cstring_match(key, "data"))
-                    option_set("remote-address", value);
-
-            }
+            if (cstring_match(key, "data"))
+                option_set("remote-address", value);
 
         }
 
