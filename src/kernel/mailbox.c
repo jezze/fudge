@@ -24,8 +24,8 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsi
         else
         {
 
-            message_dropdata(message);
             ring_skip(&mailbox->ring, message_datasize(message));
+            message_dropdata(message);
 
         }
 
