@@ -14,9 +14,8 @@ unsigned int channel_redirecttarget(unsigned int target, unsigned int event, uns
 unsigned int channel_redirectback(unsigned int target, unsigned int event);
 unsigned int channel_pick(struct message *message, unsigned int count, void *data);
 unsigned int channel_process(void);
-unsigned int channel_pollfrom(unsigned int source, struct message *message, unsigned int count, void *data);
-unsigned int channel_pollevent(unsigned int event, struct message *message, unsigned int count, void *data);
-unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data);
+unsigned int channel_poll(unsigned int event, struct message *message, unsigned int count, void *data);
+unsigned int channel_pollfrom(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data);
 unsigned int channel_read(unsigned int event, unsigned int count, void *data);
 unsigned int channel_readfrom(unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int channel_wait(unsigned int source, unsigned int event);

@@ -21,7 +21,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         file_link(FILE_L0);
         file_link(FILE_L1);
 
-        while (channel_pollevent(EVENT_LOGINFO, &message, sizeof (struct event_loginfo) + 200, &data))
+        while (channel_poll(EVENT_LOGINFO, &message, sizeof (struct event_loginfo) + 200, &data))
         {
 
             if (option_getdecimal("level") >= data.loginfo.level)

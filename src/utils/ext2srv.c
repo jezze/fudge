@@ -132,7 +132,7 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
 
     request_send(sector, nblocks);
 
-    while (channel_pollevent(EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         read += buffer_write(buffer, count, data, message_datasize(&message), read);

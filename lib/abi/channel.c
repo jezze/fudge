@@ -199,24 +199,7 @@ unsigned int channel_process(void)
 
 }
 
-unsigned int channel_pollfrom(unsigned int source, struct message *message, unsigned int count, void *data)
-{
-
-    while (channel_pick(message, count, data))
-    {
-
-        if (message->source == source)
-            return message->event;
-
-        channel_dispatch(message, data);
-
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_pollevent(unsigned int event, struct message *message, unsigned int count, void *data)
+unsigned int channel_poll(unsigned int event, struct message *message, unsigned int count, void *data)
 {
 
     while (channel_pick(message, count, data))
@@ -233,7 +216,7 @@ unsigned int channel_pollevent(unsigned int event, struct message *message, unsi
 
 }
 
-unsigned int channel_polleventfrom(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data)
+unsigned int channel_pollfrom(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data)
 {
 
     while (channel_pick(message, count, data))
@@ -294,7 +277,7 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    return channel_polleventfrom(source, event, &message, MESSAGE_SIZE, data);
+    return channel_pollfrom(source, event, &message, MESSAGE_SIZE, data);
 
 }
 
