@@ -245,12 +245,12 @@ void kernel_kill(unsigned int source, unsigned int target)
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
+unsigned int kernel_pick(unsigned int source, struct message *message, void *data)
 {
 
     struct mailbox *mailbox = &mailboxes[source];
 
-    return mailbox_pick(mailbox, message, count, data);
+    return mailbox_pick(mailbox, message, data);
 
 }
 

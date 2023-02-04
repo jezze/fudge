@@ -698,7 +698,7 @@ static void run(void)
 
     setup();
 
-    while (channel_pick(&message, MESSAGE_SIZE, data))
+    while (channel_pick(&message, data))
     {
 
         switch (message.event)

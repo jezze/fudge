@@ -5,14 +5,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct message message;
-    struct event_consoledata consoledata;
+    union {struct event_consoledata consoledata; char data[MESSAGE_SIZE];} data;
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "If you press f I will quit\n");
 
-    while (channel_pollfrom(source, EVENT_CONSOLEDATA, &message, sizeof (struct event_consoledata), &consoledata))
+    while (channel_pollfrom(source, EVENT_CONSOLEDATA, &message, &data))
     {
 
-        if (consoledata.data == 'f')
+        if (data.consoledata.data == 'f')
         {
 
             channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "\nYou clicked f, goodbye!\n");
@@ -21,7 +21,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        else if (consoledata.data == '\r')
+        else if (data.consoledata.data == '\r')
         {
 
             channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "\n");
@@ -31,7 +31,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, message_datasize(&message), &consoledata.data);
+            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, message_datasize(&message), &data.consoledata.data);
 
         }
 

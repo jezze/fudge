@@ -101,7 +101,7 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         channel_sendbuffer(id, EVENT_DATA, icount, ibuffer);
         channel_send(id, EVENT_MAIN);
 
-        while ((count = channel_readfrom(id, EVENT_DATA, MESSAGE_SIZE, data)))
+        while ((count = channel_readfrom(id, EVENT_DATA, data)))
             offset += buffer_write(obuffer, ocount, data, count, offset);
 
     }
@@ -152,7 +152,7 @@ static void interpret(void)
                 job_pipe(&job, EVENT_DATA);
                 job_run(&job);
 
-                while (job_pick(&job, &message, MESSAGE_SIZE, data))
+                while (job_pick(&job, &message, data))
                 {
 
                     switch (message.event)
@@ -277,7 +277,7 @@ static void complete(void)
         job_pipe(&job, EVENT_DATA);
         job_run(&job);
 
-        while (job_pick(&job, &message, MESSAGE_SIZE, data))
+        while (job_pick(&job, &message, data))
         {
 
             switch (message.event)

@@ -310,8 +310,8 @@ static unsigned int despawn(struct task *task, void *stack)
 static unsigned int pick(struct task *task, void *stack)
 {
 
-    struct {void *caller; struct message *message; unsigned int count; void *data;} *args = stack;
-    unsigned int count = kernel_pick(task->id, args->message, args->count, args->data);
+    struct {void *caller; struct message *message; void *data;} *args = stack;
+    unsigned int count = kernel_pick(task->id, args->message, args->data);
 
     if (!count)
         task_signal(task, TASK_SIGNAL_BLOCK);

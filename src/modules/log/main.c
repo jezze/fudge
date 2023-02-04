@@ -9,17 +9,17 @@ static struct system_node messages;
 static void interface_write(unsigned int level, char *string, char *file, unsigned int line)
 {
 
-    struct {struct event_loginfo loginfo; char buffer[200];} message;
+    union {struct event_loginfo loginfo; char data[MESSAGE_SIZE];} message;
 
     message.loginfo.level = level;
-    message.loginfo.count = 0;
+    message.loginfo.count = sizeof (struct event_loginfo);
 
     if (file)
-        message.loginfo.count += cstring_writefmt3(message.buffer, 200, "%s (%s:%u)", message.loginfo.count, string, file, &line);
+        message.loginfo.count += cstring_writefmt3(message.data, MESSAGE_SIZE, "%s (%s:%u)", message.loginfo.count, string, file, &line);
     else
-        message.loginfo.count += cstring_writefmt1(message.buffer, 200, "%s", message.loginfo.count, string);
+        message.loginfo.count += cstring_writefmt1(message.data, MESSAGE_SIZE, "%s", message.loginfo.count, string);
 
-    kernel_notify(&messages.links, EVENT_LOGINFO, &message, sizeof (struct event_loginfo) + message.loginfo.count);
+    kernel_notify(&messages.links, EVENT_LOGINFO, &message, message.loginfo.count);
 
 }
 

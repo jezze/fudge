@@ -230,10 +230,10 @@ unsigned int job_exist(struct job *job, unsigned int id)
 
 }
 
-unsigned int job_pick(struct job *job, struct message *message, unsigned int count, void *data)
+unsigned int job_pick(struct job *job, struct message *message, void *data)
 {
 
-    while (job_count(job) && channel_pick(message, count, data))
+    while (job_count(job) && channel_pick(message, data))
     {
 
         if (job_exist(job, message->source))

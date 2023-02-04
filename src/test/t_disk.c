@@ -64,7 +64,7 @@ static unsigned int request_poll(struct state *state)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_poll(EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(EVENT_DATA, &message, data))
     {
 
         state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message_datasize(&message), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
