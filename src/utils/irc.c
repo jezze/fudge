@@ -9,6 +9,19 @@ static struct socket router;
 static char inputbuffer[BUFFER_SIZE];
 static struct ring input;
 
+static unsigned int buildrequest(unsigned int count, void *buffer)
+{
+
+    unsigned int offset = 0;
+
+    offset += cstring_writefmt1(buffer, count, "NICK %s\n", offset, option_getstring("nick"));
+    offset += cstring_writefmt2(buffer, count, "USER %s 0 * :%s\n", offset, option_getstring("nick"), option_getstring("realname"));
+    offset += cstring_writefmt1(buffer, count, "JOIN %s\n", offset, option_getstring("channel"));
+
+    return offset;
+
+}
+
 static void interpret(void *buffer, unsigned int count)
 {
 
@@ -32,19 +45,6 @@ static void interpret(void *buffer, unsigned int count)
         socket_send_tcp(FILE_G0, &local, &remote, &router, offset, outputdata);
 
     }
-
-}
-
-static unsigned int buildrequest(unsigned int count, void *buffer)
-{
-
-    unsigned int offset = 0;
-
-    offset += cstring_writefmt1(buffer, count, "NICK %s\n", offset, option_getstring("nick"));
-    offset += cstring_writefmt2(buffer, count, "USER %s 0 * :%s\n", offset, option_getstring("nick"), option_getstring("realname"));
-    offset += cstring_writefmt1(buffer, count, "JOIN %s\n", offset, option_getstring("channel"));
-
-    return offset;
 
 }
 
