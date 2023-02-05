@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
 #include "binary.h"
+#include "debug.h"
 #include "task.h"
 
 void task_signal(struct task *task, unsigned int signal)
@@ -83,6 +84,9 @@ unsigned int task_transition(struct task *task, unsigned int state)
     valid = task->state == state;
 
     spinlock_release(&task->spinlock);
+
+    if (!valid)
+        DEBUG_LOG(DEBUG_ERROR, "state transition failed");
 
     return valid;
 

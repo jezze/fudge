@@ -7,7 +7,6 @@
 #include "link.h"
 #include "service.h"
 #include "descriptor.h"
-#include "debug.h"
 #include "kernel.h"
 
 struct taskdata
@@ -59,13 +58,9 @@ static void unblocktasks(void)
 
             if (task_transition(task, TASK_STATE_UNBLOCKED))
                 list_remove_unsafe(&blockedtasks, &taskdata[task->id].item);
-            else
-                DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
             if (task_transition(task, TASK_STATE_ASSIGNED))
                 coreassign(&taskdata[task->id].item);
-            else
-                DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
         }
 
@@ -85,8 +80,6 @@ static void checksignals(struct task *task)
 
         if (task_transition(task, TASK_STATE_DEAD))
             list_add(&deadtasks, &taskdata[task->id].item);
-        else
-            DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
 
@@ -95,8 +88,6 @@ static void checksignals(struct task *task)
 
         if (task_transition(task, TASK_STATE_BLOCKED))
             list_add(&blockedtasks, &taskdata[task->id].item);
-        else
-            DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
 
@@ -105,8 +96,6 @@ static void checksignals(struct task *task)
 
         if (task_transition(task, TASK_STATE_ASSIGNED))
             coreassign(&taskdata[task->id].item);
-        else
-            DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
 
@@ -126,8 +115,6 @@ static struct task *picknewtask(struct core *core)
 
         if (task_transition(task, TASK_STATE_RUNNING))
             return task;
-        else
-            DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
 
@@ -307,8 +294,6 @@ struct task *kernel_createtask(void)
 
         if (task_transition(task, TASK_STATE_NEW))
             return task;
-        else
-            DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
 
@@ -326,8 +311,6 @@ void kernel_setuptask(struct task *task, unsigned int sp)
 
         if (task_transition(task, TASK_STATE_ASSIGNED))
             coreassign(&taskdata[task->id].item);
-        else
-            DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
 
@@ -336,8 +319,6 @@ void kernel_setuptask(struct task *task, unsigned int sp)
 
         if (task_transition(task, TASK_STATE_DEAD))
             list_add(&deadtasks, &taskdata[task->id].item);
-        else
-            DEBUG_LOG(DEBUG_ERROR, "state transition error");
 
     }
 
