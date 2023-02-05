@@ -729,10 +729,31 @@ static void run(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, "system:service/wm"))
-        file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
-    else
-        channel_warning("Could not open window manager service");
+    if (!file_walk2(FILE_L0, option_getstring("keyboard")))
+        channel_error("keyboard");
+
+    if (!file_walk(FILE_G0, FILE_L0, "event"))
+        channel_error("keyboard event");
+
+    if (!file_walk2(FILE_L0, option_getstring("timer")))
+        channel_error("timer");
+
+    if (!file_walk(FILE_G1, FILE_L0, "event1"))
+        channel_error("timer event1");
+
+    if (!file_walk2(FILE_L0, option_getstring("video")))
+        channel_error("video device");
+
+    if (!file_walk(FILE_G2, FILE_L0, "event"))
+        channel_error("video event");
+
+    if (!file_walk(FILE_G3, FILE_L0, "ctrl"))
+        channel_error("video ctrl");
+
+    if (!file_walk2(FILE_L0, "system:service/wm"))
+        channel_error("window manager service");
+
+    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -766,32 +787,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.height = option_getdecimal("height");
     settings.bpp = option_getdecimal("bpp");
 
-    if (!file_walk2(FILE_L0, option_getstring("keyboard")))
-        channel_warning("Could not open keyboard");
-
-    if (!file_walk(FILE_G0, FILE_L0, "event"))
-        channel_warning("Could not open keyboard event");
-
-    if (!file_walk2(FILE_L0, option_getstring("video")))
-        channel_error("Could not find video device");
-
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
-        channel_error("Could not find video device ctrl");
-
-    if (!file_walk(FILE_G1, FILE_L0, "event"))
-        channel_warning("Could not open video event");
-
-    if (!file_walk2(FILE_L0, option_getstring("timer")))
-        channel_error("Could not find timer device");
-
-    if (!file_walk(FILE_G2, FILE_L0, "event1"))
-        channel_warning("Could not open timer event");
-
     channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
-    file_writeall(FILE_L1, &settings, sizeof (struct ctrl_videosettings));
+    file_writeall(FILE_G3, &settings, sizeof (struct ctrl_videosettings));
     run();
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);
