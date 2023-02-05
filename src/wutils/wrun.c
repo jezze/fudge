@@ -10,6 +10,13 @@ static char inputdata[BUFFER_SIZE];
 static struct ring input;
 static unsigned int isbody;
 
+static unsigned int buildrequest(unsigned int count, void *buffer, struct url *url)
+{
+
+    return cstring_writefmt2(buffer, BUFFER_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
+
+}
+
 static void handlehttppacket(void)
 {
 
@@ -38,25 +45,6 @@ static void handlehttppacket(void)
         }
 
     }
-
-}
-
-static unsigned int buildrequest(unsigned int count, void *buffer, struct url *url)
-{
-
-    unsigned int offset = 0;
-
-    offset += cstring_write(buffer, count, "GET /", offset);
-
-    if (url->path)
-        offset += cstring_write(buffer, count, url->path, offset);
-
-    offset += cstring_write(buffer, count, " HTTP/1.1\r\n", offset);
-    offset += cstring_write(buffer, count, "Host: ", offset);
-    offset += cstring_write(buffer, count, url->host, offset);
-    offset += cstring_write(buffer, count, "\r\n\r\n", offset);
-
-    return offset;
 
 }
 
@@ -190,12 +178,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
 
-    count = buildrequest(BUFFER_SIZE, buffer, &url);
-
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer, &url), buffer);
 
     while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
     {

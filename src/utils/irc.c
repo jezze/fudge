@@ -186,12 +186,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (cstring_length(option_getstring("domain")))
         dnsresolve(&remote, option_getstring("domain"));
 
-    count = buildrequest(BUFFER_SIZE, buffer);
-
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer), buffer);
 
     while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
         channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);

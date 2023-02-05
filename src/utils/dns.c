@@ -115,12 +115,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     seed(&state);
     setupnetwork(&state);
-
-    count = buildrequest(BUFFER_SIZE, buffer);
-
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);
-    socket_send_udp(FILE_G0, &local, &remote, &router, count, buffer);
+    socket_send_udp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer), buffer);
 
     count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE);
 

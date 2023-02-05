@@ -9,6 +9,13 @@ static struct socket router;
 static char inputdata[BUFFER_SIZE];
 static struct ring input;
 
+static unsigned int buildrequest(unsigned int count, void *buffer, struct url *url)
+{
+
+    return cstring_writefmt2(buffer, BUFFER_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
+
+}
+
 static void handlehttppacket(void)
 {
 
@@ -132,12 +139,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
 
-    count = cstring_writefmt2(buffer, BUFFER_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url.path) ? url.path : "", url.host);
-
     file_link(FILE_G0);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, count, buffer);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer, &url), buffer);
 
     while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
     {
