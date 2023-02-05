@@ -60,7 +60,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *u
 
 }
 
-static void dnsresolve(char *domain)
+static void dnsresolve(struct socket *socket, char *domain)
 {
 
     unsigned int id = file_spawn(FILE_L0, "/bin/dns");
@@ -83,7 +83,7 @@ static void dnsresolve(char *domain)
             char *value = cstring_tindex(data, count, 1);
 
             if (cstring_match(key, "data"))
-                option_set("remote-address", value);
+                socket_bind_ipv4s(socket, value);
 
         }
 
@@ -111,6 +111,27 @@ static void seed(struct mtwist_state *state)
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+
+}
+
+static void setupnetwork(struct mtwist_state *state)
+{
+
+    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+        channel_error("Could not find ethernet device");
+
+    if (!file_walk(FILE_L1, FILE_L0, "addr"))
+        channel_error("Could not find ethernet device addr");
+
+    if (!file_walk(FILE_G0, FILE_L0, "data"))
+        channel_error("Could not find ethernet device data");
+
+    socket_bind_ipv4s(&local, option_getstring("local-address"));
+    socket_bind_tcpv(&local, mtwist_rand(state), mtwist_rand(state), mtwist_rand(state));
+    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+    socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(state), mtwist_rand(state));
+    socket_bind_ipv4s(&router, option_getstring("router-address"));
+    socket_resolvelocal(FILE_L1, &local);
 
 }
 
@@ -160,31 +181,14 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     struct mtwist_state state;
 
     seed(&state);
+    setupnetwork(&state);
     parseurl(&url, urldata, BUFFER_SIZE);
 
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_error("Could not find ethernet device");
-
-    if (!file_walk(FILE_L1, FILE_L0, "addr"))
-        channel_error("Could not find ethernet device addr");
-
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
-        channel_error("Could not find ethernet device data");
-
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
-    socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(FILE_L1, &local);
-
     if (url.host)
-        dnsresolve(url.host);
-
-    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+        dnsresolve(&remote, url.host);
 
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
-    else
-        socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
 
     count = buildrequest(BUFFER_SIZE, buffer, &url);
 
