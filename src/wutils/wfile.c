@@ -6,14 +6,7 @@ static char *path = "initrd:";
 static void updatepath(void)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count = 0;
-
-    count += cstring_write(buffer, BUFFER_SIZE, "= path content \"", count);
-    count += cstring_write(buffer, BUFFER_SIZE, path, count);
-    count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
-
-    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
 
 }
 
@@ -22,19 +15,14 @@ static void updatecontent(void)
 
     struct record records[4];
     unsigned int nrecords;
-    char *data =
-        "- content\n"
-        "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ textbox id \"content\" in \"main\" mode \"readonly\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
     while ((nrecords = file_list(FILE_PW, FILE_L0, 4, records)))
     {
 
-        char buffer[BUFFER_SIZE];
-        unsigned int count = 0;
         unsigned int i;
 
         for (i = 0; i < nrecords; i++)
@@ -42,17 +30,9 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            count += cstring_write(buffer, BUFFER_SIZE, "+ textbutton in \"content\" label \"", count);
-            count += buffer_write(buffer, BUFFER_SIZE, record->name, record->length, count);
-
-            if (record->type == RECORD_TYPE_DIRECTORY)
-                count += cstring_write(buffer, BUFFER_SIZE, "/", count);
-
-            count += cstring_write(buffer, BUFFER_SIZE, "\n\"\n", count);
+            channel_sendfmt3(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton in \"content\" label \"%w%s\n\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
         }
-
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
 
     }
 

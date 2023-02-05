@@ -20,22 +20,17 @@ static void update(void)
     char buffer[BUFFER_SIZE];
     unsigned int count;
 
-    count = 0;
-    count += cstring_write(buffer, BUFFER_SIZE, "= result content \"", count);
-    count += ring_readcopy(&result, buffer + count, BUFFER_SIZE - count);
-    count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
+    count = ring_readcopy(&result, buffer, BUFFER_SIZE);
 
-    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
+    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
-    count = 0;
-    count += cstring_write(buffer, BUFFER_SIZE, "= input1 content \"", count);
-    count += ring_readcopy(&input1, buffer + count, BUFFER_SIZE - count);
-    count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
-    count += cstring_write(buffer, BUFFER_SIZE, "= input2 content \"", count);
-    count += ring_readcopy(&input2, buffer + count, BUFFER_SIZE - count);
-    count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
+    count = ring_readcopy(&input1, buffer, BUFFER_SIZE);
 
-    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
+    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input1 content \"%w\"\n", buffer, &count);
+
+    count = ring_readcopy(&input2, buffer, BUFFER_SIZE);
+
+    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input2 content \"%w\"\n", buffer, &count);
 
 }
 

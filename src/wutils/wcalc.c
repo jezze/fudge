@@ -14,14 +14,7 @@ static int accumulator;
 static void refresh(int value)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count = 0;
-
-    count += cstring_write(buffer, BUFFER_SIZE, "= result content \"", count);
-    count += cstring_writevalue(buffer, BUFFER_SIZE, value, 10, 0, count);
-    count += cstring_write(buffer, BUFFER_SIZE, "\"\n", count);
-
-    channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
 
 }
 
