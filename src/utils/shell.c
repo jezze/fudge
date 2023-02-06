@@ -505,6 +505,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk2(FILE_G1, option_getstring("output")))
         channel_warning("Could not get output device");
 
+    file_duplicate(FILE_G8, FILE_PW);
     printprompt();
     file_link(FILE_G0);
 
@@ -517,7 +518,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_duplicate(FILE_G8, FILE_PW);
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if:0/event");
     option_add("output", "system:console/if:0/data");

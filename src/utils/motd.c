@@ -13,15 +13,24 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int id = file_spawn(FILE_L0, "/bin/echo");
 
-    if (!id)
+    if (id)
+    {
+
+        channel_listen(id, EVENT_DATA);
+        channel_listen(id, EVENT_CLOSE);
+        channel_sendfmt0(id, EVENT_PATH, "/data/motd.txt\\0");
+        channel_send(id, EVENT_MAIN);
+        channel_wait(id, EVENT_CLOSE);
+        channel_close();
+
+    }
+
+    else
+    {
+
         channel_error("Could not spawn process");
 
-    channel_listen(id, EVENT_DATA);
-    channel_listen(id, EVENT_CLOSE);
-    channel_sendfmt0(id, EVENT_PATH, "/data/motd.txt\\0");
-    channel_send(id, EVENT_MAIN);
-    channel_wait(id, EVENT_CLOSE);
-    channel_close();
+    }
 
 }
 

@@ -346,6 +346,8 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    file_duplicate(FILE_G8, FILE_PW);
+
     if (!file_walk2(FILE_L0, "system:service/wm"))
         channel_error("window manager service");
 
@@ -518,7 +520,6 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_duplicate(FILE_G8, FILE_PW);
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, TEXTSIZE, resultdata);
