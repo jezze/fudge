@@ -141,23 +141,21 @@ static void interpret(void)
 static void complete(void)
 {
 
-    char buffer[INPUTSIZE];
+    char path[INPUTSIZE];
     char prefix[INPUTSIZE];
-    char resultdata[BUFFER_SIZE];
-    struct ring result;
-    struct message message;
-    char data[MESSAGE_SIZE];
-    unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
 
-    ring_init(&result, BUFFER_SIZE, resultdata);
+    cstring_writezero(path, INPUTSIZE, 0);
+    cstring_writezero(prefix, INPUTSIZE, 0);
     job_init(&job, workers, JOBSIZE);
 
     job.workers[0].program = "/bin/ls";
     job.count = 1;
 
-    if (count)
+    if (ring_count(&input))
     {
 
+        char buffer[INPUTSIZE];
+        unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
         unsigned int lastwordoffset = buffer_lastbyte(buffer, count, ' ');
         unsigned int searchoffset = lastwordoffset + buffer_lastbyte(buffer + lastwordoffset, count - lastwordoffset, '/');
         unsigned int searchcount = count - searchoffset;
@@ -167,8 +165,6 @@ static void complete(void)
 
             if (searchoffset > lastwordoffset)
             {
-
-                char path[INPUTSIZE];
 
                 cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0));
 
@@ -210,6 +206,12 @@ static void complete(void)
     if (job_spawn(&job, FILE_L1, FILE_G8))
     {
 
+        struct message message;
+        char data[MESSAGE_SIZE];
+        char outputdata[BUFFER_SIZE];
+        struct ring output;
+
+        ring_init(&output, BUFFER_SIZE, outputdata);
         job_listen(&job, EVENT_CLOSE);
         job_listen(&job, EVENT_DATA);
         job_listen(&job, EVENT_ERROR);
@@ -233,7 +235,7 @@ static void complete(void)
                 break;
 
             case EVENT_DATA:
-                ring_write(&result, data, message_datasize(&message));
+                ring_write(&output, data, message_datasize(&message));
 
                 break;
 
@@ -241,25 +243,27 @@ static void complete(void)
 
         }
 
-        if (ring_count(&result))
+        if (ring_count(&output))
         {
 
-            if (ring_each(&result, '\n') == ring_count(&result))
+            if (ring_each(&output, '\n') == ring_count(&output))
             {
 
-                char *resultbuffer = resultdata + cstring_length(prefix);
-                unsigned int resultcount = ring_count(&result) - cstring_lengthzero(prefix);
+                char *outputbuffer = outputdata + cstring_length(prefix);
+                unsigned int outputcount = ring_count(&output) - cstring_lengthzero(prefix);
 
-                ring_write(&input, resultbuffer, resultcount);
-                print(resultbuffer, resultcount);
+                ring_write(&input, outputbuffer, outputcount);
+                print(outputbuffer, outputcount);
 
             }
 
             else
             {
 
+                char buffer[INPUTSIZE];
+
                 print("\n", 1);
-                print(resultdata, ring_count(&result));
+                print(outputdata, ring_count(&output));
                 printprompt();
                 print(buffer, ring_readcopy(&input, buffer, INPUTSIZE));
 
