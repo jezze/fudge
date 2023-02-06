@@ -30,7 +30,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            channel_sendfmt3(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton in \"content\" label \"%w%s\n\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            channel_sendfmt3(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton in \"content\" label \"%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
         }
 
