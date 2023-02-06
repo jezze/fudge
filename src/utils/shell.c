@@ -143,13 +143,11 @@ static void complete(void)
 
     char path[INPUTSIZE];
     char prefix[INPUTSIZE];
+    char ibuffer[INPUTSIZE];
+    unsigned int icount;
 
     cstring_writezero(path, INPUTSIZE, 0);
     cstring_writezero(prefix, INPUTSIZE, 0);
-    job_init(&job, workers, JOBSIZE);
-
-    job.workers[0].program = "/bin/ls";
-    job.count = 1;
 
     if (ring_count(&input))
     {
@@ -164,119 +162,121 @@ static void complete(void)
         {
 
             if (searchoffset > lastwordoffset)
-            {
-
                 cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0));
-
-                job.workers[0].paths[0] = path;
-                job.workers[0].npaths = 1;
-
-            }
 
         }
 
         else
         {
 
-            job.workers[0].paths[0] = "/bin";
-            job.workers[0].npaths = 1;
+            cstring_writefmt0(path, INPUTSIZE, "/bin\\0", 0);
 
         }
 
         if (searchcount)
-        {
-
-            unsigned int prefixcount = cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0));
-
-            if (prefixcount)
-            {
-
-                job.workers[1].program = "/bin/grep";
-                job.workers[1].options[0].key = "prefix";
-                job.workers[1].options[0].value = prefix;
-                job.workers[1].noptions = 1;
-                job.count = 2;
-
-            }
-
-        }
+            cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0));
 
     }
 
-    if (job_spawn(&job, FILE_L1, FILE_G8))
+    if (cstring_length(path) && cstring_length(prefix))
+        icount = cstring_writefmt2(ibuffer, INPUTSIZE, "/bin/ls %s | /bin/grep ?prefix %s\n", 0, path, prefix);
+    else if (cstring_length(prefix))
+        icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
+    else if (cstring_length(path))
+        icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls %s\n", 0, path);
+    else
+        icount = cstring_writefmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
+
+    if (icount)
     {
 
-        struct message message;
-        char data[MESSAGE_SIZE];
-        char outputdata[BUFFER_SIZE];
-        struct ring output;
+        char obuffer[1000];
+        unsigned int ocount = runslang(obuffer, 1000, ibuffer, icount);
 
-        ring_init(&output, BUFFER_SIZE, outputdata);
-        job_listen(&job, EVENT_CLOSE);
-        job_listen(&job, EVENT_DATA);
-        job_listen(&job, EVENT_ERROR);
-        job_pipe(&job, EVENT_DATA);
-        job_run(&job);
-
-        while (job_pick(&job, &message, data))
+        if (ocount)
         {
 
-            switch (message.event)
+            job_init(&job, workers, JOBSIZE);
+            job_parse(&job, obuffer, ocount);
+
+            if (job_spawn(&job, FILE_L1, FILE_G8))
             {
 
-            case EVENT_CLOSE:
-                job_close(&job, message.source);
+                struct message message;
+                char data[MESSAGE_SIZE];
+                char outputdata[BUFFER_SIZE];
+                struct ring output;
 
-                break;
+                ring_init(&output, BUFFER_SIZE, outputdata);
+                job_listen(&job, EVENT_CLOSE);
+                job_listen(&job, EVENT_DATA);
+                job_listen(&job, EVENT_ERROR);
+                job_pipe(&job, EVENT_DATA);
+                job_run(&job);
 
-            case EVENT_ERROR:
-                channel_dispatch(&message, data);
+                while (job_pick(&job, &message, data))
+                {
 
-                break;
+                    switch (message.event)
+                    {
 
-            case EVENT_DATA:
-                ring_write(&output, data, message_datasize(&message));
+                    case EVENT_CLOSE:
+                        job_close(&job, message.source);
 
-                break;
+                        break;
 
-            }
+                    case EVENT_ERROR:
+                        channel_dispatch(&message, data);
 
-        }
+                        break;
 
-        if (ring_count(&output))
-        {
+                    case EVENT_DATA:
+                        ring_write(&output, data, message_datasize(&message));
 
-            if (ring_each(&output, '\n') == ring_count(&output))
-            {
+                        break;
 
-                char *outputbuffer = outputdata + cstring_length(prefix);
-                unsigned int outputcount = ring_count(&output) - cstring_lengthzero(prefix);
+                    }
 
-                ring_write(&input, outputbuffer, outputcount);
-                print(outputbuffer, outputcount);
+                }
+
+                if (ring_count(&output))
+                {
+
+                    if (ring_each(&output, '\n') == ring_count(&output))
+                    {
+
+                        char *outputbuffer = outputdata + cstring_length(prefix);
+                        unsigned int outputcount = ring_count(&output) - cstring_lengthzero(prefix);
+
+                        ring_write(&input, outputbuffer, outputcount);
+                        print(outputbuffer, outputcount);
+
+                    }
+
+                    else
+                    {
+
+                        char buffer[INPUTSIZE];
+
+                        print("\n", 1);
+                        print(outputdata, ring_count(&output));
+                        printprompt();
+                        print(buffer, ring_readcopy(&input, buffer, INPUTSIZE));
+
+                    }
+
+                }
 
             }
 
             else
             {
 
-                char buffer[INPUTSIZE];
-
-                print("\n", 1);
-                print(outputdata, ring_count(&output));
-                printprompt();
-                print(buffer, ring_readcopy(&input, buffer, INPUTSIZE));
+                job_killall(&job);
 
             }
 
         }
-
-    }
-
-    else
-    {
-
-        job_killall(&job);
 
     }
 
