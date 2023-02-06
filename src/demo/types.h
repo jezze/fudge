@@ -1,3 +1,15 @@
+struct scene
+{
+
+    unsigned int used;
+    unsigned int framestart;
+    unsigned int framestop;
+    unsigned int duration;
+    void (*setup)(struct scene *scene);
+    void (*render)(struct scene *scene, unsigned int frame, unsigned int loopframe, unsigned int globalframe);
+
+};
+
 struct vector2
 {
 
@@ -29,3 +41,5 @@ struct matrix3x3
     double z2;
 
 };
+
+unsigned int inperiod(unsigned int frame, unsigned int start, unsigned int end);
