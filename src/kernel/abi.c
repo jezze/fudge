@@ -16,7 +16,7 @@ static unsigned int checkuserstack(struct task *task, void *address, unsigned in
 
     unsigned int value = (unsigned int)address;
 
-    return value >= 0x80000000 - 0x8000 && value < 0x80000000;
+    return value >= 0x80000000 - 0x8000 && (value + count) < 0x80000000;
 
 }
 
@@ -118,13 +118,10 @@ static unsigned int walk(struct task *task, void *stack)
     struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
     struct service *service;
 
-    if (!checkzerobuffer(task, args->path, args->length))
+    if (!checkzerobuffer(task, args->path, args->length) || !descriptor_check(pdescriptor))
         return 0;
 
     service = findservice(args->path, args->length);
-
-    if (!descriptor_check(pdescriptor))
-        return 0;
 
     descriptor_copy(descriptor, pdescriptor);
 
@@ -150,10 +147,7 @@ static unsigned int create(struct task *task, void *stack)
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
 
-    if (!checkbuffer(task, args->name, args->length))
-        return 0;
-
-    if (!descriptor_check(pdescriptor))
+    if (!checkbuffer(task, args->name, args->length) || !descriptor_check(pdescriptor))
         return 0;
 
     descriptor_copy(descriptor, pdescriptor);
@@ -198,10 +192,7 @@ static unsigned int list(struct task *task, void *stack)
     struct descriptor *cdescriptor = kernel_getdescriptor(task, args->cdescriptor);
     unsigned int count;
 
-    if (!checkbuffer(task, args->records, args->count * sizeof (struct record)))
-        return 0;
-
-    if (!descriptor_check(descriptor) || !descriptor_check(cdescriptor))
+    if (!checkbuffer(task, args->records, args->count * sizeof (struct record)) || !descriptor_check(descriptor) || !descriptor_check(cdescriptor))
         return 0;
 
     if (descriptor->id == cdescriptor->id)
@@ -220,10 +211,7 @@ static unsigned int read(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
-    if (!checkbuffer(task, args->buffer, args->count))
-        return 0;
-
-    if (!descriptor_check(descriptor))
+    if (!checkbuffer(task, args->buffer, args->count) || !descriptor_check(descriptor))
         return 0;
 
     descriptor->count = descriptor->service->read(descriptor->id, args->buffer, args->count, descriptor->offset);
@@ -239,10 +227,7 @@ static unsigned int write(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
-    if (!checkbuffer(task, args->buffer, args->count))
-        return 0;
-
-    if (!descriptor_check(descriptor))
+    if (!checkbuffer(task, args->buffer, args->count) || !descriptor_check(descriptor))
         return 0;
 
     descriptor->count = descriptor->service->write(descriptor->id, args->buffer, args->count, descriptor->offset);
@@ -287,10 +272,7 @@ static unsigned int load(struct task *task, void *stack)
 
     format = binary_findformat(&node);
 
-    if (!format)
-        return 0;
-
-    if (!format->relocate(&node))
+    if (!format || !format->relocate(&node))
         return 0;
 
     module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
@@ -360,10 +342,7 @@ static unsigned int pick(struct task *task, void *stack)
     struct {void *caller; struct message *message; void *data;} *args = stack;
     unsigned int count;
 
-    if (!checkbuffer(task, args->message, sizeof (struct message)))
-        return 0;
-
-    if (!checkbuffer(task, args->data, MESSAGE_SIZE))
+    if (!checkbuffer(task, args->message, sizeof (struct message)) || !checkbuffer(task, args->data, MESSAGE_SIZE))
         return 0;
 
     count = kernel_pick(task->id, args->message, args->data);
@@ -380,10 +359,7 @@ static unsigned int place(struct task *task, void *stack)
 
     struct {void *caller; unsigned int id; struct message *message; void *data;} *args = stack;
 
-    if (!checkbuffer(task, args->message, sizeof (struct message)))
-        return 0;
-
-    if (!checkzerobuffer(task, args->data, message_datasize(args->message)))
+    if (!checkbuffer(task, args->message, sizeof (struct message)) || !checkzerobuffer(task, args->data, message_datasize(args->message)))
         return 0;
 
     return kernel_place(task->id, args->id, args->message, args->data);
@@ -422,10 +398,7 @@ static unsigned int notify(struct task *task, void *stack)
     struct {void *caller; unsigned int descriptor; unsigned int event; unsigned int count; void *data;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
-    if (!checkzerobuffer(task, args->data, args->count))
-        return 0;
-
-    if (!descriptor_check(descriptor))
+    if (!checkzerobuffer(task, args->data, args->count) || !descriptor_check(descriptor))
         return 0;
 
     return descriptor->service->notify(descriptor->id, task->id, args->event, args->count, args->data);
