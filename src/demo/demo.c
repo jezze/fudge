@@ -460,6 +460,7 @@ static void render_plasma_square(double period, double phase)
 
 }
 
+#if 0
 static void render_plasma_radial(double period, double phase)
 {
 
@@ -485,6 +486,7 @@ static void render_plasma_radial(double period, double phase)
     }
 
 }
+#endif
 
 static void render_plasma_mixed(double period, double phase)
 {
@@ -546,19 +548,21 @@ static void render_scene1(struct scene *scene, unsigned int frame, unsigned int 
     double period = 0.4;
     double phase = frame * 2.0;
 
-    if (inperiod(frame, 0, 120))
+    if (inperiod(frame, 0, 60))
         render_plasma_plain(period, phase);
 
-    if (inperiod(frame, 120, 240))
+    if (inperiod(frame, 60, 120))
         render_plasma_square(period, phase);
 
-    if (inperiod(frame, 240, 240))
-        render_plasma_radial(period, phase); /* not used */
+#if 0
+    if (inperiod(frame, 120, 180))
+        render_plasma_radial(period, phase);
+#endif
 
-    if (inperiod(frame, 240, 360))
+    if (inperiod(frame, 120, 180))
         render_plasma_mixed(period, phase);
 
-    if (inperiod(frame, 360, 600))
+    if (inperiod(frame, 180, 240))
         render_plasma_weird(period, phase);
 
 }
@@ -584,7 +588,7 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
     model_transform(&cube);
     clearscreen(bcolor);
 
-    if (inperiod(frame, 0, scene->duration))
+    if (inperiod(frame, 120, scene->duration))
     {
 
         unsigned int i;
@@ -601,7 +605,7 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
 
     }
 
-    if (inperiod(frame, 240, scene->duration))
+    if (inperiod(frame, 360, scene->duration))
     {
 
         unsigned int polygon0[] = {0, 1, 2, 3};
@@ -616,7 +620,7 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
 
     }
 
-    if (inperiod(frame, 120, scene->duration))
+    if (inperiod(frame, 240, scene->duration))
     {
 
         unsigned int i;
@@ -635,7 +639,7 @@ static void render_scene2(struct scene *scene, unsigned int frame, unsigned int 
 }
 
 static struct scene scenelist[] = {
-    {1, 0, 0, 600, setup_scene1, render_scene1},
+    {1, 0, 0, 400, setup_scene1, render_scene1},
     {1, 0, 0, 600, setup_scene2, render_scene2}
 };
 static unsigned int totaltime;
