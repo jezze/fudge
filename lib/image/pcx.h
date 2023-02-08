@@ -21,7 +21,7 @@ struct pcx_header
     char reserved1[1];
     char nplanes;
     short bpl;
-    short palettetype;
+    short palettemode;
     short xscreen;
     short yscreen;
     char reserved2[54];

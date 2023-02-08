@@ -48,7 +48,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ button id \"button0\" in \"base\" label \"Click Me\"\n"
         "+ text id \"text1\" wrap \"word\" in \"base\" content \"<awaiting event>\"\n"
         "+ button id \"button1\" in \"base\" label \"Click Me Too\"\n"
-        "+ image in \"base\" type \"image/pcx\" source \"initrd:data/mi.pcx\"\n";
+        "+ image in \"base\" type \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 

@@ -413,7 +413,7 @@ void arch_setup1(void)
     kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
     kernel_setcallback(coreget, coreassign);
     abi_setup();
-    abi_setcallback(0x0B, spawn);
+    abi_setcallback(0x0C, spawn);
 
 }
 

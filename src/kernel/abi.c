@@ -184,6 +184,19 @@ static unsigned int kill(struct task *task, void *stack)
 
 }
 
+static unsigned int stat(struct task *task, void *stack)
+{
+
+    struct {void *caller; unsigned int descriptor; struct record *record;} *args = stack;
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+
+    if (!checkbuffer(task, args->record, sizeof (struct record)) || !descriptor_check(descriptor))
+        return 0;
+
+    return descriptor->service->stat(descriptor->id, args->record);
+
+}
+
 static unsigned int list(struct task *task, void *stack)
 {
 
@@ -427,20 +440,20 @@ void abi_setup(void)
     abi_setcallback(0x02, create);
     abi_setcallback(0x03, destroy);
     abi_setcallback(0x04, kill);
-    abi_setcallback(0x05, list);
-    abi_setcallback(0x06, read);
-    abi_setcallback(0x07, write);
-    abi_setcallback(0x08, seek);
-    abi_setcallback(0x09, load);
-    abi_setcallback(0x0A, unload);
-    abi_setcallback(0x0B, spawn);
-    abi_setcallback(0x0C, despawn);
-    abi_setcallback(0x0D, pick);
-    abi_setcallback(0x0E, place);
-    abi_setcallback(0x0F, link);
-    abi_setcallback(0x10, unlink);
-    abi_setcallback(0x11, notify);
-    abi_setcallback(0x12, debug);
+    abi_setcallback(0x05, stat);
+    abi_setcallback(0x06, list);
+    abi_setcallback(0x07, read);
+    abi_setcallback(0x08, write);
+    abi_setcallback(0x09, seek);
+    abi_setcallback(0x0A, load);
+    abi_setcallback(0x0B, unload);
+    abi_setcallback(0x0C, spawn);
+    abi_setcallback(0x0D, despawn);
+    abi_setcallback(0x0E, pick);
+    abi_setcallback(0x0F, place);
+    abi_setcallback(0x10, link);
+    abi_setcallback(0x11, unlink);
+    abi_setcallback(0x12, notify);
     abi_setcallback(0x13, debug);
     abi_setcallback(0x14, debug);
     abi_setcallback(0x15, debug);

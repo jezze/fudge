@@ -128,8 +128,10 @@ struct widget_text
     unsigned int mode;
     unsigned int weight;
     unsigned int wrap;
+    unsigned int rows;
     unsigned int firstrowx;
-    struct text_info textinfo;
+    unsigned int lastrowx;
+    unsigned int lastrowy;
 
 };
 

@@ -37,6 +37,13 @@ unsigned int file_seek(unsigned int descriptor, unsigned int offset)
 
 }
 
+unsigned int file_stat(unsigned int descriptor, struct record *record)
+{
+
+    return call_stat(descriptor, record);
+
+}
+
 unsigned int file_list(unsigned int descriptor, unsigned int cid, unsigned int count, struct record *records)
 {
 

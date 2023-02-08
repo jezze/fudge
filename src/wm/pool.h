@@ -4,7 +4,7 @@
 struct pool_pcxresource
 {
 
-    unsigned char data[0x8000];
+    unsigned char data[0x10000];
     unsigned char colormap[768];
     unsigned int width;
     unsigned int height;

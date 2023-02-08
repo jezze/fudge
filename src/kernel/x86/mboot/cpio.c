@@ -141,6 +141,30 @@ static unsigned int service_destroy(unsigned int id)
 
 }
 
+static unsigned int service_stat(unsigned int id, struct record *record)
+{
+
+    struct cpio_header *header = getheader(id);
+
+    if (header)
+    {
+
+        record->id = id;
+        record->size = cpio_filesize(header);
+        record->type = RECORD_TYPE_NORMAL;
+        record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(id), header->namesize - 1, header->namesize);
+
+        if ((header->mode & 0xF000) == 0x4000)
+            record->type = RECORD_TYPE_DIRECTORY;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int getlist(unsigned int id, unsigned int cid, unsigned int count, struct record *records)
 {
 
@@ -293,7 +317,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_list, service_read, service_write, service_seek, service_map, service_link, service_unlink, service_notify);
+    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_seek, service_map, service_link, service_unlink, service_notify);
     resource_register(&service.resource);
 
 }

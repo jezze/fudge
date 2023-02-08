@@ -6,19 +6,20 @@
 .set CALL_INDEX_CREATE,                 0x02
 .set CALL_INDEX_DESTROY,                0x03
 .set CALL_INDEX_KILL,                   0x04
-.set CALL_INDEX_LIST,                   0x05
-.set CALL_INDEX_READ,                   0x06
-.set CALL_INDEX_WRITE,                  0x07
-.set CALL_INDEX_SEEK,                   0x08
-.set CALL_INDEX_LOAD,                   0x09
-.set CALL_INDEX_UNLOAD,                 0x0A
-.set CALL_INDEX_SPAWN,                  0x0B
-.set CALL_INDEX_DESPAWN,                0x0C
-.set CALL_INDEX_PICK,                   0x0D
-.set CALL_INDEX_PLACE,                  0x0E
-.set CALL_INDEX_LINK,                   0x0F
-.set CALL_INDEX_UNLINK,                 0x10
-.set CALL_INDEX_NOTIFY,                 0x11
+.set CALL_INDEX_STAT,                   0x05
+.set CALL_INDEX_LIST,                   0x06
+.set CALL_INDEX_READ,                   0x07
+.set CALL_INDEX_WRITE,                  0x08
+.set CALL_INDEX_SEEK,                   0x09
+.set CALL_INDEX_LOAD,                   0x0A
+.set CALL_INDEX_UNLOAD,                 0x0B
+.set CALL_INDEX_SPAWN,                  0x0C
+.set CALL_INDEX_DESPAWN,                0x0D
+.set CALL_INDEX_PICK,                   0x0E
+.set CALL_INDEX_PLACE,                  0x0F
+.set CALL_INDEX_LINK,                   0x10
+.set CALL_INDEX_UNLINK,                 0x11
+.set CALL_INDEX_NOTIFY,                 0x12
 
 .section .text
 
@@ -103,6 +104,12 @@ call_seek:
 .global call_spawn
 call_spawn:
     movl $CALL_INDEX_SPAWN, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_stat
+call_stat:
+    movl $CALL_INDEX_STAT, %eax
     int $CALL_INTERRUPT
     ret
 

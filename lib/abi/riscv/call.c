@@ -98,6 +98,13 @@ unsigned int call_spawn(unsigned int pdescriptor, unsigned int wdescriptor)
 
 }
 
+unsigned int call_stat(unsigned int descriptor, struct record *record)
+{
+
+    return 0;
+
+}
+
 unsigned int call_unlink(unsigned int descriptor)
 {
 

@@ -9,19 +9,17 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct pcx_header header;
-        unsigned char magic;
+        struct record record;
         unsigned int width;
         unsigned int height;
-        unsigned int filesize = 31467;
         unsigned int offset = 0;
         unsigned int h;
 
+        file_stat(FILE_L0, &record);
         file_readall(FILE_L0, &header, sizeof (struct pcx_header));
 
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;
-
-        file_seekreadall(FILE_L0, &magic, 1, filesize - 768 - 1);
 
         for (h = 0; h < height; h++)
         {

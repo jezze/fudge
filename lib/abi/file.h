@@ -3,6 +3,7 @@ unsigned int file_walk2(unsigned int descriptor, char *path);
 unsigned int file_duplicate(unsigned int descriptor, unsigned int pdescriptor);
 unsigned int file_create(unsigned int descriptor, unsigned int pdescriptor, char *name);
 unsigned int file_seek(unsigned int descriptor, unsigned int offset);
+unsigned int file_stat(unsigned int descriptor, struct record *record);
 unsigned int file_list(unsigned int descriptor, unsigned int cid, unsigned int count, struct record *records);
 unsigned int file_read(unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int file_readall(unsigned int descriptor, void *buffer, unsigned int count);

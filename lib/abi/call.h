@@ -12,6 +12,7 @@ unsigned int call_place(unsigned int id, struct message *message, void *data);
 unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count);
 unsigned int call_seek(unsigned int descriptor, unsigned int offset);
 unsigned int call_spawn(unsigned int pdescriptor, unsigned int wdescriptor);
+unsigned int call_stat(unsigned int descriptor, struct record *record);
 unsigned int call_unlink(unsigned int descriptor);
 unsigned int call_unload(unsigned int descriptor);
 unsigned int call_walk(unsigned int descriptor, unsigned int pdescriptor, char *path, unsigned int length);

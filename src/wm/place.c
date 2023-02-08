@@ -354,13 +354,15 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 {
 
     struct widget_text *text = widget->data;
-    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont((text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
+    struct text_info info;
 
-    cache->exist = 0;
+    text_gettextinfo(&info, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, maxw, text->firstrowx);
+    resize(widget, x, y, info.width + 11 /* why 11? fixme */, info.height, minw, minh, maxw, maxh);
 
-    text_gettextinfo(&text->textinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, maxw, text->firstrowx);
-    resize(widget, x, y, text->textinfo.width + 11 /* why 11? fixme */, text->textinfo.height, minw, minh, maxw, maxh);
+    text->rows = info.rows;
+    text->lastrowx = info.lastrowx;
+    text->lastrowy = info.lastrowy;
 
 }
 
@@ -394,8 +396,8 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
             addtotal(&total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
 
-            lastrowx = text->textinfo.lastrowx;
-            lastrowy += text->textinfo.lastrowy;
+            lastrowx = text->lastrowx;
+            lastrowy += text->lastrowy;
 
         }
 

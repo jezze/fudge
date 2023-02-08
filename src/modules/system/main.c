@@ -103,6 +103,42 @@ static unsigned int service_destroy(unsigned int id)
 
 }
 
+static unsigned int service_stat(unsigned int id, struct record *record)
+{
+
+    struct system_node *node = getnode(id);
+
+    if (node)
+    {
+
+        record->id = (unsigned int)node;
+        record->size = 0;
+        record->type = RECORD_TYPE_NORMAL;
+        record->length = buffer_read(record->name, RECORD_NAMESIZE, node->name, cstring_length(node->name), 0);
+
+        if (node->type == SYSTEM_NODETYPE_GROUP)
+        {
+
+            record->type = RECORD_TYPE_DIRECTORY;
+
+        }
+
+        if (node->type == SYSTEM_NODETYPE_MULTIGROUP)
+        {
+
+            record->type = RECORD_TYPE_DIRECTORY;
+            record->length += cstring_writefmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &node->index);
+
+        }
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int count, struct record *records)
 {
 
@@ -339,7 +375,7 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
-    service_init(&service, "system", service_root, service_parent, service_child, service_create, service_destroy, service_list, service_read, service_write, service_seek, service_map, service_link, service_unlink, service_notify);
+    service_init(&service, "system", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_seek, service_map, service_link, service_unlink, service_notify);
     resource_register(&service.resource);
 
 }

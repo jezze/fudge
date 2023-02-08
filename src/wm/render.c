@@ -210,61 +210,73 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
 }
 
+static struct widget *cwidget;
+static unsigned int crownum;
+static unsigned int cstart;
+static unsigned int clength;
+static unsigned int cchars;
+static int crx;
+static int cry;
+static char *cstring;
+
+static unsigned int updatetextcache(struct widget *widget, struct widget_text *text, struct text_font *font, unsigned int rownum)
+{
+
+    if (rownum >= text->rows)
+        return 0;
+
+    if (cwidget != widget || crownum != rownum)
+    {
+
+        unsigned int rowx = (rownum) ? 0 : text->firstrowx;
+        static struct text_rowinfo rowinfo;
+
+        crownum = rownum;
+        cstart = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), crownum, text->wrap, widget->size.w, text->firstrowx);
+        clength = text_getrowinfo(&rowinfo, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, cstart);
+        crx = text_getrowx(&rowinfo, text->halign, widget->position.x + rowx, widget->size.w - rowx);
+        cry = text_getrowy(&rowinfo, text->valign, widget->position.y + crownum * rowinfo.lineheight, widget->size.h);
+        cchars = rowinfo.chars;
+        cstring = pool_getstring(text->content) + cstart;
+
+    }
+
+    return clength;
+
+}
+
 static void rendertext(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     struct widget_text *text = widget->data;
-    struct widget_cache *cache = &widget->cache;
     struct text_font *font = pool_getfont((text->weight == TEXT_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
     unsigned int rownum = (line - widget->position.y) / font->lineheight;
-    static unsigned int cmapnormal[1] = {
-        0xE8E0E0E0,
-    };
-    static unsigned int cmaphover[1] = {
-        0xE8E0E0E0,
-    };
-    static unsigned int cmapfocus[1] = {
-        0xE8F0F0F0,
-    };
 
-    if (rownum < text->textinfo.rows)
+    if (updatetextcache(widget, text, font, rownum))
     {
 
-        unsigned int rowx = (rownum) ? 0 : text->firstrowx;
+        static unsigned int cmapnormal[1] = {
+            0xE8E0E0E0,
+        };
+        static unsigned int cmaphover[1] = {
+            0xE8E0E0E0,
+        };
+        static unsigned int cmapfocus[1] = {
+            0xE8F0F0F0,
+        };
 
-        if (cache->payload.textrow.num != rownum)
-            cache->exist = 0;
-
-        if (!cache->exist)
+        switch (text->mode)
         {
 
-            cache->payload.textrow.num = rownum;
-            cache->payload.textrow.start = text_getrowstart(font, pool_getstring(text->content), pool_getcstringlength(text->content), cache->payload.textrow.num, text->wrap, widget->size.w, text->firstrowx);
-            cache->payload.textrow.length = text_getrowinfo(&cache->payload.textrow.info, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, cache->payload.textrow.start);
-            cache->exist = 1;
+        case TEXT_MODE_NORMAL:
+            blit_textnormal(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], cstring, cchars, crx, cry, line, x0, x2);
 
-        }
+            break;
 
-        if (cache->payload.textrow.length)
-        {
+        case TEXT_MODE_INVERTED:
+            blit_textinverted(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], cstring, cchars, crx, cry, line, x0, x2);
 
-            int rx = text_getrowx(&cache->payload.textrow.info, text->halign, widget->position.x + rowx, widget->size.w - rowx);
-            int ry = text_getrowy(&cache->payload.textrow.info, text->valign, widget->position.y + cache->payload.textrow.num * cache->payload.textrow.info.lineheight, widget->size.h);
-
-            switch (text->mode)
-            {
-
-            case TEXT_MODE_NORMAL:
-                blit_textnormal(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + cache->payload.textrow.start, cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
-
-                break;
-
-            case TEXT_MODE_INVERTED:
-                blit_textinverted(display, font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + cache->payload.textrow.start, cache->payload.textrow.info.chars, rx, ry, line, x0, x2);
-
-                break;
-
-            }
+            break;
 
         }
 
