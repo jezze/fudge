@@ -69,6 +69,15 @@ struct widget_button
 {
 
     unsigned int label;
+    struct
+    {
+
+        int rx;
+        int ry;
+        unsigned int chars;
+        struct text_font *font;
+
+    } placement;
 
 };
 
@@ -76,6 +85,15 @@ struct widget_choice
 {
 
     unsigned int label;
+    struct
+    {
+
+        int rx;
+        int ry;
+        unsigned int chars;
+        struct text_font *font;
+
+    } placement;
 
 };
 
@@ -109,6 +127,13 @@ struct widget_image
 
     unsigned int type;
     unsigned int source;
+    struct
+    {
+
+        unsigned int loaded;
+        struct widget_size size;
+
+    } placement;
 
 };
 
@@ -116,6 +141,16 @@ struct widget_select
 {
 
     unsigned int label;
+    struct
+    {
+
+        int extra;
+        int rx;
+        int ry;
+        unsigned int chars;
+        struct text_font *font;
+
+    } placement;
 
 };
 
@@ -128,10 +163,29 @@ struct widget_text
     unsigned int mode;
     unsigned int weight;
     unsigned int wrap;
-    unsigned int rows;
-    unsigned int firstrowx;
-    unsigned int lastrowx;
-    unsigned int lastrowy;
+    struct
+    {
+
+        unsigned int rows;
+        int firstrowx;
+        int lastrowx;
+        int lastrowy;
+        struct text_font *font;
+
+    } placement;
+    struct
+    {
+
+        unsigned int exist;
+        unsigned int rownum;
+        unsigned int start;
+        unsigned int length;
+        unsigned int chars;
+        int rx;
+        int ry;
+        char *string;
+
+    } rendering;
 
 };
 
@@ -147,6 +201,15 @@ struct widget_textbutton
 {
 
     unsigned int label;
+    struct
+    {
+
+        int rx;
+        int ry;
+        unsigned int chars;
+        struct text_font *font;
+
+    } placement;
 
 };
 
@@ -154,31 +217,6 @@ struct widget_window
 {
 
     unsigned int title;
-
-};
-
-struct widget_cache
-{
-
-    unsigned int exist;
-    union
-    {
-
-        struct
-        {
-
-            unsigned int num;
-            unsigned int start;
-            unsigned int length;
-            struct text_rowinfo info;
-
-        } textrow;
-        struct
-        {
-            struct widget_size size;
-        } image;
-
-    } payload;
 
 };
 
@@ -193,7 +231,6 @@ struct widget
     void *data;
     struct widget_position position;
     struct widget_size size;
-    struct widget_cache cache;
 
 };
 
