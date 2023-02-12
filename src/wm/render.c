@@ -209,7 +209,7 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
     {
 
         unsigned int rowx = (rownum) ? 0 : text->placement.firstrowx;
-        static struct text_rowinfo rowinfo;
+        struct text_rowinfo rowinfo;
 
         text->rendering.rownum = rownum;
         text->rendering.start = text_getrowstart(text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), text->rendering.rownum, text->wrap, widget->size.w, text->placement.firstrowx);
