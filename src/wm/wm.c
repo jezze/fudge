@@ -134,13 +134,100 @@ static void scrollwidget(int amount)
 
 }
 
+static void bumpmouse(void)
+{
+
+    if (state.mousewidget)
+    {
+
+        pool_bump(state.mousewidget);
+        damage(state.mousewidget);
+
+    }
+
+}
+
 static void bump(struct widget *widget)
 {
 
     pool_bump(widget);
-    pool_bump(state.mousewidget);
     damage(widget);
-    damage(state.mousewidget);
+    bumpmouse();
+
+}
+
+static void placewindows(unsigned int source)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_WINDOW)
+        {
+
+            if (widget->size.w == 0 && widget->size.h == 0)
+            {
+
+                widget->position.x = 64 + 128 * numwindows;
+                widget->position.y = 64 + 64 * numwindows;
+                widget->size.w = 640;
+                widget->size.h = 640;
+
+                bump(widget);
+
+                numwindows++;
+
+            }
+
+            damage(widget);
+
+        }
+
+    }
+
+}
+
+static void destroy(struct widget *widget)
+{
+
+    if (state.hoverwidget == widget)
+        state.hoverwidget = 0;
+
+    if (state.focusedwidget == widget)
+        state.focusedwidget = 0;
+
+    if (state.focusedwindow == widget)
+        state.focusedwindow = 0;
+
+    damage(widget);
+    pool_destroy(widget);
+
+}
+
+static void removedestroyed(unsigned int source)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->state == WIDGET_STATE_DESTROYED)
+        {
+
+            current = current->prev;
+
+            destroy(widget);
+
+        }
+
+    }
 
 }
 
@@ -630,64 +717,10 @@ static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct list_item *current = 0;
-
     parser_parse(source, "root", msize, mdata);
-
-    while ((current = pool_nextsource(current, source)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->type == WIDGET_TYPE_WINDOW)
-        {
-
-            if (widget->size.w == 0 && widget->size.h == 0)
-            {
-
-                widget->position.x = 64 + 128 * numwindows;
-                widget->position.y = 64 + 64 * numwindows;
-                widget->size.w = 640;
-                widget->size.h = 640;
-
-                bump(widget);
-
-                numwindows++;
-
-            }
-
-            damage(widget);
-
-        }
-
-    }
-
-    current = 0;
-
-    while ((current = pool_nextsource(current, source)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->state == WIDGET_STATE_DESTROYED)
-        {
-
-            current = current->prev;
-
-            damage(widget);
-            pool_destroy(widget);
-
-        }
-
-    }
-
-    if (state.mousewidget)
-    {
-
-        pool_bump(state.mousewidget);
-        damage(state.mousewidget);
-
-    }
+    placewindows(source);
+    removedestroyed(source);
+    bumpmouse();
 
 }
 
@@ -712,31 +745,16 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
     struct list_item *current = 0;
 
-    while ((current = pool_next(current)))
+    while ((current = pool_nextsource(current, source)))
     {
  
-        struct widget *child = current->data;
+        struct widget *widget = current->data;
 
-        if (child->source == source)
-        {
-
-            current = current->prev;
-
-            if (state.hoverwidget == child)
-                state.hoverwidget = 0;
-
-            if (state.focusedwidget == child)
-                state.focusedwidget = 0;
-
-            if (state.focusedwindow == child)
-                state.focusedwindow = 0;
-
-            damage(child);
-            pool_destroy(child);
-
-        }
+        widget->state = WIDGET_STATE_DESTROYED;
 
     }
+
+    removedestroyed(source);
 
 }
 
