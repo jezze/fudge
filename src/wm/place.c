@@ -8,11 +8,11 @@
 #include "pool.h"
 #include "place.h"
 
-static void addtotal(struct widget_size *total, struct widget *widget, int x, int y, int pw, int ph)
+static void addtotal(struct widget_size *total, struct widget *widget, int x, int y, int paddingw, int paddingh)
 {
 
-    total->w = util_max(total->w, ((widget->position.x + widget->size.w) - x) + pw);
-    total->h = util_max(total->h, ((widget->position.y + widget->size.h) - y) + ph);
+    total->w = util_max(total->w, ((widget->position.x + widget->size.w) - x) + paddingw);
+    total->h = util_max(total->h, ((widget->position.y + widget->size.h) - y) + paddingh);
 
 }
 
@@ -34,6 +34,53 @@ static void resize2(struct widget *widget, int x, int y, int w, int h, int minw,
 
     if (maxh < h)
         widget->size.h = 0;
+
+}
+
+static void placeverticalflow(struct widget *widget, struct widget_size *total, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingw, unsigned int paddingh)
+{
+
+    struct list_item *current = 0;
+    unsigned int lastrowx = 0;
+    unsigned int lastrowy = 0;
+
+    widget_initsize(total, 0, 0);
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+        struct widget_position cpos;
+        struct widget_size cmax;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            struct widget_text *text = child->data;
+
+            text->placement.firstrowx = lastrowx;
+
+            widget_initposition(&cpos, x + paddingw, y + paddingh + lastrowy);
+            widget_initsize(&cmax, util_max(0, maxw - paddingw * 2), 50000);
+            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
+            addtotal(total, child, x, y, paddingw, paddingh);
+
+            lastrowx = text->placement.lastrowx;
+            lastrowy += text->placement.lastrowy;
+
+        }
+
+        else
+        {
+
+            widget_initposition(&cpos, x + paddingw, y + paddingh + total->h);
+            widget_initsize(&cmax, util_max(0, maxw - 4 * 2), 50000);
+            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
+            addtotal(total, child, x, y, paddingw, paddingh);
+
+        }
+
+    }
 
 }
 
@@ -384,53 +431,6 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 
 }
 
-static void placeverticalflow(struct widget *widget, struct widget_size *total, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct list_item *current = 0;
-    unsigned int lastrowx = 0;
-    unsigned int lastrowy = 0;
-
-    widget_initsize(total, 0, 0);
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-        struct widget_position cpos;
-        struct widget_size cmax;
-
-        if (child->type == WIDGET_TYPE_TEXT)
-        {
-
-            struct widget_text *text = child->data;
-
-            text->placement.firstrowx = lastrowx;
-
-            widget_initposition(&cpos, x + CONFIG_TEXTBOX_PADDING_WIDTH, y + CONFIG_TEXTBOX_PADDING_HEIGHT + lastrowy);
-            widget_initsize(&cmax, util_max(0, maxw - CONFIG_TEXTBOX_PADDING_WIDTH * 2), 50000);
-            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
-            addtotal(total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
-
-            lastrowx = text->placement.lastrowx;
-            lastrowy += text->placement.lastrowy;
-
-        }
-
-        else
-        {
-
-            widget_initposition(&cpos, x + 4, y + 4 + total->h);
-            widget_initsize(&cmax, util_max(0, maxw - 4 * 2), 50000);
-            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
-            addtotal(total, child, x, y, 4, 0);
-
-        }
-
-    }
-
-}
-
 static void placetextbox(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -438,7 +438,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     struct list_item *current = 0;
     struct widget_size total;
 
-    placeverticalflow(widget, &total, x, y, minw, minh, maxw, maxh);
+    placeverticalflow(widget, &total, x, y, minw, minh, maxw, maxh, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (textbox->scroll)
