@@ -37,7 +37,7 @@ static void resize2(struct widget *widget, int x, int y, int w, int h, int minw,
 
 }
 
-static void placeverticalflow(struct widget *widget, struct widget_size *total, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingw, unsigned int paddingh)
+static void placeverticalflow(struct widget *widget, struct widget_size *total, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingw, unsigned int paddingh, unsigned int placement)
 {
 
     struct list_item *current = 0;
@@ -52,6 +52,7 @@ static void placeverticalflow(struct widget *widget, struct widget_size *total, 
         struct widget *child = current->data;
         struct widget_position cpos;
         struct widget_size cmax;
+        struct widget_size cmin;
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
@@ -74,8 +75,9 @@ static void placeverticalflow(struct widget *widget, struct widget_size *total, 
         {
 
             widget_initposition(&cpos, x + paddingw, y + paddingh + total->h);
-            widget_initsize(&cmax, util_max(0, maxw - 4 * 2), 50000);
-            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
+            widget_initsize(&cmax, util_max(0, maxw - paddingw * 2), util_max(0, maxh - total->h - paddingh * 2));
+            widget_initsize(&cmin, (placement == LAYOUT_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
+            place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
             addtotal(total, child, x, y, paddingw, paddingh);
 
         }
@@ -438,7 +440,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     struct list_item *current = 0;
     struct widget_size total;
 
-    placeverticalflow(widget, &total, x, y, minw, minh, maxw, maxh, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
+    placeverticalflow(widget, &total, x, y, minw, minh, maxw, maxh, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (textbox->scroll)
