@@ -62,8 +62,9 @@ static void placeverticalflow(struct widget *widget, struct widget_size *total, 
             text->placement.firstrowx = lastrowx;
 
             widget_initposition(&cpos, x + paddingw, y + paddingh + lastrowy);
-            widget_initsize(&cmax, util_max(0, maxw - paddingw * 2), 50000);
-            place_widget(child, cpos.x, cpos.y, cmax.w, 0, cmax.w, cmax.h);
+            widget_initsize(&cmax, util_max(0, maxw - paddingw * 2), util_max(0, maxh - total->h - paddingh * 2));
+            widget_initsize(&cmin, (placement == LAYOUT_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
+            place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
             addtotal(total, child, x, y, paddingw, paddingh);
 
             lastrowx = text->placement.lastrowx;
@@ -440,7 +441,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     struct list_item *current = 0;
     struct widget_size total;
 
-    placeverticalflow(widget, &total, x, y, minw, minh, maxw, maxh, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED);
+    placeverticalflow(widget, &total, x, y, minw, minh, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (textbox->scroll)
