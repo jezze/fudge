@@ -65,70 +65,62 @@ static void interpret(void)
     char ibuffer[INPUTSIZE];
     unsigned int icount = ring_read(&input, ibuffer, INPUTSIZE);
 
-    if (icount)
+    if (icount && (icount = runslang(ibuffer, BUFFER_SIZE, ibuffer, icount)))
     {
 
-        char obuffer[BUFFER_SIZE];
-        unsigned int ocount = runslang(obuffer, BUFFER_SIZE, ibuffer, icount);
+        job_init(&job, workers, JOBSIZE);
+        job_parse(&job, ibuffer, icount);
 
-        if (ocount)
+        if (job_spawn(&job, FILE_L1, FILE_G8))
         {
 
-            job_init(&job, workers, JOBSIZE);
-            job_parse(&job, obuffer, ocount);
+            struct message message;
+            char data[MESSAGE_SIZE];
 
-            if (job_spawn(&job, FILE_L1, FILE_G8))
+            job_listen(&job, EVENT_CLOSE);
+            job_listen(&job, EVENT_DATA);
+            job_listen(&job, EVENT_ERROR);
+            job_listen(&job, EVENT_PATH);
+            job_pipe(&job, EVENT_DATA);
+            job_run(&job);
+
+            while (job_pick(&job, &message, data))
             {
 
-                struct message message;
-                char data[MESSAGE_SIZE];
-
-                job_listen(&job, EVENT_CLOSE);
-                job_listen(&job, EVENT_DATA);
-                job_listen(&job, EVENT_ERROR);
-                job_listen(&job, EVENT_PATH);
-                job_pipe(&job, EVENT_DATA);
-                job_run(&job);
-
-                while (job_pick(&job, &message, data))
+                switch (message.event)
                 {
 
-                    switch (message.event)
-                    {
+                case EVENT_CLOSE:
+                    job_close(&job, message.source);
 
-                    case EVENT_CLOSE:
-                        job_close(&job, message.source);
+                    break;
 
-                        break;
+                case EVENT_ERROR:
+                    channel_dispatch(&message, data);
 
-                    case EVENT_ERROR:
-                        channel_dispatch(&message, data);
+                    break;
 
-                        break;
+                case EVENT_DATA:
+                    print(data, message_datasize(&message));
 
-                    case EVENT_DATA:
-                        print(data, message_datasize(&message));
+                    break;
 
-                        break;
+                case EVENT_PATH:
+                    if (file_walk(FILE_L0, FILE_G8, data))
+                        file_duplicate(FILE_G8, FILE_L0);
 
-                    case EVENT_PATH:
-                        if (file_walk(FILE_L0, FILE_G8, data))
-                            file_duplicate(FILE_G8, FILE_L0);
-
-                        break;
-
-                    }
+                    break;
 
                 }
 
             }
 
-            else
-            {
+        }
 
-                job_killall(&job);
+        else
+        {
 
-            }
+            job_killall(&job);
 
         }
 
@@ -138,20 +130,16 @@ static void interpret(void)
 
 }
 
-static void complete(void)
+static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix)
 {
 
-    char prefix[INPUTSIZE];
-    char ibuffer[INPUTSIZE];
-    unsigned int icount = cstring_writefmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
+    unsigned int icount = 0;
 
-    cstring_writezero(prefix, INPUTSIZE, 0);
-
-    if (ring_count(&input))
+    if (ring_count(ring))
     {
 
         char buffer[INPUTSIZE];
-        unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
+        unsigned int count = ring_readcopy(ring, buffer, INPUTSIZE);
         unsigned int lastspace = buffer_lastbyte(buffer, count, ' ');
 
         if (lastspace)
@@ -190,94 +178,105 @@ static void complete(void)
 
     }
 
-    if (icount)
+    else
     {
 
-        char obuffer[BUFFER_SIZE];
-        unsigned int ocount = runslang(obuffer, BUFFER_SIZE, ibuffer, icount);
+        cstring_writezero(prefix, INPUTSIZE, 0);
 
-        if (ocount)
+        icount = cstring_writefmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
+
+    }
+
+    return icount;
+
+}
+
+static void complete(void)
+{
+
+    char prefix[INPUTSIZE];
+    char ibuffer[INPUTSIZE];
+    unsigned int icount = createcommand(&input, ibuffer, prefix);
+
+    if (icount && (icount = runslang(ibuffer, BUFFER_SIZE, ibuffer, icount)))
+    {
+
+        job_init(&job, workers, JOBSIZE);
+        job_parse(&job, ibuffer, icount);
+
+        if (job_spawn(&job, FILE_L1, FILE_G8))
         {
 
-            job_init(&job, workers, JOBSIZE);
-            job_parse(&job, obuffer, ocount);
+            struct message message;
+            char data[MESSAGE_SIZE];
+            struct ring output;
 
-            if (job_spawn(&job, FILE_L1, FILE_G8))
+            ring_init(&output, BUFFER_SIZE, ibuffer);
+            job_listen(&job, EVENT_CLOSE);
+            job_listen(&job, EVENT_DATA);
+            job_listen(&job, EVENT_ERROR);
+            job_pipe(&job, EVENT_DATA);
+            job_run(&job);
+
+            while (job_pick(&job, &message, data))
             {
 
-                struct message message;
-                char data[MESSAGE_SIZE];
-                char outputdata[BUFFER_SIZE];
-                struct ring output;
-
-                ring_init(&output, BUFFER_SIZE, outputdata);
-                job_listen(&job, EVENT_CLOSE);
-                job_listen(&job, EVENT_DATA);
-                job_listen(&job, EVENT_ERROR);
-                job_pipe(&job, EVENT_DATA);
-                job_run(&job);
-
-                while (job_pick(&job, &message, data))
+                switch (message.event)
                 {
 
-                    switch (message.event)
-                    {
+                case EVENT_CLOSE:
+                    job_close(&job, message.source);
 
-                    case EVENT_CLOSE:
-                        job_close(&job, message.source);
+                    break;
 
-                        break;
+                case EVENT_ERROR:
+                    channel_dispatch(&message, data);
 
-                    case EVENT_ERROR:
-                        channel_dispatch(&message, data);
+                    break;
 
-                        break;
+                case EVENT_DATA:
+                    ring_write(&output, data, message_datasize(&message));
 
-                    case EVENT_DATA:
-                        ring_write(&output, data, message_datasize(&message));
-
-                        break;
-
-                    }
-
-                }
-
-                if (ring_count(&output))
-                {
-
-                    if (ring_each(&output, '\n') == ring_count(&output))
-                    {
-
-                        char *outputbuffer = outputdata + cstring_length(prefix);
-                        unsigned int outputcount = ring_count(&output) - cstring_lengthzero(prefix);
-
-                        ring_write(&input, outputbuffer, outputcount);
-                        print(outputbuffer, outputcount);
-
-                    }
-
-                    else
-                    {
-
-                        char buffer[INPUTSIZE];
-
-                        print("\n", 1);
-                        print(outputdata, ring_count(&output));
-                        printprompt();
-                        print(buffer, ring_readcopy(&input, buffer, INPUTSIZE));
-
-                    }
+                    break;
 
                 }
 
             }
 
-            else
+            if (ring_count(&output))
             {
 
-                job_killall(&job);
+                if (ring_each(&output, '\n') == ring_count(&output))
+                {
+
+                    char *outputbuffer = ibuffer + cstring_length(prefix);
+                    unsigned int outputcount = ring_count(&output) - cstring_lengthzero(prefix);
+
+                    ring_write(&input, outputbuffer, outputcount);
+                    print(outputbuffer, outputcount);
+
+                }
+
+                else
+                {
+
+                    char tbuffer[INPUTSIZE];
+
+                    print("\n", 1);
+                    print(ibuffer, ring_count(&output));
+                    printprompt();
+                    print(tbuffer, ring_readcopy(&input, tbuffer, INPUTSIZE));
+
+                }
 
             }
+
+        }
+
+        else
+        {
+
+            job_killall(&job);
 
         }
 
