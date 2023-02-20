@@ -240,6 +240,7 @@ static void complete(void)
         {
 
             cstring_writefmt0(path, INPUTSIZE, "/bin\\0", 0);
+            cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer, count, 0));
 
         }
 
