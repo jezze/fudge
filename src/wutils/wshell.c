@@ -211,14 +211,28 @@ static void complete(void)
         char buffer[INPUTSIZE];
         unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
         unsigned int lastwordoffset = buffer_lastbyte(buffer, count, ' ');
-        unsigned int searchoffset = lastwordoffset + buffer_lastbyte(buffer + lastwordoffset, count - lastwordoffset, '/');
-        unsigned int searchcount = count - searchoffset;
 
         if (lastwordoffset)
         {
 
-            if (searchoffset > lastwordoffset)
-                cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, buffer + lastwordoffset, searchoffset - lastwordoffset - 1, 0));
+            char *name = buffer + lastwordoffset;
+            unsigned int namecount = count - lastwordoffset;
+            unsigned int lastslash = buffer_lastbyte(name, namecount, '/');
+
+            if (lastslash)
+            {
+
+                cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, name, lastslash, 0));
+                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, name + lastslash, namecount - lastslash, 0));
+
+            }
+
+            else
+            {
+
+                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, name, namecount, 0));
+
+            }
 
         }
 
@@ -228,9 +242,6 @@ static void complete(void)
             cstring_writefmt0(path, INPUTSIZE, "/bin\\0", 0);
 
         }
-
-        if (searchcount)
-            cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, (char *)buffer + searchoffset, searchcount, 0));
 
     }
 
