@@ -197,12 +197,10 @@ static void interpret(void)
 static void complete(void)
 {
 
-    char path[INPUTSIZE];
     char prefix[INPUTSIZE];
     char ibuffer[INPUTSIZE];
-    unsigned int icount;
+    unsigned int icount = cstring_writefmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
 
-    cstring_writezero(path, INPUTSIZE, 0);
     cstring_writezero(prefix, INPUTSIZE, 0);
 
     if (ring_count(&input1))
@@ -220,8 +218,9 @@ static void complete(void)
             if (lastslash)
             {
 
-                cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, buffer + lastspace, lastslash, 0));
                 cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace + lastslash, count - lastspace - lastslash, 0));
+
+                icount = cstring_writefmt3(ibuffer, INPUTSIZE, "/bin/ls %w | /bin/grep ?prefix %s\n", 0, buffer + lastspace, &lastslash, prefix);
 
             }
 
@@ -230,6 +229,8 @@ static void complete(void)
 
                 cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace, count - lastspace, 0));
 
+                icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
+
             }
 
         }
@@ -237,21 +238,13 @@ static void complete(void)
         else
         {
 
-            cstring_writefmt0(path, INPUTSIZE, "/bin\\0", 0);
             cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer, count, 0));
+
+            icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls /bin | /bin/grep ?prefix %s\n", 0, prefix);
 
         }
 
     }
-
-    if (cstring_length(path) && cstring_length(prefix))
-        icount = cstring_writefmt2(ibuffer, INPUTSIZE, "/bin/ls %s | /bin/grep ?prefix %s\n", 0, path, prefix);
-    else if (cstring_length(prefix))
-        icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
-    else if (cstring_length(path))
-        icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls %s\n", 0, path);
-    else
-        icount = cstring_writefmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
 
     if (icount)
     {
