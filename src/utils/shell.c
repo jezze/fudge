@@ -154,27 +154,25 @@ static void complete(void)
 
         char buffer[INPUTSIZE];
         unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
-        unsigned int lastwordoffset = buffer_lastbyte(buffer, count, ' ');
+        unsigned int lastspace = buffer_lastbyte(buffer, count, ' ');
 
-        if (lastwordoffset)
+        if (lastspace)
         {
 
-            char *name = buffer + lastwordoffset;
-            unsigned int namecount = count - lastwordoffset;
-            unsigned int lastslash = buffer_lastbyte(name, namecount, '/');
+            unsigned int lastslash = buffer_lastbyte(buffer + lastspace, count - lastspace, '/');
 
             if (lastslash)
             {
 
-                cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, name, lastslash, 0));
-                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, name + lastslash, namecount - lastslash, 0));
+                cstring_writezero(path, INPUTSIZE, buffer_write(path, INPUTSIZE, buffer + lastspace, lastslash, 0));
+                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace + lastslash, count - lastspace - lastslash, 0));
 
             }
 
             else
             {
 
-                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, name, namecount, 0));
+                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace, count - lastspace, 0));
 
             }
 
