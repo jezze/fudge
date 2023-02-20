@@ -104,12 +104,10 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 {
 
     unsigned int address = 0;
-    unsigned int offset = 0;
+    unsigned int underscore = buffer_findbyte(symbolname, count, '_');
     char module[32];
 
-    offset += buffer_write(module, 32, symbolname, buffer_findbyte(symbolname, count, '_'), offset);
-    offset += cstring_write(module, 32, ".ko", offset);
-    offset += cstring_writezero(module, 32, offset);
+    cstring_writefmt2(module, 32, "%w.ko\\0", 0, symbolname, &underscore);
 
     if (file_walk(FILE_L0, FILE_G0, module))
         address = findsymbol(FILE_L0, count, symbolname);

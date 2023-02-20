@@ -219,7 +219,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct ext2_superblock sb;
-    unsigned int rootid = 2;
 
     file_walk2(FILE_G5, option_getstring("volume"));
     file_link(FILE_G5);
@@ -230,6 +229,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         struct ext2_blockgroup bg;
         struct ext2_node node;
+        unsigned int rootid = 2;
         unsigned int blockgroup = (rootid - 1) / sb.nodeCountGroup;
         unsigned int nodeindex = (rootid - 1) % sb.nodeCountGroup;
         unsigned int blockindex = (rootid * sb.nodeSize) / sb.blockSize;

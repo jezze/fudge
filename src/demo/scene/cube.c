@@ -169,10 +169,11 @@ static void putline(int x0, int y0, int x1, int y1, unsigned int color)
     int dy = -math_abs(y1 - y0);
     int sy = y0 < y1 ? 1 : -1;
     int err = dx + dy;
-    int e2;
 
     for (;;)
     {
+
+        int e2;
 
         putpixel(x0, y0, color);
 
@@ -272,10 +273,6 @@ static void putpolygon(unsigned int *polygon, unsigned int psize, struct vector3
 void cube_render(struct scene *scene, unsigned int frame, unsigned int loopframe, unsigned int globalframe)
 {
 
-    unsigned int bcolor = 0xFF001020;
-    unsigned int ncolor = 0xFFFFFF00;
-    unsigned int ecolor = 0xFFFFFF00;
-    unsigned int ccolor = 0xFFFF00FF;
     double scale = hmid;
     double offx = wmid;
     double offy = hmid;
@@ -288,7 +285,7 @@ void cube_render(struct scene *scene, unsigned int frame, unsigned int loopframe
     cube.translation.z = 1.5 + math_sin(zmotion) * 1.5;
 
     model_transform(&cube);
-    clearscreen(bcolor);
+    clearscreen(0xFF001020);
 
     if (inperiod(frame, 120, scene->duration - 120))
     {
@@ -300,7 +297,7 @@ void cube_render(struct scene *scene, unsigned int frame, unsigned int loopframe
 
             struct vector3 *v = &cube.gvertices[i];
 
-            putcircle(v->x * scale + offx, v->y * scale + offy, math_abs(v->z) * scale / 2, ccolor);
+            putcircle(v->x * scale + offx, v->y * scale + offy, math_abs(v->z) * scale / 2, 0xFFFF00FF);
 
         }
 
@@ -315,10 +312,10 @@ void cube_render(struct scene *scene, unsigned int frame, unsigned int loopframe
         unsigned int polygon2[] = {5, 4, 7, 6};
         unsigned int polygon3[] = {1, 5, 6, 2};
 
-        putpolygon(polygon0, 4, cube.gvertices, ecolor, scale, offx, offy);
-        putpolygon(polygon1, 4, cube.gvertices, ecolor, scale, offx, offy);
-        putpolygon(polygon2, 4, cube.gvertices, ecolor, scale, offx, offy);
-        putpolygon(polygon3, 4, cube.gvertices, ecolor, scale, offx, offy);
+        putpolygon(polygon0, 4, cube.gvertices, 0xFFFFFF00, scale, offx, offy);
+        putpolygon(polygon1, 4, cube.gvertices, 0xFFFFFF00, scale, offx, offy);
+        putpolygon(polygon2, 4, cube.gvertices, 0xFFFFFF00, scale, offx, offy);
+        putpolygon(polygon3, 4, cube.gvertices, 0xFFFFFF00, scale, offx, offy);
 
     }
 
@@ -332,7 +329,7 @@ void cube_render(struct scene *scene, unsigned int frame, unsigned int loopframe
 
             struct vector3 *v = &cube.gvertices[i];
 
-            putcircle(v->x * scale + offx, v->y * scale + offy, math_abs(v->z) * scale / 8, ncolor);
+            putcircle(v->x * scale + offx, v->y * scale + offy, math_abs(v->z) * scale / 8, 0xFFFFFF00);
 
         }
 

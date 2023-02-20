@@ -213,9 +213,9 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
         {
 
             char num[64];
-            unsigned int u;
-            int i;
-            char *s;
+            unsigned int uvalue;
+            int ivalue;
+            char *svalue;
 
             switch (q)
             {
@@ -336,8 +336,8 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 break;
 
             case 'u':
-                u = *((unsigned int *)args[cargs++]);
-                offset += buffer_write(out, count, num, writevalue(num, 64, u, base, padding), offset);
+                uvalue = *((unsigned int *)args[cargs++]);
+                offset += buffer_write(out, count, num, writevalue(num, 64, uvalue, base, padding), offset);
                 interpreted = 0;
                 padding = 0;
                 base = 10;
@@ -345,8 +345,8 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 break;
 
             case 'i':
-                i = *((int *)args[cargs++]);
-                offset += buffer_write(out, count, num, writevalue(num, 64, i, base, padding), offset);
+                ivalue = *((int *)args[cargs++]);
+                offset += buffer_write(out, count, num, writevalue(num, 64, ivalue, base, padding), offset);
                 interpreted = 0;
                 padding = 0;
                 base = 10;
@@ -354,8 +354,8 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 break;
 
             case 's':
-                s = ((char *)args[cargs++]);
-                offset += buffer_write(out, count, s, cstring_length(s), offset);
+                svalue = ((char *)args[cargs++]);
+                offset += buffer_write(out, count, svalue, cstring_length(svalue), offset);
                 interpreted = 0;
                 padding = 0;
                 base = 10;
@@ -363,9 +363,9 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
                 break;
 
             case 'w':
-                s = ((char *)args[cargs++]);
-                u = *((unsigned int *)args[cargs++]);
-                offset += buffer_write(out, count, s, u, offset);
+                svalue = ((char *)args[cargs++]);
+                uvalue = *((unsigned int *)args[cargs++]);
+                offset += buffer_write(out, count, svalue, uvalue, offset);
                 interpreted = 0;
                 padding = 0;
                 base = 10;

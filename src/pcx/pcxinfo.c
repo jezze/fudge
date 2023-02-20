@@ -33,10 +33,10 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
         channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Identifier: %c\n", &header.identifier);
         channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Version: %c\n", &header.version);
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Encoding: %s\n", (header.encoding <= 1) ? encodings[(unsigned int)header.encoding] : "Unknown");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Encoding: %s\n", (header.encoding < 2) ? encodings[(unsigned int)header.encoding] : "Unknown");
         channel_sendfmt3(CHANNEL_DEFAULT, EVENT_DATA, "Size: %ix%ix%c\n", &width, &height, &header.bpp);
         channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Planes: %c\n", &header.nplanes);
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Palette mode: %s\n", (header.palettemode <= 3) ? palettemodes[header.palettemode] : "Unknown");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Palette mode: %s\n", (header.palettemode < 3) ? palettemodes[header.palettemode] : "Unknown");
 
         if (header.palettemode)
         {
