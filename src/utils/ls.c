@@ -20,10 +20,25 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             struct record *record = &records[i];
 
-            if (record->type == RECORD_TYPE_DIRECTORY)
-                channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w/\n", record->name, &record->length);
+            if (cstring_match(option_getstring("show"), "all"))
+            {
+
+                if (record->type == RECORD_TYPE_DIRECTORY)
+                    channel_sendfmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w/\n", &record->id, &record->size, record->name, &record->length);
+                else
+                    channel_sendfmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w\n", &record->id, &record->size, record->name, &record->length);
+
+            }
+
             else
-                channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", record->name, &record->length);
+            {
+
+                if (record->type == RECORD_TYPE_DIRECTORY)
+                    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w/\n", record->name, &record->length);
+                else
+                    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", record->name, &record->length);
+
+            }
 
         }
 
@@ -46,6 +61,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("show", "");
     file_duplicate(FILE_G0, FILE_PW);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
