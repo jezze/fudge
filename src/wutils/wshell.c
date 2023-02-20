@@ -125,8 +125,8 @@ static void interpret(void)
     if (icount)
     {
 
-        char obuffer[1000];
-        unsigned int ocount = runslang(obuffer, 1000, ibuffer, icount);
+        char obuffer[BUFFER_SIZE];
+        unsigned int ocount = runslang(obuffer, BUFFER_SIZE, ibuffer, icount);
 
         if (ocount)
         {
@@ -258,8 +258,8 @@ static void complete(void)
     if (icount)
     {
 
-        char obuffer[1000];
-        unsigned int ocount = runslang(obuffer, 1000, ibuffer, icount);
+        char obuffer[BUFFER_SIZE];
+        unsigned int ocount = runslang(obuffer, BUFFER_SIZE, ibuffer, icount);
 
         if (ocount)
         {
