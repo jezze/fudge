@@ -37,19 +37,7 @@ static void update(void)
 static void print(void *buffer, unsigned int count)
 {
 
-    char *b = buffer;
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (!ring_avail(&result))
-            ring_skip(&result, ring_find(&result, '\n') + 1);
-
-        if (b[i] != '\r')
-            ring_write(&result, &b[i], 1);
-
-    }
+    ring_overwrite(&result, buffer, count);
 
 }
 
@@ -159,7 +147,6 @@ static void interpret(void)
 
                 case EVENT_DATA:
                     print(data, message_datasize(&message));
-                    update();
 
                     break;
 
@@ -183,6 +170,8 @@ static void interpret(void)
         }
 
     }
+
+    update();
 
 }
 
