@@ -301,7 +301,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
         0xE8888888,
     };
 
-    if (textbox->mode == TEXTBOX_MODE_READONLY)
+    if (textbox->mode == TEXTBOX_MODE_READONLY || textbox->mode == TEXTBOX_MODE_SELECT)
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
     else
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));

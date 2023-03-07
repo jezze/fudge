@@ -48,6 +48,7 @@
 #define LAYOUT_PLACEMENT_STRETCHED              1
 #define TEXTBOX_MODE_NORMAL                     0
 #define TEXTBOX_MODE_READONLY                   1
+#define TEXTBOX_MODE_SELECT                     2
 
 struct widget_position
 {

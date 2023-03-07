@@ -441,7 +441,11 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     struct list_item *current = 0;
     struct widget_size total;
 
-    placeverticalflow(widget, &total, x, y, minw, minh, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED);
+    if (textbox->mode == TEXTBOX_MODE_SELECT)
+        placeverticalflow(widget, &total, x + 4, y + 4, minw, minh, maxw - 8, 50000, 0, 0, LAYOUT_PLACEMENT_STRETCHED);
+    else
+        placeverticalflow(widget, &total, x, y, minw, minh, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED);
+
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (textbox->scroll)

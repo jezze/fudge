@@ -119,7 +119,8 @@ static struct token textmodes[] =
 static struct token textboxmodes[] =
 {
     {TEXTBOX_MODE_NORMAL, "normal"},
-    {TEXTBOX_MODE_READONLY, "readonly"}
+    {TEXTBOX_MODE_READONLY, "readonly"},
+    {TEXTBOX_MODE_SELECT, "select"}
 };
 
 static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
@@ -334,7 +335,7 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
     {
 
     case WIDGET_ATTR_MODE:
-        textbox->mode = getkey(textboxmodes, 2, value);
+        textbox->mode = getkey(textboxmodes, 3, value);
 
         break;
 
@@ -585,10 +586,31 @@ static void getclipping(struct widget *widget, struct widget_position *position,
     {
 
     case WIDGET_TYPE_TEXTBOX:
-        position->x = widget->position.x + CONFIG_TEXTBOX_PADDING_WIDTH;
-        position->y = widget->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT;
-        size->w = widget->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
-        size->h = widget->size.h - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
+        {
+
+            struct widget_textbox *textbox = widget->data;
+
+            if (textbox->mode == TEXTBOX_MODE_SELECT)
+            {
+
+                position->x = widget->position.x + 4;
+                position->y = widget->position.y + 4;
+                size->w = widget->size.w - 4 * 2;
+                size->h = widget->size.h - 4 * 2;
+
+            }
+
+            else
+            {
+
+                position->x = widget->position.x + CONFIG_TEXTBOX_PADDING_WIDTH;
+                position->y = widget->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT;
+                size->w = widget->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
+                size->h = widget->size.h - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
+
+            }
+
+        }
 
         break;
 
@@ -616,6 +638,7 @@ unsigned int widget_intersectsx(struct widget *widget, int x)
     {
 
     case WIDGET_TYPE_TEXT:
+    case WIDGET_TYPE_TEXTBUTTON:
         parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
 
         getclipping(parent, &position, &size);
@@ -673,6 +696,7 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
     {
 
     case WIDGET_TYPE_TEXT:
+    case WIDGET_TYPE_TEXTBUTTON:
         parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
 
         getclipping(parent, &position, &size);

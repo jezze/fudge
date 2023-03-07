@@ -16,7 +16,7 @@ static void updatecontent(void)
     struct record records[4];
     unsigned int nrecords;
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ textbox id \"content\" in \"main\" mode \"readonly\"\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ textbox id \"content\" in \"main\" mode \"select\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
