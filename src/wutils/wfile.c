@@ -17,6 +17,7 @@ static void updatecontent(void)
     unsigned int nrecords;
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ textbox id \"content\" in \"main\" mode \"select\"\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"%../\" in \"content\" label \"../\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
@@ -30,7 +31,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            channel_sendfmt6(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"%w%s\" in \"content\" label \"%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            channel_sendfmt6(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"_%w%s\" in \"content\" label \"%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
         }
 
@@ -61,30 +62,22 @@ static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_wmclick *wmclick = mdata;
 
-    if (cstring_match(wmclick->clicked, "initrd:"))
+    switch (wmclick->clicked[0])
     {
 
-        cstring_writefmt0(path, 256, "initrd:\\0", 0);
+    case ':':
+        cstring_writefmt1(path, 256, "%s:\\0", 0, wmclick->clicked + 1);
         updatepath();
         updatecontent();
 
-    }
+        break;
 
-    else if (cstring_match(wmclick->clicked, "system:"))
-    {
-
-        cstring_writefmt0(path, 256, "system:\\0", 0);
+    case '_':
+        cstring_writefmt2(path, 256, "%s%s\\0", 0, path, wmclick->clicked + 1);
         updatepath();
         updatecontent();
 
-    }
-
-    else
-    {
-
-        cstring_writefmt2(path, 256, "%s%s\\0", 0, path, wmclick->clicked);
-        updatepath();
-        updatecontent();
+        break;
 
     }
 
@@ -100,8 +93,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ layout id \"top1\" in \"top\" type \"vertical\" padding \"8\"\n"
         "+ select id \"drive\" in \"top1\" label \"Drives\"\n"
         "+ layout id \"drivelist\" in \"drive\" type \"vertical\" placement \"stretched\"\n"
-        "+ choice id \"initrd:\" in \"drivelist\" label \"initrd:\"\n"
-        "+ choice id \"system:\" in \"drivelist\" label \"system:\"\n"
+        "+ choice id \":initrd\" in \"drivelist\" label \"initrd:\"\n"
+        "+ choice id \":system\" in \"drivelist\" label \"system:\"\n"
         "+ layout id \"top2\" in \"top\" type \"vertical\" padding \"8\" placement \"stretched\"\n"
         "+ textbox id \"pathbox\" in \"top2\"\n"
         "+ text id \"path\" in \"pathbox\"\n"
