@@ -474,7 +474,7 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
     widget_initsize(&total, rowinfo.width + 16 * 2, rowinfo.lineheight + 8 * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
-    textbutton->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_LEFT, widget->position.x, widget->size.w);
+    textbutton->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_LEFT, widget->position.x + 16, widget->size.w);
     textbutton->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
     textbutton->placement.chars = rowinfo.chars;
     textbutton->placement.font = font;
