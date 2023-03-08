@@ -451,7 +451,10 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     if (textbox->scroll)
     {
 
-        textbox->scroll = util_clamp(textbox->scroll, 0, total.h - 56);
+        if (textbox->mode == TEXTBOX_MODE_SELECT)
+            textbox->scroll = util_clamp(textbox->scroll, 0, (total.h > maxh) ? total.h - maxh + 8 : 0);
+        else
+            textbox->scroll = util_clamp(textbox->scroll, 0, total.h - 56);
 
         while ((current = pool_nextin(current, widget)))
         {
