@@ -99,8 +99,8 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
     widget_initsize(&total, rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
-    button->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_CENTER, widget->position.x, widget->size.w);
-    button->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    button->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_CENTER, 0, widget->size.w);
+    button->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, 0, widget->size.h);
     button->placement.chars = rowinfo.chars;
     button->placement.font = font;
 
@@ -118,8 +118,8 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
     widget_initsize(&total, rowinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
-    choice->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_LEFT, widget->position.x + CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
-    choice->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    choice->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_LEFT, CONFIG_CHOICE_PADDING_WIDTH, widget->size.w);
+    choice->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, 0, widget->size.h);
     choice->placement.chars = rowinfo.chars;
     choice->placement.font = font;
 
@@ -409,8 +409,8 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     }
 
     select->placement.extra = 16 + CONFIG_SELECT_PADDING_WIDTH * 2;
-    select->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_CENTER, widget->position.x + select->placement.extra, widget->size.w - select->placement.extra);
-    select->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    select->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_CENTER, select->placement.extra, widget->size.w - select->placement.extra);
+    select->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, 0, widget->size.h);
     select->placement.chars = rowinfo.chars;
     select->placement.font = pool_getfont(POOL_FONTBOLD);
 
@@ -478,8 +478,8 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
     widget_initsize(&total, rowinfo.width + 16 * 2, rowinfo.lineheight + 8 * 2);
     resize2(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
-    textbutton->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_LEFT, widget->position.x + 16, widget->size.w);
-    textbutton->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, widget->position.y, widget->size.h);
+    textbutton->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_LEFT, 16, widget->size.w);
+    textbutton->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, 0, widget->size.h);
     textbutton->placement.chars = rowinfo.chars;
     textbutton->placement.font = font;
 
