@@ -213,7 +213,7 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
         unsigned int offset;
         unsigned int frownum;
 
-        if (rownum < text->rendering.rownum)
+        if (rownum <= text->rendering.rownum)
         {
 
             offset = 0;
