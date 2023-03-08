@@ -784,6 +784,21 @@ unsigned int widget_isinteractive(struct widget *widget)
 
 }
 
+unsigned int widget_isscrollable(struct widget *widget)
+{
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_TEXTBOX:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 void widget_initposition(struct widget_position *position, int x, int y)
 {
 

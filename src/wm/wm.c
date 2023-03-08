@@ -82,6 +82,26 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
 }
 
+static struct widget *getscrollablewidgetat(int x, int y)
+{
+
+    struct list_item *current = 0;
+    struct widget *last = 0;
+
+    while ((current = pool_next(current)))
+    {
+ 
+        struct widget *child = current->data;
+
+        if (widget_isscrollable(child) && widget_intersects(child, x, y))
+            last = child;
+
+    }
+
+    return last;
+
+}
+
 static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
 {
 
@@ -118,17 +138,17 @@ static void damage(struct widget *widget)
 
 }
 
-static void scrollwidget(int amount)
+static void scrollwidget(struct widget *widget, int amount)
 {
 
-    if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX)
+    if (widget->type == WIDGET_TYPE_TEXTBOX)
     {
 
-        struct widget_textbox *textbox = state.focusedwidget->data;
+        struct widget_textbox *textbox = widget->data;
 
         textbox->scroll += amount;
 
-        damage(state.focusedwidget);
+        damage(widget);
 
     }
 
@@ -462,12 +482,14 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             break;
 
         case 0x49:
-            scrollwidget(-16);
+            if (widget_isscrollable(state.focusedwidget))
+                scrollwidget(state.focusedwidget, -16);
 
             break;
 
         case 0x51:
-            scrollwidget(16);
+            if (widget_isscrollable(state.focusedwidget))
+                scrollwidget(state.focusedwidget, 16);
 
             break;
 
@@ -620,8 +642,10 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousescroll *mousescroll = mdata;
+    struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    scrollwidget(mousescroll->relz * 16);
+    if (scrollablewidget)
+        scrollwidget(scrollablewidget, mousescroll->relz * 16);
 
 }
 
