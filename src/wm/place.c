@@ -315,14 +315,8 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
         {
 
             struct widget *child = current->data;
-            struct widget_position cpos;
-            struct widget_size cmax;
-            struct widget_size cmin;
 
-            widget_initposition(&cpos, widget->position.x, widget->position.y + widget->size.h);
-            widget_initsize(&cmax, widget->size.w, 512);
-            widget_initsize(&cmin, widget->size.w, 0);
-            place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+            placechild(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, 0, widget->size.w, 512, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
 
         }
 
@@ -337,10 +331,8 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
         {
 
             struct widget *child = current->data;
-            struct widget_position cpos;
 
-            widget_initposition(&cpos, widget->position.x, widget->position.y + widget->size.h);
-            place_widget(child, cpos.x, cpos.y, 0, 0, 0, 0);
+            placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, 0, 0, 0, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
 
         }
 
