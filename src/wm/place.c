@@ -37,6 +37,20 @@ static void resize2(struct widget *widget, int x, int y, int w, int h, int minw,
 
 }
 
+static void placechild(struct widget *widget, int x, int y, int minw, int minh, int maxw, int maxh, int paddingw, int paddingh, int stretchw, int stretchh)
+{
+
+    struct widget_position cpos;
+    struct widget_size cmax;
+    struct widget_size cmin;
+
+    widget_initposition(&cpos, x + paddingw, y + paddingh);
+    widget_initsize(&cmax, util_max(0, maxw - paddingw * 2), util_max(0, maxh - paddingh * 2));
+    widget_initsize(&cmin, (stretchw == LAYOUT_PLACEMENT_STRETCHED) ? cmax.w : 0, (stretchh == LAYOUT_PLACEMENT_STRETCHED) ? cmax.h : 0);
+    place_widget(widget, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+
+}
+
 static void placeverticalflow(struct widget *widget, struct widget_size *total, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingw, unsigned int paddingh, unsigned int placement)
 {
 
@@ -50,9 +64,6 @@ static void placeverticalflow(struct widget *widget, struct widget_size *total, 
     {
 
         struct widget *child = current->data;
-        struct widget_position cpos;
-        struct widget_size cmax;
-        struct widget_size cmin;
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
@@ -61,10 +72,7 @@ static void placeverticalflow(struct widget *widget, struct widget_size *total, 
 
             text->placement.firstrowx = lastrowx;
 
-            widget_initposition(&cpos, x + paddingw, y + paddingh + lastrowy);
-            widget_initsize(&cmax, util_max(0, maxw - paddingw * 2), util_max(0, maxh - total->h - paddingh * 2));
-            widget_initsize(&cmin, (placement == LAYOUT_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
-            place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+            placechild(child, x, y + lastrowy, minw, minh, maxw, maxh - total->h, paddingw, paddingh, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_NORMAL);
             addtotal(total, child, x, y, paddingw, paddingh);
 
             lastrowx = text->placement.lastrowx;
@@ -75,10 +83,7 @@ static void placeverticalflow(struct widget *widget, struct widget_size *total, 
         else
         {
 
-            widget_initposition(&cpos, x + paddingw, y + paddingh + total->h);
-            widget_initsize(&cmax, util_max(0, maxw - paddingw * 2), util_max(0, maxh - total->h - paddingh * 2));
-            widget_initsize(&cmin, (placement == LAYOUT_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
-            place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+            placechild(child, x, y + total->h, minw, minh, maxw, maxh - total->h, paddingw, paddingh, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_NORMAL);
             addtotal(total, child, x, y, paddingw, paddingh);
 
         }
@@ -156,14 +161,8 @@ static void placelayouthorizontal(struct widget *widget, int x, int y, unsigned 
     {
 
         struct widget *child = current->data;
-        struct widget_position cpos;
-        struct widget_size cmax;
-        struct widget_size cmin;
 
-        widget_initposition(&cpos, x + layout->padding + total.w, y + layout->padding);
-        widget_initsize(&cmax, util_max(0, maxw - total.w - layout->padding * 2), util_max(0, maxh - layout->padding * 2));
-        widget_initsize(&cmin, 0, (layout->placement == LAYOUT_PLACEMENT_STRETCHED) ? cmax.h : 0);
-        place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+        placechild(child, x + total.w, y, minw, minh, maxw - total.w, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, layout->placement);
         addtotal(&total, child, x, y, layout->padding, layout->padding);
 
     }
@@ -182,12 +181,8 @@ static void placelayoutmaximize(struct widget *widget, int x, int y, unsigned in
     {
 
         struct widget *child = current->data;
-        struct widget_position cpos;
-        struct widget_size cmax;
 
-        widget_initposition(&cpos, x + layout->padding, y + layout->padding);
-        widget_initsize(&cmax, util_max(0, maxw - layout->padding * 2), util_max(0, maxh - layout->padding * 2));
-        place_widget(child, cpos.x, cpos.y, cmax.w, cmax.h, cmax.w, cmax.h);
+        placechild(child, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_STRETCHED);
 
     }
 
@@ -208,14 +203,8 @@ static void placelayoutvertical(struct widget *widget, int x, int y, unsigned in
     {
 
         struct widget *child = current->data;
-        struct widget_position cpos;
-        struct widget_size cmax;
-        struct widget_size cmin;
 
-        widget_initposition(&cpos, x + layout->padding, y + layout->padding + total.h);
-        widget_initsize(&cmax, util_max(0, maxw - layout->padding * 2), util_max(0, maxh - total.h - layout->padding * 2));
-        widget_initsize(&cmin, (layout->placement == LAYOUT_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
-        place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+        placechild(child, x, y + total.h, minw, minh, maxw, maxh - total.h, layout->padding, layout->padding, layout->placement, LAYOUT_PLACEMENT_NORMAL);
         addtotal(&total, child, x, y, layout->padding, layout->padding);
 
     }
@@ -279,14 +268,8 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
     {
 
         struct widget *child = current->data;
-        struct widget_position cpos;
-        struct widget_size cmax;
-        struct widget_size cmin;
 
-        widget_initposition(&cpos, x + grid->padding + row.w, y + grid->padding + total.h);
-        widget_initsize(&cmax, util_max(0, (maxw / grid->columns) - grid->padding * 2), util_max(0, maxh - total.h - grid->padding * 2));
-        widget_initsize(&cmin, (grid->placement == GRID_PLACEMENT_STRETCHED) ? cmax.w : 0, 0);
-        place_widget(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+        placechild(child, x + row.w, y + total.h, minw, minh, maxw / grid->columns, maxh - total.h, grid->padding, grid->padding, grid->placement, GRID_PLACEMENT_NORMAL);
 
         row.w += (maxw / grid->columns);
 
@@ -496,12 +479,8 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
     {
 
         struct widget *child = current->data;
-        struct widget_position cpos;
-        struct widget_size cmax;
 
-        widget_initposition(&cpos, widget->position.x + CONFIG_WINDOW_BORDER_WIDTH, widget->position.y + CONFIG_WINDOW_BORDER_HEIGHT + CONFIG_WINDOW_BUTTON_HEIGHT);
-        widget_initsize(&cmax, util_max(0, widget->size.w - CONFIG_WINDOW_BORDER_WIDTH * 2), util_max(0, widget->size.h - CONFIG_WINDOW_BORDER_HEIGHT * 2 - CONFIG_WINDOW_BUTTON_HEIGHT));
-        place_widget(child, cpos.x, cpos.y, 0, 0, cmax.w, cmax.h);
+        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, minw, minh, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
 
     }
 
