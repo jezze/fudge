@@ -16,7 +16,7 @@ static void updatecontent(void)
     struct record records[4];
     unsigned int nrecords;
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ textbox id \"content\" in \"main\" mode \"select\"\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\"\n");
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"%../\" in \"content\" label \"../\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
@@ -99,7 +99,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ textbox id \"pathbox\" in \"top2\"\n"
         "+ text id \"path\" in \"pathbox\"\n"
         "+ layout id \"main\" in \"base\" type \"maximize\" padding \"8\"\n"
-        "+ textbox id \"content\" in \"main\" mode \"readonly\"\n";
+        "+ listbox id \"content\" in \"main\" mode \"readonly\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
     cstring_writefmt0(path, 256, "initrd:\\0", 0);

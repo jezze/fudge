@@ -162,6 +162,33 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
 }
 
+static void renderlistbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct widget_listbox *listbox = widget->data;
+    static unsigned int cmapnormal[3] = {
+        0xE8101010,
+        0xE8282828,
+        0xE8686868,
+    };
+    static unsigned int cmaphover[3] = {
+        0xE8101010,
+        0xE8282828,
+        0xE8787878,
+    };
+    static unsigned int cmapfocus[3] = {
+        0xE8101010,
+        0xE8282828,
+        0xE8888888,
+    };
+
+    if (listbox->mode == LISTBOX_MODE_READONLY)
+        blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
+    else
+        blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+
+}
+
 static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -302,7 +329,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
         0xE8888888,
     };
 
-    if (textbox->mode == TEXTBOX_MODE_READONLY || textbox->mode == TEXTBOX_MODE_SELECT)
+    if (textbox->mode == TEXTBOX_MODE_READONLY)
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
     else
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
@@ -384,6 +411,11 @@ static void renderwidget(struct blit_display *display, struct widget *widget, in
 
     case WIDGET_TYPE_IMAGE:
         renderimage(display, widget, line, x0, x2);
+
+        break;
+
+    case WIDGET_TYPE_LISTBOX:
+        renderlistbox(display, widget, line, x0, x2);
 
         break;
 

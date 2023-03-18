@@ -32,6 +32,7 @@ struct entry
         struct widget_fill fill;
         struct widget_grid grid;
         struct widget_image image;
+        struct widget_listbox listbox;
         struct widget_select select;
         struct widget_text text;
         struct widget_textbox textbox;

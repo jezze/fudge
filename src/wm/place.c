@@ -293,6 +293,34 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
 
 }
 
+static void placelistbox(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+{
+
+    struct widget_listbox *listbox = widget->data;
+    struct list_item *current = 0;
+    struct widget_size total;
+
+    placeverticalflow(widget, &total, x, y, minw, minh, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0, LAYOUT_PLACEMENT_STRETCHED);
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
+
+    if (listbox->scroll)
+    {
+
+        listbox->scroll = util_clamp(listbox->scroll, 0, (total.h > maxh) ? total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2 : 0);
+
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+
+            child->position.y -= listbox->scroll;
+
+        }
+
+    }
+
+}
+
 static void placeselect(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -370,20 +398,13 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     struct list_item *current = 0;
     struct widget_size total;
 
-    if (textbox->mode == TEXTBOX_MODE_SELECT)
-        placeverticalflow(widget, &total, x + 4, y + 4, minw, minh, maxw - 8, 50000, 0, 0, LAYOUT_PLACEMENT_STRETCHED);
-    else
-        placeverticalflow(widget, &total, x, y, minw, minh, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED);
-
+    placeverticalflow(widget, &total, x, y, minw, minh, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED);
     resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
     if (textbox->scroll)
     {
 
-        if (textbox->mode == TEXTBOX_MODE_SELECT)
-            textbox->scroll = util_clamp(textbox->scroll, 0, (total.h > maxh) ? total.h - maxh + 8 : 0);
-        else
-            textbox->scroll = util_clamp(textbox->scroll, 0, total.h - 56);
+        textbox->scroll = util_clamp(textbox->scroll, 0, total.h - 56);
 
         while ((current = pool_nextin(current, widget)))
         {
@@ -466,6 +487,11 @@ void place_widget(struct widget *widget, int x, int y, unsigned int minw, unsign
 
     case WIDGET_TYPE_IMAGE:
         placeimage(widget, x, y, minw, minh, maxw, maxh);
+
+        break;
+
+    case WIDGET_TYPE_LISTBOX:
+        placelistbox(widget, x, y, minw, minh, maxw, maxh);
 
         break;
 

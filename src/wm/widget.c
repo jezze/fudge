@@ -30,6 +30,7 @@ static struct token types[] =
     {WIDGET_TYPE_IMAGE, "image"},
     {WIDGET_TYPE_CHOICE, "choice"},
     {WIDGET_TYPE_LAYOUT, "layout"},
+    {WIDGET_TYPE_LISTBOX, "listbox"},
     {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_TEXT, "text"},
     {WIDGET_TYPE_TEXTBOX, "textbox"},
@@ -69,6 +70,12 @@ static struct token layoutplacements[] =
 {
     {LAYOUT_PLACEMENT_NORMAL, "normal"},
     {LAYOUT_PLACEMENT_STRETCHED, "stretched"}
+};
+
+static struct token listboxmodes[] =
+{
+    {LISTBOX_MODE_NORMAL, "normal"},
+    {LISTBOX_MODE_READONLY, "readonly"}
 };
 
 static struct token gridplacements[] =
@@ -119,8 +126,7 @@ static struct token textmodes[] =
 static struct token textboxmodes[] =
 {
     {TEXTBOX_MODE_NORMAL, "normal"},
-    {TEXTBOX_MODE_READONLY, "readonly"},
-    {TEXTBOX_MODE_SELECT, "select"}
+    {TEXTBOX_MODE_READONLY, "readonly"}
 };
 
 static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
@@ -267,6 +273,23 @@ static void setattributeimage(struct widget *widget, unsigned int attribute, cha
 
 }
 
+static void setattributelistbox(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_listbox *listbox = widget->data;
+
+    switch (attribute)
+    {
+
+    case WIDGET_ATTR_MODE:
+        listbox->mode = getkey(listboxmodes, 2, value);
+
+        break;
+
+    }
+
+}
+
 static void setattributeselect(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -335,7 +358,7 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
     {
 
     case WIDGET_ATTR_MODE:
-        textbox->mode = getkey(textboxmodes, 3, value);
+        textbox->mode = getkey(textboxmodes, 2, value);
 
         break;
 
@@ -410,6 +433,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case WIDGET_TYPE_LAYOUT:
         setattributelayout(widget, attribute, value);
+
+        break;
+
+    case WIDGET_TYPE_LISTBOX:
+        setattributelistbox(widget, attribute, value);
 
         break;
 
@@ -522,7 +550,7 @@ unsigned int widget_getcommand(char *value)
 unsigned int widget_gettype(char *value)
 {
 
-    return getkey(types, 11, value);
+    return getkey(types, 12, value);
 
 }
 
@@ -585,32 +613,19 @@ static void getclipping(struct widget *widget, struct widget_position *position,
     switch (widget->type)
     {
 
+    case WIDGET_TYPE_LISTBOX:
+        position->x = widget->position.x + 4;
+        position->y = widget->position.y + 4;
+        size->w = widget->size.w - 4 * 2;
+        size->h = widget->size.h - 4 * 2;
+
+        break;
+
     case WIDGET_TYPE_TEXTBOX:
-        {
-
-            struct widget_textbox *textbox = widget->data;
-
-            if (textbox->mode == TEXTBOX_MODE_SELECT)
-            {
-
-                position->x = widget->position.x + 4;
-                position->y = widget->position.y + 4;
-                size->w = widget->size.w - 4 * 2;
-                size->h = widget->size.h - 4 * 2;
-
-            }
-
-            else
-            {
-
-                position->x = widget->position.x + CONFIG_TEXTBOX_PADDING_WIDTH;
-                position->y = widget->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT;
-                size->w = widget->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
-                size->h = widget->size.h - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
-
-            }
-
-        }
+        position->x = widget->position.x + CONFIG_TEXTBOX_PADDING_WIDTH;
+        position->y = widget->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT;
+        size->w = widget->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
+        size->h = widget->size.h - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
 
         break;
 
@@ -772,6 +787,7 @@ unsigned int widget_isinteractive(struct widget *widget)
 
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHOICE:
+    case WIDGET_TYPE_LISTBOX:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_TEXTBOX:
     case WIDGET_TYPE_TEXTBUTTON:
@@ -789,6 +805,9 @@ unsigned int widget_isscrollable(struct widget *widget)
 
     switch (widget->type)
     {
+
+    case WIDGET_TYPE_LISTBOX:
+        return 1;
 
     case WIDGET_TYPE_TEXTBOX:
         return 1;

@@ -9,11 +9,12 @@
 #define WIDGET_TYPE_IMAGE                       4
 #define WIDGET_TYPE_CHOICE                      5
 #define WIDGET_TYPE_LAYOUT                      6
-#define WIDGET_TYPE_SELECT                      7
-#define WIDGET_TYPE_TEXT                        8
-#define WIDGET_TYPE_TEXTBOX                     9
-#define WIDGET_TYPE_TEXTBUTTON                  10
-#define WIDGET_TYPE_WINDOW                      11
+#define WIDGET_TYPE_LISTBOX                     7
+#define WIDGET_TYPE_SELECT                      8
+#define WIDGET_TYPE_TEXT                        9
+#define WIDGET_TYPE_TEXTBOX                     10
+#define WIDGET_TYPE_TEXTBUTTON                  11
+#define WIDGET_TYPE_WINDOW                      12
 #define WIDGET_STATE_NORMAL                     0
 #define WIDGET_STATE_HOVER                      1
 #define WIDGET_STATE_HOVEROFF                   2
@@ -46,9 +47,10 @@
 #define LAYOUT_TYPE_VERTICAL                    3
 #define LAYOUT_PLACEMENT_NORMAL                 0
 #define LAYOUT_PLACEMENT_STRETCHED              1
+#define LISTBOX_MODE_NORMAL                     0
+#define LISTBOX_MODE_READONLY                   1
 #define TEXTBOX_MODE_NORMAL                     0
 #define TEXTBOX_MODE_READONLY                   1
-#define TEXTBOX_MODE_SELECT                     2
 
 struct widget_position
 {
@@ -135,6 +137,14 @@ struct widget_image
         struct widget_size size;
 
     } placement;
+
+};
+
+struct widget_listbox
+{
+
+    unsigned int mode;
+    int scroll;
 
 };
 

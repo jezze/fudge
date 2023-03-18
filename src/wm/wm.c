@@ -139,7 +139,18 @@ static void damage(struct widget *widget)
 static void scrollwidget(struct widget *widget, int amount)
 {
 
-    if (widget->type == WIDGET_TYPE_TEXTBOX)
+    if (widget->type == WIDGET_TYPE_LISTBOX)
+    {
+
+        struct widget_listbox *listbox = widget->data;
+
+        listbox->scroll += amount;
+
+        damage(widget);
+
+    }
+
+    else if (widget->type == WIDGET_TYPE_TEXTBOX)
     {
 
         struct widget_textbox *textbox = widget->data;
