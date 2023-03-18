@@ -614,10 +614,10 @@ static void getclipping(struct widget *widget, struct widget_position *position,
     {
 
     case WIDGET_TYPE_LISTBOX:
-        position->x = widget->position.x + 4;
-        position->y = widget->position.y + 4;
-        size->w = widget->size.w - 4 * 2;
-        size->h = widget->size.h - 4 * 2;
+        position->x = widget->position.x + CONFIG_LISTBOX_PADDING_WIDTH;
+        position->y = widget->position.y + CONFIG_LISTBOX_PADDING_HEIGHT;
+        size->w = widget->size.w - CONFIG_LISTBOX_PADDING_WIDTH * 2;
+        size->h = widget->size.h - CONFIG_LISTBOX_PADDING_HEIGHT * 2;
 
         break;
 
@@ -807,8 +807,6 @@ unsigned int widget_isscrollable(struct widget *widget)
     {
 
     case WIDGET_TYPE_LISTBOX:
-        return 1;
-
     case WIDGET_TYPE_TEXTBOX:
         return 1;
 
