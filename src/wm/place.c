@@ -148,7 +148,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
+            placechild(child, x, y, minw, minw, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -174,7 +174,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_STRETCHED);
+            placechild(child, x, y, minw, minh, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_STRETCHED);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
