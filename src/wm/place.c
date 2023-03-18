@@ -130,118 +130,73 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 
 }
 
-static void placelayoutfloat(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        place_widget(child, x, y, 0, 0, maxw, maxh);
-
-    }
-
-    resize(widget, x, y, 0, 0, minw, minh, maxw, maxh);
-
-}
-
-static void placelayouthorizontal(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct widget_layout *layout = widget->data;
-    struct list_item *current = 0;
-    struct widget_size total;
-
-    widget_initsize(&total, 0, 0);
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        placechild(child, x + total.w, y, minw, minh, maxw - total.w, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, layout->placement);
-        addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-    }
-
-    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
-
-}
-
-static void placelayoutmaximize(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct widget_layout *layout = widget->data;
-    struct list_item *current = 0;
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        placechild(child, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_STRETCHED);
-
-    }
-
-    resize(widget, x, y, maxw, maxh, minw, minh, maxw, maxh);
-
-}
-
-static void placelayoutvertical(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct widget_layout *layout = widget->data;
-    struct list_item *current = 0;
-    struct widget_size total;
-
-    widget_initsize(&total, 0, 0);
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        placechild(child, x, y + total.h, minw, minh, maxw, maxh - total.h, layout->padding, layout->padding, layout->placement, LAYOUT_PLACEMENT_NORMAL);
-        addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-    }
-
-    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
-
-}
-
 static void placelayout(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_layout *layout = widget->data;
+    struct list_item *current = 0;
+    struct widget_size total;
+
+    widget_initsize(&total, 0, 0);
 
     switch (layout->type)
     {
 
     case LAYOUT_TYPE_FLOAT:
-        placelayoutfloat(widget, x, y, minw, minh, maxw, maxh);
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+
+            placechild(child, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
+            addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+        }
 
         break;
 
     case LAYOUT_TYPE_HORIZONTAL:
-        placelayouthorizontal(widget, x, y, minw, minh, maxw, maxh);
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+
+            placechild(child, x + total.w, y, minw, minh, maxw - total.w, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, layout->placement);
+            addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+        }
 
         break;
 
     case LAYOUT_TYPE_MAXIMIZE:
-        placelayoutmaximize(widget, x, y, minw, minh, maxw, maxh);
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+
+            placechild(child, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_STRETCHED);
+            addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+        }
 
         break;
 
     case LAYOUT_TYPE_VERTICAL:
-        placelayoutvertical(widget, x, y, minw, minh, maxw, maxh);
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+
+            placechild(child, x, y + total.h, minw, minh, maxw, maxh - total.h, layout->padding, layout->padding, layout->placement, LAYOUT_PLACEMENT_NORMAL);
+            addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+        }
 
         break;
 
     }
+
+    resize(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
 
