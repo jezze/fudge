@@ -145,7 +145,6 @@ struct widget_select
     struct
     {
 
-        int extra;
         int rx;
         int ry;
         unsigned int chars;

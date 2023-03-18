@@ -166,6 +166,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_select *select = widget->data;
+    unsigned int extra = CONFIG_SELECT_EXTRA + CONFIG_SELECT_PADDING_WIDTH * 2;
     static unsigned int cmapnormal[3] = {
         0xE8101010,
         0xE8484848,
@@ -188,9 +189,9 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
         0xE8FFFFFF,
     };
 
-    blit_panel(display, widget->position.x, widget->position.y, select->placement.extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
-    blit_iconhamburger(display, widget->position.x, widget->position.y, select->placement.extra, widget->size.h, line, x0, x2, cmapicon);
-    blit_panel(display, widget->position.x + select->placement.extra, widget->position.y, widget->size.w - select->placement.extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_iconhamburger(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, cmapicon);
+    blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + select->placement.ry, widget->position.y + select->placement.ry + select->placement.font->lineheight))
         blit_textnormal(display, select->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label), select->placement.chars, widget->position.x + select->placement.rx, widget->position.y + select->placement.ry, line, x0, x2);
