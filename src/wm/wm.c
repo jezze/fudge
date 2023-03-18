@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include "config.h"
 #include "util.h"
 #include "text.h"
 #include "widget.h"
@@ -8,9 +9,6 @@
 #include "place.h"
 #include "render.h"
 #include "parser.h"
-
-#define WINDOW_MIN_WIDTH                128
-#define WINDOW_MIN_HEIGHT               128
 
 struct state
 {
@@ -409,8 +407,8 @@ static void dragwidget(struct widget *widget)
 
                 damage(widget);
 
-                widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, WINDOW_MIN_WIDTH);
-                widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, WINDOW_MIN_HEIGHT);
+                widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH);
+                widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT);
 
                 damage(widget);
 

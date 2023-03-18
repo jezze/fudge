@@ -13,3 +13,5 @@
 #define CONFIG_WINDOW_BORDER_HEIGHT         16
 #define CONFIG_WINDOW_BUTTON_WIDTH          36
 #define CONFIG_WINDOW_BUTTON_HEIGHT         36
+#define CONFIG_WINDOW_MIN_WIDTH             128
+#define CONFIG_WINDOW_MIN_HEIGHT            128
