@@ -292,7 +292,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 {
 
     struct widget_select *select = widget->data;
-    struct text_font *font = pool_getfont(POOL_FONTNORMAL);
+    struct text_font *font = pool_getfont(POOL_FONTBOLD);
     unsigned int extra = CONFIG_SELECT_EXTRA + CONFIG_SELECT_PADDING_WIDTH * 2;
     struct text_rowinfo rowinfo;
 
@@ -334,7 +334,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     select->placement.rx = text_getrowx(&rowinfo, TEXT_HALIGN_CENTER, extra, widget->size.w - extra);
     select->placement.ry = text_getrowy(&rowinfo, TEXT_VALIGN_MIDDLE, 0, widget->size.h);
     select->placement.chars = rowinfo.chars;
-    select->placement.font = pool_getfont(POOL_FONTBOLD);
+    select->placement.font = font;
 
 }
 
