@@ -253,6 +253,7 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state);
 unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);
+unsigned int widget_shouldrender(struct widget *widget, int line);
 unsigned int widget_isdragable(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
 unsigned int widget_isscrollable(struct widget *widget);

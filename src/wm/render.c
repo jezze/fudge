@@ -497,7 +497,7 @@ void render(struct blit_display *display, struct blit_damage *damage)
 
                 struct widget *widget = current->data;
 
-                if (widget_intersectsy(widget, line))
+                if (widget_shouldrender(widget, line))
                 {
 
                     int x0 = util_max(widget->position.x, damage->position0.x);

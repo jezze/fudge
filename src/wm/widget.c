@@ -644,64 +644,14 @@ static void getclipping(struct widget *widget, struct widget_position *position,
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
-    struct widget_position position;
-    struct widget_size size;
-    struct widget *parent;
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_TEXT:
-    case WIDGET_TYPE_TEXTBUTTON:
-        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
-
-        if (parent)
-        {
-
-            getclipping(parent, &position, &size);
-
-            return util_intersects(x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(x, position.x, position.x + size.w);
-
-        }
-
-    default:
-        return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
-
-    }
-
-    return 0;
+    return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
 
 }
 
 unsigned int widget_intersectsy(struct widget *widget, int y)
 {
 
-    struct widget_position position;
-    struct widget_size size;
-    struct widget *parent;
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_TEXT:
-    case WIDGET_TYPE_TEXTBUTTON:
-        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
-
-        if (parent)
-        {
-
-            getclipping(parent, &position, &size);
-
-            return util_intersects(y, widget->position.y, widget->position.y + widget->size.h) && util_intersects(y, position.y, position.y + size.h);
-
-        }
-
-    default:
-        return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
-
-    }
-
-    return 0;
+    return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
 
 }
 
@@ -709,6 +659,39 @@ unsigned int widget_intersects(struct widget *widget, int x, int y)
 {
 
     return widget_intersectsx(widget, x) && widget_intersectsy(widget, y);
+
+}
+
+unsigned int widget_shouldrender(struct widget *widget, int line)
+{
+
+    struct widget *parent;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_TEXT:
+    case WIDGET_TYPE_TEXTBUTTON:
+        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
+
+        if (parent)
+        {
+
+            struct widget_position position;
+            struct widget_size size;
+
+            getclipping(parent, &position, &size);
+
+            return widget_intersectsy(widget, line) && util_intersects(line, position.y, position.y + size.h);
+
+        }
+
+    default:
+        return widget_intersectsy(widget, line);
+
+    }
+
+    return 0;
 
 }
 
