@@ -37,7 +37,7 @@ static void placewidget2(struct widget *widget, int x, int y, int w, int h, int 
 
 }
 
-static void placechild(struct widget *widget, int x, int y, int minw, int minh, int maxw, int maxh, int paddingw, int paddingh, int stretchw, int stretchh)
+static void placechild(struct widget *widget, int x, int y, int maxw, int maxh, int paddingw, int paddingh, int stretchw, int stretchh)
 {
 
     struct widget_position cpos;
@@ -103,7 +103,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, minw, minw, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
+            placechild(child, x, y, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -116,7 +116,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x + total.w, y, minw, minh, maxw - total.w, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, layout->placement);
+            placechild(child, x + total.w, y, maxw - total.w, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_NORMAL, layout->placement);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -129,7 +129,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, minw, minh, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_STRETCHED);
+            placechild(child, x, y, maxw, maxh, layout->padding, layout->padding, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_STRETCHED);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -142,7 +142,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y + total.h, minw, minh, maxw, maxh - total.h, layout->padding, layout->padding, layout->placement, LAYOUT_PLACEMENT_NORMAL);
+            placechild(child, x, y + total.h, maxw, maxh - total.h, layout->padding, layout->padding, layout->placement, LAYOUT_PLACEMENT_NORMAL);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -180,7 +180,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 
         struct widget *child = current->data;
 
-        placechild(child, x + row.w, y + rowtotal.h, minw, minh, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding, grid->placement, GRID_PLACEMENT_NORMAL);
+        placechild(child, x + row.w, y + rowtotal.h, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding, grid->placement, GRID_PLACEMENT_NORMAL);
         addtotal(&total, child, x, y, grid->padding, grid->padding);
 
         row.w += (maxw / grid->columns);
@@ -263,7 +263,7 @@ static void placelistbox(struct widget *widget, int x, int y, unsigned int minw,
 
         struct widget *child = current->data;
 
-        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, minw, minh, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_NORMAL);
+        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_NORMAL);
         addtotal(&total, child, x, y, 0, 0);
 
     }
@@ -309,7 +309,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, 0, widget->size.w, 512, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
+            placechild(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, 512, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
 
         }
 
@@ -325,7 +325,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, 0, 0, 0, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
+            placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, 0, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
 
         }
 
@@ -379,7 +379,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
             text->placement.firstrowx = lastrowx;
 
-            placechild(child, x, y + lastrowy, minw, minh, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_NORMAL);
+            placechild(child, x, y + lastrowy, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, LAYOUT_PLACEMENT_STRETCHED, LAYOUT_PLACEMENT_NORMAL);
             addtotal(&total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
 
             lastrowx = text->placement.lastrowx;
@@ -436,7 +436,7 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 
         struct widget *child = current->data;
 
-        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, minw, minh, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
+        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
 
     }
 
