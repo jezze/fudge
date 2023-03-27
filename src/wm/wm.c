@@ -123,7 +123,6 @@ static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
 static void damage(struct widget *widget)
 {
 
-    struct list_item *current = 0;
     int x0 = util_clamp(widget->position.x, 0, display.size.w);
     int y0 = util_clamp(widget->position.y, 0, display.size.h);
     int x2 = util_clamp(widget->position.x + widget->size.w, 0, display.size.w);
@@ -131,8 +130,17 @@ static void damage(struct widget *widget)
 
     render_damage(&displaydamage, x0, y0, x2, y2);
 
+}
+
+static void damageall(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+
+    damage(widget);
+
     while ((current = pool_nextin(current, widget)))
-        damage(current->data);
+        damageall(current->data);
 
 }
 
@@ -180,7 +188,7 @@ static void bump(struct widget *widget)
 {
 
     pool_bump(widget);
-    damage(widget);
+    damageall(widget);
     bumpmouse();
 
 }
@@ -212,7 +220,7 @@ static void placewindows(unsigned int source)
 
             }
 
-            damage(widget);
+            damageall(widget);
 
         }
 
@@ -232,7 +240,7 @@ static void destroy(struct widget *widget)
     if (state.focusedwindow == widget)
         state.focusedwindow = 0;
 
-    damage(widget);
+    damageall(widget);
     pool_destroy(widget);
 
 }
@@ -268,7 +276,7 @@ static void setfocuswidget(struct widget *widget)
 
         widget_setstate(state.focusedwidget, WIDGET_STATE_FOCUSOFF);
         widget_setstate(state.focusedwidget, WIDGET_STATE_NORMAL);
-        damage(state.focusedwidget);
+        damageall(state.focusedwidget);
 
         state.focusedwidget = 0;
 
@@ -279,7 +287,7 @@ static void setfocuswidget(struct widget *widget)
 
         state.focusedwidget = widget;
 
-        damage(state.focusedwidget);
+        damageall(state.focusedwidget);
 
         if (widget->type == WIDGET_TYPE_SELECT)
         {
@@ -309,7 +317,7 @@ static void setfocuswindow(struct widget *widget)
 
         widget_setstate(state.focusedwindow, WIDGET_STATE_FOCUSOFF);
         widget_setstate(state.focusedwindow, WIDGET_STATE_NORMAL);
-        damage(state.focusedwindow);
+        damageall(state.focusedwindow);
 
         state.focusedwindow = 0;
 
@@ -334,7 +342,7 @@ static void sethover(struct widget *widget)
 
         widget_setstate(state.hoverwidget, WIDGET_STATE_HOVEROFF);
         widget_setstate(state.hoverwidget, WIDGET_STATE_NORMAL);
-        damage(state.hoverwidget);
+        damageall(state.hoverwidget);
 
         state.hoverwidget = 0;
 
@@ -345,7 +353,7 @@ static void sethover(struct widget *widget)
 
         state.hoverwidget = widget;
 
-        damage(state.hoverwidget);
+        damageall(state.hoverwidget);
 
     }
 
@@ -404,24 +412,24 @@ static void dragwidget(struct widget *widget)
             if (state.mousebuttonleft)
             {
 
-                damage(widget);
+                damageall(widget);
 
                 widget->position.x += state.mousemovement.x;
                 widget->position.y += state.mousemovement.y;
 
-                damage(widget);
+                damageall(widget);
 
             }
 
             if (state.mousebuttonright)
             {
 
-                damage(widget);
+                damageall(widget);
 
                 widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH);
                 widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT);
 
-                damage(widget);
+                damageall(widget);
 
             }
 
