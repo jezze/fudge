@@ -167,19 +167,21 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 
     struct widget_grid *grid = widget->data;
     struct list_item *current = 0;
-    struct widget_size row;
     struct widget_size total;
+    struct widget_size row;
+    struct widget_size rowtotal;
     unsigned int column = 0;
 
     widget_initsize(&row, 0, 0);
-    widget_initsize(&total, 0, 0);
+    widget_initsize(&rowtotal, 0, 0);
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
 
-        placechild(child, x + row.w, y + total.h, minw, minh, maxw / grid->columns, maxh - total.h, grid->padding, grid->padding, grid->placement, GRID_PLACEMENT_NORMAL);
+        placechild(child, x + row.w, y + rowtotal.h, minw, minh, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding, grid->placement, GRID_PLACEMENT_NORMAL);
+        addtotal(&total, child, x, y, grid->padding, grid->padding);
 
         row.w += (maxw / grid->columns);
 
@@ -189,14 +191,13 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
         if (++column % grid->columns == 0)
         {
 
-            widget_initsize(&total, total.w + util_max(total.w, row.w), total.h + row.h);
+            widget_initsize(&rowtotal, 0, rowtotal.h + row.h);
             widget_initsize(&row, 0, 0);
 
         }
 
     }
 
-    widget_initsize(&total, total.w + util_max(total.w, row.w), total.h + row.h);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
 }
