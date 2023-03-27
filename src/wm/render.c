@@ -476,6 +476,39 @@ void render_damage(struct blit_damage *damage, int x0, int y0, int x2, int y2)
 
 }
 
+static unsigned int shouldrender(struct widget *widget, int line)
+{
+
+    struct widget *parent;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_TEXT:
+    case WIDGET_TYPE_TEXTBUTTON:
+        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
+
+        if (parent)
+        {
+
+            struct widget_position position;
+            struct widget_size size;
+
+            widget_getclipping(parent, &position, &size);
+
+            return widget_intersectsy(widget, line) && util_intersects(line, position.y, position.y + size.h);
+
+        }
+
+    default:
+        return widget_intersectsy(widget, line);
+
+    }
+
+    return 0;
+
+}
+
 void render(struct blit_display *display, struct blit_damage *damage)
 {
 
@@ -497,7 +530,7 @@ void render(struct blit_display *display, struct blit_damage *damage)
 
                 struct widget *widget = current->data;
 
-                if (widget_shouldrender(widget, line))
+                if (shouldrender(widget, line))
                 {
 
                     int x0 = util_max(widget->position.x, damage->position0.x);

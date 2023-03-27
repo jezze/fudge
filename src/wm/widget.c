@@ -607,7 +607,7 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 
 }
 
-static void getclipping(struct widget *widget, struct widget_position *position, struct widget_size *size)
+void widget_getclipping(struct widget *widget, struct widget_position *position, struct widget_size *size)
 {
 
     switch (widget->type)
@@ -659,39 +659,6 @@ unsigned int widget_intersects(struct widget *widget, int x, int y)
 {
 
     return widget_intersectsx(widget, x) && widget_intersectsy(widget, y);
-
-}
-
-unsigned int widget_shouldrender(struct widget *widget, int line)
-{
-
-    struct widget *parent;
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_TEXT:
-    case WIDGET_TYPE_TEXTBUTTON:
-        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
-
-        if (parent)
-        {
-
-            struct widget_position position;
-            struct widget_size size;
-
-            getclipping(parent, &position, &size);
-
-            return widget_intersectsy(widget, line) && util_intersects(line, position.y, position.y + size.h);
-
-        }
-
-    default:
-        return widget_intersectsy(widget, line);
-
-    }
-
-    return 0;
 
 }
 
