@@ -668,18 +668,13 @@ unsigned int widget_intersectsx(struct widget *widget, int x)
             if (util_intersects(x, widget->position.x, widget->position.x + widget->size.w))
                 return 1;
 
-            if (widget->state == WIDGET_STATE_FOCUS)
+            while ((current = pool_nextin(current, widget)))
             {
 
-                while ((current = pool_nextin(current, widget)))
-                {
+                struct widget *child = current->data;
 
-                    struct widget *child = current->data;
-
-                    if (util_intersects(x, child->position.x, child->position.x + child->size.w))
-                        return 1;
-
-                }
+                if (util_intersects(x, child->position.x, child->position.x + child->size.w))
+                    return 1;
 
             }
 
@@ -726,18 +721,13 @@ unsigned int widget_intersectsy(struct widget *widget, int y)
             if (util_intersects(y, widget->position.y, widget->position.y + widget->size.h))
                 return 1;
 
-            if (widget->state == WIDGET_STATE_FOCUS)
+            while ((current = pool_nextin(current, widget)))
             {
 
-                while ((current = pool_nextin(current, widget)))
-                {
+                struct widget *child = current->data;
 
-                    struct widget *child = current->data;
-
-                    if (util_intersects(y, child->position.y, child->position.y + child->size.h))
-                        return 1;
-
-                }
+                if (util_intersects(y, child->position.y, child->position.y + child->size.h))
+                    return 1;
 
             }
 
