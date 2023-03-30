@@ -14,6 +14,7 @@ struct pool_pcxresource
 
 };
 
+struct list_item *pool_prev(struct list_item *current);
 struct list_item *pool_next(struct list_item *current);
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent);
 struct list_item *pool_nextsource(struct list_item *current, unsigned int source);

@@ -55,6 +55,13 @@ static struct text_font fonts[MAX_FONTS];
 static unsigned char fontnormal[FONTDATA_SIZE];
 static unsigned char fontbold[FONTDATA_SIZE];
 
+struct list_item *pool_prev(struct list_item *current)
+{
+
+    return (current) ? current->prev : widgetlist.tail;
+
+}
+
 struct list_item *pool_next(struct list_item *current)
 {
 

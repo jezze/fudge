@@ -64,19 +64,18 @@ static struct widget *getinteractivewidgetat(int x, int y)
 {
 
     struct list_item *current = 0;
-    struct widget *last = 0;
 
-    while ((current = pool_next(current)))
+    while ((current = pool_prev(current)))
     {
  
         struct widget *child = current->data;
 
         if (widget_isinteractive(child) && widget_intersects(child, x, y))
-            last = child;
+            return child;
 
     }
 
-    return last;
+    return 0;
 
 }
 
@@ -84,19 +83,18 @@ static struct widget *getscrollablewidgetat(int x, int y)
 {
 
     struct list_item *current = 0;
-    struct widget *last = 0;
 
-    while ((current = pool_next(current)))
+    while ((current = pool_prev(current)))
     {
  
         struct widget *child = current->data;
 
         if (widget_isscrollable(child) && widget_intersects(child, x, y))
-            last = child;
+            return child;
 
     }
 
-    return last;
+    return 0;
 
 }
 
@@ -104,19 +102,18 @@ static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
 {
 
     struct list_item *current = 0;
-    struct widget *last = 0;
 
-    while ((current = pool_next(current)))
+    while ((current = pool_prev(current)))
     {
  
         struct widget *child = current->data;
 
         if (child->type == type && widget_intersects(child, x, y))
-            last = child;
+            return child;
 
     }
 
-    return last;
+    return 0;
 
 }
 
