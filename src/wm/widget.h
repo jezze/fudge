@@ -68,19 +68,54 @@ struct widget_size
 
 };
 
+struct widget_cache_placement
+{
+
+    int rx;
+    int ry;
+    unsigned int chars;
+    struct text_font *font;
+
+};
+
+struct widget_cache_placement2
+{
+
+    unsigned int rows;
+    int firstrowx;
+    int lastrowx;
+    int lastrowy;
+    struct text_font *font;
+
+};
+
+struct widget_cache_placement3
+{
+
+    unsigned int loaded;
+    struct widget_size size;
+
+};
+
+struct widget_cache_rendering
+{
+
+    unsigned int exist;
+    unsigned int rownum;
+    unsigned int start;
+    unsigned int length;
+    unsigned int chars;
+    int rx;
+    int ry;
+    char *string;
+
+};
+
 struct widget_button
 {
 
     unsigned int label;
-    struct
-    {
-
-        int rx;
-        int ry;
-        unsigned int chars;
-        struct text_font *font;
-
-    } placement;
+    struct widget_cache_placement placement;
 
 };
 
@@ -88,15 +123,7 @@ struct widget_choice
 {
 
     unsigned int label;
-    struct
-    {
-
-        int rx;
-        int ry;
-        unsigned int chars;
-        struct text_font *font;
-
-    } placement;
+    struct widget_cache_placement placement;
 
 };
 
@@ -130,13 +157,7 @@ struct widget_image
 
     unsigned int type;
     unsigned int source;
-    struct
-    {
-
-        unsigned int loaded;
-        struct widget_size size;
-
-    } placement;
+    struct widget_cache_placement3 placement;
 
 };
 
@@ -152,15 +173,7 @@ struct widget_select
 {
 
     unsigned int label;
-    struct
-    {
-
-        int rx;
-        int ry;
-        unsigned int chars;
-        struct text_font *font;
-
-    } placement;
+    struct widget_cache_placement placement;
 
 };
 
@@ -173,29 +186,8 @@ struct widget_text
     unsigned int mode;
     unsigned int weight;
     unsigned int wrap;
-    struct
-    {
-
-        unsigned int rows;
-        int firstrowx;
-        int lastrowx;
-        int lastrowy;
-        struct text_font *font;
-
-    } placement;
-    struct
-    {
-
-        unsigned int exist;
-        unsigned int rownum;
-        unsigned int start;
-        unsigned int length;
-        unsigned int chars;
-        int rx;
-        int ry;
-        char *string;
-
-    } rendering;
+    struct widget_cache_placement2 placement;
+    struct widget_cache_rendering rendering;
 
 };
 
@@ -211,15 +203,7 @@ struct widget_textbutton
 {
 
     unsigned int label;
-    struct
-    {
-
-        int rx;
-        int ry;
-        unsigned int chars;
-        struct text_font *font;
-
-    } placement;
+    struct widget_cache_placement placement;
 
 };
 

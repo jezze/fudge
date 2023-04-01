@@ -121,7 +121,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (w + metricsdata.width >= maxw)
+        if (w + metricsdata.width > maxw)
         {
 
             switch (wrap)

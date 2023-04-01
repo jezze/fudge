@@ -225,7 +225,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
 }
 
-static unsigned int updatetextcache(struct widget *widget, struct widget_text *text, int line)
+static unsigned int updatetextcache(struct widget *widget, struct widget_text *text, struct widget_cache_rendering *rendering, int line)
 {
 
     unsigned int rownum = (line - widget->position.y) / text->placement.font->lineheight;
@@ -233,7 +233,7 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
     if (rownum >= text->placement.rows)
         return 0;
 
-    if (!text->rendering.exist || text->rendering.rownum != rownum)
+    if (!rendering->exist || rendering->rownum != rownum)
     {
 
         unsigned int rowx = (rownum) ? 0 : text->placement.firstrowx;
@@ -241,7 +241,7 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
         unsigned int offset;
         unsigned int frownum;
 
-        if (rownum <= text->rendering.rownum)
+        if (rownum <= rendering->rownum)
         {
 
             offset = 0;
@@ -252,23 +252,23 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
         else
         {
 
-            offset = text->rendering.start;
-            frownum = text->rendering.rownum;
+            offset = rendering->start;
+            frownum = rendering->rownum;
 
         }
 
-        text->rendering.rownum = rownum;
-        text->rendering.start = text_getrowstart(text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), frownum, rownum, text->wrap, widget->size.w, text->placement.firstrowx, offset);
-        text->rendering.length = text_getrowinfo(&rowinfo, text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, text->rendering.start);
-        text->rendering.rx = text_getrowx(&rowinfo, text->halign, rowx, widget->size.w - rowx);
-        text->rendering.ry = text_getrowy(&rowinfo, text->valign, text->rendering.rownum * rowinfo.lineheight, widget->size.h);
-        text->rendering.chars = rowinfo.chars;
-        text->rendering.string = pool_getstring(text->content) + text->rendering.start;
-        text->rendering.exist = 1;
+        rendering->rownum = rownum;
+        rendering->start = text_getrowstart(text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), frownum, rownum, text->wrap, widget->size.w, text->placement.firstrowx, offset);
+        rendering->length = text_getrowinfo(&rowinfo, text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, rendering->start);
+        rendering->rx = text_getrowx(&rowinfo, text->halign, rowx, widget->size.w - rowx);
+        rendering->ry = text_getrowy(&rowinfo, text->valign, rendering->rownum * rowinfo.lineheight, widget->size.h);
+        rendering->chars = rowinfo.chars;
+        rendering->string = pool_getstring(text->content) + rendering->start;
+        rendering->exist = 1;
 
     }
 
-    return text->rendering.length;
+    return rendering->length;
 
 }
 
@@ -277,7 +277,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
     struct widget_text *text = widget->data;
 
-    if (updatetextcache(widget, text, line))
+    if (updatetextcache(widget, text, &text->rendering, line))
     {
 
         static unsigned int cmapnormal[1] = {
