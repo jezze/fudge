@@ -51,11 +51,11 @@ static void placechild(struct widget *widget, int x, int y, int maxw, int maxh, 
 
 }
 
-static void updatecache(struct widget *widget, struct widget_cache_placement *placement, struct text_rowinfo *rowinfo, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign)
+static void updatecache(struct widget *widget, struct widget_cache_placement *placement, struct text_rowinfo *rowinfo, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int w, int h)
 {
 
-    placement->rx = text_getrowx(rowinfo, halign, paddingx, widget->size.w);
-    placement->ry = text_getrowy(rowinfo, valign, paddingy, widget->size.h);
+    placement->rx = text_getrowx(rowinfo, halign, paddingx, w);
+    placement->ry = text_getrowy(rowinfo, valign, paddingy, h);
     placement->chars = rowinfo->chars;
     placement->font = font;
 
@@ -70,7 +70,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
     text_getrowinfo(&rowinfo, font, pool_getstring(button->label), pool_getcstringlength(button->label), TEXT_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
     placewidget2(widget, x, y, rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
-    updatecache(widget, &button->placement, &rowinfo, font, 0, 0, TEXT_HALIGN_CENTER, TEXT_VALIGN_MIDDLE);
+    updatecache(widget, &button->placement, &rowinfo, font, 0, 0, TEXT_HALIGN_CENTER, TEXT_VALIGN_MIDDLE, widget->size.w, widget->size.h);
 
 }
 
@@ -83,7 +83,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 
     text_getrowinfo(&rowinfo, font, pool_getstring(choice->label), pool_getcstringlength(choice->label), TEXT_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
-    updatecache(widget, &choice->placement, &rowinfo, font, CONFIG_CHOICE_PADDING_WIDTH, 0, TEXT_HALIGN_LEFT, TEXT_VALIGN_MIDDLE);
+    updatecache(widget, &choice->placement, &rowinfo, font, CONFIG_CHOICE_PADDING_WIDTH, 0, TEXT_HALIGN_LEFT, TEXT_VALIGN_MIDDLE, widget->size.w, widget->size.h);
 
 }
 
@@ -333,7 +333,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     }
 
-    updatecache(widget, &select->placement, &rowinfo, font, extra, 0, TEXT_HALIGN_CENTER, TEXT_VALIGN_MIDDLE);
+    updatecache(widget, &select->placement, &rowinfo, font, extra, 0, TEXT_HALIGN_CENTER, TEXT_VALIGN_MIDDLE, widget->size.w - extra, widget->size.h);
 
 }
 
@@ -417,7 +417,7 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
 
     text_getrowinfo(&rowinfo, font, pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), TEXT_WRAP_NONE, maxw - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);
     placewidget2(widget, x, y, rowinfo.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
-    updatecache(widget, &textbutton->placement, &rowinfo, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, TEXT_HALIGN_LEFT, TEXT_VALIGN_MIDDLE);
+    updatecache(widget, &textbutton->placement, &rowinfo, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, TEXT_HALIGN_LEFT, TEXT_VALIGN_MIDDLE, widget->size.w, widget->size.h);
 
 }
 
