@@ -77,9 +77,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 {
 
     unsigned int si = 0;
-    unsigned int w = 0;
     unsigned int sw = 0;
-    unsigned int h = 0;
     unsigned int sh = 0;
     unsigned int i;
 
@@ -107,15 +105,15 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
         cw = metricsdata.width;
         ch = metricsdata.ascent + metricsdata.descent;
 
-        w = w + cw;
-        h = util_max(h, ch);
+        rowinfo->width = rowinfo->width + cw;
+        rowinfo->height = util_max(rowinfo->height, ch);
 
         if (text[i] == ' ')
         {
 
             si = i;
-            sw = w;
-            sh = h;
+            sw = rowinfo->width;
+            sh = rowinfo->height;
 
         }
 
@@ -128,7 +126,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (w + cw > maxw)
+        if (rowinfo->width + cw > maxw)
         {
 
             switch (wrap)
@@ -150,8 +148,6 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
                 break;
 
             case TEXT_WRAP_CHAR:
-                rowinfo->width = w;
-                rowinfo->height = h;
                 rowinfo->length = i - offset;
                 rowinfo->iend = rowinfo->istart + rowinfo->length;
 
@@ -159,8 +155,6 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
             case TEXT_WRAP_NONE:
             default:
-                rowinfo->width = w;
-                rowinfo->height = h;
                 rowinfo->length = i - offset;
                 rowinfo->iend = rowinfo->istart + rowinfo->length;
 
@@ -172,8 +166,6 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
     }
 
-    rowinfo->width = w;
-    rowinfo->height = h;
     rowinfo->length = i - offset;
     rowinfo->iend = rowinfo->istart + rowinfo->length;
 
