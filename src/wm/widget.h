@@ -73,6 +73,7 @@ struct widget_cache_placement
 
     int rx;
     int ry;
+    unsigned int istart;
     unsigned int chars;
     struct text_font *font;
 
@@ -102,11 +103,11 @@ struct widget_cache_rendering
 
     unsigned int exist;
     unsigned int rownum;
-    unsigned int start;
+    unsigned int icurrent;
+    unsigned int istart;
     unsigned int chars;
     int rx;
     int ry;
-    char *string;
 
 };
 
