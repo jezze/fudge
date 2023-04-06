@@ -99,11 +99,16 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         struct pcf_metricsdata metricsdata;
         unsigned short index = pcf_getindex(font->data, text[i]);
+        unsigned int cw;
+        unsigned int ch;
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        w += metricsdata.width;
-        h = util_max(h, metricsdata.ascent + metricsdata.descent);
+        cw = metricsdata.width;
+        ch = metricsdata.ascent + metricsdata.descent;
+
+        w = w + cw;
+        h = util_max(h, ch);
 
         if (text[i] == ' ')
         {
@@ -123,7 +128,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (w + metricsdata.width > maxw)
+        if (w + cw > maxw)
         {
 
             switch (wrap)
