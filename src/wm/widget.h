@@ -103,7 +103,6 @@ struct widget_cache_rendering
     unsigned int exist;
     unsigned int rownum;
     unsigned int start;
-    unsigned int length;
     unsigned int chars;
     int rx;
     int ry;

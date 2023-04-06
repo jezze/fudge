@@ -259,7 +259,9 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
 
         rendering->rownum = rownum;
         rendering->start = text_getrowstart(text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), frownum, rownum, text->wrap, widget->size.w, text->placement.firstrowx, offset);
-        rendering->length = text_getrowinfo(&rowinfo, text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, rendering->start);
+
+        text_getrowinfo(&rowinfo, text->placement.font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, rendering->start);
+
         rendering->rx = text_getrowx(&rowinfo, text->halign, rowx, widget->size.w - rowx);
         rendering->ry = text_getrowy(&rowinfo, text->valign, rendering->rownum * rowinfo.lineheight, widget->size.h);
         rendering->chars = rowinfo.chars;
@@ -268,7 +270,7 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
 
     }
 
-    return rendering->length;
+    return rendering->chars;
 
 }
 
