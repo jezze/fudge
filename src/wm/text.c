@@ -76,6 +76,8 @@ unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int l
 unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
+    unsigned int foundspace = 0;
+    unsigned int foundchar = 0;
     unsigned int si = 0;
     unsigned int sw = 0;
     unsigned int sh = 0;
@@ -95,8 +97,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     for (i = offset; i < length; i++)
     {
 
-        struct pcf_metricsdata metricsdata;
         unsigned short index = pcf_getindex(font->data, text[i]);
+        struct pcf_metricsdata metricsdata;
         unsigned int cw;
         unsigned int ch;
 
@@ -105,72 +107,101 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
         cw = metricsdata.width;
         ch = metricsdata.ascent + metricsdata.descent;
 
-        if (text[i] == ' ')
+        switch (text[i])
         {
 
+        case '\n':
+            rowinfo->iend = i;
+            rowinfo->length = rowinfo->iend - rowinfo->istart;
+            rowinfo->newline = 1;
+
+            return i + 1;
+
+        case ' ':
+            foundspace = 1;
             si = i;
             sw = rowinfo->width;
             sh = rowinfo->height;
 
-        }
+            break;
 
-        if (text[i] == '\n')
-        {
+        default:
+            if (wrap == TEXT_WRAP_WORD)
+            {
 
-            rowinfo->newline = 1;
+                if (!foundchar)
+                {
+
+                    rowinfo->istart = i;
+                    rowinfo->iend = i;
+
+                }
+
+            }
+
+            foundchar = 1;
 
             break;
 
         }
 
-        rowinfo->width = rowinfo->width + cw;
-        rowinfo->height = util_max(rowinfo->height, ch);
-
-        /* if (rowinfo->width + cw > maxw) */
-        if (rowinfo->width > maxw)
+        if (rowinfo->width + cw > maxw)
         {
 
             switch (wrap)
             {
 
             case TEXT_WRAP_WORD:
-                if (si)
+                if (foundspace)
                 {
 
                     rowinfo->width = sw;
                     rowinfo->height = sh;
-                    rowinfo->length = si - offset;
-                    rowinfo->iend = rowinfo->istart + rowinfo->length;
+                    rowinfo->iend = si;
+                    rowinfo->length = rowinfo->iend - rowinfo->istart;
 
-                    return si + 1;
+                    return si;
+
+                }
+
+                else
+                {
+
+                    rowinfo->iend = i;
+                    rowinfo->length = rowinfo->iend - rowinfo->istart;
+
+                    return i;
 
                 }
 
                 break;
 
             case TEXT_WRAP_CHAR:
-                rowinfo->length = i - offset;
-                rowinfo->iend = rowinfo->istart + rowinfo->length;
+                rowinfo->iend = i;
+                rowinfo->length = rowinfo->iend - rowinfo->istart;
 
                 return i;
 
             case TEXT_WRAP_NONE:
             default:
-                rowinfo->length = i - offset;
-                rowinfo->iend = rowinfo->istart + rowinfo->length;
+                rowinfo->iend = i;
+                rowinfo->length = rowinfo->iend - rowinfo->istart;
 
-                return i + 1;
+                return i;
 
             }
 
         }
 
+        rowinfo->width = rowinfo->width + cw;
+        rowinfo->height = util_max(rowinfo->height, ch);
+
     }
 
-    rowinfo->length = i - offset;
-    rowinfo->iend = rowinfo->istart + rowinfo->length;
+    rowinfo->iend = i;
+    rowinfo->length = rowinfo->iend - rowinfo->istart;
 
-    return i + 1;
+    return length;
 
 }
 
