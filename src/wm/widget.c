@@ -607,7 +607,7 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 
 }
 
-void widget_getclipping(struct widget *widget, struct widget_position *position, struct widget_size *size)
+void widget_getclipping(struct widget *widget, struct util_position *position, struct util_size *size)
 {
 
     switch (widget->type)
@@ -714,27 +714,11 @@ unsigned int widget_isscrollable(struct widget *widget)
 
 }
 
-void widget_initposition(struct widget_position *position, int x, int y)
-{
-
-    position->x = x;
-    position->y = y;
-
-}
-
-void widget_initsize(struct widget_size *size, int w, int h)
-{
-
-    size->w = w;
-    size->h = h;
-
-}
-
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
 {
 
-    widget_initposition(&widget->position, 0, 0);
-    widget_initsize(&widget->size, 0, 0);
+    util_initposition(&widget->position, 0, 0);
+    util_initsize(&widget->size, 0, 0);
 
     widget->source = source;
     widget->type = type;

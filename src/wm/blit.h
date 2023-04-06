@@ -2,8 +2,8 @@ struct blit_damage
 {
 
     unsigned int state;
-    struct widget_position position0;
-    struct widget_position position2;
+    struct util_position position0;
+    struct util_position position2;
 
 };
 
@@ -11,7 +11,7 @@ struct blit_display
 {
 
     void *framebuffer;
-    struct widget_size size;
+    struct util_size size;
     unsigned int bpp;
 
 };

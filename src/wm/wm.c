@@ -13,9 +13,9 @@
 struct state
 {
 
-    struct widget_position mouseposition;
-    struct widget_position mousemovement;
-    struct widget_position mouseclicked;
+    struct util_position mouseposition;
+    struct util_position mousemovement;
+    struct util_position mouseclicked;
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
     struct widget *rootwidget;

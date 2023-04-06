@@ -52,23 +52,7 @@
 #define TEXTBOX_MODE_NORMAL                     0
 #define TEXTBOX_MODE_READONLY                   1
 
-struct widget_position
-{
-
-    int x;
-    int y;
-
-};
-
-struct widget_size
-{
-
-    unsigned int w;
-    unsigned int h;
-
-};
-
-struct widget_cache_placement
+struct cache_row
 {
 
     int rx;
@@ -79,35 +63,24 @@ struct widget_cache_placement
 
 };
 
-struct widget_cache_placement2
+struct cache_text
 {
 
     unsigned int rows;
     int firstrowx;
     int lastrowx;
     int lastrowy;
-    struct text_font *font;
+    unsigned int rownum;
+    unsigned int icurrent;
+    unsigned int exist;
 
 };
 
-struct widget_cache_placement3
+struct cache_image
 {
 
     unsigned int loaded;
-    struct widget_size size;
-
-};
-
-struct widget_cache_rendering
-{
-
-    unsigned int exist;
-    unsigned int rownum;
-    unsigned int icurrent;
-    unsigned int istart;
-    unsigned int length;
-    int rx;
-    int ry;
+    struct util_size size;
 
 };
 
@@ -115,7 +88,7 @@ struct widget_button
 {
 
     unsigned int label;
-    struct widget_cache_placement placement;
+    struct cache_row cacherow;
 
 };
 
@@ -123,7 +96,7 @@ struct widget_choice
 {
 
     unsigned int label;
-    struct widget_cache_placement placement;
+    struct cache_row cacherow;
 
 };
 
@@ -157,7 +130,7 @@ struct widget_image
 
     unsigned int type;
     unsigned int source;
-    struct widget_cache_placement3 placement;
+    struct cache_image cacheimage;
 
 };
 
@@ -173,7 +146,7 @@ struct widget_select
 {
 
     unsigned int label;
-    struct widget_cache_placement placement;
+    struct cache_row cacherow;
 
 };
 
@@ -186,8 +159,8 @@ struct widget_text
     unsigned int mode;
     unsigned int weight;
     unsigned int wrap;
-    struct widget_cache_placement2 placement;
-    struct widget_cache_rendering rendering;
+    struct cache_row cacherow;
+    struct cache_text cachetext;
 
 };
 
@@ -203,7 +176,7 @@ struct widget_textbutton
 {
 
     unsigned int label;
-    struct widget_cache_placement placement;
+    struct cache_row cacherow;
 
 };
 
@@ -223,8 +196,8 @@ struct widget
     unsigned int id;
     unsigned int in;
     void *data;
-    struct widget_position position;
-    struct widget_size size;
+    struct util_position position;
+    struct util_size size;
 
 };
 
@@ -234,13 +207,11 @@ unsigned int widget_getattribute(char *value);
 unsigned int widget_getcommand(char *value);
 unsigned int widget_gettype(char *value);
 unsigned int widget_setstate(struct widget *widget, unsigned int state);
-void widget_getclipping(struct widget *widget, struct widget_position *position, struct widget_size *size);
+void widget_getclipping(struct widget *widget, struct util_position *position, struct util_size *size);
 unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);
 unsigned int widget_isdragable(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
 unsigned int widget_isscrollable(struct widget *widget);
-void widget_initposition(struct widget_position *position, int x, int y);
-void widget_initsize(struct widget_size *size, int w, int h);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data);

@@ -36,3 +36,19 @@ int util_clamp(int v, int min, int max)
 
 }
 
+void util_initposition(struct util_position *position, int x, int y)
+{
+
+    position->x = x;
+    position->y = y;
+
+}
+
+void util_initsize(struct util_size *size, int w, int h)
+{
+
+    size->w = w;
+    size->h = h;
+
+}
+
