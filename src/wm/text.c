@@ -88,7 +88,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
     rowinfo->istart = offset;
     rowinfo->iend = offset;
-    rowinfo->chars = 0;
+    rowinfo->length = 0;
     rowinfo->width = 0;
     rowinfo->height = 0;
     rowinfo->newline = 0;
@@ -135,8 +135,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
                     rowinfo->width = sw;
                     rowinfo->height = sh;
-                    rowinfo->chars = si - offset;
-                    rowinfo->iend = rowinfo->istart + rowinfo->chars;
+                    rowinfo->length = si - offset;
+                    rowinfo->iend = rowinfo->istart + rowinfo->length;
 
                     return si + 1;
 
@@ -147,8 +147,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             case TEXT_WRAP_CHAR:
                 rowinfo->width = w;
                 rowinfo->height = h;
-                rowinfo->chars = i - offset;
-                rowinfo->iend = rowinfo->istart + rowinfo->chars;
+                rowinfo->length = i - offset;
+                rowinfo->iend = rowinfo->istart + rowinfo->length;
 
                 return i;
 
@@ -156,8 +156,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             default:
                 rowinfo->width = w;
                 rowinfo->height = h;
-                rowinfo->chars = i - offset;
-                rowinfo->iend = rowinfo->istart + rowinfo->chars;
+                rowinfo->length = i - offset;
+                rowinfo->iend = rowinfo->istart + rowinfo->length;
 
                 return i + 1;
 
@@ -169,8 +169,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
     rowinfo->width = w;
     rowinfo->height = h;
-    rowinfo->chars = i - offset;
-    rowinfo->iend = rowinfo->istart + rowinfo->chars;
+    rowinfo->length = i - offset;
+    rowinfo->iend = rowinfo->istart + rowinfo->length;
 
     return i + 1;
 

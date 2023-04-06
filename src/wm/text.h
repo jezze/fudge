@@ -26,7 +26,7 @@ struct text_font
 struct text_rowinfo
 {
 
-    unsigned int chars;
+    unsigned int length;
     unsigned int width;
     unsigned int height;
     unsigned int lineheight;

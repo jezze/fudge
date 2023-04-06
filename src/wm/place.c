@@ -57,7 +57,7 @@ static void updatecache(struct widget *widget, struct widget_cache_placement *pl
     placement->rx = text_getrowx(rowinfo, halign, paddingx, w);
     placement->ry = text_getrowy(rowinfo, valign, paddingy, h);
     placement->istart = rowinfo->istart;
-    placement->chars = rowinfo->chars;
+    placement->length = rowinfo->length;
     placement->font = font;
 
 }

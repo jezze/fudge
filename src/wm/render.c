@@ -58,7 +58,7 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + button->placement.ry, widget->position.y + button->placement.ry + button->placement.font->lineheight))
-        blit_textnormal(display, button->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label) + button->placement.istart, button->placement.chars, widget->position.x + button->placement.rx, widget->position.y + button->placement.ry, line, x0, x2);
+        blit_textnormal(display, button->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label) + button->placement.istart, button->placement.length, widget->position.x + button->placement.rx, widget->position.y + button->placement.ry, line, x0, x2);
 
 }
 
@@ -88,7 +88,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + choice->placement.ry, widget->position.y + choice->placement.ry + choice->placement.font->lineheight))
-        blit_textnormal(display, choice->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label) + choice->placement.istart, choice->placement.chars, widget->position.x + choice->placement.rx, widget->position.y + choice->placement.ry, line, x0, x2);
+        blit_textnormal(display, choice->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label) + choice->placement.istart, choice->placement.length, widget->position.x + choice->placement.rx, widget->position.y + choice->placement.ry, line, x0, x2);
 
 }
 
@@ -221,7 +221,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + select->placement.ry, widget->position.y + select->placement.ry + select->placement.font->lineheight))
-        blit_textnormal(display, select->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label) + select->placement.istart, select->placement.chars, widget->position.x + select->placement.rx, widget->position.y + select->placement.ry, line, x0, x2);
+        blit_textnormal(display, select->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label) + select->placement.istart, select->placement.length, widget->position.x + select->placement.rx, widget->position.y + select->placement.ry, line, x0, x2);
 
 }
 
@@ -265,12 +265,12 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
         rendering->rx = text_getrowx(&rowinfo, text->halign, rowx, widget->size.w - rowx);
         rendering->ry = text_getrowy(&rowinfo, text->valign, rendering->rownum * rowinfo.lineheight, widget->size.h);
         rendering->istart = rowinfo.istart;
-        rendering->chars = rowinfo.chars;
+        rendering->length = rowinfo.length;
         rendering->exist = 1;
 
     }
 
-    return rendering->chars;
+    return rendering->length;
 
 }
 
@@ -296,12 +296,12 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         {
 
         case TEXT_MODE_NORMAL:
-            blit_textnormal(display, text->placement.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rendering.istart, text->rendering.chars, widget->position.x + text->rendering.rx, widget->position.y + text->rendering.ry, line, x0, x2);
+            blit_textnormal(display, text->placement.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rendering.istart, text->rendering.length, widget->position.x + text->rendering.rx, widget->position.y + text->rendering.ry, line, x0, x2);
 
             break;
 
         case TEXT_MODE_INVERTED:
-            blit_textinverted(display, text->placement.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rendering.istart, text->rendering.chars, widget->position.x + text->rendering.rx, widget->position.y + text->rendering.ry, line, x0, x2);
+            blit_textinverted(display, text->placement.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->rendering.istart, text->rendering.length, widget->position.x + text->rendering.rx, widget->position.y + text->rendering.ry, line, x0, x2);
 
             break;
 
@@ -358,7 +358,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     blit_rect(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + textbutton->placement.ry, widget->position.y + textbutton->placement.ry + textbutton->placement.font->lineheight))
-        blit_textnormal(display, textbutton->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(textbutton->label) + textbutton->placement.istart, textbutton->placement.chars, widget->position.x + textbutton->placement.rx, widget->position.y + textbutton->placement.ry, line, x0, x2);
+        blit_textnormal(display, textbutton->placement.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(textbutton->label) + textbutton->placement.istart, textbutton->placement.length, widget->position.x + textbutton->placement.rx, widget->position.y + textbutton->placement.ry, line, x0, x2);
 
 }
 
