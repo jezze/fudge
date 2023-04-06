@@ -105,9 +105,6 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
         cw = metricsdata.width;
         ch = metricsdata.ascent + metricsdata.descent;
 
-        rowinfo->width = rowinfo->width + cw;
-        rowinfo->height = util_max(rowinfo->height, ch);
-
         if (text[i] == ' ')
         {
 
@@ -126,7 +123,11 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (rowinfo->width + cw > maxw)
+        rowinfo->width = rowinfo->width + cw;
+        rowinfo->height = util_max(rowinfo->height, ch);
+
+        /* if (rowinfo->width + cw > maxw) */
+        if (rowinfo->width > maxw)
         {
 
             switch (wrap)
