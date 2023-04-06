@@ -78,6 +78,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
     unsigned int foundspace = 0;
     unsigned int foundchar = 0;
+    unsigned int foundmaxwidth = 0;
     unsigned int si = 0;
     unsigned int sw = 0;
     unsigned int sh = 0;
@@ -106,6 +107,9 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         cw = metricsdata.width;
         ch = metricsdata.ascent + metricsdata.descent;
+
+        if (rowinfo->width + cw > maxw)
+            foundmaxwidth = 1;
 
         switch (text[i])
         {
@@ -145,7 +149,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (rowinfo->width + cw > maxw)
+        if (foundmaxwidth)
         {
 
             switch (wrap)
