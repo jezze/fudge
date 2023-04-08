@@ -8,6 +8,18 @@
 #include "pool.h"
 #include "place.h"
 
+static void hideall(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+
+    widget->display = WIDGET_DISPLAY_HIDDEN;
+
+    while ((current = pool_nextin(current, widget)))
+        hideall(current->data);
+
+}
+
 static void addtotal(struct util_size *total, struct widget *widget, int x, int y, int paddingw, int paddingh)
 {
 
@@ -21,6 +33,8 @@ static void placewidget(struct widget *widget, int x, int y, int w, int h, int m
 
     util_initposition(&widget->position, x, y);
     util_initsize(&widget->size, util_clamp(w, minw, maxw), util_clamp(h, minh, maxh));
+
+    widget->display = WIDGET_DISPLAY_NORMAL;
 
 }
 
@@ -287,39 +301,20 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     unsigned int extra = CONFIG_SELECT_EXTRA + CONFIG_SELECT_PADDING_WIDTH * 2;
     struct text_rowinfo rowinfo;
+    struct list_item *current = 0;
 
     text_getrowinfo(&rowinfo, font, pool_getstring(select->label), pool_getcstringlength(select->label), TEXT_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
     placewidget2(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, rowinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
-    if (widget->state == WIDGET_STATE_FOCUS)
+    while ((current = pool_nextin(current, widget)))
     {
 
-        struct list_item *current = 0;
+        struct widget *child = current->data;
 
-        while ((current = pool_nextin(current, widget)))
-        {
+        placechild(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, 512, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
 
-            struct widget *child = current->data;
-
-            placechild(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, 512, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
-
-        }
-
-    }
-
-    else
-    {
-
-        struct list_item *current = 0;
-
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, 0, 0, 0, LAYOUT_PLACEMENT_NORMAL, LAYOUT_PLACEMENT_NORMAL);
-
-        }
+        if (widget->state != WIDGET_STATE_FOCUS)
+            hideall(child);
 
     }
 

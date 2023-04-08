@@ -483,6 +483,9 @@ static unsigned int shouldrender(struct widget *widget, int line)
 
     struct widget *parent;
 
+    if (widget->display == WIDGET_DISPLAY_HIDDEN)
+        return 0;
+
     switch (widget->type)
     {
 

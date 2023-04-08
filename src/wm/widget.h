@@ -37,6 +37,8 @@
 #define WIDGET_ATTR_WEIGHT                      14
 #define WIDGET_ATTR_VALIGN                      15
 #define WIDGET_ATTR_WRAP                        16
+#define WIDGET_DISPLAY_NORMAL                   0
+#define WIDGET_DISPLAY_HIDDEN                   1
 #define GRID_PLACEMENT_NORMAL                   0
 #define GRID_PLACEMENT_STRETCHED                1
 #define IMAGE_TYPE_FUDGEMOUSE                   1
@@ -198,6 +200,7 @@ struct widget
     void *data;
     struct util_position position;
     struct util_size size;
+    unsigned int display;
 
 };
 
