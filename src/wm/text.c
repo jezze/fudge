@@ -100,15 +100,10 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         unsigned short index = pcf_getindex(font->data, text[i]);
         struct pcf_metricsdata metricsdata;
-        unsigned int cw;
-        unsigned int ch;
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        cw = metricsdata.width;
-        ch = metricsdata.ascent + metricsdata.descent;
-
-        if (rowinfo->width + cw > maxw)
+        if (rowinfo->width + metricsdata.width > maxw)
             foundmaxwidth = 1;
 
         switch (text[i])
@@ -197,8 +192,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        rowinfo->width = rowinfo->width + cw;
-        rowinfo->height = util_max(rowinfo->height, ch);
+        rowinfo->width = rowinfo->width + metricsdata.width;
+        rowinfo->height = util_max(rowinfo->height, metricsdata.ascent + metricsdata.descent);
 
     }
 
