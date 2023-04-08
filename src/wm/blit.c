@@ -158,12 +158,12 @@ void blit_textnormal(struct blit_display *display, struct text_font *font, unsig
         if (util_intersects(lline, 0, height))
         {
 
-            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width, x0, x2))
+            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width - 1, x0, x2))
             {
 
                 unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
                 int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x2 - rx, metricsdata.width);
+                int r1 = util_min(x2 - rx, metricsdata.width - 1);
                 unsigned int r;
 
                 for (r = r0; r < r1; r++)
@@ -206,12 +206,12 @@ void blit_textinverted(struct blit_display *display, struct text_font *font, uns
         if (util_intersects(lline, 0, height))
         {
 
-            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width, x0, x2))
+            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width - 1, x0, x2))
             {
 
                 unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
                 int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x2 - rx, metricsdata.width);
+                int r1 = util_min(x2 - rx, metricsdata.width - 1);
                 unsigned int r;
 
                 for (r = r0; r < r1; r++)
