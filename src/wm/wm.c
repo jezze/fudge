@@ -365,6 +365,9 @@ static void clickwidget(struct widget *widget)
     {
 
     case WIDGET_TYPE_WINDOW:
+        if (util_intersects(state.mousewidget->position.x, widget->position.x + widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->position.x + widget->size.w) && util_intersects(state.mousewidget->position.y, widget->position.y, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT))
+            channel_send(widget->source, EVENT_TERM);
+
         break;
 
     case WIDGET_TYPE_BUTTON:
