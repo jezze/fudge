@@ -4,22 +4,6 @@
 #include "attr.h"
 #include "widget.h"
 
-static struct util_token types[12] =
-{
-    {WIDGET_TYPE_BUTTON, "button"},
-    {WIDGET_TYPE_FILL, "fill"},
-    {WIDGET_TYPE_GRID, "grid"},
-    {WIDGET_TYPE_IMAGE, "image"},
-    {WIDGET_TYPE_CHOICE, "choice"},
-    {WIDGET_TYPE_LAYOUT, "layout"},
-    {WIDGET_TYPE_LISTBOX, "listbox"},
-    {WIDGET_TYPE_SELECT, "select"},
-    {WIDGET_TYPE_TEXT, "text"},
-    {WIDGET_TYPE_TEXTBOX, "textbox"},
-    {WIDGET_TYPE_TEXTBUTTON, "textbutton"},
-    {WIDGET_TYPE_WINDOW, "window"}
-};
-
 static void setattributebutton(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -414,13 +398,6 @@ void widget_unsetattributes(struct widget *widget)
         break;
 
     }
-
-}
-
-unsigned int widget_gettype(char *value)
-{
-
-    return util_getkey(types, 12, value);
 
 }
 

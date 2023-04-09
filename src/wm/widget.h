@@ -175,7 +175,6 @@ struct widget
 
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
 void widget_unsetattributes(struct widget *widget);
-unsigned int widget_gettype(char *value);
 unsigned int widget_setstate(struct widget *widget, unsigned int state);
 void widget_getclipping(struct widget *widget, struct util_position *position, struct util_size *size);
 unsigned int widget_intersectsx(struct widget *widget, int x);

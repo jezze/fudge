@@ -4,29 +4,6 @@
 #include "strpool.h"
 #include "attr.h"
 
-static struct util_token attributes[19] =
-{
-    {ATTR_BLIT, "blit"},
-    {ATTR_COLOR, "color"},
-    {ATTR_COLUMNS, "columns"},
-    {ATTR_CONTENT, "content"},
-    {ATTR_FIT, "fit"},
-    {ATTR_FORM, "form"},
-    {ATTR_HALIGN, "halign"},
-    {ATTR_ID, "id"},
-    {ATTR_IN, "in"},
-    {ATTR_LABEL, "label"},
-    {ATTR_MIMETYPE, "mimetype"},
-    {ATTR_MODE, "mode"},
-    {ATTR_OVERFLOW, "overflow"},
-    {ATTR_PADDING, "padding"},
-    {ATTR_SOURCE, "source"},
-    {ATTR_TITLE, "title"},
-    {ATTR_WEIGHT, "weight"},
-    {ATTR_VALIGN, "valign"},
-    {ATTR_WRAP, "wrap"}
-};
-
 static struct util_token blits[2] =
 {
     {ATTR_BLIT_NORMAL, "normal"},
@@ -221,13 +198,6 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     }
 
     return 0;
-
-}
-
-unsigned int attr_get(char *value)
-{
-
-    return util_getkey(attributes, 19, value);
 
 }
 

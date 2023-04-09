@@ -21,6 +21,45 @@ static struct util_token commands[5] =
     {UPDATE, "="}
 };
 
+static struct util_token widgets[12] =
+{
+    {WIDGET_TYPE_BUTTON, "button"},
+    {WIDGET_TYPE_FILL, "fill"},
+    {WIDGET_TYPE_GRID, "grid"},
+    {WIDGET_TYPE_IMAGE, "image"},
+    {WIDGET_TYPE_CHOICE, "choice"},
+    {WIDGET_TYPE_LAYOUT, "layout"},
+    {WIDGET_TYPE_LISTBOX, "listbox"},
+    {WIDGET_TYPE_SELECT, "select"},
+    {WIDGET_TYPE_TEXT, "text"},
+    {WIDGET_TYPE_TEXTBOX, "textbox"},
+    {WIDGET_TYPE_TEXTBUTTON, "textbutton"},
+    {WIDGET_TYPE_WINDOW, "window"}
+};
+
+static struct util_token attributes[19] =
+{
+    {ATTR_BLIT, "blit"},
+    {ATTR_COLOR, "color"},
+    {ATTR_COLUMNS, "columns"},
+    {ATTR_CONTENT, "content"},
+    {ATTR_FIT, "fit"},
+    {ATTR_FORM, "form"},
+    {ATTR_HALIGN, "halign"},
+    {ATTR_ID, "id"},
+    {ATTR_IN, "in"},
+    {ATTR_LABEL, "label"},
+    {ATTR_MIMETYPE, "mimetype"},
+    {ATTR_MODE, "mode"},
+    {ATTR_OVERFLOW, "overflow"},
+    {ATTR_PADDING, "padding"},
+    {ATTR_SOURCE, "source"},
+    {ATTR_TITLE, "title"},
+    {ATTR_WEIGHT, "weight"},
+    {ATTR_VALIGN, "valign"},
+    {ATTR_WRAP, "wrap"}
+};
+
 struct state
 {
 
@@ -194,7 +233,7 @@ static unsigned int getattribute(struct state *state)
 
     unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-    return (count) ? attr_get(strbuffer) : 0;
+    return (count) ? util_getkey(attributes, 19, strbuffer) : 0;
 
 }
 
@@ -203,7 +242,7 @@ static unsigned int getwidget(struct state *state)
 
     unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-    return (count) ? widget_gettype(strbuffer) : 0;
+    return (count) ? util_getkey(widgets, 12, strbuffer) : 0;
 
 }
 

@@ -49,4 +49,3 @@ unsigned int attr_isvalue(unsigned int attribute);
 unsigned int attr_isstring(unsigned int attribute);
 unsigned int attr_isenum(unsigned int attribute);
 unsigned int attr_update(unsigned int attribute, char *value, unsigned int current);
-unsigned int attr_get(char *value);
