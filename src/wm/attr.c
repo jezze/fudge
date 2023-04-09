@@ -63,6 +63,66 @@ static struct util_token wraps[3] =
     {ATTR_WRAP_WORD, "word"}
 };
 
+unsigned int attr_isvalue(unsigned int attribute)
+{
+
+    switch (attribute)
+    {
+
+    case ATTR_COLOR:
+    case ATTR_COLUMNS:
+    case ATTR_PADDING:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int attr_isstring(unsigned int attribute)
+{
+
+    switch (attribute)
+    {
+
+    case ATTR_CONTENT:
+    case ATTR_ID:
+    case ATTR_IN:
+    case ATTR_LABEL:
+    case ATTR_SOURCE:
+    case ATTR_TITLE:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int attr_isenum(unsigned int attribute)
+{
+
+    switch (attribute)
+    {
+
+    case ATTR_BLIT:
+    case ATTR_FIT:
+    case ATTR_FORM:
+    case ATTR_HALIGN:
+    case ATTR_MIMETYPE:
+    case ATTR_MODE:
+    case ATTR_VALIGN:
+    case ATTR_WEIGHT:
+    case ATTR_WRAP:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int attr_update(unsigned int attribute, char *value, unsigned int current)
 {
 
