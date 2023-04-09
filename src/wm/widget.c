@@ -3,7 +3,6 @@
 #include "util.h"
 #include "attr.h"
 #include "widget.h"
-#include "pool.h"
 
 static struct util_token commands[5] =
 {
