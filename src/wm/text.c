@@ -181,11 +181,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
                 return i;
 
-            case TEXT_WRAP_NONE:
             default:
-                rowinfo->iend = i;
-                rowinfo->length = rowinfo->iend - rowinfo->istart;
-
                 break;
 
             }
