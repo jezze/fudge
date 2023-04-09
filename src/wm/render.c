@@ -5,6 +5,7 @@
 #include "attr.h"
 #include "widget.h"
 #include "text.h"
+#include "strpool.h"
 #include "pool.h"
 #include "blit.h"
 #include "render.h"
@@ -59,7 +60,7 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + button->cacherow.ry, widget->position.y + button->cacherow.ry + button->cacherow.font->lineheight))
-        blit_textnormal(display, button->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(button->label) + button->cacherow.istart, button->cacherow.length, widget->position.x + button->cacherow.rx, widget->position.y + button->cacherow.ry, line, x0, x2);
+        blit_textnormal(display, button->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], strpool_getstring(button->label) + button->cacherow.istart, button->cacherow.length, widget->position.x + button->cacherow.rx, widget->position.y + button->cacherow.ry, line, x0, x2);
 
 }
 
@@ -89,7 +90,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + choice->cacherow.ry, widget->position.y + choice->cacherow.ry + choice->cacherow.font->lineheight))
-        blit_textnormal(display, choice->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(choice->label) + choice->cacherow.istart, choice->cacherow.length, widget->position.x + choice->cacherow.rx, widget->position.y + choice->cacherow.ry, line, x0, x2);
+        blit_textnormal(display, choice->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], strpool_getstring(choice->label) + choice->cacherow.istart, choice->cacherow.length, widget->position.x + choice->cacherow.rx, widget->position.y + choice->cacherow.ry, line, x0, x2);
 
 }
 
@@ -155,7 +156,7 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
         break;
 
     case ATTR_MIMETYPE_PCX:
-        blit_pcx(display, line, pool_getstring(image->source), widget->position.x, widget->position.y, x0, x2);
+        blit_pcx(display, line, strpool_getstring(image->source), widget->position.x, widget->position.y, x0, x2);
 
         break;
 
@@ -222,7 +223,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + select->cacherow.ry, widget->position.y + select->cacherow.ry + select->cacherow.font->lineheight))
-        blit_textnormal(display, select->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(select->label) + select->cacherow.istart, select->cacherow.length, widget->position.x + select->cacherow.rx, widget->position.y + select->cacherow.ry, line, x0, x2);
+        blit_textnormal(display, select->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], strpool_getstring(select->label) + select->cacherow.istart, select->cacherow.length, widget->position.x + select->cacherow.rx, widget->position.y + select->cacherow.ry, line, x0, x2);
 
 }
 
@@ -260,9 +261,9 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
 
         text->cachetext.exist = 1;
         text->cachetext.rownum = rownum;
-        text->cachetext.icurrent = text_getrowstart(text->cacherow.font, pool_getstring(text->content), pool_getcstringlength(text->content), frownum, rownum, text->wrap, widget->size.w, text->cachetext.firstrowx, offset);
+        text->cachetext.icurrent = text_getrowstart(text->cacherow.font, strpool_getstring(text->content), strpool_getcstringlength(text->content), frownum, rownum, text->wrap, widget->size.w, text->cachetext.firstrowx, offset);
 
-        text_getrowinfo(&rowinfo, text->cacherow.font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, widget->size.w, text->cachetext.icurrent);
+        text_getrowinfo(&rowinfo, text->cacherow.font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, text->cachetext.icurrent);
 
         text->cacherow.rx = text_getrowx(&rowinfo, text->halign, rowx, widget->size.w - rowx);
         text->cacherow.ry = text_getrowy(&rowinfo, text->valign, text->cachetext.rownum * rowinfo.lineheight, widget->size.h);
@@ -297,12 +298,12 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
         {
 
         case ATTR_BLIT_NORMAL:
-            blit_textnormal(display, text->cacherow.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2);
+            blit_textnormal(display, text->cacherow.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2);
 
             break;
 
         case ATTR_BLIT_INVERTED:
-            blit_textinverted(display, text->cacherow.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2);
+            blit_textinverted(display, text->cacherow.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2);
 
             break;
 
@@ -359,7 +360,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     blit_rect(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
     if (util_intersects(line, widget->position.y + textbutton->cacherow.ry, widget->position.y + textbutton->cacherow.ry + textbutton->cacherow.font->lineheight))
-        blit_textnormal(display, textbutton->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], pool_getstring(textbutton->label) + textbutton->cacherow.istart, textbutton->cacherow.length, widget->position.x + textbutton->cacherow.rx, widget->position.y + textbutton->cacherow.ry, line, x0, x2);
+        blit_textnormal(display, textbutton->cacherow.font, getcmap(widget->state, cmaptext, cmaptext, cmaptext)[CMAP_TEXT_COLOR], strpool_getstring(textbutton->label) + textbutton->cacherow.istart, textbutton->cacherow.length, widget->position.x + textbutton->cacherow.rx, widget->position.y + textbutton->cacherow.ry, line, x0, x2);
 
 }
 
@@ -492,7 +493,7 @@ static unsigned int shouldrender(struct widget *widget, int line)
 
     case WIDGET_TYPE_TEXT:
     case WIDGET_TYPE_TEXTBUTTON:
-        parent = pool_getwidgetbyid(widget->source, pool_getstring(widget->in));
+        parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->in));
 
         if (parent)
         {

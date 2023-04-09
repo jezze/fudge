@@ -8,6 +8,7 @@ O:=\
     $(DIR_SRC)/wm/place.o \
     $(DIR_SRC)/wm/pool.o \
     $(DIR_SRC)/wm/render.o \
+    $(DIR_SRC)/wm/strpool.o \
     $(DIR_SRC)/wm/text.o \
     $(DIR_SRC)/wm/util.o \
     $(DIR_SRC)/wm/widget.o \

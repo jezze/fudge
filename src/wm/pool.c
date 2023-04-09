@@ -4,21 +4,12 @@
 #include "util.h"
 #include "widget.h"
 #include "text.h"
+#include "strpool.h"
 #include "pool.h"
 
 #define MAX_WIDGETS                     1024
-#define MAX_STRINGS                     512
 #define MAX_FONTS                       32
-#define STRINGDATA_SIZE                 0x4000
 #define FONTDATA_SIZE                   0x8000
-
-struct strindex
-{
-
-    unsigned int offset;
-    unsigned int length;
-
-};
 
 struct entry
 {
@@ -49,9 +40,6 @@ static struct list bumplist;
 static struct list freelist;
 static struct entry entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
-static char strdata[STRINGDATA_SIZE];
-static unsigned int strdataoffset;
-static struct strindex strindex[MAX_STRINGS];
 static struct text_font fonts[MAX_FONTS];
 static unsigned char fontnormal[FONTDATA_SIZE];
 static unsigned char fontbold[FONTDATA_SIZE];
@@ -73,7 +61,7 @@ struct list_item *pool_next(struct list_item *current)
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    if (!pool_getcstringlength(parent->id))
+    if (!strpool_getcstringlength(parent->id))
         return 0;
 
     while ((current = pool_next(current)))
@@ -85,7 +73,7 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
         if (!parent->source || widget->source == parent->source)
         {
 
-            if (cstring_match(pool_getstring(widget->in), pool_getstring(parent->id)))
+            if (cstring_match(strpool_getstring(widget->in), strpool_getstring(parent->id)))
                 return current;
 
         }
@@ -126,7 +114,7 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
         if (entry->widget.source != source)
             continue;
 
-        if (cstring_match(pool_getstring(entry->widget.id), id))
+        if (cstring_match(strpool_getstring(entry->widget.id), id))
             return &entry->widget;
 
     }
@@ -221,106 +209,6 @@ void pool_destroy(struct widget *widget)
         list_move(&freelist, &widgetlist, item);
 
     }
-
-}
-
-static unsigned int findslot(void)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < MAX_STRINGS; i++)
-    {
-
-        struct strindex *s = &strindex[i];
-
-        if (s->offset == 0 && s->length == 0)
-            return i;
-
-    }
-
-    return 0;
-
-}
-
-char *pool_getstring(unsigned int index)
-{
-
-    struct strindex *s = &strindex[index];
-
-    return strdata + s->offset;
-
-}
-
-unsigned int pool_getcstringlength(unsigned int index)
-{
-
-    struct strindex *s = &strindex[index];
-
-    return (s->length) ? s->length - 1 : 0;
-
-}
-
-static unsigned int savedata(unsigned int count, void *data)
-{
-
-    unsigned int slot = findslot();
-
-    if (slot)
-    {
-
-        struct strindex *s = &strindex[slot];
-
-        s->offset = strdataoffset;
-        s->length = count;
-        strdataoffset += buffer_write(strdata, STRINGDATA_SIZE, data, s->length, s->offset);
-
-    }
-
-    return slot;
-
-}
-
-static unsigned int freedata(unsigned int index)
-{
-
-    struct strindex *s = &strindex[index];
-    unsigned int offset = s->offset;
-    unsigned int length = s->length;
-    unsigned int next = s->offset + s->length;
-    unsigned int count = strdataoffset - next;
-    unsigned int i;
-
-    buffer_write(strdata, STRINGDATA_SIZE, strdata + next, count, offset);
-    strdataoffset -= length;
-
-    s->offset = 0;
-    s->length = 0;
-
-    for (i = 0; i < MAX_STRINGS; i++)
-    {
-
-        struct strindex *current = &strindex[i];
-
-        if (current->offset > offset)
-            current->offset -= length;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int pool_updatestring(unsigned int index, char *cstring)
-{
-
-    if (index)
-        index = freedata(index);
-
-    if (cstring)
-        index = savedata(cstring_lengthzero(cstring), cstring);
-
-    return index;
 
 }
 

@@ -6,6 +6,7 @@
 #include "attr.h"
 #include "widget.h"
 #include "text.h"
+#include "strpool.h"
 #include "pool.h"
 #include "place.h"
 
@@ -73,7 +74,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_font *font = pool_getfont(POOL_FONTBOLD);
     struct text_rowinfo rowinfo;
 
-    text_getrowinfo(&rowinfo, font, pool_getstring(button->label), pool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
     placewidget2(widget, x, y, rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
     cache_initrow(&button->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h);
 
@@ -86,7 +87,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct text_rowinfo rowinfo;
 
-    text_getrowinfo(&rowinfo, font, pool_getstring(choice->label), pool_getcstringlength(choice->label), ATTR_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
     cache_initrow(&choice->cacherow, &rowinfo, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h);
 
@@ -218,7 +219,7 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
     if (!image->cacheimage.loaded)
     {
 
-        if (file_walk2(FILE_L0, pool_getstring(image->source)))
+        if (file_walk2(FILE_L0, strpool_getstring(image->source)))
         {
 
             struct pcx_header header;
@@ -304,7 +305,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
     struct text_rowinfo rowinfo;
     struct list_item *current = 0;
 
-    text_getrowinfo(&rowinfo, font, pool_getstring(select->label), pool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
     placewidget2(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 2 + extra, rowinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
 
     while ((current = pool_nextin(current, widget)))
@@ -330,7 +331,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct text_font *font = pool_getfont((text->weight == ATTR_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
     struct text_info info;
 
-    text_gettextinfo(&info, font, pool_getstring(text->content), pool_getcstringlength(text->content), text->wrap, maxw, text->cachetext.firstrowx);
+    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->cachetext.firstrowx);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh);
 
     text->cacherow.font = font;
@@ -401,7 +402,7 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
     struct text_font *font = pool_getfont(POOL_FONTNORMAL);
     struct text_rowinfo rowinfo;
 
-    text_getrowinfo(&rowinfo, font, pool_getstring(textbutton->label), pool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, maxw - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, maxw - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);
     placewidget2(widget, x, y, rowinfo.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2, minw, minh, maxw, maxh);
     cache_initrow(&textbutton->cacherow, &rowinfo, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h);
 

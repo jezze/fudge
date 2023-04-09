@@ -5,6 +5,7 @@
 #include "attr.h"
 #include "widget.h"
 #include "text.h"
+#include "strpool.h"
 #include "pool.h"
 #include "blit.h"
 #include "place.h"
@@ -386,7 +387,7 @@ static void clickwidget(struct widget *widget)
         if (state.mousebuttonleft)
         {
 
-            cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, pool_getstring(widget->id), 0));
+            cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, strpool_getstring(widget->id), 0));
             channel_sendbuffer(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
 
         }
@@ -461,7 +462,7 @@ static void keypresswidget(struct widget *widget, unsigned char scancode, unsign
         wmkeypress.length = length;
         wmkeypress.keymod = keymod;
 
-        cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, pool_getstring(widget->id), 0));
+        cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, strpool_getstring(widget->id), 0));
         channel_sendbuffer(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
 
     }

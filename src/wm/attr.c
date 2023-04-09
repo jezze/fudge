@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "config.h"
 #include "util.h"
-#include "pool2.h"
+#include "strpool.h"
 #include "attr.h"
 
 static struct util_token attributes[19] =
@@ -171,7 +171,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return cstring_readvalue(value, cstring_length(value), 10);
 
     case ATTR_CONTENT:
-        return pool_updatestring(current, value);
+        return strpool_updatestring(current, value);
 
     case ATTR_FIT:
         return util_getkey(fits, 2, value);
@@ -183,13 +183,13 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(haligns, 3, value);
 
     case ATTR_ID:
-        return pool_updatestring(current, value);
+        return strpool_updatestring(current, value);
 
     case ATTR_IN:
-        return pool_updatestring(current, value);
+        return strpool_updatestring(current, value);
 
     case ATTR_LABEL:
-        return pool_updatestring(current, value);
+        return strpool_updatestring(current, value);
 
     case ATTR_MIMETYPE:
         return util_getkey(mimetypes, 2, value);
@@ -204,10 +204,10 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return cstring_readvalue(value, cstring_length(value), 10);
 
     case ATTR_SOURCE:
-        return pool_updatestring(current, value);
+        return strpool_updatestring(current, value);
 
     case ATTR_TITLE:
-        return pool_updatestring(current, value);
+        return strpool_updatestring(current, value);
 
     case ATTR_VALIGN:
         return util_getkey(valigns, 3, value);
