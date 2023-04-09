@@ -186,7 +186,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
                 rowinfo->iend = i;
                 rowinfo->length = rowinfo->iend - rowinfo->istart;
 
-                return i;
+                break;
 
             }
 
