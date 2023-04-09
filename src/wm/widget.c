@@ -1,19 +1,11 @@
 #include <fudge.h>
 #include "config.h"
 #include "util.h"
-#include "text.h"
+#include "attr.h"
 #include "widget.h"
 #include "pool.h"
 
-struct token
-{
-
-    unsigned int key;
-    char *value;
-
-};
-
-static struct token commands[] =
+static struct util_token commands[5] =
 {
     {WIDGET_COMMAND_NONE, ""},
     {WIDGET_COMMAND_COMMENT, "#"},
@@ -22,7 +14,7 @@ static struct token commands[] =
     {WIDGET_COMMAND_UPDATE, "="}
 };
 
-static struct token types[] =
+static struct util_token types[12] =
 {
     {WIDGET_TYPE_BUTTON, "button"},
     {WIDGET_TYPE_FILL, "fill"},
@@ -38,113 +30,27 @@ static struct token types[] =
     {WIDGET_TYPE_WINDOW, "window"}
 };
 
-static struct token attributes[] =
+static struct util_token attributes[18] =
 {
-    {WIDGET_ATTR_COLOR, "color"},
-    {WIDGET_ATTR_COLUMNS, "columns"},
-    {WIDGET_ATTR_CONTENT, "content"},
-    {WIDGET_ATTR_HALIGN, "halign"},
-    {WIDGET_ATTR_ID, "id"},
-    {WIDGET_ATTR_IN, "in"},
-    {WIDGET_ATTR_LABEL, "label"},
-    {WIDGET_ATTR_MODE, "mode"},
-    {WIDGET_ATTR_PADDING, "padding"},
-    {WIDGET_ATTR_PLACEMENT, "placement"},
-    {WIDGET_ATTR_SOURCE, "source"},
-    {WIDGET_ATTR_TITLE, "title"},
-    {WIDGET_ATTR_TYPE, "type"},
-    {WIDGET_ATTR_WEIGHT, "weight"},
-    {WIDGET_ATTR_VALIGN, "valign"},
-    {WIDGET_ATTR_WRAP, "wrap"}
+    {ATTR_BLIT, "blit"},
+    {ATTR_COLOR, "color"},
+    {ATTR_COLUMNS, "columns"},
+    {ATTR_CONTENT, "content"},
+    {ATTR_FIT, "fit"},
+    {ATTR_FORM, "form"},
+    {ATTR_HALIGN, "halign"},
+    {ATTR_ID, "id"},
+    {ATTR_IN, "in"},
+    {ATTR_LABEL, "label"},
+    {ATTR_MIMETYPE, "mimetype"},
+    {ATTR_MODE, "mode"},
+    {ATTR_PADDING, "padding"},
+    {ATTR_SOURCE, "source"},
+    {ATTR_TITLE, "title"},
+    {ATTR_WEIGHT, "weight"},
+    {ATTR_VALIGN, "valign"},
+    {ATTR_WRAP, "wrap"}
 };
-
-static struct token layouttypes[] =
-{
-    {LAYOUT_TYPE_FLOAT, "float"},
-    {LAYOUT_TYPE_MAXIMIZE, "maximize"},
-    {LAYOUT_TYPE_HORIZONTAL, "horizontal"},
-    {LAYOUT_TYPE_VERTICAL, "vertical"}
-};
-
-static struct token layoutplacements[] =
-{
-    {LAYOUT_PLACEMENT_NORMAL, "normal"},
-    {LAYOUT_PLACEMENT_STRETCHED, "stretched"}
-};
-
-static struct token listboxmodes[] =
-{
-    {LISTBOX_MODE_NORMAL, "normal"},
-    {LISTBOX_MODE_READONLY, "readonly"}
-};
-
-static struct token gridplacements[] =
-{
-    {GRID_PLACEMENT_NORMAL, "normal"},
-    {GRID_PLACEMENT_STRETCHED, "stretched"}
-};
-
-static struct token imagetypes[] =
-{
-    {IMAGE_TYPE_FUDGEMOUSE, "image/fudge-icon-mouse"},
-    {IMAGE_TYPE_PCX, "image/pcx"}
-};
-
-static struct token texthaligns[] =
-{
-    {TEXT_HALIGN_LEFT, "left"},
-    {TEXT_HALIGN_CENTER, "center"},
-    {TEXT_HALIGN_RIGHT, "right"}
-};
-
-static struct token textweights[] =
-{
-    {TEXT_WEIGHT_NORMAL, "normal"},
-    {TEXT_WEIGHT_BOLD, "bold"}
-};
-
-static struct token textvaligns[] =
-{
-    {TEXT_VALIGN_TOP, "top"},
-    {TEXT_VALIGN_MIDDLE, "middle"},
-    {TEXT_VALIGN_BOTTOM, "bottom"}
-};
-
-static struct token textwraps[] =
-{
-    {TEXT_WRAP_NONE, "none"},
-    {TEXT_WRAP_CHAR, "char"},
-    {TEXT_WRAP_WORD, "word"}
-};
-
-static struct token textmodes[] =
-{
-    {TEXT_MODE_NORMAL, "normal"},
-    {TEXT_MODE_INVERTED, "inverted"}
-};
-
-static struct token textboxmodes[] =
-{
-    {TEXTBOX_MODE_NORMAL, "normal"},
-    {TEXTBOX_MODE_READONLY, "readonly"}
-};
-
-static unsigned int getkey(struct token *tokens, unsigned int n, char *value)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < n; i++)
-    {
-
-        if (cstring_match(tokens[i].value, value))
-            return tokens[i].key;
-
-    }
-
-    return 0;
-
-}
 
 static void setattributebutton(struct widget *widget, unsigned int attribute, char *value)
 {
@@ -154,8 +60,8 @@ static void setattributebutton(struct widget *widget, unsigned int attribute, ch
     switch (attribute)
     {
 
-    case WIDGET_ATTR_LABEL:
-        button->label = pool_updatestring(button->label, value);
+    case ATTR_LABEL:
+        button->label = attr_update(ATTR_LABEL, value, button->label);
 
         break;
 
@@ -171,35 +77,8 @@ static void setattributechoice(struct widget *widget, unsigned int attribute, ch
     switch (attribute)
     {
 
-    case WIDGET_ATTR_LABEL:
-        choice->label = pool_updatestring(choice->label, value);
-
-        break;
-
-    }
-
-}
-
-static void setattributelayout(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_layout *layout = widget->data;
-
-    switch (attribute)
-    {
-
-    case WIDGET_ATTR_TYPE:
-        layout->type = getkey(layouttypes, 4, value);
-
-        break;
-
-    case WIDGET_ATTR_PADDING:
-        layout->padding = cstring_readvalue(value, cstring_length(value), 10);
-
-        break;
-
-    case WIDGET_ATTR_PLACEMENT:
-        layout->placement = getkey(layoutplacements, 2, value);
+    case ATTR_LABEL:
+        choice->label = attr_update(ATTR_LABEL, value, choice->label);
 
         break;
 
@@ -215,8 +94,8 @@ static void setattributefill(struct widget *widget, unsigned int attribute, char
     switch (attribute)
     {
 
-    case WIDGET_ATTR_COLOR:
-        fill->color = cstring_readvalue(value, cstring_length(value), 16);
+    case ATTR_COLOR:
+        fill->color = attr_update(ATTR_COLOR, value, fill->color);
 
         break;
 
@@ -232,18 +111,18 @@ static void setattributegrid(struct widget *widget, unsigned int attribute, char
     switch (attribute)
     {
 
-    case WIDGET_ATTR_COLUMNS:
-        grid->columns = cstring_readvalue(value, cstring_length(value), 10);
+    case ATTR_COLUMNS:
+        grid->columns = attr_update(ATTR_COLUMNS, value, grid->columns);
 
         break;
 
-    case WIDGET_ATTR_PADDING:
-        grid->padding = cstring_readvalue(value, cstring_length(value), 10);
+    case ATTR_PADDING:
+        grid->padding = attr_update(ATTR_PADDING, value, grid->padding);
 
         break;
 
-    case WIDGET_ATTR_PLACEMENT:
-        grid->placement = getkey(gridplacements, 2, value);
+    case ATTR_FIT:
+        grid->fit = attr_update(ATTR_FIT, value, grid->fit);
 
         break;
 
@@ -259,13 +138,40 @@ static void setattributeimage(struct widget *widget, unsigned int attribute, cha
     switch (attribute)
     {
 
-    case WIDGET_ATTR_SOURCE:
-        image->source = pool_updatestring(image->source, value);
+    case ATTR_SOURCE:
+        image->source = attr_update(ATTR_SOURCE, value, image->source);
 
         break;
 
-    case WIDGET_ATTR_TYPE:
-        image->type = getkey(imagetypes, 2, value);
+    case ATTR_MIMETYPE:
+        image->mimetype = attr_update(ATTR_MIMETYPE, value, image->mimetype);
+
+        break;
+
+    }
+
+}
+
+static void setattributelayout(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_layout *layout = widget->data;
+
+    switch (attribute)
+    {
+
+    case ATTR_FORM:
+        layout->form = attr_update(ATTR_FORM, value, layout->form);
+
+        break;
+
+    case ATTR_PADDING:
+        layout->padding = attr_update(ATTR_PADDING, value, layout->padding);
+
+        break;
+
+    case ATTR_FIT:
+        layout->fit = attr_update(ATTR_FIT, value, layout->fit);
 
         break;
 
@@ -281,8 +187,8 @@ static void setattributelistbox(struct widget *widget, unsigned int attribute, c
     switch (attribute)
     {
 
-    case WIDGET_ATTR_MODE:
-        listbox->mode = getkey(listboxmodes, 2, value);
+    case ATTR_MODE:
+        listbox->mode = attr_update(ATTR_MODE, value, listbox->mode);
 
         break;
 
@@ -298,8 +204,8 @@ static void setattributeselect(struct widget *widget, unsigned int attribute, ch
     switch (attribute)
     {
 
-    case WIDGET_ATTR_LABEL:
-        select->label = pool_updatestring(select->label, value);
+    case ATTR_LABEL:
+        select->label = attr_update(ATTR_LABEL, value, select->label);
 
         break;
 
@@ -315,33 +221,33 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
     switch (attribute)
     {
 
-    case WIDGET_ATTR_HALIGN:
-        text->halign = getkey(texthaligns, 3, value);
+    case ATTR_BLIT:
+        text->blit = attr_update(ATTR_BLIT, value, text->blit);
 
         break;
 
-    case WIDGET_ATTR_CONTENT:
-        text->content = pool_updatestring(text->content, value);
+    case ATTR_HALIGN:
+        text->halign = attr_update(ATTR_HALIGN, value, text->halign);
 
         break;
 
-    case WIDGET_ATTR_MODE:
-        text->mode = getkey(textmodes, 2, value);
+    case ATTR_CONTENT:
+        text->content = attr_update(ATTR_CONTENT, value, text->content);
 
         break;
 
-    case WIDGET_ATTR_WEIGHT:
-        text->weight = getkey(textweights, 2, value);
+    case ATTR_VALIGN:
+        text->valign = attr_update(ATTR_VALIGN, value, text->valign);
 
         break;
 
-    case WIDGET_ATTR_VALIGN:
-        text->valign = getkey(textvaligns, 3, value);
+    case ATTR_WEIGHT:
+        text->weight = attr_update(ATTR_WEIGHT, value, text->weight);
 
         break;
 
-    case WIDGET_ATTR_WRAP:
-        text->wrap = getkey(textwraps, 3, value);
+    case ATTR_WRAP:
+        text->wrap = attr_update(ATTR_WRAP, value, text->wrap);
 
         break;
 
@@ -357,8 +263,8 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
     switch (attribute)
     {
 
-    case WIDGET_ATTR_MODE:
-        textbox->mode = getkey(textboxmodes, 2, value);
+    case ATTR_MODE:
+        textbox->mode = attr_update(ATTR_MODE, value, textbox->mode);
 
         break;
 
@@ -374,8 +280,8 @@ static void setattributetextbutton(struct widget *widget, unsigned int attribute
     switch (attribute)
     {
 
-    case WIDGET_ATTR_LABEL:
-        textbutton->label = pool_updatestring(textbutton->label, value);
+    case ATTR_LABEL:
+        textbutton->label = attr_update(ATTR_LABEL, value, textbutton->label);
 
         break;
 
@@ -391,8 +297,8 @@ static void setattributewindow(struct widget *widget, unsigned int attribute, ch
     switch (attribute)
     {
 
-    case WIDGET_ATTR_TITLE:
-        window->title = pool_updatestring(window->title, value);
+    case ATTR_TITLE:
+        window->title = attr_update(ATTR_TITLE, value, window->title);
 
         break;
 
@@ -406,13 +312,13 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     switch (attribute)
     {
 
-    case WIDGET_ATTR_ID:
-        widget->id = pool_updatestring(widget->id, value);
+    case ATTR_ID:
+        widget->id = attr_update(ATTR_ID, value, widget->id);
 
         break;
 
-    case WIDGET_ATTR_IN:
-        widget->in = pool_updatestring(widget->in, value);
+    case ATTR_IN:
+        widget->in = attr_update(ATTR_IN, value, widget->in);
 
         break;
 
@@ -431,16 +337,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case WIDGET_TYPE_LAYOUT:
-        setattributelayout(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_LISTBOX:
-        setattributelistbox(widget, attribute, value);
-
-        break;
-
     case WIDGET_TYPE_FILL:
         setattributefill(widget, attribute, value);
 
@@ -453,6 +349,16 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case WIDGET_TYPE_IMAGE:
         setattributeimage(widget, attribute, value);
+
+        break;
+
+    case WIDGET_TYPE_LAYOUT:
+        setattributelayout(widget, attribute, value);
+
+        break;
+
+    case WIDGET_TYPE_LISTBOX:
+        setattributelistbox(widget, attribute, value);
 
         break;
 
@@ -488,44 +394,44 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 void widget_unsetattributes(struct widget *widget)
 {
 
-    widget->id = pool_updatestring(widget->id, 0);
-    widget->in = pool_updatestring(widget->in, 0);
+    widget->id = attr_update(ATTR_ID, 0, widget->id);
+    widget->in = attr_update(ATTR_IN, 0, widget->in);
 
     switch (widget->type)
     {
 
     case WIDGET_TYPE_BUTTON:
-        setattributebutton(widget, WIDGET_ATTR_LABEL, 0);
+        setattributebutton(widget, ATTR_LABEL, 0);
 
         break;
 
     case WIDGET_TYPE_CHOICE:
-        setattributechoice(widget, WIDGET_ATTR_LABEL, 0);
+        setattributechoice(widget, ATTR_LABEL, 0);
 
         break;
 
     case WIDGET_TYPE_IMAGE:
-        setattributeimage(widget, WIDGET_ATTR_SOURCE, 0);
+        setattributeimage(widget, ATTR_SOURCE, 0);
 
         break;
 
     case WIDGET_TYPE_SELECT:
-        setattributeselect(widget, WIDGET_ATTR_LABEL, 0);
+        setattributeselect(widget, ATTR_LABEL, 0);
 
         break;
 
     case WIDGET_TYPE_TEXT:
-        setattributetext(widget, WIDGET_ATTR_CONTENT, 0);
+        setattributetext(widget, ATTR_CONTENT, 0);
 
         break;
 
     case WIDGET_TYPE_TEXTBUTTON:
-        setattributetextbutton(widget, WIDGET_ATTR_LABEL, 0);
+        setattributetextbutton(widget, ATTR_LABEL, 0);
 
         break;
 
     case WIDGET_TYPE_WINDOW:
-        setattributewindow(widget, WIDGET_ATTR_TITLE, 0);
+        setattributewindow(widget, ATTR_TITLE, 0);
 
         break;
 
@@ -536,21 +442,21 @@ void widget_unsetattributes(struct widget *widget)
 unsigned int widget_getattribute(char *value)
 {
 
-    return getkey(attributes, 16, value);
+    return util_getkey(attributes, 18, value);
 
 }
 
 unsigned int widget_getcommand(char *value)
 {
 
-    return getkey(commands, 5, value);
+    return util_getkey(commands, 5, value);
 
 }
 
 unsigned int widget_gettype(char *value)
 {
 
-    return getkey(types, 12, value);
+    return util_getkey(types, 12, value);
 
 }
 
@@ -722,8 +628,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
     widget->source = source;
     widget->type = type;
-    widget->id = pool_updatestring(widget->id, id);
-    widget->in = pool_updatestring(widget->in, in);
+    widget->id = attr_update(ATTR_ID, id, widget->id);
+    widget->in = attr_update(ATTR_IN, in, widget->in);
     widget->data = data;
 
 }

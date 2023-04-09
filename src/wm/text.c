@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 #include "util.h"
+#include "attr.h"
 #include "text.h"
 
 int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w)
@@ -9,13 +10,13 @@ int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w
     switch (halign)
     {
 
-    case TEXT_HALIGN_LEFT:
+    case ATTR_HALIGN_LEFT:
         return x;
 
-    case TEXT_HALIGN_CENTER:
+    case ATTR_HALIGN_CENTER:
         return x + w / 2 - rowinfo->width / 2;
 
-    case TEXT_HALIGN_RIGHT:
+    case ATTR_HALIGN_RIGHT:
         return x + w - rowinfo->width;
 
     }
@@ -30,13 +31,13 @@ int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, int y, int h
     switch (valign)
     {
 
-    case TEXT_VALIGN_TOP:
+    case ATTR_VALIGN_TOP:
         return y;
 
-    case TEXT_VALIGN_MIDDLE:
+    case ATTR_VALIGN_MIDDLE:
         return y + h / 2 - rowinfo->height / 2 - (rowinfo->lineheight - rowinfo->height) / 2;
 
-    case TEXT_VALIGN_BOTTOM:
+    case ATTR_VALIGN_BOTTOM:
         return y + h - rowinfo->height;
 
     }
@@ -125,7 +126,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             break;
 
         default:
-            if (wrap == TEXT_WRAP_WORD)
+            if (wrap == ATTR_WRAP_WORD)
             {
 
                 if (!foundchar)
@@ -150,7 +151,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             switch (wrap)
             {
 
-            case TEXT_WRAP_WORD:
+            case ATTR_WRAP_WORD:
                 if (foundspace)
                 {
 
@@ -175,7 +176,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
                 break;
 
-            case TEXT_WRAP_CHAR:
+            case ATTR_WRAP_CHAR:
                 rowinfo->iend = i;
                 rowinfo->length = rowinfo->iend - rowinfo->istart;
 

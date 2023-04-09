@@ -1,17 +1,3 @@
-#define TEXT_HALIGN_LEFT                0
-#define TEXT_HALIGN_CENTER              1
-#define TEXT_HALIGN_RIGHT               2
-#define TEXT_MODE_NORMAL                0
-#define TEXT_MODE_INVERTED              1
-#define TEXT_WEIGHT_NORMAL              0
-#define TEXT_WEIGHT_BOLD                1
-#define TEXT_VALIGN_TOP                 0
-#define TEXT_VALIGN_MIDDLE              1
-#define TEXT_VALIGN_BOTTOM              2
-#define TEXT_WRAP_NONE                  0
-#define TEXT_WRAP_CHAR                  1
-#define TEXT_WRAP_WORD                  2
-
 struct text_font
 {
 

@@ -2,8 +2,9 @@
 #include <abi.h>
 #include "config.h"
 #include "util.h"
-#include "text.h"
+#include "attr.h"
 #include "widget.h"
+#include "text.h"
 #include "pool.h"
 #include "blit.h"
 #include "render.h"
@@ -135,10 +136,10 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
     struct widget_image *image = widget->data;
 
-    switch (image->type)
+    switch (image->mimetype)
     {
 
-    case IMAGE_TYPE_FUDGEMOUSE:
+    case ATTR_MIMETYPE_FUDGEMOUSE:
         {
 
         static unsigned int cmap[3] = {
@@ -153,7 +154,7 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
         break;
 
-    case IMAGE_TYPE_PCX:
+    case ATTR_MIMETYPE_PCX:
         blit_pcx(display, line, pool_getstring(image->source), widget->position.x, widget->position.y, x0, x2);
 
         break;
@@ -182,7 +183,7 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
         0xE8888888,
     };
 
-    if (listbox->mode == LISTBOX_MODE_READONLY)
+    if (listbox->mode == ATTR_MODE_READONLY)
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
     else
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
@@ -292,15 +293,15 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
             0xE8F0F0F0,
         };
 
-        switch (text->mode)
+        switch (text->blit)
         {
 
-        case TEXT_MODE_NORMAL:
+        case ATTR_BLIT_NORMAL:
             blit_textnormal(display, text->cacherow.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2);
 
             break;
 
-        case TEXT_MODE_INVERTED:
+        case ATTR_BLIT_INVERTED:
             blit_textinverted(display, text->cacherow.font, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus)[CMAP_TEXT_COLOR], pool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2);
 
             break;
@@ -331,7 +332,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
         0xE8888888,
     };
 
-    if (textbox->mode == TEXTBOX_MODE_READONLY)
+    if (textbox->mode == ATTR_MODE_READONLY)
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
     else
         blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));

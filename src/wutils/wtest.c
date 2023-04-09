@@ -38,17 +38,17 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Test\"\n"
-        "+ layout id \"base\" in \"window\" type \"vertical\" padding \"8\"\n"
+        "+ layout id \"base\" in \"window\" form \"vertical\" padding \"8\"\n"
         "+ text in \"base\" wrap \"word\" content \"Hello World! How are we today?\nI am very good thank you for asking!\nThat is very good.\"\n"
         "+ select id \"country\" in \"base\" label \"Select country\"\n"
-        "+ layout id \"countrylist\" in \"country\" type \"vertical\" placement \"stretched\"\n"
+        "+ layout id \"countrylist\" in \"country\" form \"vertical\" fit \"stretched\"\n"
         "+ choice id \"sweden\" in \"countrylist\" label \"Sweden\"\n"
         "+ choice id \"norway\" in \"countrylist\" label \"Norway\"\n"
         "+ choice id \"england\" in \"countrylist\" label \"England\"\n"
         "+ button id \"button0\" in \"base\" label \"Click Me\"\n"
         "+ text id \"text1\" wrap \"word\" in \"base\" content \"<awaiting event>\"\n"
         "+ button id \"button1\" in \"base\" label \"Click Me Too\"\n"
-        "+ image in \"base\" type \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
+        "+ image in \"base\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 

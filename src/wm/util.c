@@ -52,3 +52,20 @@ void util_initsize(struct util_size *size, int w, int h)
 
 }
 
+unsigned int util_getkey(struct util_token *tokens, unsigned int n, char *value)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+    {
+
+        if (cstring_match(tokens[i].value, value))
+            return tokens[i].key;
+
+    }
+
+    return 0;
+
+}
+

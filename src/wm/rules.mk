@@ -2,6 +2,7 @@ B:=\
     $(DIR_SRC)/wm/wm \
 
 O:=\
+    $(DIR_SRC)/wm/attr.o \
     $(DIR_SRC)/wm/blit.o \
     $(DIR_SRC)/wm/parser.o \
     $(DIR_SRC)/wm/place.o \

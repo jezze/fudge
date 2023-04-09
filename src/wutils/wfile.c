@@ -88,17 +88,17 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Filesystem Explorer\"\n"
-        "+ layout id \"base\" in \"window\" type \"vertical\"\n"
-        "+ layout id \"top\" in \"base\" type \"horizontal\"\n"
-        "+ layout id \"top1\" in \"top\" type \"vertical\" padding \"8\"\n"
+        "+ layout id \"base\" in \"window\" form \"vertical\"\n"
+        "+ layout id \"top\" in \"base\" form \"horizontal\"\n"
+        "+ layout id \"top1\" in \"top\" form \"vertical\" padding \"8\"\n"
         "+ select id \"drive\" in \"top1\" label \"Drives\"\n"
-        "+ layout id \"drivelist\" in \"drive\" type \"vertical\" placement \"stretched\"\n"
+        "+ layout id \"drivelist\" in \"drive\" form \"vertical\" fit \"stretched\"\n"
         "+ choice id \":initrd\" in \"drivelist\" label \"initrd:\"\n"
         "+ choice id \":system\" in \"drivelist\" label \"system:\"\n"
-        "+ layout id \"top2\" in \"top\" type \"vertical\" padding \"8\" placement \"stretched\"\n"
+        "+ layout id \"top2\" in \"top\" form \"vertical\" padding \"8\" fit \"stretched\"\n"
         "+ textbox id \"pathbox\" in \"top2\"\n"
         "+ text id \"path\" in \"pathbox\"\n"
-        "+ layout id \"main\" in \"base\" type \"maximize\" padding \"8\"\n"
+        "+ layout id \"main\" in \"base\" form \"maximize\" padding \"8\"\n"
         "+ listbox id \"content\" in \"main\" mode \"readonly\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);

@@ -803,9 +803,9 @@ static void setupwidgets(void)
 {
 
     char *data =
-        "+ layout id \"root\" type \"float\"\n"
+        "+ layout id \"root\" form \"float\"\n"
         "+ fill in \"root\" color \"FF202020\"\n"
-        "+ image id \"mouse\" in \"root\" type \"image/fudge-icon-mouse\"\n";
+        "+ image id \"mouse\" in \"root\" mimetype \"image/fudge-icon-mouse\"\n";
 
     parser_parse(0, "", cstring_length(data), data);
 
