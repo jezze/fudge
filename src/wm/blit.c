@@ -2,6 +2,7 @@
 #include <abi.h>
 #include <image.h>
 #include "util.h"
+#include "attr.h"
 #include "widget.h"
 #include "text.h"
 #include "pool.h"
@@ -136,7 +137,7 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
 
 }
 
-void blit_textnormal(struct blit_display *display, struct text_font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2)
+void blit_text(struct blit_display *display, struct text_font *font, unsigned int invert, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2)
 {
 
     unsigned int i;
@@ -169,55 +170,7 @@ void blit_textnormal(struct blit_display *display, struct text_font *font, unsig
                 for (r = r0; r < r1; r++)
                 {
 
-                    if (data[(r >> 3)] & (0x80 >> (r % 8)))
-                        blit_line(display, color, rx + r, rx + r + 1);
-
-                }
-
-            }
-
-        }
-
-        rx += metricsdata.width;
-
-    }
-
-}
-
-void blit_textinverted(struct blit_display *display, struct text_font *font, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        unsigned short index = pcf_getindex(font->data, text[i]);
-        unsigned int offset = pcf_getbitmapoffset(font->data, index);
-        struct pcf_metricsdata metricsdata;
-        unsigned int lline;
-        unsigned int height;
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
-
-        height = metricsdata.ascent + metricsdata.descent;
-        lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
-
-        if (util_intersects(lline, 0, height))
-        {
-
-            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width - 1, x0, x2))
-            {
-
-                unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
-                int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x2 - rx, metricsdata.width - 1);
-                unsigned int r;
-
-                for (r = r0; r < r1; r++)
-                {
-
-                    if (!(data[(r >> 3)] & (0x80 >> (r % 8))))
+                    if ((data[(r >> 3)] & (0x80 >> (r % 8))) || invert)
                         blit_line(display, color, rx + r, rx + r + 1);
 
                 }
