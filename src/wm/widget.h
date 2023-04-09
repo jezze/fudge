@@ -1,8 +1,8 @@
 #define WIDGET_TYPE_BUTTON              1
-#define WIDGET_TYPE_FILL                2
-#define WIDGET_TYPE_GRID                3
-#define WIDGET_TYPE_IMAGE               4
-#define WIDGET_TYPE_CHOICE              5
+#define WIDGET_TYPE_CHOICE              2
+#define WIDGET_TYPE_FILL                3
+#define WIDGET_TYPE_GRID                4
+#define WIDGET_TYPE_IMAGE               5
 #define WIDGET_TYPE_LAYOUT              6
 #define WIDGET_TYPE_LISTBOX             7
 #define WIDGET_TYPE_SELECT              8

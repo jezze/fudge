@@ -26,10 +26,10 @@ static struct util_token commands[5] =
 static struct util_token widgets[12] =
 {
     {WIDGET_TYPE_BUTTON, "button"},
+    {WIDGET_TYPE_CHOICE, "choice"},
     {WIDGET_TYPE_FILL, "fill"},
     {WIDGET_TYPE_GRID, "grid"},
     {WIDGET_TYPE_IMAGE, "image"},
-    {WIDGET_TYPE_CHOICE, "choice"},
     {WIDGET_TYPE_LAYOUT, "layout"},
     {WIDGET_TYPE_LISTBOX, "listbox"},
     {WIDGET_TYPE_SELECT, "select"},
@@ -57,8 +57,8 @@ static struct util_token attributes[19] =
     {ATTR_PADDING, "padding"},
     {ATTR_SOURCE, "source"},
     {ATTR_TITLE, "title"},
-    {ATTR_WEIGHT, "weight"},
     {ATTR_VALIGN, "valign"},
+    {ATTR_WEIGHT, "weight"},
     {ATTR_WRAP, "wrap"}
 };
 
