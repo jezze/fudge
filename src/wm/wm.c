@@ -580,7 +580,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (!paused)
         {
 
-            place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h);
+            place_widget(state.rootwidget, 0, 0, 0, 0, 0, display.size.w, display.size.h);
             render(&display, &displaydamage);
 
         }

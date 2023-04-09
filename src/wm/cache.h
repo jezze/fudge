@@ -32,4 +32,4 @@ struct cache_image
 
 void cache_updatetext(struct cache_text *cachetext, struct text_font *font, unsigned int rownum, char *content, unsigned int length, unsigned int wrap, int w, int h);
 void cache_initrow(struct cache_row *cacherow, struct text_rowinfo *rowinfo, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int w, int h);
-void cache_inittext(struct cache_text *cachetext, unsigned int rows, int lastrowx, int lastrowy);
+void cache_inittext(struct cache_text *cachetext, unsigned int rows, int firstrowx, int lastrowx, int lastrowy);

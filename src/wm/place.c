@@ -54,7 +54,7 @@ static void placewidget2(struct widget *widget, int x, int y, int w, int h, int 
 
 }
 
-static void placechild(struct widget *widget, int x, int y, int maxw, int maxh, int paddingw, int paddingh, int stretchw, int stretchh)
+static void placechild(struct widget *widget, int x, int y, int offx, int maxw, int maxh, int paddingw, int paddingh, int stretchw, int stretchh)
 {
 
     struct util_position cpos;
@@ -64,11 +64,11 @@ static void placechild(struct widget *widget, int x, int y, int maxw, int maxh, 
     util_initposition(&cpos, x + paddingw, y + paddingh);
     util_initsize(&cmax, util_max(0, maxw - paddingw * 2), util_max(0, maxh - paddingh * 2));
     util_initsize(&cmin, (stretchw == ATTR_FIT_STRETCHED) ? cmax.w : 0, (stretchh == ATTR_FIT_STRETCHED) ? cmax.h : 0);
-    place_widget(widget, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h);
+    place_widget(widget, cpos.x, cpos.y, offx, cmin.w, cmin.h, cmax.w, cmax.h);
 
 }
 
-static void placebutton(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placebutton(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_button *button = widget->data;
@@ -81,7 +81,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
 }
 
-static void placechoice(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placechoice(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_choice *choice = widget->data;
@@ -94,7 +94,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 
 }
 
-static void placelayout(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placelayout(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_layout *layout = widget->data;
@@ -112,7 +112,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, maxw, maxh, layout->padding, layout->padding, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
+            placechild(child, x, y, 0, maxw, maxh, layout->padding, layout->padding, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -125,7 +125,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x + total.w, y, maxw - total.w, maxh, layout->padding, layout->padding, ATTR_FIT_NORMAL, layout->fit);
+            placechild(child, x + total.w, y, 0, maxw - total.w, maxh, layout->padding, layout->padding, ATTR_FIT_NORMAL, layout->fit);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -138,7 +138,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, maxw, maxh, layout->padding, layout->padding, ATTR_FIT_STRETCHED, ATTR_FIT_STRETCHED);
+            placechild(child, x, y, 0, maxw, maxh, layout->padding, layout->padding, ATTR_FIT_STRETCHED, ATTR_FIT_STRETCHED);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -151,7 +151,7 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y + total.h, maxw, maxh - total.h, layout->padding, layout->padding, layout->fit, ATTR_FIT_NORMAL);
+            placechild(child, x, y + total.h, 0, maxw, maxh - total.h, layout->padding, layout->padding, layout->fit, ATTR_FIT_NORMAL);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -164,14 +164,14 @@ static void placelayout(struct widget *widget, int x, int y, unsigned int minw, 
 
 }
 
-static void placefill(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placefill(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     placewidget(widget, x, y, maxw, maxh, minw, minh, maxw, maxh);
 
 }
 
-static void placegrid(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placegrid(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_grid *grid = widget->data;
@@ -189,7 +189,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 
         struct widget *child = current->data;
 
-        placechild(child, x + row.w, y + rowtotal.h, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding, grid->fit, ATTR_FIT_NORMAL);
+        placechild(child, x + row.w, y + rowtotal.h, 0, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding, grid->fit, ATTR_FIT_NORMAL);
         addtotal(&total, child, x, y, grid->padding, grid->padding);
 
         row.w += (maxw / grid->columns);
@@ -211,7 +211,7 @@ static void placegrid(struct widget *widget, int x, int y, unsigned int minw, un
 
 }
 
-static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placeimagepcx(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_image *image = widget->data;
@@ -238,7 +238,7 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
 
 }
 
-static void placeimage(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placeimage(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_image *image = widget->data;
@@ -250,7 +250,7 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
         break;
 
     case ATTR_MIMETYPE_PCX:
-        placeimagepcx(widget, x, y, minw, minh, maxw, maxh);
+        placeimagepcx(widget, x, y, 0, minw, minh, maxw, maxh);
 
         break;
 
@@ -258,7 +258,7 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
 
 }
 
-static void placelistbox(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_listbox *listbox = widget->data;
@@ -272,7 +272,7 @@ static void placelistbox(struct widget *widget, int x, int y, unsigned int minw,
 
         struct widget *child = current->data;
 
-        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0, ATTR_FIT_STRETCHED, ATTR_FIT_NORMAL);
+        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, 0, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0, ATTR_FIT_STRETCHED, ATTR_FIT_NORMAL);
         addtotal(&total, child, x, y, 0, 0);
 
     }
@@ -297,7 +297,7 @@ static void placelistbox(struct widget *widget, int x, int y, unsigned int minw,
 
 }
 
-static void placeselect(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placeselect(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_select *select = widget->data;
@@ -314,7 +314,7 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
         struct widget *child = current->data;
 
-        placechild(child, widget->position.x, widget->position.y + widget->size.h, widget->size.w, 512, 0, 0, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
+        placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, widget->size.w, 512, 0, 0, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
 
         if (widget->state != WIDGET_STATE_FOCUS)
             hideall(child);
@@ -325,20 +325,20 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
 }
 
-static void placetext(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placetext(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_text *text = widget->data;
     struct text_font *font = pool_getfont((text->weight == ATTR_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
     struct text_info info;
 
-    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->cachetext.firstrowx);
+    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, offx);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh);
-    cache_inittext(&text->cachetext, info.rows, info.lastrowx, info.lastrowy);
+    cache_inittext(&text->cachetext, info.rows, offx, info.lastrowx, info.lastrowy);
 
 }
 
-static void placetextbox(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_textbox *textbox = widget->data;
@@ -359,9 +359,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
             struct widget_text *text = child->data;
 
-            text->cachetext.firstrowx = lastrowx;
-
-            placechild(child, x, y + lastrowy, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, ATTR_FIT_STRETCHED, ATTR_FIT_NORMAL);
+            placechild(child, x, y + lastrowy, lastrowx, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, ATTR_FIT_STRETCHED, ATTR_FIT_NORMAL);
             addtotal(&total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
 
             lastrowx = text->cachetext.lastrowx;
@@ -391,7 +389,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
 }
 
-static void placetextbutton(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placetextbutton(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_textbutton *textbutton = widget->data;
@@ -404,7 +402,7 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
 
 }
 
-static void placewindow(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+static void placewindow(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct list_item *current = 0;
@@ -414,75 +412,75 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 
         struct widget *child = current->data;
 
-        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
+        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
 
     }
 
 }
 
-void place_widget(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+void place_widget(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     switch (widget->type)
     {
 
     case WIDGET_TYPE_BUTTON:
-        placebutton(widget, x, y, minw, minh, maxw, maxh);
+        placebutton(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_CHOICE:
-        placechoice(widget, x, y, minw, minh, maxw, maxh);
+        placechoice(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_LAYOUT:
-        placelayout(widget, x, y, minw, minh, maxw, maxh);
+        placelayout(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_FILL:
-        placefill(widget, x, y, minw, minh, maxw, maxh);
+        placefill(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_GRID:
-        placegrid(widget, x, y, minw, minh, maxw, maxh);
+        placegrid(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_IMAGE:
-        placeimage(widget, x, y, minw, minh, maxw, maxh);
+        placeimage(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_LISTBOX:
-        placelistbox(widget, x, y, minw, minh, maxw, maxh);
+        placelistbox(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_SELECT:
-        placeselect(widget, x, y, minw, minh, maxw, maxh);
+        placeselect(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_TEXT:
-        placetext(widget, x, y, minw, minh, maxw, maxh);
+        placetext(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_TEXTBOX:
-        placetextbox(widget, x, y, minw, minh, maxw, maxh);
+        placetextbox(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_TEXTBUTTON:
-        placetextbutton(widget, x, y, minw, minh, maxw, maxh);
+        placetextbutton(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
     case WIDGET_TYPE_WINDOW:
-        placewindow(widget, x, y, minw, minh, maxw, maxh);
+        placewindow(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 

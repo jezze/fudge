@@ -36,10 +36,11 @@ void cache_initrow(struct cache_row *cacherow, struct text_rowinfo *rowinfo, str
 
 }
 
-void cache_inittext(struct cache_text *cachetext, unsigned int rows, int lastrowx, int lastrowy)
+void cache_inittext(struct cache_text *cachetext, unsigned int rows, int firstrowx, int lastrowx, int lastrowy)
 {
 
     cachetext->rows = rows;
+    cachetext->firstrowx = firstrowx;
     cachetext->lastrowx = lastrowx;
     cachetext->lastrowy = lastrowy;
     cachetext->exist = 0;
