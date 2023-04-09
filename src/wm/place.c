@@ -277,17 +277,17 @@ static void placelistbox(struct widget *widget, int x, int y, unsigned int minw,
 
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
-    if (listbox->scroll)
+    if (listbox->vscroll)
     {
 
-        listbox->scroll = util_clamp(listbox->scroll, 0, (total.h > maxh) ? total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2 : 0);
+        listbox->vscroll = util_clamp(listbox->vscroll, 0, (total.h > maxh) ? total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2 : 0);
 
         while ((current = pool_nextin(current, widget)))
         {
 
             struct widget *child = current->data;
 
-            child->position.y -= listbox->scroll;
+            child->position.y -= listbox->vscroll;
 
         }
 
@@ -376,17 +376,17 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh);
 
-    if (textbox->scroll)
+    if (textbox->vscroll)
     {
 
-        textbox->scroll = util_clamp(textbox->scroll, 0, total.h - 56);
+        textbox->vscroll = util_clamp(textbox->vscroll, 0, total.h - 56);
 
         while ((current = pool_nextin(current, widget)))
         {
 
             struct widget *child = current->data;
 
-            child->position.y -= textbox->scroll;
+            child->position.y -= textbox->vscroll;
 
         }
 

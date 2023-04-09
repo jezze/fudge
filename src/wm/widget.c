@@ -29,28 +29,6 @@ static struct util_token types[12] =
     {WIDGET_TYPE_WINDOW, "window"}
 };
 
-static struct util_token attributes[18] =
-{
-    {ATTR_BLIT, "blit"},
-    {ATTR_COLOR, "color"},
-    {ATTR_COLUMNS, "columns"},
-    {ATTR_CONTENT, "content"},
-    {ATTR_FIT, "fit"},
-    {ATTR_FORM, "form"},
-    {ATTR_HALIGN, "halign"},
-    {ATTR_ID, "id"},
-    {ATTR_IN, "in"},
-    {ATTR_LABEL, "label"},
-    {ATTR_MIMETYPE, "mimetype"},
-    {ATTR_MODE, "mode"},
-    {ATTR_PADDING, "padding"},
-    {ATTR_SOURCE, "source"},
-    {ATTR_TITLE, "title"},
-    {ATTR_WEIGHT, "weight"},
-    {ATTR_VALIGN, "valign"},
-    {ATTR_WRAP, "wrap"}
-};
-
 static void setattributebutton(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -191,6 +169,11 @@ static void setattributelistbox(struct widget *widget, unsigned int attribute, c
 
         break;
 
+    case ATTR_OVERFLOW:
+        listbox->overflow = attr_update(ATTR_OVERFLOW, value, listbox->overflow);
+
+        break;
+
     }
 
 }
@@ -264,6 +247,11 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
     case ATTR_MODE:
         textbox->mode = attr_update(ATTR_MODE, value, textbox->mode);
+
+        break;
+
+    case ATTR_OVERFLOW:
+        textbox->overflow = attr_update(ATTR_OVERFLOW, value, textbox->overflow);
 
         break;
 
@@ -435,13 +423,6 @@ void widget_unsetattributes(struct widget *widget)
         break;
 
     }
-
-}
-
-unsigned int widget_getattribute(char *value)
-{
-
-    return util_getkey(attributes, 18, value);
 
 }
 

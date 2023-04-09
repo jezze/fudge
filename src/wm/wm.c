@@ -2,8 +2,9 @@
 #include <abi.h>
 #include "config.h"
 #include "util.h"
-#include "text.h"
+#include "attr.h"
 #include "widget.h"
+#include "text.h"
 #include "pool.h"
 #include "blit.h"
 #include "place.h"
@@ -141,7 +142,7 @@ static void damageall(struct widget *widget)
 
 }
 
-static void scrollwidget(struct widget *widget, int amount)
+static void scrollwidget(struct widget *widget, int hamount, int vamount)
 {
 
     if (widget->type == WIDGET_TYPE_LISTBOX)
@@ -149,7 +150,11 @@ static void scrollwidget(struct widget *widget, int amount)
 
         struct widget_listbox *listbox = widget->data;
 
-        listbox->scroll += amount;
+        if (listbox->overflow == ATTR_OVERFLOW_SCROLL || listbox->overflow == ATTR_OVERFLOW_HSCROLL)
+            listbox->hscroll += hamount;
+
+        if (listbox->overflow == ATTR_OVERFLOW_SCROLL || listbox->overflow == ATTR_OVERFLOW_VSCROLL)
+            listbox->vscroll += vamount;
 
         damage(widget);
 
@@ -160,7 +165,11 @@ static void scrollwidget(struct widget *widget, int amount)
 
         struct widget_textbox *textbox = widget->data;
 
-        textbox->scroll += amount;
+        if (textbox->overflow == ATTR_OVERFLOW_SCROLL || textbox->overflow == ATTR_OVERFLOW_HSCROLL)
+            textbox->hscroll += hamount;
+
+        if (textbox->overflow == ATTR_OVERFLOW_SCROLL || textbox->overflow == ATTR_OVERFLOW_VSCROLL)
+            textbox->vscroll += vamount;
 
         damage(widget);
 
@@ -500,13 +509,13 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
         case 0x49:
             if (widget_isscrollable(state.focusedwidget))
-                scrollwidget(state.focusedwidget, -16);
+                scrollwidget(state.focusedwidget, 0, -16);
 
             break;
 
         case 0x51:
             if (widget_isscrollable(state.focusedwidget))
-                scrollwidget(state.focusedwidget, 16);
+                scrollwidget(state.focusedwidget, 0, 16);
 
             break;
 
@@ -662,7 +671,7 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     if (scrollablewidget)
-        scrollwidget(scrollablewidget, mousescroll->relz * 16);
+        scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
 
 }
 

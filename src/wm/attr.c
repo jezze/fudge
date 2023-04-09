@@ -4,6 +4,29 @@
 #include "pool2.h"
 #include "attr.h"
 
+static struct util_token attributes[19] =
+{
+    {ATTR_BLIT, "blit"},
+    {ATTR_COLOR, "color"},
+    {ATTR_COLUMNS, "columns"},
+    {ATTR_CONTENT, "content"},
+    {ATTR_FIT, "fit"},
+    {ATTR_FORM, "form"},
+    {ATTR_HALIGN, "halign"},
+    {ATTR_ID, "id"},
+    {ATTR_IN, "in"},
+    {ATTR_LABEL, "label"},
+    {ATTR_MIMETYPE, "mimetype"},
+    {ATTR_MODE, "mode"},
+    {ATTR_OVERFLOW, "overflow"},
+    {ATTR_PADDING, "padding"},
+    {ATTR_SOURCE, "source"},
+    {ATTR_TITLE, "title"},
+    {ATTR_WEIGHT, "weight"},
+    {ATTR_VALIGN, "valign"},
+    {ATTR_WRAP, "wrap"}
+};
+
 static struct util_token blits[2] =
 {
     {ATTR_BLIT_NORMAL, "normal"},
@@ -41,6 +64,14 @@ static struct util_token modes[2] =
 {
     {ATTR_MODE_NORMAL, "normal"},
     {ATTR_MODE_READONLY, "readonly"}
+};
+
+static struct util_token overflows[4] =
+{
+    {ATTR_OVERFLOW_NONE, "none"},
+    {ATTR_OVERFLOW_SCROLL, "scroll"},
+    {ATTR_OVERFLOW_HSCROLL, "hscroll"},
+    {ATTR_OVERFLOW_VSCROLL, "vscroll"}
 };
 
 static struct util_token valigns[3] =
@@ -112,6 +143,7 @@ unsigned int attr_isenum(unsigned int attribute)
     case ATTR_HALIGN:
     case ATTR_MIMETYPE:
     case ATTR_MODE:
+    case ATTR_OVERFLOW:
     case ATTR_VALIGN:
     case ATTR_WEIGHT:
     case ATTR_WRAP:
@@ -165,6 +197,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     case ATTR_MODE:
         return util_getkey(modes, 2, value);
 
+    case ATTR_OVERFLOW:
+        return util_getkey(overflows, 4, value);
+
     case ATTR_PADDING:
         return cstring_readvalue(value, cstring_length(value), 10);
 
@@ -186,6 +221,13 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     }
 
     return 0;
+
+}
+
+unsigned int attr_get(char *value)
+{
+
+    return util_getkey(attributes, 19, value);
 
 }
 

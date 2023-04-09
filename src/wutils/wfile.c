@@ -99,7 +99,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ textbox id \"pathbox\" in \"top2\"\n"
         "+ text id \"path\" in \"pathbox\"\n"
         "+ layout id \"main\" in \"base\" form \"maximize\" padding \"8\"\n"
-        "+ listbox id \"content\" in \"main\" mode \"readonly\"\n";
+        "+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
     cstring_writefmt0(path, 256, "initrd:\\0", 0);

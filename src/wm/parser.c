@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 #include "util.h"
+#include "attr.h"
 #include "widget.h"
 #include "pool.h"
 #include "parser.h"
@@ -169,7 +170,7 @@ static unsigned int getattribute(struct state *state)
 
     unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
 
-    return (count) ? widget_getattribute(strbuffer) : 0;
+    return (count) ? attr_get(strbuffer) : 0;
 
 }
 

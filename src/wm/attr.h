@@ -10,12 +10,13 @@
 #define ATTR_LABEL                              10
 #define ATTR_MIMETYPE                           11
 #define ATTR_MODE                               12
-#define ATTR_PADDING                            13
-#define ATTR_SOURCE                             14
-#define ATTR_TITLE                              15
-#define ATTR_VALIGN                             16
-#define ATTR_WEIGHT                             17
-#define ATTR_WRAP                               18
+#define ATTR_OVERFLOW                           13
+#define ATTR_PADDING                            14
+#define ATTR_SOURCE                             15
+#define ATTR_TITLE                              16
+#define ATTR_VALIGN                             17
+#define ATTR_WEIGHT                             18
+#define ATTR_WRAP                               19
 #define ATTR_FIT_NORMAL                         0
 #define ATTR_FIT_STRETCHED                      1
 #define ATTR_FORM_FLOAT                         0
@@ -26,6 +27,10 @@
 #define ATTR_MIMETYPE_PCX                       2
 #define ATTR_MODE_NORMAL                        0
 #define ATTR_MODE_READONLY                      1
+#define ATTR_OVERFLOW_NONE                      0
+#define ATTR_OVERFLOW_SCROLL                    1
+#define ATTR_OVERFLOW_HSCROLL                   2
+#define ATTR_OVERFLOW_VSCROLL                   3
 #define ATTR_BLIT_NORMAL                        0
 #define ATTR_BLIT_INVERTED                      1
 #define ATTR_HALIGN_LEFT                        0
@@ -44,3 +49,4 @@ unsigned int attr_isvalue(unsigned int attribute);
 unsigned int attr_isstring(unsigned int attribute);
 unsigned int attr_isenum(unsigned int attribute);
 unsigned int attr_update(unsigned int attribute, char *value, unsigned int current);
+unsigned int attr_get(char *value);

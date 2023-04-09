@@ -110,7 +110,9 @@ struct widget_listbox
 {
 
     unsigned int mode;
-    int scroll;
+    unsigned int overflow;
+    int hscroll;
+    int vscroll;
 
 };
 
@@ -140,7 +142,9 @@ struct widget_textbox
 {
 
     unsigned int mode;
-    int scroll;
+    unsigned int overflow;
+    int hscroll;
+    int vscroll;
 
 };
 
@@ -176,7 +180,6 @@ struct widget
 
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
 void widget_unsetattributes(struct widget *widget);
-unsigned int widget_getattribute(char *value);
 unsigned int widget_getcommand(char *value);
 unsigned int widget_gettype(char *value);
 unsigned int widget_setstate(struct widget *widget, unsigned int state);
