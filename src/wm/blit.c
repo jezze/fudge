@@ -22,6 +22,7 @@
 #define CMAP_MOUSE_HIGHLIGHT            2
 #define CMAP_ICON_COLOR                 0
 #define CMAP_RECT_COLOR                 0
+#define CMAP_TEXT_COLOR                 0
 
 struct linesegment
 {
@@ -137,9 +138,10 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
 
 }
 
-void blit_text(struct blit_display *display, struct text_font *font, unsigned int invert, unsigned int color, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2)
+void blit_text(struct blit_display *display, struct text_font *font, unsigned int invert, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int *cmap)
 {
 
+    unsigned int color = cmap[CMAP_TEXT_COLOR];
     unsigned int i;
 
     for (i = 0; i < length; i++)
