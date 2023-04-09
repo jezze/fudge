@@ -4,6 +4,7 @@
 #include "util.h"
 #include "text.h"
 #include "cache.h"
+#include "attr.h"
 #include "widget.h"
 #include "strpool.h"
 #include "pool.h"
@@ -327,9 +328,9 @@ void pool_loadfont(unsigned int factor)
     }
 
     file_read(FILE_L0, fontnormal, FONTDATA_SIZE);
-    pool_setfont(POOL_FONTNORMAL, fontnormal, lineheight, padding);
+    pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
     file_read(FILE_L1, fontbold, FONTDATA_SIZE);
-    pool_setfont(POOL_FONTBOLD, fontbold, lineheight, padding);
+    pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
 
 }
 

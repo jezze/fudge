@@ -72,7 +72,7 @@ static void placebutton(struct widget *widget, int x, int y, int offx, unsigned 
 {
 
     struct widget_button *button = widget->data;
-    struct text_font *font = pool_getfont(POOL_FONTBOLD);
+    struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
     struct text_rowinfo rowinfo;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
@@ -85,7 +85,7 @@ static void placechoice(struct widget *widget, int x, int y, int offx, unsigned 
 {
 
     struct widget_choice *choice = widget->data;
-    struct text_font *font = pool_getfont(POOL_FONTNORMAL);
+    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
     struct text_rowinfo rowinfo;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
@@ -301,7 +301,7 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
 {
 
     struct widget_select *select = widget->data;
-    struct text_font *font = pool_getfont(POOL_FONTBOLD);
+    struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
     unsigned int extra = CONFIG_SELECT_EXTRA + CONFIG_SELECT_PADDING_WIDTH * 2;
     struct text_rowinfo rowinfo;
     struct list_item *current = 0;
@@ -329,7 +329,7 @@ static void placetext(struct widget *widget, int x, int y, int offx, unsigned in
 {
 
     struct widget_text *text = widget->data;
-    struct text_font *font = pool_getfont((text->weight == ATTR_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
+    struct text_font *font = pool_getfont(text->weight);
     struct text_info info;
 
     text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, offx);
@@ -393,7 +393,7 @@ static void placetextbutton(struct widget *widget, int x, int y, int offx, unsig
 {
 
     struct widget_textbutton *textbutton = widget->data;
-    struct text_font *font = pool_getfont(POOL_FONTNORMAL);
+    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
     struct text_rowinfo rowinfo;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, maxw - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);

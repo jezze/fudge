@@ -1,6 +1,3 @@
-#define POOL_FONTNORMAL                 0
-#define POOL_FONTBOLD                   1
-
 struct pool_pcxresource
 {
 

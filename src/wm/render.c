@@ -186,7 +186,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct widget_text *text = widget->data;
-    struct text_font *font = pool_getfont((text->weight == ATTR_WEIGHT_BOLD) ? POOL_FONTBOLD : POOL_FONTNORMAL);
+    struct text_font *font = pool_getfont(text->weight);
     unsigned int rownum = (line - widget->position.y) / font->lineheight;
 
     if (rownum >= text->cachetext.rows)
