@@ -230,11 +230,11 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     if (updatetextcache(widget, text, line))
     {
 
-        static unsigned int cmaptext[3] = {
-            0xE8E0E0E0, 0xE8E0E0E0, 0xE8F0F0F0,
+        static unsigned int cmaptext[1] = {
+            0xE8E0E0E0,
         };
 
-        blit_text(display, text->cacherow.font, text->blit, strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2, getcmap(widget->state, cmaptext, 1));
+        blit_text(display, text->cacherow.font, text->blit, strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2, getcmap(widget->state, cmaptext, 0));
 
     }
 
@@ -259,7 +259,9 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 
     struct widget_textbutton *textbutton = widget->data;
     static unsigned int cmaprect[3] = {
-        0x00000000, 0xE8242424, 0xE8202020,
+        0x00000000,
+        0xE8242424,
+        0xE8202020,
     };
     static unsigned int cmaptext[1] = {
         0xE8FFFFFF,
