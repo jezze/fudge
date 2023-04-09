@@ -184,10 +184,7 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
         0xE8888888,
     };
 
-    if (listbox->mode == ATTR_MODE_READONLY)
-        blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
-    else
-        blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, (listbox->mode == ATTR_MODE_READONLY) ? cmapnormal : getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
 }
 
@@ -240,18 +237,10 @@ static unsigned int updatetextcache(struct widget *widget, struct widget_text *t
 
         unsigned int rowx = (rownum) ? 0 : text->cachetext.firstrowx;
         struct text_rowinfo rowinfo;
-        unsigned int offset;
-        unsigned int frownum;
+        unsigned int offset = 0;
+        unsigned int frownum = 0;
 
-        if (rownum <= text->cachetext.rownum)
-        {
-
-            offset = 0;
-            frownum = 0;
-
-        }
-
-        else
+        if (rownum > text->cachetext.rownum)
         {
 
             offset = text->cachetext.icurrent;
@@ -320,10 +309,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
         0xE8888888,
     };
 
-    if (textbox->mode == ATTR_MODE_READONLY)
-        blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmapnormal);
-    else
-        blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
+    blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, (textbox->mode == ATTR_MODE_READONLY) ? cmapnormal : getcmap(widget->state, cmapnormal, cmaphover, cmapfocus));
 
 }
 
