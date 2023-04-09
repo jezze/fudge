@@ -6,6 +6,21 @@
 #include "pool.h"
 #include "parser.h"
 
+#define NONE    1
+#define COMMENT 2
+#define DELETE  3
+#define INSERT  4
+#define UPDATE  5
+
+static struct util_token commands[5] =
+{
+    {NONE, ""},
+    {COMMENT, "#"},
+    {DELETE, "-"},
+    {INSERT, "+"},
+    {UPDATE, "="}
+};
+
 struct state
 {
 
@@ -165,6 +180,15 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
 }
 
+static unsigned int getcommand(struct state *state)
+{
+
+    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+
+    return (count) ? util_getkey(commands, 5, strbuffer) : 0;
+
+}
+
 static unsigned int getattribute(struct state *state)
 {
 
@@ -174,16 +198,7 @@ static unsigned int getattribute(struct state *state)
 
 }
 
-static unsigned int getcommand(struct state *state)
-{
-
-    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
-
-    return (count) ? widget_getcommand(strbuffer) : 0;
-
-}
-
-static unsigned int gettype(struct state *state)
+static unsigned int getwidget(struct state *state)
 {
 
     unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
@@ -287,7 +302,7 @@ static void parsedelete(struct state *state, unsigned int source)
 static void parseinsert(struct state *state, unsigned int source, char *in)
 {
 
-    unsigned int type = gettype(state);
+    unsigned int type = getwidget(state);
 
     if (type)
     {
@@ -345,25 +360,25 @@ static void parse(struct state *state, unsigned int source, char *in)
         switch (getcommand(state))
         {
 
-        case WIDGET_COMMAND_NONE:
+        case NONE:
             break;
 
-        case WIDGET_COMMAND_COMMENT:
+        case COMMENT:
             parsecomment(state);
 
             break;
 
-        case WIDGET_COMMAND_DELETE:
+        case DELETE:
             parsedelete(state, source);
 
             break;
 
-        case WIDGET_COMMAND_INSERT:
+        case INSERT:
             parseinsert(state, source, in);
 
             break;
 
-        case WIDGET_COMMAND_UPDATE:
+        case UPDATE:
             parseupdate(state, source);
 
             break;

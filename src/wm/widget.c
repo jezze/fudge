@@ -4,15 +4,6 @@
 #include "attr.h"
 #include "widget.h"
 
-static struct util_token commands[5] =
-{
-    {WIDGET_COMMAND_NONE, ""},
-    {WIDGET_COMMAND_COMMENT, "#"},
-    {WIDGET_COMMAND_DELETE, "-"},
-    {WIDGET_COMMAND_INSERT, "+"},
-    {WIDGET_COMMAND_UPDATE, "="}
-};
-
 static struct util_token types[12] =
 {
     {WIDGET_TYPE_BUTTON, "button"},
@@ -423,13 +414,6 @@ void widget_unsetattributes(struct widget *widget)
         break;
 
     }
-
-}
-
-unsigned int widget_getcommand(char *value)
-{
-
-    return util_getkey(commands, 5, value);
 
 }
 

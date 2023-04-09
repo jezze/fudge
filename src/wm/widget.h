@@ -1,28 +1,23 @@
-#define WIDGET_COMMAND_NONE                     1
-#define WIDGET_COMMAND_COMMENT                  2
-#define WIDGET_COMMAND_DELETE                   3
-#define WIDGET_COMMAND_INSERT                   4
-#define WIDGET_COMMAND_UPDATE                   5
-#define WIDGET_TYPE_BUTTON                      1
-#define WIDGET_TYPE_FILL                        2
-#define WIDGET_TYPE_GRID                        3
-#define WIDGET_TYPE_IMAGE                       4
-#define WIDGET_TYPE_CHOICE                      5
-#define WIDGET_TYPE_LAYOUT                      6
-#define WIDGET_TYPE_LISTBOX                     7
-#define WIDGET_TYPE_SELECT                      8
-#define WIDGET_TYPE_TEXT                        9
-#define WIDGET_TYPE_TEXTBOX                     10
-#define WIDGET_TYPE_TEXTBUTTON                  11
-#define WIDGET_TYPE_WINDOW                      12
-#define WIDGET_STATE_NORMAL                     0
-#define WIDGET_STATE_HOVER                      1
-#define WIDGET_STATE_HOVEROFF                   2
-#define WIDGET_STATE_FOCUS                      3
-#define WIDGET_STATE_FOCUSOFF                   4
-#define WIDGET_STATE_DESTROYED                  5
-#define WIDGET_DISPLAY_NORMAL                   0
-#define WIDGET_DISPLAY_HIDDEN                   1
+#define WIDGET_TYPE_BUTTON              1
+#define WIDGET_TYPE_FILL                2
+#define WIDGET_TYPE_GRID                3
+#define WIDGET_TYPE_IMAGE               4
+#define WIDGET_TYPE_CHOICE              5
+#define WIDGET_TYPE_LAYOUT              6
+#define WIDGET_TYPE_LISTBOX             7
+#define WIDGET_TYPE_SELECT              8
+#define WIDGET_TYPE_TEXT                9
+#define WIDGET_TYPE_TEXTBOX             10
+#define WIDGET_TYPE_TEXTBUTTON          11
+#define WIDGET_TYPE_WINDOW              12
+#define WIDGET_STATE_NORMAL             0
+#define WIDGET_STATE_HOVER              1
+#define WIDGET_STATE_HOVEROFF           2
+#define WIDGET_STATE_FOCUS              3
+#define WIDGET_STATE_FOCUSOFF           4
+#define WIDGET_STATE_DESTROYED          5
+#define WIDGET_DISPLAY_NORMAL           0
+#define WIDGET_DISPLAY_HIDDEN           1
 
 struct cache_row
 {
@@ -180,7 +175,6 @@ struct widget
 
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
 void widget_unsetattributes(struct widget *widget);
-unsigned int widget_getcommand(char *value);
 unsigned int widget_gettype(char *value);
 unsigned int widget_setstate(struct widget *widget, unsigned int state);
 void widget_getclipping(struct widget *widget, struct util_position *position, struct util_size *size);
