@@ -107,8 +107,10 @@ static void blitrowsegment(struct blit_display *display, struct rowsegment *rs, 
 void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
 {
 
-    while (x0 < x2)
-        linebuffer[x0++] = color;
+    int x;
+
+    for (x = x0; x < x2; x++)
+        linebuffer[x] = color;
 
 }
 
@@ -116,21 +118,19 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
 {
 
     unsigned char *fg = (unsigned char *)&color;
+    int x;
 
-    while (x0 < x2)
+    for (x = x0; x < x2; x++)
     {
 
-        unsigned char *bg = (unsigned char *)&linebuffer[x0];
-        unsigned char *result = bg;
+        unsigned char *bg = (unsigned char *)&linebuffer[x];
         unsigned int alpha = fg[3] + 1;
-        unsigned int inv_alpha = 256 - fg[3];
+        unsigned int ialpha = 256 - fg[3];
 
-        result[0] = ((alpha * fg[0] + inv_alpha * bg[0]) >> 8);
-        result[1] = ((alpha * fg[1] + inv_alpha * bg[1]) >> 8);
-        result[2] = ((alpha * fg[2] + inv_alpha * bg[2]) >> 8);
-        result[3] = 0xFF;
-
-        x0++;
+        bg[0] = ((alpha * fg[0] + ialpha * bg[0]) >> 8);
+        bg[1] = ((alpha * fg[1] + ialpha * bg[1]) >> 8);
+        bg[2] = ((alpha * fg[2] + ialpha * bg[2]) >> 8);
+        bg[3] = 0xFF;
 
     }
 
