@@ -3,9 +3,10 @@
 #include <image.h>
 #include "config.h"
 #include "util.h"
+#include "text.h"
+#include "cache.h"
 #include "attr.h"
 #include "widget.h"
-#include "text.h"
 #include "strpool.h"
 #include "pool.h"
 #include "place.h"
@@ -333,12 +334,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 
     text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->cachetext.firstrowx);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh);
-
-    text->cacherow.font = font;
-    text->cachetext.rows = info.rows;
-    text->cachetext.lastrowx = info.lastrowx;
-    text->cachetext.lastrowy = info.lastrowy;
-    text->cachetext.exist = 0;
+    cache_inittext(&text->cachetext, info.rows, info.lastrowx, info.lastrowy);
 
 }
 
@@ -421,17 +417,6 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
         placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
 
     }
-
-}
-
-void cache_initrow(struct cache_row *cacherow, struct text_rowinfo *rowinfo, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int w, int h)
-{
-
-    cacherow->rx = text_getrowx(rowinfo, halign, paddingx, w);
-    cacherow->ry = text_getrowy(rowinfo, valign, paddingy, h);
-    cacherow->istart = rowinfo->istart;
-    cacherow->length = rowinfo->length;
-    cacherow->font = font;
 
 }
 

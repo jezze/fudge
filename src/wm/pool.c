@@ -2,8 +2,9 @@
 #include <abi.h>
 #include <image.h>
 #include "util.h"
-#include "widget.h"
 #include "text.h"
+#include "cache.h"
+#include "widget.h"
 #include "strpool.h"
 #include "pool.h"
 

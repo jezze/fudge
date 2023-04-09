@@ -4,6 +4,7 @@ B:=\
 O:=\
     $(DIR_SRC)/wm/attr.o \
     $(DIR_SRC)/wm/blit.o \
+    $(DIR_SRC)/wm/cache.o \
     $(DIR_SRC)/wm/parser.o \
     $(DIR_SRC)/wm/place.o \
     $(DIR_SRC)/wm/pool.o \

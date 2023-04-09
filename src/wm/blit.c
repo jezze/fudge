@@ -2,9 +2,10 @@
 #include <abi.h>
 #include <image.h>
 #include "util.h"
+#include "text.h"
+#include "cache.h"
 #include "attr.h"
 #include "widget.h"
-#include "text.h"
 #include "pool.h"
 #include "blit.h"
 

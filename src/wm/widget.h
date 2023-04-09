@@ -19,38 +19,6 @@
 #define WIDGET_DISPLAY_NORMAL           0
 #define WIDGET_DISPLAY_HIDDEN           1
 
-struct cache_row
-{
-
-    int rx;
-    int ry;
-    unsigned int istart;
-    unsigned int length;
-    struct text_font *font;
-
-};
-
-struct cache_text
-{
-
-    unsigned int rows;
-    int firstrowx;
-    int lastrowx;
-    int lastrowy;
-    unsigned int rownum;
-    unsigned int icurrent;
-    unsigned int exist;
-
-};
-
-struct cache_image
-{
-
-    unsigned int loaded;
-    struct util_size size;
-
-};
-
 struct widget_button
 {
 

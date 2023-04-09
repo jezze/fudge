@@ -1,6 +1,8 @@
 #include <fudge.h>
 #include "config.h"
 #include "util.h"
+#include "text.h"
+#include "cache.h"
 #include "attr.h"
 #include "widget.h"
 
