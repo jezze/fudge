@@ -75,11 +75,6 @@ static void setattributegrid(struct widget *widget, unsigned int attribute, char
 
         break;
 
-    case ATTR_FIT:
-        grid->fit = attr_update(ATTR_FIT, value, grid->fit);
-
-        break;
-
     }
 
 }
@@ -121,11 +116,6 @@ static void setattributelayout(struct widget *widget, unsigned int attribute, ch
 
     case ATTR_PADDING:
         layout->padding = attr_update(ATTR_PADDING, value, layout->padding);
-
-        break;
-
-    case ATTR_FIT:
-        layout->fit = attr_update(ATTR_FIT, value, layout->fit);
 
         break;
 
@@ -283,6 +273,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_IN:
         widget->in = attr_update(ATTR_IN, value, widget->in);
+
+        break;
+
+    case ATTR_FIT:
+        widget->fit = attr_update(ATTR_FIT, value, widget->fit);
 
         break;
 

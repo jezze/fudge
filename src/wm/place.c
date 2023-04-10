@@ -99,6 +99,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     struct widget_layout *layout = widget->data;
     struct list_item *current = 0;
     struct util_size total;
+    unsigned int totalstretched = 0;
 
     util_initsize(&total, 0, 0);
 
@@ -110,10 +111,8 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
-            int cminw = 0;
-            int cminh = 0;
 
-            placechild(child, x, y, 0, cminw, cminh, maxw, maxh, layout->padding, layout->padding);
+            placechild(child, x, y, 0, 0, 0, maxw, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -125,11 +124,50 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
-            int cminw = 0;
-            int cminh = (layout->fit == ATTR_FIT_STRETCHED) ? maxh : 0;
 
-            placechild(child, x + total.w, y, 0, cminw, cminh, maxw - total.w, maxh, layout->padding, layout->padding);
-            addtotal(&total, child, x, y, layout->padding, layout->padding);
+            if (child->fit == ATTR_FIT_STRETCHED)
+            {
+
+                totalstretched++;
+
+            }
+
+            else
+            {
+
+                placechild(child, x + total.w, y, 0, 0, 0, maxw - total.w, maxh, layout->padding, layout->padding);
+                addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+            }
+
+        }
+
+        if (totalstretched)
+        {
+
+            unsigned int sharedw = (maxw - total.w) / totalstretched;
+
+            util_initsize(&total, 0, 0);
+
+            while ((current = pool_nextin(current, widget)))
+            {
+
+                struct widget *child = current->data;
+                unsigned int cminw = 0;
+                unsigned int cmaxw = maxw - total.w;
+
+                if (child->fit == ATTR_FIT_STRETCHED)
+                {
+
+                    cminw = sharedw;
+                    cmaxw = sharedw;
+
+                }
+
+                placechild(child, x + total.w, y, 0, cminw, 0, cmaxw, maxh, layout->padding, layout->padding);
+                addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+            }
 
         }
 
@@ -140,10 +178,8 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
-            int cminw = maxw;
-            int cminh = maxh;
 
-            placechild(child, x, y, 0, cminw, cminh, maxw, maxh, layout->padding, layout->padding);
+            placechild(child, x, y, 0, maxw, maxh, maxw, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -155,11 +191,50 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
-            int cminw = (layout->fit == ATTR_FIT_STRETCHED) ? maxw : 0;
-            int cminh = 0;
 
-            placechild(child, x, y + total.h, 0, cminw, cminh, maxw, maxh - total.h, layout->padding, layout->padding);
-            addtotal(&total, child, x, y, layout->padding, layout->padding);
+            if (child->fit == ATTR_FIT_STRETCHED)
+            {
+
+                totalstretched++;
+
+            }
+
+            else
+            {
+
+                placechild(child, x, y + total.h, 0, 0, 0, maxw, maxh - total.h, layout->padding, layout->padding);
+                addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+            }
+
+        }
+
+        if (totalstretched)
+        {
+
+            unsigned int sharedh = (maxh - total.h) / totalstretched;
+
+            util_initsize(&total, 0, 0);
+
+            while ((current = pool_nextin(current, widget)))
+            {
+
+                struct widget *child = current->data;
+                unsigned int cminh = 0;
+                unsigned int cmaxh = maxh - total.h;
+
+                if (child->fit == ATTR_FIT_STRETCHED)
+                {
+
+                    cminh = sharedh;
+                    cmaxh = sharedh;
+
+                }
+
+                placechild(child, x, y + total.h, 0, 0, cminh, maxw, cmaxh, layout->padding, layout->padding);
+                addtotal(&total, child, x, y, layout->padding, layout->padding);
+
+            }
 
         }
 
@@ -196,7 +271,7 @@ static void placegrid(struct widget *widget, int x, int y, int offx, unsigned in
 
         struct widget *child = current->data;
 
-        placechild(child, x + row.w, y + rowtotal.h, 0, (grid->fit == ATTR_FIT_STRETCHED) ? maxw / grid->columns : 0, 0, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding);
+        placechild(child, x + row.w, y + rowtotal.h, 0, maxw / grid->columns, 0, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding);
         addtotal(&total, child, x, y, grid->padding, grid->padding);
 
         row.w += (maxw / grid->columns);
@@ -419,7 +494,10 @@ static void placewindow(struct widget *widget, int x, int y, int offx, unsigned 
 
         struct widget *child = current->data;
 
-        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
+        if (child->fit == ATTR_FIT_STRETCHED)
+            placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
+        else
+            placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
 
     }
 

@@ -39,7 +39,6 @@ struct widget_layout
 {
 
     unsigned int form;
-    unsigned int fit;
     unsigned int padding;
 
 };
@@ -55,7 +54,6 @@ struct widget_grid
 {
 
     unsigned int columns;
-    unsigned int fit;
     unsigned int padding;
 
 };
@@ -138,6 +136,7 @@ struct widget
     struct util_position position;
     struct util_size size;
     unsigned int display;
+    unsigned int fit;
 
 };
 

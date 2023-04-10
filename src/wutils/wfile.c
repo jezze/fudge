@@ -16,7 +16,7 @@ static void updatecontent(void)
     struct record records[4];
     unsigned int nrecords;
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\"\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" fit \"stretched\"\n");
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"%../\" in \"content\" label \"../\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
@@ -88,18 +88,18 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Filesystem Explorer\"\n"
-        "+ layout id \"base\" in \"window\" form \"vertical\"\n"
-        "+ layout id \"top\" in \"base\" form \"horizontal\"\n"
-        "+ layout id \"top1\" in \"top\" form \"vertical\" padding \"8\"\n"
-        "+ select id \"drive\" in \"top1\" label \"Drives\"\n"
-        "+ listbox id \"drivelist\" in \"drive\" mode \"readonly\" overflow \"vscroll\"\n"
-        "+ textbutton id \":initrd\" in \"drivelist\" label \"initrd:\"\n"
-        "+ textbutton id \":system\" in \"drivelist\" label \"system:\"\n"
-        "+ layout id \"top2\" in \"top\" form \"vertical\" padding \"8\" fit \"stretched\"\n"
-        "+ textbox id \"pathbox\" in \"top2\"\n"
-        "+ text id \"path\" in \"pathbox\"\n"
-        "+ layout id \"main\" in \"base\" form \"maximize\" padding \"8\"\n"
-        "+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\"\n";
+        "  + layout id \"base\" in \"window\" form \"vertical\" fit \"stretched\"\n"
+        "    + layout id \"top\" in \"base\" form \"horizontal\" padding \"8\"\n"
+        "      + select id \"drive\" in \"top\" label \"Drives\"\n"
+        "        + listbox id \"drivelist\" in \"drive\" mode \"readonly\" overflow \"vscroll\"\n"
+        "          + textbutton id \":initrd\" in \"drivelist\" label \"initrd:\"\n"
+        "          + textbutton id \":system\" in \"drivelist\" label \"system:\"\n"
+        "      + textbox id \"pathbox\" in \"top\" fit \"stretched\"\n"
+        "        + text id \"path\" in \"pathbox\"\n"
+        "    + layout id \"main\" in \"base\" form \"maximize\" padding \"8\" fit \"stretched\"\n"
+        "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" fit \"stretched\"\n"
+        "    + layout id \"bottom\" in \"base\" form \"horizontal\" padding \"8\"\n"
+        "      + button id \"copy\" in \"bottom\" label \"Copy\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
     cstring_writefmt0(path, 256, "initrd:\\0", 0);
