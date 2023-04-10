@@ -153,9 +153,9 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
 
     struct widget_listbox *listbox = widget->data;
     static unsigned int cmapframe[9] = {
-        0xE8101010, 0xE8282828, 0xE8686868,
-        0xE8101010, 0xE8282828, 0xE8787878,
-        0xE8101010, 0xE8282828, 0xE8888888,
+        0xE8101010, 0xE82A2A2A, 0xE8686868,
+        0xE8101010, 0xE82A2A2A, 0xE8787878,
+        0xE8101010, 0xE82A2A2A, 0xE8888888,
     };
 
     blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapframe, (listbox->mode == ATTR_MODE_READONLY) ? 0 : 3));
@@ -225,12 +225,14 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 
     struct widget_textbox *textbox = widget->data;
     static unsigned int cmapframe[9] = {
-        0xE8101010, 0xE8282828, 0xE8686868,
-        0xE8101010, 0xE8282828, 0xE8787878,
-        0xE8101010, 0xE8282828, 0xE8888888,
+        0xE8101010, 0xE8242424, 0xE8686868,
+        0xE8101010, 0xE8242424, 0xE8787878,
+        0xE8101010, 0xE8242424, 0xE8888888,
     };
-
-    blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmapframe, (textbox->mode == ATTR_MODE_READONLY) ? 0 : 3));
+    static unsigned int cmapframero[3] = {
+        0xE8101010, 0xE82A2A2A, 0xE8686868,
+    };
+    blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, (textbox->mode == ATTR_MODE_READONLY) ? cmapframero : cmapframe, (textbox->mode == ATTR_MODE_READONLY) ? 0 : 3));
 
 }
 
@@ -239,9 +241,9 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 
     struct widget_textbutton *textbutton = widget->data;
     static unsigned int cmaprect[3] = {
-        0x00202020,
-        0xE8202020,
-        0xE8202020,
+        0x00242424,
+        0xE8242424,
+        0xE8242424,
     };
     static unsigned int cmaptext[1] = {
         0xE8FFFFFF,
