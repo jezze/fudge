@@ -99,7 +99,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     struct widget_layout *layout = widget->data;
     struct list_item *current = 0;
     struct util_size total;
-    unsigned int totalstretched = 0;
+    unsigned int totalfits = 0;
 
     util_initsize(&total, 0, 0);
 
@@ -125,10 +125,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
             struct widget *child = current->data;
 
-            if (child->fit == ATTR_FIT_STRETCHED)
+            if (child->fit)
             {
 
-                totalstretched++;
+                totalfits += child->fit;
 
             }
 
@@ -142,10 +142,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
         }
 
-        if (totalstretched)
+        if (totalfits)
         {
 
-            unsigned int sharedw = (maxw - total.w) / totalstretched;
+            unsigned int sharedw = (maxw - total.w) / totalfits;
 
             util_initsize(&total, 0, 0);
 
@@ -156,11 +156,11 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
                 unsigned int cminw = 0;
                 unsigned int cmaxw = maxw - total.w;
 
-                if (child->fit == ATTR_FIT_STRETCHED)
+                if (child->fit)
                 {
 
-                    cminw = sharedw;
-                    cmaxw = sharedw;
+                    cminw = sharedw * child->fit;
+                    cmaxw = sharedw * child->fit;
 
                 }
 
@@ -192,10 +192,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
             struct widget *child = current->data;
 
-            if (child->fit == ATTR_FIT_STRETCHED)
+            if (child->fit)
             {
 
-                totalstretched++;
+                totalfits += child->fit;
 
             }
 
@@ -209,10 +209,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
         }
 
-        if (totalstretched)
+        if (totalfits)
         {
 
-            unsigned int sharedh = (maxh - total.h) / totalstretched;
+            unsigned int sharedh = (maxh - total.h) / totalfits;
 
             util_initsize(&total, 0, 0);
 
@@ -223,11 +223,11 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
                 unsigned int cminh = 0;
                 unsigned int cmaxh = maxh - total.h;
 
-                if (child->fit == ATTR_FIT_STRETCHED)
+                if (child->fit)
                 {
 
-                    cminh = sharedh;
-                    cmaxh = sharedh;
+                    cminh = sharedh * child->fit;
+                    cmaxh = sharedh * child->fit;
 
                 }
 
@@ -494,7 +494,7 @@ static void placewindow(struct widget *widget, int x, int y, int offx, unsigned 
 
         struct widget *child = current->data;
 
-        if (child->fit == ATTR_FIT_STRETCHED)
+        if (child->fit)
             placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
         else
             placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);

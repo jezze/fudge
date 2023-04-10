@@ -38,7 +38,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Test\"\n"
-        "  + layout id \"base\" in \"window\" form \"vertical\" padding \"8\" fit \"stretched\"\n"
+        "  + layout id \"base\" in \"window\" form \"vertical\" padding \"8\" fit \"1\"\n"
         "    + text in \"base\" wrap \"word\" content \"Hello World! How are we today?\nI am very good thank you for asking!\nThat is very good.\"\n"
         "    + select id \"country\" in \"base\" label \"Select country\"\n"
         "      + listbox id \"countrylist\" in \"country\" mode \"readonly\" overflow \"vscroll\"\n"

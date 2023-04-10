@@ -19,8 +19,6 @@
 #define ATTR_WRAP                       19
 #define ATTR_BLIT_NORMAL                0
 #define ATTR_BLIT_INVERTED              1
-#define ATTR_FIT_NORMAL                 0
-#define ATTR_FIT_STRETCHED              1
 #define ATTR_FORM_FLOAT                 0
 #define ATTR_FORM_HORIZONTAL            1
 #define ATTR_FORM_MAXIMIZE              2
