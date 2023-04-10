@@ -11,6 +11,8 @@
 #include "pool.h"
 #include "place.h"
 
+#define INFINITY    50000
+
 static void hideall(struct widget *widget)
 {
 
@@ -277,7 +279,7 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
 
         struct widget *child = current->data;
 
-        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, 0, 0, 0, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0);
+        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, 0, 0, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0);
         addtotal(&total, child, x, y, 0, 0);
 
     }
@@ -319,7 +321,7 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
 
         struct widget *child = current->data;
 
-        placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, 0, 0, widget->size.w, 512, 0, 0);
+        placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, widget->size.w, 0, INFINITY, INFINITY, 0, 0);
 
         if (widget->state != WIDGET_STATE_FOCUS)
             hideall(child);
@@ -364,7 +366,7 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
 
             struct widget_text *text = child->data;
 
-            placechild(child, x, y + lastrowy, lastrowx, 0, 0, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
+            placechild(child, x, y + lastrowy, lastrowx, 0, 0, maxw, INFINITY, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
             addtotal(&total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
 
             lastrowx = text->cachetext.lastrowx;
