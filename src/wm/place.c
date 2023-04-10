@@ -93,150 +93,149 @@ static void placechoice(struct widget *widget, int x, int y, int offx, unsigned 
 
 }
 
+static void placeA(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, struct util_size *total)
+{
+
+    struct list_item *current = 0;
+
+    util_initsize(total, 0, 0);
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        placechild(child, x, y, 0, minw, minh, maxw, maxh, paddingx, paddingy);
+        addtotal(total, child, x, y, paddingx, paddingy);
+
+    }
+
+}
+
+static unsigned int placeX(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
+{
+
+    struct list_item *current = 0;
+    unsigned int totalfits = 0;
+
+    util_initsize(total, 0, 0);
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+        unsigned int cx = (incw) ? total->w : 0;
+        unsigned int cy = (inch) ? total->h : 0;
+
+        if (child->fit)
+            totalfits += child->fit;
+
+        if (!child->fit)
+        {
+
+            placechild(child, x + cx, y + cy, 0, minw, minh, maxw - cx, maxh - cy, paddingx, paddingy);
+            addtotal(total, child, x, y, paddingx, paddingy);
+
+        }
+
+    }
+
+    return totalfits;
+
+}
+
+static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int sharedw, unsigned int sharedh, struct util_size *total)
+{
+
+    struct list_item *current = 0;
+
+    util_initsize(total, 0, 0);
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+        unsigned int cminw = 0;
+        unsigned int cmaxw = 0;
+        unsigned int cminh = 0;
+        unsigned int cmaxh = 0;
+        unsigned int totalw = 0;
+        unsigned int totalh = 0;
+
+        if (sharedw)
+        {
+
+            totalw = total->w;
+            cmaxw = maxw - total->w;
+            cmaxh = maxh;
+
+            if (child->fit)
+            {
+
+                cminw = sharedw * child->fit;
+                cmaxw = sharedw * child->fit;
+
+            }
+
+        }
+
+        if (sharedh)
+        {
+
+            totalh = total->h;
+            cmaxw = maxw;
+            cmaxh = maxh - total->h;
+
+            if (child->fit)
+            {
+
+                cminh = sharedh * child->fit;
+                cmaxh = sharedh * child->fit;
+
+            }
+
+        }
+
+        placechild(child, x + totalw, y + totalh, 0, cminw, cminh, cmaxw, cmaxh, paddingx, paddingy);
+        addtotal(total, child, x, y, paddingx, paddingy);
+
+    }
+
+}
+
 static void placelayout(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_layout *layout = widget->data;
-    struct list_item *current = 0;
     struct util_size total;
     unsigned int totalfits = 0;
-
-    util_initsize(&total, 0, 0);
 
     switch (layout->form)
     {
 
     case ATTR_FORM_FLOAT:
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            placechild(child, x, y, 0, 0, 0, maxw, maxh, layout->padding, layout->padding);
-            addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-        }
+        placeA(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, &total);
 
         break;
 
     case ATTR_FORM_HORIZONTAL:
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            if (child->fit)
-            {
-
-                totalfits += child->fit;
-
-            }
-
-            else
-            {
-
-                placechild(child, x + total.w, y, 0, 0, 0, maxw - total.w, maxh, layout->padding, layout->padding);
-                addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-            }
-
-        }
+        totalfits = placeX(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
 
         if (totalfits)
-        {
-
-            unsigned int sharedw = (maxw - total.w) / totalfits;
-
-            util_initsize(&total, 0, 0);
-
-            while ((current = pool_nextin(current, widget)))
-            {
-
-                struct widget *child = current->data;
-                unsigned int cminw = 0;
-                unsigned int cmaxw = maxw - total.w;
-
-                if (child->fit)
-                {
-
-                    cminw = sharedw * child->fit;
-                    cmaxw = sharedw * child->fit;
-
-                }
-
-                placechild(child, x + total.w, y, 0, cminw, 0, cmaxw, maxh, layout->padding, layout->padding);
-                addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-            }
-
-        }
+            placeF(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, (maxw - total.w) / totalfits, 0, &total);
 
         break;
 
     case ATTR_FORM_MAXIMIZE:
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            placechild(child, x, y, 0, maxw, maxh, maxw, maxh, layout->padding, layout->padding);
-            addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-        }
+        placeA(widget, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, &total);
 
         break;
 
     case ATTR_FORM_VERTICAL:
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            if (child->fit)
-            {
-
-                totalfits += child->fit;
-
-            }
-
-            else
-            {
-
-                placechild(child, x, y + total.h, 0, 0, 0, maxw, maxh - total.h, layout->padding, layout->padding);
-                addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-            }
-
-        }
+        totalfits = placeX(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
 
         if (totalfits)
-        {
-
-            unsigned int sharedh = (maxh - total.h) / totalfits;
-
-            util_initsize(&total, 0, 0);
-
-            while ((current = pool_nextin(current, widget)))
-            {
-
-                struct widget *child = current->data;
-                unsigned int cminh = 0;
-                unsigned int cmaxh = maxh - total.h;
-
-                if (child->fit)
-                {
-
-                    cminh = sharedh * child->fit;
-                    cmaxh = sharedh * child->fit;
-
-                }
-
-                placechild(child, x, y + total.h, 0, 0, cminh, maxw, cmaxh, layout->padding, layout->padding);
-                addtotal(&total, child, x, y, layout->padding, layout->padding);
-
-            }
-
-        }
+            placeF(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, (maxh - total.h) / totalfits, &total);
 
         break;
 
