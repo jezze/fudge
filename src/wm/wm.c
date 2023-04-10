@@ -217,10 +217,10 @@ static void placewindows(unsigned int source)
             if (widget->size.w == 0 && widget->size.h == 0)
             {
 
-                widget->position.x = 64 + 128 * numwindows;
-                widget->position.y = 64 + 64 * numwindows;
+                widget->position.x = 128 + 128 * numwindows;
+                widget->position.y = 128 + 64 * numwindows;
                 widget->size.w = 640;
-                widget->size.h = 640;
+                widget->size.h = 480;
 
                 bump(widget);
 
@@ -290,7 +290,7 @@ static void setfocuswidget(struct widget *widget)
 
     }
 
-    if (widget_setstate(widget, WIDGET_STATE_FOCUS))
+    if (widget && widget_setstate(widget, WIDGET_STATE_FOCUS))
     {
 
         state.focusedwidget = widget;
@@ -331,7 +331,7 @@ static void setfocuswindow(struct widget *widget)
 
     }
 
-    if (widget_setstate(widget, WIDGET_STATE_FOCUS))
+    if (widget && widget_setstate(widget, WIDGET_STATE_FOCUS))
     {
 
         state.focusedwindow = widget;
@@ -631,8 +631,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (clickedwindow)
             setfocuswindow(clickedwindow);
 
-        if (state.clickedwidget)
-            setfocuswidget(state.clickedwidget);
+        setfocuswidget(state.clickedwidget);
 
         if (state.clickedwidget)
             clickwidget(state.clickedwidget);
@@ -807,6 +806,13 @@ static void setupwidgets(void)
     char *data =
         "+ layout id \"root\" form \"float\"\n"
         "  + fill in \"root\" color \"FF202020\"\n"
+        "  + layout id \"desktop\" in \"root\" form \"vertical\"\n"
+        "    + layout id \"menu\" in \"desktop\" form \"horizontal\"\n"
+        "      + select id \"fudge\" in \"menu\" label \"FUDGE\"\n"
+        "      + layout id \"items\" in \"fudge\" form \"vertical\"\n"
+        "        + choice id \"terminal\" in \"items\" label \"Terminal\"\n"
+        "        + choice id \"filemanager\" in \"items\" label \"File Manager\"\n"
+        "        + choice id \"calculator\" in \"items\" label \"Calculator\"\n"
         "  + image id \"mouse\" in \"root\" mimetype \"image/fudge-icon-mouse\"\n";
 
     parser_parse(0, "", cstring_length(data), data);
