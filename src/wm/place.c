@@ -206,7 +206,7 @@ static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsig
 static void placeS(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
 {
 
-    unsigned int totalfits = placeX(widget, x, y, 0, 0, maxw, maxh, paddingx, paddingy, incw, inch, total);
+    unsigned int totalfits = placeX(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, incw, inch, total);
 
     if (totalfits)
     {
@@ -214,7 +214,7 @@ static void placeS(struct widget *widget, int x, int y, unsigned int minw, unsig
         unsigned int sharedw = (incw) ? (maxw - total->w) / totalfits : 0;
         unsigned int sharedh = (inch) ? (maxh - total->h) / totalfits : 0;
 
-        placeF(widget, x, y, 0, 0, maxw, maxh, paddingx, paddingy, sharedw, sharedh, total);
+        placeF(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, sharedw, sharedh, total);
 
     }
 
@@ -317,17 +317,7 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
     struct util_size total;
 
     util_initsize(&total, 0, 0);
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, 0, 0, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0);
-        addtotal(&total, child, x, y, 0, 0);
-
-    }
-
+    placeS(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, 0, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
     if (listbox->vscroll)

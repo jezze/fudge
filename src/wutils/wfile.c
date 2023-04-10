@@ -17,7 +17,7 @@ static void updatecontent(void)
     unsigned int nrecords;
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" fit \"1\"\n");
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"%../\" in \"content\" label \"../\" fit \"1\"\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"%../\" in \"content\" label \"../\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
@@ -31,7 +31,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            channel_sendfmt6(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"_%w%s\" in \"content\" label \"%w%s\" fit \"1\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            channel_sendfmt6(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton id \"_%w%s\" in \"content\" label \"%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
         }
 
@@ -92,8 +92,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + layout id \"top\" in \"base\" form \"horizontal\" padding \"8\"\n"
         "      + select id \"drive\" in \"top\" label \"Drives\"\n"
         "        + listbox id \"drivelist\" in \"drive\" mode \"readonly\" overflow \"vscroll\"\n"
-        "          + textbutton id \":initrd\" in \"drivelist\" label \"initrd:\" fit \"1\"\n"
-        "          + textbutton id \":system\" in \"drivelist\" label \"system:\" fit \"1\"\n"
+        "          + textbutton id \":initrd\" in \"drivelist\" label \"initrd:\"\n"
+        "          + textbutton id \":system\" in \"drivelist\" label \"system:\"\n"
         "      + textbox id \"pathbox\" in \"top\" fit \"1\"\n"
         "        + text id \"path\" in \"pathbox\"\n"
         "      + button id \"open\" in \"top\" label \"Open\"\n"
