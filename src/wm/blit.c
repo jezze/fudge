@@ -590,10 +590,10 @@ void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned 
 
 }
 
-void blit(struct blit_display *display, int line, int dx0, int dx2)
+void blit(struct blit_display *display, int line, int x0, int x2)
 {
 
-    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + dx0, display->linebuffer + dx0, (dx2 - dx0) * display->bpp);
+    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + x0, display->linebuffer + x0, (x2 - x0) * display->bpp);
 
 }
 
