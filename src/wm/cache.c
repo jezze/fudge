@@ -25,11 +25,11 @@ void cache_updatetext(struct cache_text *cachetext, struct text_font *font, unsi
 
 }
 
-void cache_initrow(struct cache_row *cacherow, struct text_rowinfo *rowinfo, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int w, int h)
+void cache_initrow(struct cache_row *cacherow, struct text_rowinfo *rowinfo, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int w, int h, int offx, int offy)
 {
 
-    cacherow->rx = text_getrowx(rowinfo, halign, paddingx, w);
-    cacherow->ry = text_getrowy(rowinfo, valign, paddingy, h);
+    cacherow->rx = text_getrowx(rowinfo, halign, paddingx, w - offx) + offx;
+    cacherow->ry = text_getrowy(rowinfo, valign, paddingy, h - offy) + offy;
     cacherow->istart = rowinfo->istart;
     cacherow->length = rowinfo->length;
     cacherow->font = font;

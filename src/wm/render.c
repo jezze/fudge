@@ -201,12 +201,11 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     if (!text->cachetext.exist || text->cachetext.rownum != rownum)
     {
 
-        unsigned int rowx = (rownum) ? 0 : text->cachetext.firstrowx;
         struct text_rowinfo rowinfo;
 
         cache_updatetext(&text->cachetext, font, rownum, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, widget->size.h);
         text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, text->cachetext.icurrent);
-        cache_initrow(&text->cacherow, &rowinfo, font, rowx, text->cachetext.rownum * rowinfo.lineheight, text->halign, text->valign, widget->size.w - rowx, widget->size.h);
+        cache_initrow(&text->cacherow, &rowinfo, font, 0, 0, text->halign, text->valign, widget->size.w, widget->size.h, (rownum) ? 0 : text->cachetext.firstrowx, text->cachetext.rownum * rowinfo.lineheight);
 
     }
 
