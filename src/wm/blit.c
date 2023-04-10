@@ -48,7 +48,6 @@ struct rowsegment
 
 };
 
-static unsigned int linebuffer[3840];
 static struct pool_pcxresource pcxresource;
 
 static int getpoint(unsigned int type, int p, int o, int m)
@@ -113,7 +112,7 @@ void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
     int x;
 
     for (x = x0; x < x2; x++)
-        linebuffer[x] = color;
+        display->linebuffer[x] = color;
 
 }
 
@@ -126,7 +125,7 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
     for (x = x0; x < x2; x++)
     {
 
-        unsigned char *bg = (unsigned char *)&linebuffer[x];
+        unsigned char *bg = (unsigned char *)&display->linebuffer[x];
         unsigned int alpha = fg[3] + 1;
         unsigned int ialpha = 256 - fg[3];
 
@@ -574,26 +573,27 @@ void blit_pcx(struct blit_display *display, int line, char *source, int x, int y
         unsigned char g = pcxresource.colormap[off + 1];
         unsigned char b = pcxresource.colormap[off + 2];
 
-        linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
+        display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
 
     }
 
 }
 
-void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
+void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer)
 {
 
     display->framebuffer = framebuffer;
     display->size.w = w;
     display->size.h = h;
     display->bpp = bpp;
+    display->linebuffer = linebuffer;
 
 }
 
 void blit(struct blit_display *display, int line, int dx0, int dx2)
 {
 
-    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + dx0, linebuffer + dx0, (dx2 - dx0) * display->bpp);
+    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + dx0, display->linebuffer + dx0, (dx2 - dx0) * display->bpp);
 
 }
 

@@ -35,6 +35,7 @@ static struct blit_display display;
 static struct state state;
 static unsigned int numwindows;
 static unsigned int paused;
+static unsigned int linebuffer[3840];
 
 static void setupvideo(void)
 {
@@ -713,7 +714,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     struct event_videomode *videomode = mdata;
     unsigned int factor = videomode->h / 320;
 
-    blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
+    blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp, linebuffer);
     render_damage(0, 0, videomode->w, videomode->h);
     pool_loadfont(factor);
 
