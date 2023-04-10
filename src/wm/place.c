@@ -108,8 +108,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
+            int cminw = 0;
+            int cminh = 0;
 
-            placechild(child, x, y, 0, 0, 0, maxw, maxh, layout->padding, layout->padding);
+            placechild(child, x, y, 0, cminw, cminh, maxw, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -121,8 +123,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
+            int cminw = 0;
+            int cminh = (layout->fit == ATTR_FIT_STRETCHED) ? maxh : 0;
 
-            placechild(child, x + total.w, y, 0, 0, (layout->fit == ATTR_FIT_STRETCHED) ? maxh : 0, maxw - total.w, maxh, layout->padding, layout->padding);
+            placechild(child, x + total.w, y, 0, cminw, cminh, maxw - total.w, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -134,8 +138,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
+            int cminw = maxw;
+            int cminh = maxh;
 
-            placechild(child, x, y, 0, maxw, maxh, maxw, maxh, layout->padding, layout->padding);
+            placechild(child, x, y, 0, cminw, cminh, maxw, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -147,8 +153,10 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         {
 
             struct widget *child = current->data;
+            int cminw = (layout->fit == ATTR_FIT_STRETCHED) ? maxw : 0;
+            int cminh = 0;
 
-            placechild(child, x, y + total.h, 0, (layout->fit == ATTR_FIT_STRETCHED) ? maxw : 0, 0, maxw, maxh - total.h, layout->padding, layout->padding);
+            placechild(child, x, y + total.h, 0, cminw, cminh, maxw, maxh - total.h, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
