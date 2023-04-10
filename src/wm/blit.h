@@ -11,7 +11,9 @@ struct blit_display
 void blit_line(struct blit_display *display, unsigned int color, int x0, int x2);
 void blit_alphaline(struct blit_display *display, unsigned int color, int x0, int x2);
 void blit_text(struct blit_display *display, struct text_font *font, unsigned int invert, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int *cmap);
-void blit_icondownarrow(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap);
+void blit_iconarrowdown(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap);
+void blit_iconarrowup(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap);
+void blit_icondropdown(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconhamburger(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconminimize(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap);

@@ -414,7 +414,7 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
     if (textbox->vscroll)
     {
 
-        textbox->vscroll = util_clamp(textbox->vscroll, 0, total.h - 56);
+        textbox->vscroll = util_clamp(textbox->vscroll, 0, total.h - 48);
 
         while ((current = pool_nextin(current, widget)))
         {

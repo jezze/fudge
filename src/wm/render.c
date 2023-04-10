@@ -179,7 +179,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     };
 
     blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmappanel, 3));
-    blit_icondownarrow(display, widget->position.x, widget->position.y, widget->size.h, widget->size.h, line, x0, x2, getcmap(widget->state, cmapicon, 0));
+    blit_icondropdown(display, widget->position.x, widget->position.y, widget->size.h, widget->size.h, line, x0, x2, getcmap(widget->state, cmapicon, 0));
 
     if (util_intersects(line, widget->position.y + select->cacherow.ry, widget->position.y + select->cacherow.ry + select->cacherow.font->lineheight))
         blit_text(display, select->cacherow.font, ATTR_BLIT_NORMAL, strpool_getstring(select->label) + select->cacherow.istart, select->cacherow.length, widget->position.x + select->cacherow.rx, widget->position.y + select->cacherow.ry, line, x0, x2, getcmap(widget->state, cmaptext, 0));
