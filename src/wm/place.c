@@ -46,11 +46,8 @@ static void placewidget2(struct widget *widget, int x, int y, int w, int h, int 
 
     placewidget(widget, x, y, w, h, minw, minh, maxw, maxh, paddingw, paddingh);
 
-    if (maxw < w + paddingw * 2)
-        widget->size.w = 0;
-
-    if (maxh < h + paddingh * 2)
-        widget->size.h = 0;
+    if (maxw < w + paddingw * 2 || maxh < h + paddingh * 2)
+        widget->display = WIDGET_DISPLAY_HIDDEN;
 
 }
 
