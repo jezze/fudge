@@ -399,57 +399,6 @@ static void clickwidget(struct widget *widget)
 
 }
 
-static void dragwidget(struct widget *widget)
-{
-
-    if (widget_isdragable(widget))
-    {
-
-        unsigned int valid = 0;
-
-/*
-        if (state.keymod & KEYMOD_ALT)
-            valid = 1;
-
-        if (util_intersects(state.mouseclicked.x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(state.mouseclicked.y, widget->position.y, widget->position.y + 40))
-            valid = 1;
-*/
-
-        valid = 1;
-
-        if (valid)
-        {
-
-            if (state.mousebuttonleft)
-            {
-
-                damageall(widget);
-
-                widget->position.x += state.mousemovement.x;
-                widget->position.y += state.mousemovement.y;
-
-                damageall(widget);
-
-            }
-
-            if (state.mousebuttonright)
-            {
-
-                damageall(widget);
-
-                widget->size.w = util_max((int)(widget->size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH);
-                widget->size.h = util_max((int)(widget->size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT);
-
-                damageall(widget);
-
-            }
-
-        }
-
-    }
-
-}
-
 static void keypresswidget(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod)
 {
 
@@ -631,8 +580,35 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    if (state.clickedwidget)
-        dragwidget(state.clickedwidget);
+    if (state.mousebuttonleft && state.clickedwidget)
+    {
+
+        if (widget_isdragable(state.clickedwidget))
+        {
+
+            damageall(state.clickedwidget);
+
+            state.clickedwidget->position.x += state.mousemovement.x;
+            state.clickedwidget->position.y += state.mousemovement.y;
+
+            damageall(state.clickedwidget);
+
+        }
+
+
+    }
+
+    if (state.mousebuttonright && state.focusedwindow)
+    {
+
+        damageall(state.focusedwindow);
+
+        state.focusedwindow->size.w = util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH);
+        state.focusedwindow->size.h = util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT);
+
+        damageall(state.focusedwindow);
+
+    }
 
 }
 
