@@ -22,6 +22,7 @@ struct widget_button
 {
 
     unsigned int label;
+    unsigned int onclick;
     struct cache_row cacherow;
 
 };
@@ -30,6 +31,7 @@ struct widget_choice
 {
 
     unsigned int label;
+    unsigned int onclick;
     struct cache_row cacherow;
 
 };
@@ -72,6 +74,7 @@ struct widget_select
 {
 
     unsigned int label;
+    unsigned int onclick;
     struct cache_row cacherow;
 
 };
@@ -104,6 +107,7 @@ struct widget_textbutton
 {
 
     unsigned int label;
+    unsigned int onclick;
     struct cache_row cacherow;
 
 };

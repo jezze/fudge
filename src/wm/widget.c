@@ -19,6 +19,11 @@ static void setattributebutton(struct widget *widget, unsigned int attribute, ch
 
         break;
 
+    case ATTR_ONCLICK:
+        button->onclick = attr_update(ATTR_ONCLICK, value, button->onclick);
+
+        break;
+
     }
 
 }
@@ -33,6 +38,11 @@ static void setattributechoice(struct widget *widget, unsigned int attribute, ch
 
     case ATTR_LABEL:
         choice->label = attr_update(ATTR_LABEL, value, choice->label);
+
+        break;
+
+    case ATTR_ONCLICK:
+        choice->onclick = attr_update(ATTR_ONCLICK, value, choice->onclick);
 
         break;
 
@@ -136,6 +146,11 @@ static void setattributeselect(struct widget *widget, unsigned int attribute, ch
 
         break;
 
+    case ATTR_ONCLICK:
+        select->onclick = attr_update(ATTR_ONCLICK, value, select->onclick);
+
+        break;
+
     }
 
 }
@@ -214,6 +229,11 @@ static void setattributetextbutton(struct widget *widget, unsigned int attribute
 
     case ATTR_LABEL:
         textbutton->label = attr_update(ATTR_LABEL, value, textbutton->label);
+
+        break;
+
+    case ATTR_ONCLICK:
+        textbutton->onclick = attr_update(ATTR_ONCLICK, value, textbutton->onclick);
 
         break;
 
@@ -334,11 +354,13 @@ void widget_unsetattributes(struct widget *widget)
 
     case WIDGET_TYPE_BUTTON:
         setattributebutton(widget, ATTR_LABEL, 0);
+        setattributebutton(widget, ATTR_ONCLICK, 0);
 
         break;
 
     case WIDGET_TYPE_CHOICE:
         setattributechoice(widget, ATTR_LABEL, 0);
+        setattributechoice(widget, ATTR_ONCLICK, 0);
 
         break;
 
@@ -349,6 +371,7 @@ void widget_unsetattributes(struct widget *widget)
 
     case WIDGET_TYPE_SELECT:
         setattributeselect(widget, ATTR_LABEL, 0);
+        setattributeselect(widget, ATTR_ONCLICK, 0);
 
         break;
 
@@ -359,6 +382,7 @@ void widget_unsetattributes(struct widget *widget)
 
     case WIDGET_TYPE_TEXTBUTTON:
         setattributetextbutton(widget, ATTR_LABEL, 0);
+        setattributetextbutton(widget, ATTR_ONCLICK, 0);
 
         break;
 

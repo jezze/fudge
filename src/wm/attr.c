@@ -95,6 +95,7 @@ unsigned int attr_isstring(unsigned int attribute)
     case ATTR_ID:
     case ATTR_IN:
     case ATTR_LABEL:
+    case ATTR_ONCLICK:
     case ATTR_SOURCE:
     case ATTR_TITLE:
         return 1;
@@ -169,6 +170,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_MODE:
         return util_getkey(modes, 2, value);
+
+    case ATTR_ONCLICK:
+        return strpool_updatestring(current, value);
 
     case ATTR_OVERFLOW:
         return util_getkey(overflows, 4, value);

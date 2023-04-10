@@ -19,14 +19,14 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmclick(unsigned int source, void *mdata, unsigned int msize)
+static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_wmclick *wmclick = mdata;
+    char *data = (char *)mdata + sizeof (struct event_wmevent);
 
-    if (cstring_match(wmclick->clicked, "button0"))
+    if (cstring_match(data, "b0"))
         channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= text1 content \"Button 0 clicked\"\n");
-    else if (cstring_match(wmclick->clicked, "button1"))
+    else if (cstring_match(data, "b1"))
         channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= text1 content \"Button 1 clicked\"\n");
     else
         channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= text1 content \"No button clicked\"\n");
@@ -45,9 +45,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "        + choice id \"sweden\" in \"countrylist\" label \"Sweden\"\n"
         "        + choice id \"norway\" in \"countrylist\" label \"Norway\"\n"
         "        + choice id \"england\" in \"countrylist\" label \"England\"\n"
-        "    + button id \"button0\" in \"base\" label \"Click Me\"\n"
+        "    + button id \"b0\" in \"base\" label \"Click Me\" onclick \"b0\"\n"
         "    + text id \"text1\" wrap \"word\" in \"base\" content \"<awaiting event>\"\n"
-        "    + button id \"button1\" in \"base\" label \"Click Me Too\"\n"
+        "    + button id \"b1\" in \"base\" label \"Click Me Too\" onclick \"b1\"\n"
         "    + image in \"base\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
@@ -59,7 +59,7 @@ void init(void)
 
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
-    channel_bind(EVENT_WMCLICK, onwmclick);
+    channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

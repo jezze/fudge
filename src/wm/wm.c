@@ -370,7 +370,6 @@ static void sethover(struct widget *widget)
 static void clickwidget(struct widget *widget)
 {
 
-    struct event_wmclick wmclick;
 
     switch (widget->type)
     {
@@ -382,14 +381,88 @@ static void clickwidget(struct widget *widget)
         break;
 
     case WIDGET_TYPE_BUTTON:
+        if (state.mousebuttonleft)
+        {
+
+            struct widget_button *button = widget->data;
+
+            if (button->onclick)
+            {
+
+                struct {struct event_wmevent wmevent; char data[128];} message;
+
+                message.wmevent.type = 1; /* 1 is click event */
+                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(button->onclick), strpool_getcstringlength(button->onclick) + 1, 0);
+
+                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+
+            }
+
+        }
+
+        break;
+
     case WIDGET_TYPE_CHOICE:
+        if (state.mousebuttonleft)
+        {
+
+            struct widget_choice *choice = widget->data;
+
+            if (choice->onclick)
+            {
+
+                struct {struct event_wmevent wmevent; char data[128];} message;
+
+                message.wmevent.type = 1; /* 1 is click event */
+                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(choice->onclick), strpool_getcstringlength(choice->onclick) + 1, 0);
+
+                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+
+            }
+
+        }
+
+        break;
+
     case WIDGET_TYPE_SELECT:
+        if (state.mousebuttonleft)
+        {
+
+            struct widget_select *select = widget->data;
+
+            if (select->onclick)
+            {
+
+                struct {struct event_wmevent wmevent; char data[128];} message;
+
+                message.wmevent.type = 1; /* 1 is click event */
+                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(select->onclick), strpool_getcstringlength(select->onclick) + 1, 0);
+
+                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+
+            }
+
+        }
+
+        break;
+
     case WIDGET_TYPE_TEXTBUTTON:
         if (state.mousebuttonleft)
         {
 
-            cstring_writezero(wmclick.clicked, 16, cstring_write(wmclick.clicked, 16, strpool_getstring(widget->id), 0));
-            channel_sendbuffer(widget->source, EVENT_WMCLICK, sizeof (struct event_wmclick), &wmclick);
+            struct widget_textbutton *textbutton = widget->data;
+
+            if (textbutton->onclick)
+            {
+
+                struct {struct event_wmevent wmevent; char data[128];} message;
+
+                message.wmevent.type = 1; /* 1 is click event */
+                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(textbutton->onclick), strpool_getcstringlength(textbutton->onclick) + 1, 0);
+
+                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+
+            }
 
         }
 

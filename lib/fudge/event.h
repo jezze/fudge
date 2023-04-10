@@ -33,7 +33,7 @@
 #define EVENT_WMMOUSERELEASE            0x2B
 #define EVENT_WMRENDERDATA              0x2C
 #define EVENT_WMINIT                    0x2D
-#define EVENT_WMCLICK                   0x2E
+#define EVENT_WMEVENT                   0x2E
 #define EVENT_P9P                       0x30
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
@@ -179,10 +179,11 @@ struct event_wmmouserelease
 
 };
 
-struct event_wmclick
+struct event_wmevent
 {
 
-    char clicked[16];
+    unsigned int type;
+    unsigned int length;
 
 };
 
