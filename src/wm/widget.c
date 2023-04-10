@@ -57,28 +57,6 @@ static void setattributefill(struct widget *widget, unsigned int attribute, char
 
 }
 
-static void setattributegrid(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_grid *grid = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_COLUMNS:
-        grid->columns = attr_update(ATTR_COLUMNS, value, grid->columns);
-
-        break;
-
-    case ATTR_PADDING:
-        grid->padding = attr_update(ATTR_PADDING, value, grid->padding);
-
-        break;
-
-    }
-
-}
-
 static void setattributeimage(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -298,11 +276,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case WIDGET_TYPE_FILL:
         setattributefill(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_GRID:
-        setattributegrid(widget, attribute, value);
 
         break;
 

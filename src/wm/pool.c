@@ -24,7 +24,6 @@ struct entry
         struct widget_choice choice;
         struct widget_layout layout;
         struct widget_fill fill;
-        struct widget_grid grid;
         struct widget_image image;
         struct widget_listbox listbox;
         struct widget_select select;

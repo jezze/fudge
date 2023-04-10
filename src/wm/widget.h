@@ -1,7 +1,6 @@
 #define WIDGET_TYPE_BUTTON              1
 #define WIDGET_TYPE_CHOICE              2
 #define WIDGET_TYPE_FILL                3
-#define WIDGET_TYPE_GRID                4
 #define WIDGET_TYPE_IMAGE               5
 #define WIDGET_TYPE_LAYOUT              6
 #define WIDGET_TYPE_LISTBOX             7
@@ -47,14 +46,6 @@ struct widget_fill
 {
 
     unsigned int color;
-
-};
-
-struct widget_grid
-{
-
-    unsigned int columns;
-    unsigned int padding;
 
 };
 

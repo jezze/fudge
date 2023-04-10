@@ -253,46 +253,6 @@ static void placefill(struct widget *widget, int x, int y, int offx, unsigned in
 
 }
 
-static void placegrid(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct widget_grid *grid = widget->data;
-    struct list_item *current = 0;
-    struct util_size total;
-    struct util_size row;
-    struct util_size rowtotal;
-    unsigned int column = 0;
-
-    util_initsize(&row, 0, 0);
-    util_initsize(&rowtotal, 0, 0);
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        placechild(child, x + row.w, y + rowtotal.h, 0, maxw / grid->columns, 0, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding);
-        addtotal(&total, child, x, y, grid->padding, grid->padding);
-
-        row.w += (maxw / grid->columns);
-
-        if (child->size.h)
-            row.h = util_max(row.h, child->size.h + grid->padding * 2);
-
-        if (++column % grid->columns == 0)
-        {
-
-            util_initsize(&rowtotal, 0, rowtotal.h + row.h);
-            util_initsize(&row, 0, 0);
-
-        }
-
-    }
-
-    placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
-
-}
-
 static void placeimagepcx(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -526,11 +486,6 @@ void place_widget(struct widget *widget, int x, int y, int offx, unsigned int mi
 
     case WIDGET_TYPE_FILL:
         placefill(widget, x, y, offx, minw, minh, maxw, maxh);
-
-        break;
-
-    case WIDGET_TYPE_GRID:
-        placegrid(widget, x, y, offx, minw, minh, maxw, maxh);
 
         break;
 
