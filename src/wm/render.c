@@ -378,6 +378,9 @@ static unsigned int shouldrender(struct widget *widget, int line)
     if (widget->display == WIDGET_DISPLAY_HIDDEN)
         return 0;
 
+     if (!widget_intersectsy(widget, line))
+        return 0;
+
     switch (widget->type)
     {
 
@@ -393,16 +396,13 @@ static unsigned int shouldrender(struct widget *widget, int line)
 
             widget_getclipping(parent, &position, &size);
 
-            return widget_intersectsy(widget, line) && util_intersects(line, position.y, position.y + size.h);
+            return util_intersects(line, position.y, position.y + size.h);
 
         }
 
-    default:
-        return widget_intersectsy(widget, line);
-
     }
 
-    return 0;
+    return 1;
 
 }
 
