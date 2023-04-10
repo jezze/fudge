@@ -203,12 +203,28 @@ static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsig
 
 }
 
+static void placeS(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
+{
+
+    unsigned int totalfits = placeX(widget, x, y, 0, 0, maxw, maxh, paddingx, paddingy, incw, inch, total);
+
+    if (totalfits)
+    {
+
+        unsigned int sharedw = (incw) ? (maxw - total->w) / totalfits : 0;
+        unsigned int sharedh = (inch) ? (maxh - total->h) / totalfits : 0;
+
+        placeF(widget, x, y, 0, 0, maxw, maxh, paddingx, paddingy, sharedw, sharedh, total);
+
+    }
+
+}
+
 static void placelayout(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_layout *layout = widget->data;
     struct util_size total;
-    unsigned int totalfits = 0;
 
     switch (layout->form)
     {
@@ -219,10 +235,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         break;
 
     case ATTR_FORM_HORIZONTAL:
-        totalfits = placeX(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
-
-        if (totalfits)
-            placeF(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, (maxw - total.w) / totalfits, 0, &total);
+        placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
 
         break;
 
@@ -232,10 +245,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         break;
 
     case ATTR_FORM_VERTICAL:
-        totalfits = placeX(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
-
-        if (totalfits)
-            placeF(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, (maxh - total.h) / totalfits, &total);
+        placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
 
         break;
 
