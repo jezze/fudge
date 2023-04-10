@@ -241,7 +241,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 
     struct widget_textbutton *textbutton = widget->data;
     static unsigned int cmaprect[3] = {
-        0x00000000,
+        0x00202020,
         0xE8202020,
         0xE8202020,
     };
