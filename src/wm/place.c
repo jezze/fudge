@@ -354,24 +354,28 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
     struct widget_select *select = widget->data;
     struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
     struct text_rowinfo rowinfo;
-    struct list_item *current = 0;
+    struct util_size total;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
     placewidget2(widget, x, y, rowinfo.width + CONFIG_SELECT_EXTRA, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
+    cache_initrow(&select->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, CONFIG_SELECT_EXTRA, 0);
+    placeS(widget, x, widget->position.y + widget->size.h, 0, 0, INFINITY, INFINITY, 0, 0, 0, 1, &total);
 
-    while ((current = pool_nextin(current, widget)))
+    if (widget->state != WIDGET_STATE_FOCUS)
     {
 
-        struct widget *child = current->data;
+        struct list_item *current = 0;
 
-        placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, widget->size.w, 0, INFINITY, INFINITY, 0, 0);
+        while ((current = pool_nextin(current, widget)))
+        {
 
-        if (widget->state != WIDGET_STATE_FOCUS)
+            struct widget *child = current->data;
+
             hideall(child);
 
-    }
+        }
 
-    cache_initrow(&select->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, CONFIG_SELECT_EXTRA, 0);
+    }
 
 }
 
