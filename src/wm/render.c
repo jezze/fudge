@@ -166,7 +166,6 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_select *select = widget->data;
-    unsigned int extra = CONFIG_SELECT_EXTRA + CONFIG_SELECT_PADDING_WIDTH * 2;
     static unsigned int cmappanel[9] = {
         0xE8101010, 0xE8484848, 0xE8888888,
         0xE8101010, 0xE8505050, 0xE8888888,
@@ -179,9 +178,8 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
         0xE8FFFFFF,
     };
 
-    blit_panel(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmappanel, 3));
-    blit_panel(display, widget->position.x + extra, widget->position.y, widget->size.w - extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmappanel, 3));
-    blit_iconhamburger(display, widget->position.x, widget->position.y, extra, widget->size.h, line, x0, x2, getcmap(widget->state, cmapicon, 0));
+    blit_panel(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, getcmap(widget->state, cmappanel, 3));
+    blit_icondownarrow(display, widget->position.x, widget->position.y, widget->size.h, widget->size.h, line, x0, x2, getcmap(widget->state, cmapicon, 0));
 
     if (util_intersects(line, widget->position.y + select->cacherow.ry, widget->position.y + select->cacherow.ry + select->cacherow.font->lineheight))
         blit_text(display, select->cacherow.font, ATTR_BLIT_NORMAL, strpool_getstring(select->label) + select->cacherow.istart, select->cacherow.length, widget->position.x + select->cacherow.rx, widget->position.y + select->cacherow.ry, line, x0, x2, getcmap(widget->state, cmaptext, 0));
