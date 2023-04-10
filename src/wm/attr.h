@@ -21,8 +21,10 @@
 #define ATTR_BLIT_INVERTED              1
 #define ATTR_FORM_FLOAT                 0
 #define ATTR_FORM_HORIZONTAL            1
-#define ATTR_FORM_MAXIMIZE              2
-#define ATTR_FORM_VERTICAL              3
+#define ATTR_FORM_HORIZONTALSTRETCH     3
+#define ATTR_FORM_MAXIMIZE              4
+#define ATTR_FORM_VERTICAL              5
+#define ATTR_FORM_VERTICALSTRETCH       6
 #define ATTR_HALIGN_LEFT                0
 #define ATTR_HALIGN_CENTER              1
 #define ATTR_HALIGN_RIGHT               2

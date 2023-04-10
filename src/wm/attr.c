@@ -10,12 +10,14 @@ static struct util_token blits[2] =
     {ATTR_BLIT_INVERTED, "inverted"}
 };
 
-static struct util_token forms[4] =
+static struct util_token forms[6] =
 {
     {ATTR_FORM_FLOAT, "float"},
-    {ATTR_FORM_MAXIMIZE, "maximize"},
     {ATTR_FORM_HORIZONTAL, "horizontal"},
-    {ATTR_FORM_VERTICAL, "vertical"}
+    {ATTR_FORM_HORIZONTALSTRETCH, "horizontal-stretch"},
+    {ATTR_FORM_MAXIMIZE, "maximize"},
+    {ATTR_FORM_VERTICAL, "vertical"},
+    {ATTR_FORM_VERTICALSTRETCH, "vertical-stretch"}
 };
 
 static struct util_token haligns[3] =
@@ -148,7 +150,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return cstring_readvalue(value, cstring_length(value), 10);
 
     case ATTR_FORM:
-        return util_getkey(forms, 4, value);
+        return util_getkey(forms, 6, value);
 
     case ATTR_HALIGN:
         return util_getkey(haligns, 3, value);

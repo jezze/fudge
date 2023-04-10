@@ -239,6 +239,11 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
         break;
 
+    case ATTR_FORM_HORIZONTALSTRETCH:
+        placeS(widget, x, y, 0, maxh, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
+
+        break;
+
     case ATTR_FORM_MAXIMIZE:
         placeA(widget, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, &total);
 
@@ -246,6 +251,11 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
     case ATTR_FORM_VERTICAL:
         placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
+
+        break;
+
+    case ATTR_FORM_VERTICALSTRETCH:
+        placeS(widget, x, y, maxw, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
 
         break;
 
@@ -317,7 +327,7 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
     struct util_size total;
 
     util_initsize(&total, 0, 0);
-    placeS(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, 0, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
+    placeS(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, maxw, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
     if (listbox->vscroll)
