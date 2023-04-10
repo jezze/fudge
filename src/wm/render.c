@@ -11,6 +11,15 @@
 #include "blit.h"
 #include "render.h"
 
+struct
+{
+
+    unsigned int hasdamage;
+    struct util_position position0;
+    struct util_position position2;
+
+} area;
+
 static unsigned int *getcmap(unsigned int state, unsigned int *cmap, unsigned int step)
 {
 
@@ -339,38 +348,37 @@ static void renderwidget(struct blit_display *display, struct widget *widget, in
 
 }
 
-void render_damage(struct render_area *area, int x0, int y0, int x2, int y2)
+void render_damage(int x0, int y0, int x2, int y2)
 {
 
-    switch (area->state)
+    if (area.hasdamage)
     {
 
-    case RENDER_AREA_STATE_NONE:
-        area->position0.x = x0;
-        area->position0.y = y0;
-        area->position2.x = x2;
-        area->position2.y = y2;
-
-        break;
-
-    case RENDER_AREA_STATE_MADE:
-        area->position0.x = util_min(x0, area->position0.x);
-        area->position0.y = util_min(y0, area->position0.y);
-        area->position2.x = util_max(x2, area->position2.x);
-        area->position2.y = util_max(y2, area->position2.y);
-
-        break;
+        area.position0.x = util_min(x0, area.position0.x);
+        area.position0.y = util_min(y0, area.position0.y);
+        area.position2.x = util_max(x2, area.position2.x);
+        area.position2.y = util_max(y2, area.position2.y);
 
     }
 
-    area->state = RENDER_AREA_STATE_MADE;
+    else
+    {
+
+        area.position0.x = x0;
+        area.position0.y = y0;
+        area.position2.x = x2;
+        area.position2.y = y2;
+
+    }
+
+    area.hasdamage = 1;
 
 }
 
-void render_undamage(struct render_area *area)
+void render_undamage(void)
 {
 
-    area->state = RENDER_AREA_STATE_NONE;
+    area.hasdamage = 0;
 
 }
 
@@ -410,12 +418,12 @@ static unsigned int shouldrender(struct widget *widget, int line)
 
 }
 
-void render(struct blit_display *display, struct render_area *area, int mx, int my)
+void render(struct blit_display *display, int mx, int my)
 {
 
     int line;
 
-    for (line = area->position0.y; line < area->position2.y; line++)
+    for (line = area.position0.y; line < area.position2.y; line++)
     {
 
         struct list_item *current = 0;
@@ -428,8 +436,8 @@ void render(struct blit_display *display, struct render_area *area, int mx, int 
             if (shouldrender(widget, line))
             {
 
-                int x0 = util_max(widget->position.x, area->position0.x);
-                int x2 = util_min(widget->position.x + widget->size.w, area->position2.x);
+                int x0 = util_max(widget->position.x, area.position0.x);
+                int x2 = util_min(widget->position.x + widget->size.w, area.position2.x);
 
                 renderwidget(display, widget, line, x0, x2, mx, my);
 
@@ -437,7 +445,7 @@ void render(struct blit_display *display, struct render_area *area, int mx, int 
 
         }
 
-        blit(display, line, area->position0.x, area->position2.x);
+        blit(display, line, area.position0.x, area.position2.x);
 
     }
 
