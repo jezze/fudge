@@ -607,15 +607,17 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     struct event_mousemove *mousemove = mdata;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
-    struct widget *hoverwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
-
-    if (hoverwidget)
-        sethover(hoverwidget);
+    struct widget *hoverwidget;
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
     state.mouseposition.x = x;
     state.mouseposition.y = y;
+
+    hoverwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
+
+    if (hoverwidget)
+        sethover(hoverwidget);
 
     if (state.mousewidget)
     {
@@ -678,9 +680,15 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousescroll *mousescroll = mdata;
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
+    struct widget *hoverwidget;
 
     if (scrollablewidget)
         scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
+
+    hoverwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
+
+    if (hoverwidget)
+        sethover(hoverwidget);
 
 }
 
