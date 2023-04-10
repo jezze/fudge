@@ -32,7 +32,7 @@ struct state
 };
 
 static struct blit_display display;
-static struct blit_damage displaydamage;
+static struct render_area damagedarea;
 static struct state state;
 static unsigned int numwindows;
 static unsigned int paused;
@@ -128,7 +128,7 @@ static void damage(struct widget *widget)
     int x2 = util_clamp(widget->position.x + widget->size.w, 0, display.size.w);
     int y2 = util_clamp(widget->position.y + widget->size.h, 0, display.size.h);
 
-    render_damage(&displaydamage, x0, y0, x2, y2);
+    render_damage(&damagedarea, x0, y0, x2, y2);
 
 }
 
@@ -581,7 +581,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             place_widget(state.rootwidget, 0, 0, 0, 0, 0, display.size.w, display.size.h);
-            render(&display, &displaydamage, state.mousewidget->position.x, state.mousewidget->position.y);
+
+            if (display.framebuffer)
+            {
+
+                render(&display, &damagedarea, state.mousewidget->position.x, state.mousewidget->position.y);
+                render_undamage(&damagedarea);
+
+            }
 
         }
 
@@ -708,7 +715,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
     unsigned int factor = videomode->h / 320;
 
     blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp);
-    render_damage(&displaydamage, 0, 0, videomode->w, videomode->h);
+    render_damage(&damagedarea, 0, 0, videomode->w, videomode->h);
     pool_loadfont(factor);
 
     state.mouseposition.x = videomode->w / 4;

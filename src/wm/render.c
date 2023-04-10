@@ -11,9 +11,6 @@
 #include "blit.h"
 #include "render.h"
 
-#define DAMAGE_STATE_NONE               0
-#define DAMAGE_STATE_MADE               1
-
 static unsigned int *getcmap(unsigned int state, unsigned int *cmap, unsigned int step)
 {
 
@@ -342,31 +339,38 @@ static void renderwidget(struct blit_display *display, struct widget *widget, in
 
 }
 
-void render_damage(struct blit_damage *damage, int x0, int y0, int x2, int y2)
+void render_damage(struct render_area *area, int x0, int y0, int x2, int y2)
 {
 
-    switch (damage->state)
+    switch (area->state)
     {
 
-    case DAMAGE_STATE_NONE:
-        damage->position0.x = x0;
-        damage->position0.y = y0;
-        damage->position2.x = x2;
-        damage->position2.y = y2;
+    case RENDER_AREA_STATE_NONE:
+        area->position0.x = x0;
+        area->position0.y = y0;
+        area->position2.x = x2;
+        area->position2.y = y2;
 
         break;
 
-    case DAMAGE_STATE_MADE:
-        damage->position0.x = util_min(x0, damage->position0.x);
-        damage->position0.y = util_min(y0, damage->position0.y);
-        damage->position2.x = util_max(x2, damage->position2.x);
-        damage->position2.y = util_max(y2, damage->position2.y);
+    case RENDER_AREA_STATE_MADE:
+        area->position0.x = util_min(x0, area->position0.x);
+        area->position0.y = util_min(y0, area->position0.y);
+        area->position2.x = util_max(x2, area->position2.x);
+        area->position2.y = util_max(y2, area->position2.y);
 
         break;
 
     }
 
-    damage->state = DAMAGE_STATE_MADE;
+    area->state = RENDER_AREA_STATE_MADE;
+
+}
+
+void render_undamage(struct render_area *area)
+{
+
+    area->state = RENDER_AREA_STATE_NONE;
 
 }
 
@@ -406,44 +410,34 @@ static unsigned int shouldrender(struct widget *widget, int line)
 
 }
 
-void render(struct blit_display *display, struct blit_damage *damage, int mx, int my)
+void render(struct blit_display *display, struct render_area *area, int mx, int my)
 {
 
-    if (!display->framebuffer)
-        return;
+    int line;
 
-    if (damage->state == DAMAGE_STATE_MADE)
+    for (line = area->position0.y; line < area->position2.y; line++)
     {
 
-        int line;
+        struct list_item *current = 0;
 
-        for (line = damage->position0.y; line < damage->position2.y; line++)
+        while ((current = pool_next(current)))
         {
 
-            struct list_item *current = 0;
+            struct widget *widget = current->data;
 
-            while ((current = pool_next(current)))
+            if (shouldrender(widget, line))
             {
 
-                struct widget *widget = current->data;
+                int x0 = util_max(widget->position.x, area->position0.x);
+                int x2 = util_min(widget->position.x + widget->size.w, area->position2.x);
 
-                if (shouldrender(widget, line))
-                {
-
-                    int x0 = util_max(widget->position.x, damage->position0.x);
-                    int x2 = util_min(widget->position.x + widget->size.w, damage->position2.x);
-
-                    renderwidget(display, widget, line, x0, x2, mx, my);
-
-                }
+                renderwidget(display, widget, line, x0, x2, mx, my);
 
             }
 
-            blit(display, damage, line);
-
         }
 
-        damage->state = DAMAGE_STATE_NONE;
+        blit(display, line, area->position0.x, area->position2.x);
 
     }
 
