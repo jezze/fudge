@@ -51,7 +51,7 @@ static void placewidget2(struct widget *widget, int x, int y, int w, int h, int 
 
 }
 
-static void placechild(struct widget *widget, int x, int y, int offx, int minw, int minh, int maxw, int maxh, int paddingw, int paddingh, int stretchw, int stretchh)
+static void placechild(struct widget *widget, int x, int y, int offx, int minw, int minh, int maxw, int maxh, int paddingw, int paddingh)
 {
 
     struct util_position cpos;
@@ -59,8 +59,8 @@ static void placechild(struct widget *widget, int x, int y, int offx, int minw, 
     struct util_size cmin;
 
     util_initposition(&cpos, x + paddingw, y + paddingh);
-    util_initsize(&cmax, util_max(minw - paddingw * 2, maxw - paddingw * 2), util_max(minh - paddingw * 2, maxh - paddingh * 2));
-    util_initsize(&cmin, util_max(0, (stretchw == ATTR_FIT_STRETCHED) ? cmax.w : minw - paddingw * 2), util_max(0, (stretchh == ATTR_FIT_STRETCHED) ? cmax.h : minh - paddingh * 2));
+    util_initsize(&cmin, util_max(0, minw - paddingw * 2), util_max(0, minh - paddingh * 2));
+    util_initsize(&cmax, util_max(cmin.w, maxw - paddingw * 2), util_max(cmin.h, maxh - paddingh * 2));
     place_widget(widget, cpos.x, cpos.y, offx, cmin.w, cmin.h, cmax.w, cmax.h);
 
 }
@@ -109,7 +109,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, 0, 0, 0, maxw, maxh, layout->padding, layout->padding, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
+            placechild(child, x, y, 0, 0, 0, maxw, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -122,7 +122,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
             struct widget *child = current->data;
 
-            placechild(child, x + total.w, y, 0, 0, 0, maxw - total.w, maxh, layout->padding, layout->padding, ATTR_FIT_NORMAL, layout->fit);
+            placechild(child, x + total.w, y, 0, 0, (layout->fit == ATTR_FIT_STRETCHED) ? maxh : 0, maxw - total.w, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -135,7 +135,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y, 0, 0, 0, maxw, maxh, layout->padding, layout->padding, ATTR_FIT_STRETCHED, ATTR_FIT_STRETCHED);
+            placechild(child, x, y, 0, maxw, maxh, maxw, maxh, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -148,7 +148,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
             struct widget *child = current->data;
 
-            placechild(child, x, y + total.h, 0, 0, 0, maxw, maxh - total.h, layout->padding, layout->padding, layout->fit, ATTR_FIT_NORMAL);
+            placechild(child, x, y + total.h, 0, (layout->fit == ATTR_FIT_STRETCHED) ? maxw : 0, 0, maxw, maxh - total.h, layout->padding, layout->padding);
             addtotal(&total, child, x, y, layout->padding, layout->padding);
 
         }
@@ -186,7 +186,7 @@ static void placegrid(struct widget *widget, int x, int y, int offx, unsigned in
 
         struct widget *child = current->data;
 
-        placechild(child, x + row.w, y + rowtotal.h, 0, 0, 0, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding, grid->fit, ATTR_FIT_NORMAL);
+        placechild(child, x + row.w, y + rowtotal.h, 0, (grid->fit == ATTR_FIT_STRETCHED) ? maxw / grid->columns : 0, 0, maxw / grid->columns, maxh - rowtotal.h, grid->padding, grid->padding);
         addtotal(&total, child, x, y, grid->padding, grid->padding);
 
         row.w += (maxw / grid->columns);
@@ -269,7 +269,7 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
 
         struct widget *child = current->data;
 
-        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, 0, 0, 0, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0, ATTR_FIT_STRETCHED, ATTR_FIT_NORMAL);
+        placechild(child, x, y + CONFIG_LISTBOX_PADDING_HEIGHT + total.h, 0, 0, 0, maxw, 50000, CONFIG_LISTBOX_PADDING_WIDTH, 0);
         addtotal(&total, child, x, y, 0, 0);
 
     }
@@ -311,7 +311,7 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
 
         struct widget *child = current->data;
 
-        placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, 0, 0, widget->size.w, 512, 0, 0, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
+        placechild(child, widget->position.x, widget->position.y + widget->size.h, 0, 0, 0, widget->size.w, 512, 0, 0);
 
         if (widget->state != WIDGET_STATE_FOCUS)
             hideall(child);
@@ -356,7 +356,7 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
 
             struct widget_text *text = child->data;
 
-            placechild(child, x, y + lastrowy, lastrowx, 0, 0, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, ATTR_FIT_STRETCHED, ATTR_FIT_NORMAL);
+            placechild(child, x, y + lastrowy, lastrowx, 0, 0, maxw, 50000, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
             addtotal(&total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
 
             lastrowx = text->cachetext.lastrowx;
@@ -409,7 +409,7 @@ static void placewindow(struct widget *widget, int x, int y, int offx, unsigned 
 
         struct widget *child = current->data;
 
-        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, ATTR_FIT_NORMAL, ATTR_FIT_NORMAL);
+        placechild(child, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
 
     }
 
