@@ -210,7 +210,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     switch (layout->form)
     {
 
-    case ATTR_FORM_FLOAT:
+    case ATTR_FORM_DEFAULT:
         placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
 
         break;
@@ -225,7 +225,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
 
         break;
 
-    case ATTR_FORM_MAXIMIZE:
+    case ATTR_FORM_STRETCH:
         placeS(widget, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
 
         break;

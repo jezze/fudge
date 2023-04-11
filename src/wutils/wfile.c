@@ -150,7 +150,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + textbox id \"pathbox\" in \"top\" fit \"1\"\n"
         "        + text id \"path\" in \"pathbox\"\n"
         "      + button id \"open\" in \"top\" label \"Open\"\n"
-        "    + layout id \"main\" in \"base\" form \"maximize\" padding \"8\" fit \"1\"\n"
+        "    + layout id \"main\" in \"base\" form \"stretch\" padding \"8\" fit \"1\"\n"
         "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\"\n"
         "    + layout id \"bottom\" in \"base\" form \"horizontal\" padding \"8\"\n"
         "      + button in \"bottom\" label \"Copy\" onclick \"ac\"\n"

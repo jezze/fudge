@@ -12,10 +12,10 @@ static struct util_token blits[2] =
 
 static struct util_token forms[6] =
 {
-    {ATTR_FORM_FLOAT, "float"},
+    {ATTR_FORM_DEFAULT, "default"},
     {ATTR_FORM_HORIZONTAL, "horizontal"},
     {ATTR_FORM_HORIZONTALSTRETCH, "horizontal-stretch"},
-    {ATTR_FORM_MAXIMIZE, "maximize"},
+    {ATTR_FORM_STRETCH, "stretch"},
     {ATTR_FORM_VERTICAL, "vertical"},
     {ATTR_FORM_VERTICALSTRETCH, "vertical-stretch"}
 };

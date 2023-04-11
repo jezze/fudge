@@ -877,7 +877,7 @@ static void setupwidgets(void)
 {
 
     char *data =
-        "+ layout id \"root\" form \"float\"\n"
+        "+ layout id \"root\"\n"
         "  + fill in \"root\" color \"FF202020\"\n"
         "  + layout id \"desktop\" in \"root\" form \"vertical\"\n"
         "    + layout id \"menu\" in \"desktop\" form \"horizontal\"\n"
