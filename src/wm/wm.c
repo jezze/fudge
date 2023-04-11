@@ -33,7 +33,6 @@ struct state
 
 static struct blit_display display;
 static struct state state;
-static unsigned int numwindows;
 static unsigned int paused;
 static unsigned int linebuffer[3840];
 
@@ -217,14 +216,15 @@ static void placewindows(unsigned int source)
             if (widget->size.w == 0 && widget->size.h == 0)
             {
 
-                widget->position.x = 128 + 128 * numwindows;
-                widget->position.y = 128 + 64 * numwindows;
-                widget->size.w = 640;
-                widget->size.h = 480;
+                unsigned int w8 = display.size.w / 8;
+                unsigned int h8 = display.size.h / 8;
+
+                widget->position.x = w8;
+                widget->position.y = h8;
+                widget->size.w = w8 * 3;
+                widget->size.h = h8 * 6;
 
                 bump(widget);
-
-                numwindows++;
 
             }
 
@@ -367,9 +367,42 @@ static void sethover(struct widget *widget)
 
 }
 
-static void clickwidget(struct widget *widget)
+static void sendevent(unsigned int source, unsigned int type, unsigned int action)
 {
 
+    if (source)
+    {
+
+        struct {struct event_wmevent wmevent; char data[128];} message;
+
+        message.wmevent.type = type;
+        message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(action), strpool_getcstringlength(action) + 1, 0);
+
+        channel_sendbuffer(source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+
+    }
+
+    else
+    {
+
+        char *cmd = strpool_getstring(action);
+
+        if (buffer_match(cmd, "run ", 4))
+        {
+
+            unsigned int id = file_spawn(FILE_L0, cmd + 4);
+
+            if (id)
+                channel_send(id, EVENT_MAIN);
+
+        }
+
+    }
+
+}
+
+static void clickwidget(struct widget *widget)
+{
 
     switch (widget->type)
     {
@@ -387,16 +420,7 @@ static void clickwidget(struct widget *widget)
             struct widget_button *button = widget->data;
 
             if (button->onclick)
-            {
-
-                struct {struct event_wmevent wmevent; char data[128];} message;
-
-                message.wmevent.type = 1; /* 1 is click event */
-                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(button->onclick), strpool_getcstringlength(button->onclick) + 1, 0);
-
-                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
-
-            }
+                sendevent(widget->source, 1, button->onclick);
 
         }
 
@@ -409,16 +433,7 @@ static void clickwidget(struct widget *widget)
             struct widget_choice *choice = widget->data;
 
             if (choice->onclick)
-            {
-
-                struct {struct event_wmevent wmevent; char data[128];} message;
-
-                message.wmevent.type = 1; /* 1 is click event */
-                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(choice->onclick), strpool_getcstringlength(choice->onclick) + 1, 0);
-
-                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
-
-            }
+                sendevent(widget->source, 1, choice->onclick);
 
         }
 
@@ -431,16 +446,7 @@ static void clickwidget(struct widget *widget)
             struct widget_select *select = widget->data;
 
             if (select->onclick)
-            {
-
-                struct {struct event_wmevent wmevent; char data[128];} message;
-
-                message.wmevent.type = 1; /* 1 is click event */
-                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(select->onclick), strpool_getcstringlength(select->onclick) + 1, 0);
-
-                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
-
-            }
+                sendevent(widget->source, 1, select->onclick);
 
         }
 
@@ -453,16 +459,7 @@ static void clickwidget(struct widget *widget)
             struct widget_textbutton *textbutton = widget->data;
 
             if (textbutton->onclick)
-            {
-
-                struct {struct event_wmevent wmevent; char data[128];} message;
-
-                message.wmevent.type = 1; /* 1 is click event */
-                message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(textbutton->onclick), strpool_getcstringlength(textbutton->onclick) + 1, 0);
-
-                channel_sendbuffer(widget->source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
-
-            }
+                sendevent(widget->source, 1, textbutton->onclick);
 
         }
 
@@ -883,9 +880,11 @@ static void setupwidgets(void)
         "    + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "      + select id \"fudge\" in \"menu\" label \"FUDGE\"\n"
         "      + layout id \"items\" in \"fudge\" flow \"vertical\"\n"
-        "        + choice id \"terminal\" in \"items\" label \"TERMINAL\"\n"
-        "        + choice id \"filemanager\" in \"items\" label \"FILE MANAGER\"\n"
-        "        + choice id \"calculator\" in \"items\" label \"CALCULATOR\"\n"
+        "        + choice id \"terminal\" in \"items\" label \"TERMINAL\" onclick \"run /bin/wshell\"\n"
+        "        + choice id \"filemanager\" in \"items\" label \"FILE MANAGER\" onclick \"run /bin/wfile\"\n"
+        "        + choice id \"calculator\" in \"items\" label \"CALCULATOR\" onclick \"run /bin/wcalc\"\n"
+        "        + choice id \"test\" in \"items\" label \"TEST\" onclick \"run /bin/wtest\"\n"
+        "        + choice id \"reboot\" in \"items\" label \"REBOOT\" onclick \"run /bin/reboot\"\n"
         "  + image id \"mouse\" in \"root\" mimetype \"image/fudge-icon-mouse\"\n";
 
     parser_parse(0, "", cstring_length(data), data);
