@@ -677,12 +677,24 @@ void blit_pcx(struct blit_display *display, int line, char *source, int x, int y
     for (i = x0; i < x2; i++)
     {
 
-        unsigned int off = buffer[i - x] * 3;
-        unsigned char r = pcxresource.colormap[off + 0];
-        unsigned char g = pcxresource.colormap[off + 1];
-        unsigned char b = pcxresource.colormap[off + 2];
+        if (util_intersects(line, y, y + pcxresource.height) && util_intersects(i, x, x + pcxresource.width))
+        {
 
-        display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
+            unsigned int off = buffer[i - x] * 3;
+            unsigned char r = pcxresource.colormap[off + 0];
+            unsigned char g = pcxresource.colormap[off + 1];
+            unsigned char b = pcxresource.colormap[off + 2];
+
+            display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
+
+        }
+
+        else
+        {
+
+            display->linebuffer[i] = 0xFF000000;
+
+        }
 
     }
 

@@ -97,7 +97,7 @@ static unsigned int placeX(struct widget *widget, int x, int y, unsigned int min
 {
 
     struct list_item *current = 0;
-    unsigned int totalfits = 0;
+    unsigned int totalspans = 0;
 
     util_initsize(total, 0, 0);
 
@@ -108,10 +108,10 @@ static unsigned int placeX(struct widget *widget, int x, int y, unsigned int min
         unsigned int cx = (incw) ? total->w : 0;
         unsigned int cy = (inch) ? total->h : 0;
 
-        if (child->fit)
-            totalfits += child->fit;
+        if (child->span)
+            totalspans += child->span;
 
-        if (!child->fit)
+        if (!child->span)
         {
 
             placechild(child, x + cx, y + cy, 0, minw, minh, maxw - cx, maxh - cy, paddingx, paddingy);
@@ -121,7 +121,7 @@ static unsigned int placeX(struct widget *widget, int x, int y, unsigned int min
 
     }
 
-    return totalfits;
+    return totalspans;
 
 }
 
@@ -136,10 +136,10 @@ static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsig
     {
 
         struct widget *child = current->data;
-        unsigned int cminw = 0;
-        unsigned int cmaxw = 0;
-        unsigned int cminh = 0;
-        unsigned int cmaxh = 0;
+        unsigned int cminw = minw;
+        unsigned int cmaxw = maxw;
+        unsigned int cminh = minh;
+        unsigned int cmaxh = maxh;
         unsigned int totalw = 0;
         unsigned int totalh = 0;
 
@@ -148,13 +148,12 @@ static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsig
 
             totalw = total->w;
             cmaxw = maxw - total->w;
-            cmaxh = maxh;
 
-            if (child->fit)
+            if (child->span)
             {
 
-                cminw = sharedw * child->fit;
-                cmaxw = sharedw * child->fit;
+                cminw = sharedw * child->span;
+                cmaxw = sharedw * child->span;
 
             }
 
@@ -164,14 +163,13 @@ static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsig
         {
 
             totalh = total->h;
-            cmaxw = maxw;
             cmaxh = maxh - total->h;
 
-            if (child->fit)
+            if (child->span)
             {
 
-                cminh = sharedh * child->fit;
-                cmaxh = sharedh * child->fit;
+                cminh = sharedh * child->span;
+                cmaxh = sharedh * child->span;
 
             }
 
@@ -187,13 +185,13 @@ static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsig
 static void placeS(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
 {
 
-    unsigned int totalfits = placeX(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, incw, inch, total);
+    unsigned int totalspans = placeX(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, incw, inch, total);
 
-    if (totalfits)
+    if (totalspans)
     {
 
-        unsigned int sharedw = (incw) ? (maxw - total->w) / totalfits : 0;
-        unsigned int sharedh = (inch) ? (maxh - total->h) / totalfits : 0;
+        unsigned int sharedw = (incw) ? (maxw - total->w) / totalspans : 0;
+        unsigned int sharedh = (inch) ? (maxh - total->h) / totalspans : 0;
 
         placeF(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, sharedw, sharedh, total);
 
@@ -207,35 +205,30 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     struct widget_layout *layout = widget->data;
     struct util_size total;
 
-    switch (layout->form)
+    switch (layout->flow)
     {
 
-    case ATTR_FORM_DEFAULT:
+    case ATTR_FLOW_DEFAULT:
         placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
 
         break;
 
-    case ATTR_FORM_HORIZONTAL:
+    case ATTR_FLOW_HORIZONTAL:
         placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
 
         break;
 
-    case ATTR_FORM_HORIZONTALSTRETCH:
+    case ATTR_FLOW_HORIZONTALSTRETCH:
         placeS(widget, x, y, 0, maxh, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
 
         break;
 
-    case ATTR_FORM_STRETCH:
-        placeS(widget, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
-
-        break;
-
-    case ATTR_FORM_VERTICAL:
+    case ATTR_FLOW_VERTICAL:
         placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
 
         break;
 
-    case ATTR_FORM_VERTICALSTRETCH:
+    case ATTR_FLOW_VERTICALSTRETCH:
         placeS(widget, x, y, maxw, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
 
         break;

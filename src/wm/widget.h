@@ -39,7 +39,7 @@ struct widget_choice
 struct widget_layout
 {
 
-    unsigned int form;
+    unsigned int flow;
     unsigned int padding;
 
 };
@@ -127,11 +127,11 @@ struct widget
     unsigned int state;
     unsigned int id;
     unsigned int in;
+    unsigned int span;
     void *data;
     struct util_position position;
     struct util_size size;
     unsigned int display;
-    unsigned int fit;
 
 };
 

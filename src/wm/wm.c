@@ -879,10 +879,10 @@ static void setupwidgets(void)
     char *data =
         "+ layout id \"root\"\n"
         "  + fill in \"root\" color \"FF202020\"\n"
-        "  + layout id \"desktop\" in \"root\" form \"vertical\"\n"
-        "    + layout id \"menu\" in \"desktop\" form \"horizontal\"\n"
+        "  + layout id \"desktop\" in \"root\" flow \"vertical\"\n"
+        "    + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "      + select id \"fudge\" in \"menu\" label \"FUDGE\"\n"
-        "      + layout id \"items\" in \"fudge\" form \"vertical\"\n"
+        "      + layout id \"items\" in \"fudge\" flow \"vertical\"\n"
         "        + choice id \"terminal\" in \"items\" label \"Terminal\"\n"
         "        + choice id \"filemanager\" in \"items\" label \"File Manager\"\n"
         "        + choice id \"calculator\" in \"items\" label \"Calculator\"\n"

@@ -139,34 +139,38 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data =
+    char *data0 =
         "+ window id \"window\" title \"Calculator\"\n"
-        "  + layout id \"base\" in \"window\" form \"vertical\" fit \"1\"\n"
-        "    + layout id \"container\" in \"base\" form \"horizontal\" padding \"8\"\n"
-        "      + textbox id \"output\" in \"container\" mode \"readonly\" fit \"1\"\n"
-        "        + text id \"result\" in \"output\" content \"0\" halign \"right\"\n"
-        "    + layout id \"row1\" in \"base\" form \"horizontal\" padding \"8\"\n"
-        "      + button in \"row1\" label \"7\" fit \"1\" onclick \"7\"\n"
-        "      + button in \"row1\" label \"8\" fit \"1\" onclick \"8\"\n"
-        "      + button in \"row1\" label \"9\" fit \"1\" onclick \"9\"\n"
-        "      + button in \"row1\" label \"/\" fit \"1\" onclick \"div\"\n"
-        "    + layout id \"row2\" in \"base\" form \"horizontal\" padding \"8\"\n"
-        "      + button in \"row2\" label \"4\" fit \"1\" onclick \"4\"\n"
-        "      + button in \"row2\" label \"5\" fit \"1\" onclick \"5\"\n"
-        "      + button in \"row2\" label \"6\" fit \"1\" onclick \"6\"\n"
-        "      + button in \"row2\" label \"x\" fit \"1\" onclick \"mul\"\n"
-        "    + layout id \"row3\" in \"base\" form \"horizontal\" padding \"8\"\n"
-        "      + button in \"row3\" label \"3\" fit \"1\" onclick \"3\"\n"
-        "      + button in \"row3\" label \"2\" fit \"1\" onclick \"2\"\n"
-        "      + button in \"row3\" label \"1\" fit \"1\" onclick \"1\"\n"
-        "      + button in \"row3\" label \"-\" fit \"1\" onclick \"sub\"\n"
-        "    + layout id \"row4\" in \"base\" form \"horizontal\" padding \"8\"\n"
-        "      + button in \"row4\" label \"0\" fit \"1\" onclick \"0\"\n"
-        "      + button in \"row4\" label \".\" fit \"1\" onclick \"point\"\n"
-        "      + button in \"row4\" label \"+\" fit \"1\" onclick \"add\"\n"
-        "      + button in \"row4\" label \"=\" fit \"1\" onclick \"eq\"\n";
+        "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" span \"1\"\n"
+        "    + layout id \"container\" in \"base\" flow \"horizontal-stretch\" padding \"8\" span \"1\"\n"
+        "      + textbox id \"output\" in \"container\" mode \"readonly\" span \"1\"\n"
+        "        + text id \"result\" in \"output\" content \"0\" halign \"right\"\n";
+    char *data1 =
+        "    + layout id \"row1\" in \"base\" flow \"horizontal-stretch\" padding \"8\" span \"1\"\n"
+        "      + button in \"row1\" label \"7\" span \"1\" onclick \"7\"\n"
+        "      + button in \"row1\" label \"8\" span \"1\" onclick \"8\"\n"
+        "      + button in \"row1\" label \"9\" span \"1\" onclick \"9\"\n"
+        "      + button in \"row1\" label \"/\" span \"1\" onclick \"div\"\n"
+        "    + layout id \"row2\" in \"base\" flow \"horizontal-stretch\" padding \"8\" span \"1\"\n"
+        "      + button in \"row2\" label \"4\" span \"1\" onclick \"4\"\n"
+        "      + button in \"row2\" label \"5\" span \"1\" onclick \"5\"\n"
+        "      + button in \"row2\" label \"6\" span \"1\" onclick \"6\"\n"
+        "      + button in \"row2\" label \"x\" span \"1\" onclick \"mul\"\n";
+    char *data2 =
+        "    + layout id \"row3\" in \"base\" flow \"horizontal-stretch\" padding \"8\" span \"1\"\n"
+        "      + button in \"row3\" label \"3\" span \"1\" onclick \"3\"\n"
+        "      + button in \"row3\" label \"2\" span \"1\" onclick \"2\"\n"
+        "      + button in \"row3\" label \"1\" span \"1\" onclick \"1\"\n"
+        "      + button in \"row3\" label \"-\" span \"1\" onclick \"sub\"\n"
+        "    + layout id \"row4\" in \"base\" flow \"horizontal-stretch\" padding \"8\" span \"1\"\n"
+        "      + button in \"row4\" label \"0\" span \"1\" onclick \"0\"\n"
+        "      + button in \"row4\" label \".\" span \"1\" onclick \"point\"\n"
+        "      + button in \"row4\" label \"+\" span \"1\" onclick \"add\"\n"
+        "      + button in \"row4\" label \"=\" span \"1\" onclick \"eq\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data0);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data1);
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data2);
 
 }
 

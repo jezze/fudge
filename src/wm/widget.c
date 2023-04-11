@@ -97,8 +97,8 @@ static void setattributelayout(struct widget *widget, unsigned int attribute, ch
     switch (attribute)
     {
 
-    case ATTR_FORM:
-        layout->form = attr_update(ATTR_FORM, value, layout->form);
+    case ATTR_FLOW:
+        layout->flow = attr_update(ATTR_FLOW, value, layout->flow);
 
         break;
 
@@ -274,8 +274,8 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case ATTR_FIT:
-        widget->fit = attr_update(ATTR_FIT, value, widget->fit);
+    case ATTR_SPAN:
+        widget->span = attr_update(ATTR_SPAN, value, widget->span);
 
         break;
 

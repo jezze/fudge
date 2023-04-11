@@ -10,14 +10,13 @@ static struct util_token blits[2] =
     {ATTR_BLIT_INVERTED, "inverted"}
 };
 
-static struct util_token forms[6] =
+static struct util_token flows[5] =
 {
-    {ATTR_FORM_DEFAULT, "default"},
-    {ATTR_FORM_HORIZONTAL, "horizontal"},
-    {ATTR_FORM_HORIZONTALSTRETCH, "horizontal-stretch"},
-    {ATTR_FORM_STRETCH, "stretch"},
-    {ATTR_FORM_VERTICAL, "vertical"},
-    {ATTR_FORM_VERTICALSTRETCH, "vertical-stretch"}
+    {ATTR_FLOW_DEFAULT, "default"},
+    {ATTR_FLOW_HORIZONTAL, "horizontal"},
+    {ATTR_FLOW_HORIZONTALSTRETCH, "horizontal-stretch"},
+    {ATTR_FLOW_VERTICAL, "vertical"},
+    {ATTR_FLOW_VERTICALSTRETCH, "vertical-stretch"}
 };
 
 static struct util_token haligns[3] =
@@ -75,8 +74,8 @@ unsigned int attr_isvalue(unsigned int attribute)
 
     case ATTR_COLOR:
     case ATTR_COLUMNS:
-    case ATTR_FIT:
     case ATTR_PADDING:
+    case ATTR_SPAN:
         return 1;
 
     }
@@ -113,7 +112,7 @@ unsigned int attr_isenum(unsigned int attribute)
     {
 
     case ATTR_BLIT:
-    case ATTR_FORM:
+    case ATTR_FLOW:
     case ATTR_HALIGN:
     case ATTR_MIMETYPE:
     case ATTR_MODE:
@@ -147,11 +146,11 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     case ATTR_CONTENT:
         return strpool_updatestring(current, value);
 
-    case ATTR_FIT:
+    case ATTR_SPAN:
         return cstring_readvalue(value, cstring_length(value), 10);
 
-    case ATTR_FORM:
-        return util_getkey(forms, 6, value);
+    case ATTR_FLOW:
+        return util_getkey(flows, 5, value);
 
     case ATTR_HALIGN:
         return util_getkey(haligns, 3, value);
