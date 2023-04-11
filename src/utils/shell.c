@@ -65,7 +65,7 @@ static void interpret(void)
     char ibuffer[INPUTSIZE];
     unsigned int icount = ring_read(&input, ibuffer, INPUTSIZE);
 
-    if (icount && (icount = runslang(ibuffer, BUFFER_SIZE, ibuffer, icount)))
+    if (icount && (icount = runslang(ibuffer, INPUTSIZE, ibuffer, icount)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -198,7 +198,7 @@ static void complete(void)
     char ibuffer[INPUTSIZE];
     unsigned int icount = createcommand(&input, ibuffer, prefix);
 
-    if (icount && (icount = runslang(ibuffer, BUFFER_SIZE, ibuffer, icount)))
+    if (icount && (icount = runslang(ibuffer, INPUTSIZE, ibuffer, icount)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -211,7 +211,7 @@ static void complete(void)
             char data[MESSAGE_SIZE];
             struct ring output;
 
-            ring_init(&output, BUFFER_SIZE, ibuffer);
+            ring_init(&output, INPUTSIZE, ibuffer);
             job_listen(&job, EVENT_CLOSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
