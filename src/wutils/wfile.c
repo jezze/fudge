@@ -25,6 +25,8 @@ static void updatecontent(void)
     while ((nrecords = file_list(FILE_PW, FILE_L0, 4, records)))
     {
 
+        char message[MESSAGE_SIZE];
+        unsigned int count = 0;
         unsigned int i;
 
         for (i = 0; i < nrecords; i++)
@@ -32,12 +34,14 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            channel_sendfmt6(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton in \"content\" label \"%w%s\" onclick \"f %w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            count += cstring_writefmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"f %w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
             if (!--maxsend)
                 return;
 
         }
+
+        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, message);
 
     }
 
