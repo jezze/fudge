@@ -43,16 +43,6 @@ static void placewidget(struct widget *widget, int x, int y, int w, int h, int m
 
 }
 
-static void placewidget2(struct widget *widget, int x, int y, int w, int h, int minw, int minh, int maxw, int maxh, int paddingw, int paddingh)
-{
-
-    placewidget(widget, x, y, w, h, minw, minh, maxw, maxh, paddingw, paddingh);
-
-    if (maxw < w + paddingw * 2 || maxh < h + paddingh * 2)
-        widget->display = WIDGET_DISPLAY_HIDDEN;
-
-}
-
 static void placechild(struct widget *widget, int x, int y, int offx, int minw, int minh, int maxw, int maxh, int paddingw, int paddingh)
 {
 
@@ -75,7 +65,7 @@ static void placebutton(struct widget *widget, int x, int y, int offx, unsigned 
     struct text_rowinfo rowinfo;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
-    placewidget2(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
+    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
     cache_initrow(&button->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
 
 }
@@ -331,7 +321,7 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
     struct util_size total;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
-    placewidget2(widget, x, y, rowinfo.width + CONFIG_SELECT_EXTRA, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
+    placewidget(widget, x, y, rowinfo.width + CONFIG_SELECT_EXTRA, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     cache_initrow(&select->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, CONFIG_SELECT_EXTRA, 0);
     placeS(widget, x, widget->position.y + widget->size.h, 0, 0, INFINITY, INFINITY, 0, 0, 0, 1, &total);
 
@@ -426,7 +416,7 @@ static void placetextbutton(struct widget *widget, int x, int y, int offx, unsig
     struct text_rowinfo rowinfo;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, maxw - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);
-    placewidget2(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
+    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
     cache_initrow(&textbutton->cacherow, &rowinfo, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
 
 }
