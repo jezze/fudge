@@ -19,8 +19,9 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 {
 
     struct message message;
-    unsigned int offset = 0;
-    char *buffer = data;
+
+    if (count > MESSAGE_SIZE)
+        return 0;
 
     if (!target)
         target = callbacks[event].target;
@@ -28,23 +29,11 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
     if (!target)
         return 0;
 
-    while (count > MESSAGE_SIZE)
-    {
-
-        message_init(&message, event, MESSAGE_SIZE);
-
-        while (!call_place(target, &message, buffer + offset));
-
-        count -= MESSAGE_SIZE;
-        offset += MESSAGE_SIZE;
-
-    }
-
     message_init(&message, event, count);
 
-    while (!call_place(target, &message, buffer + offset));
+    while (!call_place(target, &message, data));
 
-    return count + offset;
+    return count;
 
 }
 
