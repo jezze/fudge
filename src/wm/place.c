@@ -400,6 +400,7 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
     struct util_size total;
     unsigned int lastrowx = 0;
     unsigned int lastrowy = 0;
+    int offset = 0;
 
     util_initsize(&total, 0, 0);
 
@@ -425,19 +426,19 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
 
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
-    if (textbox->vscroll)
+    current = 0;
+    offset = total.h - maxh;
+    textbox->vscroll = util_clamp(textbox->vscroll, 0 - offset, total.h - offset - maxh);
+
+    while ((current = pool_nextin(current, widget)))
     {
 
-        textbox->vscroll = util_clamp(textbox->vscroll, 0, total.h - 48);
+        struct widget *child = current->data;
 
-        while ((current = pool_nextin(current, widget)))
-        {
+        if (total.h > maxh)
+            child->position.y -= offset;
 
-            struct widget *child = current->data;
-
-            child->position.y -= textbox->vscroll;
-
-        }
+        child->position.y -= textbox->vscroll;
 
     }
 
