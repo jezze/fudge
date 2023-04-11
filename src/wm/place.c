@@ -93,25 +93,6 @@ static void placechoice(struct widget *widget, int x, int y, int offx, unsigned 
 
 }
 
-static void placeA(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, struct util_size *total)
-{
-
-    struct list_item *current = 0;
-
-    util_initsize(total, 0, 0);
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        placechild(child, x, y, 0, minw, minh, maxw, maxh, paddingx, paddingy);
-        addtotal(total, child, x, y, paddingx, paddingy);
-
-    }
-
-}
-
 static unsigned int placeX(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
 {
 
@@ -230,7 +211,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     {
 
     case ATTR_FORM_FLOAT:
-        placeA(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, &total);
+        placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
 
         break;
 
@@ -245,7 +226,7 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
         break;
 
     case ATTR_FORM_MAXIMIZE:
-        placeA(widget, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, &total);
+        placeS(widget, x, y, maxw, maxh, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
 
         break;
 

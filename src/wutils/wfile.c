@@ -16,7 +16,7 @@ static void updatecontent(void)
     struct record records[4];
     unsigned int nrecords;
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" fit \"1\"\n");
+    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\"\n");
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton in \"content\" label \"../\" onclick \"u\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
@@ -151,7 +151,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "        + text id \"path\" in \"pathbox\"\n"
         "      + button id \"open\" in \"top\" label \"Open\"\n"
         "    + layout id \"main\" in \"base\" form \"maximize\" padding \"8\" fit \"1\"\n"
-        "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" fit \"1\"\n"
+        "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\"\n"
         "    + layout id \"bottom\" in \"base\" form \"horizontal\" padding \"8\"\n"
         "      + button in \"bottom\" label \"Copy\" onclick \"ac\"\n"
         "      + button in \"bottom\" label \"Cut\" onclick \"ax\"\n"

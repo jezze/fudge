@@ -364,7 +364,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     char *data =
         "+ window id \"window\" title \"Shell\"\n"
         "  + layout id \"base\" in \"window\" form \"maximize\" padding \"8\" fit \"1\"\n"
-        "    + textbox id \"output\" in \"base\" overflow \"vscroll\" fit \"1\"\n"
+        "    + textbox id \"output\" in \"base\" overflow \"vscroll\"\n"
         "      + text id \"result\" in \"output\" wrap \"char\"\n"
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
         "      + text id \"input1\" in \"output\" wrap \"char\"\n"
