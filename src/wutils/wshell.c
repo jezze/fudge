@@ -17,18 +17,18 @@ static struct job job;
 static void update(void)
 {
 
-    char buffer[BUFFER_SIZE];
+    char buffer[800];
     unsigned int count;
 
-    count = ring_readcopy(&result, buffer, BUFFER_SIZE);
+    count = ring_readcopy(&result, buffer, 800);
 
     channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
-    count = ring_readcopy(&input1, buffer, BUFFER_SIZE);
+    count = ring_readcopy(&input1, buffer, 800);
 
     channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input1 content \"%w\"\n", buffer, &count);
 
-    count = ring_readcopy(&input2, buffer, BUFFER_SIZE);
+    count = ring_readcopy(&input2, buffer, 800);
 
     channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input2 content \"%w\"\n", buffer, &count);
 
@@ -110,7 +110,7 @@ static void interpret(void)
     print(ibuffer, icount);
     update();
 
-    if (icount && (icount = runslang(ibuffer, BUFFER_SIZE, ibuffer, icount)))
+    if (icount && (icount = runslang(ibuffer, INPUTSIZE, ibuffer, icount)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -243,7 +243,7 @@ static void complete(void)
     char ibuffer[INPUTSIZE];
     unsigned int icount = createcommand(&input1, ibuffer, prefix);
 
-    if (icount && (icount = runslang(ibuffer, BUFFER_SIZE, ibuffer, icount)))
+    if (icount && (icount = runslang(ibuffer, INPUTSIZE, ibuffer, icount)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -256,7 +256,7 @@ static void complete(void)
             char data[MESSAGE_SIZE];
             struct ring output;
 
-            ring_init(&output, BUFFER_SIZE, ibuffer);
+            ring_init(&output, INPUTSIZE, ibuffer);
             job_listen(&job, EVENT_CLOSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
