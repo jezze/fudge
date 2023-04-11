@@ -116,6 +116,7 @@ struct widget_window
 {
 
     unsigned int title;
+    struct cache_row cacherow;
 
 };
 

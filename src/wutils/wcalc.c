@@ -140,7 +140,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data0 =
-        "+ window id \"window\" title \"Calculator\"\n"
+        "+ window id \"window\" title \"CALCULATOR\"\n"
         "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" span \"1\"\n"
         "    + layout id \"container\" in \"base\" flow \"horizontal-stretch\" padding \"8\" span \"1\"\n"
         "      + textbox id \"output\" in \"container\" mode \"readonly\" span \"1\"\n"

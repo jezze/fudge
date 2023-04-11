@@ -148,7 +148,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" title \"Filesystem Explorer\"\n"
+        "+ window id \"window\" title \"FILE MANAGER\"\n"
         "  + layout id \"base\" in \"window\" flow \"vertical\" span \"1\"\n"
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"8\"\n"
         "      + select id \"drive\" in \"top\" label \"Drives\"\n"

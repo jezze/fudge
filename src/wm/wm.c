@@ -883,9 +883,9 @@ static void setupwidgets(void)
         "    + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "      + select id \"fudge\" in \"menu\" label \"FUDGE\"\n"
         "      + layout id \"items\" in \"fudge\" flow \"vertical\"\n"
-        "        + choice id \"terminal\" in \"items\" label \"Terminal\"\n"
-        "        + choice id \"filemanager\" in \"items\" label \"File Manager\"\n"
-        "        + choice id \"calculator\" in \"items\" label \"Calculator\"\n"
+        "        + choice id \"terminal\" in \"items\" label \"TERMINAL\"\n"
+        "        + choice id \"filemanager\" in \"items\" label \"FILE MANAGER\"\n"
+        "        + choice id \"calculator\" in \"items\" label \"CALCULATOR\"\n"
         "  + image id \"mouse\" in \"root\" mimetype \"image/fudge-icon-mouse\"\n";
 
     parser_parse(0, "", cstring_length(data), data);

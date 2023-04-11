@@ -362,7 +362,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" title \"Shell\"\n"
+        "+ window id \"window\" title \"TERMINAL\"\n"
         "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" padding \"8\" span \"1\"\n"
         "    + textbox id \"output\" in \"base\" overflow \"vscroll\" span \"1\"\n"
         "      + text id \"result\" in \"output\" wrap \"char\"\n"

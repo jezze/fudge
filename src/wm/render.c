@@ -260,6 +260,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 static void renderwindow(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
 {
 
+    struct widget_window *window = widget->data;
     static unsigned int cmaptop[3] = {
         0xE8101010, 0xE8805050, 0xE8E0B0B0,
     };
@@ -271,6 +272,9 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
         0xE8FFFFFF,
         0xE8FFFFFF,
     };
+    static unsigned int cmaptext[1] = {
+        0xA8FFFFFF,
+    };
 
     unsigned int onhamburger = util_intersects(mx, widget->position.x, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH) && util_intersects(my, widget->position.y, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onminimize = util_intersects(mx, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2) && util_intersects(my, widget->position.y, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -281,6 +285,10 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     blit_panel(display, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->position.y, widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, 0));
     blit_panel(display, widget->position.x + widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmaptop, 0));
     blit_panel(display, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapmain, 0));
+
+    if (util_intersects(line, widget->position.y + window->cacherow.ry, widget->position.y + window->cacherow.ry + window->cacherow.font->lineheight))
+        blit_text(display, window->cacherow.font, ATTR_BLIT_NORMAL, strpool_getstring(window->title) + window->cacherow.istart, window->cacherow.length, widget->position.x + window->cacherow.rx, widget->position.y + window->cacherow.ry, line, x0, x2, getcmap(widget->state, cmaptext, 0));
+
     blit_iconhamburger(display, widget->position.x, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapicon, (onhamburger) ? 1 : 0));
     blit_iconminimize(display, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapicon, (onminimize) ? 1 : 0));
     blit_iconx(display, widget->position.x + widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, getcmap(widget->state, cmapicon, (onx) ? 1 : 0));
