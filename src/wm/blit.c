@@ -171,7 +171,7 @@ void blit_text(struct blit_display *display, struct text_font *font, unsigned in
                 {
 
                     if ((data[(r >> 3)] & (0x80 >> (r % 8))) || invert)
-                        blit_line(display, color, rx + r, rx + r + 1);
+                        blit_alphaline(display, color, rx + r, rx + r + 1);
 
                 }
 
