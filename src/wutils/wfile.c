@@ -149,7 +149,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "  + layout id \"base\" in \"window\" flow \"vertical\" span \"1\"\n"
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"8\"\n"
         "      + select id \"drive\" in \"top\" label \"Drives\"\n"
-        "        + layout id \"drivelist\" in \"drive\" flow \"vertical\"\n"
+        "        + layout id \"drivelist\" in \"drive\" flow \"vertical-stretch\"\n"
         "          + choice in \"drivelist\" label \"initrd:\" onclick \"volume initrd\"\n"
         "          + choice in \"drivelist\" label \"system:\" onclick \"volume system\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"

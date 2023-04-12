@@ -879,7 +879,7 @@ static void setupwidgets(void)
         "  + layout id \"desktop\" in \"root\" flow \"vertical\"\n"
         "    + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "      + select id \"fudge\" in \"menu\" label \"FUDGE\"\n"
-        "      + layout id \"items\" in \"fudge\" flow \"vertical\"\n"
+        "      + layout id \"items\" in \"fudge\" flow \"vertical-stretch\"\n"
         "        + choice in \"items\" label \"TERMINAL\" onclick \"run /bin/wshell\"\n"
         "        + choice in \"items\" label \"FILE MANAGER\" onclick \"run /bin/wfile\"\n"
         "        + choice in \"items\" label \"CALCULATOR\" onclick \"run /bin/wcalc\"\n"
