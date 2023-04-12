@@ -12,9 +12,6 @@
 #define REL0                            1
 #define REL1                            2
 #define REL2                            3
-#define CMAP_PANEL_SHADOW               0
-#define CMAP_PANEL_NORMAL               1
-#define CMAP_PANEL_LIGHT                2
 #define CMAP_FRAME_SHADOW               0
 #define CMAP_FRAME_NORMAL               1
 #define CMAP_FRAME_DARK                 2
@@ -569,54 +566,6 @@ void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int li
         {REL0, REL0, 23, 24, line23, 1}
     };
     struct rowsegment *rs = findrowsegment(rows, 24, line, y, h);
-
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
-
-}
-
-void blit_panel(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
-{
-
-    static struct linesegment line0[1] = {
-        {REL0, REL2, 0, 0, CMAP_PANEL_SHADOW}
-    };
-    static struct linesegment line1[3] = {
-        {REL0, REL0, 0, 2, CMAP_PANEL_SHADOW},
-        {REL0, REL2, 2, -2, CMAP_PANEL_LIGHT},
-        {REL2, REL2, -2, 0, CMAP_PANEL_SHADOW}
-    };
-    static struct linesegment line2[5] = {
-        {REL0, REL0, 0, 2, CMAP_PANEL_SHADOW},
-        {REL0, REL0, 2, 3, CMAP_PANEL_LIGHT},
-        {REL0, REL2, 3, -3, CMAP_PANEL_NORMAL},
-        {REL2, REL2, -3, -2, CMAP_PANEL_LIGHT},
-        {REL2, REL2, -2, 0, CMAP_PANEL_SHADOW}
-    };
-    static struct rowsegment rows[5] = {
-        {REL0, REL0, 0, 2, line0, 1},
-        {REL0, REL0, 2, 3, line1, 3},
-        {REL0, REL2, 3, -3, line2, 5},
-        {REL2, REL2, -3, -2, line1, 3},
-        {REL2, REL2, -2, 0, line0, 1}
-    };
-    struct rowsegment *rs = findrowsegment(rows, 5, line, y, h);
-
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
-
-}
-
-void blit_rect(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
-{
-
-    static struct linesegment line0[1] = {
-        {REL0, REL2, 0, 0, CMAP_RECT_COLOR}
-    };
-    static struct rowsegment rows[1] = {
-        {REL0, REL2, 0, 0, line0, 1}
-    };
-    struct rowsegment *rs = findrowsegment(rows, 1, line, y, h);
 
     if (rs)
         blitrowsegment(display, rs, x, w, x0, x2, cmap);
