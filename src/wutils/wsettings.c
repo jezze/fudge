@@ -44,7 +44,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "          + choice in \"keyboardlayouts-box\" label \"Sweden (se)\" onclick \"set keyboard se\"\n"
         "    + layout id \"mouse-acc-list\" in \"base\" flow \"horizontal\"\n"
         "      + text in \"mouse-acc-list\" wrap \"word\" span \"1\" content \"Mouse acceleration\"\n"
-        "      + text in \"mouse-acc-list\" wrap \"word\" content \"Yes/No\"\n";
+        "      + text in \"mouse-acc-list\" weight \"bold\" wrap \"word\" content \"Yes / No\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 
