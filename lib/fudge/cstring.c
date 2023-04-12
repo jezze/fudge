@@ -82,6 +82,16 @@ unsigned int cstring_match(char *in1, char *in2)
 
 }
 
+unsigned int cstring_submatch(char *in1, char *in2)
+{
+
+    unsigned int n1 = cstring_lengthzero(in1);
+    unsigned int n2 = cstring_length(in2);
+
+    return (n2 < n1) ? buffer_match(in1, in2, n2) : 0;
+
+}
+
 unsigned int cstring_isalpha(char c)
 {
 

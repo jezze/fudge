@@ -103,35 +103,35 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     char *data = (char *)mdata + sizeof (struct event_wmevent);
 
-    if (cstring_match(data, "eq"))
+    if (cstring_submatch(data, "eq"))
         updatestate(STATE_SUM);
-    else if (cstring_match(data, "0"))
+    else if (cstring_submatch(data, "0"))
         updatevalue(0);
-    else if (cstring_match(data, "1"))
+    else if (cstring_submatch(data, "1"))
         updatevalue(1);
-    else if (cstring_match(data, "2"))
+    else if (cstring_submatch(data, "2"))
         updatevalue(2);
-    else if (cstring_match(data, "3"))
+    else if (cstring_submatch(data, "3"))
         updatevalue(3);
-    else if (cstring_match(data, "4"))
+    else if (cstring_submatch(data, "4"))
         updatevalue(4);
-    else if (cstring_match(data, "5"))
+    else if (cstring_submatch(data, "5"))
         updatevalue(5);
-    else if (cstring_match(data, "6"))
+    else if (cstring_submatch(data, "6"))
         updatevalue(6);
-    else if (cstring_match(data, "7"))
+    else if (cstring_submatch(data, "7"))
         updatevalue(7);
-    else if (cstring_match(data, "8"))
+    else if (cstring_submatch(data, "8"))
         updatevalue(8);
-    else if (cstring_match(data, "9"))
+    else if (cstring_submatch(data, "9"))
         updatevalue(9);
-    else if (cstring_match(data, "add"))
+    else if (cstring_submatch(data, "add"))
         updatestate(STATE_ADD);
-    else if (cstring_match(data, "sub"))
+    else if (cstring_submatch(data, "sub"))
         updatestate(STATE_SUB);
-    else if (cstring_match(data, "mul"))
+    else if (cstring_submatch(data, "mul"))
         updatestate(STATE_MUL);
-    else if (cstring_match(data, "div"))
+    else if (cstring_submatch(data, "div"))
         updatestate(STATE_DIV);
 
 }

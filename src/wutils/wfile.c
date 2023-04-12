@@ -18,7 +18,6 @@ static void updatecontent(void)
     unsigned int maxsend = 50;
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "+ textbutton in \"content\" label \"../\" onclick \"u\"\n");
     file_walk2(FILE_PW, path);
     file_duplicate(FILE_L0, FILE_PW);
 
@@ -34,7 +33,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            count += cstring_writefmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"f %w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            count += cstring_writefmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"file %w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
             if (!--maxsend)
                 return;
@@ -70,38 +69,34 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     char *data = (char *)mdata + sizeof (struct event_wmevent);
 
-    switch (data[0])
+    if (cstring_submatch(data, "action "))
     {
 
-    case 'a':
-        switch (data[1])
+        if (cstring_match(data + 7, "copy"))
         {
-
-        case 'c':
-            /* copy */
-
-            break;
-
-        case 'x':
-            /* cut */
-
-            break;
-
-        case 'p':
-            /* paste */
-
-            break;
-
-        case 'd':
-            /* delete */
-
-            break;
 
         }
 
-        break;
+        else if (cstring_match(data + 7, "cut"))
+        {
 
-    case 'u':
+        }
+
+        else if (cstring_match(data + 7, "paste"))
+        {
+
+        }
+
+        else if (cstring_match(data + 7, "delete"))
+        {
+
+        }
+
+    }
+
+    else if (cstring_submatch(data, "up"))
+    {
+
         if (cstring_length(path))
         {
 
@@ -124,21 +119,23 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
         updatepath();
         updatecontent();
 
-        break;
+    }
 
-    case 'd':
-        cstring_writefmt1(path, 256, "%s:\\0", 0, data + 2);
+    else if (cstring_submatch(data, "volume "))
+    {
+
+        cstring_writefmt1(path, 256, "%s:\\0", 0, data + 7);
         updatepath();
         updatecontent();
 
-        break;
+    }
 
-    case 'f':
-        cstring_writefmt2(path, 256, "%s%s\\0", 0, path, data + 2);
+    else if (cstring_submatch(data, "file "))
+    {
+
+        cstring_writefmt2(path, 256, "%s%s\\0", 0, path, data + 5);
         updatepath();
         updatecontent();
-
-        break;
 
     }
 
@@ -153,18 +150,18 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"8\"\n"
         "      + select id \"drive\" in \"top\" label \"Drives\"\n"
         "        + layout id \"drivelist\" in \"drive\" flow \"vertical\"\n"
-        "          + choice in \"drivelist\" label \"initrd:\" onclick \"d initrd\"\n"
-        "          + choice in \"drivelist\" label \"system:\" onclick \"d system\"\n"
+        "          + choice in \"drivelist\" label \"initrd:\" onclick \"volume initrd\"\n"
+        "          + choice in \"drivelist\" label \"system:\" onclick \"volume system\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"
         "        + text id \"path\" in \"pathbox\"\n"
-        "      + button in \"top\" label \"Open\"\n"
+        "      + button in \"top\" label \"Up\" onclick \"up\"\n"
         "    + layout id \"main\" in \"base\" flow \"vertical-stretch\" padding \"8\" span \"1\"\n"
         "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n"
         "    + layout id \"bottom\" in \"base\" flow \"horizontal\" padding \"8\"\n"
-        "      + button in \"bottom\" label \"Copy\" onclick \"ac\"\n"
-        "      + button in \"bottom\" label \"Cut\" onclick \"ax\"\n"
-        "      + button in \"bottom\" label \"Paste\" onclick \"ap\"\n"
-        "      + button in \"bottom\" label \"Delete\" onclick \"ad\"\n";
+        "      + button in \"bottom\" label \"Copy\" onclick \"action copy\"\n"
+        "      + button in \"bottom\" label \"Cut\" onclick \"action cut\"\n"
+        "      + button in \"bottom\" label \"Paste\" onclick \"action paste\"\n"
+        "      + button in \"bottom\" label \"Delete\" onclick \"action delete\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
     cstring_writefmt0(path, 256, "initrd:\\0", 0);

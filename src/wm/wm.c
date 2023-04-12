@@ -387,7 +387,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
 
         char *cmd = strpool_getstring(action);
 
-        if (buffer_match(cmd, "run ", 4))
+        if (cstring_submatch(cmd, "run "))
         {
 
             unsigned int id = file_spawn(FILE_L0, cmd + 4);
@@ -880,11 +880,11 @@ static void setupwidgets(void)
         "    + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "      + select id \"fudge\" in \"menu\" label \"FUDGE\"\n"
         "      + layout id \"items\" in \"fudge\" flow \"vertical\"\n"
-        "        + choice id \"terminal\" in \"items\" label \"TERMINAL\" onclick \"run /bin/wshell\"\n"
-        "        + choice id \"filemanager\" in \"items\" label \"FILE MANAGER\" onclick \"run /bin/wfile\"\n"
-        "        + choice id \"calculator\" in \"items\" label \"CALCULATOR\" onclick \"run /bin/wcalc\"\n"
-        "        + choice id \"test\" in \"items\" label \"TEST\" onclick \"run /bin/wtest\"\n"
-        "        + choice id \"reboot\" in \"items\" label \"REBOOT\" onclick \"run /bin/reboot\"\n"
+        "        + choice in \"items\" label \"TERMINAL\" onclick \"run /bin/wshell\"\n"
+        "        + choice in \"items\" label \"FILE MANAGER\" onclick \"run /bin/wfile\"\n"
+        "        + choice in \"items\" label \"CALCULATOR\" onclick \"run /bin/wcalc\"\n"
+        "        + choice in \"items\" label \"TEST\" onclick \"run /bin/wtest\"\n"
+        "        + choice in \"items\" label \"REBOOT\" onclick \"run /bin/reboot\"\n"
         "  + image id \"mouse\" in \"root\" mimetype \"image/fudge-icon-mouse\"\n";
 
     parser_parse(0, "", cstring_length(data), data);
