@@ -155,8 +155,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"row2\" label \"4\" span \"1\" onclick \"4\"\n"
         "      + button in \"row2\" label \"5\" span \"1\" onclick \"5\"\n"
         "      + button in \"row2\" label \"6\" span \"1\" onclick \"6\"\n"
-        "      + button in \"row2\" label \"x\" span \"1\" onclick \"mul\"\n";
-    char *data2 =
+        "      + button in \"row2\" label \"x\" span \"1\" onclick \"mul\"\n"
         "    + layout id \"row3\" in \"base\" flow \"horizontal-stretch\" padding \"8\" span \"1\"\n"
         "      + button in \"row3\" label \"3\" span \"1\" onclick \"3\"\n"
         "      + button in \"row3\" label \"2\" span \"1\" onclick \"2\"\n"
@@ -170,7 +169,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data0);
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data1);
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data2);
 
 }
 
