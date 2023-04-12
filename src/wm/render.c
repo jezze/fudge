@@ -45,9 +45,9 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
     struct widget_button *button = widget->data;
     static unsigned int cmapframe[12] = {
-        0xE8101010, 0xE8484848, 0xE8484848, 0xE8888888,
-        0xE8101010, 0xE8505050, 0xE8505050, 0xE8888888,
-        0xE8101010, 0xE8585858, 0xE8585858, 0xE8888888,
+        0xE8101010, 0xE8484848, 0xE8404040, 0xE8888888,
+        0xE8101010, 0xE8505050, 0xE8484848, 0xE8888888,
+        0xE8101010, 0xE8585858, 0xE8505050, 0xE8888888,
     };
     static unsigned int cmaptext[1] = {
         0xE8FFFFFF,
