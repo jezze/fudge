@@ -62,7 +62,7 @@ static unsigned int cmapwindow[12] = {
     0xA8FFFFFF,
     0xE8FFFFFF,
     0xE8FFFFFF,
-    0xA8FFFFFF,
+    0xE8FFFFFF,
 };
 
 static unsigned int *getcmap(unsigned int type)
