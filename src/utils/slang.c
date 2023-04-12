@@ -347,22 +347,31 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
+    if (file_walk2(FILE_L0, mdata))
+    {
 
-    if (!file_walk2(FILE_L0, mdata))
-        channel_error("File not found");
+        char buffer[BUFFER_SIZE];
+        unsigned int count;
 
-    ring_reset(&stringtable);
-    tokenlist_reset(&infix);
-    tokenlist_reset(&postfix);
-    tokenlist_reset(&stack);
+        ring_reset(&stringtable);
+        tokenlist_reset(&infix);
+        tokenlist_reset(&postfix);
+        tokenlist_reset(&stack);
 
-    while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-        tokenizebuffer(&infix, &stringtable, count, buffer);
+        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
+            tokenizebuffer(&infix, &stringtable, count, buffer);
 
-    translate(&postfix, &infix, &stack);
-    parse(source, &postfix, &stack);
+        translate(&postfix, &infix, &stack);
+        parse(source, &postfix, &stack);
+
+    }
+
+    else
+    {
+
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+
+    }
 
 }
 

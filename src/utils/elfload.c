@@ -227,13 +227,13 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_G0, "/kernel"))
-        channel_error("Could not find kernel directory");
+        channel_panic();
 
     if (!file_walk(FILE_G1, FILE_G0, "fudge"))
-        channel_error("Could not find fudge binary");
+        channel_panic();
 
     if (!file_walk2(FILE_G2, mdata))
-        channel_error("Could not find path");
+        channel_panic();
 
     if (resolve(FILE_G2))
         call_load(FILE_G2);

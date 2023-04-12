@@ -13,17 +13,28 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
         buffer[offset - 1] = '\0';
 
-        if (!file_walk2(FILE_L0, buffer))
-            channel_error("Parent directory not found");
+        if (file_walk2(FILE_L0, buffer))
+        {
 
-        file_create(FILE_L1, FILE_L0, buffer + offset);
+            if (!file_create(FILE_L1, FILE_L0, buffer + offset))
+                channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Create path failed: %s\n", mdata);
+
+        }
+
+        else
+        {
+
+            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+
+        }
 
     }
 
     else
     {
 
-        file_create(FILE_L1, FILE_PW, mdata);
+        if (!file_create(FILE_L1, FILE_PW, mdata))
+            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Create path failed: %s\n", mdata);
 
     }
 

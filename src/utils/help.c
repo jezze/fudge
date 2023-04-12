@@ -28,7 +28,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_error("Could not spawn process");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", "/bin/echo");
 
     }
 

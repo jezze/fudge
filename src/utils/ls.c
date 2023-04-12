@@ -51,10 +51,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, mdata))
-        channel_error("Could not find path");
-
-    file_duplicate(FILE_G0, FILE_L0);
+    if (file_walk2(FILE_L0, mdata))
+        file_duplicate(FILE_G0, FILE_L0);
+    else
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
 }
 

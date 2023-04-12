@@ -18,4 +18,3 @@ unsigned int cstring_writefmt3(void *out, unsigned int count, char *fmt, unsigne
 unsigned int cstring_writefmt4(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4);
 unsigned int cstring_writefmt6(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6);
 unsigned int cstring_writefmt8(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8);
-void *cstring_tindex(char *in, unsigned int count, unsigned int index);

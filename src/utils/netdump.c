@@ -149,10 +149,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int count;
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_error("Could not find ethernet device");
+        channel_panic();
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))
-        channel_error("Could not find ethernet device data");
+        channel_panic();
 
     file_link(FILE_G0);
 

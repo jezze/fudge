@@ -17,10 +17,10 @@ static void sendresponse(struct socket *remote)
     unsigned int count = 0;
 
     if (!file_walk2(FILE_L0, "/data/html"))
-        channel_error("Could not find html root directory");
+        channel_panic();
 
     if (cstring_length(request) == 0)
-        channel_error("Incorrect request");
+        channel_panic();
 
     if (cstring_length(request) == 1 && request[0] == '/')
         cstring_writezero(request, 128, cstring_write(request, 128, "/index.html", 0));
@@ -87,10 +87,10 @@ static void seed(struct mtwist_state *state)
     struct ctrl_clocksettings settings;
 
     if (!file_walk2(FILE_L0, option_getstring("clock")))
-        channel_error("Could not find clock device");
+        channel_panic();
 
     if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
-        channel_error("Could not find clock device ctrl");
+        channel_panic();
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
@@ -101,13 +101,13 @@ static void setupnetwork(struct mtwist_state *state)
 {
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_error("Could not find ethernet device");
+        channel_panic();
 
     if (!file_walk(FILE_L1, FILE_L0, "addr"))
-        channel_error("Could not find ethernet device addr");
+        channel_panic();
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))
-        channel_error("Could not find ethernet device data");
+        channel_panic();
 
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));

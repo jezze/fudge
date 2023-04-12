@@ -382,7 +382,7 @@ static unsigned int handle(void *reply, struct p9p_header *p9p)
         return protocol_getattr(reply, p9p);
 
     default:
-        channel_error("Packet has unknown type\n");
+        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Packet has unknown type\n");
 
         return protocol_error(reply, p9p, "Packet has unknown type", -1);
 

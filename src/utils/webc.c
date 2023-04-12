@@ -46,8 +46,8 @@ static void dnsresolve(struct socket *socket, char *domain)
         while ((count = channel_readfrom(id, EVENT_QUERY, data)))
         {
 
-            char *key = cstring_tindex(data, count, 0);
-            char *value = cstring_tindex(data, count, 1);
+            char *key = buffer_tindex(data, count, '\0', 0);
+            char *value = buffer_tindex(data, count, '\0', 1);
 
             if (cstring_match(key, "data"))
                 socket_bind_ipv4s(socket, value);
@@ -59,7 +59,7 @@ static void dnsresolve(struct socket *socket, char *domain)
     else
     {
 
-        channel_error("Could not spawn process");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", "/bin/dns");
 
     }
 
@@ -71,10 +71,10 @@ static void seed(struct mtwist_state *state)
     struct ctrl_clocksettings settings;
 
     if (!file_walk2(FILE_L0, option_getstring("clock")))
-        channel_error("Could not find clock device");
+        channel_panic();
 
     if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
-        channel_error("Could not find clock device ctrl");
+        channel_panic();
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
@@ -85,13 +85,13 @@ static void setupnetwork(struct mtwist_state *state)
 {
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_error("Could not find ethernet device");
+        channel_panic();
 
     if (!file_walk(FILE_L1, FILE_L0, "addr"))
-        channel_error("Could not find ethernet device addr");
+        channel_panic();
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))
-        channel_error("Could not find ethernet device data");
+        channel_panic();
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(state), mtwist_rand(state), mtwist_rand(state));

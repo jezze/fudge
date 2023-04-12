@@ -40,7 +40,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_error("Logs not found");
+        channel_sendfmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Logs not found: %s and/or %s\n", option_getstring("klog"), option_getstring("ulog"));
 
     }
 

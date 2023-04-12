@@ -26,7 +26,7 @@ static void showcores(void)
     else
     {
 
-        channel_error("Cores not found.");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Cores not found: %s\n", "system:info/cores");
 
     }
 
@@ -53,7 +53,7 @@ static void showtasks(void)
     else
     {
 
-        channel_error("Tasks not found.");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Tasks not found: %s\n", "system:info/tasks");
 
     }
 
@@ -75,7 +75,7 @@ static void showmailboxes(void)
     else
     {
 
-        channel_error("Mailboxes not found.");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Mailboxes not found: %s\n", "system:info/mailboxes");
 
     }
 

@@ -299,28 +299,28 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_L0, option_getstring("keyboard")))
-        channel_error("keyboard");
+        channel_panic();
 
     if (!file_walk(FILE_G0, FILE_L0, "event"))
-        channel_error("keyboard event");
+        channel_panic();
 
     if (!file_walk2(FILE_L0, option_getstring("timer")))
-        channel_error("timer");
+        channel_panic();
 
     if (!file_walk(FILE_G1, FILE_L0, "event1"))
-        channel_error("timer event1");
+        channel_panic();
 
     if (!file_walk2(FILE_L0, option_getstring("video")))
-        channel_error("video");
+        channel_panic();
 
     if (!file_walk(FILE_G2, FILE_L0, "event"))
-        channel_error("video event");
+        channel_panic();
 
     if (!file_walk(FILE_G3, FILE_L0, "ctrl"))
-        channel_error("video ctrl");
+        channel_panic();
 
     if (!file_walk2(FILE_L0, "system:service/wm"))
-        channel_error("window manager service");
+        channel_panic();
 
     file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
@@ -376,10 +376,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, mdata))
-        channel_error("Could not find path");
-
-    file_duplicate(FILE_G5, FILE_L0);
+    if (file_walk2(FILE_L0, mdata))
+        file_duplicate(FILE_G5, FILE_L0);
+    else
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
 }
 

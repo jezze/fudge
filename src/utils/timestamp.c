@@ -8,10 +8,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int timestamp;
 
     if (!file_walk2(FILE_L0, option_getstring("clock")))
-        channel_error("Could not find clock device");
+        channel_panic();
 
     if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
-        channel_error("Could not find clock device ctrl");
+        channel_panic();
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
 

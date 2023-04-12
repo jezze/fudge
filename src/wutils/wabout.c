@@ -28,9 +28,15 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" title \"TEST\"\n"
+        "+ window id \"window\" title \"ABOUT\"\n"
         "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"8\" span \"1\"\n"
-        "    + image in \"base\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
+        "    + text in \"base\" wrap \"word\" content \"Thanks!\"\n"
+        "    + text in \"base\" wrap \"word\" content \"(more info will come soon)\"\n"
+        "    + text in \"base\" wrap \"word\" content \"Contributors in no particular order:\"\n"
+        "    + text in \"base\" wrap \"word\" content \"jfu (Jens Nyberg)\"\n"
+        "    + text in \"base\" wrap \"word\" content \"Max-Might\"\n"
+        "    + text in \"base\" wrap \"word\" content \"tomByrer (Tom Byrer)\"\n"
+        "    + text in \"base\" wrap \"word\" content \"LemonDMN2\"\n";
 
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 

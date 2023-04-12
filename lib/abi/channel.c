@@ -318,19 +318,11 @@ void channel_close(void)
 
 }
 
-void channel_error(char *description)
+void channel_panic(void)
 {
 
-    send(CHANNEL_DEFAULT, EVENT_ERROR, cstring_length(description), description);
     send(CHANNEL_DEFAULT, EVENT_CLOSE, 0, 0);
     call_despawn();
-
-}
-
-void channel_warning(char *description)
-{
-
-    send(CHANNEL_DEFAULT, EVENT_ERROR, cstring_length(description), description);
 
 }
 

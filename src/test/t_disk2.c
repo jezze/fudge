@@ -143,13 +143,13 @@ static void sendrequest(void)
 {
 
     if (!version(40, 1200, "9P2000.F"))
-        channel_error("Incorrect version");
+        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrcognized version\n");
 
     if (!attach(41, 0, 0))
-        channel_error("Could not attach");
+        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Attach failed\n");
 
     if (!walk(42, 0, 1, "build/data/help.txt"))
-        channel_error("Could not walk");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "File not found: %s\n", "build/data/help.txt");
 
     read(43, 1);
 

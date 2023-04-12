@@ -13,11 +13,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *key = cstring_tindex(mdata, msize, 0);
-    char *value = cstring_tindex(mdata, msize, 1);
+    char *key = buffer_tindex(mdata, msize, '\0', 0);
+    char *value = buffer_tindex(mdata, msize, '\0', 1);
 
     if (!option_set(key, value))
-        channel_warning("Unrecognized option");
+        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrecognized option\n");
 
 }
 

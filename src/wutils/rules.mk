@@ -1,4 +1,16 @@
 B:=\
+    $(DIR_SRC)/wutils/wabout \
+
+O:=\
+    $(DIR_SRC)/wutils/wabout.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/wutils/wcalc \
 
 O:=\
@@ -41,6 +53,18 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wutils/wshell.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/wutils/wsettings \
+
+O:=\
+    $(DIR_SRC)/wutils/wsettings.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

@@ -37,6 +37,13 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    else
+    {
+
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+
+    }
+
 }
 
 void init(void)

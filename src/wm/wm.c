@@ -49,7 +49,7 @@ static void setupvideo(void)
     buffer_clear(black, 768);
 
     if (!file_walk2(FILE_L0, option_getstring("video")))
-        channel_warning("Could not open video");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
 
     if (!file_walk(FILE_L1, FILE_L0, "colormap"))
         return;
@@ -567,25 +567,25 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_G0, option_getstring("wm")))
-        channel_warning("Could not open window manager service");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Service not found: %s\n", option_getstring("wm"));
 
     if (!file_walk2(FILE_L0, option_getstring("keyboard")))
-        channel_warning("Could not open keyboard");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Keyboard device not found: %s\n", option_getstring("keyboard"));
 
     if (!file_walk(FILE_G1, FILE_L0, "event"))
-        channel_warning("Could not open keyboard event");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Keyboard event listener not found: %s/event\n", option_getstring("keyboard"));
 
     if (!file_walk2(FILE_L0, option_getstring("mouse")))
-        channel_warning("Could not open mouse");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Mouse device not found: %s\n", option_getstring("mouse"));
 
     if (!file_walk(FILE_G2, FILE_L0, "event"))
-        channel_warning("Could not open mouse event");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Mouse event listener not found: %s/event\n", option_getstring("mouse"));
 
     if (!file_walk2(FILE_L0, option_getstring("video")))
-        channel_warning("Could not open video");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
 
     if (!file_walk(FILE_G3, FILE_L0, "event"))
-        channel_warning("Could not open video event");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video event listener not found: %s/event\n", option_getstring("video"));
 
     file_link(FILE_G0);
     file_link(FILE_G1);
@@ -884,6 +884,8 @@ static void setupwidgets(void)
         "        + choice in \"items\" label \"FILE MANAGER\" onclick \"run /bin/wfile\"\n"
         "        + choice in \"items\" label \"CALCULATOR\" onclick \"run /bin/wcalc\"\n"
         "        + choice in \"items\" label \"TEST\" onclick \"run /bin/wtest\"\n"
+        "        + choice in \"items\" label \"ABOUT\" onclick \"run /bin/wabout\"\n"
+        "        + choice in \"items\" label \"SETTINGS\" onclick \"run /bin/wsettings\"\n"
         "        + choice in \"items\" label \"REBOOT\" onclick \"run /bin/reboot\"\n"
         "  + image id \"mouse\" in \"root\" mimetype \"image/fudge-icon-mouse\"\n";
 

@@ -4,10 +4,11 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:reset"))
-        channel_error("Reset not found");
+    if (file_walk2(FILE_L0, "system:reset"))
+        file_writeall(FILE_L0, "1", 1);
+    else
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", "system:reset");
 
-    file_writeall(FILE_L0, "1", 1);
     channel_close();
 
 }

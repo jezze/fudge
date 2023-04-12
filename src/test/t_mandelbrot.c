@@ -216,10 +216,10 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, "system:service/wm"))
-        file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
-    else
-        channel_warning("Could not open window manager service");
+    if (!file_walk2(FILE_L0, "system:service/wm"))
+        channel_panic();
+
+    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -247,19 +247,19 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     struct ctrl_videosettings settings;
 
     if (!file_walk2(FILE_L0, option_getstring("mouse")))
-        channel_warning("Could not open mouse");
+        channel_panic();
 
     if (!file_walk(FILE_G0, FILE_L0, "event"))
-        channel_warning("Could not open mouse event");
+        channel_panic();
 
     if (!file_walk2(FILE_L0, option_getstring("video")))
-        channel_error("Could not find video device");
+        channel_panic();
 
     if (!file_walk(FILE_G1, FILE_L0, "ctrl"))
-        channel_error("Could not find video device ctrl");
+        channel_panic();
 
     if (!file_walk(FILE_G2, FILE_L0, "data"))
-        channel_error("Could not find video device data");
+        channel_panic();
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
 
@@ -292,9 +292,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        if (!file_walk(FILE_L1, FILE_L0, "colormap"))
-            channel_error("Could not find video device colormap");
-
+        file_walk(FILE_L1, FILE_L0, "colormap");
         file_writeall(FILE_L1, colormap, 768);
 
     }

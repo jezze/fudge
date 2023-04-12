@@ -70,12 +70,12 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
 {
 
     unsigned int id = file_spawn2(FILE_L0, FILE_G8, "/bin/slang");
-    unsigned int offset = 0;
 
     if (id)
     {
 
         char data[MESSAGE_SIZE];
+        unsigned int offset = 0;
         unsigned int count;
 
         channel_listen(id, EVENT_DATA);
@@ -87,16 +87,13 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         while ((count = channel_readfrom(id, EVENT_DATA, data)))
             offset += buffer_write(obuffer, ocount, data, count, offset);
 
-    }
-
-    else
-    {
-
-        channel_error("Could not spawn process");
+        return offset;
 
     }
 
-    return offset;
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", "/bin/slang");
+
+    return 0;
 
 }
 
@@ -344,7 +341,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     file_duplicate(FILE_G8, FILE_PW);
 
     if (!file_walk2(FILE_L0, "system:service/wm"))
-        channel_error("window manager service");
+        channel_panic();
 
     file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 

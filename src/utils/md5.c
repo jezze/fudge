@@ -32,14 +32,23 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
-    unsigned int count;
+    if (file_walk2(FILE_L0, mdata))
+    {
 
-    if (!file_walk2(FILE_L0, mdata))
-        channel_error("File not found");
+        char buffer[BUFFER_SIZE];
+        unsigned int count;
 
-    while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
-        md5_read(&sum, buffer, count);
+        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
+            md5_read(&sum, buffer, count);
+
+    }
+
+    else
+    {
+
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+
+    }
 
 }
 

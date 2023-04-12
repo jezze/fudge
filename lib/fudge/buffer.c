@@ -145,3 +145,31 @@ unsigned int buffer_write(void *out, unsigned int ocount, void *in, unsigned int
 
 }
 
+void *buffer_tindex(char *in, unsigned int count, char c, unsigned int index)
+{
+
+    if (index)
+    {
+
+        unsigned int n = 0;
+        unsigned int i;
+
+        for (i = 0; i < count; i++)
+        {
+
+            if (in[i] == c)
+            {
+
+                if (++n == index)
+                    return in + i + 1;
+
+            }
+
+        }
+
+    }
+
+    return in;
+
+}
+
