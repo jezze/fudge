@@ -172,6 +172,94 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_wmkeypress *wmkeypress = mdata;
+
+    switch (wmkeypress->scancode)
+    {
+
+    case 0x02:
+        updatevalue(1);
+
+        break;
+
+    case 0x03:
+        updatevalue(2);
+
+        break;
+
+    case 0x04:
+        updatevalue(3);
+
+        break;
+
+    case 0x05:
+        updatevalue(4);
+
+        break;
+
+    case 0x06:
+        updatevalue(5);
+
+        break;
+
+    case 0x07:
+        updatevalue(6);
+
+        break;
+
+    case 0x08:
+        updatevalue(7);
+
+        break;
+
+    case 0x09:
+        if (wmkeypress->keymod & KEYMOD_SHIFT)
+            updatestate(STATE_MUL);
+        else
+            updatevalue(8);
+
+        break;
+
+    case 0x0A:
+        updatevalue(9);
+
+        break;
+
+    case 0x0B:
+        updatevalue(0);
+
+        break;
+
+    case 0x0C:
+        updatestate(STATE_SUB);
+
+        break;
+
+    case 0x0D:
+        if (wmkeypress->keymod & KEYMOD_SHIFT)
+            updatestate(STATE_ADD);
+        else
+            updatestate(STATE_SUM);
+
+        break;
+
+    case 0x1C:
+        updatestate(STATE_SUM);
+
+        break;
+
+    case 0x35:
+        updatestate(STATE_DIV);
+
+        break;
+
+    }
+
+}
+
 void init(void)
 {
 
@@ -179,6 +267,7 @@ void init(void)
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
+    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
 
 }
 
