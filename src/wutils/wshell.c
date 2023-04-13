@@ -361,7 +361,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     char *data =
         "+ window id \"window\" title \"TERMINAL\"\n"
         "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" padding \"8\" span \"1\"\n"
-        "    + textbox id \"output\" in \"base\" overflow \"vscroll\" span \"1\"\n"
+        "    + textbox id \"output\" in \"base\" overflow \"vscroll\" mode \"readonly\" span \"1\"\n"
         "      + text id \"result\" in \"output\" wrap \"char\"\n"
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
         "      + text id \"input1\" in \"output\" wrap \"char\"\n"
@@ -375,10 +375,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_wmkeypress2 *wmkeypress = mdata;
-
-    if (!cstring_match(wmkeypress->pressed, "output"))
-        return;
+    struct event_wmkeypress *wmkeypress = mdata;
 
     if (job_count(&job))
     {

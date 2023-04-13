@@ -469,26 +469,6 @@ static void clickwidget(struct widget *widget)
 
 }
 
-static void keypresswidget(struct widget *widget, unsigned char scancode, unsigned int unicode, unsigned int length, unsigned int keymod)
-{
-
-    if (widget_isinteractive(widget))
-    {
-
-        struct event_wmkeypress2 wmkeypress;
-
-        wmkeypress.scancode = scancode;
-        wmkeypress.unicode = unicode;
-        wmkeypress.length = length;
-        wmkeypress.keymod = keymod;
-
-        cstring_writezero(wmkeypress.pressed, 16, cstring_write(wmkeypress.pressed, 16, strpool_getstring(widget->id), 0));
-        channel_sendbuffer(widget->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress2), &wmkeypress);
-
-    }
-
-}
-
 static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -547,8 +527,19 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        if (state.focusedwidget)
-            keypresswidget(state.focusedwidget, keypress->scancode, keycode->value[0], keycode->length, state.keymod);
+        if (state.focusedwindow)
+        {
+
+            struct event_wmkeypress wmkeypress;
+
+            wmkeypress.scancode = keypress->scancode;
+            wmkeypress.unicode = keycode->value[0];
+            wmkeypress.length = keycode->length;
+            wmkeypress.keymod = state.keymod;
+
+            channel_sendbuffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+
+        }
 
     }
 
