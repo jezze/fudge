@@ -493,9 +493,8 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onerror(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    print("Error: ", 7);
+    print("[ERROR] ", 8);
     print(mdata, msize);
-    print("\n", 1);
 
 }
 
