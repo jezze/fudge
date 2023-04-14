@@ -16,7 +16,7 @@ struct text_rowinfo
     unsigned int width;
     unsigned int height;
     unsigned int lineheight;
-    unsigned int newline;
+    unsigned int linebreak;
     unsigned int istart;
     unsigned int iend;
 

@@ -93,7 +93,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     rowinfo->length = 0;
     rowinfo->width = 0;
     rowinfo->height = 0;
-    rowinfo->newline = 0;
+    rowinfo->linebreak = 0;
     rowinfo->lineheight = font->lineheight;
 
     for (i = offset; i < length; i++)
@@ -113,7 +113,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
         case '\n':
             rowinfo->iend = i;
             rowinfo->length = rowinfo->iend - rowinfo->istart;
-            rowinfo->newline = 1;
+            rowinfo->linebreak = 1;
 
             return i + 1;
 
@@ -159,6 +159,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
                     rowinfo->height = sh;
                     rowinfo->iend = si;
                     rowinfo->length = rowinfo->iend - rowinfo->istart;
+                    rowinfo->linebreak = 1;
 
                     return si;
 
@@ -169,6 +170,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
                     rowinfo->iend = i;
                     rowinfo->length = rowinfo->iend - rowinfo->istart;
+                    rowinfo->linebreak = 1;
 
                     return i;
 
@@ -179,6 +181,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             case ATTR_WRAP_CHAR:
                 rowinfo->iend = i;
                 rowinfo->length = rowinfo->iend - rowinfo->istart;
+                rowinfo->linebreak = 1;
 
                 return i;
 
@@ -216,19 +219,19 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
-        textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width + firstrowx;
-        textinfo->lastrowy += (rowinfo.newline) ? rowinfo.lineheight : 0;
+        textinfo->lastrowx = (rowinfo.linebreak) ? 0 : rowinfo.width + firstrowx;
+        textinfo->lastrowy += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
         textinfo->width = util_max(textinfo->width, rowinfo.width + firstrowx);
-        textinfo->height += rowinfo.lineheight;
+        textinfo->height = textinfo->lastrowy + rowinfo.lineheight;
         textinfo->rows++;
 
         while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
         {
 
-            textinfo->lastrowx = (rowinfo.newline) ? 0 : rowinfo.width;
-            textinfo->lastrowy += rowinfo.lineheight;
+            textinfo->lastrowx = (rowinfo.linebreak) ? 0 : rowinfo.width;
+            textinfo->lastrowy += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
             textinfo->width = util_max(textinfo->width, rowinfo.width);
-            textinfo->height += rowinfo.lineheight;
+            textinfo->height = textinfo->lastrowy + rowinfo.lineheight;
             textinfo->rows++;
 
         }
