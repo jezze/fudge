@@ -316,13 +316,13 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
 {
 
     struct widget_select *select = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
+    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
     struct text_rowinfo rowinfo;
     struct util_size total;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
-    placewidget(widget, x, y, rowinfo.width + CONFIG_SELECT_EXTRA, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
-    cache_initrow(&select->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, CONFIG_SELECT_EXTRA, 0);
+    placewidget(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
+    cache_initrow(&select->cacherow, &rowinfo, font, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
     placeS(widget, x, widget->position.y + widget->size.h, widget->size.w, 0, widget->size.w * 2, INFINITY, 0, 0, 0, 1, &total);
 
     if (widget->state != WIDGET_STATE_FOCUS)

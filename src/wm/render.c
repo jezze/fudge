@@ -120,7 +120,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     struct widget_select *select = widget->data;
 
     blit_frame(display, widget->position.x, widget->position.y, widget->size.w, widget->size.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
-    blit_icondropdown(display, widget->position.x, widget->position.y, widget->size.h, widget->size.h, line, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
+    blit_iconarrowdown(display, widget->position.x + widget->size.w - CONFIG_SELECT_PADDING_WIDTH - widget->size.h / 2, widget->position.y, widget->size.h, widget->size.h, line, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
 
     if (util_intersects(line, widget->position.y + select->cacherow.ry, widget->position.y + select->cacherow.ry + select->cacherow.font->lineheight))
         blit_text(display, select->cacherow.font, ATTR_BLIT_NORMAL, strpool_getstring(select->label) + select->cacherow.istart, select->cacherow.length, widget->position.x + select->cacherow.rx, widget->position.y + select->cacherow.ry, line, x0, x2, cmap_get(widget->state, widget->type, 13, 0));
