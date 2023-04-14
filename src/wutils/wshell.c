@@ -3,13 +3,14 @@
 
 #define JOBSIZE                         32
 #define INPUTSIZE                       128
-#define TEXTSIZE                        2048
+#define RESULTSIZE                      2048
+#define CONTENTSIZE                     1200
 
 static char inputdata1[INPUTSIZE];
 static struct ring input1;
 static char inputdata2[INPUTSIZE];
 static struct ring input2;
-static char resultdata[TEXTSIZE];
+static char resultdata[RESULTSIZE];
 static struct ring result;
 static struct job_worker workers[JOBSIZE];
 static struct job job;
@@ -17,18 +18,18 @@ static struct job job;
 static void update(void)
 {
 
-    char buffer[800];
+    char buffer[CONTENTSIZE];
     unsigned int count;
 
-    count = ring_readcopy(&result, buffer, 800);
+    count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
     channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
-    count = ring_readcopy(&input1, buffer, 800);
+    count = ring_readcopy(&input1, buffer, CONTENTSIZE);
 
     channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input1 content \"%w\"\n", buffer, &count);
 
-    count = ring_readcopy(&input2, buffer, 800);
+    count = ring_readcopy(&input2, buffer, CONTENTSIZE);
 
     channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input2 content \"%w\"\n", buffer, &count);
 
@@ -38,6 +39,20 @@ static void print(void *buffer, unsigned int count)
 {
 
     ring_overwrite(&result, buffer, count);
+
+    if (ring_count(&result) >= CONTENTSIZE)
+    {
+
+        unsigned int nl;
+
+        ring_skip(&result, ring_count(&result) - CONTENTSIZE + 1);
+
+        nl = ring_find(&result, '\n');
+
+        if (nl)
+            ring_skip(&result, nl + 1);
+
+    }
 
 }
 
@@ -511,7 +526,7 @@ void init(void)
 
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
-    ring_init(&result, TEXTSIZE, resultdata);
+    ring_init(&result, RESULTSIZE, resultdata);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
