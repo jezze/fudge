@@ -118,13 +118,18 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             return i + 1;
 
         case ' ':
-            if (foundchar)
+            if (wrap == ATTR_WRAP_WORD)
             {
 
-                foundspace = 1;
-                si = i;
-                sw = rowinfo->width;
-                sh = rowinfo->height;
+                if (foundchar)
+                {
+
+                    foundspace = 1;
+                    si = i;
+                    sw = rowinfo->width;
+                    sh = rowinfo->height;
+
+                }
 
             }
 
@@ -137,14 +142,13 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
                 if (!foundchar)
                 {
 
+                    foundchar = 1;
                     rowinfo->istart = i;
                     rowinfo->iend = i;
 
                 }
 
             }
-
-            foundchar = 1;
 
             break;
 
