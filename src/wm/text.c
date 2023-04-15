@@ -118,10 +118,15 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             return i + 1;
 
         case ' ':
-            foundspace = 1;
-            si = i;
-            sw = rowinfo->width;
-            sh = rowinfo->height;
+            if (foundchar)
+            {
+
+                foundspace = 1;
+                si = i;
+                sw = rowinfo->width;
+                sh = rowinfo->height;
+
+            }
 
             break;
 
