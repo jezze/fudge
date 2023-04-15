@@ -8,20 +8,9 @@
 void cache_updatetext(struct cache_text *cachetext, struct text_font *font, unsigned int rownum, char *content, unsigned int length, unsigned int wrap, int w, int h)
 {
 
-    unsigned int offset = 0;
-    unsigned int frownum = 0;
-
-    if (rownum > cachetext->rownum)
-    {
-
-        offset = cachetext->icurrent;
-        frownum = cachetext->rownum;
-
-    }
-
     cachetext->exist = 1;
     cachetext->rownum = rownum;
-    cachetext->icurrent = text_getrowstart(font, content, length, frownum, rownum, wrap, w, cachetext->firstrowx, offset);
+    cachetext->icurrent = text_getrowstart(font, content, length, rownum, wrap, w, cachetext->firstrowx);
 
 }
 
