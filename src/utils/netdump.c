@@ -149,10 +149,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int count;
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_panic();
+        PANIC();
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))
-        channel_panic();
+        PANIC();
 
     file_link(FILE_G0);
 

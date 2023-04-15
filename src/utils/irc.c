@@ -83,10 +83,10 @@ static void seed(struct mtwist_state *state)
     struct ctrl_clocksettings settings;
 
     if (!file_walk2(FILE_L0, option_getstring("clock")))
-        channel_panic();
+        PANIC();
 
     if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
-        channel_panic();
+        PANIC();
 
     file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
@@ -97,13 +97,13 @@ static void setupnetwork(struct mtwist_state *state)
 {
 
     if (!file_walk2(FILE_L0, option_getstring("ethernet")))
-        channel_panic();
+        PANIC();
 
     if (!file_walk(FILE_L1, FILE_L0, "addr"))
-        channel_panic();
+        PANIC();
 
     if (!file_walk(FILE_G0, FILE_L0, "data"))
-        channel_panic();
+        PANIC();
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(state), mtwist_rand(state), mtwist_rand(state));

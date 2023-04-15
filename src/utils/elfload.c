@@ -227,13 +227,13 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_G0, "/kernel"))
-        channel_panic();
+        PANIC();
 
     if (!file_walk(FILE_G1, FILE_G0, "fudge"))
-        channel_panic();
+        PANIC();
 
     if (!file_walk2(FILE_G2, mdata))
-        channel_panic();
+        PANIC();
 
     if (resolve(FILE_G2))
         call_load(FILE_G2);

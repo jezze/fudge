@@ -355,7 +355,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     file_duplicate(FILE_G8, FILE_PW);
 
     if (!file_walk2(FILE_L0, "system:service/wm"))
-        channel_panic();
+        PANIC();
 
     file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 

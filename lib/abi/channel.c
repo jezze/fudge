@@ -318,11 +318,3 @@ void channel_close(void)
 
 }
 
-void channel_panic(void)
-{
-
-    send(CHANNEL_DEFAULT, EVENT_CLOSE, 0, 0);
-    call_despawn();
-
-}
-

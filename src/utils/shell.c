@@ -502,10 +502,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_G0, option_getstring("input")))
-        channel_panic();
+        PANIC();
 
     if (!file_walk2(FILE_G1, option_getstring("output")))
-        channel_panic();
+        PANIC();
 
     file_duplicate(FILE_G8, FILE_PW);
     printprompt();

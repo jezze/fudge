@@ -558,25 +558,25 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!file_walk2(FILE_G0, option_getstring("wm")))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Service not found: %s\n", option_getstring("wm"));
+        PANIC();
 
     if (!file_walk2(FILE_L0, option_getstring("keyboard")))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Keyboard device not found: %s\n", option_getstring("keyboard"));
+        PANIC();
 
     if (!file_walk(FILE_G1, FILE_L0, "event"))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Keyboard event listener not found: %s/event\n", option_getstring("keyboard"));
+        PANIC();
 
     if (!file_walk2(FILE_L0, option_getstring("mouse")))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Mouse device not found: %s\n", option_getstring("mouse"));
+        PANIC();
 
     if (!file_walk(FILE_G2, FILE_L0, "event"))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Mouse event listener not found: %s/event\n", option_getstring("mouse"));
+        PANIC();
 
     if (!file_walk2(FILE_L0, option_getstring("video")))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
+        PANIC();
 
     if (!file_walk(FILE_G3, FILE_L0, "event"))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video event listener not found: %s/event\n", option_getstring("video"));
+        PANIC();
 
     file_link(FILE_G0);
     file_link(FILE_G1);

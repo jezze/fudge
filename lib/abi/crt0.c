@@ -54,6 +54,15 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+void panic(char *file, unsigned int line)
+{
+
+    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
+    channel_close();
+    call_despawn();
+
+}
+
 void main(void)
 {
 
