@@ -79,7 +79,6 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
     unsigned int foundspace = 0;
     unsigned int foundchar = 0;
-    unsigned int foundmaxwidth = 0;
     unsigned int si = 0;
     unsigned int sw = 0;
     unsigned int sh = 0;
@@ -104,21 +103,21 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
-        if (rowinfo->width + metricsdata.width > maxw)
-            foundmaxwidth = 1;
-
-        switch (text[i])
+        if (text[i] == '\n')
         {
 
-        case '\n':
             rowinfo->iend = i;
             rowinfo->length = rowinfo->iend - rowinfo->istart;
             rowinfo->linebreak = 1;
 
             return i + 1;
 
-        case ' ':
-            if (wrap == ATTR_WRAP_WORD)
+        }
+
+        if (wrap == ATTR_WRAP_WORD)
+        {
+
+            if (text[i] == ' ')
             {
 
                 if (foundchar)
@@ -133,10 +132,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
             }
 
-            break;
-
-        default:
-            if (wrap == ATTR_WRAP_WORD)
+            else
             {
 
                 if (!foundchar)
@@ -150,11 +146,9 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
             }
 
-            break;
-
         }
 
-        if (foundmaxwidth)
+        if (rowinfo->width + metricsdata.width > maxw)
         {
 
             switch (wrap)
