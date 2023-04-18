@@ -1,16 +1,18 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static unsigned int paths;
+
+static void list(unsigned int descriptor)
 {
 
     struct record records[8];
     unsigned int nrecords;
 
-    file_duplicate(FILE_L0, FILE_G0);
+    file_duplicate(FILE_L0, descriptor);
     channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
 
-    while ((nrecords = file_list(FILE_G0, FILE_L0, 8, records)))
+    while ((nrecords = file_list(descriptor, FILE_L0, 8, records)))
     {
 
         unsigned int i;
@@ -48,13 +50,26 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    if (!paths)
+        list(FILE_PW);
+
+    channel_close();
+
+}
+
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, mdata))
-        file_duplicate(FILE_G0, FILE_L0);
+    if (file_walk2(FILE_G0, mdata))
+        list(FILE_G0);
     else
         channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+
+     paths++;
 
 }
 
