@@ -46,10 +46,7 @@ static void list(unsigned int descriptor)
 
     }
 
-    channel_close();
-
 }
-
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
