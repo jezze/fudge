@@ -268,6 +268,16 @@ static unsigned int respondtcp(unsigned int descriptor, struct socket *local, st
 
             remote->info.tcp.localseq = net_load32(header->ack);
 
+            /* this happens, so should this be done in a smarter way? */
+            if (psize)
+            {
+
+                remote->info.tcp.remoteseq = net_load32(header->seq) + psize;
+
+                send(descriptor, data, buildtcp(local, remote, router, data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
+
+            }
+
             return psize;
 
         }
