@@ -42,13 +42,14 @@ static unsigned int buildarp(struct socket *local, struct socket *remote, struct
     unsigned char *data = output;
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_ARP, local->haddress, router->haddress);
     struct arp_header *aheader = arp_putheader(data + ethernet_hlen(eheader), 1, ETHERNET_ADDRSIZE, ETHERNET_TYPE_IPV4, IPV4_ADDRSIZE, operation);
+    unsigned int length = ethernet_hlen(eheader) + arp_hlen(aheader);
 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader), sha, ETHERNET_ADDRSIZE);
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE, sip, IPV4_ADDRSIZE);
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE, tha, ETHERNET_ADDRSIZE);
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE, tip, IPV4_ADDRSIZE);
+    length += buffer_write(data, SOCKET_MTUSIZE, sha, ETHERNET_ADDRSIZE, length);
+    length += buffer_write(data, SOCKET_MTUSIZE, sip, IPV4_ADDRSIZE, length);
+    length += buffer_write(data, SOCKET_MTUSIZE, tha, ETHERNET_ADDRSIZE, length);
+    length += buffer_write(data, SOCKET_MTUSIZE, tip, IPV4_ADDRSIZE, length);
 
-    return ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE;
+    return length;
 
 }
 
@@ -59,15 +60,15 @@ static unsigned int buildicmp(struct socket *local, struct socket *remote, struc
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
     struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_ICMP, sizeof (struct icmp_header) + count);
     struct icmp_header *icmpheader = icmp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), type, code);
+    unsigned int length = ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader);
     unsigned short checksum;
 
-    buffer_write(data, SOCKET_MTUSIZE, buffer, count, ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader));
-
+    length += buffer_write(data, SOCKET_MTUSIZE, buffer, count, length);
     checksum = icmp_calculatechecksum(icmpheader, icmp_hlen(icmpheader) + count);
 
     buffer_copy(icmpheader->checksum, &checksum, 2);
 
-    return ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader) + count;
+    return length;
 
 }
 
@@ -78,15 +79,15 @@ static unsigned int buildtcp(struct socket *local, struct socket *remote, struct
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
     struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_TCP, sizeof (struct tcp_header) + count);
     struct tcp_header *theader = tcp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local->info.tcp.port, remote->info.tcp.port, flags, seq, ack, window);
+    unsigned int length = ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader);
     unsigned short checksum;
 
-    buffer_write(data, SOCKET_MTUSIZE, buffer, count, ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
-
+    length += buffer_write(data, SOCKET_MTUSIZE, buffer, count, length);
     checksum = tcp_checksum(theader, local->paddress, remote->paddress, tcp_hlen(theader) + count);
 
     buffer_copy(theader->checksum, &checksum, 2);
 
-    return ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader) + count;
+    return length;
 
 }
 
@@ -97,15 +98,15 @@ static unsigned int buildudp(struct socket *local, struct socket *remote, struct
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
     struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_UDP, sizeof (struct udp_header) + count);
     struct udp_header *uheader = udp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local->info.udp.port, remote->info.udp.port, count);
+    unsigned int length = ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader);
     unsigned short checksum;
 
-    buffer_write(data, SOCKET_MTUSIZE, buffer, count, ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
-
+    length += buffer_write(data, SOCKET_MTUSIZE, buffer, count, length);
     checksum = udp_checksum(uheader, local->paddress, remote->paddress, udp_hlen(uheader) + count);
 
     buffer_copy(uheader->checksum, &checksum, 2);
 
-    return ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader) + count;
+    return length;
 
 }
 
