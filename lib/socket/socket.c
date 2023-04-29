@@ -222,48 +222,11 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
         break;
 
     case TCP_STATE_ESTABLISHED:
-        if (header->flags[1] == (TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
-        {
-
-            remote->info.tcp.localseq = net_load32(header->ack);
-            remote->info.tcp.remoteseq = net_load32(header->seq) + psize;
-
-            send(descriptor, data, buildtcp(local, remote, router, data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
-
-            return psize;
-
-        }
-
-        else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
-        {
-
-            remote->info.tcp.state = TCP_STATE_CLOSED;
-            remote->info.tcp.localseq = net_load32(header->ack);
-            remote->info.tcp.remoteseq = net_load32(header->seq) + psize + 1;
-
-            send(descriptor, data, buildtcp(local, remote, router, data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
-
-            return psize;
-
-        }
-
-        else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_ACK))
-        {
-
-            remote->info.tcp.state = TCP_STATE_CLOSED;
-            remote->info.tcp.localseq = net_load32(header->ack);
-            remote->info.tcp.remoteseq = net_load32(header->seq) + 1;
-
-            send(descriptor, data, buildtcp(local, remote, router, data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
-
-        }
-
-        else if (header->flags[1] == TCP_FLAGS1_ACK)
+        if (header->flags[1] == (TCP_FLAGS1_ACK) || header->flags[1] == (TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
         {
 
             remote->info.tcp.localseq = net_load32(header->ack);
 
-            /* this happens, so should this be done in a smarter way? */
             if (psize)
             {
 
@@ -272,6 +235,19 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
                 send(descriptor, data, buildtcp(local, remote, router, data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
             }
+
+            return psize;
+
+        }
+
+        else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_ACK) || header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
+        {
+
+            remote->info.tcp.state = TCP_STATE_CLOSED;
+            remote->info.tcp.localseq = net_load32(header->ack);
+            remote->info.tcp.remoteseq = net_load32(header->seq) + psize + 1;
+
+            send(descriptor, data, buildtcp(local, remote, router, data, TCP_FLAGS1_ACK, remote->info.tcp.localseq, remote->info.tcp.remoteseq, BUFFER_SIZE, 0, 0));
 
             return psize;
 
