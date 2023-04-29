@@ -43,10 +43,10 @@ static unsigned int buildarp(struct socket *local, struct socket *remote, struct
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_ARP, local->haddress, router->haddress);
     struct arp_header *aheader = arp_putheader(data + ethernet_hlen(eheader), 1, ETHERNET_ADDRSIZE, ETHERNET_TYPE_IPV4, IPV4_ADDRSIZE, operation);
 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader), sha, ETHERNET_ADDRSIZE); 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE, sip, IPV4_ADDRSIZE); 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE, tha, ETHERNET_ADDRSIZE); 
-    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE, tip, IPV4_ADDRSIZE); 
+    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader), sha, ETHERNET_ADDRSIZE);
+    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE, sip, IPV4_ADDRSIZE);
+    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE, tha, ETHERNET_ADDRSIZE);
+    buffer_copy(data + ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE, tip, IPV4_ADDRSIZE);
 
     return ethernet_hlen(eheader) + arp_hlen(aheader) + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE + ETHERNET_ADDRSIZE + IPV4_ADDRSIZE;
 
@@ -56,14 +56,12 @@ static unsigned int buildicmp(struct socket *local, struct socket *remote, struc
 {
 
     unsigned char *data = output;
-    unsigned int length = sizeof (struct icmp_header) + count;
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
-    struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_ICMP, length);
+    struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_ICMP, sizeof (struct icmp_header) + count);
     struct icmp_header *icmpheader = icmp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), type, code);
-    void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader));
     unsigned short checksum;
 
-    buffer_copy(pdata, buffer, count); 
+    buffer_write(data, SOCKET_MTUSIZE, buffer, count, ethernet_hlen(eheader) + ipv4_hlen(iheader) + icmp_hlen(icmpheader));
 
     checksum = icmp_calculatechecksum(icmpheader, icmp_hlen(icmpheader) + count);
 
@@ -77,14 +75,12 @@ static unsigned int buildtcp(struct socket *local, struct socket *remote, struct
 {
 
     unsigned char *data = output;
-    unsigned int length = sizeof (struct tcp_header) + count;
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
-    struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_TCP, length);
+    struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_TCP, sizeof (struct tcp_header) + count);
     struct tcp_header *theader = tcp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local->info.tcp.port, remote->info.tcp.port, flags, seq, ack, window);
-    void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
     unsigned short checksum;
 
-    buffer_copy(pdata, buffer, count); 
+    buffer_write(data, SOCKET_MTUSIZE, buffer, count, ethernet_hlen(eheader) + ipv4_hlen(iheader) + tcp_hlen(theader));
 
     checksum = tcp_checksum(theader, local->paddress, remote->paddress, tcp_hlen(theader) + count);
 
@@ -98,14 +94,12 @@ static unsigned int buildudp(struct socket *local, struct socket *remote, struct
 {
 
     unsigned char *data = output;
-    unsigned int length = sizeof (struct udp_header) + count;
     struct ethernet_header *eheader = ethernet_putheader(data, ETHERNET_TYPE_IPV4, local->haddress, router->haddress);
-    struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_UDP, length);
+    struct ipv4_header *iheader = ipv4_putheader(data + ethernet_hlen(eheader), local->paddress, remote->paddress, IPV4_PROTOCOL_UDP, sizeof (struct udp_header) + count);
     struct udp_header *uheader = udp_putheader(data + ethernet_hlen(eheader) + ipv4_hlen(iheader), local->info.udp.port, remote->info.udp.port, count);
-    void *pdata = (data + ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
     unsigned short checksum;
 
-    buffer_copy(pdata, buffer, count); 
+    buffer_write(data, SOCKET_MTUSIZE, buffer, count, ethernet_hlen(eheader) + ipv4_hlen(iheader) + udp_hlen(uheader));
 
     checksum = udp_checksum(uheader, local->paddress, remote->paddress, udp_hlen(uheader) + count);
 
@@ -796,7 +790,7 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
     unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
     buffer_copy(&multicast, remote, sizeof (struct socket));
-    buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE); 
+    buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE);
     send(descriptor, data, buildarp(local, remote, &multicast, data, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
     while (channel_poll(EVENT_DATA, &message, data))
@@ -855,7 +849,7 @@ void socket_bind_tcps(struct socket *socket, char *port, unsigned int localseq, 
 
     net_save16(p, cstring_readvalue(port, cstring_length(port), 10));
     socket_bind_tcp(socket, p, localseq, remoteseq);
- 
+
 }
 
 void socket_bind_tcpv(struct socket *socket, unsigned short port, unsigned int localseq, unsigned int remoteseq)
@@ -865,7 +859,7 @@ void socket_bind_tcpv(struct socket *socket, unsigned short port, unsigned int l
 
     net_save16(p, port);
     socket_bind_tcp(socket, p, localseq, remoteseq);
- 
+
 }
 
 void socket_bind_udp(struct socket *socket, unsigned char port[UDP_PORTSIZE])
@@ -882,7 +876,7 @@ void socket_bind_udps(struct socket *socket, char *port)
 
     net_save16(p, cstring_readvalue(port, cstring_length(port), 10));
     socket_bind_udp(socket, p);
- 
+
 }
 
 void socket_bind_udpv(struct socket *socket, unsigned short port)
@@ -892,7 +886,7 @@ void socket_bind_udpv(struct socket *socket, unsigned short port)
 
     net_save16(p, port);
     socket_bind_udp(socket, p);
- 
+
 }
 
 void socket_init(struct socket *socket)
