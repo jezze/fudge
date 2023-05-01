@@ -219,29 +219,33 @@ static unsigned int videointerface_readcolormap(void *buffer, unsigned int count
 
 }
 
-static unsigned int videointerface_writecolormap(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_notifycolormap(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    char *c = buffer;
-    unsigned int i;
-
-    if (count > VGA_COLORMAP_LIMIT)
-        count = VGA_COLORMAP_LIMIT;
-
-    if (offset > count)
-        return 0;
-
-    for (i = offset; i < count * 3; i += 3)
+    if (event == EVENT_DATA)
     {
 
-        io_outb(VGA_REG_DACWINDEX, i / 3);
-        io_outb(VGA_REG_DACDATA, c[i + 0]);
-        io_outb(VGA_REG_DACDATA, c[i + 1]);
-        io_outb(VGA_REG_DACDATA, c[i + 2]);
+        char *c = data;
+        unsigned int i;
+
+        if (count > VGA_COLORMAP_LIMIT)
+            count = VGA_COLORMAP_LIMIT;
+
+        for (i = 0; i < count * 3; i += 3)
+        {
+
+            io_outb(VGA_REG_DACWINDEX, i / 3);
+            io_outb(VGA_REG_DACDATA, c[i + 0]);
+            io_outb(VGA_REG_DACDATA, c[i + 1]);
+            io_outb(VGA_REG_DACDATA, c[i + 2]);
+
+        }
+
+        return i;
 
     }
 
-    return i - offset;
+    return 0;
 
 }
 
@@ -263,8 +267,8 @@ static void driver_init(unsigned int id)
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
+    videointerface.colormap.operations.notify = videointerface_notifycolormap;
     videointerface.colormap.operations.read = videointerface_readcolormap;
-    videointerface.colormap.operations.write = videointerface_writecolormap;
 
 }
 

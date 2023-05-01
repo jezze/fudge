@@ -336,7 +336,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int reset_write(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int reset_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     setcommand(REG_COMMAND_CTRLRESET);
@@ -351,7 +351,7 @@ void module_init(void)
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
     system_initnode(&reset, SYSTEM_NODETYPE_NORMAL, "reset");
 
-    reset.operations.write = reset_write;
+    reset.operations.notify = reset_notify;
 
 }
 

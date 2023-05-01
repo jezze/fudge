@@ -293,7 +293,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         }
 
         file_walk(FILE_L1, FILE_L0, "colormap");
-        file_writeall(FILE_L1, colormap, 768);
+        file_notify(FILE_L1, EVENT_DATA, 768, colormap);
 
     }
 
