@@ -41,18 +41,7 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct ctrl_consolesettings settings;
-
-    settings.scroll = 1;
-
-    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
-
-}
-
-static unsigned int consoleinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int send(void *buffer, unsigned int count)
 {
 
     unsigned int total = videointerface.width * videointerface.height;
@@ -106,25 +95,17 @@ static unsigned int consoleinterface_writedata(void *buffer, unsigned int count,
 
 }
 
-static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int consoleinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct ctrl_videosettings settings;
-
-    settings.width = videointerface.width;
-    settings.height = videointerface.height;
-    settings.bpp = videointerface.bpp;
-
-    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
+    return (event == EVENT_DATA) ? send(data, count) : 0;
 
 }
 
-static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
+static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
-    struct ctrl_videosettings *settings = buffer;
-
-    if (settings->width == 80)
+    if (width == 80)
     {
 
         if (videointerface.width == 320)
@@ -153,6 +134,46 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
     }
 
     video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
+
+}
+
+static unsigned int videointerface_notifyctrl(unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    if (event == EVENT_CONFIG)
+    {
+
+        struct ctrl_videosettings *settings = data;
+
+        setmode(settings->width, settings->height, settings->bpp);
+
+        return count;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct ctrl_videosettings settings;
+
+    settings.width = videointerface.width;
+    settings.height = videointerface.height;
+    settings.bpp = videointerface.bpp;
+
+    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
+
+}
+
+static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct ctrl_videosettings *settings = buffer;
+
+    setmode(settings->width, settings->height, settings->bpp);
 
     return count;
 
@@ -236,8 +257,8 @@ static void driver_init(unsigned int id)
 
     clear(0);
 
-    consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
-    consoleinterface.data.operations.write = consoleinterface_writedata;
+    consoleinterface.data.operations.notify = consoleinterface_notifydata;
+    videointerface.ctrl.operations.notify = videointerface_notifyctrl;
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;

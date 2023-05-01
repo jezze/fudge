@@ -14,7 +14,7 @@ static unsigned int escaped;
 static void print(void *buffer, unsigned int count)
 {
 
-    file_writeall(FILE_G1, buffer, count);
+    file_notify(FILE_G1, EVENT_DATA, count, buffer);
 
 }
 

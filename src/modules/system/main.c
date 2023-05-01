@@ -278,6 +278,10 @@ static unsigned int service_notify(unsigned int id, unsigned int source, unsigne
     struct list_item *current;
 
     message_init(&message, event, count);
+
+    if (node->operations.notify)
+        node->operations.notify(source, event, count, data);
+
     spinlock_acquire(&node->links.spinlock);
 
     for (current = node->links.head; current; current = current->next)
@@ -368,6 +372,7 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->operations.destroy = 0;
     node->operations.read = 0;
     node->operations.write = 0;
+    node->operations.notify = 0;
 
 }
 

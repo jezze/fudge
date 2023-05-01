@@ -125,18 +125,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int consoleinterface_readctrl(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct ctrl_consolesettings settings;
-
-    settings.scroll = 1;
-
-    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_consolesettings), offset);
-
-}
-
-static unsigned int consoleinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int send(void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -156,13 +145,19 @@ static unsigned int consoleinterface_writedata(void *buffer, unsigned int count,
 
 }
 
+static unsigned int consoleinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    return (event == EVENT_DATA) ? send(data, count) : 0;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id);
 
-    consoleinterface.ctrl.operations.read = consoleinterface_readctrl;
-    consoleinterface.data.operations.write = consoleinterface_writedata;
+    consoleinterface.data.operations.notify = consoleinterface_notifydata;
 
 }
 

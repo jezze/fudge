@@ -29,13 +29,12 @@ struct mbr
 static void request_send(unsigned int sector, unsigned int count)
 {
 
-    struct {struct message message; struct event_blockrequest blockrequest;} message;
+    struct event_blockrequest blockrequest;
 
-    message.blockrequest.sector = sector;
-    message.blockrequest.count = count;
+    blockrequest.sector = sector;
+    blockrequest.count = count;
 
-    message_init(&message.message, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
-    file_writeall(FILE_G5, &message, message.message.length);
+    file_notify(FILE_G5, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 

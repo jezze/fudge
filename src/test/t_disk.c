@@ -48,13 +48,12 @@ static void request_init(struct state *state, unsigned int offset, unsigned int 
 static void request_send(struct state *state)
 {
 
-    struct {struct message message; struct event_blockrequest blockrequest;} message;
+    struct event_blockrequest blockrequest;
 
-    message.blockrequest.sector = state->blocksector;
-    message.blockrequest.count = state->blockcount;
+    blockrequest.sector = state->blocksector;
+    blockrequest.count = state->blockcount;
 
-    message_init(&message.message, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest));
-    file_writeall(FILE_G5, &message, message.message.length);
+    file_notify(FILE_G5, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 

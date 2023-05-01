@@ -23,6 +23,24 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int blockinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    if (event == EVENT_BLOCKREQUEST)
+    {
+
+        struct event_blockrequest *blockrequest = data;
+
+        ide_rpio28(blockinterface.id, 0, blockrequest->count, blockrequest->sector);
+
+        return count;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int blockinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -39,6 +57,7 @@ static void driver_init(unsigned int id)
 
     block_initinterface(&blockinterface, id);
 
+    blockinterface.data.operations.notify = blockinterface_notifydata;
     blockinterface.data.operations.write = blockinterface_writedata;
 
 }

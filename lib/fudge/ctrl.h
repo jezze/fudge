@@ -11,13 +11,6 @@ struct ctrl_clocksettings
 
 };
 
-struct ctrl_consolesettings
-{
-
-    unsigned char scroll;
-
-};
-
 struct ctrl_videosettings
 {
 

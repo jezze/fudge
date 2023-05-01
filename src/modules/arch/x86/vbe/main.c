@@ -101,7 +101,7 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static void run(unsigned int w, unsigned int h, unsigned int bpp)
+static void setmode(unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     unsigned short modenum;
@@ -139,6 +139,24 @@ static void run(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
+static unsigned int videointerface_notifyctrl(unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    if (event == EVENT_CONFIG)
+    {
+
+        struct ctrl_videosettings *settings = data;
+
+        setmode(settings->width, settings->height, settings->bpp * 8);
+
+        return count;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -157,7 +175,7 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 
     struct ctrl_videosettings *settings = buffer;
 
-    run(settings->width, settings->height, settings->bpp * 8);
+    setmode(settings->width, settings->height, settings->bpp * 8);
 
     return count;
 
@@ -199,6 +217,7 @@ static void driver_init(unsigned int id)
     videointerface.width = 80;
     videointerface.height = 25;
     videointerface.bpp = 2;
+    videointerface.ctrl.operations.notify = videointerface_notifyctrl;
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;

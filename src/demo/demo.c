@@ -175,7 +175,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     file_link(FILE_G0);
     file_link(FILE_G1);
     file_link(FILE_G2);
-    file_writeall(FILE_G3, &settings, sizeof (struct ctrl_videosettings));
+    file_notify(FILE_G3, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
     run();
     file_unlink(FILE_G2);
     file_unlink(FILE_G1);

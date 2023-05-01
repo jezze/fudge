@@ -58,7 +58,7 @@ static void setupvideo(void)
         return;
 
     file_writeall(FILE_L1, black, 768);
-    file_writeall(FILE_L2, &settings, sizeof (struct ctrl_videosettings));
+    file_notify(FILE_L2, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
 
 }
 

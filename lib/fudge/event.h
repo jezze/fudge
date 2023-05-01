@@ -6,9 +6,10 @@
 #define EVENT_PATH                      0x06
 #define EVENT_DATA                      0x07
 #define EVENT_ERROR                     0x08
-#define EVENT_QUERY                     0x09
-#define EVENT_STATUS                    0x0A
-#define EVENT_LOGINFO                   0x0B
+#define EVENT_CONFIG                    0x09
+#define EVENT_QUERY                     0x0A
+#define EVENT_STATUS                    0x0B
+#define EVENT_LOGINFO                   0x0C
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12
