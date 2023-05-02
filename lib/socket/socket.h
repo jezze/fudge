@@ -4,8 +4,8 @@ struct socket_tcp
 {
 
     unsigned int state;
-    unsigned int localseq;
-    unsigned int remoteseq;
+    unsigned int seq;
+    unsigned int ack;
     unsigned char port[TCP_PORTSIZE];
 
 };
@@ -40,9 +40,9 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
 void socket_resolvelocal(unsigned int descriptor, struct socket *socket);
 void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
 void socket_bind_ipv4s(struct socket *socket, char *address);
-void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int localseq, unsigned int remoteseq);
-void socket_bind_tcps(struct socket *socket, char *port, unsigned int localseq, unsigned int remoteseq);
-void socket_bind_tcpv(struct socket *socket, unsigned short port, unsigned int localseq, unsigned int remoteseq);
+void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq, unsigned int ack);
+void socket_bind_tcps(struct socket *socket, char *port, unsigned int seq, unsigned int ack);
+void socket_bind_tcpv(struct socket *socket, unsigned short port, unsigned int seq, unsigned int ack);
 void socket_bind_udp(struct socket *socket, unsigned char port[UDP_PORTSIZE]);
 void socket_bind_udps(struct socket *socket, char *port);
 void socket_bind_udpv(struct socket *socket, unsigned short port);
