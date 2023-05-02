@@ -119,9 +119,9 @@ static void setupnetwork(struct mtwist_state *state)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char buffer[BUFFER_SIZE];
-    unsigned int count;
     struct mtwist_state state;
+    struct message message;
+    char data[SOCKET_MTUSIZE];
 
     seed(&state);
     setupnetwork(&state);
@@ -129,11 +129,37 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
-    while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, BUFFER_SIZE)))
+    while (channel_poll(EVENT_DATA, &message, data))
     {
 
-        if (ring_write(&input, buffer, count))
-            handlehttppacket(&remotes[0]);
+        struct socket *remote;
+
+        remote = socket_accept_arp(&local, remotes, 64, message_datasize(&message), data);
+
+        if (remote)
+        {
+
+            socket_handle_arp(FILE_G0, &local, remote, message_datasize(&message), data);
+
+        }
+
+        remote = socket_accept_tcp(&local, remotes, 64, message_datasize(&message), data);
+
+        if (remote)
+        {
+
+            unsigned char buffer[BUFFER_SIZE];
+            unsigned int count = socket_handle_tcp(FILE_G0, &local, remote, &router, message_datasize(&message), data, BUFFER_SIZE, buffer);
+
+            if (count)
+            {
+
+                if (ring_write(&input, buffer, count))
+                    handlehttppacket(remote);
+
+            }
+
+        }
 
     }
 

@@ -492,7 +492,7 @@ unsigned int socket_send_udp(unsigned int descriptor, struct socket *local, stru
 
 }
 
-static struct socket *acceptarp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+struct socket *socket_accept_arp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -509,7 +509,7 @@ static struct socket *acceptarp(struct socket *local, struct socket *remotes, un
 
 }
 
-static struct socket *accepttcp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+struct socket *socket_accept_tcp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -579,7 +579,7 @@ static struct socket *accepttcp(struct socket *local, struct socket *remotes, un
 
 }
 
-static struct socket *acceptudp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
+struct socket *socket_accept_udp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -659,7 +659,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
         struct socket *remote;
 
-        remote = acceptarp(local, remotes, nremotes, message_datasize(&message), data);
+        remote = socket_accept_arp(local, remotes, nremotes, message_datasize(&message), data);
 
         if (remote)
         {
@@ -668,15 +668,15 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
         }
 
-        remote = accepttcp(local, remotes, nremotes, message_datasize(&message), data);
+        remote = socket_accept_tcp(local, remotes, nremotes, message_datasize(&message), data);
 
         if (remote)
         {
 
-            unsigned int payploadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
+            unsigned int payloadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
 
-            if (payploadcount)
-                return payploadcount;
+            if (payloadcount)
+                return payloadcount;
 
 /*
             if (remote->info.tcp.state == TCP_STATE_CLOSED)
@@ -688,15 +688,15 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 
         }
 
-        remote = acceptudp(local, remotes, nremotes, message_datasize(&message), data);
+        remote = socket_accept_udp(local, remotes, nremotes, message_datasize(&message), data);
 
         if (remote)
         {
 
-            unsigned int payploadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
+            unsigned int payloadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
 
-            if (payploadcount)
-                return payploadcount;
+            if (payloadcount)
+                return payloadcount;
 
         }
 
