@@ -8,6 +8,30 @@ static unsigned int numnodes;
 static char namebuffer[1024];
 static unsigned int nameoffset;
 
+static unsigned int notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    struct message message;
+    struct list_item *current;
+
+    message_init(&message, event, count);
+    spinlock_acquire(&links->spinlock);
+
+    for (current = links->head; current; current = current->next)
+    {
+
+        struct link *target = current->data;
+
+        kernel_place(source, target->source, &message, data);
+
+    }
+
+    spinlock_release(&links->spinlock);
+
+    return count;
+
+}
+
 static unsigned int service_create(void *name, unsigned int length)
 {
 
@@ -16,6 +40,8 @@ static unsigned int service_create(void *name, unsigned int length)
     numnodes++;
 
     system_initnode(node, SYSTEM_NODETYPE_NORMAL, namebuffer + nameoffset);
+
+    node->operations.notify = notify;
 
     nameoffset += buffer_write(namebuffer, 1024, name, length, nameoffset);
     nameoffset += cstring_writezero(namebuffer, 1024, nameoffset);

@@ -267,28 +267,8 @@ static unsigned int service_notify(unsigned int id, unsigned int source, unsigne
 {
 
     struct system_node *node = getnode(id);
-    struct message message;
-    struct list_item *current;
 
-    message_init(&message, event, count);
-
-    if (node->operations.notify)
-        node->operations.notify(source, event, count, data);
-
-    spinlock_acquire(&node->links.spinlock);
-
-    for (current = node->links.head; current; current = current->next)
-    {
-
-        struct link *target = current->data;
-
-        kernel_place(source, target->source, &message, data);
-
-    }
-
-    spinlock_release(&node->links.spinlock);
-
-    return count;
+    return (node->operations.notify) ? node->operations.notify(&node->links, source, event, count, data) : 0;
 
 }
 
