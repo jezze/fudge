@@ -29,7 +29,7 @@ static void sendresponse(struct socket *remote)
     {
 
         char file[BUFFER_SIZE];
-        unsigned int filesize = file_read(FILE_L1, file, BUFFER_SIZE);
+        unsigned int filesize = file_read(FILE_L1, file, BUFFER_SIZE, 0);
 
         count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
@@ -92,7 +92,7 @@ static void seed(struct mtwist_state *state)
     if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }

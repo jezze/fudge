@@ -13,15 +13,15 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned char magic;
 
         file_stat(FILE_L0, &record);
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-        file_seekreadall(FILE_L0, &magic, 1, record.size - 768 - 1);
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
+        file_readall(FILE_L0, &magic, 1, record.size - 768 - 1);
 
         if (magic == PCX_COLORMAP_MAGIC)
         {
 
             unsigned char colormap[768];
 
-            file_seekreadall(FILE_L0, colormap, 768, record.size - 768);
+            file_readall(FILE_L0, colormap, 768, record.size - 768);
             channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 768, colormap);
 
         }

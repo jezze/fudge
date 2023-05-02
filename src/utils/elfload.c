@@ -4,14 +4,14 @@
 static unsigned int readheader(unsigned int descriptor, struct elf_header *header)
 {
 
-    return file_seekreadall(descriptor, header, ELF_HEADER_SIZE, 0);
+    return file_readall(descriptor, header, ELF_HEADER_SIZE, 0);
 
 }
 
 static unsigned int readsectionheader(unsigned int descriptor, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
 {
 
-    return file_seekreadall(descriptor, sectionheader, header->shsize, header->shoffset + index * header->shsize);
+    return file_readall(descriptor, sectionheader, header->shsize, header->shoffset + index * header->shsize);
 
 }
 
@@ -25,7 +25,7 @@ static unsigned int findvalue(unsigned int descriptor, struct elf_header *header
 
         struct elf_symbol symbol;
 
-        if (!file_seekreadall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
+        if (!file_readall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
             return 0;
 
         if (strings[symbol.name + count] != '\0')
@@ -86,7 +86,7 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
         if (stringheader.size > BUFFER_SIZE * 4)
             return 0;
 
-        if (!file_seekreadall(descriptor, strings, stringheader.size, stringheader.offset))
+        if (!file_readall(descriptor, strings, stringheader.size, stringheader.offset))
             return 0;
 
         value = findvalue(descriptor, &header, &symbolheader, strings, count, symbolname);
@@ -113,13 +113,7 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
         address = findsymbol(FILE_L0, count, symbolname);
 
     if (!address)
-    {
-
-        file_seek(FILE_G1, 0);
-
         address = findsymbol(FILE_G1, count, symbolname);
-
-    }
 
     return address;
 
@@ -138,12 +132,12 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
         struct elf_relocation relocation;
         struct elf_symbol symbol;
 
-        if (!file_seekreadall(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
+        if (!file_readall(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
             return 0;
 
         index = relocation.info >> 8;
 
-        if (!file_seekreadall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
+        if (!file_readall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
             return 0;
 
         if (symbol.shindex)
@@ -156,12 +150,12 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
 
             unsigned int value;
 
-            if (!file_seekreadall(descriptor, &value, 4, offset + relocation.offset))
+            if (!file_readall(descriptor, &value, 4, offset + relocation.offset))
                 return 0;
 
             value += address;
 
-            if (!file_seekwriteall(descriptor, &value, 4, offset + relocation.offset))
+            if (!file_writeall(descriptor, &value, 4, offset + relocation.offset))
                 return 0;
 
         }
@@ -211,7 +205,7 @@ static unsigned int resolve(unsigned int descriptor)
         if (stringheader.size > BUFFER_SIZE)
             return 0;
 
-        if (!file_seekreadall(descriptor, strings, stringheader.size, stringheader.offset))
+        if (!file_readall(descriptor, strings, stringheader.size, stringheader.offset))
             return 0;
 
         if (!resolvesymbols(descriptor, &relocationheader, &symbolheader, strings, dataheader.offset))

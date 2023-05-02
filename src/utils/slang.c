@@ -352,13 +352,14 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
         char buffer[BUFFER_SIZE];
         unsigned int count;
+        unsigned int offset;
 
         ring_reset(&stringtable);
         tokenlist_reset(&infix);
         tokenlist_reset(&postfix);
         tokenlist_reset(&stack);
 
-        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
+        for (offset = 0; (count = file_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
         translate(&postfix, &infix, &stack);

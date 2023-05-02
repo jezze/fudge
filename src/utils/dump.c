@@ -80,8 +80,9 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
         char buffer[BUFFER_SIZE];
         unsigned int count;
+        unsigned int offset;
 
-        while ((count = file_read(FILE_L0, buffer, BUFFER_SIZE)))
+        for (offset = 0; (count = file_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
             print(source, count, buffer);
 
     }

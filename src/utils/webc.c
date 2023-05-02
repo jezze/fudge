@@ -36,7 +36,7 @@ static void dnsresolve(struct socket *socket, char *domain)
     {
 
         char data[MESSAGE_SIZE];
-        unsigned int count;
+        unsigned int count = 0;
 
         channel_listen(id, EVENT_QUERY);
         channel_listen(id, EVENT_CLOSE);
@@ -76,7 +76,7 @@ static void seed(struct mtwist_state *state)
     if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }

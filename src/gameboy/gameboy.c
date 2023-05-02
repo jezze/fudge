@@ -236,7 +236,7 @@ static void run(void)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    file_read(FILE_G5, rom, 0x80000);
+    file_read(FILE_G5, rom, 0x80000, 0);
 
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
 
@@ -257,7 +257,7 @@ static void run(void)
 
     }
 
-    file_read(FILE_G5, cart_ram, getsavesize(&gb));
+    file_read(FILE_G5, cart_ram, getsavesize(&gb), 0x80000);
     channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
     while (channel_pick(&message, data))

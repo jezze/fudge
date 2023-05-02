@@ -227,16 +227,16 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
         unsigned char magic;
 
         file_stat(FILE_L0, &record);
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
-        file_seekread(FILE_L0, pcxresource->data, 0x10000, 128);
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
+        file_read(FILE_L0, pcxresource->data, 0x10000, 128);
 
         pcxresource->width = header.xend - header.xstart + 1;
         pcxresource->height = header.yend - header.ystart + 1;
 
-        file_seekreadall(FILE_L0, &magic, 1, record.size - 768 - 1);
+        file_readall(FILE_L0, &magic, 1, record.size - 768 - 1);
 
         if (magic == PCX_COLORMAP_MAGIC)
-            file_readall(FILE_L0, pcxresource->colormap, 768);
+            file_readall(FILE_L0, pcxresource->colormap, 768, record.size - 768);
 
         pcxresource->cached = 1;
 
@@ -326,9 +326,9 @@ void pool_loadfont(unsigned int factor)
 
     }
 
-    file_read(FILE_L0, fontnormal, FONTDATA_SIZE);
+    file_read(FILE_L0, fontnormal, FONTDATA_SIZE, 0);
     pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
-    file_read(FILE_L1, fontbold, FONTDATA_SIZE);
+    file_read(FILE_L1, fontbold, FONTDATA_SIZE, 0);
     pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
 
 }

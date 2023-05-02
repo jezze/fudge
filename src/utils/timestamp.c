@@ -13,7 +13,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings));
+    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
 
     timestamp = time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds);
 

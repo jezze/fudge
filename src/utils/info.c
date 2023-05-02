@@ -17,8 +17,10 @@ static void showcores(void)
     {
 
         struct ctrl_core ctrl;
+        unsigned int count;
+        unsigned int offset;
 
-        while (file_read(FILE_L0, &ctrl, sizeof (struct ctrl_core)))
+        for (offset = 0; (count = file_read(FILE_L0, &ctrl, sizeof (struct ctrl_core), offset)); offset += count)
             channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "core\n  id %u\n", &ctrl.id);
 
     }
@@ -39,8 +41,10 @@ static void showtasks(void)
     {
 
         struct ctrl_task ctrl;
+        unsigned int count;
+        unsigned int offset;
 
-        while (file_read(FILE_L0, &ctrl, sizeof (struct ctrl_task)))
+        for (offset = 0; (count = file_read(FILE_L0, &ctrl, sizeof (struct ctrl_task), offset)); offset += count)
         {
 
             if (ctrl.state)
@@ -66,8 +70,10 @@ static void showmailboxes(void)
     {
 
         struct ctrl_mailbox ctrl;
+        unsigned int count;
+        unsigned int offset;
 
-        while (file_read(FILE_L0, &ctrl, sizeof (struct ctrl_mailbox)))
+        for (offset = 0; (count = file_read(FILE_L0, &ctrl, sizeof (struct ctrl_mailbox), offset)); offset += count)
             channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &ctrl.address);
 
     }

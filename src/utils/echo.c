@@ -16,8 +16,9 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
         char buffer[MESSAGE_SIZE];
         unsigned int count;
+        unsigned int offset;
 
-        while ((count = file_read(FILE_L0, buffer, MESSAGE_SIZE)))
+        for (offset = 0; (count = file_read(FILE_L0, buffer, MESSAGE_SIZE, offset)); offset += count)
             channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
     }

@@ -207,7 +207,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
         }
 
-        file_seekwriteall(FILE_G2, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
+        file_writeall(FILE_G2, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
 
     }
 
@@ -267,8 +267,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.height = option_getdecimal("height");
     settings.bpp = option_getdecimal("bpp");
 
-    file_seekwriteall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_seekreadall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_writeall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
+    file_readall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
 
     if (settings.bpp == 1)
     {

@@ -3,8 +3,6 @@ struct descriptor
 
     struct service *service;
     unsigned int id;
-    unsigned int offset;
-    unsigned int count;
 
 };
 

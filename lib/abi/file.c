@@ -30,13 +30,6 @@ unsigned int file_create(unsigned int descriptor, unsigned int pdescriptor, char
 
 }
 
-unsigned int file_seek(unsigned int descriptor, unsigned int offset)
-{
-
-    return call_seek(descriptor, offset);
-
-}
-
 unsigned int file_stat(unsigned int descriptor, struct record *record)
 {
 
@@ -51,77 +44,41 @@ unsigned int file_list(unsigned int descriptor, unsigned int cid, unsigned int c
 
 }
 
-unsigned int file_read(unsigned int descriptor, void *buffer, unsigned int count)
+unsigned int file_read(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return call_read(descriptor, buffer, count);
+    return call_read(descriptor, buffer, count, offset);
 
 }
 
-unsigned int file_readall(unsigned int descriptor, void *buffer, unsigned int count)
+unsigned int file_readall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
     unsigned int c;
 
-    for (c = 0; c < count; c += call_read(descriptor, b + c, count - c));
+    for (c = 0; c < count; c += call_read(descriptor, b + c, count - c, offset + c));
 
     return c;
 
 }
 
-unsigned int file_write(unsigned int descriptor, void *buffer, unsigned int count)
+unsigned int file_write(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return call_write(descriptor, buffer, count);
+    return call_write(descriptor, buffer, count, offset);
 
 }
 
-unsigned int file_writeall(unsigned int descriptor, void *buffer, unsigned int count)
+unsigned int file_writeall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
     unsigned int c;
 
-    for (c = 0; c < count; c += call_write(descriptor, b + c, count - c));
+    for (c = 0; c < count; c += call_write(descriptor, b + c, count - c, offset + c));
 
     return c;
-
-}
-
-unsigned int file_seekread(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    call_seek(descriptor, offset);
-
-    return call_read(descriptor, buffer, count);
-
-}
-
-unsigned int file_seekreadall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    call_seek(descriptor, offset);
-
-    return file_readall(descriptor, buffer, count);
-
-}
-
-unsigned int file_seekwrite(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    call_seek(descriptor, offset);
-
-    return call_write(descriptor, buffer, count);
-
-}
-
-unsigned int file_seekwriteall(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    call_seek(descriptor, offset);
-
-    return file_writeall(descriptor, buffer, count);
 
 }
 

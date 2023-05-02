@@ -26,7 +26,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned int height;
 
         file_stat(FILE_L0, &record);
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
 
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;
@@ -41,7 +41,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         if (header.palettemode)
         {
 
-            file_seekreadall(FILE_L0, &magic, 1, record.size - 768 - 1);
+            file_readall(FILE_L0, &magic, 1, record.size - 768 - 1);
             channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "Palette exist: %s\n", (magic == PCX_COLORMAP_MAGIC) ? "Yes" : "No");
 
         }

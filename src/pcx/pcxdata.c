@@ -16,7 +16,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned int h;
 
         file_stat(FILE_L0, &record);
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+        file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
 
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;
@@ -27,7 +27,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned char buffer[BUFFER_SIZE];
             unsigned char raw[BUFFER_SIZE];
 
-            file_seekread(FILE_L0, raw, BUFFER_SIZE, 128 + offset);
+            file_read(FILE_L0, raw, BUFFER_SIZE, 128 + offset);
 
             offset = pcx_readline(raw, width, buffer);
 

@@ -84,13 +84,6 @@ unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count
 
 }
 
-unsigned int call_seek(unsigned int descriptor, unsigned int offset)
-{
-
-    return 0;
-
-}
-
 unsigned int call_spawn(unsigned int pdescriptor, unsigned int wdescriptor)
 {
 

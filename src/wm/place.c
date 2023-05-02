@@ -250,7 +250,7 @@ static void placeimagepcx(struct widget *widget, int x, int y, int offx, unsigne
 
             struct pcx_header header;
 
-            file_readall(FILE_L0, &header, sizeof (struct pcx_header));
+            file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
             util_initsize(&image->cacheimage.size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
 
             image->cacheimage.loaded = 1;
