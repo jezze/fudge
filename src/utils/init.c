@@ -35,7 +35,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    unsigned int id = file_spawn(FILE_L0, "/bin/slang");
+    unsigned int id = file_spawn(FILE_L0, "initrd:/bin/slang");
 
     if (id)
     {

@@ -499,7 +499,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             if ((state.keymod & KEYMOD_SHIFT))
             {
 
-                unsigned int id = file_spawn(FILE_L0, "/bin/wshell");
+                unsigned int id = file_spawn(FILE_L0, option_getstring("wshell"));
 
                 if (id)
                     channel_send(id, EVENT_MAIN);
@@ -901,6 +901,7 @@ void init(void)
     option_add("keyboard", "system:keyboard");
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
+    option_add("wshell", "initrd:/bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);

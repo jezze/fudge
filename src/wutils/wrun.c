@@ -51,7 +51,7 @@ static void handlehttppacket(void)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int id = file_spawn(FILE_L0, "/bin/dns");
+    unsigned int id = file_spawn(FILE_L0, option_getstring("dns"));
 
     if (id)
     {
@@ -80,7 +80,7 @@ static void dnsresolve(struct socket *socket, char *domain)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", "/bin/dns");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("dns"));
 
     }
 
@@ -209,6 +209,7 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
+    option_add("dns", "initrd:/bin/dns");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMINIT, onwminit);

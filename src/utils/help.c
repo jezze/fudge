@@ -11,7 +11,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = file_spawn(FILE_L0, "/bin/echo");
+    unsigned int id = file_spawn(FILE_L0, option_getstring("echo"));
 
     if (id)
     {
@@ -28,7 +28,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", "/bin/echo");
+        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("echo"));
 
     }
 
@@ -37,6 +37,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("echo", "initrd:/bin/echo");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 

@@ -28,7 +28,7 @@ static void printprompt(void)
 static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, unsigned int icount)
 {
 
-    unsigned int id = file_spawn2(FILE_L0, FILE_G8, "/bin/slang");
+    unsigned int id = file_spawn2(FILE_L0, FILE_G8, option_getstring("slang"));
 
     if (id)
     {
@@ -50,7 +50,7 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
 
     }
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", "/bin/slang");
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("slang"));
 
     return 0;
 
@@ -523,6 +523,7 @@ void init(void)
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if:0/event");
     option_add("output", "system:console/if:0/data");
+    option_add("slang", "initrd:/bin/slang");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

@@ -84,7 +84,7 @@ static void moveright(unsigned int steps)
 static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, unsigned int icount)
 {
 
-    unsigned int id = file_spawn2(FILE_L0, FILE_G8, "/bin/slang");
+    unsigned int id = file_spawn2(FILE_L0, FILE_G8, option_getstring("slang"));
 
     if (id)
     {
@@ -106,7 +106,7 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
 
     }
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", "/bin/slang");
+    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("slang"));
 
     return 0;
 
@@ -526,6 +526,7 @@ void init(void)
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
+    option_add("slang", "initrd:/bin/slang");
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
