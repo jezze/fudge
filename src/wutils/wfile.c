@@ -145,7 +145,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" title \"FILE MANAGER\"\n"
+        "+ window id \"window\" title \"File Manager\"\n"
         "  + layout id \"base\" in \"window\" flow \"vertical\" span \"1\"\n"
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"8\"\n"
         "      + select id \"volume\" in \"top\" label \"Volume\"\n"
