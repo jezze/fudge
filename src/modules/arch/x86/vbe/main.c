@@ -101,7 +101,7 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static void setmode(unsigned int w, unsigned int h, unsigned int bpp)
+static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     unsigned short modenum;
@@ -111,7 +111,7 @@ static void setmode(unsigned int w, unsigned int h, unsigned int bpp)
     /* Not used right now */
     vbe_getedid();
 
-    modenum = find(w, h, bpp);
+    modenum = find(width, height, bpp);
 
     if (modenum != 0xFFFF)
     {

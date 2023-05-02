@@ -41,24 +41,12 @@ static unsigned int blockinterface_notifydata(unsigned int source, unsigned int 
 
 }
 
-static unsigned int blockinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct {struct message message; struct event_blockrequest blockrequest;} *message = buffer;
-
-    ide_rpio28(blockinterface.id, 0, message->blockrequest.count, message->blockrequest.sector);
-
-    return count;
-
-}
-
 static void driver_init(unsigned int id)
 {
 
     block_initinterface(&blockinterface, id);
 
     blockinterface.data.operations.notify = blockinterface_notifydata;
-    blockinterface.data.operations.write = blockinterface_writedata;
 
 }
 

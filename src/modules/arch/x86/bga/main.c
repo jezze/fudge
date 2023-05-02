@@ -51,14 +51,12 @@ static unsigned int videointerface_readctrl(void *buffer, unsigned int count, un
 
 }
 
-static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
+static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
-    struct ctrl_videosettings *settings = buffer;
-
-    videointerface.width = settings->width;
-    videointerface.height = settings->height;
-    videointerface.bpp = settings->bpp;
+    videointerface.width = width;
+    videointerface.height = height;
+    videointerface.bpp = bpp;
 
     setreg(REG_COMMAND_ENABLE, 0x00);
     setreg(REG_COMMAND_XRES, videointerface.width);
@@ -67,7 +65,23 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
     setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
     video_notifymode(&videointerface, (void *)framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
 
-    return count;
+}
+
+static unsigned int videointerface_notifyctrl(unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    if (event == EVENT_CONFIG)
+    {
+
+        struct ctrl_videosettings *settings = data;
+
+        setmode(settings->width, settings->height, settings->bpp);
+
+        return count;
+
+    }
+
+    return 0;
 
 }
 
@@ -98,7 +112,7 @@ static void driver_init(unsigned int id)
     video_initinterface(&videointerface, id);
 
     videointerface.ctrl.operations.read = videointerface_readctrl;
-    videointerface.ctrl.operations.write = videointerface_writectrl;
+    videointerface.ctrl.operations.notify = videointerface_notifyctrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
     videointerface.colormap.operations.write = videointerface_writecolormap;
