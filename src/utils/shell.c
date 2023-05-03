@@ -423,21 +423,25 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
     if (job_count(&job))
     {
 
-        switch (keypress->scancode)
+        if (keymod & KEYMOD_CTRL)
         {
 
-        case 0x2E:
-            if ((keymod & KEYMOD_CTRL))
+            switch (keypress->scancode)
+            {
+
+            case 0x2E:
                 job_sendfirst(&job, EVENT_TERM, 0, 0);
-            else
-                job_sendfirst(&job, EVENT_CONSOLEDATA, keycode->length, keycode->value);
 
-            break;
+                break;
 
-        default:
+            }
+
+        }
+
+        else
+        {
+
             job_sendfirst(&job, EVENT_CONSOLEDATA, keycode->length, keycode->value);
-
-            break;
 
         }
 
