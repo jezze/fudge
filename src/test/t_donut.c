@@ -103,8 +103,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         for (k = 0; k < 1760; k += 80)
         {
 
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 80, b + k);
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 1, "\n");
+            char *offset = b + k;
+            unsigned int count = 80;
+
+            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", offset, &count);
 
         }
 
