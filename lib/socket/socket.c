@@ -32,7 +32,7 @@ static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
 static void send(unsigned int descriptor, void *buffer, unsigned int count)
 {
 
-    file_writeall(descriptor, buffer, count, 0);
+    file_notify(descriptor, EVENT_DATA, count, buffer);
 
 }
 

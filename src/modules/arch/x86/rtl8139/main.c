@@ -293,15 +293,19 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
 
 }
 
-static unsigned int ethernetinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int ethernetinterface_notifydata(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    if (offset)
-        return 0;
+    if (event == EVENT_DATA)
+    {
 
-    ethernetinterface_send(buffer, count);
+        ethernetinterface_send(data, count);
 
-    return count;
+        return count;
+
+    }
+
+    return 0;
 
 }
 
@@ -311,7 +315,7 @@ static void driver_init(unsigned int id)
     ethernet_initinterface(&ethernetinterface, id);
 
     ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
-    ethernetinterface.data.operations.write = ethernetinterface_writedata;
+    ethernetinterface.data.operations.notify = ethernetinterface_notifydata;
 
 }
 
