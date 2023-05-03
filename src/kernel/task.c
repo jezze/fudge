@@ -79,9 +79,9 @@ unsigned int task_transition(struct task *task, unsigned int state)
 
         }
 
-    }
+        valid = task->state == state;
 
-    valid = task->state == state;
+    }
 
     spinlock_release(&task->spinlock);
 
