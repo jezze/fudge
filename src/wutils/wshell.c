@@ -394,21 +394,25 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
     if (job_count(&job))
     {
 
-        switch (wmkeypress->scancode)
+        if (wmkeypress->keymod & KEYMOD_CTRL)
         {
 
-        case 0x2E:
-            if (wmkeypress->keymod & KEYMOD_CTRL)
+            switch (wmkeypress->scancode)
+            {
+
+            case 0x2E:
                 job_sendfirst(&job, EVENT_TERM, 0, 0);
-            else
-                job_sendfirst(&job, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
-            break;
+                break;
 
-        default:
+            }
+
+        }
+
+        else
+        {
+
             job_sendfirst(&job, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
-
-            break;
 
         }
 
@@ -417,100 +421,97 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        switch (wmkeypress->scancode)
+        if (wmkeypress->keymod & KEYMOD_CTRL)
         {
 
-        case 0x0E:
-            ring_skipreverse(&input1, 1);
-
-            break;
-
-        case 0x0F:
-            ring_move(&input1, &input2);
-            complete();
-
-            break;
-
-        case 0x1C:
-            ring_move(&input1, &input2);
-            ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-            interpret();
-
-            break;
-
-        case 0x16:
-            if (wmkeypress->keymod & KEYMOD_CTRL)
-                ring_reset(&input1);
-            else
-                ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-
-            break;
-
-        case 0x25:
-            if (wmkeypress->keymod & KEYMOD_CTRL)
-                ring_reset(&input2);
-            else
-                ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-
-            break;
-
-        case 0x26:
-            if (wmkeypress->keymod & KEYMOD_CTRL)
+            switch (wmkeypress->scancode)
             {
 
+            case 0x16:
+                ring_reset(&input1);
+
+                break;
+
+            case 0x25:
+                ring_reset(&input2);
+
+                break;
+
+            case 0x26:
                 ring_reset(&result);
 
+                break;
+
             }
 
-            else
+        }
+
+        else
+        {
+
+            switch (wmkeypress->scancode)
             {
 
+            case 0x0E:
+                ring_skipreverse(&input1, 1);
+
+                break;
+
+            case 0x0F:
+                ring_move(&input1, &input2);
+                complete();
+
+                break;
+
+            case 0x1C:
+                ring_move(&input1, &input2);
+                ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
+                interpret();
+
+                break;
+
+            case 0x47:
+                moveleft(ring_count(&input1));
+
+                break;
+
+            case 0x48:
+                if (wmkeypress->keymod & KEYMOD_SHIFT)
+                {
+                    /*content.offset--;*/
+                }
+
+                break;
+
+            case 0x4B:
+                moveleft(1);
+
+                break;
+
+            case 0x4D:
+                moveright(1);
+
+                break;
+
+            case 0x4F:
+                moveright(ring_count(&input2));
+
+                break;
+
+            case 0x50:
+                if (wmkeypress->keymod & KEYMOD_SHIFT)
+                {
+                    /*content.offset++;*/
+                }
+
+                break;
+
+            default:
                 ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
 
+                break;
+
             }
-
-            break;
-
-        case 0x47:
-            moveleft(ring_count(&input1));
-
-            break;
-
-        case 0x48:
-            if (wmkeypress->keymod & KEYMOD_SHIFT)
-            {
-                /*content.offset--;*/
-            }
-
-            break;
-
-        case 0x4B:
-            moveleft(1);
-
-            break;
-
-        case 0x4D:
-            moveright(1);
-
-            break;
-
-        case 0x4F:
-            moveright(ring_count(&input2));
-
-            break;
-
-        case 0x50:
-            if (wmkeypress->keymod & KEYMOD_SHIFT)
-            {
-                /*content.offset++;*/
-            }
-
-            break;
-
-        default:
-            ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-
-            break;
 
         }
 
