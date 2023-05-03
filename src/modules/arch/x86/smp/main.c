@@ -77,11 +77,14 @@ static void coreassign(struct list_item *item)
     if (coreitem)
     {
 
-        struct core *core = coreitem->data;
+        struct core *oldcore = coreget();
+        struct core *newcore = coreitem->data;
 
-        list_add(&core->tasks, item);
         list_add(&corelist, coreitem);
-        apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
+        list_add(&newcore->tasks, item);
+
+        if (oldcore != newcore)
+            apic_sendint(newcore->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
 
     }
 
