@@ -23,3 +23,4 @@ elfload /kernel/ahci.ko
 elfload /kernel/nvme.ko
 elfload /kernel/ata.ko
 elfload /kernel/virtio-network.ko
+elfload /kernel/smp.ko
