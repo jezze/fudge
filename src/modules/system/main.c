@@ -241,12 +241,12 @@ static unsigned int service_map(unsigned int id)
 
 }
 
-static unsigned int service_link(unsigned int id, unsigned int source)
+static unsigned int service_link(unsigned int id, unsigned int source, unsigned int port)
 {
 
     struct system_node *node = getnode(id);
 
-    kernel_addlink(source, &node->links);
+    kernel_addlink(port, source, &node->links);
 
     return id;
 

@@ -115,7 +115,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     seed(&state);
     setupnetwork(&state);
-    file_link(FILE_G0);
+    file_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_send_udp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer), buffer);
 

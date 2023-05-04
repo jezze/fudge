@@ -2,6 +2,7 @@ struct link
 {
 
     unsigned int source;
+    unsigned int target;
 
 };
 

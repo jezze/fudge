@@ -35,7 +35,7 @@ unsigned int call_kill(unsigned int id)
 
 }
 
-unsigned int call_link(unsigned int descriptor)
+unsigned int call_link(unsigned int descriptor, unsigned int port)
 {
 
     return 0;

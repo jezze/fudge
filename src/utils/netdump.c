@@ -154,7 +154,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_G0, FILE_L0, "data"))
         PANIC();
 
-    file_link(FILE_G0);
+    file_link(FILE_G0, 8000);
 
     while ((count = channel_read(EVENT_DATA, data)))
         print_ethernet(source, data);

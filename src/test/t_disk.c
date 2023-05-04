@@ -100,7 +100,7 @@ static unsigned int request_walk(struct state *state, unsigned int length, char 
     unsigned int status = ERROR;
     unsigned int offset = 0;
 
-    file_link(FILE_G5);
+    file_link(FILE_G5, 8000);
 
     while (request_sendpoll(state, offset, sizeof (struct cpio_header) + 1024))
     {
@@ -147,7 +147,7 @@ static unsigned int request_read(struct state *state)
 
     unsigned int status = ERROR;
 
-    file_link(FILE_G5);
+    file_link(FILE_G5, 8001);
 
     if (request_sendpoll(state, state->offset, sizeof (struct cpio_header) + 1024))
     {
@@ -402,7 +402,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_link(FILE_G4);
+    file_link(FILE_G4, 8002);
 
     if (file_walk(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
@@ -413,7 +413,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        file_link(FILE_G1);
+        file_link(FILE_G1, 8003);
         socket_resolveremote(FILE_G1, &local, &router);
         socket_listen_tcp(FILE_G1, &local, &remote, 1, &router);
 

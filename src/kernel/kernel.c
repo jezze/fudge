@@ -157,7 +157,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-void kernel_addlink(unsigned int source, struct list *list)
+void kernel_addlink(unsigned int source, unsigned int target, struct list *list)
 {
 
     struct list_item *linkitem = list_picktail(&freelinks);
@@ -168,6 +168,7 @@ void kernel_addlink(unsigned int source, struct list *list)
         struct link *link = linkitem->data;
 
         link->source = source;
+        link->target = target;
 
         list_add(list, linkitem);
 
@@ -175,7 +176,7 @@ void kernel_addlink(unsigned int source, struct list *list)
 
 }
 
-void kernel_removelink(unsigned int source, struct list *list)
+void kernel_removelink(unsigned int target, struct list *list)
 {
 
     struct list_item *current;
@@ -190,7 +191,7 @@ void kernel_removelink(unsigned int source, struct list *list)
 
         next = current->next;
 
-        if (link->source == source)
+        if (link->target == target)
         {
 
             list_remove_unsafe(list, current);
@@ -266,7 +267,7 @@ void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned
 
         struct link *link = current->data;
 
-        kernel_place(0, link->source, &message, buffer);
+        kernel_place(link->source, link->target, &message, buffer);
 
     }
 

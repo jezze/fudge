@@ -5,8 +5,8 @@
 
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
-void kernel_addlink(unsigned int source, struct list *list);
-void kernel_removelink(unsigned int source, struct list *list);
+void kernel_addlink(unsigned int source, unsigned int target, struct list *list);
+void kernel_removelink(unsigned int target, struct list *list);
 struct task *kernel_schedule(struct core *core);
 struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor);
 void kernel_kill(unsigned int source, unsigned int target);

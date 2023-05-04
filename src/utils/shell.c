@@ -513,7 +513,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     file_duplicate(FILE_G8, FILE_PW);
     printprompt();
-    file_link(FILE_G0);
+    file_link(FILE_G0, 8000);
 
     while (channel_process());
 

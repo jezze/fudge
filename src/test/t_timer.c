@@ -15,7 +15,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_L1, FILE_L0, "event100"))
         PANIC();
 
-    file_link(FILE_L1);
+    file_link(FILE_L1, 8000);
 
     while (channel_poll(EVENT_TIMERTICK, &message, data))
     {

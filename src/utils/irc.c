@@ -177,7 +177,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (cstring_length(option_getstring("domain")))
         dnsresolve(&remote, option_getstring("domain"));
 
-    file_link(FILE_G0);
+    file_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
     socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer), buffer);

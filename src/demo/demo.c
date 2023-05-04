@@ -172,9 +172,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.bpp = option_getdecimal("bpp");
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
-    file_link(FILE_G0);
-    file_link(FILE_G1);
-    file_link(FILE_G2);
+    file_link(FILE_G0, 8000);
+    file_link(FILE_G1, 8001);
+    file_link(FILE_G2, 8002);
     file_notify(FILE_G3, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
     run();
     file_unlink(FILE_G2);

@@ -220,7 +220,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct ext2_superblock sb;
 
     file_walk2(FILE_G5, option_getstring("volume"));
-    file_link(FILE_G5);
+    file_link(FILE_G5, 8000);
     readsuperblock(&sb);
 
     if (isvalid(&sb))

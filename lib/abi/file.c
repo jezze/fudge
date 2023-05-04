@@ -96,10 +96,10 @@ unsigned int file_spawn2(unsigned int pdescriptor, unsigned int wdescriptor, cha
 
 }
 
-unsigned int file_link(unsigned int descriptor)
+unsigned int file_link(unsigned int descriptor, unsigned int port)
 {
 
-    return call_link(descriptor);
+    return call_link(descriptor, port);
 
 }
 

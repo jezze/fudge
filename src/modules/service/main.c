@@ -20,9 +20,9 @@ static unsigned int notify(struct list *links, unsigned int source, unsigned int
     for (current = links->head; current; current = current->next)
     {
 
-        struct link *target = current->data;
+        struct link *link = current->data;
 
-        kernel_place(source, target->source, &message, data);
+        kernel_place(source, link->target, &message, data);
 
     }
 

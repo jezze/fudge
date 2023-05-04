@@ -18,8 +18,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct message message;
         union {struct event_loginfo loginfo; char data[MESSAGE_SIZE];} data;
 
-        file_link(FILE_L0);
-        file_link(FILE_L1);
+        file_link(FILE_L0, 8000);
+        file_link(FILE_L1, 8001);
 
         while (channel_poll(EVENT_LOGINFO, &message, &data))
         {

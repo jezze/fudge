@@ -116,7 +116,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct mbr *mbr = (struct mbr *)block;
 
     file_walk2(FILE_G5, option_getstring("volume"));
-    file_link(FILE_G5);
+    file_link(FILE_G5, 8000);
     request_readblocks(block, 1024, 0, 1);
 
     if (isvalid(mbr))

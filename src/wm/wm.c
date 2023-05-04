@@ -578,10 +578,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!file_walk(FILE_G3, FILE_L0, "event"))
         PANIC();
 
-    file_link(FILE_G0);
-    file_link(FILE_G1);
-    file_link(FILE_G2);
-    file_link(FILE_G3);
+    file_link(FILE_G0, 8000);
+    file_link(FILE_G1, 8001);
+    file_link(FILE_G2, 8002);
+    file_link(FILE_G3, 8003);
     setupvideo();
 
     while (channel_process())

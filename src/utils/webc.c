@@ -139,7 +139,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
 
-    file_link(FILE_G0);
+    file_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
     socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer, &url), buffer);
