@@ -100,17 +100,18 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
 {
 
     unsigned int id = apic_getid();
+    struct coredata *data = &coredata[id];
     struct list_item *taskitem;
 
-    core_init(&coredata[id].core, id, stack);
-    core_register(&coredata[id].core);
-    arch_configuretss(&coredata[id].tss, coredata[id].core.id, coredata[id].core.sp);
+    core_init(&data->core, id, stack);
+    core_register(&data->core);
+    arch_configuretss(&data->tss, data->core.id, data->core.sp);
     apic_setup_bp();
-    list_inititem(&coredata[id].item, &coredata[id].core);
-    list_add(&corelist, &coredata[id].item);
+    list_inititem(&data->item, &data->core);
+    list_add(&corelist, &data->item);
 
     while ((taskitem = list_pickhead(tasks)))
-        list_add(&coredata[id].core.tasks, taskitem);
+        list_add(&data->core.tasks, taskitem);
 
 }
 
@@ -118,17 +119,18 @@ void smp_setupap(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
+    struct coredata *data = &coredata[id];
 
-    core_init(&coredata[id].core, id, stack);
-    core_register(&coredata[id].core);
-    arch_configuretss(&coredata[id].tss, coredata[id].core.id, coredata[id].core.sp);
+    core_init(&data->core, id, stack);
+    core_register(&data->core);
+    arch_configuretss(&data->tss, data->core.id, data->core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
     mmu_enable();
     apic_setup_ap();
     pat_setup();
-    list_inititem(&coredata[id].item, &coredata[id].core);
-    list_add(&corelist, &coredata[id].item);
-    arch_leave(&coredata[id].core);
+    list_inititem(&data->item, &data->core);
+    list_add(&corelist, &data->item);
+    arch_leave(&data->core);
 
 }
 
