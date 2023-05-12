@@ -63,15 +63,36 @@ void list_remove(struct list *list, struct list_item *item)
 
 }
 
+void list_move_unsafe(struct list *to, struct list *from, struct list_item *item)
+{
+
+    list_remove_unsafe(from, item);
+    list_add_unsafe(to, item);
+
+}
+
 void list_move(struct list *to, struct list *from, struct list_item *item)
 {
 
-    spinlock_acquire(&from->spinlock);
-    spinlock_acquire(&to->spinlock);
-    list_remove_unsafe(from, item);
-    list_add_unsafe(to, item);
-    spinlock_release(&to->spinlock);
-    spinlock_release(&from->spinlock);
+    if (to == from)
+    {
+
+        spinlock_acquire(&to->spinlock);
+        list_move_unsafe(to, from, item);
+        spinlock_release(&to->spinlock);
+
+    }
+
+    else
+    {
+
+        spinlock_acquire(&from->spinlock);
+        spinlock_acquire(&to->spinlock);
+        list_move_unsafe(to, from, item);
+        spinlock_release(&to->spinlock);
+        spinlock_release(&from->spinlock);
+
+    }
 
 }
 

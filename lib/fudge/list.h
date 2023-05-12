@@ -21,6 +21,7 @@ void list_add_unsafe(struct list *list, struct list_item *item);
 void list_add(struct list *list, struct list_item *item);
 void list_remove_unsafe(struct list *list, struct list_item *item);
 void list_remove(struct list *list, struct list_item *item);
+void list_move_unsafe(struct list *to, struct list *from, struct list_item *item);
 void list_move(struct list *to, struct list *from, struct list_item *item);
 struct list_item *list_pickhead(struct list *list);
 struct list_item *list_picktail(struct list *list);

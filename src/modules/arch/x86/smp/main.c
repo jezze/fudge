@@ -72,21 +72,27 @@ static struct core *coreget(void)
 static void coreassign(struct list_item *item)
 {
 
-    struct list_item *coreitem = list_pickhead(&corelist);
+    spinlock_acquire(&corelist.spinlock);
 
-    if (coreitem)
     {
 
-        struct core *oldcore = coreget();
-        struct core *newcore = coreitem->data;
+        struct list_item *coreitem = corelist.head;
+        struct core *core = coreitem->data;
 
-        list_add(&corelist, coreitem);
-        list_add(&newcore->tasks, item);
+        list_move_unsafe(&corelist, &corelist, coreitem);
+        list_add(&core->tasks, item);
 
-        if (oldcore != newcore)
-            apic_sendint(newcore->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
+        if (coreget() != core)
+        {
+
+            /* Maybe only send this if core is asleep */
+            apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
+
+        }
 
     }
+
+    spinlock_release(&corelist.spinlock);
 
 }
 
