@@ -65,18 +65,6 @@ unsigned int cstring_length_zero(char *in)
 
 }
 
-unsigned int cstring_copy(char *out, char *in)
-{
-
-    unsigned int length = 0;
-
-    while ((*out++ = *in++))
-        length++;
-
-    return length;
-
-}
-
 unsigned int cstring_match(char *in1, char *in2)
 {
 
