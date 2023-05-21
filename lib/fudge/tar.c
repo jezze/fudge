@@ -4,7 +4,7 @@
 unsigned int tar_readvalue(char *attribute)
 {
 
-    return cstring_readvalue(attribute, cstring_length(attribute), 8);
+    return cstring_read_value(attribute, cstring_length(attribute), 8);
 
 }
 

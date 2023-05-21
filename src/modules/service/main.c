@@ -44,7 +44,7 @@ static unsigned int service_create(void *name, unsigned int length)
     node->operations.notify = notify;
 
     nameoffset += buffer_write(namebuffer, 1024, name, length, nameoffset);
-    nameoffset += cstring_writezero(namebuffer, 1024, nameoffset);
+    nameoffset += cstring_write_zero(namebuffer, 1024, nameoffset);
 
     system_addchild(&service, node);
 

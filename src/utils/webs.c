@@ -23,7 +23,7 @@ static void sendresponse(struct socket *remote)
         PANIC();
 
     if (cstring_length(request) == 1 && request[0] == '/')
-        cstring_writezero(request, 128, cstring_write(request, 128, "/index.html", 0));
+        cstring_write_zero(request, 128, cstring_write(request, 128, "/index.html", 0));
 
     if (call_walk_relative(FILE_L1, FILE_L0, request + 1))
     {
@@ -34,7 +34,7 @@ static void sendresponse(struct socket *remote)
         count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Content-Type: text/html\r\n", count);
-        count += cstring_writefmt1(buffer, BUFFER_SIZE, "Content-Length: %u\r\n\r\n", count, &filesize);
+        count += cstring_write_fmt1(buffer, BUFFER_SIZE, "Content-Length: %u\r\n\r\n", count, &filesize);
         count += buffer_write(buffer, BUFFER_SIZE, file, filesize, count);
 
     }
@@ -70,7 +70,7 @@ static void handlehttppacket(struct socket *remote)
 
             unsigned int end = buffer_lastbyte(buffer, BUFFER_SIZE, ' ');
 
-            cstring_writezero(request, 128, buffer_write(request, 128, buffer + 4, end - 4 - 1, 0));
+            cstring_write_zero(request, 128, buffer_write(request, 128, buffer + 4, end - 4 - 1, 0));
 
         }
 

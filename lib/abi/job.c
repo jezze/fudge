@@ -6,7 +6,7 @@
 static char *nextword(char *current)
 {
 
-    return current + cstring_lengthzero(current);
+    return current + cstring_length_zero(current);
 
 }
 

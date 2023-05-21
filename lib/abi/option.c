@@ -53,7 +53,7 @@ int option_getdecimal(char *key)
 
     struct option *option = find(key);
 
-    return (option) ? cstring_readvalue(option->value, cstring_length(option->value), 10) : 0;
+    return (option) ? cstring_read_value(option->value, cstring_length(option->value), 10) : 0;
 
 }
 
@@ -71,7 +71,7 @@ unsigned int option_set(char *key, char *value)
 
     struct option *option = find(key);
 
-    return (option) ? cstring_writezero(option->value, 64, cstring_write(option->value, 64, value, 0)) : 0;
+    return (option) ? cstring_write_zero(option->value, 64, cstring_write(option->value, 64, value, 0)) : 0;
 
 }
 
@@ -90,7 +90,7 @@ void option_init(struct option *option, char *key, char *value)
 
     option->key = key;
 
-    cstring_writezero(option->value, 64, cstring_write(option->value, 64, value, 0));
+    cstring_write_zero(option->value, 64, cstring_write(option->value, 64, value, 0));
 
 }
 

@@ -55,7 +55,7 @@ static unsigned int service_child(unsigned int id, char *path, unsigned int leng
             if (!buffer_match(cnode->name, path, colon))
                 continue;
 
-            val = cstring_readvalue(path + colon + 1, length - colon - 1, 10);
+            val = cstring_read_value(path + colon + 1, length - colon - 1, 10);
 
             if (val != cnode->index)
                 continue;
@@ -127,7 +127,7 @@ static unsigned int service_stat(unsigned int id, struct record *record)
         {
 
             record->type = RECORD_TYPE_DIRECTORY;
-            record->length += cstring_writefmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &node->index);
+            record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &node->index);
 
         }
 
@@ -197,7 +197,7 @@ static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int
             {
 
                 record->type = RECORD_TYPE_DIRECTORY;
-                record->length += cstring_writefmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &child->index);
+                record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &child->index);
 
             }
 

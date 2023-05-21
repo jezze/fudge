@@ -147,18 +147,18 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
             if (lastslash)
             {
 
-                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace + lastslash, count - lastspace - lastslash, 0));
+                cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace + lastslash, count - lastspace - lastslash, 0));
 
-                icount = cstring_writefmt3(ibuffer, INPUTSIZE, "/bin/ls %w | /bin/grep ?prefix %s\n", 0, buffer + lastspace, &lastslash, prefix);
+                icount = cstring_write_fmt3(ibuffer, INPUTSIZE, "/bin/ls %w | /bin/grep ?prefix %s\n", 0, buffer + lastspace, &lastslash, prefix);
 
             }
 
             else
             {
 
-                cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace, count - lastspace, 0));
+                cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace, count - lastspace, 0));
 
-                icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
+                icount = cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
 
             }
 
@@ -167,9 +167,9 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
         else
         {
 
-            cstring_writezero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer, count, 0));
+            cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer, count, 0));
 
-            icount = cstring_writefmt1(ibuffer, INPUTSIZE, "/bin/ls /bin | /bin/grep ?prefix %s\n", 0, prefix);
+            icount = cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls /bin | /bin/grep ?prefix %s\n", 0, prefix);
 
         }
 
@@ -178,9 +178,9 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
     else
     {
 
-        cstring_writezero(prefix, INPUTSIZE, 0);
+        cstring_write_zero(prefix, INPUTSIZE, 0);
 
-        icount = cstring_writefmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
+        icount = cstring_write_fmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
 
     }
 
@@ -247,7 +247,7 @@ static void complete(void)
                 {
 
                     char *outputbuffer = ibuffer + cstring_length(prefix);
-                    unsigned int outputcount = ring_count(&output) - cstring_lengthzero(prefix);
+                    unsigned int outputcount = ring_count(&output) - cstring_length_zero(prefix);
 
                     ring_write(&input, outputbuffer, outputcount);
                     print(outputbuffer, outputcount);

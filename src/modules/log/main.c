@@ -15,9 +15,9 @@ static void debuginterface_write(unsigned int level, char *string, char *file, u
     message.loginfo.count = sizeof (struct event_loginfo);
 
     if (file)
-        message.loginfo.count += cstring_writefmt3(message.data, MESSAGE_SIZE, "%s (%s:%u)", message.loginfo.count, string, file, &line);
+        message.loginfo.count += cstring_write_fmt3(message.data, MESSAGE_SIZE, "%s (%s:%u)", message.loginfo.count, string, file, &line);
     else
-        message.loginfo.count += cstring_writefmt1(message.data, MESSAGE_SIZE, "%s", message.loginfo.count, string);
+        message.loginfo.count += cstring_write_fmt1(message.data, MESSAGE_SIZE, "%s", message.loginfo.count, string);
 
     kernel_notify(&messages.links, EVENT_LOGINFO, &message, message.loginfo.count);
 

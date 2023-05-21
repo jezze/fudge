@@ -138,16 +138,16 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(blits, 2, value);
 
     case ATTR_COLOR:
-        return cstring_readvalue(value, cstring_length(value), 16);
+        return cstring_read_value(value, cstring_length(value), 16);
 
     case ATTR_COLUMNS:
-        return cstring_readvalue(value, cstring_length(value), 10);
+        return cstring_read_value(value, cstring_length(value), 10);
 
     case ATTR_CONTENT:
         return strpool_updatestring(current, value);
 
     case ATTR_SPAN:
-        return cstring_readvalue(value, cstring_length(value), 10);
+        return cstring_read_value(value, cstring_length(value), 10);
 
     case ATTR_FLOW:
         return util_getkey(flows, 5, value);
@@ -177,7 +177,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(overflows, 4, value);
 
     case ATTR_PADDING:
-        return cstring_readvalue(value, cstring_length(value), 10);
+        return cstring_read_value(value, cstring_length(value), 10);
 
     case ATTR_SOURCE:
         return strpool_updatestring(current, value);

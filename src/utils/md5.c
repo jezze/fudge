@@ -22,7 +22,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     md5_write(&sum, digest);
 
     for (i = 0; i < 16; i++)
-        cstring_writevalue(output, 32, digest[i], 16, 2, i * 2);
+        cstring_write_value(output, 32, digest[i], 16, 2, i * 2);
 
     channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", output, &l);
     channel_close();

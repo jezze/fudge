@@ -58,7 +58,7 @@ unsigned int cstring_length(char *in)
 
 }
 
-unsigned int cstring_lengthzero(char *in)
+unsigned int cstring_length_zero(char *in)
 {
 
     return cstring_length(in) + 1;
@@ -75,8 +75,8 @@ void cstring_copy(char *out, char *in)
 unsigned int cstring_match(char *in1, char *in2)
 {
 
-    unsigned int n1 = cstring_lengthzero(in1);
-    unsigned int n2 = cstring_lengthzero(in2);
+    unsigned int n1 = cstring_length_zero(in1);
+    unsigned int n2 = cstring_length_zero(in2);
 
     return buffer_match(in1, in2, (n1 < n2) ? n1 : n2);
 
@@ -85,7 +85,7 @@ unsigned int cstring_match(char *in1, char *in2)
 unsigned int cstring_submatch(char *in1, char *in2)
 {
 
-    unsigned int n1 = cstring_lengthzero(in1);
+    unsigned int n1 = cstring_length_zero(in1);
     unsigned int n2 = cstring_length(in2);
 
     return (n2 < n1) ? buffer_match(in1, in2, n2) : 0;
@@ -131,7 +131,7 @@ unsigned int cstring_toint(char c)
 
 }
 
-unsigned int cstring_readvalue(char *in, unsigned int count, unsigned int base)
+unsigned int cstring_read_value(char *in, unsigned int count, unsigned int base)
 {
 
     unsigned int value = 0;
@@ -151,7 +151,7 @@ unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int
 
 }
 
-unsigned int cstring_writezero(char *out, unsigned int count, unsigned int offset)
+unsigned int cstring_write_zero(char *out, unsigned int count, unsigned int offset)
 {
 
     if (offset < count)
@@ -174,7 +174,7 @@ unsigned int cstring_writezero(char *out, unsigned int count, unsigned int offse
 
 }
 
-unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding, unsigned int offset)
+unsigned int cstring_write_value(char *out, unsigned int count, int value, unsigned int base, unsigned int padding, unsigned int offset)
 {
 
     char num[64];
@@ -183,7 +183,7 @@ unsigned int cstring_writevalue(char *out, unsigned int count, int value, unsign
 
 }
 
-unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned int nargs, void **args, unsigned int offset)
+unsigned int cstring_write_fmt(void *out, unsigned int count, char *fmt, unsigned int nargs, void **args, unsigned int offset)
 {
 
     unsigned int length = cstring_length(fmt);
@@ -424,25 +424,25 @@ unsigned int cstring_writefmt(void *out, unsigned int count, char *fmt, unsigned
 
 }
 
-unsigned int cstring_writefmt0(void *out, unsigned int count, char *fmt, unsigned int offset)
+unsigned int cstring_write_fmt0(void *out, unsigned int count, char *fmt, unsigned int offset)
 {
 
-    return cstring_writefmt(out, count, fmt, 0, 0, offset);
+    return cstring_write_fmt(out, count, fmt, 0, 0, offset);
 
 }
 
-unsigned int cstring_writefmt1(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1)
+unsigned int cstring_write_fmt1(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1)
 {
 
     void *args[1];
 
     args[0] = arg1;
 
-    return cstring_writefmt(out, count, fmt, 1, args, offset);
+    return cstring_write_fmt(out, count, fmt, 1, args, offset);
 
 }
 
-unsigned int cstring_writefmt2(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2)
+unsigned int cstring_write_fmt2(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2)
 {
 
     void *args[2];
@@ -450,11 +450,11 @@ unsigned int cstring_writefmt2(void *out, unsigned int count, char *fmt, unsigne
     args[0] = arg1;
     args[1] = arg2;
 
-    return cstring_writefmt(out, count, fmt, 2, args, offset);
+    return cstring_write_fmt(out, count, fmt, 2, args, offset);
 
 }
 
-unsigned int cstring_writefmt3(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3)
+unsigned int cstring_write_fmt3(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3)
 {
 
     void *args[3];
@@ -463,11 +463,11 @@ unsigned int cstring_writefmt3(void *out, unsigned int count, char *fmt, unsigne
     args[1] = arg2;
     args[2] = arg3;
 
-    return cstring_writefmt(out, count, fmt, 3, args, offset);
+    return cstring_write_fmt(out, count, fmt, 3, args, offset);
 
 }
 
-unsigned int cstring_writefmt4(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4)
+unsigned int cstring_write_fmt4(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4)
 {
 
     void *args[8];
@@ -477,11 +477,11 @@ unsigned int cstring_writefmt4(void *out, unsigned int count, char *fmt, unsigne
     args[2] = arg3;
     args[3] = arg4;
 
-    return cstring_writefmt(out, count, fmt, 4, args, offset);
+    return cstring_write_fmt(out, count, fmt, 4, args, offset);
 
 }
 
-unsigned int cstring_writefmt6(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
+unsigned int cstring_write_fmt6(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
 {
 
     void *args[8];
@@ -493,11 +493,11 @@ unsigned int cstring_writefmt6(void *out, unsigned int count, char *fmt, unsigne
     args[4] = arg5;
     args[5] = arg6;
 
-    return cstring_writefmt(out, count, fmt, 6, args, offset);
+    return cstring_write_fmt(out, count, fmt, 6, args, offset);
 
 }
 
-unsigned int cstring_writefmt8(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
+unsigned int cstring_write_fmt8(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
 {
 
     void *args[8];
@@ -511,7 +511,7 @@ unsigned int cstring_writefmt8(void *out, unsigned int count, char *fmt, unsigne
     args[6] = arg7;
     args[7] = arg8;
 
-    return cstring_writefmt(out, count, fmt, 8, args, offset);
+    return cstring_write_fmt(out, count, fmt, 8, args, offset);
 
 }
 

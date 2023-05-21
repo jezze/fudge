@@ -69,7 +69,7 @@ unsigned int url_parse(struct url *url, void *buffer, unsigned int buffersize, c
 {
 
     const char *start = s;
-    unsigned int count = cstring_lengthzero(s);
+    unsigned int count = cstring_length_zero(s);
     struct pos pos;
     unsigned int i;
 

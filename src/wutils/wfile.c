@@ -33,7 +33,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            count += cstring_writefmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"file %w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"file %w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
             if (!--maxsend)
                 return;
@@ -124,7 +124,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     else if (cstring_submatch(data, "volume "))
     {
 
-        cstring_writefmt1(path, 256, "%s:\\0", 0, data + 7);
+        cstring_write_fmt1(path, 256, "%s:\\0", 0, data + 7);
         updatepath();
         updatecontent();
 
@@ -133,7 +133,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     else if (cstring_submatch(data, "file "))
     {
 
-        cstring_writefmt2(path, 256, "%s%s\\0", 0, path, data + 5);
+        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, data + 5);
         updatepath();
         updatecontent();
 
@@ -164,7 +164,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"bottom\" label \"Delete\" onclick \"action delete\"\n";
 
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
-    cstring_writefmt0(path, 256, "initrd:\\0", 0);
+    cstring_write_fmt0(path, 256, "initrd:\\0", 0);
     updatepath();
     updatecontent();
 

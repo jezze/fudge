@@ -287,7 +287,7 @@ static unsigned int singletail(char *p, char *s, struct data *d, unsigned int o)
         unsigned int len;
 
         len = cstring_length(p + 1);
-        lo = hi = cstring_readvalue(p + 1, len, 10);
+        lo = hi = cstring_read_value(p + 1, len, 10);
         q = p + len;
 
         if ((p + 1) == q)
@@ -297,7 +297,7 @@ static unsigned int singletail(char *p, char *s, struct data *d, unsigned int o)
         {
 
             len = cstring_length(q);
-            hi = cstring_readvalue(q + 1, len, 10);
+            hi = cstring_read_value(q + 1, len, 10);
             q = q + len;
 
             if (q[-1] == ',')

@@ -111,7 +111,7 @@ unsigned int strpool_updatestring(unsigned int index, char *cstring)
         index = freedata(index);
 
     if (cstring)
-        index = savedata(cstring_lengthzero(cstring), cstring);
+        index = savedata(cstring_length_zero(cstring), cstring);
 
     return index;
 

@@ -16,19 +16,19 @@ static void print(unsigned int source, unsigned int count, void *buffer)
         unsigned int offset = 0;
         unsigned int j;
 
-        offset += cstring_writefmt1(buffer, 120, "%H8u  ", offset, &page);
+        offset += cstring_write_fmt1(buffer, 120, "%H8u  ", offset, &page);
 
         for (j = i; j < i + 16; j++)
         {
 
             if (j < count)
-                offset += cstring_writefmt1(buffer, 120, "%H2c ", offset, &b[j]);
+                offset += cstring_write_fmt1(buffer, 120, "%H2c ", offset, &b[j]);
             else
-                offset += cstring_writefmt0(buffer, 120, "   ", offset);
+                offset += cstring_write_fmt0(buffer, 120, "   ", offset);
 
         }
 
-        offset += cstring_writefmt0(buffer, 120, " |", offset);
+        offset += cstring_write_fmt0(buffer, 120, " |", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -48,13 +48,13 @@ static void print(unsigned int source, unsigned int count, void *buffer)
             else
             {
 
-                offset += cstring_writefmt0(buffer, 120, " ", offset);
+                offset += cstring_write_fmt0(buffer, 120, " ", offset);
 
             }
 
         }
 
-        offset += cstring_writefmt0(buffer, 120, "|\n", offset);
+        offset += cstring_write_fmt0(buffer, 120, "|\n", offset);
         page += 16;
 
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, offset, buffer);
