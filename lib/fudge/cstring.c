@@ -65,10 +65,15 @@ unsigned int cstring_length_zero(char *in)
 
 }
 
-void cstring_copy(char *out, char *in)
+unsigned int cstring_copy(char *out, char *in)
 {
 
-    while ((*out++ = *in++));
+    unsigned int length = 0;
+
+    while ((*out++ = *in++))
+        length++;
+
+    return length;
 
 }
 

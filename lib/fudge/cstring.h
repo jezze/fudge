@@ -1,6 +1,6 @@
 unsigned int cstring_length(char *in);
 unsigned int cstring_length_zero(char *in);
-void cstring_copy(char *out, char *in);
+unsigned int cstring_copy(char *out, char *in);
 unsigned int cstring_match(char *in1, char *in2);
 unsigned int cstring_match_substring(char *in1, char *in2);
 unsigned int cstring_isalpha(char c);
