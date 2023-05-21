@@ -13,18 +13,18 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
         buffer[offset - 1] = '\0';
 
-        if (file_walk2(FILE_L0, buffer))
+        if (call_walk_absolute(FILE_L0, buffer))
         {
 
-            if (!file_create(FILE_L1, FILE_L0, buffer + offset))
-                channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Create path failed: %s\n", mdata);
+            if (!call_create(FILE_L1, FILE_L0, buffer + offset, cstring_length(buffer + offset)))
+                channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Create path failed: %s\n", mdata);
 
         }
 
         else
         {
 
-            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
         }
 
@@ -33,8 +33,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        if (!file_create(FILE_L1, FILE_PW, mdata))
-            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Create path failed: %s\n", mdata);
+        if (!call_create(FILE_L1, FILE_PW, mdata, cstring_length(mdata)))
+            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Create path failed: %s\n", mdata);
 
     }
 

@@ -4,10 +4,10 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -38,7 +38,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + text in \"base\" wrap \"word\" content \"tomByrer (Tom Byrer)\"\n"
         "    + text in \"base\" wrap \"word\" content \"LemonDMN2\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 
 }
 

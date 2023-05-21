@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include "call.h"
 #include "channel.h"
-#include "file.h"
 #include "job.h"
 
 static char *nextword(char *current)
@@ -87,7 +86,7 @@ unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int w
 
     unsigned int i;
 
-    if (!file_walk2(FILE_L0, "/bin"))
+    if (!call_walk_absolute(FILE_L0, "/bin"))
         return 0;
 
     for (i = 0; i < job->count; i++)
@@ -95,7 +94,7 @@ unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int w
 
         struct job_worker *worker = &job->workers[i];
 
-        if (!(file_walk(pdescriptor, FILE_L0, worker->program) || file_walk2(pdescriptor, worker->program)))
+        if (!(call_walk_relative(pdescriptor, FILE_L0, worker->program) || call_walk_absolute(pdescriptor, worker->program)))
             return 0;
 
         worker->id = call_spawn(pdescriptor, wdescriptor);
@@ -159,7 +158,7 @@ void job_run(struct job *job)
             unsigned int j;
 
             for (j = 0; j < worker->noptions; j++)
-                channel_sendfmt2(worker->id, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
+                channel_send_fmt2(worker->id, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
 
         }
 
@@ -176,7 +175,7 @@ void job_run(struct job *job)
             unsigned int j;
 
             for (j = 0; j < worker->npaths; j++)
-                channel_sendfmt1(worker->id, EVENT_PATH, "%s\\0", worker->paths[j]);
+                channel_send_fmt1(worker->id, EVENT_PATH, "%s\\0", worker->paths[j]);
 
         }
 
@@ -260,7 +259,7 @@ void job_sendfirst(struct job *job, unsigned int event, unsigned int count, void
         if (worker->id)
         {
 
-            channel_sendbuffer(worker->id, event, count, buffer);
+            channel_send_buffer(worker->id, event, count, buffer);
 
             break;
 
@@ -281,7 +280,7 @@ void job_sendall(struct job *job, unsigned int event, unsigned int count, void *
         struct job_worker *worker = &job->workers[i];
 
         if (worker->id)
-            channel_sendbuffer(worker->id, event, count, buffer);
+            channel_send_buffer(worker->id, event, count, buffer);
 
     }
 

@@ -245,12 +245,12 @@ static void placeimagepcx(struct widget *widget, int x, int y, int offx, unsigne
     if (!image->cacheimage.loaded)
     {
 
-        if (file_walk2(FILE_L0, strpool_getstring(image->source)))
+        if (call_walk_absolute(FILE_L0, strpool_getstring(image->source)))
         {
 
             struct pcx_header header;
 
-            file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
+            call_read_all(FILE_L0, &header, sizeof (struct pcx_header), 0);
             util_initsize(&image->cacheimage.size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
 
             image->cacheimage.loaded = 1;

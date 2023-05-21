@@ -314,7 +314,7 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
 
             count += cstring_writefmt0(buffer, MESSAGE_SIZE, "E\\0", count);
 
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
             count = 0;
 
@@ -347,7 +347,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, mdata))
+    if (call_walk_absolute(FILE_L0, mdata))
     {
 
         char buffer[BUFFER_SIZE];
@@ -359,7 +359,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         tokenlist_reset(&postfix);
         tokenlist_reset(&stack);
 
-        for (offset = 0; (count = file_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
+        for (offset = 0; (count = call_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
         translate(&postfix, &infix, &stack);
@@ -370,7 +370,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

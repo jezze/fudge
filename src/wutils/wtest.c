@@ -4,10 +4,10 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -32,7 +32,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"8\" span \"1\"\n"
         "    + image in \"base\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 
 }
 

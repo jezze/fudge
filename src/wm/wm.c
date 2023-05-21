@@ -48,17 +48,17 @@ static void setupvideo(void)
 
     buffer_clear(black, 768);
 
-    if (!file_walk2(FILE_L0, option_getstring("video")))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
+    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
 
-    if (!file_walk(FILE_L1, FILE_L0, "colormap"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "colormap"))
         return;
 
-    if (!file_walk(FILE_L2, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_L2, FILE_L0, "ctrl"))
         return;
 
-    file_notify(FILE_L1, EVENT_DATA, 768, black);
-    file_notify(FILE_L2, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
+    call_notify(FILE_L1, EVENT_DATA, 768, black);
+    call_notify(FILE_L2, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
 
 }
 
@@ -378,7 +378,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         message.wmevent.type = type;
         message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(action), strpool_getcstringlength(action) + 1, 0);
 
-        channel_sendbuffer(source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+        channel_send_buffer(source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
 
     }
 
@@ -390,7 +390,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         if (cstring_submatch(cmd, "run "))
         {
 
-            unsigned int id = file_spawn(FILE_L0, cmd + 4);
+            unsigned int id = call_spawn_absolute(FILE_L0, cmd + 4);
 
             if (id)
                 channel_send(id, EVENT_MAIN);
@@ -499,7 +499,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             if ((state.keymod & KEYMOD_SHIFT))
             {
 
-                unsigned int id = file_spawn(FILE_L0, option_getstring("wshell"));
+                unsigned int id = call_spawn_absolute(FILE_L0, option_getstring("wshell"));
 
                 if (id)
                     channel_send(id, EVENT_MAIN);
@@ -537,7 +537,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             wmkeypress.length = keycode->length;
             wmkeypress.keymod = state.keymod;
 
-            channel_sendbuffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+            channel_send_buffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
 
         }
 
@@ -557,31 +557,31 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, option_getstring("wm")))
+    if (!call_walk_absolute(FILE_G0, option_getstring("wm")))
         PANIC();
 
-    if (!file_walk2(FILE_L0, option_getstring("keyboard")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("keyboard")))
         PANIC();
 
-    if (!file_walk(FILE_G1, FILE_L0, "event"))
+    if (!call_walk_relative(FILE_G1, FILE_L0, "event"))
         PANIC();
 
-    if (!file_walk2(FILE_L0, option_getstring("mouse")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("mouse")))
         PANIC();
 
-    if (!file_walk(FILE_G2, FILE_L0, "event"))
+    if (!call_walk_relative(FILE_G2, FILE_L0, "event"))
         PANIC();
 
-    if (!file_walk2(FILE_L0, option_getstring("video")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
         PANIC();
 
-    if (!file_walk(FILE_G3, FILE_L0, "event"))
+    if (!call_walk_relative(FILE_G3, FILE_L0, "event"))
         PANIC();
 
-    file_link(FILE_G0, 8000);
-    file_link(FILE_G1, 8001);
-    file_link(FILE_G2, 8002);
-    file_link(FILE_G3, 8003);
+    call_link(FILE_G0, 8000);
+    call_link(FILE_G1, 8001);
+    call_link(FILE_G2, 8002);
+    call_link(FILE_G3, 8003);
     setupvideo();
 
     while (channel_process())
@@ -604,10 +604,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_G3);
-    file_unlink(FILE_G2);
-    file_unlink(FILE_G1);
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G3);
+    call_unlink(FILE_G2);
+    call_unlink(FILE_G1);
+    call_unlink(FILE_G0);
 
 }
 

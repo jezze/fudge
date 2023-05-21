@@ -14,7 +14,7 @@ static unsigned int escaped;
 static void print(void *buffer, unsigned int count)
 {
 
-    file_notify(FILE_G1, EVENT_DATA, count, buffer);
+    call_notify(FILE_G1, EVENT_DATA, count, buffer);
 
 }
 
@@ -28,7 +28,7 @@ static void printprompt(void)
 static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, unsigned int icount)
 {
 
-    unsigned int id = file_spawn2(FILE_L0, FILE_G8, option_getstring("slang"));
+    unsigned int id = call_spawn_absolute(FILE_L0, option_getstring("slang"));
 
     if (id)
     {
@@ -40,17 +40,17 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         channel_listen(id, EVENT_DATA);
         channel_listen(id, EVENT_ERROR);
         channel_listen(id, EVENT_CLOSE);
-        channel_sendbuffer(id, EVENT_DATA, icount, ibuffer);
+        channel_send_buffer(id, EVENT_DATA, icount, ibuffer);
         channel_send(id, EVENT_MAIN);
 
-        while ((count = channel_readfrom(id, EVENT_DATA, data)))
+        while ((count = channel_read_from(id, EVENT_DATA, data)))
             offset += buffer_write(obuffer, ocount, data, count, offset);
 
         return offset;
 
     }
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("slang"));
+    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("slang"));
 
     return 0;
 
@@ -103,8 +103,8 @@ static void interpret(void)
                     break;
 
                 case EVENT_PATH:
-                    if (file_walk(FILE_L0, FILE_G8, data))
-                        file_duplicate(FILE_G8, FILE_L0);
+                    if (call_walk_relative(FILE_L0, FILE_G8, data))
+                        call_walk_duplicate(FILE_G8, FILE_L0);
 
                     break;
 
@@ -378,7 +378,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
             case '\b':
             case 0x7F:
-                if (!ring_skipreverse(&input, 1))
+                if (!ring_skip_reverse(&input, 1))
                     break;
 
                 print("\b \b", 3);
@@ -454,7 +454,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         {
 
         case 0x0E:
-            if (!ring_skipreverse(&input, 1))
+            if (!ring_skip_reverse(&input, 1))
                 break;
 
             print("\b \b", 3);
@@ -505,19 +505,19 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, option_getstring("input")))
+    if (!call_walk_absolute(FILE_G0, option_getstring("input")))
         PANIC();
 
-    if (!file_walk2(FILE_G1, option_getstring("output")))
+    if (!call_walk_absolute(FILE_G1, option_getstring("output")))
         PANIC();
 
-    file_duplicate(FILE_G8, FILE_PW);
+    call_walk_duplicate(FILE_G8, FILE_PW);
     printprompt();
-    file_link(FILE_G0, 8000);
+    call_link(FILE_G0, 8000);
 
     while (channel_process());
 
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G0);
 
 }
 

@@ -113,31 +113,31 @@ static void run(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, option_getstring("keyboard")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("keyboard")))
         PANIC();
 
-    if (!file_walk(FILE_G0, FILE_L0, "event"))
+    if (!call_walk_relative(FILE_G0, FILE_L0, "event"))
         PANIC();
 
-    if (!file_walk2(FILE_L0, option_getstring("timer")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("timer")))
         PANIC();
 
-    if (!file_walk(FILE_G1, FILE_L0, "event1"))
+    if (!call_walk_relative(FILE_G1, FILE_L0, "event1"))
         PANIC();
 
-    if (!file_walk2(FILE_L0, option_getstring("video")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
         PANIC();
 
-    if (!file_walk(FILE_G2, FILE_L0, "event"))
+    if (!call_walk_relative(FILE_G2, FILE_L0, "event"))
         PANIC();
 
-    if (!file_walk(FILE_G3, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_G3, FILE_L0, "ctrl"))
         PANIC();
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -172,14 +172,14 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.bpp = option_getdecimal("bpp");
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
-    file_link(FILE_G0, 8000);
-    file_link(FILE_G1, 8001);
-    file_link(FILE_G2, 8002);
-    file_notify(FILE_G3, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
+    call_link(FILE_G0, 8000);
+    call_link(FILE_G1, 8001);
+    call_link(FILE_G2, 8002);
+    call_notify(FILE_G3, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
     run();
-    file_unlink(FILE_G2);
-    file_unlink(FILE_G1);
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G2);
+    call_unlink(FILE_G1);
+    call_unlink(FILE_G0);
     channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
 
 }

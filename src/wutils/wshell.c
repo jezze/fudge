@@ -23,15 +23,15 @@ static void update(void)
 
     count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
-    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input1, buffer, CONTENTSIZE);
 
-    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input1 content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input1 content \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input2, buffer, CONTENTSIZE);
 
-    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input2 content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input2 content \"%w\"\n", buffer, &count);
 
 }
 
@@ -68,7 +68,7 @@ static void moveleft(unsigned int steps)
 
     char buffer[INPUTSIZE];
 
-    ring_writereverse(&input2, buffer, ring_readreverse(&input1, buffer, steps));
+    ring_write_reverse(&input2, buffer, ring_read_reverse(&input1, buffer, steps));
 
 }
 
@@ -84,7 +84,7 @@ static void moveright(unsigned int steps)
 static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, unsigned int icount)
 {
 
-    unsigned int id = file_spawn2(FILE_L0, FILE_G8, option_getstring("slang"));
+    unsigned int id = call_spawn_absolute(FILE_L0, option_getstring("slang"));
 
     if (id)
     {
@@ -96,17 +96,17 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
         channel_listen(id, EVENT_DATA);
         channel_listen(id, EVENT_ERROR);
         channel_listen(id, EVENT_CLOSE);
-        channel_sendbuffer(id, EVENT_DATA, icount, ibuffer);
+        channel_send_buffer(id, EVENT_DATA, icount, ibuffer);
         channel_send(id, EVENT_MAIN);
 
-        while ((count = channel_readfrom(id, EVENT_DATA, data)))
+        while ((count = channel_read_from(id, EVENT_DATA, data)))
             offset += buffer_write(obuffer, ocount, data, count, offset);
 
         return offset;
 
     }
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("slang"));
+    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("slang"));
 
     return 0;
 
@@ -163,8 +163,8 @@ static void interpret(void)
                     break;
 
                 case EVENT_PATH:
-                    if (file_walk(FILE_L0, FILE_G8, data))
-                        file_duplicate(FILE_G8, FILE_L0);
+                    if (call_walk_relative(FILE_L0, FILE_G8, data))
+                        call_walk_duplicate(FILE_G8, FILE_L0);
 
                     break;
 
@@ -352,12 +352,12 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_duplicate(FILE_G8, FILE_PW);
+    call_walk_duplicate(FILE_G8, FILE_PW);
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -382,7 +382,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + text in \"output\" wrap \"char\" blit \"inverted\" content \" \"\n"
         "      + text id \"input2\" in \"output\" wrap \"char\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 
 }
 
@@ -453,7 +453,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case 0x0E:
-                ring_skipreverse(&input1, 1);
+                ring_skip_reverse(&input1, 1);
 
                 break;
 

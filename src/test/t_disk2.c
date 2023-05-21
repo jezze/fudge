@@ -4,7 +4,7 @@
 static void error(void *data, unsigned int count)
 {
 
-    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
 
 }
 
@@ -44,7 +44,7 @@ static unsigned int version(unsigned short tag, unsigned int msize, char *name)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    file_notify(FILE_G0, EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
+    call_notify(FILE_G0, EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
     channel_poll(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -69,7 +69,7 @@ static unsigned int attach(unsigned short tag, unsigned int fid, unsigned int af
     struct message message;
     char data[MESSAGE_SIZE];
 
-    file_notify(FILE_G0, EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
+    call_notify(FILE_G0, EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
     channel_poll(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -94,7 +94,7 @@ static unsigned int walk(unsigned short tag, unsigned int fid, unsigned int newf
     struct message message;
     char data[MESSAGE_SIZE];
 
-    file_notify(FILE_G0, EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
+    call_notify(FILE_G0, EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
     channel_poll(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -119,7 +119,7 @@ static unsigned int read(unsigned short tag, unsigned int fid)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    file_notify(FILE_G0, EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
+    call_notify(FILE_G0, EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
     channel_poll(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -129,7 +129,7 @@ static unsigned int read(unsigned short tag, unsigned int fid)
     {
 
     case P9P_RREAD:
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
 
         return 1;
 
@@ -143,13 +143,13 @@ static void sendrequest(void)
 {
 
     if (!version(40, 1200, "9P2000.F"))
-        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrcognized version\n");
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrcognized version\n");
 
     if (!attach(41, 0, 0))
-        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Attach failed\n");
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Attach failed\n");
 
     if (!walk(42, 0, 1, "build/data/help.txt"))
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "File not found: %s\n", "build/data/help.txt");
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "File not found: %s\n", "build/data/help.txt");
 
     read(43, 1);
 
@@ -166,7 +166,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    file_walk2(FILE_G0, "system:service/fd0");
+    call_walk_absolute(FILE_G0, "system:service/fd0");
     channel_bind(EVENT_MAIN, onmain);
 
 }

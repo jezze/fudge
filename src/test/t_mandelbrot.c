@@ -207,7 +207,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
         }
 
-        file_writeall(FILE_G2, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
+        call_write_all(FILE_G2, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
 
     }
 
@@ -216,10 +216,10 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -246,19 +246,19 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     struct ctrl_videosettings settings;
 
-    if (!file_walk2(FILE_L0, option_getstring("mouse")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("mouse")))
         PANIC();
 
-    if (!file_walk(FILE_G0, FILE_L0, "event"))
+    if (!call_walk_relative(FILE_G0, FILE_L0, "event"))
         PANIC();
 
-    if (!file_walk2(FILE_L0, option_getstring("video")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
         PANIC();
 
-    if (!file_walk(FILE_G1, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_G1, FILE_L0, "ctrl"))
         PANIC();
 
-    if (!file_walk(FILE_G2, FILE_L0, "data"))
+    if (!call_walk_relative(FILE_G2, FILE_L0, "data"))
         PANIC();
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
@@ -267,8 +267,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.height = option_getdecimal("height");
     settings.bpp = option_getdecimal("bpp");
 
-    file_writeall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
-    file_readall(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
+    call_write_all(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
+    call_read_all(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
 
     if (settings.bpp == 1)
     {
@@ -292,17 +292,17 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        file_walk(FILE_L1, FILE_L0, "colormap");
-        file_notify(FILE_L1, EVENT_DATA, 768, colormap);
+        call_walk_relative(FILE_L1, FILE_L0, "colormap");
+        call_notify(FILE_L1, EVENT_DATA, 768, colormap);
 
     }
 
     draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    file_link(FILE_G0, 8000);
+    call_link(FILE_G0, 8000);
 
     while (channel_process());
 
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G0);
 
 }
 

@@ -17,7 +17,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
     char *value = buffer_tindex(mdata, msize, '\0', 1);
 
     if (!option_set(key, value))
-        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrecognized option\n");
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrecognized option\n");
 
 }
 
@@ -41,7 +41,7 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
         struct option *option = option_get(i);
 
         if (option)
-            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%s:%s\n", option->key, option->value);
+            channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%s:%s\n", option->key, option->value);
 
     }
 
@@ -57,7 +57,7 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 void panic(char *file, unsigned int line)
 {
 
-    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
     channel_close();
     call_despawn();
 

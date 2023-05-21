@@ -57,7 +57,7 @@ static void print(unsigned int source, unsigned int count, void *buffer)
         offset += cstring_writefmt0(buffer, 120, "|\n", offset);
         page += 16;
 
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, offset, buffer);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, offset, buffer);
 
     }
 
@@ -75,14 +75,14 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
     page = 0;
 
-    if (file_walk2(FILE_L0, mdata))
+    if (call_walk_absolute(FILE_L0, mdata))
     {
 
         char buffer[BUFFER_SIZE];
         unsigned int count;
         unsigned int offset;
 
-        for (offset = 0; (count = file_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
+        for (offset = 0; (count = call_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
             print(source, count, buffer);
 
     }
@@ -90,7 +90,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

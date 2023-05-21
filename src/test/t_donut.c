@@ -33,13 +33,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     int cB = 0;
     int f;
 
-    if (!file_walk2(FILE_L0, option_getstring("timer")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("timer")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "event1"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "event1"))
         PANIC();
 
-    file_link(FILE_L1, 8000);
+    call_link(FILE_L1, 8000);
 
     while (channel_process())
     {
@@ -98,7 +98,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         R(5, 7, cA, sA)
         R(5, 8, cB, sB)
 
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 2, sequence);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, 2, sequence);
 
         for (k = 0; k < 1760; k += 80)
         {
@@ -106,13 +106,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             char *offset = b + k;
             unsigned int count = 80;
 
-            channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", offset, &count);
+            channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", offset, &count);
 
         }
 
     }
 
-    file_unlink(FILE_L1);
+    call_unlink(FILE_L1);
     channel_close();
 
 }

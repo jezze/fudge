@@ -4,14 +4,14 @@
 static unsigned int readheader(unsigned int descriptor, struct elf_header *header)
 {
 
-    return file_readall(descriptor, header, ELF_HEADER_SIZE, 0);
+    return call_read_all(descriptor, header, ELF_HEADER_SIZE, 0);
 
 }
 
 static unsigned int readsectionheader(unsigned int descriptor, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
 {
 
-    return file_readall(descriptor, sectionheader, header->shsize, header->shoffset + index * header->shsize);
+    return call_read_all(descriptor, sectionheader, header->shsize, header->shoffset + index * header->shsize);
 
 }
 
@@ -25,7 +25,7 @@ static unsigned int findvalue(unsigned int descriptor, struct elf_header *header
 
         struct elf_symbol symbol;
 
-        if (!file_readall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
+        if (!call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
             return 0;
 
         if (strings[symbol.name + count] != '\0')
@@ -86,7 +86,7 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
         if (stringheader.size > BUFFER_SIZE * 4)
             return 0;
 
-        if (!file_readall(descriptor, strings, stringheader.size, stringheader.offset))
+        if (!call_read_all(descriptor, strings, stringheader.size, stringheader.offset))
             return 0;
 
         value = findvalue(descriptor, &header, &symbolheader, strings, count, symbolname);
@@ -109,7 +109,7 @@ static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
 
     cstring_writefmt2(module, 32, "%w.ko\\0", 0, symbolname, &underscore);
 
-    if (file_walk(FILE_L0, FILE_G0, module))
+    if (call_walk_relative(FILE_L0, FILE_G0, module))
         address = findsymbol(FILE_L0, count, symbolname);
 
     if (!address)
@@ -132,12 +132,12 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
         struct elf_relocation relocation;
         struct elf_symbol symbol;
 
-        if (!file_readall(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
+        if (!call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
             return 0;
 
         index = relocation.info >> 8;
 
-        if (!file_readall(descriptor, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
+        if (!call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
             return 0;
 
         if (symbol.shindex)
@@ -150,12 +150,12 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
 
             unsigned int value;
 
-            if (!file_readall(descriptor, &value, 4, offset + relocation.offset))
+            if (!call_read_all(descriptor, &value, 4, offset + relocation.offset))
                 return 0;
 
             value += address;
 
-            if (!file_writeall(descriptor, &value, 4, offset + relocation.offset))
+            if (!call_write_all(descriptor, &value, 4, offset + relocation.offset))
                 return 0;
 
         }
@@ -205,7 +205,7 @@ static unsigned int resolve(unsigned int descriptor)
         if (stringheader.size > BUFFER_SIZE)
             return 0;
 
-        if (!file_readall(descriptor, strings, stringheader.size, stringheader.offset))
+        if (!call_read_all(descriptor, strings, stringheader.size, stringheader.offset))
             return 0;
 
         if (!resolvesymbols(descriptor, &relocationheader, &symbolheader, strings, dataheader.offset))
@@ -220,13 +220,13 @@ static unsigned int resolve(unsigned int descriptor)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_G0, "/kernel"))
+    if (!call_walk_absolute(FILE_G0, "/kernel"))
         PANIC();
 
-    if (!file_walk(FILE_G1, FILE_G0, "fudge"))
+    if (!call_walk_relative(FILE_G1, FILE_G0, "fudge"))
         PANIC();
 
-    if (!file_walk2(FILE_G2, mdata))
+    if (!call_walk_absolute(FILE_G2, mdata))
         PANIC();
 
     if (resolve(FILE_G2))

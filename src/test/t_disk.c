@@ -53,7 +53,7 @@ static void request_send(struct state *state)
     blockrequest.sector = state->blocksector;
     blockrequest.count = state->blockcount;
 
-    file_notify(FILE_G5, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    call_notify(FILE_G5, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -100,7 +100,7 @@ static unsigned int request_walk(struct state *state, unsigned int length, char 
     unsigned int status = ERROR;
     unsigned int offset = 0;
 
-    file_link(FILE_G5, 8000);
+    call_link(FILE_G5, 8000);
 
     while (request_sendpoll(state, offset, sizeof (struct cpio_header) + 1024))
     {
@@ -136,7 +136,7 @@ static unsigned int request_walk(struct state *state, unsigned int length, char 
 
     }
 
-    file_unlink(FILE_G5);
+    call_unlink(FILE_G5);
 
     return status;
 
@@ -147,7 +147,7 @@ static unsigned int request_read(struct state *state)
 
     unsigned int status = ERROR;
 
-    file_link(FILE_G5, 8001);
+    call_link(FILE_G5, 8001);
 
     if (request_sendpoll(state, state->offset, sizeof (struct cpio_header) + 1024))
     {
@@ -168,7 +168,7 @@ static unsigned int request_read(struct state *state)
 
     }
 
-    file_unlink(FILE_G5);
+    call_unlink(FILE_G5);
 
     return status;
 
@@ -381,7 +381,7 @@ static unsigned int handle(void *reply, struct p9p_header *p9p)
         return protocol_getattr(reply, p9p);
 
     default:
-        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Packet has unknown type\n");
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Packet has unknown type\n");
 
         return protocol_error(reply, p9p, "Packet has unknown type", -1);
 
@@ -395,25 +395,25 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     struct p9p_header *p9p = mdata;
     char buffer[MESSAGE_SIZE];
 
-    channel_sendbuffer(source, EVENT_P9P, handle(buffer, p9p), buffer);
+    channel_send_buffer(source, EVENT_P9P, handle(buffer, p9p), buffer);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    file_link(FILE_G4, 8002);
+    call_link(FILE_G4, 8002);
 
-    if (file_walk(FILE_L0, FILE_G0, "addr"))
+    if (call_walk_relative(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
 
-    if (file_walk(FILE_G1, FILE_G0, "data"))
+    if (call_walk_relative(FILE_G1, FILE_G0, "data"))
     {
 
         char buffer[BUFFER_SIZE];
         unsigned int count;
 
-        file_link(FILE_G1, 8003);
+        call_link(FILE_G1, 8003);
         socket_resolveremote(FILE_G1, &local, &router);
         socket_listen_tcp(FILE_G1, &local, &remote, 1, &router);
 
@@ -426,20 +426,20 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        file_unlink(FILE_G1);
+        call_unlink(FILE_G1);
 
     }
 
-    file_unlink(FILE_G4);
+    call_unlink(FILE_G4);
 
 }
 
 void init(void)
 {
 
-    file_walk2(FILE_G4, "system:service/fd0");
-    file_walk2(FILE_G5, "system:block/if:0/data");
-    file_walk2(FILE_G0, "system:ethernet/if:0");
+    call_walk_absolute(FILE_G4, "system:service/fd0");
+    call_walk_absolute(FILE_G5, "system:block/if:0/data");
+    call_walk_absolute(FILE_G0, "system:ethernet/if:0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "564", 42, 42);

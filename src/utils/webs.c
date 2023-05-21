@@ -16,7 +16,7 @@ static void sendresponse(struct socket *remote)
     char buffer[BUFFER_SIZE];
     unsigned int count = 0;
 
-    if (!file_walk2(FILE_L0, "/data/html"))
+    if (!call_walk_absolute(FILE_L0, "/data/html"))
         PANIC();
 
     if (cstring_length(request) == 0)
@@ -25,11 +25,11 @@ static void sendresponse(struct socket *remote)
     if (cstring_length(request) == 1 && request[0] == '/')
         cstring_writezero(request, 128, cstring_write(request, 128, "/index.html", 0));
 
-    if (file_walk(FILE_L1, FILE_L0, request + 1))
+    if (call_walk_relative(FILE_L1, FILE_L0, request + 1))
     {
 
         char file[BUFFER_SIZE];
-        unsigned int filesize = file_read(FILE_L1, file, BUFFER_SIZE, 0);
+        unsigned int filesize = call_read(FILE_L1, file, BUFFER_SIZE, 0);
 
         count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
@@ -63,7 +63,7 @@ static void handlehttppacket(struct socket *remote)
         char buffer[BUFFER_SIZE];
         unsigned int count = ring_read(&input, buffer, newline);
 
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
         if (count > 4 && buffer_match(buffer, "GET ", 4))
         {
@@ -86,13 +86,13 @@ static void seed(struct mtwist_state *state)
 
     struct ctrl_clocksettings settings;
 
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("clock")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
+    call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }
@@ -100,13 +100,13 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(struct mtwist_state *state)
 {
 
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "addr"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
         PANIC();
 
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
+    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
         PANIC();
 
     socket_bind_ipv4s(&router, option_getstring("router-address"));
@@ -125,7 +125,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     seed(&state);
     setupnetwork(&state);
-    file_link(FILE_G0, 8000);
+    call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
@@ -163,7 +163,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G0);
     channel_close();
 
 }

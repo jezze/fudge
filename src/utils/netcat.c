@@ -48,7 +48,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
     }
 
     if (count)
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, &consoledata->data);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, &consoledata->data);
 
 }
 
@@ -57,13 +57,13 @@ static void seed(struct mtwist_state *state)
 
     struct ctrl_clocksettings settings;
 
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("clock")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
+    call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }
@@ -71,13 +71,13 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(struct mtwist_state *state)
 {
 
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "addr"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
         PANIC();
 
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
+    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
         PANIC();
 
     socket_bind_ipv4s(&router, option_getstring("router-address"));
@@ -96,14 +96,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     seed(&state);
     setupnetwork(&state);
-    file_link(FILE_G0, 8000);
+    call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
     while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, BUFFER_SIZE)))
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G0);
     channel_close();
 
 }

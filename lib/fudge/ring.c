@@ -58,7 +58,7 @@ unsigned int ring_skip(struct ring *ring, unsigned int count)
 
 }
 
-unsigned int ring_skipreverse(struct ring *ring, unsigned int count)
+unsigned int ring_skip_reverse(struct ring *ring, unsigned int count)
 {
 
     unsigned int c;
@@ -113,7 +113,7 @@ unsigned int ring_readall(struct ring *ring, void *buffer, unsigned int count)
 
 }
 
-unsigned int ring_readreverse(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_read_reverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
     char *b = buffer;
@@ -136,13 +136,13 @@ unsigned int ring_readreverse(struct ring *ring, void *buffer, unsigned int coun
 
 }
 
-unsigned int ring_readallreverse(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_readall_reverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
     if (count > ring_avail(ring))
         return 0;
 
-    return ring_readreverse(ring, buffer, count);
+    return ring_read_reverse(ring, buffer, count);
 
 }
 
@@ -193,7 +193,7 @@ unsigned int ring_writeall(struct ring *ring, void *buffer, unsigned int count)
 
 }
 
-unsigned int ring_writereverse(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_write_reverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
     char *b = buffer;
@@ -216,13 +216,13 @@ unsigned int ring_writereverse(struct ring *ring, void *buffer, unsigned int cou
 
 }
 
-unsigned int ring_writeallreverse(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_writeall_reverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
     if (count > ring_avail(ring))
         return 0;
 
-    return ring_writereverse(ring, buffer, count);
+    return ring_write_reverse(ring, buffer, count);
 
 }
 
@@ -343,7 +343,7 @@ unsigned int ring_find(struct ring *ring, char value)
 
 }
 
-unsigned int ring_findreverse(struct ring *ring, char value)
+unsigned int ring_find_reverse(struct ring *ring, char value)
 {
 
     unsigned int s = ring->head;

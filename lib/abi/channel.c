@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include "call.h"
-#include "file.h"
 #include "channel.h"
 
 #define CHANNEL_CALLBACKS               256
@@ -70,14 +69,14 @@ unsigned int channel_send(unsigned int target, unsigned int event)
 
 }
 
-unsigned int channel_sendbuffer(unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int channel_send_buffer(unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     return send(target, event, count, data);
 
 }
 
-unsigned int channel_sendfmt0(unsigned int target, unsigned int event, char *fmt)
+unsigned int channel_send_fmt0(unsigned int target, unsigned int event, char *fmt)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -86,7 +85,7 @@ unsigned int channel_sendfmt0(unsigned int target, unsigned int event, char *fmt
 
 }
 
-unsigned int channel_sendfmt1(unsigned int target, unsigned int event, char *fmt, void *arg1)
+unsigned int channel_send_fmt1(unsigned int target, unsigned int event, char *fmt, void *arg1)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -95,7 +94,7 @@ unsigned int channel_sendfmt1(unsigned int target, unsigned int event, char *fmt
 
 }
 
-unsigned int channel_sendfmt2(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2)
+unsigned int channel_send_fmt2(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -104,7 +103,7 @@ unsigned int channel_sendfmt2(unsigned int target, unsigned int event, char *fmt
 
 }
 
-unsigned int channel_sendfmt3(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3)
+unsigned int channel_send_fmt3(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -113,7 +112,7 @@ unsigned int channel_sendfmt3(unsigned int target, unsigned int event, char *fmt
 
 }
 
-unsigned int channel_sendfmt4(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4)
+unsigned int channel_send_fmt4(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -122,7 +121,7 @@ unsigned int channel_sendfmt4(unsigned int target, unsigned int event, char *fmt
 
 }
 
-unsigned int channel_sendfmt6(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
+unsigned int channel_send_fmt6(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -131,7 +130,7 @@ unsigned int channel_sendfmt6(unsigned int target, unsigned int event, char *fmt
 
 }
 
-unsigned int channel_sendfmt8(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
+unsigned int channel_send_fmt8(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -205,7 +204,7 @@ unsigned int channel_poll(unsigned int event, struct message *message, void *dat
 
 }
 
-unsigned int channel_pollfrom(unsigned int source, unsigned int event, struct message *message, void *data)
+unsigned int channel_poll_from(unsigned int source, unsigned int event, struct message *message, void *data)
 {
 
     while (channel_pick(message, data))
@@ -241,7 +240,7 @@ unsigned int channel_read(unsigned int event, void *data)
 
 }
 
-unsigned int channel_readfrom(unsigned int source, unsigned int event, void *data)
+unsigned int channel_read_from(unsigned int source, unsigned int event, void *data)
 {
 
     struct message message;
@@ -266,7 +265,7 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    return channel_pollfrom(source, event, &message, data);
+    return channel_poll_from(source, event, &message, data);
 
 }
 

@@ -36,16 +36,16 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
     char fullname[256];
     unsigned int fullnamelength = dns_writename(fullname, 256, name, buffer);
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_QUERY, "type\\0%u\\0", &type);
-    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_QUERY, "name\\0%w\\0", fullname, &fullnamelength);
+    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_QUERY, "type\\0%u\\0", &type);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_QUERY, "name\\0%w\\0", fullname, &fullnamelength);
 
     if (type == 1)
     {
 
         unsigned char *addr = rddata;
 
-        channel_sendfmt4(CHANNEL_DEFAULT, EVENT_QUERY, "data\\0%c.%c.%c.%c\\0", &addr[0], &addr[1], &addr[2], &addr[3]);
-        channel_sendfmt6(CHANNEL_DEFAULT, EVENT_DATA, "%w has address %c.%c.%c.%c\n", fullname, &fullnamelength, &addr[0], &addr[1], &addr[2], &addr[3]);
+        channel_send_fmt4(CHANNEL_DEFAULT, EVENT_QUERY, "data\\0%c.%c.%c.%c\\0", &addr[0], &addr[1], &addr[2], &addr[3]);
+        channel_send_fmt6(CHANNEL_DEFAULT, EVENT_DATA, "%w has address %c.%c.%c.%c\n", fullname, &fullnamelength, &addr[0], &addr[1], &addr[2], &addr[3]);
 
     }
 
@@ -55,15 +55,15 @@ static void reply(unsigned short type, char *name, void *rddata, void *buffer)
         char alias[256];
         unsigned int aliaslength = dns_writename(alias, 256, rddata, buffer);
 
-        channel_sendfmt2(CHANNEL_DEFAULT, EVENT_QUERY, "data\\0%w\\0", alias, &aliaslength);
-        channel_sendfmt4(CHANNEL_DEFAULT, EVENT_DATA, "%w is an alias for %w\n", fullname, &fullnamelength, alias, &aliaslength);
+        channel_send_fmt2(CHANNEL_DEFAULT, EVENT_QUERY, "data\\0%w\\0", alias, &aliaslength);
+        channel_send_fmt4(CHANNEL_DEFAULT, EVENT_DATA, "%w is an alias for %w\n", fullname, &fullnamelength, alias, &aliaslength);
 
     }
 
     else
     {
 
-        channel_sendfmt0(CHANNEL_DEFAULT, EVENT_QUERY, "data\\0<null>\\0");
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_QUERY, "data\\0<null>\\0");
 
     }
 
@@ -74,13 +74,13 @@ static void seed(struct mtwist_state *state)
 
     struct ctrl_clocksettings settings;
 
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("clock")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
+    call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }
@@ -88,13 +88,13 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(struct mtwist_state *state)
 {
 
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "addr"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
         PANIC();
 
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
+    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
         PANIC();
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
@@ -115,7 +115,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     seed(&state);
     setupnetwork(&state);
-    file_link(FILE_G0, 8000);
+    call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_send_udp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer), buffer);
 
@@ -159,7 +159,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G0);
     channel_close();
 
 }

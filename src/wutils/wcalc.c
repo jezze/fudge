@@ -14,7 +14,7 @@ static int accumulator;
 static void refresh(int value)
 {
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
+    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
 
 }
 
@@ -83,10 +83,10 @@ static void updatevalue(int value)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -167,8 +167,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"row4\" label \"+\" span \"1\" onclick \"add\"\n"
         "      + button in \"row4\" label \"=\" span \"1\" onclick \"eq\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data0);
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data1);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data0);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data1);
 
 }
 

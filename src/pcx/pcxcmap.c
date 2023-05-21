@@ -5,24 +5,24 @@
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, mdata))
+    if (call_walk_absolute(FILE_L0, mdata))
     {
 
         struct pcx_header header;
         struct record record;
         unsigned char magic;
 
-        file_stat(FILE_L0, &record);
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
-        file_readall(FILE_L0, &magic, 1, record.size - 768 - 1);
+        call_stat(FILE_L0, &record);
+        call_read_all(FILE_L0, &header, sizeof (struct pcx_header), 0);
+        call_read_all(FILE_L0, &magic, 1, record.size - 768 - 1);
 
         if (magic == PCX_COLORMAP_MAGIC)
         {
 
             unsigned char colormap[768];
 
-            file_readall(FILE_L0, colormap, 768, record.size - 768);
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, 768, colormap);
+            call_read_all(FILE_L0, colormap, 768, record.size - 768);
+            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, 768, colormap);
 
         }
 
@@ -31,7 +31,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

@@ -6,13 +6,13 @@ static void seed(struct mtwist_state *state)
 
     struct ctrl_clocksettings settings;
 
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("clock")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
+    call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }
@@ -27,7 +27,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     value = mtwist_rand(&state);
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "%u\n", &value);
+    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "%u\n", &value);
     channel_close();
 
 }

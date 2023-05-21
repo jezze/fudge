@@ -13,22 +13,22 @@ static char *states[6] = {
 static void showcores(void)
 {
 
-    if (file_walk2(FILE_L0, "system:info/cores"))
+    if (call_walk_absolute(FILE_L0, "system:info/cores"))
     {
 
         struct ctrl_core ctrl;
         unsigned int count;
         unsigned int offset;
 
-        for (offset = 0; (count = file_read(FILE_L0, &ctrl, sizeof (struct ctrl_core), offset)); offset += count)
-            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "core\n  id %u\n", &ctrl.id);
+        for (offset = 0; (count = call_read(FILE_L0, &ctrl, sizeof (struct ctrl_core), offset)); offset += count)
+            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "core\n  id %u\n", &ctrl.id);
 
     }
 
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Cores not found: %s\n", "system:info/cores");
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Cores not found: %s\n", "system:info/cores");
 
     }
 
@@ -37,18 +37,18 @@ static void showcores(void)
 static void showtasks(void)
 {
 
-    if (file_walk2(FILE_L0, "system:info/tasks"))
+    if (call_walk_absolute(FILE_L0, "system:info/tasks"))
     {
 
         struct ctrl_task ctrl;
         unsigned int count;
         unsigned int offset;
 
-        for (offset = 0; (count = file_read(FILE_L0, &ctrl, sizeof (struct ctrl_task), offset)); offset += count)
+        for (offset = 0; (count = call_read(FILE_L0, &ctrl, sizeof (struct ctrl_task), offset)); offset += count)
         {
 
             if (ctrl.state)
-                channel_sendfmt6(CHANNEL_DEFAULT, EVENT_DATA, "task\n  id %u\n  state %s\n  thread.ip 0x%H8u\n  thread.sp 0x%H8u\n  signals.kills %u\n  signals.blocks %u\n", &ctrl.id, states[ctrl.state], &ctrl.thread_ip, &ctrl.thread_sp, &ctrl.signals_kills, &ctrl.signals_blocks);
+                channel_send_fmt6(CHANNEL_DEFAULT, EVENT_DATA, "task\n  id %u\n  state %s\n  thread.ip 0x%H8u\n  thread.sp 0x%H8u\n  signals.kills %u\n  signals.blocks %u\n", &ctrl.id, states[ctrl.state], &ctrl.thread_ip, &ctrl.thread_sp, &ctrl.signals_kills, &ctrl.signals_blocks);
 
         }
 
@@ -57,7 +57,7 @@ static void showtasks(void)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Tasks not found: %s\n", "system:info/tasks");
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Tasks not found: %s\n", "system:info/tasks");
 
     }
 
@@ -66,22 +66,22 @@ static void showtasks(void)
 static void showmailboxes(void)
 {
 
-    if (file_walk2(FILE_L0, "system:info/mailboxes"))
+    if (call_walk_absolute(FILE_L0, "system:info/mailboxes"))
     {
 
         struct ctrl_mailbox ctrl;
         unsigned int count;
         unsigned int offset;
 
-        for (offset = 0; (count = file_read(FILE_L0, &ctrl, sizeof (struct ctrl_mailbox), offset)); offset += count)
-            channel_sendfmt1(CHANNEL_DEFAULT, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &ctrl.address);
+        for (offset = 0; (count = call_read(FILE_L0, &ctrl, sizeof (struct ctrl_mailbox), offset)); offset += count)
+            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &ctrl.address);
 
     }
 
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Mailboxes not found: %s\n", "system:info/mailboxes");
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Mailboxes not found: %s\n", "system:info/mailboxes");
 
     }
 

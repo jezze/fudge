@@ -9,10 +9,10 @@ static void list(unsigned int descriptor)
     struct record records[8];
     unsigned int nrecords;
 
-    file_duplicate(FILE_L0, descriptor);
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
+    call_walk_duplicate(FILE_L0, descriptor);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
 
-    while ((nrecords = file_list(descriptor, FILE_L0, 8, records)))
+    while ((nrecords = call_list(descriptor, FILE_L0, 8, records)))
     {
 
         unsigned int i;
@@ -26,9 +26,9 @@ static void list(unsigned int descriptor)
             {
 
                 if (record->type == RECORD_TYPE_DIRECTORY)
-                    channel_sendfmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w/\n", &record->id, &record->size, record->name, &record->length);
+                    channel_send_fmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w/\n", &record->id, &record->size, record->name, &record->length);
                 else
-                    channel_sendfmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w\n", &record->id, &record->size, record->name, &record->length);
+                    channel_send_fmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w\n", &record->id, &record->size, record->name, &record->length);
 
             }
 
@@ -36,9 +36,9 @@ static void list(unsigned int descriptor)
             {
 
                 if (record->type == RECORD_TYPE_DIRECTORY)
-                    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w/\n", record->name, &record->length);
+                    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w/\n", record->name, &record->length);
                 else
-                    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", record->name, &record->length);
+                    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", record->name, &record->length);
 
             }
 
@@ -61,10 +61,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_G0, mdata))
+    if (call_walk_absolute(FILE_G0, mdata))
         list(FILE_G0);
     else
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
      paths++;
 
@@ -74,7 +74,7 @@ void init(void)
 {
 
     option_add("show", "");
-    file_duplicate(FILE_G0, FILE_PW);
+    call_walk_duplicate(FILE_G0, FILE_PW);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
 

@@ -5,7 +5,7 @@
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, mdata))
+    if (call_walk_absolute(FILE_L0, mdata))
     {
 
         struct pcx_header header;
@@ -15,8 +15,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned int offset = 0;
         unsigned int h;
 
-        file_stat(FILE_L0, &record);
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
+        call_stat(FILE_L0, &record);
+        call_read_all(FILE_L0, &header, sizeof (struct pcx_header), 0);
 
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;
@@ -27,11 +27,11 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned char buffer[BUFFER_SIZE];
             unsigned char raw[BUFFER_SIZE];
 
-            file_read(FILE_L0, raw, BUFFER_SIZE, 128 + offset);
+            call_read(FILE_L0, raw, BUFFER_SIZE, 128 + offset);
 
             offset = pcx_readline(raw, width, buffer);
 
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, width, buffer);
+            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, width, buffer);
 
         }
 
@@ -40,7 +40,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

@@ -31,8 +31,8 @@ static void handlehttppacket(void)
         if (isbody)
         {
 
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
-            channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
+            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+            channel_send_buffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
 
         }
 
@@ -51,7 +51,7 @@ static void handlehttppacket(void)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int id = file_spawn(FILE_L0, option_getstring("dns"));
+    unsigned int id = call_spawn_absolute(FILE_L0, option_getstring("dns"));
 
     if (id)
     {
@@ -61,10 +61,10 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         channel_listen(id, EVENT_QUERY);
         channel_listen(id, EVENT_CLOSE);
-        channel_sendfmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send_fmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(id, EVENT_MAIN);
 
-        while ((count = channel_readfrom(id, EVENT_QUERY, data)))
+        while ((count = channel_read_from(id, EVENT_QUERY, data)))
         {
 
             char *key = buffer_tindex(data, count, '\0', 0);
@@ -80,7 +80,7 @@ static void dnsresolve(struct socket *socket, char *domain)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("dns"));
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("dns"));
 
     }
 
@@ -91,13 +91,13 @@ static void seed(struct mtwist_state *state)
 
     struct ctrl_clocksettings settings;
 
-    if (!file_walk2(FILE_L0, option_getstring("clock")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("clock")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "ctrl"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "ctrl"))
         PANIC();
 
-    file_readall(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
+    call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
 }
@@ -105,13 +105,13 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(struct mtwist_state *state)
 {
 
-    if (!file_walk2(FILE_L0, option_getstring("ethernet")))
+    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
         PANIC();
 
-    if (!file_walk(FILE_L1, FILE_L0, "addr"))
+    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
         PANIC();
 
-    if (!file_walk(FILE_G0, FILE_L0, "data"))
+    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
         PANIC();
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
@@ -144,10 +144,10 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -178,7 +178,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
 
-    file_link(FILE_G0, 8000);
+    call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
     socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer, &url), buffer);
@@ -191,7 +191,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    file_unlink(FILE_G0);
+    call_unlink(FILE_G0);
 
 }
 

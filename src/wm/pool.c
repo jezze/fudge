@@ -219,24 +219,24 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
     if (pcxresource->cached)
         return;
 
-    if (file_walk2(FILE_L0, source))
+    if (call_walk_absolute(FILE_L0, source))
     {
 
         struct pcx_header header;
         struct record record;
         unsigned char magic;
 
-        file_stat(FILE_L0, &record);
-        file_readall(FILE_L0, &header, sizeof (struct pcx_header), 0);
-        file_read(FILE_L0, pcxresource->data, 0x10000, 128);
+        call_stat(FILE_L0, &record);
+        call_read_all(FILE_L0, &header, sizeof (struct pcx_header), 0);
+        call_read(FILE_L0, pcxresource->data, 0x10000, 128);
 
         pcxresource->width = header.xend - header.xstart + 1;
         pcxresource->height = header.yend - header.ystart + 1;
 
-        file_readall(FILE_L0, &magic, 1, record.size - 768 - 1);
+        call_read_all(FILE_L0, &magic, 1, record.size - 768 - 1);
 
         if (magic == PCX_COLORMAP_MAGIC)
-            file_readall(FILE_L0, pcxresource->colormap, 768, record.size - 768);
+            call_read_all(FILE_L0, pcxresource->colormap, 768, record.size - 768);
 
         pcxresource->cached = 1;
 
@@ -301,34 +301,34 @@ void pool_loadfont(unsigned int factor)
     {
 
     case 0:
-        file_walk2(FILE_L0, "/data/font/ter-112n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-112b.pcf");
+        call_walk_absolute(FILE_L0, "/data/font/ter-112n.pcf");
+        call_walk_absolute(FILE_L1, "/data/font/ter-112b.pcf");
 
         break;
 
     case 1:
-        file_walk2(FILE_L0, "/data/font/ter-114n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-114b.pcf");
+        call_walk_absolute(FILE_L0, "/data/font/ter-114n.pcf");
+        call_walk_absolute(FILE_L1, "/data/font/ter-114b.pcf");
 
         break;
 
     case 2:
-        file_walk2(FILE_L0, "/data/font/ter-116n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-116b.pcf");
+        call_walk_absolute(FILE_L0, "/data/font/ter-116n.pcf");
+        call_walk_absolute(FILE_L1, "/data/font/ter-116b.pcf");
 
         break;
 
     default:
-        file_walk2(FILE_L0, "/data/font/ter-118n.pcf");
-        file_walk2(FILE_L1, "/data/font/ter-118b.pcf");
+        call_walk_absolute(FILE_L0, "/data/font/ter-118n.pcf");
+        call_walk_absolute(FILE_L1, "/data/font/ter-118b.pcf");
 
         break;
 
     }
 
-    file_read(FILE_L0, fontnormal, FONTDATA_SIZE, 0);
+    call_read(FILE_L0, fontnormal, FONTDATA_SIZE, 0);
     pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
-    file_read(FILE_L1, fontbold, FONTDATA_SIZE, 0);
+    call_read(FILE_L1, fontbold, FONTDATA_SIZE, 0);
     pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
 
 }

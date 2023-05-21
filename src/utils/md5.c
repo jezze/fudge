@@ -24,7 +24,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     for (i = 0; i < 16; i++)
         cstring_writevalue(output, 32, digest[i], 16, 2, i * 2);
 
-    channel_sendfmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", output, &l);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", output, &l);
     channel_close();
 
 }
@@ -32,14 +32,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (file_walk2(FILE_L0, mdata))
+    if (call_walk_absolute(FILE_L0, mdata))
     {
 
         char buffer[BUFFER_SIZE];
         unsigned int count;
         unsigned int offset;
 
-        for (offset = 0; (count = file_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
+        for (offset = 0; (count = call_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
             md5_read(&sum, buffer, count);
 
     }
@@ -47,7 +47,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_sendfmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

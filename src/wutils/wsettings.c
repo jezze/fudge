@@ -4,10 +4,10 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -46,7 +46,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + text in \"mouse-acc-list\" wrap \"word\" span \"1\" content \"Mouse acceleration\"\n"
         "      + text in \"mouse-acc-list\" weight \"bold\" wrap \"word\" content \"Yes / No\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 
 }
 

@@ -6,7 +6,7 @@ static char path[256];
 static void updatepath(void)
 {
 
-    channel_sendfmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
+    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
 
 }
 
@@ -17,11 +17,11 @@ static void updatecontent(void)
     unsigned int nrecords;
     unsigned int maxsend = 50;
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
-    file_walk2(FILE_PW, path);
-    file_duplicate(FILE_L0, FILE_PW);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
+    call_walk_absolute(FILE_PW, path);
+    call_walk_duplicate(FILE_L0, FILE_PW);
 
-    while ((nrecords = file_list(FILE_PW, FILE_L0, 4, records)))
+    while ((nrecords = call_list(FILE_PW, FILE_L0, 4, records)))
     {
 
         char message[MESSAGE_SIZE];
@@ -40,7 +40,7 @@ static void updatecontent(void)
 
         }
 
-        channel_sendbuffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, message);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, message);
 
     }
 
@@ -49,10 +49,10 @@ static void updatecontent(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!file_walk2(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
         PANIC();
 
-    file_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
 
 }
 
@@ -163,7 +163,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"bottom\" label \"Paste\" onclick \"action paste\"\n"
         "      + button in \"bottom\" label \"Delete\" onclick \"action delete\"\n";
 
-    channel_sendfmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
     cstring_writefmt0(path, 256, "initrd:\\0", 0);
     updatepath();
     updatecontent();
