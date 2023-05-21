@@ -103,7 +103,7 @@ unsigned int ring_read(struct ring *ring, void *buffer, unsigned int count)
 
 }
 
-unsigned int ring_readall(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_read_all(struct ring *ring, void *buffer, unsigned int count)
 {
 
     if (count > ring_count(ring))
@@ -136,7 +136,7 @@ unsigned int ring_read_reverse(struct ring *ring, void *buffer, unsigned int cou
 
 }
 
-unsigned int ring_readall_reverse(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_read_allreverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
     if (count > ring_avail(ring))
@@ -183,7 +183,7 @@ unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
 
 }
 
-unsigned int ring_writeall(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_write_all(struct ring *ring, void *buffer, unsigned int count)
 {
 
     if (count > ring_avail(ring))
@@ -216,7 +216,7 @@ unsigned int ring_write_reverse(struct ring *ring, void *buffer, unsigned int co
 
 }
 
-unsigned int ring_writeall_reverse(struct ring *ring, void *buffer, unsigned int count)
+unsigned int ring_write_allreverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
     if (count > ring_avail(ring))

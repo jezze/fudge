@@ -12,8 +12,8 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, void
     if (ring_count(&mailbox->ring))
     {
 
-        length += ring_readall(&mailbox->ring, message, sizeof (struct message));
-        length += ring_readall(&mailbox->ring, data, message_datasize(message));
+        length += ring_read_all(&mailbox->ring, message, sizeof (struct message));
+        length += ring_read_all(&mailbox->ring, data, message_datasize(message));
 
     }
 
@@ -33,8 +33,8 @@ unsigned int mailbox_place(struct mailbox *mailbox, struct message *message, voi
     if (ring_avail(&mailbox->ring) > message->length)
     {
 
-        length += ring_writeall(&mailbox->ring, message, sizeof (struct message));
-        length += ring_writeall(&mailbox->ring, data, message_datasize(message));
+        length += ring_write_all(&mailbox->ring, message, sizeof (struct message));
+        length += ring_write_all(&mailbox->ring, data, message_datasize(message));
 
     }
 
