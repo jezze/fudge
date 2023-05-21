@@ -69,7 +69,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     char *data = (char *)mdata + sizeof (struct event_wmevent);
 
-    if (cstring_submatch(data, "action "))
+    if (cstring_match_substring(data, "action "))
     {
 
         if (cstring_match(data + 7, "copy"))
@@ -94,7 +94,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (cstring_submatch(data, "up"))
+    else if (cstring_match_substring(data, "up"))
     {
 
         if (cstring_length(path))
@@ -121,7 +121,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (cstring_submatch(data, "volume "))
+    else if (cstring_match_substring(data, "volume "))
     {
 
         cstring_write_fmt1(path, 256, "%s:\\0", 0, data + 7);
@@ -130,7 +130,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (cstring_submatch(data, "file "))
+    else if (cstring_match_substring(data, "file "))
     {
 
         cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, data + 5);

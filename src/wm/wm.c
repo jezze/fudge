@@ -387,7 +387,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
 
         char *cmd = strpool_getstring(action);
 
-        if (cstring_submatch(cmd, "run "))
+        if (cstring_match_substring(cmd, "run "))
         {
 
             unsigned int id = call_spawn_absolute(FILE_L0, cmd + 4);

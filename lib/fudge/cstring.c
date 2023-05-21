@@ -82,7 +82,7 @@ unsigned int cstring_match(char *in1, char *in2)
 
 }
 
-unsigned int cstring_submatch(char *in1, char *in2)
+unsigned int cstring_match_substring(char *in1, char *in2)
 {
 
     unsigned int n1 = cstring_length_zero(in1);
