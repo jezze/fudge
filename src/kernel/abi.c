@@ -354,13 +354,13 @@ static unsigned int place(struct task *task, void *stack)
 static unsigned int link(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int port;} *args = stack;
+    struct {void *caller; unsigned int descriptor; unsigned int source;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!descriptor_check(descriptor))
         return 0;
 
-    return descriptor->service->link(descriptor->id, task->id, args->port);
+    return descriptor->service->link(descriptor->id, task->id, args->source);
 
 }
 

@@ -283,14 +283,14 @@ static unsigned int service_map(unsigned int id)
 
 }
 
-static unsigned int service_link(unsigned int id, unsigned int source, unsigned int port)
+static unsigned int service_link(unsigned int id, unsigned int target, unsigned int source)
 {
 
     return 0;
 
 }
 
-static unsigned int service_unlink(unsigned int id, unsigned int source)
+static unsigned int service_unlink(unsigned int id, unsigned int target)
 {
 
     return 0;

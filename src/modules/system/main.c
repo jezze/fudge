@@ -241,23 +241,23 @@ static unsigned int service_map(unsigned int id)
 
 }
 
-static unsigned int service_link(unsigned int id, unsigned int source, unsigned int port)
+static unsigned int service_link(unsigned int id, unsigned int target, unsigned int source)
 {
 
     struct system_node *node = getnode(id);
 
-    kernel_addlink(port, source, &node->links);
+    kernel_addlink(&node->links, target, source);
 
     return id;
 
 }
 
-static unsigned int service_unlink(unsigned int id, unsigned int source)
+static unsigned int service_unlink(unsigned int id, unsigned int target)
 {
 
     struct system_node *node = getnode(id);
 
-    kernel_removelink(source, &node->links);
+    kernel_removelink(&node->links, target);
 
     return id;
 
