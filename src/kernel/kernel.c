@@ -13,6 +13,8 @@ struct taskdata
 {
 
     struct task task;
+    struct mailbox mailbox;
+    struct descriptor descriptors[KERNEL_DESCRIPTORS];
     struct list_item item;
 
 };
@@ -27,8 +29,6 @@ struct linkdata
 
 static struct taskdata taskdata[KERNEL_TASKS];
 static struct linkdata linkdata[KERNEL_LINKS];
-static struct descriptor descriptors[KERNEL_DESCRIPTORS * KERNEL_TASKS];
-static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct list freelinks;
 static struct list deadtasks;
 static struct list blockedtasks;
@@ -47,7 +47,7 @@ static void unblocktasks(void)
     {
 
         struct task *task = taskitem->data;
-        struct mailbox *mailbox = &mailboxes[task->id];
+        struct mailbox *mailbox = &taskdata[task->id].mailbox;
 
         next = taskitem->next;
 
@@ -75,11 +75,13 @@ static void unblocktasks(void)
 static void checksignals(struct task *task)
 {
 
+    struct list_item *taskitem = &taskdata[task->id].item;
+
     if (task->signals.kills)
     {
 
         if (task_transition(task, TASK_STATE_DEAD))
-            list_add(&deadtasks, &taskdata[task->id].item);
+            list_add(&deadtasks, taskitem);
 
     }
 
@@ -87,7 +89,7 @@ static void checksignals(struct task *task)
     {
 
         if (task_transition(task, TASK_STATE_BLOCKED))
-            list_add(&blockedtasks, &taskdata[task->id].item);
+            list_add(&blockedtasks, taskitem);
 
     }
 
@@ -95,7 +97,7 @@ static void checksignals(struct task *task)
     {
 
         if (task_transition(task, TASK_STATE_ASSIGNED))
-            coreassign(&taskdata[task->id].item);
+            coreassign(taskitem);
 
     }
 
@@ -220,7 +222,7 @@ struct task *kernel_schedule(struct core *core)
 struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
 {
 
-    return &descriptors[task->id * KERNEL_DESCRIPTORS + (descriptor & (KERNEL_DESCRIPTORS - 1))];
+    return &taskdata[task->id].descriptors[(descriptor & (KERNEL_DESCRIPTORS - 1))];
 
 }
 
@@ -236,7 +238,7 @@ void kernel_kill(unsigned int source, unsigned int target)
 unsigned int kernel_pick(unsigned int source, struct message *message, void *data)
 {
 
-    struct mailbox *mailbox = &mailboxes[source];
+    struct mailbox *mailbox = &taskdata[source].mailbox;
 
     return mailbox_pick(mailbox, message, data);
 
@@ -245,7 +247,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message *message, void *data)
 {
 
-    struct mailbox *mailbox = &mailboxes[target];
+    struct mailbox *mailbox = &taskdata[target].mailbox;
 
     message->source = source;
 
@@ -284,7 +286,7 @@ struct task *kernel_createtask(void)
     {
 
         struct task *task = taskitem->data;
-        struct mailbox *mailbox = &mailboxes[task->id];
+        struct mailbox *mailbox = &taskdata[task->id].mailbox;
         unsigned int i;
 
         task_reset(task);
@@ -338,31 +340,25 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
     {
 
         struct task *task = &taskdata[i].task;
+        struct mailbox *mailbox = &taskdata[i].mailbox;
         struct list_item *item = &taskdata[i].item;
+        unsigned int j;
 
         task_init(task, i);
         task_register(task);
+        mailbox_init(mailbox, (void *)(mbaddress + i * mbsize), mbsize);
+        mailbox_register(mailbox);
         list_inititem(item, task);
         list_add(&deadtasks, item);
 
-    }
+        for (j = 0; j < KERNEL_DESCRIPTORS; j++)
+        {
 
-    for (i = 0; i < KERNEL_DESCRIPTORS * KERNEL_TASKS; i++)
-    {
+            struct descriptor *descriptor = &taskdata[i].descriptors[j];
 
-        struct descriptor *descriptor = &descriptors[i];
+            descriptor_init(descriptor);
 
-        descriptor_init(descriptor);
-
-    }
-
-    for (i = 0; i < KERNEL_MAILBOXES; i++)
-    {
-
-        struct mailbox *mailbox = &mailboxes[i];
-
-        mailbox_init(mailbox, (void *)(mbaddress + i * mbsize), mbsize);
-        mailbox_register(mailbox);
+        }
 
     }
 
