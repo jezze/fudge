@@ -30,7 +30,7 @@ static void handlehttppacket(void)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int id = call_spawn_absolute(FILE_L0, option_getstring("dns"));
+    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("dns"));
 
     if (id)
     {

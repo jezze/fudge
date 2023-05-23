@@ -11,7 +11,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = call_spawn_absolute(FILE_L0, option_getstring("echo"));
+    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("echo"));
 
     if (id)
     {

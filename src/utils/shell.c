@@ -28,7 +28,7 @@ static void printprompt(void)
 static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, unsigned int icount)
 {
 
-    unsigned int id = call_spawn_absolute(FILE_L0, option_getstring("slang"));
+    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("slang"));
 
     if (id)
     {
