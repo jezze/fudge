@@ -32,7 +32,7 @@ static void debugnum(unsigned int value, unsigned int base)
     char num[32];
 
     buffer_clear(num, 32);
-    cstring_writevalue(num, 32, value, base, 0, 0);
+    cstring_write_value(num, 32, value, base, 0, 0);
     uart_puts(num);
     uart_puts("\n");
 

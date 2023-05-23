@@ -35,14 +35,14 @@ unsigned int call_kill(unsigned int id)
 
 }
 
-unsigned int call_link(unsigned int descriptor, unsigned int port)
+unsigned int call_link(unsigned int descriptor, unsigned int source)
 {
 
     return 0;
 
 }
 
-unsigned int call_list(unsigned int descriptor)
+unsigned int call_list(unsigned int descriptor, unsigned int cdescriptor, unsigned int count, struct record *records)
 {
 
     return 0;
@@ -63,21 +63,21 @@ unsigned int call_notify(unsigned int descriptor, unsigned int event, unsigned i
 
 }
 
-unsigned int call_pick(struct message_header *header, void *data)
+unsigned int call_pick(struct message *message, void *data)
 {
 
     return 0;
 
 }
 
-unsigned int call_place(unsigned int id, struct message_header *header, void *data)
+unsigned int call_place(unsigned int id, struct message *message, void *data)
 {
 
     return 0;
 
 }
 
-unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count)
+unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;
@@ -119,7 +119,7 @@ unsigned int call_walk(unsigned int descriptor, unsigned int pdescriptor, char *
 
 }
 
-unsigned int call_write(unsigned int descriptor, void *buffer, unsigned int count)
+unsigned int call_write(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset)
 {
 
     return 0;
