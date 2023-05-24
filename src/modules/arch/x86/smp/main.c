@@ -17,7 +17,7 @@
 #define INIT16PHYSICAL                  0x00008000
 #define INIT32PHYSICAL                  0x00008200
 
-struct coredata
+struct corerow
 {
 
     struct arch_tss tss;
@@ -26,7 +26,7 @@ struct coredata
 
 };
 
-static struct coredata coredata[256];
+static struct corerow corerows[256];
 static struct list corelist;
 
 static void detect(struct acpi_madt *madt)
@@ -65,7 +65,7 @@ static void detect(struct acpi_madt *madt)
 static struct core *coreget(void)
 {
 
-    return &coredata[apic_getid()].core;
+    return &corerows[apic_getid()].core;
 
 }
 
@@ -100,18 +100,18 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
 {
 
     unsigned int id = apic_getid();
-    struct coredata *data = &coredata[id];
+    struct corerow *corerow = &corerows[id];
     struct list_item *taskitem;
 
-    core_init(&data->core, id, stack);
-    core_register(&data->core);
-    arch_configuretss(&data->tss, data->core.id, data->core.sp);
+    core_init(&corerow->core, id, stack);
+    core_register(&corerow->core);
+    arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
     apic_setup_bp();
-    list_inititem(&data->item, &data->core);
-    list_add(&corelist, &data->item);
+    list_inititem(&corerow->item, &corerow->core);
+    list_add(&corelist, &corerow->item);
 
     while ((taskitem = list_pickhead(tasks)))
-        list_add(&data->core.tasks, taskitem);
+        list_add(&corerow->core.tasks, taskitem);
 
 }
 
@@ -119,18 +119,18 @@ void smp_setupap(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
-    struct coredata *data = &coredata[id];
+    struct corerow *corerow = &corerows[id];
 
-    core_init(&data->core, id, stack);
-    core_register(&data->core);
-    arch_configuretss(&data->tss, data->core.id, data->core.sp);
+    core_init(&corerow->core, id, stack);
+    core_register(&corerow->core);
+    arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
     mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
     mmu_enable();
     apic_setup_ap();
     pat_setup();
-    list_inititem(&data->item, &data->core);
-    list_add(&corelist, &data->item);
-    arch_leave(&data->core);
+    list_inititem(&corerow->item, &corerow->core);
+    list_add(&corelist, &corerow->item);
+    arch_leave(&corerow->core);
 
 }
 
