@@ -15,7 +15,7 @@ void video_notifymode(struct video_interface *interface, void *framebuffer, unsi
     videomode.h = h;
     videomode.bpp = bpp;
 
-    kernel_notify(&interface->event.links, EVENT_VIDEOMODE, &videomode, sizeof (struct event_videomode));
+    kernel_notify(&interface->event.links, EVENT_VIDEOMODE, sizeof (struct event_videomode), &videomode);
 
 }
 

@@ -8,7 +8,7 @@ unsigned int call_list(unsigned int descriptor, unsigned int cdescriptor, unsign
 unsigned int call_load(unsigned int descriptor);
 unsigned int call_notify(unsigned int descriptor, unsigned int event, unsigned int count, void *data);
 unsigned int call_pick(struct message *message, void *data);
-unsigned int call_place(unsigned int id, struct message *message, void *data);
+unsigned int call_place(unsigned int id, unsigned int event, unsigned int count, void *data);
 unsigned int call_read(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset);
 unsigned int call_read_all(unsigned int descriptor, void *buffer, unsigned int count, unsigned int offset);
 unsigned int call_spawn(unsigned int pdescriptor, unsigned int wdescriptor);

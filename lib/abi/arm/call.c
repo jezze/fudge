@@ -70,7 +70,7 @@ unsigned int call_pick(struct message *message, void *data)
 
 }
 
-unsigned int call_place(unsigned int id, struct message *message, void *data)
+unsigned int call_place(unsigned int id, unsigned int event, unsigned int count, void *data)
 {
 
     return 0;

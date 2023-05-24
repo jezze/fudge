@@ -342,12 +342,12 @@ static unsigned int pick(struct task *task, void *stack)
 static unsigned int place(struct task *task, void *stack)
 {
 
-    struct {void *caller; unsigned int id; struct message *message; void *data;} *args = stack;
+    struct {void *caller; unsigned int id; unsigned int event; unsigned int count; void *data;} *args = stack;
 
-    if (!checkbuffer(task, args->message, sizeof (struct message)) || !checkzerobuffer(task, args->data, message_datasize(args->message)))
+    if (!checkzerobuffer(task, args->data, args->count))
         return 0;
 
-    return kernel_place(task->id, args->id, args->message, args->data);
+    return kernel_place(task->id, args->id, args->event, args->count, args->data);
 
 }
 

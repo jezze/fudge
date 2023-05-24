@@ -8,7 +8,7 @@ static struct system_node root;
 void block_notify(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->data.links, EVENT_DATA, buffer, count);
+    kernel_notify(&interface->data.links, EVENT_DATA, count, buffer);
 
 }
 

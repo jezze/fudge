@@ -7,11 +7,11 @@ unsigned int message_datasize(struct message *message)
 
 }
 
-void message_init(struct message *message, unsigned int event, unsigned int length)
+void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length)
 {
 
     message->event = event;
-    message->source = 0;
+    message->source = source;
     message->length = sizeof (struct message) + length;
 
 }

@@ -13,8 +13,8 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 
     keypress.scancode = scancode;
 
-    kernel_notify(&event.links, EVENT_KEYPRESS, &keypress, sizeof (struct event_keypress));
-    kernel_notify(&interface->event.links, EVENT_KEYPRESS, &keypress, sizeof (struct event_keypress));
+    kernel_notify(&event.links, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    kernel_notify(&interface->event.links, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
@@ -25,8 +25,8 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
     keyrelease.scancode = scancode;
 
-    kernel_notify(&event.links, EVENT_KEYRELEASE, &keyrelease, sizeof (struct event_keyrelease));
-    kernel_notify(&interface->event.links, EVENT_KEYRELEASE, &keyrelease, sizeof (struct event_keyrelease));
+    kernel_notify(&event.links, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    kernel_notify(&interface->event.links, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 

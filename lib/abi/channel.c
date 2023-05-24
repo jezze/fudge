@@ -17,8 +17,6 @@ static unsigned int active;
 static unsigned int send(unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct message message;
-
     if (count > MESSAGE_SIZE)
         return 0;
 
@@ -28,9 +26,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
     if (!target)
         return 0;
 
-    message_init(&message, event, count);
-
-    while (!call_place(target, &message, data));
+    while (!call_place(target, event, count, data));
 
     return count;
 

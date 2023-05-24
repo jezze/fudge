@@ -11,10 +11,8 @@ static unsigned int nameoffset;
 static unsigned int notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct message message;
     struct list_item *current;
 
-    message_init(&message, event, count);
     spinlock_acquire(&links->spinlock);
 
     for (current = links->head; current; current = current->next)
@@ -22,7 +20,7 @@ static unsigned int notify(struct list *links, unsigned int source, unsigned int
 
         struct link *link = current->data;
 
-        kernel_place(source, link->target, &message, data);
+        kernel_place(source, link->target, event, count, data);
 
     }
 

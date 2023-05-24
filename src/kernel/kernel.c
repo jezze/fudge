@@ -246,24 +246,23 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, struct message *message, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct taskrow *taskrow = &taskrows[target];
+    struct message message;
 
-    message->source = source;
+    message_init(&message, event, source, count);
 
-    return mailbox_place(&taskrow->mailbox, message, data);
+    return mailbox_place(&taskrow->mailbox, &message, data);
 
 }
 
-void kernel_notify(struct list *links, unsigned int event, void *buffer, unsigned int count)
+void kernel_notify(struct list *links, unsigned int event, unsigned int count, void *data)
 {
 
-    struct message message;
     struct list_item *current;
 
-    message_init(&message, event, count);
     spinlock_acquire(&links->spinlock);
 
     for (current = links->head; current; current = current->next)
@@ -271,7 +270,7 @@ void kernel_notify(struct list *links, unsigned int event, void *buffer, unsigne
 
         struct link *link = current->data;
 
-        kernel_place(link->source, link->target, &message, buffer);
+        kernel_place(link->source, link->target, event, count, data);
 
     }
 

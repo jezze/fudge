@@ -13,16 +13,16 @@ void timer_notifytick(struct timer_interface *interface)
 
     timertick.counter = jiffies++;
 
-    kernel_notify(&interface->event1.links, EVENT_TIMERTICK, &timertick, sizeof (struct event_timertick));
+    kernel_notify(&interface->event1.links, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
     if (!(jiffies % 10))
-        kernel_notify(&interface->event10.links, EVENT_TIMERTICK, &timertick, sizeof (struct event_timertick));
+        kernel_notify(&interface->event10.links, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
     if (!(jiffies % 100))
-        kernel_notify(&interface->event100.links, EVENT_TIMERTICK, &timertick, sizeof (struct event_timertick));
+        kernel_notify(&interface->event100.links, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
     if (!(jiffies % 1000))
-        kernel_notify(&interface->event1000.links, EVENT_TIMERTICK, &timertick, sizeof (struct event_timertick));
+        kernel_notify(&interface->event1000.links, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 

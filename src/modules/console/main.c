@@ -13,8 +13,8 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(&event.links, EVENT_CONSOLEDATA, &consoledata, sizeof (struct event_consoledata));
-    kernel_notify(&interface->event.links, EVENT_CONSOLEDATA, &consoledata, sizeof (struct event_consoledata));
+    kernel_notify(&event.links, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(&interface->event.links, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 

@@ -19,7 +19,7 @@ static void debuginterface_write(unsigned int level, char *string, char *file, u
     else
         message.loginfo.count += cstring_write_fmt1(message.data, MESSAGE_SIZE, "%s", message.loginfo.count, string);
 
-    kernel_notify(&messages.links, EVENT_LOGINFO, &message, message.loginfo.count);
+    kernel_notify(&messages.links, EVENT_LOGINFO, message.loginfo.count, &message);
 
 }
 
