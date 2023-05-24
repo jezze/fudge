@@ -17,16 +17,7 @@
 #define INIT16PHYSICAL                  0x00008000
 #define INIT32PHYSICAL                  0x00008200
 
-struct corerow
-{
-
-    struct arch_tss tss;
-    struct core core;
-    struct list_item item;
-
-};
-
-static struct corerow corerows[256];
+static struct corerow {struct arch_tss tss; struct core core; struct list_item item;} corerows[256];
 static struct list corelist;
 
 static void detect(struct acpi_madt *madt)

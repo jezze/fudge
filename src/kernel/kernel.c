@@ -9,26 +9,8 @@
 #include "descriptor.h"
 #include "kernel.h"
 
-struct taskrow
-{
-
-    struct task task;
-    struct mailbox mailbox;
-    struct descriptor descriptors[KERNEL_DESCRIPTORS];
-    struct list_item item;
-
-};
-
-struct linkrow
-{
-
-    struct link link;
-    struct list_item item;
-
-};
-
-static struct taskrow taskrows[KERNEL_TASKS];
-static struct linkrow linkrows[KERNEL_LINKS];
+static struct taskrow {struct task task; struct mailbox mailbox; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
+static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
 static struct list freelinks;
 static struct list deadtasks;
 static struct list blockedtasks;
