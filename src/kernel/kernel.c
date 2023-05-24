@@ -257,13 +257,13 @@ unsigned int kernel_place(unsigned int source, unsigned int target, struct messa
 
 }
 
-void kernel_notify(struct list *links, unsigned int type, void *buffer, unsigned int count)
+void kernel_notify(struct list *links, unsigned int event, void *buffer, unsigned int count)
 {
 
     struct message message;
     struct list_item *current;
 
-    message_init(&message, type, count);
+    message_init(&message, event, count);
     spinlock_acquire(&links->spinlock);
 
     for (current = links->head; current; current = current->next)

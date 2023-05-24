@@ -11,7 +11,7 @@ struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descript
 void kernel_kill(unsigned int source, unsigned int target);
 unsigned int kernel_pick(unsigned int source, struct message *message, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, struct message *message, void *data);
-void kernel_notify(struct list *states, unsigned int type, void *buffer, unsigned int count);
+void kernel_notify(struct list *states, unsigned int event, void *buffer, unsigned int count);
 struct task *kernel_createtask(void);
 void kernel_setuptask(struct task *task, unsigned int sp);
 void kernel_setup(unsigned int mbaddress, unsigned int mbsize);
