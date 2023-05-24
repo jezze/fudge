@@ -59,14 +59,14 @@ static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, 
 static void interpret(void)
 {
 
-    char ibuffer[INPUTSIZE];
-    unsigned int icount = ring_read(&input, ibuffer, INPUTSIZE);
+    char buffer[INPUTSIZE];
+    unsigned int count = ring_read(&input, buffer, INPUTSIZE);
 
-    if (icount && (icount = runslang(ibuffer, INPUTSIZE, ibuffer, icount)))
+    if (count && (count = runslang(buffer, INPUTSIZE, buffer, count)))
     {
 
         job_init(&job, workers, JOBSIZE);
-        job_parse(&job, ibuffer, icount);
+        job_parse(&job, buffer, count);
 
         if (job_spawn(&job, FILE_L1, FILE_G8))
         {
@@ -192,14 +192,14 @@ static void complete(void)
 {
 
     char prefix[INPUTSIZE];
-    char ibuffer[INPUTSIZE];
-    unsigned int icount = createcommand(&input, ibuffer, prefix);
+    char buffer[INPUTSIZE];
+    unsigned int count = createcommand(&input, buffer, prefix);
 
-    if (icount && (icount = runslang(ibuffer, INPUTSIZE, ibuffer, icount)))
+    if (count && (count = runslang(buffer, INPUTSIZE, buffer, count)))
     {
 
         job_init(&job, workers, JOBSIZE);
-        job_parse(&job, ibuffer, icount);
+        job_parse(&job, buffer, count);
 
         if (job_spawn(&job, FILE_L1, FILE_G8))
         {
@@ -208,7 +208,7 @@ static void complete(void)
             char data[MESSAGE_SIZE];
             struct ring output;
 
-            ring_init(&output, INPUTSIZE, ibuffer);
+            ring_init(&output, INPUTSIZE, buffer);
             job_listen(&job, EVENT_CLOSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
@@ -246,7 +246,7 @@ static void complete(void)
                 if (ring_each(&output, '\n') == ring_count(&output))
                 {
 
-                    char *outputbuffer = ibuffer + cstring_length(prefix);
+                    char *outputbuffer = buffer + cstring_length(prefix);
                     unsigned int outputcount = ring_count(&output) - cstring_length_zero(prefix);
 
                     ring_write(&input, outputbuffer, outputcount);
@@ -260,7 +260,7 @@ static void complete(void)
                     char tbuffer[INPUTSIZE];
 
                     print("\n", 1);
-                    print(ibuffer, ring_count(&output));
+                    print(buffer, ring_count(&output));
                     printprompt();
                     print(tbuffer, ring_readcopy(&input, tbuffer, INPUTSIZE));
 
