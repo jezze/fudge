@@ -103,9 +103,9 @@ struct ext2_entry
 {
 
     unsigned int node;
-    unsigned char size[2];
-    unsigned char length0;
-    unsigned char length1;
+    unsigned short size;
+    unsigned char length;
+    unsigned char type;
 
 } __attribute__((packed));
 
@@ -160,7 +160,7 @@ static void readsuperblock(struct ext2_superblock *sb)
 
 }
 
-static void readblockgroups(struct ext2_blockgroup *bg, struct ext2_superblock *sb, unsigned int blocksize, unsigned int blockindex, unsigned int blockgroup)
+static void readblockgroup(struct ext2_blockgroup *bg, struct ext2_superblock *sb, unsigned int blocksize, unsigned int blockindex, unsigned int blockgroup)
 {
 
     unsigned char block[1024];
@@ -173,43 +173,53 @@ static void readblockgroups(struct ext2_blockgroup *bg, struct ext2_superblock *
 static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct ext2_blockgroup *bg, unsigned int blocksize, unsigned int nodeindex)
 {
 
-    unsigned char block[1024];
+    unsigned char block[4096];
 
-    request_readblocks(block, 1024, option_getdecimal("partoffset") + blocksize * 323, 2);
+    request_readblocks(block, 4096, option_getdecimal("partoffset") + blocksize * bg->blockTableAddress, 8);
     buffer_copy(node, block + nodeindex * sb->nodeSize, sizeof (struct ext2_node));
 
 }
 
-static void readdir(struct ext2_entry *entry, char *name, struct ext2_node *node, unsigned int blocksize)
+static unsigned int readdir(struct ext2_entry *entry, char *name, struct ext2_node *node, unsigned int blocksize, unsigned int index)
+{
+
+    unsigned char block[1024];
+    unsigned int offset = 12 + 12 + 20;
+
+    request_readblocks(block, 1024, option_getdecimal("partoffset") + blocksize * node->pointer0, 2);
+    buffer_copy(entry, block + offset, sizeof (struct ext2_entry));
+    buffer_copy(name, block + offset + 8, entry->length);
+
+    return entry->length;
+
+}
+
+static void readdata(void *data, unsigned int count, struct ext2_node *node, unsigned int blocksize)
 {
 
     unsigned char block[1024];
 
-    request_readblocks(block, 1024, option_getdecimal("partoffset") + blocksize * 0x343, 2);
-    buffer_copy(entry, block, sizeof (struct ext2_entry));
+    request_readblocks(block, 1024, option_getdecimal("partoffset") + blocksize * node->pointer0, 2);
+    buffer_write(data, count, block, 1024, 0);
 
 }
 
-
+/*
 static void printsuperblock(struct ext2_superblock *superblock)
 {
 
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Node Count: %u\n", &superblock->nodeCount);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Block Count: %u\n", &superblock->blockCount);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Block Count Super: %u\n", &superblock->blockCountSuper);
-    /* unalloc */
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Superblock Index: %u\n", &superblock->superblockIndex);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Block Size: %u\n", &superblock->blockSize);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Fragment Size: %u\n", &superblock->fragmentSize);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Block Count Group: %u\n", &superblock->blockCountGroup);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Fragment Count Group: %u\n", &superblock->fragmentCountGroup);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Node Count Group: %u\n", &superblock->nodeCountGroup);
-    /* Stuff */
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Signature: 0x%H4h\n", &superblock->signature);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Minor: %h\n", &superblock->minorVersion);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Major: %u\n", &superblock->majorVersion);
-    /* Stuff */
-    /* Extended */
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Node Size: %h\n", &superblock->nodeSize);
 
 }
@@ -223,6 +233,7 @@ static void printblockgroup(struct ext2_blockgroup *blockgroup)
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Directory Count: %h\n", &blockgroup->directoryCount);
 
 }
+*/
 
 static void printnode(struct ext2_node *node)
 {
@@ -237,11 +248,53 @@ static void printnode(struct ext2_node *node)
 
 }
 
-static void printdir(struct ext2_entry *entry)
+static void printdir(struct ext2_entry *entry, char *name)
 {
+
+    unsigned int length = entry->length;
 
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Inode: %u\n", &entry->node);
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Size: %h\n", &entry->size);
+    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Length: 0x%H2c\n", &entry->length);
+    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "Name: %w\n", name, &length);
+
+}
+
+static void showinode(struct ext2_superblock *sb, unsigned int inode)
+{
+
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
+    unsigned int blocksize = (1024 << sb->blockSize);
+    unsigned int blockgroup = (inode - 1) / sb->nodeCountGroup;
+    unsigned int nodeindex = (inode - 1) % sb->nodeCountGroup;
+    unsigned int blockindex = (inode * sb->nodeSize) / blocksize;
+
+    readblockgroup(&bg, sb, blocksize / 512, blockindex, blockgroup);
+    readnode(&node, sb, &bg, blocksize / 512, nodeindex);
+    printnode(&node);
+
+    if ((node.type & 0xF000) == 0x4000)
+    {
+
+        struct ext2_entry entry;
+        char name[1024];
+
+        readdir(&entry, name, &node, blocksize / 512, 0);
+        printdir(&entry, name);
+
+    }
+
+    if ((node.type & 0xF000) == 0x8000)
+    {
+
+        char data[1024];
+        unsigned int length = 4;
+
+        readdata(data, 1024, &node, blocksize / 512);
+        channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "Data: %w\n", data, &length);
+
+    }
 
 }
 
@@ -257,33 +310,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        struct ext2_blockgroup bg;
-        struct ext2_node node;
-        unsigned int rootid = 2;
-        unsigned int blocksize = (1024 << sb.blockSize);
-        unsigned int blockgroup = (rootid - 1) / sb.nodeCountGroup;
-        unsigned int nodeindex = (rootid - 1) % sb.nodeCountGroup;
-        unsigned int blockindex = (rootid * sb.nodeSize) / blocksize;
-
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "BlockGroup: %u\n", &blockgroup);
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "NodeIndex: %u\n", &nodeindex);
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "BlockIndex: %u\n", &blockindex);
-        readblockgroups(&bg, &sb, blocksize / 512, blockindex, blockgroup); /* add blockgroup here */
-        readnode(&node, &sb, &bg, blocksize / 512, nodeindex);
-        printsuperblock(&sb);
-        printblockgroup(&bg);
-        printnode(&node);
-
-        if ((node.type & 0xF000) == 0x4000)
-        {
-
-            struct ext2_entry entry;
-            char name[1024];
-
-            readdir(&entry, name, &node, blocksize / 512);
-            printdir(&entry);
-
-        }
+        showinode(&sb, 2);
+        showinode(&sb, 12);
 
     }
 
