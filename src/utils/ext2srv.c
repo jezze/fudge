@@ -166,7 +166,7 @@ static void readblockgroup(struct ext2_blockgroup *bg, struct ext2_superblock *s
 
     unsigned char block[4096];
 
-    request_readblocks(block, 4096, 1, 1, blocksize);
+    request_readblocks(block, 4096, (blocksize == 1024) ? 2 : 1, 1, blocksize);
     buffer_copy(bg, block, sizeof (struct ext2_blockgroup));
 
 }
