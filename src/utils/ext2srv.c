@@ -121,15 +121,16 @@ static void request_send(unsigned int sector, unsigned int count)
 
 }
 
-static void request_readblocks(void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks)
+static void request_readblocks(void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks, unsigned int blocksize)
 {
 
-    unsigned int total = nblocks * 512;
+    unsigned int diff = blocksize / 512;
+    unsigned int total = nblocks * blocksize;
     unsigned int read = 0;
     struct message message;
     char data[MESSAGE_SIZE];
 
-    request_send(sector, nblocks);
+    request_send(option_getdecimal("partoffset") + sector * diff, nblocks * diff);
 
     while (channel_poll(EVENT_DATA, &message, data))
     {
@@ -155,7 +156,7 @@ static void readsuperblock(struct ext2_superblock *sb)
 
     unsigned char block[1024];
 
-    request_readblocks(block, 1024, option_getdecimal("partoffset") + 2, 2);
+    request_readblocks(block, 1024, 1, 1, 1024);
     buffer_copy(sb, block, sizeof (struct ext2_superblock));
 
 }
@@ -165,7 +166,7 @@ static void readblockgroup(struct ext2_blockgroup *bg, struct ext2_superblock *s
 
     unsigned char block[4096];
 
-    request_readblocks(block, 4096, option_getdecimal("partoffset") + (blocksize / 512), 8);
+    request_readblocks(block, 4096, 1, 1, blocksize);
     buffer_copy(bg, block, sizeof (struct ext2_blockgroup));
 
 }
@@ -175,7 +176,7 @@ static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct 
 
     unsigned char block[4096];
 
-    request_readblocks(block, 4096, option_getdecimal("partoffset") + (blocksize / 512) * bg->blockTableAddress, 8);
+    request_readblocks(block, 4096, bg->blockTableAddress, 1, blocksize);
     buffer_copy(node, block + nodeindex * sb->nodeSize, sizeof (struct ext2_node));
 
 }
@@ -186,7 +187,7 @@ static unsigned int readdir(struct ext2_entry *entry, char *name, struct ext2_no
     unsigned char block[4096];
     unsigned int offset = 12 + 12 + 20;
 
-    request_readblocks(block, 4096, option_getdecimal("partoffset") + (blocksize / 512) * node->pointer0, 8);
+    request_readblocks(block, 4096, node->pointer0, 1, blocksize);
     buffer_copy(entry, block + offset, sizeof (struct ext2_entry));
     buffer_copy(name, block + offset + 8, entry->length);
 
@@ -199,7 +200,7 @@ static void readdata(void *data, unsigned int count, struct ext2_node *node, uns
 
     unsigned char block[4096];
 
-    request_readblocks(block, 4096, option_getdecimal("partoffset") + (blocksize / 512) * node->pointer0, 8);
+    request_readblocks(block, 4096, node->pointer0, 1, blocksize);
     buffer_write(data, count, block, 4096, 0);
 
 }
