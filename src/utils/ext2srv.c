@@ -181,30 +181,6 @@ static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct 
 
 }
 
-static unsigned int readdir(struct ext2_entry *entry, char *name, struct ext2_node *node, unsigned int blocksize, unsigned int index)
-{
-
-    unsigned char block[4096];
-    unsigned int offset = 12 + 12 + 20;
-
-    request_readblocks(block, 4096, node->pointer0, 1, blocksize);
-    buffer_copy(entry, block + offset, sizeof (struct ext2_entry));
-    buffer_copy(name, block + offset + 8, entry->length);
-
-    return entry->length;
-
-}
-
-static void readdata(void *data, unsigned int count, struct ext2_node *node, unsigned int blocksize)
-{
-
-    unsigned char block[4096];
-
-    request_readblocks(block, 4096, node->pointer0, 1, blocksize);
-    buffer_write(data, count, block, 4096, 0);
-
-}
-
 /*
 static void printsuperblock(struct ext2_superblock *superblock)
 {
@@ -246,7 +222,6 @@ static void printnode(struct ext2_node *node)
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Pointer 3: 0x%H8u\n", &node->pointer4);
 
 }
-*/
 
 static void printdir(struct ext2_entry *entry, char *name)
 {
@@ -259,6 +234,7 @@ static void printdir(struct ext2_entry *entry, char *name)
     channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "Name: %w\n", name, &length);
 
 }
+*/
 
 static void showinode(struct ext2_superblock *sb, unsigned int inode)
 {
@@ -276,22 +252,37 @@ static void showinode(struct ext2_superblock *sb, unsigned int inode)
     if ((node.type & 0xF000) == 0x4000)
     {
 
-        struct ext2_entry entry;
-        char name[1024];
+        struct ext2_entry *entry;
+        unsigned char block[4096];
+        unsigned int offset = 0;
 
-        readdir(&entry, name, &node, blocksize, 0);
-        printdir(&entry, name);
+        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+
+        while (offset < 4096)
+        {
+
+            unsigned int length;
+            char *name;
+
+            entry = (struct ext2_entry *)(block + offset);
+            name = (char *)entry + 8;
+            length = entry->length;
+
+            channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "(%u) %w\n", &entry->node, name, &length);
+
+            offset += entry->size;
+
+        }
 
     }
 
     if ((node.type & 0xF000) == 0x8000)
     {
 
-        char data[1024];
-        unsigned int length = 4;
+        unsigned char block[4096];
 
-        readdata(data, 1024, &node, blocksize);
-        channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "Data: %w\n", data, &length);
+        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
 
@@ -309,7 +300,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 2:\n");
         showinode(&sb, 2);
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 11:\n");
+        showinode(&sb, 11);
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 12:\n");
         showinode(&sb, 12);
 
     }
