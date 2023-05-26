@@ -239,12 +239,12 @@ static void printdir(struct ext2_entry *entry, char *name)
 static void showinode(struct ext2_superblock *sb, unsigned int inode)
 {
 
-    struct ext2_blockgroup bg;
-    struct ext2_node node;
     unsigned int blocksize = (1024 << sb->blockSize);
     unsigned int blockgroup = (inode - 1) / sb->nodeCountGroup;
     unsigned int nodeindex = (inode - 1) % sb->nodeCountGroup;
     unsigned int blockindex = (inode * sb->nodeSize) / blocksize;
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
 
     readblockgroup(&bg, sb, blocksize, blockindex, blockgroup);
     readnode(&node, sb, &bg, blocksize, nodeindex);
