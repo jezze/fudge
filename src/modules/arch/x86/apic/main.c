@@ -50,15 +50,10 @@ unsigned int apic_getid(void)
     return id;
 }
 
-/* TODO: Remove changing of CR3 register. This is a workaround because existing tasks cant access apic mapped register. */
 unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    unsigned int directory = cpu_getcr3();
-
-    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
     apic_outd(APIC_REG_EOI, 0);
-    cpu_setcr3(directory);
 
     return arch_resume(&general, &interrupt);
 
