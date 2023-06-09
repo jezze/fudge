@@ -121,8 +121,8 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
         if (mode->framebuffer)
         {
 
-            arch_setmapvideo(8, mode->framebuffer, mode->framebuffer, 0x00400000);
-            arch_setmapvideo(9, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
+            arch_mapvideo(8, mode->framebuffer, mode->framebuffer, 0x00400000);
+            arch_mapvideo(9, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
 
         }
 

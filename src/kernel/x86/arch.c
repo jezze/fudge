@@ -114,7 +114,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
 }
 
-void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_map(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = getkerneldirectory();
@@ -125,14 +125,25 @@ void arch_setmap(unsigned char index, unsigned int paddress, unsigned int vaddre
 
 }
 
-void arch_setmapvideo(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_mapuncached(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct mmu_directory *directory = getkerneldirectory();
     struct mmu_table *table = gettable(directory, index);
 
     buffer_clear(table, sizeof (struct mmu_table));
-    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_CACHEWRITE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_CACHEWRITE);
+    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+
+}
+
+void arch_mapvideo(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+{
+
+    struct mmu_directory *directory = getkerneldirectory();
+    struct mmu_table *table = gettable(directory, index);
+
+    buffer_clear(table, sizeof (struct mmu_table));
+    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
 
 }
 
@@ -404,10 +415,10 @@ void arch_setup1(void)
     arch_configureidt();
     arch_configuretss(&tss0, core0.id, core0.sp);
     buffer_clear(directory, sizeof (struct mmu_directory));
-    arch_setmap(0, 0x00000000, 0x00000000, 0x00400000);
-    arch_setmap(1, 0x00400000, 0x00400000, 0x00400000);
-    arch_setmap(2, 0x00800000, 0x00800000, 0x00400000);
-    arch_setmap(3, 0x00C00000, 0x00C00000, 0x00400000);
+    arch_map(0, 0x00000000, 0x00000000, 0x00400000);
+    arch_map(1, 0x00400000, 0x00400000, 0x00400000);
+    arch_map(2, 0x00800000, 0x00800000, 0x00400000);
+    arch_map(3, 0x00C00000, 0x00C00000, 0x00400000);
     mmu_setdirectory(directory);
     mmu_enable();
     kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);

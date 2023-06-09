@@ -131,8 +131,8 @@ static void driver_reset(unsigned int id)
 
     framebuffer = pci_ind(id, PCI_CONFIG_BAR0) & 0xFFFFFFF0;
 
-    arch_setmapvideo(4, framebuffer, framebuffer, 0x00400000);
-    arch_setmapvideo(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
+    arch_mapvideo(4, framebuffer, framebuffer, 0x00400000);
+    arch_mapvideo(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
 
 }
 

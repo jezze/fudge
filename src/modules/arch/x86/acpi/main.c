@@ -66,7 +66,7 @@ void module_init(void)
     if (!rsdp)
         return;
 
-    arch_setmap(6, rsdp->rsdt, rsdp->rsdt, 0x00100000);
+    arch_mapuncached(6, rsdp->rsdt, rsdp->rsdt, 0x00100000);
 
 }
 
