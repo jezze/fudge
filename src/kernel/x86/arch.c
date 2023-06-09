@@ -317,7 +317,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (core->task)
     {
 
-        unsigned int code = core->task->format->findbase(&core->task->node, address);
+        struct binary_format *format = binary_findformat(&core->task->node);
+        unsigned int code = format->findbase(&core->task->node, address);
         struct mmu_directory *directory = gettaskdirectory(core->task->id);
 
         if (code)
@@ -331,7 +332,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             mmu_map(directory, ctable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
             mmu_map(directory, stable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
-            if (!core->task->format->copyprogram(&core->task->node))
+            if (!format->copyprogram(&core->task->node))
                 task_signal(core->task, TASK_SIGNAL_KILL);
 
         }

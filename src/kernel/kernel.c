@@ -111,18 +111,24 @@ static unsigned int setupbinary(struct task *task, unsigned int sp, struct servi
 
     task->node.address = service->map(id);
 
-    if (!task->node.address)
-        return 0;
+    if (task->node.address)
+    {
 
-    task->format = binary_findformat(&task->node);
+        struct binary_format *format = binary_findformat(&task->node);
 
-    if (!task->format)
-        return 0;
+        if (format)
+        {
 
-    task->thread.ip = task->format->findentry(&task->node);
-    task->thread.sp = sp;
+            task->thread.ip = format->findentry(&task->node);
+            task->thread.sp = sp;
 
-    return task->id;
+            return task->id;
+
+        }
+
+    }
+
+    return 0;
 
 }
 

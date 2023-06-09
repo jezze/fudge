@@ -157,7 +157,6 @@ void task_init(struct task *task, unsigned int id)
     binary_initnode(&task->node);
     spinlock_init(&task->spinlock);
 
-    task->format = 0;
     task->id = id;
     task->state = TASK_STATE_DEAD;
 

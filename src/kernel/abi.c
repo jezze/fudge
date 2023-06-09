@@ -23,9 +23,9 @@ static unsigned int checkuserstack(struct task *task, void *address, unsigned in
 static unsigned int checkuserbase(struct task *task, void *address, unsigned int count)
 {
 
-    unsigned int value = (unsigned int)address;
+    struct binary_format *format = binary_findformat(&task->node);
 
-    return task->format->findbase(&task->node, value);
+    return (format) ? format->findbase(&task->node, (unsigned int)address) : 0;
 
 }
 
