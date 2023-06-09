@@ -190,7 +190,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     {
 
         if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-            task_signal(core->task, TASK_SIGNAL_KILL);
+            kernel_signal(core->task->id, TASK_SIGNAL_KILL);
 
     }
 
@@ -317,13 +317,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (core->task)
     {
 
-        struct binary_format *format = binary_findformat(&core->task->node);
-        unsigned int code = format->findbase(&core->task->node, address);
-        struct mmu_directory *directory = gettaskdirectory(core->task->id);
+        unsigned int code = kernel_codebase(core->task->id, address);
 
         if (code)
         {
 
+            struct mmu_directory *directory = gettaskdirectory(core->task->id);
             struct mmu_table *ctable = gettable(directory, 0);
             struct mmu_table *stable = gettable(directory, 1);
 
@@ -332,21 +331,22 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             mmu_map(directory, ctable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
             mmu_map(directory, stable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
-            if (!format->copyprogram(&core->task->node))
-                task_signal(core->task, TASK_SIGNAL_KILL);
+            if (!kernel_loadprogram(core->task->id))
+                kernel_signal(core->task->id, TASK_SIGNAL_KILL);
 
         }
 
         else
         {
 
+            struct mmu_directory *directory = gettaskdirectory(core->task->id);
             struct mmu_directory *kdirectory = getkerneldirectory();
             unsigned int index = address >> 22;
 
             if (!directory->tables[index] && kdirectory->tables[index])
                 directory->tables[index] = kdirectory->tables[index];
             else
-                task_signal(core->task, TASK_SIGNAL_KILL);
+                kernel_signal(core->task->id, TASK_SIGNAL_KILL);
 
         }
 

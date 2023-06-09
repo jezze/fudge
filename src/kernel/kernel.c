@@ -207,6 +207,35 @@ struct task *kernel_schedule(struct core *core)
 
 }
 
+unsigned int kernel_codebase(unsigned int task, unsigned int address)
+{
+
+    struct taskrow *taskrow = &taskrows[task];
+    struct binary_format *format = binary_findformat(&taskrow->task.node);
+
+    return format->findbase(&taskrow->task.node, address);
+
+}
+
+unsigned int kernel_loadprogram(unsigned int task)
+{
+
+    struct taskrow *taskrow = &taskrows[task];
+    struct binary_format *format = binary_findformat(&taskrow->task.node);
+
+    return format->copyprogram(&taskrow->task.node);
+
+}
+
+void kernel_signal(unsigned int task, unsigned int signal)
+{
+
+    struct taskrow *taskrow = &taskrows[task];
+
+    task_signal(&taskrow->task, signal);
+
+}
+
 struct descriptor *kernel_getdescriptor(unsigned int task, unsigned int descriptor)
 {
 

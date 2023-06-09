@@ -7,6 +7,9 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 void kernel_addlink(struct list *list, unsigned int target, unsigned int source);
 void kernel_removelink(struct list *list, unsigned int target);
 struct task *kernel_schedule(struct core *core);
+unsigned int kernel_codebase(unsigned int task, unsigned int address);
+unsigned int kernel_loadprogram(unsigned int task);
+void kernel_signal(unsigned int task, unsigned int signal);
 struct descriptor *kernel_getdescriptor(unsigned int task, unsigned int descriptor);
 void kernel_setdescriptor(unsigned int task, unsigned int descriptor, struct service *service, unsigned int id);
 void kernel_copydescriptor(unsigned int task, unsigned int descriptor, unsigned int ptask, unsigned int pdescriptor);
