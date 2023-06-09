@@ -1,7 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "binary.h"
-#include "task.h"
 #include "core.h"
 
 void core_register(struct core *core)
