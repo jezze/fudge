@@ -6,7 +6,6 @@ elfload /kernel/acpi.ko
 elfload /kernel/syse.ko
 elfload /kernel/pic.ko
 elfload /kernel/apic.ko
-elfload /kernel/ioapic.ko
 elfload /kernel/platform.ko
 elfload /kernel/pci.ko
 elfload /kernel/pit.ko
