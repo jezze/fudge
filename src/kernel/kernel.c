@@ -201,12 +201,33 @@ struct task *kernel_schedule(struct core *core)
 
 }
 
-struct descriptor *kernel_getdescriptor(struct task *task, unsigned int descriptor)
+struct descriptor *kernel_getdescriptor(unsigned int task, unsigned int descriptor)
 {
 
-    struct taskrow *taskrow = &taskrows[task->id];
+    struct taskrow *taskrow = &taskrows[task];
 
     return &taskrow->descriptors[(descriptor & (KERNEL_DESCRIPTORS - 1))];
+
+}
+
+void kernel_setdescriptor(unsigned int task, unsigned int descriptor, struct service *service, unsigned int id)
+{
+
+    struct descriptor *desc = kernel_getdescriptor(task, descriptor);
+
+    desc->service = service;
+    desc->id = id;
+
+}
+
+void kernel_copydescriptor(unsigned int task, unsigned int descriptor, unsigned int ptask, unsigned int pdescriptor)
+{
+
+    struct descriptor *desc = kernel_getdescriptor(task, descriptor);
+    struct descriptor *pdesc = kernel_getdescriptor(ptask, pdescriptor);
+
+    desc->service = pdesc->service;
+    desc->id = pdesc->id;
 
 }
 
@@ -260,7 +281,7 @@ void kernel_notify(struct list *links, unsigned int event, unsigned int count, v
 
 }
 
-struct task *kernel_createtask(void)
+unsigned int kernel_createtask(void)
 {
 
     struct list_item *taskitem = list_picktail(&deadtasks);
@@ -276,10 +297,10 @@ struct task *kernel_createtask(void)
         mailbox_reset(mailbox);
 
         for (i = 0; i < KERNEL_DESCRIPTORS; i++)
-            descriptor_reset(kernel_getdescriptor(task, i));
+            descriptor_reset(kernel_getdescriptor(task->id, i));
 
         if (task_transition(task, TASK_STATE_NEW))
-            return task;
+            return task->id;
 
     }
 
@@ -287,16 +308,16 @@ struct task *kernel_createtask(void)
 
 }
 
-void kernel_setuptask(struct task *task, unsigned int sp)
+void kernel_setuptask(unsigned int task, unsigned int sp, unsigned int descriptor)
 {
 
-    struct descriptor *prog = kernel_getdescriptor(task, FILE_PP);
-    struct taskrow *taskrow = &taskrows[task->id];
+    struct descriptor *pdescriptor = kernel_getdescriptor(task, descriptor);
+    struct taskrow *taskrow = &taskrows[task];
 
-    if (setupbinary(task, sp, prog->service, prog->id))
+    if (setupbinary(&taskrow->task, sp, pdescriptor->service, pdescriptor->id))
     {
 
-        if (task_transition(task, TASK_STATE_ASSIGNED))
+        if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
             coreassign(&taskrow->item);
 
     }
@@ -304,7 +325,7 @@ void kernel_setuptask(struct task *task, unsigned int sp)
     else
     {
 
-        if (task_transition(task, TASK_STATE_DEAD))
+        if (task_transition(&taskrow->task, TASK_STATE_DEAD))
             list_add(&deadtasks, &taskrow->item);
 
     }

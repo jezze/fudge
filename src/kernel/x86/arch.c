@@ -17,14 +17,14 @@ static struct arch_tss tss0;
 static struct mmu_directory *getkerneldirectory(void)
 {
 
-    return (struct mmu_directory *)ARCH_KERNELMMUPHYSICAL;
+    return (struct mmu_directory *)(ARCH_KERNELMMUPHYSICAL);
 
 }
 
 static struct mmu_directory *gettaskdirectory(unsigned int index)
 {
 
-    return (struct mmu_directory *)(ARCH_TASKMMUPHYSICAL + index * ARCH_TASKMMUSIZE);
+    return (struct mmu_directory *)(ARCH_TASKMMUPHYSICAL + ARCH_TASKMMUSIZE * index);
 
 }
 
@@ -35,25 +35,33 @@ static struct mmu_table *gettable(struct mmu_directory *directory, unsigned int 
 
 }
 
+static void initmap(unsigned int task)
+{
+
+    struct mmu_directory *tdirectory = gettaskdirectory(task);
+    struct mmu_directory *kdirectory = getkerneldirectory();
+
+    buffer_copy(tdirectory, kdirectory, sizeof (struct mmu_directory));
+
+}
+
 static unsigned int spawn(struct task *task, void *stack)
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int wdescriptor;} *args = stack;
-    struct task *ntask = kernel_createtask();
+    unsigned int ntask = kernel_createtask();
 
     if (ntask)
     {
 
-        descriptor_copy(kernel_getdescriptor(ntask, FILE_PP), kernel_getdescriptor(task, args->pdescriptor));
-        descriptor_copy(kernel_getdescriptor(ntask, FILE_PW), kernel_getdescriptor(task, args->wdescriptor));
-        buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
-
-        return ntask->id;
+        initmap(ntask);
+        kernel_copydescriptor(ntask, FILE_PP, task->id, args->pdescriptor);
+        kernel_copydescriptor(ntask, FILE_PW, task->id, args->wdescriptor);
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
 
     }
 
-    return 0;
+    return ntask;
 
 }
 
@@ -431,22 +439,17 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    struct task *ntask = kernel_createtask();
+    unsigned int ntask = kernel_createtask();
 
     if (ntask)
     {
 
-        struct descriptor *pdescriptor = kernel_getdescriptor(ntask, FILE_PP);
-        struct descriptor *wdescriptor = kernel_getdescriptor(ntask, FILE_PW);
         struct service *service = service_find(6, "initrd");
 
-        pdescriptor->service = service;
-        pdescriptor->id = service->child(service->child(service->root(), "bin", 3), "init", 4);
-        wdescriptor->service = service;
-        wdescriptor->id = service->root();
-
-        buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
+        initmap(ntask);
+        kernel_setdescriptor(ntask, FILE_PP, service, service->child(service->child(service->root(), "bin", 3), "init", 4));
+        kernel_setdescriptor(ntask, FILE_PW, service, service->root());
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
 
     }
 
