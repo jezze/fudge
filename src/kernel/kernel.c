@@ -29,8 +29,9 @@ static void unblocktasks(void)
     for (taskitem = blockedtasks.head; taskitem; taskitem = next)
     {
 
-        struct task *task = taskitem->data;
-        struct mailbox *mailbox = &taskrows[task->id].mailbox;
+        struct taskrow *taskrow = taskitem->data;
+        struct task *task = &taskrow->task;
+        struct mailbox *mailbox = &taskrow->mailbox;
 
         next = taskitem->next;
 
@@ -55,36 +56,37 @@ static void unblocktasks(void)
 
 }
 
-static void checksignals(unsigned int task)
+static void checksignals(struct taskrow *taskrow)
 {
 
-    struct taskrow *taskrow = &taskrows[task];
+    struct task *task = &taskrow->task;
+    struct list_item *item = &taskrow->item;
 
-    if (taskrow->task.signals.kills)
+    if (task->signals.kills)
     {
 
-        if (task_transition(&taskrow->task, TASK_STATE_DEAD))
-            list_add(&deadtasks, &taskrow->item);
+        if (task_transition(task, TASK_STATE_DEAD))
+            list_add(&deadtasks, item);
 
     }
 
-    else if (taskrow->task.signals.blocks)
+    else if (task->signals.blocks)
     {
 
-        if (task_transition(&taskrow->task, TASK_STATE_BLOCKED))
-            list_add(&blockedtasks, &taskrow->item);
+        if (task_transition(task, TASK_STATE_BLOCKED))
+            list_add(&blockedtasks, item);
 
     }
 
     else
     {
 
-        if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
-            coreassign(&taskrow->item);
+        if (task_transition(task, TASK_STATE_ASSIGNED))
+            coreassign(item);
 
     }
 
-    task_resetsignals(&taskrow->task.signals);
+    task_resetsignals(&task->signals);
 
 }
 
@@ -96,7 +98,8 @@ unsigned int picknewtask(struct core *core)
     if (taskitem)
     {
 
-        struct task *task = taskitem->data;
+        struct taskrow *taskrow = taskitem->data;
+        struct task *task = &taskrow->task;
 
         if (task_transition(task, TASK_STATE_RUNNING))
             return task->id;
@@ -156,7 +159,8 @@ void kernel_addlink(struct list *list, unsigned int target, unsigned int source)
     if (linkitem)
     {
 
-        struct link *link = linkitem->data;
+        struct linkrow *linkrow = linkitem->data;
+        struct link *link = &linkrow->link;
 
         link->source = source;
         link->target = target;
@@ -178,7 +182,8 @@ void kernel_removelink(struct list *list, unsigned int target)
     for (current = list->head; current; current = next)
     {
 
-        struct link *link = current->data;
+        struct linkrow *linkrow = current->data;
+        struct link *link = &linkrow->link;
 
         next = current->next;
 
@@ -200,7 +205,7 @@ unsigned int kernel_schedule(struct core *core)
 {
 
     if (core->task)
-        checksignals(core->task);
+        checksignals(&taskrows[core->task]);
 
     unblocktasks();
 
@@ -289,8 +294,9 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 {
 
     struct taskrow *taskrow = &taskrows[source];
+    struct mailbox *mailbox = &taskrow->mailbox;
 
-    return mailbox_pick(&taskrow->mailbox, message, data);
+    return mailbox_pick(mailbox, message, data);
 
 }
 
@@ -298,11 +304,12 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 {
 
     struct taskrow *taskrow = &taskrows[target];
+    struct mailbox *mailbox = &taskrow->mailbox;
     struct message message;
 
     message_init(&message, event, source, count);
 
-    return mailbox_place(&taskrow->mailbox, &message, data);
+    return mailbox_place(mailbox, &message, data);
 
 }
 
@@ -334,8 +341,9 @@ unsigned int kernel_createtask(void)
     if (taskitem)
     {
 
-        struct task *task = taskitem->data;
-        struct mailbox *mailbox = &taskrows[task->id].mailbox;
+        struct taskrow *taskrow = taskitem->data;
+        struct task *task = &taskrow->task;
+        struct mailbox *mailbox = &taskrow->mailbox;
         unsigned int i;
 
         task_reset(task);
@@ -405,7 +413,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
         task_register(&taskrow->task);
         mailbox_init(&taskrow->mailbox, (void *)(mbaddress + i * mbsize), mbsize);
         mailbox_register(&taskrow->mailbox);
-        list_inititem(&taskrow->item, &taskrow->task);
+        list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
@@ -419,7 +427,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
         struct linkrow *linkrow = &linkrows[i];
 
         link_init(&linkrow->link);
-        list_inititem(&linkrow->item, &linkrow->link);
+        list_inititem(&linkrow->item, linkrow);
         list_add(&freelinks, &linkrow->item);
 
     }
