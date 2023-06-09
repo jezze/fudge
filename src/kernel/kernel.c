@@ -7,6 +7,7 @@
 #include "link.h"
 #include "service.h"
 #include "descriptor.h"
+#include "abi.h"
 #include "kernel.h"
 
 static struct taskrow {struct task task; struct mailbox mailbox; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
@@ -54,23 +55,23 @@ static void unblocktasks(void)
 
 }
 
-static void checksignals(struct task *task)
+static void checksignals(unsigned int task)
 {
 
-    struct taskrow *taskrow = &taskrows[task->id];
+    struct taskrow *taskrow = &taskrows[task];
 
-    if (task->signals.kills)
+    if (taskrow->task.signals.kills)
     {
 
-        if (task_transition(task, TASK_STATE_DEAD))
+        if (task_transition(&taskrow->task, TASK_STATE_DEAD))
             list_add(&deadtasks, &taskrow->item);
 
     }
 
-    else if (task->signals.blocks)
+    else if (taskrow->task.signals.blocks)
     {
 
-        if (task_transition(task, TASK_STATE_BLOCKED))
+        if (task_transition(&taskrow->task, TASK_STATE_BLOCKED))
             list_add(&blockedtasks, &taskrow->item);
 
     }
@@ -78,16 +79,16 @@ static void checksignals(struct task *task)
     else
     {
 
-        if (task_transition(task, TASK_STATE_ASSIGNED))
+        if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
             coreassign(&taskrow->item);
 
     }
 
-    task_resetsignals(&task->signals);
+    task_resetsignals(&taskrow->task.signals);
 
 }
 
-static struct task *picknewtask(struct core *core)
+unsigned int picknewtask(struct core *core)
 {
 
     struct list_item *taskitem = list_picktail(&core->tasks);
@@ -98,7 +99,7 @@ static struct task *picknewtask(struct core *core)
         struct task *task = taskitem->data;
 
         if (task_transition(task, TASK_STATE_RUNNING))
-            return task;
+            return task->id;
 
     }
 
@@ -195,7 +196,7 @@ void kernel_removelink(struct list *list, unsigned int target)
 
 }
 
-struct task *kernel_schedule(struct core *core)
+unsigned int kernel_schedule(struct core *core)
 {
 
     if (core->task)
@@ -233,6 +234,15 @@ void kernel_signal(unsigned int task, unsigned int signal)
     struct taskrow *taskrow = &taskrows[task];
 
     task_signal(&taskrow->task, signal);
+
+}
+
+struct task_thread *kernel_getthread(unsigned int task)
+{
+
+    struct taskrow *taskrow = &taskrows[task];
+
+    return &taskrow->task.thread;
 
 }
 
@@ -340,6 +350,15 @@ unsigned int kernel_createtask(void)
     }
 
     return 0;
+
+}
+
+unsigned int kernel_call(unsigned int index, unsigned int task, void *stack)
+{
+
+    struct taskrow *taskrow = &taskrows[task];
+
+    return abi_call(index, &taskrow->task, stack);
 
 }
 

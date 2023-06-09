@@ -85,10 +85,12 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->task)
     {
 
-        buffer_copy(&registers[core->task->id], general, sizeof (struct cpu_general));
+        struct task_thread *thread = kernel_getthread(core->task);
 
-        core->task->thread.ip = interrupt->eip.value;
-        core->task->thread.sp = interrupt->esp.value;
+        buffer_copy(&registers[core->task], general, sizeof (struct cpu_general));
+
+        thread->ip = interrupt->eip.value;
+        thread->sp = interrupt->esp.value;
 
     }
 
@@ -97,14 +99,16 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->task)
     {
 
-        buffer_copy(general, &registers[core->task->id], sizeof (struct cpu_general));
+        struct task_thread *thread = kernel_getthread(core->task);
+
+        buffer_copy(general, &registers[core->task], sizeof (struct cpu_general));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
-        interrupt->eip.value = core->task->thread.ip;
-        interrupt->esp.value = core->task->thread.sp;
+        interrupt->eip.value = thread->ip;
+        interrupt->esp.value = thread->sp;
 
-        mmu_setdirectory(gettaskdirectory(core->task->id));
+        mmu_setdirectory(gettaskdirectory(core->task));
 
     }
 
@@ -190,7 +194,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     {
 
         if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-            kernel_signal(core->task->id, TASK_SIGNAL_KILL);
+            kernel_signal(core->task, TASK_SIGNAL_KILL);
 
     }
 
@@ -317,36 +321,36 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (core->task)
     {
 
-        unsigned int code = kernel_codebase(core->task->id, address);
+        unsigned int code = kernel_codebase(core->task, address);
 
         if (code)
         {
 
-            struct mmu_directory *directory = gettaskdirectory(core->task->id);
+            struct mmu_directory *directory = gettaskdirectory(core->task);
             struct mmu_table *ctable = gettable(directory, 0);
             struct mmu_table *stable = gettable(directory, 1);
 
             buffer_clear(ctable, sizeof (struct mmu_table));
             buffer_clear(stable, sizeof (struct mmu_table));
-            mmu_map(directory, ctable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            mmu_map(directory, stable, ARCH_TASKCODEPHYSICAL + core->task->id * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            mmu_map(directory, ctable, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            mmu_map(directory, stable, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
-            if (!kernel_loadprogram(core->task->id))
-                kernel_signal(core->task->id, TASK_SIGNAL_KILL);
+            if (!kernel_loadprogram(core->task))
+                kernel_signal(core->task, TASK_SIGNAL_KILL);
 
         }
 
         else
         {
 
-            struct mmu_directory *directory = gettaskdirectory(core->task->id);
+            struct mmu_directory *directory = gettaskdirectory(core->task);
             struct mmu_directory *kdirectory = getkerneldirectory();
             unsigned int index = address >> 22;
 
             if (!directory->tables[index] && kdirectory->tables[index])
                 directory->tables[index] = kdirectory->tables[index];
             else
-                kernel_signal(core->task->id, TASK_SIGNAL_KILL);
+                kernel_signal(core->task, TASK_SIGNAL_KILL);
 
         }
 
@@ -361,7 +365,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
     struct core *core = kernel_getcore();
 
-    general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
+    general.eax.value = kernel_call(general.eax.value, core->task, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);
 
