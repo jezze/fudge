@@ -46,8 +46,8 @@ static unsigned int spawn(struct task *task, void *stack)
 
         descriptor_copy(kernel_getdescriptor(ntask, FILE_PP), kernel_getdescriptor(task, args->pdescriptor));
         descriptor_copy(kernel_getdescriptor(ntask, FILE_PW), kernel_getdescriptor(task, args->wdescriptor));
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
 
         return ntask->id;
 
@@ -436,19 +436,17 @@ void arch_setup2(void)
     if (ntask)
     {
 
-        struct descriptor *prog = kernel_getdescriptor(ntask, FILE_PP);
-        struct descriptor *work = kernel_getdescriptor(ntask, FILE_PW);
+        struct descriptor *pdescriptor = kernel_getdescriptor(ntask, FILE_PP);
+        struct descriptor *wdescriptor = kernel_getdescriptor(ntask, FILE_PW);
+        struct service *service = service_find(6, "initrd");
 
-        work->service = service_find(6, "initrd");
-        work->id = work->service->root();
+        pdescriptor->service = service;
+        pdescriptor->id = service->child(service->child(service->root(), "bin", 3), "init", 4);
+        wdescriptor->service = service;
+        wdescriptor->id = service->root();
 
-        descriptor_copy(prog, work);
-
-        prog->id = prog->service->child(prog->id, "bin", 3);
-        prog->id = prog->service->child(prog->id, "init", 4);
-
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
         buffer_copy(gettaskdirectory(ntask->id), getkerneldirectory(), sizeof (struct mmu_directory));
+        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL);
 
     }
 
