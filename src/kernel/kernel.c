@@ -349,7 +349,7 @@ unsigned int kernel_createtask(void)
         mailbox_reset(mailbox);
 
         for (i = 0; i < KERNEL_DESCRIPTORS; i++)
-            descriptor_reset(kernel_getdescriptor(task->id, i));
+            descriptor_reset(&taskrow->descriptors[i]);
 
         if (task_transition(task, TASK_STATE_NEW))
             return task->id;
