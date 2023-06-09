@@ -148,7 +148,7 @@ static unsigned int kill(unsigned int task, void *stack)
 
     struct {void *caller; unsigned int id;} *args = stack;
 
-    kernel_kill(task, args->id);
+    kernel_signal(args->id, TASK_SIGNAL_KILL);
 
     return 0;
 

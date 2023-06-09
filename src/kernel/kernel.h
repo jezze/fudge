@@ -14,7 +14,6 @@ struct task_thread *kernel_getthread(unsigned int task);
 struct descriptor *kernel_getdescriptor(unsigned int task, unsigned int descriptor);
 void kernel_setdescriptor(unsigned int task, unsigned int descriptor, struct service *service, unsigned int id);
 void kernel_copydescriptor(unsigned int task, unsigned int descriptor, unsigned int ptask, unsigned int pdescriptor);
-void kernel_kill(unsigned int source, unsigned int target);
 unsigned int kernel_pick(unsigned int source, struct message *message, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 void kernel_notify(struct list *states, unsigned int event, unsigned int count, void *data);

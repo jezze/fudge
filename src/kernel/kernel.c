@@ -280,15 +280,6 @@ void kernel_copydescriptor(unsigned int task, unsigned int descriptor, unsigned 
 
 }
 
-void kernel_kill(unsigned int source, unsigned int target)
-{
-
-    struct taskrow *taskrow = &taskrows[target];
-
-    task_signal(&taskrow->task, TASK_SIGNAL_KILL);
-
-}
-
 unsigned int kernel_pick(unsigned int source, struct message *message, void *data)
 {
 
