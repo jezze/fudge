@@ -50,7 +50,7 @@ void syse_syscall(struct cpu_general general)
 
     struct core *core = kernel_getcore();
 
-    general.eax.value = kernel_call(general.eax.value, core->task, (void *)(general.ecx.value + 8));
+    general.eax.value = abi_call(general.eax.value, core->task, (void *)(general.ecx.value + 8));
 
     syse_resume(&general);
 

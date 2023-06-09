@@ -19,6 +19,5 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 void kernel_notify(struct list *states, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
-unsigned int kernel_call(unsigned int index, unsigned int task, void *stack);
 void kernel_setuptask(unsigned int task, unsigned int sp, unsigned int descriptor);
 void kernel_setup(unsigned int mbaddress, unsigned int mbsize);

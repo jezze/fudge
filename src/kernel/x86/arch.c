@@ -45,7 +45,7 @@ static void initmap(unsigned int task)
 
 }
 
-static unsigned int spawn(struct task *task, void *stack)
+static unsigned int spawn(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int wdescriptor;} *args = stack;
@@ -55,8 +55,8 @@ static unsigned int spawn(struct task *task, void *stack)
     {
 
         initmap(ntask);
-        kernel_copydescriptor(ntask, FILE_PP, task->id, args->pdescriptor);
-        kernel_copydescriptor(ntask, FILE_PW, task->id, args->wdescriptor);
+        kernel_copydescriptor(ntask, FILE_PP, task, args->pdescriptor);
+        kernel_copydescriptor(ntask, FILE_PW, task, args->wdescriptor);
         kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
 
     }
@@ -365,7 +365,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
     struct core *core = kernel_getcore();
 
-    general.eax.value = kernel_call(general.eax.value, core->task, interrupt.esp.reference);
+    general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);
 

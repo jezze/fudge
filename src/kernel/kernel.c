@@ -7,7 +7,6 @@
 #include "link.h"
 #include "service.h"
 #include "descriptor.h"
-#include "abi.h"
 #include "kernel.h"
 
 static struct taskrow {struct task task; struct mailbox mailbox; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
@@ -358,15 +357,6 @@ unsigned int kernel_createtask(void)
     }
 
     return 0;
-
-}
-
-unsigned int kernel_call(unsigned int index, unsigned int task, void *stack)
-{
-
-    struct taskrow *taskrow = &taskrows[task];
-
-    return abi_call(index, &taskrow->task, stack);
 
 }
 

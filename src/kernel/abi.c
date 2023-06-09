@@ -9,9 +9,9 @@
 
 #define CALLS                           32
 
-static unsigned int (*calls[CALLS])(struct task *task, void *stack);
+static unsigned int (*calls[CALLS])(unsigned int task, void *stack);
 
-static unsigned int checkuserstack(struct task *task, void *address, unsigned int count)
+static unsigned int checkuserstack(unsigned int task, void *address, unsigned int count)
 {
 
     unsigned int value = (unsigned int)address;
@@ -20,30 +20,21 @@ static unsigned int checkuserstack(struct task *task, void *address, unsigned in
 
 }
 
-static unsigned int checkuserbase(struct task *task, void *address, unsigned int count)
+static unsigned int checkuserspace(unsigned int task, void *address, unsigned int count)
 {
 
-    struct binary_format *format = binary_findformat(&task->node);
-
-    return (format) ? format->findbase(&task->node, (unsigned int)address) : 0;
+    return checkuserstack(task, address, count) || kernel_codebase(task, (unsigned int)address);
 
 }
 
-static unsigned int checkuserspace(struct task *task, void *address, unsigned int count)
-{
-
-    return checkuserstack(task, address, count) || checkuserbase(task, address, count);
-
-}
-
-static unsigned int checkbuffer(struct task *task, void *address, unsigned int count)
+static unsigned int checkbuffer(unsigned int task, void *address, unsigned int count)
 {
 
     return (address && count) ? checkuserspace(task, address, count) : 0;
 
 }
 
-static unsigned int checkzerobuffer(struct task *task, void *address, unsigned int count)
+static unsigned int checkzerobuffer(unsigned int task, void *address, unsigned int count)
 {
 
     return (address && count) ? checkuserspace(task, address, count) : (address == 0 && count == 0);
@@ -103,54 +94,54 @@ static unsigned int findpath(struct service *service, unsigned int id, char *pat
 
 }
 
-static unsigned int debug(struct task *task, void *stack)
+static unsigned int debug(unsigned int task, void *stack)
 {
 
     return 0;
 
 }
 
-static unsigned int walk(struct task *task, void *stack)
+static unsigned int walk(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(task->id, args->pdescriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
     struct service *service;
 
     if (!checkzerobuffer(task, args->path, args->length) || !descriptor_check(pdescriptor))
         return 0;
 
-    kernel_copydescriptor(task->id, args->descriptor, task->id, args->pdescriptor);
+    kernel_copydescriptor(task, args->descriptor, task, args->pdescriptor);
 
     if ((service = findservice(args->path, args->length)))
-        kernel_setdescriptor(task->id, args->descriptor, service, service->root());
+        kernel_setdescriptor(task, args->descriptor, service, service->root());
 
     return descriptor->id = findpath(descriptor->service, descriptor->id, args->path, args->length);
 
 }
 
-static unsigned int create(struct task *task, void *stack)
+static unsigned int create(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *name; unsigned int length;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(task->id, args->pdescriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
 
     if (!checkbuffer(task, args->name, args->length) || !descriptor_check(pdescriptor))
         return 0;
 
-    kernel_copydescriptor(task->id, args->descriptor, task->id, args->pdescriptor);
+    kernel_copydescriptor(task, args->descriptor, task, args->pdescriptor);
 
     return descriptor->id = descriptor->service->create(descriptor->id, args->name, args->length);
 
 }
 
-static unsigned int destroy(struct task *task, void *stack)
+static unsigned int destroy(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!descriptor_check(descriptor))
         return 0;
@@ -159,22 +150,22 @@ static unsigned int destroy(struct task *task, void *stack)
 
 }
 
-static unsigned int kill(struct task *task, void *stack)
+static unsigned int kill(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int id;} *args = stack;
 
-    kernel_kill(task->id, args->id);
+    kernel_kill(task, args->id);
 
     return 0;
 
 }
 
-static unsigned int stat(struct task *task, void *stack)
+static unsigned int stat(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; struct record *record;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!checkbuffer(task, args->record, sizeof (struct record)) || !descriptor_check(descriptor))
         return 0;
@@ -183,12 +174,12 @@ static unsigned int stat(struct task *task, void *stack)
 
 }
 
-static unsigned int list(struct task *task, void *stack)
+static unsigned int list(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int cdescriptor; unsigned int count; struct record *records;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
-    struct descriptor *cdescriptor = kernel_getdescriptor(task->id, args->cdescriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct descriptor *cdescriptor = kernel_getdescriptor(task, args->cdescriptor);
     unsigned int count;
 
     if (!checkbuffer(task, args->records, args->count * sizeof (struct record)) || !descriptor_check(descriptor) || !descriptor_check(cdescriptor))
@@ -204,11 +195,11 @@ static unsigned int list(struct task *task, void *stack)
 
 }
 
-static unsigned int read(struct task *task, void *stack)
+static unsigned int read(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!checkbuffer(task, args->buffer, args->count) || !descriptor_check(descriptor))
         return 0;
@@ -217,11 +208,11 @@ static unsigned int read(struct task *task, void *stack)
 
 }
 
-static unsigned int write(struct task *task, void *stack)
+static unsigned int write(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!checkbuffer(task, args->buffer, args->count) || !descriptor_check(descriptor))
         return 0;
@@ -230,11 +221,11 @@ static unsigned int write(struct task *task, void *stack)
 
 }
 
-static unsigned int load(struct task *task, void *stack)
+static unsigned int load(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct binary_format *format;
     struct binary_node node;
     void (*module_init)(void);
@@ -267,11 +258,11 @@ static unsigned int load(struct task *task, void *stack)
 
 }
 
-static unsigned int unload(struct task *task, void *stack)
+static unsigned int unload(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
     struct binary_format *format;
     struct binary_node node;
     void (*module_unregister)(void);
@@ -298,23 +289,23 @@ static unsigned int unload(struct task *task, void *stack)
 
 }
 
-static unsigned int spawn(struct task *task, void *stack)
+static unsigned int spawn(unsigned int task, void *stack)
 {
 
     return 0;
 
 }
 
-static unsigned int despawn(struct task *task, void *stack)
+static unsigned int despawn(unsigned int task, void *stack)
 {
 
-    task_signal(task, TASK_SIGNAL_KILL);
+    kernel_signal(task, TASK_SIGNAL_KILL);
 
     return 0;
 
 }
 
-static unsigned int pick(struct task *task, void *stack)
+static unsigned int pick(unsigned int task, void *stack)
 {
 
     struct {void *caller; struct message *message; void *data;} *args = stack;
@@ -323,16 +314,16 @@ static unsigned int pick(struct task *task, void *stack)
     if (!checkbuffer(task, args->message, sizeof (struct message)) || !checkbuffer(task, args->data, MESSAGE_SIZE))
         return 0;
 
-    count = kernel_pick(task->id, args->message, args->data);
+    count = kernel_pick(task, args->message, args->data);
 
     if (!count)
-        task_signal(task, TASK_SIGNAL_BLOCK);
+        kernel_signal(task, TASK_SIGNAL_BLOCK);
 
     return count;
 
 }
 
-static unsigned int place(struct task *task, void *stack)
+static unsigned int place(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int id; unsigned int event; unsigned int count; void *data;} *args = stack;
@@ -340,57 +331,57 @@ static unsigned int place(struct task *task, void *stack)
     if (!checkzerobuffer(task, args->data, args->count))
         return 0;
 
-    return kernel_place(task->id, args->id, args->event, args->count, args->data);
+    return kernel_place(task, args->id, args->event, args->count, args->data);
 
 }
 
-static unsigned int link(struct task *task, void *stack)
+static unsigned int link(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int source;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!descriptor_check(descriptor))
         return 0;
 
-    return descriptor->service->link(descriptor->id, task->id, args->source);
+    return descriptor->service->link(descriptor->id, task, args->source);
 
 }
 
-static unsigned int unlink(struct task *task, void *stack)
+static unsigned int unlink(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!descriptor_check(descriptor))
         return 0;
 
-    return descriptor->service->unlink(descriptor->id, task->id);
+    return descriptor->service->unlink(descriptor->id, task);
 
 }
 
-static unsigned int notify(struct task *task, void *stack)
+static unsigned int notify(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int descriptor; unsigned int event; unsigned int count; void *data;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task->id, args->descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
 
     if (!checkzerobuffer(task, args->data, args->count) || !descriptor_check(descriptor))
         return 0;
 
-    return descriptor->service->notify(descriptor->id, task->id, args->event, args->count, args->data);
+    return descriptor->service->notify(descriptor->id, task, args->event, args->count, args->data);
 
 }
 
-unsigned int abi_call(unsigned int index, struct task *task, void *stack)
+unsigned int abi_call(unsigned int index, unsigned int task, void *stack)
 {
 
     return index < CALLS ? calls[index](task, stack) : 0;
 
 }
 
-void abi_setcallback(unsigned int index, unsigned int (*callback)(struct task *task, void *stack))
+void abi_setcallback(unsigned int index, unsigned int (*callback)(unsigned int task, void *stack))
 {
 
     calls[index] = callback;
