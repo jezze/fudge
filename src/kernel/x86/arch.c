@@ -28,13 +28,6 @@ static struct mmu_directory *gettaskdirectory(unsigned int index)
 
 }
 
-static struct mmu_table *gettable(struct mmu_directory *directory, unsigned int index)
-{
-
-    return (struct mmu_table *)(directory + 1) + index;
-
-}
-
 static void initmap(unsigned int task)
 {
 
@@ -42,6 +35,16 @@ static void initmap(unsigned int task)
     struct mmu_directory *kdirectory = getkerneldirectory();
 
     buffer_copy(tdirectory, kdirectory, sizeof (struct mmu_directory));
+
+}
+
+static void map(struct mmu_directory *directory, unsigned int index, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+{
+
+    struct mmu_table *table = (struct mmu_table *)(directory + 1) + index;
+
+    buffer_clear(table, sizeof (struct mmu_table));
+    mmu_map(directory, table, paddress, vaddress, size, tflags, pflags);
 
 }
 
@@ -129,33 +132,21 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 void arch_map(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = getkerneldirectory();
-    struct mmu_table *table = gettable(directory, index);
-
-    buffer_clear(table, sizeof (struct mmu_table));
-    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(getkerneldirectory(), index, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
 void arch_mapuncached(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = getkerneldirectory();
-    struct mmu_table *table = gettable(directory, index);
-
-    buffer_clear(table, sizeof (struct mmu_table));
-    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+    map(getkerneldirectory(), index, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
 
 }
 
 void arch_mapvideo(unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct mmu_directory *directory = getkerneldirectory();
-    struct mmu_table *table = gettable(directory, index);
-
-    buffer_clear(table, sizeof (struct mmu_table));
-    mmu_map(directory, table, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
+    map(getkerneldirectory(), index, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
 
 }
 
@@ -322,18 +313,13 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     {
 
         unsigned int code = kernel_codebase(core->task, address);
+        struct mmu_directory *directory = gettaskdirectory(core->task);
 
         if (code)
         {
 
-            struct mmu_directory *directory = gettaskdirectory(core->task);
-            struct mmu_table *ctable = gettable(directory, 0);
-            struct mmu_table *stable = gettable(directory, 1);
-
-            buffer_clear(ctable, sizeof (struct mmu_table));
-            buffer_clear(stable, sizeof (struct mmu_table));
-            mmu_map(directory, ctable, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            mmu_map(directory, stable, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 0, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 1, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
             if (!kernel_loadprogram(core->task))
                 kernel_signal(core->task, TASK_SIGNAL_KILL);
@@ -343,7 +329,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         else
         {
 
-            struct mmu_directory *directory = gettaskdirectory(core->task);
             struct mmu_directory *kdirectory = getkerneldirectory();
             unsigned int index = address >> 22;
 
