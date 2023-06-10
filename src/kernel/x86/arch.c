@@ -359,8 +359,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 void arch_configuregdt(void)
 {
 
-    gdt_initpointer(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
-    gdt_cleardescriptors(&gdt->pointer, ARCH_GDTDESCRIPTORS);
+    gdt_init(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
     gdt_setdescriptor(&gdt->pointer, ARCH_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, ARCH_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, ARCH_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -372,8 +371,7 @@ void arch_configuregdt(void)
 void arch_configureidt(void)
 {
 
-    idt_initpointer(&idt->pointer, ARCH_IDTDESCRIPTORS, idt->descriptors);
-    idt_cleardescriptors(&idt->pointer, ARCH_IDTDESCRIPTORS);
+    idt_init(&idt->pointer, ARCH_IDTDESCRIPTORS, idt->descriptors);
     idt_setdescriptor(&idt->pointer, 0x00, isr_zero, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x01, isr_debug, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x02, isr_nmi, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -396,7 +394,7 @@ void arch_configureidt(void)
 void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 {
 
-    tss_initpointer(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
+    tss_init(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
     tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), sp);
     gdt_setdescriptor(&gdt->pointer, ARCH_TSS + id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, ARCH_TSS + id));

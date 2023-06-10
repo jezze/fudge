@@ -38,5 +38,4 @@ struct gdt_pointer
 
 unsigned short gdt_getselector(struct gdt_pointer *pointer, unsigned char index);
 void gdt_setdescriptor(struct gdt_pointer *pointer, unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags);
-void gdt_cleardescriptors(struct gdt_pointer *pointer, unsigned int count);
-void gdt_initpointer(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors);
+void gdt_init(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors);

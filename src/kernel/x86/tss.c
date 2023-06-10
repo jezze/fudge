@@ -9,11 +9,13 @@ void tss_setdescriptor(struct tss_pointer *pointer, unsigned char index, unsigne
 
 }
 
-void tss_initpointer(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors)
+void tss_init(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors)
 {
 
     pointer->descriptors = descriptors;
     pointer->limit = sizeof (struct tss_descriptor) * count;
+
+    buffer_clear(descriptors, sizeof (struct tss_descriptor) * count);
 
 }
 
