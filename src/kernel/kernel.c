@@ -228,7 +228,7 @@ unsigned int kernel_loadprogram(unsigned int task)
     struct taskrow *taskrow = &taskrows[task];
     struct binary_format *format = binary_findformat(&taskrow->task.node);
 
-    return format->copyprogram(&taskrow->task.node);
+    return (format) ? format->copyprogram(&taskrow->task.node) : 0;
 
 }
 

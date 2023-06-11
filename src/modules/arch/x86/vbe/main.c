@@ -106,11 +106,6 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 
     unsigned short modenum;
 
-    buffer_copy((void *)0x9000, (void *)(unsigned int)vbe_begin16, (unsigned int)vbe_end16 - (unsigned int)vbe_begin16);
-
-    /* Not used right now */
-    vbe_getedid();
-
     modenum = find(width, height, bpp);
 
     if (modenum != 0xFFFF)
@@ -240,6 +235,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
+    buffer_copy((void *)0x9000, (void *)(unsigned int)vbe_lowmemstart, (unsigned int)vbe_lowmemend - (unsigned int)vbe_lowmemstart);
     base_initdriver(&driver, "vbe", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }

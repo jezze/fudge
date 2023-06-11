@@ -11,7 +11,7 @@
 vbe_getinfo:
     mov eax, VBE_INFO
     pushad
-    mov edx, VBE_CODE + (getinfo_real - vbe_begin16)
+    mov edx, VBE_CODE + (getinfo_real - vbe_lowmemstart)
     jmp switch_16
 
 .global vbe_getvideomode
@@ -21,7 +21,7 @@ vbe_getvideomode:
     mov eax, VBE_MODENUM
     mov ebx, [esp + 32 + 4]
     mov [eax], ebx
-    mov edx, VBE_CODE + (getvideomode_real - vbe_begin16)
+    mov edx, VBE_CODE + (getvideomode_real - vbe_lowmemstart)
     jmp switch_16
 
 .global vbe_setvideomode
@@ -30,13 +30,13 @@ vbe_setvideomode:
     mov eax, VBE_MODENUM
     mov ebx, [esp + 32 + 4]
     mov [eax], ebx
-    mov edx, VBE_CODE + (setvideomode_real - vbe_begin16)
+    mov edx, VBE_CODE + (setvideomode_real - vbe_lowmemstart)
     jmp switch_16
 
 .global vbe_getedid
 vbe_getedid:
     pushad
-    mov edx, VBE_CODE + (getedid_real - vbe_begin16)
+    mov edx, VBE_CODE + (getedid_real - vbe_lowmemstart)
     jmp switch_16
 
 switch_16:
@@ -45,15 +45,15 @@ switch_16:
     mov eax, cr0
     and eax, ~0x80000000
     mov cr0, eax
-    mov eax, VBE_CODE + (realmode_gdt - vbe_begin16)
+    mov eax, VBE_CODE + (realmode_gdt - vbe_lowmemstart)
     lgdt [eax]
     push 0x8
-    mov eax, VBE_CODE + (switch_real - vbe_begin16)
+    mov eax, VBE_CODE + (switch_real - vbe_lowmemstart)
     push eax
     lret
 
-.global vbe_begin16
-vbe_begin16:
+.global vbe_lowmemstart
+vbe_lowmemstart:
 
 .code16
 
@@ -64,7 +64,7 @@ switch_real:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov eax, VBE_CODE + (realmode_idt - vbe_begin16)
+    mov eax, VBE_CODE + (realmode_idt - vbe_lowmemstart)
     lidt [eax]
     mov eax, cr0
     and eax, 0x7FFFFFFE
@@ -145,7 +145,7 @@ leave_real:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ljmp 0x8:(VBE_CODE + switch_32 - vbe_begin16)
+    ljmp 0x8:(VBE_CODE + switch_32 - vbe_lowmemstart)
 
 .code32
 
@@ -167,7 +167,7 @@ switch_32:
 .global realmode_gdt
 realmode_gdt:
 .word (3 * 8) - 1
-.long (VBE_CODE + realmode_gdt - vbe_begin16 + 8)
+.long (VBE_CODE + realmode_gdt - vbe_lowmemstart + 8)
 .word 0
 
 .long 0x0
@@ -192,6 +192,6 @@ realmode_idt:
 .word 0x3FF
 .long 0x0
 
-.global vbe_end16
-vbe_end16:
+.global vbe_lowmemend
+vbe_lowmemend:
 
