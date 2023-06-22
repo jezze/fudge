@@ -109,32 +109,6 @@ unsigned int picknewtask(struct core *core)
 
 }
 
-static unsigned int setupbinary(struct task *task, unsigned int sp, struct service *service, unsigned int id)
-{
-
-    task->node.address = service->map(id);
-
-    if (task->node.address)
-    {
-
-        struct binary_format *format = binary_findformat(&task->node);
-
-        if (format)
-        {
-
-            task->thread.ip = format->findentry(&task->node);
-            task->thread.sp = sp;
-
-            return task->id;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 struct core *kernel_getcore(void)
 {
 
@@ -351,13 +325,36 @@ unsigned int kernel_createtask(void)
 
 }
 
-void kernel_setuptask(unsigned int task, unsigned int sp, unsigned int descriptor)
+void kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int descriptor)
 {
 
-    struct descriptor *pdescriptor = kernel_getdescriptor(task, descriptor);
-    struct taskrow *taskrow = &taskrows[task];
+    struct descriptor *pdescriptor = kernel_getdescriptor(taskid, descriptor);
+    struct taskrow *taskrow = &taskrows[taskid];
+    struct task *task = &taskrow->task;
 
-    if (setupbinary(&taskrow->task, sp, pdescriptor->service, pdescriptor->id))
+    if (pdescriptor)
+    {
+
+        task->node.address = pdescriptor->service->map(pdescriptor->id);
+
+        if (task->node.address)
+        {
+
+            struct binary_format *format = binary_findformat(&task->node);
+
+            if (format)
+            {
+
+                task->thread.ip = format->findentry(&task->node);
+                task->thread.sp = sp;
+
+            }
+
+        }
+
+    }
+
+    if (task->thread.ip)
     {
 
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))

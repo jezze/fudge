@@ -60,7 +60,7 @@ static unsigned int spawn(unsigned int task, void *stack)
         initmap(ntask);
         kernel_copydescriptor(ntask, FILE_PP, task, args->pdescriptor);
         kernel_copydescriptor(ntask, FILE_PW, task, args->wdescriptor);
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
+        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
 
     }
 
@@ -438,7 +438,7 @@ void arch_setup2(void)
         initmap(ntask);
         kernel_setdescriptor(ntask, FILE_PP, service, service->child(service->child(service->root(), "bin", 3), "init", 4));
         kernel_setdescriptor(ntask, FILE_PW, service, service->root());
-        kernel_setuptask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
+        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
 
     }
 
