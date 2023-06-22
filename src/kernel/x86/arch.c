@@ -60,11 +60,12 @@ static unsigned int spawn(unsigned int task, void *stack)
         initmap(ntask);
         kernel_copydescriptor(ntask, FILE_PP, task, args->pdescriptor);
         kernel_copydescriptor(ntask, FILE_PW, task, args->wdescriptor);
-        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
+
+        return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
 
     }
 
-    return ntask;
+    return 0;
 
 }
 

@@ -325,7 +325,7 @@ unsigned int kernel_createtask(void)
 
 }
 
-void kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int descriptor)
+unsigned int kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int descriptor)
 {
 
     struct descriptor *pdescriptor = kernel_getdescriptor(taskid, descriptor);
@@ -360,6 +360,8 @@ void kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int descript
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
             coreassign(&taskrow->item);
 
+        return taskid;
+
     }
 
     else
@@ -367,6 +369,8 @@ void kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int descript
 
         if (task_transition(&taskrow->task, TASK_STATE_DEAD))
             list_add(&deadtasks, &taskrow->item);
+
+        return 0;
 
     }
 
