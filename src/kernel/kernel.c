@@ -218,7 +218,7 @@ unsigned int kernel_codebase(unsigned int task, unsigned int address)
     struct taskrow *taskrow = &taskrows[task];
     struct binary_format *format = binary_findformat(&taskrow->task.node);
 
-    return format->findbase(&taskrow->task.node, address);
+    return (format) ? format->findbase(&taskrow->task.node, address) : 0;
 
 }
 
