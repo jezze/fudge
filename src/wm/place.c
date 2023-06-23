@@ -383,8 +383,8 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
     struct util_size total;
-    unsigned int lastrowx = 0;
-    unsigned int lastrowy = 0;
+    unsigned int cx = x;
+    unsigned int cy = y;
     int offset = 0;
 
     util_initsize(&total, 0, 0);
@@ -399,11 +399,11 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
 
             struct widget_text *text = child->data;
 
-            placechild(child, x, y + lastrowy, lastrowx, 0, 0, maxw, INFINITY, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
+            placechild(child, cx, cy, offx, 0, 0, maxw, INFINITY, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
             addtotal(&total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
 
-            lastrowx = text->cachetext.lastrowx;
-            lastrowy += text->cachetext.lastrowy;
+            cy += text->cachetext.lastrowy;
+            offx = text->cachetext.lastrowx;
 
         }
 
