@@ -220,27 +220,27 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     {
 
     case ATTR_FLOW_DEFAULT:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding * 8, layout->padding * 8, 0, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTAL:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding * 8, layout->padding * 8, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTALSTRETCH:
-        placechildren(widget, x, y, 0, maxh, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
+        placechildren(widget, x, y, 0, maxh, maxw, maxh, layout->padding * 8, layout->padding * 8, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_VERTICAL:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding * 8, layout->padding * 8, 0, 1, &total);
 
         break;
 
     case ATTR_FLOW_VERTICALSTRETCH:
-        placechildren(widget, x, y, maxw, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
+        placechildren(widget, x, y, maxw, 0, maxw, maxh, layout->padding * 8, layout->padding * 8, 0, 1, &total);
 
         break;
 

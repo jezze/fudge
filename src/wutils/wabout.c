@@ -29,7 +29,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"About\"\n"
-        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"8\" span \"1\"\n"
+        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\" span \"1\"\n"
         "    + text in \"base\" weight \"bold\" wrap \"word\" content \"Fudge Operating System\"\n"
         "    + text in \"base\" wrap \"word\" content \"(more info will come soon)\"\n"
         "    + text in \"base\" weight \"bold\" wrap \"word\" content \"Contributors (in no particular order)\"\n"

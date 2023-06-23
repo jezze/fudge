@@ -29,7 +29,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Settings\"\n"
-        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"8\" span \"1\"\n"
+        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\" span \"1\"\n"
         "    + layout id \"languages-list\" in \"base\" flow \"horizontal\"\n"
         "      + text in \"languages-list\" wrap \"word\" span \"1\" content \"Language\"\n"
         "      + select id \"languages\" in \"languages-list\" label \"English (en_US)\"\n"
