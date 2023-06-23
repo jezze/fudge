@@ -156,7 +156,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "        + text id \"path\" in \"pathbox\"\n"
         "      + button in \"top\" label \"Up\" onclick \"up\"\n"
         "    + layout id \"main\" in \"base\" flow \"horizontal-stretch\" padding \"1\" span \"1\"\n"
-        "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\"\n"
+        "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n"
         "    + layout id \"bottom\" in \"base\" flow \"horizontal\" padding \"1\"\n"
         "      + button in \"bottom\" label \"Copy\" onclick \"action copy\"\n"
         "      + button in \"bottom\" label \"Cut\" onclick \"action cut\"\n"
