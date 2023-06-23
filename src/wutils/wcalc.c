@@ -141,7 +141,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data0 =
         "+ window id \"window\" title \"Calculator\"\n"
-        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\" span \"1\"\n"
+        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\"\n"
         "    + layout id \"display\" in \"base\" flow \"horizontal\"\n"
         "      + textbox id \"output\" in \"display\" mode \"readonly\" span \"1\"\n"
         "        + text id \"result\" in \"output\" content \"0\" halign \"right\"\n";
