@@ -57,32 +57,6 @@ static void placechild(struct widget *widget, int x, int y, int offx, int minw, 
 
 }
 
-static void placebutton(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct widget_button *button = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
-    struct text_rowinfo rowinfo;
-
-    text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
-    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
-    cache_initrow(&button->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
-
-}
-
-static void placechoice(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
-{
-
-    struct widget_choice *choice = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
-    struct text_rowinfo rowinfo;
-
-    text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
-    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
-    cache_initrow(&choice->cacherow, &rowinfo, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
-
-}
-
 static unsigned int getnumspans(struct widget *widget)
 {
 
@@ -151,7 +125,7 @@ static void calculatespan(struct widget *widget, int x, int y, unsigned int minw
 
 }
 
-static void placeS(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
+static void placechildren(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
 {
 
     struct list_item *current = 0;
@@ -210,6 +184,32 @@ static void placeS(struct widget *widget, int x, int y, unsigned int minw, unsig
 
 }
 
+static void placebutton(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+{
+
+    struct widget_button *button = widget->data;
+    struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
+    struct text_rowinfo rowinfo;
+
+    text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
+    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
+    cache_initrow(&button->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
+
+}
+
+static void placechoice(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
+{
+
+    struct widget_choice *choice = widget->data;
+    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
+    struct text_rowinfo rowinfo;
+
+    text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
+    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
+    cache_initrow(&choice->cacherow, &rowinfo, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
+
+}
+
 static void placelayout(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -220,27 +220,27 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     {
 
     case ATTR_FLOW_DEFAULT:
-        placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTAL:
-        placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTALSTRETCH:
-        placeS(widget, x, y, 0, maxh, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
+        placechildren(widget, x, y, 0, maxh, maxw, maxh, layout->padding, layout->padding, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_VERTICAL:
-        placeS(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
 
         break;
 
     case ATTR_FLOW_VERTICALSTRETCH:
-        placeS(widget, x, y, maxw, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
+        placechildren(widget, x, y, maxw, 0, maxw, maxh, layout->padding, layout->padding, 0, 1, &total);
 
         break;
 
@@ -312,7 +312,7 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
     struct util_size total;
 
     util_initsize(&total, 0, 0);
-    placeS(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, maxw, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
+    placechildren(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, maxw, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
     if (listbox->vscroll)
@@ -344,7 +344,7 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     cache_initrow(&select->cacherow, &rowinfo, font, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
-    placeS(widget, x, widget->position.y + widget->size.h, widget->size.w, 0, widget->size.w * 2, INFINITY, 0, 0, 0, 1, &total);
+    placechildren(widget, x, widget->position.y + widget->size.h, widget->size.w, 0, widget->size.w * 2, INFINITY, 0, 0, 0, 1, &total);
 
     if (widget->state != WIDGET_STATE_FOCUS)
     {
@@ -452,7 +452,7 @@ static void placewindow(struct widget *widget, int x, int y, int offx, unsigned 
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, maxw, 0);
     cache_initrow(&window->cacherow, &rowinfo, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget->size.w, widget->size.h, 0, 0);
-    placeS(widget, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, 0, 1, &total);
+    placechildren(widget, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, 0, 1, &total);
 
 }
 
