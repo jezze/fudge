@@ -29,7 +29,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data =
         "+ window id \"window\" title \"Test\"\n"
-        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\" span \"1\"\n"
+        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\"\n"
         "    + image in \"base\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
 
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
