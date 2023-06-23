@@ -83,31 +83,19 @@ static void placechoice(struct widget *widget, int x, int y, int offx, unsigned 
 
 }
 
-static unsigned int placeX(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
+static unsigned int getnumspans(struct widget *widget)
 {
 
     struct list_item *current = 0;
     unsigned int totalspans = 0;
 
-    util_initsize(total, 0, 0);
-
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        unsigned int cx = (incw) ? total->w : 0;
-        unsigned int cy = (inch) ? total->h : 0;
 
         if (child->span)
             totalspans += child->span;
-
-        if (!child->span)
-        {
-
-            placechild(child, x + cx, y + cy, 0, minw, minh, maxw - cx, maxh - cy, paddingx, paddingy);
-            addtotal(total, child, x, y, paddingx, paddingy);
-
-        }
 
     }
 
@@ -115,75 +103,108 @@ static unsigned int placeX(struct widget *widget, int x, int y, unsigned int min
 
 }
 
-static void placeF(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int sharedw, unsigned int sharedh, struct util_size *total)
+static void calculatespan(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *span)
 {
 
+    unsigned int totalspans = getnumspans(widget);
     struct list_item *current = 0;
+    struct util_size total;
 
-    util_initsize(total, 0, 0);
+    util_initsize(&total, 0, 0);
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        unsigned int cminw = minw;
+        unsigned int cx = x;
+        unsigned int cy = y;
         unsigned int cmaxw = maxw;
-        unsigned int cminh = minh;
         unsigned int cmaxh = maxh;
-        unsigned int totalw = 0;
-        unsigned int totalh = 0;
 
-        if (sharedw)
+        if (incw)
         {
 
-            totalw = total->w;
-            cmaxw = maxw - total->w;
-
-            if (child->span)
-            {
-
-                cminw = sharedw * child->span;
-                cmaxw = sharedw * child->span;
-
-            }
+            cx = x + total.w;
+            cmaxw = maxw - total.w;
 
         }
 
-        if (sharedh)
+        if (inch)
         {
 
-            totalh = total->h;
-            cmaxh = maxh - total->h;
-
-            if (child->span)
-            {
-
-                cminh = sharedh * child->span;
-                cmaxh = sharedh * child->span;
-
-            }
+            cy = y + total.h;
+            cmaxh = maxh - total.h;
 
         }
 
-        placechild(child, x + totalw, y + totalh, 0, cminw, cminh, cmaxw, cmaxh, paddingx, paddingy);
-        addtotal(total, child, x, y, paddingx, paddingy);
+        if (!child->span)
+        {
+
+            placechild(child, cx, cy, 0, minw, minh, cmaxw, cmaxh, paddingx, paddingy);
+            addtotal(&total, child, x, y, paddingx, paddingy);
+
+        }
 
     }
+
+    util_initsize(span, (totalspans) ? (maxw - total.w) / totalspans : 0, (totalspans) ? (maxh - total.h) / totalspans : 0);
 
 }
 
 static void placeS(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
 {
 
-    unsigned int totalspans = placeX(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, incw, inch, total);
+    struct list_item *current = 0;
+    struct util_size span;
 
-    if (totalspans)
+    util_initsize(total, 0, 0);
+    calculatespan(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, incw, inch, &span);
+
+    while ((current = pool_nextin(current, widget)))
     {
 
-        unsigned int sharedw = (incw) ? (maxw - total->w) / totalspans : 0;
-        unsigned int sharedh = (inch) ? (maxh - total->h) / totalspans : 0;
+        struct widget *child = current->data;
+        unsigned int cx = x;
+        unsigned int cy = y;
+        unsigned int cminw = minw;
+        unsigned int cmaxw = maxw;
+        unsigned int cminh = minh;
+        unsigned int cmaxh = maxh;
 
-        placeF(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, sharedw, sharedh, total);
+        if (incw)
+        {
+
+            cx = x + total->w;
+            cmaxw = maxw - total->w;
+
+            if (child->span)
+            {
+
+                cminw = span.w * child->span;
+                cmaxw = span.w * child->span;
+
+            }
+
+        }
+
+        if (inch)
+        {
+
+            cy = y + total->h;
+            cmaxh = maxh - total->h;
+
+            if (child->span)
+            {
+
+                cminh = span.h * child->span;
+                cmaxh = span.h * child->span;
+
+            }
+
+        }
+
+        placechild(child, cx, cy, 0, cminw, cminh, cmaxw, cmaxh, paddingx, paddingy);
+        addtotal(total, child, x, y, paddingx, paddingy);
 
     }
 
