@@ -90,12 +90,12 @@ static void calculatespan(struct widget *widget, int x, int y, unsigned int minw
     {
 
         struct widget *child = current->data;
-        unsigned int cx = x;
-        unsigned int cy = y;
-        unsigned int cminw = minw;
-        unsigned int cminh = minh;
-        unsigned int cmaxw = maxw;
-        unsigned int cmaxh = maxh;
+        unsigned int cx = x + marginx;
+        unsigned int cy = y + marginy;
+        unsigned int cmaxw = util_clamp(maxw, 0, maxw - marginx * 2);
+        unsigned int cmaxh = util_clamp(maxh, 0, maxh - marginy * 2);
+        unsigned int cminw = util_clamp(minw, 0, cmaxw);
+        unsigned int cminh = util_clamp(minh, 0, cmaxh);
 
         if (incw)
         {
@@ -131,8 +131,7 @@ static void placetextflow(struct widget *widget, int x, int y, int offx, unsigne
 {
 
     struct list_item *current = 0;
-    unsigned int cx = x;
-    unsigned int cy = y;
+    unsigned int offy = 0;
 
     util_initsize(total, 0, 0);
 
@@ -140,17 +139,23 @@ static void placetextflow(struct widget *widget, int x, int y, int offx, unsigne
     {
 
         struct widget *child = current->data;
+        unsigned int cx = x + marginx;
+        unsigned int cy = y + marginy + offy;
+        unsigned int cmaxw = util_clamp(maxw, 0, maxw - marginx * 2);
+        unsigned int cmaxh = util_clamp(maxh, 0, maxh - marginy * 2);
+        unsigned int cminw = util_clamp(minw, 0, cmaxw);
+        unsigned int cminh = util_clamp(minh, 0, cmaxh);
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
 
             struct widget_text *text = child->data;
 
-            placechild(child, cx, cy, offx, 0, 0, maxw, INFINITY, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
-            addtotal(total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
+            placechild(child, cx, cy, offx, cminw, cminh, cmaxw, cmaxh, paddingx, paddingy);
+            addtotal(total, child, x, y, paddingx, paddingy);
 
-            cy += text->cachetext.lastrowy;
             offx = text->cachetext.lastrowx;
+            offy += text->cachetext.lastrowy;
 
         }
 
@@ -171,12 +176,12 @@ static void placechildren(struct widget *widget, int x, int y, unsigned int minw
     {
 
         struct widget *child = current->data;
-        unsigned int cx = x;
-        unsigned int cy = y;
-        unsigned int cminw = minw;
-        unsigned int cmaxw = maxw;
-        unsigned int cminh = minh;
-        unsigned int cmaxh = maxh;
+        unsigned int cx = x + marginx;
+        unsigned int cy = y + marginy;
+        unsigned int cmaxw = util_clamp(maxw, 0, maxw - marginx * 2);
+        unsigned int cmaxh = util_clamp(maxh, 0, maxh - marginy * 2);
+        unsigned int cminw = util_clamp(minw, 0, cmaxw);
+        unsigned int cminh = util_clamp(minh, 0, cmaxh);
 
         if (incw)
         {
@@ -361,11 +366,11 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
     struct util_size total;
 
     util_initsize(&total, 0, 0);
-    placechildren(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, 0, 0, maxw, INFINITY, 0, 0, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
+    placechildren(widget, x, y, 0, 0, maxw, INFINITY, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_LISTBOX_PADDING_WIDTH, CONFIG_LISTBOX_PADDING_HEIGHT, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
     if (total.h > maxh)
-        listbox->vscroll = util_clamp(listbox->vscroll, 0, total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2);
+        listbox->vscroll = util_clamp(listbox->vscroll, 0, total.h - maxh + CONFIG_FRAME_HEIGHT * 2);
     else
         listbox->vscroll = util_clamp(listbox->vscroll, 0, 0);
 
@@ -423,7 +428,7 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
     struct widget_textbox *textbox = widget->data;
     struct util_size total;
 
-    placetextflow(widget, x, y, offx, minw, minh, maxw, maxh, 0, 0, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
+    placetextflow(widget, x, y, offx, 0, 0, maxw, INFINITY, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
     textbox->vscroll = util_clamp(textbox->vscroll, 0 - (total.h - maxh), 0);
