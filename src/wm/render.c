@@ -179,7 +179,6 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_window *window = widget->data;
-
     unsigned int onhamburger = util_intersects(mx, widget->position.x, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH) && util_intersects(my, widget->position.y, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onminimize = util_intersects(mx, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2) && util_intersects(my, widget->position.y, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onx = util_intersects(mx, widget->position.x + widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->position.x + widget->size.w) && util_intersects(my, widget->position.y, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT);
