@@ -77,7 +77,7 @@ static unsigned int getnumspans(struct widget *widget)
 
 }
 
-static void calculatespan(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *span)
+static void calculatespan(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int marginx, unsigned int marginy, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *span)
 {
 
     unsigned int totalspans = getnumspans(widget);
@@ -92,29 +92,31 @@ static void calculatespan(struct widget *widget, int x, int y, unsigned int minw
         struct widget *child = current->data;
         unsigned int cx = x;
         unsigned int cy = y;
+        unsigned int cminw = minw;
+        unsigned int cminh = minh;
         unsigned int cmaxw = maxw;
         unsigned int cmaxh = maxh;
 
         if (incw)
         {
 
-            cx = x + total.w;
-            cmaxw = maxw - total.w;
+            cx += total.w;
+            cmaxw -= total.w;
 
         }
 
         if (inch)
         {
 
-            cy = y + total.h;
-            cmaxh = maxh - total.h;
+            cy += total.h;
+            cmaxh -= total.h;
 
         }
 
         if (!child->span)
         {
 
-            placechild(child, cx, cy, 0, minw, minh, cmaxw, cmaxh, paddingx, paddingy);
+            placechild(child, cx, cy, 0, cminw, cminh, cmaxw, cmaxh, paddingx, paddingy);
             addtotal(&total, child, x, y, paddingx, paddingy);
 
         }
@@ -125,7 +127,7 @@ static void calculatespan(struct widget *widget, int x, int y, unsigned int minw
 
 }
 
-static void placetextflow(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, struct util_size *total)
+static void placetextflow(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int marginx, unsigned int marginy, unsigned int paddingx, unsigned int paddingy, struct util_size *total)
 {
 
     struct list_item *current = 0;
@@ -156,14 +158,14 @@ static void placetextflow(struct widget *widget, int x, int y, int offx, unsigne
 
 }
 
-static void placechildren(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
+static void placechildren(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int marginx, unsigned int marginy, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
 {
 
     struct list_item *current = 0;
     struct util_size span;
 
     util_initsize(total, 0, 0);
-    calculatespan(widget, x, y, minw, minh, maxw, maxh, paddingx, paddingy, incw, inch, &span);
+    calculatespan(widget, x, y, minw, minh, maxw, maxh, marginx, marginx, paddingx, paddingy, incw, inch, &span);
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -179,8 +181,8 @@ static void placechildren(struct widget *widget, int x, int y, unsigned int minw
         if (incw)
         {
 
-            cx = x + total->w;
-            cmaxw = maxw - total->w;
+            cx += total->w;
+            cmaxw -= total->w;
 
             if (child->span)
             {
@@ -195,8 +197,8 @@ static void placechildren(struct widget *widget, int x, int y, unsigned int minw
         if (inch)
         {
 
-            cy = y + total->h;
-            cmaxh = maxh - total->h;
+            cy += total->h;
+            cmaxh -= total->h;
 
             if (child->span)
             {
@@ -268,27 +270,27 @@ static void placelayout(struct widget *widget, int x, int y, int offx, unsigned 
     {
 
     case ATTR_FLOW_DEFAULT:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 0, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTAL:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTALSTRETCH:
-        placechildren(widget, x, y, 0, maxh, maxw, maxh, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
+        placechildren(widget, x, y, 0, maxh, maxw, maxh, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_VERTICAL:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
+        placechildren(widget, x, y, 0, 0, maxw, maxh, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
 
         break;
 
     case ATTR_FLOW_VERTICALSTRETCH:
-        placechildren(widget, x, y, maxw, 0, maxw, maxh, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
+        placechildren(widget, x, y, maxw, 0, maxw, maxh, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
 
         break;
 
@@ -359,10 +361,13 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
     struct util_size total;
 
     util_initsize(&total, 0, 0);
-    placechildren(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, 0, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
+    placechildren(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, 0, 0, maxw, INFINITY, 0, 0, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
-    listbox->vscroll = util_clamp(listbox->vscroll, 0, (total.h > maxh) ? total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2 : 0);
+    if (total.h > maxh)
+        listbox->vscroll = util_clamp(listbox->vscroll, 0, total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2);
+    else
+        listbox->vscroll = util_clamp(listbox->vscroll, 0, 0);
 
     scrollchildren(widget, 0, listbox->vscroll);
 
@@ -379,7 +384,7 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH, rowinfo.lineheight, minw, minh, maxw, maxh, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     cache_initrow(&select->cacherow, &rowinfo, font, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
-    placechildren(widget, x, widget->position.y + widget->size.h, 0, 0, widget->size.w * 2, INFINITY, 0, 0, 0, 1, &total);
+    placechildren(widget, x, widget->position.y + widget->size.h, 0, 0, widget->size.w * 2, INFINITY, 0, 0, 0, 0, 0, 1, &total);
 
     if (widget->state != WIDGET_STATE_FOCUS)
     {
@@ -418,7 +423,7 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
     struct widget_textbox *textbox = widget->data;
     struct util_size total;
 
-    placetextflow(widget, x, y, offx, minw, minh, maxw, maxh, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
+    placetextflow(widget, x, y, offx, minw, minh, maxw, maxh, 0, 0, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
     textbox->vscroll = util_clamp(textbox->vscroll, 0 - (total.h - maxh), 0);
@@ -450,7 +455,7 @@ static void placewindow(struct widget *widget, int x, int y, int offx, unsigned 
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, maxw, 0);
     cache_initrow(&window->cacherow, &rowinfo, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget->size.w, widget->size.h, 0, 0);
-    placechildren(widget, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, 0, 1, &total);
+    placechildren(widget, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, 0, 1, &total);
 
 }
 
