@@ -215,6 +215,23 @@ static void placechildren(struct widget *widget, int x, int y, unsigned int minw
 
 }
 
+static void scrollchildren(struct widget *widget, int x, int y)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        child->position.x -= x;
+        child->position.y -= y;
+
+    }
+
+}
+
 static void placebutton(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh)
 {
 
@@ -339,28 +356,15 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
 {
 
     struct widget_listbox *listbox = widget->data;
-    struct list_item *current = 0;
     struct util_size total;
 
     util_initsize(&total, 0, 0);
     placechildren(widget, x, y + CONFIG_LISTBOX_PADDING_HEIGHT, 0, 0, maxw, INFINITY, CONFIG_LISTBOX_PADDING_WIDTH, 0, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
-    if (listbox->vscroll)
-    {
+    listbox->vscroll = util_clamp(listbox->vscroll, 0, (total.h > maxh) ? total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2 : 0);
 
-        listbox->vscroll = util_clamp(listbox->vscroll, 0, (total.h > maxh) ? total.h - maxh + CONFIG_LISTBOX_PADDING_HEIGHT * 2 : 0);
-
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            child->position.y -= listbox->vscroll;
-
-        }
-
-    }
+    scrollchildren(widget, 0, listbox->vscroll);
 
 }
 
@@ -412,27 +416,14 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
 {
 
     struct widget_textbox *textbox = widget->data;
-    struct list_item *current = 0;
     struct util_size total;
-    int offset;
 
     placetextflow(widget, x, y, offx, minw, minh, maxw, maxh, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
-    offset = total.h - maxh;
-    textbox->vscroll = util_clamp(textbox->vscroll, 0 - offset, total.h - offset - maxh);
+    textbox->vscroll = util_clamp(textbox->vscroll, 0 - (total.h - maxh), 0);
 
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        if (total.h > maxh)
-            child->position.y -= offset;
-
-        child->position.y -= textbox->vscroll;
-
-    }
+    scrollchildren(widget, 0, (total.h > maxh) ? textbox->vscroll + total.h - maxh : textbox->vscroll);
 
 }
 
