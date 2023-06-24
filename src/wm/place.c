@@ -125,6 +125,37 @@ static void calculatespan(struct widget *widget, int x, int y, unsigned int minw
 
 }
 
+static void placetextflow(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, struct util_size *total)
+{
+
+    struct list_item *current = 0;
+    unsigned int cx = x;
+    unsigned int cy = y;
+
+    util_initsize(total, 0, 0);
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            struct widget_text *text = child->data;
+
+            placechild(child, cx, cy, offx, 0, 0, maxw, INFINITY, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
+            addtotal(total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
+
+            cy += text->cachetext.lastrowy;
+            offx = text->cachetext.lastrowx;
+
+        }
+
+    }
+
+}
+
 static void placechildren(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int paddingx, unsigned int paddingy, unsigned int incw, unsigned int inch, struct util_size *total)
 {
 
@@ -383,35 +414,11 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
     struct util_size total;
-    unsigned int cx = x;
-    unsigned int cy = y;
-    int offset = 0;
+    int offset;
 
-    util_initsize(&total, 0, 0);
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        if (child->type == WIDGET_TYPE_TEXT)
-        {
-
-            struct widget_text *text = child->data;
-
-            placechild(child, cx, cy, offx, 0, 0, maxw, INFINITY, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
-            addtotal(&total, child, x, y, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
-
-            cy += text->cachetext.lastrowy;
-            offx = text->cachetext.lastrowx;
-
-        }
-
-    }
-
+    placetextflow(widget, x, y, offx, minw, minh, maxw, maxh, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, 0, 0);
 
-    current = 0;
     offset = total.h - maxh;
     textbox->vscroll = util_clamp(textbox->vscroll, 0 - offset, total.h - offset - maxh);
 
