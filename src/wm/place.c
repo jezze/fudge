@@ -88,24 +88,25 @@ static void placechildren1(struct widget *widget, int x, int y, unsigned int min
     {
 
         struct widget *child = current->data;
-        unsigned int cx = x + marginw;
-        unsigned int cy = y + marginh;
-        unsigned int cmaxw = util_clamp(maxw, 0, maxw - marginw * 2);
-        unsigned int cmaxh = util_clamp(maxh, 0, maxh - marginh * 2);
-        unsigned int cminw = util_clamp(minw, 0, cmaxw);
-        unsigned int cminh = util_clamp(minh, 0, cmaxh);
+        struct util_position cpos;
+        struct util_size cmax;
+        struct util_size cmin;
+
+        util_initposition(&cpos, x + marginw, y + marginh);
+        util_initsize(&cmax, util_clamp(maxw, 0, maxw - marginw * 2), util_clamp(maxh, 0, maxh - marginh * 2));
+        util_initsize(&cmin, util_clamp(minw, 0, cmax.w), util_clamp(minh, 0, cmax.h));
 
         if (incx)
         {
 
-            cx += total->w;
-            cmaxw -= total->w;
+            cpos.x += total->w;
+            cmax.w -= total->w;
 
             if (child->span)
             {
 
-                cminw = spanw * child->span;
-                cmaxw = spanw * child->span;
+                cmin.w = spanw * child->span;
+                cmax.w = spanw * child->span;
 
             }
 
@@ -114,20 +115,20 @@ static void placechildren1(struct widget *widget, int x, int y, unsigned int min
         if (incy)
         {
 
-            cy += total->h;
-            cmaxh -= total->h;
+            cpos.y += total->h;
+            cmax.h -= total->h;
 
             if (child->span)
             {
 
-                cminh = spanh * child->span;
-                cmaxh = spanh * child->span;
+                cmin.h = spanh * child->span;
+                cmax.h = spanh * child->span;
 
             }
 
         }
 
-        placechild(child, cx, cy, 0, cminw, cminh, cmaxw, cmaxh, paddingw, paddingh);
+        placechild(child, cpos.x, cpos.y, 0, cmin.w, cmin.h, cmax.w, cmax.h, paddingw, paddingh);
         addtotal(total, child, x, y, paddingw, paddingh);
 
     }
@@ -158,19 +159,22 @@ static void placetextflow(struct widget *widget, int x, int y, int offx, unsigne
     {
 
         struct widget *child = current->data;
-        unsigned int cx = x + marginw;
-        unsigned int cy = y + marginh + offy;
-        unsigned int cmaxw = util_clamp(maxw, 0, maxw - marginw * 2);
-        unsigned int cmaxh = util_clamp(maxh, 0, maxh - marginh * 2);
-        unsigned int cminw = util_clamp(minw, 0, cmaxw);
-        unsigned int cminh = util_clamp(minh, 0, cmaxh);
+        struct util_position cpos;
+        struct util_size cmax;
+        struct util_size cmin;
+
+        util_initposition(&cpos, x + marginw, y + marginh);
+        util_initsize(&cmax, util_clamp(maxw, 0, maxw - marginw * 2), util_clamp(maxh, 0, maxh - marginh * 2));
+        util_initsize(&cmin, util_clamp(minw, 0, cmax.w), util_clamp(minh, 0, cmax.h));
+
+        cpos.y += offy;
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
 
             struct widget_text *text = child->data;
 
-            placechild(child, cx, cy, offx, cminw, cminh, cmaxw, cmaxh, paddingw, paddingh);
+            placechild(child, cpos.x, cpos.y, offx, cmin.w, cmin.h, cmax.w, cmax.h, paddingw, paddingh);
             addtotal(total, child, x, y, paddingw, paddingh);
 
             offx = text->cachetext.lastrowx;
