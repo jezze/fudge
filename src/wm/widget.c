@@ -455,18 +455,18 @@ void widget_getclipping(struct widget *widget, struct util_position *position, s
     {
 
     case WIDGET_TYPE_LISTBOX:
-        position->x = widget->position.x + CONFIG_LISTBOX_PADDING_WIDTH;
-        position->y = widget->position.y + CONFIG_LISTBOX_PADDING_HEIGHT;
-        size->w = widget->size.w - CONFIG_LISTBOX_PADDING_WIDTH * 2;
-        size->h = widget->size.h - CONFIG_LISTBOX_PADDING_HEIGHT * 2;
+        position->x = widget->position.x + CONFIG_FRAME_WIDTH + CONFIG_LISTBOX_PADDING_WIDTH;
+        position->y = widget->position.y + CONFIG_FRAME_HEIGHT + CONFIG_LISTBOX_PADDING_HEIGHT;
+        size->w = widget->size.w - CONFIG_FRAME_WIDTH * 2 - CONFIG_LISTBOX_PADDING_WIDTH * 2;
+        size->h = widget->size.h - CONFIG_FRAME_HEIGHT * 2 - CONFIG_LISTBOX_PADDING_HEIGHT * 2;
 
         break;
 
     case WIDGET_TYPE_TEXTBOX:
-        position->x = widget->position.x + CONFIG_TEXTBOX_PADDING_WIDTH;
-        position->y = widget->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT;
-        size->w = widget->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
-        size->h = widget->size.h - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
+        position->x = widget->position.x + CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH;
+        position->y = widget->position.y + CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT;
+        size->w = widget->size.w - CONFIG_FRAME_WIDTH * 2 - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
+        size->h = widget->size.h - CONFIG_FRAME_HEIGHT * 2 - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
 
         break;
 
