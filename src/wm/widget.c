@@ -448,40 +448,6 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 
 }
 
-void widget_getclipping(struct widget *widget, struct util_position *position, struct util_size *size)
-{
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_LISTBOX:
-        position->x = widget->position.x + CONFIG_FRAME_WIDTH + CONFIG_LISTBOX_PADDING_WIDTH;
-        position->y = widget->position.y + CONFIG_FRAME_HEIGHT + CONFIG_LISTBOX_PADDING_HEIGHT;
-        size->w = widget->size.w - CONFIG_FRAME_WIDTH * 2 - CONFIG_LISTBOX_PADDING_WIDTH * 2;
-        size->h = widget->size.h - CONFIG_FRAME_HEIGHT * 2 - CONFIG_LISTBOX_PADDING_HEIGHT * 2;
-
-        break;
-
-    case WIDGET_TYPE_TEXTBOX:
-        position->x = widget->position.x + CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH;
-        position->y = widget->position.y + CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT;
-        size->w = widget->size.w - CONFIG_FRAME_WIDTH * 2 - CONFIG_TEXTBOX_PADDING_WIDTH * 2;
-        size->h = widget->size.h - CONFIG_FRAME_HEIGHT * 2 - CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
-
-        break;
-
-    default:
-        position->x = widget->position.x;
-        position->y = widget->position.y;
-        size->w = widget->size.w;
-        size->h = widget->size.h;
-
-        break;
-
-    }
-
-}
-
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 

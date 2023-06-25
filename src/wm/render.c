@@ -292,42 +292,6 @@ void render_undamage(void)
 
 }
 
-static unsigned int shouldrender(struct widget *widget, int line)
-{
-
-    struct widget *parent;
-
-    if (widget->display == WIDGET_DISPLAY_HIDDEN)
-        return 0;
-
-     if (!widget_intersectsy(widget, line))
-        return 0;
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_TEXT:
-    case WIDGET_TYPE_TEXTBUTTON:
-        parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->in));
-
-        if (parent)
-        {
-
-            struct util_position position;
-            struct util_size size;
-
-            widget_getclipping(parent, &position, &size);
-
-            return util_intersects(line, position.y, position.y + size.h);
-
-        }
-
-    }
-
-    return 1;
-
-}
-
 void render(struct blit_display *display, int mx, int my)
 {
 
@@ -343,7 +307,10 @@ void render(struct blit_display *display, int mx, int my)
 
             struct widget *widget = current->data;
 
-            if (shouldrender(widget, line))
+            if (widget->display == WIDGET_DISPLAY_HIDDEN)
+                continue;
+
+            if (widget_intersectsy(widget, line) && util_intersects(line, widget->clipposition.y, widget->clipposition.y + widget->clipsize.h))
             {
 
                 int x0 = util_max(widget->position.x, area.position0.x);
