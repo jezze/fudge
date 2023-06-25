@@ -569,6 +569,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
     util_initposition(&widget->position, 0, 0);
     util_initsize(&widget->size, 0, 0);
+    util_initposition(&widget->clipposition, 0, 0);
+    util_initsize(&widget->clipsize, 0, 0);
 
     widget->source = source;
     widget->type = type;
