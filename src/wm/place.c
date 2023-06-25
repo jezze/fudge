@@ -138,12 +138,12 @@ static void placechildren1(struct widget *widget, int x, int y, unsigned int min
 static void placechildren(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, unsigned int marginw, unsigned int marginh, unsigned int paddingw, unsigned int paddingh, unsigned int incx, unsigned int incy, struct util_size *total)
 {
 
-    unsigned int totalspans = getnumspans(widget);
-    struct util_size span;
+    unsigned int spans = getnumspans(widget);
 
     placechildren1(widget, x, y, minw, minh, maxw, maxh, marginw, marginh, paddingw, paddingh, incx, incy, 0, 0, total);
-    util_initsize(&span, (totalspans) ? (maxw - total->w) / totalspans : 0, (totalspans) ? (maxh - total->h) / totalspans : 0);
-    placechildren1(widget, x, y, minw, minh, maxw, maxh, marginw, marginh, paddingw, paddingh, incx, incy, span.w, span.h, total);
+
+    if (spans)
+        placechildren1(widget, x, y, minw, minh, maxw, maxh, marginw, marginh, paddingw, paddingh, incx, incy, (maxw - total->w) / spans, (maxh - total->h) / spans, total);
 
 }
 
