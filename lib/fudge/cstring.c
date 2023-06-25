@@ -85,6 +85,16 @@ unsigned int cstring_match_substring(char *in1, char *in2)
 
 }
 
+unsigned int cstring_isspace(char c)
+{
+
+    if (c == ' ')
+        return 1;
+
+    return 0;
+
+}
+
 unsigned int cstring_isalpha(char c)
 {
 
