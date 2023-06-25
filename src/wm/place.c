@@ -215,8 +215,8 @@ static void scrollchildren(struct widget *widget, int x, int y)
 
         struct widget *child = current->data;
 
-        child->position.x -= x;
-        child->position.y -= y;
+        child->position.x += x;
+        child->position.y += y;
 
     }
 
@@ -354,10 +354,7 @@ static void placelistbox(struct widget *widget, int x, int y, int offx, unsigned
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
     clipchildren(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
 
-    if (total.h > maxh)
-        listbox->vscroll = util_clamp(listbox->vscroll, 0, total.h - maxh + CONFIG_FRAME_HEIGHT * 2);
-    else
-        listbox->vscroll = util_clamp(listbox->vscroll, 0, 0);
+    listbox->vscroll = util_clamp(listbox->vscroll, widget->size.h - total.h, 0);
 
     scrollchildren(widget, 0, listbox->vscroll);
 
@@ -417,9 +414,9 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
     clipchildren(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
 
-    textbox->vscroll = util_clamp(textbox->vscroll, 0 - (total.h - maxh), 0);
+    textbox->vscroll = util_clamp(textbox->vscroll, widget->size.h - total.h, 0);
 
-    scrollchildren(widget, 0, (total.h > maxh) ? textbox->vscroll + total.h - maxh : textbox->vscroll);
+    scrollchildren(widget, 0, textbox->vscroll);
 
 }
 

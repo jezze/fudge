@@ -152,10 +152,10 @@ static void scrollwidget(struct widget *widget, int hamount, int vamount)
         struct widget_listbox *listbox = widget->data;
 
         if (listbox->overflow == ATTR_OVERFLOW_SCROLL || listbox->overflow == ATTR_OVERFLOW_HSCROLL)
-            listbox->hscroll += hamount;
+            listbox->hscroll -= hamount;
 
         if (listbox->overflow == ATTR_OVERFLOW_SCROLL || listbox->overflow == ATTR_OVERFLOW_VSCROLL)
-            listbox->vscroll += vamount;
+            listbox->vscroll -= vamount;
 
         damage(widget);
 
@@ -167,10 +167,10 @@ static void scrollwidget(struct widget *widget, int hamount, int vamount)
         struct widget_textbox *textbox = widget->data;
 
         if (textbox->overflow == ATTR_OVERFLOW_SCROLL || textbox->overflow == ATTR_OVERFLOW_HSCROLL)
-            textbox->hscroll += hamount;
+            textbox->hscroll -= hamount;
 
         if (textbox->overflow == ATTR_OVERFLOW_SCROLL || textbox->overflow == ATTR_OVERFLOW_VSCROLL)
-            textbox->vscroll += vamount;
+            textbox->vscroll -= vamount;
 
         damage(widget);
 

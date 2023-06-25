@@ -172,7 +172,6 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     if (util_intersects(line, widget->position.y + textbutton->cacherow.ry, widget->position.y + textbutton->cacherow.ry + textbutton->cacherow.font->lineheight))
         blit_text(display, textbutton->cacherow.font, ATTR_BLIT_NORMAL, strpool_getstring(textbutton->label) + textbutton->cacherow.istart, textbutton->cacherow.length, widget->position.x + textbutton->cacherow.rx, widget->position.y + textbutton->cacherow.ry, line, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
 
-
 }
 
 static void renderwindow(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
