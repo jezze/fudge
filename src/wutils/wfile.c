@@ -69,32 +69,32 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     char *data = (char *)mdata + sizeof (struct event_wmevent);
 
-    if (cstring_match_substring(data, "action "))
+    if (cstring_match_word(data, 0, "action"))
     {
 
-        if (cstring_match(data + 7, "copy"))
+        if (cstring_match_word(data, 1, "copy"))
         {
 
         }
 
-        else if (cstring_match(data + 7, "cut"))
+        else if (cstring_match_word(data, 1, "cut"))
         {
 
         }
 
-        else if (cstring_match(data + 7, "paste"))
+        else if (cstring_match_word(data, 1, "paste"))
         {
 
         }
 
-        else if (cstring_match(data + 7, "delete"))
+        else if (cstring_match_word(data, 1, "delete"))
         {
 
         }
 
     }
 
-    else if (cstring_match_substring(data, "up"))
+    else if (cstring_match_word(data, 0, "up"))
     {
 
         if (cstring_length(path))
@@ -121,19 +121,19 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (cstring_match_substring(data, "volume "))
+    else if (cstring_match_word(data, 0, "volume"))
     {
 
-        cstring_write_fmt1(path, 256, "%s:\\0", 0, data + 7);
+        cstring_write_fmt1(path, 256, "%s:\\0", 0, cstring_get_word(data, 1));
         updatepath();
         updatecontent();
 
     }
 
-    else if (cstring_match_substring(data, "file "))
+    else if (cstring_match_word(data, 0, "file"))
     {
 
-        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, data + 5);
+        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, cstring_get_word(data, 1));
         updatepath();
         updatecontent();
 

@@ -387,10 +387,10 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
 
         char *cmd = strpool_getstring(action);
 
-        if (cstring_match_substring(cmd, "run "))
+        if (cstring_match_word(cmd, 0, "run"))
         {
 
-            unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, cmd + 4);
+            unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, cstring_get_word(cmd, 1));
 
             if (id)
                 channel_send(id, EVENT_MAIN);

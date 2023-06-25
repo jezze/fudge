@@ -103,35 +103,17 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     char *data = (char *)mdata + sizeof (struct event_wmevent);
 
-    if (cstring_match_substring(data, "eq"))
+    if (cstring_match_word(data, 0, "val"))
+        updatevalue(cstring_read_value(cstring_get_word(data, 1), 1, 10));
+    else if (cstring_match_word(data, 0, "sum"))
         updatestate(STATE_SUM);
-    else if (cstring_match_substring(data, "0"))
-        updatevalue(0);
-    else if (cstring_match_substring(data, "1"))
-        updatevalue(1);
-    else if (cstring_match_substring(data, "2"))
-        updatevalue(2);
-    else if (cstring_match_substring(data, "3"))
-        updatevalue(3);
-    else if (cstring_match_substring(data, "4"))
-        updatevalue(4);
-    else if (cstring_match_substring(data, "5"))
-        updatevalue(5);
-    else if (cstring_match_substring(data, "6"))
-        updatevalue(6);
-    else if (cstring_match_substring(data, "7"))
-        updatevalue(7);
-    else if (cstring_match_substring(data, "8"))
-        updatevalue(8);
-    else if (cstring_match_substring(data, "9"))
-        updatevalue(9);
-    else if (cstring_match_substring(data, "add"))
+    else if (cstring_match_word(data, 0, "add"))
         updatestate(STATE_ADD);
-    else if (cstring_match_substring(data, "sub"))
+    else if (cstring_match_word(data, 0, "sub"))
         updatestate(STATE_SUB);
-    else if (cstring_match_substring(data, "mul"))
+    else if (cstring_match_word(data, 0, "mul"))
         updatestate(STATE_MUL);
-    else if (cstring_match_substring(data, "div"))
+    else if (cstring_match_word(data, 0, "div"))
         updatestate(STATE_DIV);
 
 }
@@ -148,25 +130,25 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     char *data1 =
         "    + layout id \"buttons\" in \"base\" flow \"vertical\" span \"1\"\n"
         "      + layout id \"row1\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row1\" label \"7\" span \"1\" onclick \"7\"\n"
-        "        + button in \"row1\" label \"8\" span \"1\" onclick \"8\"\n"
-        "        + button in \"row1\" label \"9\" span \"1\" onclick \"9\"\n"
+        "        + button in \"row1\" label \"7\" span \"1\" onclick \"val 7\"\n"
+        "        + button in \"row1\" label \"8\" span \"1\" onclick \"val 8\"\n"
+        "        + button in \"row1\" label \"9\" span \"1\" onclick \"val 9\"\n"
         "        + button in \"row1\" label \"/\" span \"1\" onclick \"div\"\n"
         "      + layout id \"row2\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row2\" label \"4\" span \"1\" onclick \"4\"\n"
-        "        + button in \"row2\" label \"5\" span \"1\" onclick \"5\"\n"
-        "        + button in \"row2\" label \"6\" span \"1\" onclick \"6\"\n"
+        "        + button in \"row2\" label \"4\" span \"1\" onclick \"val 4\"\n"
+        "        + button in \"row2\" label \"5\" span \"1\" onclick \"val 5\"\n"
+        "        + button in \"row2\" label \"6\" span \"1\" onclick \"val 6\"\n"
         "        + button in \"row2\" label \"x\" span \"1\" onclick \"mul\"\n"
         "      + layout id \"row3\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row3\" label \"3\" span \"1\" onclick \"3\"\n"
-        "        + button in \"row3\" label \"2\" span \"1\" onclick \"2\"\n"
-        "        + button in \"row3\" label \"1\" span \"1\" onclick \"1\"\n"
+        "        + button in \"row3\" label \"3\" span \"1\" onclick \"val 3\"\n"
+        "        + button in \"row3\" label \"2\" span \"1\" onclick \"val 2\"\n"
+        "        + button in \"row3\" label \"1\" span \"1\" onclick \"val 1\"\n"
         "        + button in \"row3\" label \"-\" span \"1\" onclick \"sub\"\n"
         "      + layout id \"row4\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row4\" label \"0\" span \"1\" onclick \"0\"\n"
-        "        + button in \"row4\" label \".\" span \"1\" onclick \"point\"\n"
+        "        + button in \"row4\" label \"0\" span \"1\" onclick \"val 0\"\n"
+        "        + button in \"row4\" label \".\" span \"1\" onclick \"dot\"\n"
         "        + button in \"row4\" label \"+\" span \"1\" onclick \"add\"\n"
-        "        + button in \"row4\" label \"=\" span \"1\" onclick \"eq\"\n";
+        "        + button in \"row4\" label \"=\" span \"1\" onclick \"sum\"\n";
 
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data0);
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data1);
