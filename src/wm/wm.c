@@ -276,7 +276,7 @@ static void removedestroyed(unsigned int source)
 
 }
 
-static void setfocuswidget(struct widget *widget)
+static void setfocus(struct widget *widget)
 {
 
     if (state.focusedwidget)
@@ -356,7 +356,7 @@ static void sethover(struct widget *widget)
 
     }
 
-    if (widget_setstate(widget, WIDGET_STATE_HOVER))
+    if (widget && widget_setstate(widget, WIDGET_STATE_HOVER))
     {
 
         state.hoverwidget = widget;
@@ -401,7 +401,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
 
 }
 
-static void clickwidget(struct widget *widget)
+static void setclick(struct widget *widget)
 {
 
     switch (widget->type)
@@ -617,17 +617,13 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     struct event_mousemove *mousemove = mdata;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
-    struct widget *hoverwidget;
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    hoverwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
-
-    if (hoverwidget)
-        sethover(hoverwidget);
+    sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
     if (state.mousewidget)
     {
@@ -692,10 +688,10 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         if (clickedwindow)
             setfocuswindow(clickedwindow);
 
-        setfocuswidget(state.clickedwidget);
+        setfocus(state.clickedwidget);
 
         if (state.clickedwidget)
-            clickwidget(state.clickedwidget);
+            setclick(state.clickedwidget);
 
         break;
 
@@ -703,7 +699,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         state.mousebuttonright = 1;
 
         if (state.clickedwidget)
-            clickwidget(state.clickedwidget);
+            setclick(state.clickedwidget);
 
         break;
 
@@ -716,15 +712,11 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousescroll *mousescroll = mdata;
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
-    struct widget *hoverwidget;
 
     if (scrollablewidget)
         scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
 
-    hoverwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
-
-    if (hoverwidget)
-        sethover(hoverwidget);
+    sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
 }
 
