@@ -853,7 +853,7 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
  
         struct widget *widget = current->data;
 
-        widget->state = WIDGET_STATE_DESTROYED;
+        widget_setstate(widget, WIDGET_STATE_DESTROYED);
 
     }
 
