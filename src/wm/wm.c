@@ -401,7 +401,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
 
 }
 
-static void setclick(struct widget *widget)
+static void clickwidget(struct widget *widget)
 {
 
     switch (widget->type)
@@ -464,6 +464,27 @@ static void setclick(struct widget *widget)
         }
 
         break;
+
+    }
+
+}
+
+static void setclick(struct widget *widget)
+{
+
+    if (state.clickedwidget)
+    {
+
+        state.clickedwidget = 0;
+
+    }
+
+    if (widget)
+    {
+
+        state.clickedwidget = widget;
+
+        clickwidget(widget);
 
     }
 
@@ -674,8 +695,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_mousepress *mousepress = mdata;
     struct widget *clickedwindow = getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *clickedwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    state.clickedwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
     state.mouseclicked.x = state.mouseposition.x;
     state.mouseclicked.y = state.mouseposition.y;
 
@@ -685,21 +706,16 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     case 1:
         state.mousebuttonleft = 1;
 
-        if (clickedwindow)
-            setfocuswindow(clickedwindow);
-
-        setfocus(state.clickedwidget);
-
-        if (state.clickedwidget)
-            setclick(state.clickedwidget);
+        setfocuswindow(clickedwindow);
+        setfocus(clickedwidget);
+        setclick(clickedwidget);
 
         break;
 
     case 2:
         state.mousebuttonright = 1;
 
-        if (state.clickedwidget)
-            setclick(state.clickedwidget);
+        setclick(clickedwidget);
 
         break;
 
