@@ -487,6 +487,24 @@ unsigned int widget_isdragable(struct widget *widget)
 
 }
 
+unsigned int widget_isresizable(struct widget *widget)
+{
+
+    if (widget->display == WIDGET_DISPLAY_HIDDEN)
+        return 0;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_WINDOW:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int widget_isinteractive(struct widget *widget)
 {
 

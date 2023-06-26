@@ -143,6 +143,42 @@ static void damageall(struct widget *widget)
 
 }
 
+static void movewidget(struct widget *widget, int x, int y)
+{
+
+    damageall(widget);
+
+    widget->position.x = x;
+    widget->position.y = y;
+
+    damageall(widget);
+
+}
+
+static void translatewidget(struct widget *widget, int x, int y)
+{
+
+    damageall(widget);
+
+    widget->position.x += x;
+    widget->position.y += y;
+
+    damageall(widget);
+
+}
+
+static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
+{
+
+    damageall(widget);
+
+    widget->size.w = w;
+    widget->size.h = h;
+
+    damageall(widget);
+
+}
+
 static void scrollwidget(struct widget *widget, int hamount, int vamount)
 {
 
@@ -236,46 +272,6 @@ static void placewindows(unsigned int source)
 
 }
 
-static void destroy(struct widget *widget)
-{
-
-    if (state.hoverwidget == widget)
-        state.hoverwidget = 0;
-
-    if (state.focusedwidget == widget)
-        state.focusedwidget = 0;
-
-    if (state.focusedwindow == widget)
-        state.focusedwindow = 0;
-
-    damageall(widget);
-    pool_destroy(widget);
-
-}
-
-static void removedestroyed(unsigned int source)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_nextsource(current, source)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->state == WIDGET_STATE_DESTROYED)
-        {
-
-            current = current->prev;
-
-            destroy(widget);
-
-        }
-
-    }
-
-}
-
 static void setfocus(struct widget *widget)
 {
 
@@ -362,6 +358,46 @@ static void sethover(struct widget *widget)
         state.hoverwidget = widget;
 
         damageall(state.hoverwidget);
+
+    }
+
+}
+
+static void destroy(struct widget *widget)
+{
+
+    if (state.hoverwidget == widget)
+        sethover(0);
+
+    if (state.focusedwidget == widget)
+        setfocus(0);
+
+    if (state.focusedwindow == widget)
+        setfocuswindow(0);
+
+    damageall(widget);
+    pool_destroy(widget);
+
+}
+
+static void removedestroyed(unsigned int source)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->state == WIDGET_STATE_DESTROYED)
+        {
+
+            current = current->prev;
+
+            destroy(widget);
+
+        }
 
     }
 
@@ -647,45 +683,13 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
     if (state.mousewidget)
-    {
+        movewidget(state.mousewidget, state.mouseposition.x, state.mouseposition.y);
 
-        damage(state.mousewidget);
+    if (state.mousebuttonleft && widget_isdragable(state.clickedwidget))
+        translatewidget(state.clickedwidget, state.mousemovement.x, state.mousemovement.y);
 
-        state.mousewidget->position.x = state.mouseposition.x;
-        state.mousewidget->position.y = state.mouseposition.y;
-
-        damage(state.mousewidget);
-
-    }
-
-    if (state.mousebuttonleft && state.clickedwidget)
-    {
-
-        if (widget_isdragable(state.clickedwidget))
-        {
-
-            damageall(state.clickedwidget);
-
-            state.clickedwidget->position.x += state.mousemovement.x;
-            state.clickedwidget->position.y += state.mousemovement.y;
-
-            damageall(state.clickedwidget);
-
-        }
-
-    }
-
-    if (state.mousebuttonright && state.focusedwindow)
-    {
-
-        damageall(state.focusedwindow);
-
-        state.focusedwindow->size.w = util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH);
-        state.focusedwindow->size.h = util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT);
-
-        damageall(state.focusedwindow);
-
-    }
+    if (state.mousebuttonright && widget_isresizable(state.focusedwindow))
+        scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
 
 }
 
