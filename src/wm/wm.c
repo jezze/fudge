@@ -16,6 +16,7 @@
 struct state
 {
 
+    unsigned int paused;
     struct util_position mouseposition;
     struct util_position mousemovement;
     struct util_position mouseclicked;
@@ -33,7 +34,6 @@ struct state
 
 static struct blit_display display;
 static struct state state;
-static unsigned int paused;
 static unsigned int linebuffer[3840];
 
 static void setupvideo(void)
@@ -608,7 +608,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_process())
     {
 
-        if (!paused)
+        if (!state.paused)
         {
 
             place_widget(state.rootwidget, 0, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
@@ -673,7 +673,6 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-
     }
 
     if (state.mousebuttonright && state.focusedwindow)
@@ -694,8 +693,6 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct widget *clickedwindow = getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
-    struct widget *clickedwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     state.mouseclicked.x = state.mouseposition.x;
     state.mouseclicked.y = state.mouseposition.y;
@@ -706,16 +703,16 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     case 1:
         state.mousebuttonleft = 1;
 
-        setfocuswindow(clickedwindow);
-        setfocus(clickedwidget);
-        setclick(clickedwidget);
+        setfocuswindow(getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW));
+        setfocus(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
+        setclick(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
         break;
 
     case 2:
         state.mousebuttonright = 1;
 
-        setclick(clickedwidget);
+        setclick(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
         break;
 
@@ -727,11 +724,8 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousescroll *mousescroll = mdata;
-    struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    if (scrollablewidget)
-        scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
-
+    scrollwidget(getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y), 0, mousescroll->relz * 16);
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
 }
@@ -801,7 +795,7 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    paused = 1;
+    state.paused = 1;
 
     channel_bind(EVENT_KEYPRESS, 0);
     channel_bind(EVENT_KEYRELEASE, 0);
@@ -838,7 +832,7 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    paused = 0;
+    state.paused = 0;
 
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
