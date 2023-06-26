@@ -472,9 +472,6 @@ unsigned int widget_intersects(struct widget *widget, int x, int y)
 unsigned int widget_isdragable(struct widget *widget)
 {
 
-    if (widget->display == WIDGET_DISPLAY_HIDDEN)
-        return 0;
-
     switch (widget->type)
     {
 
@@ -490,9 +487,6 @@ unsigned int widget_isdragable(struct widget *widget)
 unsigned int widget_isresizable(struct widget *widget)
 {
 
-    if (widget->display == WIDGET_DISPLAY_HIDDEN)
-        return 0;
-
     switch (widget->type)
     {
 
@@ -507,9 +501,6 @@ unsigned int widget_isresizable(struct widget *widget)
 
 unsigned int widget_isinteractive(struct widget *widget)
 {
-
-    if (widget->display == WIDGET_DISPLAY_HIDDEN)
-        return 0;
 
     switch (widget->type)
     {
@@ -531,9 +522,6 @@ unsigned int widget_isinteractive(struct widget *widget)
 
 unsigned int widget_isscrollable(struct widget *widget)
 {
-
-    if (widget->display == WIDGET_DISPLAY_HIDDEN)
-        return 0;
 
     switch (widget->type)
     {

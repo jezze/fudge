@@ -15,8 +15,6 @@
 #define WIDGET_STATE_FOCUS              3
 #define WIDGET_STATE_FOCUSOFF           4
 #define WIDGET_STATE_DESTROYED          5
-#define WIDGET_DISPLAY_NORMAL           0
-#define WIDGET_DISPLAY_HIDDEN           1
 
 struct widget_button
 {
@@ -134,7 +132,6 @@ struct widget
     struct util_size size;
     struct util_position clipposition;
     struct util_size clipsize;
-    unsigned int display;
 
 };
 

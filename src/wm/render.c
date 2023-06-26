@@ -306,9 +306,6 @@ void render(struct blit_display *display, int mx, int my)
 
             struct widget *widget = current->data;
 
-            if (widget->display == WIDGET_DISPLAY_HIDDEN)
-                continue;
-
             if (widget_intersectsy(widget, line))
             {
 

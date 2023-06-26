@@ -13,18 +13,6 @@
 
 #define INFINITY    50000
 
-static void hideall(struct widget *widget)
-{
-
-    struct list_item *current = 0;
-
-    widget->display = WIDGET_DISPLAY_HIDDEN;
-
-    while ((current = pool_nextin(current, widget)))
-        hideall(current->data);
-
-}
-
 static unsigned int getnumspans(struct widget *widget)
 {
 
@@ -52,8 +40,6 @@ static void placewidget(struct widget *widget, int x, int y, int w, int h, unsig
     util_initsize(&widget->size, util_clamp(w + paddingw * 2, minw, maxw), util_clamp(h + paddingh * 2, minh, maxh));
     util_initposition(&widget->clipposition, clipx, clipy);
     util_initsize(&widget->clipsize, clipw, cliph);
-
-    widget->display = WIDGET_DISPLAY_NORMAL;
 
 }
 
@@ -371,20 +357,7 @@ static void placeselect(struct widget *widget, int x, int y, int offx, unsigned 
     placechildren(widget, x, widget->position.y + widget->size.h, 0, 0, widget->size.w * 2, INFINITY, clipx, clipy, clipw, cliph, 0, 0, 0, 0, 0, 1, &total);
 
     if (widget->state != WIDGET_STATE_FOCUS)
-    {
-
-        struct list_item *current = 0;
-
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            hideall(child);
-
-        }
-
-    }
+        clipchildren(widget, widget->position.x, widget->position.y, 0, 0, 0, 0);
 
 }
 
