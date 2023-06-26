@@ -700,6 +700,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
+    struct widget *clickedwindow = getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
+    struct widget *clickedwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     state.mouseclicked.x = state.mouseposition.x;
     state.mouseclicked.y = state.mouseposition.y;
@@ -710,16 +712,16 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     case 1:
         state.mousebuttonleft = 1;
 
-        setfocuswindow(getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW));
-        setfocus(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
-        setclick(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
+        setfocuswindow(clickedwindow);
+        setfocus(clickedwidget);
+        setclick(clickedwidget);
 
         break;
 
     case 2:
         state.mousebuttonright = 1;
 
-        setclick(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
+        setclick(clickedwidget);
 
         break;
 
