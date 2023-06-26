@@ -216,8 +216,8 @@ static void scrollchildren(struct widget *widget, int x, int y)
 
         struct widget *child = current->data;
 
-        child->position.x += x;
-        child->position.y += y;
+        util_initposition(&child->position, child->position.x + x, child->position.y + y);
+        scrollchildren(child, x, y);
 
     }
 
