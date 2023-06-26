@@ -25,11 +25,11 @@ static void hideall(struct widget *widget)
 
 }
 
-static void addtotal(struct util_size *total, struct widget *widget, int x, int y, unsigned int paddingw, unsigned int paddingh)
+static void addtotal(struct util_size *total, struct widget *widget, int x, int y, unsigned int marginw, unsigned int marginh, unsigned int paddingw, unsigned int paddingh)
 {
 
-    total->w = util_max(total->w, ((widget->position.x + widget->size.w) - x) + paddingw);
-    total->h = util_max(total->h, ((widget->position.y + widget->size.h) - y) + paddingh);
+    total->w = util_max(total->w, ((widget->position.x + widget->size.w) - x) + marginw + paddingw);
+    total->h = util_max(total->h, ((widget->position.y + widget->size.h) - y) + marginh + paddingh);
 
 }
 
@@ -131,7 +131,7 @@ static void placechildren1(struct widget *widget, int x, int y, unsigned int min
         }
 
         placechild(child, cpos.x, cpos.y, 0, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
-        addtotal(total, child, x, y, paddingw, paddingh);
+        addtotal(total, child, x, y, marginw, marginh, paddingw, paddingh);
 
     }
 
@@ -177,7 +177,7 @@ static void placetextflow(struct widget *widget, int x, int y, int offx, unsigne
             struct widget_text *text = child->data;
 
             placechild(child, cpos.x, cpos.y, offx, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
-            addtotal(total, child, x, y, paddingw, paddingh);
+            addtotal(total, child, x, y, marginw, marginh, paddingw, paddingh);
 
             offx = text->cachetext.lastrowx;
             offy += text->cachetext.lastrowy;
@@ -200,6 +200,7 @@ static void clipchildren(struct widget *widget, int x, int y, unsigned int w, un
 
         util_initposition(&child->clipposition, x + marginw, y + marginh);
         util_initsize(&child->clipsize, util_clamp(w, 0, w - marginw * 2), util_clamp(h, 0, h - marginh * 2));
+        clipchildren(child, x, y, w, h, marginw, marginh);
 
     }
 
@@ -412,7 +413,7 @@ static void placetextbox(struct widget *widget, int x, int y, int offx, unsigned
 
     placetextflow(widget, x, y, offx, 0, 0, maxw, INFINITY, clipx, clipy, clipw, cliph, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
-    clipchildren(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
+    clipchildren(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
 
     textbox->vscroll = util_clamp(textbox->vscroll, widget->size.h - total.h, 0);
 
