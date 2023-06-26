@@ -451,14 +451,14 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
-    return util_intersects(x, widget->position.x, widget->position.x + widget->size.w);
+    return util_intersects(x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(x, widget->clipposition.x, widget->clipposition.x + widget->clipsize.w);
 
 }
 
 unsigned int widget_intersectsy(struct widget *widget, int y)
 {
 
-    return util_intersects(y, widget->position.y, widget->position.y + widget->size.h);
+    return util_intersects(y, widget->position.y, widget->position.y + widget->size.h) && util_intersects(y, widget->clipposition.y, widget->clipposition.y + widget->clipsize.h);
 
 }
 

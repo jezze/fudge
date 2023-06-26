@@ -309,7 +309,7 @@ void render(struct blit_display *display, int mx, int my)
             if (widget->display == WIDGET_DISPLAY_HIDDEN)
                 continue;
 
-            if (widget_intersectsy(widget, line) && util_intersects(line, widget->clipposition.y, widget->clipposition.y + widget->clipsize.h))
+            if (widget_intersectsy(widget, line))
             {
 
                 int x0 = util_max(widget->position.x, area.position0.x);
