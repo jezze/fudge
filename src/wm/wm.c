@@ -363,46 +363,6 @@ static void sethover(struct widget *widget)
 
 }
 
-static void destroy(struct widget *widget)
-{
-
-    if (state.hoverwidget == widget)
-        sethover(0);
-
-    if (state.focusedwidget == widget)
-        setfocus(0);
-
-    if (state.focusedwindow == widget)
-        setfocuswindow(0);
-
-    damageall(widget);
-    pool_destroy(widget);
-
-}
-
-static void removedestroyed(unsigned int source)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_nextsource(current, source)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->state == WIDGET_STATE_DESTROYED)
-        {
-
-            current = current->prev;
-
-            destroy(widget);
-
-        }
-
-    }
-
-}
-
 static void sendevent(unsigned int source, unsigned int type, unsigned int action)
 {
 
@@ -521,6 +481,49 @@ static void setclick(struct widget *widget)
         state.clickedwidget = widget;
 
         clickwidget(widget);
+
+    }
+
+}
+
+static void destroy(struct widget *widget)
+{
+
+    if (state.hoverwidget == widget)
+        sethover(0);
+
+    if (state.focusedwidget == widget)
+        setfocus(0);
+
+    if (state.focusedwindow == widget)
+        setfocuswindow(0);
+
+    if (state.clickedwidget == widget)
+        setclick(0);
+
+    damageall(widget);
+    pool_destroy(widget);
+
+}
+
+static void removedestroyed(unsigned int source)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->state == WIDGET_STATE_DESTROYED)
+        {
+
+            current = current->prev;
+
+            destroy(widget);
+
+        }
 
     }
 
