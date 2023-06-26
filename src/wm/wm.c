@@ -866,28 +866,34 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 static void setupwidgets(void)
 {
 
-    char *data =
-        "+ layout id \"root\"\n"
-        "  + fill in \"root\" color \"FF202020\"\n"
-        "  + layout id \"desktop\" in \"root\" flow \"vertical\"\n"
-        "    + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
-        "      + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"
-        "        + layout id \"fudge-layout\" in \"fudge-select\" flow \"vertical-stretch\"\n"
-        "          + choice in \"fudge-layout\" label \"About\" onclick \"run /bin/wabout\"\n"
-        "          + choice in \"fudge-layout\" label \"Settings\" onclick \"run /bin/wsettings\"\n"
-        "          + choice in \"fudge-layout\" label \"Reboot\" onclick \"run /bin/reboot\"\n"
-        "      + select id \"apps-select\" in \"menu\" label \"Apps\"\n"
-        "        + layout id \"apps-layout\" in \"apps-select\" flow \"vertical-stretch\"\n"
-        "          + choice in \"apps-layout\" label \"Shell\" onclick \"run /bin/wshell\"\n"
-        "          + choice in \"apps-layout\" label \"File Manager\" onclick \"run /bin/wfile\"\n"
-        "          + choice in \"apps-layout\" label \"Calculator\" onclick \"run /bin/wcalc\"\n"
-        "          + choice in \"apps-layout\" label \"Test\" onclick \"run /bin/wtest\"\n"
-        "  + image id \"mouse\" in \"root\" mimetype \"image/fudge-icon-mouse\"\n";
+    char *data0 =
+        "+ layout id \"root\"\n";
+    char *data1 =
+        "+ fill color \"FF202020\"\n"
+        "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\"\n";
+    char *data2 =
+        "+ layout id \"desktop\" flow \"vertical\"\n"
+        "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
+        "    + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"
+        "      + layout id \"fudge-layout\" in \"fudge-select\" flow \"vertical-stretch\"\n"
+        "        + choice in \"fudge-layout\" label \"About\" onclick \"run /bin/wabout\"\n"
+        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run /bin/wsettings\"\n"
+        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run /bin/reboot\"\n"
+        "    + select id \"apps-select\" in \"menu\" label \"Apps\"\n"
+        "      + layout id \"apps-layout\" in \"apps-select\" flow \"vertical-stretch\"\n"
+        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run /bin/wshell\"\n"
+        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run /bin/wfile\"\n"
+        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run /bin/wcalc\"\n"
+        "        + choice in \"apps-layout\" label \"Test\" onclick \"run /bin/wtest\"\n";
 
-    parser_parse(0, "", cstring_length(data), data);
+    parser_parse(0, "", cstring_length(data0), data0);
+    parser_parse(0, "root", cstring_length(data1), data1);
+    parser_parse(0, "root", cstring_length(data2), data2);
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
     state.mousewidget = pool_getwidgetbyid(0, "mouse");
+
+    bumpmouse();
 
 }
 
