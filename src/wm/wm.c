@@ -214,25 +214,31 @@ static void scrollwidget(struct widget *widget, int hamount, int vamount)
 
 }
 
-static void bumpmouse(void)
+static void bump(struct widget *widget)
 {
 
-    if (state.mousewidget)
+    if (widget)
     {
 
-        pool_bump(state.mousewidget);
-        damage(state.mousewidget);
+        pool_bump(widget);
+        damageall(widget);
 
     }
 
 }
 
-static void bump(struct widget *widget)
+static void bumpchildren(struct widget *widget)
 {
 
-    pool_bump(widget);
-    damageall(widget);
-    bumpmouse();
+    if (widget)
+    {
+
+        struct list_item *current = 0;
+
+        while ((current = pool_nextin(current, widget)))
+            bump(current->data);
+
+    }
 
 }
 
@@ -293,19 +299,11 @@ static void setfocus(struct widget *widget)
 
         damageall(state.focusedwidget);
 
-        if (widget->type == WIDGET_TYPE_SELECT)
+        if (state.focusedwidget->type == WIDGET_TYPE_SELECT)
         {
 
-            struct list_item *current = 0;
-
-            while ((current = pool_nextin(current, widget)))
-            {
-
-                struct widget *child = current->data;
-
-                bump(child);
-
-            }
+            bumpchildren(state.focusedwidget);
+            bump(state.mousewidget);
 
         }
 
@@ -333,6 +331,7 @@ static void setfocuswindow(struct widget *widget)
         state.focusedwindow = widget;
 
         bump(state.focusedwindow);
+        bump(state.mousewidget);
 
     }
 
@@ -834,7 +833,7 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
     parser_parse(source, "root", msize, mdata);
     placewindows(source);
     removedestroyed(source);
-    bumpmouse();
+    bump(state.mousewidget);
 
 }
 
@@ -902,7 +901,7 @@ static void setupwidgets(void)
     state.rootwidget = pool_getwidgetbyid(0, "root");
     state.mousewidget = pool_getwidgetbyid(0, "mouse");
 
-    bumpmouse();
+    bump(state.mousewidget);
 
 }
 
