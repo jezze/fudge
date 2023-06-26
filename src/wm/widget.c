@@ -163,18 +163,13 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
     switch (attribute)
     {
 
-    case ATTR_BLIT:
-        text->blit = attr_update(ATTR_BLIT, value, text->blit);
+    case ATTR_CONTENT:
+        text->content = attr_update(ATTR_CONTENT, value, text->content);
 
         break;
 
     case ATTR_HALIGN:
         text->halign = attr_update(ATTR_HALIGN, value, text->halign);
-
-        break;
-
-    case ATTR_CONTENT:
-        text->content = attr_update(ATTR_CONTENT, value, text->content);
 
         break;
 
@@ -234,6 +229,48 @@ static void setattributetextbutton(struct widget *widget, unsigned int attribute
 
     case ATTR_ONCLICK:
         textbutton->onclick = attr_update(ATTR_ONCLICK, value, textbutton->onclick);
+
+        break;
+
+    }
+
+}
+
+static void setattributetextedit(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    struct widget_textedit *textedit = widget->data;
+
+    switch (attribute)
+    {
+
+    case ATTR_CONTENT:
+        textedit->content = attr_update(ATTR_CONTENT, value, textedit->content);
+
+        break;
+
+    case ATTR_CURSOR:
+        textedit->cursor = attr_update(ATTR_CURSOR, value, textedit->cursor);
+
+        break;
+
+    case ATTR_HALIGN:
+        textedit->halign = attr_update(ATTR_HALIGN, value, textedit->halign);
+
+        break;
+
+    case ATTR_VALIGN:
+        textedit->valign = attr_update(ATTR_VALIGN, value, textedit->valign);
+
+        break;
+
+    case ATTR_WEIGHT:
+        textedit->weight = attr_update(ATTR_WEIGHT, value, textedit->weight);
+
+        break;
+
+    case ATTR_WRAP:
+        textedit->wrap = attr_update(ATTR_WRAP, value, textedit->wrap);
 
         break;
 
@@ -334,6 +371,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case WIDGET_TYPE_TEXTEDIT:
+        setattributetextedit(widget, attribute, value);
+
+        break;
+
     case WIDGET_TYPE_WINDOW:
         setattributewindow(widget, attribute, value);
 
@@ -383,6 +425,11 @@ void widget_unsetattributes(struct widget *widget)
     case WIDGET_TYPE_TEXTBUTTON:
         setattributetextbutton(widget, ATTR_LABEL, 0);
         setattributetextbutton(widget, ATTR_ONCLICK, 0);
+
+        break;
+
+    case WIDGET_TYPE_TEXTEDIT:
+        setattributetextedit(widget, ATTR_CONTENT, 0);
 
         break;
 

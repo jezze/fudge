@@ -30,6 +30,7 @@ struct entry
         struct widget_text text;
         struct widget_textbox textbox;
         struct widget_textbutton textbutton;
+        struct widget_textedit textedit;
         struct widget_window window;
 
     } payload;

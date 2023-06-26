@@ -20,18 +20,17 @@ static void update(void)
 
     char buffer[CONTENTSIZE];
     unsigned int count;
+    unsigned int cursor;
 
     count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
     channel_send_fmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input1, buffer, CONTENTSIZE);
+    cursor = count;
+    count += ring_readcopy(&input2, buffer + count, CONTENTSIZE);
 
-    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input1 content \"%w\"\n", buffer, &count);
-
-    count = ring_readcopy(&input2, buffer, CONTENTSIZE);
-
-    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input2 content \"%w\"\n", buffer, &count);
+    channel_send_fmt3(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input cursor \"%u\" content \"%w \"\n", &cursor, buffer, &count);
 
 }
 
@@ -378,9 +377,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + textbox id \"output\" in \"base\" overflow \"vscroll\" mode \"readonly\" span \"1\"\n"
         "      + text id \"result\" in \"output\" wrap \"char\"\n"
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
-        "      + text id \"input1\" in \"output\" wrap \"char\"\n"
-        "      + text in \"output\" wrap \"char\" blit \"inverted\" content \" \"\n"
-        "      + text id \"input2\" in \"output\" wrap \"char\"\n";
+        "      + textedit id \"input\" in \"output\" wrap \"char\" content \" \"\n";
 
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
 

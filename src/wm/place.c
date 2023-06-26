@@ -166,6 +166,21 @@ static void placetextflow(struct widget *widget, int x, int y, int offx, unsigne
 
         }
 
+        else if (child->type == WIDGET_TYPE_TEXTEDIT)
+        {
+
+            struct widget_textedit *textedit = child->data;
+
+            placechild(child, cpos.x, cpos.y, offx, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
+
+            total->w = util_max(total->w, ((child->position.x + child->size.w) - x) + marginw + paddingw);
+            total->h = util_max(total->h, ((child->position.y + child->size.h) - y) + marginh + paddingh);
+
+            offx = textedit->cachetext.lastrowx;
+            offy += textedit->cachetext.lastrowy;
+
+        }
+
     }
 
 }
@@ -403,6 +418,19 @@ static void placetextbutton(struct widget *widget, int x, int y, int offx, unsig
 
 }
 
+static void placetextedit(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph)
+{
+
+    struct widget_textedit *textedit = widget->data;
+    struct text_font *font = pool_getfont(textedit->weight);
+    struct text_info info;
+
+    text_gettextinfo(&info, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, maxw, offx);
+    placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
+    cache_inittext(&textedit->cachetext, info.rows, offx, info.lastrowx, info.lastrowy);
+
+}
+
 static void placewindow(struct widget *widget, int x, int y, int offx, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph)
 {
 
@@ -471,6 +499,11 @@ void place_widget(struct widget *widget, int x, int y, int offx, unsigned int mi
 
     case WIDGET_TYPE_TEXTBUTTON:
         placetextbutton(widget, x, y, offx, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
+
+        break;
+
+    case WIDGET_TYPE_TEXTEDIT:
+        placetextedit(widget, x, y, offx, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
 
         break;
 

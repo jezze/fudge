@@ -1,7 +1,7 @@
-#define ATTR_BLIT                       1
-#define ATTR_COLOR                      2
-#define ATTR_COLUMNS                    3
-#define ATTR_CONTENT                    4
+#define ATTR_COLOR                      1
+#define ATTR_COLUMNS                    2
+#define ATTR_CONTENT                    3
+#define ATTR_CURSOR                     4
 #define ATTR_FLOW                       5
 #define ATTR_HALIGN                     6
 #define ATTR_ID                         7
@@ -18,8 +18,6 @@
 #define ATTR_VALIGN                     18
 #define ATTR_WEIGHT                     19
 #define ATTR_WRAP                       20
-#define ATTR_BLIT_NORMAL                0
-#define ATTR_BLIT_INVERTED              1
 #define ATTR_FLOW_DEFAULT               0
 #define ATTR_FLOW_HORIZONTAL            1
 #define ATTR_FLOW_HORIZONTALSTRETCH     2
