@@ -234,32 +234,6 @@ static void printdir(struct ext2_entry *entry, char *name)
     channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "Name: %w\n", name, &length);
 
 }
-*/
-
-static void sendreadresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
-{
-
-    struct {struct event_readresponse readresponse; char data[64];} message;
-
-    message.readresponse.session = session;
-    message.readresponse.count = count;
-
-    buffer_write(message.data, 64, buffer, message.readresponse.count, 0);
-    channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
-
-}
-
-static void sendwalkresponse(unsigned int source, unsigned int session, unsigned int id)
-{
-
-    struct event_walkresponse walkresponse;
-
-    walkresponse.session = session;
-    walkresponse.id = id;
-
-    channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
-
-}
 
 static void showinode(unsigned int source, struct event_readrequest *readrequest, struct ext2_superblock *sb)
 {
@@ -312,13 +286,58 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
     }
 
 }
+*/
+
+static void sendreadresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
+{
+
+    struct {struct event_readresponse readresponse; char data[64];} message;
+
+    message.readresponse.session = session;
+    message.readresponse.count = count;
+
+    buffer_write(message.data, 64, buffer, message.readresponse.count, 0);
+    channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+
+}
+
+static void sendwalkresponse(unsigned int source, unsigned int session, unsigned int id)
+{
+
+    struct event_walkresponse walkresponse;
+
+    walkresponse.session = session;
+    walkresponse.id = id;
+
+    channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
+
+}
 
 static struct ext2_superblock sb;
 
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    showinode(source, mdata, &sb);
+    struct event_readrequest *readrequest = mdata;
+    unsigned int blocksize = (1024 << sb.blockSize);
+    unsigned int blockgroup = (readrequest->id - 1) / sb.nodeCountGroup;
+    unsigned int nodeindex = (readrequest->id - 1) % sb.nodeCountGroup;
+    unsigned int blockindex = (readrequest->id * sb.nodeSize) / blocksize;
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
+
+    readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
+    readnode(&node, &sb, &bg, blocksize, nodeindex);
+
+    if ((node.type & 0xF000) == 0x8000)
+    {
+
+        unsigned char block[4096];
+
+        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+        sendreadresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
+
+    }
 
 }
 
