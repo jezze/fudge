@@ -291,6 +291,9 @@ static void showinode(struct ext2_superblock *sb, unsigned int inode)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    if (!call_walk_absolute(FILE_G0, option_getstring("fs-service")))
+        PANIC();
+
     if (call_walk_absolute(FILE_G5, option_getstring("volume")))
     {
 
@@ -322,11 +325,21 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    call_link(FILE_G0, 8000);
+
+    while (channel_process())
+    {
+
+    }
+
+    call_unlink(FILE_G0);
+
 }
 
 void init(void)
 {
 
+    option_add("fs-service", "system:service/fd0");
     option_add("volume", "system:block/if:0/data");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);

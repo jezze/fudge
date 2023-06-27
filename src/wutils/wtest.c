@@ -4,7 +4,7 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, option_getstring("wm-service")))
         PANIC();
 
     call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
@@ -38,6 +38,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("wm-service", "system:service/wm");
     channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);

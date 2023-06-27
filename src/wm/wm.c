@@ -621,7 +621,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_G0, option_getstring("wm")))
+    if (!call_walk_absolute(FILE_G0, option_getstring("wm-service")))
         PANIC();
 
     if (!call_walk_absolute(FILE_L0, option_getstring("keyboard")))
@@ -918,7 +918,7 @@ void init(void)
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
-    option_add("wm", "system:service/wm");
+    option_add("wm-service", "system:service/wm");
     option_add("keyboard", "system:keyboard");
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");

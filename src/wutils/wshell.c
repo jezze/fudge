@@ -353,7 +353,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     call_walk_duplicate(FILE_G8, FILE_PW);
 
-    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
+    if (!call_walk_absolute(FILE_L0, option_getstring("wm-service")))
         PANIC();
 
     call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
@@ -523,6 +523,7 @@ void init(void)
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
+    option_add("wm-service", "system:service/wm");
     option_add("slang", "initrd:/bin/slang");
     channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_ERROR, onerror);
