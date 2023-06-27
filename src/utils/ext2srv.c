@@ -236,13 +236,38 @@ static void printdir(struct ext2_entry *entry, char *name)
 }
 */
 
-static void showinode(unsigned int source, struct ext2_superblock *sb, unsigned int inode)
+static void sendreadresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
+{
+
+    struct {struct event_readresponse readresponse; char data[64];} message;
+
+    message.readresponse.session = session;
+    message.readresponse.count = count;
+
+    buffer_write(message.data, 64, buffer, message.readresponse.count, 0);
+    channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+
+}
+
+static void sendwalkresponse(unsigned int source, unsigned int session, unsigned int id)
+{
+
+    struct event_walkresponse walkresponse;
+
+    walkresponse.session = session;
+    walkresponse.id = id;
+
+    channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
+
+}
+
+static void showinode(unsigned int source, struct event_readrequest *readrequest, struct ext2_superblock *sb)
 {
 
     unsigned int blocksize = (1024 << sb->blockSize);
-    unsigned int blockgroup = (inode - 1) / sb->nodeCountGroup;
-    unsigned int nodeindex = (inode - 1) % sb->nodeCountGroup;
-    unsigned int blockindex = (inode * sb->nodeSize) / blocksize;
+    unsigned int blockgroup = (readrequest->id - 1) / sb->nodeCountGroup;
+    unsigned int nodeindex = (readrequest->id - 1) % sb->nodeCountGroup;
+    unsigned int blockindex = (readrequest->id * sb->nodeSize) / blocksize;
     struct ext2_blockgroup bg;
     struct ext2_node node;
 
@@ -282,7 +307,7 @@ static void showinode(unsigned int source, struct ext2_superblock *sb, unsigned 
         unsigned char block[4096];
 
         request_readblocks(block, 4096, node.pointer0, 1, blocksize);
-        channel_send_buffer(source, EVENT_DATA, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
+        sendreadresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
 
@@ -290,21 +315,23 @@ static void showinode(unsigned int source, struct ext2_superblock *sb, unsigned 
 
 static struct ext2_superblock sb;
 
-static void onread(unsigned int source, void *mdata, unsigned int msize)
+static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_read *read = mdata;
-
-    showinode(source, &sb, read->id);
+    showinode(source, mdata, &sb);
 
 }
 
-static void onwalk(unsigned int source, void *mdata, unsigned int msize)
+static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
+
+    struct event_walkrequest *walkrequest = mdata;
+
+    sendwalkresponse(source, walkrequest->session, 12);
 
 }
 
-static void onwrite(unsigned int source, void *mdata, unsigned int msize)
+static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
 }
@@ -359,9 +386,9 @@ void init(void)
     option_add("volume", "system:block/if:0/data");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_READ, onread);
-    channel_bind(EVENT_WALK, onwalk);
-    channel_bind(EVENT_WRITE, onwrite);
+    channel_bind(EVENT_READREQUEST, onreadrequest);
+    channel_bind(EVENT_WALKREQUEST, onwalkrequest);
+    channel_bind(EVENT_WRITEREQUEST, onwriterequest);
 
 }
 

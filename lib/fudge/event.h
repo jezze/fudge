@@ -36,9 +36,12 @@
 #define EVENT_WMINIT                    0x2D
 #define EVENT_WMEVENT                   0x2E
 #define EVENT_P9P                       0x30
-#define EVENT_WALK                      0x40
-#define EVENT_READ                      0x41
-#define EVENT_WRITE                     0x42
+#define EVENT_WALKREQUEST               0x41
+#define EVENT_WALKRESPONSE              0x42
+#define EVENT_READREQUEST               0x43
+#define EVENT_READRESPONSE              0x44
+#define EVENT_WRITEREQUEST              0x45
+#define EVENT_WRITERESPONSE             0x46
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 
@@ -191,27 +194,55 @@ struct event_wmevent
 
 };
 
-struct event_read
+struct event_readrequest
 {
 
+    unsigned int session;
     unsigned int id;
     unsigned int offset;
     unsigned int count;
 
 };
 
-struct event_walk
+struct event_readresponse
 {
 
+    unsigned int session;
     unsigned int count;
 
 };
 
-struct event_write
+struct event_walkrequest
 {
 
+    unsigned int session;
+    unsigned int parent;
+    unsigned int length;
+
+};
+
+struct event_walkresponse
+{
+
+    unsigned int session;
+    unsigned int id;
+
+};
+
+struct event_writerequest
+{
+
+    unsigned int session;
     unsigned int id;
     unsigned int offset;
+    unsigned int count;
+
+};
+
+struct event_writeresponse
+{
+
+    unsigned int session;
     unsigned int count;
 
 };
