@@ -364,24 +364,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_absolute(FILE_G5, option_getstring("volume")))
         PANIC();
 
-/*
-    call_link(FILE_G5, 8000);
-
-    if (isvalid(&sb))
-    {
-
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 2:\n");
-        showinode(&sb, 2);
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 11:\n");
-        showinode(&sb, 11);
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 12:\n");
-        showinode(&sb, 12);
-
-    }
-
-    call_unlink(FILE_G5);
-*/
-
     call_link(FILE_G0, 8000);
     call_link(FILE_G5, 8001);
     readsuperblock(&sb);
