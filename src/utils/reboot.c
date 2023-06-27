@@ -9,8 +9,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     else
         channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", "system:reset");
 
-    channel_close();
-
 }
 
 void init(void)

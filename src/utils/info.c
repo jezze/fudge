@@ -93,7 +93,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     showcores();
     showtasks();
     showmailboxes();
-    channel_close();
 
 }
 

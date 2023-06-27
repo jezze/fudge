@@ -21,7 +21,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_send_fmt0(id, EVENT_PATH, "/data/help.txt\\0");
         channel_send(id, EVENT_MAIN);
         channel_wait(id, EVENT_CLOSE);
-        channel_close();
 
     }
 

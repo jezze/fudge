@@ -61,7 +61,6 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-    channel_close();
 
 }
 
@@ -174,6 +173,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMEVENT, onwmevent);

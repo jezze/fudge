@@ -160,7 +160,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         print_ethernet(source, data);
 
     call_unlink(FILE_G0);
-    channel_close();
 
 }
 

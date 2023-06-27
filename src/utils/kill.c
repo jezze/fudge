@@ -9,8 +9,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (id)
         call_kill(id);
 
-    channel_close();
-
 }
 
 void init(void)

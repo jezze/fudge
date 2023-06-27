@@ -123,7 +123,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         print(mbr);
 
     call_unlink(FILE_G5);
-    channel_close();
 
 }
 

@@ -228,7 +228,6 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
     channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-    channel_close();
 
 }
 
@@ -314,6 +313,7 @@ void init(void)
     option_add("bpp", "4");
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
+    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);

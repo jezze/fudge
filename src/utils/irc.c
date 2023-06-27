@@ -186,7 +186,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
     call_unlink(FILE_G0);
-    channel_close();
 
 }
 

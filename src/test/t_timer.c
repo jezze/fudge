@@ -27,7 +27,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     }
 
     call_unlink(FILE_L1);
-    channel_close();
 
 }
 

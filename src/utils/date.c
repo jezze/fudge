@@ -14,7 +14,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
     channel_send_fmt6(CHANNEL_DEFAULT, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
-    channel_close();
 
 }
 

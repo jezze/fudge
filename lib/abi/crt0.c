@@ -3,13 +3,6 @@
 
 extern void init(void);
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_close();
-
-}
-
 static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -47,13 +40,6 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_close();
-
-}
-
 void panic(char *file, unsigned int line)
 {
 
@@ -67,11 +53,11 @@ void main(void)
 {
 
     channel_open();
-    channel_bind(EVENT_MAIN, onmain);
+    channel_autoclose(EVENT_MAIN, 1);
+    channel_autoclose(EVENT_TERM, 1);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_REDIRECT, onredirect);
     channel_bind(EVENT_STATUS, onstatus);
-    channel_bind(EVENT_TERM, onterm);
     init();
 
     while (channel_process());

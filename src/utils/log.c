@@ -44,8 +44,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_close();
-
 }
 
 void init(void)

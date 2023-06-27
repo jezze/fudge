@@ -155,7 +155,6 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-    channel_close();
 
 }
 
@@ -210,6 +209,7 @@ void init(void)
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
     option_add("dns", "initrd:/bin/dns");
+    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMINIT, onwminit);

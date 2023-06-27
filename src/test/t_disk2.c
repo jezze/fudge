@@ -159,7 +159,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     sendrequest();
-    channel_close();
 
 }
 

@@ -145,7 +145,6 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-    channel_close();
 
 }
 
@@ -193,6 +192,7 @@ void init(void)
     option_add("keyboard", "system:keyboard");
     option_add("timer", "system:timer/if:0");
     option_add("video", "system:video/if:0");
+    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_VIDEOMODE, onvideomode);

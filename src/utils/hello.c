@@ -5,7 +5,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Hello World!\n");
-    channel_close();
 
 }
 

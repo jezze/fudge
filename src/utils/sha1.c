@@ -25,7 +25,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         cstring_write_value(output, 40, digest[i], 16, 2, i * 2);
 
     channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", output, &l);
-    channel_close();
 
 }
 

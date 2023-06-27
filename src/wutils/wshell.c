@@ -364,7 +364,6 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-    channel_close();
 
 }
 
@@ -525,6 +524,7 @@ void init(void)
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
     option_add("slang", "initrd:/bin/slang");
+    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);

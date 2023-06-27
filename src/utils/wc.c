@@ -56,7 +56,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "%u\n%u\n%u\n", &lines, &words, &bytes);
-    channel_close();
 
 }
 

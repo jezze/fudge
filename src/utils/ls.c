@@ -54,8 +54,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!paths)
         list(FILE_PW);
 
-    channel_close();
-
 }
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)

@@ -16,10 +16,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (id)
         channel_send(id, EVENT_STATUS);
 
-    /*
-    channel_close();
-    */
-
 }
 
 void init(void)
