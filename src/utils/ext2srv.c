@@ -339,6 +339,13 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    else
+    {
+
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Not a regular file: %u\n", &readrequest->id);
+
+    }
+
 }
 
 static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
