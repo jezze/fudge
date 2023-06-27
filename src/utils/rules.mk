@@ -110,10 +110,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/utils/fsclient \
+    $(DIR_SRC)/utils/rs \
 
 O:=\
-    $(DIR_SRC)/utils/fsclient.o \
+    $(DIR_SRC)/utils/rs.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \

@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int session = 42;
+static unsigned int session;
 
 static unsigned int getsession()
 {
