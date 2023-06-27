@@ -4,13 +4,14 @@
 
 #define CHANNEL_CALLBACKS               256
 
-static struct channel_callback
+static struct channel_handler
 {
 
     void (*callback)(unsigned int source, void *data, unsigned int size);
     unsigned int target;
+    unsigned int autoclose;
 
-} callbacks[CHANNEL_CALLBACKS];
+} handlers[CHANNEL_CALLBACKS];
 
 static unsigned int active;
 
@@ -21,7 +22,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
         return 0;
 
     if (!target)
-        target = callbacks[event].target;
+        target = handlers[event].target;
 
     if (!target)
         return 0;
@@ -51,8 +52,13 @@ void channel_dispatch(struct message *message, void *data)
     if (message->event < CHANNEL_CALLBACKS)
     {
 
-        if (callbacks[message->event].callback)
-            callbacks[message->event].callback(message->source, data, message_datasize(message));
+        struct channel_handler *handler = &handlers[message->event];
+
+        if (handler->callback)
+            handler->callback(message->source, data, message_datasize(message));
+
+        if (handler->autoclose)
+            channel_close();
 
     }
 
@@ -268,7 +274,14 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 
-    callbacks[event].callback = callback;
+    handlers[event].callback = callback;
+
+}
+
+void channel_autoclose(unsigned int event, unsigned int autoclose)
+{
+
+    handlers[event].autoclose = autoclose;
 
 }
 
@@ -279,17 +292,17 @@ void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsig
     {
 
     case EVENT_REDIRECT_TARGET:
-        callbacks[event].target = id;
+        handlers[event].target = id;
 
         break;
 
     case EVENT_REDIRECT_SOURCE:
-        callbacks[event].target = source;
+        handlers[event].target = source;
 
         break;
 
     default:
-        callbacks[event].target = CHANNEL_DEFAULT;
+        handlers[event].target = CHANNEL_DEFAULT;
 
         break;
 
