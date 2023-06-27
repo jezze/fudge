@@ -236,7 +236,7 @@ static void printdir(struct ext2_entry *entry, char *name)
 }
 */
 
-static void showinode(struct ext2_superblock *sb, unsigned int inode)
+static void showinode(unsigned int source, struct ext2_superblock *sb, unsigned int inode)
 {
 
     unsigned int blocksize = (1024 << sb->blockSize);
@@ -268,7 +268,7 @@ static void showinode(struct ext2_superblock *sb, unsigned int inode)
             name = (char *)entry + 8;
             length = entry->length;
 
-            channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "(%u) %w\n", &entry->node, name, &length);
+            channel_send_fmt3(source, EVENT_DATA, "(%u) %w\n", &entry->node, name, &length);
 
             offset += entry->size;
 
@@ -282,9 +282,30 @@ static void showinode(struct ext2_superblock *sb, unsigned int inode)
         unsigned char block[4096];
 
         request_readblocks(block, 4096, node.pointer0, 1, blocksize);
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
+        channel_send_buffer(source, EVENT_DATA, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
+
+}
+
+static struct ext2_superblock sb;
+
+static void onread(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_read *read = mdata;
+
+    showinode(source, &sb, read->id);
+
+}
+
+static void onwalk(unsigned int source, void *mdata, unsigned int msize)
+{
+
+}
+
+static void onwrite(unsigned int source, void *mdata, unsigned int msize)
+{
 
 }
 
@@ -294,44 +315,39 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_absolute(FILE_G0, option_getstring("fs-service")))
         PANIC();
 
-    if (call_walk_absolute(FILE_G5, option_getstring("volume")))
+    if (!call_walk_absolute(FILE_G5, option_getstring("volume")))
+        PANIC();
+
+/*
+    call_link(FILE_G5, 8000);
+
+    if (isvalid(&sb))
     {
 
-        struct ext2_superblock sb;
-
-        call_link(FILE_G5, 8000);
-        readsuperblock(&sb);
-
-        if (isvalid(&sb))
-        {
-
-            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 2:\n");
-            showinode(&sb, 2);
-            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 11:\n");
-            showinode(&sb, 11);
-            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 12:\n");
-            showinode(&sb, 12);
-
-        }
-
-        call_unlink(FILE_G5);
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 2:\n");
+        showinode(&sb, 2);
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 11:\n");
+        showinode(&sb, 11);
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 12:\n");
+        showinode(&sb, 12);
 
     }
 
-    else
-    {
-
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Volume not found: %s\n", option_getstring("volume"));
-
-    }
+    call_unlink(FILE_G5);
+*/
 
     call_link(FILE_G0, 8000);
+    call_link(FILE_G5, 8001);
+    readsuperblock(&sb);
 
-    while (channel_process())
+    if (isvalid(&sb))
     {
+
+        while (channel_process());
 
     }
 
+    call_unlink(FILE_G5);
     call_unlink(FILE_G0);
 
 }
@@ -343,6 +359,9 @@ void init(void)
     option_add("volume", "system:block/if:0/data");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_READ, onread);
+    channel_bind(EVENT_WALK, onwalk);
+    channel_bind(EVENT_WRITE, onwrite);
 
 }
 

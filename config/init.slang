@@ -1,5 +1,5 @@
 slang /config/terminal.slang
 slang /config/wm.slang
+slang /config/fs.slang
 touch system:service/log
-touch system:service/fd0
 elfload /kernel/smp.ko

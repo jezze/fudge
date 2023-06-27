@@ -36,6 +36,9 @@
 #define EVENT_WMINIT                    0x2D
 #define EVENT_WMEVENT                   0x2E
 #define EVENT_P9P                       0x30
+#define EVENT_WALK                      0x40
+#define EVENT_READ                      0x41
+#define EVENT_WRITE                     0x42
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 
@@ -188,3 +191,27 @@ struct event_wmevent
 
 };
 
+struct event_read
+{
+
+    unsigned int id;
+    unsigned int offset;
+    unsigned int count;
+
+};
+
+struct event_walk
+{
+
+    unsigned int count;
+
+};
+
+struct event_write
+{
+
+    unsigned int id;
+    unsigned int offset;
+    unsigned int count;
+
+};
