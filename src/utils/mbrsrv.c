@@ -112,17 +112,28 @@ static void print(struct mbr *mbr)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char block[1024];
-    struct mbr *mbr = (struct mbr *)block;
+    if (call_walk_absolute(FILE_G5, option_getstring("volume")))
+    {
 
-    call_walk_absolute(FILE_G5, option_getstring("volume"));
-    call_link(FILE_G5, 8000);
-    request_readblocks(block, 1024, 0, 1);
+        unsigned char block[1024];
+        struct mbr *mbr = (struct mbr *)block;
 
-    if (isvalid(mbr))
-        print(mbr);
+        call_link(FILE_G5, 8000);
+        request_readblocks(block, 1024, 0, 1);
 
-    call_unlink(FILE_G5);
+        if (isvalid(mbr))
+            print(mbr);
+
+        call_unlink(FILE_G5);
+
+    }
+
+    else
+    {
+
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Volume not found: %s\n", option_getstring("volume"));
+
+    }
 
 }
 

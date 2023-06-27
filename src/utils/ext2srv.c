@@ -291,25 +291,36 @@ static void showinode(struct ext2_superblock *sb, unsigned int inode)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct ext2_superblock sb;
-
-    call_walk_absolute(FILE_G5, option_getstring("volume"));
-    call_link(FILE_G5, 8000);
-    readsuperblock(&sb);
-
-    if (isvalid(&sb))
+    if (call_walk_absolute(FILE_G5, option_getstring("volume")))
     {
 
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 2:\n");
-        showinode(&sb, 2);
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 11:\n");
-        showinode(&sb, 11);
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 12:\n");
-        showinode(&sb, 12);
+        struct ext2_superblock sb;
+
+        call_link(FILE_G5, 8000);
+        readsuperblock(&sb);
+
+        if (isvalid(&sb))
+        {
+
+            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 2:\n");
+            showinode(&sb, 2);
+            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 11:\n");
+            showinode(&sb, 11);
+            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "Node 12:\n");
+            showinode(&sb, 12);
+
+        }
+
+        call_unlink(FILE_G5);
 
     }
 
-    call_unlink(FILE_G5);
+    else
+    {
+
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Volume not found: %s\n", option_getstring("volume"));
+
+    }
 
 }
 
