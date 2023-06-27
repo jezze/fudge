@@ -2,16 +2,16 @@
 #include "call.h"
 #include "channel.h"
 
-#define CHANNEL_CALLBACKS               256
+#define CHANNEL_LISTENERS 256
 
-static struct channel_handler
+static struct
 {
 
     void (*callback)(unsigned int source, void *data, unsigned int size);
     unsigned int target;
     unsigned int autoclose;
 
-} handlers[CHANNEL_CALLBACKS];
+} listeners[CHANNEL_LISTENERS];
 
 static unsigned int active;
 
@@ -22,7 +22,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
         return 0;
 
     if (!target)
-        target = handlers[event].target;
+        target = listeners[event].target;
 
     if (!target)
         return 0;
@@ -49,15 +49,13 @@ static unsigned int redirect(unsigned int target, unsigned int event, unsigned i
 void channel_dispatch(struct message *message, void *data)
 {
 
-    if (message->event < CHANNEL_CALLBACKS)
+    if (message->event < CHANNEL_LISTENERS)
     {
 
-        struct channel_handler *handler = &handlers[message->event];
+        if (listeners[message->event].callback)
+            listeners[message->event].callback(message->source, data, message_datasize(message));
 
-        if (handler->callback)
-            handler->callback(message->source, data, message_datasize(message));
-
-        if (handler->autoclose)
+        if (listeners[message->event].autoclose)
             channel_close();
 
     }
@@ -274,14 +272,14 @@ unsigned int channel_wait(unsigned int source, unsigned int event)
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 
-    handlers[event].callback = callback;
+    listeners[event].callback = callback;
 
 }
 
 void channel_autoclose(unsigned int event, unsigned int autoclose)
 {
 
-    handlers[event].autoclose = autoclose;
+    listeners[event].autoclose = autoclose;
 
 }
 
@@ -292,17 +290,17 @@ void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsig
     {
 
     case EVENT_REDIRECT_TARGET:
-        handlers[event].target = id;
+        listeners[event].target = id;
 
         break;
 
     case EVENT_REDIRECT_SOURCE:
-        handlers[event].target = source;
+        listeners[event].target = source;
 
         break;
 
     default:
-        handlers[event].target = CHANNEL_DEFAULT;
+        listeners[event].target = CHANNEL_DEFAULT;
 
         break;
 
