@@ -38,14 +38,14 @@ static void sendreadrequest(unsigned int session, unsigned int id, unsigned int 
 
 }
 
-static unsigned int walk(char *path)
+static unsigned int walk(unsigned int id, char *path)
 {
 
     unsigned int session = getsession();
     struct message message;
     struct event_walkresponse walkresponse;
 
-    sendwalkrequest(session, 0, path);
+    sendwalkrequest(session, id, path);
 
     while (channel_poll(EVENT_WALKRESPONSE, &message, &walkresponse))
     {
@@ -92,7 +92,7 @@ static unsigned int read(unsigned int id, unsigned int count, unsigned int offse
 static void test(void)
 {
 
-    unsigned int id = walk("test.txt");
+    unsigned int id = walk(0, "test.txt");
 
     if (id)
     {
