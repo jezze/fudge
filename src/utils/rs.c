@@ -92,7 +92,7 @@ static unsigned int read(unsigned int id, unsigned int count, unsigned int offse
 static void test(void)
 {
 
-    unsigned int id = walk("/");
+    unsigned int id = walk("test.txt");
 
     if (id)
     {

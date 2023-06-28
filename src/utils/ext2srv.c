@@ -315,6 +315,49 @@ static void sendwalkresponse(unsigned int source, unsigned int session, unsigned
 
 static struct ext2_superblock sb;
 
+static unsigned int walk(unsigned int id, char *path)
+{
+
+    unsigned int blocksize = (1024 << sb.blockSize);
+    unsigned int blockgroup = (id - 1) / sb.nodeCountGroup;
+    unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
+    unsigned int blockindex = (id * sb.nodeSize) / blocksize;
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
+
+    readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
+    readnode(&node, &sb, &bg, blocksize, nodeindex);
+
+    if ((node.type & 0xF000) == 0x4000)
+    {
+
+        struct ext2_entry *entry;
+        unsigned char block[4096];
+        unsigned int offset = 0;
+
+        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+
+        while (offset < 4096)
+        {
+
+            char *name;
+
+            entry = (struct ext2_entry *)(block + offset);
+            name = (char *)entry + 8;
+
+            if (entry->length == cstring_length(path) && buffer_match(name, path, entry->length))
+                return entry->node;
+
+            offset += entry->size;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -352,8 +395,9 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_walkrequest *walkrequest = mdata;
+    unsigned int id = walk((walkrequest->parent) ? walkrequest->parent : 2, (char *)(walkrequest + 1));
 
-    sendwalkresponse(source, walkrequest->session, 12);
+    sendwalkresponse(source, walkrequest->session, id);
 
 }
 
