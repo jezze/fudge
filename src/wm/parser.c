@@ -362,7 +362,7 @@ static void parseinsert(struct state *state, unsigned int source, char *in)
     {
 
         fail(state);
-        
+
     }
 
 }

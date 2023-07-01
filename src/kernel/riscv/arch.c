@@ -1,4 +1,4 @@
-unsigned char *uart = (unsigned char *)0x10000000; 
+unsigned char *uart = (unsigned char *)0x10000000;
 
 void putchar(char c)
 {
@@ -7,7 +7,7 @@ void putchar(char c)
         *uart = c;
 
 }
- 
+
 void print(const char *str)
 {
 
@@ -21,7 +21,7 @@ void print(const char *str)
     }
 
 }
- 
+
 void kmain(void)
 {
 

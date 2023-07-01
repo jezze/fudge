@@ -493,7 +493,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
     keymod = keymap_modkey(keyrelease->scancode, keymod);
 
 }
- 
+
 static void onerror(unsigned int source, void *mdata, unsigned int msize)
 {
 

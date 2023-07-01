@@ -42,13 +42,13 @@ struct rgb hsv2rgb(struct hsv hsv)
         return rgb;
 
     }
-    
+
     region = hsv.h / 43;
-    remainder = (hsv.h - (region * 43)) * 6; 
+    remainder = (hsv.h - (region * 43)) * 6;
     p = (hsv.v * (255 - hsv.s)) >> 8;
     q = (hsv.v * (255 - ((hsv.s * remainder) >> 8))) >> 8;
     t = (hsv.v * (255 - ((hsv.s * (255 - remainder)) >> 8))) >> 8;
-    
+
     switch (region)
     {
 
@@ -95,7 +95,7 @@ struct rgb hsv2rgb(struct hsv hsv)
             break;
 
     }
-    
+
     return rgb;
 
 }
@@ -106,7 +106,7 @@ struct hsv rgb2hsv(struct rgb rgb)
     unsigned char rgbmin = rgb.r < rgb.g ? (rgb.r < rgb.b ? rgb.r : rgb.b) : (rgb.g < rgb.b ? rgb.g : rgb.b);
     unsigned char rgbmax = rgb.r > rgb.g ? (rgb.r > rgb.b ? rgb.r : rgb.b) : (rgb.g > rgb.b ? rgb.g : rgb.b);
     struct hsv hsv;
-    
+
     hsv.v = rgbmax;
 
     if (hsv.v == 0)

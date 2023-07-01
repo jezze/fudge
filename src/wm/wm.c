@@ -69,7 +69,7 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
     while ((current = pool_prev(current)))
     {
- 
+
         struct widget *child = current->data;
 
         if (widget_isinteractive(child) && widget_intersects(child, x, y))
@@ -88,7 +88,7 @@ static struct widget *getscrollablewidgetat(int x, int y)
 
     while ((current = pool_prev(current)))
     {
- 
+
         struct widget *child = current->data;
 
         if (widget_isscrollable(child) && widget_intersects(child, x, y))
@@ -107,7 +107,7 @@ static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
 
     while ((current = pool_prev(current)))
     {
- 
+
         struct widget *child = current->data;
 
         if (child->type == type && widget_intersects(child, x, y))
@@ -865,7 +865,7 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
     while ((current = pool_nextsource(current, source)))
     {
- 
+
         struct widget *widget = current->data;
 
         widget_setstate(widget, WIDGET_STATE_DESTROYED);

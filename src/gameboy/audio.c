@@ -513,7 +513,7 @@ unsigned char audio_read(const unsigned short addr)
 
     if (addr > 0xFF26)
         return audio_mem[addr - AUDIO_ADDR_COMPENSATION];
-    
+
     return audio_mem[addr - AUDIO_ADDR_COMPENSATION] | ortab[addr - 0xFF10];
 
 }
