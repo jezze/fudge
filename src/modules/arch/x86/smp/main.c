@@ -99,6 +99,8 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
     while ((taskitem = list_pickhead(tasks)))
         list_add(&corerow->core.tasks, taskitem);
 
+    corerow->core.state = CORE_STATE_AWAKE;
+
 }
 
 void smp_setupap(unsigned int stack)
