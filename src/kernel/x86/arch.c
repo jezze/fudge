@@ -337,7 +337,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             struct mmu_directory *kdirectory = getkerneldirectory();
             unsigned int index = address >> 22;
 
-            if (!directory->tables[index] && kdirectory->tables[index])
+            if (kdirectory->tables[index])
                 directory->tables[index] = kdirectory->tables[index];
             else
                 kernel_signal(core->task, TASK_SIGNAL_KILL);
