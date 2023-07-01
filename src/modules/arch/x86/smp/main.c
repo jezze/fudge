@@ -73,13 +73,8 @@ static void coreassign(struct list_item *item)
         list_move_unsafe(&corelist, &corelist, coreitem);
         list_add(&core->tasks, item);
 
-        if (coreget() != core)
-        {
-
-            /* Maybe only send this if core is asleep */
+        if (coreget() != core && core->state == CORE_STATE_ASLEEP)
             apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
-
-        }
 
     }
 

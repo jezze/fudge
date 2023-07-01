@@ -114,6 +114,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         mmu_setdirectory(gettaskdirectory(core->task));
 
+        core->state = CORE_STATE_AWAKE;
+
     }
 
     else
@@ -125,6 +127,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->esp.value = core->sp;
 
         mmu_setdirectory(getkerneldirectory());
+
+        core->state = CORE_STATE_ASLEEP;
 
     }
 

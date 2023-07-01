@@ -1,3 +1,6 @@
+#define CORE_STATE_ASLEEP               0
+#define CORE_STATE_AWAKE                1
+
 struct core
 {
 
@@ -6,6 +9,7 @@ struct core
     unsigned int id;
     unsigned int sp;
     unsigned int task;
+    unsigned int state;
 
 };
 
