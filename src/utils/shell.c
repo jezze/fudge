@@ -8,8 +8,8 @@ static char inputbuffer[INPUTSIZE];
 static struct ring input;
 static struct job_worker workers[JOBSIZE];
 static struct job job;
-static unsigned int keymod = KEYMOD_NONE;
 static unsigned int escaped;
+static struct keystate keystate;
 
 static void print(void *buffer, unsigned int count)
 {
@@ -415,15 +415,12 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, keymod);
-
-    keymod = keymap_modkey(keypress->scancode, keymod);
+    struct keycode *keycode = keymap_getkeycode(&keystate, KEYMAP_US, keypress->scancode);
 
     if (job_count(&job))
     {
 
-        if (keymod & KEYMOD_CTRL)
+        if (keystate.mod & KEYMOD_CTRL)
         {
 
             switch (keypress->scancode)
@@ -490,7 +487,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    keymod = keymap_modkey(keyrelease->scancode, keymod);
+    keymap_getkeycode(&keystate, KEYMAP_US, keyrelease->scancode);
 
 }
 

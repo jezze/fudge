@@ -122,7 +122,7 @@ static struct keymap map_se[256] = {
     {{{1, {0x20, 0x00, 0x00, 0x00}}, {1, {0x20, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
 };
 
-struct keymap *keymap_load(unsigned int type)
+struct keymap *getkeymap(unsigned int type)
 {
 
     switch (type)
@@ -140,45 +140,59 @@ struct keymap *keymap_load(unsigned int type)
 
 }
 
-struct keycode *keymap_getkeycode(struct keymap *keymap, unsigned int scancode, unsigned int modifier)
-{
-
-    if (modifier & KEYMOD_SHIFT)
-        return &keymap[scancode].keycode[1];
-
-    return &keymap[scancode].keycode[0];
-
-}
-
-unsigned int keymap_modkey(unsigned int scancode, unsigned int modifier)
+static void updatemodifier(struct keystate *keystate, unsigned int scancode)
 {
 
     switch (scancode)
     {
 
     case 0x1D:
-        return modifier | KEYMOD_CTRL;
+        keystate->mod |= KEYMOD_CTRL;
+
+        break;
 
     case 0x9D:
-        return modifier & ~KEYMOD_CTRL;
+        keystate->mod &= ~KEYMOD_CTRL;
+
+        break;
 
     case 0x2A:
     case 0x36:
-        return modifier | KEYMOD_SHIFT;
+        keystate->mod |= KEYMOD_SHIFT;
+
+        break;
 
     case 0xAA:
     case 0xB6:
-        return modifier & ~KEYMOD_SHIFT;
+        keystate->mod &= ~KEYMOD_SHIFT;
+
+        break;
 
     case 0x38:
-        return modifier | KEYMOD_ALT;
+        keystate->mod |= KEYMOD_ALT;
+
+        break;
 
     case 0xB8:
-        return modifier & ~KEYMOD_ALT;
+        keystate->mod &= ~KEYMOD_ALT;
+
+        break;
 
     }
 
-    return modifier;
+}
+
+struct keycode *keymap_getkeycode(struct keystate *keystate, unsigned int type, unsigned int scancode)
+{
+
+    struct keymap *keymap = getkeymap(type);
+
+    updatemodifier(keystate, scancode);
+
+    if (keystate->mod & KEYMOD_SHIFT)
+        return &keymap[scancode].keycode[1];
+
+    return &keymap[scancode].keycode[0];
 
 }
 

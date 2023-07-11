@@ -21,6 +21,11 @@ struct keymap
 
 };
 
-struct keymap *keymap_load(unsigned int type);
-struct keycode *keymap_getkeycode(struct keymap *keymap, unsigned int scancode, unsigned int modifier);
-unsigned int keymap_modkey(unsigned int scancode, unsigned int modifier);
+struct keystate
+{
+
+    unsigned int mod;
+
+};
+
+struct keycode *keymap_getkeycode(struct keystate *keystate, unsigned int type, unsigned int scancode);

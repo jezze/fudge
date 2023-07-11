@@ -28,7 +28,7 @@ struct state
     struct widget *focusedwindow;
     struct widget *focusedwidget;
     struct widget *clickedwidget;
-    unsigned int keymod;
+    struct keystate keystate;
 
 };
 
@@ -537,19 +537,16 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    struct keymap *keymap = keymap_load(KEYMAP_US);
-    struct keycode *keycode = keymap_getkeycode(keymap, keypress->scancode, state.keymod);
+    struct keycode *keycode = keymap_getkeycode(&state.keystate, KEYMAP_US, keypress->scancode);
 
-    state.keymod = keymap_modkey(keypress->scancode, state.keymod);
-
-    if ((state.keymod & KEYMOD_ALT))
+    if ((state.keystate.mod & KEYMOD_ALT))
     {
 
         switch (keypress->scancode)
         {
 
         case 0x10:
-            if ((state.keymod & KEYMOD_SHIFT))
+            if ((state.keystate.mod & KEYMOD_SHIFT))
             {
 
                 if (state.focusedwindow)
@@ -560,7 +557,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             break;
 
         case 0x19:
-            if ((state.keymod & KEYMOD_SHIFT))
+            if ((state.keystate.mod & KEYMOD_SHIFT))
             {
 
                 unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("wshell"));
@@ -599,7 +596,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             wmkeypress.scancode = keypress->scancode;
             wmkeypress.unicode = keycode->value[0];
             wmkeypress.length = keycode->length;
-            wmkeypress.keymod = state.keymod;
+            wmkeypress.keymod = state.keystate.mod;
 
             channel_send_buffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
 
@@ -614,7 +611,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    state.keymod = keymap_modkey(keyrelease->scancode, state.keymod);
+    keymap_getkeycode(&state.keystate, KEYMAP_US, keyrelease->scancode);
 
 }
 
