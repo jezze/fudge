@@ -417,19 +417,31 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
     struct event_keypress *keypress = mdata;
     struct keycode *keycode = keymap_getkeycode(&keystate, KEYMAP_US, keypress->scancode);
 
-    if (job_count(&job))
+    if (keycode)
     {
 
-        if (keystate.mod & KEYMOD_CTRL)
+        if (job_count(&job))
         {
 
-            switch (keypress->scancode)
+            if (keystate.mod & KEYMOD_CTRL)
             {
 
-            case 0x2E:
-                job_sendfirst(&job, EVENT_TERM, 0, 0);
+                switch (keypress->scancode)
+                {
 
-                break;
+                case 0x2E:
+                    job_sendfirst(&job, EVENT_TERM, 0, 0);
+
+                    break;
+
+                }
+
+            }
+
+            else
+            {
+
+                job_sendfirst(&job, EVENT_CONSOLEDATA, keycode->length, keycode->value);
 
             }
 
@@ -438,43 +450,36 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            job_sendfirst(&job, EVENT_CONSOLEDATA, keycode->length, keycode->value);
+            switch (keypress->scancode)
+            {
 
-        }
+            case 0x0E:
+                if (!ring_skip_reverse(&input, 1))
+                    break;
 
-    }
+                print("\b \b", 3);
 
-    else
-    {
-
-        switch (keypress->scancode)
-        {
-
-        case 0x0E:
-            if (!ring_skip_reverse(&input, 1))
                 break;
 
-            print("\b \b", 3);
+            case 0x0F:
+                complete();
 
-            break;
+                break;
 
-        case 0x0F:
-            complete();
+            case 0x1C:
+                print(keycode->value, keycode->length);
+                ring_write(&input, keycode->value, keycode->length);
+                interpret();
 
-            break;
+                break;
 
-        case 0x1C:
-            print(keycode->value, keycode->length);
-            ring_write(&input, keycode->value, keycode->length);
-            interpret();
+            default:
+                ring_write(&input, keycode->value, keycode->length);
+                print(keycode->value, keycode->length);
 
-            break;
+                break;
 
-        default:
-            ring_write(&input, keycode->value, keycode->length);
-            print(keycode->value, keycode->length);
-
-            break;
+            }
 
         }
 

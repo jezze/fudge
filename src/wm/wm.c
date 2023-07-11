@@ -539,66 +539,71 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
     struct event_keypress *keypress = mdata;
     struct keycode *keycode = keymap_getkeycode(&state.keystate, KEYMAP_US, keypress->scancode);
 
-    if ((state.keystate.mod & KEYMOD_ALT))
+    if (keycode)
     {
 
-        switch (keypress->scancode)
+        if ((state.keystate.mod & KEYMOD_ALT))
         {
 
-        case 0x10:
-            if ((state.keystate.mod & KEYMOD_SHIFT))
+            switch (keypress->scancode)
             {
 
-                if (state.focusedwindow)
-                    channel_send(state.focusedwindow->source, EVENT_TERM);
+            case 0x10:
+                if ((state.keystate.mod & KEYMOD_SHIFT))
+                {
+
+                    if (state.focusedwindow)
+                        channel_send(state.focusedwindow->source, EVENT_TERM);
+
+                }
+
+                break;
+
+            case 0x19:
+                if ((state.keystate.mod & KEYMOD_SHIFT))
+                {
+
+                    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("wshell"));
+
+                    if (id)
+                        channel_send(id, EVENT_MAIN);
+
+                }
+
+                break;
+
+            case 0x49:
+                if (widget_isscrollable(state.focusedwidget))
+                    scrollwidget(state.focusedwidget, 0, -16);
+
+                break;
+
+            case 0x51:
+                if (widget_isscrollable(state.focusedwidget))
+                    scrollwidget(state.focusedwidget, 0, 16);
+
+                break;
 
             }
-
-            break;
-
-        case 0x19:
-            if ((state.keystate.mod & KEYMOD_SHIFT))
-            {
-
-                unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("wshell"));
-
-                if (id)
-                    channel_send(id, EVENT_MAIN);
-
-            }
-
-            break;
-
-        case 0x49:
-            if (widget_isscrollable(state.focusedwidget))
-                scrollwidget(state.focusedwidget, 0, -16);
-
-            break;
-
-        case 0x51:
-            if (widget_isscrollable(state.focusedwidget))
-                scrollwidget(state.focusedwidget, 0, 16);
-
-            break;
 
         }
 
-    }
-
-    else
-    {
-
-        if (state.focusedwindow)
+        else
         {
 
-            struct event_wmkeypress wmkeypress;
+            if (state.focusedwindow)
+            {
 
-            wmkeypress.scancode = keypress->scancode;
-            wmkeypress.unicode = keycode->value[0];
-            wmkeypress.length = keycode->length;
-            wmkeypress.keymod = state.keystate.mod;
+                struct event_wmkeypress wmkeypress;
 
-            channel_send_buffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+                wmkeypress.scancode = keypress->scancode;
+                wmkeypress.unicode = keycode->value[0];
+                wmkeypress.length = keycode->length;
+                wmkeypress.keymod = state.keystate.mod;
+
+                channel_send_buffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+
+            }
 
         }
 

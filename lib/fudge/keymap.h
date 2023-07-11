@@ -24,6 +24,7 @@ struct keymap
 struct keystate
 {
 
+    unsigned int extended;
     unsigned int mod;
 
 };
