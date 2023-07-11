@@ -2,6 +2,7 @@
 #define KEYS_MOD_SHIFT                  1
 #define KEYS_MOD_ALT                    2
 #define KEYS_MOD_CTRL                   4
+#define KEYS_MOD_META                   8
 #define KEYS_MAP_NONE                   0
 #define KEYS_MAP_US                     1
 #define KEYS_MAP_SE                     2
@@ -115,8 +116,8 @@
 #define KEYS_KEY_PAGEDOWN               0x2051
 #define KEYS_KEY_INSERT                 0x2052
 #define KEYS_KEY_DELETE                 0x2053
-#define KEYS_KEY_LGUI                   0x205B
-#define KEYS_KEY_RGUI                   0x205C
+#define KEYS_KEY_LMETA                  0x205B
+#define KEYS_KEY_RMETA                  0x205C
 #define KEYS_KEY_APPS                   0x205D
 #define KEYS_KEY_POWER                  0x205E
 #define KEYS_KEY_SLEEP                  0x205F

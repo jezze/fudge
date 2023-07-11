@@ -186,8 +186,8 @@ static unsigned int qwerty_us_extended[128] = {
     0,
     0,
     0,
-    KEYS_KEY_LGUI,
-    KEYS_KEY_RGUI,
+    KEYS_KEY_LMETA,
+    KEYS_KEY_RMETA,
     KEYS_KEY_APPS,
     KEYS_KEY_POWER,
     KEYS_KEY_SLEEP,
@@ -394,6 +394,12 @@ static void update(struct keys *keys, unsigned int type, unsigned int offset, un
 
             break;
 
+        case KEYS_KEY_LMETA:
+        case KEYS_KEY_RMETA:
+            keys->mod &= ~KEYS_MOD_META;
+
+            break;
+
         }
 
     }
@@ -419,6 +425,12 @@ static void update(struct keys *keys, unsigned int type, unsigned int offset, un
         case KEYS_KEY_LALT:
         case KEYS_KEY_RALT:
             keys->mod |= KEYS_MOD_ALT;
+
+            break;
+
+        case KEYS_KEY_LMETA:
+        case KEYS_KEY_RMETA:
+            keys->mod |= KEYS_MOD_META;
 
             break;
 
