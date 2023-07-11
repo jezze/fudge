@@ -1,5 +1,100 @@
 #include "keymap.h"
 
+static unsigned int qwerty_us[128] = {
+    0,
+    KEY_ESC,
+    KEY_1,
+    KEY_2,
+    KEY_3,
+    KEY_4,
+    KEY_5,
+    KEY_6,
+    KEY_7,
+    KEY_8,
+    KEY_9,
+    KEY_0,
+    KEY_MINUS,
+    KEY_EQUAL,
+    KEY_BACKSPACE,
+    KEY_TAB,
+    KEY_Q,
+    KEY_W,
+    KEY_E,
+    KEY_R,
+    KEY_T,
+    KEY_Y,
+    KEY_U,
+    KEY_I,
+    KEY_O,
+    KEY_P,
+    KEY_LBRACKET,
+    KEY_RBRACKET,
+    KEY_ENTER,
+    KEY_LCONTROL,
+    KEY_A,
+    KEY_S,
+    KEY_D,
+    KEY_F,
+    KEY_G,
+    KEY_H,
+    KEY_J,
+    KEY_K,
+    KEY_L,
+    KEY_SEMICOLON,
+    KEY_SINGLEQUOTE,
+    KEY_BACKTICK,
+    KEY_LSHIFT,
+    KEY_BACKSLASH,
+    KEY_Z,
+    KEY_X,
+    KEY_C,
+    KEY_V,
+    KEY_B,
+    KEY_N,
+    KEY_M,
+    KEY_COMMA,
+    KEY_PERIOD,
+    KEY_SLASH,
+    KEY_RSHIFT,
+    KEY_KEYPAD_STAR,
+    KEY_LALT,
+    KEY_SPACE,
+    KEY_CAPSLOCK,
+    KEY_F1,
+    KEY_F2,
+    KEY_F3,
+    KEY_F4,
+    KEY_F5,
+    KEY_F6,
+    KEY_F7,
+    KEY_F8,
+    KEY_F9,
+    KEY_F10,
+    KEY_NUMLOCK,
+    KEY_SCROLLLOCK,
+    KEY_KEYPAD_7,
+    KEY_KEYPAD_8,
+    KEY_KEYPAD_9,
+    KEY_KEYPAD_MINUS,
+    KEY_KEYPAD_4,
+    KEY_KEYPAD_5,
+    KEY_KEYPAD_6,
+    KEY_KEYPAD_PLUS,
+    KEY_KEYPAD_1,
+    KEY_KEYPAD_2,
+    KEY_KEYPAD_3,
+    KEY_KEYPAD_0,
+    KEY_KEYPAD_PERIOD,
+    0,
+    0,
+    0,
+    KEY_F11,
+    KEY_F12,
+    0
+};
+
+static unsigned int qwerty_us_extended[128];
+
 static struct keymap map_us[256] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -244,6 +339,22 @@ static struct keymap map_se_extended[256] = {
     {{{1, {0x20, 0x00, 0x00, 0x00}}, {1, {0x20, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
 };
 
+unsigned int *getlayout(unsigned int type, unsigned int extended)
+{
+
+    switch (type)
+    {
+
+    case KEYMAP_LAYOUT_QWERTY_US:
+        return (extended) ? qwerty_us_extended : qwerty_us;
+
+    }
+
+    return 0;
+
+}
+
+
 struct keymap *getkeymap(unsigned int type, unsigned int extended)
 {
 
@@ -304,6 +415,15 @@ static void updatemodifier(struct keystate *keystate, unsigned int scancode)
 
 }
 
+unsigned int keymap_getkey(struct keystate *keystate, unsigned int type, unsigned int scancode)
+{
+
+    unsigned int *layout = getlayout(type, keystate->extended);
+
+    return (layout) ? layout[scancode & 0x7F] : 0;
+
+}
+
 struct keycode *keymap_getkeycode(struct keystate *keystate, unsigned int type, unsigned int scancode)
 {
 
@@ -312,8 +432,6 @@ struct keycode *keymap_getkeycode(struct keystate *keystate, unsigned int type, 
 
         keystate->extended = !keystate->extended;
 
-        return 0;
-
     }
 
     else
@@ -321,15 +439,21 @@ struct keycode *keymap_getkeycode(struct keystate *keystate, unsigned int type, 
 
         struct keymap *keymap = getkeymap(type, keystate->extended);
 
-        updatemodifier(keystate, scancode);
+        if (keymap)
+        {
 
-        if (keystate->mod & KEYMOD_SHIFT)
-            return &keymap[scancode].keycode[1];
+            updatemodifier(keystate, scancode);
 
-        return &keymap[scancode].keycode[0];
+            if (keystate->mod & KEYMOD_SHIFT)
+                return &keymap[scancode].keycode[1];
 
+            return &keymap[scancode].keycode[0];
+
+        }
 
     }
+
+    return 0;
 
 }
 
