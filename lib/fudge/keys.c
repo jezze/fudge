@@ -1,5 +1,5 @@
 #include "buffer.h"
-#include "keymap.h"
+#include "keys.h"
 
 static unsigned int qwerty_us[128] = {
     0,
