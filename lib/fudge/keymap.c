@@ -233,15 +233,6 @@ static unsigned int *getlayout(unsigned int type, unsigned int extended)
 
 }
 
-static unsigned int getid(struct keystate *keystate, unsigned int type, unsigned int scancode)
-{
-
-    unsigned int *layout = getlayout(type, keystate->extended);
-
-    return (layout) ? layout[scancode & 0x7F] : 0;
-
-}
-
 static struct keymap *getkeymap(unsigned int type)
 {
 
@@ -260,8 +251,12 @@ static struct keymap *getkeymap(unsigned int type)
 
 }
 
-static void updatemodifier(struct keystate *keystate, unsigned int release)
+static void update(struct keystate *keystate, unsigned int type, unsigned int offset, unsigned int release)
 {
+
+    unsigned int *layout = getlayout(type, keystate->extended);
+
+    keystate->id = (layout) ? layout[offset] : 0;
 
     if (release)
     {
@@ -317,7 +312,7 @@ static void updatemodifier(struct keystate *keystate, unsigned int release)
 
 }
 
-unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int layout, unsigned int keymaptype, unsigned int scancode)
+unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int scancode)
 {
 
     if (scancode == 0xE0)
@@ -332,19 +327,20 @@ unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int layout, u
     else
     {
 
-        keystate->id = getid(keystate, layout, scancode);
+        unsigned int offset = scancode & 0x7F;
+        unsigned int release = scancode & 0x80;
 
-        updatemodifier(keystate, scancode & 0x80);
+        update(keystate, keystate->layout, offset, release);
 
-        if (keystate->id)
+        if (offset)
         {
 
-            struct keymap *keymap = getkeymap(keymaptype);
+            struct keymap *keymap = getkeymap(keystate->layout);
 
             if (keymap)
             {
 
-                struct keycode *code = &keymap[keystate->id].keycode[(keystate->mod & KEYMOD_SHIFT) ? 1 : 0];
+                struct keycode *code = &keymap[offset].keycode[(keystate->mod & KEYMOD_SHIFT) ? 1 : 0];
 
                 buffer_copy(&keystate->keycode, code, sizeof (struct keycode));
 
@@ -355,6 +351,18 @@ unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int layout, u
     }
 
     return keystate->id;
+
+}
+
+void keymap_init(struct keystate *keystate, unsigned int layout, unsigned int keymap)
+{
+
+    keystate->layout = layout;
+    keystate->keymap = keymap;
+    keystate->extended = 0;
+    keystate->mod = 0;
+    keystate->id = 0;
+    keystate->keycode.length = 0;
 
 }
 
