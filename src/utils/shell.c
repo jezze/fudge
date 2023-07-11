@@ -415,9 +415,9 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    struct keycode *keycode = keymap_getkeycode(&keystate, KEYMAP_US, keypress->scancode);
+    unsigned int id = keymap_getkeycode(&keystate, KEYMAP_LAYOUT_QWERTY_US, KEYMAP_US, keypress->scancode);
 
-    if (keycode)
+    if (id)
     {
 
         if (job_count(&job))
@@ -441,7 +441,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             else
             {
 
-                job_sendfirst(&job, EVENT_CONSOLEDATA, keycode->length, keycode->value);
+                job_sendfirst(&job, EVENT_CONSOLEDATA, keystate.keycode.length, keystate.keycode.value);
 
             }
 
@@ -467,15 +467,15 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x1C:
-                print(keycode->value, keycode->length);
-                ring_write(&input, keycode->value, keycode->length);
+                print(keystate.keycode.value, keystate.keycode.length);
+                ring_write(&input, keystate.keycode.value, keystate.keycode.length);
                 interpret();
 
                 break;
 
             default:
-                ring_write(&input, keycode->value, keycode->length);
-                print(keycode->value, keycode->length);
+                ring_write(&input, keystate.keycode.value, keystate.keycode.length);
+                print(keystate.keycode.value, keystate.keycode.length);
 
                 break;
 
@@ -492,7 +492,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    keymap_getkeycode(&keystate, KEYMAP_US, keyrelease->scancode);
+    keymap_getkeycode(&keystate, KEYMAP_LAYOUT_QWERTY_US, KEYMAP_US, keyrelease->scancode);
 
 }
 

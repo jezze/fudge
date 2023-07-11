@@ -113,8 +113,9 @@ struct keystate
 
     unsigned int extended;
     unsigned int mod;
+    unsigned int id;
+    struct keycode keycode;
 
 };
 
-unsigned int keymap_getkey(struct keystate *keystate, unsigned int type, unsigned int scancode);
-struct keycode *keymap_getkeycode(struct keystate *keystate, unsigned int type, unsigned int scancode);
+unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int layout, unsigned int keymaptype, unsigned int scancode);

@@ -537,9 +537,9 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    struct keycode *keycode = keymap_getkeycode(&state.keystate, KEYMAP_US, keypress->scancode);
+    unsigned int id = keymap_getkeycode(&state.keystate, KEYMAP_LAYOUT_QWERTY_US, KEYMAP_US, keypress->scancode);
 
-    if (keycode)
+    if (id)
     {
 
         if ((state.keystate.mod & KEYMOD_ALT))
@@ -597,8 +597,8 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 struct event_wmkeypress wmkeypress;
 
                 wmkeypress.scancode = keypress->scancode;
-                wmkeypress.unicode = keycode->value[0];
-                wmkeypress.length = keycode->length;
+                wmkeypress.unicode = state.keystate.keycode.value[0];
+                wmkeypress.length = state.keystate.keycode.length;
                 wmkeypress.keymod = state.keystate.mod;
 
                 channel_send_buffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
@@ -616,7 +616,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    keymap_getkeycode(&state.keystate, KEYMAP_US, keyrelease->scancode);
+    keymap_getkeycode(&state.keystate, KEYMAP_LAYOUT_QWERTY_US, KEYMAP_US, keyrelease->scancode);
 
 }
 
