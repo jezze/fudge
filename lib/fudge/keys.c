@@ -94,7 +94,119 @@ static unsigned int qwerty_us[128] = {
     0
 };
 
-static unsigned int qwerty_us_extended[128];
+static unsigned int qwerty_us_extended[128] = {
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    KEYS_KEY_PREVIOUSTRACK,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    KEYS_KEY_NEXTTRACK,
+    0,
+    0,
+    KEYS_KEY_KEYPAD_ENTER,
+    KEYS_KEY_RCONTROL,
+    0,
+    0,
+    KEYS_KEY_MUTE,
+    KEYS_KEY_CALCULATOR,
+    KEYS_KEY_PLAY,
+    0,
+    KEYS_KEY_STOP,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    KEYS_KEY_VOLUMEDOWN,
+    0,
+    KEYS_KEY_VOLUMEUP,
+    0,
+    KEYS_KEY_WEBHOME,
+    0,
+    0,
+    KEYS_KEY_KEYPAD_SLASH,
+    0,
+    0,
+    KEYS_KEY_RALT,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    KEYS_KEY_HOME,
+    KEYS_KEY_CURSORUP,
+    KEYS_KEY_PAGEUP,
+    0,
+    KEYS_KEY_CURSORLEFT,
+    0,
+    KEYS_KEY_CURSORRIGHT,
+    0,
+    KEYS_KEY_END,
+    KEYS_KEY_CURSORDOWN,
+    KEYS_KEY_PAGEDOWN,
+    KEYS_KEY_INSERT,
+    KEYS_KEY_DELETE,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    KEYS_KEY_LGUI,
+    KEYS_KEY_RGUI,
+    KEYS_KEY_APPS,
+    KEYS_KEY_POWER,
+    KEYS_KEY_SLEEP,
+    0,
+    0,
+    0,
+    KEYS_KEY_WAKE,
+    0,
+    KEYS_KEY_WEBSEARCH,
+    KEYS_KEY_FAVOURITES,
+    KEYS_KEY_REFRESH,
+    KEYS_KEY_WEBSTOP,
+    KEYS_KEY_WEBFORWARD,
+    KEYS_KEY_WEBBACK,
+    KEYS_KEY_MYCOMPUTER,
+    KEYS_KEY_EMAIL,
+    KEYS_KEY_MEDIASELECT,
+    0
+};
 
 static struct keys_map map_us[256] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -265,6 +377,7 @@ static void update(struct keys *keys, unsigned int type, unsigned int offset, un
         {
 
         case KEYS_KEY_LCONTROL:
+        case KEYS_KEY_RCONTROL:
             keys->mod &= ~KEYS_MOD_CTRL;
 
             break;
@@ -276,6 +389,7 @@ static void update(struct keys *keys, unsigned int type, unsigned int offset, un
             break;
 
         case KEYS_KEY_LALT:
+        case KEYS_KEY_RALT:
             keys->mod &= ~KEYS_MOD_ALT;
 
             break;
@@ -291,6 +405,7 @@ static void update(struct keys *keys, unsigned int type, unsigned int offset, un
         {
 
         case KEYS_KEY_LCONTROL:
+        case KEYS_KEY_RCONTROL:
             keys->mod |= KEYS_MOD_CTRL;
 
             break;
@@ -302,6 +417,7 @@ static void update(struct keys *keys, unsigned int type, unsigned int offset, un
             break;
 
         case KEYS_KEY_LALT:
+        case KEYS_KEY_RALT:
             keys->mod |= KEYS_MOD_ALT;
 
             break;

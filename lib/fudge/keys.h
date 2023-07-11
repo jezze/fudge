@@ -92,6 +92,44 @@
 #define KEYS_KEY_KEYPAD_PERIOD          0x1053
 #define KEYS_KEY_F11                    0x1057
 #define KEYS_KEY_F12                    0x1058
+#define KEYS_KEY_PREVIOUSTRACK          0x2010
+#define KEYS_KEY_NEXTTRACK              0x2019
+#define KEYS_KEY_KEYPAD_ENTER           0x201C
+#define KEYS_KEY_RCONTROL               0x201D
+#define KEYS_KEY_MUTE                   0x2020
+#define KEYS_KEY_CALCULATOR             0x2021
+#define KEYS_KEY_PLAY                   0x2022
+#define KEYS_KEY_STOP                   0x2024
+#define KEYS_KEY_VOLUMEDOWN             0x202E
+#define KEYS_KEY_VOLUMEUP               0x2030
+#define KEYS_KEY_WEBHOME                0x2032
+#define KEYS_KEY_KEYPAD_SLASH           0x2035
+#define KEYS_KEY_RALT                   0x2038
+#define KEYS_KEY_HOME                   0x2047
+#define KEYS_KEY_CURSORUP               0x2048
+#define KEYS_KEY_PAGEUP                 0x2049
+#define KEYS_KEY_CURSORLEFT             0x204B
+#define KEYS_KEY_CURSORRIGHT            0x204D
+#define KEYS_KEY_END                    0x204F
+#define KEYS_KEY_CURSORDOWN             0x2050
+#define KEYS_KEY_PAGEDOWN               0x2051
+#define KEYS_KEY_INSERT                 0x2052
+#define KEYS_KEY_DELETE                 0x2053
+#define KEYS_KEY_LGUI                   0x205B
+#define KEYS_KEY_RGUI                   0x205C
+#define KEYS_KEY_APPS                   0x205D
+#define KEYS_KEY_POWER                  0x205E
+#define KEYS_KEY_SLEEP                  0x205F
+#define KEYS_KEY_WAKE                   0x2063
+#define KEYS_KEY_WEBSEARCH              0x2065
+#define KEYS_KEY_FAVOURITES             0x2066
+#define KEYS_KEY_REFRESH                0x2067
+#define KEYS_KEY_WEBSTOP                0x2068
+#define KEYS_KEY_WEBFORWARD             0x2069
+#define KEYS_KEY_WEBBACK                0x206A
+#define KEYS_KEY_MYCOMPUTER             0x206B
+#define KEYS_KEY_EMAIL                  0x206C
+#define KEYS_KEY_MEDIASELECT            0x206D
 
 struct keys_code
 {
