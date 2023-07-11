@@ -198,7 +198,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 0x09:
-        if (wmkeypress->keymod & KEYMOD_SHIFT)
+        if (wmkeypress->keymod & KEYS_MOD_SHIFT)
             updatestate(STATE_MUL);
         else
             updatevalue(8);
@@ -221,7 +221,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 0x0D:
-        if (wmkeypress->keymod & KEYMOD_SHIFT)
+        if (wmkeypress->keymod & KEYS_MOD_SHIFT)
             updatestate(STATE_ADD);
         else
             updatestate(STATE_SUM);

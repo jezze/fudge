@@ -415,7 +415,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    unsigned int id = keymap_getkeycode(&keystate, keypress->scancode);
+    unsigned int id = keys_getkeycode(&keystate, keypress->scancode);
 
     if (id)
     {
@@ -423,7 +423,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         if (job_count(&job))
         {
 
-            if (keystate.mod & KEYMOD_CTRL)
+            if (keystate.mod & KEYS_MOD_CTRL)
             {
 
                 switch (keypress->scancode)
@@ -492,7 +492,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    keymap_getkeycode(&keystate, keyrelease->scancode);
+    keys_getkeycode(&keystate, keyrelease->scancode);
 
 }
 
@@ -526,7 +526,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    keymap_init(&keystate, KEYMAP_LAYOUT_QWERTY_US, KEYMAP_US);
+    keys_init(&keystate, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if:0/event");
     option_add("output", "system:console/if:0/data");

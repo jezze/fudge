@@ -537,19 +537,19 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    unsigned int id = keymap_getkeycode(&state.keystate, keypress->scancode);
+    unsigned int id = keys_getkeycode(&state.keystate, keypress->scancode);
 
     if (id)
     {
 
-        if ((state.keystate.mod & KEYMOD_ALT))
+        if ((state.keystate.mod & KEYS_MOD_ALT))
         {
 
             switch (keypress->scancode)
             {
 
             case 0x10:
-                if ((state.keystate.mod & KEYMOD_SHIFT))
+                if ((state.keystate.mod & KEYS_MOD_SHIFT))
                 {
 
                     if (state.focusedwindow)
@@ -560,7 +560,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x19:
-                if ((state.keystate.mod & KEYMOD_SHIFT))
+                if ((state.keystate.mod & KEYS_MOD_SHIFT))
                 {
 
                     unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("wshell"));
@@ -616,7 +616,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    keymap_getkeycode(&state.keystate, keyrelease->scancode);
+    keys_getkeycode(&state.keystate, keyrelease->scancode);
 
 }
 
@@ -915,7 +915,7 @@ static void setupwidgets(void)
 void init(void)
 {
 
-    keymap_init(&state.keystate, KEYMAP_LAYOUT_QWERTY_US, KEYMAP_US);
+    keys_init(&state.keystate, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     pool_setup();
     setupwidgets();
     option_add("width", "1920");

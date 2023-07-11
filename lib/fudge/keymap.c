@@ -3,94 +3,94 @@
 
 static unsigned int qwerty_us[128] = {
     0,
-    KEY_ESC,
-    KEY_1,
-    KEY_2,
-    KEY_3,
-    KEY_4,
-    KEY_5,
-    KEY_6,
-    KEY_7,
-    KEY_8,
-    KEY_9,
-    KEY_0,
-    KEY_MINUS,
-    KEY_EQUAL,
-    KEY_BACKSPACE,
-    KEY_TAB,
-    KEY_Q,
-    KEY_W,
-    KEY_E,
-    KEY_R,
-    KEY_T,
-    KEY_Y,
-    KEY_U,
-    KEY_I,
-    KEY_O,
-    KEY_P,
-    KEY_LBRACKET,
-    KEY_RBRACKET,
-    KEY_ENTER,
-    KEY_LCONTROL,
-    KEY_A,
-    KEY_S,
-    KEY_D,
-    KEY_F,
-    KEY_G,
-    KEY_H,
-    KEY_J,
-    KEY_K,
-    KEY_L,
-    KEY_SEMICOLON,
-    KEY_SINGLEQUOTE,
-    KEY_BACKTICK,
-    KEY_LSHIFT,
-    KEY_BACKSLASH,
-    KEY_Z,
-    KEY_X,
-    KEY_C,
-    KEY_V,
-    KEY_B,
-    KEY_N,
-    KEY_M,
-    KEY_COMMA,
-    KEY_PERIOD,
-    KEY_SLASH,
-    KEY_RSHIFT,
-    KEY_KEYPAD_STAR,
-    KEY_LALT,
-    KEY_SPACE,
-    KEY_CAPSLOCK,
-    KEY_F1,
-    KEY_F2,
-    KEY_F3,
-    KEY_F4,
-    KEY_F5,
-    KEY_F6,
-    KEY_F7,
-    KEY_F8,
-    KEY_F9,
-    KEY_F10,
-    KEY_NUMLOCK,
-    KEY_SCROLLLOCK,
-    KEY_KEYPAD_7,
-    KEY_KEYPAD_8,
-    KEY_KEYPAD_9,
-    KEY_KEYPAD_MINUS,
-    KEY_KEYPAD_4,
-    KEY_KEYPAD_5,
-    KEY_KEYPAD_6,
-    KEY_KEYPAD_PLUS,
-    KEY_KEYPAD_1,
-    KEY_KEYPAD_2,
-    KEY_KEYPAD_3,
-    KEY_KEYPAD_0,
-    KEY_KEYPAD_PERIOD,
+    KEYS_KEY_ESC,
+    KEYS_KEY_1,
+    KEYS_KEY_2,
+    KEYS_KEY_3,
+    KEYS_KEY_4,
+    KEYS_KEY_5,
+    KEYS_KEY_6,
+    KEYS_KEY_7,
+    KEYS_KEY_8,
+    KEYS_KEY_9,
+    KEYS_KEY_0,
+    KEYS_KEY_MINUS,
+    KEYS_KEY_EQUAL,
+    KEYS_KEY_BACKSPACE,
+    KEYS_KEY_TAB,
+    KEYS_KEY_Q,
+    KEYS_KEY_W,
+    KEYS_KEY_E,
+    KEYS_KEY_R,
+    KEYS_KEY_T,
+    KEYS_KEY_Y,
+    KEYS_KEY_U,
+    KEYS_KEY_I,
+    KEYS_KEY_O,
+    KEYS_KEY_P,
+    KEYS_KEY_LBRACKET,
+    KEYS_KEY_RBRACKET,
+    KEYS_KEY_ENTER,
+    KEYS_KEY_LCONTROL,
+    KEYS_KEY_A,
+    KEYS_KEY_S,
+    KEYS_KEY_D,
+    KEYS_KEY_F,
+    KEYS_KEY_G,
+    KEYS_KEY_H,
+    KEYS_KEY_J,
+    KEYS_KEY_K,
+    KEYS_KEY_L,
+    KEYS_KEY_SEMICOLON,
+    KEYS_KEY_SINGLEQUOTE,
+    KEYS_KEY_BACKTICK,
+    KEYS_KEY_LSHIFT,
+    KEYS_KEY_BACKSLASH,
+    KEYS_KEY_Z,
+    KEYS_KEY_X,
+    KEYS_KEY_C,
+    KEYS_KEY_V,
+    KEYS_KEY_B,
+    KEYS_KEY_N,
+    KEYS_KEY_M,
+    KEYS_KEY_COMMA,
+    KEYS_KEY_PERIOD,
+    KEYS_KEY_SLASH,
+    KEYS_KEY_RSHIFT,
+    KEYS_KEY_KEYPAD_STAR,
+    KEYS_KEY_LALT,
+    KEYS_KEY_SPACE,
+    KEYS_KEY_CAPSLOCK,
+    KEYS_KEY_F1,
+    KEYS_KEY_F2,
+    KEYS_KEY_F3,
+    KEYS_KEY_F4,
+    KEYS_KEY_F5,
+    KEYS_KEY_F6,
+    KEYS_KEY_F7,
+    KEYS_KEY_F8,
+    KEYS_KEY_F9,
+    KEYS_KEY_F10,
+    KEYS_KEY_NUMLOCK,
+    KEYS_KEY_SCROLLLOCK,
+    KEYS_KEY_KEYPAD_7,
+    KEYS_KEY_KEYPAD_8,
+    KEYS_KEY_KEYPAD_9,
+    KEYS_KEY_KEYPAD_MINUS,
+    KEYS_KEY_KEYPAD_4,
+    KEYS_KEY_KEYPAD_5,
+    KEYS_KEY_KEYPAD_6,
+    KEYS_KEY_KEYPAD_PLUS,
+    KEYS_KEY_KEYPAD_1,
+    KEYS_KEY_KEYPAD_2,
+    KEYS_KEY_KEYPAD_3,
+    KEYS_KEY_KEYPAD_0,
+    KEYS_KEY_KEYPAD_PERIOD,
     0,
     0,
     0,
-    KEY_F11,
-    KEY_F12,
+    KEYS_KEY_F11,
+    KEYS_KEY_F12,
     0
 };
 
@@ -224,7 +224,7 @@ static unsigned int *getlayout(unsigned int type, unsigned int extended)
     switch (type)
     {
 
-    case KEYMAP_LAYOUT_QWERTY_US:
+    case KEYS_LAYOUT_QWERTY_US:
         return (extended) ? qwerty_us_extended : qwerty_us;
 
     }
@@ -239,10 +239,10 @@ static struct keymap *getkeymap(unsigned int type)
     switch (type)
     {
 
-    case KEYMAP_US:
+    case KEYS_MAP_US:
         return map_us;
 
-    case KEYMAP_SE:
+    case KEYS_MAP_SE:
         return map_se;
 
     }
@@ -264,19 +264,19 @@ static void update(struct keystate *keystate, unsigned int type, unsigned int of
         switch (keystate->id)
         {
 
-        case KEY_LCONTROL:
-            keystate->mod &= ~KEYMOD_CTRL;
+        case KEYS_KEY_LCONTROL:
+            keystate->mod &= ~KEYS_MOD_CTRL;
 
             break;
 
-        case KEY_LSHIFT:
-        case KEY_RSHIFT:
-            keystate->mod &= ~KEYMOD_SHIFT;
+        case KEYS_KEY_LSHIFT:
+        case KEYS_KEY_RSHIFT:
+            keystate->mod &= ~KEYS_MOD_SHIFT;
 
             break;
 
-        case KEY_LALT:
-            keystate->mod &= ~KEYMOD_ALT;
+        case KEYS_KEY_LALT:
+            keystate->mod &= ~KEYS_MOD_ALT;
 
             break;
 
@@ -290,19 +290,19 @@ static void update(struct keystate *keystate, unsigned int type, unsigned int of
         switch (keystate->id)
         {
 
-        case KEY_LCONTROL:
-            keystate->mod |= KEYMOD_CTRL;
+        case KEYS_KEY_LCONTROL:
+            keystate->mod |= KEYS_MOD_CTRL;
 
             break;
 
-        case KEY_LSHIFT:
-        case KEY_RSHIFT:
-            keystate->mod |= KEYMOD_SHIFT;
+        case KEYS_KEY_LSHIFT:
+        case KEYS_KEY_RSHIFT:
+            keystate->mod |= KEYS_MOD_SHIFT;
 
             break;
 
-        case KEY_LALT:
-            keystate->mod |= KEYMOD_ALT;
+        case KEYS_KEY_LALT:
+            keystate->mod |= KEYS_MOD_ALT;
 
             break;
 
@@ -312,7 +312,7 @@ static void update(struct keystate *keystate, unsigned int type, unsigned int of
 
 }
 
-unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int scancode)
+unsigned int keys_getkeycode(struct keystate *keystate, unsigned int scancode)
 {
 
     if (scancode == 0xE0)
@@ -340,7 +340,7 @@ unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int scancode)
             if (keymap)
             {
 
-                struct keycode *code = &keymap[offset].keycode[(keystate->mod & KEYMOD_SHIFT) ? 1 : 0];
+                struct keycode *code = &keymap[offset].keycode[(keystate->mod & KEYS_MOD_SHIFT) ? 1 : 0];
 
                 buffer_copy(&keystate->keycode, code, sizeof (struct keycode));
 
@@ -354,7 +354,7 @@ unsigned int keymap_getkeycode(struct keystate *keystate, unsigned int scancode)
 
 }
 
-void keymap_init(struct keystate *keystate, unsigned int layout, unsigned int keymap)
+void keys_init(struct keystate *keystate, unsigned int layout, unsigned int keymap)
 {
 
     keystate->layout = layout;

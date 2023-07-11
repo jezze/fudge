@@ -390,7 +390,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
     if (job_count(&job))
     {
 
-        if (wmkeypress->keymod & KEYMOD_CTRL)
+        if (wmkeypress->keymod & KEYS_MOD_CTRL)
         {
 
             switch (wmkeypress->scancode)
@@ -417,7 +417,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        if (wmkeypress->keymod & KEYMOD_CTRL)
+        if (wmkeypress->keymod & KEYS_MOD_CTRL)
         {
 
             switch (wmkeypress->scancode)
@@ -472,7 +472,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x48:
-                if (wmkeypress->keymod & KEYMOD_SHIFT)
+                if (wmkeypress->keymod & KEYS_MOD_SHIFT)
                 {
                     /*content.offset--;*/
                 }
@@ -495,7 +495,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x50:
-                if (wmkeypress->keymod & KEYMOD_SHIFT)
+                if (wmkeypress->keymod & KEYS_MOD_SHIFT)
                 {
                     /*content.offset++;*/
                 }
