@@ -93,7 +93,7 @@
 #define KEYS_KEY_F11                    0x1057
 #define KEYS_KEY_F12                    0x1058
 
-struct keycode
+struct keys_code
 {
 
     unsigned char length;
@@ -101,24 +101,24 @@ struct keycode
 
 };
 
-struct keymap
+struct keys_map
 {
 
-    struct keycode keycode[4];
+    struct keys_code code[4];
 
 };
 
-struct keystate
+struct keys
 {
 
     unsigned int layout;
-    unsigned int keymap;
+    unsigned int map;
     unsigned int extended;
     unsigned int mod;
     unsigned int id;
-    struct keycode keycode;
+    struct keys_code code;
 
 };
 
-unsigned int keys_getkeycode(struct keystate *keystate, unsigned int scancode);
-void keys_init(struct keystate *keystate, unsigned int layout, unsigned int keymap);
+unsigned int keys_getcode(struct keys *keys, unsigned int scancode);
+void keys_init(struct keys *keys, unsigned int layout, unsigned int map);

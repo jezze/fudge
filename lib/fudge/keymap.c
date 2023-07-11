@@ -96,7 +96,7 @@ static unsigned int qwerty_us[128] = {
 
 static unsigned int qwerty_us_extended[128];
 
-static struct keymap map_us[256] = {
+static struct keys_map map_us[256] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{1, {0x31, 0x00, 0x00, 0x00}}, {1, {0x21, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -157,7 +157,7 @@ static struct keymap map_us[256] = {
     {{{1, {0x20, 0x00, 0x00, 0x00}}, {1, {0x20, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
 };
 
-static struct keymap map_se[256] = {
+static struct keys_map map_se[256] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{1, {0x31, 0x00, 0x00, 0x00}}, {1, {0x21, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -233,7 +233,7 @@ static unsigned int *getlayout(unsigned int type, unsigned int extended)
 
 }
 
-static struct keymap *getkeymap(unsigned int type)
+static struct keys_map *getmap(unsigned int type)
 {
 
     switch (type)
@@ -251,32 +251,32 @@ static struct keymap *getkeymap(unsigned int type)
 
 }
 
-static void update(struct keystate *keystate, unsigned int type, unsigned int offset, unsigned int release)
+static void update(struct keys *keys, unsigned int type, unsigned int offset, unsigned int release)
 {
 
-    unsigned int *layout = getlayout(type, keystate->extended);
+    unsigned int *layout = getlayout(type, keys->extended);
 
-    keystate->id = (layout) ? layout[offset] : 0;
+    keys->id = (layout) ? layout[offset] : 0;
 
     if (release)
     {
 
-        switch (keystate->id)
+        switch (keys->id)
         {
 
         case KEYS_KEY_LCONTROL:
-            keystate->mod &= ~KEYS_MOD_CTRL;
+            keys->mod &= ~KEYS_MOD_CTRL;
 
             break;
 
         case KEYS_KEY_LSHIFT:
         case KEYS_KEY_RSHIFT:
-            keystate->mod &= ~KEYS_MOD_SHIFT;
+            keys->mod &= ~KEYS_MOD_SHIFT;
 
             break;
 
         case KEYS_KEY_LALT:
-            keystate->mod &= ~KEYS_MOD_ALT;
+            keys->mod &= ~KEYS_MOD_ALT;
 
             break;
 
@@ -287,22 +287,22 @@ static void update(struct keystate *keystate, unsigned int type, unsigned int of
     else
     {
 
-        switch (keystate->id)
+        switch (keys->id)
         {
 
         case KEYS_KEY_LCONTROL:
-            keystate->mod |= KEYS_MOD_CTRL;
+            keys->mod |= KEYS_MOD_CTRL;
 
             break;
 
         case KEYS_KEY_LSHIFT:
         case KEYS_KEY_RSHIFT:
-            keystate->mod |= KEYS_MOD_SHIFT;
+            keys->mod |= KEYS_MOD_SHIFT;
 
             break;
 
         case KEYS_KEY_LALT:
-            keystate->mod |= KEYS_MOD_ALT;
+            keys->mod |= KEYS_MOD_ALT;
 
             break;
 
@@ -312,15 +312,15 @@ static void update(struct keystate *keystate, unsigned int type, unsigned int of
 
 }
 
-unsigned int keys_getkeycode(struct keystate *keystate, unsigned int scancode)
+unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
 {
 
     if (scancode == 0xE0)
     {
 
-        keystate->extended = !keystate->extended;
-        keystate->id = 0;
-        keystate->keycode.length = 0;
+        keys->extended = !keys->extended;
+        keys->id = 0;
+        keys->code.length = 0;
 
     }
 
@@ -330,19 +330,19 @@ unsigned int keys_getkeycode(struct keystate *keystate, unsigned int scancode)
         unsigned int offset = scancode & 0x7F;
         unsigned int release = scancode & 0x80;
 
-        update(keystate, keystate->layout, offset, release);
+        update(keys, keys->layout, offset, release);
 
         if (offset)
         {
 
-            struct keymap *keymap = getkeymap(keystate->layout);
+            struct keys_map *map = getmap(keys->layout);
 
-            if (keymap)
+            if (map)
             {
 
-                struct keycode *code = &keymap[offset].keycode[(keystate->mod & KEYS_MOD_SHIFT) ? 1 : 0];
+                struct keys_code *code = &map[offset].code[(keys->mod & KEYS_MOD_SHIFT) ? 1 : 0];
 
-                buffer_copy(&keystate->keycode, code, sizeof (struct keycode));
+                buffer_copy(&keys->code, code, sizeof (struct keys_code));
 
             }
 
@@ -350,19 +350,19 @@ unsigned int keys_getkeycode(struct keystate *keystate, unsigned int scancode)
 
     }
 
-    return keystate->id;
+    return keys->id;
 
 }
 
-void keys_init(struct keystate *keystate, unsigned int layout, unsigned int keymap)
+void keys_init(struct keys *keys, unsigned int layout, unsigned int map)
 {
 
-    keystate->layout = layout;
-    keystate->keymap = keymap;
-    keystate->extended = 0;
-    keystate->mod = 0;
-    keystate->id = 0;
-    keystate->keycode.length = 0;
+    keys->layout = layout;
+    keys->map = map;
+    keys->extended = 0;
+    keys->mod = 0;
+    keys->id = 0;
+    keys->code.length = 0;
 
 }
 

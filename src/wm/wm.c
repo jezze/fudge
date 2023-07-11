@@ -28,7 +28,7 @@ struct state
     struct widget *focusedwindow;
     struct widget *focusedwidget;
     struct widget *clickedwidget;
-    struct keystate keystate;
+    struct keys keys;
 
 };
 
@@ -537,19 +537,19 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    unsigned int id = keys_getkeycode(&state.keystate, keypress->scancode);
+    unsigned int id = keys_getcode(&state.keys, keypress->scancode);
 
     if (id)
     {
 
-        if ((state.keystate.mod & KEYS_MOD_ALT))
+        if ((state.keys.mod & KEYS_MOD_ALT))
         {
 
             switch (keypress->scancode)
             {
 
             case 0x10:
-                if ((state.keystate.mod & KEYS_MOD_SHIFT))
+                if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
                     if (state.focusedwindow)
@@ -560,7 +560,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x19:
-                if ((state.keystate.mod & KEYS_MOD_SHIFT))
+                if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
                     unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("wshell"));
@@ -597,9 +597,9 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 struct event_wmkeypress wmkeypress;
 
                 wmkeypress.scancode = keypress->scancode;
-                wmkeypress.unicode = state.keystate.keycode.value[0];
-                wmkeypress.length = state.keystate.keycode.length;
-                wmkeypress.keymod = state.keystate.mod;
+                wmkeypress.unicode = state.keys.code.value[0];
+                wmkeypress.length = state.keys.code.length;
+                wmkeypress.keymod = state.keys.mod;
 
                 channel_send_buffer(state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
 
@@ -616,7 +616,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    keys_getkeycode(&state.keystate, keyrelease->scancode);
+    keys_getcode(&state.keys, keyrelease->scancode);
 
 }
 
@@ -915,7 +915,7 @@ static void setupwidgets(void)
 void init(void)
 {
 
-    keys_init(&state.keystate, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
+    keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     pool_setup();
     setupwidgets();
     option_add("width", "1920");

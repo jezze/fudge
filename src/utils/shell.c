@@ -9,7 +9,7 @@ static struct ring input;
 static struct job_worker workers[JOBSIZE];
 static struct job job;
 static unsigned int escaped;
-static struct keystate keystate;
+static struct keys keys;
 
 static void print(void *buffer, unsigned int count)
 {
@@ -415,7 +415,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_keypress *keypress = mdata;
-    unsigned int id = keys_getkeycode(&keystate, keypress->scancode);
+    unsigned int id = keys_getcode(&keys, keypress->scancode);
 
     if (id)
     {
@@ -423,7 +423,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         if (job_count(&job))
         {
 
-            if (keystate.mod & KEYS_MOD_CTRL)
+            if (keys.mod & KEYS_MOD_CTRL)
             {
 
                 switch (keypress->scancode)
@@ -441,7 +441,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             else
             {
 
-                job_sendfirst(&job, EVENT_CONSOLEDATA, keystate.keycode.length, keystate.keycode.value);
+                job_sendfirst(&job, EVENT_CONSOLEDATA, keys.code.length, keys.code.value);
 
             }
 
@@ -467,15 +467,15 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x1C:
-                print(keystate.keycode.value, keystate.keycode.length);
-                ring_write(&input, keystate.keycode.value, keystate.keycode.length);
+                print(keys.code.value, keys.code.length);
+                ring_write(&input, keys.code.value, keys.code.length);
                 interpret();
 
                 break;
 
             default:
-                ring_write(&input, keystate.keycode.value, keystate.keycode.length);
-                print(keystate.keycode.value, keystate.keycode.length);
+                ring_write(&input, keys.code.value, keys.code.length);
+                print(keys.code.value, keys.code.length);
 
                 break;
 
@@ -492,7 +492,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_keyrelease *keyrelease = mdata;
 
-    keys_getkeycode(&keystate, keyrelease->scancode);
+    keys_getcode(&keys, keyrelease->scancode);
 
 }
 
@@ -526,7 +526,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    keys_init(&keystate, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
+    keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if:0/event");
     option_add("output", "system:console/if:0/data");
