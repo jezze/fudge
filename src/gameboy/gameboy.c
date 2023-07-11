@@ -107,12 +107,6 @@ static void keypress(struct gb_s *gb, void *data)
 
         break;
 
-    case KEYS_KEY_ESCAPE:
-        channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-        channel_close();
-
-        break;
-
     case KEYS_KEY_ENTER:
         gb->direct.joypad_bits.start = 0;
 
@@ -130,6 +124,12 @@ static void keypress(struct gb_s *gb, void *data)
 
     case KEYS_KEY_X:
         gb->direct.joypad_bits.b = 0;
+
+        break;
+
+    case KEYS_KEY_ESCAPE:
+        channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+        channel_close();
 
         break;
 
