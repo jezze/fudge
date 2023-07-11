@@ -140,6 +140,7 @@ struct event_blockrequest
 struct event_wmkeypress
 {
 
+    unsigned int id;
     unsigned char scancode;
     unsigned int keymod;
     unsigned int unicode;
@@ -150,6 +151,7 @@ struct event_wmkeypress
 struct event_wmkeyrelease
 {
 
+    unsigned int id;
     unsigned char scancode;
     unsigned int keymod;
     unsigned int unicode;

@@ -426,10 +426,10 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             if (keys.mod & KEYS_MOD_CTRL)
             {
 
-                switch (keypress->scancode)
+                switch (id)
                 {
 
-                case 0x2E:
+                case KEYS_KEY_C:
                     job_sendfirst(&job, EVENT_TERM, 0, 0);
 
                     break;
@@ -450,10 +450,10 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            switch (keypress->scancode)
+            switch (id)
             {
 
-            case 0x0E:
+            case KEYS_KEY_BACKSPACE:
                 if (!ring_skip_reverse(&input, 1))
                     break;
 
@@ -461,12 +461,12 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
-            case 0x0F:
+            case KEYS_KEY_TAB:
                 complete();
 
                 break;
 
-            case 0x1C:
+            case KEYS_KEY_ENTER:
                 print(keys.code.value, keys.code.length);
                 ring_write(&input, keys.code.value, keys.code.length);
                 interpret();

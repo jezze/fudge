@@ -8,6 +8,7 @@
 
 static struct base_driver driver;
 static struct keyboard_interface keyboardinterface;
+static unsigned int extended;
 
 static void handleirq(unsigned int irq)
 {
@@ -28,10 +29,46 @@ static void handleirq(unsigned int irq)
     if (data == 0xFF)
         return;
 
+    if (data == 0xE0)
+    {
+
+        extended = 1;
+
+        return;
+
+    }
+
     if (data & 0x80)
+    {
+
+        if (extended)
+        {
+
+            keyboard_notifyrelease(&keyboardinterface, 0xE0);
+
+            extended = 0;
+
+        }
+
         keyboard_notifyrelease(&keyboardinterface, data);
+
+    }
+
     else
+    {
+
+        if (extended)
+        {
+
+            keyboard_notifypress(&keyboardinterface, 0xE0);
+
+            extended = 0;
+
+        }
+
         keyboard_notifypress(&keyboardinterface, data);
+
+    }
 
 }
 

@@ -3,7 +3,7 @@
 
 static unsigned int qwerty_us[128] = {
     0,
-    KEYS_KEY_ESC,
+    KEYS_KEY_ESCAPE,
     KEYS_KEY_1,
     KEYS_KEY_2,
     KEYS_KEY_3,
@@ -434,7 +434,7 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
     if (scancode == 0xE0)
     {
 
-        keys->extended = !keys->extended;
+        keys->extended = 1;
         keys->id = 0;
         keys->code.length = 0;
 
@@ -463,6 +463,8 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
             }
 
         }
+
+        keys->extended = 0;
 
     }
 

@@ -159,45 +159,58 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_wmkeypress *wmkeypress = mdata;
 
-    switch (wmkeypress->scancode)
+    switch (wmkeypress->id)
     {
 
-    case 0x02:
+    case KEYS_KEY_0:
+    case KEYS_KEY_KEYPAD_0:
+        updatevalue(0);
+
+        break;
+
+    case KEYS_KEY_1:
+    case KEYS_KEY_KEYPAD_1:
         updatevalue(1);
 
         break;
 
-    case 0x03:
+    case KEYS_KEY_2:
+    case KEYS_KEY_KEYPAD_2:
         updatevalue(2);
 
         break;
 
-    case 0x04:
+    case KEYS_KEY_3:
+    case KEYS_KEY_KEYPAD_3:
         updatevalue(3);
 
         break;
 
-    case 0x05:
+    case KEYS_KEY_4:
+    case KEYS_KEY_KEYPAD_4:
         updatevalue(4);
 
         break;
 
-    case 0x06:
+    case KEYS_KEY_5:
+    case KEYS_KEY_KEYPAD_5:
         updatevalue(5);
 
         break;
 
-    case 0x07:
+    case KEYS_KEY_6:
+    case KEYS_KEY_KEYPAD_6:
         updatevalue(6);
 
         break;
 
-    case 0x08:
+    case KEYS_KEY_7:
+    case KEYS_KEY_KEYPAD_7:
         updatevalue(7);
 
         break;
 
-    case 0x09:
+    case KEYS_KEY_8:
         if (wmkeypress->keymod & KEYS_MOD_SHIFT)
             updatestate(STATE_MUL);
         else
@@ -205,22 +218,24 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
         break;
 
-    case 0x0A:
+    case KEYS_KEY_KEYPAD_8:
+        updatevalue(8);
+
+        break;
+
+    case KEYS_KEY_9:
+    case KEYS_KEY_KEYPAD_9:
         updatevalue(9);
 
         break;
 
-    case 0x0B:
-        updatevalue(0);
-
-        break;
-
-    case 0x0C:
+    case KEYS_KEY_MINUS:
+    case KEYS_KEY_KEYPAD_MINUS:
         updatestate(STATE_SUB);
 
         break;
 
-    case 0x0D:
+    case KEYS_KEY_EQUAL:
         if (wmkeypress->keymod & KEYS_MOD_SHIFT)
             updatestate(STATE_ADD);
         else
@@ -228,12 +243,19 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
         break;
 
-    case 0x1C:
+    case KEYS_KEY_KEYPAD_PLUS:
+        updatestate(STATE_ADD);
+
+        break;
+
+    case KEYS_KEY_ENTER:
+    case KEYS_KEY_KEYPAD_ENTER:
         updatestate(STATE_SUM);
 
         break;
 
-    case 0x35:
+    case KEYS_KEY_SLASH:
+    case KEYS_KEY_KEYPAD_SLASH:
         updatestate(STATE_DIV);
 
         break;

@@ -393,10 +393,10 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         if (wmkeypress->keymod & KEYS_MOD_CTRL)
         {
 
-            switch (wmkeypress->scancode)
+            switch (wmkeypress->id)
             {
 
-            case 0x2E:
+            case KEYS_KEY_C:
                 job_sendfirst(&job, EVENT_TERM, 0, 0);
 
                 break;
@@ -420,20 +420,20 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         if (wmkeypress->keymod & KEYS_MOD_CTRL)
         {
 
-            switch (wmkeypress->scancode)
+            switch (wmkeypress->id)
             {
 
-            case 0x16:
+            case KEYS_KEY_U:
                 ring_reset(&input1);
 
                 break;
 
-            case 0x25:
+            case KEYS_KEY_K:
                 ring_reset(&input2);
 
                 break;
 
-            case 0x26:
+            case KEYS_KEY_L:
                 ring_reset(&result);
 
                 break;
@@ -445,33 +445,33 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            switch (wmkeypress->scancode)
+            switch (wmkeypress->id)
             {
 
-            case 0x0E:
+            case KEYS_KEY_BACKSPACE:
                 ring_skip_reverse(&input1, 1);
 
                 break;
 
-            case 0x0F:
+            case KEYS_KEY_TAB:
                 ring_move(&input1, &input2);
                 complete();
 
                 break;
 
-            case 0x1C:
+            case KEYS_KEY_ENTER:
                 ring_move(&input1, &input2);
                 ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
                 interpret();
 
                 break;
 
-            case 0x47:
+            case KEYS_KEY_HOME:
                 moveleft(ring_count(&input1));
 
                 break;
 
-            case 0x48:
+            case KEYS_KEY_CURSORUP:
                 if (wmkeypress->keymod & KEYS_MOD_SHIFT)
                 {
                     /*content.offset--;*/
@@ -479,22 +479,22 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
-            case 0x4B:
+            case KEYS_KEY_CURSORLEFT:
                 moveleft(1);
 
                 break;
 
-            case 0x4D:
+            case KEYS_KEY_CURSORRIGHT:
                 moveright(1);
 
                 break;
 
-            case 0x4F:
+            case KEYS_KEY_END:
                 moveright(ring_count(&input2));
 
                 break;
 
-            case 0x50:
+            case KEYS_KEY_CURSORDOWN:
                 if (wmkeypress->keymod & KEYS_MOD_SHIFT)
                 {
                     /*content.offset++;*/

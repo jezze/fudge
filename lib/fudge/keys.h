@@ -7,7 +7,7 @@
 #define KEYS_MAP_SE                     2
 #define KEYS_LAYOUT_NONE                0
 #define KEYS_LAYOUT_QWERTY_US           1
-#define KEYS_KEY_ESC                    0x1001
+#define KEYS_KEY_ESCAPE                 0x1001
 #define KEYS_KEY_1                      0x1002
 #define KEYS_KEY_2                      0x1003
 #define KEYS_KEY_3                      0x1004

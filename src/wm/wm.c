@@ -545,10 +545,10 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
         if ((state.keys.mod & KEYS_MOD_ALT))
         {
 
-            switch (keypress->scancode)
+            switch (id)
             {
 
-            case 0x10:
+            case KEYS_KEY_Q:
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
@@ -559,7 +559,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
-            case 0x19:
+            case KEYS_KEY_P:
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
@@ -572,13 +572,13 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
-            case 0x49:
+            case KEYS_KEY_PAGEUP:
                 if (widget_isscrollable(state.focusedwidget))
                     scrollwidget(state.focusedwidget, 0, -16);
 
                 break;
 
-            case 0x51:
+            case KEYS_KEY_PAGEDOWN:
                 if (widget_isscrollable(state.focusedwidget))
                     scrollwidget(state.focusedwidget, 0, 16);
 
@@ -596,6 +596,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 struct event_wmkeypress wmkeypress;
 
+                wmkeypress.id = state.keys.id;
                 wmkeypress.scancode = keypress->scancode;
                 wmkeypress.unicode = state.keys.code.value[0];
                 wmkeypress.length = state.keys.code.length;

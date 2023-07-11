@@ -7,7 +7,7 @@ static unsigned char rom[0x80000];
 static unsigned char cart_ram[0x20000];
 static unsigned int *framebuffer;
 static unsigned int w, h, scalew, scaleh, totw, toth, offx, offy;
-static unsigned int escaped;
+static struct keys keys;
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
 {
@@ -82,72 +82,56 @@ static void keypress(struct gb_s *gb, void *data)
 {
 
     struct event_keypress *keypress = data;
+    unsigned int id = keys_getcode(&keys, keypress->scancode);
 
-    if (escaped)
+    switch (id)
     {
 
-        switch (keypress->scancode)
-        {
+    case KEYS_KEY_CURSORUP:
+        gb->direct.joypad_bits.up = 0;
 
-        case 0x48:
-            gb->direct.joypad_bits.up = 0;
+        break;
 
-            break;
+    case KEYS_KEY_CURSORLEFT:
+        gb->direct.joypad_bits.left = 0;
 
-        case 0x4B:
-            gb->direct.joypad_bits.left = 0;
+        break;
 
-            break;
+    case KEYS_KEY_CURSORRIGHT:
+        gb->direct.joypad_bits.right = 0;
 
-        case 0x4D:
-            gb->direct.joypad_bits.right = 0;
+        break;
 
-            break;
+    case KEYS_KEY_CURSORDOWN:
+        gb->direct.joypad_bits.down = 0;
 
-        case 0x50:
-            gb->direct.joypad_bits.down = 0;
+        break;
 
-            break;
+    case KEYS_KEY_ESCAPE:
+        channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+        channel_close();
 
-        }
+        break;
 
-        escaped = 0;
+    case KEYS_KEY_ENTER:
+        gb->direct.joypad_bits.start = 0;
 
-    }
+        break;
 
-    else
-    {
+    case KEYS_KEY_BACKSPACE:
+        gb->direct.joypad_bits.select = 0;
 
-        switch (keypress->scancode)
-        {
+        break;
 
-        case 0x01:
-            channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-            channel_close();
+    case KEYS_KEY_Z:
+        gb->direct.joypad_bits.a = 0;
 
-            break;
+        break;
 
-        case 0x1C:
-            gb->direct.joypad_bits.start = 0;
+    case KEYS_KEY_X:
+        gb->direct.joypad_bits.b = 0;
 
-            break;
-
-        case 0x0E:
-            gb->direct.joypad_bits.select = 0;
-
-            break;
-
-        case 0x2C:
-            gb->direct.joypad_bits.a = 0;
-
-            break;
-
-        case 0x2D:
-            gb->direct.joypad_bits.b = 0;
-
-            break;
-
-        }
+        break;
 
     }
 
@@ -157,71 +141,50 @@ static void keyrelease(struct gb_s *gb, void *data)
 {
 
     struct event_keyrelease *keyrelease = data;
+    unsigned int id = keys_getcode(&keys, keyrelease->scancode);
 
-    if (escaped)
+    switch (id)
     {
 
-        switch (keyrelease->scancode)
-        {
+    case KEYS_KEY_CURSORUP:
+        gb->direct.joypad_bits.up = 1;
 
-        case 0x48 | 0x80:
-            gb->direct.joypad_bits.up = 1;
+        break;
 
-            break;
+    case KEYS_KEY_CURSORLEFT:
+        gb->direct.joypad_bits.left = 1;
 
-        case 0x4B | 0x80:
-            gb->direct.joypad_bits.left = 1;
+        break;
 
-            break;
+    case KEYS_KEY_CURSORRIGHT:
+        gb->direct.joypad_bits.right = 1;
 
-        case 0x4D | 0x80:
-            gb->direct.joypad_bits.right = 1;
+        break;
 
-            break;
+    case KEYS_KEY_CURSORDOWN:
+        gb->direct.joypad_bits.down = 1;
 
-        case 0x50 | 0x80:
-            gb->direct.joypad_bits.down = 1;
+        break;
 
-            break;
+    case KEYS_KEY_ENTER:
+        gb->direct.joypad_bits.start = 1;
 
-        }
+        break;
 
-        escaped = 0;
+    case KEYS_KEY_BACKSPACE:
+        gb->direct.joypad_bits.select = 1;
 
-    }
+        break;
 
-    else
-    {
+    case KEYS_KEY_Z:
+        gb->direct.joypad_bits.a = 1;
 
-        switch (keyrelease->scancode)
-        {
+        break;
 
-        case 0x1C | 0x80:
-            gb->direct.joypad_bits.start = 1;
+    case KEYS_KEY_X:
+        gb->direct.joypad_bits.b = 1;
 
-            break;
-
-        case 0x0E | 0x80:
-            gb->direct.joypad_bits.select = 1;
-
-            break;
-
-        case 0x2C | 0x80:
-            gb->direct.joypad_bits.a = 1;
-
-            break;
-
-        case 0x2D | 0x80:
-            gb->direct.joypad_bits.b = 1;
-
-            break;
-
-        case 0xE0:
-            escaped = 1;
-
-            break;
-
-        }
+        break;
 
     }
 
@@ -385,6 +348,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     option_add("width", "1024");
     option_add("height", "768");
     option_add("bpp", "4");
