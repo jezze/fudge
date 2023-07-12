@@ -6,6 +6,7 @@
 #include "tss.h"
 #include "isr.h"
 #include "mmu.h"
+#include "pic.h"
 #include "arch.h"
 
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
@@ -412,6 +413,7 @@ void arch_setup1(void)
     struct mmu_directory *directory = getkerneldirectory();
 
     resource_setup();
+    pic_init();
     core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
     arch_configuregdt();
     arch_configureidt();
