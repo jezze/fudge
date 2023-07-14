@@ -288,6 +288,19 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
 }
 */
 
+static void sendlistresponse(unsigned int source, unsigned int session, unsigned int nrecords, struct record *records)
+{
+
+    struct {struct event_listresponse listresponse; struct record records[8];} message;
+
+    message.listresponse.session = session;
+    message.listresponse.nrecords = nrecords;
+
+    buffer_write(message.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
+    channel_send_buffer(source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+
+}
+
 static void sendreadresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
 {
 
@@ -331,7 +344,6 @@ static unsigned int walk(unsigned int id, char *path)
     if ((node.type & 0xF000) == 0x4000)
     {
 
-        struct ext2_entry *entry;
         unsigned char block[4096];
         unsigned int offset = 0;
 
@@ -340,12 +352,9 @@ static unsigned int walk(unsigned int id, char *path)
         while (offset < 4096)
         {
 
-            char *name;
+            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
 
-            entry = (struct ext2_entry *)(block + offset);
-            name = (char *)entry + 8;
-
-            if (entry->length == cstring_length(path) && buffer_match(name, path, entry->length))
+            if (entry->length == cstring_length(path) && buffer_match((char *)entry + 8, path, entry->length))
                 return entry->node;
 
             offset += entry->size;
@@ -355,6 +364,63 @@ static unsigned int walk(unsigned int id, char *path)
     }
 
     return 0;
+
+}
+
+static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_listrequest *listrequest = mdata;
+    unsigned int blocksize = (1024 << sb.blockSize);
+    unsigned int blockgroup = (listrequest->id - 1) / sb.nodeCountGroup;
+    unsigned int nodeindex = (listrequest->id - 1) % sb.nodeCountGroup;
+    unsigned int blockindex = (listrequest->id * sb.nodeSize) / blocksize;
+    struct ext2_blockgroup bg;
+    struct ext2_node node;
+
+    readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
+    readnode(&node, &sb, &bg, blocksize, nodeindex);
+
+    if ((node.type & 0xF000) == 0x4000)
+    {
+
+        unsigned char block[4096];
+        unsigned int offset = 0;
+        struct record records[8];
+        unsigned int nrecords = 0;
+
+        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+
+        while (offset < 4096)
+        {
+
+            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
+            struct record *record = &records[nrecords];
+
+            record->id = entry->node;
+            record->size = 0; /* can not be determined */
+            record->type = (entry->type == 2) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL;
+            record->length = buffer_write(record->name, RECORD_NAMESIZE, (char *)entry + 8, entry->length, 0);
+
+            if (nrecords < 8)
+                nrecords++;
+            else
+                break;
+
+            offset += entry->size;
+
+        }
+
+        sendlistresponse(source, listrequest->session, nrecords, records);
+
+    }
+
+    else
+    {
+
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Not a directory: %u\n", &listrequest->id);
+
+    }
 
 }
 
@@ -438,6 +504,7 @@ void init(void)
     option_add("volume", "system:block/if:0/data");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_LISTREQUEST, onlistrequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);
