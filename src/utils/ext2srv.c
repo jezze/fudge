@@ -428,6 +428,15 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     char *path = (char *)(walkrequest + 1);
     struct ext2_node node;
 
+    if (!walkrequest->length)
+    {
+
+        sendwalkresponse(source, walkrequest->session, id);
+
+        return;
+
+    }
+
     simpleread(&node, id);
 
     if ((node.type & 0xF000) == 0x4000)
