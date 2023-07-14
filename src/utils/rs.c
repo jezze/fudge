@@ -100,7 +100,8 @@ static void test(void)
         char buffer[4096];
         unsigned int count = read(id, 100, 0, 4096, buffer);
 
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+        if (count)
+            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
     }
 
