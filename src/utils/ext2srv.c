@@ -328,7 +328,7 @@ static void sendwalkresponse(unsigned int source, unsigned int session, unsigned
 
 static struct ext2_superblock sb;
 
-static unsigned int walk(unsigned int id, char *path)
+static void simpleread(struct ext2_node *node, unsigned int id)
 {
 
     unsigned int blocksize = (1024 << sb.blockSize);
@@ -336,10 +336,18 @@ static unsigned int walk(unsigned int id, char *path)
     unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
     unsigned int blockindex = (id * sb.nodeSize) / blocksize;
     struct ext2_blockgroup bg;
-    struct ext2_node node;
 
     readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
-    readnode(&node, &sb, &bg, blocksize, nodeindex);
+    readnode(node, &sb, &bg, blocksize, nodeindex);
+
+}
+
+static unsigned int walk(unsigned int id, char *path)
+{
+
+    struct ext2_node node;
+
+    simpleread(&node, id);
 
     if ((node.type & 0xF000) == 0x4000)
     {
@@ -347,7 +355,7 @@ static unsigned int walk(unsigned int id, char *path)
         unsigned char block[4096];
         unsigned int offset = 0;
 
-        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
 
         while (offset < 4096)
         {
@@ -370,16 +378,10 @@ static unsigned int walk(unsigned int id, char *path)
 static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_listrequest *listrequest = mdata;
-    unsigned int blocksize = (1024 << sb.blockSize);
-    unsigned int blockgroup = (listrequest->id - 1) / sb.nodeCountGroup;
-    unsigned int nodeindex = (listrequest->id - 1) % sb.nodeCountGroup;
-    unsigned int blockindex = (listrequest->id * sb.nodeSize) / blocksize;
-    struct ext2_blockgroup bg;
+    struct event_readrequest *listrequest = mdata;
     struct ext2_node node;
 
-    readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
-    readnode(&node, &sb, &bg, blocksize, nodeindex);
+    simpleread(&node, listrequest->id);
 
     if ((node.type & 0xF000) == 0x4000)
     {
@@ -389,7 +391,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
         struct record records[8];
         unsigned int nrecords = 0;
 
-        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
 
         while (offset < 4096)
         {
@@ -428,22 +430,16 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_readrequest *readrequest = mdata;
-    unsigned int blocksize = (1024 << sb.blockSize);
-    unsigned int blockgroup = (readrequest->id - 1) / sb.nodeCountGroup;
-    unsigned int nodeindex = (readrequest->id - 1) % sb.nodeCountGroup;
-    unsigned int blockindex = (readrequest->id * sb.nodeSize) / blocksize;
-    struct ext2_blockgroup bg;
     struct ext2_node node;
 
-    readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
-    readnode(&node, &sb, &bg, blocksize, nodeindex);
+    simpleread(&node, readrequest->id);
 
     if ((node.type & 0xF000) == 0x8000)
     {
 
         unsigned char block[4096];
 
-        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
         sendreadresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
