@@ -20,7 +20,8 @@ static unsigned int notify(struct list *links, unsigned int source, unsigned int
 
         struct link *link = current->data;
 
-        kernel_place(source, link->target, event, count, data);
+        if (link->target != source)
+            kernel_place(source, link->target, event, count, data);
 
     }
 
