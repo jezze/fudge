@@ -424,10 +424,11 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_walkrequest *walkrequest = mdata;
+    unsigned int id = (walkrequest->parent) ? walkrequest->parent : 2;
     char *path = (char *)(walkrequest + 1);
     struct ext2_node node;
 
-    simpleread(&node, (walkrequest->parent) ? walkrequest->parent : 2);
+    simpleread(&node, id);
 
     if ((node.type & 0xF000) == 0x4000)
     {
@@ -460,7 +461,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Not a directory: %u\n", &walkrequest->parent);
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Not a directory: %u\n", &id);
 
     }
 
