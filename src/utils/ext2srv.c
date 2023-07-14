@@ -442,7 +442,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 
             struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
 
-            if (entry->length == cstring_length(path) && buffer_match((char *)entry + 8, path, entry->length))
+            if (entry->length == walkrequest->length && buffer_match((char *)entry + 8, path, entry->length))
             {
 
                 sendwalkresponse(source, walkrequest->session, entry->node);

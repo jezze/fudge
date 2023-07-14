@@ -17,7 +17,7 @@ static void sendwalkrequest(unsigned int session, unsigned int parent, char *pat
 
     message.walkrequest.session = session;
     message.walkrequest.parent = parent;
-    message.walkrequest.length = cstring_length_zero(path);
+    message.walkrequest.length = cstring_length(path);
 
     buffer_write(message.path, 64, path, message.walkrequest.length, 0);
     call_notify(FILE_G0, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
