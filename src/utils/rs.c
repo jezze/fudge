@@ -10,17 +10,15 @@ static unsigned int getsession()
 
 }
 
-static void sendwalkrequest(unsigned int session, unsigned int parent, char *path)
+static void sendlistrequest(unsigned int session, unsigned int id)
 {
 
-    struct {struct event_walkrequest walkrequest; char path[64];} message;
+    struct event_listrequest listrequest;
 
-    message.walkrequest.session = session;
-    message.walkrequest.parent = parent;
-    message.walkrequest.length = cstring_length(path);
+    listrequest.session = session;
+    listrequest.id = id;
 
-    buffer_write(message.path, 64, path, message.walkrequest.length, 0);
-    call_notify(FILE_G0, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
+    call_notify(FILE_G0, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
 
 }
 
@@ -38,20 +36,38 @@ static void sendreadrequest(unsigned int session, unsigned int id, unsigned int 
 
 }
 
-static unsigned int walk(unsigned int id, char *path)
+static void sendwalkrequest(unsigned int session, unsigned int parent, char *path)
+{
+
+    struct {struct event_walkrequest walkrequest; char path[64];} message;
+
+    message.walkrequest.session = session;
+    message.walkrequest.parent = parent;
+    message.walkrequest.length = cstring_length(path);
+
+    buffer_write(message.path, 64, path, message.walkrequest.length, 0);
+    call_notify(FILE_G0, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
+
+}
+
+static unsigned int list(unsigned int id)
 {
 
     unsigned int session = getsession();
     struct message message;
-    struct event_walkresponse walkresponse;
+    struct {struct event_listresponse listresponse; struct record records[8];} payload;
 
-    sendwalkrequest(session, id, path);
+    sendlistrequest(session, id);
 
-    while (channel_poll(EVENT_WALKRESPONSE, &message, &walkresponse))
+    while (channel_poll(EVENT_LISTRESPONSE, &message, &payload))
     {
 
-        if (walkresponse.session == session)
-            return walkresponse.id;
+        if (payload.listresponse.session == session)
+        {
+
+            return payload.listresponse.nrecords;
+
+        }
 
     }
 
@@ -89,6 +105,27 @@ static unsigned int read(unsigned int id, unsigned int count, unsigned int offse
 
 }
 
+static unsigned int walk(unsigned int id, char *path)
+{
+
+    unsigned int session = getsession();
+    struct message message;
+    struct event_walkresponse walkresponse;
+
+    sendwalkrequest(session, id, path);
+
+    while (channel_poll(EVENT_WALKRESPONSE, &message, &walkresponse))
+    {
+
+        if (walkresponse.session == session)
+            return walkresponse.id;
+
+    }
+
+    return 0;
+
+}
+
 static void test(void)
 {
 
@@ -102,6 +139,17 @@ static void test(void)
 
         if (count)
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+
+    }
+
+    id = walk(0, "");
+
+    if (id)
+    {
+
+        unsigned int nrecords = list(id);
+
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "nrecords: %u\n", &nrecords);
 
     }
 
