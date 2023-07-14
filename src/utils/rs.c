@@ -50,7 +50,7 @@ static void sendwalkrequest(unsigned int session, unsigned int parent, char *pat
 
 }
 
-static unsigned int list(unsigned int id)
+static unsigned int list(unsigned int id, struct record records[8])
 {
 
     unsigned int session = getsession();
@@ -64,6 +64,8 @@ static unsigned int list(unsigned int id)
 
         if (payload.listresponse.session == session)
         {
+
+            buffer_write(records, sizeof (struct record) * 8, payload.records, sizeof (struct record) * payload.listresponse.nrecords, 0);
 
             return payload.listresponse.nrecords;
 
@@ -129,7 +131,26 @@ static unsigned int walk(unsigned int id, char *path)
 static void test(void)
 {
 
-    unsigned int id = walk(0, "test.txt");
+    unsigned int root = walk(0, "");
+    unsigned int id = walk(root, "test.txt");
+
+    if (root)
+    {
+
+        struct record records[8];
+        unsigned int nrecords = list(root, records);
+        unsigned int i;
+
+        for (i = 0; i < nrecords; i++)
+        {
+
+            struct record *record = &records[i];
+
+            channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "(%u) %w\n", &record->id, record->name, &record->length);
+
+        }
+
+    }
 
     if (id)
     {
@@ -139,17 +160,6 @@ static void test(void)
 
         if (count)
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
-
-    }
-
-    id = walk(0, "");
-
-    if (id)
-    {
-
-        unsigned int nrecords = list(id);
-
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "nrecords: %u\n", &nrecords);
 
     }
 
