@@ -41,6 +41,15 @@ static struct option *findfree(char *key)
 
 }
 
+unsigned int option_isvalid(char *key)
+{
+
+    struct option *option = find(key);
+
+    return cstring_length(option->value) > 0;
+
+}
+
 struct option *option_get(unsigned int i)
 {
 
