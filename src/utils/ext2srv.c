@@ -342,39 +342,6 @@ static void simpleread(struct ext2_node *node, unsigned int id)
 
 }
 
-static unsigned int walk(unsigned int id, char *path)
-{
-
-    struct ext2_node node;
-
-    simpleread(&node, id);
-
-    if ((node.type & 0xF000) == 0x4000)
-    {
-
-        unsigned char block[4096];
-        unsigned int offset = 0;
-
-        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
-
-        while (offset < 4096)
-        {
-
-            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
-
-            if (entry->length == cstring_length(path) && buffer_match((char *)entry + 8, path, entry->length))
-                return entry->node;
-
-            offset += entry->size;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -457,9 +424,45 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_walkrequest *walkrequest = mdata;
-    unsigned int id = walk((walkrequest->parent) ? walkrequest->parent : 2, (char *)(walkrequest + 1));
+    char *path = (char *)(walkrequest + 1);
+    struct ext2_node node;
 
-    sendwalkresponse(source, walkrequest->session, id);
+    simpleread(&node, (walkrequest->parent) ? walkrequest->parent : 2);
+
+    if ((node.type & 0xF000) == 0x4000)
+    {
+
+        unsigned char block[4096];
+        unsigned int offset = 0;
+
+        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
+
+        while (offset < 4096)
+        {
+
+            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
+
+            if (entry->length == cstring_length(path) && buffer_match((char *)entry + 8, path, entry->length))
+            {
+
+                sendwalkresponse(source, walkrequest->session, entry->node);
+
+                break;
+
+            }
+
+            offset += entry->size;
+
+        }
+
+    }
+
+    else
+    {
+
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Not a directory: %u\n", &walkrequest->parent);
+
+    }
 
 }
 
