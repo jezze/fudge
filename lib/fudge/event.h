@@ -40,8 +40,10 @@
 #define EVENT_WALKRESPONSE              0x42
 #define EVENT_READREQUEST               0x43
 #define EVENT_READRESPONSE              0x44
-#define EVENT_WRITEREQUEST              0x45
-#define EVENT_WRITERESPONSE             0x46
+#define EVENT_LISTREQUEST               0x45
+#define EVENT_LISTRESPONSE              0x46
+#define EVENT_WRITEREQUEST              0x47
+#define EVENT_WRITERESPONSE             0x48
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 
@@ -193,6 +195,22 @@ struct event_wmevent
 
     unsigned int type;
     unsigned int length;
+
+};
+
+struct event_listrequest
+{
+
+    unsigned int session;
+    unsigned int id;
+
+};
+
+struct event_listresponse
+{
+
+    unsigned int session;
+    unsigned int nrecords;
 
 };
 
