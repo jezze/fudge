@@ -18,8 +18,6 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
-static struct acpi_madt_ioapic_intsource *ioapic_intsource;
-
 static unsigned int readio(unsigned int base, unsigned int offset)
 {
 
@@ -143,18 +141,16 @@ static void detect(void)
             if (entry->type == 2)
             {
 
-                if (ioapic_intsource == 0)
-                    ioapic_intsource = (struct acpi_madt_ioapic_intsource *)entry;
+                /* override io apic */
 
             }
 
-            /*
             if (entry->type == 4)
             {
 
-            }
+                /* local apic nmi */
 
-            */
+            }
 
             madttable += entry->length;
 
