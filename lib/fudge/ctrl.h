@@ -24,6 +24,8 @@ struct ctrl_core
 {
 
     unsigned int id;
+    unsigned int sp;
+    unsigned int task;
 
 };
 

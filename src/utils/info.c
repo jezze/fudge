@@ -21,7 +21,7 @@ static void showcores(void)
         unsigned int offset;
 
         for (offset = 0; (count = call_read(FILE_L0, &ctrl, sizeof (struct ctrl_core), offset)); offset += count)
-            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "core\n  id %u\n", &ctrl.id);
+            channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "core\n  id %u\n  sp 0x%H8u\n  task %u\n", &ctrl.id, &ctrl.sp, &ctrl.task);
 
     }
 

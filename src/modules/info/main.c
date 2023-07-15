@@ -25,6 +25,8 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
             struct ctrl_core ctrl;
 
             ctrl.id = core->id;
+            ctrl.sp = core->sp;
+            ctrl.task = core->task;
 
             return buffer_read(buffer, count, &ctrl, sizeof (struct core), o);
 
