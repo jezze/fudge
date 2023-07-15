@@ -34,14 +34,14 @@ static void detect(struct acpi_madt *madt)
         if (entry->type == 0)
         {
 
-            struct acpi_madt_apic *apic = (struct acpi_madt_apic *)entry;
+            struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
 
-            if (apic->id)
+            if (lapic->id)
             {
 
-                apic_sendint(apic->id, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0x00);
+                apic_sendint(lapic->id, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0x00);
                 pit_wait(10);
-                apic_sendint(apic->id, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | (INIT16PHYSICAL >> 12));
+                apic_sendint(lapic->id, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | (INIT16PHYSICAL >> 12));
 
             }
 

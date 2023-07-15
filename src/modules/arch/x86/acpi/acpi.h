@@ -30,7 +30,7 @@ struct acpi_madt_entry
 
 };
 
-struct acpi_madt_apic
+struct acpi_madt_lapic
 {
 
     struct acpi_madt_entry base;
