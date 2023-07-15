@@ -13,7 +13,7 @@
 #define MSR_LAPIC                       0x1B
 
 static struct {unsigned int detected;} lapics[256];
-static struct {unsigned int detected;} ioapics[256];
+static struct {unsigned int detected; unsigned int address;} ioapics[256];
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
@@ -61,6 +61,7 @@ static void detect(void)
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
 
                 ioapics[ioapic->id].detected = 1;
+                ioapics[ioapic->id].address = ioapic->address;
 
             }
 
