@@ -18,6 +18,31 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
+static unsigned int readio(unsigned int base, unsigned int reg)
+{
+
+    volatile unsigned int *ioregsel = (volatile unsigned int *)(base);
+    volatile unsigned int *ioregwin = (volatile unsigned int *)(base + 0x10);
+
+    *ioregsel = reg;
+
+    return *ioregwin;
+
+}
+
+/*
+static void writeio(unsigned int base, unsigned int reg, unsigned int value)
+{
+
+    volatile unsigned int *ioregsel = (volatile unsigned int *)(base);
+    volatile unsigned int *ioregwin = (volatile unsigned int *)(base + 0x10);
+
+    *ioregsel = reg;
+    *ioregwin = value;
+
+}
+*/
+
 void apic_debug(void)
 {
 
@@ -29,8 +54,26 @@ void apic_debug(void)
         if (ioapics[i].detected)
         {
 
-            DEBUG_FMT1(DEBUG_INFO, "ioapic id %u", &i);
-            DEBUG_FMT1(DEBUG_INFO, "ioapic address 0x%8Hu", &ioapics[i].address);
+            unsigned int ioapicid = readio(ioapics[i].address, 0);
+            unsigned int ioapicversion = readio(ioapics[i].address, 1);
+            unsigned int version = ioapicversion & 0xFF;
+            unsigned int max = ((ioapicversion >> 8) & 0xFF) + 1;
+            unsigned int j;
+
+            DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
+            DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
+            DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
+            DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
+
+            for (j = 0; j < 48; j++)
+            {
+
+                unsigned int value = readio(ioapics[i].address, 0x10 + i * 2 + 1);
+                unsigned int vector = value & 0xFF;
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
+
+            }
 
         }
 
@@ -83,7 +126,9 @@ static void detect(void)
                 ioapics[ioapic->id].detected = 1;
                 ioapics[ioapic->id].address = ioapic->address;
 
+/*
                 arch_mapuncached(10 + ioapic->id, ioapic->address, ioapic->address, 0x1000);
+*/
 
             }
 
@@ -243,7 +288,7 @@ void module_init(void)
 
         mmio = (msrdata.eax & 0xFFFFF000);
 
-        arch_mapuncached(7, mmio, mmio, 0x1000);
+        arch_mapuncached(7, mmio, mmio, 0x400000);
         detect();
         idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
         idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
