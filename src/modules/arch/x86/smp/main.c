@@ -64,7 +64,7 @@ static void coreassign(struct list_item *item)
         list_move_unsafe(&corelist, &corelist, coreitem);
         list_add(&core->tasks, item);
 
-        if (coreget() != core && core->state == CORE_STATE_ASLEEP)
+        if (coreget() != core)
             apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
 
     }
@@ -96,8 +96,6 @@ void smp_setupbp(unsigned int stack, unsigned int task, struct list *tasks)
     while ((taskitem = list_pickhead(tasks)))
         list_add(&corerow->core.tasks, taskitem);
 
-    corerow->core.state = CORE_STATE_AWAKE;
-
 }
 
 void smp_setupap(unsigned int stack)
@@ -118,9 +116,6 @@ void smp_setupap(unsigned int stack)
     pat_setup();
     list_inititem(&corerow->item, &corerow->core);
     list_add(&corelist, &corerow->item);
-
-    /*corerow->core.state = CORE_STATE_AWAKE;*/
-
     arch_leave(&corerow->core);
 
 }
