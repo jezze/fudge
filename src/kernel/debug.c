@@ -45,6 +45,24 @@ void debug_fmt2(unsigned int level, char *fmt, void *arg1, void *arg2, char *fil
 
 }
 
+void debug_fmt3(unsigned int level, char *fmt, void *arg1, void *arg2, void *arg3, char *file, unsigned int line)
+{
+
+    char buffer[64];
+
+    debug(level, cstring_write_fmt3(buffer, 64, fmt, 0, arg1, arg2, arg3), buffer, file, line); 
+
+}
+
+void debug_fmt4(unsigned int level, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, char *file, unsigned int line)
+{
+
+    char buffer[64];
+
+    debug(level, cstring_write_fmt4(buffer, 64, fmt, 0, arg1, arg2, arg3, arg4), buffer, file, line); 
+
+}
+
 void debug_assert(unsigned int level, unsigned int test, char *file, unsigned int line)
 {
 

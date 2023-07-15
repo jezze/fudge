@@ -18,6 +18,7 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
+/*
 static unsigned int readio(unsigned int base, unsigned int offset)
 {
 
@@ -27,7 +28,6 @@ static unsigned int readio(unsigned int base, unsigned int offset)
 
 }
 
-/*
 static void writeio(unsigned int base, unsigned int reg, unsigned int value)
 {
 
@@ -66,6 +66,7 @@ void apic_debug(void)
             if (entry->type == 1)
             {
 
+/*
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
                 unsigned int ioapicid;
                 unsigned int ioapicversion;
@@ -106,13 +107,16 @@ void apic_debug(void)
                     DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
 
                 }
+*/
 
             }
 
             if (entry->type == 2)
             {
 
-                /*struct acpi_madt_intsource *intsource = (struct acpi_madt_intsouce *)entry;*/
+                struct acpi_madt_intsource *intsource = (struct acpi_madt_intsource *)entry;
+
+                DEBUG_FMT3(DEBUG_INFO, "intsource bus %c irq %c gsi %u", &intsource->bus, &intsource->irq, &intsource->intbase);
 
             }
 
@@ -249,6 +253,7 @@ unsigned int apic_getid(void)
     cpu_setcr3(directory);
 
     return id;
+
 }
 
 unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
