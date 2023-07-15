@@ -34,6 +34,8 @@ static void enable(void)
             if (i == id)
                 continue;
 
+            DEBUG_FMT1(DEBUG_INFO, "enable processor id %u", &i);
+
             apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0x00);
             pit_wait(10);
             apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | (INIT16PHYSICAL >> 12));
