@@ -18,15 +18,12 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
-static unsigned int readio(unsigned int base, unsigned int reg)
+static unsigned int readio(unsigned int base, unsigned int offset)
 {
 
-    volatile unsigned int *ioregsel = (volatile unsigned int *)(base);
-    volatile unsigned int *ioregwin = (volatile unsigned int *)(base + 0x10);
+    *(volatile unsigned int *)(base) = offset;
 
-    *ioregsel = reg;
-
-    return *ioregwin;
+    return *(volatile unsigned int *)(base + 0x10);
 
 }
 
@@ -60,10 +57,18 @@ void apic_debug(void)
             unsigned int max = ((ioapicversion >> 8) & 0xFF) + 1;
             unsigned int j;
 
+            DEBUG_FMT1(DEBUG_INFO, "ioapic address %8Hu", &ioapics[i].address);
             DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
             DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
             DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
             DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
+
+            if (ioapics[i].address == (unsigned int)0xFEC00000)
+            {
+
+                DEBUG_FMT0(DEBUG_INFO, "match");
+
+            }
 
             for (j = 0; j < 48; j++)
             {
@@ -126,9 +131,7 @@ static void detect(void)
                 ioapics[ioapic->id].detected = 1;
                 ioapics[ioapic->id].address = ioapic->address;
 
-/*
-                arch_mapuncached(10 + ioapic->id, ioapic->address, ioapic->address, 0x1000);
-*/
+                /*arch_mapuncached(10 + ioapic->id, ioapics[ioapic->id].address, ioapics[ioapic->id].address, 0x1000);*/
 
             }
 
