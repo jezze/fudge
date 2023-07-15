@@ -13,7 +13,7 @@
 #define MSR_APIC                        0x1B
 
 static struct {unsigned int detected;} lapics[256];
-static struct {unsigned int detected; unsigned int address;} ioapics[256];
+static struct {unsigned int detected; unsigned int address; unsigned int intbase;} ioapics[256];
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
@@ -51,25 +51,34 @@ void apic_debug(void)
         if (ioapics[i].detected)
         {
 
-            unsigned int ioapicid = readio(ioapics[i].address, 0);
-            unsigned int ioapicversion = readio(ioapics[i].address, 1);
-            unsigned int version = ioapicversion & 0xFF;
-            unsigned int max = ((ioapicversion >> 8) & 0xFF) + 1;
+            unsigned int ioapicid;
+            unsigned int ioapicversion;
+            unsigned int ioapicarb;
+            unsigned int version;
+            unsigned int max;
             unsigned int j;
 
             DEBUG_FMT1(DEBUG_INFO, "ioapic mmio %8Hu", &mmio);
             DEBUG_FMT1(DEBUG_INFO, "ioapic address %8Hu", &ioapics[i].address);
+            DEBUG_FMT1(DEBUG_INFO, "ioapic intbase %u", &ioapics[i].intbase);
+
+            ioapicid = readio(ioapics[i].address, 0);
+
             DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
+
+            ioapicversion = readio(ioapics[i].address, 1);
+
             DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
+
+            ioapicarb = readio(ioapics[i].address, 2);
+
+            DEBUG_FMT1(DEBUG_INFO, "ioapic reg2 %u", &ioapicarb);
+
+            version = ioapicversion & 0xFF;
+            max = ((ioapicversion >> 8) & 0xFF) + 1;
+
             DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
             DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
-
-            if (ioapics[i].address == (unsigned int)0xFEC00000)
-            {
-
-                DEBUG_FMT0(DEBUG_INFO, "match");
-
-            }
 
             for (j = 0; j < 48; j++)
             {
@@ -133,6 +142,7 @@ static void detect(void)
 
                 ioapics[ioapic->id].detected = 1;
                 ioapics[ioapic->id].address = ioapic->address;
+                ioapics[ioapic->id].intbase = ioapic->intbase;
 
                 /*arch_mapuncached(10 + ioapic->id, ioapics[ioapic->id].address, ioapics[ioapic->id].address, 0x1000);*/
 
