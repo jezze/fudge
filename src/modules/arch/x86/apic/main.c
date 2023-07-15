@@ -7,7 +7,6 @@
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/msr/msr.h>
-#include <modules/arch/x86/pic/pic.h>
 #include "apic.h"
 
 #define MSR_LAPIC                       0x1B
@@ -153,8 +152,6 @@ void module_init(void)
         arch_mapuncached(7, mmio, mmio, 0x1000);
         idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
         idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-
-        /* pic_disable(); */
 
     }
 

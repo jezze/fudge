@@ -9,6 +9,7 @@
 #include <modules/system/system.h>
 #include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
+#include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/pat/pat.h>
 #include <modules/arch/x86/pit/pit.h>
@@ -30,7 +31,7 @@ static void detect(void)
     if (madt->flags & 0x01)
     {
 
-        /* pic_disable(); */
+        pic_disable();
 
     }
 
