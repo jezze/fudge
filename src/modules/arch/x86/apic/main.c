@@ -22,45 +22,51 @@ static void detect(void)
 {
 
     struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
-    unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
-    unsigned int madtend = (unsigned int)madt + madt->base.length;
 
-    if (madt->flags & 0x01)
+    if (madt)
     {
 
-        /* pic_disable(); */
+        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+        unsigned int madtend = (unsigned int)madt + madt->base.length;
 
-    }
-
-    while (madttable < madtend)
-    {
-
-        struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
-
-        if (entry->type == 0)
+        if (madt->flags & 0x01)
         {
 
-            struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
+            /* pic_disable(); */
 
-            if ((lapic->flags & 0x01) || (lapic->flags & 0x02))
+        }
+
+        while (madttable < madtend)
+        {
+
+            struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
+
+            if (entry->type == 0)
             {
 
-                lapics[lapic->id].detected = 1;
+                struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
+
+                if ((lapic->flags & 0x01) || (lapic->flags & 0x02))
+                {
+
+                    lapics[lapic->id].detected = 1;
+
+                }
 
             }
 
+            if (entry->type == 1)
+            {
+
+                struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+
+                ioapics[ioapic->id].detected = 1;
+
+            }
+
+            madttable += entry->length;
+
         }
-
-        if (entry->type == 1)
-        {
-
-            struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-
-            ioapics[ioapic->id].detected = 1;
-
-        }
-
-        madttable += entry->length;
 
     }
 
