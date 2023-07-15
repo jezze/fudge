@@ -4,6 +4,7 @@
 #include <modules/system/system.h>
 #include <modules/timer/timer.h>
 #include <modules/arch/x86/pic/pic.h>
+#include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/platform/platform.h>
 #include "pit.h"
@@ -90,16 +91,22 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    unsigned short irq = platform_getirq(id);
+
     timer_registerinterface(&timerinterface);
-    pic_setroutine(platform_getirq(id), handleirq);
+    pic_setroutine(irq, handleirq);
+    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = platform_getirq(id);
+
     timer_unregisterinterface(&timerinterface);
-    pic_unsetroutine(platform_getirq(id));
+    pic_unsetroutine(irq);
+    apic_unsetroutine(irq);
 
 }
 

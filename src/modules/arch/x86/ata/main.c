@@ -5,6 +5,7 @@
 #include <modules/block/block.h>
 #include <modules/arch/x86/ide/ide.h>
 #include <modules/arch/x86/pic/pic.h>
+#include <modules/arch/x86/apic/apic.h>
 
 static struct base_driver driver;
 static struct block_interface blockinterface;
@@ -65,16 +66,22 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    unsigned short irq = ide_getirq(id);
+
     block_registerinterface(&blockinterface);
-    pic_setroutine(ide_getirq(id), handleirq);
+    pic_setroutine(irq, handleirq);
+    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = ide_getirq(id);
+
     block_unregisterinterface(&blockinterface);
-    pic_unsetroutine(ide_getirq(id));
+    pic_unsetroutine(irq);
+    apic_unsetroutine(irq);
 
 }
 

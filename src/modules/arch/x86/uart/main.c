@@ -5,6 +5,7 @@
 #include <modules/console/console.h>
 #include <modules/arch/x86/platform/platform.h>
 #include <modules/arch/x86/pic/pic.h>
+#include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/io/io.h>
 
 #define REG_RBR                         0x0000
@@ -187,16 +188,22 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    unsigned short irq = platform_getirq(id);
+
     console_registerinterface(&consoleinterface);
-    pic_setroutine(platform_getirq(id), handleirq);
+    pic_setroutine(irq, handleirq);
+    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = platform_getirq(id);
+
     console_unregisterinterface(&consoleinterface);
-    pic_unsetroutine(platform_getirq(id));
+    pic_unsetroutine(irq);
+    apic_unsetroutine(irq);
 
 }
 

@@ -5,6 +5,7 @@
 #include <modules/system/system.h>
 #include <modules/ethernet/ethernet.h>
 #include <modules/arch/x86/pic/pic.h>
+#include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/io/io.h>
 #include <modules/arch/x86/pci/pci.h>
 
@@ -345,16 +346,22 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    unsigned short irq = pci_getirq(id);
+
     ethernet_registerinterface(&ethernetinterface);
-    pic_setroutine(pci_getirq(id), handleirq);
+    pic_setroutine(irq, handleirq);
+    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = pci_getirq(id);
+
     ethernet_unregisterinterface(&ethernetinterface);
-    pic_unsetroutine(pci_getirq(id));
+    pic_unsetroutine(irq);
+    apic_unsetroutine(irq);
 
 }
 

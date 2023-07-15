@@ -4,6 +4,7 @@
 #include <modules/system/system.h>
 #include <modules/video/video.h>
 #include <modules/arch/x86/pic/pic.h>
+#include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/pci/pci.h>
 #include <modules/arch/x86/pit/pit.h>
 #include "i915.h"
@@ -136,16 +137,22 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    unsigned short irq = pci_getirq(id);
+
     video_registerinterface(&videointerface);
-    pic_setroutine(pci_getirq(id), handleirq);
+    pic_setroutine(irq, handleirq);
+    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = pci_getirq(id);
+
     video_unregisterinterface(&videointerface);
-    pic_unsetroutine(pci_getirq(id));
+    pic_unsetroutine(irq);
+    apic_unsetroutine(irq);
 
 }
 

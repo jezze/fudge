@@ -4,6 +4,7 @@
 #include <modules/system/system.h>
 #include <modules/keyboard/keyboard.h>
 #include <modules/arch/x86/pic/pic.h>
+#include <modules/arch/x86/apic/apic.h>
 #include "ps2.h"
 
 static struct base_driver driver;
@@ -102,16 +103,22 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    unsigned short irq = ps2_getirq(id);
+
     keyboard_registerinterface(&keyboardinterface);
-    pic_setroutine(ps2_getirq(id), handleirq);
+    pic_setroutine(irq, handleirq);
+    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
+    unsigned short irq = ps2_getirq(id);
+
     keyboard_unregisterinterface(&keyboardinterface);
-    pic_unsetroutine(ps2_getirq(id));
+    pic_unsetroutine(irq);
+    apic_unsetroutine(irq);
 
 }
 
