@@ -10,13 +10,33 @@
 #include <modules/arch/x86/acpi/acpi.h>
 #include "apic.h"
 
-#define MSR_LAPIC                       0x1B
+#define MSR_APIC                        0x1B
 
 static struct {unsigned int detected;} lapics[256];
 static struct {unsigned int detected; unsigned int address;} ioapics[256];
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
+
+void apic_debug(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 256; i++)
+    {
+
+        if (ioapics[i].detected)
+        {
+
+            DEBUG_FMT1(DEBUG_INFO, "ioapic id %u", &i);
+            DEBUG_FMT1(DEBUG_INFO, "ioapic address 0x%8Hu", &ioapics[i].address);
+
+        }
+
+    }
+
+}
 
 static void detect(void)
 {
@@ -62,6 +82,8 @@ static void detect(void)
 
                 ioapics[ioapic->id].detected = 1;
                 ioapics[ioapic->id].address = ioapic->address;
+
+                arch_mapuncached(10 + ioapic->id, ioapic->address, ioapic->address, 0x1000);
 
             }
 
@@ -217,7 +239,7 @@ void module_init(void)
     if ((data.edx & CPUID_FEATURES01_APIC))
     {
 
-        msr_get(MSR_LAPIC, &msrdata);
+        msr_get(MSR_APIC, &msrdata);
 
         mmio = (msrdata.eax & 0xFFFFF000);
 
