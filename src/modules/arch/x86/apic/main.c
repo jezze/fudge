@@ -43,54 +43,87 @@ static void writeio(unsigned int base, unsigned int reg, unsigned int value)
 void apic_debug(void)
 {
 
-    unsigned int i;
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
 
-    for (i = 0; i < 256; i++)
+    if (madt)
     {
 
-        if (ioapics[i].detected)
+        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+        unsigned int madtend = (unsigned int)madt + madt->base.length;
+
+        while (madttable < madtend)
         {
 
-            unsigned int ioapicid;
-            unsigned int ioapicversion;
-            unsigned int ioapicarb;
-            unsigned int version;
-            unsigned int max;
-            unsigned int j;
+            struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
 
-            DEBUG_FMT1(DEBUG_INFO, "ioapic mmio %8Hu", &mmio);
-            DEBUG_FMT1(DEBUG_INFO, "ioapic address %8Hu", &ioapics[i].address);
-            DEBUG_FMT1(DEBUG_INFO, "ioapic intbase %u", &ioapics[i].intbase);
-
-            ioapicid = readio(ioapics[i].address, 0);
-
-            DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
-
-            ioapicversion = readio(ioapics[i].address, 1);
-
-            DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
-
-            ioapicarb = readio(ioapics[i].address, 2);
-
-            DEBUG_FMT1(DEBUG_INFO, "ioapic reg2 %u", &ioapicarb);
-
-            version = ioapicversion & 0xFF;
-            max = ((ioapicversion >> 8) & 0xFF) + 1;
-
-            DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
-            DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
-
-            for (j = 0; j < 48; j++)
+            if (entry->type == 0)
             {
 
-                unsigned int value0 = readio(ioapics[i].address, 0x10 + i * 2);
-                unsigned int value1 = readio(ioapics[i].address, 0x10 + i * 2 + 1);
-                unsigned int vector = value0 & 0xFF;
-
-                DEBUG_FMT2(DEBUG_INFO, "ioapic regs %H8u:%H8u", &value1, &value0);
-                DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
+                /*struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;*/
 
             }
+
+            if (entry->type == 1)
+            {
+
+                struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+                unsigned int ioapicid;
+                unsigned int ioapicversion;
+                unsigned int ioapicarb;
+                unsigned int version;
+                unsigned int max;
+                unsigned int j;
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic address %8Hu", &ioapic->address);
+                DEBUG_FMT1(DEBUG_INFO, "ioapic intbase %u", &ioapic->intbase);
+
+                ioapicid = readio(ioapic->address, 0);
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
+
+                ioapicversion = readio(ioapic->address, 1);
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
+
+                ioapicarb = readio(ioapic->address, 2);
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic reg2 %u", &ioapicarb);
+
+                version = ioapicversion & 0xFF;
+                max = ((ioapicversion >> 8) & 0xFF) + 1;
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
+                DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
+
+                for (j = 0; j < 48; j++)
+                {
+
+                    unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
+                    unsigned int value1 = readio(ioapic->address, 0x10 + j * 2 + 1);
+                    unsigned int vector = value0 & 0xFF;
+
+                    DEBUG_FMT2(DEBUG_INFO, "ioapic regs %H8u:%H8u", &value1, &value0);
+                    DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
+
+                }
+
+            }
+
+            if (entry->type == 2)
+            {
+
+                /*struct acpi_madt_intsource *intsource = (struct acpi_madt_intsouce *)entry;*/
+
+            }
+
+            if (entry->type == 4)
+            {
+
+                /* local apic nmi */
+
+            }
+
+            madttable += entry->length;
 
         }
 
