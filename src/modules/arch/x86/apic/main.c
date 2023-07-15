@@ -7,13 +7,64 @@
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/msr/msr.h>
+#include <modules/arch/x86/acpi/acpi.h>
 #include "apic.h"
 
 #define MSR_LAPIC                       0x1B
 
+static struct {unsigned int detected;} lapics[256];
+static struct {unsigned int detected;} ioapics[256];
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
+
+static void detect(void)
+{
+
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+    unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+    unsigned int madtend = (unsigned int)madt + madt->base.length;
+
+    if (madt->flags & 0x01)
+    {
+
+        /* pic_disable(); */
+
+    }
+
+    while (madttable < madtend)
+    {
+
+        struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
+
+        if (entry->type == 0)
+        {
+
+            struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
+
+            if ((lapic->flags & 0x01) || (lapic->flags & 0x02))
+            {
+
+                lapics[lapic->id].detected = 1;
+
+            }
+
+        }
+
+        if (entry->type == 1)
+        {
+
+            struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+
+            ioapics[ioapic->id].detected = 1;
+
+        }
+
+        madttable += entry->length;
+
+    }
+
+}
 
 static unsigned int apic_ind(unsigned int reg)
 {
@@ -30,6 +81,20 @@ static void apic_outd(unsigned int reg, unsigned int value)
     volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
 
     *address = value;
+
+}
+
+unsigned int apic_checklapic(unsigned int id)
+{
+
+    return lapics[id].detected;
+
+}
+
+unsigned int apic_checkioapic(unsigned int id)
+{
+
+    return ioapics[id].detected;
 
 }
 
@@ -150,6 +215,7 @@ void module_init(void)
         mmio = (msrdata.eax & 0xFFFFF000);
 
         arch_mapuncached(7, mmio, mmio, 0x1000);
+        detect();
         idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
         idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
