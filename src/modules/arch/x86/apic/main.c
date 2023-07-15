@@ -18,6 +18,8 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
+static struct acpi_madt_ioapic_intsource *ioapic_intsource;
+
 static unsigned int readio(unsigned int base, unsigned int offset)
 {
 
@@ -57,6 +59,7 @@ void apic_debug(void)
             unsigned int max = ((ioapicversion >> 8) & 0xFF) + 1;
             unsigned int j;
 
+            DEBUG_FMT1(DEBUG_INFO, "ioapic mmio %8Hu", &mmio);
             DEBUG_FMT1(DEBUG_INFO, "ioapic address %8Hu", &ioapics[i].address);
             DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
             DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
@@ -73,9 +76,11 @@ void apic_debug(void)
             for (j = 0; j < 48; j++)
             {
 
-                unsigned int value = readio(ioapics[i].address, 0x10 + i * 2 + 1);
-                unsigned int vector = value & 0xFF;
+                unsigned int value0 = readio(ioapics[i].address, 0x10 + i * 2);
+                unsigned int value1 = readio(ioapics[i].address, 0x10 + i * 2 + 1);
+                unsigned int vector = value0 & 0xFF;
 
+                DEBUG_FMT2(DEBUG_INFO, "ioapic regs %H8u:%H8u", &value1, &value0);
                 DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
 
             }
@@ -134,6 +139,22 @@ static void detect(void)
                 /*arch_mapuncached(10 + ioapic->id, ioapics[ioapic->id].address, ioapics[ioapic->id].address, 0x1000);*/
 
             }
+
+            if (entry->type == 2)
+            {
+
+                if (ioapic_intsource == 0)
+                    ioapic_intsource = (struct acpi_madt_ioapic_intsource *)entry;
+
+            }
+
+            /*
+            if (entry->type == 4)
+            {
+
+            }
+
+            */
 
             madttable += entry->length;
 
