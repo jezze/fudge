@@ -86,7 +86,7 @@ unsigned int task_transition(struct task *task, unsigned int state)
     spinlock_release(&task->spinlock);
 
     if (!valid)
-        DEBUG_LOG(DEBUG_ERROR, "state transition failed");
+        DEBUG_FMT0(DEBUG_ERROR, "state transition failed");
 
     return valid;
 

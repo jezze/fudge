@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "debug.h"
 
-void debug_log(unsigned int level, char *string, char *file, unsigned int line)
+static void debug(unsigned int level, char *string, char *file, unsigned int line)
 {
 
     struct resource *current = 0;
@@ -18,11 +18,41 @@ void debug_log(unsigned int level, char *string, char *file, unsigned int line)
 
 }
 
+void debug_fmt0(unsigned int level, char *fmt, char *file, unsigned int line)
+{
+
+    char buffer[64];
+
+    cstring_write_fmt0(buffer, 64, fmt, 0);
+    debug(level, buffer, file, line); 
+
+}
+
+void debug_fmt1(unsigned int level, char *fmt, void *arg1, char *file, unsigned int line)
+{
+
+    char buffer[64];
+
+    cstring_write_fmt1(buffer, 64, fmt, 0, arg1);
+    debug(level, buffer, file, line); 
+
+}
+
+void debug_fmt2(unsigned int level, char *fmt, void *arg1, void *arg2, char *file, unsigned int line)
+{
+
+    char buffer[64];
+
+    cstring_write_fmt2(buffer, 64, fmt, 0, arg1, arg2);
+    debug(level, buffer, file, line); 
+
+}
+
 void debug_assert(unsigned int level, unsigned int test, char *file, unsigned int line)
 {
 
     if (!test)
-        debug_log(level, "ASSERT FAIL", file, line);
+        debug(level, "ASSERT FAIL", file, line);
 
 }
 

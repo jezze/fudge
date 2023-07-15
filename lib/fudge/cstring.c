@@ -528,7 +528,7 @@ unsigned int cstring_write_fmt3(void *out, unsigned int count, char *fmt, unsign
 unsigned int cstring_write_fmt4(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4)
 {
 
-    void *args[8];
+    void *args[4];
 
     args[0] = arg1;
     args[1] = arg2;
@@ -542,7 +542,7 @@ unsigned int cstring_write_fmt4(void *out, unsigned int count, char *fmt, unsign
 unsigned int cstring_write_fmt6(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
 {
 
-    void *args[8];
+    void *args[6];
 
     args[0] = arg1;
     args[1] = arg2;
