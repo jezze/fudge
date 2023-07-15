@@ -1,6 +1,6 @@
-.set VBE_MODENUM,                       0x6000
-.set VBE_STACK,                         0x7000
-.set VBE_CODE,                          0x9000
+.set VBE_MODENUM,                       0x8000
+.set VBE_STACK,                         0x9000
+.set VBE_CODE,                          0xA000
 .set VBE_INFO,                          0xC000
 .set VBE_MODE,                          0xD000
 .set VBE_EDID,                          0xE000
