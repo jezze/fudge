@@ -89,6 +89,9 @@ void smp_setupbp(unsigned int stack, struct list *tasks)
     struct corerow *corerow = &corerows[id];
     struct list_item *taskitem;
 
+    DEBUG_FMT1(DEBUG_INFO, "bp id", &id);
+    DEBUG_FMT1(DEBUG_INFO, "bp stack", &stack);
+
     core_init(&corerow->core, id, stack);
     core_register(&corerow->core);
     arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
@@ -108,6 +111,9 @@ void smp_setupap(unsigned int stack)
 
     unsigned int id = apic_getid();
     struct corerow *corerow = &corerows[id];
+
+    DEBUG_FMT1(DEBUG_INFO, "ap id", &id);
+    DEBUG_FMT1(DEBUG_INFO, "ap stack", &stack);
 
     core_init(&corerow->core, id, stack);
     core_register(&corerow->core);

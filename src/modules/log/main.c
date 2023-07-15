@@ -6,7 +6,7 @@ static struct debug_interface debuginterface;
 static struct system_node root;
 static struct system_node messages;
 
-static void debuginterface_write(unsigned int level, char *string, char *file, unsigned int line)
+static void debuginterface_write(unsigned int level, unsigned int count, char *string, char *file, unsigned int line)
 {
 
     union {struct event_loginfo loginfo; char data[MESSAGE_SIZE];} message;
@@ -15,9 +15,9 @@ static void debuginterface_write(unsigned int level, char *string, char *file, u
     message.loginfo.count = sizeof (struct event_loginfo);
 
     if (file)
-        message.loginfo.count += cstring_write_fmt3(message.data, MESSAGE_SIZE, "%s (%s:%u)", message.loginfo.count, string, file, &line);
+        message.loginfo.count += cstring_write_fmt4(message.data, MESSAGE_SIZE, "%w (%s:%u)", message.loginfo.count, string, &count, file, &line);
     else
-        message.loginfo.count += cstring_write_fmt1(message.data, MESSAGE_SIZE, "%s", message.loginfo.count, string);
+        message.loginfo.count += cstring_write_fmt2(message.data, MESSAGE_SIZE, "%w", message.loginfo.count, string, &count);
 
     kernel_notify(&messages.links, EVENT_LOGINFO, message.loginfo.count, &message);
 

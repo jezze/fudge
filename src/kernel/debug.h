@@ -11,7 +11,7 @@ struct debug_interface
 {
 
     struct resource resource;
-    void (*write)(unsigned int level, char *string, char *file, unsigned int line);
+    void (*write)(unsigned int level, unsigned int count, char *string, char *file, unsigned int line);
 
 };
 
@@ -21,4 +21,4 @@ void debug_fmt2(unsigned int level, char *string, void *arg1, void *arg2, char *
 void debug_assert(unsigned int level, unsigned int test, char *file, unsigned int line);
 void debug_registerinterface(struct debug_interface *interface);
 void debug_unregisterinterface(struct debug_interface *interface);
-void debug_initinterface(struct debug_interface *interface, void (*write)(unsigned int level, char *string, char *file, unsigned int line));
+void debug_initinterface(struct debug_interface *interface, void (*write)(unsigned int level, unsigned int count, char *string, char *file, unsigned int line));
