@@ -59,6 +59,20 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 
 }
 
+unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
+{
+
+    return 0;
+
+}
+
+unsigned int apic_unsetroutine(unsigned int irq)
+{
+
+    return 0;
+
+}
+
 void apic_setup_ap(void)
 {
 

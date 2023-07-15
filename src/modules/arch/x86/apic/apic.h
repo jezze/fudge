@@ -67,6 +67,8 @@
 unsigned int apic_getid(void);
 void apic_test(void);
 void apic_spurious(void);
+unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq));
+unsigned int apic_unsetroutine(unsigned int irq);
 void apic_setup_ap(void);
 void apic_setup_bp(void);
 void apic_sendint(unsigned int id, unsigned int value);
