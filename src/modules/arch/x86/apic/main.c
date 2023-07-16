@@ -93,7 +93,7 @@ void apic_debug_ioapic(void)
                     unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
                     unsigned int value1 = readio(ioapic->address, 0x10 + j * 2 + 1);
 
-                    DEBUG_FMT2(DEBUG_INFO, "ioapic regs %H8u:%H8u", &value1, &value0);
+                    DEBUG_FMT3(DEBUG_INFO, "ioapic redtbl %u %H8u:%H8u", &j, &value1, &value0);
 
                 }
 
