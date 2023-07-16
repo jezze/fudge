@@ -18,6 +18,7 @@ static struct {unsigned int detected; unsigned int address; unsigned int intbase
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static void (*routines[ROUTINES])(unsigned int irq);
+static unsigned int overrides[16];
 static unsigned int mmio;
 
 static volatile unsigned int readio(unsigned int base, unsigned int offset)
@@ -184,6 +185,16 @@ void apic_setupisrs(void)
 
             }
 
+            if (entry->type == 2)
+            {
+
+                struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
+
+                if (override->intbase < 16)
+                    overrides[override->intbase] = override->irq;
+
+            }
+
             madttable += entry->length;
 
         }
@@ -314,8 +325,13 @@ unsigned int apic_getid(void)
 
 }
 
-unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt interrupt)
+unsigned short apic_interrupt(struct cpu_general general, unsigned int index, struct cpu_interrupt interrupt)
 {
+
+    unsigned int gsi = overrides[index];
+
+    if (routines[gsi])
+        routines[gsi](gsi);
 
     apic_outd(APIC_REG_EOI, 0);
 
@@ -323,76 +339,8 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 
 }
 
-unsigned short apic_interrupt01(struct cpu_general general, struct cpu_interrupt interrupt)
+unsigned short apic_interruptnone(struct cpu_general general, struct cpu_interrupt interrupt)
 {
-
-    routines[0x01](0x01);
-
-    apic_outd(APIC_REG_EOI, 0);
-
-    return arch_resume(&general, &interrupt);
-
-}
-
-unsigned short apic_interrupt02(struct cpu_general general, struct cpu_interrupt interrupt)
-{
-
-    routines[0x00](0x00);
-
-    apic_outd(APIC_REG_EOI, 0);
-
-    return arch_resume(&general, &interrupt);
-
-}
-
-unsigned short apic_interrupt03(struct cpu_general general, struct cpu_interrupt interrupt)
-{
-
-    routines[0x03](0x03);
-
-    apic_outd(APIC_REG_EOI, 0);
-
-    return arch_resume(&general, &interrupt);
-
-}
-
-unsigned short apic_interrupt04(struct cpu_general general, struct cpu_interrupt interrupt)
-{
-
-    routines[0x04](0x04);
-
-    apic_outd(APIC_REG_EOI, 0);
-
-    return arch_resume(&general, &interrupt);
-
-}
-
-unsigned short apic_interrupt08(struct cpu_general general, struct cpu_interrupt interrupt)
-{
-
-    routines[0x08](0x08);
-
-    apic_outd(APIC_REG_EOI, 0);
-
-    return arch_resume(&general, &interrupt);
-
-}
-
-unsigned short apic_interrupt0C(struct cpu_general general, struct cpu_interrupt interrupt)
-{
-
-    routines[0x0C](0x0C);
-
-    apic_outd(APIC_REG_EOI, 0);
-
-    return arch_resume(&general, &interrupt);
-
-}
-
-unsigned short apic_interrupt0E(struct cpu_general general, struct cpu_interrupt interrupt)
-{
-
-    routines[0x0E](0x0E);
 
     apic_outd(APIC_REG_EOI, 0);
 
@@ -471,6 +419,7 @@ void module_init(void)
 
     struct cpuid_data data;
     struct msr_data msrdata;
+    unsigned int i;
 
     if (!cpuid_exist())
         return;
@@ -479,6 +428,9 @@ void module_init(void)
         return;
 
     cpuid_getdata(CPUID_FEATURES0, &data);
+
+    for (i = 0; i < 16; i++)
+        overrides[i] = i;
 
 /*
     if ((data.ecx & CPUID_FEATURES00_2XAPIC))
