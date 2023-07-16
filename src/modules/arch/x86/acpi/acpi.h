@@ -51,7 +51,7 @@ struct acpi_madt_ioapic
 
 };
 
-struct acpi_madt_intsource
+struct acpi_madt_ioapic_iso
 {
 
     struct acpi_madt_entry base;
@@ -59,6 +59,16 @@ struct acpi_madt_intsource
     unsigned char irq;
     unsigned int intbase;
     unsigned char flags[2];
+
+};
+
+struct acpi_madt_lapic_nmi
+{
+
+    struct acpi_madt_entry base;
+    unsigned char processor;
+    unsigned short flags;
+    unsigned char lint;
 
 };
 

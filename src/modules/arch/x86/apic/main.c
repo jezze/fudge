@@ -59,24 +59,26 @@ void apic_debug(void)
             if (entry->type == 0)
             {
 
-                /*struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;*/
+                struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
+
+                DEBUG_FMT3(DEBUG_INFO, "lapic processor %c id %c flags 0x%8Hu", &lapic->processor, &lapic->id, &lapic->flags);
 
             }
 
             if (entry->type == 1)
             {
 
-/*
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+
+                DEBUG_FMT3(DEBUG_INFO, "ioapic id %c address 0x%8Hu intbase %u", &ioapic->id, &ioapic->address, &ioapic->intbase);
+
+/*
                 unsigned int ioapicid;
                 unsigned int ioapicversion;
                 unsigned int ioapicarb;
                 unsigned int version;
                 unsigned int max;
                 unsigned int j;
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic address %8Hu", &ioapic->address);
-                DEBUG_FMT1(DEBUG_INFO, "ioapic intbase %u", &ioapic->intbase);
 
                 ioapicid = readio(ioapic->address, 0);
 
@@ -114,16 +116,18 @@ void apic_debug(void)
             if (entry->type == 2)
             {
 
-                struct acpi_madt_intsource *intsource = (struct acpi_madt_intsource *)entry;
+                struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
 
-                DEBUG_FMT3(DEBUG_INFO, "intsource bus %c irq %c gsi %u", &intsource->bus, &intsource->irq, &intsource->intbase);
+                DEBUG_FMT3(DEBUG_INFO, "ioapic override bus %c irq %c gsi %u", &override->bus, &override->irq, &override->intbase);
 
             }
 
             if (entry->type == 4)
             {
 
-                /* local apic nmi */
+                struct acpi_madt_lapic_nmi *nmi = (struct acpi_madt_lapic_nmi *)entry;
+
+                DEBUG_FMT1(DEBUG_INFO, "lapic nmi processor %c", &nmi->processor);
 
             }
 
