@@ -58,7 +58,7 @@ struct acpi_madt_ioapic_iso
     unsigned char bus;
     unsigned char irq;
     unsigned int intbase;
-    unsigned char flags[2];
+    unsigned short flags;
 
 };
 

@@ -125,7 +125,7 @@ void apic_debug(void)
 
                 struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
 
-                DEBUG_FMT3(DEBUG_INFO, "ioapic override bus %c irq %c gsi %u", &override->bus, &override->irq, &override->intbase);
+                DEBUG_FMT4(DEBUG_INFO, "ioapic override bus %c irq %c gsi %u flags %4Hh", &override->bus, &override->irq, &override->intbase, &override->flags);
 
             }
 
