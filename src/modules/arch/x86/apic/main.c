@@ -18,7 +18,6 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
-/*
 static unsigned int readio(unsigned int base, unsigned int offset)
 {
 
@@ -28,6 +27,7 @@ static unsigned int readio(unsigned int base, unsigned int offset)
 
 }
 
+/*
 static void writeio(unsigned int base, unsigned int reg, unsigned int value)
 {
 
@@ -39,6 +39,75 @@ static void writeio(unsigned int base, unsigned int reg, unsigned int value)
 
 }
 */
+
+void apic_debug_ioapic(void)
+{
+
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+
+    if (madt)
+    {
+
+        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+        unsigned int madtend = (unsigned int)madt + madt->base.length;
+
+        while (madttable < madtend)
+        {
+
+            struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
+
+            if (entry->type == 1)
+            {
+
+                struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+                unsigned int ioapicid;
+                unsigned int ioapicversion;
+                unsigned int ioapicarb;
+                unsigned int version;
+                unsigned int max;
+                unsigned int j;
+
+                DEBUG_FMT3(DEBUG_INFO, "ioapic id %c address 0x%8Hu intbase %u", &ioapic->id, &ioapic->address, &ioapic->intbase);
+
+                ioapicid = readio(ioapic->address, 0);
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
+
+                ioapicversion = readio(ioapic->address, 1);
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
+
+                ioapicarb = readio(ioapic->address, 2);
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic reg2 %u", &ioapicarb);
+
+                version = ioapicversion & 0xFF;
+                max = ((ioapicversion >> 8) & 0xFF) + 1;
+
+                DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
+                DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
+
+                for (j = 0; j < 48; j++)
+                {
+
+                    unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
+                    unsigned int value1 = readio(ioapic->address, 0x10 + j * 2 + 1);
+                    unsigned int vector = value0 & 0xFF;
+
+                    DEBUG_FMT2(DEBUG_INFO, "ioapic regs %H8u:%H8u", &value1, &value0);
+                    DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
+
+                }
+
+            }
+
+            madttable += entry->length;
+
+        }
+
+    }
+
+}
 
 void apic_debug(void)
 {
@@ -71,45 +140,6 @@ void apic_debug(void)
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
 
                 DEBUG_FMT3(DEBUG_INFO, "ioapic id %c address 0x%8Hu intbase %u", &ioapic->id, &ioapic->address, &ioapic->intbase);
-
-/*
-                unsigned int ioapicid;
-                unsigned int ioapicversion;
-                unsigned int ioapicarb;
-                unsigned int version;
-                unsigned int max;
-                unsigned int j;
-
-                ioapicid = readio(ioapic->address, 0);
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
-
-                ioapicversion = readio(ioapic->address, 1);
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
-
-                ioapicarb = readio(ioapic->address, 2);
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic reg2 %u", &ioapicarb);
-
-                version = ioapicversion & 0xFF;
-                max = ((ioapicversion >> 8) & 0xFF) + 1;
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
-                DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
-
-                for (j = 0; j < 48; j++)
-                {
-
-                    unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
-                    unsigned int value1 = readio(ioapic->address, 0x10 + j * 2 + 1);
-                    unsigned int vector = value0 & 0xFF;
-
-                    DEBUG_FMT2(DEBUG_INFO, "ioapic regs %H8u:%H8u", &value1, &value0);
-                    DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
-
-                }
-*/
 
             }
 
