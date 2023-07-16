@@ -92,10 +92,8 @@ void apic_debug_ioapic(void)
 
                     unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
                     unsigned int value1 = readio(ioapic->address, 0x10 + j * 2 + 1);
-                    unsigned int vector = value0 & 0xFF;
 
                     DEBUG_FMT2(DEBUG_INFO, "ioapic regs %H8u:%H8u", &value1, &value0);
-                    DEBUG_FMT1(DEBUG_INFO, "ioapic vector %u", &vector);
 
                 }
 
