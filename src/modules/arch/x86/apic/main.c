@@ -18,7 +18,7 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static unsigned int mmio;
 
-static unsigned int readio(unsigned int base, unsigned int offset)
+static volatile unsigned int readio(unsigned int base, unsigned int offset)
 {
 
     *(volatile unsigned int *)(base) = offset;
@@ -27,18 +27,13 @@ static unsigned int readio(unsigned int base, unsigned int offset)
 
 }
 
-/*
-static void writeio(unsigned int base, unsigned int reg, unsigned int value)
+static void writeio(unsigned int base, unsigned int offset, unsigned int value)
 {
 
-    volatile unsigned int *ioregsel = (volatile unsigned int *)(base);
-    volatile unsigned int *ioregwin = (volatile unsigned int *)(base + 0x10);
-
-    *ioregsel = reg;
-    *ioregwin = value;
+    *(volatile unsigned int *)(base) = offset;
+    *(volatile unsigned int *)(base + 0x10) = value;
 
 }
-*/
 
 void apic_debug_ioapic(void)
 {
@@ -208,10 +203,22 @@ static void detect(void)
             {
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+                unsigned int j;
 
                 ioapics[ioapic->id].detected = 1;
                 ioapics[ioapic->id].address = ioapic->address;
                 ioapics[ioapic->id].intbase = ioapic->intbase;
+
+                for (j = 0; j < 24; j++)
+                {
+
+                    unsigned int directory = cpu_getcr3();
+
+                    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
+                    writeio(ioapic->address, 0x10 + j * 2, (1 << 16));
+                    cpu_setcr3(directory);
+
+                }
 
                 /*arch_mapuncached(10 + ioapic->id, ioapics[ioapic->id].address, ioapics[ioapic->id].address, 0x1000);*/
 
