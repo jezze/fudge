@@ -87,7 +87,7 @@ void apic_debug_ioapic(void)
                 DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
                 DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
 
-                for (j = 0; j < 48; j++)
+                for (j = 0; j < 24; j++)
                 {
 
                     unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
