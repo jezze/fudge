@@ -27,6 +27,7 @@ static volatile unsigned int readio(unsigned int base, unsigned int offset)
 
 }
 
+/*
 static void writeio(unsigned int base, unsigned int offset, unsigned int value)
 {
 
@@ -34,6 +35,7 @@ static void writeio(unsigned int base, unsigned int offset, unsigned int value)
     *(volatile unsigned int *)(base + 0x10) = value;
 
 }
+*/
 
 void apic_debug_ioapic(void)
 {
@@ -55,34 +57,16 @@ void apic_debug_ioapic(void)
             {
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-                unsigned int ioapicid;
-                unsigned int ioapicversion;
-                unsigned int ioapicarb;
-                unsigned int version;
-                unsigned int max;
+                unsigned int ioapicid = readio(ioapic->address, 0);
+                unsigned int ioapicversion = readio(ioapic->address, 1);
+                unsigned int id = ((ioapicid >> 24) & 0x0F);
+                unsigned int version = ioapicversion & 0xFF;
+                unsigned int max = ((ioapicversion >> 16) & 0xFF) + 1;
                 unsigned int j;
 
-                DEBUG_FMT3(DEBUG_INFO, "ioapic id %c address 0x%8Hu intbase %u", &ioapic->id, &ioapic->address, &ioapic->intbase);
+                DEBUG_FMT3(DEBUG_INFO, "ioapic id %u version %u max %u", &id, &version, &max);
 
-                ioapicid = readio(ioapic->address, 0);
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic reg0 %u", &ioapicid);
-
-                ioapicversion = readio(ioapic->address, 1);
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic reg1 %u", &ioapicversion);
-
-                ioapicarb = readio(ioapic->address, 2);
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic reg2 %u", &ioapicarb);
-
-                version = ioapicversion & 0xFF;
-                max = ((ioapicversion >> 8) & 0xFF) + 1;
-
-                DEBUG_FMT1(DEBUG_INFO, "ioapic version %u", &version);
-                DEBUG_FMT1(DEBUG_INFO, "ioapic max %u", &max);
-
-                for (j = 0; j < 24; j++)
+                for (j = 0; j < max; j++)
                 {
 
                     unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
@@ -203,24 +187,10 @@ static void detect(void)
             {
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-                unsigned int j;
 
                 ioapics[ioapic->id].detected = 1;
                 ioapics[ioapic->id].address = ioapic->address;
                 ioapics[ioapic->id].intbase = ioapic->intbase;
-
-                for (j = 0; j < 24; j++)
-                {
-
-                    unsigned int directory = cpu_getcr3();
-
-                    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
-                    writeio(ioapic->address, 0x10 + j * 2, (1 << 16));
-                    cpu_setcr3(directory);
-
-                }
-
-                /*arch_mapuncached(10 + ioapic->id, ioapics[ioapic->id].address, ioapics[ioapic->id].address, 0x1000);*/
 
             }
 
@@ -395,7 +365,7 @@ void module_init(void)
 
         mmio = (msrdata.eax & 0xFFFFF000);
 
-        arch_mapuncached(7, mmio, mmio, 0x400000);
+        arch_mapuncached(7, 0xFEC00000, 0xFEC00000, 0x400000);
         detect();
         idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
         idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
