@@ -10,12 +10,14 @@
 #include <modules/arch/x86/acpi/acpi.h>
 #include "apic.h"
 
+#define ROUTINES                        256
 #define MSR_APIC                        0x1B
 
 static struct {unsigned int detected;} lapics[256];
 static struct {unsigned int detected; unsigned int address; unsigned int intbase;} ioapics[256];
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
+static void (*routines[ROUTINES])(unsigned int irq);
 static unsigned int mmio;
 
 static volatile unsigned int readio(unsigned int base, unsigned int offset)
@@ -277,14 +279,18 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
-    return 0;
+    routines[irq] = routine;
+
+    return 1;
 
 }
 
 unsigned int apic_unsetroutine(unsigned int irq)
 {
 
-    return 0;
+    routines[irq] = 0;
+
+    return 1;
 
 }
 
