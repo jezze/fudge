@@ -66,10 +66,18 @@
 
 void apic_debug_ioapic(void);
 void apic_debug(void);
+void apic_setupisrs(void);
 unsigned int apic_checklapic(unsigned int id);
 unsigned int apic_checkioapic(unsigned int id);
 unsigned int apic_getid(void);
 void apic_test(void);
+void apic_isr01(void);
+void apic_isr02(void);
+void apic_isr03(void);
+void apic_isr04(void);
+void apic_isr08(void);
+void apic_isr0C(void);
+void apic_isr0E(void);
 void apic_spurious(void);
 unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq));
 unsigned int apic_unsetroutine(unsigned int irq);

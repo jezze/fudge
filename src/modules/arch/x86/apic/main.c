@@ -29,7 +29,6 @@ static volatile unsigned int readio(unsigned int base, unsigned int offset)
 
 }
 
-/*
 static void writeio(unsigned int base, unsigned int offset, unsigned int value)
 {
 
@@ -37,7 +36,6 @@ static void writeio(unsigned int base, unsigned int offset, unsigned int value)
     *(volatile unsigned int *)(base + 0x10) = value;
 
 }
-*/
 
 void apic_debug_ioapic(void)
 {
@@ -145,6 +143,55 @@ void apic_debug(void)
         }
 
     }
+
+}
+
+void apic_setupisrs(void)
+{
+
+    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
+
+    if (madt)
+    {
+
+        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
+        unsigned int madtend = (unsigned int)madt + madt->base.length;
+
+        while (madttable < madtend)
+        {
+
+            struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
+
+            if (entry->type == 1)
+            {
+
+                struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+
+                idt_setdescriptor(&idt->pointer, 0x61, apic_isr01, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                idt_setdescriptor(&idt->pointer, 0x62, apic_isr02, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                idt_setdescriptor(&idt->pointer, 0x63, apic_isr03, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                idt_setdescriptor(&idt->pointer, 0x64, apic_isr04, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                idt_setdescriptor(&idt->pointer, 0x68, apic_isr08, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                idt_setdescriptor(&idt->pointer, 0x6C, apic_isr0C, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                idt_setdescriptor(&idt->pointer, 0x6E, apic_isr0E, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                writeio(ioapic->address, 0x10 + 0x01 * 2, 0x61);
+                writeio(ioapic->address, 0x10 + 0x02 * 2, 0x62);
+                writeio(ioapic->address, 0x10 + 0x03 * 2, 0x63);
+                writeio(ioapic->address, 0x10 + 0x04 * 2, 0x64);
+                writeio(ioapic->address, 0x10 + 0x08 * 2, 0x68);
+                writeio(ioapic->address, 0x10 + 0x0C * 2, 0x6C);
+                writeio(ioapic->address, 0x10 + 0x0E * 2, 0x6E);
+
+            }
+
+            madttable += entry->length;
+
+        }
+
+    }
+
+    idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
 }
 
@@ -276,6 +323,83 @@ unsigned short apic_interrupt(struct cpu_general general, struct cpu_interrupt i
 
 }
 
+unsigned short apic_interrupt01(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    routines[0x01](0x01);
+
+    apic_outd(APIC_REG_EOI, 0);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short apic_interrupt02(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    routines[0x00](0x00);
+
+    apic_outd(APIC_REG_EOI, 0);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short apic_interrupt03(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    routines[0x03](0x03);
+
+    apic_outd(APIC_REG_EOI, 0);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short apic_interrupt04(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    routines[0x04](0x04);
+
+    apic_outd(APIC_REG_EOI, 0);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short apic_interrupt08(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    routines[0x08](0x08);
+
+    apic_outd(APIC_REG_EOI, 0);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short apic_interrupt0C(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    routines[0x0C](0x0C);
+
+    apic_outd(APIC_REG_EOI, 0);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short apic_interrupt0E(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    routines[0x0E](0x0E);
+
+    apic_outd(APIC_REG_EOI, 0);
+
+    return arch_resume(&general, &interrupt);
+
+}
+
 unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
@@ -373,8 +497,6 @@ void module_init(void)
 
         arch_mapuncached(7, 0xFEC00000, 0xFEC00000, 0x400000);
         detect();
-        idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-        idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
     }
 
