@@ -261,7 +261,7 @@ unsigned short arch_device(struct cpu_general general, struct cpu_interrupt inte
 unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: double fault");
+    DEBUG_FMT1(DEBUG_INFO, "exception: double fault %u", &zero);
 
     return arch_resume(&general, &interrupt);
 
@@ -270,7 +270,7 @@ unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, s
 unsigned short arch_tss(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: invalid tss");
+    DEBUG_FMT1(DEBUG_INFO, "exception: invalid tss %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -279,7 +279,7 @@ unsigned short arch_tss(struct cpu_general general, unsigned int selector, struc
 unsigned short arch_segment(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: segment not present");
+    DEBUG_FMT1(DEBUG_INFO, "exception: segment not present %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -288,7 +288,7 @@ unsigned short arch_segment(struct cpu_general general, unsigned int selector, s
 unsigned short arch_stack(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: stack segment fault");
+    DEBUG_FMT1(DEBUG_INFO, "exception: stack segment fault %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -297,7 +297,7 @@ unsigned short arch_stack(struct cpu_general general, unsigned int selector, str
 unsigned short arch_generalfault(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: general fault");
+    DEBUG_FMT1(DEBUG_INFO, "exception: general fault %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -309,7 +309,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     struct core *core = kernel_getcore();
     unsigned int address = cpu_getcr2();
 
-    DEBUG_FMT1(DEBUG_INFO, "exception: page fault at 0x%H8u", &address);
+    DEBUG_FMT2(DEBUG_INFO, "exception: page fault at 0x%H8u type %u", &address, &type);
 
     if (core->task)
     {
