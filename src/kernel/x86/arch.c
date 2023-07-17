@@ -62,7 +62,7 @@ static unsigned int spawn(unsigned int task, void *stack)
         kernel_copydescriptor(ntask, FILE_PP, task, args->pdescriptor);
         kernel_copydescriptor(ntask, FILE_PW, task, args->wdescriptor);
 
-        return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
+        return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
 
     }
 
@@ -334,10 +334,21 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             struct mmu_directory *kdirectory = getkerneldirectory();
             unsigned int index = address >> 22;
 
-            if (kdirectory->tables[index])
+            if (index != 0 && kdirectory->tables[index])
+            {
+
                 directory->tables[index] = kdirectory->tables[index];
+
+            }
+
             else
+            {
+
+                DEBUG_FMT2(DEBUG_INFO, "Killing task %u on core %u", &core->task, &core->id);
+
                 kernel_signal(core->task, TASK_SIGNAL_KILL);
+
+            }
 
         }
 
@@ -441,7 +452,7 @@ void arch_setup2(void)
         initmap(ntask);
         kernel_setdescriptor(ntask, FILE_PP, service, service->child(service->child(service->root(), "bin", 3), "init", 4));
         kernel_setdescriptor(ntask, FILE_PW, service, service->root());
-        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL, FILE_PP);
+        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
 
     }
 

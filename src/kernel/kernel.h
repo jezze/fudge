@@ -1,4 +1,4 @@
-#define KERNEL_TASKS                    64
+#define KERNEL_TASKS                    16
 #define KERNEL_LINKS                    128
 #define KERNEL_DESCRIPTORS              32
 
