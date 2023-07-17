@@ -192,6 +192,8 @@ void pic_disable(void)
 void module_init(void)
 {
 
+    unsigned int i;
+
     setchip(REG_COMMAND0, REG_DATA0, REG_DATA_VECTOR0, 0x04);
     setchip(REG_COMMAND1, REG_DATA1, REG_DATA_VECTOR1, 0x02);
     setmask(REG_DATA0, 0xFB);
@@ -208,22 +210,13 @@ void module_init(void)
     while (getstatus(REG_COMMAND0, REG_COMMAND_ISR))
         io_outb(REG_COMMAND0, REG_COMMAND_EOI);
 
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x00, pic_routine00, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x01, pic_routine01, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x02, pic_routine02, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x03, pic_routine03, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x04, pic_routine04, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x05, pic_routine05, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x06, pic_routine06, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + 0x07, pic_routine07, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x00, pic_routine08, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x01, pic_routine09, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x02, pic_routine0A, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x03, pic_routine0B, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x04, pic_routine0C, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x05, pic_routine0D, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x06, pic_routine0E, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + 0x07, pic_routine0F, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    for (i = 0; i < 8; i++)
+    {
+
+        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + i, (void (*)(void))((unsigned int)pic_isr0 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + i, (void (*)(void))((unsigned int)pic_isr1 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+
+    }
 
 }
 
