@@ -350,6 +350,9 @@ unsigned short apic_interruptnone(struct cpu_general general, struct cpu_interru
 unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
+    if (irq >= ROUTINES)
+        return 0;
+
     routines[irq] = routine;
 
     return 1;
@@ -358,6 +361,9 @@ unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq)
 
 unsigned int apic_unsetroutine(unsigned int irq)
 {
+
+    if (irq >= ROUTINES)
+        return 0;
 
     routines[irq] = 0;
 
