@@ -89,7 +89,7 @@ unsigned short pic_getisr(void)
 
 }
 
-unsigned short pic_interrupt(struct cpu_general general, unsigned int index, unsigned int slave, struct cpu_interrupt interrupt)
+unsigned short pic_interrupt1(struct cpu_general general, unsigned int index, struct cpu_interrupt interrupt)
 {
 
     if (index == 15)
@@ -115,7 +115,25 @@ unsigned short pic_interrupt(struct cpu_general general, unsigned int index, uns
 
     }
 
-    else if (index == 7)
+    else
+    {
+
+        if (routines[index])
+            routines[index](index);
+
+        io_outb(REG_COMMAND1, REG_COMMAND_EOI);
+        io_outb(REG_COMMAND0, REG_COMMAND_EOI);
+
+    }
+
+    return arch_resume(&general, &interrupt);
+
+}
+
+unsigned short pic_interrupt0(struct cpu_general general, unsigned int index, struct cpu_interrupt interrupt)
+{
+
+    if (index == 7)
     {
 
         if (getstatus(REG_COMMAND0, REG_COMMAND_ISR))
@@ -135,9 +153,6 @@ unsigned short pic_interrupt(struct cpu_general general, unsigned int index, uns
 
         if (routines[index])
             routines[index](index);
-
-        if (slave)
-            io_outb(REG_COMMAND1, REG_COMMAND_EOI);
 
         io_outb(REG_COMMAND0, REG_COMMAND_EOI);
 

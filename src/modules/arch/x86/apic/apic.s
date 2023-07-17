@@ -5,6 +5,7 @@
 
 .section .text
 
+.align 16
 .global apic_isr
 apic_isr:
     .align 8
@@ -56,6 +57,7 @@ apic_isr:
     pushl $0x0F
     jmp apic_common
 
+.align 16
 .global apic_test
 apic_test:
     pusha
@@ -72,10 +74,12 @@ apic_test:
     popa
     iret
 
+.align 16
 .global apic_spurious
 apic_spurious:
     iret
 
+.align 16
 apic_common:
     pusha
     movw %ss, %ax
