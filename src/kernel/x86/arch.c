@@ -309,7 +309,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     struct core *core = kernel_getcore();
     unsigned int address = cpu_getcr2();
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: page fault");
+    DEBUG_FMT1(DEBUG_INFO, "exception: page fault at 0x%H8u", &address);
 
     if (core->task)
     {
