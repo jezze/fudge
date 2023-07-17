@@ -5,83 +5,54 @@
 
 .section .text
 
-.global apic_isr00
-apic_isr00:
+.global apic_isr
+apic_isr:
+    .align 8
     pushl $0x00
     jmp apic_common
-
-.global apic_isr01
-apic_isr01:
+    .align 8
     pushl $0x01
     jmp apic_common
-
-.global apic_isr02
-apic_isr02:
+    .align 8
     pushl $0x02
     jmp apic_common
-
-.global apic_isr03
-apic_isr03:
+    .align 8
     pushl $0x03
     jmp apic_common
-
-.global apic_isr04
-apic_isr04:
+    .align 8
     pushl $0x04
     jmp apic_common
-
-.global apic_isr05
-apic_isr05:
+    .align 8
     pushl $0x05
     jmp apic_common
-
-.global apic_isr06
-apic_isr06:
+    .align 8
     pushl $0x06
     jmp apic_common
-
-.global apic_isr07
-apic_isr07:
+    .align 8
     pushl $0x07
     jmp apic_common
-
-.global apic_isr08
-apic_isr08:
+    .align 8
     pushl $0x08
     jmp apic_common
-
-.global apic_isr09
-apic_isr09:
+    .align 8
     pushl $0x09
     jmp apic_common
-
-.global apic_isr0A
-apic_isr0A:
+    .align 8
     pushl $0x0A
     jmp apic_common
-
-.global apic_isr0B
-apic_isr0B:
+    .align 8
     pushl $0x0B
     jmp apic_common
-
-.global apic_isr0C
-apic_isr0C:
+    .align 8
     pushl $0x0C
     jmp apic_common
-
-.global apic_isr0D
-apic_isr0D:
+    .align 8
     pushl $0x0D
     jmp apic_common
-
-.global apic_isr0E
-apic_isr0E:
+    .align 8
     pushl $0x0E
     jmp apic_common
-
-.global apic_isr0F
-apic_isr0F:
+    .align 8
     pushl $0x0F
     jmp apic_common
 
