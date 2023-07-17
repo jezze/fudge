@@ -11,14 +11,15 @@
 #include "apic.h"
 
 #define ROUTINES                        256
+#define OVERRIDES                       16
 #define MSR_APIC                        0x1B
 
 static struct {unsigned int detected;} lapics[256];
-static struct {unsigned int detected; unsigned int address; unsigned int intbase;} ioapics[256];
+static struct {unsigned int detected; unsigned int address; unsigned int gsibase;} ioapics[256];
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
-static void (*routines[ROUTINES])(unsigned int irq);
-static unsigned int overrides[16];
+static void (*routines[ROUTINES])(unsigned int gsi);
+static unsigned int overrides[OVERRIDES];
 static unsigned int mmio;
 
 static volatile unsigned int readio(unsigned int base, unsigned int offset)
@@ -117,7 +118,7 @@ void apic_debug(void)
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
 
-                DEBUG_FMT3(DEBUG_INFO, "ioapic id %c address 0x%8Hu intbase %u", &ioapic->id, &ioapic->address, &ioapic->intbase);
+                DEBUG_FMT3(DEBUG_INFO, "ioapic id %c address 0x%8Hu gsibase %u", &ioapic->id, &ioapic->address, &ioapic->gsibase);
 
             }
 
@@ -126,7 +127,7 @@ void apic_debug(void)
 
                 struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
 
-                DEBUG_FMT4(DEBUG_INFO, "ioapic override bus %c irq %c gsi %u flags %4Hh", &override->bus, &override->irq, &override->intbase, &override->flags);
+                DEBUG_FMT4(DEBUG_INFO, "ioapic override bus %c irq %c gsi %u flags %4Hh", &override->bus, &override->irq, &override->gsi, &override->flags);
 
             }
 
@@ -168,30 +169,25 @@ void apic_setupisrs(void)
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
 
-                idt_setdescriptor(&idt->pointer, 0x61, (void (*)(void))((unsigned int)apic_isr + 8 * 0x01), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                idt_setdescriptor(&idt->pointer, 0x62, (void (*)(void))((unsigned int)apic_isr + 8 * 0x02), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                idt_setdescriptor(&idt->pointer, 0x63, (void (*)(void))((unsigned int)apic_isr + 8 * 0x03), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                idt_setdescriptor(&idt->pointer, 0x64, (void (*)(void))((unsigned int)apic_isr + 8 * 0x04), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                idt_setdescriptor(&idt->pointer, 0x68, (void (*)(void))((unsigned int)apic_isr + 8 * 0x08), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                idt_setdescriptor(&idt->pointer, 0x6C, (void (*)(void))((unsigned int)apic_isr + 8 * 0x0C), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                idt_setdescriptor(&idt->pointer, 0x6E, (void (*)(void))((unsigned int)apic_isr + 8 * 0x0E), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                writeio(ioapic->address, 0x10 + 0x01 * 2, 0x61);
-                writeio(ioapic->address, 0x10 + 0x02 * 2, 0x62);
-                writeio(ioapic->address, 0x10 + 0x03 * 2, 0x63);
-                writeio(ioapic->address, 0x10 + 0x04 * 2, 0x64);
-                writeio(ioapic->address, 0x10 + 0x08 * 2, 0x68);
-                writeio(ioapic->address, 0x10 + 0x0C * 2, 0x6C);
-                writeio(ioapic->address, 0x10 + 0x0E * 2, 0x6E);
+                if (ioapic->gsibase == 0)
+                {
 
-            }
+                    idt_setdescriptor(&idt->pointer, 0x61, (void (*)(void))((unsigned int)apic_isr + 8 * 0x01), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x62, (void (*)(void))((unsigned int)apic_isr + 8 * 0x02), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x63, (void (*)(void))((unsigned int)apic_isr + 8 * 0x03), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x64, (void (*)(void))((unsigned int)apic_isr + 8 * 0x04), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x68, (void (*)(void))((unsigned int)apic_isr + 8 * 0x08), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x6C, (void (*)(void))((unsigned int)apic_isr + 8 * 0x0C), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x6E, (void (*)(void))((unsigned int)apic_isr + 8 * 0x0E), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    writeio(ioapic->address, 0x10 + 0x01 * 2, 0x61);
+                    writeio(ioapic->address, 0x10 + 0x02 * 2, 0x62);
+                    writeio(ioapic->address, 0x10 + 0x03 * 2, 0x63);
+                    writeio(ioapic->address, 0x10 + 0x04 * 2, 0x64);
+                    writeio(ioapic->address, 0x10 + 0x08 * 2, 0x68);
+                    writeio(ioapic->address, 0x10 + 0x0C * 2, 0x6C);
+                    writeio(ioapic->address, 0x10 + 0x0E * 2, 0x6E);
 
-            if (entry->type == 2)
-            {
-
-                struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
-
-                if (override->intbase < 16)
-                    overrides[override->intbase] = override->irq;
+                }
 
             }
 
@@ -250,14 +246,17 @@ static void detect(void)
 
                 ioapics[ioapic->id].detected = 1;
                 ioapics[ioapic->id].address = ioapic->address;
-                ioapics[ioapic->id].intbase = ioapic->intbase;
+                ioapics[ioapic->id].gsibase = ioapic->gsibase;
 
             }
 
             if (entry->type == 2)
             {
 
-                /* override io apic */
+                struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
+
+                if (override->gsi < 16)
+                    overrides[override->gsi] = override->irq;
 
             }
 
@@ -328,9 +327,9 @@ unsigned int apic_getid(void)
 unsigned short apic_interrupt(struct cpu_general general, unsigned int index, struct cpu_interrupt interrupt)
 {
 
-    unsigned int gsi = overrides[index];
+    unsigned int gsi = (index < OVERRIDES) ? overrides[index] : index;
 
-    if (routines[gsi])
+    if (gsi < ROUTINES && routines[gsi])
         routines[gsi](gsi);
 
     apic_outd(APIC_REG_EOI, 0);
@@ -429,7 +428,7 @@ void module_init(void)
 
     cpuid_getdata(CPUID_FEATURES0, &data);
 
-    for (i = 0; i < 16; i++)
+    for (i = 0; i < OVERRIDES; i++)
         overrides[i] = i;
 
 /*

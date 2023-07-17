@@ -47,7 +47,7 @@ struct acpi_madt_ioapic
     unsigned char id;
     unsigned char reserved;
     unsigned int address;
-    unsigned int intbase;
+    unsigned int gsibase;
 
 };
 
@@ -57,7 +57,7 @@ struct acpi_madt_ioapic_iso
     struct acpi_madt_entry base;
     unsigned char bus;
     unsigned char irq;
-    unsigned int intbase;
+    unsigned int gsi;
     unsigned short flags;
 
 };
