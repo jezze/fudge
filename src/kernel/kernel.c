@@ -56,7 +56,7 @@ static void unblocktasks(void)
 
 }
 
-static void checksignals(struct taskrow *taskrow)
+static void checksignals(struct core *core, struct taskrow *taskrow)
 {
 
     struct task *task = &taskrow->task;
@@ -82,7 +82,7 @@ static void checksignals(struct taskrow *taskrow)
     {
 
         if (task_transition(task, TASK_STATE_ASSIGNED))
-            coreassign(item);
+            list_add(&core->tasks, item);
 
     }
 
@@ -179,7 +179,7 @@ unsigned int kernel_schedule(struct core *core)
 {
 
     if (core->task)
-        checksignals(&taskrows[core->task]);
+        checksignals(core, &taskrows[core->task]);
 
     unblocktasks();
 
