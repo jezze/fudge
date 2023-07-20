@@ -348,31 +348,33 @@ unsigned int kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int 
                 task->thread.ip = format->findentry(&task->node);
                 task->thread.sp = sp;
 
+                if (task->thread.ip)
+                {
+
+                    if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
+                        coreassign(&taskrow->item);
+
+                    return taskid;
+
+                }
+
+                else
+                {
+
+                    if (task_transition(&taskrow->task, TASK_STATE_DEAD))
+                        list_add(&deadtasks, &taskrow->item);
+
+                    return 0;
+
+                }
+
             }
 
         }
 
     }
 
-    if (task->thread.ip)
-    {
-
-        if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
-            coreassign(&taskrow->item);
-
-        return taskid;
-
-    }
-
-    else
-    {
-
-        if (task_transition(&taskrow->task, TASK_STATE_DEAD))
-            list_add(&deadtasks, &taskrow->item);
-
-        return 0;
-
-    }
+    return 0;
 
 }
 
