@@ -53,9 +53,20 @@ static unsigned int spawn(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int wdescriptor;} *args = stack;
-    unsigned int ntask = kernel_createtask();
+    struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
+    struct descriptor *wdescriptor = kernel_getdescriptor(task, args->wdescriptor);
+    unsigned int ntask;
 
-    if (ntask)
+    if (!descriptor_check(pdescriptor) || !descriptor_check(wdescriptor))
+    {
+
+        DEBUG_FMT0(DEBUG_ERROR, "spawn check failed");
+
+        return 0;
+
+    }
+
+    if ((ntask = kernel_createtask()))
     {
 
         initmap(ntask);
@@ -63,6 +74,13 @@ static unsigned int spawn(unsigned int task, void *stack)
         kernel_copydescriptor(ntask, FILE_PW, task, args->wdescriptor);
 
         return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
+
+    }
+
+    else
+    {
+
+        DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
 
     }
 
