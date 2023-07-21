@@ -268,8 +268,14 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 
     struct taskrow *taskrow = &taskrows[source];
     struct mailbox *mailbox = &taskrow->mailbox;
+    unsigned int c;
 
-    return mailbox_pick(mailbox, message, data);
+    c = mailbox_pick(mailbox, message, data);
+
+    if (!c)
+        kernel_signal(source, TASK_SIGNAL_BLOCK);
+
+    return c;
 
 }
 
@@ -279,10 +285,16 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
     struct taskrow *taskrow = &taskrows[target];
     struct mailbox *mailbox = &taskrow->mailbox;
     struct message message;
+    unsigned int c;
 
     message_init(&message, event, source, count);
 
-    return mailbox_place(mailbox, &message, data);
+    c = mailbox_place(mailbox, &message, data);
+
+    if (!c)
+        kernel_signal(target, TASK_SIGNAL_UNBLOCK);
+
+    return c;
 
 }
 

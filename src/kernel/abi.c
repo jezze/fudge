@@ -344,7 +344,6 @@ static unsigned int pick(unsigned int task, void *stack)
 {
 
     struct {void *caller; struct message *message; void *data;} *args = stack;
-    unsigned int count;
 
     if (!checkbuffer(task, args->message, sizeof (struct message)) || !checkbuffer(task, args->data, MESSAGE_SIZE))
     {
@@ -355,12 +354,7 @@ static unsigned int pick(unsigned int task, void *stack)
 
     }
 
-    count = kernel_pick(task, args->message, args->data);
-
-    if (!count)
-        kernel_signal(task, TASK_SIGNAL_BLOCK);
-
-    return count;
+    return kernel_pick(task, args->message, args->data);
 
 }
 
@@ -368,7 +362,6 @@ static unsigned int place(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int id; unsigned int event; unsigned int count; void *data;} *args = stack;
-    unsigned int count;
 
     if (!checkzerobuffer(task, args->data, args->count))
     {
@@ -379,12 +372,7 @@ static unsigned int place(unsigned int task, void *stack)
 
     }
 
-    count = kernel_place(task, args->id, args->event, args->count, args->data);
-
-    if (!count)
-        kernel_signal(args->id, TASK_SIGNAL_UNBLOCK);
-
-    return count;
+    return kernel_place(task, args->id, args->event, args->count, args->data);
 
 }
 
