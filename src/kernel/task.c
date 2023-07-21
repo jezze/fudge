@@ -22,6 +22,11 @@ void task_signal(struct task *task, unsigned int signal)
 
         break;
 
+    case TASK_SIGNAL_UNBLOCK:
+        task->signals.unblocks++;
+
+        break;
+
     }
 
     spinlock_release(&task->spinlock);
@@ -111,6 +116,7 @@ void task_resetsignals(struct task_signals *signals)
 
     signals->kills = 0;
     signals->blocks = 0;
+    signals->unblocks = 0;
 
 }
 
@@ -127,6 +133,7 @@ void task_initsignals(struct task_signals *signals)
 
     signals->kills = 0;
     signals->blocks = 0;
+    signals->unblocks = 0;
 
 }
 

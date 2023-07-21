@@ -6,12 +6,14 @@
 #define TASK_STATE_RUNNING              5
 #define TASK_SIGNAL_KILL                1
 #define TASK_SIGNAL_BLOCK               2
+#define TASK_SIGNAL_UNBLOCK             3
 
 struct task_signals
 {
 
     unsigned int kills;
     unsigned int blocks;
+    unsigned int unblocks;
 
 };
 

@@ -70,6 +70,14 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
     }
 
+    else if (task->signals.unblocks)
+    {
+
+        if (task_transition(task, TASK_STATE_ASSIGNED))
+            list_add(&core->tasks, item);
+
+    }
+
     else if (task->signals.blocks)
     {
 

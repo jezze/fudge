@@ -368,6 +368,7 @@ static unsigned int place(unsigned int task, void *stack)
 {
 
     struct {void *caller; unsigned int id; unsigned int event; unsigned int count; void *data;} *args = stack;
+    unsigned int count;
 
     if (!checkzerobuffer(task, args->data, args->count))
     {
@@ -378,7 +379,12 @@ static unsigned int place(unsigned int task, void *stack)
 
     }
 
-    return kernel_place(task, args->id, args->event, args->count, args->data);
+    count = kernel_place(task, args->id, args->event, args->count, args->data);
+
+    if (!count)
+        kernel_signal(task, TASK_SIGNAL_UNBLOCK);
+
+    return count;
 
 }
 
