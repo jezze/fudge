@@ -382,7 +382,7 @@ static unsigned int place(unsigned int task, void *stack)
     count = kernel_place(task, args->id, args->event, args->count, args->data);
 
     if (!count)
-        kernel_signal(task, TASK_SIGNAL_UNBLOCK);
+        kernel_signal(args->id, TASK_SIGNAL_UNBLOCK);
 
     return count;
 
