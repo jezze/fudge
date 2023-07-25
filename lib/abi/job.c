@@ -87,7 +87,13 @@ unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int w
     unsigned int i;
 
     if (!call_walk_absolute(FILE_L0, "/bin"))
+    {
+
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Bin directory not found\n");
+
         return 0;
+
+    }
 
     for (i = 0; i < job->count; i++)
     {
@@ -95,12 +101,24 @@ unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int w
         struct job_worker *worker = &job->workers[i];
 
         if (!(call_walk_relative(pdescriptor, FILE_L0, worker->program) || call_walk_absolute(pdescriptor, worker->program)))
+        {
+
+            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", &worker->program);
+
             return 0;
+
+        }
 
         worker->id = call_spawn(pdescriptor, wdescriptor);
 
         if (!worker->id)
+        {
+
+            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Job spawn failed\n");
+
             return 0;
+
+        }
 
     }
 
