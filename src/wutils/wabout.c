@@ -4,14 +4,14 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -29,7 +29,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + text in \"base\" wrap \"word\" content \"tomByrer (Tom Byrer)\"\n"
         "    + text in \"base\" wrap \"word\" content \"LemonDMN2\"\n";
 
-    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
 
 }
 

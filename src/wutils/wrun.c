@@ -32,7 +32,7 @@ static void handlehttppacket(void)
         {
 
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
-            channel_send_buffer(12345, EVENT_WMRENDERDATA, count, buffer);
+            channel_send_buffer(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, buffer);
 
         }
 
@@ -144,14 +144,14 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 

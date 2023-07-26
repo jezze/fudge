@@ -283,28 +283,28 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct taskrow *taskrow = &taskrows[target];
-    struct mailbox *mailbox = &taskrow->mailbox;
-    struct message message;
-    unsigned int c;
+    target = target < 0xFFFF ? stasks[target] : 0;
 
-    if (target >= 1000)
+    if (target)
     {
 
-        target = stasks[target];
-        taskrow = &taskrows[target];
-        mailbox = &taskrow->mailbox;
+        struct taskrow *taskrow = &taskrows[target];
+        struct mailbox *mailbox = &taskrow->mailbox;
+        struct message message;
+        unsigned int c;
+
+        message_init(&message, event, source, count);
+
+        c = mailbox_place(mailbox, &message, data);
+
+        if (!c)
+            kernel_signal(target, TASK_SIGNAL_UNBLOCK);
+
+        return c;
 
     }
 
-    message_init(&message, event, source, count);
-
-    c = mailbox_place(mailbox, &message, data);
-
-    if (!c)
-        kernel_signal(target, TASK_SIGNAL_UNBLOCK);
-
-    return c;
+    return 0;
 
 }
 
@@ -440,6 +440,8 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
+
+        stasks[i] = i;
 
     }
 

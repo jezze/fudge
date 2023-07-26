@@ -128,7 +128,7 @@ static void keypress(struct gb_s *gb, void *data)
         break;
 
     case KEYS_KEY_ESCAPE:
-        channel_send(12345, EVENT_WMUNMAP);
+        channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
         channel_close();
 
         break;
@@ -282,16 +282,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_relative(FILE_G3, FILE_L0, "ctrl"))
         PANIC();
 
-    channel_send(12345, EVENT_WMMAP);
-    channel_send(12345, EVENT_WMGRAB);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNGRAB);
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -352,6 +352,7 @@ void init(void)
     option_add("keyboard", "system:keyboard");
     option_add("timer", "system:timer/if:0");
     option_add("video", "system:video/if:0");
+    option_add("wm-service", "12345");
     channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);

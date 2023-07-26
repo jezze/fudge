@@ -14,7 +14,7 @@ static int accumulator;
 static void refresh(int value)
 {
 
-    channel_send_fmt1(12345, EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
+    channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
 
 }
 
@@ -83,14 +83,14 @@ static void updatevalue(int value)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -146,8 +146,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "        + button in \"row4\" label \"+\" span \"1\" onclick \"add\"\n"
         "        + button in \"row4\" label \"=\" span \"1\" onclick \"sum\"\n";
 
-    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data0);
-    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data1);
+    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data0);
+    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data1);
 
 }
 

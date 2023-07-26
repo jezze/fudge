@@ -18,7 +18,7 @@ static void sendlistrequest(unsigned int session, unsigned int id)
     listrequest.session = session;
     listrequest.id = id;
 
-    channel_send_buffer(1111, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
+    channel_send_buffer(option_getdecimal("fs-service"), EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
 
 }
 
@@ -32,7 +32,7 @@ static void sendreadrequest(unsigned int session, unsigned int id, unsigned int 
     readrequest.offset = offset;
     readrequest.count = count;
 
-    channel_send_buffer(1111, EVENT_READREQUEST, sizeof (struct event_readrequest), &readrequest);
+    channel_send_buffer(option_getdecimal("fs-service"), EVENT_READREQUEST, sizeof (struct event_readrequest), &readrequest);
 
 }
 
@@ -46,7 +46,7 @@ static void sendwalkrequest(unsigned int session, unsigned int parent, char *pat
     message.walkrequest.length = cstring_length(path);
 
     buffer_write(message.path, 64, path, message.walkrequest.length, 0);
-    channel_send_buffer(1111, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
+    channel_send_buffer(option_getdecimal("fs-service"), EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
 
 }
 

@@ -24,13 +24,13 @@ static void update(void)
 
     count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
-    channel_send_fmt2(12345, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input1, buffer, CONTENTSIZE);
     cursor = count;
     count += ring_readcopy(&input2, buffer + count, CONTENTSIZE);
 
-    channel_send_fmt3(12345, EVENT_WMRENDERDATA, "= input cursor \"%u\" content \"%w \"\n", &cursor, buffer, &count);
+    channel_send_fmt3(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= input cursor \"%u\" content \"%w \"\n", &cursor, buffer, &count);
 
 }
 
@@ -352,14 +352,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     call_walk_duplicate(FILE_G8, FILE_PW);
-    channel_send(12345, EVENT_WMMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -374,7 +374,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
         "      + textedit id \"input\" in \"output\" wrap \"char\" content \" \"\n";
 
-    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
 
 }
 

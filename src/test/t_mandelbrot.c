@@ -234,24 +234,24 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_relative(FILE_G3, FILE_L0, "colormap"))
         PANIC();
 
-    channel_send(12345, EVENT_WMMAP);
-    channel_send(12345, EVENT_WMGRAB);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNGRAB);
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
 static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNGRAB);
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -310,6 +310,7 @@ void init(void)
     option_add("bpp", "4");
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
+    option_add("wm-service", "12345");
     channel_autoclose(EVENT_MAIN, 0);
     channel_autoclose(EVENT_MOUSEPRESS, 1);
     channel_bind(EVENT_MAIN, onmain);

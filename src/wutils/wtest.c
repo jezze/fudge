@@ -4,14 +4,14 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(12345, EVENT_WMUNMAP);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -28,7 +28,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\"\n"
         "    + image in \"base\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
 
-    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
 
 }
 
