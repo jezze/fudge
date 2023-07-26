@@ -624,9 +624,6 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_G0, option_getstring("wm-service")))
-        PANIC();
-
     if (!call_walk_absolute(FILE_L0, option_getstring("keyboard")))
         PANIC();
 
@@ -645,7 +642,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_relative(FILE_G3, FILE_L0, "event"))
         PANIC();
 
-    call_link(FILE_G0, 8000);
+    call_announce(option_getdecimal("wm-service"));
     call_link(FILE_G1, 8001);
     call_link(FILE_G2, 8002);
     call_link(FILE_G3, 8003);
@@ -674,7 +671,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     call_unlink(FILE_G3);
     call_unlink(FILE_G2);
     call_unlink(FILE_G1);
-    call_unlink(FILE_G0);
 
 }
 
@@ -826,11 +822,6 @@ static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
 static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_listen(source, EVENT_WMMAP);
-    channel_listen(source, EVENT_WMUNMAP);
-    channel_listen(source, EVENT_WMGRAB);
-    channel_listen(source, EVENT_WMUNGRAB);
-    channel_listen(source, EVENT_WMRENDERDATA);
     channel_send(source, EVENT_WMINIT);
 
 }
@@ -922,7 +913,7 @@ void init(void)
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
-    option_add("wm-service", "system:service/wm");
+    option_add("wm-service", "12345");
     option_add("keyboard", "system:keyboard");
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");

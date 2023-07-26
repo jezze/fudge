@@ -24,13 +24,13 @@ static void update(void)
 
     count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
-    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(12345, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input1, buffer, CONTENTSIZE);
     cursor = count;
     count += ring_readcopy(&input2, buffer + count, CONTENTSIZE);
 
-    channel_send_fmt3(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= input cursor \"%u\" content \"%w \"\n", &cursor, buffer, &count);
+    channel_send_fmt3(12345, EVENT_WMRENDERDATA, "= input cursor \"%u\" content \"%w \"\n", &cursor, buffer, &count);
 
 }
 
@@ -352,18 +352,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     call_walk_duplicate(FILE_G8, FILE_PW);
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("wm-service")))
-        PANIC();
-
-    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    channel_send(12345, EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+    channel_send(12345, EVENT_WMUNMAP);
 
 }
 
@@ -378,7 +374,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
         "      + textedit id \"input\" in \"output\" wrap \"char\" content \" \"\n";
 
-    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data);
 
 }
 
@@ -523,7 +519,7 @@ void init(void)
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
-    option_add("wm-service", "system:service/wm");
+    option_add("wm-service", "12345");
     option_add("slang", "initrd:/bin/slang");
     channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_ERROR, onerror);

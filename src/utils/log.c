@@ -12,14 +12,13 @@ static char *levels[5] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (call_walk_absolute(FILE_L0, option_getstring("klog")) && call_walk_absolute(FILE_L1, option_getstring("ulog")))
+    if (call_walk_absolute(FILE_L0, option_getstring("klog")))
     {
 
         struct message message;
         union {struct event_loginfo loginfo; char data[MESSAGE_SIZE];} data;
 
         call_link(FILE_L0, 8000);
-        call_link(FILE_L1, 8001);
 
         while (channel_poll(EVENT_LOGINFO, &message, &data))
         {
@@ -32,7 +31,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        call_unlink(FILE_L1);
         call_unlink(FILE_L0);
 
     }
@@ -49,7 +47,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("ulog", "system:service/log");
     option_add("klog", "system:log/messages");
     option_add("level", "4");
     channel_bind(EVENT_MAIN, onmain);

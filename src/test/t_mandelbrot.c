@@ -216,35 +216,6 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
-        PANIC();
-
-    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
-
-}
-
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-
-}
-
-static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
-    channel_close();
-
-}
-
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct ctrl_videosettings settings;
-
     if (!call_walk_absolute(FILE_L0, option_getstring("mouse")))
         PANIC();
 
@@ -260,7 +231,34 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_relative(FILE_G2, FILE_L0, "data"))
         PANIC();
 
-    channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
+    if (!call_walk_relative(FILE_G3, FILE_L0, "colormap"))
+        PANIC();
+
+    channel_send(12345, EVENT_WMMAP);
+    channel_send(12345, EVENT_WMGRAB);
+
+}
+
+static void onterm(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_send(12345, EVENT_WMUNGRAB);
+    channel_send(12345, EVENT_WMUNMAP);
+
+}
+
+static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_send(12345, EVENT_WMUNGRAB);
+    channel_send(12345, EVENT_WMUNMAP);
+
+}
+
+static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct ctrl_videosettings settings;
 
     settings.width = option_getdecimal("width");
     settings.height = option_getdecimal("height");
@@ -291,8 +289,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        call_walk_relative(FILE_L1, FILE_L0, "colormap");
-        call_notify(FILE_L1, EVENT_DATA, 768, colormap);
+        call_notify(FILE_G3, EVENT_DATA, 768, colormap);
 
     }
 
@@ -314,6 +311,7 @@ void init(void)
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
     channel_autoclose(EVENT_MAIN, 0);
+    channel_autoclose(EVENT_MOUSEPRESS, 1);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);

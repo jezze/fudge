@@ -433,6 +433,17 @@ static unsigned int notify(unsigned int task, void *stack)
 
 }
 
+static unsigned int announce(unsigned int task, void *stack)
+{
+
+    struct {void *caller; unsigned int id;} *args = stack;
+
+    kernel_announce(task, args->id);
+
+    return 0;
+
+}
+
 unsigned int abi_call(unsigned int index, unsigned int task, void *stack)
 {
 
@@ -468,7 +479,7 @@ void abi_setup(void)
     abi_setcallback(0x0F, place);
     abi_setcallback(0x10, link);
     abi_setcallback(0x11, unlink);
-    abi_setcallback(0x12, debug);
+    abi_setcallback(0x12, announce);
     abi_setcallback(0x13, debug);
     abi_setcallback(0x14, debug);
     abi_setcallback(0x15, debug);

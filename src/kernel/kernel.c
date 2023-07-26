@@ -10,6 +10,7 @@
 #include "descriptor.h"
 #include "kernel.h"
 
+static unsigned int stasks[0xFFFF];
 static struct taskrow {struct task task; struct mailbox mailbox; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
 static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
 static struct list freelinks;
@@ -287,6 +288,15 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
     struct message message;
     unsigned int c;
 
+    if (target >= 1000)
+    {
+
+        target = stasks[target];
+        taskrow = &taskrows[target];
+        mailbox = &taskrow->mailbox;
+
+    }
+
     message_init(&message, event, source, count);
 
     c = mailbox_place(mailbox, &message, data);
@@ -295,6 +305,13 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
         kernel_signal(target, TASK_SIGNAL_UNBLOCK);
 
     return c;
+
+}
+
+void kernel_announce(unsigned int task, unsigned int id)
+{
+
+    stasks[id] = task;
 
 }
 

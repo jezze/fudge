@@ -32,7 +32,7 @@ static void handlehttppacket(void)
         {
 
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
-            channel_send_buffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, buffer);
+            channel_send_buffer(12345, EVENT_WMRENDERDATA, count, buffer);
 
         }
 
@@ -144,17 +144,14 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("wm-service")))
-        PANIC();
-
-    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    channel_send(12345, EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+    channel_send(12345, EVENT_WMUNMAP);
 
 }
 
@@ -201,7 +198,7 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("wm-service", "system:service/wm");
+    option_add("wm-service", "12345");
     option_add("clock", "system:clock/if:0");
     option_add("ethernet", "system:ethernet/if:0");
     option_add("local-address", "10.0.5.1");

@@ -14,7 +14,7 @@ static int accumulator;
 static void refresh(int value)
 {
 
-    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
+    channel_send_fmt1(12345, EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
 
 }
 
@@ -83,17 +83,14 @@ static void updatevalue(int value)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("wm-service")))
-        PANIC();
-
-    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    channel_send(12345, EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+    channel_send(12345, EVENT_WMUNMAP);
 
 }
 
@@ -149,8 +146,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "        + button in \"row4\" label \"+\" span \"1\" onclick \"add\"\n"
         "        + button in \"row4\" label \"=\" span \"1\" onclick \"sum\"\n";
 
-    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data0);
-    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data1);
+    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data0);
+    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data1);
 
 }
 
@@ -267,7 +264,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("wm-service", "system:service/wm");
+    option_add("wm-service", "12345");
     channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);

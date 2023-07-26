@@ -484,32 +484,29 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_G0, option_getstring("fs-service")))
-        PANIC();
-
     if (!call_walk_absolute(FILE_G5, option_getstring("volume")))
         PANIC();
 
-    call_link(FILE_G0, 8000);
     call_link(FILE_G5, 8001);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
     {
 
+        call_announce(option_getdecimal("fs-service"));
+
         while (channel_process());
 
     }
 
     call_unlink(FILE_G5);
-    call_unlink(FILE_G0);
 
 }
 
 void init(void)
 {
 
-    option_add("fs-service", "system:service/fd0");
+    option_add("fs-service", "1111");
     option_add("volume", "system:block/if:0/data");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);

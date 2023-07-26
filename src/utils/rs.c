@@ -18,7 +18,7 @@ static void sendlistrequest(unsigned int session, unsigned int id)
     listrequest.session = session;
     listrequest.id = id;
 
-    call_notify(FILE_G0, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
+    channel_send_buffer(1111, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
 
 }
 
@@ -32,7 +32,7 @@ static void sendreadrequest(unsigned int session, unsigned int id, unsigned int 
     readrequest.offset = offset;
     readrequest.count = count;
 
-    call_notify(FILE_G0, EVENT_READREQUEST, sizeof (struct event_readrequest), &readrequest);
+    channel_send_buffer(1111, EVENT_READREQUEST, sizeof (struct event_readrequest), &readrequest);
 
 }
 
@@ -46,7 +46,7 @@ static void sendwalkrequest(unsigned int session, unsigned int parent, char *pat
     message.walkrequest.length = cstring_length(path);
 
     buffer_write(message.path, 64, path, message.walkrequest.length, 0);
-    call_notify(FILE_G0, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
+    channel_send_buffer(1111, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
 
 }
 
@@ -168,19 +168,14 @@ static void test(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_G0, option_getstring("fs-service")))
-        PANIC();
-
-    call_link(FILE_G0, 8000);
     test();
-    call_unlink(FILE_G0);
 
 }
 
 void init(void)
 {
 
-    option_add("fs-service", "system:service/fd0");
+    option_add("fs-service", "1111");
     channel_bind(EVENT_MAIN, onmain);
 
 }

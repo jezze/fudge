@@ -1,3 +1,4 @@
+unsigned int call_announce(unsigned int id);
 unsigned int call_create(unsigned int descriptor, unsigned int pdescriptor, char *name, unsigned int length);
 unsigned int call_debug(void);
 unsigned int call_destroy(unsigned int descriptor);

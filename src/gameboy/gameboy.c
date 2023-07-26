@@ -128,7 +128,7 @@ static void keypress(struct gb_s *gb, void *data)
         break;
 
     case KEYS_KEY_ESCAPE:
-        channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+        channel_send(12345, EVENT_WMUNMAP);
         channel_close();
 
         break;
@@ -282,17 +282,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_relative(FILE_G3, FILE_L0, "ctrl"))
         PANIC();
 
-    if (!call_walk_absolute(FILE_L0, "system:service/wm"))
-        PANIC();
-
-    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    channel_send(12345, EVENT_WMMAP);
+    channel_send(12345, EVENT_WMGRAB);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+    channel_send(12345, EVENT_WMUNGRAB);
+    channel_send(12345, EVENT_WMUNMAP);
 
 }
 
@@ -322,7 +321,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.height = option_getdecimal("height");
     settings.bpp = option_getdecimal("bpp");
 
-    channel_send(CHANNEL_DEFAULT, EVENT_WMGRAB);
     call_link(FILE_G0, 8000);
     call_link(FILE_G1, 8001);
     call_link(FILE_G2, 8002);
@@ -331,7 +329,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     call_unlink(FILE_G2);
     call_unlink(FILE_G1);
     call_unlink(FILE_G0);
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNGRAB);
 
 }
 

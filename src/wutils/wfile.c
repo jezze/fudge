@@ -6,8 +6,8 @@ static char path[256];
 static void updatepath(void)
 {
 
-    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= path cursor \"2\"\n");
-    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
+    channel_send_fmt0(12345, EVENT_WMRENDERDATA, "= path cursor \"2\"\n");
+    channel_send_fmt1(12345, EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
 
 }
 
@@ -18,7 +18,7 @@ static void updatecontent(void)
     unsigned int nrecords;
     unsigned int maxsend = 50;
 
-    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
+    channel_send_fmt0(12345, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
     call_walk_absolute(FILE_PW, path);
     call_walk_duplicate(FILE_L0, FILE_PW);
 
@@ -41,7 +41,7 @@ static void updatecontent(void)
 
         }
 
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, count, message);
+        channel_send_buffer(12345, EVENT_WMRENDERDATA, count, message);
 
     }
 
@@ -50,17 +50,14 @@ static void updatecontent(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("wm-service")))
-        PANIC();
-
-    call_notify(FILE_L0, EVENT_WMMAP, 0, 0);
+    channel_send(12345, EVENT_WMMAP);
 
 }
 
 static void onterm(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(CHANNEL_DEFAULT, EVENT_WMUNMAP);
+    channel_send(12345, EVENT_WMUNMAP);
 
 }
 
@@ -163,7 +160,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"bottom\" label \"Paste\" onclick \"action paste\"\n"
         "      + button in \"bottom\" label \"Delete\" onclick \"action delete\"\n";
 
-    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(12345, EVENT_WMRENDERDATA, data);
     cstring_write_fmt0(path, 256, "initrd:\\0", 0);
     updatepath();
     updatecontent();
@@ -173,7 +170,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("wm-service", "system:service/wm");
+    option_add("wm-service", "12345");
     channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TERM, onterm);

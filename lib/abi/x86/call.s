@@ -19,8 +19,15 @@
 .set CALL_INDEX_PLACE,                  0x0F
 .set CALL_INDEX_LINK,                   0x10
 .set CALL_INDEX_UNLINK,                 0x11
+.set CALL_INDEX_ANNOUNCE,               0x12
 
 .section .text
+
+.global call_announce
+call_announce:
+    movl $CALL_INDEX_ANNOUNCE, %eax
+    int $CALL_INTERRUPT
+    ret
 
 .global call_create
 call_create:
