@@ -119,7 +119,7 @@ void smp_setupap(unsigned int stack)
     unsigned int id;
     struct corerow *corerow;
 
-    mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
+    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
     mmu_enable();
 
     id = apic_getid();
