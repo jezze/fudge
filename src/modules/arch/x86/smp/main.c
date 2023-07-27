@@ -49,7 +49,16 @@ static void enable(void)
 static struct core *coreget(void)
 {
 
-    return &corerows[apic_getid()].core;
+    unsigned int directory = cpu_getcr3();
+    unsigned int id;
+
+    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
+
+    id = apic_getid();
+
+    cpu_setcr3(directory);
+
+    return &corerows[id].core;
 
 }
 
@@ -62,12 +71,16 @@ static void coreassign(struct list_item *item)
 
         struct list_item *coreitem = corelist.head;
         struct core *core = coreitem->data;
+        unsigned int directory = cpu_getcr3();
 
         list_move_unsafe(&corelist, &corelist, coreitem);
         list_add(&core->tasks, item);
+        cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
 
-        if (coreget() != core)
+        if (core->id != apic_getid())
             apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
+
+        cpu_setcr3(directory);
 
     }
 
@@ -103,8 +116,14 @@ void smp_setupbp(unsigned int stack, unsigned int task, struct list *tasks)
 void smp_setupap(unsigned int stack)
 {
 
-    unsigned int id = apic_getid();
-    struct corerow *corerow = &corerows[id];
+    unsigned int id;
+    struct corerow *corerow;
+
+    mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
+    mmu_enable();
+
+    id = apic_getid();
+    corerow = &corerows[id];
 
     DEBUG_FMT1(DEBUG_INFO, "ap id %u", &id);
     DEBUG_FMT1(DEBUG_INFO, "ap stack 0x%H8u", &stack);
@@ -112,13 +131,11 @@ void smp_setupap(unsigned int stack)
     core_init(&corerow->core, id, stack);
     core_register(&corerow->core);
     arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
-    mmu_setdirectory((struct mmu_directory *)ARCH_KERNELMMUPHYSICAL);
-    mmu_enable();
     apic_setup_ap();
     pat_setup();
     list_inititem(&corerow->item, &corerow->core);
     list_add(&corelist, &corerow->item);
-    arch_leave(&corerow->core);
+    arch_leave();
 
 }
 

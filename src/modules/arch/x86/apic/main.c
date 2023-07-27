@@ -307,20 +307,10 @@ unsigned int apic_checkioapic(unsigned int id)
 
 }
 
-/* TODO: Remove changing of CR3 register. This is a workaround because existing tasks cant access apic mapped register. */
 unsigned int apic_getid(void)
 {
 
-    unsigned int directory = cpu_getcr3();
-    unsigned int id;
-
-    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
-
-    id = apic_ind(APIC_REG_ID) >> 24;
-
-    cpu_setcr3(directory);
-
-    return id;
+    return (apic_ind(APIC_REG_ID) >> 24);
 
 }
 
@@ -406,16 +396,10 @@ void apic_setup_bp(void)
 void apic_sendint(unsigned int id, unsigned int value)
 {
 
-    unsigned int directory = cpu_getcr3();
-
-    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
-
     apic_outd(APIC_REG_ICR1, id << 24);
     apic_outd(APIC_REG_ICR0, value);
 
     while (apic_ind(APIC_REG_ICR0) & APIC_REG_ICR_STATUS_PENDING);
-
-    cpu_setcr3(directory);
 
 }
 

@@ -102,8 +102,10 @@ static void coreassign(struct list_item *item)
 
 }
 
-static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt, struct core *core)
+static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
+
+    struct core *core = kernel_getcore();
 
     if (core->task)
     {
@@ -173,15 +175,13 @@ void arch_mapvideo(unsigned char index, unsigned int paddress, unsigned int vadd
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
-    struct core *core = kernel_getcore();
-
-    schedule(general, interrupt, core);
+    schedule(general, interrupt);
 
     return interrupt->ss.value;
 
 }
 
-void arch_leave(struct core *core)
+void arch_leave(void)
 {
 
     struct cpu_general general;
@@ -189,7 +189,7 @@ void arch_leave(struct core *core)
 
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
-    schedule(&general, &interrupt, core);
+    schedule(&general, &interrupt);
     cpu_leave(interrupt);
 
 }
@@ -474,7 +474,7 @@ void arch_setup2(void)
 
     }
 
-    arch_leave(&core0);
+    arch_leave();
 
 }
 
