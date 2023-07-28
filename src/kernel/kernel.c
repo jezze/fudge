@@ -318,7 +318,8 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 void kernel_announce(unsigned int task, unsigned int id)
 {
 
-    ports[id].task = task;
+    if (id < KERNEL_PORTS)
+        ports[id].task = task;
 
 }
 
