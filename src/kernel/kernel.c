@@ -10,7 +10,7 @@
 #include "descriptor.h"
 #include "kernel.h"
 
-static unsigned int stasks[0xFFFF];
+static unsigned int ports[KERNEL_PORTS];
 static struct taskrow {struct task task; struct mailbox mailbox; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
 static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
 static struct list freelinks;
@@ -283,7 +283,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    target = target < 0xFFFF ? stasks[target] : 0;
+    target = target < KERNEL_PORTS ? ports[target] : 0;
 
     if (target)
     {
@@ -311,7 +311,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 void kernel_announce(unsigned int task, unsigned int id)
 {
 
-    stasks[id] = task;
+    ports[id] = task;
 
 }
 
@@ -441,7 +441,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
 
-        stasks[i] = i;
+        ports[i] = i;
 
     }
 
