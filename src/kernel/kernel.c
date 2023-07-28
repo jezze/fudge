@@ -318,7 +318,7 @@ unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned in
 void kernel_announce(unsigned int task, unsigned int channel)
 {
 
-    if (channel && channel < KERNEL_CHANNELS)
+    if (channel > KERNEL_TASKS  && channel < KERNEL_CHANNELS)
         channels[channel].task = task;
 
 }
