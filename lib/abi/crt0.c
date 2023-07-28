@@ -19,7 +19,7 @@ static void onredirect(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_redirect *redirect = mdata;
 
-    channel_route(redirect->event, redirect->mode, redirect->id, source);
+    channel_route(redirect->event, redirect->mode, redirect->target, source);
 
 }
 

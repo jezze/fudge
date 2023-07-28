@@ -33,14 +33,14 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
 
 }
 
-static unsigned int redirect(unsigned int target, unsigned int event, unsigned int mode, unsigned int id)
+static unsigned int redirect(unsigned int target, unsigned int event, unsigned int mode, unsigned int channel)
 {
 
     struct event_redirect redirect;
 
     redirect.event = event;
     redirect.mode = mode;
-    redirect.id = id;
+    redirect.target = channel;
 
     return send(target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
 
@@ -146,10 +146,10 @@ unsigned int channel_listen(unsigned int target, unsigned int event)
 
 }
 
-unsigned int channel_forward(unsigned int target, unsigned int event, unsigned int id)
+unsigned int channel_forward(unsigned int target, unsigned int event, unsigned int channel)
 {
 
-    return redirect(target, event, EVENT_REDIRECT_TARGET, id);
+    return redirect(target, event, EVENT_REDIRECT_TARGET, channel);
 
 }
 
@@ -283,14 +283,14 @@ void channel_autoclose(unsigned int event, unsigned int autoclose)
 
 }
 
-void channel_route(unsigned int event, unsigned int mode, unsigned int id, unsigned int source)
+void channel_route(unsigned int event, unsigned int mode, unsigned int target, unsigned int source)
 {
 
     switch (mode)
     {
 
     case EVENT_REDIRECT_TARGET:
-        listeners[event].target = id;
+        listeners[event].target = target;
 
         break;
 

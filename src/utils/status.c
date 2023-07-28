@@ -11,17 +11,17 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = option_getdecimal("task");
+    unsigned int channel = option_getdecimal("channel");
 
-    if (id)
-        channel_send(id, EVENT_STATUS);
+    if (channel)
+        channel_send(channel, EVENT_STATUS);
 
 }
 
 void init(void)
 {
 
-    option_add("task", "");
+    option_add("channel", "");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 

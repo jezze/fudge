@@ -35,19 +35,19 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, "initrd:/bin/slang");
+    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, "initrd:/bin/slang");
 
-    if (id)
+    if (channel)
     {
 
         channel_bind(EVENT_DATA, ondata);
-        channel_listen(id, EVENT_CLOSE);
-        channel_listen(id, EVENT_DATA);
-        channel_listen(id, EVENT_ERROR);
-        channel_send_fmt0(id, EVENT_PATH, "/config/base.slang\\0");
-        channel_send_fmt0(id, EVENT_PATH, "/config/arch.slang\\0");
-        channel_send_fmt0(id, EVENT_PATH, "/config/init.slang\\0");
-        channel_send(id, EVENT_MAIN);
+        channel_listen(channel, EVENT_CLOSE);
+        channel_listen(channel, EVENT_DATA);
+        channel_listen(channel, EVENT_ERROR);
+        channel_send_fmt0(channel, EVENT_PATH, "/config/base.slang\\0");
+        channel_send_fmt0(channel, EVENT_PATH, "/config/arch.slang\\0");
+        channel_send_fmt0(channel, EVENT_PATH, "/config/init.slang\\0");
+        channel_send(channel, EVENT_MAIN);
 
     }
 

@@ -10,14 +10,14 @@
 #include "descriptor.h"
 #include "kernel.h"
 
-struct port
+struct channel
 {
 
     unsigned int task;
 
 };
 
-static struct port ports[KERNEL_PORTS];
+static struct channel channels[KERNEL_CHANNELS];
 static struct taskrow {struct task task; struct mailbox mailbox; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
 static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
 static struct list freelinks;
@@ -287,10 +287,10 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
-    target = target < KERNEL_PORTS ? ports[target].task : 0;
+    unsigned int target = channel && channel < KERNEL_CHANNELS ? channels[channel].task : 0;
 
     if (target)
     {
@@ -315,11 +315,11 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
 }
 
-void kernel_announce(unsigned int task, unsigned int id)
+void kernel_announce(unsigned int task, unsigned int channel)
 {
 
-    if (id < KERNEL_PORTS)
-        ports[id].task = task;
+    if (channel && channel < KERNEL_CHANNELS)
+        channels[channel].task = task;
 
 }
 
@@ -449,7 +449,7 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
 
-        ports[i].task = taskrow->task.id;
+        channels[i].task = taskrow->task.id;
 
     }
 

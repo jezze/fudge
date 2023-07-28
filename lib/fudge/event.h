@@ -52,7 +52,7 @@ struct event_redirect
 
     unsigned int event;
     unsigned int mode;
-    unsigned int id;
+    unsigned int target;
 
 };
 

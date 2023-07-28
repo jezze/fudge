@@ -164,9 +164,9 @@ static unsigned int destroy(unsigned int task, void *stack)
 static unsigned int kill(unsigned int task, void *stack)
 {
 
-    struct {void *caller; unsigned int id;} *args = stack;
+    struct {void *caller; unsigned int task;} *args = stack;
 
-    kernel_signal(args->id, TASK_SIGNAL_KILL);
+    kernel_signal(args->task, TASK_SIGNAL_KILL);
 
     return 0;
 
@@ -361,7 +361,7 @@ static unsigned int pick(unsigned int task, void *stack)
 static unsigned int place(unsigned int task, void *stack)
 {
 
-    struct {void *caller; unsigned int id; unsigned int event; unsigned int count; void *data;} *args = stack;
+    struct {void *caller; unsigned int channel; unsigned int event; unsigned int count; void *data;} *args = stack;
 
     if (!checkzerobuffer(task, args->data, args->count))
     {
@@ -372,7 +372,7 @@ static unsigned int place(unsigned int task, void *stack)
 
     }
 
-    return kernel_place(task, args->id, args->event, args->count, args->data);
+    return kernel_place(task, args->channel, args->event, args->count, args->data);
 
 }
 
@@ -436,9 +436,9 @@ static unsigned int notify(unsigned int task, void *stack)
 static unsigned int announce(unsigned int task, void *stack)
 {
 
-    struct {void *caller; unsigned int id;} *args = stack;
+    struct {void *caller; unsigned int channel;} *args = stack;
 
-    kernel_announce(task, args->id);
+    kernel_announce(task, args->channel);
 
     return 0;
 

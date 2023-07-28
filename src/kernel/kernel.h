@@ -1,7 +1,7 @@
 #define KERNEL_TASKS                    16
 #define KERNEL_LINKS                    128
 #define KERNEL_DESCRIPTORS              32
-#define KERNEL_PORTS                    0x4000
+#define KERNEL_CHANNELS                 0x4000
 
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
@@ -16,8 +16,8 @@ struct descriptor *kernel_getdescriptor(unsigned int task, unsigned int descript
 void kernel_setdescriptor(unsigned int task, unsigned int descriptor, struct service *service, unsigned int id);
 void kernel_copydescriptor(unsigned int task, unsigned int descriptor, unsigned int ptask, unsigned int pdescriptor);
 unsigned int kernel_pick(unsigned int source, struct message *message, void *data);
-unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
-void kernel_announce(unsigned int task, unsigned int id);
+unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned int event, unsigned int count, void *data);
+void kernel_announce(unsigned int task, unsigned int channel);
 void kernel_notify(struct list *states, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
 unsigned int kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int descriptor);

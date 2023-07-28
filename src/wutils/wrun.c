@@ -51,20 +51,20 @@ static void handlehttppacket(void)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("dns"));
+    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("dns"));
 
-    if (id)
+    if (channel)
     {
 
         char data[MESSAGE_SIZE];
         unsigned int count;
 
-        channel_listen(id, EVENT_QUERY);
-        channel_listen(id, EVENT_CLOSE);
-        channel_send_fmt1(id, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_send(id, EVENT_MAIN);
+        channel_listen(channel, EVENT_QUERY);
+        channel_listen(channel, EVENT_CLOSE);
+        channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(channel, EVENT_MAIN);
 
-        while ((count = channel_read_from(id, EVENT_QUERY, data)))
+        while ((count = channel_read_from(channel, EVENT_QUERY, data)))
         {
 
             char *key = buffer_tindex(data, count, '\0', 0);

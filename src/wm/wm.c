@@ -385,10 +385,10 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         if (cstring_match_word(cmd, 0, "run"))
         {
 
-            unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, cstring_get_word(cmd, 1));
+            unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, cstring_get_word(cmd, 1));
 
-            if (id)
-                channel_send(id, EVENT_MAIN);
+            if (channel)
+                channel_send(channel, EVENT_MAIN);
 
         }
 
@@ -563,10 +563,10 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
-                    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("wshell"));
+                    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("wshell"));
 
-                    if (id)
-                        channel_send(id, EVENT_MAIN);
+                    if (channel)
+                        channel_send(channel, EVENT_MAIN);
 
                 }
 

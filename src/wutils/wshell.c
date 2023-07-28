@@ -83,22 +83,22 @@ static void moveright(unsigned int steps)
 static unsigned int runslang(void *obuffer, unsigned int ocount, void *ibuffer, unsigned int icount)
 {
 
-    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("slang"));
+    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("slang"));
 
-    if (id)
+    if (channel)
     {
 
         char data[MESSAGE_SIZE];
         unsigned int offset = 0;
         unsigned int count;
 
-        channel_listen(id, EVENT_DATA);
-        channel_listen(id, EVENT_ERROR);
-        channel_listen(id, EVENT_CLOSE);
-        channel_send_buffer(id, EVENT_DATA, icount, ibuffer);
-        channel_send(id, EVENT_MAIN);
+        channel_listen(channel, EVENT_DATA);
+        channel_listen(channel, EVENT_ERROR);
+        channel_listen(channel, EVENT_CLOSE);
+        channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
+        channel_send(channel, EVENT_MAIN);
 
-        while ((count = channel_read_from(id, EVENT_DATA, data)))
+        while ((count = channel_read_from(channel, EVENT_DATA, data)))
             offset += buffer_write(obuffer, ocount, data, count, offset);
 
         return offset;

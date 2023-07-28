@@ -11,16 +11,16 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("echo"));
+    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("echo"));
 
-    if (id)
+    if (channel)
     {
 
-        channel_listen(id, EVENT_DATA);
-        channel_listen(id, EVENT_CLOSE);
-        channel_send_fmt0(id, EVENT_PATH, "/data/motd.txt\\0");
-        channel_send(id, EVENT_MAIN);
-        channel_wait(id, EVENT_CLOSE);
+        channel_listen(channel, EVENT_DATA);
+        channel_listen(channel, EVENT_CLOSE);
+        channel_send_fmt0(channel, EVENT_PATH, "/data/motd.txt\\0");
+        channel_send(channel, EVENT_MAIN);
+        channel_wait(channel, EVENT_CLOSE);
 
     }
 

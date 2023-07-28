@@ -4,10 +4,10 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = option_getdecimal("task");
+    unsigned int task = option_getdecimal("task");
 
-    if (id)
-        call_kill(id);
+    if (task)
+        call_kill(task);
 
 }
 

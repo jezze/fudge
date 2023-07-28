@@ -28,7 +28,7 @@ unsigned int call_despawn(void)
 
 }
 
-unsigned int call_kill(unsigned int id)
+unsigned int call_kill(unsigned int task)
 {
 
     return 0;
@@ -70,7 +70,7 @@ unsigned int call_pick(struct message *message, void *data)
 
 }
 
-unsigned int call_place(unsigned int id, unsigned int event, unsigned int count, void *data)
+unsigned int call_place(unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
     return 0;
