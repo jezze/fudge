@@ -242,42 +242,6 @@ static void bumpchildren(struct widget *widget)
 
 }
 
-static void placewindows(unsigned int source)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_nextsource(current, source)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->type == WIDGET_TYPE_WINDOW)
-        {
-
-            if (widget->size.w == 0 && widget->size.h == 0)
-            {
-
-                unsigned int w8 = display.size.w / 8;
-                unsigned int h8 = display.size.h / 8;
-
-                widget->position.x = w8;
-                widget->position.y = h8;
-                widget->size.w = w8 * 3;
-                widget->size.h = h8 * 6;
-
-                bump(widget);
-
-            }
-
-            damageall(widget);
-
-        }
-
-    }
-
-}
-
 static void setfocus(struct widget *widget)
 {
 
@@ -357,6 +321,42 @@ static void sethover(struct widget *widget)
         state.hoverwidget = widget;
 
         damageall(state.hoverwidget);
+
+    }
+
+}
+
+static void placewindows(unsigned int source)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextsource(current, source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_WINDOW)
+        {
+
+            if (widget->size.w == 0 && widget->size.h == 0)
+            {
+
+                unsigned int w8 = display.size.w / 8;
+                unsigned int h8 = display.size.h / 8;
+
+                widget->position.x = w8;
+                widget->position.y = h8;
+                widget->size.w = w8 * 3;
+                widget->size.h = h8 * 6;
+
+                setfocuswindow(widget);
+
+            }
+
+            damageall(widget);
+
+        }
 
     }
 
