@@ -44,6 +44,16 @@ static unsigned int newchannel(unsigned int index, unsigned int task)
 
 }
 
+static unsigned int newchannel2(unsigned int index, unsigned int task)
+{
+
+    channels[index].task = task;
+    channels[index].counter = 0;
+
+    return getchannel(index);
+
+}
+
 static unsigned int gettarget(unsigned int channel)
 {
 
@@ -355,12 +365,7 @@ void kernel_announce(unsigned int task, unsigned int channel)
     unsigned int index = channel & (KERNEL_CHANNELS - 1);
 
     if (index > KERNEL_TASKS)
-    {
-
-        channels[index].task = task;
-        channels[index].counter = 0;
-
-    }
+        newchannel2(index, task);
 
 }
 
