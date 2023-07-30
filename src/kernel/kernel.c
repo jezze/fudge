@@ -305,8 +305,7 @@ unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned in
 
         c = mailbox_place(mailbox, &message, data);
 
-        if (!c)
-            kernel_signal(target, TASK_SIGNAL_UNBLOCK);
+        kernel_signal(target, TASK_SIGNAL_UNBLOCK);
 
         return c;
 
