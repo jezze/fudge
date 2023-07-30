@@ -247,7 +247,7 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(unsigned int source, struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct tokenlist *postfix, struct tokenlist *stack)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -338,7 +338,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
         tokenlist_reset(&stack);
         tokenizebuffer(&infix, &stringtable, msize, mdata);
         translate(&postfix, &infix, &stack);
-        parse(source, &postfix, &stack);
+        parse(&postfix, &stack);
 
     }
 
@@ -363,7 +363,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
         translate(&postfix, &infix, &stack);
-        parse(source, &postfix, &stack);
+        parse(&postfix, &stack);
 
     }
 
