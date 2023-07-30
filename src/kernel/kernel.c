@@ -14,6 +14,7 @@ struct channel
 {
 
     unsigned int task;
+    unsigned short counter;
 
 };
 
@@ -25,6 +26,40 @@ static struct list deadtasks;
 static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
+
+static unsigned int getchannel(unsigned int index)
+{
+
+    return (channels[index].counter << 16) | channels[index].task;
+
+}
+
+static unsigned int newchannel(unsigned int index, unsigned int task)
+{
+
+    channels[index].task = task;
+    channels[index].counter++;
+
+    return getchannel(index);
+
+}
+
+static unsigned int gettarget(unsigned int channel)
+{
+
+    unsigned int index = channel & (KERNEL_CHANNELS - 1);
+
+    if (index)
+    {
+
+        if (channels[index].counter == (channel >> 16))
+            return channels[index].task;
+
+    }
+
+    return 0;
+
+}
 
 static void unblocktasks(void)
 {
@@ -152,8 +187,8 @@ void kernel_addlink(struct list *list, unsigned int target, unsigned int source)
         struct linkrow *linkrow = linkitem->data;
         struct link *link = &linkrow->link;
 
-        link->source = source;
-        link->target = target;
+        link->source = getchannel(source);
+        link->target = getchannel(target);
 
         list_add(list, linkitem);
 
@@ -290,8 +325,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
-    unsigned int index = channel & (KERNEL_CHANNELS - 1);
-    unsigned int target = index ? channels[index].task : 0;
+    unsigned int target = gettarget(channel);
 
     if (target)
     {
@@ -301,7 +335,7 @@ unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned in
         struct message message;
         unsigned int c;
 
-        message_init(&message, event, source, count);
+        message_init(&message, event, getchannel(source), count);
 
         c = mailbox_place(mailbox, &message, data);
 
@@ -321,7 +355,12 @@ void kernel_announce(unsigned int task, unsigned int channel)
     unsigned int index = channel & (KERNEL_CHANNELS - 1);
 
     if (index > KERNEL_TASKS)
+    {
+
         channels[index].task = task;
+        channels[index].counter = 0;
+
+    }
 
 }
 
@@ -402,7 +441,7 @@ unsigned int kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int 
                     if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
                         coreassign(&taskrow->item);
 
-                    return taskid;
+                    return newchannel(taskid, taskid);
 
                 }
 
@@ -450,8 +489,6 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
-
-        channels[i].task = taskrow->task.id;
 
     }
 
