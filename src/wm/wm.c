@@ -351,6 +351,7 @@ static void placewindows(unsigned int source)
                 widget->size.h = h8 * 6;
 
                 setfocuswindow(widget);
+                setfocus(0);
 
             }
 
