@@ -21,7 +21,7 @@ static unsigned int send(unsigned int target, unsigned int event, unsigned int c
     if (count > MESSAGE_SIZE)
         return 0;
 
-    if (!target)
+    if (target == CHANNEL_DEFAULT)
         target = listeners[event].target;
 
     if (!target)
