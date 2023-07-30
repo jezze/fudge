@@ -290,7 +290,8 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
-    unsigned int target = channel && channel < KERNEL_CHANNELS ? channels[channel].task : 0;
+    unsigned int index = channel & (KERNEL_CHANNELS - 1);
+    unsigned int target = index ? channels[index].task : 0;
 
     if (target)
     {
@@ -318,8 +319,10 @@ unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned in
 void kernel_announce(unsigned int task, unsigned int channel)
 {
 
-    if (channel > KERNEL_TASKS  && channel < KERNEL_CHANNELS)
-        channels[channel].task = task;
+    unsigned int index = channel & (KERNEL_CHANNELS - 1);
+
+    if (index > KERNEL_TASKS)
+        channels[index].task = task;
 
 }
 
