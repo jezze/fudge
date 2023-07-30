@@ -14,7 +14,7 @@ struct channel
 {
 
     unsigned int task;
-    unsigned short counter;
+    unsigned short uniqueness;
 
 };
 
@@ -30,7 +30,7 @@ static void (*coreassign)(struct list_item *item);
 static unsigned int getchannel(unsigned int index)
 {
 
-    return (channels[index].counter << 16) | channels[index].task;
+    return (channels[index].uniqueness << 16) | channels[index].task;
 
 }
 
@@ -38,7 +38,7 @@ static unsigned int newchannel(unsigned int index, unsigned int task)
 {
 
     channels[index].task = task;
-    channels[index].counter++;
+    channels[index].uniqueness++;
 
     return getchannel(index);
 
@@ -48,7 +48,7 @@ static unsigned int newchannel2(unsigned int index, unsigned int task)
 {
 
     channels[index].task = task;
-    channels[index].counter = 0;
+    channels[index].uniqueness = 0;
 
     return getchannel(index);
 
@@ -62,7 +62,7 @@ static unsigned int gettarget(unsigned int channel)
     if (index)
     {
 
-        if (channels[index].counter == (channel >> 16))
+        if (channels[index].uniqueness == (channel >> 16))
             return channels[index].task;
 
     }
