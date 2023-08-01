@@ -146,10 +146,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
-}
-
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
+    while (channel_process());
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
@@ -207,9 +204,7 @@ void init(void)
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
     option_add("dns", "initrd:/bin/dns");
-    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

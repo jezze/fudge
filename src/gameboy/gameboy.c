@@ -283,14 +283,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         PANIC();
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
-    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
 
-}
+    while (channel_process());
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
@@ -321,6 +316,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.height = option_getdecimal("height");
     settings.bpp = option_getdecimal("bpp");
 
+    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
+    channel_wait_any(EVENT_WMACK);
     call_link(FILE_G0, 8000);
     call_link(FILE_G1, 8001);
     call_link(FILE_G2, 8002);
@@ -329,6 +326,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     call_unlink(FILE_G2);
     call_unlink(FILE_G1);
     call_unlink(FILE_G0);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_wait_any(EVENT_WMACK);
 
 }
 
@@ -353,10 +352,8 @@ void init(void)
     option_add("timer", "system:timer/if:0");
     option_add("video", "system:video/if:0");
     option_add("wm-service", "12345");
-    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
     channel_bind(EVENT_WMINIT, onwminit);
 

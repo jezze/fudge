@@ -6,17 +6,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
-}
-
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
+    while (channel_process());
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
-
-}
-
-static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
-{
 
 }
 
@@ -50,10 +42,7 @@ void init(void)
 {
 
     option_add("wm-service", "12345");
-    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_TERM, onterm);
-    channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

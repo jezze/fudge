@@ -235,14 +235,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         PANIC();
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
-    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
 
-}
+    while (channel_process());
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
@@ -250,8 +245,7 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
 static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_close();
 
 }
 
@@ -264,6 +258,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.height = option_getdecimal("height");
     settings.bpp = option_getdecimal("bpp");
 
+    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
+    channel_wait_any(EVENT_WMACK);
     call_write_all(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
     call_read_all(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
 
@@ -299,6 +295,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     while (channel_process());
 
     call_unlink(FILE_G0);
+    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_wait_any(EVENT_WMACK);
 
 }
 
@@ -311,10 +309,7 @@ void init(void)
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if:0");
     option_add("wm-service", "12345");
-    channel_autoclose(EVENT_MAIN, 0);
-    channel_autoclose(EVENT_MOUSEPRESS, 1);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_WMINIT, onwminit);
 

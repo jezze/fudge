@@ -531,7 +531,6 @@ void init(void)
     option_add("input", "system:console/if:0/event");
     option_add("output", "system:console/if:0/data");
     option_add("slang", "initrd:/bin/slang");
-    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

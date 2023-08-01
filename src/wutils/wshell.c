@@ -354,10 +354,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     call_walk_duplicate(FILE_G8, FILE_PW);
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
-}
-
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
-{
+    while (channel_process());
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
@@ -521,10 +518,8 @@ void init(void)
     ring_init(&result, RESULTSIZE, resultdata);
     option_add("wm-service", "12345");
     option_add("slang", "initrd:/bin/slang");
-    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_WMINIT, onwminit);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
 

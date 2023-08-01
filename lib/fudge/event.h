@@ -35,6 +35,7 @@
 #define EVENT_WMRENDERDATA              0x2C
 #define EVENT_WMINIT                    0x2D
 #define EVENT_WMEVENT                   0x2E
+#define EVENT_WMACK                     0x2F
 #define EVENT_P9P                       0x30
 #define EVENT_WALKREQUEST               0x41
 #define EVENT_WALKRESPONSE              0x42

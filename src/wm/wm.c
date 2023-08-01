@@ -817,6 +817,7 @@ static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSESCROLL, 0);
     channel_bind(EVENT_MOUSERELEASE, 0);
     channel_bind(EVENT_VIDEOMODE, 0);
+    channel_send(source, EVENT_WMACK);
 
 }
 
@@ -849,6 +850,7 @@ static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_send(source, EVENT_WMACK);
     setupvideo();
 
 }
