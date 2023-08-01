@@ -17,7 +17,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     call_link(FILE_L1, 8000);
 
-    while (channel_poll(EVENT_TIMERTICK, &message, data))
+    while (channel_poll_any(EVENT_TIMERTICK, &message, data))
     {
 
         channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Tick: %u second(s)\n", &counter);

@@ -654,7 +654,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
     struct message message;
     char data[SOCKET_MTUSIZE];
 
-    while (channel_poll(EVENT_DATA, &message, data))
+    while (channel_poll_any(EVENT_DATA, &message, data))
     {
 
         struct socket *remote;
@@ -735,7 +735,7 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
 
     send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, BUFFER_SIZE, 0, 0));
 
-    while (channel_poll(EVENT_DATA, &message, data))
+    while (channel_poll_any(EVENT_DATA, &message, data))
     {
 
         char buffer[BUFFER_SIZE];
@@ -762,7 +762,7 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE);
     send(descriptor, data, buildarp(data, SOCKET_MTUSIZE, local, remote, &multicast, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_poll(EVENT_DATA, &message, data))
+    while (channel_poll_any(EVENT_DATA, &message, data))
     {
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message), data);

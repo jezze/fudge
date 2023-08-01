@@ -129,7 +129,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
-    while (channel_poll(EVENT_DATA, &message, data))
+    while (channel_poll_any(EVENT_DATA, &message, data))
     {
 
         struct socket *remote;

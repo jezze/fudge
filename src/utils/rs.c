@@ -59,7 +59,7 @@ static unsigned int list(unsigned int id, struct record records[8])
 
     sendlistrequest(session, id);
 
-    while (channel_poll(EVENT_LISTRESPONSE, &message, &payload))
+    while (channel_poll_any(EVENT_LISTRESPONSE, &message, &payload))
     {
 
         if (payload.listresponse.session == session)
@@ -89,7 +89,7 @@ static unsigned int read(unsigned int id, unsigned int count, unsigned int offse
 
     sendreadrequest(session, id, count, offset);
 
-    while (channel_poll(EVENT_READRESPONSE, &message, &payload))
+    while (channel_poll_any(EVENT_READRESPONSE, &message, &payload))
     {
 
         if (payload.readresponse.session == session)
@@ -116,7 +116,7 @@ static unsigned int walk(unsigned int id, char *path)
 
     sendwalkrequest(session, id, path);
 
-    while (channel_poll(EVENT_WALKRESPONSE, &message, &walkresponse))
+    while (channel_poll_any(EVENT_WALKRESPONSE, &message, &walkresponse))
     {
 
         if (walkresponse.session == session)
