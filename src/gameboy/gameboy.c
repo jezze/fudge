@@ -220,7 +220,9 @@ static void run(void)
 
     }
 
-    call_read(FILE_G5, cart_ram, getsavesize(&gb), 0x80000);
+    if (getsavesize(&gb))
+        call_read(FILE_G5, cart_ram, getsavesize(&gb), 0x80000);
+
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
     while (channel_pick(&message, data))

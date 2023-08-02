@@ -69,7 +69,6 @@ struct vbe_mode
 
 static struct base_driver driver;
 static struct video_interface videointerface;
-static unsigned int framebuffer;
 static struct vbe_mode *mode;
 
 static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
@@ -77,14 +76,12 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
     struct vbe_info *info = vbe_getinfo();
     unsigned short *modes = (unsigned short *)((info->video_modes_segment * 16) + info->video_modes_offset);
-    unsigned short modenum = 0xFFFF;
     unsigned int i;
 
     for (i = 0; modes[i] != 0xFFFF; i++)
     {
 
-        modenum = modes[i];
-        mode = vbe_getvideomode(modenum);
+        mode = vbe_getvideomode(modes[i]);
 
         if ((mode->attributes & 0x90) != 0x90)
             continue;
@@ -93,11 +90,11 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
             continue;
 
         if (mode->width == w && mode->height == h && mode->bpp == bpp)
-            break;
+            return modes[i];
 
     }
 
-    return modenum;
+    return 0;
 
 }
 
@@ -106,12 +103,12 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 
     unsigned short modenum;
 
+    buffer_copy((void *)0xA000, (void *)(unsigned int)vbe_lowmemstart, (unsigned int)vbe_lowmemend - (unsigned int)vbe_lowmemstart);
+
     modenum = find(width, height, bpp);
 
-    if (modenum != 0xFFFF)
+    if (modenum)
     {
-
-        vbe_setvideomode(modenum | 0x4000);
 
         if (mode->framebuffer)
         {
@@ -121,14 +118,13 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 
         }
 
+        vbe_setvideomode(modenum | 0x4000);
+
         videointerface.width = mode->width;
         videointerface.height = mode->height;
         videointerface.bpp = mode->bpp / 8;
 
         video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
-
-        /* remove */
-        framebuffer = mode->framebuffer;
 
     }
 
@@ -179,14 +175,14 @@ static unsigned int videointerface_writectrl(void *buffer, unsigned int count, u
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_read(buffer, count, (void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, offset);
+    return buffer_read(buffer, count, (void *)mode->framebuffer, videointerface.width * videointerface.height * videointerface.bpp, offset);
 
 }
 
 static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return buffer_write((void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, buffer, count, offset);
+    return buffer_write((void *)mode->framebuffer, videointerface.width * videointerface.height * videointerface.bpp, buffer, count, offset);
 
 }
 
@@ -235,7 +231,6 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    buffer_copy((void *)0xA000, (void *)(unsigned int)vbe_lowmemstart, (unsigned int)vbe_lowmemend - (unsigned int)vbe_lowmemstart);
     base_initdriver(&driver, "vbe", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
