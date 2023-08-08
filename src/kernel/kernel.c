@@ -63,15 +63,19 @@ static unsigned int getitask(unsigned int ichannel)
 static unsigned int getichannel(unsigned short index)
 {
 
-    return (channels[index].uniqueness << 16) | channels[index].itask;
+    struct channel *channel = &channels[index];
+
+    return (channel->uniqueness << 16) | channel->itask;
 
 }
 
 static unsigned int setchannel(unsigned short index, unsigned int itask)
 {
 
-    channels[index].itask = itask;
-    channels[index].uniqueness++;
+    struct channel *channel = &channels[index];
+
+    channel->itask = itask;
+    channel->uniqueness++;
 
     return getichannel(index);
 
