@@ -5,7 +5,7 @@ struct core
     struct list tasks;
     unsigned int id;
     unsigned int sp;
-    unsigned int task;
+    unsigned int itask;
 
 };
 

@@ -29,10 +29,10 @@ static struct mmu_directory *gettaskdirectory(unsigned int index)
 
 }
 
-static void initmap(unsigned int task)
+static void initmap(unsigned int itask)
 {
 
-    struct mmu_directory *tdirectory = gettaskdirectory(task);
+    struct mmu_directory *tdirectory = gettaskdirectory(itask);
     struct mmu_directory *kdirectory = getkerneldirectory();
 
     buffer_copy(tdirectory, kdirectory, sizeof (struct mmu_directory));
@@ -49,12 +49,12 @@ static void map(struct mmu_directory *directory, unsigned int index, unsigned in
 
 }
 
-static unsigned int spawn(unsigned int task, void *stack)
+static unsigned int spawn(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int wdescriptor;} *args = stack;
-    struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
-    struct descriptor *wdescriptor = kernel_getdescriptor(task, args->wdescriptor);
+    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->pdescriptor);
+    struct descriptor *wdescriptor = kernel_getdescriptor(itask, args->wdescriptor);
     unsigned int ntask;
 
     if (!descriptor_check(pdescriptor) || !descriptor_check(wdescriptor))
@@ -70,8 +70,8 @@ static unsigned int spawn(unsigned int task, void *stack)
     {
 
         initmap(ntask);
-        kernel_copydescriptor(ntask, FILE_PP, task, args->pdescriptor);
-        kernel_copydescriptor(ntask, FILE_PW, task, args->wdescriptor);
+        kernel_copydescriptor(ntask, FILE_PP, itask, args->pdescriptor);
+        kernel_copydescriptor(ntask, FILE_PW, itask, args->wdescriptor);
 
         return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
 
@@ -107,33 +107,33 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
     struct core *core = kernel_getcore();
 
-    if (core->task)
+    if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->task);
+        struct task_thread *thread = kernel_getthread(core->itask);
 
-        buffer_copy(&registers[core->task], general, sizeof (struct cpu_general));
+        buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
 
         thread->ip = interrupt->eip.value;
         thread->sp = interrupt->esp.value;
 
     }
 
-    core->task = kernel_schedule(core);
+    core->itask = kernel_schedule(core);
 
-    if (core->task)
+    if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->task);
+        struct task_thread *thread = kernel_getthread(core->itask);
 
-        buffer_copy(general, &registers[core->task], sizeof (struct cpu_general));
+        buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
         interrupt->eip.value = thread->ip;
         interrupt->esp.value = thread->sp;
 
-        mmu_setdirectory(gettaskdirectory(core->task));
+        mmu_setdirectory(gettaskdirectory(core->itask));
 
     }
 
@@ -201,11 +201,11 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
 
     DEBUG_FMT0(DEBUG_INFO, "exception: divide by zero");
 
-    if (core->task)
+    if (core->itask)
     {
 
         if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
-            kernel_signal(core->task, TASK_SIGNAL_KILL);
+            kernel_signal(core->itask, TASK_SIGNAL_KILL);
 
     }
 
@@ -329,20 +329,20 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
     DEBUG_FMT2(DEBUG_INFO, "exception: page fault at 0x%H8u type %u", &address, &type);
 
-    if (core->task)
+    if (core->itask)
     {
 
-        unsigned int code = kernel_codebase(core->task, address);
-        struct mmu_directory *directory = gettaskdirectory(core->task);
+        unsigned int code = kernel_codebase(core->itask, address);
+        struct mmu_directory *directory = gettaskdirectory(core->itask);
 
         if (code)
         {
 
-            map(directory, 0, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            map(directory, 1, ARCH_TASKCODEPHYSICAL + core->task * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 0, ARCH_TASKCODEPHYSICAL + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 1, ARCH_TASKCODEPHYSICAL + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
-            if (!kernel_loadprogram(core->task))
-                kernel_signal(core->task, TASK_SIGNAL_KILL);
+            if (!kernel_loadprogram(core->itask))
+                kernel_signal(core->itask, TASK_SIGNAL_KILL);
 
         }
 
@@ -362,9 +362,9 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             else
             {
 
-                DEBUG_FMT2(DEBUG_INFO, "Killing task %u on core %u", &core->task, &core->id);
+                DEBUG_FMT2(DEBUG_INFO, "Killing task %u on core %u", &core->itask, &core->id);
 
-                kernel_signal(core->task, TASK_SIGNAL_KILL);
+                kernel_signal(core->itask, TASK_SIGNAL_KILL);
 
             }
 
@@ -381,7 +381,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
     struct core *core = kernel_getcore();
 
-    general.eax.value = abi_call(general.eax.value, core->task, interrupt.esp.reference);
+    general.eax.value = abi_call(general.eax.value, core->itask, interrupt.esp.reference);
 
     return arch_resume(&general, &interrupt);
 

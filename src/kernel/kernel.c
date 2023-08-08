@@ -13,7 +13,7 @@
 struct channel
 {
 
-    unsigned int task;
+    unsigned int itask;
     unsigned short uniqueness;
 
 };
@@ -27,47 +27,51 @@ static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
 
-static unsigned int getchannel(unsigned int index)
+static unsigned short getindex(unsigned int ichannel)
 {
 
-    return (channels[index].uniqueness << 16) | channels[index].task;
+    return (ichannel & (KERNEL_CHANNELS - 1));
 
 }
 
-static unsigned int newchannel(unsigned int index, unsigned int task)
+static unsigned short getuniqueness(unsigned int ichannel)
 {
 
-    channels[index].task = task;
-    channels[index].uniqueness++;
-
-    return getchannel(index);
+    return (ichannel >> 16);
 
 }
 
-static unsigned int newchannel2(unsigned int index, unsigned int task)
+static unsigned int getitask(unsigned int ichannel)
 {
 
-    channels[index].task = task;
-    channels[index].uniqueness = 0;
-
-    return getchannel(index);
-
-}
-
-static unsigned int gettarget(unsigned int channel)
-{
-
-    unsigned int index = channel & (KERNEL_CHANNELS - 1);
+    unsigned short index = getindex(ichannel);
 
     if (index)
     {
 
-        if (channels[index].uniqueness == (channel >> 16))
-            return channels[index].task;
+        if (channels[index].uniqueness == getuniqueness(ichannel))
+            return channels[index].itask;
 
     }
 
     return 0;
+
+}
+
+static unsigned int getichannel(unsigned short index)
+{
+
+    return (channels[index].uniqueness << 16) | channels[index].itask;
+
+}
+
+static unsigned int setchannel(unsigned short index, unsigned int itask)
+{
+
+    channels[index].itask = itask;
+    channels[index].uniqueness++;
+
+    return getichannel(index);
 
 }
 
@@ -197,8 +201,8 @@ void kernel_addlink(struct list *list, unsigned int target, unsigned int source)
         struct linkrow *linkrow = linkitem->data;
         struct link *link = &linkrow->link;
 
-        link->source = getchannel(source);
-        link->target = getchannel(target);
+        link->source = getichannel(source);
+        link->target = getichannel(target);
 
         list_add(list, linkitem);
 
@@ -239,8 +243,8 @@ void kernel_removelink(struct list *list, unsigned int target)
 unsigned int kernel_schedule(struct core *core)
 {
 
-    if (core->task)
-        checksignals(core, &taskrows[core->task]);
+    if (core->itask)
+        checksignals(core, &taskrows[core->itask]);
 
     unblocktasks();
 
@@ -248,67 +252,67 @@ unsigned int kernel_schedule(struct core *core)
 
 }
 
-unsigned int kernel_codebase(unsigned int task, unsigned int address)
+unsigned int kernel_codebase(unsigned int itask, unsigned int address)
 {
 
-    struct taskrow *taskrow = &taskrows[task];
+    struct taskrow *taskrow = &taskrows[itask];
     struct binary_format *format = binary_findformat(&taskrow->task.node);
 
     return (format) ? format->findbase(&taskrow->task.node, address) : 0;
 
 }
 
-unsigned int kernel_loadprogram(unsigned int task)
+unsigned int kernel_loadprogram(unsigned int itask)
 {
 
-    struct taskrow *taskrow = &taskrows[task];
+    struct taskrow *taskrow = &taskrows[itask];
     struct binary_format *format = binary_findformat(&taskrow->task.node);
 
     return (format) ? format->copyprogram(&taskrow->task.node) : 0;
 
 }
 
-void kernel_signal(unsigned int task, unsigned int signal)
+void kernel_signal(unsigned int itask, unsigned int signal)
 {
 
-    struct taskrow *taskrow = &taskrows[task];
+    struct taskrow *taskrow = &taskrows[itask];
 
     task_signal(&taskrow->task, signal);
 
 }
 
-struct task_thread *kernel_getthread(unsigned int task)
+struct task_thread *kernel_getthread(unsigned int itask)
 {
 
-    struct taskrow *taskrow = &taskrows[task];
+    struct taskrow *taskrow = &taskrows[itask];
 
     return &taskrow->task.thread;
 
 }
 
-struct descriptor *kernel_getdescriptor(unsigned int task, unsigned int descriptor)
+struct descriptor *kernel_getdescriptor(unsigned int itask, unsigned int descriptor)
 {
 
-    struct taskrow *taskrow = &taskrows[task];
+    struct taskrow *taskrow = &taskrows[itask];
 
     return &taskrow->descriptors[(descriptor & (KERNEL_DESCRIPTORS - 1))];
 
 }
 
-void kernel_setdescriptor(unsigned int task, unsigned int descriptor, struct service *service, unsigned int id)
+void kernel_setdescriptor(unsigned int itask, unsigned int descriptor, struct service *service, unsigned int id)
 {
 
-    struct descriptor *desc = kernel_getdescriptor(task, descriptor);
+    struct descriptor *desc = kernel_getdescriptor(itask, descriptor);
 
     desc->service = service;
     desc->id = id;
 
 }
 
-void kernel_copydescriptor(unsigned int task, unsigned int descriptor, unsigned int ptask, unsigned int pdescriptor)
+void kernel_copydescriptor(unsigned int itask, unsigned int descriptor, unsigned int ptask, unsigned int pdescriptor)
 {
 
-    struct descriptor *desc = kernel_getdescriptor(task, descriptor);
+    struct descriptor *desc = kernel_getdescriptor(itask, descriptor);
     struct descriptor *pdesc = kernel_getdescriptor(ptask, pdescriptor);
 
     desc->service = pdesc->service;
@@ -332,10 +336,10 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    unsigned int target = gettarget(channel);
+    unsigned int target = getitask(ichannel);
 
     if (target)
     {
@@ -345,7 +349,7 @@ unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned in
         struct message message;
         unsigned int c;
 
-        message_init(&message, event, getchannel(source), count);
+        message_init(&message, event, getichannel(source), count);
 
         c = mailbox_place(mailbox, &message, data);
 
@@ -359,13 +363,18 @@ unsigned int kernel_place(unsigned int source, unsigned int channel, unsigned in
 
 }
 
-void kernel_announce(unsigned int task, unsigned int channel)
+void kernel_announce(unsigned int itask, unsigned int ichannel)
 {
 
-    unsigned int index = channel & (KERNEL_CHANNELS - 1);
+    unsigned int index = ichannel & (KERNEL_CHANNELS - 1);
 
     if (index > KERNEL_TASKS)
-        newchannel2(index, task);
+    {
+
+        channels[index].itask = itask;
+        channels[index].uniqueness = 0;
+
+    }
 
 }
 
@@ -417,11 +426,11 @@ unsigned int kernel_createtask(void)
 
 }
 
-unsigned int kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int descriptor)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int descriptor)
 {
 
-    struct descriptor *pdescriptor = kernel_getdescriptor(taskid, descriptor);
-    struct taskrow *taskrow = &taskrows[taskid];
+    struct descriptor *pdescriptor = kernel_getdescriptor(itask, descriptor);
+    struct taskrow *taskrow = &taskrows[itask];
     struct task *task = &taskrow->task;
 
     if (pdescriptor)
@@ -446,7 +455,7 @@ unsigned int kernel_loadtask(unsigned int taskid, unsigned int sp, unsigned int 
                     if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
                         coreassign(&taskrow->item);
 
-                    return newchannel(taskid, taskid);
+                    return setchannel(getindex(itask), itask);
 
                 }
 

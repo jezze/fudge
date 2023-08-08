@@ -13,22 +13,22 @@ void syse_resume(struct cpu_general *general)
 
     struct core *core = kernel_getcore();
 
-    if (core->task)
+    if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->task);
+        struct task_thread *thread = kernel_getthread(core->itask);
 
         thread->ip = general->edx.value;
         thread->sp = general->ecx.value;
 
     }
 
-    core->task = kernel_schedule(core);
+    core->itask = kernel_schedule(core);
 
-    if (core->task)
+    if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->task);
+        struct task_thread *thread = kernel_getthread(core->itask);
 
         general->edx.value = thread->ip;
         general->ecx.value = thread->sp;
@@ -50,7 +50,7 @@ void syse_syscall(struct cpu_general general)
 
     struct core *core = kernel_getcore();
 
-    general.eax.value = abi_call(general.eax.value, core->task, (void *)(general.ecx.value + 8));
+    general.eax.value = abi_call(general.eax.value, core->itask, (void *)(general.ecx.value + 8));
 
     syse_resume(&general);
 

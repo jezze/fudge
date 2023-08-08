@@ -9,28 +9,28 @@
 
 #define CALLS                           32
 
-static unsigned int (*calls[CALLS])(unsigned int task, void *stack);
+static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 
-static unsigned int checkuserspace(unsigned int task, void *address, unsigned int count)
+static unsigned int checkuserspace(unsigned int itask, void *address, unsigned int count)
 {
 
     unsigned int value = (unsigned int)address;
 
-    return ((((value >= (0x80000000 - 0x8000)) && ((value + count) < 0x80000000))) || kernel_codebase(task, value));
+    return ((((value >= (0x80000000 - 0x8000)) && ((value + count) < 0x80000000))) || kernel_codebase(itask, value));
 
 }
 
-static unsigned int checkbuffer(unsigned int task, void *address, unsigned int count)
+static unsigned int checkbuffer(unsigned int itask, void *address, unsigned int count)
 {
 
-    return (address && count) ? checkuserspace(task, address, count) : 0;
+    return (address && count) ? checkuserspace(itask, address, count) : 0;
 
 }
 
-static unsigned int checkzerobuffer(unsigned int task, void *address, unsigned int count)
+static unsigned int checkzerobuffer(unsigned int itask, void *address, unsigned int count)
 {
 
-    return (address && count) ? checkuserspace(task, address, count) : (address == 0 && count == 0);
+    return (address && count) ? checkuserspace(itask, address, count) : (address == 0 && count == 0);
 
 }
 
@@ -87,22 +87,22 @@ static unsigned int findpath(struct service *service, unsigned int id, char *pat
 
 }
 
-static unsigned int debug(unsigned int task, void *stack)
+static unsigned int debug(unsigned int itask, void *stack)
 {
 
     return 0;
 
 }
 
-static unsigned int walk(unsigned int task, void *stack)
+static unsigned int walk(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
+    struct {void *caller; unsigned int idescriptor; unsigned int pdescriptor; char *path; unsigned int length;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
+    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->pdescriptor);
     struct service *service;
 
-    if (!checkzerobuffer(task, args->path, args->length) || !descriptor_check(pdescriptor))
+    if (!checkzerobuffer(itask, args->path, args->length) || !descriptor_check(pdescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "walk check failed");
@@ -111,23 +111,23 @@ static unsigned int walk(unsigned int task, void *stack)
 
     }
 
-    kernel_copydescriptor(task, args->descriptor, task, args->pdescriptor);
+    kernel_copydescriptor(itask, args->idescriptor, itask, args->pdescriptor);
 
     if ((service = findservice(args->path, args->length)))
-        kernel_setdescriptor(task, args->descriptor, service, service->root());
+        kernel_setdescriptor(itask, args->idescriptor, service, service->root());
 
-    return descriptor->id = findpath(descriptor->service, descriptor->id, args->path, args->length);
+    return idescriptor->id = findpath(idescriptor->service, idescriptor->id, args->path, args->length);
 
 }
 
-static unsigned int create(unsigned int task, void *stack)
+static unsigned int create(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int pdescriptor; char *name; unsigned int length;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(task, args->pdescriptor);
+    struct {void *caller; unsigned int idescriptor; unsigned int pdescriptor; char *name; unsigned int length;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
+    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->pdescriptor);
 
-    if (!checkbuffer(task, args->name, args->length) || !descriptor_check(pdescriptor))
+    if (!checkbuffer(itask, args->name, args->length) || !descriptor_check(pdescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "create check failed");
@@ -136,19 +136,19 @@ static unsigned int create(unsigned int task, void *stack)
 
     }
 
-    kernel_copydescriptor(task, args->descriptor, task, args->pdescriptor);
+    kernel_copydescriptor(itask, args->idescriptor, itask, args->pdescriptor);
 
-    return descriptor->id = descriptor->service->create(descriptor->id, args->name, args->length);
+    return idescriptor->id = idescriptor->service->create(idescriptor->id, args->name, args->length);
 
 }
 
-static unsigned int destroy(unsigned int task, void *stack)
+static unsigned int destroy(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
 
-    if (!descriptor_check(descriptor))
+    if (!descriptor_check(idescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "destroy check failed");
@@ -157,28 +157,28 @@ static unsigned int destroy(unsigned int task, void *stack)
 
     }
 
-    return descriptor->id = descriptor->service->destroy(descriptor->id);
+    return idescriptor->id = idescriptor->service->destroy(idescriptor->id);
 
 }
 
-static unsigned int kill(unsigned int task, void *stack)
+static unsigned int kill(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int task;} *args = stack;
+    struct {void *caller; unsigned int itask;} *args = stack;
 
-    kernel_signal(args->task, TASK_SIGNAL_KILL);
+    kernel_signal(args->itask, TASK_SIGNAL_KILL);
 
     return 0;
 
 }
 
-static unsigned int stat(unsigned int task, void *stack)
+static unsigned int stat(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; struct record *record;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor; struct record *record;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
 
-    if (!checkbuffer(task, args->record, sizeof (struct record)) || !descriptor_check(descriptor))
+    if (!checkbuffer(itask, args->record, sizeof (struct record)) || !descriptor_check(idescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "stat check failed");
@@ -187,19 +187,19 @@ static unsigned int stat(unsigned int task, void *stack)
 
     }
 
-    return descriptor->service->stat(descriptor->id, args->record);
+    return idescriptor->service->stat(idescriptor->id, args->record);
 
 }
 
-static unsigned int list(unsigned int task, void *stack)
+static unsigned int list(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int cdescriptor; unsigned int count; struct record *records;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
-    struct descriptor *cdescriptor = kernel_getdescriptor(task, args->cdescriptor);
+    struct {void *caller; unsigned int idescriptor; unsigned int cdescriptor; unsigned int count; struct record *records;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
+    struct descriptor *cdescriptor = kernel_getdescriptor(itask, args->cdescriptor);
     unsigned int count;
 
-    if (!checkbuffer(task, args->records, args->count * sizeof (struct record)) || !descriptor_check(descriptor) || !descriptor_check(cdescriptor))
+    if (!checkbuffer(itask, args->records, args->count * sizeof (struct record)) || !descriptor_check(idescriptor) || !descriptor_check(cdescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "list check failed");
@@ -208,23 +208,23 @@ static unsigned int list(unsigned int task, void *stack)
 
     }
 
-    if (descriptor->id == cdescriptor->id)
+    if (idescriptor->id == cdescriptor->id)
         cdescriptor->id = 0;
 
-    count = descriptor->service->list(descriptor->id, cdescriptor->id, args->count, args->records);
+    count = idescriptor->service->list(idescriptor->id, cdescriptor->id, args->count, args->records);
     cdescriptor->id = (count) ? args->records[count - 1].id : 0;
 
     return count;
 
 }
 
-static unsigned int read(unsigned int task, void *stack)
+static unsigned int read(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
 
-    if (!checkbuffer(task, args->buffer, args->count) || !descriptor_check(descriptor))
+    if (!checkbuffer(itask, args->buffer, args->count) || !descriptor_check(idescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "read check failed");
@@ -233,17 +233,17 @@ static unsigned int read(unsigned int task, void *stack)
 
     }
 
-    return descriptor->service->read(descriptor->id, args->buffer, args->count, args->offset);
+    return idescriptor->service->read(idescriptor->id, args->buffer, args->count, args->offset);
 
 }
 
-static unsigned int write(unsigned int task, void *stack)
+static unsigned int write(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
 
-    if (!checkbuffer(task, args->buffer, args->count) || !descriptor_check(descriptor))
+    if (!checkbuffer(itask, args->buffer, args->count) || !descriptor_check(idescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "write check failed");
@@ -252,24 +252,24 @@ static unsigned int write(unsigned int task, void *stack)
 
     }
 
-    return descriptor->service->write(descriptor->id, args->buffer, args->count, args->offset);
+    return idescriptor->service->write(idescriptor->id, args->buffer, args->count, args->offset);
 
 }
 
-static unsigned int load(unsigned int task, void *stack)
+static unsigned int load(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
     struct binary_format *format;
     struct binary_node node;
     void (*module_init)(void);
     void (*module_register)(void);
 
-    if (!descriptor_check(descriptor))
+    if (!descriptor_check(idescriptor))
         return 0;
 
-    node.address = descriptor->service->map(descriptor->id);
+    node.address = idescriptor->service->map(idescriptor->id);
 
     if (!node.address)
         return 0;
@@ -293,19 +293,19 @@ static unsigned int load(unsigned int task, void *stack)
 
 }
 
-static unsigned int unload(unsigned int task, void *stack)
+static unsigned int unload(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
     struct binary_format *format;
     struct binary_node node;
     void (*module_unregister)(void);
 
-    if (!descriptor_check(descriptor))
+    if (!descriptor_check(idescriptor))
         return 0;
 
-    node.address = descriptor->service->map(descriptor->id);
+    node.address = idescriptor->service->map(idescriptor->id);
 
     if (!node.address)
         return 0;
@@ -324,28 +324,28 @@ static unsigned int unload(unsigned int task, void *stack)
 
 }
 
-static unsigned int spawn(unsigned int task, void *stack)
+static unsigned int spawn(unsigned int itask, void *stack)
 {
 
     return 0;
 
 }
 
-static unsigned int despawn(unsigned int task, void *stack)
+static unsigned int despawn(unsigned int itask, void *stack)
 {
 
-    kernel_signal(task, TASK_SIGNAL_KILL);
+    kernel_signal(itask, TASK_SIGNAL_KILL);
 
     return 0;
 
 }
 
-static unsigned int pick(unsigned int task, void *stack)
+static unsigned int pick(unsigned int itask, void *stack)
 {
 
     struct {void *caller; struct message *message; void *data;} *args = stack;
 
-    if (!checkbuffer(task, args->message, sizeof (struct message)) || !checkbuffer(task, args->data, MESSAGE_SIZE))
+    if (!checkbuffer(itask, args->message, sizeof (struct message)) || !checkbuffer(itask, args->data, MESSAGE_SIZE))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "pick check failed");
@@ -354,16 +354,16 @@ static unsigned int pick(unsigned int task, void *stack)
 
     }
 
-    return kernel_pick(task, args->message, args->data);
+    return kernel_pick(itask, args->message, args->data);
 
 }
 
-static unsigned int place(unsigned int task, void *stack)
+static unsigned int place(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int channel; unsigned int event; unsigned int count; void *data;} *args = stack;
+    struct {void *caller; unsigned int ichannel; unsigned int event; unsigned int count; void *data;} *args = stack;
 
-    if (!checkzerobuffer(task, args->data, args->count))
+    if (!checkzerobuffer(itask, args->data, args->count))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "place check failed");
@@ -372,17 +372,17 @@ static unsigned int place(unsigned int task, void *stack)
 
     }
 
-    return kernel_place(task, args->channel, args->event, args->count, args->data);
+    return kernel_place(itask, args->ichannel, args->event, args->count, args->data);
 
 }
 
-static unsigned int link(unsigned int task, void *stack)
+static unsigned int link(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int source;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor; unsigned int source;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
 
-    if (!descriptor_check(descriptor))
+    if (!descriptor_check(idescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "link check failed");
@@ -391,17 +391,17 @@ static unsigned int link(unsigned int task, void *stack)
 
     }
 
-    return descriptor->service->link(descriptor->id, task, args->source);
+    return idescriptor->service->link(idescriptor->id, itask, args->source);
 
 }
 
-static unsigned int unlink(unsigned int task, void *stack)
+static unsigned int unlink(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
 
-    if (!descriptor_check(descriptor))
+    if (!descriptor_check(idescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "unlink check failed");
@@ -410,17 +410,17 @@ static unsigned int unlink(unsigned int task, void *stack)
 
     }
 
-    return descriptor->service->unlink(descriptor->id, task);
+    return idescriptor->service->unlink(idescriptor->id, itask);
 
 }
 
-static unsigned int notify(unsigned int task, void *stack)
+static unsigned int notify(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int descriptor; unsigned int event; unsigned int count; void *data;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(task, args->descriptor);
+    struct {void *caller; unsigned int idescriptor; unsigned int event; unsigned int count; void *data;} *args = stack;
+    struct descriptor *idescriptor = kernel_getdescriptor(itask, args->idescriptor);
 
-    if (!checkzerobuffer(task, args->data, args->count) || !descriptor_check(descriptor))
+    if (!checkzerobuffer(itask, args->data, args->count) || !descriptor_check(idescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "notify check failed");
@@ -429,29 +429,29 @@ static unsigned int notify(unsigned int task, void *stack)
 
     }
 
-    return descriptor->service->notify(descriptor->id, task, args->event, args->count, args->data);
+    return idescriptor->service->notify(idescriptor->id, itask, args->event, args->count, args->data);
 
 }
 
-static unsigned int announce(unsigned int task, void *stack)
+static unsigned int announce(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int channel;} *args = stack;
+    struct {void *caller; unsigned int ichannel;} *args = stack;
 
-    kernel_announce(task, args->channel);
+    kernel_announce(itask, args->ichannel);
 
     return 0;
 
 }
 
-unsigned int abi_call(unsigned int index, unsigned int task, void *stack)
+unsigned int abi_call(unsigned int index, unsigned int itask, void *stack)
 {
 
-    return index < CALLS ? calls[index](task, stack) : 0;
+    return index < CALLS ? calls[index](itask, stack) : 0;
 
 }
 
-void abi_setcallback(unsigned int index, unsigned int (*callback)(unsigned int task, void *stack))
+void abi_setcallback(unsigned int index, unsigned int (*callback)(unsigned int itask, void *stack))
 {
 
     calls[index] = callback;
