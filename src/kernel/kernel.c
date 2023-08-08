@@ -49,8 +49,10 @@ static unsigned int getitask(unsigned int ichannel)
     if (index)
     {
 
-        if (channels[index].uniqueness == getuniqueness(ichannel))
-            return channels[index].itask;
+        struct channel *channel = &channels[index];
+
+        if (channel->uniqueness == getuniqueness(ichannel))
+            return channel->itask;
 
     }
 
@@ -366,13 +368,15 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 void kernel_announce(unsigned int itask, unsigned int ichannel)
 {
 
-    unsigned int index = ichannel & (KERNEL_CHANNELS - 1);
+    unsigned short index = getindex(ichannel);
 
     if (index > KERNEL_TASKS)
     {
 
-        channels[index].itask = itask;
-        channels[index].uniqueness = 0;
+        struct channel *channel = &channels[index];
+
+        channel->itask = itask;
+        channel->uniqueness = 0;
 
     }
 
