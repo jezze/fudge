@@ -104,10 +104,14 @@ static void unblocktasks(void)
         {
 
             if (task_transition(task, TASK_STATE_UNBLOCKED))
+            {
+
                 list_remove_unsafe(&blockedtasks, taskitem);
 
-            if (task_transition(task, TASK_STATE_ASSIGNED))
-                coreassign(taskitem);
+                if (task_transition(task, TASK_STATE_ASSIGNED))
+                    coreassign(taskitem);
+
+            }
 
         }
 
