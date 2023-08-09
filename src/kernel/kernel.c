@@ -439,10 +439,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int d
 
     struct descriptor *pdescriptor = kernel_getdescriptor(itask, descriptor);
     struct taskrow *taskrow = &taskrows[itask];
-    struct task *task = &taskrow->task;
 
     if (pdescriptor)
     {
+
+        struct task *task = &taskrow->task;
 
         task->node.address = pdescriptor->service->map(pdescriptor->id);
 
@@ -461,19 +462,13 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int d
                 {
 
                     if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
+                    {
+
                         coreassign(&taskrow->item);
 
-                    return setchannel(getindex(itask), itask);
+                        return setchannel(getindex(itask), itask);
 
-                }
-
-                else
-                {
-
-                    if (task_transition(&taskrow->task, TASK_STATE_DEAD))
-                        list_add(&deadtasks, &taskrow->item);
-
-                    return 0;
+                    }
 
                 }
 
@@ -482,6 +477,9 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int d
         }
 
     }
+
+    if (task_transition(&taskrow->task, TASK_STATE_DEAD))
+        list_add(&deadtasks, &taskrow->item);
 
     return 0;
 
