@@ -10,7 +10,7 @@ static unsigned int getsession()
 
 }
 
-static void sendlistrequest(unsigned int session, unsigned int id)
+static void sendlistrequest(unsigned int target, unsigned int session, unsigned int id)
 {
 
     struct event_listrequest listrequest;
@@ -18,11 +18,11 @@ static void sendlistrequest(unsigned int session, unsigned int id)
     listrequest.session = session;
     listrequest.id = id;
 
-    channel_send_buffer(option_getdecimal("fs-service"), EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
+    channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
 
 }
 
-static void sendreadrequest(unsigned int session, unsigned int id, unsigned int count, unsigned int offset)
+static void sendreadrequest(unsigned int target, unsigned int session, unsigned int id, unsigned int count, unsigned int offset)
 {
 
     struct event_readrequest readrequest;
@@ -32,11 +32,11 @@ static void sendreadrequest(unsigned int session, unsigned int id, unsigned int 
     readrequest.offset = offset;
     readrequest.count = count;
 
-    channel_send_buffer(option_getdecimal("fs-service"), EVENT_READREQUEST, sizeof (struct event_readrequest), &readrequest);
+    channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &readrequest);
 
 }
 
-static void sendwalkrequest(unsigned int session, unsigned int parent, char *path)
+static void sendwalkrequest(unsigned int target, unsigned int session, unsigned int parent, char *path)
 {
 
     struct {struct event_walkrequest walkrequest; char path[64];} message;
@@ -46,18 +46,18 @@ static void sendwalkrequest(unsigned int session, unsigned int parent, char *pat
     message.walkrequest.length = cstring_length(path);
 
     buffer_write(message.path, 64, path, message.walkrequest.length, 0);
-    channel_send_buffer(option_getdecimal("fs-service"), EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
+    channel_send_buffer(target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + message.walkrequest.length, &message);
 
 }
 
-static unsigned int list(unsigned int id, struct record records[8])
+static unsigned int list(unsigned int target, unsigned int id, struct record records[8])
 {
 
     unsigned int session = getsession();
     struct message message;
     struct {struct event_listresponse listresponse; struct record records[8];} payload;
 
-    sendlistrequest(session, id);
+    sendlistrequest(target, session, id);
 
     while (channel_poll_any(EVENT_LISTRESPONSE, &message, &payload))
     {
@@ -77,7 +77,7 @@ static unsigned int list(unsigned int id, struct record records[8])
 
 }
 
-static unsigned int read(unsigned int id, unsigned int count, unsigned int offset, unsigned int ocount, void *obuffer)
+static unsigned int read(unsigned int target, unsigned int id, unsigned int count, unsigned int offset, unsigned int ocount, void *obuffer)
 {
 
     unsigned int session = getsession();
@@ -87,7 +87,7 @@ static unsigned int read(unsigned int id, unsigned int count, unsigned int offse
     if (!count)
         return 0;
 
-    sendreadrequest(session, id, count, offset);
+    sendreadrequest(target, session, id, count, offset);
 
     while (channel_poll_any(EVENT_READRESPONSE, &message, &payload))
     {
@@ -107,14 +107,14 @@ static unsigned int read(unsigned int id, unsigned int count, unsigned int offse
 
 }
 
-static unsigned int walk(unsigned int id, char *path)
+static unsigned int walk(unsigned int target, unsigned int id, char *path)
 {
 
     unsigned int session = getsession();
     struct message message;
     struct event_walkresponse walkresponse;
 
-    sendwalkrequest(session, id, path);
+    sendwalkrequest(target, session, id, path);
 
     while (channel_poll_any(EVENT_WALKRESPONSE, &message, &walkresponse))
     {
@@ -131,13 +131,14 @@ static unsigned int walk(unsigned int id, char *path)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int root = walk(0, "");
+    unsigned int target = option_getdecimal("fs-service");
+    unsigned int root = walk(target, 0, "");
 
     if (root)
     {
 
         struct record records[8];
-        unsigned int nrecords = list(root, records);
+        unsigned int nrecords = list(target, root, records);
         unsigned int i;
         unsigned int id;
 
@@ -150,13 +151,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        id = walk(root, "test.txt");
+        id = walk(target, root, "test.txt");
 
         if (id)
         {
 
             char buffer[4096];
-            unsigned int count = read(id, 100, 0, 4096, buffer);
+            unsigned int count = read(target, id, 100, 0, 4096, buffer);
 
             if (count)
                 channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
