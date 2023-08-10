@@ -12,23 +12,23 @@ static void print(unsigned int source, unsigned int count, void *buffer)
     for (i = 0; i < count; i += 16)
     {
 
-        char buffer[120];
+        char data[120];
         unsigned int offset = 0;
         unsigned int j;
 
-        offset += cstring_write_fmt1(buffer, 120, "%H8u  ", offset, &page);
+        offset += cstring_write_fmt1(data, 120, "%H8u  ", offset, &page);
 
         for (j = i; j < i + 16; j++)
         {
 
             if (j < count)
-                offset += cstring_write_fmt1(buffer, 120, "%H2c ", offset, &b[j]);
+                offset += cstring_write_fmt1(data, 120, "%H2c ", offset, &b[j]);
             else
-                offset += cstring_write_fmt0(buffer, 120, "   ", offset);
+                offset += cstring_write_fmt0(data, 120, "   ", offset);
 
         }
 
-        offset += cstring_write_fmt0(buffer, 120, " |", offset);
+        offset += cstring_write_fmt0(data, 120, " |", offset);
 
         for (j = i; j < i + 16; j++)
         {
@@ -41,23 +41,23 @@ static void print(unsigned int source, unsigned int count, void *buffer)
                 if (!(c >= 0x20 && c <= 0x7e))
                     c = ' ';
 
-                offset += buffer_write(buffer, 120, &c, 1, offset);
+                offset += buffer_write(data, 120, &c, 1, offset);
 
             }
 
             else
             {
 
-                offset += cstring_write_fmt0(buffer, 120, " ", offset);
+                offset += cstring_write_fmt0(data, 120, " ", offset);
 
             }
 
         }
 
-        offset += cstring_write_fmt0(buffer, 120, "|\n", offset);
+        offset += cstring_write_fmt0(data, 120, "|\n", offset);
         page += 16;
 
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, offset, buffer);
+        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, offset, data);
 
     }
 

@@ -628,13 +628,13 @@ void audio_write(const unsigned short addr, const unsigned char val)
     case 0xFF25:
         {
 
-            unsigned char i;
+            unsigned char j;
 
-            for (i = 0; i < 4; ++i)
+            for (j = 0; j < 4; ++j)
             {
 
-                chans[i].on_left  = (val >> (4 + i)) & 1;
-                chans[i].on_right = (val >> i) & 1;
+                chans[j].on_left  = (val >> (4 + j)) & 1;
+                chans[j].on_right = (val >> j) & 1;
 
             }
 

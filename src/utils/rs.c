@@ -1,12 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int session;
+static unsigned int sessioncount;
 
 static unsigned int getsession()
 {
 
-    return ++session;
+    return ++sessioncount;
 
 }
 

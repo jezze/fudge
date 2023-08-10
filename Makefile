@@ -27,7 +27,10 @@ clean:
 	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(IMAGE) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD) $(REPORT)
 
 check:
-	@cppcheck -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) --std=c89 --report-progress --xml --enable=all --suppress=unusedFunction --suppress=cert-API01-C --suppress=cert-EXP15-C --suppress=cert-STR05-C . 2> $(REPORT)
+	@cppcheck -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) --std=c89 --report-progress --xml --enable=all --suppress=unusedStructMember --suppress=constParameterPointer --suppress=constVariablePointer --suppress=constParameterCallback --suppress=unusedFunction --suppress=cert-API01-C --suppress=cert-EXP15-C --suppress=cert-STR05-C . 2> $(REPORT)
+
+check-full:
+	@cppcheck -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) --std=c89 --report-progress --xml --enable=all . 2> $(REPORT)
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
@@ -40,6 +43,8 @@ deps: $(DEP)
 $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@echo BUILDROOT $@
 	@mkdir -p $@
+	@mkdir -p $@/lib
+	@cp $(LIB) $@/lib
 	@mkdir -p $@/bin
 	@cp $(BIN) $@/bin
 	@mkdir -p $@/config
@@ -50,8 +55,6 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@cp $(KBIN) $@/kernel
 	@cp $(KMAP) $@/kernel
 	@cp $(KMOD) $@/kernel
-	@mkdir -p $@/lib
-	@cp $(LIB) $@/lib
 
 $(DIR_ISO): $(KERNEL) $(RAMDISK)
 	@echo ISO $@

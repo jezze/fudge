@@ -94,13 +94,10 @@ static void unblocktasks(void)
 
         struct taskrow *taskrow = taskitem->data;
         struct task *task = &taskrow->task;
-        struct mailbox *mailbox = &taskrow->mailbox;
 
         next = taskitem->next;
 
-        spinlock_acquire(&mailbox->spinlock);
-
-        if (ring_count(&mailbox->ring))
+        if (task->signals.unblocks)
         {
 
             if (task_transition(task, TASK_STATE_UNBLOCKED))
@@ -114,8 +111,6 @@ static void unblocktasks(void)
             }
 
         }
-
-        spinlock_release(&mailbox->spinlock);
 
     }
 
