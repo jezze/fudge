@@ -128,6 +128,14 @@ static unsigned int walk(unsigned int target, unsigned int id, char *path)
 
 }
 
+static void onerror(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_send_buffer(CHANNEL_DEFAULT, EVENT_ERROR, msize, mdata);
+    channel_close();
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -173,6 +181,7 @@ void init(void)
 
     option_add("fs-service", "1111");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_ERROR, onerror);
 
 }
 
