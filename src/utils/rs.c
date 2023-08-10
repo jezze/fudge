@@ -128,11 +128,10 @@ static unsigned int walk(unsigned int id, char *path)
 
 }
 
-static void test(void)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int root = walk(0, "");
-    unsigned int id = walk(root, "test.txt");
 
     if (root)
     {
@@ -140,6 +139,7 @@ static void test(void)
         struct record records[8];
         unsigned int nrecords = list(root, records);
         unsigned int i;
+        unsigned int id;
 
         for (i = 0; i < nrecords; i++)
         {
@@ -150,25 +150,20 @@ static void test(void)
 
         }
 
+        id = walk(root, "test.txt");
+
+        if (id)
+        {
+
+            char buffer[4096];
+            unsigned int count = read(id, 100, 0, 4096, buffer);
+
+            if (count)
+                channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+
+        }
+
     }
-
-    if (id)
-    {
-
-        char buffer[4096];
-        unsigned int count = read(id, 100, 0, 4096, buffer);
-
-        if (count)
-            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
-
-    }
-
-}
-
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    test();
 
 }
 
