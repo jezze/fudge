@@ -13,7 +13,7 @@
 struct channel
 {
 
-    unsigned int itask;
+    unsigned int target;
     unsigned short uniqueness;
 
 };
@@ -41,7 +41,7 @@ static unsigned short getuniqueness(unsigned int ichannel)
 
 }
 
-static unsigned int getitask(unsigned int ichannel)
+static unsigned int gettarget(unsigned int ichannel)
 {
 
     unsigned short index = getindex(ichannel);
@@ -52,7 +52,7 @@ static unsigned int getitask(unsigned int ichannel)
         struct channel *channel = &channels[index];
 
         if (channel->uniqueness == getuniqueness(ichannel))
-            return channel->itask;
+            return channel->target;
 
     }
 
@@ -65,16 +65,16 @@ static unsigned int getichannel(unsigned short index)
 
     struct channel *channel = &channels[index];
 
-    return (channel->uniqueness << 16) | channel->itask;
+    return (channel->uniqueness << 16) | index;
 
 }
 
-static unsigned int setchannel(unsigned short index, unsigned int itask)
+static unsigned int setchannel(unsigned short index, unsigned int target)
 {
 
     struct channel *channel = &channels[index];
 
-    channel->itask = itask;
+    channel->target = target;
     channel->uniqueness++;
 
     return getichannel(index);
@@ -344,7 +344,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    unsigned int target = getitask(ichannel);
+    unsigned int target = gettarget(ichannel);
 
     if (target)
     {
@@ -368,7 +368,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned int itask, unsigned int ichannel)
+void kernel_announce(unsigned int target, unsigned int ichannel)
 {
 
     unsigned short index = getindex(ichannel);
@@ -378,7 +378,7 @@ void kernel_announce(unsigned int itask, unsigned int ichannel)
 
         struct channel *channel = &channels[index];
 
-        channel->itask = itask;
+        channel->target = target;
         channel->uniqueness = 0;
 
     }
