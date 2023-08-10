@@ -36,9 +36,9 @@ static void enable(void)
 
             DEBUG_FMT1(DEBUG_INFO, "enable processor id %u", &i);
 
-            apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0x00);
+            apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
             pit_wait(10);
-            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | (INIT16PHYSICAL >> 12));
+            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16PHYSICAL >> 12));
 
         }
 
@@ -78,7 +78,7 @@ static void coreassign(struct list_item *item)
         cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
 
         if (core->id != apic_getid())
-            apic_sendint(core->id, APIC_REG_ICR_TYPE_NORMAL | APIC_REG_ICR_MODE_PHYSICAL | APIC_REG_ICR_LEVEL_ASSERT | APIC_REG_ICR_TRIGGER_EDGE | APIC_REG_ICR_TARGET_NORMAL | 0xFE);
+            apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
 
         cpu_setcr3(directory);
 
