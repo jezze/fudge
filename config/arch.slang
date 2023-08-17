@@ -13,7 +13,7 @@ elfload /kernel/rtc.ko
 elfload /kernel/ps2.ko
 elfload /kernel/ps2-keyboard.ko
 elfload /kernel/ps2-mouse.ko
-elfload /kernel/vbe.ko
+elfload /kernel/bga.ko
 elfload /kernel/uart.ko
 elfload /kernel/vga.ko
 elfload /kernel/rtl8139.ko
