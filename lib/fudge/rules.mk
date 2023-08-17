@@ -21,5 +21,11 @@ O:=\
     $(DIR_LIB)/fudge/url.o \
     $(DIR_LIB)/fudge/utf8.o \
 
+ifeq ($(TARGET),i386-tcc)
+O:=\
+    $(O) \
+    $(DIR_LIB)/fudge/tcc.o
+endif
+
 include $(DIR_LIB)/fudge/$(ARCH)/rules.mk
 include $(DIR_MK)/lib.mk
