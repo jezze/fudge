@@ -2,8 +2,6 @@
 
 .section .text
 
-.extern smp_setupap
-
 .set SMP_GDTADDRESS,                    0x1000
 .set SMP_IDTADDRESS,                    0x2000
 .set SMP_INIT16ADDRESS,                 0x8000

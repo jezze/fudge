@@ -1,8 +1,5 @@
 .code32
 
-.extern main
-.extern call_despawn
-
 .section .text
 
 .global _start

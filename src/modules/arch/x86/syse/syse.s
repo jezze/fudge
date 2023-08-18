@@ -1,7 +1,5 @@
 .code32
 
-.extern syse_syscall
-
 .section .text
 
 .global syse_interrupt

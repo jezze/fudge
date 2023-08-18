@@ -1,7 +1,5 @@
 .code32
 
-.extern mboot_setup
-
 .set INIT_MBOOT_HEADER_MAGIC,           0x1BADB002
 .set INIT_MBOOT_HEADER_FLAGS,           0x00000001
 .set INIT_MBOOT_CHECKSUM,               0x00000000 - (INIT_MBOOT_HEADER_MAGIC + INIT_MBOOT_HEADER_FLAGS)

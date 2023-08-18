@@ -1,8 +1,5 @@
 .code32
 
-.extern apic_interrupt
-.extern apic_interruptnone
-
 .section .text
 
 .align 16

@@ -1,21 +1,5 @@
 .code32
 
-.extern arch_zero
-.extern arch_debug
-.extern arch_nmi
-.extern arch_breakpoint
-.extern arch_overflow
-.extern arch_bound
-.extern arch_opcode
-.extern arch_device
-.extern arch_doublefault
-.extern arch_tss
-.extern arch_segment
-.extern arch_stack
-.extern arch_generalfault
-.extern arch_pagefault
-.extern arch_syscall
-
 .section .text
 
 .global isr_zero

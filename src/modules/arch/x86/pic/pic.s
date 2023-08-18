@@ -1,8 +1,5 @@
 .code32
 
-.extern pic_interrupt0
-.extern pic_interrupt1
-
 .section .text
 
 .align 16
