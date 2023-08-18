@@ -12,6 +12,8 @@
 
 .section .text
 
+.global _start
+_start:
 .global mboot_init
 mboot_init:
     pushl %eax
