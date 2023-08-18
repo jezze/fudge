@@ -92,7 +92,7 @@ cpu_setidt:
 .global cpu_settss
 cpu_settss:
     movw 4(%esp), %ax
-    ltrw %ax
+    ltr %ax
     ret
 
 .global cpu_halt
