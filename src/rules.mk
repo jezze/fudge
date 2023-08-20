@@ -1,4 +1,4 @@
-ifeq ($(ARCH),x86)
+ifeq ($(TARGET),i386-unknown-elf)
 include $(DIR_SRC)/demo/rules.mk
 include $(DIR_SRC)/gameboy/rules.mk
 endif

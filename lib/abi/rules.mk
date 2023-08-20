@@ -11,6 +11,7 @@ O:=\
 include $(DIR_LIB)/abi/$(ARCH)/rules.mk
 include $(DIR_MK)/lib.mk
 
+ifeq ($(TARGET),i386-unknown-elf)
 L:=\
     $(DIR_LIB)/abi/qabi.a \
 
@@ -23,3 +24,4 @@ O:=\
 
 include $(DIR_LIB)/abi/$(ARCH)/qrules.mk
 include $(DIR_MK)/lib.mk
+endif

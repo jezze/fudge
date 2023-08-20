@@ -21,9 +21,13 @@ include $(DIR_SRC)/modules/arch/x86/ps2/rules.mk
 include $(DIR_SRC)/modules/arch/x86/rtc/rules.mk
 include $(DIR_SRC)/modules/arch/x86/rtl8139/rules.mk
 include $(DIR_SRC)/modules/arch/x86/smp/rules.mk
+ifeq ($(TARGET),i386-unknown-elf)
 include $(DIR_SRC)/modules/arch/x86/syse/rules.mk
+endif
 include $(DIR_SRC)/modules/arch/x86/uart/rules.mk
 include $(DIR_SRC)/modules/arch/x86/usb/rules.mk
+ifeq ($(TARGET),i386-unknown-elf)
 include $(DIR_SRC)/modules/arch/x86/vbe/rules.mk
+endif
 include $(DIR_SRC)/modules/arch/x86/vga/rules.mk
 include $(DIR_SRC)/modules/arch/x86/virtio/rules.mk
