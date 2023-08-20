@@ -12,7 +12,7 @@
 static char b[1760];
 static char z[1760];
 
-static void memset(char *buffer, int value, unsigned int length)
+static void setmemto(char *buffer, int value, unsigned int length)
 {
 
     unsigned int i;
@@ -49,8 +49,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         int j;
         int k;
 
-        memset(b, 32, 1760);
-        memset(z, 127, 1760);
+        setmemto(b, 32, 1760);
+        setmemto(z, 127, 1760);
 
         for (j = 0; j < 90; j++)
         {
