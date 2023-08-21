@@ -1,7 +1,5 @@
-ARCH:=x86
+CONFIG:=config
 KERNEL:=fudge
-LOADER:=mboot
-TARGET:=i386-unknown-elf
 RAMDISK_TYPE:=cpio
 RAMDISK:=$(KERNEL).$(RAMDISK_TYPE)
 IMAGE_TYPE:=img
@@ -18,7 +16,7 @@ DIR_SNAPSHOT:=snapshot
 DIR_INSTALL:=/boot
 REPORT:=report.xml
 
-.PHONY: all clean install
+.PHONY: all clean check check-full install default help
 .SUFFIXES:
 
 all: $(KERNEL) $(RAMDISK)
@@ -34,6 +32,79 @@ check-full:
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
 
+config-init:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo -n "" > $(DIR_MK)/$(CONFIG).mk
+
+config-arch-x86:
+	@echo "ARCH:=x86" >> $(DIR_MK)/$(CONFIG).mk
+
+config-arch-arm:
+	@echo "ARCH:=arm" >> $(DIR_MK)/$(CONFIG).mk
+
+config-arch-riscv:
+	@echo "ARCH:=riscv" >> $(DIR_MK)/$(CONFIG).mk
+
+config-loader-mboot:
+	@echo "LOADER:=mboot" >> $(DIR_MK)/$(CONFIG).mk
+
+config-loader-integratorcp:
+	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
+
+config-loader-medany:
+	@echo "LOADER:=medany" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-i386-unknown-elf:
+	@echo "TARGET:=i386-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-i386-tcc:
+	@echo "TARGET:=i386-tcc" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-arm-none-eabi:
+	@echo "TARGET:=arm-none-eabi" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-arm-unknown-eabi:
+	@echo "TARGET:=arm-unknown-eabi" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-riscv64-linux-gnu:
+	@echo "TARGET:=riscv64-linux-gnu" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-riscv64-tcc:
+	@echo "TARGET:=riscv64-tcc" >> $(DIR_MK)/$(CONFIG).mk
+
+x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-unknown-elf
+x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
+
+arm-integratorcp-none: config-init | config-arch-arm config-loader-integratorcp config-target-arm-none-eabi
+arm-integratorcp-unknown: config-init | config-arch-arm config-loader-integratorcp config-target-arm-unknown-eabi
+
+riscv-medany-linux: config-init | config-arch-riscv config-loader-medany config-target-riscv64-linux-gnu
+riscv-medany-tcc: config-init | config-arch-riscv config-loader-medany config-target-riscv64-tcc
+
+default: x86-mboot
+
+help:
+	@echo "Building and cleaning:"
+	@echo ""
+	@echo "  $$ make"
+	@echo "  $$ make clean"
+	@echo ""
+	@echo "Set configuration (mostly for cross-compiling):"
+	@echo ""
+	@echo "  $$ make <config>"
+	@echo ""
+	@echo "Where <config> is one of the following:"
+	@echo ""
+	@echo "  x86-mboot (default)"
+	@echo "  x86-mboot-tcc"
+	@echo "  arm-integratorcp-none"
+	@echo "  arm-integratorcp-unknown"
+	@echo "  arm-integratorcp-tcc"
+	@echo "  riscv-medany-linux"
+	@echo "  riscv-medany-tcc"
+	@echo ""
+
+include $(DIR_MK)/$(CONFIG).mk
 include $(DIR_MK)/$(TARGET).mk
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk

@@ -2,10 +2,10 @@
 
 ARM port is only in early development.
 
-## Build
+## Conigure and Build
 
-make ARCH=arm TARGET=arm-unknown-eabi LOADER=integratorcp
-make ARCH=arm TARGET=arm-none-eabi LOADER=integratorcp
+make arm-integratorcp-none
+make
 
 ## Run in QEMU
 

@@ -2,9 +2,10 @@
 
 RISC-V port is only in early development.
 
-## Build
+## Conigure and Build
 
-make ARCH=riscv TARGET=riscv64-linux-gnu LOADER=medany
+make riscv64-medany-linux
+make
 
 ## Run in QEMU
 
