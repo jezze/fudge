@@ -90,6 +90,10 @@ static unsigned int findpath(struct service *service, unsigned int id, char *pat
 static unsigned int debug(unsigned int itask, void *stack)
 {
 
+    struct {void *caller; char *message;} *args = stack;
+
+    DEBUG_FMT0(DEBUG_INFO, args->message);
+
     return 0;
 
 }

@@ -1,6 +1,6 @@
 unsigned int call_announce(unsigned int ichannel);
 unsigned int call_create(unsigned int idescriptor, unsigned int pdescriptor, char *name, unsigned int length);
-unsigned int call_debug(void);
+unsigned int call_debug(char *message);
 unsigned int call_destroy(unsigned int idescriptor);
 unsigned int call_despawn(void);
 unsigned int call_kill(unsigned int task);
