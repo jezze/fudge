@@ -1,7 +1,7 @@
 ifeq ($(TARGET),i386-tcc)
 O:=\
     $(O) \
-    $(DIR_LIB)/abi/x86/crt0.o \
+    $(DIR_LIB)/abi/$(ARCH)/crt0.o \
 
 L:=\
     $(L) \
