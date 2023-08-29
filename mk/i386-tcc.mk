@@ -3,7 +3,7 @@ AS=$(TARGET)
 CC=$(TARGET)
 LD=$(TARGET)
 NM=touch
-AR_FLAGS=-r
+AR_FLAGS=-ar rcs
 AS_FLAGS=-c
 CC_FLAGS=-c -Wall -Werror -Wno-overlength-strings -msoft-float -ffreestanding -fno-asynchronous-unwind-tables -std=c89 -pedantic -O2 -nostdlib -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC)
 LD_FLAGS=-s -static -nostdlib
