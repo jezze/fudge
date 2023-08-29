@@ -1,5 +1,12 @@
 #include <fudge.h>
 
+unsigned int call_announce(unsigned int ichannel)
+{
+
+    return 0;
+
+}
+
 unsigned int call_create(unsigned int idescriptor, unsigned int pdescriptor, char *name, unsigned int length)
 {
 
