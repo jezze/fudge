@@ -5,51 +5,49 @@
 .set VBE_MODE,                          0xD000
 .set VBE_EDID,                          0xE000
 
-.intel_syntax noprefix
-
 .global vbe_getinfo
 vbe_getinfo:
-    mov eax, VBE_INFO
-    pushad
-    mov edx, VBE_CODE + (getinfo_real - vbe_lowmemstart)
+    movl $VBE_INFO, %eax
+    pusha
+    movl $(VBE_CODE + getinfo_real - vbe_lowmemstart), %edx
     jmp switch_16
 
 .global vbe_getvideomode
 vbe_getvideomode:
-    mov eax, VBE_MODE
-    pushad
-    mov eax, VBE_MODENUM
-    mov ebx, [esp + 32 + 4]
-    mov [eax], ebx
-    mov edx, VBE_CODE + (getvideomode_real - vbe_lowmemstart)
+    movl $VBE_MODE, %eax
+    pusha
+    movl $VBE_MODENUM, %eax
+    movl 36(%esp), %ebx
+    movl %ebx, (%eax)
+    movl $(VBE_CODE + getvideomode_real - vbe_lowmemstart), %edx
     jmp switch_16
 
 .global vbe_setvideomode
 vbe_setvideomode:
-    pushad
-    mov eax, VBE_MODENUM
-    mov ebx, [esp + 32 + 4]
-    mov [eax], ebx
-    mov edx, VBE_CODE + (setvideomode_real - vbe_lowmemstart)
+    pusha
+    movl $VBE_MODENUM, %eax
+    movl 36(%esp), %ebx
+    movl %ebx, (%eax)
+    movl $(VBE_CODE + setvideomode_real - vbe_lowmemstart), %edx
     jmp switch_16
 
 .global vbe_getedid
 vbe_getedid:
-    pushad
-    mov edx, VBE_CODE + (getedid_real - vbe_lowmemstart)
+    pusha
+    movl $(VBE_CODE + getedid_real - vbe_lowmemstart), %edx
     jmp switch_16
 
 switch_16:
-    mov eax, VBE_STACK
-    mov [eax], esp
-    mov eax, cr0
-    and eax, ~0x80000000
-    mov cr0, eax
-    mov eax, VBE_CODE + (realmode_gdt - vbe_lowmemstart)
-    lgdt [eax]
-    push 0x8
-    mov eax, VBE_CODE + (switch_real - vbe_lowmemstart)
-    push eax
+    movl $VBE_STACK, %eax
+    movl %esp, (%eax)
+    movl %cr0, %eax
+    andl $~0x80000000, %eax
+    movl %eax, %cr0
+    movl $(VBE_CODE + realmode_gdt - vbe_lowmemstart), %eax
+    lgdt (%eax)
+    pushl $0x8
+    movl $(VBE_CODE + switch_real - vbe_lowmemstart), %eax
+    pushl %eax
     lret
 
 .global vbe_lowmemstart
@@ -58,110 +56,110 @@ vbe_lowmemstart:
 .code16
 
 switch_real:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov eax, VBE_CODE + (realmode_idt - vbe_lowmemstart)
-    lidt [eax]
-    mov eax, cr0
-    and eax, 0x7FFFFFFE
-    mov cr0, eax
-    push 0x0
-    push edx
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    movl $(VBE_CODE + realmode_idt - vbe_lowmemstart), %eax
+    lidt (%eax)
+    movl %cr0, %eax
+    andl $0x7FFFFFFE, %eax
+    movl %eax, %cr0
+    pushl $0x0
+    pushl %edx
     lret
 
 getinfo_real:
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov sp, 0xA000
-    mov ax, 0x4F00
-    xor bx, bx
-    xor cx, cx
-    xor dx, dx
-    mov di, VBE_INFO
-    int 0x10
+    xorw %ax, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    movw $0xA000, %sp
+    movw $0x4F00, %ax
+    xorw %bx, %bx
+    xorw %cx, %cx
+    xorw %dx, %dx
+    movw $VBE_INFO, %di
+    int $0x10
     jmp leave_real
 
 getvideomode_real:
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov sp, 0xA000
-    mov ax, 0x4F01
-    xor bx, bx
-    mov cx, [VBE_MODENUM]
-    xor dx, dx
-    mov di, VBE_MODE
-    int 0x10
+    xorw %ax, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    movw $0xA000, %sp
+    movw $0x4F01, %ax
+    xorw %bx, %bx
+    movw (VBE_MODENUM), %cx
+    xorw %dx, %dx
+    movw $VBE_MODE, %di
+    int $0x10
     jmp leave_real
 
 setvideomode_real:
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov sp, 0xA000
-    mov ax, 0x4F02
-    mov bx, [VBE_MODENUM]
-    xor cx, cx
-    xor dx, dx
-    xor di, di
-    int 0x10
+    xorw %ax, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    movw $0xA000, %sp
+    movw $0x4F02, %ax
+    movw (VBE_MODENUM), %bx
+    xorw %cx, %cx
+    xorw %dx, %dx
+    xorw %di, %di
+    int $0x10
     jmp leave_real
 
 getedid_real:
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov sp, 0xA000
-    mov ax, 0x4F15
-    mov bx, 0x0001
-    xor cx, cx
-    xor dx, dx
-    mov di, VBE_EDID
-    int 0x10
+    xorw %ax, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    movw $0xA000, %sp
+    movw $0x4F02, %ax
+    movw $0x0001, %bx
+    xorw %cx, %cx
+    xorw %dx, %dx
+    movw $VBE_EDID, %di
+    int $0x10
     jmp leave_real
 
 leave_real:
-    mov eax, 0x1000
-    lgdt [eax]
-    mov eax, 0x2000
-    lidt [eax]
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
-    ljmp 0x8:(VBE_CODE + switch_32 - vbe_lowmemstart)
+    movl $0x1000, %eax
+    lgdt (%eax)
+    movl $0x2000, %eax
+    lidt (%eax)
+    movl %cr0, %eax
+    orl $1, %eax
+    movl %eax, %cr0
+    ljmp $0x8, $(VBE_CODE + switch_32 - vbe_lowmemstart)
 
 .code32
 
 switch_32:
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov eax, cr0
-    or eax, 0x80000000
-    mov cr0, eax
-    mov eax, VBE_STACK
-    mov esp, [eax]
-    popad
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+    movl %cr0, %eax
+    orl $0x80000000, %eax
+    movl %eax, %cr0
+    movl $VBE_STACK, %eax
+    movl (%eax), %esp
+    popa
     ret
 
 .global realmode_gdt
