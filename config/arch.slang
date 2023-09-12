@@ -3,7 +3,6 @@ elfload /kernel/cpuid.ko
 elfload /kernel/msr.ko
 elfload /kernel/pat.ko
 elfload /kernel/acpi.ko
-elfload /kernel/syse.ko
 elfload /kernel/pic.ko
 elfload /kernel/apic.ko
 elfload /kernel/platform.ko
