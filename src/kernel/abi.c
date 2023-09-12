@@ -273,7 +273,7 @@ static unsigned int load(unsigned int itask, void *stack)
     if (!descriptor_check(idescriptor))
         return 0;
 
-    node.address = idescriptor->service->map(idescriptor->id);
+    node.address = idescriptor->service->map(idescriptor->id, 0);
 
     if (!node.address)
         return 0;
@@ -309,7 +309,7 @@ static unsigned int unload(unsigned int itask, void *stack)
     if (!descriptor_check(idescriptor))
         return 0;
 
-    node.address = idescriptor->service->map(idescriptor->id);
+    node.address = idescriptor->service->map(idescriptor->id, 0);
 
     if (!node.address)
         return 0;

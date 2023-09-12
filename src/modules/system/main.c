@@ -234,7 +234,7 @@ static unsigned int service_write(unsigned int id, void *buffer, unsigned int co
 
 }
 
-static unsigned int service_map(unsigned int id)
+static unsigned int service_map(unsigned int id, unsigned int address)
 {
 
     return 0;

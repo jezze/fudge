@@ -443,7 +443,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int d
     if (pdescriptor)
     {
 
-        task->node.address = pdescriptor->service->map(pdescriptor->id);
+        task->node.address = pdescriptor->service->map(pdescriptor->id, 0);
 
         if (task->node.address)
         {
