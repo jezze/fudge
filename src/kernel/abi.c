@@ -293,7 +293,7 @@ static unsigned int load(unsigned int itask, void *stack)
     if (module_register)
         module_register();
 
-    return 1;
+    return node.address;
 
 }
 
@@ -324,7 +324,7 @@ static unsigned int unload(unsigned int itask, void *stack)
     if (module_unregister)
         module_unregister();
 
-    return 1;
+    return node.address;
 
 }
 
