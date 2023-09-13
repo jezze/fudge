@@ -5,51 +5,6 @@
 .set VBE_MODE,                          0xD000
 .set VBE_EDID,                          0xE000
 
-.global vbe_getinfo
-vbe_getinfo:
-    movl $VBE_INFO, %eax
-    pusha
-    movl $(VBE_CODE + getinfo_real - vbe_lowmemstart), %edx
-    jmp switch_16
-
-.global vbe_getvideomode
-vbe_getvideomode:
-    movl $VBE_MODE, %eax
-    pusha
-    movl $VBE_MODENUM, %eax
-    movl 36(%esp), %ebx
-    movl %ebx, (%eax)
-    movl $(VBE_CODE + getvideomode_real - vbe_lowmemstart), %edx
-    jmp switch_16
-
-.global vbe_setvideomode
-vbe_setvideomode:
-    pusha
-    movl $VBE_MODENUM, %eax
-    movl 36(%esp), %ebx
-    movl %ebx, (%eax)
-    movl $(VBE_CODE + setvideomode_real - vbe_lowmemstart), %edx
-    jmp switch_16
-
-.global vbe_getedid
-vbe_getedid:
-    pusha
-    movl $(VBE_CODE + getedid_real - vbe_lowmemstart), %edx
-    jmp switch_16
-
-switch_16:
-    movl $VBE_STACK, %eax
-    movl %esp, (%eax)
-    movl %cr0, %eax
-    andl $~0x80000000, %eax
-    movl %eax, %cr0
-    movl $(VBE_CODE + realmode_gdt - vbe_lowmemstart), %eax
-    lgdt (%eax)
-    pushl $0x8
-    movl $(VBE_CODE + switch_real - vbe_lowmemstart), %eax
-    pushl %eax
-    lret
-
 .global vbe_lowmemstart
 vbe_lowmemstart:
 
@@ -192,4 +147,49 @@ realmode_idt:
 
 .global vbe_lowmemend
 vbe_lowmemend:
+
+.global vbe_getinfo
+vbe_getinfo:
+    movl $VBE_INFO, %eax
+    pusha
+    movl $(VBE_CODE + getinfo_real - vbe_lowmemstart), %edx
+    jmp switch_16
+
+.global vbe_getvideomode
+vbe_getvideomode:
+    movl $VBE_MODE, %eax
+    pusha
+    movl $VBE_MODENUM, %eax
+    movl 36(%esp), %ebx
+    movl %ebx, (%eax)
+    movl $(VBE_CODE + getvideomode_real - vbe_lowmemstart), %edx
+    jmp switch_16
+
+.global vbe_setvideomode
+vbe_setvideomode:
+    pusha
+    movl $VBE_MODENUM, %eax
+    movl 36(%esp), %ebx
+    movl %ebx, (%eax)
+    movl $(VBE_CODE + setvideomode_real - vbe_lowmemstart), %edx
+    jmp switch_16
+
+.global vbe_getedid
+vbe_getedid:
+    pusha
+    movl $(VBE_CODE + getedid_real - vbe_lowmemstart), %edx
+    jmp switch_16
+
+switch_16:
+    movl $VBE_STACK, %eax
+    movl %esp, (%eax)
+    movl %cr0, %eax
+    andl $~0x80000000, %eax
+    movl %eax, %cr0
+    movl $(VBE_CODE + realmode_gdt - vbe_lowmemstart), %eax
+    lgdt (%eax)
+    pushl $0x8
+    movl $(VBE_CODE + switch_real - vbe_lowmemstart), %eax
+    pushl %eax
+    lret
 

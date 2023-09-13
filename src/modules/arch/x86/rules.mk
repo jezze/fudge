@@ -26,8 +26,6 @@ include $(DIR_SRC)/modules/arch/x86/syse/rules.mk
 endif
 include $(DIR_SRC)/modules/arch/x86/uart/rules.mk
 include $(DIR_SRC)/modules/arch/x86/usb/rules.mk
-ifeq ($(TARGET),i386-unknown-elf)
 include $(DIR_SRC)/modules/arch/x86/vbe/rules.mk
-endif
 include $(DIR_SRC)/modules/arch/x86/vga/rules.mk
 include $(DIR_SRC)/modules/arch/x86/virtio/rules.mk
