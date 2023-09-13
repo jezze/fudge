@@ -21,5 +21,5 @@ NM_FLAGS=-gp
 
 %.map: %
 	@echo NM $@
-	@$(NM) $(NM_FLAGS) $^ > $@
+	@$(NM) $(NM_FLAGS) $^ | sort > $@
 

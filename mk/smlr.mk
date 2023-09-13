@@ -41,7 +41,7 @@ PP_FLAGS= -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC)
 
 %.map: %
 	@echo NM $@
-	@$(NM) $(NM_FLAGS) $^ > $@
+	@$(NM) $(NM_FLAGS) $^ | sort > $@
 
 %.o: %.asm
 	@echo NASM $@

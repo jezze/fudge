@@ -37,5 +37,5 @@ PP_FLAGS=-Wall -Werror -nostdinc -std=c89 -pedantic -E -I$(DIR_INCLUDE) -I$(DIR_
 
 %.map: %
 	@echo NM $@
-	@$(NM) $(NM_FLAGS) $^ > $@
+	@$(NM) $(NM_FLAGS) $^ | sort > $@
 
