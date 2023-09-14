@@ -111,7 +111,7 @@ include $(DIR_SRC)/rules.mk
 
 deps: $(DEP)
 
-$(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
+$(DIR_BUILD): $(LIB) $(BIN) $(KMAP) $(KMOD)
 	@echo BUILDROOT $@
 	@mkdir -p $@
 	@mkdir -p $@/lib
@@ -123,7 +123,6 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD)
 	@mkdir -p $@/data
 	@cp -r data/* $@/data
 	@mkdir -p $@/kernel
-	@cp $(KBIN) $@/kernel
 	@cp $(KMAP) $@/kernel
 	@cp $(KMOD) $@/kernel
 

@@ -100,20 +100,43 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
 
 }
 
-static unsigned int findmodulesymbol(unsigned int count, char *symbolname)
+static unsigned int findsymbol2(unsigned int descriptor, unsigned int length, char *symbol)
+{
+
+    char data[8192];
+    unsigned int count = call_read(descriptor, data, 8192, 0);
+    unsigned int offset = 0;
+    unsigned int i;
+
+    for (i = 0; (offset = buffer_eachbyte(data, count, '\n', offset)); i = offset)
+    {
+
+        if (data[i] == ' ')
+            break;
+
+        if (buffer_match(&data[i + 11], symbol, length))
+            return cstring_read_value(&data[i], 8, 16);
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int findmodulesymbol(unsigned int length, char *symbol)
 {
 
     unsigned int address = 0;
-    unsigned int underscore = buffer_findbyte(symbolname, count, '_');
+    unsigned int underscore = buffer_findbyte(symbol, length, '_');
     char module[32];
 
-    cstring_write_fmt2(module, 32, "%w.ko\\0", 0, symbolname, &underscore);
+    cstring_write_fmt2(module, 32, "%w.ko\\0", 0, symbol, &underscore);
 
     if (call_walk_relative(FILE_L0, FILE_G0, module))
-        address = findsymbol(FILE_L0, count, symbolname);
+        address = findsymbol(FILE_L0, length, symbol);
 
     if (!address)
-        address = findsymbol(FILE_G1, count, symbolname);
+        address = findsymbol2(FILE_G1, length, symbol);
 
     return address;
 
@@ -254,7 +277,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_absolute(FILE_G0, "/kernel"))
         PANIC();
 
-    if (!call_walk_relative(FILE_G1, FILE_G0, "fudge"))
+    if (!call_walk_relative(FILE_G1, FILE_G0, "fudge.map"))
         PANIC();
 
     if (!call_walk_absolute(FILE_G2, mdata))
