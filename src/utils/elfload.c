@@ -217,6 +217,37 @@ static unsigned int resolve(unsigned int descriptor)
 
 }
 
+static void update(char *name, unsigned int address)
+{
+
+    char fullname[256];
+
+    cstring_write_fmt1(fullname, 256, "%s.map\\0", 0, name);
+
+    if (call_walk_absolute(FILE_L0, fullname))
+    {
+
+        char data[8192];
+        unsigned int count = call_read(FILE_L0, data, 8192, 0);
+        unsigned int offset = 0;
+        unsigned int i;
+
+        for (i = 0; (offset = buffer_eachbyte(data, count, '\n', offset)); i = offset)
+        {
+
+            if (data[i] == ' ')
+                break;
+
+            cstring_write_value(&data[i], 8, cstring_read_value(&data[i], 8, 16) + address, 16, 8, 0);
+
+        }
+
+        call_write_all(FILE_L0, data, count, 0);
+
+    }
+
+}
+
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -230,7 +261,13 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         PANIC();
 
     if (resolve(FILE_G2))
-        call_load(FILE_G2);
+    {
+
+        unsigned int address = call_load(FILE_G2);
+
+        update(mdata, address);
+
+    }
 
 }
 
