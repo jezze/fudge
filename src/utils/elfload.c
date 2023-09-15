@@ -157,11 +157,13 @@ static unsigned int findsymbol2(char *data, unsigned int count, unsigned int len
     for (i = 0; (offset = buffer_eachbyte(data, count, '\n', offset)); i = offset)
     {
 
-        if (data[i] == ' ')
-            break;
+        if (data[i + 9] == 'T')
+        {
 
-        if (buffer_match(&data[i + 11], symbol, length))
-            return cstring_read_value(&data[i], 8, 16);
+            if (buffer_match(&data[i + 11], symbol, length))
+                return cstring_read_value(&data[i], 8, 16);
+
+        }
 
     }
 
