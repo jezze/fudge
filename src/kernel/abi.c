@@ -269,6 +269,7 @@ static unsigned int load(unsigned int itask, void *stack)
     struct binary_node node;
     void (*module_init)(void);
     void (*module_register)(void);
+    unsigned int reloc = 0;
 
     if (!descriptor_check(idescriptor))
         return 0;
@@ -280,7 +281,12 @@ static unsigned int load(unsigned int itask, void *stack)
 
     format = binary_findformat(&node);
 
-    if (!format || !format->relocate(&node))
+    if (!format)
+        return 0;
+
+    reloc = format->relocate(&node);
+
+    if (!reloc)
         return 0;
 
     module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
@@ -293,7 +299,7 @@ static unsigned int load(unsigned int itask, void *stack)
     if (module_register)
         module_register();
 
-    return node.address;
+    return reloc;
 
 }
 
@@ -324,7 +330,7 @@ static unsigned int unload(unsigned int itask, void *stack)
     if (module_unregister)
         module_unregister();
 
-    return node.address;
+    return 0;
 
 }
 

@@ -155,6 +155,7 @@ static unsigned int format_relocate(struct binary_node *node)
     struct elf_header *header = (struct elf_header *)node->address;
     struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(node->address + header->shoffset);
     unsigned int i;
+    unsigned int r = 0;
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -164,12 +165,14 @@ static unsigned int format_relocate(struct binary_node *node)
         if (sectionheaders[i].type != ELF_SECTION_TYPE_REL)
             continue;
 
-        if (!relocate(node, &sectionheaders[i]))
-            return 0;
+        relocate(node, &sectionheaders[i]);
+
+        if (!r)
+            r = sectionheaders[r].address + 52;
 
     }
 
-    return 1;
+    return r;
 
 }
 

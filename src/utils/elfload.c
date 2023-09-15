@@ -1,6 +1,11 @@
 #include <fudge.h>
 #include <abi.h>
 
+static char kerneldata[8192];
+static unsigned int kernelcount;
+static char mapdata[8192];
+static unsigned int mapcount;
+
 static unsigned int readheader(unsigned int descriptor, struct elf_header *header)
 {
 
@@ -100,11 +105,52 @@ static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char
 
 }
 
-static unsigned int findsymbol2(unsigned int descriptor, unsigned int length, char *symbol)
+static void relocate(unsigned int address)
 {
 
-    char data[8192];
-    unsigned int count = call_read(descriptor, data, 8192, 0);
+    unsigned int offset = 0;
+    unsigned int i;
+
+    for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
+    {
+
+        if (mapdata[i + 9] == 'T')
+            cstring_write_value(&mapdata[i], 8, cstring_read_value(&mapdata[i], 8, 16) + address, 16, 8, 0);
+
+    }
+
+}
+
+static void updatesymbol(unsigned int length, char *symbol, unsigned int address)
+{
+
+    unsigned int offset = 0;
+    unsigned int i;
+
+    for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
+    {
+
+        if (mapdata[i + 9] == 'U')
+        {
+
+            if (buffer_match(&mapdata[i + 11], symbol, length))
+            {
+
+                mapdata[i + 9] = 'A';
+
+                cstring_write_value(&mapdata[i], 8, address, 16, 8, 0);
+
+            }
+
+        }
+
+    }
+
+}
+
+static unsigned int findsymbol2(char *data, unsigned int count, unsigned int length, char *symbol)
+{
+
     unsigned int offset = 0;
     unsigned int i;
 
@@ -126,17 +172,22 @@ static unsigned int findsymbol2(unsigned int descriptor, unsigned int length, ch
 static unsigned int findmodulesymbol(unsigned int length, char *symbol)
 {
 
-    unsigned int address = 0;
-    unsigned int underscore = buffer_findbyte(symbol, length, '_');
-    char module[32];
-
-    cstring_write_fmt2(module, 32, "%w.ko\\0", 0, symbol, &underscore);
-
-    if (call_walk_relative(FILE_L0, FILE_G0, module))
-        address = findsymbol(FILE_L0, length, symbol);
+    unsigned int address = findsymbol2(kerneldata, kernelcount, length, symbol);
 
     if (!address)
-        address = findsymbol2(FILE_G1, length, symbol);
+    {
+
+        unsigned int underscore = buffer_findbyte(symbol, length, '_');
+        char module[32];
+
+        cstring_write_fmt2(module, 32, "%w.ko\\0", 0, symbol, &underscore);
+
+        if (call_walk_relative(FILE_L0, FILE_G0, module))
+            address = findsymbol(FILE_L0, length, symbol);
+
+    }
+
+    updatesymbol(length, symbol, address);
 
     return address;
 
@@ -240,39 +291,12 @@ static unsigned int resolve(unsigned int descriptor)
 
 }
 
-static void update(char *name, unsigned int address)
-{
-
-    char fullname[256];
-
-    cstring_write_fmt1(fullname, 256, "%s.map\\0", 0, name);
-
-    if (call_walk_absolute(FILE_L0, fullname))
-    {
-
-        char data[8192];
-        unsigned int count = call_read(FILE_L0, data, 8192, 0);
-        unsigned int offset = 0;
-        unsigned int i;
-
-        for (i = 0; (offset = buffer_eachbyte(data, count, '\n', offset)); i = offset)
-        {
-
-            if (data[i] == ' ')
-                break;
-
-            cstring_write_value(&data[i], 8, cstring_read_value(&data[i], 8, 16) + address, 16, 8, 0);
-
-        }
-
-        call_write_all(FILE_L0, data, count, 0);
-
-    }
-
-}
-
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
+
+    char mapname[256];
+
+    cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
 
     if (!call_walk_absolute(FILE_G0, "/kernel"))
         PANIC();
@@ -283,14 +307,23 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_absolute(FILE_G2, mdata))
         PANIC();
 
+    if (!call_walk_absolute(FILE_G3, mapname))
+        PANIC();
+
+    kernelcount = call_read(FILE_G1, kerneldata, 8192, 0);
+    mapcount = call_read(FILE_G3, mapdata, 8192, 0);
+
     if (resolve(FILE_G2))
     {
 
         unsigned int address = call_load(FILE_G2);
 
-        update(mdata, address);
+        if (address)
+            relocate(address);
 
     }
+
+    call_write_all(FILE_G3, mapdata, mapcount, 0);
 
 }
 
