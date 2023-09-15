@@ -149,13 +149,12 @@ static unsigned int format_copyprogram(struct binary_node *node)
 
 }
 
-static unsigned int format_relocate(struct binary_node *node)
+static void format_relocate(struct binary_node *node)
 {
 
     struct elf_header *header = (struct elf_header *)node->address;
     struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(node->address + header->shoffset);
     unsigned int i;
-    unsigned int r = 0;
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -167,12 +166,7 @@ static unsigned int format_relocate(struct binary_node *node)
 
         relocate(node, &sectionheaders[i]);
 
-        if (!r)
-            r = sectionheaders[r].address + 52;
-
     }
-
-    return r;
 
 }
 

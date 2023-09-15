@@ -115,7 +115,7 @@ static void relocate(unsigned int address)
     {
 
         if (mapdata[i + 9] == 'T')
-            cstring_write_value(&mapdata[i], 8, cstring_read_value(&mapdata[i], 8, 16) + address, 16, 8, 0);
+            cstring_write_value(&mapdata[i], 8, cstring_read_value(&mapdata[i], 8, 16) + address + 52, 16, 8, 0);
 
     }
 
