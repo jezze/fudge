@@ -20,91 +20,6 @@ static unsigned int readsectionheader(unsigned int descriptor, struct elf_header
 
 }
 
-static unsigned int findvalue(unsigned int descriptor, struct elf_header *header, struct elf_sectionheader *symbolheader, char *strings, unsigned int count, char *symbolname)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
-    {
-
-        struct elf_symbol symbol;
-
-        if (!call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + i * symbolheader->esize))
-            return 0;
-
-        if (strings[symbol.name + count] != '\0')
-            continue;
-
-        if (!buffer_match(symbolname, &strings[symbol.name], count))
-            continue;
-
-        if (header->type == ELF_TYPE_RELOCATABLE)
-        {
-
-            struct elf_sectionheader referenceheader;
-
-            if (!readsectionheader(descriptor, header, symbol.shindex, &referenceheader))
-                return 0;
-
-            return referenceheader.address + referenceheader.offset + symbol.value;
-
-        }
-
-        return symbol.value;
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int findsymbol(unsigned int descriptor, unsigned int count, char *symbolname)
-{
-
-    struct elf_header header;
-    unsigned int i;
-
-    if (!readheader(descriptor, &header))
-        return 0;
-
-    if (!elf_validate(&header))
-        return 0;
-
-    for (i = 0; i < header.shcount; i++)
-    {
-
-        struct elf_sectionheader symbolheader;
-        struct elf_sectionheader stringheader;
-        char strings[BUFFER_SIZE * 4];
-        unsigned int value;
-
-        if (!readsectionheader(descriptor, &header, i, &symbolheader))
-            return 0;
-
-        if (symbolheader.type != ELF_SECTION_TYPE_SYMTAB)
-            continue;
-
-        if (!readsectionheader(descriptor, &header, symbolheader.link, &stringheader))
-            return 0;
-
-        if (stringheader.size > BUFFER_SIZE * 4)
-            return 0;
-
-        if (!call_read_all(descriptor, strings, stringheader.size, stringheader.offset))
-            return 0;
-
-        value = findvalue(descriptor, &header, &symbolheader, strings, count, symbolname);
-
-        if (value)
-            return value;
-
-    }
-
-    return 0;
-
-}
-
 static void relocate(unsigned int address)
 {
 
@@ -115,40 +30,13 @@ static void relocate(unsigned int address)
     {
 
         if (mapdata[i + 9] == 'T')
-            cstring_write_value(&mapdata[i], 8, cstring_read_value(&mapdata[i], 8, 16) + address + 52, 16, 8, 0);
+            cstring_write_value(&mapdata[i], 8, cstring_read_value(&mapdata[i], 8, 16) + address, 16, 8, 0);
 
     }
 
 }
 
-static void updatesymbol(unsigned int length, char *symbol, unsigned int address)
-{
-
-    unsigned int offset = 0;
-    unsigned int i;
-
-    for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
-    {
-
-        if (mapdata[i + 9] == 'U')
-        {
-
-            if (buffer_match(&mapdata[i + 11], symbol, length))
-            {
-
-                mapdata[i + 9] = 'A';
-
-                cstring_write_value(&mapdata[i], 8, address, 16, 8, 0);
-
-            }
-
-        }
-
-    }
-
-}
-
-static unsigned int findsymbol2(char *data, unsigned int count, unsigned int length, char *symbol)
+static unsigned int findsymbol(char *data, unsigned int count, unsigned int length, char *symbol)
 {
 
     unsigned int offset = 0;
@@ -157,7 +45,7 @@ static unsigned int findsymbol2(char *data, unsigned int count, unsigned int len
     for (i = 0; (offset = buffer_eachbyte(data, count, '\n', offset)); i = offset)
     {
 
-        if (data[i + 9] == 'T')
+        if ((data[i + 9] == 'T') || (data[i + 9] == 'A'))
         {
 
             if (buffer_match(&data[i + 11], symbol, length))
@@ -171,27 +59,54 @@ static unsigned int findsymbol2(char *data, unsigned int count, unsigned int len
 
 }
 
-static unsigned int findmodulesymbol(unsigned int length, char *symbol)
+static void updateundefined(void)
 {
 
-    unsigned int address = findsymbol2(kerneldata, kernelcount, length, symbol);
+    unsigned int offset = 0;
+    unsigned int i;
 
-    if (!address)
+    for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
     {
 
-        unsigned int underscore = buffer_findbyte(symbol, length, '_');
-        char module[32];
+        if (mapdata[i + 9] == 'U')
+        {
 
-        cstring_write_fmt2(module, 32, "%w.ko\\0", 0, symbol, &underscore);
+            char *symbol = &mapdata[i + 11];
+            unsigned int length = (offset - i) - 11;
+            unsigned int address = findsymbol(kerneldata, kernelcount, length, symbol);
 
-        if (call_walk_relative(FILE_L0, FILE_G0, module))
-            address = findsymbol(FILE_L0, length, symbol);
+            if (!address)
+            {
+
+                unsigned int underscore = buffer_findbyte(symbol, length, '_');
+                char module[32];
+
+                cstring_write_fmt2(module, 32, "/kernel/%w.ko.map\\0", 0, symbol, &underscore);
+
+                if (call_walk_absolute(FILE_L0, module))
+                {
+
+                    char data[8192];
+                    unsigned int count = call_read(FILE_L0, data, 8192, 0);
+
+                    address = findsymbol(data, count, length, symbol);
+
+                }
+
+            }
+
+            if (address)
+            {
+
+                mapdata[i + 9] = 'A';
+
+                cstring_write_value(&mapdata[i], 8, address, 16, 8, 0);
+
+            }
+
+        }
 
     }
-
-    updatesymbol(length, symbol, address);
-
-    return address;
 
 }
 
@@ -219,7 +134,7 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
         if (symbol.shindex)
             continue;
 
-        address = findmodulesymbol(cstring_length(strings + symbol.name), strings + symbol.name);
+        address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
 
         if (address)
         {
@@ -239,6 +154,37 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
     }
 
     return 1;
+
+}
+
+static unsigned int gettextsectionoffset(unsigned int descriptor)
+{
+
+    struct elf_header header;
+    unsigned int i;
+
+    if (!readheader(descriptor, &header))
+        return 0;
+
+    if (!elf_validate(&header))
+        return 0;
+
+    for (i = 0; i < header.shcount; i++)
+    {
+
+        struct elf_sectionheader sectionheader;
+
+        if (!readsectionheader(descriptor, &header, i, &sectionheader))
+            return 0;
+
+        if (sectionheader.type != ELF_SECTION_TYPE_PROGBITS)
+            continue;
+
+        return sectionheader.offset;
+
+    }
+
+    return 0;
 
 }
 
@@ -300,10 +246,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
     cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
 
-    if (!call_walk_absolute(FILE_G0, "/kernel"))
-        PANIC();
-
-    if (!call_walk_relative(FILE_G1, FILE_G0, "fudge.map"))
+    if (!call_walk_absolute(FILE_G1, "/kernel/fudge.map"))
         PANIC();
 
     if (!call_walk_absolute(FILE_G2, mdata))
@@ -315,13 +258,21 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     kernelcount = call_read(FILE_G1, kerneldata, 8192, 0);
     mapcount = call_read(FILE_G3, mapdata, 8192, 0);
 
+    updateundefined();
+
     if (resolve(FILE_G2))
     {
 
         unsigned int address = call_load(FILE_G2);
 
         if (address)
+        {
+
+            address += gettextsectionoffset(FILE_G2);
+
             relocate(address);
+
+        }
 
     }
 
