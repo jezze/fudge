@@ -163,13 +163,7 @@ static void format_relocate(struct binary_node *node)
             sectionheaders[i].address += node->address;
 
         if (sectionheaders[i].type == ELF_SECTION_TYPE_REL)
-        {
-
-            sectionheaders[i].address += node->address;
-
             relocate(node, &sectionheaders[i]);
-
-        }
 
     }
 
