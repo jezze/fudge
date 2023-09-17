@@ -57,7 +57,7 @@ static unsigned int findsymbol(struct binary_node *node, struct elf_sectionheade
             continue;
 
         if (strings[symbols[i].name + count] == '\0' && buffer_match(symbolname, &strings[symbols[i].name], count))
-            return symbols[i].value + sectionheaders[symbols[i].shindex].address + sectionheaders[symbols[i].shindex].offset;
+            return node->address + symbols[i].value + sectionheaders[symbols[i].shindex].address + sectionheaders[symbols[i].shindex].offset;
 
     }
 
@@ -158,9 +158,6 @@ static void format_relocate(struct binary_node *node)
 
     for (i = 0; i < header->shcount; i++)
     {
-
-        if (sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
-            sectionheaders[i].address += node->address;
 
         if (sectionheaders[i].type == ELF_SECTION_TYPE_REL)
             relocate(node, &sectionheaders[i]);
