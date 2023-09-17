@@ -1,24 +1,12 @@
 #include <fudge.h>
 #include <abi.h>
 
+static struct elf_header header;
+static struct elf_sectionheader sectionheaders[64];
 static char kerneldata[8192];
 static unsigned int kernelcount;
 static char mapdata[8192];
 static unsigned int mapcount;
-
-static unsigned int readheader(unsigned int descriptor, struct elf_header *header)
-{
-
-    return call_read_all(descriptor, header, ELF_HEADER_SIZE, 0);
-
-}
-
-static unsigned int readsectionheader(unsigned int descriptor, struct elf_header *header, unsigned int index, struct elf_sectionheader *sectionheader)
-{
-
-    return call_read_all(descriptor, sectionheader, header->shsize, header->shoffset + index * header->shsize);
-
-}
 
 static void relocate(unsigned int address)
 {
@@ -110,35 +98,77 @@ static void updateundefined(void)
 
 }
 
-static void resolvesymbols(unsigned int descriptor, struct elf_sectionheader *relocationheader, struct elf_sectionheader *symbolheader, char *strings, unsigned int offset)
+static unsigned int gettextsectionoffset(void)
 {
 
     unsigned int i;
 
-    for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
+    for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_relocation relocation;
-        struct elf_symbol symbol;
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
+            return sectionheaders[i].offset;
 
-        call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize);
-        call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+    }
 
-        if (!symbol.shindex)
+    return 0;
+
+}
+
+static void resolve(unsigned int descriptor)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header.shcount; i++)
+    {
+
+        struct elf_sectionheader *relocationheader;
+        struct elf_sectionheader *dataheader;
+        struct elf_sectionheader *symbolheader;
+        struct elf_sectionheader *stringheader;
+        char strings[BUFFER_SIZE];
+        unsigned int j;
+
+        if (sectionheaders[i].type != ELF_SECTION_TYPE_REL)
+            continue;
+
+        relocationheader = &sectionheaders[i];
+        dataheader = &sectionheaders[relocationheader->info];
+        symbolheader = &sectionheaders[relocationheader->link];
+        stringheader = &sectionheaders[symbolheader->link];
+
+        if (stringheader->size > BUFFER_SIZE)
+            PANIC();
+
+        call_read_all(descriptor, strings, stringheader->size, stringheader->offset);
+
+        for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
         {
 
-            unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+            struct elf_relocation relocation;
+            struct elf_symbol symbol;
 
-            if (address)
+            call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+            call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+
+            if (!symbol.shindex)
             {
 
-                unsigned int value;
+                unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
 
-                call_read_all(descriptor, &value, 4, offset + relocation.offset);
+                if (address)
+                {
 
-                value += address;
+                    unsigned int value;
 
-                call_write_all(descriptor, &value, 4, offset + relocation.offset);
+                    call_read_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+
+                    value += address;
+
+                    call_write_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+
+                }
 
             }
 
@@ -148,113 +178,43 @@ static void resolvesymbols(unsigned int descriptor, struct elf_sectionheader *re
 
 }
 
-static unsigned int gettextsectionoffset(unsigned int descriptor)
-{
-
-    struct elf_header header;
-    unsigned int i;
-
-    readheader(descriptor, &header);
-
-    if (!elf_validate(&header))
-        return 0;
-
-    for (i = 0; i < header.shcount; i++)
-    {
-
-        struct elf_sectionheader sectionheader;
-
-        readsectionheader(descriptor, &header, i, &sectionheader);
-
-        if (sectionheader.type != ELF_SECTION_TYPE_PROGBITS)
-            continue;
-
-        return sectionheader.offset;
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int resolve(unsigned int descriptor)
-{
-
-    struct elf_header header;
-    unsigned int i;
-
-    readheader(descriptor, &header);
-
-    if (!elf_validate(&header))
-        return 0;
-
-    for (i = 0; i < header.shcount; i++)
-    {
-
-        struct elf_sectionheader relocationheader;
-        struct elf_sectionheader dataheader;
-        struct elf_sectionheader symbolheader;
-        struct elf_sectionheader stringheader;
-        char strings[BUFFER_SIZE];
-
-        readsectionheader(descriptor, &header, i, &relocationheader);
-
-        if (relocationheader.type != ELF_SECTION_TYPE_REL)
-            continue;
-
-        readsectionheader(descriptor, &header, relocationheader.info, &dataheader);
-        readsectionheader(descriptor, &header, relocationheader.link, &symbolheader);
-        readsectionheader(descriptor, &header, symbolheader.link, &stringheader);
-
-        if (stringheader.size > BUFFER_SIZE)
-            return 0;
-
-        call_read_all(descriptor, strings, stringheader.size, stringheader.offset);
-        resolvesymbols(descriptor, &relocationheader, &symbolheader, strings, dataheader.offset);
-
-    }
-
-    return 1;
-
-}
-
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char mapname[256];
+    unsigned int address;
 
     cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
 
     if (!call_walk_absolute(FILE_G1, "/kernel/fudge.map"))
         PANIC();
 
+    kernelcount = call_read(FILE_G1, kerneldata, 8192, 0);
+
     if (!call_walk_absolute(FILE_G2, mdata))
         PANIC();
+
+    call_read_all(FILE_G2, &header, ELF_HEADER_SIZE, 0);
+
+    if (!elf_validate(&header))
+        PANIC();
+
+    if (header.shcount > 64)
+        PANIC();
+
+    call_read_all(FILE_G2, sectionheaders, header.shsize * header.shcount, header.shoffset);
 
     if (!call_walk_absolute(FILE_G3, mapname))
         PANIC();
 
-    kernelcount = call_read(FILE_G1, kerneldata, 8192, 0);
     mapcount = call_read(FILE_G3, mapdata, 8192, 0);
 
     updateundefined();
+    resolve(FILE_G2);
 
-    if (resolve(FILE_G2))
-    {
+    address = call_load(FILE_G2) + gettextsectionoffset();
 
-        unsigned int address = call_load(FILE_G2);
-
-        if (address)
-        {
-
-            address += gettextsectionoffset(FILE_G2);
-
-            relocate(address);
-
-        }
-
-    }
-
+    relocate(address);
     call_write_all(FILE_G3, mapdata, mapcount, 0);
 
 }
