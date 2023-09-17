@@ -110,7 +110,7 @@ static void updateundefined(void)
 
 }
 
-static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionheader *relocationheader, struct elf_sectionheader *symbolheader, char *strings, unsigned int offset)
+static void resolvesymbols(unsigned int descriptor, struct elf_sectionheader *relocationheader, struct elf_sectionheader *symbolheader, char *strings, unsigned int offset)
 {
 
     unsigned int i;
@@ -118,42 +118,33 @@ static unsigned int resolvesymbols(unsigned int descriptor, struct elf_sectionhe
     for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
     {
 
-        unsigned char index;
-        unsigned int address;
         struct elf_relocation relocation;
         struct elf_symbol symbol;
 
-        if (!call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize))
-            return 0;
+        call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + i * relocationheader->esize);
+        call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
 
-        index = relocation.info >> 8;
-
-        if (!call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + index * symbolheader->esize))
-            return 0;
-
-        if (symbol.shindex)
-            continue;
-
-        address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
-
-        if (address)
+        if (!symbol.shindex)
         {
 
-            unsigned int value;
+            unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
 
-            if (!call_read_all(descriptor, &value, 4, offset + relocation.offset))
-                return 0;
+            if (address)
+            {
 
-            value += address;
+                unsigned int value;
 
-            if (!call_write_all(descriptor, &value, 4, offset + relocation.offset))
-                return 0;
+                call_read_all(descriptor, &value, 4, offset + relocation.offset);
+
+                value += address;
+
+                call_write_all(descriptor, &value, 4, offset + relocation.offset);
+
+            }
 
         }
 
     }
-
-    return 1;
 
 }
 
@@ -163,8 +154,7 @@ static unsigned int gettextsectionoffset(unsigned int descriptor)
     struct elf_header header;
     unsigned int i;
 
-    if (!readheader(descriptor, &header))
-        return 0;
+    readheader(descriptor, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -174,8 +164,7 @@ static unsigned int gettextsectionoffset(unsigned int descriptor)
 
         struct elf_sectionheader sectionheader;
 
-        if (!readsectionheader(descriptor, &header, i, &sectionheader))
-            return 0;
+        readsectionheader(descriptor, &header, i, &sectionheader);
 
         if (sectionheader.type != ELF_SECTION_TYPE_PROGBITS)
             continue;
@@ -194,8 +183,7 @@ static unsigned int resolve(unsigned int descriptor)
     struct elf_header header;
     unsigned int i;
 
-    if (!readheader(descriptor, &header))
-        return 0;
+    readheader(descriptor, &header);
 
     if (!elf_validate(&header))
         return 0;
@@ -209,29 +197,20 @@ static unsigned int resolve(unsigned int descriptor)
         struct elf_sectionheader stringheader;
         char strings[BUFFER_SIZE];
 
-        if (!readsectionheader(descriptor, &header, i, &relocationheader))
-            return 0;
+        readsectionheader(descriptor, &header, i, &relocationheader);
 
         if (relocationheader.type != ELF_SECTION_TYPE_REL)
             continue;
 
-        if (!readsectionheader(descriptor, &header, relocationheader.info, &dataheader))
-            return 0;
-
-        if (!readsectionheader(descriptor, &header, relocationheader.link, &symbolheader))
-            return 0;
-
-        if (!readsectionheader(descriptor, &header, symbolheader.link, &stringheader))
-            return 0;
+        readsectionheader(descriptor, &header, relocationheader.info, &dataheader);
+        readsectionheader(descriptor, &header, relocationheader.link, &symbolheader);
+        readsectionheader(descriptor, &header, symbolheader.link, &stringheader);
 
         if (stringheader.size > BUFFER_SIZE)
             return 0;
 
-        if (!call_read_all(descriptor, strings, stringheader.size, stringheader.offset))
-            return 0;
-
-        if (!resolvesymbols(descriptor, &relocationheader, &symbolheader, strings, dataheader.offset))
-            return 0;
+        call_read_all(descriptor, strings, stringheader.size, stringheader.offset);
+        resolvesymbols(descriptor, &relocationheader, &symbolheader, strings, dataheader.offset);
 
     }
 
