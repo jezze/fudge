@@ -8,11 +8,32 @@ static unsigned int kernelcount;
 static char mapdata[8192];
 static unsigned int mapcount;
 
+static unsigned int gettextsectionoffset(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header.shcount; i++)
+    {
+
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
+            return sectionheaders[i].offset;
+
+    }
+
+    return 0;
+
+}
+
+/* this function should update the mapdata by parsing the module instead of the map */
 static void relocate(unsigned int address)
 {
 
     unsigned int offset = 0;
     unsigned int i;
+
+    /* all symbols are relative to certain section. now we just assume .text but this should be fixed */
+    address += gettextsectionoffset();
 
     for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
     {
@@ -95,23 +116,6 @@ static void updateundefined(void)
         }
 
     }
-
-}
-
-static unsigned int gettextsectionoffset(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < header.shcount; i++)
-    {
-
-        if (sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
-            return sectionheaders[i].offset;
-
-    }
-
-    return 0;
 
 }
 
@@ -212,7 +216,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     updateundefined();
     resolve(FILE_G2);
 
-    address = call_load(FILE_G2) + gettextsectionoffset();
+    address = call_load(FILE_G2);
 
     relocate(address);
     call_write_all(FILE_G3, mapdata, mapcount, 0);
