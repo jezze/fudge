@@ -10,22 +10,6 @@
 
 extern void halt(void);
 
-static struct core core0;
-
-static struct core *coreget(void)
-{
-
-    return &core0;
-
-}
-
-static void coreassign(struct list_item *item)
-{
-
-    list_add(&core0.tasks, item);
-
-}
-
 static void debugnum(unsigned int value, unsigned int base)
 {
 
@@ -119,9 +103,7 @@ void arch_setup(void)
     /*swi_test();*/
 
     resource_setup();
-    core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
-    kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
-    kernel_setcallback(coreget, coreassign);
+    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
     abi_setup();
     uart_puts("Loop forever...\n");
 
