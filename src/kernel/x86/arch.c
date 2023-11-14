@@ -12,7 +12,6 @@
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
 static struct cpu_general registers[KERNEL_TASKS];
-static struct core core0;
 static struct arch_tss tss0;
 
 static struct mmu_directory *getkerneldirectory(void)
@@ -85,20 +84,6 @@ static unsigned int spawn(unsigned int itask, void *stack)
     }
 
     return 0;
-
-}
-
-static struct core *coreget(void)
-{
-
-    return &core0;
-
-}
-
-static void coreassign(struct list_item *item)
-{
-
-    list_add(&core0.tasks, item);
 
 }
 
@@ -439,10 +424,9 @@ void arch_setup1(void)
 
     resource_setup();
     pic_init();
-    core_init(&core0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
     arch_configuregdt();
     arch_configureidt();
-    arch_configuretss(&tss0, core0.id, core0.sp);
+    arch_configuretss(&tss0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
     buffer_clear(directory, sizeof (struct mmu_directory));
     arch_map(0, 0x00000000, 0x00000000, 0x00400000);
     arch_map(1, 0x00400000, 0x00400000, 0x00400000);
@@ -450,8 +434,7 @@ void arch_setup1(void)
     arch_map(3, 0x00C00000, 0x00C00000, 0x00400000);
     mmu_setdirectory(directory);
     mmu_enable();
-    kernel_setup(ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
-    kernel_setcallback(coreget, coreassign);
+    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
     abi_setup();
     abi_setcallback(0x0C, spawn);
 
@@ -467,10 +450,29 @@ void arch_setup2(void)
 
         struct service *service = service_find(6, "initrd");
 
-        initmap(ntask);
-        kernel_setdescriptor(ntask, FILE_PP, service, service->child(service->child(service->root(), "bin", 3), "init", 4));
-        kernel_setdescriptor(ntask, FILE_PW, service, service->root());
-        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
+        if (service)
+        {
+
+            initmap(ntask);
+            kernel_setdescriptor(ntask, FILE_PP, service, service->child(service->child(service->root(), "bin", 3), "init", 4));
+            kernel_setdescriptor(ntask, FILE_PW, service, service->root());
+            kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
+
+        }
+
+        else
+        {
+
+            DEBUG_FMT0(DEBUG_ERROR, "initrd service not found");
+
+        }
+
+    }
+
+    else
+    {
+
+        DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
 
     }
 

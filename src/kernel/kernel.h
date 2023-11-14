@@ -21,4 +21,4 @@ void kernel_announce(unsigned int itask, unsigned int ichannel);
 void kernel_notify(struct list *states, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
 unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int descriptor);
-void kernel_setup(unsigned int mbaddress, unsigned int mbsize);
+void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize);

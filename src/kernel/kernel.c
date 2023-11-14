@@ -26,6 +26,21 @@ static struct list deadtasks;
 static struct list blockedtasks;
 static struct core *(*coreget)(void);
 static void (*coreassign)(struct list_item *item);
+static struct core core0;
+
+static struct core *coreget0(void)
+{
+
+    return &core0;
+
+}
+
+static void coreassign0(struct list_item *item)
+{
+
+    list_add(&core0.tasks, item);
+
+}
 
 static unsigned short getindex(unsigned int ichannel)
 {
@@ -494,11 +509,12 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int d
 
 }
 
-void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
+void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize)
 {
 
     unsigned int i;
 
+    core_init(&core0, 0, saddress + ssize);
     list_init(&freelinks);
     list_init(&deadtasks);
     list_init(&blockedtasks);
@@ -531,6 +547,8 @@ void kernel_setup(unsigned int mbaddress, unsigned int mbsize)
         list_add(&freelinks, &linkrow->item);
 
     }
+
+    kernel_setcallback(coreget0, coreassign0);
 
 }
 
