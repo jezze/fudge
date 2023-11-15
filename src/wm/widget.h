@@ -86,6 +86,7 @@ struct widget_text
     unsigned int valign;
     unsigned int weight;
     unsigned int wrap;
+    unsigned int offx;
     struct cache_row cacherow;
     struct cache_text cachetext;
 
@@ -118,6 +119,7 @@ struct widget_textedit
     unsigned int valign;
     unsigned int weight;
     unsigned int wrap;
+    unsigned int offx;
     unsigned int cursor;
     struct cache_row cacherow;
     struct cache_text cachetext;

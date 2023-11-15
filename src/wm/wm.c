@@ -655,7 +655,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (!state.paused)
         {
 
-            place_widget(state.rootwidget, 0, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
+            place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
 
             if (display.framebuffer)
             {
