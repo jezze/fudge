@@ -94,7 +94,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data = (char *)mdata + sizeof (struct event_wmevent);
+    struct event_wmevent *event = mdata;
+    void *data = (void *)(event + 1);
 
     if (cstring_match_word(data, 0, "val"))
         updatevalue(cstring_read_value(cstring_get_word(data, 1), 1, 10));

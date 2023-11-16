@@ -2,11 +2,11 @@
 #include <abi.h>
 
 static char path[256];
+static unsigned int cursor = 0;
 
 static void updatepath(void)
 {
 
-    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path cursor \"2\"\n");
     channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
 
 }
@@ -61,7 +61,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data = (char *)mdata + sizeof (struct event_wmevent);
+    struct event_wmevent *event = mdata;
+    void *data = (void *)(event + 1);
 
     if (cstring_match_word(data, 0, "action"))
     {
@@ -164,6 +165,42 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_wmkeypress *wmkeypress = mdata;
+
+    switch (wmkeypress->id)
+    {
+
+    case KEYS_KEY_CURSORLEFT:
+        if (cursor > 0)
+        {
+
+            cursor--;
+
+            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path cursor \"%u\"\n", &cursor);
+
+        }
+
+        break;
+
+    case KEYS_KEY_CURSORRIGHT:
+        if (cursor < cstring_length(path))
+        {
+
+            cursor++;
+
+            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path cursor \"%u\"\n", &cursor);
+
+        }
+
+        break;
+
+    }
+
+}
+
 void init(void)
 {
 
@@ -171,6 +208,7 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
+    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
 
 }
 
