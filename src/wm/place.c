@@ -390,7 +390,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
 
     text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->offx);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
-    cache_inittext(&text->cachetext, info.rows, text->offx, info.lastrowx, info.lastrowy);
+    cache_inittext(&text->cachetext, info.rows, info.lastrowx, info.lastrowy);
 
 }
 
@@ -432,7 +432,7 @@ static void placetextedit(struct widget *widget, int x, int y, unsigned int minw
 
     text_gettextinfo(&info, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, maxw, textedit->offx);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
-    cache_inittext(&textedit->cachetext, info.rows, textedit->offx, info.lastrowx, info.lastrowy);
+    cache_inittext(&textedit->cachetext, info.rows, info.lastrowx, info.lastrowy);
 
 }
 

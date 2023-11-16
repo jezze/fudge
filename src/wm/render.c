@@ -142,9 +142,9 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
         struct text_rowinfo rowinfo;
 
-        cache_updatetext(&text->cachetext, font, rownum, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, widget->size.h);
+        cache_updatetext(&text->cachetext, font, rownum, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, widget->size.h, text->offx);
         text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, text->cachetext.icurrent);
-        cache_initrow(&text->cacherow, &rowinfo, font, 0, 0, text->halign, text->valign, widget->size.w, widget->size.h, (rownum) ? 0 : text->cachetext.firstrowx, text->cachetext.rownum * rowinfo.lineheight);
+        cache_initrow(&text->cacherow, &rowinfo, font, 0, 0, text->halign, text->valign, widget->size.w, widget->size.h, text->offx, text->cachetext.rownum * rowinfo.lineheight);
 
     }
 
@@ -189,9 +189,9 @@ static void rendertextedit(struct blit_display *display, struct widget *widget, 
 
         struct text_rowinfo rowinfo;
 
-        cache_updatetext(&textedit->cachetext, font, rownum, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->size.w, widget->size.h);
+        cache_updatetext(&textedit->cachetext, font, rownum, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->size.w, widget->size.h, textedit->offx);
         text_getrowinfo(&rowinfo, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->size.w, textedit->cachetext.icurrent);
-        cache_initrow(&textedit->cacherow, &rowinfo, font, 0, 0, textedit->halign, textedit->valign, widget->size.w, widget->size.h, (rownum) ? 0 : textedit->cachetext.firstrowx, textedit->cachetext.rownum * rowinfo.lineheight);
+        cache_initrow(&textedit->cacherow, &rowinfo, font, 0, 0, textedit->halign, textedit->valign, widget->size.w, widget->size.h, textedit->offx, textedit->cachetext.rownum * rowinfo.lineheight);
 
     }
 
