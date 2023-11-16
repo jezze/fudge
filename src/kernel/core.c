@@ -2,6 +2,19 @@
 #include "resource.h"
 #include "core.h"
 
+void core_migrate(struct core *core, struct core *from)
+{
+
+    struct list_item *taskitem;
+
+    while ((taskitem = list_pickhead(&from->tasks)))
+        list_add(&core->tasks, taskitem);
+
+    core->itask = from->itask;
+    from->itask = 0;
+
+}
+
 void core_register(struct core *core)
 {
 

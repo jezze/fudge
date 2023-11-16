@@ -88,28 +88,24 @@ static void coreassign(struct list_item *item)
 
 }
 
-static void smp_setupbp(unsigned int stack, unsigned int itask, struct list *tasks)
+static void smp_setupbp(unsigned int stack)
 {
 
+    struct core *core0 = kernel_getcore();
     unsigned int id = apic_getid();
     struct corerow *corerow = &corerows[id];
-    struct list_item *taskitem;
 
     DEBUG_FMT1(DEBUG_INFO, "bp id %u", &id);
     DEBUG_FMT1(DEBUG_INFO, "bp stack 0x%H8u", &stack);
 
     core_init(&corerow->core, id, stack);
     core_register(&corerow->core);
-
-    corerow->core.itask = itask;
+    core_migrate(&corerow->core, core0);
 
     arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
     apic_setup_bp();
     list_inititem(&corerow->item, &corerow->core);
     list_add(&corelist, &corerow->item);
-
-    while ((taskitem = list_pickhead(tasks)))
-        list_add(&corerow->core.tasks, taskitem);
 
 }
 
@@ -142,10 +138,8 @@ void smp_setupap(unsigned int stack)
 void module_init(void)
 {
 
-    struct core *core = kernel_getcore();
-
     list_init(&corelist);
-    smp_setupbp(core->sp, core->itask, &core->tasks);
+    smp_setupbp(ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
     kernel_setcallback(coreget, coreassign);
     buffer_copy((void *)INIT16PHYSICAL, (void *)(unsigned int)smp_begin16, (unsigned int)smp_end16 - (unsigned int)smp_begin16);
     buffer_copy((void *)INIT32PHYSICAL, (void *)(unsigned int)smp_begin32, (unsigned int)smp_end32 - (unsigned int)smp_begin32);
