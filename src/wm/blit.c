@@ -143,7 +143,7 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
 
 }
 
-void blit_char(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
+void blitpcfbitmap(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
 {
 
     int r0 = util_max(0, x0 - rx);
@@ -160,7 +160,7 @@ void blit_char(struct blit_display *display, int rx, int x0, int x2, unsigned in
 
 }
 
-void blit_charinverted(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
+void blitpcfbitmapinverted(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
 {
 
     int r0 = util_max(0, x0 - rx);
@@ -203,7 +203,7 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
         {
 
             if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
-                blit_char(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+                blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
 
         }
 
@@ -242,9 +242,9 @@ void blit_textedit(struct blit_display *display, struct text_font *font, unsigne
             {
 
                 if (i == cursor)
-                    blit_charinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+                    blitpcfbitmapinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
                 else
-                    blit_char(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+                    blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
 
             }
 
