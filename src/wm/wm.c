@@ -95,6 +95,9 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
         struct widget *child = current->data;
 
+        if (child == state.mousewidget)
+            continue;
+
         if (widget_isinteractive(child) && widget_intersects(child, x, y))
             return child;
 
@@ -113,6 +116,9 @@ static struct widget *getscrollablewidgetat(int x, int y)
     {
 
         struct widget *child = current->data;
+
+        if (child == state.mousewidget)
+            continue;
 
         if (widget_isscrollable(child) && widget_intersects(child, x, y))
             return child;
