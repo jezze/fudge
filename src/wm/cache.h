@@ -18,6 +18,9 @@ struct cache_text
     unsigned int rownum;
     unsigned int icurrent;
     unsigned int exist;
+    unsigned int offx;
+    unsigned int markstart;
+    unsigned int marklength;
 
 };
 

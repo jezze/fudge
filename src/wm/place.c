@@ -157,7 +157,7 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
 
             struct widget_text *text = child->data;
 
-            text->offx = offx;
+            text->cachetext.offx = offx;
 
             placechild(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
 
@@ -174,7 +174,7 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
 
             struct widget_textedit *textedit = child->data;
 
-            textedit->offx = offx;
+            textedit->cachetext.offx = offx;
 
             placechild(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
 
@@ -388,7 +388,7 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct text_font *font = pool_getfont(text->weight);
     struct text_info info;
 
-    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->offx);
+    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->cachetext.offx);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
     cache_inittext(&text->cachetext, info.rows, info.lastrowx, info.lastrowy);
 
@@ -430,7 +430,7 @@ static void placetextedit(struct widget *widget, int x, int y, unsigned int minw
     struct text_font *font = pool_getfont(textedit->weight);
     struct text_info info;
 
-    text_gettextinfo(&info, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, maxw, textedit->offx);
+    text_gettextinfo(&info, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, maxw, textedit->cachetext.offx);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
     cache_inittext(&textedit->cachetext, info.rows, info.lastrowx, info.lastrowy);
 

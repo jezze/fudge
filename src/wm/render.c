@@ -142,14 +142,14 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
         struct text_rowinfo rowinfo;
 
-        cache_updatetext(&text->cachetext, font, rownum, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, widget->size.h, text->offx);
+        cache_updatetext(&text->cachetext, font, rownum, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, widget->size.h, text->cachetext.offx);
         text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->size.w, text->cachetext.icurrent);
-        cache_initrow(&text->cacherow, &rowinfo, font, 0, 0, text->halign, text->valign, widget->size.w, widget->size.h, text->offx, text->cachetext.rownum * rowinfo.lineheight);
+        cache_initrow(&text->cacherow, &rowinfo, font, 0, 0, text->halign, text->valign, widget->size.w, widget->size.h, text->cachetext.offx, text->cachetext.rownum * rowinfo.lineheight);
 
     }
 
     if (text->cacherow.length)
-        blit_text(display, text->cacherow.font, strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2, text->markstart, text->marklength, cmap_get(widget->state, widget->type, 0, 0));
+        blit_text(display, text->cacherow.font, strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->position.x + text->cacherow.rx, widget->position.y + text->cacherow.ry, line, x0, x2, text->cachetext.markstart, text->cachetext.marklength, cmap_get(widget->state, widget->type, 0, 0));
 
 }
 
@@ -189,9 +189,9 @@ static void rendertextedit(struct blit_display *display, struct widget *widget, 
 
         struct text_rowinfo rowinfo;
 
-        cache_updatetext(&textedit->cachetext, font, rownum, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->size.w, widget->size.h, textedit->offx);
+        cache_updatetext(&textedit->cachetext, font, rownum, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->size.w, widget->size.h, textedit->cachetext.offx);
         text_getrowinfo(&rowinfo, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->size.w, textedit->cachetext.icurrent);
-        cache_initrow(&textedit->cacherow, &rowinfo, font, 0, 0, textedit->halign, textedit->valign, widget->size.w, widget->size.h, textedit->offx, textedit->cachetext.rownum * rowinfo.lineheight);
+        cache_initrow(&textedit->cacherow, &rowinfo, font, 0, 0, textedit->halign, textedit->valign, widget->size.w, widget->size.h, textedit->cachetext.offx, textedit->cachetext.rownum * rowinfo.lineheight);
 
     }
 
@@ -201,7 +201,7 @@ static void rendertextedit(struct blit_display *display, struct widget *widget, 
         if (textedit->cursor >= textedit->cacherow.istart && textedit->cursor < textedit->cacherow.istart + textedit->cacherow.length)
             blit_textedit(display, textedit->cacherow.font, textedit->cursor - textedit->cacherow.istart, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->position.x + textedit->cacherow.rx, widget->position.y + textedit->cacherow.ry, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
         else
-            blit_text(display, textedit->cacherow.font, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->position.x + textedit->cacherow.rx, widget->position.y + textedit->cacherow.ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 0, 0));
+            blit_text(display, textedit->cacherow.font, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->position.x + textedit->cacherow.rx, widget->position.y + textedit->cacherow.ry, line, x0, x2, textedit->cachetext.markstart, textedit->cachetext.marklength, cmap_get(widget->state, widget->type, 0, 0));
 
     }
 
