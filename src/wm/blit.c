@@ -147,7 +147,7 @@ void blitpcfbitmap(struct blit_display *display, int rx, int x0, int x2, unsigne
 {
 
     int r0 = util_max(0, x0 - rx);
-    int r1 = util_min(x2 - rx, width - 1);
+    int r1 = util_min(x2 - rx, width);
     unsigned int r;
 
     for (r = r0; r < r1; r++)
@@ -164,7 +164,7 @@ void blitpcfbitmapinverted(struct blit_display *display, int rx, int x0, int x2,
 {
 
     int r0 = util_max(0, x0 - rx);
-    int r1 = util_min(x2 - rx, width - 1);
+    int r1 = util_min(x2 - rx, width);
     unsigned int r;
 
     for (r = r0; r < r1; r++)

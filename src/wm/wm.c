@@ -62,6 +62,28 @@ static void setupvideo(void)
 
 }
 
+static struct widget *getwidgetat(int x, int y)
+{
+
+    struct list_item *current = 0;
+
+    /* Skip mouse */
+    current = pool_prev(current);
+
+    while ((current = pool_prev(current)))
+    {
+
+        struct widget *child = current->data;
+
+        if (widget_intersects(child, x, y))
+            return child;
+
+    }
+
+    return 0;
+
+}
+
 static struct widget *getinteractivewidgetat(int x, int y)
 {
 
@@ -453,6 +475,21 @@ static void clickwidget(struct widget *widget)
 
         break;
 
+/*
+    case WIDGET_TYPE_TEXT:
+        if (state.mousebuttonleft)
+        {
+
+            struct widget_text *text = widget->data;
+
+            text->markstart = 2;
+            text->marklength = 3;
+
+        }
+
+        break;
+*/
+
     case WIDGET_TYPE_TEXTBUTTON:
         if (state.mousebuttonleft)
         {
@@ -704,6 +741,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
+    struct widget *widget = getwidgetat(state.mouseposition.x, state.mouseposition.y);
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
@@ -720,12 +758,18 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         setfocus(interactivewidget);
         setclick(interactivewidget);
 
+        if (widget != interactivewidget)
+            setclick(widget);
+
         break;
 
     case 2:
         state.mousebuttonright = 1;
 
         setclick(interactivewidget);
+
+        if (widget != interactivewidget)
+            setclick(widget);
 
         break;
 
