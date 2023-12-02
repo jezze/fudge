@@ -19,7 +19,8 @@ struct state
     unsigned int paused;
     struct util_position mouseposition;
     struct util_position mousemovement;
-    struct util_position mouseclicked;
+    struct util_position mousepressed;
+    struct util_position mousereleased;
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
     struct widget *rootwidget;
@@ -67,13 +68,13 @@ static struct widget *getwidgetat(int x, int y)
 
     struct list_item *current = 0;
 
-    /* Skip mouse */
-    current = pool_prev(current);
-
     while ((current = pool_prev(current)))
     {
 
         struct widget *child = current->data;
+
+        if (child == state.mousewidget)
+            continue;
 
         if (widget_intersects(child, x, y))
             return child;
@@ -745,8 +746,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    state.mouseclicked.x = state.mouseposition.x;
-    state.mouseclicked.y = state.mouseposition.y;
+    state.mousepressed.x = state.mouseposition.x;
+    state.mousepressed.y = state.mouseposition.y;
 
     switch (mousepress->button)
     {
@@ -791,6 +792,9 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mouserelease *mouserelease = mdata;
+
+    state.mousereleased.x = state.mouseposition.x;
+    state.mousereleased.y = state.mouseposition.y;
 
     switch (mouserelease->button)
     {
