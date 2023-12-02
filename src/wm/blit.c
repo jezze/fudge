@@ -88,17 +88,24 @@ static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int l
 
 }
 
-static void blitrowsegment(struct blit_display *display, struct rowsegment *rs, int x, int w, int x0, int x2, unsigned int *cmap)
+static void blitsegment(struct blit_display *display, struct rowsegment *rows, unsigned int count, unsigned int line, int x, int y, int w, int h, int x0, int x2, unsigned int *cmap)
 {
 
-    unsigned int i;
+    struct rowsegment *rs = findrowsegment(rows, count, line, y, h);
 
-    for (i = 0; i < rs->numlines; i++)
+    if (rs)
     {
 
-        struct linesegment *current = &rs->lines[i];
+        unsigned int i;
 
-        blit_alphaline(display, cmap[current->color], util_max(getpoint(current->t0, current->p0, x, w), x0), util_min(getpoint(current->t1, current->p1, x, w), x2));
+        for (i = 0; i < rs->numlines; i++)
+        {
+
+            struct linesegment *current = &rs->lines[i];
+
+            blit_alphaline(display, cmap[current->color], util_max(getpoint(current->t0, current->p0, x, w), x0), util_min(getpoint(current->t1, current->p1, x, w), x2));
+
+        }
 
     }
 
@@ -281,10 +288,8 @@ void blit_iconarrowdown(struct blit_display *display, int x, int y, int w, int h
         {REL1, REL1, 1, 2, line4, 1},
         {REL1, REL1, 2, 3, line5, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 6, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 6, line, x, y, w, h, x0, x2, cmap);
 
 }
 
@@ -317,10 +322,8 @@ void blit_iconarrowup(struct blit_display *display, int x, int y, int w, int h, 
         {REL1, REL1, 1, 2, line4, 1},
         {REL1, REL1, 2, 3, line5, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 6, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 6, line, x, y, w, h, x0, x2, cmap);
 
 }
 
@@ -354,10 +357,8 @@ void blit_icondropdown(struct blit_display *display, int x, int y, int w, int h,
         {REL1, REL1, 5, 6, line1, 1},
         {REL1, REL1, 6, 7, line0, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 10, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 10, line, x, y, w, h, x0, x2, cmap);
 
 }
 
@@ -372,10 +373,8 @@ void blit_iconhamburger(struct blit_display *display, int x, int y, int w, int h
         {REL1, REL1, -2, 2, line0, 1},
         {REL1, REL1, 4, 8, line0, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 3, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 3, line, x, y, w, h, x0, x2, cmap);
 
 }
 
@@ -388,10 +387,8 @@ void blit_iconminimize(struct blit_display *display, int x, int y, int w, int h,
     static struct rowsegment rows[1] = {
         {REL1, REL1, 4, 8, line0, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 1, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 1, line, x, y, w, h, x0, x2, cmap);
 
 }
 
@@ -444,10 +441,8 @@ void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int li
         {REL1, REL1, 6, 7, line6, 2},
         {REL1, REL1, 7, 8, line7, 2}
     };
-    struct rowsegment *rs = findrowsegment(rows, 15, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 15, line, x, y, w, h, x0, x2, cmap);
 
 }
 
@@ -632,10 +627,8 @@ void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int li
         {REL0, REL0, 22, 23, line22, 3},
         {REL0, REL0, 23, 24, line23, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 24, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 24, line, x, y, w, h, x0, x2, cmap);
 
 }
 
@@ -675,10 +668,8 @@ void blit_frame(struct blit_display *display, int x, int y, int w, int h, int li
         {REL2, REL2, -3, -2, line1, 3},
         {REL2, REL2, -2, 0, line0, 1}
     };
-    struct rowsegment *rs = findrowsegment(rows, 7, line, y, h);
 
-    if (rs)
-        blitrowsegment(display, rs, x, w, x0, x2, cmap);
+    blitsegment(display, rows, 7, line, x, y, w, h, x0, x2, cmap);
 
 }
 
