@@ -143,6 +143,40 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
 
 }
 
+void blit_char(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
+{
+
+    int r0 = util_max(0, x0 - rx);
+    int r1 = util_min(x2 - rx, width - 1);
+    unsigned int r;
+
+    for (r = r0; r < r1; r++)
+    {
+
+        if ((data[(r >> 3)] & (0x80 >> (r % 8))))
+            blit_alphaline(display, color, rx + r, rx + r + 1);
+
+    }
+
+}
+
+void blit_charinverted(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
+{
+
+    int r0 = util_max(0, x0 - rx);
+    int r1 = util_min(x2 - rx, width - 1);
+    unsigned int r;
+
+    for (r = r0; r < r1; r++)
+    {
+
+        if (!(data[(r >> 3)] & (0x80 >> (r % 8))))
+            blit_alphaline(display, color, rx + r, rx + r + 1);
+
+    }
+
+}
+
 void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int *cmap)
 {
 
@@ -157,36 +191,23 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
         struct pcf_metricsdata metricsdata;
         unsigned int lline;
         unsigned int height;
+        unsigned int width;
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
         height = metricsdata.ascent + metricsdata.descent;
+        width = metricsdata.width;
         lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
 
         if (util_intersects(lline, 0, height))
         {
 
-            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width - 1, x0, x2))
-            {
-
-                unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
-                int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x2 - rx, metricsdata.width - 1);
-                unsigned int r;
-
-                for (r = r0; r < r1; r++)
-                {
-
-                    if ((data[(r >> 3)] & (0x80 >> (r % 8))))
-                        blit_alphaline(display, color, rx + r, rx + r + 1);
-
-                }
-
-            }
+            if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
+                blit_char(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
 
         }
 
-        rx += metricsdata.width;
+        rx += width;
 
     }
 
@@ -206,54 +227,30 @@ void blit_textedit(struct blit_display *display, struct text_font *font, unsigne
         struct pcf_metricsdata metricsdata;
         unsigned int lline;
         unsigned int height;
+        unsigned int width;
 
         pcf_readmetricsdata(font->data, index, &metricsdata);
 
         height = metricsdata.ascent + metricsdata.descent;
+        width = metricsdata.width;
         lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
 
         if (util_intersects(lline, 0, height))
         {
 
-            if (util_intersects(rx, x0, x2) || util_intersects(rx + metricsdata.width - 1, x0, x2))
+            if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
             {
 
-                unsigned char *data = font->bitmapdata + offset + lline * font->bitmapalign;
-                int r0 = util_max(0, x0 - rx);
-                int r1 = util_min(x2 - rx, metricsdata.width - 1);
-                unsigned int r;
-
                 if (i == cursor)
-                {
-
-                    for (r = r0; r < r1; r++)
-                    {
-
-                        if (!(data[(r >> 3)] & (0x80 >> (r % 8))))
-                            blit_alphaline(display, color, rx + r, rx + r + 1);
-
-                    }
-
-                }
-
+                    blit_charinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
                 else
-                {
-
-                    for (r = r0; r < r1; r++)
-                    {
-
-                        if ((data[(r >> 3)] & (0x80 >> (r % 8))))
-                            blit_alphaline(display, color, rx + r, rx + r + 1);
-
-                    }
-
-                }
+                    blit_char(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
 
             }
 
         }
 
-        rx += metricsdata.width;
+        rx += width;
 
     }
 
