@@ -177,7 +177,7 @@ void blitpcfbitmapinverted(struct blit_display *display, int rx, int x0, int x2,
 
 }
 
-void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int *cmap)
+void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int ms, unsigned int ml, unsigned int *cmap)
 {
 
     unsigned int color = cmap[CMAP_TEXT_COLOR];
@@ -203,7 +203,14 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
         {
 
             if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
-                blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+            {
+
+                if (i >= ms && i < ms + ml)
+                    blitpcfbitmapinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+                else
+                    blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+
+            }
 
         }
 

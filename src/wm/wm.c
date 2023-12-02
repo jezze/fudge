@@ -100,7 +100,7 @@ static struct widget *getscrollablewidgetat(int x, int y)
 
 }
 
-static struct widget *getwidgetoftypeat(int x, int y, unsigned int type)
+static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 {
 
     struct list_item *current = 0;
@@ -704,8 +704,8 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct widget *clickedwindow = getwidgetoftypeat(state.mouseposition.x, state.mouseposition.y, WIDGET_TYPE_WINDOW);
-    struct widget *clickedwidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
+    struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
+    struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     state.mouseclicked.x = state.mouseposition.x;
     state.mouseclicked.y = state.mouseposition.y;
@@ -716,16 +716,16 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
     case 1:
         state.mousebuttonleft = 1;
 
-        setfocuswindow(clickedwindow);
-        setfocus(clickedwidget);
-        setclick(clickedwidget);
+        setfocuswindow(window);
+        setfocus(interactivewidget);
+        setclick(interactivewidget);
 
         break;
 
     case 2:
         state.mousebuttonright = 1;
 
-        setclick(clickedwidget);
+        setclick(interactivewidget);
 
         break;
 
