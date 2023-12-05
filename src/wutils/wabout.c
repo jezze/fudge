@@ -20,7 +20,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\"\n"
         "    + text in \"base\" weight \"bold\" wrap \"word\" content \"Fudge Operating System\"\n"
         "    + text in \"base\" wrap \"word\" content \"(more info will come soon)\"\n"
-        "    + text in \"base\" weight \"bold\" wrap \"word\" content \"Contributors (in no particular order)\"\n"
+        "    + text in \"base\" weight \"bold\" wrap \"word\" content \"Contributors (in no particular order)Contributors (in no particular order) Contributors (in no particular order)\"\n"
         "    + text in \"base\" wrap \"word\" content \"jfu (Jens Nyberg)\"\n"
         "    + text in \"base\" wrap \"word\" content \"Max-Might\"\n"
         "    + text in \"base\" wrap \"word\" content \"tomByrer (Tom Byrer)\"\n"

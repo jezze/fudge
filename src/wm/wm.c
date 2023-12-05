@@ -184,6 +184,7 @@ static void movewidget(struct widget *widget, int x, int y)
 
 }
 
+/*
 static void translatewidget(struct widget *widget, int x, int y)
 {
 
@@ -195,6 +196,7 @@ static void translatewidget(struct widget *widget, int x, int y)
     damageall(widget);
 
 }
+*/
 
 static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 {
@@ -482,21 +484,6 @@ static void clickwidget(struct widget *widget)
 
         break;
 
-/*
-    case WIDGET_TYPE_TEXT:
-        if (state.mousebuttonleft)
-        {
-
-            struct widget_text *text = widget->data;
-
-            text->markstart = 2;
-            text->marklength = 3;
-
-        }
-
-        break;
-*/
-
     case WIDGET_TYPE_TEXTBUTTON:
         if (state.mousebuttonleft)
         {
@@ -509,6 +496,38 @@ static void clickwidget(struct widget *widget)
         }
 
         break;
+
+    }
+
+}
+
+static void markwidget(struct widget *widget)
+{
+
+    if (widget->type == WIDGET_TYPE_TEXT)
+    {
+
+        struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->in));
+        struct widget_text *text = widget->data;
+        int x = state.mouseposition.x - widget->bb.x;
+        int y = state.mouseposition.y - widget->bb.y;
+        unsigned int offset = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.offx, x, y);
+        struct list_item *current = 0;
+
+        text->cachetext.markstart = 0;
+        text->cachetext.marklength = offset;
+
+        while ((current = pool_nextin(current, parent)))
+        {
+
+            struct widget *child = current->data;
+
+            if (child->type == WIDGET_TYPE_TEXT)
+            {
+
+            }
+
+        }
 
     }
 
@@ -736,11 +755,23 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     if (state.mousewidget)
         movewidget(state.mousewidget, state.mouseposition.x, state.mouseposition.y);
 
+/*
     if (state.mousebuttonleft && widget_isdragable(state.clickedwidget))
         translatewidget(state.clickedwidget, state.mousemovement.x, state.mousemovement.y);
+*/
 
     if (state.mousebuttonright && widget_isresizable(state.focusedwindow))
         scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->bb.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->bb.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
+
+    if (state.mousebuttonleft)
+    {
+
+        struct widget *widget = getwidgetat(state.mouseposition.x, state.mouseposition.y);
+
+        if (widget)
+            markwidget(widget);
+
+    }
 
 }
 
@@ -748,7 +779,6 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousepress *mousepress = mdata;
-    struct widget *widget = getwidgetat(state.mouseposition.x, state.mouseposition.y);
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
@@ -765,18 +795,12 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
         setfocus(interactivewidget);
         setclick(interactivewidget);
 
-        if (widget != interactivewidget)
-            setclick(widget);
-
         break;
 
     case 2:
         state.mousebuttonright = 1;
 
         setclick(interactivewidget);
-
-        if (widget != interactivewidget)
-            setclick(widget);
 
         break;
 

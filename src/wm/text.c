@@ -247,3 +247,34 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
 
 }
 
+unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx, int x, int y)
+{
+
+    struct text_rowinfo rowinfo;
+    unsigned int offset = 0;
+    int cy = 0;
+
+    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
+    {
+
+        if (y >= cy && y < cy + rowinfo.lineheight)
+            return text_getrowinfo(&rowinfo, font, text, length, ATTR_WRAP_CHAR, x - firstrowx, rowinfo.istart);
+
+        cy += rowinfo.lineheight;
+
+    }
+
+    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
+    {
+
+        if (y >= cy && y < cy + rowinfo.lineheight)
+            return text_getrowinfo(&rowinfo, font, text, length, ATTR_WRAP_CHAR, x, rowinfo.istart);
+
+        cy += rowinfo.lineheight;
+
+    }
+
+    return 0;
+
+}
+

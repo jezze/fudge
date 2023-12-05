@@ -149,7 +149,23 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     }
 
     if (text->cacherow.length)
-        blit_text(display, text->cacherow.font, strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->bb.x + text->cacherow.rx, widget->bb.y + text->cacherow.ry, line, x0, x2, text->cachetext.markstart, text->cachetext.marklength, cmap_get(widget->state, widget->type, 0, 0));
+    {
+
+        struct text_rowinfo rowinfo;
+        unsigned int mlength = 0;
+
+        text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.icurrent);
+
+        if (text->cachetext.markstart < rowinfo.iend && text->cachetext.markstart + text->cachetext.marklength > rowinfo.istart)
+        {
+
+            mlength = text->cachetext.markstart + text->cachetext.marklength - rowinfo.istart;
+
+        }
+
+        blit_text(display, text->cacherow.font, strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->bb.x + text->cacherow.rx, widget->bb.y + text->cacherow.ry, line, x0, x2, text->cachetext.markstart, mlength, cmap_get(widget->state, widget->type, 0, 0));
+
+    }
 
 }
 
