@@ -52,6 +52,16 @@ void util_initsize(struct util_size *size, int w, int h)
 
 }
 
+void util_initbox(struct util_box *box, int x, int y, unsigned int w, unsigned int h)
+{
+
+    box->x = x;
+    box->y = y;
+    box->w = w;
+    box->h = h;
+
+}
+
 unsigned int util_getkey(struct util_token *tokens, unsigned int n, char *value)
 {
 

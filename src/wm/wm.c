@@ -151,10 +151,10 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 static void damage(struct widget *widget)
 {
 
-    int x0 = util_clamp(widget->position.x, 0, display.size.w);
-    int y0 = util_clamp(widget->position.y, 0, display.size.h);
-    int x2 = util_clamp(widget->position.x + widget->size.w, 0, display.size.w);
-    int y2 = util_clamp(widget->position.y + widget->size.h, 0, display.size.h);
+    int x0 = util_clamp(widget->bb.x, 0, display.size.w);
+    int y0 = util_clamp(widget->bb.y, 0, display.size.h);
+    int x2 = util_clamp(widget->bb.x + widget->bb.w, 0, display.size.w);
+    int y2 = util_clamp(widget->bb.y + widget->bb.h, 0, display.size.h);
 
     render_damage(x0, y0, x2, y2);
 
@@ -177,8 +177,8 @@ static void movewidget(struct widget *widget, int x, int y)
 
     damageall(widget);
 
-    widget->position.x = x;
-    widget->position.y = y;
+    widget->bb.x = x;
+    widget->bb.y = y;
 
     damageall(widget);
 
@@ -189,8 +189,8 @@ static void translatewidget(struct widget *widget, int x, int y)
 
     damageall(widget);
 
-    widget->position.x += x;
-    widget->position.y += y;
+    widget->bb.x += x;
+    widget->bb.y += y;
 
     damageall(widget);
 
@@ -201,8 +201,8 @@ static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 
     damageall(widget);
 
-    widget->size.w = w;
-    widget->size.h = h;
+    widget->bb.w = w;
+    widget->bb.h = h;
 
     damageall(widget);
 
@@ -368,16 +368,16 @@ static void placewindows(unsigned int source)
         if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
-            if (widget->size.w == 0 && widget->size.h == 0)
+            if (widget->bb.w == 0 && widget->bb.h == 0)
             {
 
                 unsigned int w8 = display.size.w / 8;
                 unsigned int h8 = display.size.h / 8;
 
-                widget->position.x = w8;
-                widget->position.y = h8;
-                widget->size.w = w8 * 3;
-                widget->size.h = h8 * 6;
+                widget->bb.x = w8;
+                widget->bb.y = h8;
+                widget->bb.w = w8 * 3;
+                widget->bb.h = h8 * 6;
 
                 setfocuswindow(widget);
                 setfocus(0);
@@ -436,7 +436,7 @@ static void clickwidget(struct widget *widget)
         if (state.mousebuttonleft)
         {
 
-            if (util_intersects(state.mousewidget->position.x, widget->position.x + widget->size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->position.x + widget->size.w) && util_intersects(state.mousewidget->position.y, widget->position.y, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT))
+            if (util_intersects(state.mousewidget->bb.x, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + widget->bb.w) && util_intersects(state.mousewidget->bb.y, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT))
                 channel_send(widget->source, EVENT_TERM);
 
         }
@@ -704,7 +704,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             if (display.framebuffer)
             {
 
-                render(&display, state.mousewidget->position.x, state.mousewidget->position.y);
+                render(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
                 render_undamage();
 
             }
@@ -740,7 +740,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         translatewidget(state.clickedwidget, state.mousemovement.x, state.mousemovement.y);
 
     if (state.mousebuttonright && widget_isresizable(state.focusedwindow))
-        scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
+        scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->bb.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->bb.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
 
 }
 
@@ -839,19 +839,19 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     case 0:
     case 1:
-        state.mousewidget->position.x = state.mouseposition.x;
-        state.mousewidget->position.y = state.mouseposition.y;
-        state.mousewidget->size.w = 12;
-        state.mousewidget->size.h = 16;
+        state.mousewidget->bb.x = state.mouseposition.x;
+        state.mousewidget->bb.y = state.mouseposition.y;
+        state.mousewidget->bb.w = 12;
+        state.mousewidget->bb.h = 16;
 
         break;
 
     case 2:
     default:
-        state.mousewidget->position.x = state.mouseposition.x;
-        state.mousewidget->position.y = state.mouseposition.y;
-        state.mousewidget->size.w = 18;
-        state.mousewidget->size.h = 24;
+        state.mousewidget->bb.x = state.mouseposition.x;
+        state.mousewidget->bb.y = state.mouseposition.y;
+        state.mousewidget->bb.w = 18;
+        state.mousewidget->bb.h = 24;
 
         break;
 

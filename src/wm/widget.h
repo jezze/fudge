@@ -142,10 +142,8 @@ struct widget
     unsigned int in;
     unsigned int span;
     void *data;
-    struct util_position position;
-    struct util_size size;
-    struct util_position clipposition;
-    struct util_size clipsize;
+    struct util_box bb;
+    struct util_box clip;
 
 };
 

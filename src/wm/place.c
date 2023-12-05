@@ -36,10 +36,8 @@ static unsigned int getnumspans(struct widget *widget)
 static void placewidget(struct widget *widget, int x, int y, int w, int h, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph, unsigned int paddingw, unsigned int paddingh)
 {
 
-    util_initposition(&widget->position, x, y);
-    util_initsize(&widget->size, util_clamp(w + paddingw * 2, minw, maxw), util_clamp(h + paddingh * 2, minh, maxh));
-    util_initposition(&widget->clipposition, clipx, clipy);
-    util_initsize(&widget->clipsize, clipw, cliph);
+    util_initbox(&widget->bb, x, y, util_clamp(w + paddingw * 2, minw, maxw), util_clamp(h + paddingh * 2, minh, maxh));
+    util_initbox(&widget->clip, clipx, clipy, clipw, cliph);
 
 }
 
@@ -110,8 +108,8 @@ static void placechildren1(struct widget *widget, int x, int y, unsigned int min
 
         placechild(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
 
-        total->w = util_max(total->w, ((child->position.x + child->size.w) - x) + marginw + paddingw);
-        total->h = util_max(total->h, ((child->position.y + child->size.h) - y) + marginh + paddingh);
+        total->w = util_max(total->w, ((child->bb.x + child->bb.w) - x) + marginw + paddingw);
+        total->h = util_max(total->h, ((child->bb.y + child->bb.h) - y) + marginh + paddingh);
 
     }
 
@@ -161,8 +159,8 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
 
             placechild(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
 
-            total->w = util_max(total->w, ((child->position.x + child->size.w) - x) + marginw + paddingw);
-            total->h = util_max(total->h, ((child->position.y + child->size.h) - y) + marginh + paddingh);
+            total->w = util_max(total->w, ((child->bb.x + child->bb.w) - x) + marginw + paddingw);
+            total->h = util_max(total->h, ((child->bb.y + child->bb.h) - y) + marginh + paddingh);
 
             offx = text->cachetext.lastrowx;
             offy += text->cachetext.lastrowy;
@@ -178,8 +176,8 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
 
             placechild(child, cpos.x, cpos.y, cmin.w, cmin.h, cmax.w, cmax.h, clipx, clipy, clipw, cliph, paddingw, paddingh);
 
-            total->w = util_max(total->w, ((child->position.x + child->size.w) - x) + marginw + paddingw);
-            total->h = util_max(total->h, ((child->position.y + child->size.h) - y) + marginh + paddingh);
+            total->w = util_max(total->w, ((child->bb.x + child->bb.w) - x) + marginw + paddingw);
+            total->h = util_max(total->h, ((child->bb.y + child->bb.h) - y) + marginh + paddingh);
 
             offx = textedit->cachetext.lastrowx;
             offy += textedit->cachetext.lastrowy;
@@ -200,8 +198,7 @@ static void clipchildren(struct widget *widget, int x, int y, unsigned int w, un
 
         struct widget *child = current->data;
 
-        util_initposition(&child->clipposition, x + marginw, y + marginh);
-        util_initsize(&child->clipsize, util_clamp(w, 0, w - marginw * 2), util_clamp(h, 0, h - marginh * 2));
+        util_initbox(&child->clip, x + marginw, y + marginh, util_clamp(w, 0, w - marginw * 2), util_clamp(h, 0, h - marginh * 2));
         clipchildren(child, x, y, w, h, marginw, marginh);
 
     }
@@ -218,7 +215,9 @@ static void scrollchildren(struct widget *widget, int x, int y)
 
         struct widget *child = current->data;
 
-        util_initposition(&child->position, child->position.x + x, child->position.y + y);
+        child->bb.x += x;
+        child->bb.y += y;
+
         scrollchildren(child, x, y);
 
     }
@@ -234,7 +233,7 @@ static void placebutton(struct widget *widget, int x, int y, unsigned int minw, 
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
-    cache_initrow(&button->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
+    cache_initrow(&button->cacherow, &rowinfo, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
 
 }
 
@@ -247,7 +246,7 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, maxw - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
-    cache_initrow(&choice->cacherow, &rowinfo, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
+    cache_initrow(&choice->cacherow, &rowinfo, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
 
 }
 
@@ -334,7 +333,7 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
     {
 
     case ATTR_MIMETYPE_FUDGEMOUSE:
-        placewidget(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
+        placewidget(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
         break;
 
@@ -355,9 +354,9 @@ static void placelistbox(struct widget *widget, int x, int y, unsigned int minw,
 
     placechildren(widget, x, y, 0, 0, maxw, INFINITY, clipx, clipy, clipw, cliph, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_LISTBOX_PADDING_WIDTH, CONFIG_LISTBOX_PADDING_HEIGHT, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
-    clipchildren(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
+    clipchildren(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
 
-    listbox->vscroll = util_clamp(listbox->vscroll, widget->size.h - total.h, 0);
+    listbox->vscroll = util_clamp(listbox->vscroll, widget->bb.h - total.h, 0);
 
     scrollchildren(widget, 0, listbox->vscroll);
 
@@ -373,11 +372,11 @@ static void placeselect(struct widget *widget, int x, int y, unsigned int minw, 
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH, rowinfo.lineheight, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
-    cache_initrow(&select->cacherow, &rowinfo, font, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
-    placechildren(widget, x, widget->position.y + widget->size.h, 0, 0, widget->size.w * 2, INFINITY, clipx, clipy, clipw, cliph, 0, 0, 0, 0, 0, 1, &total);
+    cache_initrow(&select->cacherow, &rowinfo, font, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+    placechildren(widget, x, widget->bb.y + widget->bb.h, 0, 0, widget->bb.w * 2, INFINITY, clipx, clipy, clipw, cliph, 0, 0, 0, 0, 0, 1, &total);
 
     if (widget->state != WIDGET_STATE_FOCUS)
-        clipchildren(widget, widget->position.x, widget->position.y, 0, 0, 0, 0);
+        clipchildren(widget, widget->bb.x, widget->bb.y, 0, 0, 0, 0);
 
 }
 
@@ -402,9 +401,9 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
     placetextflow(widget, x, y, 0, 0, maxw, INFINITY, clipx, clipy, clipw, cliph, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
-    clipchildren(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
+    clipchildren(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
 
-    textbox->vscroll = util_clamp(textbox->vscroll, widget->size.h - total.h, 0);
+    textbox->vscroll = util_clamp(textbox->vscroll, widget->bb.h - total.h, 0);
 
     scrollchildren(widget, 0, textbox->vscroll);
 
@@ -419,7 +418,7 @@ static void placetextbutton(struct widget *widget, int x, int y, unsigned int mi
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, maxw - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);
     placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
-    cache_initrow(&textbutton->cacherow, &rowinfo, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->size.w, widget->size.h, 0, 0);
+    cache_initrow(&textbutton->cacherow, &rowinfo, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
 
 }
 
@@ -445,9 +444,9 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
     struct util_size total;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, maxw, 0);
-    placewidget(widget, widget->position.x, widget->position.y, widget->size.w, widget->size.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
-    cache_initrow(&window->cacherow, &rowinfo, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget->size.w, widget->size.h, 0, 0);
-    placechildren(widget, widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT, clipx, clipy, clipw, cliph, 0, 0, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, 0, 1, &total);
+    placewidget(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
+    cache_initrow(&window->cacherow, &rowinfo, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget->bb.w, widget->bb.h, 0, 0);
+    placechildren(widget, widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, 0, 0, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT, clipx, clipy, clipw, cliph, 0, 0, CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT, 0, 1, &total);
 
 }
 

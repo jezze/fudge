@@ -498,14 +498,14 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
-    return util_intersects(x, widget->position.x, widget->position.x + widget->size.w) && util_intersects(x, widget->clipposition.x, widget->clipposition.x + widget->clipsize.w);
+    return util_intersects(x, widget->bb.x, widget->bb.x + widget->bb.w) && util_intersects(x, widget->clip.x, widget->clip.x + widget->clip.w);
 
 }
 
 unsigned int widget_intersectsy(struct widget *widget, int y)
 {
 
-    return util_intersects(y, widget->position.y, widget->position.y + widget->size.h) && util_intersects(y, widget->clipposition.y, widget->clipposition.y + widget->clipsize.h);
+    return util_intersects(y, widget->bb.y, widget->bb.y + widget->bb.h) && util_intersects(y, widget->clip.y, widget->clip.y + widget->clip.h);
 
 }
 
@@ -586,10 +586,8 @@ unsigned int widget_isscrollable(struct widget *widget)
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
 {
 
-    util_initposition(&widget->position, 0, 0);
-    util_initsize(&widget->size, 0, 0);
-    util_initposition(&widget->clipposition, 0, 0);
-    util_initsize(&widget->clipsize, 0, 0);
+    util_initbox(&widget->bb, 0, 0, 0, 0);
+    util_initbox(&widget->clip, 0, 0, 0, 0);
 
     widget->source = source;
     widget->type = type;
