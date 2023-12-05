@@ -184,7 +184,6 @@ static void movewidget(struct widget *widget, int x, int y)
 
 }
 
-/*
 static void translatewidget(struct widget *widget, int x, int y)
 {
 
@@ -196,7 +195,6 @@ static void translatewidget(struct widget *widget, int x, int y)
     damageall(widget);
 
 }
-*/
 
 static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 {
@@ -755,10 +753,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     if (state.mousewidget)
         movewidget(state.mousewidget, state.mouseposition.x, state.mouseposition.y);
 
-/*
     if (state.mousebuttonleft && widget_isdragable(state.clickedwidget))
         translatewidget(state.clickedwidget, state.mousemovement.x, state.mousemovement.y);
-*/
 
     if (state.mousebuttonright && widget_isresizable(state.focusedwindow))
         scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->bb.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->bb.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
@@ -863,19 +859,13 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     case 0:
     case 1:
-        state.mousewidget->bb.x = state.mouseposition.x;
-        state.mousewidget->bb.y = state.mouseposition.y;
-        state.mousewidget->bb.w = 12;
-        state.mousewidget->bb.h = 16;
+        util_initbox(&state.mousewidget->bb, state.mouseposition.x, state.mouseposition.y, 12, 16);
 
         break;
 
     case 2:
     default:
-        state.mousewidget->bb.x = state.mouseposition.x;
-        state.mousewidget->bb.y = state.mouseposition.y;
-        state.mousewidget->bb.w = 18;
-        state.mousewidget->bb.h = 24;
+        util_initbox(&state.mousewidget->bb, state.mouseposition.x, state.mouseposition.y, 18, 24);
 
         break;
 
