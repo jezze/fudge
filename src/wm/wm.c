@@ -28,7 +28,6 @@ struct state
     struct widget *hoverwidget;
     struct widget *focusedwindow;
     struct widget *focusedwidget;
-    struct widget *clickedwidget;
     struct keys keys;
 
 };
@@ -531,27 +530,6 @@ static void markwidget(struct widget *widget)
 
 }
 
-static void setclick(struct widget *widget)
-{
-
-    if (state.clickedwidget)
-    {
-
-        state.clickedwidget = 0;
-
-    }
-
-    if (widget)
-    {
-
-        state.clickedwidget = widget;
-
-        clickwidget(widget);
-
-    }
-
-}
-
 static void destroy(struct widget *widget)
 {
 
@@ -563,9 +541,6 @@ static void destroy(struct widget *widget)
 
     if (state.focusedwindow == widget)
         setfocuswindow(0);
-
-    if (state.clickedwidget == widget)
-        setclick(0);
 
     damageall(widget);
     pool_destroy(widget);
@@ -753,12 +728,6 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     if (state.mousewidget)
         movewidget(state.mousewidget, state.mouseposition.x, state.mouseposition.y);
 
-    if (state.mousebuttonleft && widget_isdragable(state.clickedwidget))
-        translatewidget(state.clickedwidget, state.mousemovement.x, state.mousemovement.y);
-
-    if (state.mousebuttonright && widget_isresizable(state.focusedwindow))
-        scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->bb.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->bb.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
-
     if (state.mousebuttonleft)
     {
 
@@ -766,6 +735,27 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
         if (widget)
             markwidget(widget);
+
+        if (state.focusedwindow)
+        {
+
+            if (widget_isdragable(state.focusedwindow))
+                translatewidget(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
+
+        }
+
+    }
+
+    if (state.mousebuttonright)
+    {
+
+        if (state.focusedwindow)
+        {
+
+            if (widget_isresizable(state.focusedwindow))
+                scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->bb.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->bb.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
+
+        }
 
     }
 
@@ -789,14 +779,12 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
         setfocuswindow(window);
         setfocus(interactivewidget);
-        setclick(interactivewidget);
+        clickwidget(interactivewidget);
 
         break;
 
     case 2:
         state.mousebuttonright = 1;
-
-        setclick(interactivewidget);
 
         break;
 
@@ -836,8 +824,6 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     }
-
-    state.clickedwidget = 0;
 
 }
 
