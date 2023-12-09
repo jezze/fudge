@@ -62,28 +62,6 @@ static void setupvideo(void)
 
 }
 
-static struct widget *getwidgetat(int x, int y)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_prev(current)))
-    {
-
-        struct widget *child = current->data;
-
-        if (child == state.mousewidget)
-            continue;
-
-        if (widget_intersects(child, x, y))
-            return child;
-
-    }
-
-    return 0;
-
-}
-
 static struct widget *getinteractivewidgetat(int x, int y)
 {
 
@@ -504,25 +482,27 @@ static void markwidget(struct widget *widget)
     if (widget->type == WIDGET_TYPE_TEXT)
     {
 
-        struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->in));
         struct widget_text *text = widget->data;
         int x = state.mouseposition.x - widget->bb.x;
         int y = state.mouseposition.y - widget->bb.y;
         unsigned int offset = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.offx, x, y);
-        struct list_item *current = 0;
 
         text->cachetext.markstart = 0;
         text->cachetext.marklength = offset;
 
-        while ((current = pool_nextin(current, parent)))
+    }
+
+    else
+    {
+
+        struct list_item *current = 0;
+
+        while ((current = pool_nextin(current, widget)))
         {
 
             struct widget *child = current->data;
 
-            if (child->type == WIDGET_TYPE_TEXT)
-            {
-
-            }
+            markwidget(child);
 
         }
 
@@ -731,10 +711,10 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     if (state.mousebuttonleft)
     {
 
-        struct widget *widget = getwidgetat(state.mouseposition.x, state.mouseposition.y);
-
-        if (widget)
-            markwidget(widget);
+        if (state.focusedwidget)
+            markwidget(state.focusedwidget);
+        else if (state.focusedwindow)
+            markwidget(state.focusedwindow);
 
         if (state.focusedwindow)
         {
