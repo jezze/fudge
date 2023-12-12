@@ -4,6 +4,7 @@ struct cache_row
     int rx;
     int ry;
     unsigned int istart;
+    unsigned int iend;
     unsigned int length;
     struct text_font *font;
 
@@ -20,7 +21,7 @@ struct cache_text
     unsigned int exist;
     unsigned int offx;
     unsigned int markstart;
-    unsigned int marklength;
+    unsigned int markend;
 
 };
 

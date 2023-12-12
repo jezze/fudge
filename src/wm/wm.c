@@ -483,12 +483,13 @@ static void markwidget(struct widget *widget)
     {
 
         struct widget_text *text = widget->data;
-        int x = state.mouseposition.x - widget->bb.x;
-        int y = state.mouseposition.y - widget->bb.y;
-        unsigned int offset = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.offx, x, y);
+        int x0 = state.mousepressed.x - widget->bb.x;
+        int y0 = state.mousepressed.y - widget->bb.y;
+        int x1 = state.mouseposition.x - widget->bb.x;
+        int y1 = state.mouseposition.y - widget->bb.y;
 
-        text->cachetext.markstart = 0;
-        text->cachetext.marklength = offset;
+        text->cachetext.markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.offx, x0, y0);
+        text->cachetext.markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.offx, x1, y1);
 
     }
 
@@ -713,10 +714,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
         if (state.focusedwidget)
             markwidget(state.focusedwidget);
-        else if (state.focusedwindow)
-            markwidget(state.focusedwindow);
 
-        if (state.focusedwindow)
+        if (!state.focusedwidget && state.focusedwindow)
         {
 
             if (widget_isdragable(state.focusedwindow))
@@ -759,7 +758,14 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
         setfocuswindow(window);
         setfocus(interactivewidget);
-        clickwidget(interactivewidget);
+
+        if (interactivewidget)
+        {
+
+            clickwidget(interactivewidget);
+            markwidget(interactivewidget);
+
+        }
 
         break;
 
@@ -776,8 +782,11 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousescroll *mousescroll = mdata;
+    struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    scrollwidget(getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y), 0, mousescroll->relz * 16);
+    if (scrollablewidget)
+        scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
+
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
 }
