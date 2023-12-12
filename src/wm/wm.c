@@ -493,6 +493,20 @@ static void markwidget(struct widget *widget)
 
     }
 
+    if (widget->type == WIDGET_TYPE_TEXTEDIT)
+    {
+
+        struct widget_textedit *textedit = widget->data;
+        int x0 = state.mousepressed.x - widget->bb.x;
+        int y0 = state.mousepressed.y - widget->bb.y;
+        int x1 = state.mouseposition.x - widget->bb.x;
+        int y1 = state.mouseposition.y - widget->bb.y;
+
+        textedit->cachetext.markstart = text_getoffsetat(pool_getfont(textedit->weight), strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, textedit->cachetext.offx, x0, y0);
+        textedit->cachetext.markend = text_getoffsetat(pool_getfont(textedit->weight), strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, textedit->cachetext.offx, x1, y1);
+
+    }
+
     else
     {
 

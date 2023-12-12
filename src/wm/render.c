@@ -215,10 +215,23 @@ static void rendertextedit(struct blit_display *display, struct widget *widget, 
     if (textedit->cacherow.length)
     {
 
+        unsigned int mstart = (textedit->cachetext.markstart > textedit->cacherow.istart) ? textedit->cachetext.markstart - textedit->cacherow.istart : 0;
+        unsigned int mend = (textedit->cachetext.markend > textedit->cacherow.istart) ? textedit->cachetext.markend - textedit->cacherow.istart : 0;
+
+        if (mend < mstart)
+        {
+
+            unsigned int temp = mstart;
+
+            mstart = mend;
+            mend = temp;
+
+        }
+
         if (textedit->cursor >= textedit->cacherow.istart && textedit->cursor < textedit->cacherow.istart + textedit->cacherow.length)
-            blit_textedit(display, textedit->cacherow.font, textedit->cursor - textedit->cacherow.istart, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->bb.x + textedit->cacherow.rx, widget->bb.y + textedit->cacherow.ry, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
+            blit_textedit(display, textedit->cacherow.font, textedit->cursor - textedit->cacherow.istart, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->bb.x + textedit->cacherow.rx, widget->bb.y + textedit->cacherow.ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
         else
-            blit_text(display, textedit->cacherow.font, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->bb.x + textedit->cacherow.rx, widget->bb.y + textedit->cacherow.ry, line, x0, x2, textedit->cachetext.markstart, textedit->cachetext.markend, cmap_get(widget->state, widget->type, 0, 0));
+            blit_text(display, textedit->cacherow.font, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->bb.x + textedit->cacherow.rx, widget->bb.y + textedit->cacherow.ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
 
     }
 
