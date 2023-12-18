@@ -51,24 +51,6 @@ static void initcacherow(struct cacherow *cacherow, struct text_rowinfo *rowinfo
 
 }
 
-static void clearcacherows(void)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < 512; i++)
-    {
-
-        struct cacherow *row = &cacherows[i];
-
-        row->widget = 0;
-
-    }
-
-    nrows = 0;
-
-}
-
 static struct cacherow *getcacherow(struct widget *widget, unsigned int rownum)
 {
 
@@ -472,7 +454,7 @@ static void updatecache(struct blit_display *display)
 
     unsigned int i;
 
-    clearcacherows();
+    nrows = 0;
 
     for (i = 0; i < 1080; i++)
     {
