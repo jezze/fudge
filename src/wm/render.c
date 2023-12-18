@@ -37,20 +37,6 @@ struct cacherow
 static struct cacherow cacherows[512];
 static unsigned int nrows;
 
-static void initcacherow(struct cacherow *cacherow, struct text_rowinfo *rowinfo, unsigned int num, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, struct widget *widget, int offx, int offy)
-{
-
-    cacherow->num = num;
-    cacherow->rx = text_getrowx(rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
-    cacherow->ry = text_getrowy(rowinfo, valign, paddingy, widget->bb.h - offy) + offy;
-    cacherow->istart = rowinfo->istart;
-    cacherow->iend = rowinfo->iend;
-    cacherow->length = rowinfo->length;
-    cacherow->font = font;
-    cacherow->widget = widget;
-
-}
-
 static struct cacherow *getcacherow(struct widget *widget, unsigned int rownum)
 {
 
@@ -70,26 +56,29 @@ static struct cacherow *getcacherow(struct widget *widget, unsigned int rownum)
 
 }
 
-static struct cacherow *addcacherow(struct widget *widget, unsigned int rownum)
+static void addcacherow(struct widget *widget, unsigned int num, unsigned int font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int offx, int offy, int text, unsigned int wrap, unsigned int icurrent)
 {
 
-    struct cacherow *row = getcacherow(widget, rownum);
+    struct cacherow *row = getcacherow(widget, num);
 
-    if (row)
+    if (!row)
     {
 
-        return row;
+        struct cacherow *cacherow = &cacherows[nrows];
+        struct text_rowinfo rowinfo;
 
-    }
+        text_getrowinfo(&rowinfo, pool_getfont(font), strpool_getstring(text), strpool_getcstringlength(text), wrap, widget->bb.w, icurrent);
 
-    else
-    {
-
-        struct cacherow *nrow = &cacherows[nrows];
+        cacherow->num = num;
+        cacherow->rx = text_getrowx(&rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
+        cacherow->ry = text_getrowy(&rowinfo, valign, paddingy, widget->bb.h - offy) + offy;
+        cacherow->istart = rowinfo.istart;
+        cacherow->iend = rowinfo.iend;
+        cacherow->length = rowinfo.length;
+        cacherow->font = pool_getfont(font);
+        cacherow->widget = widget;
 
         nrows++;
-
-        return nrow;
 
     }
 
@@ -473,18 +462,8 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_button *button = widget->data;
-                    struct cacherow *row = addcacherow(widget, 0);
 
-                    if (row)
-                    {
-
-                        struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
-                        struct text_rowinfo rowinfo;
-
-                        text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        initcacherow(row, &rowinfo, 0, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget, 0, 0);
-
-                    }
+                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE, 0);
 
                 }
 
@@ -492,18 +471,8 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_choice *choice = widget->data;
-                    struct cacherow *row = addcacherow(widget, 0);
 
-                    if (row)
-                    {
-
-                        struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
-                        struct text_rowinfo rowinfo;
-
-                        text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        initcacherow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget, 0, 0);
-
-                    }
+                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE, 0);
 
                 }
 
@@ -511,18 +480,8 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_select *select = widget->data;
-                    struct cacherow *row = addcacherow(widget, 0);
 
-                    if (row)
-                    {
-
-                        struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
-                        struct text_rowinfo rowinfo;
-
-                        text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        initcacherow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget, 0, 0);
-
-                    }
+                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE, 0);
 
                 }
 
@@ -532,18 +491,9 @@ static void updatecache(struct blit_display *display)
                     struct widget_text *text = widget->data;
                     struct text_font *font = pool_getfont(text->weight);
                     unsigned int rownum = (i - widget->bb.y) / font->lineheight;
-                    struct cacherow *row = addcacherow(widget, rownum);
+                    unsigned int icurrent = text_getrowstart(font, strpool_getstring(text->content), strpool_getcstringlength(text->content), rownum, text->wrap, widget->bb.w, text->offx);
 
-                    if (row)
-                    {
-
-                        unsigned int icurrent = text_getrowstart(font, strpool_getstring(text->content), strpool_getcstringlength(text->content), rownum, text->wrap, widget->bb.w, text->offx);
-                        struct text_rowinfo rowinfo;
-
-                        text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, icurrent);
-                        initcacherow(row, &rowinfo, rownum, font, 0, 0, text->halign, text->valign, widget, text->offx, 0);
-
-                    }
+                    addcacherow(widget, rownum, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap, icurrent);
 
                 }
 
@@ -553,18 +503,9 @@ static void updatecache(struct blit_display *display)
                     struct widget_textedit *textedit = widget->data;
                     struct text_font *font = pool_getfont(textedit->weight);
                     unsigned int rownum = (i - widget->bb.y) / font->lineheight;
-                    struct cacherow *row = addcacherow(widget, rownum);
+                    unsigned int icurrent = text_getrowstart(font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), rownum, textedit->wrap, widget->bb.w, textedit->offx);
 
-                    if (row)
-                    {
-
-                        unsigned int icurrent = text_getrowstart(font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), rownum, textedit->wrap, widget->bb.w, textedit->offx);
-                        struct text_rowinfo rowinfo;
-
-                        text_getrowinfo(&rowinfo, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, icurrent);
-                        initcacherow(row, &rowinfo, rownum, font, 0, 0, textedit->halign, textedit->valign, widget, textedit->offx, 0);
-
-                    }
+                    addcacherow(widget, rownum, textedit->weight, 0, 0, textedit->halign, textedit->valign, textedit->offx, 0, textedit->content, textedit->wrap, icurrent);
 
                 }
 
@@ -572,18 +513,8 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_textbutton *textbutton = widget->data;
-                    struct cacherow *row = addcacherow(widget, 0);
 
-                    if (row)
-                    {
-
-                        struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
-                        struct text_rowinfo rowinfo;
-
-                        text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        initcacherow(row, &rowinfo, 0, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget, 0, 0);
-
-                    }
+                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE, 0);
 
                 }
 
@@ -591,18 +522,8 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_window *window = widget->data;
-                    struct cacherow *row = addcacherow(widget, 0);
 
-                    if (row)
-                    {
-
-                        struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
-                        struct text_rowinfo rowinfo;
-
-                        text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        initcacherow(row, &rowinfo, 0, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget, 0, 0);
-
-                    }
+                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE, 0);
 
                 }
 
