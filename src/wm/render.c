@@ -84,21 +84,28 @@ static void addcacherow(struct widget *widget, unsigned int num, unsigned int fo
 
 }
 
-static void renderbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
+static void renderrow(struct blit_display *display, struct widget *widget, unsigned int num, unsigned int line, unsigned int text, int x0, int x2, unsigned int *cmap)
 {
 
-    struct widget_button *button = widget->data;
-    struct cacherow *row = getcacherow(widget, 0);
-
-    blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
+    struct cacherow *row = getcacherow(widget, num);
 
     if (row && row->length)
     {
 
         if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
-            blit_text(display, row->font, strpool_getstring(button->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+            blit_text(display, row->font, strpool_getstring(text) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap);
 
     }
+
+}
+
+static void renderbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
+{
+
+    struct widget_button *button = widget->data;
+
+    blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
+    renderrow(display, widget, 0, line, button->label, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
 
 }
 
@@ -106,17 +113,9 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_choice *choice = widget->data;
-    struct cacherow *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
-
-    if (row && row->length)
-    {
-
-        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
-            blit_text(display, row->font, strpool_getstring(choice->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
-
-    }
+    renderrow(display, widget, 0, line, choice->label, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
 
 }
 
@@ -193,18 +192,10 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_select *select = widget->data;
-    struct cacherow *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
     blit_iconarrowdown(display, widget->bb.x + widget->bb.w - CONFIG_SELECT_PADDING_WIDTH - widget->bb.h / 2, widget->bb.y, widget->bb.h, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
-
-    if (row && row->length)
-    {
-
-        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
-            blit_text(display, row->font, strpool_getstring(select->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 13, 0));
-
-    }
+    renderrow(display, widget, 0, line, select->label, x0, x2, cmap_get(widget->state, widget->type, 13, 0));
 
 }
 
@@ -257,17 +248,9 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 {
 
     struct widget_textbutton *textbutton = widget->data;
-    struct cacherow *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
-
-    if (row && row->length)
-    {
-
-        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
-            blit_text(display, row->font, strpool_getstring(textbutton->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
-
-    }
+    renderrow(display, widget, 0, line, textbutton->label, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
 
 }
 
@@ -314,7 +297,6 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_window *window = widget->data;
-    struct cacherow *row = getcacherow(widget, 0);
     unsigned int onhamburger = util_intersects(mx, widget->bb.x, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onminimize = util_intersects(mx, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onx = util_intersects(mx, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + widget->bb.w) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -324,15 +306,7 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     blit_frame(display, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->bb.y, widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 4, 0));
-
-    if (row && row->length)
-    {
-
-        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
-            blit_text(display, row->font, strpool_getstring(window->title) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 11, 0));
-
-    }
-
+    renderrow(display, widget, 0, line, window->title, x0, x2, cmap_get(widget->state, widget->type, 11, 0));
     blit_iconhamburger(display, widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onhamburger) ? 1 : 0));
     blit_iconminimize(display, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onminimize) ? 1 : 0));
     blit_iconx(display, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onx) ? 1 : 0));
