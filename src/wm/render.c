@@ -3,7 +3,6 @@
 #include "config.h"
 #include "util.h"
 #include "text.h"
-#include "cache.h"
 #include "attr.h"
 #include "widget.h"
 #include "strpool.h"
@@ -21,8 +20,36 @@ struct
 
 } area;
 
-static struct cache_row cacherows[512];
+struct cacherow
+{
+
+    int num;
+    int rx;
+    int ry;
+    unsigned int istart;
+    unsigned int iend;
+    unsigned int length;
+    struct text_font *font;
+    struct widget *widget;
+
+};
+
+static struct cacherow cacherows[512];
 static unsigned int nrows;
+
+static void initcacherow(struct cacherow *cacherow, struct text_rowinfo *rowinfo, unsigned int num, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, struct widget *widget, int offx, int offy)
+{
+
+    cacherow->num = num;
+    cacherow->rx = text_getrowx(rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
+    cacherow->ry = text_getrowy(rowinfo, valign, paddingy, widget->bb.h - offy) + offy;
+    cacherow->istart = rowinfo->istart;
+    cacherow->iend = rowinfo->iend;
+    cacherow->length = rowinfo->length;
+    cacherow->font = font;
+    cacherow->widget = widget;
+
+}
 
 static void clearcacherows(void)
 {
@@ -32,7 +59,7 @@ static void clearcacherows(void)
     for (i = 0; i < 512; i++)
     {
 
-        struct cache_row *row = &cacherows[i];
+        struct cacherow *row = &cacherows[i];
 
         row->widget = 0;
 
@@ -42,7 +69,7 @@ static void clearcacherows(void)
 
 }
 
-static struct cache_row *getcacherow(struct widget *widget, unsigned int rownum)
+static struct cacherow *getcacherow(struct widget *widget, unsigned int rownum)
 {
 
     unsigned int i;
@@ -50,7 +77,7 @@ static struct cache_row *getcacherow(struct widget *widget, unsigned int rownum)
     for (i = 0; i < nrows; i++)
     {
 
-        struct cache_row *row = &cacherows[i];
+        struct cacherow *row = &cacherows[i];
 
         if (row->num == rownum && row->widget == widget)
             return row;
@@ -61,20 +88,28 @@ static struct cache_row *getcacherow(struct widget *widget, unsigned int rownum)
 
 }
 
-static struct cache_row *addcacherow(struct widget *widget, unsigned int rownum)
+static struct cacherow *addcacherow(struct widget *widget, unsigned int rownum)
 {
 
-    struct cache_row *row = getcacherow(widget, rownum);
-    struct cache_row *nrow = &cacherows[nrows];
+    struct cacherow *row = getcacherow(widget, rownum);
 
     if (row)
+    {
+
         return row;
 
-    nrow->widget = widget;
+    }
 
-    nrows++;
+    else
+    {
 
-    return nrow;
+        struct cacherow *nrow = &cacherows[nrows];
+
+        nrows++;
+
+        return nrow;
+
+    }
 
 }
 
@@ -82,7 +117,7 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_button *button = widget->data;
-    struct cache_row *row = getcacherow(widget, 0);
+    struct cacherow *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
 
@@ -100,7 +135,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_choice *choice = widget->data;
-    struct cache_row *row = getcacherow(widget, 0);
+    struct cacherow *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
 
@@ -187,7 +222,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_select *select = widget->data;
-    struct cache_row *row = getcacherow(widget, 0);
+    struct cacherow *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
     blit_iconarrowdown(display, widget->bb.x + widget->bb.w - CONFIG_SELECT_PADDING_WIDTH - widget->bb.h / 2, widget->bb.y, widget->bb.h, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
@@ -212,7 +247,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     if (rownum < text->rows)
     {
 
-        struct cache_row *row = getcacherow(widget, rownum);
+        struct cacherow *row = getcacherow(widget, rownum);
 
         if (row && row->length)
         {
@@ -251,7 +286,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 {
 
     struct widget_textbutton *textbutton = widget->data;
-    struct cache_row *row = getcacherow(widget, 0);
+    struct cacherow *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
 
@@ -275,7 +310,7 @@ static void rendertextedit(struct blit_display *display, struct widget *widget, 
     if (rownum < textedit->rows)
     {
 
-        struct cache_row *row = getcacherow(widget, rownum);
+        struct cacherow *row = getcacherow(widget, rownum);
 
         if (row && row->length)
         {
@@ -308,7 +343,7 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_window *window = widget->data;
-    struct cache_row *row = getcacherow(widget, 0);
+    struct cacherow *row = getcacherow(widget, 0);
     unsigned int onhamburger = util_intersects(mx, widget->bb.x, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onminimize = util_intersects(mx, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onx = util_intersects(mx, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + widget->bb.w) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -456,7 +491,7 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_button *button = widget->data;
-                    struct cache_row *row = addcacherow(widget, 0);
+                    struct cacherow *row = addcacherow(widget, 0);
 
                     if (row)
                     {
@@ -465,7 +500,7 @@ static void updatecache(struct blit_display *display)
                         struct text_rowinfo rowinfo;
 
                         text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        cache_initrow(row, &rowinfo, 0, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+                        initcacherow(row, &rowinfo, 0, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget, 0, 0);
 
                     }
 
@@ -475,7 +510,7 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_choice *choice = widget->data;
-                    struct cache_row *row = addcacherow(widget, 0);
+                    struct cacherow *row = addcacherow(widget, 0);
 
                     if (row)
                     {
@@ -484,7 +519,7 @@ static void updatecache(struct blit_display *display)
                         struct text_rowinfo rowinfo;
 
                         text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        cache_initrow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+                        initcacherow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget, 0, 0);
 
                     }
 
@@ -494,7 +529,7 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_select *select = widget->data;
-                    struct cache_row *row = addcacherow(widget, 0);
+                    struct cacherow *row = addcacherow(widget, 0);
 
                     if (row)
                     {
@@ -503,7 +538,7 @@ static void updatecache(struct blit_display *display)
                         struct text_rowinfo rowinfo;
 
                         text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        cache_initrow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+                        initcacherow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget, 0, 0);
 
                     }
 
@@ -515,7 +550,7 @@ static void updatecache(struct blit_display *display)
                     struct widget_text *text = widget->data;
                     struct text_font *font = pool_getfont(text->weight);
                     unsigned int rownum = (i - widget->bb.y) / font->lineheight;
-                    struct cache_row *row = addcacherow(widget, rownum);
+                    struct cacherow *row = addcacherow(widget, rownum);
 
                     if (row)
                     {
@@ -524,7 +559,7 @@ static void updatecache(struct blit_display *display)
                         struct text_rowinfo rowinfo;
 
                         text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, icurrent);
-                        cache_initrow(row, &rowinfo, rownum, font, 0, 0, text->halign, text->valign, widget->bb.w, widget->bb.h, text->offx, 0);
+                        initcacherow(row, &rowinfo, rownum, font, 0, 0, text->halign, text->valign, widget, text->offx, 0);
 
                     }
 
@@ -536,7 +571,7 @@ static void updatecache(struct blit_display *display)
                     struct widget_textedit *textedit = widget->data;
                     struct text_font *font = pool_getfont(textedit->weight);
                     unsigned int rownum = (i - widget->bb.y) / font->lineheight;
-                    struct cache_row *row = addcacherow(widget, rownum);
+                    struct cacherow *row = addcacherow(widget, rownum);
 
                     if (row)
                     {
@@ -545,7 +580,7 @@ static void updatecache(struct blit_display *display)
                         struct text_rowinfo rowinfo;
 
                         text_getrowinfo(&rowinfo, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, icurrent);
-                        cache_initrow(row, &rowinfo, rownum, font, 0, 0, textedit->halign, textedit->valign, widget->bb.w, widget->bb.h, textedit->offx, 0);
+                        initcacherow(row, &rowinfo, rownum, font, 0, 0, textedit->halign, textedit->valign, widget, textedit->offx, 0);
 
                     }
 
@@ -555,7 +590,7 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_textbutton *textbutton = widget->data;
-                    struct cache_row *row = addcacherow(widget, 0);
+                    struct cacherow *row = addcacherow(widget, 0);
 
                     if (row)
                     {
@@ -564,7 +599,7 @@ static void updatecache(struct blit_display *display)
                         struct text_rowinfo rowinfo;
 
                         text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        cache_initrow(row, &rowinfo, 0, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+                        initcacherow(row, &rowinfo, 0, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget, 0, 0);
 
                     }
 
@@ -574,7 +609,7 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_window *window = widget->data;
-                    struct cache_row *row = addcacherow(widget, 0);
+                    struct cacherow *row = addcacherow(widget, 0);
 
                     if (row)
                     {
@@ -583,7 +618,7 @@ static void updatecache(struct blit_display *display)
                         struct text_rowinfo rowinfo;
 
                         text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, widget->bb.w, 0);
-                        cache_initrow(row, &rowinfo, 0, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget->bb.w, widget->bb.h, 0, 0);
+                        initcacherow(row, &rowinfo, 0, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget, 0, 0);
 
                     }
 

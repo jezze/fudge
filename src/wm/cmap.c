@@ -3,7 +3,6 @@
 #include "config.h"
 #include "util.h"
 #include "text.h"
-#include "cache.h"
 #include "widget.h"
 
 static unsigned int cmapbutton[13] = {

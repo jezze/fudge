@@ -4,7 +4,6 @@
 #include "config.h"
 #include "util.h"
 #include "text.h"
-#include "cache.h"
 #include "attr.h"
 #include "widget.h"
 #include "strpool.h"
@@ -307,7 +306,7 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
     struct widget_image *image = widget->data;
 
     /* This should be done in some preload state after placement but before rendering. Left in placement for now. */
-    if (!image->cacheimage.loaded)
+    if (!image->loaded)
     {
 
         if (call_walk_absolute(FILE_L0, strpool_getstring(image->source)))
@@ -316,15 +315,15 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
             struct pcx_header header;
 
             call_read_all(FILE_L0, &header, sizeof (struct pcx_header), 0);
-            util_initsize(&image->cacheimage.size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
+            util_initsize(&image->size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
 
-            image->cacheimage.loaded = 1;
+            image->loaded = 1;
 
         }
 
     }
 
-    placewidget(widget, x, y, image->cacheimage.size.w, image->cacheimage.size.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
+    placewidget(widget, x, y, image->size.w, image->size.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
 }
 

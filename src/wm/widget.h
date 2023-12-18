@@ -53,7 +53,8 @@ struct widget_image
 
     unsigned int mimetype;
     unsigned int source;
-    struct cache_image cacheimage;
+    unsigned int loaded;
+    struct util_size size;
 
 };
 
