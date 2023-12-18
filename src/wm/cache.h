@@ -12,15 +12,6 @@ struct cache_row
 
 };
 
-struct cache_text
-{
-
-    unsigned int rows;
-    int lastrowx;
-    int lastrowy;
-
-};
-
 struct cache_image
 {
 
@@ -30,4 +21,3 @@ struct cache_image
 };
 
 void cache_initrow(struct cache_row *cacherow, struct text_rowinfo *rowinfo, unsigned int num, struct text_font *font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int w, int h, int offx, int offy);
-void cache_inittext(struct cache_text *cachetext, unsigned int rows, int lastrowx, int lastrowy);

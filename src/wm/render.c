@@ -209,7 +209,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     struct text_font *font = pool_getfont(text->weight);
     unsigned int rownum = (line - widget->bb.y) / font->lineheight;
 
-    if (rownum < text->cachetext.rows)
+    if (rownum < text->rows)
     {
 
         struct cache_row *row = getcacherow(widget, rownum);
@@ -272,7 +272,7 @@ static void rendertextedit(struct blit_display *display, struct widget *widget, 
     struct text_font *font = pool_getfont(textedit->weight);
     unsigned int rownum = (line - widget->bb.y) / font->lineheight;
 
-    if (rownum < textedit->cachetext.rows)
+    if (rownum < textedit->rows)
     {
 
         struct cache_row *row = getcacherow(widget, rownum);

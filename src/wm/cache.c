@@ -18,12 +18,3 @@ void cache_initrow(struct cache_row *cacherow, struct text_rowinfo *rowinfo, uns
 
 }
 
-void cache_inittext(struct cache_text *cachetext, unsigned int rows, int lastrowx, int lastrowy)
-{
-
-    cachetext->rows = rows;
-    cachetext->lastrowx = lastrowx;
-    cachetext->lastrowy = lastrowy;
-
-}
-

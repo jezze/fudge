@@ -86,7 +86,7 @@ struct widget_text
     unsigned int offx;
     unsigned int markstart;
     unsigned int markend;
-    struct cache_text cachetext;
+    unsigned int rows;
 
 };
 
@@ -120,7 +120,7 @@ struct widget_textedit
     unsigned int markstart;
     unsigned int markend;
     unsigned int cursor;
-    struct cache_text cachetext;
+    unsigned int rows;
 
 };
 
