@@ -56,7 +56,7 @@ static struct cacherow *getcacherow(struct widget *widget, unsigned int num)
 
 }
 
-static void addcacherow(struct widget *widget, unsigned int num, unsigned int font, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int offx, int offy, int text, unsigned int wrap, unsigned int icurrent)
+static void addcacherow(struct widget *widget, unsigned int num, unsigned int weight, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int offx, int offy, int text, unsigned int wrap)
 {
 
     struct cacherow *row = getcacherow(widget, num);
@@ -65,9 +65,13 @@ static void addcacherow(struct widget *widget, unsigned int num, unsigned int fo
     {
 
         struct cacherow *cacherow = &cacherows[nrows];
+        struct text_font *font = pool_getfont(weight);
+        char *textstring = strpool_getstring(text);
+        unsigned int textlength = strpool_getcstringlength(text);
+        unsigned int icurrent = text_getrowstart(font, textstring, textlength, num, wrap, widget->bb.w, offx);
         struct text_rowinfo rowinfo;
 
-        text_getrowinfo(&rowinfo, pool_getfont(font), strpool_getstring(text), strpool_getcstringlength(text), wrap, widget->bb.w, icurrent);
+        text_getrowinfo(&rowinfo, font, textstring, textlength, wrap, widget->bb.w, icurrent);
 
         cacherow->num = num;
         cacherow->rx = text_getrowx(&rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
@@ -75,7 +79,7 @@ static void addcacherow(struct widget *widget, unsigned int num, unsigned int fo
         cacherow->istart = rowinfo.istart;
         cacherow->iend = rowinfo.iend;
         cacherow->length = rowinfo.length;
-        cacherow->font = pool_getfont(font);
+        cacherow->font = font;
         cacherow->widget = widget;
 
         nrows++;
@@ -436,7 +440,7 @@ static void updatecache(struct blit_display *display)
 
     nrows = 0;
 
-    for (i = 0; i < 1080; i++)
+    for (i = 0; i < display->size.h; i++)
     {
 
         struct list_item *current = 0;
@@ -454,7 +458,7 @@ static void updatecache(struct blit_display *display)
 
                     struct widget_button *button = widget->data;
 
-                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE, 0);
+                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE);
 
                 }
 
@@ -463,7 +467,7 @@ static void updatecache(struct blit_display *display)
 
                     struct widget_choice *choice = widget->data;
 
-                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE, 0);
+                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE);
 
                 }
 
@@ -472,7 +476,7 @@ static void updatecache(struct blit_display *display)
 
                     struct widget_select *select = widget->data;
 
-                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE, 0);
+                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE);
 
                 }
 
@@ -480,11 +484,8 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_text *text = widget->data;
-                    struct text_font *font = pool_getfont(text->weight);
-                    unsigned int rownum = (i - widget->bb.y) / font->lineheight;
-                    unsigned int icurrent = text_getrowstart(font, strpool_getstring(text->content), strpool_getcstringlength(text->content), rownum, text->wrap, widget->bb.w, text->offx);
 
-                    addcacherow(widget, rownum, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap, icurrent);
+                    addcacherow(widget, (i - widget->bb.y) / pool_getfont(text->weight)->lineheight, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
 
                 }
 
@@ -492,11 +493,8 @@ static void updatecache(struct blit_display *display)
                 {
 
                     struct widget_textedit *textedit = widget->data;
-                    struct text_font *font = pool_getfont(textedit->weight);
-                    unsigned int rownum = (i - widget->bb.y) / font->lineheight;
-                    unsigned int icurrent = text_getrowstart(font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), rownum, textedit->wrap, widget->bb.w, textedit->offx);
 
-                    addcacherow(widget, rownum, textedit->weight, 0, 0, textedit->halign, textedit->valign, textedit->offx, 0, textedit->content, textedit->wrap, icurrent);
+                    addcacherow(widget, (i - widget->bb.y) / pool_getfont(textedit->weight)->lineheight, textedit->weight, 0, 0, textedit->halign, textedit->valign, textedit->offx, 0, textedit->content, textedit->wrap);
 
                 }
 
@@ -505,7 +503,7 @@ static void updatecache(struct blit_display *display)
 
                     struct widget_textbutton *textbutton = widget->data;
 
-                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE, 0);
+                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE);
 
                 }
 
@@ -514,7 +512,7 @@ static void updatecache(struct blit_display *display)
 
                     struct widget_window *window = widget->data;
 
-                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE, 0);
+                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE);
 
                 }
 
