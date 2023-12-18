@@ -37,7 +37,7 @@ struct cacherow
 static struct cacherow cacherows[512];
 static unsigned int nrows;
 
-static struct cacherow *getcacherow(struct widget *widget, unsigned int rownum)
+static struct cacherow *getcacherow(struct widget *widget, unsigned int num)
 {
 
     unsigned int i;
@@ -47,7 +47,7 @@ static struct cacherow *getcacherow(struct widget *widget, unsigned int rownum)
 
         struct cacherow *row = &cacherows[i];
 
-        if (row->num == rownum && row->widget == widget)
+        if (row->num == num && row->widget == widget)
             return row;
 
     }
