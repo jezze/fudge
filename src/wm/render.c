@@ -21,15 +21,78 @@ struct
 
 } area;
 
+static struct cache_row cacherows[512];
+static unsigned int nrows;
+
+static void clearcacherows(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 512; i++)
+    {
+
+        struct cache_row *row = &cacherows[i];
+
+        row->widget = 0;
+
+    }
+
+    nrows = 0;
+
+}
+
+static struct cache_row *getcacherow(struct widget *widget, unsigned int rownum)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < nrows; i++)
+    {
+
+        struct cache_row *row = &cacherows[i];
+
+        if (row->num == rownum && row->widget == widget)
+            return row;
+
+    }
+
+    return 0;
+
+}
+
+static struct cache_row *addcacherow(struct widget *widget, unsigned int rownum)
+{
+
+    struct cache_row *row = getcacherow(widget, rownum);
+    struct cache_row *nrow = &cacherows[nrows];
+
+    if (row)
+        return row;
+
+    nrow->widget = widget;
+
+    nrows++;
+
+    return nrow;
+
+}
+
 static void renderbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
 {
 
     struct widget_button *button = widget->data;
+    struct cache_row *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
 
-    if (util_intersects(line, widget->bb.y + button->cacherow.ry, widget->bb.y + button->cacherow.ry + button->cacherow.font->lineheight))
-        blit_text(display, button->cacherow.font, strpool_getstring(button->label) + button->cacherow.istart, button->cacherow.length, widget->bb.x + button->cacherow.rx, widget->bb.y + button->cacherow.ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+    if (row && row->length)
+    {
+
+        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
+            blit_text(display, row->font, strpool_getstring(button->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+
+    }
 
 }
 
@@ -37,11 +100,17 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_choice *choice = widget->data;
+    struct cache_row *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
 
-    if (util_intersects(line, widget->bb.y + choice->cacherow.ry, widget->bb.y + choice->cacherow.ry + choice->cacherow.font->lineheight))
-        blit_text(display, choice->cacherow.font, strpool_getstring(choice->label) + choice->cacherow.istart, choice->cacherow.length, widget->bb.x + choice->cacherow.rx, widget->bb.y + choice->cacherow.ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+    if (row && row->length)
+    {
+
+        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
+            blit_text(display, row->font, strpool_getstring(choice->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+
+    }
 
 }
 
@@ -118,12 +187,18 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_select *select = widget->data;
+    struct cache_row *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
     blit_iconarrowdown(display, widget->bb.x + widget->bb.w - CONFIG_SELECT_PADDING_WIDTH - widget->bb.h / 2, widget->bb.y, widget->bb.h, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
 
-    if (util_intersects(line, widget->bb.y + select->cacherow.ry, widget->bb.y + select->cacherow.ry + select->cacherow.font->lineheight))
-        blit_text(display, select->cacherow.font, strpool_getstring(select->label) + select->cacherow.istart, select->cacherow.length, widget->bb.x + select->cacherow.rx, widget->bb.y + select->cacherow.ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 13, 0));
+    if (row && row->length)
+    {
+
+        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
+            blit_text(display, row->font, strpool_getstring(select->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 13, 0));
+
+    }
 
 }
 
@@ -134,37 +209,30 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     struct text_font *font = pool_getfont(text->weight);
     unsigned int rownum = (line - widget->bb.y) / font->lineheight;
 
-    if (rownum >= text->cachetext.rows)
-        return;
-
-    if (!text->cachetext.exist || text->cachetext.rownum != rownum)
+    if (rownum < text->cachetext.rows)
     {
 
-        struct text_rowinfo rowinfo;
+        struct cache_row *row = getcacherow(widget, rownum);
 
-        cache_updatetext(&text->cachetext, font, rownum, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, widget->bb.h, text->cachetext.offx);
-        text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.icurrent);
-        cache_initrow(&text->cacherow, &rowinfo, font, 0, 0, text->halign, text->valign, widget->bb.w, widget->bb.h, text->cachetext.offx, text->cachetext.rownum * rowinfo.lineheight);
-
-    }
-
-    if (text->cacherow.length)
-    {
-
-        unsigned int mstart = (text->cachetext.markstart > text->cacherow.istart) ? text->cachetext.markstart - text->cacherow.istart : 0;
-        unsigned int mend = (text->cachetext.markend > text->cacherow.istart) ? text->cachetext.markend - text->cacherow.istart : 0;
-
-        if (mend < mstart)
+        if (row && row->length)
         {
 
-            unsigned int temp = mstart;
+            unsigned int mstart = (text->markstart > row->istart) ? text->markstart - row->istart : 0;
+            unsigned int mend = (text->markend > row->istart) ? text->markend - row->istart : 0;
 
-            mstart = mend;
-            mend = temp;
+            if (mend < mstart)
+            {
+
+                unsigned int temp = mstart;
+
+                mstart = mend;
+                mend = temp;
+
+            }
+
+            blit_text(display, row->font, strpool_getstring(text->content) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
 
         }
-
-        blit_text(display, text->cacherow.font, strpool_getstring(text->content) + text->cacherow.istart, text->cacherow.length, widget->bb.x + text->cacherow.rx, widget->bb.y + text->cacherow.ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
 
     }
 
@@ -183,11 +251,17 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 {
 
     struct widget_textbutton *textbutton = widget->data;
+    struct cache_row *row = getcacherow(widget, 0);
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
 
-    if (util_intersects(line, widget->bb.y + textbutton->cacherow.ry, widget->bb.y + textbutton->cacherow.ry + textbutton->cacherow.font->lineheight))
-        blit_text(display, textbutton->cacherow.font, strpool_getstring(textbutton->label) + textbutton->cacherow.istart, textbutton->cacherow.length, widget->bb.x + textbutton->cacherow.rx, widget->bb.y + textbutton->cacherow.ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+    if (row && row->length)
+    {
+
+        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
+            blit_text(display, row->font, strpool_getstring(textbutton->label) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+
+    }
 
 }
 
@@ -198,40 +272,33 @@ static void rendertextedit(struct blit_display *display, struct widget *widget, 
     struct text_font *font = pool_getfont(textedit->weight);
     unsigned int rownum = (line - widget->bb.y) / font->lineheight;
 
-    if (rownum >= textedit->cachetext.rows)
-        return;
-
-    if (!textedit->cachetext.exist || textedit->cachetext.rownum != rownum)
+    if (rownum < textedit->cachetext.rows)
     {
 
-        struct text_rowinfo rowinfo;
+        struct cache_row *row = getcacherow(widget, rownum);
 
-        cache_updatetext(&textedit->cachetext, font, rownum, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, widget->bb.h, textedit->cachetext.offx);
-        text_getrowinfo(&rowinfo, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, textedit->cachetext.icurrent);
-        cache_initrow(&textedit->cacherow, &rowinfo, font, 0, 0, textedit->halign, textedit->valign, widget->bb.w, widget->bb.h, textedit->cachetext.offx, textedit->cachetext.rownum * rowinfo.lineheight);
-
-    }
-
-    if (textedit->cacherow.length)
-    {
-
-        unsigned int mstart = (textedit->cachetext.markstart > textedit->cacherow.istart) ? textedit->cachetext.markstart - textedit->cacherow.istart : 0;
-        unsigned int mend = (textedit->cachetext.markend > textedit->cacherow.istart) ? textedit->cachetext.markend - textedit->cacherow.istart : 0;
-
-        if (mend < mstart)
+        if (row && row->length)
         {
 
-            unsigned int temp = mstart;
+            unsigned int mstart = (textedit->markstart > row->istart) ? textedit->markstart - row->istart : 0;
+            unsigned int mend = (textedit->markend > row->istart) ? textedit->markend - row->istart : 0;
 
-            mstart = mend;
-            mend = temp;
+            if (mend < mstart)
+            {
+
+                unsigned int temp = mstart;
+
+                mstart = mend;
+                mend = temp;
+
+            }
+
+            if (textedit->cursor >= row->istart && textedit->cursor < row->istart + row->length)
+                blit_textedit(display, row->font, textedit->cursor - row->istart, strpool_getstring(textedit->content) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
+            else
+                blit_text(display, row->font, strpool_getstring(textedit->content) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
 
         }
-
-        if (textedit->cursor >= textedit->cacherow.istart && textedit->cursor < textedit->cacherow.istart + textedit->cacherow.length)
-            blit_textedit(display, textedit->cacherow.font, textedit->cursor - textedit->cacherow.istart, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->bb.x + textedit->cacherow.rx, widget->bb.y + textedit->cacherow.ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
-        else
-            blit_text(display, textedit->cacherow.font, strpool_getstring(textedit->content) + textedit->cacherow.istart, textedit->cacherow.length, widget->bb.x + textedit->cacherow.rx, widget->bb.y + textedit->cacherow.ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
 
     }
 
@@ -241,6 +308,7 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_window *window = widget->data;
+    struct cache_row *row = getcacherow(widget, 0);
     unsigned int onhamburger = util_intersects(mx, widget->bb.x, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onminimize = util_intersects(mx, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onx = util_intersects(mx, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + widget->bb.w) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -251,8 +319,13 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     blit_frame(display, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 4, 0));
 
-    if (util_intersects(line, widget->bb.y + window->cacherow.ry, widget->bb.y + window->cacherow.ry + window->cacherow.font->lineheight))
-        blit_text(display, window->cacherow.font, strpool_getstring(window->title) + window->cacherow.istart, window->cacherow.length, widget->bb.x + window->cacherow.rx, widget->bb.y + window->cacherow.ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 11, 0));
+    if (row && row->length)
+    {
+
+        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
+            blit_text(display, row->font, strpool_getstring(window->title) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 11, 0));
+
+    }
 
     blit_iconhamburger(display, widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onhamburger) ? 1 : 0));
     blit_iconminimize(display, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onminimize) ? 1 : 0));
@@ -359,10 +432,177 @@ void render_undamage(void)
 
 }
 
+static void updatecache(struct blit_display *display)
+{
+
+    unsigned int i;
+
+    clearcacherows();
+
+    for (i = 0; i < 1080; i++)
+    {
+
+        struct list_item *current = 0;
+
+        while ((current = pool_next(current)))
+        {
+
+            struct widget *widget = current->data;
+
+            if (widget_intersectsy(widget, i))
+            {
+
+                if (widget->type == WIDGET_TYPE_BUTTON)
+                {
+
+                    struct widget_button *button = widget->data;
+                    struct cache_row *row = addcacherow(widget, 0);
+
+                    if (row)
+                    {
+
+                        struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
+                        struct text_rowinfo rowinfo;
+
+                        text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, widget->bb.w, 0);
+                        cache_initrow(row, &rowinfo, 0, font, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+
+                    }
+
+                }
+
+                if (widget->type == WIDGET_TYPE_CHOICE)
+                {
+
+                    struct widget_choice *choice = widget->data;
+                    struct cache_row *row = addcacherow(widget, 0);
+
+                    if (row)
+                    {
+
+                        struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
+                        struct text_rowinfo rowinfo;
+
+                        text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, widget->bb.w, 0);
+                        cache_initrow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+
+                    }
+
+                }
+
+                if (widget->type == WIDGET_TYPE_SELECT)
+                {
+
+                    struct widget_select *select = widget->data;
+                    struct cache_row *row = addcacherow(widget, 0);
+
+                    if (row)
+                    {
+
+                        struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
+                        struct text_rowinfo rowinfo;
+
+                        text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, widget->bb.w, 0);
+                        cache_initrow(row, &rowinfo, 0, font, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+
+                    }
+
+                }
+
+                if (widget->type == WIDGET_TYPE_TEXT)
+                {
+
+                    struct widget_text *text = widget->data;
+                    struct text_font *font = pool_getfont(text->weight);
+                    unsigned int rownum = (i - widget->bb.y) / font->lineheight;
+                    struct cache_row *row = addcacherow(widget, rownum);
+
+                    if (row)
+                    {
+
+                        unsigned int icurrent = text_getrowstart(font, strpool_getstring(text->content), strpool_getcstringlength(text->content), rownum, text->wrap, widget->bb.w, text->offx);
+                        struct text_rowinfo rowinfo;
+
+                        text_getrowinfo(&rowinfo, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, icurrent);
+                        cache_initrow(row, &rowinfo, rownum, font, 0, 0, text->halign, text->valign, widget->bb.w, widget->bb.h, text->offx, 0);
+
+                    }
+
+                }
+
+                if (widget->type == WIDGET_TYPE_TEXTEDIT)
+                {
+
+                    struct widget_textedit *textedit = widget->data;
+                    struct text_font *font = pool_getfont(textedit->weight);
+                    unsigned int rownum = (i - widget->bb.y) / font->lineheight;
+                    struct cache_row *row = addcacherow(widget, rownum);
+
+                    if (row)
+                    {
+
+                        unsigned int icurrent = text_getrowstart(font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), rownum, textedit->wrap, widget->bb.w, textedit->offx);
+                        struct text_rowinfo rowinfo;
+
+                        text_getrowinfo(&rowinfo, font, strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, icurrent);
+                        cache_initrow(row, &rowinfo, rownum, font, 0, 0, textedit->halign, textedit->valign, widget->bb.w, widget->bb.h, textedit->offx, 0);
+
+                    }
+
+                }
+
+                if (widget->type == WIDGET_TYPE_TEXTBUTTON)
+                {
+
+                    struct widget_textbutton *textbutton = widget->data;
+                    struct cache_row *row = addcacherow(widget, 0);
+
+                    if (row)
+                    {
+
+                        struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
+                        struct text_rowinfo rowinfo;
+
+                        text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, widget->bb.w, 0);
+                        cache_initrow(row, &rowinfo, 0, font, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, widget->bb.w, widget->bb.h, 0, 0);
+
+                    }
+
+                }
+
+                if (widget->type == WIDGET_TYPE_WINDOW)
+                {
+
+                    struct widget_window *window = widget->data;
+                    struct cache_row *row = addcacherow(widget, 0);
+
+                    if (row)
+                    {
+
+                        struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
+                        struct text_rowinfo rowinfo;
+
+                        text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, widget->bb.w, 0);
+                        cache_initrow(row, &rowinfo, 0, font, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, widget->bb.w, widget->bb.h, 0, 0);
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
 void render(struct blit_display *display, int mx, int my)
 {
 
     int line;
+
+    updatecache(display);
 
     for (line = area.position0.y; line < area.position2.y; line++)
     {

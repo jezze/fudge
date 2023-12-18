@@ -488,8 +488,8 @@ static void markwidget(struct widget *widget)
         int x1 = state.mouseposition.x - widget->bb.x;
         int y1 = state.mouseposition.y - widget->bb.y;
 
-        text->cachetext.markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.offx, x0, y0);
-        text->cachetext.markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->cachetext.offx, x1, y1);
+        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->offx, x0, y0);
+        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->offx, x1, y1);
 
     }
 
@@ -502,8 +502,8 @@ static void markwidget(struct widget *widget)
         int x1 = state.mouseposition.x - widget->bb.x;
         int y1 = state.mouseposition.y - widget->bb.y;
 
-        textedit->cachetext.markstart = text_getoffsetat(pool_getfont(textedit->weight), strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, textedit->cachetext.offx, x0, y0);
-        textedit->cachetext.markend = text_getoffsetat(pool_getfont(textedit->weight), strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, textedit->cachetext.offx, x1, y1);
+        textedit->markstart = text_getoffsetat(pool_getfont(textedit->weight), strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, textedit->offx, x0, y0);
+        textedit->markend = text_getoffsetat(pool_getfont(textedit->weight), strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, widget->bb.w, textedit->offx, x1, y1);
 
     }
 

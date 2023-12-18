@@ -22,7 +22,6 @@ struct widget_button
 
     unsigned int label;
     unsigned int onclick;
-    struct cache_row cacherow;
 
 };
 
@@ -31,7 +30,6 @@ struct widget_choice
 
     unsigned int label;
     unsigned int onclick;
-    struct cache_row cacherow;
 
 };
 
@@ -74,7 +72,6 @@ struct widget_select
 
     unsigned int label;
     unsigned int onclick;
-    struct cache_row cacherow;
 
 };
 
@@ -86,7 +83,9 @@ struct widget_text
     unsigned int valign;
     unsigned int weight;
     unsigned int wrap;
-    struct cache_row cacherow;
+    unsigned int offx;
+    unsigned int markstart;
+    unsigned int markend;
     struct cache_text cachetext;
 
 };
@@ -106,7 +105,6 @@ struct widget_textbutton
 
     unsigned int label;
     unsigned int onclick;
-    struct cache_row cacherow;
 
 };
 
@@ -118,8 +116,10 @@ struct widget_textedit
     unsigned int valign;
     unsigned int weight;
     unsigned int wrap;
+    unsigned int offx;
+    unsigned int markstart;
+    unsigned int markend;
     unsigned int cursor;
-    struct cache_row cacherow;
     struct cache_text cachetext;
 
 };
@@ -128,7 +128,6 @@ struct widget_window
 {
 
     unsigned int title;
-    struct cache_row cacherow;
 
 };
 
