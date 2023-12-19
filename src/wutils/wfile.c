@@ -35,7 +35,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"action=file&name=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"action=relpath&path=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
             if (!--maxsend)
                 return;
@@ -111,19 +111,19 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (kv_match(event, "action=volume"))
+    else if (kv_match(event, "action=abspath"))
     {
 
-        cstring_write_fmt1(path, 256, "%s:\\0", 0, kv_getstring(event, "name="));
+        cstring_write_fmt1(path, 256, "%s\\0", 0, kv_getstring(event, "path="));
         updatepath();
         updatecontent();
 
     }
 
-    else if (kv_match(event, "action=file"))
+    else if (kv_match(event, "action=relpath"))
     {
 
-        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, kv_getstring(event, "name="));
+        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, kv_getstring(event, "path="));
         updatepath();
         updatecontent();
 
@@ -140,8 +140,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"1\"\n"
         "      + select id \"volume\" in \"top\" label \"Volume\"\n"
         "        + layout id \"volume-list\" in \"volume\" flow \"vertical\"\n"
-        "          + choice in \"volume-list\" label \"initrd:\" onclick \"action=volume&name=initrd\"\n"
-        "          + choice in \"volume-list\" label \"system:\" onclick \"action=volume&name=system\"\n"
+        "          + choice in \"volume-list\" label \"initrd:\" onclick \"action=abspath&path=initrd:\"\n"
+        "          + choice in \"volume-list\" label \"system:\" onclick \"action=abspath&path=system:\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"
         "        + text id \"path\" in \"pathbox\" cursor \"0\"\n"
         "      + button in \"top\" label \"Up\" onclick \"action=up\"\n"
