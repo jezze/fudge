@@ -2,8 +2,6 @@ unsigned int cstring_length(char *in);
 unsigned int cstring_length_zero(char *in);
 unsigned int cstring_match(char *in1, char *in2);
 unsigned int cstring_match_substring(char *in1, char *in2);
-char *cstring_get_word(char *in, unsigned int index);
-unsigned int cstring_match_word(char *in, unsigned int index, char *word);
 unsigned int cstring_isspace(char c);
 unsigned int cstring_isalpha(char c);
 unsigned int cstring_isdigit(char c);

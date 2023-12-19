@@ -389,10 +389,10 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
 
         char *cmd = strpool_getstring(action);
 
-        if (cstring_match_word(cmd, 0, "run"))
+        if (buffer_match(cmd, "run=", 4))
         {
 
-            unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, cstring_get_word(cmd, 1));
+            unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, cmd + 4);
 
             if (channel)
                 channel_send(channel, EVENT_MAIN);
@@ -929,15 +929,15 @@ static void setupwidgets(void)
         "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "    + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"
         "      + layout id \"fudge-layout\" in \"fudge-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"fudge-layout\" label \"About\" onclick \"run /bin/wabout\"\n"
-        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run /bin/wsettings\"\n"
-        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run /bin/reboot\"\n"
+        "        + choice in \"fudge-layout\" label \"About\" onclick \"run=/bin/wabout\"\n"
+        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run=/bin/wsettings\"\n"
+        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run=/bin/reboot\"\n"
         "    + select id \"apps-select\" in \"menu\" label \"Apps\"\n"
         "      + layout id \"apps-layout\" in \"apps-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run /bin/wshell\"\n"
-        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run /bin/wfile\"\n"
-        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run /bin/wcalc\"\n"
-        "        + choice in \"apps-layout\" label \"Test\" onclick \"run /bin/wtest\"\n";
+        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run=/bin/wshell\"\n"
+        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run=/bin/wfile\"\n"
+        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run=/bin/wcalc\"\n"
+        "        + choice in \"apps-layout\" label \"Test\" onclick \"run=/bin/wtest\"\n";
 
     parser_parse(0, "", cstring_length(data0), data0);
     parser_parse(0, "root", cstring_length(data1), data1);

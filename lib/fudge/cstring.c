@@ -85,61 +85,6 @@ unsigned int cstring_match_substring(char *in1, char *in2)
 
 }
 
-char *cstring_get_word(char *in, unsigned int index)
-{
-
-    unsigned int n = cstring_length_zero(in);
-    unsigned int start = 0;
-    unsigned int i;
-
-    for (i = 0; i < n; i++)
-    {
-
-        if (cstring_isspace(in[i]) || in[i] == '\0')
-        {
-
-            if (!index)
-                return in + start;
-
-            index--;
-            start = i + 1;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-unsigned int cstring_match_word(char *in, unsigned int index, char *word)
-{
-
-    unsigned int n = cstring_length_zero(in);
-    unsigned int nword = cstring_length(word);
-    unsigned int start = 0;
-    unsigned int i;
-
-    for (i = 0; i < n; i++)
-    {
-
-        if (cstring_isspace(in[i]) || in[i] == '\0')
-        {
-
-            if (!index)
-                return buffer_match(in + start, word, nword);
-
-            index--;
-            start = i + 1;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 unsigned int cstring_isspace(char c)
 {
 
