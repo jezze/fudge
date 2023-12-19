@@ -221,7 +221,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
     textinfo->height = 0;
     textinfo->rows = 0;
 
-    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
+    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
         textinfo->lastrowx = (rowinfo.linebreak) ? 0 : rowinfo.width + firstrowx;
@@ -230,16 +230,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
         textinfo->height = textinfo->lastrowy + rowinfo.lineheight;
         textinfo->rows++;
 
-        while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
-        {
-
-            textinfo->lastrowx = (rowinfo.linebreak) ? 0 : rowinfo.width;
-            textinfo->lastrowy += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
-            textinfo->width = util_max(textinfo->width, rowinfo.width);
-            textinfo->height = textinfo->lastrowy + rowinfo.lineheight;
-            textinfo->rows++;
-
-        }
+        firstrowx = 0;
 
     }
 
@@ -254,7 +245,7 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
     unsigned int offset = 0;
     int cy = 0;
 
-    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
+    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
         if (y >= cy && y < cy + rowinfo.lineheight)
@@ -262,15 +253,7 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
 
         cy += rowinfo.lineheight;
 
-    }
-
-    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
-    {
-
-        if (y >= cy && y < cy + rowinfo.lineheight)
-            return text_getrowinfo(&rowinfo, font, text, length, ATTR_WRAP_CHAR, x, rowinfo.istart);
-
-        cy += rowinfo.lineheight;
+        firstrowx = 0;
 
     }
 
