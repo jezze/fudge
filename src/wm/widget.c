@@ -536,6 +536,132 @@ unsigned int widget_isscrollable(struct widget *widget)
 
 }
 
+static void initbutton(struct widget *widget)
+{
+
+    struct widget_button *button = widget->data;
+
+    button->label = 0;
+    button->onclick = 0;
+
+}
+
+static void initchoice(struct widget *widget)
+{
+
+    struct widget_choice *choice = widget->data;
+
+    choice->label = 0;
+    choice->onclick = 0;
+
+}
+
+static void initfill(struct widget *widget)
+{
+
+    struct widget_fill *fill = widget->data;
+
+    fill->color = 0;
+
+}
+
+static void initimage(struct widget *widget)
+{
+
+    struct widget_image *image = widget->data;
+
+    image->mimetype = ATTR_MIMETYPE_NONE;
+    image->source = 0;
+    image->loaded = 0;
+
+    util_initsize(&image->size, 0, 0);
+
+}
+
+static void initlayout(struct widget *widget)
+{
+
+    struct widget_layout *layout = widget->data;
+
+    layout->flow = ATTR_FLOW_DEFAULT;
+    layout->padding = 0;
+
+}
+
+static void initlistbox(struct widget *widget)
+{
+
+    struct widget_listbox *listbox = widget->data;
+
+    listbox->mode = ATTR_MODE_NORMAL;
+    listbox->overflow = ATTR_OVERFLOW_NONE;
+    listbox->hscroll = 0;
+    listbox->vscroll = 0;
+
+}
+
+static void initselect(struct widget *widget)
+{
+
+    struct widget_select *select = widget->data;
+
+    select->label = 0;
+    select->onclick = 0;
+
+}
+
+static void inittext(struct widget *widget)
+{
+
+    struct widget_text *text = widget->data;
+
+    text->content = 0;
+    text->halign = ATTR_HALIGN_LEFT;
+    text->valign = ATTR_VALIGN_TOP;
+    text->weight = ATTR_WEIGHT_NORMAL;
+    text->wrap = ATTR_WRAP_NONE;
+    text->offx = 0;
+    text->enablecursor = 0;
+    text->cursor = 0;
+    text->markstart = 0;
+    text->markend = 0;
+    text->rows = 0;
+    text->lastrowx = 0;
+    text->lastrowy = 0;
+
+}
+
+static void inittextbox(struct widget *widget)
+{
+
+    struct widget_textbox *textbox = widget->data;
+
+    textbox->mode = ATTR_MODE_NORMAL;
+    textbox->overflow = ATTR_OVERFLOW_NONE;
+    textbox->hscroll = 0;
+    textbox->vscroll = 0;
+
+}
+
+static void inittextbutton(struct widget *widget)
+{
+
+    struct widget_textbutton *textbutton = widget->data;
+
+    textbutton->label = 0;
+    textbutton->onclick = 0;
+
+}
+
+static void initwindow(struct widget *widget)
+{
+
+    struct widget_window *window = widget->data;
+
+    window->title = 0;
+
+}
+
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
 {
 
@@ -550,129 +676,63 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     util_initbox(&widget->bb, 0, 0, 0, 0);
     util_initbox(&widget->clip, 0, 0, 0, 0);
 
-    if (widget->type == WIDGET_TYPE_BUTTON)
+    switch (widget->type)
     {
 
-        struct widget_button *button = widget->data;
+    case WIDGET_TYPE_BUTTON:
+        initbutton(widget);
 
-        button->label = 0;
-        button->onclick = 0;
+        break;
 
-    }
+    case WIDGET_TYPE_CHOICE:
+        initchoice(widget);
 
-    if (widget->type == WIDGET_TYPE_CHOICE)
-    {
+        break;
 
-        struct widget_choice *choice = widget->data;
+    case WIDGET_TYPE_FILL:
+        initfill(widget);
 
-        choice->label = 0;
-        choice->onclick = 0;
+        break;
 
-    }
+    case WIDGET_TYPE_IMAGE:
+        initimage(widget);
 
-    if (widget->type == WIDGET_TYPE_LAYOUT)
-    {
+        break;
 
-        struct widget_layout *layout = widget->data;
+    case WIDGET_TYPE_LAYOUT:
+        initlayout(widget);
 
-        layout->flow = ATTR_FLOW_DEFAULT;
-        layout->padding = 0;
+        break;
 
-    }
+    case WIDGET_TYPE_LISTBOX:
+        initlistbox(widget);
 
-    if (widget->type == WIDGET_TYPE_FILL)
-    {
+        break;
 
-        struct widget_fill *fill = widget->data;
+    case WIDGET_TYPE_SELECT:
+        initselect(widget);
 
-        fill->color = 0;
+        break;
 
-    }
+    case WIDGET_TYPE_TEXT:
+        inittext(widget);
 
-    if (widget->type == WIDGET_TYPE_IMAGE)
-    {
+        break;
 
-        struct widget_image *image = widget->data;
+    case WIDGET_TYPE_TEXTBOX:
+        inittextbox(widget);
 
-        image->mimetype = ATTR_MIMETYPE_NONE;
-        image->source = 0;
-        image->loaded = 0;
+        break;
 
-        util_initsize(&image->size, 0, 0);
+    case WIDGET_TYPE_TEXTBUTTON:
+        inittextbutton(widget);
 
-    }
+        break;
 
-    if (widget->type == WIDGET_TYPE_LISTBOX)
-    {
+    case WIDGET_TYPE_WINDOW:
+        initwindow(widget);
 
-        struct widget_listbox *listbox = widget->data;
-
-        listbox->mode = ATTR_MODE_NORMAL;
-        listbox->overflow = ATTR_OVERFLOW_NONE;
-        listbox->hscroll = 0;
-        listbox->vscroll = 0;
-
-    }
-
-    if (widget->type == WIDGET_TYPE_SELECT)
-    {
-
-        struct widget_select *select = widget->data;
-
-        select->label = 0;
-        select->onclick = 0;
-
-    }
-
-    if (widget->type == WIDGET_TYPE_TEXT)
-    {
-
-        struct widget_text *text = widget->data;
-
-        text->content = 0;
-        text->halign = ATTR_HALIGN_LEFT;
-        text->valign = ATTR_VALIGN_TOP;
-        text->weight = ATTR_WEIGHT_NORMAL;
-        text->wrap = ATTR_WRAP_NONE;
-        text->offx = 0;
-        text->enablecursor = 0;
-        text->cursor = 0;
-        text->markstart = 0;
-        text->markend = 0;
-        text->rows = 0;
-        text->lastrowx = 0;
-        text->lastrowy = 0;
-
-    }
-
-    if (widget->type == WIDGET_TYPE_TEXTBOX)
-    {
-
-        struct widget_textbox *textbox = widget->data;
-
-        textbox->mode = ATTR_MODE_NORMAL;
-        textbox->overflow = ATTR_OVERFLOW_NONE;
-        textbox->hscroll = 0;
-        textbox->vscroll = 0;
-
-    }
-
-    if (widget->type == WIDGET_TYPE_TEXTBUTTON)
-    {
-
-        struct widget_textbutton *textbutton = widget->data;
-
-        textbutton->label = 0;
-        textbutton->onclick = 0;
-
-    }
-
-    if (widget->type == WIDGET_TYPE_WINDOW)
-    {
-
-        struct widget_window *window = widget->data;
-
-        window->title = 0;
+        break;
 
     }
 
