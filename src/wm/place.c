@@ -143,11 +143,9 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
         struct util_size cmax;
         struct util_size cmin;
 
-        util_initposition(&cpos, x + marginw, y + marginh);
+        util_initposition(&cpos, x + marginw, y + marginh + offy);
         util_initsize(&cmax, util_clamp(maxw, 0, maxw - marginw * 2), util_clamp(maxh, 0, maxh - marginh * 2));
         util_initsize(&cmin, util_clamp(minw, 0, cmax.w), util_clamp(minh, 0, cmax.h));
-
-        cpos.y += offy;
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
