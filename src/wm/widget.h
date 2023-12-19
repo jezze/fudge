@@ -8,8 +8,7 @@
 #define WIDGET_TYPE_TEXT                9
 #define WIDGET_TYPE_TEXTBOX             10
 #define WIDGET_TYPE_TEXTBUTTON          11
-#define WIDGET_TYPE_TEXTEDIT            12
-#define WIDGET_TYPE_WINDOW              13
+#define WIDGET_TYPE_WINDOW              12
 #define WIDGET_STATE_NORMAL             0
 #define WIDGET_STATE_HOVER              1
 #define WIDGET_STATE_HOVEROFF           2
@@ -85,6 +84,8 @@ struct widget_text
     unsigned int weight;
     unsigned int wrap;
     unsigned int offx;
+    unsigned int enablecursor;
+    unsigned int cursor;
     unsigned int markstart;
     unsigned int markend;
     unsigned int rows;
@@ -108,24 +109,6 @@ struct widget_textbutton
 
     unsigned int label;
     unsigned int onclick;
-
-};
-
-struct widget_textedit
-{
-
-    unsigned int content;
-    unsigned int halign;
-    unsigned int valign;
-    unsigned int weight;
-    unsigned int wrap;
-    unsigned int offx;
-    unsigned int markstart;
-    unsigned int markend;
-    unsigned int cursor;
-    unsigned int rows;
-    int lastrowx;
-    int lastrowy;
 
 };
 

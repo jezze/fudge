@@ -167,6 +167,12 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
 
         break;
 
+    case ATTR_CURSOR:
+        text->cursor = attr_update(ATTR_CURSOR, value, text->cursor);
+        text->enablecursor = 1; /* FIXME */
+
+        break;
+
     case ATTR_HALIGN:
         text->halign = attr_update(ATTR_HALIGN, value, text->halign);
 
@@ -228,48 +234,6 @@ static void setattributetextbutton(struct widget *widget, unsigned int attribute
 
     case ATTR_ONCLICK:
         textbutton->onclick = attr_update(ATTR_ONCLICK, value, textbutton->onclick);
-
-        break;
-
-    }
-
-}
-
-static void setattributetextedit(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_textedit *textedit = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_CONTENT:
-        textedit->content = attr_update(ATTR_CONTENT, value, textedit->content);
-
-        break;
-
-    case ATTR_CURSOR:
-        textedit->cursor = attr_update(ATTR_CURSOR, value, textedit->cursor);
-
-        break;
-
-    case ATTR_HALIGN:
-        textedit->halign = attr_update(ATTR_HALIGN, value, textedit->halign);
-
-        break;
-
-    case ATTR_VALIGN:
-        textedit->valign = attr_update(ATTR_VALIGN, value, textedit->valign);
-
-        break;
-
-    case ATTR_WEIGHT:
-        textedit->weight = attr_update(ATTR_WEIGHT, value, textedit->weight);
-
-        break;
-
-    case ATTR_WRAP:
-        textedit->wrap = attr_update(ATTR_WRAP, value, textedit->wrap);
 
         break;
 
@@ -370,11 +334,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case WIDGET_TYPE_TEXTEDIT:
-        setattributetextedit(widget, attribute, value);
-
-        break;
-
     case WIDGET_TYPE_WINDOW:
         setattributewindow(widget, attribute, value);
 
@@ -424,11 +383,6 @@ void widget_unsetattributes(struct widget *widget)
     case WIDGET_TYPE_TEXTBUTTON:
         setattributetextbutton(widget, ATTR_LABEL, 0);
         setattributetextbutton(widget, ATTR_ONCLICK, 0);
-
-        break;
-
-    case WIDGET_TYPE_TEXTEDIT:
-        setattributetextedit(widget, ATTR_CONTENT, 0);
 
         break;
 
@@ -585,14 +539,142 @@ unsigned int widget_isscrollable(struct widget *widget)
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
 {
 
-    util_initbox(&widget->bb, 0, 0, 0, 0);
-    util_initbox(&widget->clip, 0, 0, 0, 0);
-
     widget->source = source;
     widget->type = type;
+    widget->state = WIDGET_STATE_NORMAL;
+    widget->span = 0;
     widget->id = attr_update(ATTR_ID, id, widget->id);
     widget->in = attr_update(ATTR_IN, in, widget->in);
     widget->data = data;
+
+    util_initbox(&widget->bb, 0, 0, 0, 0);
+    util_initbox(&widget->clip, 0, 0, 0, 0);
+
+    if (widget->type == WIDGET_TYPE_BUTTON)
+    {
+
+        struct widget_button *button = widget->data;
+
+        button->label = 0;
+        button->onclick = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_CHOICE)
+    {
+
+        struct widget_choice *choice = widget->data;
+
+        choice->label = 0;
+        choice->onclick = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_LAYOUT)
+    {
+
+        struct widget_layout *layout = widget->data;
+
+        layout->flow = ATTR_FLOW_DEFAULT;
+        layout->padding = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_FILL)
+    {
+
+        struct widget_fill *fill = widget->data;
+
+        fill->color = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_IMAGE)
+    {
+
+        struct widget_image *image = widget->data;
+
+        image->mimetype = ATTR_MIMETYPE_NONE;
+        image->source = 0;
+        image->loaded = 0;
+
+        util_initsize(&image->size, 0, 0);
+
+    }
+
+    if (widget->type == WIDGET_TYPE_LISTBOX)
+    {
+
+        struct widget_listbox *listbox = widget->data;
+
+        listbox->mode = ATTR_MODE_NORMAL;
+        listbox->overflow = ATTR_OVERFLOW_NONE;
+        listbox->hscroll = 0;
+        listbox->vscroll = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_SELECT)
+    {
+
+        struct widget_select *select = widget->data;
+
+        select->label = 0;
+        select->onclick = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_TEXT)
+    {
+
+        struct widget_text *text = widget->data;
+
+        text->content = 0;
+        text->halign = ATTR_HALIGN_LEFT;
+        text->valign = ATTR_VALIGN_TOP;
+        text->weight = ATTR_WEIGHT_NORMAL;
+        text->wrap = ATTR_WRAP_NONE;
+        text->offx = 0;
+        text->enablecursor = 0;
+        text->cursor = 0;
+        text->markstart = 0;
+        text->markend = 0;
+        text->rows = 0;
+        text->lastrowx = 0;
+        text->lastrowy = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_TEXTBOX)
+    {
+
+        struct widget_textbox *textbox = widget->data;
+
+        textbox->mode = ATTR_MODE_NORMAL;
+        textbox->overflow = ATTR_OVERFLOW_NONE;
+        textbox->hscroll = 0;
+        textbox->vscroll = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_TEXTBUTTON)
+    {
+
+        struct widget_textbutton *textbutton = widget->data;
+
+        textbutton->label = 0;
+        textbutton->onclick = 0;
+
+    }
+
+    if (widget->type == WIDGET_TYPE_WINDOW)
+    {
+
+        struct widget_window *window = widget->data;
+
+        window->title = 0;
+
+    }
 
 }
 

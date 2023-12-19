@@ -55,10 +55,6 @@ static unsigned int cmaptextbutton[13] = {
     0xE8FFFFFF,
 };
 
-static unsigned int cmaptextedit[1] = {
-    0xE8E0E0E0,
-};
-
 static unsigned int cmapwindow[12] = {
     0xE8101010, 0xE8805050, 0xE8805050, 0xE8E0B0B0,
     0xE8101010, 0xE8303030, 0xE8303030, 0xE8585858,
@@ -97,9 +93,6 @@ static unsigned int *getcmap(unsigned int type)
 
     case WIDGET_TYPE_TEXTBUTTON:
         return cmaptextbutton;
-
-    case WIDGET_TYPE_TEXTEDIT:
-        return cmaptextedit;
 
     case WIDGET_TYPE_WINDOW:
         return cmapwindow;

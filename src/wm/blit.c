@@ -176,7 +176,7 @@ void blitpcfbitmapinverted(struct blit_display *display, int rx, int x0, int x2,
 
 }
 
-void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int ms, unsigned int me, unsigned int *cmap)
+void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int ms, unsigned int me, unsigned int enablecursor, unsigned int cursor, unsigned int *cmap)
 {
 
     unsigned int color = cmap[CMAP_TEXT_COLOR];
@@ -204,50 +204,7 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
             if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
             {
 
-                if (i >= ms && i < me)
-                    blitpcfbitmapinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
-                else
-                    blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
-
-            }
-
-        }
-
-        rx += width;
-
-    }
-
-}
-
-void blit_textedit(struct blit_display *display, struct text_font *font, unsigned int cursor, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int ms, unsigned int me, unsigned int *cmap)
-{
-
-    unsigned int color = cmap[CMAP_TEXT_COLOR];
-    unsigned int i;
-
-    for (i = 0; i < length; i++)
-    {
-
-        unsigned short index = pcf_getindex(font->data, text[i]);
-        unsigned int offset = pcf_getbitmapoffset(font->data, index);
-        struct pcf_metricsdata metricsdata;
-        unsigned int lline;
-        unsigned int height;
-        unsigned int width;
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
-
-        height = metricsdata.ascent + metricsdata.descent;
-        width = metricsdata.width;
-        lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
-
-        if (util_intersects(lline, 0, height))
-        {
-
-            if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
-            {
-
-                if ((i >= ms && i < me) || (i == cursor))
+                if ((i >= ms && i < me) || (enablecursor && i == cursor))
                     blitpcfbitmapinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
                 else
                     blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);

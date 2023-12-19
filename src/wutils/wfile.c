@@ -148,7 +148,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "          + choice in \"volume-list\" label \"initrd:\" onclick \"volume initrd\"\n"
         "          + choice in \"volume-list\" label \"system:\" onclick \"volume system\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"
-        "        + textedit id \"path\" in \"pathbox\"\n"
+        "        + text id \"path\" in \"pathbox\" cursor \"0\"\n"
         "      + button in \"top\" label \"Up\" onclick \"up\"\n"
         "    + layout id \"main\" in \"base\" flow \"horizontal-stretch\" padding \"1\" span \"1\"\n"
         "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n"
