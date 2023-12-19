@@ -410,11 +410,11 @@ void render_undamage(void)
 static void updatecache(struct blit_display *display)
 {
 
-    unsigned int i;
+    int line;
 
     nrows = 0;
 
-    for (i = 0; i < display->size.h; i++)
+    for (line = 0; line < display->size.h; line++)
     {
 
         struct list_item *current = 0;
@@ -424,7 +424,7 @@ static void updatecache(struct blit_display *display)
 
             struct widget *widget = current->data;
 
-            if (widget_intersectsy(widget, i))
+            if (widget_intersectsy(widget, line))
             {
 
                 if (widget->type == WIDGET_TYPE_BUTTON)
@@ -459,7 +459,7 @@ static void updatecache(struct blit_display *display)
 
                     struct widget_text *text = widget->data;
 
-                    addcacherow(widget, (i - widget->bb.y) / pool_getfont(text->weight)->lineheight, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
+                    addcacherow(widget, (line - widget->bb.y) / pool_getfont(text->weight)->lineheight, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
 
                 }
 
@@ -468,7 +468,7 @@ static void updatecache(struct blit_display *display)
 
                     struct widget_textedit *textedit = widget->data;
 
-                    addcacherow(widget, (i - widget->bb.y) / pool_getfont(textedit->weight)->lineheight, textedit->weight, 0, 0, textedit->halign, textedit->valign, textedit->offx, 0, textedit->content, textedit->wrap);
+                    addcacherow(widget, (line - widget->bb.y) / pool_getfont(textedit->weight)->lineheight, textedit->weight, 0, 0, textedit->halign, textedit->valign, textedit->offx, 0, textedit->content, textedit->wrap);
 
                 }
 
