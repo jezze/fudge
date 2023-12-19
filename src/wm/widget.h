@@ -88,6 +88,8 @@ struct widget_text
     unsigned int markstart;
     unsigned int markend;
     unsigned int rows;
+    int lastrowx;
+    int lastrowy;
 
 };
 
@@ -122,6 +124,8 @@ struct widget_textedit
     unsigned int markend;
     unsigned int cursor;
     unsigned int rows;
+    int lastrowx;
+    int lastrowy;
 
 };
 

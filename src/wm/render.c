@@ -64,7 +64,7 @@ static void addcacherow(struct widget *widget, unsigned int num, unsigned int we
     if (!row)
     {
 
-        struct cacherow *cacherow = &cacherows[nrows];
+        struct cacherow *cacherow = &cacherows[nrows++];
         struct text_font *font = pool_getfont(weight);
         char *textstring = strpool_getstring(text);
         unsigned int textlength = strpool_getcstringlength(text);
@@ -75,14 +75,12 @@ static void addcacherow(struct widget *widget, unsigned int num, unsigned int we
 
         cacherow->num = num;
         cacherow->rx = text_getrowx(&rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
-        cacherow->ry = text_getrowy(&rowinfo, valign, paddingy, widget->bb.h - offy) + offy;
+        cacherow->ry = text_getrowy(&rowinfo, valign, paddingy, widget->bb.h - offy) + offy + rowinfo.lineheight * num;
         cacherow->istart = rowinfo.istart;
         cacherow->iend = rowinfo.iend;
         cacherow->length = rowinfo.length;
         cacherow->font = font;
         cacherow->widget = widget;
-
-        nrows++;
 
     }
 
@@ -228,31 +226,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     unsigned int rownum = (line - widget->bb.y) / font->lineheight;
 
     if (rownum < text->rows)
-    {
-
-        struct cacherow *row = getcacherow(widget, rownum);
-
-        if (row && row->length)
-        {
-
-            unsigned int mstart = (text->markstart > row->istart) ? text->markstart - row->istart : 0;
-            unsigned int mend = (text->markend > row->istart) ? text->markend - row->istart : 0;
-
-            if (mend < mstart)
-            {
-
-                unsigned int temp = mstart;
-
-                mstart = mend;
-                mend = temp;
-
-            }
-
-            blit_text(display, row->font, strpool_getstring(text->content) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, cmap_get(widget->state, widget->type, 0, 0));
-
-        }
-
-    }
+        rendercacherow(display, widget, rownum, line, text->content, x0, x2, text->markstart, text->markend, cmap_get(widget->state, widget->type, 0, 0));
 
 }
 

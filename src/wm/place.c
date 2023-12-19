@@ -153,9 +153,6 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
         {
 
             struct widget_text *text = child->data;
-            struct text_info info;
-
-            text_gettextinfo(&info, pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, cmax.w, offx);
 
             text->offx = offx;
 
@@ -164,8 +161,8 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
             total->w = util_max(total->w, ((child->bb.x + child->bb.w) - x) + marginw + paddingw);
             total->h = util_max(total->h, ((child->bb.y + child->bb.h) - y) + marginh + paddingh);
 
-            offx = info.lastrowx;
-            offy += info.lastrowy;
+            offx = text->lastrowx;
+            offy += text->lastrowy;
 
         }
 
@@ -173,9 +170,6 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
         {
 
             struct widget_textedit *textedit = child->data;
-            struct text_info info;
-
-            text_gettextinfo(&info, pool_getfont(textedit->weight), strpool_getstring(textedit->content), strpool_getcstringlength(textedit->content), textedit->wrap, cmax.w, offx);
 
             textedit->offx = offx;
 
@@ -184,8 +178,8 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
             total->w = util_max(total->w, ((child->bb.x + child->bb.w) - x) + marginw + paddingw);
             total->h = util_max(total->h, ((child->bb.y + child->bb.h) - y) + marginh + paddingh);
 
-            offx = info.lastrowx;
-            offy += info.lastrowy;
+            offx = textedit->lastrowx;
+            offy += textedit->lastrowy;
 
         }
 
@@ -393,6 +387,8 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
     text->rows = info.rows;
+    text->lastrowx = info.lastrowx;
+    text->lastrowy = info.lastrowy;
 
 }
 
@@ -435,6 +431,8 @@ static void placetextedit(struct widget *widget, int x, int y, unsigned int minw
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
     textedit->rows = info.rows;
+    textedit->lastrowx = info.lastrowx;
+    textedit->lastrowy = info.lastrowy;
 
 }
 
