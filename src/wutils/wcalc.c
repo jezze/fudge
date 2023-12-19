@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include "kv.h"
 
 #define STATE_SUM                       0
 #define STATE_ADD                       1
@@ -95,19 +96,18 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmevent *event = mdata;
-    void *data = (void *)(event + 1);
 
-    if (cstring_match_word(data, 0, "val"))
-        updatevalue(cstring_read_value(cstring_get_word(data, 1), 1, 10));
-    else if (cstring_match_word(data, 0, "sum"))
+    if (kv_match(event, "action=num"))
+        updatevalue(kv_getvalue(event, "val=", 10));
+    else if (kv_match(event, "action=sum"))
         updatestate(STATE_SUM);
-    else if (cstring_match_word(data, 0, "add"))
+    else if (kv_match(event, "action=add"))
         updatestate(STATE_ADD);
-    else if (cstring_match_word(data, 0, "sub"))
+    else if (kv_match(event, "action=sub"))
         updatestate(STATE_SUB);
-    else if (cstring_match_word(data, 0, "mul"))
+    else if (kv_match(event, "action=mul"))
         updatestate(STATE_MUL);
-    else if (cstring_match_word(data, 0, "div"))
+    else if (kv_match(event, "action=div"))
         updatestate(STATE_DIV);
 
 }
@@ -124,25 +124,25 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     char *data1 =
         "    + layout id \"buttons\" in \"base\" flow \"vertical\" span \"1\"\n"
         "      + layout id \"row1\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row1\" label \"7\" span \"1\" onclick \"val 7\"\n"
-        "        + button in \"row1\" label \"8\" span \"1\" onclick \"val 8\"\n"
-        "        + button in \"row1\" label \"9\" span \"1\" onclick \"val 9\"\n"
-        "        + button in \"row1\" label \"/\" span \"1\" onclick \"div\"\n"
+        "        + button in \"row1\" label \"7\" span \"1\" onclick \"action=num&val=7\"\n"
+        "        + button in \"row1\" label \"8\" span \"1\" onclick \"action=num&val=8\"\n"
+        "        + button in \"row1\" label \"9\" span \"1\" onclick \"action=num&val=9\"\n"
+        "        + button in \"row1\" label \"/\" span \"1\" onclick \"action=div\"\n"
         "      + layout id \"row2\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row2\" label \"4\" span \"1\" onclick \"val 4\"\n"
-        "        + button in \"row2\" label \"5\" span \"1\" onclick \"val 5\"\n"
-        "        + button in \"row2\" label \"6\" span \"1\" onclick \"val 6\"\n"
-        "        + button in \"row2\" label \"x\" span \"1\" onclick \"mul\"\n"
+        "        + button in \"row2\" label \"4\" span \"1\" onclick \"action=num&val=4\"\n"
+        "        + button in \"row2\" label \"5\" span \"1\" onclick \"action=num&val=5\"\n"
+        "        + button in \"row2\" label \"6\" span \"1\" onclick \"action=num&val=6\"\n"
+        "        + button in \"row2\" label \"x\" span \"1\" onclick \"action=mul\"\n"
         "      + layout id \"row3\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row3\" label \"3\" span \"1\" onclick \"val 3\"\n"
-        "        + button in \"row3\" label \"2\" span \"1\" onclick \"val 2\"\n"
-        "        + button in \"row3\" label \"1\" span \"1\" onclick \"val 1\"\n"
-        "        + button in \"row3\" label \"-\" span \"1\" onclick \"sub\"\n"
+        "        + button in \"row3\" label \"3\" span \"1\" onclick \"action=num&val=3\"\n"
+        "        + button in \"row3\" label \"2\" span \"1\" onclick \"action=num&val=2\"\n"
+        "        + button in \"row3\" label \"1\" span \"1\" onclick \"action=num&val=1\"\n"
+        "        + button in \"row3\" label \"-\" span \"1\" onclick \"action=sub\"\n"
         "      + layout id \"row4\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
-        "        + button in \"row4\" label \"0\" span \"1\" onclick \"val 0\"\n"
-        "        + button in \"row4\" label \".\" span \"1\" onclick \"dot\"\n"
-        "        + button in \"row4\" label \"+\" span \"1\" onclick \"add\"\n"
-        "        + button in \"row4\" label \"=\" span \"1\" onclick \"sum\"\n";
+        "        + button in \"row4\" label \"0\" span \"1\" onclick \"action=num&val=0\"\n"
+        "        + button in \"row4\" label \".\" span \"1\" onclick \"action=dot\"\n"
+        "        + button in \"row4\" label \"+\" span \"1\" onclick \"action=add\"\n"
+        "        + button in \"row4\" label \"=\" span \"1\" onclick \"action=sum\"\n";
 
     channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data0);
     channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data1);

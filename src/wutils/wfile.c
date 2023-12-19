@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include "kv.h"
 
 static char path[256];
 static unsigned int cursor = 0;
@@ -34,7 +35,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"file %w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"action=file&name=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
             if (!--maxsend)
                 return;
@@ -62,34 +63,28 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_wmevent *event = mdata;
-    void *data = (void *)(event + 1);
 
-    if (cstring_match_word(data, 0, "action"))
+    if (kv_match(event, "action=copy"))
     {
-
-        if (cstring_match_word(data, 1, "copy"))
-        {
-
-        }
-
-        else if (cstring_match_word(data, 1, "cut"))
-        {
-
-        }
-
-        else if (cstring_match_word(data, 1, "paste"))
-        {
-
-        }
-
-        else if (cstring_match_word(data, 1, "delete"))
-        {
-
-        }
 
     }
 
-    else if (cstring_match_word(data, 0, "up"))
+    else if (kv_match(event, "action=cut"))
+    {
+
+    }
+
+    else if (kv_match(event, "action=paste"))
+    {
+
+    }
+
+    else if (kv_match(event, "action=delete"))
+    {
+
+    }
+
+    else if (kv_match(event, "action=up"))
     {
 
         if (cstring_length(path))
@@ -116,19 +111,19 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (cstring_match_word(data, 0, "volume"))
+    else if (kv_match(event, "action=volume"))
     {
 
-        cstring_write_fmt1(path, 256, "%s:\\0", 0, cstring_get_word(data, 1));
+        cstring_write_fmt1(path, 256, "%s:\\0", 0, kv_getstring(event, "name="));
         updatepath();
         updatecontent();
 
     }
 
-    else if (cstring_match_word(data, 0, "file"))
+    else if (kv_match(event, "action=file"))
     {
 
-        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, cstring_get_word(data, 1));
+        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, kv_getstring(event, "name="));
         updatepath();
         updatecontent();
 
@@ -145,18 +140,18 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"1\"\n"
         "      + select id \"volume\" in \"top\" label \"Volume\"\n"
         "        + layout id \"volume-list\" in \"volume\" flow \"vertical\"\n"
-        "          + choice in \"volume-list\" label \"initrd:\" onclick \"volume initrd\"\n"
-        "          + choice in \"volume-list\" label \"system:\" onclick \"volume system\"\n"
+        "          + choice in \"volume-list\" label \"initrd:\" onclick \"action=volume&name=initrd\"\n"
+        "          + choice in \"volume-list\" label \"system:\" onclick \"action=volume&name=system\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"
         "        + text id \"path\" in \"pathbox\" cursor \"0\"\n"
-        "      + button in \"top\" label \"Up\" onclick \"up\"\n"
+        "      + button in \"top\" label \"Up\" onclick \"action=up\"\n"
         "    + layout id \"main\" in \"base\" flow \"horizontal-stretch\" padding \"1\" span \"1\"\n"
         "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n"
         "    + layout id \"bottom\" in \"base\" flow \"horizontal\" padding \"1\"\n"
-        "      + button in \"bottom\" label \"Copy\" onclick \"action copy\"\n"
-        "      + button in \"bottom\" label \"Cut\" onclick \"action cut\"\n"
-        "      + button in \"bottom\" label \"Paste\" onclick \"action paste\"\n"
-        "      + button in \"bottom\" label \"Delete\" onclick \"action delete\"\n";
+        "      + button in \"bottom\" label \"Copy\" onclick \"action=copy\"\n"
+        "      + button in \"bottom\" label \"Cut\" onclick \"action=cut\"\n"
+        "      + button in \"bottom\" label \"Paste\" onclick \"action=paste\"\n"
+        "      + button in \"bottom\" label \"Delete\" onclick \"action=delete\"\n";
 
     channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
     cstring_write_fmt0(path, 256, "initrd:\\0", 0);

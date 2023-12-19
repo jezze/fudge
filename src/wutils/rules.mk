@@ -14,6 +14,7 @@ B:=\
     $(DIR_SRC)/wutils/wcalc \
 
 O:=\
+    $(DIR_SRC)/wutils/kv.o \
     $(DIR_SRC)/wutils/wcalc.o \
 
 L:=\
@@ -26,6 +27,7 @@ B:=\
     $(DIR_SRC)/wutils/wfile \
 
 O:=\
+    $(DIR_SRC)/wutils/kv.o \
     $(DIR_SRC)/wutils/wfile.o \
 
 L:=\

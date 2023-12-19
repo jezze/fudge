@@ -375,9 +375,10 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
     {
 
         struct {struct event_wmevent wmevent; char data[128];} message;
+        unsigned int length = strpool_getcstringlength(action) + 1;
 
         message.wmevent.type = type;
-        message.wmevent.length = buffer_write(message.data, 128, strpool_getstring(action), strpool_getcstringlength(action) + 1, 0);
+        message.wmevent.length = cstring_write_fmt2(message.data, 128, "%w\\0", 0, strpool_getstring(action), &length);
 
         channel_send_buffer(source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
 
