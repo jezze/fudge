@@ -139,7 +139,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "  + layout id \"base\" in \"window\" flow \"vertical\"\n"
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"1\"\n"
         "      + select id \"volume\" in \"top\" label \"Volume\"\n"
-        "        + layout id \"volume-list\" in \"volume\" flow \"vertical\"\n"
+        "        + layout id \"volume-list\" in \"volume\" flow \"vertical-stretch\"\n"
         "          + choice in \"volume-list\" label \"initrd:\" onclick \"q=abspath&path=initrd:\"\n"
         "          + choice in \"volume-list\" label \"system:\" onclick \"q=abspath&path=system:\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"
