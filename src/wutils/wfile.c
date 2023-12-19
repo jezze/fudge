@@ -35,7 +35,7 @@ static void updatecontent(void)
 
             struct record *record = &records[i];
 
-            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"action=relpath&path=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
             if (!--maxsend)
                 return;
@@ -64,27 +64,27 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_wmevent *event = mdata;
 
-    if (kv_match(event, "action=copy"))
+    if (kv_match(event, "q=copy"))
     {
 
     }
 
-    else if (kv_match(event, "action=cut"))
+    else if (kv_match(event, "q=cut"))
     {
 
     }
 
-    else if (kv_match(event, "action=paste"))
+    else if (kv_match(event, "q=paste"))
     {
 
     }
 
-    else if (kv_match(event, "action=delete"))
+    else if (kv_match(event, "q=delete"))
     {
 
     }
 
-    else if (kv_match(event, "action=up"))
+    else if (kv_match(event, "q=up"))
     {
 
         if (cstring_length(path))
@@ -111,7 +111,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (kv_match(event, "action=abspath"))
+    else if (kv_match(event, "q=abspath"))
     {
 
         cstring_write_fmt1(path, 256, "%s\\0", 0, kv_getstring(event, "path="));
@@ -120,7 +120,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else if (kv_match(event, "action=relpath"))
+    else if (kv_match(event, "q=relpath"))
     {
 
         cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, kv_getstring(event, "path="));
@@ -140,18 +140,18 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + layout id \"top\" in \"base\" flow \"horizontal\" padding \"1\"\n"
         "      + select id \"volume\" in \"top\" label \"Volume\"\n"
         "        + layout id \"volume-list\" in \"volume\" flow \"vertical\"\n"
-        "          + choice in \"volume-list\" label \"initrd:\" onclick \"action=abspath&path=initrd:\"\n"
-        "          + choice in \"volume-list\" label \"system:\" onclick \"action=abspath&path=system:\"\n"
+        "          + choice in \"volume-list\" label \"initrd:\" onclick \"q=abspath&path=initrd:\"\n"
+        "          + choice in \"volume-list\" label \"system:\" onclick \"q=abspath&path=system:\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"
         "        + text id \"path\" in \"pathbox\" cursor \"0\"\n"
-        "      + button in \"top\" label \"Up\" onclick \"action=up\"\n"
+        "      + button in \"top\" label \"Up\" onclick \"q=up\"\n"
         "    + layout id \"main\" in \"base\" flow \"horizontal-stretch\" padding \"1\" span \"1\"\n"
         "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n"
         "    + layout id \"bottom\" in \"base\" flow \"horizontal\" padding \"1\"\n"
-        "      + button in \"bottom\" label \"Copy\" onclick \"action=copy\"\n"
-        "      + button in \"bottom\" label \"Cut\" onclick \"action=cut\"\n"
-        "      + button in \"bottom\" label \"Paste\" onclick \"action=paste\"\n"
-        "      + button in \"bottom\" label \"Delete\" onclick \"action=delete\"\n";
+        "      + button in \"bottom\" label \"Copy\" onclick \"q=copy\"\n"
+        "      + button in \"bottom\" label \"Cut\" onclick \"q=cut\"\n"
+        "      + button in \"bottom\" label \"Paste\" onclick \"q=paste\"\n"
+        "      + button in \"bottom\" label \"Delete\" onclick \"q=delete\"\n";
 
     channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
     cstring_write_fmt0(path, 256, "initrd:\\0", 0);
