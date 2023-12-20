@@ -4,78 +4,6 @@
 #include "attr.h"
 #include "text.h"
 
-int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w)
-{
-
-    switch (halign)
-    {
-
-    case ATTR_HALIGN_LEFT:
-        return x;
-
-    case ATTR_HALIGN_CENTER:
-        return x + w / 2 - rowinfo->width / 2;
-
-    case ATTR_HALIGN_RIGHT:
-        return x + w - rowinfo->width;
-
-    }
-
-    return 0;
-
-}
-
-int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, int y, int h)
-{
-
-    switch (valign)
-    {
-
-    case ATTR_VALIGN_TOP:
-        return y;
-
-    case ATTR_VALIGN_MIDDLE:
-        return y + h / 2 - rowinfo->height / 2 - (rowinfo->lineheight - rowinfo->height) / 2;
-
-    case ATTR_VALIGN_BOTTOM:
-        return y + h - rowinfo->height;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx)
-{
-
-    struct text_rowinfo rowinfo;
-    unsigned int offset = 0;
-    unsigned int row = 0;
-
-    if (!rownum)
-        return 0;
-
-    if ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
-    {
-
-        if (++row == rownum)
-            return offset;
-
-        while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw, offset)))
-        {
-
-            if (++row == rownum)
-                return offset;
-
-        }
-
-    }
-
-    return length;
-
-}
-
 unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int offset)
 {
 
@@ -238,6 +166,30 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
 
 }
 
+unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx)
+{
+
+    struct text_rowinfo rowinfo;
+    unsigned int offset = 0;
+    unsigned int row = 0;
+
+    if (!rownum)
+        return 0;
+
+    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
+    {
+
+        if (++row == rownum)
+            return offset;
+
+        firstrowx = 0;
+
+    }
+
+    return length;
+
+}
+
 unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx, int x, int y)
 {
 
@@ -254,6 +206,48 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
         cy += rowinfo.lineheight;
 
         firstrowx = 0;
+
+    }
+
+    return 0;
+
+}
+
+int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w)
+{
+
+    switch (halign)
+    {
+
+    case ATTR_HALIGN_LEFT:
+        return x;
+
+    case ATTR_HALIGN_CENTER:
+        return x + w / 2 - rowinfo->width / 2;
+
+    case ATTR_HALIGN_RIGHT:
+        return x + w - rowinfo->width;
+
+    }
+
+    return 0;
+
+}
+
+int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, int y, int h)
+{
+
+    switch (valign)
+    {
+
+    case ATTR_VALIGN_TOP:
+        return y;
+
+    case ATTR_VALIGN_MIDDLE:
+        return y + h / 2 - rowinfo->height / 2 - (rowinfo->lineheight - rowinfo->height) / 2;
+
+    case ATTR_VALIGN_BOTTOM:
+        return y + h - rowinfo->height;
 
     }
 
