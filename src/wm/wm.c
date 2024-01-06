@@ -956,6 +956,8 @@ void init(void)
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     pool_setup();
     setupwidgets();
+    place_init();
+    render_init();
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");

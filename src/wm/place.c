@@ -12,6 +12,8 @@
 
 #define INFINITY    50000
 
+static void (*calls[32])(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph);
+
 static unsigned int getnumspans(struct widget *widget)
 {
 
@@ -228,46 +230,6 @@ static void placechoice(struct widget *widget, int x, int y, unsigned int minw, 
 
 }
 
-static void placelayout(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph)
-{
-
-    struct widget_layout *layout = widget->data;
-    struct util_size total;
-
-    switch (layout->flow)
-    {
-
-    case ATTR_FLOW_DEFAULT:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 0, &total);
-
-        break;
-
-    case ATTR_FLOW_HORIZONTAL:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
-
-        break;
-
-    case ATTR_FLOW_HORIZONTALSTRETCH:
-        placechildren(widget, x, y, 0, maxh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
-
-        break;
-
-    case ATTR_FLOW_VERTICAL:
-        placechildren(widget, x, y, 0, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
-
-        break;
-
-    case ATTR_FLOW_VERTICALSTRETCH:
-        placechildren(widget, x, y, maxw, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
-
-        break;
-
-    }
-
-    placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
-
-}
-
 static void placefill(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph)
 {
 
@@ -321,6 +283,46 @@ static void placeimage(struct widget *widget, int x, int y, unsigned int minw, u
         break;
 
     }
+
+}
+
+static void placelayout(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph)
+{
+
+    struct widget_layout *layout = widget->data;
+    struct util_size total;
+
+    switch (layout->flow)
+    {
+
+    case ATTR_FLOW_DEFAULT:
+        placechildren(widget, x, y, 0, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 0, &total);
+
+        break;
+
+    case ATTR_FLOW_HORIZONTAL:
+        placechildren(widget, x, y, 0, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
+
+        break;
+
+    case ATTR_FLOW_HORIZONTALSTRETCH:
+        placechildren(widget, x, y, 0, maxh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
+
+        break;
+
+    case ATTR_FLOW_VERTICAL:
+        placechildren(widget, x, y, 0, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
+
+        break;
+
+    case ATTR_FLOW_VERTICALSTRETCH:
+        placechildren(widget, x, y, maxw, 0, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
+
+        break;
+
+    }
+
+    placewidget(widget, x, y, total.w, total.h, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
 }
 
@@ -418,65 +420,24 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int minw, 
 void place_widget(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph)
 {
 
-    switch (widget->type)
-    {
+    calls[widget->type](widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
 
-    case WIDGET_TYPE_BUTTON:
-        placebutton(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
+}
 
-        break;
+void place_init(void)
+{
 
-    case WIDGET_TYPE_CHOICE:
-        placechoice(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_LAYOUT:
-        placelayout(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_FILL:
-        placefill(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_IMAGE:
-        placeimage(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_LISTBOX:
-        placelistbox(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_SELECT:
-        placeselect(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_TEXT:
-        placetext(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBOX:
-        placetextbox(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBUTTON:
-        placetextbutton(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    case WIDGET_TYPE_WINDOW:
-        placewindow(widget, x, y, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph);
-
-        break;
-
-    }
+    calls[WIDGET_TYPE_BUTTON] = placebutton;
+    calls[WIDGET_TYPE_CHOICE] = placechoice;
+    calls[WIDGET_TYPE_FILL] = placefill;
+    calls[WIDGET_TYPE_IMAGE] = placeimage;
+    calls[WIDGET_TYPE_LAYOUT] = placelayout;
+    calls[WIDGET_TYPE_LISTBOX] = placelistbox;
+    calls[WIDGET_TYPE_SELECT] = placeselect;
+    calls[WIDGET_TYPE_TEXT] = placetext;
+    calls[WIDGET_TYPE_TEXTBOX] = placetextbox;
+    calls[WIDGET_TYPE_TEXTBUTTON] = placetextbutton;
+    calls[WIDGET_TYPE_WINDOW] = placewindow;
 
 }
 

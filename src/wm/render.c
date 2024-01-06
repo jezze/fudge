@@ -34,6 +34,7 @@ struct cacherow
 
 };
 
+static void (*calls[32])(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my);
 static struct cacherow cacherows[512];
 static unsigned int nrows;
 
@@ -198,6 +199,11 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
 }
 
+static void renderlayout(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
+{
+
+}
+
 static void renderlistbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
 {
 
@@ -266,66 +272,6 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     blit_iconhamburger(display, widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onhamburger) ? 1 : 0));
     blit_iconminimize(display, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onminimize) ? 1 : 0));
     blit_iconx(display, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onx) ? 1 : 0));
-
-}
-
-static void renderwidget(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my)
-{
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_BUTTON:
-        renderbutton(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_CHOICE:
-        renderchoice(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_FILL:
-        renderfill(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_IMAGE:
-        renderimage(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_LISTBOX:
-        renderlistbox(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_SELECT:
-        renderselect(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_TEXT:
-        rendertext(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBOX:
-        rendertextbox(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBUTTON:
-        rendertextbutton(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    case WIDGET_TYPE_WINDOW:
-        renderwindow(display, widget, line, x0, x2, mx, my);
-
-        break;
-
-    }
 
 }
 
@@ -468,7 +414,7 @@ void render(struct blit_display *display, int mx, int my)
                 int x0 = util_max(widget->bb.x, area.position0.x);
                 int x2 = util_min(widget->bb.x + widget->bb.w, area.position2.x);
 
-                renderwidget(display, widget, line, x0, x2, mx, my);
+                calls[widget->type](display, widget, line, x0, x2, mx, my);
 
             }
 
@@ -477,6 +423,23 @@ void render(struct blit_display *display, int mx, int my)
         blit(display, line, area.position0.x, area.position2.x);
 
     }
+
+}
+
+void render_init(void)
+{
+
+    calls[WIDGET_TYPE_BUTTON] = renderbutton;
+    calls[WIDGET_TYPE_CHOICE] = renderchoice;
+    calls[WIDGET_TYPE_FILL] = renderfill;
+    calls[WIDGET_TYPE_IMAGE] = renderimage;
+    calls[WIDGET_TYPE_LAYOUT] = renderlayout;
+    calls[WIDGET_TYPE_LISTBOX] = renderlistbox;
+    calls[WIDGET_TYPE_SELECT] = renderselect;
+    calls[WIDGET_TYPE_TEXT] = rendertext;
+    calls[WIDGET_TYPE_TEXTBOX] = rendertextbox;
+    calls[WIDGET_TYPE_TEXTBUTTON] = rendertextbutton;
+    calls[WIDGET_TYPE_WINDOW] = renderwindow;
 
 }
 
