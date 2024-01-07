@@ -98,18 +98,8 @@ static void rendercacherow(struct blit_display *display, struct widget *widget, 
         if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
         {
 
-            unsigned int mstart = (markstart > row->istart) ? markstart - row->istart : 0;
-            unsigned int mend = (markend > row->istart) ? markend - row->istart : 0;
-
-            if (mend < mstart)
-            {
-
-                unsigned int temp = mstart;
-
-                mstart = mend;
-                mend = temp;
-
-            }
+            unsigned int mstart = util_max(0, util_min(markstart, markend) - row->istart);
+            unsigned int mend = util_max(0, util_max(markstart, markend) - row->istart);
 
             blit_text(display, row->font, strpool_getstring(text) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, enablecursor, cursor, cmap);
 
