@@ -34,7 +34,15 @@ struct cacherow
 
 };
 
-static void (*calls[32])(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my);
+struct calls
+{
+
+    void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my);
+    void (*cache)(struct widget *widget, unsigned int line);
+
+};
+
+static struct calls calls[32];
 static struct cacherow cacherows[512];
 static unsigned int nrows;
 
@@ -299,7 +307,86 @@ void render_undamage(void)
 
 }
 
-static void updatecache(struct blit_display *display)
+static void cachebutton(struct widget *widget, unsigned int line)
+{
+
+    struct widget_button *button = widget->data;
+
+    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE);
+
+}
+
+static void cachechoice(struct widget *widget, unsigned int line)
+{
+
+    struct widget_choice *choice = widget->data;
+
+    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE);
+
+}
+
+static void cachefill(struct widget *widget, unsigned int line)
+{
+
+}
+
+static void cacheimage(struct widget *widget, unsigned int line)
+{
+
+}
+
+static void cachelayout(struct widget *widget, unsigned int line)
+{
+
+}
+
+static void cachelistbox(struct widget *widget, unsigned int line)
+{
+
+}
+
+static void cacheselect(struct widget *widget, unsigned int line)
+{
+
+    struct widget_select *select = widget->data;
+
+    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE);
+
+}
+
+static void cachetext(struct widget *widget, unsigned int line)
+{
+
+    struct widget_text *text = widget->data;
+
+    addcacherow(widget, (line - widget->bb.y) / pool_getfont(text->weight)->lineheight, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
+
+}
+
+static void cachetextbox(struct widget *widget, unsigned int line)
+{
+
+}
+
+static void cachetextbutton(struct widget *widget, unsigned int line)
+{
+
+    struct widget_textbutton *textbutton = widget->data;
+
+    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE);
+
+}
+
+static void cachewindow(struct widget *widget, unsigned int line)
+{
+
+    struct widget_window *window = widget->data;
+
+    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE);
+
+}
+
+void render(struct blit_display *display, int mx, int my)
 {
 
     int line;
@@ -319,74 +406,15 @@ static void updatecache(struct blit_display *display)
             if (widget_intersectsy(widget, line))
             {
 
-                if (widget->type == WIDGET_TYPE_BUTTON)
-                {
+                struct calls *call = &calls[widget->type];
 
-                    struct widget_button *button = widget->data;
-
-                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE);
-
-                }
-
-                if (widget->type == WIDGET_TYPE_CHOICE)
-                {
-
-                    struct widget_choice *choice = widget->data;
-
-                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE);
-
-                }
-
-                if (widget->type == WIDGET_TYPE_SELECT)
-                {
-
-                    struct widget_select *select = widget->data;
-
-                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE);
-
-                }
-
-                if (widget->type == WIDGET_TYPE_TEXT)
-                {
-
-                    struct widget_text *text = widget->data;
-
-                    addcacherow(widget, (line - widget->bb.y) / pool_getfont(text->weight)->lineheight, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
-
-                }
-
-                if (widget->type == WIDGET_TYPE_TEXTBUTTON)
-                {
-
-                    struct widget_textbutton *textbutton = widget->data;
-
-                    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE);
-
-                }
-
-                if (widget->type == WIDGET_TYPE_WINDOW)
-                {
-
-                    struct widget_window *window = widget->data;
-
-                    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE);
-
-                }
+                call->cache(widget, line);
 
             }
 
         }
 
     }
-
-}
-
-void render(struct blit_display *display, int mx, int my)
-{
-
-    int line;
-
-    updatecache(display);
 
     for (line = area.position0.y; line < area.position2.y; line++)
     {
@@ -403,8 +431,9 @@ void render(struct blit_display *display, int mx, int my)
 
                 int x0 = util_max(widget->bb.x, area.position0.x);
                 int x2 = util_min(widget->bb.x + widget->bb.w, area.position2.x);
+                struct calls *call = &calls[widget->type];
 
-                calls[widget->type](display, widget, line, x0, x2, mx, my);
+                call->render(display, widget, line, x0, x2, mx, my);
 
             }
 
@@ -419,17 +448,28 @@ void render(struct blit_display *display, int mx, int my)
 void render_init(void)
 {
 
-    calls[WIDGET_TYPE_BUTTON] = renderbutton;
-    calls[WIDGET_TYPE_CHOICE] = renderchoice;
-    calls[WIDGET_TYPE_FILL] = renderfill;
-    calls[WIDGET_TYPE_IMAGE] = renderimage;
-    calls[WIDGET_TYPE_LAYOUT] = renderlayout;
-    calls[WIDGET_TYPE_LISTBOX] = renderlistbox;
-    calls[WIDGET_TYPE_SELECT] = renderselect;
-    calls[WIDGET_TYPE_TEXT] = rendertext;
-    calls[WIDGET_TYPE_TEXTBOX] = rendertextbox;
-    calls[WIDGET_TYPE_TEXTBUTTON] = rendertextbutton;
-    calls[WIDGET_TYPE_WINDOW] = renderwindow;
+    calls[WIDGET_TYPE_BUTTON].cache = cachebutton;
+    calls[WIDGET_TYPE_BUTTON].render = renderbutton;
+    calls[WIDGET_TYPE_CHOICE].cache = cachechoice;
+    calls[WIDGET_TYPE_CHOICE].render = renderchoice;
+    calls[WIDGET_TYPE_FILL].cache = cachefill;
+    calls[WIDGET_TYPE_FILL].render = renderfill;
+    calls[WIDGET_TYPE_IMAGE].cache = cacheimage;
+    calls[WIDGET_TYPE_IMAGE].render = renderimage;
+    calls[WIDGET_TYPE_LAYOUT].cache = cachelayout;
+    calls[WIDGET_TYPE_LAYOUT].render = renderlayout;
+    calls[WIDGET_TYPE_LISTBOX].cache = cachelistbox;
+    calls[WIDGET_TYPE_LISTBOX].render = renderlistbox;
+    calls[WIDGET_TYPE_SELECT].cache = cacheselect;
+    calls[WIDGET_TYPE_SELECT].render = renderselect;
+    calls[WIDGET_TYPE_TEXT].cache = cachetext;
+    calls[WIDGET_TYPE_TEXT].render = rendertext;
+    calls[WIDGET_TYPE_TEXTBOX].cache = cachetextbox;
+    calls[WIDGET_TYPE_TEXTBOX].render = rendertextbox;
+    calls[WIDGET_TYPE_TEXTBUTTON].cache = cachetextbutton;
+    calls[WIDGET_TYPE_TEXTBUTTON].render = rendertextbutton;
+    calls[WIDGET_TYPE_WINDOW].cache = cachewindow;
+    calls[WIDGET_TYPE_WINDOW].render = renderwindow;
 
 }
 
