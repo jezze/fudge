@@ -8,7 +8,6 @@
 #include "strpool.h"
 #include "pool.h"
 #include "blit.h"
-#include "place.h"
 #include "render.h"
 #include "parser.h"
 
@@ -672,12 +671,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (!state.paused)
         {
 
-            place_widget(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
+            render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
 
             if (display.framebuffer)
             {
 
-                render(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
+                render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
                 render_undamage();
 
             }
@@ -956,7 +955,6 @@ void init(void)
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     pool_setup();
     setupwidgets();
-    place_init();
     render_init();
     option_add("width", "1920");
     option_add("height", "1080");
