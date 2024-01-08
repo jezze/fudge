@@ -859,42 +859,31 @@ void render_update(struct blit_display *display, int mx, int my)
 
 }
 
+static void setupcall(unsigned int type, void (*place)(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my), void (*cache)(struct widget *widget, unsigned int line))
+{
+
+    struct calls *call = &calls[type];
+
+    call->place = place;
+    call->cache = cache;
+    call->render = render;
+
+}
+
 void render_init(void)
 {
 
-    calls[WIDGET_TYPE_BUTTON].cache = cachebutton;
-    calls[WIDGET_TYPE_BUTTON].place = placebutton;
-    calls[WIDGET_TYPE_BUTTON].render = renderbutton;
-    calls[WIDGET_TYPE_CHOICE].cache = cachechoice;
-    calls[WIDGET_TYPE_CHOICE].place = placechoice;
-    calls[WIDGET_TYPE_CHOICE].render = renderchoice;
-    calls[WIDGET_TYPE_FILL].cache = cachefill;
-    calls[WIDGET_TYPE_FILL].place = placefill;
-    calls[WIDGET_TYPE_FILL].render = renderfill;
-    calls[WIDGET_TYPE_IMAGE].cache = cacheimage;
-    calls[WIDGET_TYPE_IMAGE].place = placeimage;
-    calls[WIDGET_TYPE_IMAGE].render = renderimage;
-    calls[WIDGET_TYPE_LAYOUT].cache = cachelayout;
-    calls[WIDGET_TYPE_LAYOUT].place = placelayout;
-    calls[WIDGET_TYPE_LAYOUT].render = renderlayout;
-    calls[WIDGET_TYPE_LISTBOX].cache = cachelistbox;
-    calls[WIDGET_TYPE_LISTBOX].place = placelistbox;
-    calls[WIDGET_TYPE_LISTBOX].render = renderlistbox;
-    calls[WIDGET_TYPE_SELECT].cache = cacheselect;
-    calls[WIDGET_TYPE_SELECT].place = placeselect;
-    calls[WIDGET_TYPE_SELECT].render = renderselect;
-    calls[WIDGET_TYPE_TEXT].cache = cachetext;
-    calls[WIDGET_TYPE_TEXT].place = placetext;
-    calls[WIDGET_TYPE_TEXT].render = rendertext;
-    calls[WIDGET_TYPE_TEXTBOX].cache = cachetextbox;
-    calls[WIDGET_TYPE_TEXTBOX].place = placetextbox;
-    calls[WIDGET_TYPE_TEXTBOX].render = rendertextbox;
-    calls[WIDGET_TYPE_TEXTBUTTON].cache = cachetextbutton;
-    calls[WIDGET_TYPE_TEXTBUTTON].place = placetextbutton;
-    calls[WIDGET_TYPE_TEXTBUTTON].render = rendertextbutton;
-    calls[WIDGET_TYPE_WINDOW].cache = cachewindow;
-    calls[WIDGET_TYPE_WINDOW].place = placewindow;
-    calls[WIDGET_TYPE_WINDOW].render = renderwindow;
+    setupcall(WIDGET_TYPE_BUTTON, placebutton, renderbutton, cachebutton);
+    setupcall(WIDGET_TYPE_CHOICE, placechoice, renderchoice, cachechoice);
+    setupcall(WIDGET_TYPE_FILL, placefill, renderfill, cachefill);
+    setupcall(WIDGET_TYPE_IMAGE, placeimage, renderimage, cacheimage);
+    setupcall(WIDGET_TYPE_LAYOUT, placelayout, renderlayout, cachelayout);
+    setupcall(WIDGET_TYPE_LISTBOX, placelistbox, renderlistbox, cachelistbox);
+    setupcall(WIDGET_TYPE_SELECT, placeselect, renderselect, cacheselect);
+    setupcall(WIDGET_TYPE_TEXT, placetext, rendertext, cachetext);
+    setupcall(WIDGET_TYPE_TEXTBOX, placetextbox, rendertextbox, cachetextbox);
+    setupcall(WIDGET_TYPE_TEXTBUTTON, placetextbutton, rendertextbutton, cachetextbutton);
+    setupcall(WIDGET_TYPE_WINDOW, placewindow, renderwindow, cachewindow);
 
 }
 
