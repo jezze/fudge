@@ -531,13 +531,14 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct text_info info;
 
     text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->offx, text->enablecursor, text->cursor);
-    placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
     text->rows = info.rows;
     text->lastrowx = info.lastrowx;
     text->lastrowy = info.lastrowy;
     text->cursorx = info.cursorx;
     text->cursory = info.cursory;
+
+    placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
 }
 
