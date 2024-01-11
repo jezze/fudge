@@ -30,7 +30,7 @@ static void update(void)
     cursor = count;
     count += ring_readcopy(&input2, buffer + count, CONTENTSIZE);
 
-    channel_send_fmt3(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= input cursor \"%u\" content \"%w \"\n", &cursor, buffer, &count);
+    channel_send_fmt3(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= input cursor \"%u\" content \"%w\"\n", &cursor, buffer, &count);
 
 }
 
@@ -369,7 +369,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + textbox id \"output\" in \"base\" overflow \"vscroll\" mode \"readonly\" span \"1\"\n"
         "      + text id \"result\" in \"output\" wrap \"char\"\n"
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
-        "      + text id \"input\" in \"output\" wrap \"char\" cursor \"0\" content \" \"\n";
+        "      + text id \"input\" in \"output\" wrap \"char\" cursor \"0\" content \"\"\n";
 
     channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
 

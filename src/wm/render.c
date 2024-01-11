@@ -530,12 +530,14 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     struct text_font *font = pool_getfont(text->weight);
     struct text_info info;
 
-    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->offx);
+    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, text->offx, text->enablecursor, text->cursor);
     placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
     text->rows = info.rows;
     text->lastrowx = info.lastrowx;
     text->lastrowy = info.lastrowy;
+    text->cursorx = info.cursorx;
+    text->cursory = info.cursory;
 
 }
 
@@ -595,7 +597,7 @@ static void rendercacherow(struct blit_display *display, struct widget *widget, 
             unsigned int mstart = util_max(0, util_min(markstart, markend) - row->istart);
             unsigned int mend = util_max(0, util_max(markstart, markend) - row->istart);
 
-            blit_text(display, row->font, strpool_getstring(text) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, enablecursor, cursor, cmap);
+            blit_text(display, row->font, strpool_getstring(text) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, cmap);
 
         }
 
@@ -717,6 +719,9 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
     if (rownum < text->rows)
         rendercacherow(display, widget, rownum, line, text->content, x0, x2, text->markstart, text->markend, text->enablecursor, text->cursor, cmap_get(widget->state, widget->type, 0, 0));
+
+    if (text->enablecursor)
+        blit_iconcursor(display, widget->bb.x + text->cursorx, widget->bb.y + text->cursory, 2, font->lineheight, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
 
 }
 

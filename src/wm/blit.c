@@ -176,7 +176,7 @@ void blitpcfbitmapinverted(struct blit_display *display, int rx, int x0, int x2,
 
 }
 
-void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int ms, unsigned int me, unsigned int enablecursor, unsigned int cursor, unsigned int *cmap)
+void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int ms, unsigned int me, unsigned int *cmap)
 {
 
     unsigned int color = cmap[CMAP_TEXT_COLOR];
@@ -204,7 +204,7 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
             if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
             {
 
-                if ((i >= ms && i < me) || (enablecursor && i == cursor))
+                if ((i >= ms && i < me))
                     blitpcfbitmapinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
                 else
                     blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
@@ -284,6 +284,20 @@ void blit_iconarrowup(struct blit_display *display, int x, int y, int w, int h, 
     };
 
     blitsegment(display, rows, 6, line, x, y, w, h, x0, x2, cmap);
+
+}
+
+void blit_iconcursor(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    static struct linesegment line0[1] = {
+        {REL0, REL2, 0, 0, CMAP_ICON_COLOR}
+    };
+    static struct rowsegment rows[1] = {
+        {REL0, REL2, 0, 0, line0, 1}
+    };
+
+    blitsegment(display, rows, 1, line, x, y, w, h, x0, x2, cmap);
 
 }
 

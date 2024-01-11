@@ -91,6 +91,8 @@ struct widget_text
     unsigned int rows;
     int lastrowx;
     int lastrowy;
+    int cursorx;
+    int cursory;
 
 };
 
