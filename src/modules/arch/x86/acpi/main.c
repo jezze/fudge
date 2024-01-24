@@ -7,6 +7,8 @@
 #include <kernel/x86/arch.h>
 #include "acpi.h"
 
+volatile unsigned int *address = (volatile unsigned int *)0x40E;
+
 static struct acpi_rsdp *findrsdp(void)
 {
 
@@ -22,7 +24,7 @@ static struct acpi_rsdp *findrsdp(void)
 
     }
 
-    ebda = *((unsigned int *)0x40E);
+    ebda = *address;
     ebda = ebda * 0x10 & 0x000FFFFF;
 
     for (rsdp = ebda; rsdp < ebda + 0x400; rsdp += 0x10)

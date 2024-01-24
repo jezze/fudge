@@ -538,7 +538,10 @@ static void placetext(struct widget *widget, int x, int y, unsigned int minw, un
     text->cursorx = info.cursorx;
     text->cursory = info.cursory;
 
-    placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
+    if (text->enablecursor)
+        placewidget(widget, x, y, info.width + 8, util_max(info.height, font->lineheight), minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
+    else
+        placewidget(widget, x, y, info.width, info.height, minw, minh, maxw, maxh, clipx, clipy, clipw, cliph, 0, 0);
 
 }
 

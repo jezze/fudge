@@ -165,7 +165,7 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
 
     }
 
-    if (enablecursor && cursor > 0)
+    if (enablecursor)
     {
 
         firstrowx = oldrowx;
