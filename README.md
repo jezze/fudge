@@ -36,12 +36,12 @@ In order to compile Fudge for x86 we need to have a cross-compiler. Building a
 cross-compiler can be a tedious task but luckily there is a tool called
 crosstool-ng that automates the entire process for us.
 
-Download and install crosstool-ng. The recommended version is 1.24.0.
+Download and install crosstool-ng. The recommended version is 1.26.0.
 
 ```sh
-$ wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-1.24.0.tar.bz2
-$ tar xjf crosstool-ng-1.24.0.tar.bz2
-$ cd crosstool-ng-1.24.0
+$ wget http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-1.26.0.tar.bz2
+$ tar xjf crosstool-ng-1.26.0.tar.bz2
+$ cd crosstool-ng-1.26.0
 $ ./configure
 $ make
 $ sudo make install
