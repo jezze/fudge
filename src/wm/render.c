@@ -544,6 +544,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 {
 
     struct widget_textbox *textbox = widget->data;
+    struct list_item *current = 0;
     struct util_size total;
 
     placetextflow(widget, x, y, 0, 0, maxw, INFINITY, clipx, clipy, clipw, cliph, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
@@ -553,6 +554,26 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
     textbox->vscroll = util_clamp(textbox->vscroll, widget->bb.h - total.h, 0);
 
     scrollchildren(widget, 0, textbox->vscroll);
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            struct widget_text *text = child->data;
+
+            textbox->cursorx = child->bb.x;
+            textbox->cursory = child->bb.y + 4;
+            textbox->cursorheight = pool_getfont(text->weight)->lineheight;
+
+        }
+
+        break;
+
+    }
 
 }
 
@@ -727,11 +748,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
     struct widget_textbox *textbox = widget->data;
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, (textbox->mode == ATTR_MODE_READONLY) ? 12 : 0, (textbox->mode == ATTR_MODE_READONLY) ? 0 : 4));
-
-    /*
-    if (textbox->enablecursor)
-        blit_iconcursor(display, widget->bb.x + text->cursorx, widget->bb.y + text->cursory, 2, font->lineheight, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
-    */
+    blit_iconcursor(display, textbox->cursorx, textbox->cursory, 2, 18, line, x0, x2, cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0));
 
 }
 

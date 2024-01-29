@@ -101,6 +101,9 @@ struct widget_textbox
     int vscroll;
     unsigned int enablecursor;
     unsigned int cursor;
+    int cursorx;
+    int cursory;
+    unsigned int cursorheight;
 
 };
 

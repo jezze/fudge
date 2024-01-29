@@ -638,6 +638,9 @@ static void inittextbox(struct widget *widget)
     textbox->overflow = ATTR_OVERFLOW_NONE;
     textbox->hscroll = 0;
     textbox->vscroll = 0;
+    textbox->cursorx = 0;
+    textbox->cursory = 0;
+    textbox->cursorheight = 0;
 
 }
 
