@@ -30,13 +30,11 @@ struct text_info
     unsigned int height;
     int lastrowx;
     int lastrowy;
-    int cursorx;
-    int cursory;
 
 };
 
 unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int offset);
-unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx, unsigned int enablecursor, unsigned int cursor);
+unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx);
 unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx);
 unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx, int x, int y);
 int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w);

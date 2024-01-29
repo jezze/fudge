@@ -167,12 +167,6 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
 
         break;
 
-    case ATTR_CURSOR:
-        text->cursor = attr_update(ATTR_CURSOR, value, text->cursor);
-        text->enablecursor = 1; /* FIXME */
-
-        break;
-
     case ATTR_HALIGN:
         text->halign = attr_update(ATTR_HALIGN, value, text->halign);
 
@@ -204,6 +198,12 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
     switch (attribute)
     {
+
+    case ATTR_CURSOR:
+        textbox->cursor = attr_update(ATTR_CURSOR, value, textbox->cursor);
+        textbox->enablecursor = 1; /* FIXME */
+
+        break;
 
     case ATTR_MODE:
         textbox->mode = attr_update(ATTR_MODE, value, textbox->mode);
@@ -621,8 +621,6 @@ static void inittext(struct widget *widget)
     text->weight = ATTR_WEIGHT_NORMAL;
     text->wrap = ATTR_WRAP_NONE;
     text->offx = 0;
-    text->enablecursor = 0;
-    text->cursor = 0;
     text->markstart = 0;
     text->markend = 0;
     text->rows = 0;

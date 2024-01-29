@@ -137,20 +137,17 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
 }
 
-unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx, unsigned int enablecursor, unsigned int cursor)
+unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx)
 {
 
     struct text_rowinfo rowinfo;
     unsigned int offset = 0;
-    unsigned int oldrowx = firstrowx;
 
     textinfo->lastrowx = firstrowx;
     textinfo->lastrowy = 0;
     textinfo->width = 0;
     textinfo->height = 0;
     textinfo->rows = 0;
-    textinfo->cursorx = firstrowx;
-    textinfo->cursory = 0;
 
     while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
@@ -162,24 +159,6 @@ unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font
         textinfo->rows++;
 
         firstrowx = 0;
-
-    }
-
-    if (enablecursor)
-    {
-
-        firstrowx = oldrowx;
-        offset = 0;
-
-        while ((offset = text_getrowinfo(&rowinfo, font, text, cursor, wrap, maxw - firstrowx, offset)))
-        {
-
-            textinfo->cursorx = (rowinfo.linebreak) ? 0 : rowinfo.width + firstrowx;
-            textinfo->cursory += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
-
-            firstrowx = 0;
-
-        }
 
     }
 

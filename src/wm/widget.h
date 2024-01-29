@@ -84,15 +84,11 @@ struct widget_text
     unsigned int weight;
     unsigned int wrap;
     unsigned int offx;
-    unsigned int enablecursor;
-    unsigned int cursor;
     unsigned int markstart;
     unsigned int markend;
     unsigned int rows;
     int lastrowx;
     int lastrowy;
-    int cursorx;
-    int cursory;
 
 };
 
@@ -103,6 +99,8 @@ struct widget_textbox
     unsigned int overflow;
     int hscroll;
     int vscroll;
+    unsigned int enablecursor;
+    unsigned int cursor;
 
 };
 

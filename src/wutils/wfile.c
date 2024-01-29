@@ -142,8 +142,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "        + layout id \"volume-list\" in \"volume\" flow \"vertical-stretch\"\n"
         "          + choice in \"volume-list\" label \"initrd:\" onclick \"q=abspath&path=initrd:\"\n"
         "          + choice in \"volume-list\" label \"system:\" onclick \"q=abspath&path=system:\"\n"
-        "      + textbox id \"pathbox\" in \"top\" span \"1\"\n"
-        "        + text id \"path\" in \"pathbox\" cursor \"0\"\n"
+        "      + textbox id \"pathbox\" in \"top\" span \"1\" cursor \"0\"\n"
+        "        + text id \"path\" in \"pathbox\"\n"
         "      + button in \"top\" label \"Up\" onclick \"q=up\"\n"
         "    + layout id \"main\" in \"base\" flow \"horizontal-stretch\" padding \"1\" span \"1\"\n"
         "      + listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n"
@@ -174,7 +174,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor--;
 
-            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 
