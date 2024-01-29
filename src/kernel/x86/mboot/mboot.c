@@ -87,7 +87,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    if (header->flags & MBOOT_FLAG_FB)
+    if (header->flags & MBOOT_FLAG_FRAMEBUFFER)
     {
 
     }
