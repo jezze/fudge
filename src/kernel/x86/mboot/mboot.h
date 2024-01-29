@@ -9,6 +9,7 @@
 #define MBOOT_FLAG_LOADER               0x00000100
 #define MBOOT_FLAG_APM                  0x00000200
 #define MBOOT_FLAG_VBE                  0x00000400
+#define MBOOT_FLAG_FB                   0x00000800
 
 struct mboot_header_modules
 {
@@ -56,6 +57,19 @@ struct mboot_header_vbe
 
 };
 
+struct mboot_header_fb
+{
+
+    unsigned int addr0;
+    unsigned int addr1;
+    unsigned int width;
+    unsigned int height;
+    unsigned char bpp;
+    unsigned char type;
+    unsigned char color[6];
+
+};
+
 struct mboot_header
 {
 
@@ -72,6 +86,7 @@ struct mboot_header
     unsigned int name;
     unsigned int atable;
     struct mboot_header_vbe vbe;
+    struct mboot_header_fb fb;
 
 };
 

@@ -85,10 +85,10 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     if (header->flags & MBOOT_FLAG_VBE)
     {
 
-        if (header->vbe.cinfo)
-        {
+    }
 
-        }
+    if (header->flags & MBOOT_FLAG_FB)
+    {
 
     }
 
