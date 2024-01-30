@@ -672,6 +672,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
+            render_cache();
 
             if (display.framebuffer)
             {

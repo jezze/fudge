@@ -42,7 +42,7 @@ struct calls
 
     void (*place)(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph);
     void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my);
-    void (*cache)(struct widget *widget, unsigned int line);
+    void (*cache)(struct widget *widget, int y0, int y2);
 
 };
 
@@ -72,34 +72,27 @@ static struct cacherow *getcacherow(struct widget *widget, unsigned int num)
 static void addcacherow(struct widget *widget, unsigned int num, unsigned int weight, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int offx, int offy, int text, unsigned int wrap)
 {
 
-    struct cacherow *row = getcacherow(widget, num);
+    struct cacherow *cacherow = &cacherows[nrows++];
+    struct text_font *font = pool_getfont(weight);
+    char *textstring = strpool_getstring(text);
+    unsigned int textlength = strpool_getcstringlength(text);
+    unsigned int icurrent = text_getrowstart(font, textstring, textlength, num, wrap, widget->bb.w, offx);
+    struct text_rowinfo rowinfo;
 
-    if (!row)
-    {
+    text_getrowinfo(&rowinfo, font, textstring, textlength, wrap, widget->bb.w, icurrent);
 
-        struct cacherow *cacherow = &cacherows[nrows++];
-        struct text_font *font = pool_getfont(weight);
-        char *textstring = strpool_getstring(text);
-        unsigned int textlength = strpool_getcstringlength(text);
-        unsigned int icurrent = text_getrowstart(font, textstring, textlength, num, wrap, widget->bb.w, offx);
-        struct text_rowinfo rowinfo;
-
-        text_getrowinfo(&rowinfo, font, textstring, textlength, wrap, widget->bb.w, icurrent);
-
-        cacherow->num = num;
-        cacherow->rx = text_getrowx(&rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
-        cacherow->ry = text_getrowy(&rowinfo, valign, paddingy, widget->bb.h - offy) + offy + rowinfo.lineheight * num;
-        cacherow->istart = rowinfo.istart;
-        cacherow->iend = rowinfo.iend;
-        cacherow->length = rowinfo.length;
-        cacherow->font = font;
-        cacherow->widget = widget;
-
-    }
+    cacherow->num = num;
+    cacherow->rx = text_getrowx(&rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
+    cacherow->ry = text_getrowy(&rowinfo, valign, paddingy, widget->bb.h - offy) + offy + rowinfo.lineheight * num;
+    cacherow->istart = rowinfo.istart;
+    cacherow->iend = rowinfo.iend;
+    cacherow->length = rowinfo.length;
+    cacherow->font = font;
+    cacherow->widget = widget;
 
 }
 
-static void cachebutton(struct widget *widget, unsigned int line)
+static void cachebutton(struct widget *widget, int y0, int y2)
 {
 
     struct widget_button *button = widget->data;
@@ -108,7 +101,7 @@ static void cachebutton(struct widget *widget, unsigned int line)
 
 }
 
-static void cachechoice(struct widget *widget, unsigned int line)
+static void cachechoice(struct widget *widget, int y0, int y2)
 {
 
     struct widget_choice *choice = widget->data;
@@ -117,27 +110,27 @@ static void cachechoice(struct widget *widget, unsigned int line)
 
 }
 
-static void cachefill(struct widget *widget, unsigned int line)
+static void cachefill(struct widget *widget, int y0, int y2)
 {
 
 }
 
-static void cacheimage(struct widget *widget, unsigned int line)
+static void cacheimage(struct widget *widget, int y0, int y2)
 {
 
 }
 
-static void cachelayout(struct widget *widget, unsigned int line)
+static void cachelayout(struct widget *widget, int y0, int y2)
 {
 
 }
 
-static void cachelistbox(struct widget *widget, unsigned int line)
+static void cachelistbox(struct widget *widget, int y0, int y2)
 {
 
 }
 
-static void cacheselect(struct widget *widget, unsigned int line)
+static void cacheselect(struct widget *widget, int y0, int y2)
 {
 
     struct widget_select *select = widget->data;
@@ -146,21 +139,30 @@ static void cacheselect(struct widget *widget, unsigned int line)
 
 }
 
-static void cachetext(struct widget *widget, unsigned int line)
+static void cachetext(struct widget *widget, int y0, int y2)
 {
 
     struct widget_text *text = widget->data;
+    int line;
 
-    addcacherow(widget, (line - widget->bb.y) / pool_getfont(text->weight)->lineheight, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
+    for (line = y0; line < y2; line++)
+    {
+
+        unsigned int rownum = (line - widget->bb.y) / pool_getfont(text->weight)->lineheight;
+
+        if (!getcacherow(widget, rownum))
+            addcacherow(widget, rownum, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
+
+    }
 
 }
 
-static void cachetextbox(struct widget *widget, unsigned int line)
+static void cachetextbox(struct widget *widget, int y0, int y2)
 {
 
 }
 
-static void cachetextbutton(struct widget *widget, unsigned int line)
+static void cachetextbutton(struct widget *widget, int y0, int y2)
 {
 
     struct widget_textbutton *textbutton = widget->data;
@@ -169,7 +171,7 @@ static void cachetextbutton(struct widget *widget, unsigned int line)
 
 }
 
-static void cachewindow(struct widget *widget, unsigned int line)
+static void cachewindow(struct widget *widget, int y0, int y2)
 {
 
     struct widget_window *window = widget->data;
@@ -823,35 +825,28 @@ void render_undamage(void)
 
 }
 
+void render_cache(void)
+{
+
+    struct list_item *current = 0;
+
+    nrows = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        calls[widget->type].cache(widget, area.position0.y, area.position2.y);
+
+    }
+
+}
+
 void render_update(struct blit_display *display, int mx, int my)
 {
 
     int line;
-
-    nrows = 0;
-
-    for (line = 0; line < display->size.h; line++)
-    {
-
-        struct list_item *current = 0;
-
-        while ((current = pool_next(current)))
-        {
-
-            struct widget *widget = current->data;
-
-            if (widget_intersectsy(widget, line))
-            {
-
-                struct calls *call = &calls[widget->type];
-
-                call->cache(widget, line);
-
-            }
-
-        }
-
-    }
 
     for (line = area.position0.y; line < area.position2.y; line++)
     {
@@ -868,9 +863,8 @@ void render_update(struct blit_display *display, int mx, int my)
 
                 int x0 = util_max(widget->bb.x, area.position0.x);
                 int x2 = util_min(widget->bb.x + widget->bb.w, area.position2.x);
-                struct calls *call = &calls[widget->type];
 
-                call->render(display, widget, line, x0, x2, mx, my);
+                calls[widget->type].render(display, widget, line, x0, x2, mx, my);
 
             }
 
@@ -882,7 +876,7 @@ void render_update(struct blit_display *display, int mx, int my)
 
 }
 
-static void setupcall(unsigned int type, void (*place)(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my), void (*cache)(struct widget *widget, unsigned int line))
+static void setupcall(unsigned int type, void (*place)(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, int clipx, int clipy, unsigned int clipw, unsigned int cliph), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my), void (*cache)(struct widget *widget, int y0, int y2))
 {
 
     struct calls *call = &calls[type];
