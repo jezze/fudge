@@ -567,14 +567,16 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
         {
 
             struct widget_text *text = child->data;
+            struct text_font *font = pool_getfont(text->weight);
+            struct text_info info;
 
-            textbox->cursorx = child->bb.x;
-            textbox->cursory = child->bb.y;
-            textbox->cursorheight = pool_getfont(text->weight)->lineheight;
+            text_gettextinfo(&info, font, strpool_getstring(text->content), textbox->cursor, text->wrap, maxw, text->offx);
+
+            textbox->cursorx = child->bb.x + info.lastrowx;
+            textbox->cursory = child->bb.y + info.lastrowy;
+            textbox->cursorheight = font->lineheight;
 
         }
-
-        break;
 
     }
 
