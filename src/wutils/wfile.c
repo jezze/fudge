@@ -186,7 +186,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor++;
 
-            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 
