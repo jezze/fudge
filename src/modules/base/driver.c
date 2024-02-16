@@ -12,20 +12,25 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
     {
 
         struct base_bus *bus = current->data;
-        unsigned int id = 0;
 
-        if (bus->type != type)
-            continue;
-
-        while ((id = bus->next(id)))
+        if (bus->type == type)
         {
 
-            if (!driver->match(id))
-                continue;
+            unsigned int id = 0;
 
-            driver->init(id);
-            driver->reset(id);
-            driver->attach(id);
+            while ((id = bus->next(id)))
+            {
+
+                if (driver->match(id))
+                {
+
+                    driver->init(id);
+                    driver->reset(id);
+                    driver->attach(id);
+
+                }
+
+            }
 
         }
 
@@ -44,18 +49,19 @@ void base_unregisterdriver(struct base_driver *driver, unsigned int type)
     {
 
         struct base_bus *bus = current->data;
-        unsigned int id = 0;
 
-        if (bus->type != type)
-            continue;
-
-        while ((id = bus->next(id)))
+        if (bus->type == type)
         {
 
-            if (!driver->match(id))
-                continue;
+            unsigned int id = 0;
 
-            driver->detach(id);
+            while ((id = bus->next(id)))
+            {
+
+                if (driver->match(id))
+                    driver->detach(id);
+
+            }
 
         }
 
