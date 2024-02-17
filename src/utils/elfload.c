@@ -127,50 +127,47 @@ static void resolve(unsigned int descriptor)
     for (i = 0; i < header.shcount; i++)
     {
 
-        struct elf_sectionheader *relocationheader;
-        struct elf_sectionheader *dataheader;
-        struct elf_sectionheader *symbolheader;
-        struct elf_sectionheader *stringheader;
-        char strings[BUFFER_SIZE];
-        unsigned int j;
-
-        if (sectionheaders[i].type != ELF_SECTION_TYPE_REL)
-            continue;
-
-        relocationheader = &sectionheaders[i];
-        dataheader = &sectionheaders[relocationheader->info];
-        symbolheader = &sectionheaders[relocationheader->link];
-        stringheader = &sectionheaders[symbolheader->link];
-
-        if (stringheader->size > BUFFER_SIZE)
-            PANIC();
-
-        call_read_all(descriptor, strings, stringheader->size, stringheader->offset);
-
-        for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL)
         {
 
-            struct elf_relocation relocation;
-            struct elf_symbol symbol;
+            struct elf_sectionheader *relocationheader = &sectionheaders[i];
+            struct elf_sectionheader *dataheader = &sectionheaders[relocationheader->info];
+            struct elf_sectionheader *symbolheader = &sectionheaders[relocationheader->link];
+            struct elf_sectionheader *stringheader = &sectionheaders[symbolheader->link];
+            char strings[BUFFER_SIZE];
+            unsigned int j;
 
-            call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
-            call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+            if (stringheader->size > BUFFER_SIZE)
+                PANIC();
 
-            if (!symbol.shindex)
+            call_read_all(descriptor, strings, stringheader->size, stringheader->offset);
+
+            for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
             {
 
-                unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+                struct elf_relocation relocation;
+                struct elf_symbol symbol;
 
-                if (address)
+                call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+
+                if (!symbol.shindex)
                 {
 
-                    unsigned int value;
+                    unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
 
-                    call_read_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+                    if (address)
+                    {
 
-                    value += address;
+                        unsigned int value;
 
-                    call_write_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+                        call_read_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+
+                        value += address;
+
+                        call_write_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+
+                    }
 
                 }
 
