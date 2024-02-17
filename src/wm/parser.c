@@ -75,7 +75,7 @@ struct state
 
 };
 
-static char strbuffer[BUFFER_SIZE];
+static char strbuffer[4096];
 
 static void fail(struct state *state)
 {
@@ -223,7 +223,7 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 static unsigned int getcommand(struct state *state)
 {
 
-    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+    unsigned int count = readword(state, strbuffer, 4096);
 
     return (count) ? util_getkey(commands, 5, strbuffer) : 0;
 
@@ -232,7 +232,7 @@ static unsigned int getcommand(struct state *state)
 static unsigned int getattribute(struct state *state)
 {
 
-    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+    unsigned int count = readword(state, strbuffer, 4096);
 
     return (count) ? util_getkey(attributes, 20, strbuffer) : 0;
 
@@ -241,7 +241,7 @@ static unsigned int getattribute(struct state *state)
 static unsigned int getwidget(struct state *state)
 {
 
-    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+    unsigned int count = readword(state, strbuffer, 4096);
 
     return (count) ? util_getkey(widgets, 11, strbuffer) : 0;
 
@@ -258,7 +258,7 @@ static void parseattributes(struct state *state, struct widget *widget)
         if (attribute)
         {
 
-            unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+            unsigned int count = readword(state, strbuffer, 4096);
 
             if (count)
                 widget_setattribute(widget, attribute, strbuffer);
@@ -282,7 +282,7 @@ static void parsecomment(struct state *state)
 {
 
     while (!state->errors && !state->linebreak)
-        readword(state, strbuffer, BUFFER_SIZE);
+        readword(state, strbuffer, 4096);
 
 }
 
@@ -306,7 +306,7 @@ static void deletechildren(struct widget *widget)
 static void parsedelete(struct state *state, unsigned int source)
 {
 
-    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+    unsigned int count = readword(state, strbuffer, 4096);
 
     if (count)
     {
@@ -368,7 +368,7 @@ static void parseinsert(struct state *state, unsigned int source, char *in)
 static void parseupdate(struct state *state, unsigned int source)
 {
 
-    unsigned int count = readword(state, strbuffer, BUFFER_SIZE);
+    unsigned int count = readword(state, strbuffer, 4096);
 
     if (count)
     {

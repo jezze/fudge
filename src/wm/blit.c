@@ -650,7 +650,7 @@ void blit_frame(struct blit_display *display, int x, int y, int w, int h, int li
 void blit_pcx(struct blit_display *display, int line, char *source, int x, int y, int x0, int x2)
 {
 
-    unsigned char buffer[BUFFER_SIZE];
+    unsigned char buffer[4096];
     int i;
 
     pool_pcxload(&pcxresource, source);
