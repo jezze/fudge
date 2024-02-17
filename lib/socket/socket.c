@@ -180,7 +180,7 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
             remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, BUFFER_SIZE, 0, 0));
+            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 4096, 0, 0));
 
         }
 
@@ -194,7 +194,7 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
             remote->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, BUFFER_SIZE, 0, 0));
+            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -204,7 +204,7 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
             remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, BUFFER_SIZE, 0, 0));
+            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -229,7 +229,7 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
             remote->info.tcp.ack = net_load32(header->seq) + psize;
 
             if (psize)
-                send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, BUFFER_SIZE, 0, 0));
+                send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -240,7 +240,7 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
             remote->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.ack = net_load32(header->seq) + psize + 1;
 
-            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, BUFFER_SIZE, 0, 0));
+            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -261,7 +261,7 @@ static unsigned int handletcp(unsigned int descriptor, struct socket *local, str
             remote->info.tcp.state = TCP_STATE_CLOSING;
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, BUFFER_SIZE, 0, 0));
+            send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -471,7 +471,7 @@ unsigned int socket_send_tcp(unsigned int descriptor, struct socket *local, stru
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, BUFFER_SIZE, psize, pdata));
+        send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, 4096, psize, pdata));
 
         return psize;
 
@@ -673,7 +673,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
+            unsigned int payloadcount = socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -693,7 +693,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
+            unsigned int payloadcount = socket_handle_udp(descriptor, local, remote, router, message_datasize(&message), data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -733,15 +733,15 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
     remote->info.tcp.state = TCP_STATE_SYNSENT;
     remote->info.tcp.ack = 0;
 
-    send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, BUFFER_SIZE, 0, 0));
+    send(descriptor, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, 4096, 0, 0));
 
     while (channel_poll_any(EVENT_DATA, &message, data))
     {
 
-        char buffer[BUFFER_SIZE];
+        char buffer[SOCKET_MTUSIZE];
 
         socket_handle_arp(descriptor, local, remote, message_datasize(&message), data);
-        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, BUFFER_SIZE, buffer);
+        socket_handle_tcp(descriptor, local, remote, router, message_datasize(&message), data, SOCKET_MTUSIZE, buffer);
 
         if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
             break;
