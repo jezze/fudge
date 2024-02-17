@@ -90,7 +90,7 @@ static void setupnetwork(struct mtwist_state *state)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
+    char buffer[SOCKET_MTUSIZE];
     unsigned int count;
     struct mtwist_state state;
 
@@ -100,7 +100,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
-    while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, SOCKET_MTUSIZE)))
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
     call_unlink(FILE_G0);

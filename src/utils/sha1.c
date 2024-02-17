@@ -34,11 +34,11 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (call_walk_absolute(FILE_L0, mdata))
     {
 
-        char buffer[BUFFER_SIZE];
+        char buffer[4096];
         unsigned int count;
         unsigned int offset;
 
-        for (offset = 0; (count = call_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
+        for (offset = 0; (count = call_read(FILE_L0, buffer, 4096, offset)); offset += count)
             sha1_read(&sum, buffer, count);
 
     }
