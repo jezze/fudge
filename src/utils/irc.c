@@ -6,7 +6,7 @@
 static struct socket local;
 static struct socket remote;
 static struct socket router;
-static char inputbuffer[BUFFER_SIZE];
+static char inputbuffer[4096];
 static struct ring input;
 
 static unsigned int buildrequest(unsigned int count, void *buffer)
@@ -31,9 +31,9 @@ static void interpret(void *buffer, unsigned int count)
     else
     {
 
-        char outputdata[BUFFER_SIZE];
+        char outputdata[4096];
 
-        socket_send_tcp(FILE_G0, &local, &remote, &router, cstring_write_fmt3(outputdata, BUFFER_SIZE, "PRIVMSG %s :%w", 0, option_getstring("channel"), buffer, &count), outputdata);
+        socket_send_tcp(FILE_G0, &local, &remote, &router, cstring_write_fmt3(outputdata, 4096, "PRIVMSG %s :%w", 0, option_getstring("channel"), buffer, &count), outputdata);
 
     }
 
@@ -118,7 +118,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_consoledata *consoledata = mdata;
-    char buffer[BUFFER_SIZE];
+    char buffer[4096];
     unsigned int count;
 
     if (!remote.resolved)
@@ -147,7 +147,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
         ring_write(&input, &consoledata->data, 1);
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, 1, &consoledata->data);
 
-        count = ring_read(&input, buffer, BUFFER_SIZE);
+        count = ring_read(&input, buffer, 4096);
 
         if (count)
             interpret(buffer, count);
@@ -167,7 +167,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[BUFFER_SIZE];
+    char buffer[4096];
     unsigned int count;
     struct mtwist_state state;
 
@@ -180,9 +180,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer), buffer);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
-    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, 4096)))
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
     call_unlink(FILE_G0);
@@ -192,7 +192,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&input, BUFFER_SIZE, inputbuffer);
+    ring_init(&input, 4096, inputbuffer);
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);

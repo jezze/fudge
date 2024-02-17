@@ -1,9 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char inputdata[BUFFER_SIZE];
-static struct ring input;
-
 static void opensocket(struct url *url)
 {
 
@@ -56,10 +53,10 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char urldata[BUFFER_SIZE];
+    char urldata[2048];
     struct url url;
 
-    parseurl(&url, urldata, BUFFER_SIZE);
+    parseurl(&url, urldata, 2048);
     opensocket(&url);
 
 }
@@ -67,7 +64,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&input, BUFFER_SIZE, inputdata);
     option_add("socket", "initrd:/bin/socket");
     option_add("host", "51.158.105.96");
     option_add("url", "www.blunder.se");

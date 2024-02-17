@@ -410,14 +410,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (call_walk_relative(FILE_G1, FILE_G0, "data"))
     {
 
-        char buffer[BUFFER_SIZE];
+        char buffer[4096];
         unsigned int count;
 
         call_link(FILE_G1, 8003);
         socket_resolveremote(FILE_G1, &local, &router);
         socket_listen_tcp(FILE_G1, &local, &remote, 1, &router);
 
-        while ((count = socket_receive(FILE_G1, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
+        while ((count = socket_receive(FILE_G1, &local, &remote, 1, &router, buffer, 4096)))
         {
 
             char reply[MESSAGE_SIZE];

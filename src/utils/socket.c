@@ -47,14 +47,14 @@ static void setupnetwork(struct mtwist_state *state)
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char buffer[SOCKET_MTUSIZE];
+    unsigned char buffer[MESSAGE_SIZE];
     unsigned int count;
 
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
     socket_send_tcp(FILE_G0, &local, &remote, &router, msize, mdata);
 
-    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, SOCKET_MTUSIZE)))
+    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
 }

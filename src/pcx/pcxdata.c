@@ -24,10 +24,10 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         for (h = 0; h < height; h++)
         {
 
-            unsigned char buffer[BUFFER_SIZE];
-            unsigned char raw[BUFFER_SIZE];
+            unsigned char buffer[4096];
+            unsigned char raw[4096];
 
-            call_read(FILE_L0, raw, BUFFER_SIZE, 128 + offset);
+            call_read(FILE_L0, raw, 4096, 128 + offset);
 
             offset = pcx_readline(raw, width, buffer);
 

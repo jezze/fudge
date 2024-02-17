@@ -6,14 +6,14 @@
 static struct socket router;
 static struct socket local;
 static struct socket remotes[64];
-static char inputdata[BUFFER_SIZE];
+static char inputdata[4096];
 static struct ring input;
 static char request[128];
 
 static void sendresponse(struct socket *remote)
 {
 
-    char buffer[BUFFER_SIZE];
+    char buffer[4096];
     unsigned int count = 0;
 
     if (!call_walk_absolute(FILE_L0, "/data/html"))
@@ -28,23 +28,23 @@ static void sendresponse(struct socket *remote)
     if (call_walk_relative(FILE_L1, FILE_L0, request + 1))
     {
 
-        char file[BUFFER_SIZE];
-        unsigned int filesize = call_read(FILE_L1, file, BUFFER_SIZE, 0);
+        char file[4096];
+        unsigned int filesize = call_read(FILE_L1, file, 4096, 0);
 
-        count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 200 OK\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "Content-Type: text/html\r\n", count);
-        count += cstring_write_fmt1(buffer, BUFFER_SIZE, "Content-Length: %u\r\n\r\n", count, &filesize);
-        count += buffer_write(buffer, BUFFER_SIZE, file, filesize, count);
+        count += cstring_write(buffer, 4096, "HTTP/1.1 200 OK\r\n", count);
+        count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
+        count += cstring_write(buffer, 4096, "Content-Type: text/html\r\n", count);
+        count += cstring_write_fmt1(buffer, 4096, "Content-Length: %u\r\n\r\n", count, &filesize);
+        count += buffer_write(buffer, 4096, file, filesize, count);
 
     }
 
     else
     {
 
-        count += cstring_write(buffer, BUFFER_SIZE, "HTTP/1.1 404 Not Found\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "Server: Webs/1.0.0 (Fudge)\r\n", count);
-        count += cstring_write(buffer, BUFFER_SIZE, "Content-Length: 0\r\n\r\n", count);
+        count += cstring_write(buffer, 4096, "HTTP/1.1 404 Not Found\r\n", count);
+        count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
+        count += cstring_write(buffer, 4096, "Content-Length: 0\r\n\r\n", count);
 
     }
 
@@ -60,7 +60,7 @@ static void handlehttppacket(struct socket *remote)
     while ((newline = ring_each(&input, '\n')))
     {
 
-        char buffer[BUFFER_SIZE];
+        char buffer[4096];
         unsigned int count = ring_read(&input, buffer, newline);
 
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
@@ -68,7 +68,7 @@ static void handlehttppacket(struct socket *remote)
         if (count > 4 && buffer_match(buffer, "GET ", 4))
         {
 
-            unsigned int end = buffer_lastbyte(buffer, BUFFER_SIZE, ' ');
+            unsigned int end = buffer_lastbyte(buffer, 4096, ' ');
 
             cstring_write_zero(request, 128, buffer_write(request, 128, buffer + 4, end - 4 - 1, 0));
 
@@ -121,7 +121,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     struct mtwist_state state;
     struct message message;
-    char data[SOCKET_MTUSIZE];
+    char data[MESSAGE_SIZE];
 
     seed(&state);
     setupnetwork(&state);
@@ -148,8 +148,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (remote)
         {
 
-            unsigned char buffer[BUFFER_SIZE];
-            unsigned int count = socket_handle_tcp(FILE_G0, &local, remote, &router, message_datasize(&message), data, BUFFER_SIZE, buffer);
+            unsigned char buffer[4096];
+            unsigned int count = socket_handle_tcp(FILE_G0, &local, remote, &router, message_datasize(&message), data, 4096, buffer);
 
             if (count)
             {
@@ -172,7 +172,7 @@ void init(void)
 
     unsigned int i;
 
-    ring_init(&input, BUFFER_SIZE, inputdata);
+    ring_init(&input, 4096, inputdata);
     socket_init(&router);
     socket_init(&local);
 

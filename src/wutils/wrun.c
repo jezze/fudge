@@ -6,7 +6,7 @@
 static struct socket local;
 static struct socket remote;
 static struct socket router;
-static char inputdata[BUFFER_SIZE];
+static char inputdata[4096];
 static struct ring input;
 static unsigned int isbody;
 
@@ -25,7 +25,7 @@ static void handlehttppacket(void)
     while ((newline = ring_each(&input, '\n')))
     {
 
-        char buffer[BUFFER_SIZE];
+        char buffer[4096];
         unsigned int count = ring_read(&input, buffer, newline);
 
         if (isbody)
@@ -155,15 +155,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char urldata[BUFFER_SIZE];
+    char urldata[4096];
     struct url url;
-    unsigned char buffer[BUFFER_SIZE];
+    unsigned char buffer[4096];
     unsigned int count;
     struct mtwist_state state;
 
     seed(&state);
     setupnetwork(&state);
-    parseurl(&url, urldata, BUFFER_SIZE);
+    parseurl(&url, urldata, 4096);
 
     if (url.host)
         dnsresolve(&remote, url.host);
@@ -174,9 +174,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(BUFFER_SIZE, buffer, &url), buffer);
+    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
 
-    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, BUFFER_SIZE)))
+    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, 4096)))
     {
 
         if (ring_write(&input, buffer, count))
@@ -191,7 +191,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&input, BUFFER_SIZE, inputdata);
+    ring_init(&input, 4096, inputdata);
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);

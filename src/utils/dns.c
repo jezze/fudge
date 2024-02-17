@@ -109,7 +109,7 @@ static void setupnetwork(struct mtwist_state *state)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char buffer[SOCKET_MTUSIZE];
+    unsigned char buffer[4096];
     unsigned int count;
     struct mtwist_state state;
 
@@ -117,9 +117,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     setupnetwork(&state);
     call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
-    socket_send_udp(FILE_G0, &local, &remote, &router, buildrequest(SOCKET_MTUSIZE, buffer), buffer);
+    socket_send_udp(FILE_G0, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
-    count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, SOCKET_MTUSIZE);
+    count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, 4096);
 
     if (count)
     {
