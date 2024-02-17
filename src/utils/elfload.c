@@ -134,10 +134,10 @@ static void resolve(unsigned int descriptor)
             struct elf_sectionheader *dataheader = &sectionheaders[relocationheader->info];
             struct elf_sectionheader *symbolheader = &sectionheaders[relocationheader->link];
             struct elf_sectionheader *stringheader = &sectionheaders[symbolheader->link];
-            char strings[BUFFER_SIZE];
+            char strings[4096];
             unsigned int j;
 
-            if (stringheader->size > BUFFER_SIZE)
+            if (stringheader->size > 4096)
                 PANIC();
 
             call_read_all(descriptor, strings, stringheader->size, stringheader->offset);

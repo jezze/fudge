@@ -24,7 +24,7 @@ struct tokenlist
 
 };
 
-static char stringdata[BUFFER_SIZE];
+static char stringdata[4096];
 static struct ring stringtable;
 static struct token infixdata[1024];
 static struct token postfixdata[1024];
@@ -350,7 +350,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (call_walk_absolute(FILE_L0, mdata))
     {
 
-        char buffer[BUFFER_SIZE];
+        char buffer[4096];
         unsigned int count;
         unsigned int offset;
 
@@ -359,7 +359,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         tokenlist_reset(&postfix);
         tokenlist_reset(&stack);
 
-        for (offset = 0; (count = call_read(FILE_L0, buffer, BUFFER_SIZE, offset)); offset += count)
+        for (offset = 0; (count = call_read(FILE_L0, buffer, 4096, offset)); offset += count)
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
         translate(&postfix, &infix, &stack);
@@ -379,7 +379,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&stringtable, BUFFER_SIZE, stringdata);
+    ring_init(&stringtable, 4096, stringdata);
     tokenlist_init(&infix, 1024, infixdata);
     tokenlist_init(&postfix, 1024, postfixdata);
     tokenlist_init(&stack, 8, stackdata);
