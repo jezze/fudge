@@ -21,6 +21,8 @@ static void opensocket(struct url *url)
         while ((count = channel_read_from(channel, EVENT_DATA, data)))
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, data);
 
+        channel_send(channel, EVENT_TERM);
+
     }
 
     else

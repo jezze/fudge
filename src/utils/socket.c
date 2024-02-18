@@ -55,7 +55,9 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     socket_send_tcp(FILE_G0, &local, &remote, &router, msize, mdata);
 
     while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+        channel_send_buffer(source, EVENT_DATA, count, buffer);
+
+    channel_send(source, EVENT_CLOSE);
 
 }
 
