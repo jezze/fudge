@@ -34,7 +34,7 @@ static void opensocket(struct url *url)
 
 }
 
-static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *opturl = option_getstring("url");
@@ -43,23 +43,17 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
     if (count)
     {
 
+        char urldata[2048];
+        struct url url;
+
         if (cstring_length(opturl) >= 4 && buffer_match(opturl, "http", 4))
-            url_parse(url, urldata, urlsize, opturl, URL_SCHEME);
+            url_parse(&url, urldata, 2048, opturl, URL_SCHEME);
         else
-            url_parse(url, urldata, urlsize, opturl, URL_HOST);
+            url_parse(&url, urldata, 2048, opturl, URL_HOST);
+
+        opensocket(&url);
 
     }
-
-}
-
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    char urldata[2048];
-    struct url url;
-
-    parseurl(&url, urldata, 2048);
-    opensocket(&url);
 
 }
 
