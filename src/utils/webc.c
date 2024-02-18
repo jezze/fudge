@@ -1,7 +1,45 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void opensocket(struct url *url)
+static void dnsresolve(char *domain, char address[32])
+{
+
+    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("dns"));
+
+    if (channel)
+    {
+
+        char data[MESSAGE_SIZE];
+        unsigned int count;
+
+        channel_listen(channel, EVENT_QUERY);
+        channel_listen(channel, EVENT_CLOSE);
+        channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(channel, EVENT_MAIN);
+
+        while ((count = channel_read_from(channel, EVENT_QUERY, data)))
+        {
+
+            char *key = buffer_tindex(data, count, '\0', 0);
+            char *value = buffer_tindex(data, count, '\0', 1);
+
+            if (cstring_match(key, "data"))
+                buffer_write(address, 32, value, cstring_length(value) + 1, 0);
+
+        }
+
+    }
+
+    else
+    {
+
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("dns"));
+
+    }
+
+}
+
+static void opensocket(struct url *url, char address[32])
 {
 
     unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("socket"));
@@ -14,7 +52,7 @@ static void opensocket(struct url *url)
 
         channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_CLOSE);
-        channel_send_fmt1(channel, EVENT_OPTION, "remote-address\\0%s\\0", option_getstring("host"));
+        channel_send_fmt1(channel, EVENT_OPTION, "remote-address\\0%s\\0", address);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
 
@@ -44,6 +82,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         char urldata[2048];
+        char address[32];
         struct url url;
 
         if (cstring_length(opturl) >= 4 && buffer_match(opturl, "http", 4))
@@ -51,7 +90,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else
             url_parse(&url, urldata, 2048, opturl, URL_HOST);
 
-        opensocket(&url);
+        dnsresolve(url.host, address);
+        opensocket(&url, address);
 
     }
 
@@ -60,9 +100,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("dns", "initrd:/bin/dns");
     option_add("socket", "initrd:/bin/socket");
-    option_add("host", "51.158.105.96");
-    option_add("url", "www.blunder.se");
+    option_add("url", "");
     channel_bind(EVENT_MAIN, onmain);
 
 }
