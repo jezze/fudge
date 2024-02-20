@@ -24,7 +24,7 @@ static void dnsresolve(char *domain, char address[32])
             char *value = buffer_tindex(data, count, '\0', 1);
 
             if (cstring_match(key, "data"))
-                buffer_write(address, 32, value, cstring_length(value) + 1, 0);
+                buffer_write(address, 32, value, cstring_length_zero(value), 0);
 
         }
 
