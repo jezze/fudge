@@ -47,15 +47,33 @@ static void setupnetwork(struct mtwist_state *state)
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char *optmode = option_getstring("mode");
     unsigned char buffer[MESSAGE_SIZE];
     unsigned int count;
 
     socket_resolveremote(FILE_G0, &local, &router);
-    socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, msize, mdata);
 
-    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
+    if (cstring_match(optmode, "tcp"))
+    {
+
+        socket_connect_tcp(FILE_G0, &local, &remote, &router);
+        socket_send_tcp(FILE_G0, &local, &remote, &router, msize, mdata);
+
+        while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
+            channel_send_buffer(source, EVENT_DATA, count, buffer);
+
+    }
+
+    if (cstring_match(optmode, "udp"))
+    {
+
+        socket_send_udp(FILE_G0, &local, &remote, &router, msize, mdata);
+
+        count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, MESSAGE_SIZE);
+
         channel_send_buffer(source, EVENT_DATA, count, buffer);
+
+    }
 
     channel_send(source, EVENT_CLOSE);
 
@@ -88,6 +106,7 @@ void init(void)
     option_add("remote-address", "");
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
+    option_add("mode", "");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 
