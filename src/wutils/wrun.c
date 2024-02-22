@@ -67,11 +67,22 @@ static void dnsresolve(struct socket *socket, char *domain)
         while ((count = channel_read_from(channel, EVENT_QUERY, data)))
         {
 
-            char *key = buffer_tindex(data, count, '\0', 0);
-            char *value = buffer_tindex(data, count, '\0', 1);
+            unsigned int i;
+            char *key;
 
-            if (cstring_match(key, "data"))
-                socket_bind_ipv4s(socket, value);
+            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i++)
+            {
+
+                if (cstring_match_substring(key, "data="))
+                {
+
+                    socket_bind_ipv4s(socket, key + 5);
+
+                    break;
+
+                }
+
+            }
 
         }
 
