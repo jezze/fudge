@@ -20,11 +20,22 @@ static void dnsresolve(char *domain, char address[32])
         while ((count = channel_read_from(channel, EVENT_QUERY, data)))
         {
 
-            char *key = buffer_tindex(data, count, '\0', 0);
-            char *value = buffer_tindex(data, count, '\0', 1);
+            unsigned int i;
+            char *key;
 
-            if (cstring_match(key, "data"))
-                buffer_write(address, 32, value, cstring_length_zero(value), 0);
+            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i++)
+            {
+
+                if (cstring_match_substring(key, "data="))
+                {
+
+                    buffer_write(address, 32, key + 5, cstring_length_zero(key + 5), 0);
+
+                    break;
+
+                }
+
+            }
 
         }
 

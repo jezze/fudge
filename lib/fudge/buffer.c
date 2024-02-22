@@ -167,9 +167,16 @@ void *buffer_tindex(char *in, unsigned int count, char c, unsigned int index)
 
         }
 
+        return 0;
+
     }
 
-    return in;
+    else
+    {
+
+        return in;
+
+    }
 
 }
 
