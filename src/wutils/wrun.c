@@ -70,13 +70,15 @@ static void dnsresolve(struct socket *socket, char *domain)
             unsigned int i;
             char *key;
 
-            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i++)
+            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
             {
 
-                if (cstring_match_substring(key, "data="))
+                if (cstring_match(key, "data"))
                 {
 
-                    socket_bind_ipv4s(socket, key + 5);
+                    char *value = key + cstring_length_zero(key);
+
+                    socket_bind_ipv4s(socket, value);
 
                     break;
 
