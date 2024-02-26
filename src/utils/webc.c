@@ -23,13 +23,15 @@ static void dnsresolve(char *domain, char address[32])
             unsigned int i;
             char *key;
 
-            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i++)
+            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
             {
 
-                if (cstring_match_substring(key, "data="))
+                if (cstring_match(key, "data"))
                 {
 
-                    buffer_write(address, 32, key + 5, cstring_length_zero(key + 5), 0);
+                    char *value = key + cstring_length_zero(key);
+
+                    buffer_write(address, 32, value, cstring_length_zero(value), 0);
 
                     break;
 
