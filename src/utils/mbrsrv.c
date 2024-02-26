@@ -140,7 +140,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("volume", "system:block/if:0/data");
+    option_add("volume", "system:block/if.0/data");
     channel_bind(EVENT_MAIN, onmain);
 
 }

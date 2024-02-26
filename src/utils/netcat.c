@@ -118,8 +118,8 @@ void init(void)
     for (i = 0; i < 64; i++)
         socket_init(&remotes[i]);
 
-    option_add("clock", "system:clock/if:0");
-    option_add("ethernet", "system:ethernet/if:0");
+    option_add("clock", "system:clock/if.0");
+    option_add("ethernet", "system:ethernet/if.0");
     option_add("local-address", "10.0.5.1");
     option_add("local-port", "");
     option_add("router-address", "10.0.5.80");

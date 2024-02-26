@@ -307,7 +307,7 @@ void init(void)
     option_add("height", "480");
     option_add("bpp", "4");
     option_add("mouse", "system:mouse");
-    option_add("video", "system:video/if:0");
+    option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);

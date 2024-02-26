@@ -46,7 +46,7 @@ static unsigned int service_child(unsigned int id, char *path, unsigned int leng
         if (cnode->type == SYSTEM_NODETYPE_MULTIGROUP)
         {
 
-            unsigned int colon = buffer_findbyte(path, length, ':');
+            unsigned int colon = buffer_findbyte(path, length, '.');
             unsigned int val;
 
             if (length0 != colon)
@@ -127,7 +127,7 @@ static unsigned int service_stat(unsigned int id, struct record *record)
         {
 
             record->type = RECORD_TYPE_DIRECTORY;
-            record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &node->index);
+            record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ".%u", record->length, &node->index);
 
         }
 
@@ -197,7 +197,7 @@ static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int
             {
 
                 record->type = RECORD_TYPE_DIRECTORY;
-                record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ":%u", record->length, &child->index);
+                record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ".%u", record->length, &child->index);
 
             }
 

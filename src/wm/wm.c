@@ -963,7 +963,7 @@ void init(void)
     option_add("wm-service", "12345");
     option_add("keyboard", "system:keyboard");
     option_add("mouse", "system:mouse");
-    option_add("video", "system:video/if:0");
+    option_add("video", "system:video/if.0");
     option_add("wshell", "initrd:/bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

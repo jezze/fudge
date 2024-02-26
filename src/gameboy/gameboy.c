@@ -351,8 +351,8 @@ void init(void)
     option_add("height", "768");
     option_add("bpp", "4");
     option_add("keyboard", "system:keyboard");
-    option_add("timer", "system:timer/if:0");
-    option_add("video", "system:video/if:0");
+    option_add("timer", "system:timer/if.0");
+    option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);

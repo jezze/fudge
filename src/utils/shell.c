@@ -528,8 +528,8 @@ void init(void)
 
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
-    option_add("input", "system:console/if:0/event");
-    option_add("output", "system:console/if:0/data");
+    option_add("input", "system:console/if.0/event");
+    option_add("output", "system:console/if.0/data");
     option_add("slang", "initrd:/bin/slang");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);

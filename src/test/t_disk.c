@@ -438,8 +438,8 @@ void init(void)
 {
 
     call_walk_absolute(FILE_G4, "system:service/fd0");
-    call_walk_absolute(FILE_G5, "system:block/if:0/data");
-    call_walk_absolute(FILE_G0, "system:ethernet/if:0");
+    call_walk_absolute(FILE_G5, "system:block/if.0/data");
+    call_walk_absolute(FILE_G0, "system:ethernet/if.0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "564", 42, 42);

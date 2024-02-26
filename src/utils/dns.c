@@ -159,8 +159,8 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("clock", "system:clock/if:0");
-    option_add("ethernet", "system:ethernet/if:0");
+    option_add("clock", "system:clock/if.0");
+    option_add("ethernet", "system:ethernet/if.0");
     option_add("local-address", "10.0.5.1");
     option_add("remote-address", "8.8.8.8");
     option_add("remote-port", "53");
