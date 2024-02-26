@@ -65,8 +65,7 @@ static void opensocket(struct url *url, char address[32])
 
         channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_CLOSE);
-        channel_send_fmt0(channel, EVENT_OPTION, "mode\\0tcp\\0");
-        channel_send_fmt1(channel, EVENT_OPTION, "remote-address\\0%s\\0", address);
+        channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
 
