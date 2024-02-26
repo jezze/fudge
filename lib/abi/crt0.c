@@ -6,11 +6,18 @@ extern void init(void);
 static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *key = buffer_tindex(mdata, msize, '\0', 0);
-    char *value = buffer_tindex(mdata, msize, '\0', 1);
+    unsigned int i;
+    char *key;
 
-    if (!option_set(key, value))
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrecognized option\n");
+    for (i = 0; (key = buffer_tindex(mdata, msize, '\0', i)); i += 2)
+    {
+
+        char *value = key + cstring_length_zero(key);
+
+        if (!option_set(key, value))
+            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Unrecognized option: %s\n", key);
+
+    }
 
 }
 
