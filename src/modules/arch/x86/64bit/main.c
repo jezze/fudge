@@ -4,14 +4,16 @@
 #include <kernel/x86/gdt.h>
 #include <kernel/x86/idt.h>
 #include <kernel/x86/tss.h>
+#include <kernel/x86/mmu.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/cpuid/cpuid.h>
 #include <modules/arch/x86/msr/msr.h>
+#include <modules/arch/x86/uart/uart.h>
 
-int *pml4t = (void *)0x1000;
-int *pdpt = (void *)0x2000;
-int *pdt = (void *)0x3000;
-int *pt = (void *)0x4000;
+int *pml4t = (void *)0x4000;
+int *pdpt = (void *)0x5000;
+int *pdt = (void *)0x6000;
+int *pt = (void *)0x7000;
 
 static void setuptables(void)
 {
@@ -20,9 +22,6 @@ static void setuptables(void)
     int *c = pt;
 
     buffer_clear(pml4t, 0x1000);
-    buffer_clear(pml4t, 0x1000);
-    buffer_clear(pdt, 0x1000);
-    buffer_clear(pt, 0x200000);
 
     pml4t[0] = (unsigned int)pdpt | 3;
     pdpt[0] = (unsigned int)pdt | 3;
@@ -84,14 +83,18 @@ void module_init(void)
     if (!check())
         return;
 
-    cpu_setcr0(cpu_getcr0() & ~0x80000000);
+    uart_put('a');
+    mmu_disable();
+    uart_put('a');
     setuptables();
-    cpu_setcr3(0x1000);
+    uart_put('b');
+    cpu_setcr3((unsigned int)pml4t);
+    uart_put('c');
     cpu_setcr4(cpu_getcr4() | (1 << 5));
+    uart_put('d');
     setlongmode();
-    cpu_setcr0(cpu_getcr0() | 0x80000000);
-
-    for (;;);
+    mmu_enable();
+    uart_put('e');
 
 }
 
