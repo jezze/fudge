@@ -10,24 +10,21 @@
 #include <modules/arch/x86/msr/msr.h>
 #include <modules/arch/x86/uart/uart.h>
 
-int *pml4t = (void *)0x4000;
-int *pdpt = (void *)0x5000;
-int *pdt = (void *)0x6000;
-int *pt = (void *)0x7000;
+unsigned int *pml4t = (void *)0x4000;
+unsigned int *pdpt = (void *)0x5000;
+unsigned int *pdt = (void *)0x6000;
+unsigned int *pt = (void *)0x7000;
 
-static void setuptables(void)
+static void idmap(unsigned int x)
 {
 
+    unsigned int *c;
     unsigned int i;
-    int *c = pt;
 
-    buffer_clear(pml4t, 0x1000);
+    pdt[x] = (unsigned int)&pt[x] | 3;
+    c = &pt[x];
 
-    pml4t[0] = (unsigned int)pdpt | 3;
-    pdpt[0] = (unsigned int)pdt | 3;
-    pdt[0] = (unsigned int)pt | 3;
-
-    for (i = 0; i < 512; i++)
+    for (i = x * 512; i < (x + 1) * 512; i++)
     {
 
         *c = (i * 0x1000) | 3;
@@ -36,6 +33,25 @@ static void setuptables(void)
         c++;
 
     }
+
+}
+
+static void setuptables(void)
+{
+
+    buffer_clear(pml4t, 0x1000);
+
+    pml4t[0] = (unsigned int)pdpt | 3;
+    pdpt[0] = (unsigned int)pdt | 3;
+
+    idmap(0);
+    idmap(1);
+    idmap(2);
+    idmap(3);
+    idmap(4);
+    idmap(5);
+    idmap(6);
+    idmap(7);
 
 }
 
