@@ -101,16 +101,17 @@ void module_init(void)
 
     uart_put('a');
     mmu_disable();
-    uart_put('a');
-    setuptables();
     uart_put('b');
-    cpu_setcr3((unsigned int)pml4t);
+    setuptables();
     uart_put('c');
-    cpu_setcr4(cpu_getcr4() | (1 << 5));
+    cpu_setcr3((unsigned int)pml4t);
     uart_put('d');
-    setlongmode();
-    mmu_enable();
+    cpu_setcr4(cpu_getcr4() | (1 << 5));
     uart_put('e');
+    setlongmode();
+    uart_put('f');
+    mmu_enable();
+    uart_put('g');
 
 }
 
