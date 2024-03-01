@@ -161,17 +161,6 @@ static unsigned int videointerface_readctrl(void *buffer, unsigned int count, un
 
 }
 
-static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct ctrl_videosettings *settings = buffer;
-
-    setmode(settings->width, settings->height, settings->bpp * 8);
-
-    return count;
-
-}
-
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -194,9 +183,8 @@ static void driver_init(unsigned int id)
     videointerface.width = 80;
     videointerface.height = 25;
     videointerface.bpp = 2;
-    videointerface.ctrl.operations.notify = videointerface_notifyctrl;
     videointerface.ctrl.operations.read = videointerface_readctrl;
-    videointerface.ctrl.operations.write = videointerface_writectrl;
+    videointerface.ctrl.operations.notify = videointerface_notifyctrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
 
