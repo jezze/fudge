@@ -572,9 +572,9 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
 
             text_gettextinfo(&info, font, strpool_getstring(text->content), textbox->cursor, text->wrap, maxw, text->offx);
 
+            textbox->cursorheight = font->lineheight - font->lineheight / 4;
             textbox->cursorx = child->bb.x + info.lastrowx;
-            textbox->cursory = child->bb.y + info.lastrowy;
-            textbox->cursorheight = font->lineheight;
+            textbox->cursory = child->bb.y + info.lastrowy + font->lineheight / 2 - textbox->cursorheight / 2;
 
         }
 
