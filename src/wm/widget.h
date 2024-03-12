@@ -104,6 +104,7 @@ struct widget_textbox
     int cursorx;
     int cursory;
     unsigned int cursorheight;
+    unsigned int cursorwidth;
 
 };
 

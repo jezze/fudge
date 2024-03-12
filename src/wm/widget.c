@@ -641,6 +641,7 @@ static void inittextbox(struct widget *widget)
     textbox->cursorx = 0;
     textbox->cursory = 0;
     textbox->cursorheight = 0;
+    textbox->cursorwidth = 0;
 
 }
 

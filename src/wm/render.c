@@ -573,6 +573,7 @@ static void placetextbox(struct widget *widget, int x, int y, unsigned int minw,
             text_gettextinfo(&info, font, strpool_getstring(text->content), textbox->cursor, text->wrap, maxw, text->offx);
 
             textbox->cursorheight = font->lineheight - font->lineheight / 4;
+            textbox->cursorwidth = 2;
             textbox->cursorx = child->bb.x + info.lastrowx;
             textbox->cursory = child->bb.y + info.lastrowy + font->lineheight / 2 - textbox->cursorheight / 2;
 
@@ -753,7 +754,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
     struct widget_textbox *textbox = widget->data;
 
     blit_frame(display, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, line, x0, x2, cmap_get(widget->state, widget->type, (textbox->mode == ATTR_MODE_READONLY) ? 12 : 0, (textbox->mode == ATTR_MODE_READONLY) ? 0 : 4));
-    blit_iconcursor(display, textbox->cursorx, textbox->cursory, 2, textbox->cursorheight, line, x0, x2, cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0));
+    blit_iconcursor(display, textbox->cursorx, textbox->cursory, textbox->cursorwidth, textbox->cursorheight, line, x0, x2, cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0));
 
 }
 
