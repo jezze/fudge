@@ -186,8 +186,6 @@ static void interpret(void)
 static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix)
 {
 
-    unsigned int icount = 0;
-
     if (ring_count(ring))
     {
 
@@ -205,7 +203,7 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
                 cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace + lastslash, count - lastspace - lastslash, 0));
 
-                icount = cstring_write_fmt3(ibuffer, INPUTSIZE, "/bin/ls %w | /bin/grep ?prefix %s\n", 0, buffer + lastspace, &lastslash, prefix);
+                return cstring_write_fmt3(ibuffer, INPUTSIZE, "/bin/ls %w | /bin/grep ?prefix %s\n", 0, buffer + lastspace, &lastslash, prefix);
 
             }
 
@@ -214,7 +212,7 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
                 cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace, count - lastspace, 0));
 
-                icount = cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
+                return cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
 
             }
 
@@ -225,7 +223,7 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
             cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer, count, 0));
 
-            icount = cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls /bin | /bin/grep ?prefix %s\n", 0, prefix);
+            return cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls /bin | /bin/grep ?prefix %s\n", 0, prefix);
 
         }
 
@@ -236,11 +234,11 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
         cstring_write_zero(prefix, INPUTSIZE, 0);
 
-        icount = cstring_write_fmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
+        return cstring_write_fmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
 
     }
 
-    return icount;
+    return 0;
 
 }
 
