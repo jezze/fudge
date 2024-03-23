@@ -226,7 +226,7 @@ unsigned int channel_read_any(unsigned int event, void *data)
 
     struct message message;
 
-    while (channel_pick(&message, data) != EVENT_CLOSE)
+    while (channel_pick(&message, data) != EVENT_TERMRESPONSE)
     {
 
         if (message.event == event)
@@ -245,7 +245,7 @@ unsigned int channel_read_from(unsigned int source, unsigned int event, void *da
 
     struct message message;
 
-    while (channel_pick(&message, data) != EVENT_CLOSE)
+    while (channel_pick(&message, data) != EVENT_TERMRESPONSE)
     {
 
         if (message.event == event && message.source == source)
@@ -328,7 +328,7 @@ void channel_open(void)
 void channel_close(void)
 {
 
-    send(CHANNEL_DEFAULT, EVENT_CLOSE, 0, 0);
+    send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
 
     active = 0;
 

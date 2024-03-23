@@ -15,7 +15,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     if (job_spawn(&job, FILE_L0, FILE_PW))
     {
 
-        job_listen(&job, EVENT_CLOSE);
+        job_listen(&job, EVENT_TERMRESPONSE);
         job_listen(&job, EVENT_ERROR);
         job_listen(&job, EVENT_DATA);
         job_pipe(&job, EVENT_DATA);
@@ -41,7 +41,7 @@ void init(void)
     {
 
         channel_bind(EVENT_DATA, ondata);
-        channel_listen(channel, EVENT_CLOSE);
+        channel_listen(channel, EVENT_TERMRESPONSE);
         channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_ERROR);
         channel_send_fmt0(channel, EVENT_PATH, "/config/base.slang\\0");

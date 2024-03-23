@@ -75,7 +75,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(source, EVENT_CLOSE);
+    channel_send(source, EVENT_TERMRESPONSE);
 
 }
 

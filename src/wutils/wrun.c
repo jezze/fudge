@@ -60,7 +60,7 @@ static void dnsresolve(struct socket *socket, char *domain)
         unsigned int count;
 
         channel_listen(channel, EVENT_QUERY);
-        channel_listen(channel, EVENT_CLOSE);
+        channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
 

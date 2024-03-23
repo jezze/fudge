@@ -90,7 +90,7 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
 
         channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_ERROR);
-        channel_listen(channel, EVENT_CLOSE);
+        channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
         channel_send(channel, EVENT_MAIN);
 
@@ -130,7 +130,7 @@ static void interpret(void)
             struct message message;
             char data[MESSAGE_SIZE];
 
-            job_listen(&job, EVENT_CLOSE);
+            job_listen(&job, EVENT_TERMRESPONSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_listen(&job, EVENT_PATH);
@@ -143,7 +143,7 @@ static void interpret(void)
                 switch (message.event)
                 {
 
-                case EVENT_CLOSE:
+                case EVENT_TERMRESPONSE:
                     job_close(&job, message.source);
 
                     break;
@@ -264,7 +264,7 @@ static void complete(void)
             struct ring output;
 
             ring_init(&output, INPUTSIZE, buffer);
-            job_listen(&job, EVENT_CLOSE);
+            job_listen(&job, EVENT_TERMRESPONSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
@@ -276,7 +276,7 @@ static void complete(void)
                 switch (message.event)
                 {
 
-                case EVENT_CLOSE:
+                case EVENT_TERMRESPONSE:
                     job_close(&job, message.source);
 
                     break;
@@ -386,7 +386,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_C:
-                job_sendfirst(&job, EVENT_TERM, 0, 0);
+                job_sendfirst(&job, EVENT_TERMREQUEST, 0, 0);
 
                 break;
 

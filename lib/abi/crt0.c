@@ -61,7 +61,7 @@ void main(void)
 
     channel_open();
     channel_autoclose(EVENT_MAIN, 1);
-    channel_autoclose(EVENT_TERM, 1);
+    channel_autoclose(EVENT_TERMREQUEST, 1);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_REDIRECT, onredirect);
     channel_bind(EVENT_STATUS, onstatus);
