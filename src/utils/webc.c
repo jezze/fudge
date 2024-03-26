@@ -73,6 +73,7 @@ static void opensocket(struct url *url, char address[32])
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, data);
 
         channel_send(channel, EVENT_TERMREQUEST);
+        channel_wait_from(channel, EVENT_TERMRESPONSE);
 
     }
 
