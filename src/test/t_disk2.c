@@ -148,8 +148,8 @@ static void sendrequest(void)
     if (!attach(41, 0, 0))
         channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Attach failed\n");
 
-    if (!walk(42, 0, 1, "build/data/help.txt"))
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "File not found: %s\n", "build/data/help.txt");
+    if (!walk(42, 0, 1, option_getstring("path")))
+        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
 
     read(43, 1);
 
@@ -166,6 +166,7 @@ void init(void)
 {
 
     option_add("9p-service", "5588");
+    option_add("path", "build/data/help.txt");
     channel_bind(EVENT_MAIN, onmain);
 
 }
