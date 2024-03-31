@@ -44,7 +44,7 @@ static unsigned int version(unsigned short tag, unsigned int msize, char *name)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    call_notify(FILE_G0, EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
+    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
     channel_poll_any(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -69,7 +69,7 @@ static unsigned int attach(unsigned short tag, unsigned int fid, unsigned int af
     struct message message;
     char data[MESSAGE_SIZE];
 
-    call_notify(FILE_G0, EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
+    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
     channel_poll_any(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -94,7 +94,7 @@ static unsigned int walk(unsigned short tag, unsigned int fid, unsigned int newf
     struct message message;
     char data[MESSAGE_SIZE];
 
-    call_notify(FILE_G0, EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
+    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
     channel_poll_any(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -119,7 +119,7 @@ static unsigned int read(unsigned short tag, unsigned int fid)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    call_notify(FILE_G0, EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
+    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
     channel_poll_any(EVENT_P9P, &message, data);
 
     if (!validate(data, tag))
@@ -165,7 +165,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    call_walk_absolute(FILE_G0, "system:service/fd0");
+    option_add("9p-service", "5588");
     channel_bind(EVENT_MAIN, onmain);
 
 }

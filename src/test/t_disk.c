@@ -402,7 +402,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    call_link(FILE_G4, 8002);
+    call_announce(option_getdecimal("9p-service"));
 
     if (call_walk_relative(FILE_L0, FILE_G0, "addr"))
         socket_resolvelocal(FILE_L0, &local);
@@ -430,14 +430,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    call_unlink(FILE_G4);
-
 }
 
 void init(void)
 {
 
-    call_walk_absolute(FILE_G4, "system:service/fd0");
+    option_add("9p-service", "5588");
     call_walk_absolute(FILE_G5, "system:block/if.0/data");
     call_walk_absolute(FILE_G0, "system:ethernet/if.0");
     socket_init(&local);
