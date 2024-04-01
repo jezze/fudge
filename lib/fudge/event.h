@@ -20,6 +20,7 @@
 #define EVENT_TIMERTICK                 0x17
 #define EVENT_VIDEOMODE                 0x18
 #define EVENT_BLOCKREQUEST              0x19
+#define EVENT_BLOCKRESPONSE             0x1A
 #define EVENT_WMMAP                     0x20
 #define EVENT_WMUNMAP                   0x21
 #define EVENT_WMGRAB                    0x22
