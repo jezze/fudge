@@ -281,50 +281,12 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
         unsigned char block[4096];
 
         request_readblocks(block, 4096, node.pointer0, 1, blocksize);
-        sendreadresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
+        fsp_readresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
 
 }
 */
-
-static void sendlistresponse(unsigned int source, unsigned int session, unsigned int nrecords, struct record *records)
-{
-
-    struct {struct event_listresponse listresponse; struct record records[8];} message;
-
-    message.listresponse.session = session;
-    message.listresponse.nrecords = nrecords;
-
-    buffer_write(message.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
-    channel_send_buffer(source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
-
-}
-
-static void sendreadresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
-{
-
-    struct {struct event_readresponse readresponse; char data[64];} message;
-
-    message.readresponse.session = session;
-    message.readresponse.count = count;
-
-    buffer_write(message.data, 64, buffer, message.readresponse.count, 0);
-    channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
-
-}
-
-static void sendwalkresponse(unsigned int source, unsigned int session, unsigned int id)
-{
-
-    struct event_walkresponse walkresponse;
-
-    walkresponse.session = session;
-    walkresponse.id = id;
-
-    channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
-
-}
 
 static struct ext2_superblock sb;
 
@@ -380,7 +342,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        sendlistresponse(source, listrequest->session, nrecords, records);
+        fsp_listresponse(source, listrequest->session, nrecords, records);
 
     }
 
@@ -407,7 +369,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         unsigned char block[4096];
 
         request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
-        sendreadresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
+        fsp_readresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
 
@@ -431,7 +393,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     if (!walkrequest->length)
     {
 
-        sendwalkresponse(source, walkrequest->session, id);
+        fsp_walkresponse(source, walkrequest->session, id);
 
         return;
 
@@ -455,7 +417,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
             if (entry->length == walkrequest->length && buffer_match((char *)entry + 8, path, entry->length))
             {
 
-                sendwalkresponse(source, walkrequest->session, entry->node);
+                fsp_walkresponse(source, walkrequest->session, entry->node);
 
                 break;
 
