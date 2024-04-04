@@ -42,48 +42,6 @@ static void coreassign0(struct list_item *item)
 
 }
 
-static unsigned short getindex(unsigned int ichannel)
-{
-
-    return (ichannel & (KERNEL_CHANNELS - 1));
-
-}
-
-static unsigned short getuniqueness(unsigned int ichannel)
-{
-
-    return (ichannel >> 16);
-
-}
-
-static unsigned int gettarget(unsigned int ichannel)
-{
-
-    unsigned short index = getindex(ichannel);
-
-    if (index)
-    {
-
-        struct channel *channel = &channels[index];
-
-        if (channel->uniqueness == getuniqueness(ichannel))
-            return channel->target;
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int getichannel(unsigned short index)
-{
-
-    struct channel *channel = &channels[index];
-
-    return (channel->uniqueness << 16) | index;
-
-}
-
 static unsigned int setchannel(unsigned short index, unsigned int target)
 {
 
@@ -92,7 +50,7 @@ static unsigned int setchannel(unsigned short index, unsigned int target)
     channel->target = target;
     channel->uniqueness++;
 
-    return getichannel(index);
+    return index;
 
 }
 
@@ -221,8 +179,8 @@ void kernel_addlink(struct list *list, unsigned int target, unsigned int source)
         struct linkrow *linkrow = linkitem->data;
         struct link *link = &linkrow->link;
 
-        link->source = getichannel(source);
-        link->target = getichannel(target);
+        link->source = source;
+        link->target = target;
 
         list_add(list, linkitem);
 
@@ -356,10 +314,8 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
-
-    unsigned int target = gettarget(ichannel);
 
     if (target)
     {
@@ -369,7 +325,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
         struct message message;
         unsigned int c;
 
-        message_init(&message, event, getichannel(source), count);
+        message_init(&message, event, source, count);
 
         c = mailbox_place(mailbox, &message, data);
 
@@ -383,10 +339,8 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned int target, unsigned int ichannel)
+void kernel_announce(unsigned int target, unsigned int index)
 {
-
-    unsigned short index = getindex(ichannel);
 
     if (index > KERNEL_TASKS)
     {
@@ -485,7 +439,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int d
 
             coreassign(&taskrow->item);
 
-            return setchannel(getindex(itask), itask);
+            return setchannel(itask, itask);
 
         }
 

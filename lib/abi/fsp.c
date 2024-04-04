@@ -12,25 +12,27 @@ static unsigned int getsession()
 
 }
 
-static void sendlistrequest(unsigned int target, unsigned int session, unsigned int id)
+static void sendlistrequest(unsigned int target, unsigned int session, unsigned int id, unsigned int cid)
 {
 
     struct event_listrequest listrequest;
 
     listrequest.session = session;
     listrequest.id = id;
+    listrequest.cid = cid;
 
     channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
 
 }
 
-static void sendlistrequest2(unsigned int descriptor, unsigned int session, unsigned int id)
+static void sendlistrequest2(unsigned int descriptor, unsigned int session, unsigned int id, unsigned int cid)
 {
 
     struct event_listrequest listrequest;
 
     listrequest.session = session;
     listrequest.id = id;
+    listrequest.cid = cid;
 
     call_notify(descriptor, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &listrequest);
 
@@ -90,7 +92,6 @@ static void sendreadresponse(unsigned int source, unsigned int session, unsigned
 
 }
 
-
 static void sendwalkrequest(unsigned int target, unsigned int session, unsigned int parent, char *path)
 {
 
@@ -131,14 +132,14 @@ static void sendwalkresponse(unsigned int source, unsigned int session, unsigned
 
 }
 
-unsigned int fsp_list(unsigned int target, unsigned int id, struct record records[8])
+unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int cid, struct record records[8])
 {
 
     unsigned int session = getsession();
     struct message message;
     struct {struct event_listresponse listresponse; struct record records[8];} payload;
 
-    sendlistrequest(target, session, id);
+    sendlistrequest(target, session, id, cid);
 
     while (channel_poll_any(EVENT_LISTRESPONSE, &message, &payload))
     {
@@ -158,14 +159,14 @@ unsigned int fsp_list(unsigned int target, unsigned int id, struct record record
 
 }
 
-unsigned int fsp_list2(unsigned int descriptor, unsigned int id, struct record records[8])
+unsigned int fsp_list2(unsigned int descriptor, unsigned int id, unsigned int cid, struct record records[8])
 {
 
     unsigned int session = getsession();
     struct message message;
     struct {struct event_listresponse listresponse; struct record records[8];} payload;
 
-    sendlistrequest2(descriptor, session, id);
+    sendlistrequest2(descriptor, session, id, cid);
 
     while (channel_poll_any(EVENT_LISTRESPONSE, &message, &payload))
     {

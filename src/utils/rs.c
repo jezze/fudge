@@ -12,14 +12,13 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int target = option_getdecimal("fs-service");
-    unsigned int root = fsp_walk(target, 0, "");
+    unsigned int root = fsp_walk2(FILE_PW, 0, "");
 
     if (root)
     {
 
         struct record records[8];
-        unsigned int nrecords = fsp_list(target, root, records);
+        unsigned int nrecords = fsp_list2(FILE_PW, root, 0, records);
         unsigned int i;
 
         for (i = 0; i < nrecords; i++)
@@ -33,25 +32,24 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    /*
     if (root)
     {
 
-        unsigned int id = fsp_walk(target, root, "test.txt");
+        unsigned int id = fsp_walk2(FILE_PW, root, "data/help.txt");
 
         if (id)
         {
 
             char buffer[8192];
-            unsigned int count = fsp_read(target, id, 100, 0, 8192, buffer);
+            unsigned int count;
+            unsigned int offset;
 
-            if (count)
+            for (offset = 0; (count = fsp_read2(FILE_PW, id, 100, offset, 8192, buffer)); offset += count)
                 channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
         }
 
     }
-    */
 
 }
 
