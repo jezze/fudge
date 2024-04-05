@@ -10,9 +10,13 @@
 #include "descriptor.h"
 #include "kernel.h"
 
+#define CHANNEL_TYPE_TASK               1
+#define CHANNEL_TYPE_SERVICE            2
+
 struct channel
 {
 
+    unsigned int type;
     unsigned int target;
     unsigned short uniqueness;
 
@@ -42,11 +46,12 @@ static void coreassign0(struct list_item *item)
 
 }
 
-static unsigned int setchannel(unsigned short index, unsigned int target)
+static unsigned int setchannel(unsigned short index, unsigned int type, unsigned int target)
 {
 
     struct channel *channel = &channels[index];
 
+    channel->type = type;
     channel->target = target;
     channel->uniqueness++;
 
@@ -314,26 +319,61 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    target = channels[target].target;
+    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
-    if (target)
+    if (channel)
     {
 
-        struct taskrow *taskrow = &taskrows[target];
-        struct mailbox *mailbox = &taskrow->mailbox;
-        struct message message;
-        unsigned int c;
+        if (channel->type == CHANNEL_TYPE_TASK)
+        {
 
-        message_init(&message, event, source, count);
+            if (channel->target)
+            {
 
-        c = mailbox_place(mailbox, &message, data);
+                struct taskrow *taskrow = &taskrows[channel->target];
+                struct mailbox *mailbox = &taskrow->mailbox;
+                struct message message;
+                unsigned int c;
 
-        kernel_signal(target, TASK_SIGNAL_UNBLOCK);
+                message_init(&message, event, source, count);
 
-        return c;
+                c = mailbox_place(mailbox, &message, data);
+
+                kernel_signal(channel->target, TASK_SIGNAL_UNBLOCK);
+
+                return c;
+
+            }
+
+        }
+
+        if (channel->type == CHANNEL_TYPE_SERVICE)
+        {
+
+            struct service *service = 0;
+
+            switch (channel->target)
+            {
+
+            case 666:
+                service = service_find(6, "initrd");
+
+                break;
+
+            case 667:
+                service = service_find(6, "system");
+
+                break;
+
+            }
+
+            if (service)
+                return service->notify(0, source, event, count, data);
+
+        }
 
     }
 
@@ -341,18 +381,10 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
 }
 
-void kernel_announce(unsigned int target, unsigned int index)
+void kernel_announce(unsigned short index, unsigned int type, unsigned int target)
 {
 
-    if (index > KERNEL_TASKS)
-    {
-
-        struct channel *channel = &channels[index];
-
-        channel->target = target;
-        channel->uniqueness = 0;
-
-    }
+    setchannel(index, type, target);
 
 }
 
@@ -441,7 +473,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int d
 
             coreassign(&taskrow->item);
 
-            return setchannel(itask, itask);
+            return setchannel(itask, CHANNEL_TYPE_TASK, itask);
 
         }
 
@@ -505,6 +537,8 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     }
 
     kernel_setcallback(coreget0, coreassign0);
+    setchannel(666, CHANNEL_TYPE_SERVICE, 666);
+    setchannel(667, CHANNEL_TYPE_SERVICE, 667);
 
 }
 

@@ -426,7 +426,7 @@ static unsigned int announce(unsigned int itask, void *stack)
 
     struct {void *caller; unsigned int ichannel;} *args = stack;
 
-    kernel_announce(itask, args->ichannel);
+    kernel_announce(args->ichannel, 1, itask);
 
     return 0;
 
