@@ -317,6 +317,8 @@ unsigned int kernel_pick(unsigned int source, struct message *message, void *dat
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
+    target = channels[target].target;
+
     if (target)
     {
 
