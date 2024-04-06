@@ -274,7 +274,7 @@ static unsigned int service_write(unsigned int id, void *buffer, unsigned int co
 
 }
 
-static unsigned int service_map(unsigned int id, unsigned int address)
+static unsigned int service_map(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);

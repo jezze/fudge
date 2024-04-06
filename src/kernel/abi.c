@@ -255,7 +255,7 @@ static unsigned int load(unsigned int itask, void *stack)
 
         struct binary_node node;
 
-        node.address = idescriptor->service->map(idescriptor->id, 0);
+        node.address = idescriptor->service->map(idescriptor->id);
 
         if (node.address)
         {
@@ -303,7 +303,7 @@ static unsigned int unload(unsigned int itask, void *stack)
 
         struct binary_node node;
 
-        node.address = idescriptor->service->map(idescriptor->id, 0);
+        node.address = idescriptor->service->map(idescriptor->id);
 
         if (node.address)
         {
