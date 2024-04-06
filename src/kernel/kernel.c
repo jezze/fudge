@@ -436,17 +436,17 @@ unsigned int kernel_createtask(void)
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int descriptor)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int id)
 {
 
-    struct descriptor *pdescriptor = kernel_getdescriptor(itask, descriptor);
+    struct service *service = service_find(6, "initrd");
     struct taskrow *taskrow = &taskrows[itask];
     struct task *task = &taskrow->task;
 
-    if (pdescriptor)
+    if (service && id)
     {
 
-        task->node.address = pdescriptor->service->map(pdescriptor->id);
+        task->node.address = service->map(id);
 
         if (task->node.address)
         {

@@ -52,11 +52,11 @@ static unsigned int spawn(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int pdescriptor; unsigned int wdescriptor;} *args = stack;
-    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->pdescriptor);
     struct descriptor *wdescriptor = kernel_getdescriptor(itask, args->wdescriptor);
+    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->pdescriptor);
     unsigned int ntask;
 
-    if (!descriptor_check(pdescriptor) || !descriptor_check(wdescriptor))
+    if (!descriptor_check(wdescriptor) || !descriptor_check(pdescriptor))
     {
 
         DEBUG_FMT0(DEBUG_ERROR, "spawn check failed");
@@ -69,10 +69,10 @@ static unsigned int spawn(unsigned int itask, void *stack)
     {
 
         initmap(ntask);
-        kernel_copydescriptor(ntask, FILE_PP, itask, args->pdescriptor);
         kernel_copydescriptor(ntask, FILE_PW, itask, args->wdescriptor);
+        kernel_copydescriptor(ntask, FILE_PP, itask, args->pdescriptor);
 
-        return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
+        return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, pdescriptor->id);
 
     }
 
@@ -453,10 +453,13 @@ void arch_setup2(void)
         if (service)
         {
 
+            unsigned int root = service->root();
+            unsigned int id = service->child(service->child(service->root(), "bin", 3), "init", 4);
+
             initmap(ntask);
-            kernel_setdescriptor(ntask, FILE_PP, service, service->child(service->child(service->root(), "bin", 3), "init", 4));
-            kernel_setdescriptor(ntask, FILE_PW, service, service->root());
-            kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, FILE_PP);
+            kernel_setdescriptor(ntask, FILE_PW, service, root);
+            kernel_setdescriptor(ntask, FILE_PP, service, id);
+            kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, id);
 
         }
 
