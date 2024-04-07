@@ -9,7 +9,7 @@ static void dnsresolve(char *domain, char address[32])
     if (id)
     {
 
-        unsigned int channel = call_spawn(id);
+        unsigned int channel = call_spawn(666, id);
 
         if (channel)
         {
@@ -67,7 +67,7 @@ static void opensocket(struct url *url, char address[32])
     if (id)
     {
 
-        unsigned int channel = call_spawn(id);
+        unsigned int channel = call_spawn(666, id);
 
         if (channel)
         {

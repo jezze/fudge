@@ -40,7 +40,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (id)
     {
 
-        unsigned int channel = call_spawn(id);
+        unsigned int channel = call_spawn(666, id);
 
         if (channel)
         {

@@ -91,7 +91,7 @@ unsigned int call_read(unsigned int idescriptor, void *buffer, unsigned int coun
 
 }
 
-unsigned int call_spawn(unsigned int id)
+unsigned int call_spawn(unsigned int ichannel, unsigned int id)
 {
 
     return 0;

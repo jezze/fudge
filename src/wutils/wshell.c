@@ -88,7 +88,7 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
     if (id)
     {
 
-        unsigned int channel = call_spawn(id);
+        unsigned int channel = call_spawn(666, id);
 
         if (channel)
         {

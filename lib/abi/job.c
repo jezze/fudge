@@ -116,7 +116,7 @@ unsigned int job_spawn(struct job *job)
 
         }
 
-        worker->channel = call_spawn(id);
+        worker->channel = call_spawn(channel, id);
 
         if (!worker->channel)
         {

@@ -47,7 +47,7 @@ static void dnsresolve(struct socket *socket, char *domain)
     if (id)
     {
 
-        unsigned int channel = call_spawn(id);
+        unsigned int channel = call_spawn(666, id);
 
         if (channel)
         {

@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (id)
     {
 
-        unsigned int channel = call_spawn(id);
+        unsigned int channel = call_spawn(option_getdecimal("service"), id);
 
         if (channel)
         {

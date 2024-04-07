@@ -396,7 +396,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
             if (id)
             {
 
-                unsigned int channel = call_spawn(id);
+                unsigned int channel = call_spawn(666, id);
 
                 if (channel)
                     channel_send(channel, EVENT_MAIN);
@@ -592,7 +592,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                     if (id)
                     {
 
-                        unsigned int channel = call_spawn(id);
+                        unsigned int channel = call_spawn(666, id);
 
                         if (channel)
                             channel_send(channel, EVENT_MAIN);
