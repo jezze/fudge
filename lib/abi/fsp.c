@@ -20,8 +20,15 @@ unsigned int fsp_auth(char *path)
     if (cstring_match(path, "initrd"))
         return 666;
 
+    if (cstring_length(path) > 7 && buffer_match(path, "initrd:", 7))
+        return 666;
+
     if (cstring_match(path, "system"))
         return 667;
+
+    if (cstring_length(path) > 7 && buffer_match(path, "system:", 7))
+        return 667;
+
 
     return 0;
 
