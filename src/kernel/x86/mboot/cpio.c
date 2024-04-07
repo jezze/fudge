@@ -425,6 +425,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
 
     service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink, service_notify);
     resource_register(&service.resource);
+    kernel_announce(666, 2, &service, 666);
 
 }
 

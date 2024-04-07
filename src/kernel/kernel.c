@@ -17,6 +17,7 @@ struct channel
 {
 
     unsigned int type;
+    struct service *service;
     unsigned int target;
     unsigned short uniqueness;
 
@@ -46,12 +47,13 @@ static void coreassign0(struct list_item *item)
 
 }
 
-static unsigned int setchannel(unsigned short index, unsigned int type, unsigned int target)
+static unsigned int setchannel(unsigned short index, unsigned int type, struct service *service, unsigned int target)
 {
 
     struct channel *channel = &channels[index];
 
     channel->type = type;
+    channel->service = service;
     channel->target = target;
     channel->uniqueness++;
 
@@ -381,10 +383,10 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned short index, unsigned int type, unsigned int target)
+void kernel_announce(unsigned short index, unsigned int type, struct service *service, unsigned int target)
 {
 
-    setchannel(index, type, target);
+    setchannel(index, type, service, target);
 
 }
 
@@ -473,7 +475,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int i
 
             coreassign(&taskrow->item);
 
-            return setchannel(itask, CHANNEL_TYPE_TASK, itask);
+            return setchannel(itask, CHANNEL_TYPE_TASK, 0, itask);
 
         }
 
@@ -537,8 +539,6 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     }
 
     kernel_setcallback(coreget0, coreassign0);
-    setchannel(666, CHANNEL_TYPE_SERVICE, 666);
-    setchannel(667, CHANNEL_TYPE_SERVICE, 667);
 
 }
 
