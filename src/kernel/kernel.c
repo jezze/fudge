@@ -10,13 +10,9 @@
 #include "descriptor.h"
 #include "kernel.h"
 
-#define CHANNEL_TYPE_TASK               1
-#define CHANNEL_TYPE_SERVICE            2
-
 struct channel
 {
 
-    unsigned int type;
     struct service *service;
     unsigned int target;
     unsigned short uniqueness;
@@ -47,12 +43,11 @@ static void coreassign0(struct list_item *item)
 
 }
 
-static unsigned int setchannel(unsigned short index, unsigned int type, struct service *service, unsigned int target)
+static unsigned int setchannel(unsigned short index, struct service *service, unsigned int target)
 {
 
     struct channel *channel = &channels[index];
 
-    channel->type = type;
     channel->service = service;
     channel->target = target;
     channel->uniqueness++;
@@ -329,34 +324,24 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
     if (channel)
     {
 
-        if (channel->type == CHANNEL_TYPE_TASK)
+        if (channel->service)
+            return channel->service->notify(channel->target, source, event, count, data);
+
+        if (channel->target)
         {
 
-            if (channel->target)
-            {
+            struct taskrow *taskrow = &taskrows[channel->target];
+            struct mailbox *mailbox = &taskrow->mailbox;
+            struct message message;
+            unsigned int c;
 
-                struct taskrow *taskrow = &taskrows[channel->target];
-                struct mailbox *mailbox = &taskrow->mailbox;
-                struct message message;
-                unsigned int c;
+            message_init(&message, event, source, count);
 
-                message_init(&message, event, source, count);
+            c = mailbox_place(mailbox, &message, data);
 
-                c = mailbox_place(mailbox, &message, data);
+            kernel_signal(channel->target, TASK_SIGNAL_UNBLOCK);
 
-                kernel_signal(channel->target, TASK_SIGNAL_UNBLOCK);
-
-                return c;
-
-            }
-
-        }
-
-        else if (channel->type == CHANNEL_TYPE_SERVICE)
-        {
-
-            if (channel->service)
-                return channel->service->notify(channel->target, source, event, count, data);
+            return c;
 
         }
 
@@ -366,10 +351,10 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned short index, unsigned int type, struct service *service, unsigned int target)
+void kernel_announce(unsigned short index, struct service *service, unsigned int target)
 {
 
-    setchannel(index, type, service, target);
+    setchannel(index, service, target);
 
 }
 
@@ -469,7 +454,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int i
 
             coreassign(&taskrow->item);
 
-            return setchannel(itask, CHANNEL_TYPE_TASK, 0, itask);
+            return setchannel(itask, 0, itask);
 
         }
 
