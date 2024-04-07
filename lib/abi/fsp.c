@@ -51,14 +51,14 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int cid, st
 unsigned int fsp_listresponse(unsigned int source, unsigned int session, unsigned int nrecords, struct record *records)
 {
 
-    struct {struct event_listresponse listresponse; struct record records[8];} message;
+    struct {struct event_listresponse header; struct record records[8];} response;
 
-    message.listresponse.session = session;
-    message.listresponse.nrecords = nrecords;
+    response.header.session = session;
+    response.header.nrecords = nrecords;
 
-    buffer_write(message.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
+    buffer_write(response.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
 
-    return channel_send_buffer(source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+    return channel_send_buffer(source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
 
 }
 
@@ -105,14 +105,14 @@ unsigned int fsp_read(unsigned int target, unsigned int id, unsigned int count, 
 unsigned int fsp_readresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
 {
 
-    struct {struct event_readresponse readresponse; char data[64];} message;
+    struct {struct event_readresponse header; char data[64];} response;
 
-    message.readresponse.session = session;
-    message.readresponse.count = count;
+    response.header.session = session;
+    response.header.count = count;
 
-    buffer_write(message.data, 64, buffer, message.readresponse.count, 0);
+    buffer_write(response.data, 64, buffer, response.header.count, 0);
 
-    return channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+    return channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
 
 }
 
@@ -151,12 +151,12 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 unsigned int fsp_walkresponse(unsigned int source, unsigned int session, unsigned int id)
 {
 
-    struct event_walkresponse walkresponse;
+    struct {struct event_walkresponse header;} response;
 
-    walkresponse.session = session;
-    walkresponse.id = id;
+    response.header.session = session;
+    response.header.id = id;
 
-    return channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
+    return channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
