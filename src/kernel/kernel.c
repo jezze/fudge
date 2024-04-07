@@ -356,7 +356,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
         {
 
             if (channel->service)
-                return channel->service->notify(0, source, event, count, data);
+                return channel->service->notify(channel->target, source, event, count, data);
 
         }
 
