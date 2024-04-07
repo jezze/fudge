@@ -529,7 +529,7 @@ void init(void)
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
     option_add("wm-service", "12345");
-    option_add("slang", "initrd:/bin/slang");
+    option_add("slang", "bin/slang");
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);
