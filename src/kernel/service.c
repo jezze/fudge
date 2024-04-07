@@ -2,6 +2,50 @@
 #include "resource.h"
 #include "service.h"
 
+unsigned int service_findpath(struct service *service, unsigned int id, char *path, unsigned int length)
+{
+
+    unsigned int offset = buffer_firstbyte(path, length, ':');
+
+    while (offset < length)
+    {
+
+        char *cp = path + offset;
+        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+        if (cl == 0)
+        {
+
+            id = service->root();
+
+        }
+
+        else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+        {
+
+            if (id != service->root())
+                id = service->parent(id);
+
+        }
+
+        else
+        {
+
+            id = service->child(id, cp, cl);
+
+        }
+
+        if (!id)
+            return 0;
+
+        offset += cl + 1;
+
+    }
+
+    return id;
+
+}
+
 struct service *service_find(unsigned int count, char *name)
 {
 

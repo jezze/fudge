@@ -297,50 +297,6 @@ static unsigned int service_unlink(unsigned int id, unsigned int target)
 
 }
 
-static unsigned int findpath(unsigned int id, char *path, unsigned int length)
-{
-
-    unsigned int offset = buffer_firstbyte(path, length, ':');
-
-    while (offset < length)
-    {
-
-        char *cp = path + offset;
-        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
-
-        if (cl == 0)
-        {
-
-            id = service_root();
-
-        }
-
-        else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
-        {
-
-            if (id != service_root())
-                id = service_parent(id);
-
-        }
-
-        else
-        {
-
-            id = service_child(id, cp, cl);
-
-        }
-
-        if (!id)
-            return 0;
-
-        offset += cl + 1;
-
-    }
-
-    return id;
-
-}
-
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -348,7 +304,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct event_walkresponse walkresponse;
 
     walkresponse.session = walkrequest->session;
-    walkresponse.id = findpath((walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
+    walkresponse.id = service_findpath(&service, (walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
 
     return kernel_place(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
 
