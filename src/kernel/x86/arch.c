@@ -51,37 +51,34 @@ static void map(struct mmu_directory *directory, unsigned int index, unsigned in
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int pdescriptor; unsigned int wdescriptor;} *args = stack;
-    struct descriptor *wdescriptor = kernel_getdescriptor(itask, args->wdescriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->pdescriptor);
-    unsigned int ntask;
+    struct {void *caller; unsigned int id;} *args = stack;
 
-    if (!descriptor_check(wdescriptor) || !descriptor_check(pdescriptor))
+    if (args->id)
     {
 
-        DEBUG_FMT0(DEBUG_ERROR, "spawn check failed");
+        struct service *service = service_find(6, "initrd");
 
-        return 0;
+        if (service)
+        {
+
+            unsigned int ntask = kernel_createtask();
+
+            if (ntask)
+            {
+
+                initmap(ntask);
+                kernel_setdescriptor(ntask, FILE_PW, service, service->root());
+                kernel_setdescriptor(ntask, FILE_PP, service, args->id);
+
+                return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, args->id);
+
+            }
+
+        }
 
     }
 
-    if ((ntask = kernel_createtask()))
-    {
-
-        initmap(ntask);
-        kernel_copydescriptor(ntask, FILE_PW, itask, args->wdescriptor);
-        kernel_copydescriptor(ntask, FILE_PP, itask, args->pdescriptor);
-
-        return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, pdescriptor->id);
-
-    }
-
-    else
-    {
-
-        DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
-
-    }
+    DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
 
     return 0;
 
@@ -460,6 +457,7 @@ void arch_setup2(void)
             kernel_setdescriptor(ntask, FILE_PW, service, root);
             kernel_setdescriptor(ntask, FILE_PP, service, id);
             kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, id);
+            kernel_place(0, ntask, EVENT_MAIN, 0, 0);
 
         }
 

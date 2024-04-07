@@ -51,36 +51,43 @@ static void handlehttppacket(void)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("dns"));
+    unsigned int id = fsp_walk(666, 0, option_getstring("dns"));
 
-    if (channel)
+    if (id)
     {
 
-        char data[MESSAGE_SIZE];
-        unsigned int count;
+        unsigned int channel = call_spawn(id);
 
-        channel_listen(channel, EVENT_QUERY);
-        channel_listen(channel, EVENT_TERMRESPONSE);
-        channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_send(channel, EVENT_MAIN);
-
-        while ((count = channel_read_from(channel, EVENT_QUERY, data)))
+        if (channel)
         {
 
-            unsigned int i;
-            char *key;
+            char data[MESSAGE_SIZE];
+            unsigned int count;
 
-            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
+            channel_listen(channel, EVENT_QUERY);
+            channel_listen(channel, EVENT_TERMRESPONSE);
+            channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
+            channel_send(channel, EVENT_MAIN);
+
+            while ((count = channel_read_from(channel, EVENT_QUERY, data)))
             {
 
-                if (cstring_match(key, "data"))
+                unsigned int i;
+                char *key;
+
+                for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
                 {
 
-                    char *value = key + cstring_length_zero(key);
+                    if (cstring_match(key, "data"))
+                    {
 
-                    socket_bind_ipv4s(socket, value);
+                        char *value = key + cstring_length_zero(key);
 
-                    break;
+                        socket_bind_ipv4s(socket, value);
+
+                        break;
+
+                    }
 
                 }
 
@@ -216,7 +223,7 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
-    option_add("dns", "initrd:/bin/dns");
+    option_add("dns", "bin/dns");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);
 

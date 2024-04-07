@@ -12,7 +12,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, mdata, msize);
 
-    if (job_spawn(&job, FILE_L0, FILE_PW))
+    if (job_spawn(&job))
     {
 
         job_listen(&job, EVENT_TERMRESPONSE);
@@ -32,24 +32,39 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    unsigned int id = fsp_walk(666, 0, "bin/slang");
+
+    if (id)
+    {
+
+        unsigned int channel = call_spawn(id);
+
+        if (channel)
+        {
+
+            channel_bind(EVENT_DATA, ondata);
+            channel_listen(channel, EVENT_TERMRESPONSE);
+            channel_listen(channel, EVENT_DATA);
+            channel_listen(channel, EVENT_ERROR);
+            channel_send_fmt0(channel, EVENT_PATH, "/config/base.slang\\0");
+            channel_send_fmt0(channel, EVENT_PATH, "/config/arch.slang\\0");
+            channel_send_fmt0(channel, EVENT_PATH, "/config/init.slang\\0");
+            channel_send(channel, EVENT_MAIN);
+
+        }
+
+    }
+
+}
+
 void init(void)
 {
 
-    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, "initrd:/bin/slang");
-
-    if (channel)
-    {
-
-        channel_bind(EVENT_DATA, ondata);
-        channel_listen(channel, EVENT_TERMRESPONSE);
-        channel_listen(channel, EVENT_DATA);
-        channel_listen(channel, EVENT_ERROR);
-        channel_send_fmt0(channel, EVENT_PATH, "/config/base.slang\\0");
-        channel_send_fmt0(channel, EVENT_PATH, "/config/arch.slang\\0");
-        channel_send_fmt0(channel, EVENT_PATH, "/config/init.slang\\0");
-        channel_send(channel, EVENT_MAIN);
-
-    }
+    channel_autoclose(EVENT_MAIN, 0);
+    channel_bind(EVENT_MAIN, onmain);
 
 }
 

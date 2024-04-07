@@ -46,10 +46,3 @@ unsigned int call_write_all(unsigned int idescriptor, void *buffer, unsigned int
 
 }
 
-unsigned int call_spawn_absolute(unsigned int pdescriptor, unsigned int wdescriptor, char *path)
-{
-
-    return (call_walk_absolute(pdescriptor, path)) ? call_spawn(pdescriptor, wdescriptor) : 0;
-
-}
-

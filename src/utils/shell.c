@@ -28,16 +28,32 @@ static void printprompt(void)
 static unsigned int runslang(void *ibuffer, unsigned int icount)
 {
 
-    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("slang"));
+    unsigned int id = fsp_walk(666, 0, option_getstring("slang"));
 
-    if (channel)
+    if (id)
     {
 
-        channel_listen(channel, EVENT_DATA);
-        channel_listen(channel, EVENT_ERROR);
-        channel_listen(channel, EVENT_TERMRESPONSE);
-        channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
-        channel_send(channel, EVENT_MAIN);
+        unsigned int channel = call_spawn(id);
+
+        if (channel)
+        {
+
+            channel_listen(channel, EVENT_DATA);
+            channel_listen(channel, EVENT_ERROR);
+            channel_listen(channel, EVENT_TERMRESPONSE);
+            channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
+            channel_send(channel, EVENT_MAIN);
+
+        }
+
+        else
+        {
+
+            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
+
+        }
+
+        return channel;
 
     }
 
@@ -48,7 +64,7 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
 
     }
 
-    return channel;
+    return 0;
 
 }
 
@@ -65,7 +81,7 @@ static void interpret(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job, FILE_L1, FILE_G8))
+        if (job_spawn(&job))
         {
 
             struct message message;
@@ -197,7 +213,7 @@ static void complete(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job, FILE_L1, FILE_G8))
+        if (job_spawn(&job))
         {
 
             struct message message;
@@ -526,7 +542,7 @@ void init(void)
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if.0/event");
     option_add("output", "system:console/if.0/data");
-    option_add("slang", "initrd:/bin/slang");
+    option_add("slang", "bin/slang");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

@@ -91,7 +91,7 @@ unsigned int call_read(unsigned int idescriptor, void *buffer, unsigned int coun
 
 }
 
-unsigned int call_spawn(unsigned int pdescriptor, unsigned int wdescriptor)
+unsigned int call_spawn(unsigned int id)
 {
 
     return 0;

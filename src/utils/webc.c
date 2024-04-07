@@ -4,36 +4,43 @@
 static void dnsresolve(char *domain, char address[32])
 {
 
-    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("dns"));
+    unsigned int id = fsp_walk(666, 0, option_getstring("dns"));
 
-    if (channel)
+    if (id)
     {
 
-        char data[MESSAGE_SIZE];
-        unsigned int count;
+        unsigned int channel = call_spawn(id);
 
-        channel_listen(channel, EVENT_QUERY);
-        channel_listen(channel, EVENT_TERMRESPONSE);
-        channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_send(channel, EVENT_MAIN);
-
-        while ((count = channel_read_from(channel, EVENT_QUERY, data)))
+        if (channel)
         {
 
-            unsigned int i;
-            char *key;
+            char data[MESSAGE_SIZE];
+            unsigned int count;
 
-            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
+            channel_listen(channel, EVENT_QUERY);
+            channel_listen(channel, EVENT_TERMRESPONSE);
+            channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
+            channel_send(channel, EVENT_MAIN);
+
+            while ((count = channel_read_from(channel, EVENT_QUERY, data)))
             {
 
-                if (cstring_match(key, "data"))
+                unsigned int i;
+                char *key;
+
+                for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
                 {
 
-                    char *value = key + cstring_length_zero(key);
+                    if (cstring_match(key, "data"))
+                    {
 
-                    buffer_write(address, 32, value, cstring_length_zero(value), 0);
+                        char *value = key + cstring_length_zero(key);
 
-                    break;
+                        buffer_write(address, 32, value, cstring_length_zero(value), 0);
+
+                        break;
+
+                    }
 
                 }
 
@@ -55,25 +62,32 @@ static void dnsresolve(char *domain, char address[32])
 static void opensocket(struct url *url, char address[32])
 {
 
-    unsigned int channel = call_spawn_absolute(FILE_L0, FILE_PW, option_getstring("socket"));
+    unsigned int id = fsp_walk(666, 0, option_getstring("socket"));
 
-    if (channel)
+    if (id)
     {
 
-        char data[MESSAGE_SIZE];
-        unsigned int count = cstring_write_fmt2(data, MESSAGE_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
+        unsigned int channel = call_spawn(id);
 
-        channel_listen(channel, EVENT_DATA);
-        channel_listen(channel, EVENT_TERMRESPONSE);
-        channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
-        channel_send(channel, EVENT_MAIN);
-        channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
+        if (channel)
+        {
 
-        while ((count = channel_read_from(channel, EVENT_DATA, data)))
-            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, data);
+            char data[MESSAGE_SIZE];
+            unsigned int count = cstring_write_fmt2(data, MESSAGE_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
 
-        channel_send(channel, EVENT_TERMREQUEST);
-        channel_wait_from(channel, EVENT_TERMRESPONSE);
+            channel_listen(channel, EVENT_DATA);
+            channel_listen(channel, EVENT_TERMRESPONSE);
+            channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
+            channel_send(channel, EVENT_MAIN);
+            channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
+
+            while ((count = channel_read_from(channel, EVENT_DATA, data)))
+                channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, data);
+
+            channel_send(channel, EVENT_TERMREQUEST);
+            channel_wait_from(channel, EVENT_TERMRESPONSE);
+
+        }
 
     }
 
@@ -114,8 +128,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("dns", "initrd:/bin/dns");
-    option_add("socket", "initrd:/bin/socket");
+    option_add("dns", "bin/dns");
+    option_add("socket", "bin/socket");
     option_add("url", "");
     channel_bind(EVENT_MAIN, onmain);
 

@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include "call.h"
 #include "channel.h"
+#include "fsp.h"
 #include "job.h"
 
 static char *nextword(char *current)
@@ -81,12 +82,14 @@ static void activatenext(struct job *job, unsigned int startindex)
 
 }
 
-unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int wdescriptor)
+unsigned int job_spawn(struct job *job)
 {
 
+    unsigned int channel = 666;
+    unsigned int bindir = fsp_walk(channel, 0, "bin");
     unsigned int i;
 
-    if (!call_walk_absolute(FILE_L0, "/bin"))
+    if (!bindir)
     {
 
         channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Bin directory not found\n");
@@ -99,8 +102,12 @@ unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int w
     {
 
         struct job_worker *worker = &job->workers[i];
+        unsigned int id = fsp_walk(channel, bindir, worker->program);
 
-        if (!(call_walk_relative(pdescriptor, FILE_L0, worker->program) || call_walk_absolute(pdescriptor, worker->program)))
+        if (!id)
+            id = fsp_walk(channel, 0, worker->program);
+
+        if (!id)
         {
 
             channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", &worker->program);
@@ -109,7 +116,7 @@ unsigned int job_spawn(struct job *job, unsigned int pdescriptor, unsigned int w
 
         }
 
-        worker->channel = call_spawn(pdescriptor, wdescriptor);
+        worker->channel = call_spawn(id);
 
         if (!worker->channel)
         {
