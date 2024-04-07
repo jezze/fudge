@@ -263,12 +263,84 @@ static unsigned int service_unlink(unsigned int id, unsigned int target)
 
 }
 
+static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_walkrequest *walkrequest = data;
+    struct event_walkresponse walkresponse;
+
+    walkresponse.session = walkrequest->session;
+    walkresponse.id = service_findpath(&service, (walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
+
+    return kernel_place(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
+
+}
+
+static unsigned int onlistrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_listrequest *listrequest = data;
+    struct {struct event_listresponse listresponse; struct record records[8];} message;
+
+    message.listresponse.session = listrequest->session;
+    message.listresponse.nrecords = service_list(listrequest->id, listrequest->cid, 8, message.records);
+
+    return kernel_place(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+
+}
+
+static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_readrequest *readrequest = data;
+    struct {struct event_readresponse readresponse; char data[64];} message;
+
+    message.readresponse.session = readrequest->session;
+    message.readresponse.count = service_read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
+
+    return kernel_place(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+
+}
+
+static unsigned int onwriterequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_writerequest *writerequest = data;
+    struct {struct event_writeresponse writeresponse;} message;
+
+    message.writeresponse.session = writerequest->session;
+    message.writeresponse.count = service_write(writerequest->id, (void *)(writerequest + 1), writerequest->count, writerequest->offset);
+
+    return kernel_place(0, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
+
+}
+
 static unsigned int service_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct system_node *node = getnode(id);
 
-    return (node->operations.notify) ? node->operations.notify(&node->links, source, event, count, data) : 0;
+    switch (event)
+    {
+
+    case EVENT_WALKREQUEST:
+        return onwalkrequest(source, count, data);
+
+    case EVENT_LISTREQUEST:
+        return onlistrequest(source, count, data);
+
+    case EVENT_READREQUEST:
+        return onreadrequest(source, count, data);
+
+    case EVENT_WRITEREQUEST:
+        return onwriterequest(source, count, data);
+
+    default:
+        return (node->operations.notify) ? node->operations.notify(&node->links, source, event, count, data) : 0;
+
+    }
+
+    return 0;
 
 }
 

@@ -45,7 +45,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fsp_read(service, id, MESSAGE_SIZE, offset, 8192, buffer)); offset += count)
+            for (offset = 0; (count = fsp_read(service, id, offset, 8192, buffer)); offset += count)
                 channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
         }

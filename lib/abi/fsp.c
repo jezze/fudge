@@ -84,7 +84,7 @@ unsigned int fsp_listresponse(unsigned int source, unsigned int session, unsigne
 
 }
 
-unsigned int fsp_read(unsigned int target, unsigned int id, unsigned int count, unsigned int offset, unsigned int ocount, void *obuffer)
+unsigned int fsp_read(unsigned int target, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     unsigned int session = getsession();
@@ -110,7 +110,7 @@ unsigned int fsp_read(unsigned int target, unsigned int id, unsigned int count, 
             if (payload.readresponse.session == session)
             {
 
-                buffer_write(obuffer, ocount, payload.data, payload.readresponse.count, 0);
+                buffer_write(buffer, count, payload.data, payload.readresponse.count, 0);
 
                 return payload.readresponse.count;
 
