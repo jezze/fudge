@@ -46,7 +46,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (channel)
         {
 
-            channel_bind(EVENT_DATA, ondata);
             channel_listen(channel, EVENT_TERMRESPONSE);
             channel_listen(channel, EVENT_DATA);
             channel_listen(channel, EVENT_ERROR);
@@ -66,6 +65,7 @@ void init(void)
 
     channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_DATA, ondata);
 
 }
 
