@@ -84,7 +84,7 @@ unsigned int fsp_listresponse(unsigned int source, unsigned int session, unsigne
 
 }
 
-unsigned int fsp_read(unsigned int target, unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned int session = getsession();
