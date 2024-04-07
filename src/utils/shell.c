@@ -28,12 +28,13 @@ static void printprompt(void)
 static unsigned int runslang(void *ibuffer, unsigned int icount)
 {
 
-    unsigned int id = fsp_walk(666, 0, option_getstring("slang"));
+    unsigned int service = fsp_auth(option_getstring("slang"));
+    unsigned int id = fsp_walk(service, 0, option_getstring("slang"));
 
     if (id)
     {
 
-        unsigned int channel = call_spawn(666, id);
+        unsigned int channel = call_spawn(service, id);
 
         if (channel)
         {
@@ -542,7 +543,7 @@ void init(void)
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if.0/event");
     option_add("output", "system:console/if.0/data");
-    option_add("slang", "bin/slang");
+    option_add("slang", "initrd:bin/slang");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

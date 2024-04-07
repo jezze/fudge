@@ -35,12 +35,13 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = fsp_walk(666, 0, "bin/slang");
+    unsigned int service = fsp_auth("initrd");
+    unsigned int id = fsp_walk(service, 0, "bin/slang");
 
     if (id)
     {
 
-        unsigned int channel = call_spawn(666, id);
+        unsigned int channel = call_spawn(service, id);
 
         if (channel)
         {

@@ -42,12 +42,13 @@ static void interpret(void *buffer, unsigned int count)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int id = fsp_walk(666, 0, option_getstring("dns"));
+    unsigned int service = fsp_auth(option_getstring("dns"));
+    unsigned int id = fsp_walk(service, 0, option_getstring("dns"));
 
     if (id)
     {
 
-        unsigned int channel = call_spawn(666, id);
+        unsigned int channel = call_spawn(service, id);
 
         if (channel)
         {
@@ -226,7 +227,7 @@ void init(void)
     option_add("channel", "#fudge");
     option_add("nick", "");
     option_add("realname", "Anonymous User");
-    option_add("dns", "bin/dns");
+    option_add("dns", "initrd:bin/dns");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
 

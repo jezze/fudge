@@ -11,12 +11,13 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int id = fsp_walk(option_getdecimal("service"), 0, option_getstring("echo"));
+    unsigned int service = fsp_auth(option_getstring("echo"));
+    unsigned int id = fsp_walk(service, 0, option_getstring("echo"));
 
     if (id)
     {
 
-        unsigned int channel = call_spawn(option_getdecimal("service"), id);
+        unsigned int channel = call_spawn(service, id);
 
         if (channel)
         {
@@ -50,8 +51,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("service", "666");
-    option_add("echo", "/bin/echo");
+    option_add("echo", "initrd:/bin/echo");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 

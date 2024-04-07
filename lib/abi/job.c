@@ -85,8 +85,8 @@ static void activatenext(struct job *job, unsigned int startindex)
 unsigned int job_spawn(struct job *job)
 {
 
-    unsigned int channel = 666;
-    unsigned int bindir = fsp_walk(channel, 0, "bin");
+    unsigned int service = fsp_auth("initrd");
+    unsigned int bindir = fsp_walk(service, 0, "bin");
     unsigned int i;
 
     if (!bindir)
@@ -102,10 +102,10 @@ unsigned int job_spawn(struct job *job)
     {
 
         struct job_worker *worker = &job->workers[i];
-        unsigned int id = fsp_walk(channel, bindir, worker->program);
+        unsigned int id = fsp_walk(service, bindir, worker->program);
 
         if (!id)
-            id = fsp_walk(channel, 0, worker->program);
+            id = fsp_walk(service, 0, worker->program);
 
         if (!id)
         {
@@ -116,7 +116,7 @@ unsigned int job_spawn(struct job *job)
 
         }
 
-        worker->channel = call_spawn(channel, id);
+        worker->channel = call_spawn(service, id);
 
         if (!worker->channel)
         {

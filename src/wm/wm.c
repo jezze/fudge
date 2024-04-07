@@ -391,12 +391,13 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         if (buffer_match(cmd, "run=", 4))
         {
 
-            unsigned int id = fsp_walk(666, 0, cmd + 4);
+            unsigned int service = fsp_auth(cmd + 4);
+            unsigned int id = fsp_walk(service, 0, cmd + 4);
 
             if (id)
             {
 
-                unsigned int channel = call_spawn(666, id);
+                unsigned int channel = call_spawn(service, id);
 
                 if (channel)
                     channel_send(channel, EVENT_MAIN);
@@ -587,12 +588,13 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
-                    unsigned int id = fsp_walk(666, 0, option_getstring("wshell"));
+                    unsigned int service = fsp_auth(option_getstring("wshell"));
+                    unsigned int id = fsp_walk(service, 0, option_getstring("wshell"));
 
                     if (id)
                     {
 
-                        unsigned int channel = call_spawn(666, id);
+                        unsigned int channel = call_spawn(service, id);
 
                         if (channel)
                             channel_send(channel, EVENT_MAIN);
@@ -943,15 +945,15 @@ static void setupwidgets(void)
         "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "    + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"
         "      + layout id \"fudge-layout\" in \"fudge-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"fudge-layout\" label \"About\" onclick \"run=bin/wabout\"\n"
-        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run=bin/wsettings\"\n"
-        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run=bin/reboot\"\n"
+        "        + choice in \"fudge-layout\" label \"About\" onclick \"run=initrd:bin/wabout\"\n"
+        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run=initrd:bin/wsettings\"\n"
+        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run=initrd:bin/reboot\"\n"
         "    + select id \"apps-select\" in \"menu\" label \"Apps\"\n"
         "      + layout id \"apps-layout\" in \"apps-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run=bin/wshell\"\n"
-        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run=bin/wfile\"\n"
-        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run=bin/wcalc\"\n"
-        "        + choice in \"apps-layout\" label \"Test\" onclick \"run=bin/wtest\"\n";
+        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run=initrd:bin/wshell\"\n"
+        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run=initrd:bin/wfile\"\n"
+        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run=initrd:bin/wcalc\"\n"
+        "        + choice in \"apps-layout\" label \"Test\" onclick \"run=initrd:bin/wtest\"\n";
 
     parser_parse(0, "", cstring_length(data0), data0);
     parser_parse(0, "root", cstring_length(data1), data1);
@@ -978,7 +980,7 @@ void init(void)
     option_add("keyboard", "system:keyboard");
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if.0");
-    option_add("wshell", "bin/wshell");
+    option_add("wshell", "initrd:bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);

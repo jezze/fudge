@@ -12,6 +12,21 @@ static unsigned int getsession()
 
 }
 
+unsigned int fsp_auth(char *path)
+{
+
+    /* need to make syscall for this */
+
+    if (cstring_match(path, "initrd"))
+        return 666;
+
+    if (cstring_match(path, "system"))
+        return 667;
+
+    return 0;
+
+}
+
 unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int cid, struct record records[8])
 {
 
@@ -121,6 +136,10 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 
     unsigned int session = getsession();
     struct {struct event_walkrequest header; char path[64];} request;
+    unsigned int offset = buffer_firstbyte(path, cstring_length(path), ':');
+
+    if (offset)
+        path += offset;
 
     request.header.session = session;
     request.header.parent = parent;
