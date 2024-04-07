@@ -352,28 +352,11 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
         }
 
-        if (channel->type == CHANNEL_TYPE_SERVICE)
+        else if (channel->type == CHANNEL_TYPE_SERVICE)
         {
 
-            struct service *service = 0;
-
-            switch (channel->target)
-            {
-
-            case 666:
-                service = service_find(6, "initrd");
-
-                break;
-
-            case 667:
-                service = service_find(6, "system");
-
-                break;
-
-            }
-
-            if (service)
-                return service->notify(0, source, event, count, data);
+            if (channel->service)
+                return channel->service->notify(0, source, event, count, data);
 
         }
 
