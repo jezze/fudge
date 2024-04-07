@@ -421,28 +421,39 @@ unsigned int kernel_createtask(void)
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int id)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int ichannel, unsigned int id)
 {
 
-    struct service *service = service_find(6, "initrd");
+    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
     struct taskrow *taskrow = &taskrows[itask];
     struct task *task = &taskrow->task;
 
-    if (service && id)
+    if (channel && channel->service)
     {
 
-        task->node.address = service->map(id);
+        if (!id)
+            id = channel->service->child(channel->service->child(channel->service->root(), "bin", 3), "init", 4);
 
-        if (task->node.address)
+        if (id)
         {
 
-            struct binary_format *format = binary_findformat(&task->node);
+            kernel_setdescriptor(itask, FILE_PW, channel->service, channel->service->root());
+            kernel_setdescriptor(itask, FILE_PP, channel->service, id);
 
-            if (format)
+            task->node.address = channel->service->map(id);
+
+            if (task->node.address)
             {
 
-                task->thread.ip = format->findentry(&task->node);
-                task->thread.sp = sp;
+                struct binary_format *format = binary_findformat(&task->node);
+
+                if (format)
+                {
+
+                    task->thread.ip = format->findentry(&task->node);
+                    task->thread.sp = sp;
+
+                }
 
             }
 

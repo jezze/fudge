@@ -56,23 +56,14 @@ static unsigned int spawn(unsigned int itask, void *stack)
     if (args->id)
     {
 
-        struct service *service = service_find(6, "initrd");
+        unsigned int ntask = kernel_createtask();
 
-        if (service)
+        if (ntask)
         {
 
-            unsigned int ntask = kernel_createtask();
+            initmap(ntask);
 
-            if (ntask)
-            {
-
-                initmap(ntask);
-                kernel_setdescriptor(ntask, FILE_PW, service, service->root());
-                kernel_setdescriptor(ntask, FILE_PP, service, args->id);
-
-                return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, args->id);
-
-            }
+            return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, 666, args->id);
 
         }
 
@@ -445,28 +436,9 @@ void arch_setup2(void)
     if (ntask)
     {
 
-        struct service *service = service_find(6, "initrd");
-
-        if (service)
-        {
-
-            unsigned int root = service->root();
-            unsigned int id = service->child(service->child(service->root(), "bin", 3), "init", 4);
-
-            initmap(ntask);
-            kernel_setdescriptor(ntask, FILE_PW, service, root);
-            kernel_setdescriptor(ntask, FILE_PP, service, id);
-            kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, id);
-            kernel_place(0, ntask, EVENT_MAIN, 0, 0);
-
-        }
-
-        else
-        {
-
-            DEBUG_FMT0(DEBUG_ERROR, "initrd service not found");
-
-        }
+        initmap(ntask);
+        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, 666, 0);
+        kernel_place(0, ntask, EVENT_MAIN, 0, 0);
 
     }
 
