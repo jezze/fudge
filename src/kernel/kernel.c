@@ -270,33 +270,33 @@ struct task_thread *kernel_getthread(unsigned int itask)
 
 }
 
-struct descriptor *kernel_getdescriptor(unsigned int itask, unsigned int descriptor)
+struct descriptor *kernel_getdescriptor(unsigned int itask, unsigned int idescriptor)
 {
 
     struct taskrow *taskrow = &taskrows[itask];
 
-    return &taskrow->descriptors[(descriptor & (KERNEL_DESCRIPTORS - 1))];
+    return &taskrow->descriptors[(idescriptor & (KERNEL_DESCRIPTORS - 1))];
 
 }
 
-void kernel_setdescriptor(unsigned int itask, unsigned int descriptor, struct service *service, unsigned int id)
+void kernel_setdescriptor(unsigned int itask, unsigned int idescriptor, struct service *service, unsigned int id)
 {
 
-    struct descriptor *desc = kernel_getdescriptor(itask, descriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(itask, idescriptor);
 
-    desc->service = service;
-    desc->id = id;
+    descriptor->service = service;
+    descriptor->id = id;
 
 }
 
-void kernel_copydescriptor(unsigned int itask, unsigned int descriptor, unsigned int ptask, unsigned int pdescriptor)
+void kernel_copydescriptor(unsigned int itask, unsigned int idescriptor, unsigned int iptask, unsigned int ipdescriptor)
 {
 
-    struct descriptor *desc = kernel_getdescriptor(itask, descriptor);
-    struct descriptor *pdesc = kernel_getdescriptor(ptask, pdescriptor);
+    struct descriptor *descriptor = kernel_getdescriptor(itask, idescriptor);
+    struct descriptor *pdescriptor = kernel_getdescriptor(iptask, ipdescriptor);
 
-    desc->service = pdesc->service;
-    desc->id = pdesc->id;
+    descriptor->service = pdescriptor->service;
+    descriptor->id = pdescriptor->id;
 
 }
 

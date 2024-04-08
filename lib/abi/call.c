@@ -1,17 +1,17 @@
 #include <fudge.h>
 #include "call.h"
 
-unsigned int call_walk_duplicate(unsigned int idescriptor, unsigned int pdescriptor)
+unsigned int call_walk_duplicate(unsigned int idescriptor, unsigned int ipdescriptor)
 {
 
-    return call_walk(idescriptor, pdescriptor, 0, 0);
+    return call_walk(idescriptor, ipdescriptor, 0, 0);
 
 }
 
-unsigned int call_walk_relative(unsigned int idescriptor, unsigned int pdescriptor, char *path)
+unsigned int call_walk_relative(unsigned int idescriptor, unsigned int ipdescriptor, char *path)
 {
 
-    return call_walk(idescriptor, pdescriptor, path, cstring_length(path));
+    return call_walk(idescriptor, ipdescriptor, path, cstring_length(path));
 
 }
 
