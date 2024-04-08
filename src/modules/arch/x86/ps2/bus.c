@@ -336,7 +336,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int reset_notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int reset_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     setcommand(REG_COMMAND_CTRLRESET);

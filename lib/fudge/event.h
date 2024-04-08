@@ -46,6 +46,10 @@
 #define EVENT_LISTRESPONSE              0x46
 #define EVENT_WRITEREQUEST              0x47
 #define EVENT_WRITERESPONSE             0x48
+#define EVENT_LINKREQUEST               0x49
+#define EVENT_LINKRESPONSE              0x4A
+#define EVENT_UNLINKREQUEST             0x4B
+#define EVENT_UNLINKRESPONSE            0x4C
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 
@@ -267,5 +271,21 @@ struct event_writeresponse
 
     unsigned int session;
     unsigned int count;
+
+};
+
+struct event_linkrequest
+{
+
+    unsigned int session;
+    unsigned int id;
+
+};
+
+struct event_unlinkrequest
+{
+
+    unsigned int session;
+    unsigned int id;
 
 };

@@ -294,7 +294,7 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
 
 }
 
-static unsigned int ethernetinterface_notifydata(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int ethernetinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     if (event == EVENT_DATA)

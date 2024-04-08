@@ -69,7 +69,7 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 
 }
 
-static unsigned int videointerface_notifyctrl(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int videointerface_notifyctrl(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     if (event == EVENT_CONFIG)

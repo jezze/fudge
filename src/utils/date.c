@@ -4,16 +4,24 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct ctrl_clocksettings settings;
+    unsigned int service = fsp_auth(option_getstring("clock"));
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("clock")))
-        PANIC();
+    if (service)
+    {
 
-    if (!call_walk_relative(FILE_L1, FILE_L0, "ctrl"))
-        PANIC();
+        unsigned int id = fsp_walk(service, fsp_walk(service, 0, option_getstring("clock")), "ctrl");
 
-    call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
-    channel_send_fmt6(CHANNEL_DEFAULT, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
+        if (id)
+        {
+
+            struct ctrl_clocksettings settings;
+
+            fsp_read_all(service, id, &settings, sizeof (struct ctrl_clocksettings), 0);
+            channel_send_fmt6(CHANNEL_DEFAULT, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
+
+        }
+
+    }
 
 }
 

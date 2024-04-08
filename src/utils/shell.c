@@ -14,7 +14,8 @@ static struct keys keys;
 static void print(void *buffer, unsigned int count)
 {
 
-    call_notify(FILE_G1, EVENT_DATA, count, buffer);
+    if (call_walk_absolute(FILE_L0, option_getstring("output")))
+        call_notify(FILE_L0, EVENT_DATA, count, buffer);
 
 }
 
@@ -520,19 +521,16 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_G0, option_getstring("input")))
-        PANIC();
-
-    if (!call_walk_absolute(FILE_G1, option_getstring("output")))
-        PANIC();
+    unsigned int service = fsp_auth(option_getstring("input"));
+    unsigned int id = fsp_walk(service, 0, option_getstring("input"));
 
     call_walk_duplicate(FILE_G8, FILE_PW);
     printprompt();
-    call_link(FILE_G0, 8000);
+    fsp_link(service, id);
 
     while (channel_process());
 
-    call_unlink(FILE_G0);
+    fsp_unlink(service, id);
 
 }
 

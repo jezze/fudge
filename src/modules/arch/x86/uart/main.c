@@ -146,7 +146,7 @@ static unsigned int send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int consoleinterface_notifydata(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int consoleinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     return (event == EVENT_DATA) ? send(data, count) : 0;

@@ -124,6 +124,18 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 
 }
 
+unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    unsigned char *b = buffer;
+    unsigned int c;
+
+    for (c = 0; c < count; c += fsp_read(target, id, b + c, count - c, offset + c));
+
+    return c;
+
+}
+
 unsigned int fsp_readresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
 {
 
@@ -183,6 +195,54 @@ unsigned int fsp_walkresponse(unsigned int source, unsigned int session, unsigne
     response.header.id = id;
 
     return channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+
+}
+
+unsigned int fsp_link(unsigned int target, unsigned int id)
+{
+
+    unsigned int session = getsession();
+    struct {struct event_linkrequest header;} request;
+
+    request.header.session = session;
+    request.header.id = id;
+
+    if (channel_send_buffer(target, EVENT_LINKREQUEST, sizeof (struct event_linkrequest), &request))
+    {
+
+        struct message message;
+        char data[MESSAGE_SIZE];
+
+        if (channel_poll_any(EVENT_LINKRESPONSE, &message, data))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int fsp_unlink(unsigned int target, unsigned int id)
+{
+
+    unsigned int session = getsession();
+    struct {struct event_unlinkrequest header;} request;
+
+    request.header.session = session;
+    request.header.id = id;
+
+    if (channel_send_buffer(target, EVENT_UNLINKREQUEST, sizeof (struct event_unlinkrequest), &request))
+    {
+
+        struct message message;
+        char data[MESSAGE_SIZE];
+
+        if (channel_poll_any(EVENT_UNLINKRESPONSE, &message, data))
+            return 1;
+
+    }
+
+    return 0;
 
 }
 

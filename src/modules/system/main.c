@@ -315,6 +315,28 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
+static unsigned int onlinkrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_linkrequest *linkrequest = data;
+
+    service_link(linkrequest->id, source, 0);
+
+    return kernel_place(0, source, EVENT_LINKRESPONSE, 0, 0);
+
+}
+
+static unsigned int onunlinkrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_unlinkrequest *unlinkrequest = data;
+
+    service_unlink(unlinkrequest->id, source);
+
+    return kernel_place(0, source, EVENT_UNLINKRESPONSE, 0, 0);
+
+}
+
 static unsigned int service_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -335,8 +357,14 @@ static unsigned int service_notify(unsigned int id, unsigned int source, unsigne
     case EVENT_WRITEREQUEST:
         return onwriterequest(source, count, data);
 
+    case EVENT_LINKREQUEST:
+        return onlinkrequest(source, count, data);
+
+    case EVENT_UNLINKREQUEST:
+        return onunlinkrequest(source, count, data);
+
     default:
-        return (node->operations.notify) ? node->operations.notify(&node->links, source, event, count, data) : 0;
+        return (node->operations.notify) ? node->operations.notify(source, event, count, data) : 0;
 
     }
 

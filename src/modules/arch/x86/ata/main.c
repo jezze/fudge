@@ -24,7 +24,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_notifydata(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int blockinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     if (event == EVENT_BLOCKREQUEST)

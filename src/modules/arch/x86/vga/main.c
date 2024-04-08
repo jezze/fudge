@@ -95,7 +95,7 @@ static unsigned int send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int consoleinterface_notifydata(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int consoleinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     return (event == EVENT_DATA) ? send(data, count) : 0;
@@ -137,7 +137,7 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
 
 }
 
-static unsigned int videointerface_notifyctrl(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int videointerface_notifyctrl(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     if (event == EVENT_CONFIG)
@@ -219,7 +219,7 @@ static unsigned int videointerface_readcolormap(void *buffer, unsigned int count
 
 }
 
-static unsigned int videointerface_notifycolormap(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int videointerface_notifycolormap(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     if (event == EVENT_DATA)
