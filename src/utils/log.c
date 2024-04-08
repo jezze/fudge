@@ -16,18 +16,19 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct message message;
-        union {struct event_loginfo loginfo; char data[MESSAGE_SIZE];} data;
+        char data[MESSAGE_SIZE];
 
         call_link(FILE_L0, 8000);
 
-        while (channel_poll_any(EVENT_LOGINFO, &message, &data))
+        while (channel_poll_any(EVENT_LOGINFO, &message, data))
         {
 
-            char *description = data.data + sizeof (struct event_loginfo);
-            unsigned int count = data.loginfo.count - sizeof (struct event_loginfo);
+            struct event_loginfo *loginfo = (void *)data;
+            char *description = (char *)(loginfo + 1);
+            unsigned int count = loginfo->count - sizeof (struct event_loginfo);
 
-            if (option_getdecimal("level") >= data.loginfo.level)
-                channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "[%s] %w\n", levels[data.loginfo.level], description, &count);
+            if (option_getdecimal("level") >= loginfo->level)
+                channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
 
         }
 

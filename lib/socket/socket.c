@@ -652,7 +652,7 @@ unsigned int socket_receive(unsigned int descriptor, struct socket *local, struc
 {
 
     struct message message;
-    char data[SOCKET_MTUSIZE];
+    char data[MESSAGE_SIZE];
 
     while (channel_poll_any(EVENT_DATA, &message, data))
     {
@@ -728,7 +728,7 @@ void socket_connect_tcp(unsigned int descriptor, struct socket *local, struct so
 {
 
     struct message message;
-    char data[SOCKET_MTUSIZE];
+    char data[MESSAGE_SIZE];
 
     remote->info.tcp.state = TCP_STATE_SYNSENT;
     remote->info.tcp.ack = 0;
@@ -755,7 +755,7 @@ void socket_resolveremote(unsigned int descriptor, struct socket *local, struct 
 
     struct socket multicast;
     struct message message;
-    char data[SOCKET_MTUSIZE];
+    char data[MESSAGE_SIZE];
     unsigned char haddress[ETHERNET_ADDRSIZE] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
     buffer_copy(&multicast, remote, sizeof (struct socket));

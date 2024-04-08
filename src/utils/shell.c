@@ -73,7 +73,7 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
 static void interpret(void)
 {
 
-    char buffer[INPUTSIZE];
+    char buffer[MESSAGE_SIZE];
     unsigned int count = ring_read(&input, buffer, INPUTSIZE);
     unsigned int channel = runslang(buffer, count);
 
@@ -205,7 +205,7 @@ static void complete(void)
 {
 
     char prefix[INPUTSIZE];
-    char buffer[INPUTSIZE];
+    char buffer[MESSAGE_SIZE];
     unsigned int count = createcommand(&input, buffer, prefix);
     unsigned int channel = runslang(buffer, count);
 

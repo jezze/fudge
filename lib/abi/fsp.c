@@ -48,17 +48,19 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int cid, st
     {
 
         struct message message;
-        struct {struct event_listresponse listresponse; struct record records[8];} payload;
+        char data[MESSAGE_SIZE];
 
-        while (channel_poll_any(EVENT_LISTRESPONSE, &message, &payload))
+        while (channel_poll_any(EVENT_LISTRESPONSE, &message, data))
         {
 
-            if (payload.listresponse.session == session)
+            struct {struct event_listresponse header; struct record records[8];} *response = (void *)data;
+
+            if (response->header.session == session)
             {
 
-                buffer_write(records, sizeof (struct record) * 8, payload.records, sizeof (struct record) * payload.listresponse.nrecords, 0);
+                buffer_write(records, sizeof (struct record) * 8, response->records, sizeof (struct record) * response->header.nrecords, 0);
 
-                return payload.listresponse.nrecords;
+                return response->header.nrecords;
 
             }
 
@@ -102,17 +104,19 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
     {
 
         struct message message;
-        struct {struct event_readresponse readresponse; char data[64];} payload;
+        char data[MESSAGE_SIZE];
 
-        while (channel_poll_any(EVENT_READRESPONSE, &message, &payload))
+        while (channel_poll_any(EVENT_READRESPONSE, &message, data))
         {
 
-            if (payload.readresponse.session == session)
+            struct {struct event_readresponse header; char data[64];} *response = (void *)data;
+
+            if (response->header.session == session)
             {
 
-                buffer_write(buffer, count, payload.data, payload.readresponse.count, 0);
+                buffer_write(buffer, count, response->data, response->header.count, 0);
 
-                return payload.readresponse.count;
+                return response->header.count;
 
             }
 
@@ -170,13 +174,15 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
     {
 
         struct message message;
-        struct event_walkresponse walkresponse;
+        char data[MESSAGE_SIZE];
 
-        while (channel_poll_any(EVENT_WALKRESPONSE, &message, &walkresponse))
+        while (channel_poll_any(EVENT_WALKRESPONSE, &message, data))
         {
 
-            if (walkresponse.session == session)
-                return walkresponse.id;
+            struct {struct event_walkresponse header;} *response = (void *)data;
+
+            if (response->header.session == session)
+                return response->header.id;
 
         }
 
