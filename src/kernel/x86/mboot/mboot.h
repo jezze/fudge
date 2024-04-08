@@ -62,6 +62,7 @@ struct mboot_header_framebuffer
 {
 
     unsigned int address[2];
+    unsigned int pitch;
     unsigned int width;
     unsigned int height;
     unsigned char bpp;
@@ -82,9 +83,9 @@ struct mboot_header
     struct mboot_header_elf elf;
     struct mboot_header_mmap mmap;
     struct mboot_header_drives drives;
-    unsigned int ctable;
-    unsigned int name;
-    unsigned int atable;
+    unsigned int config;
+    unsigned int bootloader;
+    unsigned int apm;
     struct mboot_header_vbe vbe;
     struct mboot_header_framebuffer framebuffer;
 
