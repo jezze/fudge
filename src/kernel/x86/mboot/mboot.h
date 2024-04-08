@@ -5,11 +5,12 @@
 #define MBOOT_FLAG_AOUT                 0x00000010
 #define MBOOT_FLAG_ELF                  0x00000020
 #define MBOOT_FLAG_MMAP                 0x00000040
-#define MBOOT_FLAG_CONFIG               0x00000080
-#define MBOOT_FLAG_LOADER               0x00000100
-#define MBOOT_FLAG_APM                  0x00000200
-#define MBOOT_FLAG_VBE                  0x00000400
-#define MBOOT_FLAG_FRAMEBUFFER          0x00000800
+#define MBOOT_FLAG_DRIVES               0x00000080
+#define MBOOT_FLAG_CONFIG               0x00000100
+#define MBOOT_FLAG_LOADER               0x00000200
+#define MBOOT_FLAG_APM                  0x00000400
+#define MBOOT_FLAG_VBE                  0x00000800
+#define MBOOT_FLAG_FRAMEBUFFER          0x00001000
 
 struct mboot_header_modules
 {

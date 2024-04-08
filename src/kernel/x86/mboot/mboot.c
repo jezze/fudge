@@ -15,8 +15,9 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
 
     arch_setup1();
+    elf_setup();
 
-    if (header->flags & MBOOT_FLAG_LOADER)
+    if (header->flags & MBOOT_FLAG_MEMORY)
     {
 
     }
@@ -50,19 +51,6 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    if (header->flags & MBOOT_FLAG_AOUT)
-    {
-
-    }
-
-    elf_setup();
-
-    if (header->flags & MBOOT_FLAG_ELF)
-    {
-
-
-    }
-
     if (header->flags & MBOOT_FLAG_MODULES)
     {
 
@@ -72,12 +60,37 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    if (header->flags & MBOOT_FLAG_MEMORY)
+    if (header->flags & MBOOT_FLAG_AOUT)
+    {
+
+    }
+
+    if (header->flags & MBOOT_FLAG_ELF)
     {
 
     }
 
     if (header->flags & MBOOT_FLAG_MMAP)
+    {
+
+    }
+
+    if (header->flags & MBOOT_FLAG_DRIVES)
+    {
+
+    }
+
+    if (header->flags & MBOOT_FLAG_CONFIG)
+    {
+
+    }
+
+    if (header->flags & MBOOT_FLAG_LOADER)
+    {
+
+    }
+
+    if (header->flags & MBOOT_FLAG_APM)
     {
 
     }
