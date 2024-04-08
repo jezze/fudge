@@ -8,7 +8,7 @@
 .set INIT_MBOOT_LOAD_END_ADDRESS,       0x00000000
 .set INIT_MBOOT_BSS_END_ADDRESS,        0x00000000
 .set INIT_MBOOT_ENTRY_ADDRESS,          0x00000000
-.set INIT_MBOOT_MODE,                   0x00000000
+.set INIT_MBOOT_MODE,                   0
 .set INIT_MBOOT_WIDTH,                  1920
 .set INIT_MBOOT_HEIGHT,                 1080
 .set INIT_MBOOT_DEPTH,                  32
