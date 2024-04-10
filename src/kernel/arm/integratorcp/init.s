@@ -1,28 +1,59 @@
-.section .data
-
-b arch_reset
-b arch_undefined
-b arch_swi
-b arch_undefined
-b arch_undefined
-b arch_undefined
-b arch_irq
-b arch_fiq
-
 .section .text
 
 .global init
 init:
-    mov r4, #0x10000
-    cps #0x13
-    mov sp, r4
-    cps #0x17
-    mov sp, r4
-    cps #0x12
-    mov sp, r4
-    cps #0x1f
-    mov sp, r4
+    mov r1, #0x2000
+    mov sp, r1
     bl arch_setup
+
+.align 4
+.global arch_x_swi
+arch_x_swi:
+    mov r0, #0x3000
+    mov sp, r0
+    push {lr}
+    push {r0-r12}
+    mov r0, #0x3000
+    mov r0, lr
+    bl arch_swi
+    pop {r0-r12}
+    ldm sp!, {pc}^
+
+.align 4
+.global arch_x_irq
+arch_x_irq:
+    mov r0, #0x3000
+    mov sp, r0
+    sub lr, lr, #4
+    push {lr}
+    push {r0-r12}
+    mrs r0, spsr
+    push {r0}
+    mov r0, #0x3000
+    mov r0, lr
+    bl arch_irq
+    pop {r0}
+    msr spsr, r0
+    pop {r0-r12}
+    ldm sp!, {pc}^
+
+.align 4
+.global arch_x_fiq
+arch_x_fiq:
+    mov r0, #0x3000
+    mov sp, r0
+    sub lr, lr, #4
+    push {lr}
+    push {r0-r12}
+    mrs r0, spsr
+    push {r0}
+    mov r0, #0x3000
+    mov r0, lr
+    bl arch_irq
+    pop {r0}
+    msr spsr, r0
+    pop {r0-r12}
+    ldm sp!, {pc}^
 
 .global halt
 halt:

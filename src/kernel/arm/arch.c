@@ -8,104 +8,117 @@
 #include "uart.h"
 #include "arch.h"
 
-extern void halt(void);
+#define CTRL_SIZE_32            0x02
+#define CTRL_INT_ENABLE         (1 << 5)
+#define CTRL_MODE_PERIODIC      0x40
+#define CTRL_ENABLE             0x80
 
-static void debugnum(unsigned int value, unsigned int base)
+#define REG_LOAD        0x00
+#define REG_VALUE       0x01
+#define REG_CTRL        0x02
+#define REG_INTCLR      0x03
+#define REG_INTSTAT     0x04
+#define REG_INTMASK     0x05
+#define REG_BGLOAD      0x06
+
+#define ARM4_XRQ_RESET   0x00
+#define ARM4_XRQ_UNDEF   0x01
+#define ARM4_XRQ_SWINT   0x02
+#define ARM4_XRQ_ABRTP   0x03
+#define ARM4_XRQ_ABRTD   0x04
+#define ARM4_XRQ_RESV1   0x05
+#define ARM4_XRQ_IRQ     0x06
+#define ARM4_XRQ_FIQ     0x07
+
+void timer_setup(void)
 {
 
-    char num[32];
-
-    buffer_clear(num, 32);
-    cstring_write_value(num, 32, value, base, 0, 0);
-    uart_puts(num);
-    uart_puts("\n");
+    reg_write32(0x13000000, 0x00FFFFFF);
+    reg_write32(0x13000008, CTRL_SIZE_32 | CTRL_INT_ENABLE | CTRL_MODE_PERIODIC | CTRL_ENABLE);
+    reg_write32(0x1300000C, ~0);
+    pic_enableirq(PIC_IRQ_TIMER0);
 
 }
 
-void arch_undefined(void)
+extern unsigned int arch_x_swi;
+extern unsigned int arch_x_irq;
+extern unsigned int arch_x_fiq;
+
+void arch_swi(void)
 {
 
-    uart_puts("ISR UNDEFINED\n");
-
-    for (;;);
+    uart_puts("SWI\n");
 
 }
 
-void arch_reset(void)
+void arch_irq(void)
 {
 
-    uart_puts("ISR RESET\n");
+    unsigned int *picmmio = (unsigned int*)0x14000000;
 
-    for (;;);
+    uart_puts("IRQ\n");
+
+    if (picmmio[0] == PIC_IRQ_UART0)
+    {
+
+        unsigned int *u0mmio = (unsigned int*)0x16000000;
+
+        u0mmio[REG_INTCLR] = 1;
+
+        uart_puts("  UART0\n");
+
+    }
+
+    if (picmmio[0] == PIC_IRQ_KEYBOARD)
+    {
+
+        uart_puts("  KEYBOARD\n");
+
+    }
+
+    if (picmmio[0] == PIC_IRQ_TIMER0)
+    {
+
+        reg_write32(0x1300000C, 1);
+        uart_puts("  TIMER0\n");
+
+    }
 
 }
 
-__attribute__ ((interrupt("SWI"))) void arch_swi(void)
+void arch_fiq(void)
 {
 
-    register unsigned int addr __asm__ ("r14");
-
-    addr -= 4;
-
-    uart_puts("ISR SWI: ");
-    debugnum(*((unsigned int *)(addr)) & 0x00FFFFFF, 10);
+    uart_puts("FIQ\n");
 
 }
 
-__attribute__ ((interrupt("IRQ"))) void arch_irq(void)
+static void xrqinstall(unsigned int index, void *addr)
 {
 
-    uart_puts("ISR IRQ\n");
+    unsigned int value = 0xEA000000 | (((unsigned int)addr - (8 + (4 * index))) >> 2);
 
-}
-
-__attribute__ ((interrupt("FIQ"))) void arch_fiq(void)
-{
-
-    uart_puts("ISR FIQ\n");
-
-}
-
-void pic_do(void)
-{
-
-    unsigned int *mmio = (unsigned int *)0x14000000;
-
-    mmio[0x02] = (1 << 5) | (1 << 6) | (1 << 7);
-
-}
-
-void timer_do(void)
-{
-
-    unsigned int *mmio = (unsigned int *)0x13000000;
-
-    mmio[0x00] = 0xffffff;
-    mmio[0x06] = 0xffffff;
-    mmio[0x02] = 0x80 | 0x40 | 0x02 | 0x00 | (1 << 5);
-    /*
-    mmio[0x02] = ~0;
-    */
+    buffer_copy((void *)(index * 4), &value, 4);
 
 }
 
 void arch_setup(void)
 {
 
+    xrqinstall(ARM4_XRQ_RESET, &arch_x_swi);
+    xrqinstall(ARM4_XRQ_UNDEF, &arch_x_swi);
+    xrqinstall(ARM4_XRQ_SWINT, &arch_x_swi);
+    xrqinstall(ARM4_XRQ_ABRTP, &arch_x_swi);
+    xrqinstall(ARM4_XRQ_ABRTD, &arch_x_swi);
+    xrqinstall(ARM4_XRQ_RESV1, &arch_x_swi);
+    xrqinstall(ARM4_XRQ_IRQ, &arch_x_irq);
+    xrqinstall(ARM4_XRQ_FIQ, &arch_x_fiq);
     pic_setup();
-    pic_do();
-
+    uart_setup();
+    timer_setup();
     /*
-    timer_do();
+    kmi_setup();
     */
-
-    uart_puts("Fudge Console\n");
-    /*swi_test();*/
-
-    resource_setup();
-    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
-    abi_setup();
-    uart_puts("Loop forever...\n");
 
     for (;;);
 

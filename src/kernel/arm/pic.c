@@ -32,28 +32,28 @@ static void enablefiq(void)
 void pic_enableirq(unsigned int irq)
 {
 
-    reg_write32(PIC_REG_IRQ_ENABLESET, reg_read32(PIC_REG_IRQ_ENABLESET) & irq);
+    reg_write32(PIC_REG_IRQ_ENABLESET, irq);
 
 }
 
 void pic_disableirq(unsigned int irq)
 {
 
-    reg_write32(PIC_REG_IRQ_ENABLESET, reg_read32(PIC_REG_IRQ_ENABLESET) & ~irq);
+    reg_write32(PIC_REG_IRQ_ENABLECLR, irq);
 
 }
 
 void pic_enablefiq(unsigned int fiq)
 {
 
-    reg_write32(PIC_REG_FIQ_ENABLESET, reg_read32(PIC_REG_FIQ_ENABLESET) & fiq);
+    reg_write32(PIC_REG_FIQ_ENABLESET, fiq);
 
 }
 
 void pic_disablefiq(unsigned int fiq)
 {
 
-    reg_write32(PIC_REG_FIQ_ENABLESET, reg_read32(PIC_REG_FIQ_ENABLESET) & ~fiq);
+    reg_write32(PIC_REG_FIQ_ENABLECLR, fiq);
 
 }
 
