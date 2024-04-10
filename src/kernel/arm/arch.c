@@ -54,29 +54,31 @@ void arch_swi(void)
 void arch_irq(void)
 {
 
-    unsigned int *picmmio = (unsigned int*)0x14000000;
+    unsigned int status = reg_read32(0x14000000);
 
     uart_puts("IRQ\n");
 
-    if (picmmio[0] == PIC_IRQ_UART0)
+    if (status == PIC_IRQ_UART0)
     {
 
-        unsigned int *u0mmio = (unsigned int*)0x16000000;
-
-        u0mmio[REG_INTCLR] = 1;
-
+        reg_write32(0x16000044, 1);
         uart_puts("  UART0\n");
 
     }
 
-    if (picmmio[0] == PIC_IRQ_KEYBOARD)
+    if (status == PIC_IRQ_KEYBOARD)
     {
+
+        unsigned int value = reg_read32(0x18000008);
 
         uart_puts("  KEYBOARD\n");
 
+        if (value == 0x1C)
+            uart_puts("  Enter was pressed\n");
+
     }
 
-    if (picmmio[0] == PIC_IRQ_TIMER0)
+    if (status == PIC_IRQ_TIMER0)
     {
 
         reg_write32(0x1300000C, 1);
@@ -116,9 +118,7 @@ void arch_setup(void)
     pic_setup();
     uart_setup();
     timer_setup();
-    /*
     kmi_setup();
-    */
 
     for (;;);
 
