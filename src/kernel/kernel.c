@@ -406,12 +406,18 @@ unsigned int kernel_createtask(void)
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int ichannel, unsigned int id)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int ichannel, unsigned int id)
 {
 
     struct channel *channel = (ichannel) ? ((ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0) : &channels[666];
     struct taskrow *taskrow = &taskrows[itask];
     struct task *task = &taskrow->task;
+
+    if (ip)
+        task->thread.ip = ip;
+
+    if (sp)
+        task->thread.sp = sp;
 
     if (channel && channel->service)
     {
@@ -433,12 +439,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int sp, unsigned int i
                 struct binary_format *format = binary_findformat(&task->node);
 
                 if (format)
-                {
-
                     task->thread.ip = format->findentry(&task->node);
-                    task->thread.sp = sp;
-
-                }
 
             }
 

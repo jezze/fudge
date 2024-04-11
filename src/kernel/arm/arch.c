@@ -44,7 +44,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
         if (ntask)
         {
 
-            return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, args->ichannel, args->id);
+            return kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL - 0x10, args->ichannel, args->id);
 
         }
 
@@ -56,10 +56,57 @@ static unsigned int spawn(unsigned int itask, void *stack)
 
 }
 
+static void testtask(void)
+{
+
+    uart_puts("TEST TASK\n");
+
+}
+
 void arch_swi(void)
 {
 
     uart_puts("SWI\n");
+
+}
+
+static void schedule(void)
+{
+
+    struct core *core = kernel_getcore();
+
+    if (core->itask)
+    {
+
+        uart_puts("SAVE TASK\n");
+
+    }
+
+    core->itask = kernel_schedule(core);
+
+    if (core->itask)
+    {
+
+        uart_puts("LOAD TASK\n");
+
+    }
+
+    else
+    {
+
+        uart_puts("HALT\n");
+
+    }
+
+}
+
+void arch_leave(void)
+{
+
+    schedule();
+    uart_puts("LEAVE\n");
+
+    for (;;);
 
 }
 
@@ -86,7 +133,7 @@ void arch_setup2(void)
     if (ntask)
     {
 
-        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, 0, 0);
+        kernel_loadtask(ntask, (unsigned int)&testtask, ARCH_TASKSTACKVIRTUAL - 0x10, 0, 0);
         kernel_place(0, ntask, EVENT_MAIN, 0, 0);
 
     }
@@ -98,9 +145,7 @@ void arch_setup2(void)
 
     }
 
-    /*
     arch_leave();
-    */
 
 }
 
@@ -117,8 +162,6 @@ void arch_setup(void)
     isr_install(ISR_FIQ, &isr_fiq);
     arch_setup1();
     arch_setup2();
-
-    for (;;);
 
 }
 
