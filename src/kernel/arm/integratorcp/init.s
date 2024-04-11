@@ -7,8 +7,8 @@ init:
     bl arch_setup
 
 .align 4
-.global arch_x_swi
-arch_x_swi:
+.global isr_swi
+isr_swi:
     mov r0, #0x3000
     mov sp, r0
     push {lr}
@@ -20,8 +20,8 @@ arch_x_swi:
     ldm sp!, {pc}^
 
 .align 4
-.global arch_x_irq
-arch_x_irq:
+.global isr_irq
+isr_irq:
     mov r0, #0x3000
     mov sp, r0
     sub lr, lr, #4
@@ -38,8 +38,8 @@ arch_x_irq:
     ldm sp!, {pc}^
 
 .align 4
-.global arch_x_fiq
-arch_x_fiq:
+.global isr_fiq
+isr_fiq:
     mov r0, #0x3000
     mov sp, r0
     sub lr, lr, #4

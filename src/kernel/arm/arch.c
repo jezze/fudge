@@ -9,18 +9,27 @@
 #include "lcd.h"
 #include "arch.h"
 
-#define ARM4_XRQ_RESET   0x00
-#define ARM4_XRQ_UNDEF   0x01
-#define ARM4_XRQ_SWINT   0x02
-#define ARM4_XRQ_ABRTP   0x03
-#define ARM4_XRQ_ABRTD   0x04
-#define ARM4_XRQ_RESV1   0x05
-#define ARM4_XRQ_IRQ     0x06
-#define ARM4_XRQ_FIQ     0x07
+#define ISR_RESET   0x00
+#define ISR_UNDEF   0x01
+#define ISR_SWINT   0x02
+#define ISR_ABRTP   0x03
+#define ISR_ABRTD   0x04
+#define ISR_RESV1   0x05
+#define ISR_IRQ     0x06
+#define ISR_FIQ     0x07
 
-extern unsigned int arch_x_swi;
-extern unsigned int arch_x_irq;
-extern unsigned int arch_x_fiq;
+extern unsigned int isr_swi;
+extern unsigned int isr_irq;
+extern unsigned int isr_fiq;
+
+static void isr_install(unsigned int index, void *addr)
+{
+
+    unsigned int value = 0xEA000000 | (((unsigned int)addr - (8 + (4 * index))) >> 2);
+
+    buffer_copy((void *)(index * 4), &value, 4);
+
+}
 
 static unsigned int spawn(unsigned int itask, void *stack)
 {
@@ -98,12 +107,18 @@ void arch_fiq(void)
 
 }
 
-static void xrqinstall(unsigned int index, void *addr)
+void arch_setup1(void)
 {
 
-    unsigned int value = 0xEA000000 | (((unsigned int)addr - (8 + (4 * index))) >> 2);
-
-    buffer_copy((void *)(index * 4), &value, 4);
+    resource_setup();
+    pic_setup();
+    uart_setup();
+    timer_setup();
+    kmi_setup();
+    lcd_setup();
+    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
+    abi_setup();
+    abi_setcallback(0x0C, spawn);
 
 }
 
@@ -136,23 +151,15 @@ void arch_setup2(void)
 void arch_setup(void)
 {
 
-    xrqinstall(ARM4_XRQ_RESET, &arch_x_swi);
-    xrqinstall(ARM4_XRQ_UNDEF, &arch_x_swi);
-    xrqinstall(ARM4_XRQ_SWINT, &arch_x_swi);
-    xrqinstall(ARM4_XRQ_ABRTP, &arch_x_swi);
-    xrqinstall(ARM4_XRQ_ABRTD, &arch_x_swi);
-    xrqinstall(ARM4_XRQ_RESV1, &arch_x_swi);
-    xrqinstall(ARM4_XRQ_IRQ, &arch_x_irq);
-    xrqinstall(ARM4_XRQ_FIQ, &arch_x_fiq);
-    resource_setup();
-    pic_setup();
-    uart_setup();
-    timer_setup();
-    kmi_setup();
-    lcd_setup();
-    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
-    abi_setup();
-    abi_setcallback(0x0C, spawn);
+    isr_install(ISR_RESET, 0);
+    isr_install(ISR_UNDEF, 0);
+    isr_install(ISR_SWINT, &isr_swi);
+    isr_install(ISR_ABRTP, 0);
+    isr_install(ISR_ABRTD, 0);
+    isr_install(ISR_RESV1, 0);
+    isr_install(ISR_IRQ, &isr_irq);
+    isr_install(ISR_FIQ, &isr_fiq);
+    arch_setup1();
     arch_setup2();
 
     for (;;);
