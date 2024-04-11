@@ -1,25 +1,13 @@
 #include <fudge.h>
 #include <kernel.h>
 #include "cpu.h"
-#include "arch.h"
-#include "kmi.h"
-#include "pic.h"
 #include "reg.h"
+#include "pic.h"
 #include "uart.h"
+#include "kmi.h"
+#include "timer.h"
+#include "lcd.h"
 #include "arch.h"
-
-#define CTRL_SIZE_32            0x02
-#define CTRL_INT_ENABLE         (1 << 5)
-#define CTRL_MODE_PERIODIC      0x40
-#define CTRL_ENABLE             0x80
-
-#define REG_LOAD        0x00
-#define REG_VALUE       0x01
-#define REG_CTRL        0x02
-#define REG_INTCLR      0x03
-#define REG_INTSTAT     0x04
-#define REG_INTMASK     0x05
-#define REG_BGLOAD      0x06
 
 #define ARM4_XRQ_RESET   0x00
 #define ARM4_XRQ_UNDEF   0x01
@@ -30,19 +18,34 @@
 #define ARM4_XRQ_IRQ     0x06
 #define ARM4_XRQ_FIQ     0x07
 
-void timer_setup(void)
-{
-
-    reg_write32(0x13000000, 0x00FFFFFF);
-    reg_write32(0x13000008, CTRL_SIZE_32 | CTRL_INT_ENABLE | CTRL_MODE_PERIODIC | CTRL_ENABLE);
-    reg_write32(0x1300000C, ~0);
-    pic_enableirq(PIC_IRQ_TIMER0);
-
-}
-
 extern unsigned int arch_x_swi;
 extern unsigned int arch_x_irq;
 extern unsigned int arch_x_fiq;
+
+static unsigned int spawn(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int ichannel; unsigned int id;} *args = stack;
+
+    if (args->ichannel && args->id)
+    {
+
+        unsigned int ntask = kernel_createtask();
+
+        if (ntask)
+        {
+
+            return kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, args->ichannel, args->id);
+
+        }
+
+    }
+
+    DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
+
+    return 0;
+
+}
 
 void arch_swi(void)
 {
@@ -104,6 +107,32 @@ static void xrqinstall(unsigned int index, void *addr)
 
 }
 
+void arch_setup2(void)
+{
+
+    unsigned int ntask = kernel_createtask();
+
+    if (ntask)
+    {
+
+        kernel_loadtask(ntask, ARCH_TASKSTACKVIRTUAL - 0x10, 0, 0);
+        kernel_place(0, ntask, EVENT_MAIN, 0, 0);
+
+    }
+
+    else
+    {
+
+        DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
+
+    }
+
+    /*
+    arch_leave();
+    */
+
+}
+
 void arch_setup(void)
 {
 
@@ -115,10 +144,16 @@ void arch_setup(void)
     xrqinstall(ARM4_XRQ_RESV1, &arch_x_swi);
     xrqinstall(ARM4_XRQ_IRQ, &arch_x_irq);
     xrqinstall(ARM4_XRQ_FIQ, &arch_x_fiq);
+    resource_setup();
     pic_setup();
     uart_setup();
     timer_setup();
     kmi_setup();
+    lcd_setup();
+    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
+    abi_setup();
+    abi_setcallback(0x0C, spawn);
+    arch_setup2();
 
     for (;;);
 
