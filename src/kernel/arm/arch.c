@@ -63,20 +63,6 @@ void arch_swi(void)
 
 }
 
-void arch_irq(void)
-{
-
-    pic_irq();
-
-}
-
-void arch_fiq(void)
-{
-
-    uart_puts("FIQ\n");
-
-}
-
 void arch_setup1(void)
 {
 

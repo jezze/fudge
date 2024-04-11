@@ -96,6 +96,13 @@ void pic_irq(void)
 
 }
 
+void pic_fiq(void)
+{
+
+    uart_puts("FIQ\n");
+
+}
+
 void pic_setup(void)
 {
 

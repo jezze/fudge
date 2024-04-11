@@ -31,7 +31,7 @@ isr_irq:
     push {r0}
     mov r0, #0x3000
     mov r0, lr
-    bl arch_irq
+    bl pic_irq
     pop {r0}
     msr spsr, r0
     pop {r0-r12}
@@ -49,7 +49,7 @@ isr_fiq:
     push {r0}
     mov r0, #0x3000
     mov r0, lr
-    bl arch_irq
+    bl pic_fiq
     pop {r0}
     msr spsr, r0
     pop {r0-r12}
