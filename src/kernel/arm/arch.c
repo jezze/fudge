@@ -66,37 +66,7 @@ void arch_swi(void)
 void arch_irq(void)
 {
 
-    unsigned int status = reg_read32(0x14000000);
-
-    uart_puts("IRQ\n");
-
-    if (status == PIC_IRQ_UART0)
-    {
-
-        reg_write32(0x16000044, 1);
-        uart_puts("  UART0\n");
-
-    }
-
-    if (status == PIC_IRQ_KEYBOARD)
-    {
-
-        unsigned int value = reg_read32(0x18000008);
-
-        uart_puts("  KEYBOARD\n");
-
-        if (value == 0x1C)
-            uart_puts("  Enter was pressed\n");
-
-    }
-
-    if (status == PIC_IRQ_TIMER0)
-    {
-
-        reg_write32(0x1300000C, 1);
-        uart_puts("  TIMER0\n");
-
-    }
+    pic_irq();
 
 }
 

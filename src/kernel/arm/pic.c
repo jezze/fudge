@@ -2,6 +2,10 @@
 #include "reg.h"
 #include "pic.h"
 
+#include "uart.h"
+#include "kmi.h"
+#include "timer.h"
+
 #define PIC_REG_IRQ_STATUS              0x14000000
 #define PIC_REG_IRQ_RAWSTAT             0x14000004
 #define PIC_REG_IRQ_ENABLESET           0x14000008
@@ -54,6 +58,41 @@ void pic_disablefiq(unsigned int fiq)
 {
 
     reg_write32(PIC_REG_FIQ_ENABLECLR, fiq);
+
+}
+
+void pic_irq(void)
+{
+
+    unsigned int status = reg_read32(PIC_REG_IRQ_STATUS);
+
+    if (status == PIC_IRQ_UART0)
+    {
+
+        uart_irq();
+
+    }
+
+    if (status == PIC_IRQ_KEYBOARD)
+    {
+
+        kmi_kbd_irq();
+
+    }
+
+    if (status == PIC_IRQ_MOUSE)
+    {
+
+        kmi_mouse_irq();
+
+    }
+
+    if (status == PIC_IRQ_TIMER0)
+    {
+
+        timer_irq();
+
+    }
 
 }
 
