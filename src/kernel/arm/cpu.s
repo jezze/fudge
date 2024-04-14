@@ -25,12 +25,13 @@ cpu_enable_interrupts:
     msr cpsr_c, r0
     bx lr
 
+.global cpu_halt
+cpu_halt:
+    wfe
+    b cpu_halt
+
 .global ivt_enable
 ivt_enable:
     cpsie i
     bx lr
 
-.global swi_test
-swi_test:
-    swi #1234
-    bx lr

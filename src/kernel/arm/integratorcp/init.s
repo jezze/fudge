@@ -55,8 +55,3 @@ isr_fiq:
     pop {r0-r12}
     ldm sp!, {pc}^
 
-.global halt
-halt:
-    wfe
-    b halt
-

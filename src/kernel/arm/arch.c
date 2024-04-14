@@ -22,6 +22,8 @@ extern unsigned int isr_swi;
 extern unsigned int isr_irq;
 extern unsigned int isr_fiq;
 
+static struct cpu_registers registers[KERNEL_TASKS];
+
 static void isr_install(unsigned int index, void *addr)
 {
 
@@ -70,7 +72,7 @@ void arch_swi(void)
 
 }
 
-static void schedule(void)
+static void schedule(struct cpu_registers *current)
 {
 
     struct core *core = kernel_getcore();
@@ -78,7 +80,12 @@ static void schedule(void)
     if (core->itask)
     {
 
-        uart_puts("SAVE TASK\n");
+        struct task_thread *thread = kernel_getthread(core->itask);
+
+        buffer_copy(&registers[core->itask], current, sizeof (struct cpu_registers));
+
+        thread->ip = current->pc.value;
+        thread->sp = current->sp.value;
 
     }
 
@@ -87,14 +94,20 @@ static void schedule(void)
     if (core->itask)
     {
 
-        uart_puts("LOAD TASK\n");
+        struct task_thread *thread = kernel_getthread(core->itask);
+
+        buffer_copy(current, &registers[core->itask], sizeof (struct cpu_registers));
+
+        current->pc.value = thread->ip;
+        current->sp.value = thread->sp;
 
     }
 
     else
     {
 
-        uart_puts("HALT\n");
+        current->pc.value = (unsigned int)cpu_halt;
+        current->sp.value = core->sp;
 
     }
 
@@ -103,7 +116,9 @@ static void schedule(void)
 void arch_leave(void)
 {
 
-    schedule();
+    struct cpu_registers registers;
+
+    schedule(&registers);
     uart_puts("LEAVE\n");
 
     for (;;);
