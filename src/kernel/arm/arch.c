@@ -91,6 +91,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         thread->ip = interrupt->pc.value;
         thread->sp = interrupt->sp.value;
 
+        uart_puts("SAVE TASK\n");
+
     }
 
     core->itask = kernel_schedule(core);
@@ -105,6 +107,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->pc.value = (unsigned int)testtask;
         interrupt->sp.value = thread->sp;
 
+        uart_puts("LOAD TASK\n");
+
     }
 
     else
@@ -112,6 +116,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         interrupt->pc.value = (unsigned int)cpu_halt;
         interrupt->sp.value = core->sp;
+
+        uart_puts("HALT\n");
 
     }
 
