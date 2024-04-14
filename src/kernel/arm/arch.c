@@ -104,7 +104,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
-        interrupt->pc.value = (unsigned int)testtask;
+        interrupt->pc.value = thread->ip;
         interrupt->sp.value = thread->sp;
 
         uart_puts("LOAD TASK\n");
