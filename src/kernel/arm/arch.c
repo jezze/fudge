@@ -22,7 +22,7 @@ extern unsigned int isr_swi;
 extern unsigned int isr_irq;
 extern unsigned int isr_fiq;
 
-static struct cpu_registers registers[KERNEL_TASKS];
+static struct cpu_general registers[KERNEL_TASKS];
 
 static void isr_install(unsigned int index, void *addr)
 {
@@ -72,7 +72,7 @@ void arch_swi(void)
 
 }
 
-static void schedule(struct cpu_registers *current)
+static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
     struct core *core = kernel_getcore();
@@ -82,10 +82,10 @@ static void schedule(struct cpu_registers *current)
 
         struct task_thread *thread = kernel_getthread(core->itask);
 
-        buffer_copy(&registers[core->itask], current, sizeof (struct cpu_registers));
+        buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
 
-        thread->ip = current->pc.value;
-        thread->sp = current->sp.value;
+        thread->ip = interrupt->pc.value;
+        thread->sp = interrupt->sp.value;
 
     }
 
@@ -96,18 +96,18 @@ static void schedule(struct cpu_registers *current)
 
         struct task_thread *thread = kernel_getthread(core->itask);
 
-        buffer_copy(current, &registers[core->itask], sizeof (struct cpu_registers));
+        buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
-        current->pc.value = thread->ip;
-        current->sp.value = thread->sp;
+        interrupt->pc.value = thread->ip;
+        interrupt->sp.value = thread->sp;
 
     }
 
     else
     {
 
-        current->pc.value = (unsigned int)cpu_halt;
-        current->sp.value = core->sp;
+        interrupt->pc.value = (unsigned int)cpu_halt;
+        interrupt->sp.value = core->sp;
 
     }
 
@@ -116,9 +116,12 @@ static void schedule(struct cpu_registers *current)
 void arch_leave(void)
 {
 
-    struct cpu_registers registers;
+    struct cpu_general general;
+    struct cpu_interrupt interrupt;
 
-    schedule(&registers);
+    buffer_clear(&general, sizeof (struct cpu_general));
+    buffer_clear(&interrupt, sizeof (struct cpu_interrupt));
+    schedule(&general, &interrupt);
     uart_puts("LEAVE\n");
 
     for (;;);

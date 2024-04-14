@@ -6,7 +6,26 @@ union cpu_register
 
 };
 
-struct cpu_registers
+struct cpu_general
+{
+
+    union cpu_register r0;
+    union cpu_register r1;
+    union cpu_register r2;
+    union cpu_register r3;
+    union cpu_register r4;
+    union cpu_register r5;
+    union cpu_register r6;
+    union cpu_register r7;
+    union cpu_register r8;
+    union cpu_register r9;
+    union cpu_register r10;
+    union cpu_register r11;
+    union cpu_register r12;
+
+};
+
+struct cpu_interrupt
 {
 
     union cpu_register pc;
