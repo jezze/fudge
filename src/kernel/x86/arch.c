@@ -160,6 +160,9 @@ void arch_leave(void)
     struct cpu_general general;
     struct cpu_interrupt interrupt;
 
+    buffer_clear(&general, sizeof (struct cpu_general));
+    buffer_clear(&interrupt, sizeof (struct cpu_interrupt));
+
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
     schedule(&general, &interrupt);
