@@ -25,6 +25,11 @@ cpu_enable_interrupts:
     msr cpsr_c, r0
     bx lr
 
+.align 4
+.global cpu_leave
+cpu_leave:
+    ldm sp!, {sp, pc}^
+
 .global cpu_halt
 cpu_halt:
     wfe

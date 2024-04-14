@@ -63,6 +63,10 @@ static void testtask(void)
 
     uart_puts("TEST TASK\n");
 
+    __asm__("swi #4");
+
+    for(;;);
+
 }
 
 void arch_swi(void)
@@ -98,7 +102,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
-        interrupt->pc.value = thread->ip;
+        interrupt->pc.value = (unsigned int)testtask;
         interrupt->sp.value = thread->sp;
 
     }
@@ -123,6 +127,7 @@ void arch_leave(void)
     buffer_clear(&interrupt, sizeof (struct cpu_interrupt));
     schedule(&general, &interrupt);
     uart_puts("LEAVE\n");
+    cpu_leave(interrupt);
 
     for (;;);
 
