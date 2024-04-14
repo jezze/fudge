@@ -13,8 +13,6 @@ isr_swi:
     mov sp, r0
     push {lr}
     push {r0-r12}
-    mov r0, #0x3000
-    mov r0, lr
     bl arch_swi
     pop {r0-r12}
     ldm sp!, {pc}^
@@ -29,8 +27,6 @@ isr_irq:
     push {r0-r12}
     mrs r0, spsr
     push {r0}
-    mov r0, #0x3000
-    mov r0, lr
     bl pic_irq
     pop {r0}
     msr spsr, r0
@@ -47,8 +43,6 @@ isr_fiq:
     push {r0-r12}
     mrs r0, spsr
     push {r0}
-    mov r0, #0x3000
-    mov r0, lr
     bl pic_fiq
     pop {r0}
     msr spsr, r0
