@@ -9,7 +9,7 @@ init:
 .align 4
 .global isr_swi
 isr_swi:
-    push {r0-r12, lr}
+    stm sp, {r0-r12, lr}
     bl arch_swi
     ldm sp!, {r0-r12, pc}^
 
@@ -19,7 +19,7 @@ isr_irq:
     mov r0, #0x3000
     mov sp, r0
     sub lr, lr, #4
-    push {r0-r12, lr}
+    stm sp, {r0-r12, lr}
     mrs r0, spsr
     push {r0}
     bl pic_irq
@@ -33,7 +33,7 @@ isr_fiq:
     mov r0, #0x3000
     mov sp, r0
     sub lr, lr, #4
-    push {r0-r12, lr}
+    stm sp, {r0-r12, lr}
     mrs r0, spsr
     push {r0}
     bl pic_fiq
