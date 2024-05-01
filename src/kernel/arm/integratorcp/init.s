@@ -2,15 +2,13 @@
 
 .global init
 init:
-    mov r1, #0x2000
-    mov sp, r1
+    mov sp, #0x2000
     bl arch_setup
 
 .align 4
 .global isr_swi
 isr_swi:
-    mov r0, #0x3000
-    mov sp, r0
+    mov sp, #0x3000
     stm sp, {r0-r12, lr}
     bl arch_swi
     ldm sp, {r0-r12, pc}^
@@ -18,8 +16,7 @@ isr_swi:
 .align 4
 .global isr_irq
 isr_irq:
-    mov r0, #0x3000
-    mov sp, r0
+    mov sp, #0x3000
     sub lr, lr, #4
     stm sp, {r0-r12, lr}
     bl pic_irq
@@ -28,8 +25,7 @@ isr_irq:
 .align 4
 .global isr_fiq
 isr_fiq:
-    mov r0, #0x3000
-    mov sp, r0
+    mov sp, #0x3000
     sub lr, lr, #4
     stm sp, {r0-r12, lr}
     mrs r0, spsr
