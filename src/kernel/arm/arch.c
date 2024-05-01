@@ -21,6 +21,7 @@
 extern unsigned int isr_swi;
 extern unsigned int isr_irq;
 extern unsigned int isr_fiq;
+extern void test_call(void);
 
 static struct cpu_general registers[KERNEL_TASKS];
 
@@ -61,9 +62,13 @@ static unsigned int spawn(unsigned int itask, void *stack)
 static void testtask(void)
 {
 
-    uart_puts("TEST TASK\n");
+    uart_puts("TEST TASK 1\n");
 
-    __asm__("swi #4");
+    test_call();
+    test_call();
+    test_call();
+
+    uart_puts("TEST TASK 2\n");
 
     for(;;);
 

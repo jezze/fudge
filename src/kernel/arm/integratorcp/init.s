@@ -9,9 +9,11 @@ init:
 .align 4
 .global isr_swi
 isr_swi:
+    mov r0, #0x3000
+    mov sp, r0
     stm sp, {r0-r12, lr}
     bl arch_swi
-    ldm sp!, {r0-r12, pc}^
+    ldm sp, {r0-r12, pc}^
 
 .align 4
 .global isr_irq
@@ -20,12 +22,8 @@ isr_irq:
     mov sp, r0
     sub lr, lr, #4
     stm sp, {r0-r12, lr}
-    mrs r0, spsr
-    push {r0}
     bl pic_irq
-    pop {r0}
-    msr spsr, r0
-    ldm sp!, {r0-r12, pc}^
+    ldm sp, {r0-r12, pc}^
 
 .align 4
 .global isr_fiq
@@ -41,3 +39,12 @@ isr_fiq:
     msr spsr, r0
     ldm sp!, {r0-r12, pc}^
 
+.align 4
+.global test_call
+test_call:
+    mov fp, sp
+    stm sp!, {r0-r12, lr}
+    swi #0
+    ldm sp!, {r0-r12, lr}
+    mov sp, fp
+    bx lr
