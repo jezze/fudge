@@ -21,7 +21,7 @@
 extern unsigned int isr_swi;
 extern unsigned int isr_irq;
 extern unsigned int isr_fiq;
-extern void test_call(void);
+extern unsigned int test_call(unsigned int);
 
 static struct cpu_general registers[KERNEL_TASKS];
 
@@ -64,9 +64,10 @@ static void testtask(void)
 
     uart_puts("TEST TASK 1\n");
 
-    test_call();
-    test_call();
-    test_call();
+    test_call(4);
+    test_call(2);
+    test_call(1);
+    test_call(3);
 
     uart_puts("TEST TASK 2\n");
 
@@ -74,10 +75,17 @@ static void testtask(void)
 
 }
 
-void arch_swi(void)
+void arch_swi(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    uart_puts("SWI\n");
+    if (general.r0.value == 1)
+        uart_puts("SWI 1\n");
+    else if (general.r0.value == 2)
+        uart_puts("SWI 2\n");
+    else if (general.r0.value == 3)
+        uart_puts("SWI 3\n");
+    else
+        uart_puts("SWI X\n");
 
 }
 
@@ -140,7 +148,7 @@ void arch_leave(void)
     uart_puts("LEAVE\n");
     cpu_leave(interrupt);
 
-    for (;;);
+    for(;;);
 
 }
 

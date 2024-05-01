@@ -10,7 +10,9 @@ init:
 isr_swi:
     mov sp, #0x3000
     stm sp, {r0-r12, lr}
+    push {fp}
     bl arch_swi
+    pop {fp}
     ldm sp, {r0-r12, pc}^
 
 .align 4
