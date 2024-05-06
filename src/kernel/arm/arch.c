@@ -75,24 +75,12 @@ static void testtask(void)
 
 }
 
-void arch_swi(struct cpu_general general, struct cpu_interrupt interrupt)
-{
-
-    if (general.r0.value == 1)
-        uart_puts("SWI 1\n");
-    else if (general.r0.value == 2)
-        uart_puts("SWI 2\n");
-    else if (general.r0.value == 3)
-        uart_puts("SWI 3\n");
-    else
-        uart_puts("SWI X\n");
-
-}
-
 static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
     struct core *core = kernel_getcore();
+
+    uart_puts("SCHEDULE\n");
 
     if (core->itask)
     {
@@ -133,6 +121,24 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         uart_puts("HALT\n");
 
     }
+
+}
+
+unsigned int arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
+{
+
+    if (general.r0.value == 1)
+        uart_puts("SWI 1\n");
+    else if (general.r0.value == 2)
+        uart_puts("SWI 2\n");
+    else if (general.r0.value == 3)
+        uart_puts("SWI 3\n");
+    else
+        uart_puts("SWI X\n");
+
+    schedule(&general, &interrupt);
+
+    return 42;
 
 }
 
