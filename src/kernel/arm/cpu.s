@@ -28,7 +28,9 @@ cpu_enable_interrupts:
 .align 4
 .global cpu_leave
 cpu_leave:
-    ldm sp, {sp, pc}
+    mov sp, r0
+    mov lr, r1
+    bx lr
 
 .global cpu_halt
 cpu_halt:

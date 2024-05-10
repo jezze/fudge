@@ -5,7 +5,7 @@
 #define ARCH_TASKSTACKSIZE              0x00008000
 #define ARCH_TASKSTACKVIRTUAL           0x80000000
 
-unsigned int arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt);
+void arch_syscall(void *stack);
 void arch_leave(void);
 void arch_setup1(void);
 void arch_setup2(void);

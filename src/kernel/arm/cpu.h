@@ -28,8 +28,8 @@ struct cpu_general
 struct cpu_interrupt
 {
 
-    union cpu_register pc;
     union cpu_register sp;
+    union cpu_register pc;
 
 };
 
@@ -37,6 +37,6 @@ unsigned int cpu_get_cpsr(void);
 void cpu_set_cpsr(unsigned int value);
 void cpu_disable_interrupts(void);
 void cpu_enable_interrupts(void);
-void cpu_leave(struct cpu_interrupt interrupt);
+void cpu_leave(unsigned int sp, unsigned int pc);
 void cpu_halt(void);
 void ivt_enable(void);

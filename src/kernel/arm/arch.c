@@ -25,6 +25,16 @@ extern unsigned int test_call(unsigned int);
 
 static struct cpu_general registers[KERNEL_TASKS];
 
+static void shownum(unsigned int n)
+{
+
+    char num[32];
+
+    cstring_write_fmt1(num, 32, "%Bu\n\\0", 0, &n);
+    uart_puts(num);
+
+}
+
 static void isr_install(unsigned int index, void *addr)
 {
 
@@ -47,7 +57,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
         if (ntask)
         {
 
-            return kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL - 0x10, args->ichannel, args->id);
+            return kernel_loadtask(ntask, 0, 0x6000, args->ichannel, args->id);
 
         }
 
@@ -64,12 +74,18 @@ static void testtask(void)
 
     uart_puts("TEST TASK 1\n");
 
-    test_call(4);
+    shownum(cpu_get_cpsr());
+
+    test_call(123);
     test_call(2);
     test_call(1);
     test_call(3);
 
     uart_puts("TEST TASK 2\n");
+
+    shownum(cpu_get_cpsr());
+    cpu_set_cpsr(cpu_get_cpsr() & ~(1 << 7));
+    shownum(cpu_get_cpsr());
 
     for(;;);
 
@@ -79,8 +95,6 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 {
 
     struct core *core = kernel_getcore();
-
-    uart_puts("SCHEDULE\n");
 
     if (core->itask)
     {
@@ -124,21 +138,23 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
 }
 
-unsigned int arch_syscall(struct cpu_general general, struct cpu_interrupt interrupt)
+void arch_syscall(void *stack)
 {
 
-    if (general.r0.value == 1)
+    struct {struct cpu_interrupt interrupt; struct cpu_general general; unsigned int lr; } *args = stack;
+
+    if (args->general.r7.value == 123)
+        uart_puts("SWI 123\n");
+    else if (args->general.r7.value == 1)
         uart_puts("SWI 1\n");
-    else if (general.r0.value == 2)
+    else if (args->general.r7.value == 2)
         uart_puts("SWI 2\n");
-    else if (general.r0.value == 3)
+    else if (args->general.r7.value == 3)
         uart_puts("SWI 3\n");
     else
         uart_puts("SWI X\n");
 
-    schedule(&general, &interrupt);
-
-    return 42;
+    schedule(&args->general, &args->interrupt);
 
 }
 
@@ -151,10 +167,7 @@ void arch_leave(void)
     buffer_clear(&general, sizeof (struct cpu_general));
     buffer_clear(&interrupt, sizeof (struct cpu_interrupt));
     schedule(&general, &interrupt);
-    uart_puts("LEAVE\n");
-    cpu_leave(interrupt);
-
-    for(;;);
+    cpu_leave(interrupt.sp.value, interrupt.pc.value);
 
 }
 
@@ -181,7 +194,7 @@ void arch_setup2(void)
     if (ntask)
     {
 
-        kernel_loadtask(ntask, (unsigned int)&testtask, ARCH_TASKSTACKVIRTUAL - 0x10, 0, 0);
+        kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
         kernel_place(0, ntask, EVENT_MAIN, 0, 0);
 
     }
