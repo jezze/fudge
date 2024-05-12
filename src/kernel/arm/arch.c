@@ -25,6 +25,7 @@ extern unsigned int test_call(unsigned int);
 
 static struct cpu_general registers[KERNEL_TASKS];
 
+/*
 static void shownum(unsigned int n)
 {
 
@@ -34,6 +35,7 @@ static void shownum(unsigned int n)
     uart_puts(num);
 
 }
+*/
 
 static void isr_install(unsigned int index, void *addr)
 {
@@ -74,18 +76,12 @@ static void testtask(void)
 
     uart_puts("TEST TASK 1\n");
 
-    shownum(cpu_get_cpsr());
-
     test_call(123);
     test_call(2);
     test_call(1);
     test_call(3);
 
     uart_puts("TEST TASK 2\n");
-
-    shownum(cpu_get_cpsr());
-    cpu_set_cpsr(cpu_get_cpsr() & ~(1 << 7));
-    shownum(cpu_get_cpsr());
 
     for(;;);
 

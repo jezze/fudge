@@ -25,7 +25,8 @@ isr_swi:
     ldmia sp, {sp, lr}^
     add sp, #8
     pop {r0-r12, lr}
-    bx lr
+
+    movs pc, lr
 
 .align 4
 .global isr_irq
