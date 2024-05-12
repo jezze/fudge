@@ -25,17 +25,15 @@ extern unsigned int test_call(unsigned int);
 
 static struct cpu_general registers[KERNEL_TASKS];
 
-/*
 static void shownum(unsigned int n)
 {
 
     char num[32];
 
-    cstring_write_fmt1(num, 32, "%Bu\n\\0", 0, &n);
+    cstring_write_fmt1(num, 32, "%u\n\\0", 0, &n);
     uart_puts(num);
 
 }
-*/
 
 static void isr_install(unsigned int index, void *addr)
 {
@@ -137,18 +135,12 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 void arch_syscall(void *stack)
 {
 
-    struct {struct cpu_interrupt interrupt; struct cpu_general general; unsigned int lr; } *args = stack;
+    struct {struct cpu_interrupt interrupt; struct cpu_general general; unsigned int lr;} *args = stack;
+    struct core *core = kernel_getcore();
 
-    if (args->general.r7.value == 123)
-        uart_puts("SWI 123\n");
-    else if (args->general.r7.value == 1)
-        uart_puts("SWI 1\n");
-    else if (args->general.r7.value == 2)
-        uart_puts("SWI 2\n");
-    else if (args->general.r7.value == 3)
-        uart_puts("SWI 3\n");
-    else
-        uart_puts("SWI X\n");
+    shownum(args->general.r0.value);
+
+    args->general.r0.value = abi_call(args->general.r7.value, core->itask, args->interrupt.sp.reference);
 
     schedule(&args->general, &args->interrupt);
 
