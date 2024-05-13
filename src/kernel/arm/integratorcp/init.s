@@ -34,7 +34,7 @@ isr_irq:
     mov sp, #0x2000
     sub lr, lr, #4
     stm sp, {r0-r12, lr}
-    bl pic_irq
+    bl arch_irq
     ldm sp, {r0-r12, pc}^
 
 .align 4
@@ -45,7 +45,7 @@ isr_fiq:
     stm sp, {r0-r12, lr}
     mrs r0, spsr
     push {r0}
-    bl pic_fiq
+    bl arch_fiq
     pop {r0}
     msr spsr, r0
     ldm sp!, {r0-r12, pc}^

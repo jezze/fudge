@@ -91,10 +91,6 @@ static void testtask(void)
 
     call_despawn();
 
-    uart_puts("TEST TASK 2\n");
-
-    for(;;);
-
 }
 
 static void schedule(struct cpu_general *general, struct cpu_interrupt *interrupt)
@@ -139,6 +135,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->sp.value = core->sp;
 
         uart_puts("HALT\n");
+        cpu_set_cpsr(cpu_get_cpsr() & ~(1 << 7));
+        cpu_halt();
 
     }
 
@@ -155,6 +153,20 @@ void arch_syscall(void *stack)
     args->general.r0.value = abi_call(args->general.r7.value, core->itask, args->interrupt.sp.reference);
 
     schedule(&args->general, &args->interrupt);
+
+}
+
+void arch_irq(void)
+{
+
+    pic_irq();
+
+}
+
+void arch_fiq(void)
+{
+
+    pic_fiq();
 
 }
 

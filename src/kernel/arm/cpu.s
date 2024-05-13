@@ -33,7 +33,7 @@ cpu_leave:
 
 .global cpu_halt
 cpu_halt:
-    wfe
+    wfi
     b cpu_halt
 
 .align 4
