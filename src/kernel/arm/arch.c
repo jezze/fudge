@@ -21,7 +21,6 @@
 extern unsigned int isr_swi;
 extern unsigned int isr_irq;
 extern unsigned int isr_fiq;
-extern unsigned int test_call(unsigned int num);
 extern unsigned int call_despawn(void);
 extern unsigned int call_place(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 
@@ -84,10 +83,6 @@ static void testtask(void)
         uart_puts("CORRECT\n");
     else
         uart_puts("INCORRECT\n");
-
-    test_call(2);
-    test_call(1);
-    test_call(3);
 
     call_despawn();
 

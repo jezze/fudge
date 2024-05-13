@@ -37,15 +37,6 @@ cpu_halt:
     b cpu_halt
 
 .align 4
-.global test_call
-test_call:
-    push {r0-r12, lr}
-    mov r7, r0
-    swi #0
-    pop {r0-r12, lr}
-    bx lr
-
-.align 4
 .global call_place
 call_place:
     push {r0-r12, lr}
