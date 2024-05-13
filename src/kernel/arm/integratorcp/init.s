@@ -50,11 +50,3 @@ isr_fiq:
     msr spsr, r0
     ldm sp!, {r0-r12, pc}^
 
-.align 4
-.global test_call
-test_call:
-    push {r0-r12, lr}
-    mov r7, r0
-    swi #0
-    pop {r0-r12, lr}
-    bx lr

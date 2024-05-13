@@ -15,7 +15,6 @@ cpu_disable_interrupts:
     mrs r0, cpsr
     orr r0,r0, #0x80
     msr cpsr_c, r0
-    mov r0, #1
     bx lr
 
 .global cpu_enable_interrupts
@@ -37,8 +36,30 @@ cpu_halt:
     wfe
     b cpu_halt
 
-.global ivt_enable
-ivt_enable:
-    cpsie i
+.align 4
+.global test_call
+test_call:
+    push {r0-r12, lr}
+    mov r7, r0
+    swi #0
+    pop {r0-r12, lr}
+    bx lr
+
+.align 4
+.global call_place
+call_place:
+    push {r0-r12, lr}
+    mov r7, #0x0F
+    swi #0
+    pop {r0-r12, lr}
+    bx lr
+
+.align 4
+.global call_despawn
+call_despawn:
+    push {r0-r12, lr}
+    mov r7, #0x0D
+    swi #0
+    pop {r0-r12, lr}
     bx lr
 

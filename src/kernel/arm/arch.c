@@ -21,7 +21,9 @@
 extern unsigned int isr_swi;
 extern unsigned int isr_irq;
 extern unsigned int isr_fiq;
-extern unsigned int test_call(unsigned int);
+extern unsigned int test_call(unsigned int num);
+extern unsigned int call_despawn(void);
+extern unsigned int call_place(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 
 static struct cpu_general registers[KERNEL_TASKS];
 
@@ -72,12 +74,22 @@ static unsigned int spawn(unsigned int itask, void *stack)
 static void testtask(void)
 {
 
+    unsigned int ret;
+
     uart_puts("TEST TASK 1\n");
 
-    test_call(123);
+    ret = call_place(10, EVENT_DATA, 5, "hello");
+
+    if (ret == 5)
+        uart_puts("CORRECT\n");
+    else
+        uart_puts("INCORRECT\n");
+
     test_call(2);
     test_call(1);
     test_call(3);
+
+    call_despawn();
 
     uart_puts("TEST TASK 2\n");
 
@@ -138,7 +150,7 @@ void arch_syscall(void *stack)
     struct {struct cpu_interrupt interrupt; struct cpu_general general; unsigned int lr;} *args = stack;
     struct core *core = kernel_getcore();
 
-    shownum(args->general.r0.value);
+    shownum(args->general.r7.value);
 
     args->general.r0.value = abi_call(args->general.r7.value, core->itask, args->interrupt.sp.reference);
 
