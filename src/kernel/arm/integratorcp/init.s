@@ -34,7 +34,13 @@ isr_irq:
     mov sp, #0x2000
     sub lr, lr, #4
     stm sp, {r0-r12, lr}
+    sub sp, #8
+    stmia sp, {sp, lr}^
+
     bl arch_irq
+
+    ldmia sp, {sp, lr}^
+    add sp, #8
     ldm sp, {r0-r12, pc}^
 
 .align 4

@@ -56,11 +56,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
         unsigned int ntask = kernel_createtask();
 
         if (ntask)
-        {
-
             return kernel_loadtask(ntask, 0, 0x6000, args->ichannel, args->id);
-
-        }
 
     }
 
@@ -151,10 +147,30 @@ void arch_syscall(void *stack)
 
 }
 
-void arch_irq(void)
+static unsigned int TEMPX = 0;
+
+void arch_irq(void *stack)
 {
 
+    struct {struct cpu_interrupt interrupt; struct cpu_general general; unsigned int lr;} *args = stack;
+
     pic_irq();
+
+    TEMPX++;
+
+    if (TEMPX == 10)
+    {
+
+        unsigned int ntask = kernel_createtask();
+
+        if (ntask)
+            kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
+
+        TEMPX = 0;
+
+    }
+
+    schedule(&args->general, &args->interrupt);
 
 }
 

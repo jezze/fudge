@@ -6,7 +6,7 @@
 #define ARCH_TASKSTACKVIRTUAL           0x80000000
 
 void arch_syscall(void *stack);
-void arch_irq(void);
+void arch_irq(void *stack);
 void arch_fiq(void);
 void arch_leave(void);
 void arch_setup1(void);
