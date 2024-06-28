@@ -300,14 +300,14 @@ void kernel_copydescriptor(unsigned int itask, unsigned int idescriptor, unsigne
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct message *message, void *data)
+unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
     struct taskrow *taskrow = &taskrows[source];
     struct mailbox *mailbox = &taskrow->mailbox;
     unsigned int c;
 
-    c = mailbox_pick(mailbox, message, data);
+    c = mailbox_pick(mailbox, message, count, data);
 
     if (!c)
         kernel_signal(source, TASK_SIGNAL_BLOCK);

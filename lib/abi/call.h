@@ -8,7 +8,7 @@ unsigned int call_link(unsigned int idescriptor, unsigned int source);
 unsigned int call_list(unsigned int idescriptor, unsigned int icdescriptor, unsigned int count, struct record *records);
 unsigned int call_load(unsigned int idescriptor);
 unsigned int call_notify(unsigned int idescriptor, unsigned int event, unsigned int count, void *data);
-unsigned int call_pick(struct message *message, char data[MESSAGE_SIZE]);
+unsigned int call_pick(struct message *message, unsigned int count, void *data);
 unsigned int call_place(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int call_read(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset);
 unsigned int call_read_all(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset);

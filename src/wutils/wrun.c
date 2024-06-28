@@ -64,7 +64,7 @@ static void dnsresolve(struct socket *socket, char *domain)
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
 
-        while ((count = channel_read_from(channel, EVENT_QUERY, data)))
+        while ((count = channel_read_from(channel, EVENT_QUERY, MESSAGE_SIZE, data)))
         {
 
             unsigned int i;

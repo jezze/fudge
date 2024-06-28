@@ -70,7 +70,7 @@ unsigned int call_notify(unsigned int idescriptor, unsigned int event, unsigned 
 
 }
 
-unsigned int call_pick(struct message *message, void *data)
+unsigned int call_pick(struct message *message, unsigned int count, void *data)
 {
 
     return 0;

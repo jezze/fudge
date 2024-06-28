@@ -307,10 +307,10 @@ static unsigned int despawn(unsigned int itask, void *stack)
 static unsigned int pick(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; struct message *message; void *data;} *args = stack;
+    struct {void *caller; struct message *message; unsigned int count; void *data;} *args = stack;
 
-    if (checkbuffer(itask, args->message, sizeof (struct message)) && checkbuffer(itask, args->data, MESSAGE_SIZE))
-        return kernel_pick(itask, args->message, args->data);
+    if (checkbuffer(itask, args->message, sizeof (struct message)) && checkbuffer(itask, args->data, args->count))
+        return kernel_pick(itask, args->message, args->count, args->data);
 
     DEBUG_FMT0(DEBUG_ERROR, "pick check failed");
 

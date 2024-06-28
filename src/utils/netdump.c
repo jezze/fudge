@@ -156,7 +156,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     call_link(FILE_G0, 8000);
 
-    while ((count = channel_read_any(EVENT_DATA, data)))
+    while ((count = channel_read_any(EVENT_DATA, MESSAGE_SIZE, data)))
         print_ethernet(source, data);
 
     call_unlink(FILE_G0);

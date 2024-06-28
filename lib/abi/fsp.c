@@ -43,7 +43,7 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int cid, st
         struct message message;
         char data[MESSAGE_SIZE];
 
-        while (channel_poll_any(EVENT_LISTRESPONSE, &message, data))
+        while (channel_poll_any(EVENT_LISTRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             struct {struct event_listresponse header; struct record records[8];} *response = (void *)data;
@@ -99,7 +99,7 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
         struct message message;
         char data[MESSAGE_SIZE];
 
-        while (channel_poll_any(EVENT_READRESPONSE, &message, data))
+        while (channel_poll_any(EVENT_READRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             struct {struct event_readresponse header; char data[64];} *response = (void *)data;
@@ -169,7 +169,7 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
         struct message message;
         char data[MESSAGE_SIZE];
 
-        while (channel_poll_any(EVENT_WALKRESPONSE, &message, data))
+        while (channel_poll_any(EVENT_WALKRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             struct {struct event_walkresponse header;} *response = (void *)data;
@@ -226,7 +226,7 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
         struct message message;
         char data[MESSAGE_SIZE];
 
-        if (channel_poll_any(EVENT_LINKRESPONSE, &message, data))
+        if (channel_poll_any(EVENT_LINKRESPONSE, &message, MESSAGE_SIZE, data))
             return 1;
 
     }
@@ -250,7 +250,7 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
         struct message message;
         char data[MESSAGE_SIZE];
 
-        if (channel_poll_any(EVENT_UNLINKRESPONSE, &message, data))
+        if (channel_poll_any(EVENT_UNLINKRESPONSE, &message, MESSAGE_SIZE, data))
             return 1;
 
     }

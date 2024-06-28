@@ -53,7 +53,7 @@ static void interpret(void)
     unsigned int count = ring_read(&input, buffer, INPUTSIZE);
     unsigned int channel = runslang(buffer, count);
 
-    while ((count = channel_read_from(channel, EVENT_DATA, buffer)))
+    while ((count = channel_read_from(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -72,7 +72,7 @@ static void interpret(void)
             job_pipe(&job, EVENT_DATA);
             job_run(&job);
 
-            while (job_pick(&job, &message, data))
+            while (job_pick(&job, &message, MESSAGE_SIZE, data))
             {
 
                 switch (message.event)
@@ -185,7 +185,7 @@ static void complete(void)
     unsigned int count = createcommand(&input, buffer, prefix);
     unsigned int channel = runslang(buffer, count);
 
-    while ((count = channel_read_from(channel, EVENT_DATA, buffer)))
+    while ((count = channel_read_from(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -205,7 +205,7 @@ static void complete(void)
             job_pipe(&job, EVENT_DATA);
             job_run(&job);
 
-            while (job_pick(&job, &message, data))
+            while (job_pick(&job, &message, MESSAGE_SIZE, data))
             {
 
                 switch (message.event)

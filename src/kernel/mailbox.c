@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "mailbox.h"
 
-unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, void *data)
+unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsigned int count, void *data)
 {
 
     unsigned int length = 0;
@@ -12,8 +12,22 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, void
     if (ring_count(&mailbox->ring))
     {
 
+        unsigned int datasize;
+
         length += ring_read_all(&mailbox->ring, message, sizeof (struct message));
-        length += ring_read_all(&mailbox->ring, data, message_datasize(message));
+
+        datasize = message_datasize(message);
+
+        if (datasize <= count)
+            length += ring_read_all(&mailbox->ring, data, datasize);
+        else
+        {
+
+            ring_skip(&mailbox->ring, datasize);
+
+            message->length = 0;
+
+        }
 
     }
 

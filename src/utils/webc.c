@@ -17,7 +17,7 @@ static void dnsresolve(char *domain, char address[32])
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
 
-        while ((count = channel_read_from(channel, EVENT_QUERY, data)))
+        while ((count = channel_read_from(channel, EVENT_QUERY, MESSAGE_SIZE, data)))
         {
 
             unsigned int i;
@@ -62,7 +62,7 @@ static void opensocket(struct url *url, char address[32])
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
 
-        while ((count = channel_read_from(channel, EVENT_DATA, data)))
+        while ((count = channel_read_from(channel, EVENT_DATA, MESSAGE_SIZE, data)))
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, data);
 
         channel_send(channel, EVENT_TERMREQUEST);

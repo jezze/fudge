@@ -46,7 +46,7 @@ static unsigned int redirect(unsigned int target, unsigned int event, unsigned i
 
 }
 
-void channel_dispatch(struct message *message, char data[MESSAGE_SIZE])
+void channel_dispatch(struct message *message, void *data)
 {
 
     if (message->event < CHANNEL_LISTENERS)
@@ -153,13 +153,13 @@ unsigned int channel_forward(unsigned int target, unsigned int event, unsigned i
 
 }
 
-unsigned int channel_pick(struct message *message, char data[MESSAGE_SIZE])
+unsigned int channel_pick(struct message *message, unsigned int count, void *data)
 {
 
     while (active)
     {
 
-        if (call_pick(message, data))
+        if (call_pick(message, count, data))
             return message->event;
 
     }
@@ -174,7 +174,7 @@ unsigned int channel_process(void)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    if (channel_pick(&message, data))
+    if (channel_pick(&message, MESSAGE_SIZE, data))
     {
 
         channel_dispatch(&message, data);
@@ -187,10 +187,10 @@ unsigned int channel_process(void)
 
 }
 
-unsigned int channel_poll_any(unsigned int event, struct message *message, char data[MESSAGE_SIZE])
+unsigned int channel_poll_any(unsigned int event, struct message *message, unsigned int count, void *data)
 {
 
-    while (channel_pick(message, data))
+    while (channel_pick(message, count, data))
     {
 
         if (message->event == event)
@@ -204,10 +204,10 @@ unsigned int channel_poll_any(unsigned int event, struct message *message, char 
 
 }
 
-unsigned int channel_poll_from(unsigned int source, unsigned int event, struct message *message, char data[MESSAGE_SIZE])
+unsigned int channel_poll_from(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data)
 {
 
-    while (channel_pick(message, data))
+    while (channel_pick(message, count, data))
     {
 
         if (message->event == event && message->source == source)
@@ -221,12 +221,12 @@ unsigned int channel_poll_from(unsigned int source, unsigned int event, struct m
 
 }
 
-unsigned int channel_read_any(unsigned int event, char data[MESSAGE_SIZE])
+unsigned int channel_read_any(unsigned int event, unsigned int count, void *data)
 {
 
     struct message message;
 
-    while (channel_pick(&message, data) != EVENT_TERMRESPONSE)
+    while (channel_pick(&message, count, data) != EVENT_TERMRESPONSE)
     {
 
         if (message.event == event)
@@ -240,12 +240,12 @@ unsigned int channel_read_any(unsigned int event, char data[MESSAGE_SIZE])
 
 }
 
-unsigned int channel_read_from(unsigned int source, unsigned int event, char data[MESSAGE_SIZE])
+unsigned int channel_read_from(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct message message;
 
-    while (channel_pick(&message, data) != EVENT_TERMRESPONSE)
+    while (channel_pick(&message, count, data) != EVENT_TERMRESPONSE)
     {
 
         if (message.event == event && message.source == source)
@@ -265,7 +265,7 @@ unsigned int channel_wait_any(unsigned int event)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    return channel_poll_any(event, &message, data);
+    return channel_poll_any(event, &message, MESSAGE_SIZE, data);
 
 }
 
@@ -275,7 +275,7 @@ unsigned int channel_wait_from(unsigned int source, unsigned int event)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    return channel_poll_from(source, event, &message, data);
+    return channel_poll_from(source, event, &message, MESSAGE_SIZE, data);
 
 }
 

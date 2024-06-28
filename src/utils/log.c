@@ -20,7 +20,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         call_link(FILE_L0, 8000);
 
-        while (channel_poll_any(EVENT_LOGINFO, &message, data))
+        while (channel_poll_any(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
         {
 
             struct event_loginfo *loginfo = (void *)data;

@@ -225,7 +225,7 @@ static void run(void)
 
     channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
-    while (channel_pick(&message, data))
+    while (channel_pick(&message, MESSAGE_SIZE, data))
     {
 
         switch (message.event)

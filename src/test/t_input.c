@@ -9,7 +9,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "If you press f I will quit\n");
 
-    while (channel_poll_from(source, EVENT_CONSOLEDATA, &message, data))
+    while (channel_poll_from(source, EVENT_CONSOLEDATA, &message, MESSAGE_SIZE, data))
     {
 
         struct event_consoledata *consoledata = (void *)data;
