@@ -1,1 +1,1 @@
-wm ?wm-service 12345
+wm ?listen 12345

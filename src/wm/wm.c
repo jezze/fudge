@@ -659,7 +659,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (!call_walk_relative(FILE_G3, FILE_L0, "event"))
         PANIC();
 
-    call_announce(option_getdecimal("wm-service"));
+    call_announce(option_getdecimal("listen"));
     call_link(FILE_G1, 8001);
     call_link(FILE_G2, 8002);
     call_link(FILE_G3, 8003);
@@ -960,7 +960,7 @@ void init(void)
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
-    option_add("wm-service", "12345");
+    option_add("listen", "12345");
     option_add("keyboard", "system:keyboard");
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if.0");

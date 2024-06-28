@@ -455,7 +455,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        call_announce(option_getdecimal("fs-service"));
+        call_announce(option_getdecimal("listen"));
 
         while (channel_process());
 
@@ -468,7 +468,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("fs-service", "1111");
+    option_add("listen", "1111");
     option_add("volume", "system:block/if.0/data");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
