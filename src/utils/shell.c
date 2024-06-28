@@ -50,7 +50,7 @@ static void interpret(void)
 {
 
     char buffer[MESSAGE_SIZE];
-    unsigned int count = ring_read(&input, buffer, INPUTSIZE);
+    unsigned int count = ring_read(&input, buffer, MESSAGE_SIZE);
     unsigned int channel = runslang(buffer, count);
 
     while ((count = channel_read_from(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))

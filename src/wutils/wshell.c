@@ -104,7 +104,7 @@ static void interpret(void)
 {
 
     char buffer[MESSAGE_SIZE];
-    unsigned int count = ring_read(&input1, buffer, INPUTSIZE);
+    unsigned int count = ring_read(&input1, buffer, MESSAGE_SIZE);
     unsigned int channel = runslang(buffer, count);
 
     printprompt();
