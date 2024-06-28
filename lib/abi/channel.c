@@ -18,9 +18,6 @@ static unsigned int active;
 static unsigned int send(unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    if (count > MESSAGE_SIZE)
-        return 0;
-
     if (target == CHANNEL_DEFAULT)
         target = listeners[event].target;
 
