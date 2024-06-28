@@ -19,7 +19,12 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsi
         datasize = message_datasize(message);
 
         if (datasize <= count)
+        {
+
             length += ring_read_all(&mailbox->ring, data, datasize);
+
+        }
+
         else
         {
 
