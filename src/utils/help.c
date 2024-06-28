@@ -11,38 +11,23 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(option_getstring("echo"));
-    unsigned int id = fsp_walk(service, 0, option_getstring("echo"));
+    unsigned int channel = fsp_spawn(option_getstring("echo"));
 
-    if (id)
+    if (channel)
     {
 
-        unsigned int channel = call_spawn(service, id);
-
-        if (channel)
-        {
-
-            channel_listen(channel, EVENT_DATA);
-            channel_listen(channel, EVENT_TERMRESPONSE);
-            channel_send_fmt0(channel, EVENT_PATH, "/data/help.txt\\0");
-            channel_send(channel, EVENT_MAIN);
-            channel_wait_from(channel, EVENT_TERMRESPONSE);
-
-        }
-
-        else
-        {
-
-            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
-
-        }
+        channel_listen(channel, EVENT_DATA);
+        channel_listen(channel, EVENT_TERMRESPONSE);
+        channel_send_fmt0(channel, EVENT_PATH, "initrd:data/help.txt\\0");
+        channel_send(channel, EVENT_MAIN);
+        channel_wait_from(channel, EVENT_TERMRESPONSE);
 
     }
 
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("echo"));
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
 
     }
 

@@ -391,18 +391,10 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         if (buffer_match(cmd, "run=", 4))
         {
 
-            unsigned int service = fsp_auth(cmd + 4);
-            unsigned int id = fsp_walk(service, 0, cmd + 4);
+            unsigned int channel = fsp_spawn(cmd + 4);
 
-            if (id)
-            {
-
-                unsigned int channel = call_spawn(service, id);
-
-                if (channel)
-                    channel_send(channel, EVENT_MAIN);
-
-            }
+            if (channel)
+                channel_send(channel, EVENT_MAIN);
 
         }
 
@@ -588,18 +580,10 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
-                    unsigned int service = fsp_auth(option_getstring("wshell"));
-                    unsigned int id = fsp_walk(service, 0, option_getstring("wshell"));
+                    unsigned int channel = fsp_spawn(option_getstring("wshell"));
 
-                    if (id)
-                    {
-
-                        unsigned int channel = call_spawn(service, id);
-
-                        if (channel)
-                            channel_send(channel, EVENT_MAIN);
-
-                    }
+                    if (channel)
+                        channel_send(channel, EVENT_MAIN);
 
                 }
 

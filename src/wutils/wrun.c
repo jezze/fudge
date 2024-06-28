@@ -51,44 +51,36 @@ static void handlehttppacket(void)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int service = fsp_auth(option_getstring("dns"));
-    unsigned int id = fsp_walk(service, 0, option_getstring("dns"));
+    unsigned int channel = fsp_spawn(option_getstring("dns"));
 
-    if (id)
+    if (channel)
     {
 
-        unsigned int channel = call_spawn(service, id);
+        char data[MESSAGE_SIZE];
+        unsigned int count;
 
-        if (channel)
+        channel_listen(channel, EVENT_QUERY);
+        channel_listen(channel, EVENT_TERMRESPONSE);
+        channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(channel, EVENT_MAIN);
+
+        while ((count = channel_read_from(channel, EVENT_QUERY, data)))
         {
 
-            char data[MESSAGE_SIZE];
-            unsigned int count;
+            unsigned int i;
+            char *key;
 
-            channel_listen(channel, EVENT_QUERY);
-            channel_listen(channel, EVENT_TERMRESPONSE);
-            channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
-            channel_send(channel, EVENT_MAIN);
-
-            while ((count = channel_read_from(channel, EVENT_QUERY, data)))
+            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
             {
 
-                unsigned int i;
-                char *key;
-
-                for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
+                if (cstring_match(key, "data"))
                 {
 
-                    if (cstring_match(key, "data"))
-                    {
+                    char *value = key + cstring_length_zero(key);
 
-                        char *value = key + cstring_length_zero(key);
+                    socket_bind_ipv4s(socket, value);
 
-                        socket_bind_ipv4s(socket, value);
-
-                        break;
-
-                    }
+                    break;
 
                 }
 
@@ -101,7 +93,7 @@ static void dnsresolve(struct socket *socket, char *domain)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("dns"));
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
 
     }
 
@@ -110,16 +102,24 @@ static void dnsresolve(struct socket *socket, char *domain)
 static void seed(struct mtwist_state *state)
 {
 
-    struct ctrl_clocksettings settings;
+    unsigned int service = fsp_auth(option_getstring("clock"));
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("clock")))
-        PANIC();
+    if (service)
+    {
 
-    if (!call_walk_relative(FILE_L1, FILE_L0, "ctrl"))
-        PANIC();
+        unsigned int id = fsp_walk(service, fsp_walk(service, 0, option_getstring("clock")), "ctrl");
 
-    call_read_all(FILE_L1, &settings, sizeof (struct ctrl_clocksettings), 0);
-    mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+        if (id)
+        {
+
+            struct ctrl_clocksettings settings;
+
+            fsp_read_all(service, id, &settings, sizeof (struct ctrl_clocksettings), 0);
+            mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+
+        }
+
+    }
 
 }
 

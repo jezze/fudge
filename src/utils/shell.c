@@ -29,44 +29,27 @@ static void printprompt(void)
 static unsigned int runslang(void *ibuffer, unsigned int icount)
 {
 
-    unsigned int service = fsp_auth(option_getstring("slang"));
-    unsigned int id = fsp_walk(service, 0, option_getstring("slang"));
+    unsigned int channel = fsp_spawn(option_getstring("slang"));
 
-    if (id)
+    if (channel)
     {
 
-        unsigned int channel = call_spawn(service, id);
-
-        if (channel)
-        {
-
-            channel_listen(channel, EVENT_DATA);
-            channel_listen(channel, EVENT_ERROR);
-            channel_listen(channel, EVENT_TERMRESPONSE);
-            channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
-            channel_send(channel, EVENT_MAIN);
-
-        }
-
-        else
-        {
-
-            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
-
-        }
-
-        return channel;
+        channel_listen(channel, EVENT_DATA);
+        channel_listen(channel, EVENT_ERROR);
+        channel_listen(channel, EVENT_TERMRESPONSE);
+        channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
+        channel_send(channel, EVENT_MAIN);
 
     }
 
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", option_getstring("slang"));
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
 
     }
 
-    return 0;
+    return channel;
 
 }
 
@@ -83,7 +66,7 @@ static void interpret(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job))
+        if (job_spawn(&job, "initrd:bin"))
         {
 
             struct message message;
@@ -215,7 +198,7 @@ static void complete(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job))
+        if (job_spawn(&job, "initrd:bin"))
         {
 
             struct message message;

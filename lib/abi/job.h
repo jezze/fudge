@@ -28,7 +28,7 @@ struct job
 };
 
 void job_parse(struct job *job, void *buffer, unsigned int count);
-unsigned int job_spawn(struct job *job);
+unsigned int job_spawn(struct job *job, char *bindir);
 void job_listen(struct job *job, unsigned int event);
 void job_pipe(struct job *job, unsigned int event);
 void job_run(struct job *job);

@@ -17,18 +17,11 @@ unsigned int fsp_auth(char *path)
 
     /* need to make syscall for this */
 
-    if (cstring_match(path, "initrd"))
+    if (cstring_length(path) >= 7 && buffer_match(path, "initrd:", 7))
         return 666;
 
-    if (cstring_length(path) > 7 && buffer_match(path, "initrd:", 7))
-        return 666;
-
-    if (cstring_match(path, "system"))
+    if (cstring_length(path) >= 7 && buffer_match(path, "system:", 7))
         return 667;
-
-    if (cstring_length(path) > 7 && buffer_match(path, "system:", 7))
-        return 667;
-
 
     return 0;
 
@@ -245,6 +238,44 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
 
         if (channel_poll_any(EVENT_UNLINKRESPONSE, &message, data))
             return 1;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int fsp_spawn(char *path)
+{
+
+    unsigned int service = fsp_auth(path);
+
+    if (service)
+    {
+
+        unsigned int id = fsp_walk(service, 0, path);
+
+        if (id)
+            return call_spawn(service, id);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int fsp_spawn_relative(char *path, char *parent)
+{
+
+    unsigned int service = fsp_auth(parent);
+
+    if (service)
+    {
+
+        unsigned int id = fsp_walk(service, fsp_walk(service, 0, parent), path);
+
+        if (id)
+            return call_spawn(service, id);
 
     }
 

@@ -82,41 +82,20 @@ static void activatenext(struct job *job, unsigned int startindex)
 
 }
 
-unsigned int job_spawn(struct job *job)
+unsigned int job_spawn(struct job *job, char *bindir)
 {
 
-    unsigned int service = fsp_auth("initrd");
-    unsigned int bindir = fsp_walk(service, 0, "bin");
     unsigned int i;
-
-    if (!bindir)
-    {
-
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Bin directory not found\n");
-
-        return 0;
-
-    }
 
     for (i = 0; i < job->count; i++)
     {
 
         struct job_worker *worker = &job->workers[i];
-        unsigned int id = fsp_walk(service, bindir, worker->program);
 
-        if (!id)
-            id = fsp_walk(service, 0, worker->program);
+        worker->channel = fsp_spawn_relative(worker->program, bindir);
 
-        if (!id)
-        {
-
-            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Program not found: %s\n", &worker->program);
-
-            return 0;
-
-        }
-
-        worker->channel = call_spawn(service, id);
+        if (!worker->channel)
+            worker->channel = fsp_spawn(worker->program);
 
         if (!worker->channel)
         {
