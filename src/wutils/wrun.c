@@ -90,13 +90,6 @@ static void dnsresolve(struct socket *socket, char *domain)
 
     }
 
-    else
-    {
-
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
-
-    }
-
 }
 
 static void seed(struct mtwist_state *state)

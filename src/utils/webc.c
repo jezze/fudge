@@ -43,13 +43,6 @@ static void dnsresolve(char *domain, char address[32])
 
     }
 
-    else
-    {
-
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
-
-    }
-
 }
 
 static void opensocket(struct url *url, char address[32])
@@ -74,13 +67,6 @@ static void opensocket(struct url *url, char address[32])
 
         channel_send(channel, EVENT_TERMREQUEST);
         channel_wait_from(channel, EVENT_TERMRESPONSE);
-
-    }
-
-    else
-    {
-
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
 
     }
 

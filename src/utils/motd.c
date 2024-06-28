@@ -24,13 +24,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    else
-    {
-
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
-
-    }
-
 }
 
 void init(void)

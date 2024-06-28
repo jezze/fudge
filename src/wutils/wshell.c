@@ -96,13 +96,6 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
 
     }
 
-    else
-    {
-
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Could not spawn process\n");
-
-    }
-
     return channel;
 
 }
