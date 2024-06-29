@@ -139,7 +139,7 @@ static unsigned int service_stat(unsigned int id, struct record *record)
 
 }
 
-static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int count, struct record *records)
+static unsigned int service_list(unsigned int id, unsigned int offset, unsigned int count, struct record *records)
 {
 
     struct system_node *node = getnode(id);
@@ -148,38 +148,24 @@ static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int
     {
 
         struct list_item *current;
-        struct list_item *first = 0;
         unsigned int n = 0;
 
         spinlock_acquire(&node->children.spinlock);
 
-        if (cid)
-        {
-
-            struct system_node *c = getnode(cid);
-
-            if (c)
-            {
-
-                first = &c->item;
-                first = first->next;
-
-            }
-
-        }
-
-        else
-        {
-
-            first = node->children.head;
-
-        }
-
-        for (current = first; current; current = current->next)
+        for (current = node->children.head; current; current = current->next)
         {
 
             struct system_node *child = current->data;
             struct record *record = &records[n];
+
+            if (offset)
+            {
+
+                offset--;
+
+                continue;
+
+            }
 
             record->id = (unsigned int)child;
             record->size = 0;
@@ -283,7 +269,7 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     struct {struct event_listresponse listresponse; struct record records[8];} message;
 
     message.listresponse.session = listrequest->session;
-    message.listresponse.nrecords = service_list(listrequest->id, listrequest->cid, 8, message.records);
+    message.listresponse.nrecords = service_list(listrequest->id, listrequest->offset, 8, message.records);
 
     return kernel_place(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 

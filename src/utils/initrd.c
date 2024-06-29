@@ -7,17 +7,8 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
     struct event_listrequest *listrequest = mdata;
     struct record records[8];
 
-    if (listrequest->cid == 0)
-    {
-
-        call_set(FILE_L0, listrequest->id);
-        call_walk_duplicate(FILE_L1, FILE_L0);
-        call_walk_duplicate(FILE_L2, FILE_L0);
-        fsp_listresponse(source, listrequest->session, call_list(FILE_L1, FILE_L2, 8, records), records);
-
-    }
-
-    fsp_listresponse(source, listrequest->session, 0, 0);
+    call_set(FILE_L0, listrequest->id);
+    fsp_listresponse(source, listrequest->session, call_list(FILE_L0, listrequest->offset, 8, records), records);
 
 }
 

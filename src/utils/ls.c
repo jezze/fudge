@@ -8,11 +8,11 @@ static void list(unsigned int descriptor)
 
     struct record records[8];
     unsigned int nrecords;
+    unsigned int offset;
 
-    call_walk_duplicate(FILE_L0, descriptor);
     channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
 
-    while ((nrecords = call_list(descriptor, FILE_L0, 8, records)))
+    for (offset = 0; (nrecords = call_list(descriptor, offset, 8, records)); offset += nrecords)
     {
 
         unsigned int i;
@@ -72,7 +72,6 @@ void init(void)
 {
 
     option_add("show", "");
-    call_walk_duplicate(FILE_G0, FILE_PW);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
 

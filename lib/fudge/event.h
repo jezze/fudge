@@ -209,7 +209,7 @@ struct event_listrequest
 
     unsigned int session;
     unsigned int id;
-    unsigned int cid;
+    unsigned int offset;
 
 };
 

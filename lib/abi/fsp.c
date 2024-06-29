@@ -27,7 +27,7 @@ unsigned int fsp_auth(char *path)
 
 }
 
-unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int cid, struct record records[8])
+unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset, struct record records[8])
 {
 
     unsigned int session = getsession();
@@ -35,7 +35,7 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int cid, st
 
     request.header.session = session;
     request.header.id = id;
-    request.header.cid = cid;
+    request.header.offset = offset;
 
     if (channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request))
     {

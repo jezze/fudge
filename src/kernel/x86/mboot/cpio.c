@@ -165,13 +165,12 @@ static unsigned int service_stat(unsigned int id, struct record *record)
 
 }
 
-static unsigned int getlist(unsigned int id, unsigned int cid, unsigned int count, struct record *records)
+static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int count, struct record *records)
 {
 
     struct cpio_header *header = getheader(id);
+    unsigned int cid = address;
     unsigned int n = 0;
-
-    cid = (cid) ? getnext(cid) : address;
 
     do
     {
@@ -181,24 +180,33 @@ static unsigned int getlist(unsigned int id, unsigned int cid, unsigned int coun
         if (!cheader)
             break;
 
-        if (cid == id)
-            break;
-
         if (parent(cheader, cid) == id)
         {
 
-            struct record *record = &records[n];
+            if (offset > 0)
+            {
 
-            record->id = cid;
-            record->size = cpio_filesize(cheader);
-            record->type = RECORD_TYPE_NORMAL;
-            record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(cid), cheader->namesize - 1, header->namesize);
+                offset--;
 
-            if ((cheader->mode & 0xF000) == 0x4000)
-                record->type = RECORD_TYPE_DIRECTORY;
+            }
 
-            if (++n >= count)
-                break;
+            else
+            {
+
+                struct record *record = &records[n];
+
+                record->id = cid;
+                record->size = cpio_filesize(cheader);
+                record->type = RECORD_TYPE_NORMAL;
+                record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(cid), cheader->namesize - 1, header->namesize);
+
+                if ((cheader->mode & 0xF000) == 0x4000)
+                    record->type = RECORD_TYPE_DIRECTORY;
+
+                if (++n >= count)
+                    break;
+
+            }
 
         }
 
@@ -208,7 +216,7 @@ static unsigned int getlist(unsigned int id, unsigned int cid, unsigned int coun
 
 }
 
-static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int count, struct record *record)
+static unsigned int service_list(unsigned int id, unsigned int offset, unsigned int count, struct record *record)
 {
 
     struct cpio_header *header = getheader(id);
@@ -220,7 +228,7 @@ static unsigned int service_list(unsigned int id, unsigned int cid, unsigned int
         {
 
         case 0x4000:
-            return getlist(id, cid, count, record);
+            return getlist(id, offset, count, record);
 
         }
 
@@ -317,7 +325,7 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     struct {struct event_listresponse listresponse; struct record records[8];} message;
 
     message.listresponse.session = listrequest->session;
-    message.listresponse.nrecords = service_list(listrequest->id, listrequest->cid, 8, message.records);
+    message.listresponse.nrecords = service_list(listrequest->id, listrequest->offset, 8, message.records);
 
     return kernel_place(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 
