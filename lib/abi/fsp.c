@@ -85,9 +85,6 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
     unsigned int session = getsession();
     struct {struct event_readrequest header;} request;
 
-    if (!count)
-        return 0;
-
     request.header.session = session;
     request.header.id = id;
     request.header.offset = offset;
