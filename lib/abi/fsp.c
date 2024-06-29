@@ -152,10 +152,6 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 
     unsigned int session = getsession();
     struct {struct event_walkrequest header; char path[64];} request;
-    unsigned int offset = buffer_firstbyte(path, cstring_length(path), ':');
-
-    if (offset)
-        path += offset;
 
     request.header.session = session;
     request.header.parent = parent;
