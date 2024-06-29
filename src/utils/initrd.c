@@ -39,10 +39,15 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
         unsigned int id;
+        char buffer[200];
+
+        buffer_write(buffer, 200, walkrequest + 1, walkrequest->length, 0);
+
+        buffer[walkrequest->length] = '\0';
 
         call_set(FILE_L0, walkrequest->parent);
 
-        id = call_walk_relative(FILE_L1, FILE_L0, (char *)(walkrequest + 1));
+        id = call_walk_relative(FILE_L1, FILE_L0, buffer);
 
         fsp_walkresponse(source, walkrequest->session, id);
 
