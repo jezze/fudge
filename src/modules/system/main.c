@@ -155,9 +155,6 @@ static unsigned int service_list(unsigned int id, unsigned int offset, unsigned 
         for (current = node->children.head; current; current = current->next)
         {
 
-            struct system_node *child = current->data;
-            struct record *record = &records[n];
-
             if (offset)
             {
 
@@ -167,28 +164,36 @@ static unsigned int service_list(unsigned int id, unsigned int offset, unsigned 
 
             }
 
-            record->id = (unsigned int)child;
-            record->size = 0;
-            record->type = RECORD_TYPE_NORMAL;
-            record->length = buffer_read(record->name, RECORD_NAMESIZE, child->name, cstring_length(child->name), 0);
-
-            if (child->type == SYSTEM_NODETYPE_GROUP)
+            else
             {
 
-                record->type = RECORD_TYPE_DIRECTORY;
+                struct system_node *child = current->data;
+                struct record *record = &records[n];
+
+                record->id = (unsigned int)child;
+                record->size = 0;
+                record->type = RECORD_TYPE_NORMAL;
+                record->length = buffer_read(record->name, RECORD_NAMESIZE, child->name, cstring_length(child->name), 0);
+
+                if (child->type == SYSTEM_NODETYPE_GROUP)
+                {
+
+                    record->type = RECORD_TYPE_DIRECTORY;
+
+                }
+
+                if (child->type == SYSTEM_NODETYPE_MULTIGROUP)
+                {
+
+                    record->type = RECORD_TYPE_DIRECTORY;
+                    record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ".%u", record->length, &child->index);
+
+                }
+
+                if (++n >= count)
+                    break;
 
             }
-
-            if (child->type == SYSTEM_NODETYPE_MULTIGROUP)
-            {
-
-                record->type = RECORD_TYPE_DIRECTORY;
-                record->length += cstring_write_fmt1(record->name, RECORD_NAMESIZE, ".%u", record->length, &child->index);
-
-            }
-
-            if (++n >= count)
-                break;
 
         }
 
