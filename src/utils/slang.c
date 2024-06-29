@@ -247,10 +247,9 @@ static void translate(struct tokenlist *postfix, struct tokenlist *infix, struct
 
 }
 
-static void parse(struct tokenlist *postfix, struct tokenlist *stack)
+static void parse(struct tokenlist *postfix, struct tokenlist *stack, unsigned int size, void *buffer)
 {
 
-    char buffer[MESSAGE_SIZE];
     unsigned int count = 0;
     unsigned int i;
 
@@ -280,7 +279,7 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
             if (!u)
                 return;
 
-            count += cstring_write_fmt2(buffer, MESSAGE_SIZE, "O\\0%s\\0%s\\0", count, t->str, u->str);
+            count += cstring_write_fmt2(buffer, size, "O\\0%s\\0%s\\0", count, t->str, u->str);
 
             break;
 
@@ -291,9 +290,9 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 t = tokenlist_pop(stack);
 
                 if (tokenlist_check(stack) == TOKEN_IDENT)
-                    count += cstring_write_fmt1(buffer, MESSAGE_SIZE, "D\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, "D\\0%s\\0", count, t->str);
                 else
-                    count += cstring_write_fmt1(buffer, MESSAGE_SIZE, "P\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, "P\\0%s\\0", count, t->str);
 
             }
 
@@ -306,13 +305,13 @@ static void parse(struct tokenlist *postfix, struct tokenlist *stack)
                 t = tokenlist_pop(stack);
 
                 if (tokenlist_check(stack) == TOKEN_IDENT)
-                    count += cstring_write_fmt1(buffer, MESSAGE_SIZE, "D\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, "D\\0%s\\0", count, t->str);
                 else
-                    count += cstring_write_fmt1(buffer, MESSAGE_SIZE, "P\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, "P\\0%s\\0", count, t->str);
 
             }
 
-            count += cstring_write_fmt0(buffer, MESSAGE_SIZE, "E\\0", count);
+            count += cstring_write_fmt0(buffer, size, "E\\0", count);
 
             channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
 
@@ -332,13 +331,15 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     if (msize)
     {
 
+        char buffer[4096];
+
         ring_reset(&stringtable);
         tokenlist_reset(&infix);
         tokenlist_reset(&postfix);
         tokenlist_reset(&stack);
         tokenizebuffer(&infix, &stringtable, msize, mdata);
         translate(&postfix, &infix, &stack);
-        parse(&postfix, &stack);
+        parse(&postfix, &stack, 4096, buffer);
 
     }
 
@@ -363,7 +364,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             tokenizebuffer(&infix, &stringtable, count, buffer);
 
         translate(&postfix, &infix, &stack);
-        parse(&postfix, &stack);
+        parse(&postfix, &stack, 4096, buffer);
 
     }
 
