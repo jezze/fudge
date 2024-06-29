@@ -20,6 +20,7 @@
 .set CALL_INDEX_LINK,                   0x10
 .set CALL_INDEX_UNLINK,                 0x11
 .set CALL_INDEX_ANNOUNCE,               0x12
+.set CALL_INDEX_SET,                    0x13
 
 .section .text
 
@@ -98,6 +99,12 @@ call_place:
 .global call_read
 call_read:
     movl $CALL_INDEX_READ, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_set
+call_set:
+    movl $CALL_INDEX_SET, %eax
     int $CALL_INTERRUPT
     ret
 
