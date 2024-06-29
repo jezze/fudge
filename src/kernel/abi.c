@@ -146,11 +146,11 @@ static unsigned int stat(unsigned int itask, void *stack)
 static unsigned int list(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor; unsigned int cid; unsigned int count; struct record *records;} *args = stack;
+    struct {void *caller; unsigned int idescriptor; unsigned int offset; unsigned int count; struct record *records;} *args = stack;
     struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
 
     if (checkbuffer(itask, args->records, args->count * sizeof (struct record)) && descriptor_check(descriptor))
-        return descriptor->service->list(descriptor->id, args->cid, args->count, args->records);
+        return descriptor->service->list(descriptor->id, args->offset, args->count, args->records);
 
     DEBUG_FMT0(DEBUG_ERROR, "list check failed");
 
