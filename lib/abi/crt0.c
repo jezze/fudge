@@ -59,6 +59,7 @@ void panic(char *file, unsigned int line)
 void main(void)
 {
 
+    option_add("pwd", "");
     channel_open();
     channel_autoclose(EVENT_MAIN, 1);
     channel_autoclose(EVENT_TERMREQUEST, 1);

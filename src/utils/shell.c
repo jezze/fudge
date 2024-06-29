@@ -70,6 +70,7 @@ static void interpret(void)
             job_listen(&job, EVENT_ERROR);
             job_listen(&job, EVENT_PATH);
             job_pipe(&job, EVENT_DATA);
+            job_sendall(&job, EVENT_OPTION, 11, "pwd\0initrd:\0");
             job_run(&job);
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
