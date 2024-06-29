@@ -32,16 +32,10 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_walkrequest *walkrequest = mdata;
 
-    if (walkrequest->parent == 0 && walkrequest->length == 0)
-    {
+    if (!walkrequest->parent)
+        walkrequest->parent = call_walk_absolute(FILE_L0, "/");
 
-        unsigned int id = call_walk_absolute(FILE_L0, "/");
-
-        fsp_walkresponse(source, walkrequest->session, id);
-
-    }
-
-    else
+    if (walkrequest->length)
     {
 
         unsigned int id;
@@ -50,8 +44,14 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 
         id = call_walk_relative(FILE_L1, FILE_L0, (char *)(walkrequest + 1));
 
-        if (id)
-            fsp_walkresponse(source, walkrequest->session, id);
+        fsp_walkresponse(source, walkrequest->session, id);
+
+    }
+
+    else
+    {
+
+        fsp_walkresponse(source, walkrequest->session, walkrequest->parent);
 
     }
 
