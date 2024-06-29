@@ -30,14 +30,9 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     if (walkrequest->parent == 0 && walkrequest->length == 0)
     {
 
-        if (call_walk_absolute(FILE_L2, "/"))
-        {
-
-            fsp_walkresponse(source, walkrequest->session, FILE_L2);
-            call_walk_duplicate(FILE_L7, FILE_L2);
-            call_walk_duplicate(FILE_L8, FILE_L2);
-
-        }
+        fsp_walkresponse(source, walkrequest->session, FILE_L2);
+        call_walk_duplicate(FILE_L7, FILE_L2);
+        call_walk_duplicate(FILE_L8, FILE_L2);
 
     }
 
@@ -65,6 +60,7 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    call_walk_absolute(FILE_L2, "/");
     call_announce(option_getdecimal("listen"));
 
     while (channel_process());
