@@ -1,3 +1,4 @@
+initrd
 elfload /kernel/base.ko
 elfload /kernel/system.ko
 elfload /kernel/log.ko
