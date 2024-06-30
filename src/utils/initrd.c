@@ -67,7 +67,11 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_writerequest *writerequest = mdata;
     char buffer[MESSAGE_SIZE];
-    unsigned int count = call_write(writerequest->id, buffer, writerequest->count < 64 ? writerequest->count : 64, writerequest->offset);
+    unsigned int count;
+
+    call_set(FILE_L0, writerequest->id);
+
+    count = call_write(writerequest->id, buffer, writerequest->count < 64 ? writerequest->count : 64, writerequest->offset);
 
     fsp_writeresponse(source, writerequest->session, count, buffer);
 
