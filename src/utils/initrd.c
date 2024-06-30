@@ -17,13 +17,9 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_readrequest *readrequest = mdata;
     char buffer[MESSAGE_SIZE];
-    unsigned int count;
 
     call_set(FILE_L0, readrequest->id);
-
-    count = call_read(FILE_L0, buffer, readrequest->count < 64 ? readrequest->count : 64, readrequest->offset);
-
-    fsp_readresponse(source, readrequest->session, count, buffer);
+    fsp_readresponse(source, readrequest->session, call_read(FILE_L0, buffer, readrequest->count < 64 ? readrequest->count : 64, readrequest->offset), buffer);
 
 }
 
@@ -38,7 +34,6 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     if (walkrequest->length)
     {
 
-        unsigned int id;
         char buffer[200];
 
         buffer_write(buffer, 200, walkrequest + 1, walkrequest->length, 0);
@@ -46,10 +41,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
         buffer[walkrequest->length] = '\0';
 
         call_set(FILE_L0, walkrequest->parent);
-
-        id = call_walk_relative(FILE_L1, FILE_L0, buffer);
-
-        fsp_walkresponse(source, walkrequest->session, id);
+        fsp_walkresponse(source, walkrequest->session, call_walk_relative(FILE_L1, FILE_L0, buffer));
 
     }
 
@@ -67,13 +59,9 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_writerequest *writerequest = mdata;
     char buffer[MESSAGE_SIZE];
-    unsigned int count;
 
     call_set(FILE_L0, writerequest->id);
-
-    count = call_write(writerequest->id, buffer, writerequest->count < 64 ? writerequest->count : 64, writerequest->offset);
-
-    fsp_writeresponse(source, writerequest->session, count, buffer);
+    fsp_writeresponse(source, writerequest->session, call_write(writerequest->id, buffer, writerequest->count < 64 ? writerequest->count : 64, writerequest->offset), buffer);
 
 }
 
