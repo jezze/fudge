@@ -419,45 +419,25 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
     if (sp)
         task->thread.sp = sp;
 
-    if (address)
+    task->node.address = (address) ? address : 0;
+
+    if (!task->node.address && channel && channel->service)
     {
 
-        task->node.address = address;
+        kernel_setdescriptor(itask, FILE_PW, channel->service, channel->service->root());
+        kernel_setdescriptor(itask, FILE_PP, channel->service, id);
 
-        if (task->node.address)
-        {
-
-            struct binary_format *format = binary_findformat(&task->node);
-
-            if (format)
-                task->thread.ip = format->findentry(&task->node);
-
-        }
+        task->node.address = channel->service->map(id);
 
     }
 
-    else
+    if (task->node.address)
     {
 
-        if (channel && channel->service)
-        {
+        struct binary_format *format = binary_findformat(&task->node);
 
-            kernel_setdescriptor(itask, FILE_PW, channel->service, channel->service->root());
-            kernel_setdescriptor(itask, FILE_PP, channel->service, id);
-
-            task->node.address = channel->service->map(id);
-
-            if (task->node.address)
-            {
-
-                struct binary_format *format = binary_findformat(&task->node);
-
-                if (format)
-                    task->thread.ip = format->findentry(&task->node);
-
-            }
-
-        }
+        if (format)
+            task->thread.ip = format->findentry(&task->node);
 
     }
 
