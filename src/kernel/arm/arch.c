@@ -56,7 +56,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
         unsigned int ntask = kernel_createtask();
 
         if (ntask)
-            return kernel_loadtask(ntask, 0, 0x6000, args->ichannel, args->id);
+            return kernel_loadtask(ntask, 0, 0x6000, args->ichannel, args->id, 0);
 
     }
 
@@ -164,7 +164,7 @@ void arch_irq(void *stack)
         unsigned int ntask = kernel_createtask();
 
         if (ntask)
-            kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
+            kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0, 0);
 
         TEMPX = 0;
 
@@ -217,7 +217,7 @@ void arch_setup2(void)
     if (ntask)
     {
 
-        kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
+        kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0, 0);
         kernel_place(0, ntask, EVENT_MAIN, 0, 0);
 
     }

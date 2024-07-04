@@ -19,7 +19,7 @@ REPORT:=report.xml
 .PHONY: all clean check check-full install default help
 .SUFFIXES:
 
-all: $(KERNEL) $(RAMDISK)
+all: $(KERNEL) $(IMAGE)
 
 clean:
 	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(IMAGE) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD) $(REPORT)
@@ -147,11 +147,12 @@ $(KERNEL).cpio: $(DIR_BUILD)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o > $@
 
-$(KERNEL).img: $(KERNEL) $(RAMDISK)
+$(KERNEL).img: $(KERNEL) $(RAMDISK) $(DIR_SRC)/utils/init
 	@echo IMAGE $@
-	@dd if=/dev/zero of=$@ count=65536
-	@dd if=$(KERNEL) of=$@ conv=notrunc
-	@dd if=$(RAMDISK) of=$@ skip=4096 conv=notrunc
+	@dd if=/dev/zero of=$@ bs=512 count=16384
+	@dd if=$(KERNEL) of=$@ bs=512 seek=2048 conv=notrunc
+	@dd if=$(DIR_SRC)/utils/init of=$@ bs=512 seek=3584 conv=notrunc
+	@dd if=$(RAMDISK) of=$@ bs=512 seek=4096 conv=notrunc
 
 $(KERNEL).iso: $(DIR_ISO)
 	@grub-mkrescue -o $@ $^
