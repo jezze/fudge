@@ -73,16 +73,19 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int service = option_getdecimal("service");
+    unsigned int id = fsp_walk(service, 0, mdata);
+
     page = 0;
 
-    if (call_walk_absolute(FILE_L0, mdata))
+    if (id)
     {
 
         char buffer[4096];
         unsigned int count;
         unsigned int offset;
 
-        for (offset = 0; (count = call_read(FILE_L0, buffer, 4096, offset)); offset += count)
+        for (offset = 0; (count = fsp_read(service, id, buffer, 4096, offset)); offset += count)
             print(source, count, buffer);
 
     }
@@ -99,6 +102,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("service", "90");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_PATH, onpath);
 
