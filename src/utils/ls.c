@@ -7,35 +7,31 @@ static void list(char *path)
 {
 
     unsigned int service = option_getdecimal("service");
-    unsigned int root = fsp_walk(service, 0, "");
+    unsigned int id = fsp_walk(service, 0, path);
 
-    if (root)
+    if (id)
     {
 
-        unsigned int id = fsp_walk(service, root, path);
+        struct record records[8];
+        unsigned int nrecords;
+        unsigned int offset;
 
-        if (id)
+        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
+
+        for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
         {
 
-            struct record records[8];
-            unsigned int nrecords;
-            unsigned int offset;
+            unsigned int i;
 
-            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
-
-            for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
+            for (i = 0; i < nrecords; i++)
             {
 
-                unsigned int i;
+                struct record *record = &records[i];
 
-                for (i = 0; i < nrecords; i++)
-                {
-
-                    struct record *record = &records[i];
-
+                if (record->type == RECORD_TYPE_DIRECTORY)
+                    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w/\n", record->name, &record->length);
+                else
                     channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", record->name, &record->length);
-
-                }
 
             }
 
