@@ -62,7 +62,7 @@ void main(void)
     option_add("pwd", "");
     channel_open();
     channel_autoclose(EVENT_END, 1);
-    channel_autoclose(EVENT_TERMREQUEST, 1);
+    channel_autoclose(EVENT_TERMREQUEST, 2);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_REDIRECT, onredirect);
     channel_bind(EVENT_STATUS, onstatus);

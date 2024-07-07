@@ -6,6 +6,7 @@
 #define CHANNEL_STATE_CLOSE             0
 #define CHANNEL_STATE_OPEN              1
 #define CHANNEL_STATE_AWAIT             2
+#define CHANNEL_STATE_TERM              3
 
 static struct
 {
@@ -65,14 +66,46 @@ void channel_dispatch(struct message *message, void *data)
         }
 
         if (listeners[message->event].autoclose)
-            state = CHANNEL_STATE_AWAIT;
-
-        if (state == CHANNEL_STATE_AWAIT && outstanding == 0)
         {
 
+            switch (listeners[message->event].autoclose)
+            {
+
+            case 1:
+                state = CHANNEL_STATE_AWAIT;
+
+                break;
+
+            case 2:
+                state = CHANNEL_STATE_TERM;
+
+                break;
+
+            }
+
+        }
+
+        switch (state)
+        {
+
+        case CHANNEL_STATE_AWAIT:
+            if (!outstanding)
+            {
+
+                send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
+
+                channel_close();
+
+            }
+
+            break;
+
+        case CHANNEL_STATE_TERM:
             send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
 
             channel_close();
+
+            break;
 
         }
 
