@@ -43,7 +43,6 @@ static void list(char *path)
 
     }
 
-
 }
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
