@@ -4,7 +4,10 @@
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (call_walk_absolute(FILE_L0, mdata))
+    unsigned int service = option_getdecimal("service");
+    unsigned int id = fsp_walk(service, 0, mdata);
+
+    if (id)
         channel_send_buffer(CHANNEL_DEFAULT, EVENT_PATH, msize, mdata);
     else
         channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
@@ -14,6 +17,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("service", "90");
     channel_bind(EVENT_PATH, onpath);
 
 }
