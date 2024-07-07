@@ -93,6 +93,7 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
         channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
         channel_send(channel, EVENT_MAIN);
+        channel_send(channel, EVENT_END);
 
     }
 
@@ -508,6 +509,7 @@ void init(void)
     ring_init(&result, RESULTSIZE, resultdata);
     option_add("wm-service", "12345");
     option_add("slang", "initrd:bin/slang");
+    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);

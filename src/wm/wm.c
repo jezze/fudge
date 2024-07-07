@@ -394,7 +394,12 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
             unsigned int channel = fsp_spawn(cmd + 4);
 
             if (channel)
+            {
+
                 channel_send(channel, EVENT_MAIN);
+                channel_send(channel, EVENT_END);
+
+            }
 
         }
 
@@ -583,7 +588,12 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                     unsigned int channel = fsp_spawn(option_getstring("wshell"));
 
                     if (channel)
+                    {
+
                         channel_send(channel, EVENT_MAIN);
+                        channel_send(channel, EVENT_END);
+
+                    }
 
                 }
 
@@ -671,12 +681,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (!state.paused)
         {
 
-            render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
-            render_cache();
-
             if (display.framebuffer)
             {
 
+                render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
+                render_cache();
                 render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
                 render_undamage();
 
@@ -965,6 +974,7 @@ void init(void)
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if.0");
     option_add("wshell", "initrd:bin/wshell");
+    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);

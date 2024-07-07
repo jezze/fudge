@@ -47,6 +47,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_send_fmt0(channel, EVENT_PATH, "/config/arch.slang\\0");
         channel_send_fmt0(channel, EVENT_PATH, "/config/init.slang\\0");
         channel_send(channel, EVENT_MAIN);
+        channel_send(channel, EVENT_END);
 
     }
 
@@ -56,7 +57,6 @@ void init(void)
 {
 
     option_add("slang", "initrd:bin/slang");
-    channel_autoclose(EVENT_MAIN, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_DATA, ondata);
 

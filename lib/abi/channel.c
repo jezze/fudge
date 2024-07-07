@@ -2,7 +2,10 @@
 #include "call.h"
 #include "channel.h"
 
-#define CHANNEL_LISTENERS 256
+#define CHANNEL_LISTENERS               256
+#define CHANNEL_STATE_CLOSE             0
+#define CHANNEL_STATE_OPEN              1
+#define CHANNEL_STATE_AWAIT             2
 
 static struct
 {
@@ -13,7 +16,8 @@ static struct
 
 } listeners[CHANNEL_LISTENERS];
 
-static unsigned int active;
+static unsigned int state = CHANNEL_STATE_CLOSE;
+static unsigned int outstanding;
 
 static unsigned int send(unsigned int target, unsigned int event, unsigned int count, void *data)
 {
@@ -50,10 +54,27 @@ void channel_dispatch(struct message *message, void *data)
     {
 
         if (listeners[message->event].callback)
+        {
+
+            outstanding++;
+
             listeners[message->event].callback(message->source, data, message_datasize(message));
 
+            outstanding--;
+
+        }
+
         if (listeners[message->event].autoclose)
+            state = CHANNEL_STATE_AWAIT;
+
+        if (state == CHANNEL_STATE_AWAIT && outstanding == 0)
+        {
+
+            send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
+
             channel_close();
+
+        }
 
     }
 
@@ -153,7 +174,7 @@ unsigned int channel_forward(unsigned int target, unsigned int event, unsigned i
 unsigned int channel_pick(struct message *message, unsigned int count, void *data)
 {
 
-    while (active)
+    while (state != CHANNEL_STATE_CLOSE)
     {
 
         if (call_pick(message, count, data))
@@ -318,16 +339,14 @@ void channel_route(unsigned int event, unsigned int mode, unsigned int target, u
 void channel_open(void)
 {
 
-    active = 1;
+    state = CHANNEL_STATE_OPEN;
 
 }
 
 void channel_close(void)
 {
 
-    send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
-
-    active = 0;
+    state = CHANNEL_STATE_CLOSE;
 
 }
 

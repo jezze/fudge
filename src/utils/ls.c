@@ -48,7 +48,7 @@ static void list(unsigned int descriptor)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onend(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!paths)
@@ -72,7 +72,7 @@ void init(void)
 {
 
     option_add("show", "");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_END, onend);
     channel_bind(EVENT_PATH, onpath);
 
 }

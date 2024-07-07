@@ -471,6 +471,7 @@ void init(void)
     option_add("listen", "1111");
     option_add("volume", "system:block/if.0/data");
     option_add("partoffset", "2048");
+    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_LISTREQUEST, onlistrequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);

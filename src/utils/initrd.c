@@ -78,6 +78,7 @@ void init(void)
 {
 
     option_add("listen", "90");
+    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_LISTREQUEST, onlistrequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);

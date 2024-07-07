@@ -72,7 +72,7 @@ static void activatenext(struct job *job, unsigned int startindex)
         if (worker->channel)
         {
 
-            channel_send(worker->channel, EVENT_MAIN);
+            channel_send(worker->channel, EVENT_END);
 
             return;
 
@@ -165,6 +165,16 @@ void job_run(struct job *job)
                 channel_send_fmt2(worker->channel, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
 
         }
+
+    }
+
+    for (i = 0; i < job->count; i++)
+    {
+
+        struct job_worker *worker = &job->workers[i];
+
+        if (worker->channel)
+            channel_send(worker->channel, EVENT_MAIN);
 
     }
 
