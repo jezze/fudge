@@ -18,7 +18,7 @@ static struct
 } listeners[CHANNEL_LISTENERS];
 
 static unsigned int state = CHANNEL_STATE_CLOSE;
-static unsigned int outstanding;
+static unsigned int pending;
 
 static unsigned int send(unsigned int target, unsigned int event, unsigned int count, void *data)
 {
@@ -57,55 +57,38 @@ void channel_dispatch(struct message *message, void *data)
         if (listeners[message->event].callback)
         {
 
-            outstanding++;
+            pending++;
 
             listeners[message->event].callback(message->source, data, message_datasize(message));
 
-            outstanding--;
+            pending--;
 
         }
 
-        if (listeners[message->event].autoclose)
+        switch (listeners[message->event].autoclose)
         {
 
-            switch (listeners[message->event].autoclose)
-            {
-
-            case 1:
-                state = CHANNEL_STATE_AWAIT;
-
-                break;
-
-            case 2:
-                state = CHANNEL_STATE_TERM;
-
-                break;
-
-            }
-
-        }
-
-        switch (state)
-        {
-
-        case CHANNEL_STATE_AWAIT:
-            if (!outstanding)
-            {
-
-                send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
-
-                channel_close();
-
-            }
+        case 1:
+            state = CHANNEL_STATE_AWAIT;
 
             break;
 
-        case CHANNEL_STATE_TERM:
+        case 2:
+            state = CHANNEL_STATE_TERM;
+
+            break;
+
+        }
+
+        if (state == CHANNEL_STATE_AWAIT && !pending)
+            state = CHANNEL_STATE_TERM;
+
+        if (state == CHANNEL_STATE_TERM)
+        {
+
             send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
 
             channel_close();
-
-            break;
 
         }
 
