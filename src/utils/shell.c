@@ -96,9 +96,6 @@ static void interpret(void)
                     break;
 
                 case EVENT_PATH:
-                    if (call_walk_relative(FILE_L0, FILE_G8, data))
-                        call_walk_duplicate(FILE_G8, FILE_L0);
-
                     break;
 
                 }
@@ -502,7 +499,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int service = fsp_auth(option_getstring("input"));
     unsigned int id = fsp_walk(service, 0, option_getstring("input"));
 
-    call_walk_duplicate(FILE_G8, FILE_PW);
     printprompt();
     fsp_link(service, id);
 

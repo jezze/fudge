@@ -154,9 +154,6 @@ static void interpret(void)
                     break;
 
                 case EVENT_PATH:
-                    if (call_walk_relative(FILE_L0, FILE_G8, data))
-                        call_walk_duplicate(FILE_G8, FILE_L0);
-
                     break;
 
                 }
@@ -342,7 +339,6 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    call_walk_duplicate(FILE_G8, FILE_PW);
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process());
