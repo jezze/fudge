@@ -3,42 +3,39 @@
 
 static unsigned int paths;
 
-static void list(unsigned int descriptor)
+static void list(char *path)
 {
 
-    struct record records[8];
-    unsigned int nrecords;
-    unsigned int offset;
+    unsigned int service = option_getdecimal("service");
+    unsigned int root = fsp_walk(service, 0, "");
 
-    channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
-
-    for (offset = 0; (nrecords = call_list(descriptor, offset, 8, records)); offset += nrecords)
+    if (root)
     {
 
-        unsigned int i;
+        unsigned int id = fsp_walk(service, root, path);
 
-        for (i = 0; i < nrecords; i++)
+        if (id)
         {
 
-            struct record *record = &records[i];
+            struct record records[8];
+            unsigned int nrecords;
+            unsigned int offset;
 
-            if (cstring_match(option_getstring("show"), "all"))
+            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
+
+            for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
             {
 
-                if (record->type == RECORD_TYPE_DIRECTORY)
-                    channel_send_fmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w/\n", &record->id, &record->size, record->name, &record->length);
-                else
-                    channel_send_fmt4(CHANNEL_DEFAULT, EVENT_DATA, "%H8u %H8u %w\n", &record->id, &record->size, record->name, &record->length);
+                unsigned int i;
 
-            }
+                for (i = 0; i < nrecords; i++)
+                {
 
-            else
-            {
+                    struct record *record = &records[i];
 
-                if (record->type == RECORD_TYPE_DIRECTORY)
-                    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w/\n", record->name, &record->length);
-                else
                     channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", record->name, &record->length);
+
+                }
 
             }
 
@@ -46,34 +43,32 @@ static void list(unsigned int descriptor)
 
     }
 
-}
-
-static void onend(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (!paths)
-        list(FILE_PW);
 
 }
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (call_walk_absolute(FILE_G0, mdata))
-        list(FILE_G0);
-    else
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+    paths++;
 
-     paths++;
+    list(mdata);
+
+}
+
+static void onend(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    if (!paths)
+        list(option_getstring("pwd"));
 
 }
 
 void init(void)
 {
 
-    option_add("show", "");
-    channel_bind(EVENT_END, onend);
+    option_add("service", "90");
     channel_bind(EVENT_PATH, onpath);
+    channel_bind(EVENT_END, onend);
 
 }
 
