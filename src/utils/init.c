@@ -43,10 +43,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_listen(channel, EVENT_TERMRESPONSE);
         channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_ERROR);
+        channel_send(channel, EVENT_MAIN);
         channel_send_fmt0(channel, EVENT_PATH, "/config/base.slang\\0");
         channel_send_fmt0(channel, EVENT_PATH, "/config/arch.slang\\0");
         channel_send_fmt0(channel, EVENT_PATH, "/config/init.slang\\0");
-        channel_send(channel, EVENT_MAIN);
         channel_send(channel, EVENT_END);
 
     }
