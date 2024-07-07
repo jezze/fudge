@@ -12,7 +12,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int service = option_getdecimal("service");
-    unsigned int id = fsp_walk(service, 0, "data/help.txt");
+    unsigned int id = fsp_walk(service, 0, mdata);
 
     if (id)
     {
