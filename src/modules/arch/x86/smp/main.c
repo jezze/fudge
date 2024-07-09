@@ -13,8 +13,8 @@
 #include <modules/arch/x86/pit/pit.h>
 #include "smp.h"
 
-#define INIT16PHYSICAL                  0x00008000
-#define INIT32PHYSICAL                  0x00008200
+#define INIT16ADDRESS                   0x00008000
+#define INIT32ADDRESS                   0x00008200
 
 static struct corerow {struct arch_tss tss; struct core core; struct list_item item;} corerows[256];
 static struct list corelist;
@@ -38,7 +38,7 @@ static void enable(void)
 
             apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
             pit_wait(10);
-            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16PHYSICAL >> 12));
+            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
 
         }
 
@@ -52,7 +52,7 @@ static struct core *coreget(void)
     unsigned int directory = cpu_getcr3();
     unsigned int id;
 
-    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
 
     id = apic_getid();
 
@@ -75,7 +75,7 @@ static void coreassign(struct list_item *item)
 
         list_move_unsafe(&corelist, &corelist, coreitem);
         list_add(&core->tasks, item);
-        cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
+        cpu_setcr3(ARCH_MMUKERNELADDRESS);
 
         if (core->id != apic_getid())
             apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
@@ -115,7 +115,7 @@ void smp_setupap(unsigned int stack)
     unsigned int id;
     struct corerow *corerow;
 
-    cpu_setcr3(ARCH_KERNELMMUPHYSICAL);
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
     mmu_enable();
 
     id = apic_getid();
@@ -139,11 +139,11 @@ void module_init(void)
 {
 
     list_init(&corelist);
-    smp_setupbp(ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
+    smp_setupbp(ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     kernel_setcallback(coreget, coreassign);
-    buffer_copy((void *)INIT16PHYSICAL, (void *)(unsigned int)smp_begin16, (unsigned int)smp_end16 - (unsigned int)smp_begin16);
-    buffer_copy((void *)INIT32PHYSICAL, (void *)(unsigned int)smp_begin32, (unsigned int)smp_end32 - (unsigned int)smp_begin32);
-    smp_prep(ARCH_KERNELSTACKPHYSICAL + 2 * ARCH_KERNELSTACKSIZE);
+    buffer_copy((void *)INIT16ADDRESS, (void *)(unsigned int)smp_begin16, (unsigned int)smp_end16 - (unsigned int)smp_begin16);
+    buffer_copy((void *)INIT32ADDRESS, (void *)(unsigned int)smp_begin32, (unsigned int)smp_end32 - (unsigned int)smp_begin32);
+    smp_prep(ARCH_KERNELSTACKADDRESS + 2 * ARCH_KERNELSTACKSIZE);
     pic_disable();
     apic_setupisrs();
     enable();

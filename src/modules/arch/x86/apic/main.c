@@ -16,8 +16,8 @@
 
 static struct {unsigned int detected;} lapics[256];
 static struct {unsigned int detected; unsigned int address; unsigned int gsibase;} ioapics[256];
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static void (*routines[ROUTINES])(unsigned int gsi);
 static unsigned int overrides[OVERRIDES];
 static unsigned int mmio;

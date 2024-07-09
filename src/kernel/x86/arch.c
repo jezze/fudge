@@ -9,22 +9,22 @@
 #include "pic.h"
 #include "arch.h"
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTPHYSICAL;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTPHYSICAL;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[KERNEL_TASKS];
 static struct arch_tss tss0;
 
 static struct mmu_directory *getkerneldirectory(void)
 {
 
-    return (struct mmu_directory *)(ARCH_KERNELMMUPHYSICAL);
+    return (struct mmu_directory *)(ARCH_MMUKERNELADDRESS);
 
 }
 
 static struct mmu_directory *gettaskdirectory(unsigned int index)
 {
 
-    return (struct mmu_directory *)(ARCH_TASKMMUPHYSICAL + ARCH_TASKMMUSIZE * index);
+    return (struct mmu_directory *)(ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * index);
 
 }
 
@@ -314,8 +314,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (code)
         {
 
-            map(directory, 0, ARCH_TASKCODEPHYSICAL + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            map(directory, 1, ARCH_TASKCODEPHYSICAL + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 0, ARCH_TASKCODEADDRESS + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 1, ARCH_TASKCODEADDRESS + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
             if (!kernel_loadprogram(core->itask))
                 kernel_signal(core->itask, TASK_SIGNAL_KILL);
@@ -417,7 +417,7 @@ void arch_setup1(void)
     pic_init();
     arch_configuregdt();
     arch_configureidt();
-    arch_configuretss(&tss0, 0, ARCH_KERNELSTACKPHYSICAL + ARCH_KERNELSTACKSIZE);
+    arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     buffer_clear(directory, sizeof (struct mmu_directory));
     arch_map(0, 0x00000000, 0x00000000, 0x00400000);
     arch_map(1, 0x00400000, 0x00400000, 0x00400000);
@@ -425,7 +425,7 @@ void arch_setup1(void)
     arch_map(3, 0x00C00000, 0x00C00000, 0x00400000);
     mmu_setdirectory(directory);
     mmu_enable();
-    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
+    kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
     abi_setup();
     abi_setcallback(0x0C, spawn);
 
