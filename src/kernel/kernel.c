@@ -413,13 +413,9 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
     struct taskrow *taskrow = &taskrows[itask];
     struct task *task = &taskrow->task;
 
-    if (ip)
-        task->thread.ip = ip;
-
-    if (sp)
-        task->thread.sp = sp;
-
-    task->node.address = (address) ? address : 0;
+    task->thread.ip = ip;
+    task->thread.sp = sp;
+    task->node.address = address;
 
     if (!task->node.address && channel && channel->service)
     {
