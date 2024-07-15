@@ -409,7 +409,6 @@ unsigned int kernel_createtask(void)
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int ichannel, unsigned int id, unsigned int address)
 {
 
-    struct channel *channel = (ichannel) ? ((ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0) : &channels[666];
     struct taskrow *taskrow = &taskrows[itask];
     struct task *task = &taskrow->task;
 
@@ -417,13 +416,20 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
     task->thread.sp = sp;
     task->node.address = address;
 
-    if (!task->node.address && channel && channel->service)
+    if (ichannel && id)
     {
 
-        kernel_setdescriptor(itask, FILE_PW, channel->service, channel->service->root());
-        kernel_setdescriptor(itask, FILE_PP, channel->service, id);
+        struct channel *channel = (ichannel) ? ((ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0) : &channels[666];
 
-        task->node.address = channel->service->map(id);
+        if (channel)
+        {
+
+            kernel_setdescriptor(itask, FILE_PW, channel->service, channel->service->root());
+            kernel_setdescriptor(itask, FILE_PP, channel->service, id);
+
+            task->node.address = channel->service->map(id);
+
+        }
 
     }
 
