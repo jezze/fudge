@@ -419,7 +419,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
     if (ichannel && id)
     {
 
-        struct channel *channel = (ichannel) ? ((ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0) : &channels[666];
+        struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
         if (channel)
         {
