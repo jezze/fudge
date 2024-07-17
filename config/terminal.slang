@@ -1,1 +1,2 @@
+tty
 shell

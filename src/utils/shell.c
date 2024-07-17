@@ -14,8 +14,7 @@ static struct keys keys;
 static void print(void *buffer, unsigned int count)
 {
 
-    if (call_walk_absolute(FILE_L0, option_getstring("output")))
-        call_notify(FILE_L0, EVENT_DATA, count, buffer);
+    channel_send_buffer(option_getdecimal("tty-service"), EVENT_DATA, count, buffer);
 
 }
 
@@ -279,7 +278,9 @@ static void clear(void)
 
     print(sequence, 2);
     printprompt();
-    print(buffer, count);
+
+    if (count)
+        print(buffer, count);
 
 }
 
@@ -514,8 +515,8 @@ void init(void)
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if.0/event");
-    option_add("output", "system:console/if.0/data");
     option_add("slang", "initrd:bin/slang");
+    option_add("tty-service", "101");
     channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
