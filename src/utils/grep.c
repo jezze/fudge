@@ -11,7 +11,7 @@ static void checkprefix(unsigned int source, void *buffer, unsigned int count)
     {
 
         if (buffer_match(buffer, prefix, prefixcount))
-            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+            channel_send_buffer(source, EVENT_DATA, count, buffer);
 
     }
 
@@ -34,7 +34,7 @@ static void checksubstr(unsigned int source, void *buffer, unsigned int count)
             if (buffer_match((char *)buffer + i, substr, substrcount))
             {
 
-                channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+                channel_send_buffer(source, EVENT_DATA, count, buffer);
 
                 break;
 
@@ -95,7 +95,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

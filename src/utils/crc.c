@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int crc = crc_finalize(&sum);
 
-    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "%u\n", &crc);
+    channel_send_fmt1(source, EVENT_DATA, "%u\n", &crc);
 
 }
 
@@ -38,7 +38,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

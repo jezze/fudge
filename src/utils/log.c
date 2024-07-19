@@ -28,7 +28,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count = loginfo->count - sizeof (struct event_loginfo);
 
             if (option_getdecimal("level") >= loginfo->level)
-                channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
+                channel_send_fmt3(source, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
 
         }
 
@@ -39,7 +39,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Logs not found: %s and/or %s\n", option_getstring("klog"), option_getstring("ulog"));
+        channel_send_fmt2(source, EVENT_ERROR, "Logs not found: %s and/or %s\n", option_getstring("klog"), option_getstring("ulog"));
 
     }
 

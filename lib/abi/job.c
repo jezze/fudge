@@ -98,13 +98,7 @@ unsigned int job_spawn(struct job *job, char *bindir)
             worker->channel = fsp_spawn(worker->program);
 
         if (!worker->channel)
-        {
-
-            channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Job spawn failed\n");
-
             return 0;
-
-        }
 
     }
 

@@ -17,7 +17,6 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
         job_listen(&job, EVENT_TERMRESPONSE);
         job_listen(&job, EVENT_ERROR);
-        job_listen(&job, EVENT_DATA);
         job_pipe(&job, EVENT_DATA);
         job_run(&job);
 
@@ -41,7 +40,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         channel_listen(channel, EVENT_TERMRESPONSE);
-        channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_ERROR);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt0(channel, EVENT_PATH, "/config/base.slang\\0");

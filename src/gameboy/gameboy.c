@@ -190,7 +190,7 @@ static void keyrelease(struct gb_s *gb, void *data)
 
 }
 
-static void run(void)
+static void run(unsigned int source)
 {
 
     char romname[16];
@@ -223,7 +223,7 @@ static void run(void)
     if (getsavesize(&gb))
         call_read(FILE_G5, cart_ram, getsavesize(&gb), 0x80000);
 
-    channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
+    channel_send_fmt1(source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
     while (channel_pick(&message, MESSAGE_SIZE, data))
     {
@@ -324,7 +324,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     call_link(FILE_G1, 8001);
     call_link(FILE_G2, 8002);
     call_notify(FILE_G3, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
-    run();
+    run(source);
     call_unlink(FILE_G2);
     call_unlink(FILE_G1);
     call_unlink(FILE_G0);
@@ -339,7 +339,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (call_walk_absolute(FILE_L0, mdata))
         call_walk_duplicate(FILE_G5, FILE_L0);
     else
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
 }
 

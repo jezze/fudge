@@ -4,7 +4,7 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, msize, mdata);
+    channel_send_buffer(source, EVENT_DATA, msize, mdata);
 
 }
 

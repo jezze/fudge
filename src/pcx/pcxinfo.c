@@ -31,18 +31,18 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Identifier: %c\n", &header.identifier);
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Version: %c\n", &header.version);
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Encoding: %s\n", (header.encoding < 2) ? encodings[(unsigned int)header.encoding] : "Unknown");
-        channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "Size: %ix%ix%c\n", &width, &height, &header.bpp);
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Planes: %c\n", &header.nplanes);
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Palette mode: %s\n", (header.palettemode < 3) ? palettemodes[header.palettemode] : "Unknown");
+        channel_send_fmt1(source, EVENT_DATA, "Identifier: %c\n", &header.identifier);
+        channel_send_fmt1(source, EVENT_DATA, "Version: %c\n", &header.version);
+        channel_send_fmt1(source, EVENT_DATA, "Encoding: %s\n", (header.encoding < 2) ? encodings[(unsigned int)header.encoding] : "Unknown");
+        channel_send_fmt3(source, EVENT_DATA, "Size: %ix%ix%c\n", &width, &height, &header.bpp);
+        channel_send_fmt1(source, EVENT_DATA, "Planes: %c\n", &header.nplanes);
+        channel_send_fmt1(source, EVENT_DATA, "Palette mode: %s\n", (header.palettemode < 3) ? palettemodes[header.palettemode] : "Unknown");
 
         if (header.palettemode)
         {
 
             call_read_all(FILE_L0, &magic, 1, record.size - 768 - 1);
-            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Palette exist: %s\n", (magic == PCX_COLORMAP_MAGIC) ? "Yes" : "No");
+            channel_send_fmt1(source, EVENT_DATA, "Palette exist: %s\n", (magic == PCX_COLORMAP_MAGIC) ? "Yes" : "No");
 
         }
 
@@ -51,7 +51,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

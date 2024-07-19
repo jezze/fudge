@@ -4,7 +4,7 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, msize, mdata);
+    channel_send_buffer(source, EVENT_DATA, msize, mdata);
 
 }
 
@@ -16,7 +16,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (channel)
     {
 
-        channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt0(channel, EVENT_PATH, "initrd:data/help.txt\\0");

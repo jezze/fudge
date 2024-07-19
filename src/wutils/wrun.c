@@ -17,7 +17,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *u
 
 }
 
-static void handlehttppacket(void)
+static void handlehttppacket(unsigned int source)
 {
 
     unsigned int newline;
@@ -31,7 +31,7 @@ static void handlehttppacket(void)
         if (isbody)
         {
 
-            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+            channel_send_buffer(source, EVENT_DATA, count, buffer);
             channel_send_buffer(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, buffer);
 
         }
@@ -195,7 +195,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     {
 
         if (ring_write(&input, buffer, count))
-            handlehttppacket();
+            handlehttppacket(source);
 
     }
 

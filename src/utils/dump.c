@@ -57,7 +57,7 @@ static void print(unsigned int source, unsigned int count, void *buffer)
         offset += cstring_write_fmt0(data, 120, "|\n", offset);
         page += 16;
 
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, offset, data);
+        channel_send_buffer(source, EVENT_DATA, offset, data);
 
     }
 
@@ -93,7 +93,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

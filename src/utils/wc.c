@@ -55,7 +55,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onend(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send_fmt3(CHANNEL_DEFAULT, EVENT_DATA, "%u\n%u\n%u\n", &lines, &words, &bytes);
+    channel_send_fmt3(source, EVENT_DATA, "%u\n%u\n%u\n", &lines, &words, &bytes);
 
 }
 
@@ -80,7 +80,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

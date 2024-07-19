@@ -46,7 +46,7 @@ static void dnsresolve(char *domain, char address[32])
 
 }
 
-static void opensocket(struct url *url, char address[32])
+static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
     unsigned int channel = fsp_spawn(option_getstring("socket"));
@@ -57,14 +57,13 @@ static void opensocket(struct url *url, char address[32])
         char data[MESSAGE_SIZE];
         unsigned int count = cstring_write_fmt2(data, MESSAGE_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
 
-        channel_listen(channel, EVENT_DATA);
         channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
 
         while ((count = channel_read_from(channel, EVENT_DATA, MESSAGE_SIZE, data)))
-            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, data);
+            channel_send_buffer(source, EVENT_DATA, count, data);
 
         channel_send(channel, EVENT_END);
         channel_wait_from(channel, EVENT_TERMRESPONSE);
@@ -92,7 +91,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             url_parse(&url, urldata, 2048, opturl, URL_HOST);
 
         dnsresolve(url.host, address);
-        opensocket(&url, address);
+        opensocket(source, &url, address);
 
     }
 

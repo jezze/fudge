@@ -24,7 +24,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     for (i = 0; i < 20; i++)
         cstring_write_value(output, 40, digest[i], 16, 2, i * 2);
 
-    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", output, &l);
+    channel_send_fmt2(source, EVENT_DATA, "%w\n", output, &l);
 
 }
 
@@ -46,7 +46,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

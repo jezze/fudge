@@ -23,7 +23,7 @@ static unsigned int pending;
 static unsigned int send(unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    if (target == CHANNEL_DEFAULT)
+    if (listeners[event].target)
         target = listeners[event].target;
 
     if (!target)
@@ -176,7 +176,7 @@ unsigned int channel_send_fmt8(unsigned int target, unsigned int event, char *fm
 unsigned int channel_listen(unsigned int target, unsigned int event)
 {
 
-    return redirect(target, event, EVENT_REDIRECT_SOURCE, CHANNEL_DEFAULT);
+    return redirect(target, event, EVENT_REDIRECT_SOURCE, 0);
 
 }
 

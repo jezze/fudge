@@ -34,7 +34,7 @@ static struct blit_display display;
 static struct state state;
 static unsigned int linebuffer[3840];
 
-static void setupvideo(void)
+static void setupvideo(unsigned int source)
 {
 
     struct ctrl_videosettings settings;
@@ -47,7 +47,7 @@ static void setupvideo(void)
     buffer_clear(black, 768);
 
     if (!call_walk_absolute(FILE_L0, option_getstring("video")))
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
+        channel_send_fmt1(source, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
 
     if (!call_walk_relative(FILE_L1, FILE_L0, "colormap"))
         return;
@@ -673,7 +673,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     call_link(FILE_G1, 8001);
     call_link(FILE_G2, 8002);
     call_link(FILE_G3, 8003);
-    setupvideo();
+    setupvideo(source);
 
     while (channel_process())
     {
@@ -903,7 +903,7 @@ static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOMODE, onvideomode);
     channel_send(source, EVENT_WMACK);
-    setupvideo();
+    setupvideo(source);
 
 }
 

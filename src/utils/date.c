@@ -17,7 +17,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             struct ctrl_clocksettings settings;
 
             fsp_read_all(service, id, &settings, sizeof (struct ctrl_clocksettings), 0);
-            channel_send_fmt6(CHANNEL_DEFAULT, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
+            channel_send_fmt6(source, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
 
         }
 

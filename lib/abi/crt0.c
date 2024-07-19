@@ -15,7 +15,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
         char *value = key + cstring_length_zero(key);
 
         if (!option_set(key, value))
-            channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Unrecognized option: %s\n", key);
+            channel_send_fmt1(source, EVENT_ERROR, "Unrecognized option: %s\n", key);
 
     }
 
@@ -41,7 +41,7 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
         struct option *option = option_get(i);
 
         if (option)
-            channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%s:%s\n", option->key, option->value);
+            channel_send_fmt2(source, EVENT_DATA, "%s:%s\n", option->key, option->value);
 
     }
 

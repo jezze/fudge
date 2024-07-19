@@ -3,7 +3,7 @@
 
 static unsigned int paths;
 
-static void list(char *path)
+static void list(unsigned int source, char *path)
 {
 
     unsigned int service = option_getdecimal("service");
@@ -16,7 +16,7 @@ static void list(char *path)
         unsigned int nrecords;
         unsigned int offset;
 
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_DATA, "../\n");
+        channel_send_fmt0(source, EVENT_DATA, "../\n");
 
         for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
         {
@@ -29,9 +29,9 @@ static void list(char *path)
                 struct record *record = &records[i];
 
                 if (record->type == RECORD_TYPE_DIRECTORY)
-                    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w/\n", record->name, &record->length);
+                    channel_send_fmt2(source, EVENT_DATA, "%w/\n", record->name, &record->length);
                 else
-                    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", record->name, &record->length);
+                    channel_send_fmt2(source, EVENT_DATA, "%w\n", record->name, &record->length);
 
             }
 
@@ -46,7 +46,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
     paths++;
 
-    list(mdata);
+    list(source, mdata);
 
 }
 
@@ -54,7 +54,7 @@ static void onend(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!paths)
-        list(option_getstring("pwd"));
+        list(source, option_getstring("pwd"));
 
 }
 

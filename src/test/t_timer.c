@@ -20,7 +20,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_poll_any(EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_DATA, "Tick: %u second(s)\n", &counter);
+        channel_send_fmt1(source, EVENT_DATA, "Tick: %u second(s)\n", &counter);
 
         counter++;
 
