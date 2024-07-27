@@ -6,7 +6,7 @@ static unsigned int paths;
 static void list(unsigned int source, char *path)
 {
 
-    unsigned int service = option_getdecimal("service");
+    unsigned int service = fsp_auth(path);
     unsigned int id = fsp_walk(service, 0, path);
 
     if (id)

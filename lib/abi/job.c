@@ -140,7 +140,7 @@ void job_pipe(struct job *job, unsigned int event)
 
 }
 
-void job_run(struct job *job)
+void job_run(struct job *job, char *pwd)
 {
 
     unsigned int i;
@@ -183,7 +183,7 @@ void job_run(struct job *job)
             unsigned int j;
 
             for (j = 0; j < worker->npaths; j++)
-                channel_send_fmt1(worker->channel, EVENT_PATH, "%s\\0", worker->paths[j]);
+                channel_send_fmt2(worker->channel, EVENT_PATH, "%s/%s\\0", pwd, worker->paths[j]);
 
         }
 

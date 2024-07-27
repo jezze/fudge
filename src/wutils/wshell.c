@@ -128,8 +128,8 @@ static void interpret(void)
             job_listen(&job, EVENT_ERROR);
             job_listen(&job, EVENT_PATH);
             job_pipe(&job, EVENT_DATA);
-            job_sendall(&job, EVENT_OPTION, 11, "pwd\0initrd:\0");
-            job_run(&job);
+            job_sendall(&job, EVENT_OPTION, 12, "pwd\0initrd:\0");
+            job_run(&job, "initrd:");
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
             {
@@ -247,7 +247,7 @@ static void complete(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job, "initrd:bin"))
+        if (job_spawn(&job, "initrd2:bin"))
         {
 
             struct message message;
@@ -259,7 +259,8 @@ static void complete(void)
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
-            job_run(&job);
+            job_sendall(&job, EVENT_OPTION, 12, "pwd\0initrd:\0");
+            job_run(&job, "initrd:");
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
             {
