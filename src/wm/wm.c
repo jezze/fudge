@@ -938,15 +938,15 @@ static void setupwidgets(void)
         "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "    + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"
         "      + layout id \"fudge-layout\" in \"fudge-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"fudge-layout\" label \"About\" onclick \"run=initrd:bin/wabout\"\n"
-        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run=initrd:bin/wsettings\"\n"
-        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run=initrd:bin/reboot\"\n"
+        "        + choice in \"fudge-layout\" label \"About\" onclick \"run=initrd2:bin/wabout\"\n"
+        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run=initrd2:bin/wsettings\"\n"
+        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run=initrd2:bin/reboot\"\n"
         "    + select id \"apps-select\" in \"menu\" label \"Apps\"\n"
         "      + layout id \"apps-layout\" in \"apps-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run=initrd:bin/wshell\"\n"
-        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run=initrd:bin/wfile\"\n"
-        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run=initrd:bin/wcalc\"\n"
-        "        + choice in \"apps-layout\" label \"Test\" onclick \"run=initrd:bin/wtest\"\n";
+        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run=initrd2:bin/wshell\"\n"
+        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run=initrd2:bin/wfile\"\n"
+        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run=initrd2:bin/wcalc\"\n"
+        "        + choice in \"apps-layout\" label \"Test\" onclick \"run=initrd2:bin/wtest\"\n";
 
     parser_parse(0, "", cstring_length(data0), data0);
     parser_parse(0, "root", cstring_length(data1), data1);
