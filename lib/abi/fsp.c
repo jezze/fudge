@@ -139,9 +139,7 @@ unsigned int fsp_readresponse(unsigned int source, unsigned int session, unsigne
     struct {struct event_readresponse header; char data[64];} response;
 
     response.header.session = session;
-    response.header.count = count;
-
-    buffer_write(response.data, 64, buffer, response.header.count, 0);
+    response.header.count = buffer_write(response.data, 64, buffer, count, 0);
 
     return channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
 
@@ -155,9 +153,7 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 
     request.header.session = session;
     request.header.parent = parent;
-    request.header.length = cstring_length(path);
-
-    buffer_write(request.path, 64, path, request.header.length, 0);
+    request.header.length = buffer_write(request.path, 64, path, cstring_length(path), 0);
 
     if (channel_send_buffer(target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + request.header.length, &request))
     {
@@ -199,9 +195,7 @@ unsigned int fsp_writeresponse(unsigned int source, unsigned int session, unsign
     struct {struct event_writeresponse header; char data[64];} response;
 
     response.header.session = session;
-    response.header.count = count;
-
-    buffer_write(response.data, 64, buffer, response.header.count, 0);
+    response.header.count = buffer_write(response.data, 64, buffer, count, 0);
 
     return channel_send_buffer(source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse) + response.header.count, &response);
 
