@@ -34,11 +34,11 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 {
 
     unsigned int session = getsession();
-    struct {struct event_listrequest header;} request;
+    struct event_listrequest request;
 
-    request.header.session = session;
-    request.header.id = id;
-    request.header.offset = offset;
+    request.session = session;
+    request.id = id;
+    request.offset = offset;
 
     if (channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request))
     {
@@ -86,12 +86,12 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 {
 
     unsigned int session = getsession();
-    struct {struct event_readrequest header;} request;
+    struct event_readrequest request;
 
-    request.header.session = session;
-    request.header.id = id;
-    request.header.offset = offset;
-    request.header.count = count;
+    request.session = session;
+    request.id = id;
+    request.offset = offset;
+    request.count = count;
 
     if (channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
     {
@@ -174,10 +174,10 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 unsigned int fsp_walkresponse(unsigned int source, unsigned int session, unsigned int id)
 {
 
-    struct {struct event_walkresponse header;} response;
+    struct event_walkresponse response;
 
-    response.header.session = session;
-    response.header.id = id;
+    response.session = session;
+    response.id = id;
 
     return channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
@@ -187,12 +187,12 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 {
 
     unsigned int session = getsession();
-    struct {struct event_writerequest header;} request;
+    struct event_writerequest request;
 
-    request.header.session = session;
-    request.header.id = id;
-    request.header.offset = offset;
-    request.header.count = count;
+    request.session = session;
+    request.id = id;
+    request.offset = offset;
+    request.count = count;
 
     if (channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_writerequest), &request))
     {
@@ -244,10 +244,10 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
 {
 
     unsigned int session = getsession();
-    struct {struct event_linkrequest header;} request;
+    struct event_linkrequest request;
 
-    request.header.session = session;
-    request.header.id = id;
+    request.session = session;
+    request.id = id;
 
     if (channel_send_buffer(target, EVENT_LINKREQUEST, sizeof (struct event_linkrequest), &request))
     {
@@ -268,10 +268,10 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
 {
 
     unsigned int session = getsession();
-    struct {struct event_unlinkrequest header;} request;
+    struct event_unlinkrequest request;
 
-    request.header.session = session;
-    request.header.id = id;
+    request.session = session;
+    request.id = id;
 
     if (channel_send_buffer(target, EVENT_UNLINKREQUEST, sizeof (struct event_unlinkrequest), &request))
     {
