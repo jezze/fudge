@@ -90,7 +90,7 @@ static void updateundefined(void)
                 unsigned int underscore = buffer_findbyte(symbol, length, '_');
                 char module[32];
 
-                cstring_write_fmt2(module, 32, "/kernel/%w.ko.map\\0", 0, symbol, &underscore);
+                cstring_write_fmt2(module, 32, "initrd:kernel/%w.ko.map\\0", 0, symbol, &underscore);
 
                 if (call_walk_absolute(FILE_L0, module))
                 {

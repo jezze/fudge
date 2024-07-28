@@ -22,9 +22,9 @@ static void runscripts(void)
     {
 
         channel_send(channel, EVENT_MAIN);
-        channel_send_fmt0(channel, EVENT_PATH, "/config/base.slang\\0");
-        channel_send_fmt0(channel, EVENT_PATH, "/config/arch.slang\\0");
-        channel_send_fmt0(channel, EVENT_PATH, "/config/init.slang\\0");
+        channel_send_fmt0(channel, EVENT_PATH, "initrd:config/base.slang\\0");
+        channel_send_fmt0(channel, EVENT_PATH, "initrd:config/arch.slang\\0");
+        channel_send_fmt0(channel, EVENT_PATH, "initrd:config/init.slang\\0");
         channel_send(channel, EVENT_END);
 
     }

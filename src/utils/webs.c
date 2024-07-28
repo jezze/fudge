@@ -16,7 +16,7 @@ static void sendresponse(struct socket *remote)
     char buffer[4096];
     unsigned int count = 0;
 
-    if (!call_walk_absolute(FILE_L0, "/data/html"))
+    if (!call_walk_absolute(FILE_L0, "initrd:data/html"))
         PANIC();
 
     if (cstring_length(request) == 0)
