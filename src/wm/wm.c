@@ -396,6 +396,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
             if (channel)
             {
 
+                channel_send_fmt1(channel, EVENT_OPTION, "pwd\\0%s\\0", option_getstring("pwd"));
                 channel_send(channel, EVENT_MAIN);
                 channel_send(channel, EVENT_END);
 
