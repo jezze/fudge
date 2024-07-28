@@ -128,7 +128,6 @@ static void interpret(void)
             job_listen(&job, EVENT_ERROR);
             job_listen(&job, EVENT_PATH);
             job_pipe(&job, EVENT_DATA);
-            job_sendall(&job, EVENT_OPTION, 12, "pwd\0initrd:\0");
             job_run(&job, "initrd:");
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
@@ -259,7 +258,6 @@ static void complete(void)
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
-            job_sendall(&job, EVENT_OPTION, 12, "pwd\0initrd:\0");
             job_run(&job, "initrd:");
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))

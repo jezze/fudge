@@ -69,7 +69,6 @@ static void interpret(void)
             job_listen(&job, EVENT_ERROR);
             job_listen(&job, EVENT_PATH);
             job_pipe(&job, EVENT_DATA);
-            job_sendall(&job, EVENT_OPTION, 12, "pwd\0initrd:\0");
             job_run(&job, "initrd:");
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
@@ -200,7 +199,6 @@ static void complete(void)
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
-            job_sendall(&job, EVENT_OPTION, 12, "pwd\0initrd:\0");
             job_run(&job, "initrd:");
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
@@ -498,14 +496,25 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int service = fsp_auth(option_getstring("input"));
-    unsigned int id = fsp_walk(service, 0, option_getstring("input"));
 
-    printprompt();
-    fsp_link(service, id);
+    if (service)
+    {
 
-    while (channel_process());
+        unsigned int id = fsp_walk(service, 0, option_getstring("input"));
 
-    fsp_unlink(service, id);
+        if (id)
+        {
+
+            printprompt();
+            fsp_link(service, id);
+
+            while (channel_process());
+
+            fsp_unlink(service, id);
+
+        }
+
+    }
 
 }
 

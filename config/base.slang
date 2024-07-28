@@ -1,4 +1,3 @@
-initrd ?listen 90
 elfload /kernel/base.ko
 elfload /kernel/system.ko
 elfload /kernel/log.ko

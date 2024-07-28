@@ -155,6 +155,8 @@ void job_run(struct job *job, char *pwd)
 
             unsigned int j;
 
+            channel_send_fmt1(worker->channel, EVENT_OPTION, "pwd\\0%s\\0", pwd);
+
             for (j = 0; j < worker->noptions; j++)
                 channel_send_fmt2(worker->channel, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
 
@@ -183,7 +185,7 @@ void job_run(struct job *job, char *pwd)
             unsigned int j;
 
             for (j = 0; j < worker->npaths; j++)
-                channel_send_fmt2(worker->channel, EVENT_PATH, "%s/%s\\0", pwd, worker->paths[j]);
+                channel_send_fmt1(worker->channel, EVENT_PATH, "%s\\0", worker->paths[j]);
 
         }
 

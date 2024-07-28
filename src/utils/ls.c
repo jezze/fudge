@@ -7,31 +7,37 @@ static void list(unsigned int source, char *path)
 {
 
     unsigned int service = fsp_auth(path);
-    unsigned int id = fsp_walk(service, 0, path);
 
-    if (id)
+    if (service)
     {
 
-        struct record records[8];
-        unsigned int nrecords;
-        unsigned int offset;
+        unsigned int id = fsp_walk(service, 0, path);
 
-        channel_send_fmt0(source, EVENT_DATA, "../\n");
-
-        for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
+        if (id)
         {
 
-            unsigned int i;
+            struct record records[8];
+            unsigned int nrecords;
+            unsigned int offset;
 
-            for (i = 0; i < nrecords; i++)
+            channel_send_fmt0(source, EVENT_DATA, "../\n");
+
+            for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
             {
 
-                struct record *record = &records[i];
+                unsigned int i;
 
-                if (record->type == RECORD_TYPE_DIRECTORY)
-                    channel_send_fmt2(source, EVENT_DATA, "%w/\n", record->name, &record->length);
-                else
-                    channel_send_fmt2(source, EVENT_DATA, "%w\n", record->name, &record->length);
+                for (i = 0; i < nrecords; i++)
+                {
+
+                    struct record *record = &records[i];
+
+                    if (record->type == RECORD_TYPE_DIRECTORY)
+                        channel_send_fmt2(source, EVENT_DATA, "%w/\n", record->name, &record->length);
+                    else
+                        channel_send_fmt2(source, EVENT_DATA, "%w\n", record->name, &record->length);
+
+                }
 
             }
 

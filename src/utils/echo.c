@@ -12,24 +12,30 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int service = fsp_auth(mdata);
-    unsigned int id = fsp_walk(service, 0, mdata);
 
-    if (id)
+    if (service)
     {
 
-        char buffer[MESSAGE_SIZE];
-        unsigned int count;
-        unsigned int offset;
+        unsigned int id = fsp_walk(service, 0, mdata);
 
-        for (offset = 0; (count = fsp_read(service, id, buffer, MESSAGE_SIZE, offset)); offset += count)
-            channel_send_buffer(source, EVENT_DATA, count, buffer);
+        if (id)
+        {
 
-    }
+            char buffer[MESSAGE_SIZE];
+            unsigned int count;
+            unsigned int offset;
 
-    else
-    {
+            for (offset = 0; (count = fsp_read(service, id, buffer, MESSAGE_SIZE, offset)); offset += count)
+                channel_send_buffer(source, EVENT_DATA, count, buffer);
 
-        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
+        }
+
+        else
+        {
+
+            channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
+
+        }
 
     }
 
