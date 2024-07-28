@@ -102,16 +102,10 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
         while (channel_poll_any(EVENT_READRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
-            struct {struct event_readresponse header; char data[64];} *response = (void *)data;
+            struct event_readresponse *response = (struct event_readresponse *)data;
 
-            if (response->header.session == session)
-            {
-
-                buffer_write(buffer, count, response->data, response->header.count, 0);
-
-                return response->header.count;
-
-            }
+            if (response->session == session)
+                return buffer_write(buffer, count, response + 1, response->count, 0);
 
         }
 
@@ -186,6 +180,51 @@ unsigned int fsp_walkresponse(unsigned int source, unsigned int session, unsigne
     response.header.id = id;
 
     return channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+
+}
+
+unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    unsigned int session = getsession();
+    struct {struct event_writerequest header;} request;
+
+    request.header.session = session;
+    request.header.id = id;
+    request.header.offset = offset;
+    request.header.count = count;
+
+    if (channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_writerequest), &request))
+    {
+
+        struct message message;
+        char data[MESSAGE_SIZE];
+
+        while (channel_poll_any(EVENT_READRESPONSE, &message, MESSAGE_SIZE, data))
+        {
+
+            struct event_writeresponse *response = (struct event_writeresponse *)data;
+
+            if (response->session == session)
+                return buffer_write(buffer, count, response + 1, response->count, 0);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int fsp_write_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    unsigned char *b = buffer;
+    unsigned int c;
+
+    for (c = 0; c < count; c += fsp_write(target, id, b + c, count - c, offset + c));
+
+    return c;
 
 }
 
