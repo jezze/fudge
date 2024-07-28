@@ -128,7 +128,7 @@ static void interpret(void)
             job_listen(&job, EVENT_ERROR);
             job_listen(&job, EVENT_PATH);
             job_pipe(&job, EVENT_DATA);
-            job_run(&job, "initrd:");
+            job_run(&job, option_getstring("pwd"));
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
             {
@@ -258,7 +258,7 @@ static void complete(void)
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
-            job_run(&job, "initrd:");
+            job_run(&job, option_getstring("pwd"));
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
             {

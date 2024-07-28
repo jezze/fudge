@@ -46,7 +46,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
         job_listen(&job, EVENT_TERMRESPONSE);
         job_listen(&job, EVENT_ERROR);
         job_pipe(&job, EVENT_DATA);
-        job_run(&job, "initrd2:");
+        job_run(&job, "initrd:");
 
     }
 
