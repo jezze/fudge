@@ -43,8 +43,6 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     if (job_spawn(&job, "initrd2:bin"))
     {
 
-        job_listen(&job, EVENT_TERMRESPONSE);
-        job_listen(&job, EVENT_ERROR);
         job_pipe(&job, EVENT_DATA);
         job_run(&job, "initrd:");
 
