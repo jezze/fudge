@@ -141,17 +141,17 @@ static void interpret(void)
 
                     break;
 
-                case EVENT_ERROR:
-                    channel_dispatch(&message, data);
-
-                    break;
-
                 case EVENT_DATA:
                     print(data, message_datasize(&message));
 
                     break;
 
                 case EVENT_PATH:
+                    break;
+
+                default:
+                    channel_dispatch(&message, data);
+
                     break;
 
                 }
@@ -271,13 +271,13 @@ static void complete(void)
 
                     break;
 
-                case EVENT_ERROR:
-                    channel_dispatch(&message, data);
+                case EVENT_DATA:
+                    ring_write(&output, data, message_datasize(&message));
 
                     break;
 
-                case EVENT_DATA:
-                    ring_write(&output, data, message_datasize(&message));
+                default:
+                    channel_dispatch(&message, data);
 
                     break;
 
