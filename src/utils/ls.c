@@ -61,7 +61,6 @@ static void onend(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("service", "90");
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_END, onend);
 

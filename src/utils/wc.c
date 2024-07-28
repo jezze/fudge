@@ -62,7 +62,7 @@ static void onend(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = option_getdecimal("service");
+    unsigned int service = fsp_auth(mdata);
     unsigned int id = fsp_walk(service, 0, mdata);
 
     if (id)
@@ -89,7 +89,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("service", "90");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_END, onend);
     channel_bind(EVENT_PATH, onpath);
