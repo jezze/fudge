@@ -2,6 +2,8 @@
 #include <kernel.h>
 #include "cpio.h"
 
+#define SYSTEMID 666
+
 static struct service service;
 static unsigned int address;
 static unsigned int limit;
@@ -314,7 +316,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     walkresponse.session = walkrequest->session;
     walkresponse.id = service_findpath(&service, (walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
 
-    return kernel_place(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
+    return kernel_place(SYSTEMID, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
 
 }
 
@@ -327,7 +329,7 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     message.listresponse.session = listrequest->session;
     message.listresponse.nrecords = service_list(listrequest->id, listrequest->offset, 8, message.records);
 
-    return kernel_place(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+    return kernel_place(SYSTEMID, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 
 }
 
@@ -340,7 +342,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     message.readresponse.session = readrequest->session;
     message.readresponse.count = service_read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
 
-    return kernel_place(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+    return kernel_place(SYSTEMID, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
 
 }
 
@@ -353,7 +355,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     message.writeresponse.session = writerequest->session;
     message.writeresponse.count = service_write(writerequest->id, (void *)(writerequest + 1), writerequest->count, writerequest->offset);
 
-    return kernel_place(0, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
+    return kernel_place(SYSTEMID, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
 
 }
 
@@ -389,7 +391,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
 
     service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink, service_notify);
     resource_register(&service.resource);
-    kernel_announce(666, &service, service_root());
+    kernel_announce(SYSTEMID, &service, service_root());
 
 }
 

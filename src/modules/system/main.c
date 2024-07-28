@@ -2,6 +2,8 @@
 #include <kernel.h>
 #include "system.h"
 
+#define SYSTEMID 667
+
 static struct system_node root;
 static struct service service;
 
@@ -263,7 +265,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     walkresponse.session = walkrequest->session;
     walkresponse.id = service_findpath(&service, (walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
 
-    return kernel_place(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
+    return kernel_place(SYSTEMID, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
 
 }
 
@@ -276,7 +278,7 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     message.listresponse.session = listrequest->session;
     message.listresponse.nrecords = service_list(listrequest->id, listrequest->offset, 8, message.records);
 
-    return kernel_place(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+    return kernel_place(SYSTEMID, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 
 }
 
@@ -289,7 +291,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     message.readresponse.session = readrequest->session;
     message.readresponse.count = service_read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
 
-    return kernel_place(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+    return kernel_place(SYSTEMID, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
 
 }
 
@@ -302,7 +304,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     message.writeresponse.session = writerequest->session;
     message.writeresponse.count = service_write(writerequest->id, (void *)(writerequest + 1), writerequest->count, writerequest->offset);
 
-    return kernel_place(0, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
+    return kernel_place(SYSTEMID, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
 
 }
 
@@ -313,7 +315,7 @@ static unsigned int onlinkrequest(unsigned int source, unsigned int count, void 
 
     service_link(linkrequest->id, source, 0);
 
-    return kernel_place(0, source, EVENT_LINKRESPONSE, 0, 0);
+    return kernel_place(SYSTEMID, source, EVENT_LINKRESPONSE, 0, 0);
 
 }
 
@@ -324,7 +326,7 @@ static unsigned int onunlinkrequest(unsigned int source, unsigned int count, voi
 
     service_unlink(unlinkrequest->id, source);
 
-    return kernel_place(0, source, EVENT_UNLINKRESPONSE, 0, 0);
+    return kernel_place(SYSTEMID, source, EVENT_UNLINKRESPONSE, 0, 0);
 
 }
 
@@ -446,7 +448,7 @@ void module_init(void)
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
     service_init(&service, "system", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink, service_notify);
     resource_register(&service.resource);
-    kernel_announce(667, &service, service_root());
+    kernel_announce(SYSTEMID, &service, service_root());
 
 }
 
