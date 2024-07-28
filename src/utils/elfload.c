@@ -187,7 +187,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
     cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
 
-    if (!call_walk_absolute(FILE_G1, "/kernel/fudge.map"))
+    if (!call_walk_absolute(FILE_G1, "initrd:kernel/fudge.map"))
         PANIC();
 
     kernelcount = call_read(FILE_G1, kerneldata, 8192, 0);
