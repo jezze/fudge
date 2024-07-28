@@ -1,3 +1,3 @@
-slang /config/terminal.slang
-slang /config/wm.slang
-slang /config/fs.slang
+slang initrd:config/terminal.slang
+slang initrd:config/wm.slang
+slang initrd:config/fs.slang
