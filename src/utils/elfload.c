@@ -135,7 +135,7 @@ static void updateundefined(void)
 
 }
 
-static void resolve(unsigned int descriptor)
+static void resolve(unsigned int descriptor, unsigned int service, unsigned int id)
 {
 
     unsigned int i;
@@ -156,7 +156,7 @@ static void resolve(unsigned int descriptor)
             if (stringheader->size > 4096)
                 PANIC();
 
-            call_read_all(descriptor, strings, stringheader->size, stringheader->offset);
+            fsp_read_all(service, id, strings, stringheader->size, stringheader->offset);
 
             for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
             {
@@ -164,8 +164,8 @@ static void resolve(unsigned int descriptor)
                 struct elf_relocation relocation;
                 struct elf_symbol symbol;
 
-                call_read_all(descriptor, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
-                call_read_all(descriptor, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+                fsp_read_all(service, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fsp_read_all(service, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
 
                 if (!symbol.shindex)
                 {
@@ -177,7 +177,7 @@ static void resolve(unsigned int descriptor)
 
                         unsigned int value;
 
-                        call_read_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+                        fsp_read_all(service, id, &value, 4, dataheader->offset + relocation.offset);
 
                         value += address;
 
@@ -248,7 +248,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                     if (!call_walk_absolute(FILE_G2, mdata))
                         PANIC();
 
-                    resolve(FILE_G2);
+                    resolve(FILE_G2, service, id);
 
                     address = call_load(FILE_G2);
 
