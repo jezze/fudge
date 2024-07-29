@@ -18,7 +18,7 @@ unsigned int fsp_auth(char *path)
     /* need to make syscall for this */
 
     if (cstring_length(path) >= 7 && buffer_match(path, "initrd:", 7))
-        return 90;
+        return 666;
 
     if (cstring_length(path) >= 8 && buffer_match(path, "initrd2:", 8))
         return 666;
@@ -115,6 +115,21 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 
 }
 
+unsigned int fsp_read_full(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    unsigned char *rbuffer = buffer;
+    unsigned int rtotal = 0;
+    unsigned int roffset;
+    unsigned int rcount;
+
+    for (roffset = offset; (rcount = fsp_read(target, id, rbuffer + roffset, count - roffset, roffset)); roffset += rcount)
+        rtotal += rcount;
+
+    return rtotal;
+
+}
+
 unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -194,13 +209,13 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
     request.offset = offset;
     request.count = count;
 
-    if (channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_writerequest), &request))
+    if (channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request))
     {
 
         struct message message;
         char data[MESSAGE_SIZE];
 
-        while (channel_poll_any(EVENT_READRESPONSE, &message, MESSAGE_SIZE, data))
+        while (channel_poll_any(EVENT_WRITERESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             struct event_writeresponse *response = (struct event_writeresponse *)data;

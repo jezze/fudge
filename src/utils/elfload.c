@@ -89,16 +89,32 @@ static void updateundefined(void)
 
                 unsigned int underscore = buffer_findbyte(symbol, length, '_');
                 char module[32];
+                unsigned int service;
+                unsigned int id;
 
                 cstring_write_fmt2(module, 32, "initrd:kernel/%w.ko.map\\0", 0, symbol, &underscore);
 
-                if (call_walk_absolute(FILE_L0, module))
+                service = fsp_auth(module);
+
+                if (service)
                 {
 
-                    char data[8192];
-                    unsigned int count = call_read(FILE_L0, data, 8192, 0);
+                    id = fsp_walk(service, 0, module);
 
-                    address = findsymbol(data, count, length, symbol);
+                    if (id)
+                    {
+
+                        char data[8192];
+                        unsigned int count;
+                        unsigned int offset;
+                        unsigned int total = 0;
+
+                        for (offset = 0; (count = fsp_read(service, id, data + offset, 8192 - offset, offset)); offset += count)
+                            total += count;
+
+                        address = findsymbol(data, total, length, symbol);
+
+                    }
 
                 }
 
@@ -179,44 +195,76 @@ static void resolve(unsigned int descriptor)
 
 }
 
+static unsigned int loadmap(char *map, char *buffer, unsigned int count)
+{
+
+    unsigned int service = fsp_auth(map);
+
+    if (service)
+    {
+
+        unsigned int id = fsp_walk(service, 0, map);
+
+        if (id)
+            return fsp_read_full(service, id, buffer, count, 0);
+
+    }
+
+    return 0;
+
+}
+
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int service = fsp_auth(mdata);
     char mapname[256];
-    unsigned int address;
 
     cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
+    kernelcount = loadmap("initrd:kernel/fudge.map", kerneldata, 8192);
+    mapcount = loadmap(mapname, mapdata, 8192);
 
-    if (!call_walk_absolute(FILE_G1, "initrd:kernel/fudge.map"))
-        PANIC();
+    if (service)
+    {
 
-    kernelcount = call_read(FILE_G1, kerneldata, 8192, 0);
+        unsigned int id = fsp_walk(service, 0, mdata);
 
-    if (!call_walk_absolute(FILE_G2, mdata))
-        PANIC();
+        if (id)
+        {
 
-    call_read_all(FILE_G2, &header, ELF_HEADER_SIZE, 0);
+            unsigned int address;
 
-    if (!elf_validate(&header))
-        PANIC();
+            if (!call_walk_absolute(FILE_G2, mdata))
+                PANIC();
 
-    if (header.shcount > 64)
-        PANIC();
+            fsp_read_all(service, id, &header, ELF_HEADER_SIZE, 0);
 
-    call_read_all(FILE_G2, sectionheaders, header.shsize * header.shcount, header.shoffset);
+            if (elf_validate(&header))
+            {
 
-    if (!call_walk_absolute(FILE_G3, mapname))
-        PANIC();
+                if (header.shcount < 64)
+                {
 
-    mapcount = call_read(FILE_G3, mapdata, 8192, 0);
+                    call_read_all(FILE_G2, sectionheaders, header.shsize * header.shcount, header.shoffset);
 
-    updateundefined();
-    resolve(FILE_G2);
+                    if (!call_walk_absolute(FILE_G3, mapname))
+                        PANIC();
 
-    address = call_load(FILE_G2);
+                    updateundefined();
+                    resolve(FILE_G2);
 
-    relocate(address);
-    call_write_all(FILE_G3, mapdata, mapcount, 0);
+                    address = call_load(FILE_G2);
+
+                    relocate(address);
+                    call_write_all(FILE_G3, mapdata, mapcount, 0);
+
+                }
+
+            }
+
+        }
+
+    }
 
 }
 
