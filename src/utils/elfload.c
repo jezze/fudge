@@ -68,6 +68,25 @@ static unsigned int findsymbol(char *data, unsigned int count, unsigned int leng
 
 }
 
+static unsigned int loadmap(char *map, char *buffer, unsigned int count)
+{
+
+    unsigned int service = fsp_auth(map);
+
+    if (service)
+    {
+
+        unsigned int id = fsp_walk(service, 0, map);
+
+        if (id)
+            return fsp_read_full(service, id, buffer, count, 0);
+
+    }
+
+    return 0;
+
+}
+
 static void updateundefined(void)
 {
 
@@ -89,34 +108,15 @@ static void updateundefined(void)
 
                 unsigned int underscore = buffer_findbyte(symbol, length, '_');
                 char module[32];
-                unsigned int service;
-                unsigned int id;
+                char data[8192];
+                unsigned int count;
 
                 cstring_write_fmt2(module, 32, "initrd:kernel/%w.ko.map\\0", 0, symbol, &underscore);
 
-                service = fsp_auth(module);
+                count = loadmap(module, data, 8192);
 
-                if (service)
-                {
-
-                    id = fsp_walk(service, 0, module);
-
-                    if (id)
-                    {
-
-                        char data[8192];
-                        unsigned int count;
-                        unsigned int offset;
-                        unsigned int total = 0;
-
-                        for (offset = 0; (count = fsp_read(service, id, data + offset, 8192 - offset, offset)); offset += count)
-                            total += count;
-
-                        address = findsymbol(data, total, length, symbol);
-
-                    }
-
-                }
+                if (count)
+                    address = findsymbol(data, count, length, symbol);
 
             }
 
@@ -192,25 +192,6 @@ static void resolve(unsigned int descriptor, unsigned int service, unsigned int 
         }
 
     }
-
-}
-
-static unsigned int loadmap(char *map, char *buffer, unsigned int count)
-{
-
-    unsigned int service = fsp_auth(map);
-
-    if (service)
-    {
-
-        unsigned int id = fsp_walk(service, 0, map);
-
-        if (id)
-            return fsp_read_full(service, id, buffer, count, 0);
-
-    }
-
-    return 0;
 
 }
 
