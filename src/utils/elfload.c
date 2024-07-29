@@ -234,9 +234,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
             unsigned int address;
 
-            if (!call_walk_absolute(FILE_G2, mdata))
-                PANIC();
-
             fsp_read_all(service, id, &header, ELF_HEADER_SIZE, 0);
 
             if (elf_validate(&header))
@@ -245,18 +242,22 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                 if (header.shcount < 64)
                 {
 
-                    call_read_all(FILE_G2, sectionheaders, header.shsize * header.shcount, header.shoffset);
+                    fsp_read_all(service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
+                    updateundefined();
 
-                    if (!call_walk_absolute(FILE_G3, mapname))
+                    if (!call_walk_absolute(FILE_G2, mdata))
                         PANIC();
 
-                    updateundefined();
                     resolve(FILE_G2);
 
                     address = call_load(FILE_G2);
 
                     relocate(address);
-                    call_write_all(FILE_G3, mapdata, mapcount, 0);
+
+                    if (!call_walk_absolute(FILE_L0, mapname))
+                        PANIC();
+
+                    call_write_all(FILE_L0, mapdata, mapcount, 0);
 
                 }
 
