@@ -58,7 +58,7 @@ static void interpret(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job, "initrd2:bin"))
+        if (job_spawn(&job, "initrd:bin"))
         {
 
             struct message message;
@@ -184,7 +184,7 @@ static void complete(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job, "initrd2:bin"))
+        if (job_spawn(&job, "initrd:bin"))
         {
 
             struct message message;
@@ -521,7 +521,7 @@ void init(void)
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("input", "system:console/if.0/event");
-    option_add("slang", "initrd2:bin/slang");
+    option_add("slang", "initrd:bin/slang");
     option_add("tty-service", "101");
     channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);

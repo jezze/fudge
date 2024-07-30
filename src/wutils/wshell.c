@@ -116,7 +116,7 @@ static void interpret(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job, "initrd2:bin"))
+        if (job_spawn(&job, "initrd:bin"))
         {
 
             struct message message;
@@ -242,7 +242,7 @@ static void complete(void)
         job_init(&job, workers, JOBSIZE);
         job_parse(&job, buffer, count);
 
-        if (job_spawn(&job, "initrd2:bin"))
+        if (job_spawn(&job, "initrd:bin"))
         {
 
             struct message message;

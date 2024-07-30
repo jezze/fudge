@@ -40,7 +40,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, mdata, msize);
 
-    if (job_spawn(&job, "initrd2:bin"))
+    if (job_spawn(&job, "initrd:bin"))
     {
 
         job_pipe(&job, EVENT_DATA);
@@ -68,8 +68,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("initrd", "initrd2:bin/initrd");
-    option_add("slang", "initrd2:bin/slang");
+    option_add("initrd", "initrd:bin/initrd");
+    option_add("slang", "initrd:bin/slang");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_DATA, ondata);
 
