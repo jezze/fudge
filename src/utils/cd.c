@@ -12,7 +12,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned int id = fsp_walk(service, 0, mdata);
 
         if (id)
-            channel_send_buffer(source, EVENT_PATH, msize, mdata);
+            channel_send_fmt1(source, EVENT_OPTION, "pwd\\0%s\\0", mdata);
         else
             channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 

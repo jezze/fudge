@@ -67,7 +67,6 @@ static void interpret(void)
             job_listen(&job, EVENT_TERMRESPONSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
-            job_listen(&job, EVENT_PATH);
             job_pipe(&job, EVENT_DATA);
             job_run(&job, option_getstring("pwd"));
 
@@ -85,9 +84,6 @@ static void interpret(void)
                 case EVENT_DATA:
                     print(data, message_datasize(&message));
 
-                    break;
-
-                case EVENT_PATH:
                     break;
 
                 default:
