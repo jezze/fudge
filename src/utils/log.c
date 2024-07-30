@@ -12,34 +12,36 @@ static char *levels[5] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (call_walk_absolute(FILE_L0, option_getstring("klog")))
+    unsigned int service = fsp_auth(option_getstring("klog"));
+
+    if (service)
     {
 
-        struct message message;
-        char data[MESSAGE_SIZE];
+        unsigned int id = fsp_walk(service, 0, option_getstring("klog"));
 
-        call_link(FILE_L0, 8000);
-
-        while (channel_poll_any(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
+        if (id)
         {
 
-            struct event_loginfo *loginfo = (void *)data;
-            char *description = (char *)(loginfo + 1);
-            unsigned int count = loginfo->count - sizeof (struct event_loginfo);
+            struct message message;
+            char data[MESSAGE_SIZE];
 
-            if (option_getdecimal("level") >= loginfo->level)
-                channel_send_fmt3(source, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
+            fsp_link(service, id);
+
+            while (channel_poll_any(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
+            {
+
+                struct event_loginfo *loginfo = (void *)data;
+                char *description = (char *)(loginfo + 1);
+                unsigned int count = loginfo->count - sizeof (struct event_loginfo);
+
+                if (option_getdecimal("level") >= loginfo->level)
+                    channel_send_fmt3(source, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
+
+            }
+
+            fsp_unlink(service, id);
 
         }
-
-        call_unlink(FILE_L0);
-
-    }
-
-    else
-    {
-
-        channel_send_fmt2(source, EVENT_ERROR, "Logs not found: %s and/or %s\n", option_getstring("klog"), option_getstring("ulog"));
 
     }
 
