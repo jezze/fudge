@@ -350,7 +350,7 @@ static unsigned int protocol_getattr(void *buffer, struct p9p_header *p9p)
 
 }
 
-static unsigned int handle(void *reply, struct p9p_header *p9p)
+static unsigned int handle(unsigned int source, void *reply, struct p9p_header *p9p)
 {
 
     if (p9p_read4(p9p, P9P_OFFSET_SIZE) < P9P_OFFSET_DATA)
@@ -381,7 +381,7 @@ static unsigned int handle(void *reply, struct p9p_header *p9p)
         return protocol_getattr(reply, p9p);
 
     default:
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Packet has unknown type\n");
+        channel_send_fmt0(source, EVENT_ERROR, "Packet has unknown type\n");
 
         return protocol_error(reply, p9p, "Packet has unknown type", -1);
 
@@ -395,7 +395,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     struct p9p_header *p9p = mdata;
     char buffer[MESSAGE_SIZE];
 
-    channel_send_buffer(source, EVENT_P9P, handle(buffer, p9p), buffer);
+    channel_send_buffer(source, EVENT_P9P, handle(source, buffer, p9p), buffer);
 
 }
 
@@ -422,7 +422,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             char reply[MESSAGE_SIZE];
 
-            socket_send_tcp(FILE_G1, &local, &remote, &router, handle(reply, (struct p9p_header *)buffer), reply);
+            socket_send_tcp(FILE_G1, &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
 
         }
 

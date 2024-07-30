@@ -1,14 +1,14 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void error(void *data, unsigned int count)
+static void error(unsigned int source, void *data, unsigned int count)
 {
 
-    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
+    channel_send_fmt2(source, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
 
 }
 
-static unsigned int validate(void *buffer, unsigned short tag)
+static unsigned int validate(unsigned int source, void *buffer, unsigned short tag)
 {
 
     struct p9p_header *p9p = buffer;
@@ -16,7 +16,7 @@ static unsigned int validate(void *buffer, unsigned short tag)
     if (p9p_read1(p9p, P9P_OFFSET_TYPE) == P9P_RERROR)
     {
 
-        error(p9p_readstringdata(p9p, P9P_OFFSET_DATA), p9p_readstringlength(p9p, P9P_OFFSET_DATA));
+        error(source, p9p_readstringdata(p9p, P9P_OFFSET_DATA), p9p_readstringlength(p9p, P9P_OFFSET_DATA));
 
         return 0;
 
@@ -27,7 +27,7 @@ static unsigned int validate(void *buffer, unsigned short tag)
 
         char *ename = "Tags do not match";
 
-        error(ename, cstring_length(ename));
+        error(source, ename, cstring_length(ename));
 
         return 0;
 
@@ -37,7 +37,7 @@ static unsigned int validate(void *buffer, unsigned short tag)
 
 }
 
-static unsigned int version(unsigned short tag, unsigned int msize, char *name)
+static unsigned int version(unsigned int source, unsigned short tag, unsigned int msize, char *name)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -47,7 +47,7 @@ static unsigned int version(unsigned short tag, unsigned int msize, char *name)
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
     channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
-    if (!validate(data, tag))
+    if (!validate(source, data, tag))
         return 0;
 
     switch (p9p_read1(data, P9P_OFFSET_TYPE))
@@ -62,7 +62,7 @@ static unsigned int version(unsigned short tag, unsigned int msize, char *name)
 
 }
 
-static unsigned int attach(unsigned short tag, unsigned int fid, unsigned int afid)
+static unsigned int attach(unsigned int source, unsigned short tag, unsigned int fid, unsigned int afid)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -72,7 +72,7 @@ static unsigned int attach(unsigned short tag, unsigned int fid, unsigned int af
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
     channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
-    if (!validate(data, tag))
+    if (!validate(source, data, tag))
         return 0;
 
     switch (p9p_read1(data, P9P_OFFSET_TYPE))
@@ -87,7 +87,7 @@ static unsigned int attach(unsigned short tag, unsigned int fid, unsigned int af
 
 }
 
-static unsigned int walk(unsigned short tag, unsigned int fid, unsigned int newfid, char *wname)
+static unsigned int walk(unsigned int source, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -97,7 +97,7 @@ static unsigned int walk(unsigned short tag, unsigned int fid, unsigned int newf
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
     channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
-    if (!validate(data, tag))
+    if (!validate(source, data, tag))
         return 0;
 
     switch (p9p_read1(data, P9P_OFFSET_TYPE))
@@ -112,7 +112,7 @@ static unsigned int walk(unsigned short tag, unsigned int fid, unsigned int newf
 
 }
 
-static unsigned int read(unsigned short tag, unsigned int fid)
+static unsigned int read(unsigned int source, unsigned short tag, unsigned int fid)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -122,14 +122,14 @@ static unsigned int read(unsigned short tag, unsigned int fid)
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
     channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
-    if (!validate(data, tag))
+    if (!validate(source, data, tag))
         return 0;
 
     switch (p9p_read1(data, P9P_OFFSET_TYPE))
     {
 
     case P9P_RREAD:
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
+        channel_send_buffer(source, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
 
         return 1;
 
@@ -139,26 +139,26 @@ static unsigned int read(unsigned short tag, unsigned int fid)
 
 }
 
-static void sendrequest(void)
+static void sendrequest(unsigned int source)
 {
 
-    if (!version(40, 1200, "9P2000.F"))
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Unrcognized version\n");
+    if (!version(source, 40, 1200, "9P2000.F"))
+        channel_send_fmt0(source, EVENT_ERROR, "Unrcognized version\n");
 
-    if (!attach(41, 0, 0))
-        channel_send_fmt0(CHANNEL_DEFAULT, EVENT_ERROR, "Attach failed\n");
+    if (!attach(source, 41, 0, 0))
+        channel_send_fmt0(source, EVENT_ERROR, "Attach failed\n");
 
-    if (!walk(42, 0, 1, option_getstring("path")))
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
+    if (!walk(source, 42, 0, 1, option_getstring("path")))
+        channel_send_fmt1(source, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
 
-    read(43, 1);
+    read(source, 43, 1);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    sendrequest();
+    sendrequest(source);
 
 }
 

@@ -98,7 +98,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         R(5, 7, cA, sA)
         R(5, 8, cB, sB)
 
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, 2, sequence);
+        channel_send_buffer(source, EVENT_DATA, 2, sequence);
 
         for (k = 0; k < 1760; k += 80)
         {
@@ -106,7 +106,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             char *offset = b + k;
             unsigned int count = 80;
 
-            channel_send_fmt2(CHANNEL_DEFAULT, EVENT_DATA, "%w\n", offset, &count);
+            channel_send_fmt2(source, EVENT_DATA, "%w\n", offset, &count);
 
         }
 
