@@ -311,12 +311,12 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_walkrequest *walkrequest = data;
-    struct event_walkresponse walkresponse;
+    struct {struct event_walkresponse walkresponse;} message;
 
-    walkresponse.session = walkrequest->session;
-    walkresponse.id = service_findpath(&service, (walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
+    message.walkresponse.session = walkrequest->session;
+    message.walkresponse.id = service_findpath(&service, (walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
 
-    return kernel_place(SYSTEMID, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
+    return kernel_place(SYSTEMID, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
 
 }
 
