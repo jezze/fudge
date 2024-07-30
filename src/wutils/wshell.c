@@ -105,13 +105,13 @@ static void interpret(void)
 
     char buffer[MESSAGE_SIZE];
     unsigned int count = ring_read(&input1, buffer, MESSAGE_SIZE);
-    unsigned int channel = runslang(buffer, count);
 
+    runslang(buffer, count);
     printprompt();
     print(buffer, count);
     update();
 
-    while ((count = channel_read_from(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
+    while ((count = channel_read_any(EVENT_DATA, MESSAGE_SIZE, buffer)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -234,9 +234,10 @@ static void complete(void)
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
     unsigned int count = createcommand(&input1, buffer, prefix);
-    unsigned int channel = runslang(buffer, count);
 
-    while ((count = channel_read_from(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
+    runslang(buffer, count);
+
+    while ((count = channel_read_any(EVENT_DATA, MESSAGE_SIZE, buffer)))
     {
 
         job_init(&job, workers, JOBSIZE);

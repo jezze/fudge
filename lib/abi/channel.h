@@ -15,11 +15,8 @@ unsigned int channel_forward(unsigned int target, unsigned int event, unsigned i
 unsigned int channel_pick(struct message *message, unsigned int count, void *data);
 unsigned int channel_process(void);
 unsigned int channel_poll_any(unsigned int event, struct message *message, unsigned int count, void *data);
-unsigned int channel_poll_from(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data);
 unsigned int channel_read_any(unsigned int event, unsigned int count, void *data);
-unsigned int channel_read_from(unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int channel_wait_any(unsigned int event);
-unsigned int channel_wait_from(unsigned int source, unsigned int event);
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
 void channel_autoclose(unsigned int event, unsigned int autoclose);
 void channel_route(unsigned int event, unsigned int mode, unsigned int target, unsigned int source);
