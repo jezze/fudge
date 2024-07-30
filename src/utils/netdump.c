@@ -149,10 +149,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int count;
 
     if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC();
+        PANIC(source);
 
     call_link(FILE_G0, 8000);
 

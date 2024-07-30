@@ -1,3 +1,3 @@
-#define PANIC() panic(__FILE__, __LINE__)
+#define PANIC(source) panic(source, __FILE__, __LINE__)
 
-void panic(char *file, unsigned int line);
+void panic(unsigned int source, char *file, unsigned int line);

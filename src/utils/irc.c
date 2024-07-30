@@ -107,17 +107,17 @@ static void seed(struct mtwist_state *state)
 
 }
 
-static void setupnetwork(struct mtwist_state *state)
+static void setupnetwork(unsigned int source, struct mtwist_state *state)
 {
 
     if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC();
+        PANIC(source);
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(state), mtwist_rand(state), mtwist_rand(state));
@@ -186,7 +186,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct mtwist_state state;
 
     seed(&state);
-    setupnetwork(&state);
+    setupnetwork(source, &state);
 
     if (cstring_length(option_getstring("domain")))
         dnsresolve(&remote, option_getstring("domain"));

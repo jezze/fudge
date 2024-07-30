@@ -154,7 +154,7 @@ static void updateundefined(void)
 
 }
 
-static void resolve(unsigned int service, unsigned int id)
+static void resolve(unsigned int source, unsigned int service, unsigned int id)
 {
 
     unsigned int i;
@@ -173,7 +173,7 @@ static void resolve(unsigned int service, unsigned int id)
             unsigned int j;
 
             if (stringheader->size > 4096)
-                PANIC();
+                PANIC(source);
 
             fsp_read_all(service, id, strings, stringheader->size, stringheader->offset);
 
@@ -242,7 +242,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
                     fsp_read_all(service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                     updateundefined();
-                    resolve(service, id);
+                    resolve(source, service, id);
 
                     if (call_walk_absolute(FILE_G2, mdata))
                         relocate(call_load(FILE_G2));

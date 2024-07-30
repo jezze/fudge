@@ -47,10 +47,10 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-void panic(char *file, unsigned int line)
+void panic(unsigned int source, char *file, unsigned int line)
 {
 
-    channel_send_fmt2(CHANNEL_DEFAULT, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
+    channel_send_fmt2(source, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
     channel_close();
     call_despawn();
 

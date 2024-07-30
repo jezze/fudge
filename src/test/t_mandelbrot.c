@@ -217,22 +217,22 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!call_walk_absolute(FILE_L0, option_getstring("mouse")))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G0, FILE_L0, "event"))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_absolute(FILE_L0, option_getstring("video")))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G1, FILE_L0, "ctrl"))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G2, FILE_L0, "data"))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G3, FILE_L0, "colormap"))
-        PANIC();
+        PANIC(source);
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 

@@ -10,17 +10,17 @@ static char inputdata[4096];
 static struct ring input;
 static char request[128];
 
-static void sendresponse(struct socket *remote)
+static void sendresponse(unsigned int source, struct socket *remote)
 {
 
     char buffer[4096];
     unsigned int count = 0;
 
     if (!call_walk_absolute(FILE_L0, "initrd:data/html"))
-        PANIC();
+        PANIC(source);
 
     if (cstring_length(request) == 0)
-        PANIC();
+        PANIC(source);
 
     if (cstring_length(request) == 1 && request[0] == '/')
         cstring_write_zero(request, 128, cstring_write(request, 128, "/index.html", 0));
@@ -52,7 +52,7 @@ static void sendresponse(struct socket *remote)
 
 }
 
-static void handlehttppacket(struct socket *remote)
+static void handlehttppacket(unsigned int source, struct socket *remote)
 {
 
     unsigned int newline;
@@ -75,7 +75,7 @@ static void handlehttppacket(struct socket *remote)
         }
 
         if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
-            sendresponse(remote);
+            sendresponse(source, remote);
 
     }
 
@@ -105,17 +105,17 @@ static void seed(struct mtwist_state *state)
 
 }
 
-static void setupnetwork(struct mtwist_state *state)
+static void setupnetwork(unsigned int source, struct mtwist_state *state)
 {
 
     if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC();
+        PANIC(source);
 
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
@@ -132,7 +132,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char data[MESSAGE_SIZE];
 
     seed(&state);
-    setupnetwork(&state);
+    setupnetwork(source, &state);
     call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
@@ -163,7 +163,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             {
 
                 if (ring_write(&input, buffer, count))
-                    handlehttppacket(remote);
+                    handlehttppacket(source, remote);
 
             }
 

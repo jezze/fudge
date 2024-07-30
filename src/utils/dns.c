@@ -83,17 +83,17 @@ static void seed(struct mtwist_state *state)
 
 }
 
-static void setupnetwork(struct mtwist_state *state)
+static void setupnetwork(unsigned int source, struct mtwist_state *state)
 {
 
     if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC();
+        PANIC(source);
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_udpv(&local, mtwist_rand(state));
@@ -112,7 +112,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct mtwist_state state;
 
     seed(&state);
-    setupnetwork(&state);
+    setupnetwork(source, &state);
     call_link(FILE_G0, 8000);
     socket_resolveremote(FILE_G0, &local, &router);
     socket_send_udp(FILE_G0, &local, &remote, &router, buildrequest(4096, buffer), buffer);

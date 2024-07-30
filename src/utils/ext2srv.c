@@ -447,7 +447,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!call_walk_absolute(FILE_G5, option_getstring("volume")))
-        PANIC();
+        PANIC(source);
 
     call_link(FILE_G5, 8001);
     readsuperblock(&sb);

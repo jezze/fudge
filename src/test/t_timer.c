@@ -10,10 +10,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char data[MESSAGE_SIZE];
 
     if (!call_walk_absolute(FILE_L0, option_getstring("timer")))
-        PANIC();
+        PANIC(source);
 
     if (!call_walk_relative(FILE_L1, FILE_L0, "event100"))
-        PANIC();
+        PANIC(source);
 
     call_link(FILE_L1, 8000);
 
