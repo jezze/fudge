@@ -298,7 +298,7 @@ void channel_route(unsigned int event, unsigned int mode, unsigned int target, u
         break;
 
     default:
-        listeners[event].target = CHANNEL_DEFAULT;
+        listeners[event].target = 0;
 
         break;
 
