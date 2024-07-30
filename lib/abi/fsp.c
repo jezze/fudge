@@ -202,14 +202,14 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 {
 
     unsigned int session = getsession();
-    struct event_writerequest request;
+    struct {struct event_writerequest header; char data[64];} request;
 
-    request.session = session;
-    request.id = id;
-    request.offset = offset;
-    request.count = count;
+    request.header.session = session;
+    request.header.id = id;
+    request.header.offset = offset;
+    request.header.count = buffer_write(request.data, 64, buffer, count, 0);
 
-    if (channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request))
+    if (channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest) + request.header.count, &request))
     {
 
         struct message message;
@@ -221,7 +221,7 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
             struct event_writeresponse *response = (struct event_writeresponse *)data;
 
             if (response->session == session)
-                return buffer_write(buffer, count, response + 1, response->count, 0);
+                return response->count;
 
         }
 

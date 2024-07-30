@@ -87,6 +87,25 @@ static unsigned int loadmap(char *map, char *buffer, unsigned int count)
 
 }
 
+static unsigned int savemap(char *map, char *buffer, unsigned int count)
+{
+
+    unsigned int service = fsp_auth(map);
+
+    if (service)
+    {
+
+        unsigned int id = fsp_walk(service, 0, map);
+
+        if (id)
+            return fsp_write_all(service, id, buffer, count, 0);
+
+    }
+
+    return 0;
+
+}
+
 static void updateundefined(void)
 {
 
@@ -135,7 +154,7 @@ static void updateundefined(void)
 
 }
 
-static void resolve(unsigned int descriptor, unsigned int service, unsigned int id)
+static void resolve(unsigned int service, unsigned int id)
 {
 
     unsigned int i;
@@ -181,7 +200,7 @@ static void resolve(unsigned int descriptor, unsigned int service, unsigned int 
 
                         value += address;
 
-                        call_write_all(descriptor, &value, 4, dataheader->offset + relocation.offset);
+                        fsp_write_all(service, id, &value, 4, dataheader->offset + relocation.offset);
 
                     }
 
@@ -213,8 +232,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         if (id)
         {
 
-            unsigned int address;
-
             fsp_read_all(service, id, &header, ELF_HEADER_SIZE, 0);
 
             if (elf_validate(&header))
@@ -225,20 +242,12 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
                     fsp_read_all(service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                     updateundefined();
+                    resolve(service, id);
 
-                    if (!call_walk_absolute(FILE_G2, mdata))
-                        PANIC();
+                    if (call_walk_absolute(FILE_G2, mdata))
+                        relocate(call_load(FILE_G2));
 
-                    resolve(FILE_G2, service, id);
-
-                    address = call_load(FILE_G2);
-
-                    relocate(address);
-
-                    if (!call_walk_absolute(FILE_L0, mapname))
-                        PANIC();
-
-                    call_write_all(FILE_L0, mapdata, mapcount, 0);
+                    savemap(mapname, mapdata, mapcount);
 
                 }
 
