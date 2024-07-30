@@ -15,34 +15,47 @@ static void updatepath(void)
 static void updatecontent(void)
 {
 
-    struct record records[4];
-    unsigned int nrecords;
-    unsigned int maxsend = 50;
+    unsigned int service = fsp_auth(path);
 
-    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
-    call_walk_absolute(FILE_PW, path);
-    call_walk_duplicate(FILE_L0, FILE_PW);
-
-    while ((nrecords = call_list(FILE_PW, FILE_L0, 4, records)))
+    if (service)
     {
 
-        char message[MESSAGE_SIZE];
-        unsigned int count = 0;
-        unsigned int i;
+        unsigned int id = fsp_walk(service, 0, path);
 
-        for (i = 0; i < nrecords; i++)
+        if (id)
         {
 
-            struct record *record = &records[i];
+            char data[MESSAGE_SIZE];
+            struct record records[8];
+            unsigned int nrecords;
+            unsigned int offset;
+            unsigned int maxsend = 50;
+            unsigned int count = 0;
 
-            count += cstring_write_fmt6(message, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
 
-            if (!--maxsend)
-                return;
+            for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
+            {
+
+                unsigned int i;
+
+                for (i = 0; i < nrecords; i++)
+                {
+
+                    struct record *record = &records[i];
+
+                    count += cstring_write_fmt6(data, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+
+                    if (!--maxsend)
+                        return;
+
+                }
+
+            }
+
+            channel_send_buffer(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, data);
 
         }
-
-        channel_send_buffer(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, message);
 
     }
 
