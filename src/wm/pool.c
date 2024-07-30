@@ -293,42 +293,56 @@ void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsig
 void pool_loadfont(unsigned int factor)
 {
 
-    unsigned int lineheight = 12 + factor * 4;
-    unsigned int padding = 4 + factor * 2;
+    unsigned int service = fsp_auth("initrd:");
 
-    switch (factor)
+    if (service)
     {
 
-    case 0:
-        call_walk_absolute(FILE_L0, "/data/font/ter-112n.pcf");
-        call_walk_absolute(FILE_L1, "/data/font/ter-112b.pcf");
+        unsigned int lineheight = 12 + factor * 4;
+        unsigned int padding = 4 + factor * 2;
+        unsigned int id1 = 0;
+        unsigned int id2 = 0;
 
-        break;
+        switch (factor)
+        {
 
-    case 1:
-        call_walk_absolute(FILE_L0, "/data/font/ter-114n.pcf");
-        call_walk_absolute(FILE_L1, "/data/font/ter-114b.pcf");
+        case 0:
+            id1 = fsp_walk(service, 0, "data/font/ter-112n.pcf");
+            id2 = fsp_walk(service, 0, "data/font/ter-112b.pcf");
 
-        break;
+            break;
 
-    case 2:
-        call_walk_absolute(FILE_L0, "/data/font/ter-116n.pcf");
-        call_walk_absolute(FILE_L1, "/data/font/ter-116b.pcf");
+        case 1:
+            id1 = fsp_walk(service, 0, "data/font/ter-114n.pcf");
+            id2 = fsp_walk(service, 0, "data/font/ter-114b.pcf");
 
-        break;
+            break;
 
-    default:
-        call_walk_absolute(FILE_L0, "/data/font/ter-118n.pcf");
-        call_walk_absolute(FILE_L1, "/data/font/ter-118b.pcf");
+        case 2:
+            id1 = fsp_walk(service, 0, "data/font/ter-116n.pcf");
+            id2 = fsp_walk(service, 0, "data/font/ter-116b.pcf");
 
-        break;
+            break;
+
+        default:
+            id1 = fsp_walk(service, 0, "/data/font/ter-118n.pcf");
+            id2 = fsp_walk(service, 0, "/data/font/ter-118b.pcf");
+
+            break;
+
+        }
+
+        if (id1 && id2)
+        {
+
+            fsp_read_full(service, id1, fontnormal, FONTDATA_SIZE, 0);
+            fsp_read_full(service, id2, fontbold, FONTDATA_SIZE, 0);
+            pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
+            pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
+
+        }
 
     }
-
-    call_read(FILE_L0, fontnormal, FONTDATA_SIZE, 0);
-    pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
-    call_read(FILE_L1, fontbold, FONTDATA_SIZE, 0);
-    pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
 
 }
 
