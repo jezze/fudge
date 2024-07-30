@@ -109,7 +109,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
 
     while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+        channel_send_buffer(source, EVENT_DATA, count, buffer);
 
     call_unlink(FILE_G0);
 

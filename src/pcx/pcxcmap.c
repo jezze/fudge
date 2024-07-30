@@ -22,7 +22,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned char colormap[768];
 
             call_read_all(FILE_L0, colormap, 768, record.size - 768);
-            channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, 768, colormap);
+            channel_send_buffer(source, EVENT_DATA, 768, colormap);
 
         }
 
@@ -31,7 +31,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(CHANNEL_DEFAULT, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
     }
 

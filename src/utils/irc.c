@@ -197,7 +197,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
     while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, 4096)))
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, buffer);
+        channel_send_buffer(source, EVENT_DATA, count, buffer);
 
     call_unlink(FILE_G0);
 
