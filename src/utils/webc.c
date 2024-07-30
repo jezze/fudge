@@ -12,7 +12,6 @@ static void dnsresolve(char *domain, char address[32])
         char data[MESSAGE_SIZE];
         unsigned int count;
 
-        channel_listen(channel, EVENT_QUERY);
         channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);

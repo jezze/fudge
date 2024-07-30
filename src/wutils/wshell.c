@@ -88,7 +88,6 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
     if (channel)
     {
 
-        channel_listen(channel, EVENT_ERROR);
         channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send(channel, EVENT_MAIN);
         channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
