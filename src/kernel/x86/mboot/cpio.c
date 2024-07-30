@@ -353,7 +353,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     struct {struct event_writeresponse writeresponse;} message;
 
     message.writeresponse.session = writerequest->session;
-    message.writeresponse.count = service_write(writerequest->id, writerequest + 1, (writerequest->count > 64) ? 64 : writerequest->count, writerequest->offset);
+    message.writeresponse.count = service_write(writerequest->id, writerequest + 1, writerequest->count, writerequest->offset);
 
     return kernel_place(SYSTEMID, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
 
