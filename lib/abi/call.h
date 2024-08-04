@@ -12,7 +12,6 @@ unsigned int call_pick(struct message *message, unsigned int count, void *data);
 unsigned int call_place(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int call_read(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset);
 unsigned int call_read_all(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset);
-unsigned int call_set(unsigned int idescriptor, unsigned int id);
 unsigned int call_spawn(unsigned int ichannel, unsigned int id);
 unsigned int call_stat(unsigned int idescriptor, struct record *record);
 unsigned int call_unlink(unsigned int idescriptor);
