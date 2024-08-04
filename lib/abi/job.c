@@ -74,7 +74,7 @@ static void activatenext(struct job *job, unsigned int startindex)
 
             channel_send(worker->channel, EVENT_END);
 
-            return;
+            break;
 
         }
 
