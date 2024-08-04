@@ -20,31 +20,31 @@ static struct
 static unsigned int state = CHANNEL_STATE_CLOSE;
 static unsigned int pending;
 
-static unsigned int send(unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int send(unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
     if (listeners[event].target)
-        target = listeners[event].target;
+        channel = listeners[event].target;
 
-    if (!target)
+    if (!channel)
         return 0;
 
-    while (!call_place(target, event, count, data));
+    while (!call_place(channel, event, count, data));
 
     return count;
 
 }
 
-static unsigned int redirect(unsigned int target, unsigned int event, unsigned int mode, unsigned int channel)
+static unsigned int redirect(unsigned int channel, unsigned int event, unsigned int mode, unsigned int target)
 {
 
     struct event_redirect redirect;
 
     redirect.event = event;
     redirect.mode = mode;
-    redirect.target = channel;
+    redirect.target = target;
 
-    return send(target, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
+    return send(channel, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
 
 }
 
@@ -96,94 +96,94 @@ void channel_dispatch(struct message *message, void *data)
 
 }
 
-unsigned int channel_send(unsigned int target, unsigned int event)
+unsigned int channel_send(unsigned int channel, unsigned int event)
 {
 
-    return send(target, event, 0, 0);
+    return send(channel, event, 0, 0);
 
 }
 
-unsigned int channel_send_buffer(unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int channel_send_buffer(unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
-    return send(target, event, count, data);
+    return send(channel, event, count, data);
 
 }
 
-unsigned int channel_send_fmt0(unsigned int target, unsigned int event, char *fmt)
+unsigned int channel_send_fmt0(unsigned int channel, unsigned int event, char *fmt)
 {
 
     char buffer[MESSAGE_SIZE];
 
-    return send(target, event, cstring_write_fmt0(buffer, MESSAGE_SIZE, fmt, 0), buffer);
+    return send(channel, event, cstring_write_fmt0(buffer, MESSAGE_SIZE, fmt, 0), buffer);
 
 }
 
-unsigned int channel_send_fmt1(unsigned int target, unsigned int event, char *fmt, void *arg1)
+unsigned int channel_send_fmt1(unsigned int channel, unsigned int event, char *fmt, void *arg1)
 {
 
     char buffer[MESSAGE_SIZE];
 
-    return send(target, event, cstring_write_fmt1(buffer, MESSAGE_SIZE, fmt, 0, arg1), buffer);
+    return send(channel, event, cstring_write_fmt1(buffer, MESSAGE_SIZE, fmt, 0, arg1), buffer);
 
 }
 
-unsigned int channel_send_fmt2(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2)
+unsigned int channel_send_fmt2(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2)
 {
 
     char buffer[MESSAGE_SIZE];
 
-    return send(target, event, cstring_write_fmt2(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2), buffer);
+    return send(channel, event, cstring_write_fmt2(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2), buffer);
 
 }
 
-unsigned int channel_send_fmt3(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3)
+unsigned int channel_send_fmt3(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3)
 {
 
     char buffer[MESSAGE_SIZE];
 
-    return send(target, event, cstring_write_fmt3(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3), buffer);
+    return send(channel, event, cstring_write_fmt3(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3), buffer);
 
 }
 
-unsigned int channel_send_fmt4(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4)
+unsigned int channel_send_fmt4(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4)
 {
 
     char buffer[MESSAGE_SIZE];
 
-    return send(target, event, cstring_write_fmt4(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3, arg4), buffer);
+    return send(channel, event, cstring_write_fmt4(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3, arg4), buffer);
 
 }
 
-unsigned int channel_send_fmt6(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
+unsigned int channel_send_fmt6(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
 {
 
     char buffer[MESSAGE_SIZE];
 
-    return send(target, event, cstring_write_fmt6(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3, arg4, arg5, arg6), buffer);
+    return send(channel, event, cstring_write_fmt6(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3, arg4, arg5, arg6), buffer);
 
 }
 
-unsigned int channel_send_fmt8(unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
+unsigned int channel_send_fmt8(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
 {
 
     char buffer[MESSAGE_SIZE];
 
-    return send(target, event, cstring_write_fmt8(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8), buffer);
+    return send(channel, event, cstring_write_fmt8(buffer, MESSAGE_SIZE, fmt, 0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8), buffer);
 
 }
 
-unsigned int channel_listen(unsigned int target, unsigned int event)
+unsigned int channel_listen(unsigned int channel, unsigned int event)
 {
 
-    return redirect(target, event, EVENT_REDIRECT_SOURCE, 0);
+    return redirect(channel, event, EVENT_REDIRECT_SOURCE, 0);
 
 }
 
-unsigned int channel_forward(unsigned int target, unsigned int event, unsigned int channel)
+unsigned int channel_forward(unsigned int channel, unsigned int event, unsigned int target)
 {
 
-    return redirect(target, event, EVENT_REDIRECT_TARGET, channel);
+    return redirect(channel, event, EVENT_REDIRECT_TARGET, target);
 
 }
 
