@@ -3,16 +3,6 @@
 
 #define JOBSIZE                         32
 
-static void runinitrd(void)
-{
-
-    unsigned int channel = fsp_spawn(option_getstring("initrd"));
-
-    if (channel)
-        channel_send(channel, EVENT_MAIN);
-
-}
-
 static void runscripts(void)
 {
 
@@ -60,7 +50,6 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    runinitrd();
     runscripts();
 
 }
