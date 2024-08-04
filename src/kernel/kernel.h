@@ -20,5 +20,6 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 void kernel_announce(unsigned short index, struct service *service, unsigned int target);
 void kernel_notify(struct list *states, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
+unsigned int kernel_map(unsigned int ichannel, unsigned int id);
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int ichannel, unsigned int id, unsigned int address);
 void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize);

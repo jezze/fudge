@@ -191,15 +191,14 @@ static unsigned int write(unsigned int itask, void *stack)
 static unsigned int load(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
+    struct {void *caller; unsigned int ichannel; unsigned int id;} *args = stack;
 
-    if (descriptor_check(descriptor))
+    if (args->ichannel && args->id)
     {
 
         struct binary_node node;
 
-        node.address = descriptor->service->map(descriptor->id);
+        node.address = kernel_map(args->ichannel, args->id);
 
         if (node.address)
         {
@@ -239,15 +238,14 @@ static unsigned int load(unsigned int itask, void *stack)
 static unsigned int unload(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
+    struct {void *caller; unsigned int ichannel; unsigned int id;} *args = stack;
 
-    if (descriptor_check(descriptor))
+    if (args->ichannel && args->id)
     {
 
         struct binary_node node;
 
-        node.address = descriptor->service->map(descriptor->id);
+        node.address = kernel_map(args->ichannel, args->id);
 
         if (node.address)
         {

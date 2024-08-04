@@ -243,10 +243,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                     fsp_read_all(service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                     updateundefined();
                     resolve(source, service, id);
-
-                    if (call_walk_absolute(FILE_G2, mdata))
-                        relocate(call_load(FILE_G2));
-
+                    relocate(call_load(service, id));
                     savemap(mapname, mapdata, mapcount);
 
                 }

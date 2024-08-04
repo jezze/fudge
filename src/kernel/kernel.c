@@ -406,6 +406,15 @@ unsigned int kernel_createtask(void)
 
 }
 
+unsigned int kernel_map(unsigned int ichannel, unsigned int id)
+{
+
+    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+
+    return channel->service->map(id);
+
+}
+
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int ichannel, unsigned int id, unsigned int address)
 {
 
