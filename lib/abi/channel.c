@@ -3,10 +3,10 @@
 #include "channel.h"
 
 #define CHANNEL_LISTENERS               256
-#define CHANNEL_STATE_CLOSE             0
-#define CHANNEL_STATE_OPEN              1
-#define CHANNEL_STATE_AWAIT             2
-#define CHANNEL_STATE_TERM              3
+#define CHANNEL_STATE_CLOSED            0
+#define CHANNEL_STATE_OPENED            1
+#define CHANNEL_STATE_WAITING           2
+#define CHANNEL_STATE_TERMINATED        3
 
 static struct
 {
@@ -17,7 +17,7 @@ static struct
 
 } listeners[CHANNEL_LISTENERS];
 
-static unsigned int state = CHANNEL_STATE_CLOSE;
+static unsigned int state = CHANNEL_STATE_CLOSED;
 static unsigned int pending;
 
 static unsigned int send(unsigned int channel, unsigned int event, unsigned int count, void *data)
@@ -69,21 +69,21 @@ void channel_dispatch(struct message *message, void *data)
         {
 
         case 1:
-            state = CHANNEL_STATE_AWAIT;
+            state = CHANNEL_STATE_WAITING;
 
             break;
 
         case 2:
-            state = CHANNEL_STATE_TERM;
+            state = CHANNEL_STATE_TERMINATED;
 
             break;
 
         }
 
-        if (state == CHANNEL_STATE_AWAIT && !pending)
-            state = CHANNEL_STATE_TERM;
+        if (state == CHANNEL_STATE_WAITING && !pending)
+            state = CHANNEL_STATE_TERMINATED;
 
-        if (state == CHANNEL_STATE_TERM)
+        if (state == CHANNEL_STATE_TERMINATED)
         {
 
             send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
@@ -190,7 +190,7 @@ unsigned int channel_forward(unsigned int channel, unsigned int event, unsigned 
 unsigned int channel_pick(struct message *message, unsigned int count, void *data)
 {
 
-    while (state != CHANNEL_STATE_CLOSE)
+    while (state != CHANNEL_STATE_CLOSED)
     {
 
         if (call_pick(message, count, data))
@@ -309,14 +309,14 @@ void channel_route(unsigned int event, unsigned int mode, unsigned int target, u
 void channel_open(void)
 {
 
-    state = CHANNEL_STATE_OPEN;
+    state = CHANNEL_STATE_OPENED;
 
 }
 
 void channel_close(void)
 {
 
-    state = CHANNEL_STATE_CLOSE;
+    state = CHANNEL_STATE_CLOSED;
 
 }
 
