@@ -393,7 +393,12 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     if (!walkrequest->length)
     {
 
-        fsp_walkresponse(source, walkrequest->session, id);
+        struct event_walkresponse response;
+
+        response.session = walkrequest->session;
+        response.id = id;
+
+        channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
         return;
 
@@ -417,7 +422,12 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
             if (entry->length == walkrequest->length && buffer_match((char *)entry + 8, path, entry->length))
             {
 
-                fsp_walkresponse(source, walkrequest->session, entry->node);
+                struct event_walkresponse response;
+
+                response.session = walkrequest->session;
+                response.id = entry->node;
+
+                channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
                 break;
 

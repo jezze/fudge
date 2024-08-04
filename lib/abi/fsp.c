@@ -183,18 +183,6 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 
 }
 
-unsigned int fsp_walkresponse(unsigned int source, unsigned int session, unsigned int id)
-{
-
-    struct event_walkresponse response;
-
-    response.session = session;
-    response.id = id;
-
-    return channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
-
-}
-
 unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
