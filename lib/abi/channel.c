@@ -8,7 +8,7 @@
 #define CHANNEL_STATE_WAITING           2
 #define CHANNEL_STATE_TERMINATED        3
 
-static struct
+static struct listener
 {
 
     void (*callback)(unsigned int source, void *data, unsigned int size);
@@ -23,8 +23,10 @@ static unsigned int pending;
 static unsigned int send(unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
-    if (listeners[event].target)
-        channel = listeners[event].target;
+    struct listener *listener = &listeners[event];
+
+    if (listener->target)
+        channel = listener->target;
 
     if (!channel)
         return 0;
@@ -54,18 +56,20 @@ void channel_dispatch(struct message *message, void *data)
     if (message->event < CHANNEL_LISTENERS)
     {
 
-        if (listeners[message->event].callback)
+        struct listener *listener = &listeners[message->event];
+
+        if (listener->callback)
         {
 
             pending++;
 
-            listeners[message->event].callback(message->source, data, message_datasize(message));
+            listener->callback(message->source, data, message_datasize(message));
 
             pending--;
 
         }
 
-        switch (listeners[message->event].autoclose)
+        switch (listener->autoclose)
         {
 
         case 1:
@@ -270,35 +274,41 @@ unsigned int channel_wait_any(unsigned int event)
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 
-    listeners[event].callback = callback;
+    struct listener *listener = &listeners[event];
+
+    listener->callback = callback;
 
 }
 
 void channel_autoclose(unsigned int event, unsigned int autoclose)
 {
 
-    listeners[event].autoclose = autoclose;
+    struct listener *listener = &listeners[event];
+
+    listener->autoclose = autoclose;
 
 }
 
 void channel_route(unsigned int event, unsigned int mode, unsigned int target, unsigned int source)
 {
 
+    struct listener *listener = &listeners[event];
+
     switch (mode)
     {
 
     case EVENT_REDIRECT_TARGET:
-        listeners[event].target = target;
+        listener->target = target;
 
         break;
 
     case EVENT_REDIRECT_SOURCE:
-        listeners[event].target = source;
+        listener->target = source;
 
         break;
 
     default:
-        listeners[event].target = 0;
+        listener->target = 0;
 
         break;
 
