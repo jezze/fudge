@@ -139,18 +139,6 @@ unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, un
 
 }
 
-unsigned int fsp_readresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
-{
-
-    struct {struct event_readresponse header; char data[64];} response;
-
-    response.header.session = session;
-    response.header.count = buffer_write(response.data, 64, buffer, count, 0);
-
-    return channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
-
-}
-
 unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 {
 

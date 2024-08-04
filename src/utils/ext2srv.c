@@ -366,10 +366,15 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     if ((node.type & 0xF000) == 0x8000)
     {
 
+        struct {struct event_readresponse header; char data[64];} response;
         unsigned char block[4096];
 
         request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
-        fsp_readresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
+        response.header.session = readrequest->session;
+        response.header.count = buffer_write(response.data, 64, block, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
+
+        channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
+
 
     }
 
