@@ -240,18 +240,6 @@ unsigned int fsp_write_all(unsigned int target, unsigned int id, void *buffer, u
 
 }
 
-unsigned int fsp_writeresponse(unsigned int source, unsigned int session, unsigned int count, void *buffer)
-{
-
-    struct {struct event_writeresponse header; char data[64];} response;
-
-    response.header.session = session;
-    response.header.count = buffer_write(response.data, 64, buffer, count, 0);
-
-    return channel_send_buffer(source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse) + response.header.count, &response);
-
-}
-
 unsigned int fsp_link(unsigned int target, unsigned int id)
 {
 

@@ -16,10 +16,14 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_readrequest *readrequest = mdata;
-    char buffer[MESSAGE_SIZE];
+    struct {struct event_readresponse header; char data[64];} response;
 
     call_set(FILE_L0, readrequest->id);
-    fsp_readresponse(source, readrequest->session, call_read(FILE_L0, buffer, readrequest->count < 64 ? readrequest->count : 64, readrequest->offset), buffer);
+
+    response.header.session = readrequest->session;
+    response.header.count = call_read(FILE_L0, response.data, readrequest->count < 64 ? readrequest->count : 64, readrequest->offset);
+
+    channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
 
 }
 
@@ -58,10 +62,14 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_writerequest *writerequest = mdata;
-    char buffer[MESSAGE_SIZE];
+    struct {struct event_writeresponse header; char data[64];} response;
 
     call_set(FILE_L0, writerequest->id);
-    fsp_writeresponse(source, writerequest->session, call_write(writerequest->id, buffer, writerequest->count < 64 ? writerequest->count : 64, writerequest->offset), buffer);
+
+    response.header.session = writerequest->session;
+    response.header.count = call_write(FILE_L0, response.data, writerequest->count < 64 ? writerequest->count : 64, writerequest->offset);
+
+    channel_send_buffer(source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse) + response.header.count, &response);
 
 }
 
