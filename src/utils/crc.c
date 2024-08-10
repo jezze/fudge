@@ -23,22 +23,31 @@ static void onexit(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (call_walk_absolute(FILE_L0, mdata))
+    unsigned int service = fsp_auth(mdata);
+
+    if (service)
     {
 
-        char buffer[4096];
-        unsigned int count;
-        unsigned int offset;
+        unsigned int id = fsp_walk(service, 0, mdata);
 
-        for (offset = 0; (count = call_read(FILE_L0, buffer, 4096, offset)); offset += count)
-            crc_read(&sum, buffer, count);
+        if (id)
+        {
 
-    }
+            char buffer[4096];
+            unsigned int count;
+            unsigned int offset;
 
-    else
-    {
+            for (offset = 0; (count = fsp_read(service, id, buffer, 4096, offset)); offset += count)
+                crc_read(&sum, buffer, count);
 
-        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
+        }
+
+        else
+        {
+
+            channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
+
+        }
 
     }
 
