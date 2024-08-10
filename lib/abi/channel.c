@@ -19,6 +19,7 @@ static struct listener
 
 static unsigned int state = CHANNEL_STATE_CLOSED;
 static unsigned int pending;
+static unsigned int parent;
 
 static unsigned int send(unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
@@ -73,11 +74,13 @@ void channel_dispatch(struct message *message, void *data)
         {
 
         case 1:
+            parent = message->source;
             state = CHANNEL_STATE_WAITING;
 
             break;
 
         case 2:
+            parent = message->source;
             state = CHANNEL_STATE_TERMINATED;
 
             break;
@@ -90,7 +93,17 @@ void channel_dispatch(struct message *message, void *data)
         if (state == CHANNEL_STATE_TERMINATED)
         {
 
-            send(CHANNEL_DEFAULT, EVENT_TERMRESPONSE, 0, 0);
+            if (parent)
+            {
+
+                struct listener *exitlistener = &listeners[EVENT_EXIT];
+
+                if (exitlistener->callback)
+                    exitlistener->callback(parent, 0, 0);
+
+                send(parent, EVENT_TERMRESPONSE, 0, 0);
+
+            }
 
             channel_close();
 

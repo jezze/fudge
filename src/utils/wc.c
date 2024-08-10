@@ -52,7 +52,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onend(unsigned int source, void *mdata, unsigned int msize)
+static void onexit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     channel_send_fmt3(source, EVENT_DATA, "%u\n%u\n%u\n", &lines, &words, &bytes);
@@ -96,7 +96,7 @@ void init(void)
 {
 
     channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_END, onend);
+    channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_PATH, onpath);
 
 }

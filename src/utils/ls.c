@@ -56,7 +56,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onend(unsigned int source, void *mdata, unsigned int msize)
+static void onexit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     if (!paths)
@@ -68,7 +68,7 @@ void init(void)
 {
 
     channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_END, onend);
+    channel_bind(EVENT_EXIT, onexit);
 
 }
 

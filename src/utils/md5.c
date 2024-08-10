@@ -11,7 +11,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onend(unsigned int source, void *mdata, unsigned int msize)
+static void onexit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned char digest[16];
@@ -57,7 +57,7 @@ void init(void)
 
     md5_init(&sum);
     channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_END, onend);
+    channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_PATH, onpath);
 
 }
