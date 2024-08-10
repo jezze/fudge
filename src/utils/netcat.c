@@ -48,7 +48,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
     }
 
     if (count)
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, count, &consoledata->data);
+        channel_send_buffer(0 /* TODO: Should not be 0 */, EVENT_DATA, count, &consoledata->data);
 
 }
 

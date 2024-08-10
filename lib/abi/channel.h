@@ -1,5 +1,3 @@
-#define CHANNEL_DEFAULT                 0
-
 void channel_dispatch(struct message *message, void *data);
 unsigned int channel_send(unsigned int channel, unsigned int event);
 unsigned int channel_send_buffer(unsigned int channel, unsigned int event, unsigned int count, void *data);

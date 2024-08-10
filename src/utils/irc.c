@@ -159,7 +159,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
     case '\n':
         ring_write(&input, &consoledata->data, 1);
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, 1, &consoledata->data);
+        channel_send_buffer(0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
 
         count = ring_read(&input, buffer, 4096);
 
@@ -170,7 +170,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
     default:
         ring_write(&input, &consoledata->data, 1);
-        channel_send_buffer(CHANNEL_DEFAULT, EVENT_DATA, 1, &consoledata->data);
+        channel_send_buffer(0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
 
         break;
 
