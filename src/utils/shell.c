@@ -33,7 +33,6 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
     if (channel)
     {
 
-        channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send(channel, EVENT_MAIN);
         channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
         channel_send(channel, EVENT_END);
@@ -64,7 +63,6 @@ static void interpret(void)
             struct message message;
             char data[MESSAGE_SIZE];
 
-            job_listen(&job, EVENT_TERMRESPONSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
@@ -192,7 +190,6 @@ static void complete(void)
             struct ring output;
 
             ring_init(&output, INPUTSIZE, buffer);
-            job_listen(&job, EVENT_TERMRESPONSE);
             job_listen(&job, EVENT_DATA);
             job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
