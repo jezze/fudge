@@ -215,29 +215,40 @@ void pool_destroy(struct widget *widget)
 void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
 {
 
-    if (pcxresource->cached)
-        return;
-
-    if (call_walk_absolute(FILE_L0, source))
+    if (!pcxresource->cached)
     {
 
-        struct pcx_header header;
-        struct record record;
-        unsigned char magic;
+        unsigned int service = fsp_auth(source);
 
-        call_stat(FILE_L0, &record);
-        call_read_all(FILE_L0, &header, sizeof (struct pcx_header), 0);
-        call_read(FILE_L0, pcxresource->data, 0x10000, 128);
+        if (service)
+        {
 
-        pcxresource->width = header.xend - header.xstart + 1;
-        pcxresource->height = header.yend - header.ystart + 1;
+            unsigned int id = fsp_walk(service, 0, source);
 
-        call_read_all(FILE_L0, &magic, 1, record.size - 768 - 1);
+            if (id)
+            {
 
-        if (magic == PCX_COLORMAP_MAGIC)
-            call_read_all(FILE_L0, pcxresource->colormap, 768, record.size - 768);
+                struct pcx_header header;
+                struct record record;
+                unsigned char magic;
 
-        pcxresource->cached = 1;
+                fsp_stat(service, id, &record);
+                fsp_read_all(service, id, &header, sizeof (struct pcx_header), 0);
+                fsp_read_full(service, id, pcxresource->data, 0x10000, 128);
+
+                pcxresource->width = header.xend - header.xstart + 1;
+                pcxresource->height = header.yend - header.ystart + 1;
+
+                fsp_read_all(service, id, &magic, 1, record.size - 768 - 1);
+
+                if (magic == PCX_COLORMAP_MAGIC)
+                    fsp_read_all(service, id, pcxresource->colormap, 768, record.size - 768);
+
+                pcxresource->cached = 1;
+
+            }
+
+        }
 
     }
 

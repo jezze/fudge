@@ -320,6 +320,19 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
 }
 
+static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_statrequest *statrequest = data;
+    struct {struct event_statresponse statresponse; struct record record;} message;
+
+    message.statresponse.session = statrequest->session;
+    message.statresponse.nrecords = service_stat(statrequest->id, &message.record);
+
+    return kernel_place(SYSTEMID, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
+
+}
+
 static unsigned int onlistrequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -367,6 +380,9 @@ static unsigned int service_notify(unsigned int id, unsigned int source, unsigne
 
     case EVENT_WALKREQUEST:
         return onwalkrequest(source, count, data);
+
+    case EVENT_STATREQUEST:
+        return onstatrequest(source, count, data);
 
     case EVENT_LISTREQUEST:
         return onlistrequest(source, count, data);

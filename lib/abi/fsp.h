@@ -4,6 +4,7 @@ unsigned int fsp_listresponse(unsigned int source, unsigned int session, unsigne
 unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fsp_read_full(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
+unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *record);
 unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path);
 unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fsp_write_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);

@@ -52,6 +52,8 @@
 #define EVENT_LINKRESPONSE              0x4A
 #define EVENT_UNLINKREQUEST             0x4B
 #define EVENT_UNLINKRESPONSE            0x4C
+#define EVENT_STATREQUEST               0x4D
+#define EVENT_STATRESPONSE              0x4E
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 
@@ -238,6 +240,22 @@ struct event_readresponse
 
     unsigned int session;
     unsigned int count;
+
+};
+
+struct event_statrequest
+{
+
+    unsigned int session;
+    unsigned int id;
+
+};
+
+struct event_statresponse
+{
+
+    unsigned int session;
+    unsigned int nrecords;
 
 };
 

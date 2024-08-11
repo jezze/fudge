@@ -120,7 +120,7 @@ unsigned int fsp_read_full(unsigned int target, unsigned int id, void *buffer, u
     unsigned int roffset;
     unsigned int rcount;
 
-    for (roffset = offset; (rcount = fsp_read(target, id, rbuffer + roffset, count - roffset, roffset)); roffset += rcount)
+    for (roffset = offset; (rcount = fsp_read(target, id, rbuffer + rtotal, count - rtotal, roffset)); roffset += rcount)
         rtotal += rcount;
 
     return rtotal;
@@ -136,6 +136,43 @@ unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, un
     for (c = 0; c < count; c += fsp_read(target, id, b + c, count - c, offset + c));
 
     return c;
+
+}
+
+unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *record)
+{
+
+    unsigned int session = getsession();
+    struct event_statrequest request;
+
+    request.session = session;
+    request.id = id;
+
+    if (channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request))
+    {
+
+        struct message message;
+        char data[MESSAGE_SIZE];
+
+        while (channel_poll_any(EVENT_STATRESPONSE, &message, MESSAGE_SIZE, data))
+        {
+
+            struct {struct event_statresponse header; struct record record;} *response = (void *)data;
+
+            if (response->header.session == session)
+            {
+
+                buffer_write(record, sizeof (struct record), &response->record, sizeof (struct record), 0);
+
+                return response->header.nrecords;
+
+            }
+
+        }
+
+    }
+
+    return 0;
 
 }
 
