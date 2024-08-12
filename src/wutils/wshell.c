@@ -122,7 +122,6 @@ static void interpret(void)
             char data[MESSAGE_SIZE];
 
             job_listen(&job, EVENT_DATA);
-            job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
             job_run(&job, option_getstring("pwd"));
 
@@ -249,7 +248,6 @@ static void complete(void)
 
             ring_init(&output, INPUTSIZE, buffer);
             job_listen(&job, EVENT_DATA);
-            job_listen(&job, EVENT_ERROR);
             job_pipe(&job, EVENT_DATA);
             job_run(&job, option_getstring("pwd"));
 
