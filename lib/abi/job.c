@@ -187,10 +187,12 @@ void job_run(struct job *job, char *pwd)
             for (j = 0; j < worker->npaths; j++)
             {
 
-                if (fsp_auth(worker->paths[j]))
-                    channel_send_fmt1(worker->channel, EVENT_PATH, "%s\\0", worker->paths[j]);
+                char *path = worker->paths[j];
+
+                if (fsp_auth(path))
+                    channel_send_fmt1(worker->channel, EVENT_PATH, "%s\\0", path);
                 else
-                    channel_send_fmt2(worker->channel, EVENT_PATH, "%s%s\\0", pwd, worker->paths[j]);
+                    channel_send_fmt2(worker->channel, EVENT_PATH, "%s%s\\0", pwd, path);
 
             }
 
