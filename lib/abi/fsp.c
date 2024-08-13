@@ -57,6 +57,8 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 
             }
 
+            channel_dispatch(&message, data);
+
         }
 
     }
@@ -103,6 +105,8 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 
             if (response->session == session)
                 return buffer_write(buffer, count, response + 1, response->count, 0);
+
+            channel_dispatch(&message, data);
 
         }
 
@@ -168,6 +172,8 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 
             }
 
+            channel_dispatch(&message, data);
+
         }
 
     }
@@ -199,6 +205,8 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 
             if (response->header.session == session)
                 return response->header.id;
+
+            channel_dispatch(&message, data);
 
         }
 
@@ -232,6 +240,8 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 
             if (response->session == session)
                 return response->count;
+
+            channel_dispatch(&message, data);
 
         }
 
