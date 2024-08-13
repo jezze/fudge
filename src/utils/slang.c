@@ -352,17 +352,12 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     {
 
         char buffer[4096];
-        unsigned int count;
-        unsigned int offset;
 
         ring_reset(&stringtable);
         tokenlist_reset(&infix);
         tokenlist_reset(&postfix);
         tokenlist_reset(&stack);
-
-        for (offset = 0; (count = call_read(FILE_L0, buffer, 4096, offset)); offset += count)
-            tokenizebuffer(&infix, &stringtable, count, buffer);
-
+        tokenizebuffer(&infix, &stringtable, call_read(FILE_L0, buffer, 4096, 0), buffer);
         translate(&postfix, &infix, &stack);
         parse(source, &postfix, &stack, 4096, buffer);
 
