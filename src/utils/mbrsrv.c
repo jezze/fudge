@@ -29,12 +29,26 @@ struct mbr
 static void request_send(unsigned int sector, unsigned int count)
 {
 
-    struct event_blockrequest blockrequest;
+    unsigned int service = fsp_auth(option_getstring("volume"));
 
-    blockrequest.sector = sector;
-    blockrequest.count = count;
+    if (service)
+    {
 
-    call_notify(FILE_G5, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+        unsigned int id = fsp_walk(service, 0, option_getstring("volume"));
+
+        if (id)
+        {
+
+            struct event_blockrequest blockrequest;
+
+            blockrequest.sector = sector;
+            blockrequest.count = count;
+
+            fsp_write(service, id, &blockrequest, sizeof (struct event_blockrequest), 0);
+
+        }
+
+    }
 
 }
 

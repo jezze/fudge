@@ -652,28 +652,17 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("keyboard")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G1, FILE_L0, "event"))
-        PANIC(source);
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("mouse")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G2, FILE_L0, "event"))
-        PANIC(source);
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G3, FILE_L0, "event"))
-        PANIC(source);
+    unsigned int keyboardservice = fsp_auth(option_getstring("keyboard"));
+    unsigned int keyboardevent = fsp_walk(keyboardservice, fsp_walk(keyboardservice, 0, option_getstring("keyboard")), "event");
+    unsigned int mouseservice = fsp_auth(option_getstring("mouse"));
+    unsigned int mouseevent = fsp_walk(mouseservice, fsp_walk(mouseservice, 0, option_getstring("mouse")), "event");
+    unsigned int videoservice = fsp_auth(option_getstring("video"));
+    unsigned int videoevent = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "event");
 
     call_announce(option_getdecimal("listen"));
-    call_link(FILE_G1, 8001);
-    call_link(FILE_G2, 8002);
-    call_link(FILE_G3, 8003);
+    fsp_link(keyboardservice, keyboardevent);
+    fsp_link(mouseservice, mouseevent);
+    fsp_link(videoservice, videoevent);
     setupvideo(source);
 
     while (channel_process())
@@ -696,9 +685,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    call_unlink(FILE_G3);
-    call_unlink(FILE_G2);
-    call_unlink(FILE_G1);
+    fsp_unlink(videoservice, videoevent);
+    fsp_unlink(mouseservice, mouseevent);
+    fsp_unlink(keyboardservice, keyboardevent);
 
 }
 

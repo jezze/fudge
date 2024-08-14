@@ -4,14 +4,23 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    call_notify(FILE_G0, EVENT_DATA, msize, mdata);
+    unsigned int service = fsp_auth(option_getstring("output"));
+
+    if (service)
+    {
+
+        unsigned int id = fsp_walk(service, 0, option_getstring("output"));
+
+        if (id)
+            fsp_write(service, id, mdata, msize, 0);
+
+    }
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    call_walk_absolute(FILE_G0, option_getstring("output"));
     call_announce(option_getdecimal("listen"));
 
 }

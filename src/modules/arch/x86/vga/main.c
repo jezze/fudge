@@ -95,10 +95,10 @@ static unsigned int send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int consoleinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int consoleinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return (event == EVENT_DATA) ? send(data, count) : 0;
+    return send(buffer, count);
 
 }
 
@@ -134,24 +134,6 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
     }
 
     video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
-
-}
-
-static unsigned int videointerface_notifyctrl(unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    if (event == EVENT_CONFIG)
-    {
-
-        struct ctrl_videosettings *settings = data;
-
-        setmode(settings->width, settings->height, settings->bpp);
-
-        return count;
-
-    }
-
-    return 0;
 
 }
 
@@ -219,33 +201,26 @@ static unsigned int videointerface_readcolormap(void *buffer, unsigned int count
 
 }
 
-static unsigned int videointerface_notifycolormap(unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int videointerface_writecolormap(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    if (event == EVENT_DATA)
+    char *c = buffer;
+    unsigned int i;
+
+    if (count > VGA_COLORMAP_LIMIT)
+        count = VGA_COLORMAP_LIMIT;
+
+    for (i = 0; i < count * 3; i += 3)
     {
 
-        char *c = data;
-        unsigned int i;
-
-        if (count > VGA_COLORMAP_LIMIT)
-            count = VGA_COLORMAP_LIMIT;
-
-        for (i = 0; i < count * 3; i += 3)
-        {
-
-            io_outb(VGA_REG_DACWINDEX, i / 3);
-            io_outb(VGA_REG_DACDATA, c[i + 0]);
-            io_outb(VGA_REG_DACDATA, c[i + 1]);
-            io_outb(VGA_REG_DACDATA, c[i + 2]);
-
-        }
-
-        return i;
+        io_outb(VGA_REG_DACWINDEX, i / 3);
+        io_outb(VGA_REG_DACDATA, c[i + 0]);
+        io_outb(VGA_REG_DACDATA, c[i + 1]);
+        io_outb(VGA_REG_DACDATA, c[i + 2]);
 
     }
 
-    return 0;
+    return i;
 
 }
 
@@ -261,13 +236,13 @@ static void driver_init(unsigned int id)
 
     clear(0);
 
-    consoleinterface.data.operations.notify = consoleinterface_notifydata;
-    videointerface.ctrl.operations.notify = videointerface_notifyctrl;
+    consoleinterface.data.operations.write = consoleinterface_writedata;
+    videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
-    videointerface.colormap.operations.notify = videointerface_notifycolormap;
+    videointerface.colormap.operations.write = videointerface_writecolormap;
     videointerface.colormap.operations.read = videointerface_readcolormap;
 
 }

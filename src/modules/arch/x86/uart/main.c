@@ -146,10 +146,10 @@ static unsigned int send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int consoleinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int consoleinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    return (event == EVENT_DATA) ? send(data, count) : 0;
+    return send(buffer, count);
 
 }
 
@@ -158,7 +158,7 @@ static void driver_init(unsigned int id)
 
     console_initinterface(&consoleinterface, id);
 
-    consoleinterface.data.operations.notify = consoleinterface_notifydata;
+    consoleinterface.data.operations.write = consoleinterface_writedata;
 
 }
 
