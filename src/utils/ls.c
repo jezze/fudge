@@ -22,7 +22,7 @@ static void list(unsigned int source, char *path)
 
             channel_send_fmt0(source, EVENT_DATA, "../\n");
 
-            for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
+            for (offset = 0; (nrecords = fsp_list(service, id, offset, records, 8)); offset += nrecords)
             {
 
                 unsigned int i;

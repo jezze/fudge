@@ -34,7 +34,7 @@ static void updatecontent(void)
 
             channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
 
-            for (offset = 0; (nrecords = fsp_list(service, id, offset, records)); offset += nrecords)
+            for (offset = 0; (nrecords = fsp_list(service, id, offset, records, 8)); offset += nrecords)
             {
 
                 unsigned int i;

@@ -276,7 +276,7 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     struct {struct event_listresponse listresponse; struct record records[8];} message;
 
     message.listresponse.session = listrequest->session;
-    message.listresponse.nrecords = service_list(listrequest->id, listrequest->offset, 8, message.records);
+    message.listresponse.nrecords = service_list(listrequest->id, listrequest->offset, (listrequest->nrecords > 8) ? 8 : listrequest->nrecords, message.records);
 
     return kernel_place(SYSTEMID, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 

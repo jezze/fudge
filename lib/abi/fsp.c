@@ -27,7 +27,7 @@ unsigned int fsp_auth(char *path)
 
 }
 
-unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset, struct record records[8])
+unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords)
 {
 
     unsigned int session = getsession();
@@ -36,6 +36,7 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
     request.session = session;
     request.id = id;
     request.offset = offset;
+    request.nrecords = nrecords;
 
     if (channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request))
     {
@@ -46,12 +47,12 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
         while (channel_poll_any(EVENT_LISTRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
-            struct {struct event_listresponse header; struct record records[8];} *response = (void *)data;
+            struct {struct event_listresponse header;} *response = (void *)data;
 
             if (response->header.session == session)
             {
 
-                buffer_write(records, sizeof (struct record) * 8, response->records, sizeof (struct record) * response->header.nrecords, 0);
+                buffer_write(records, sizeof (struct record) * request.nrecords, response + 1, sizeof (struct record) * response->header.nrecords, 0);
 
                 return response->header.nrecords;
 
