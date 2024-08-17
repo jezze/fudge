@@ -329,6 +329,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
     if ((node.type & 0xF000) == 0x4000)
     {
 
+        struct {struct event_listresponse header; struct record records[8];} response;
         unsigned char block[4096];
         unsigned int offset = 0;
         struct record records[8];
@@ -356,7 +357,11 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        fsp_listresponse(source, listrequest->session, nrecords, records);
+        response.header.session = listrequest->session;
+        response.header.nrecords = nrecords;
+
+        buffer_write(response.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
+        channel_send_buffer(source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
 
     }
 

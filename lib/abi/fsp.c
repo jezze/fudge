@@ -68,20 +68,6 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 
 }
 
-unsigned int fsp_listresponse(unsigned int source, unsigned int session, unsigned int nrecords, struct record *records)
-{
-
-    struct {struct event_listresponse header; struct record records[8];} response;
-
-    response.header.session = session;
-    response.header.nrecords = nrecords;
-
-    buffer_write(response.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
-
-    return channel_send_buffer(source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
-
-}
-
 unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
