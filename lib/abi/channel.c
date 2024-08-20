@@ -88,9 +88,6 @@ void channel_dispatch(struct message *message, void *data)
         }
 
         if (state == CHANNEL_STATE_WAITING && !pending)
-            state = CHANNEL_STATE_TERMINATED;
-
-        if (state == CHANNEL_STATE_TERMINATED)
         {
 
             if (parent)
@@ -99,11 +96,32 @@ void channel_dispatch(struct message *message, void *data)
                 struct listener *exitlistener = &listeners[EVENT_EXIT];
 
                 if (exitlistener->callback)
+                {
+
+                    pending++;
+
                     exitlistener->callback(parent, 0, 0);
 
-                send(parent, EVENT_TERMRESPONSE, 0, 0);
+                    pending--;
+
+                }
 
             }
+
+        }
+
+        if (state == CHANNEL_STATE_WAITING && !pending)
+        {
+
+            state = CHANNEL_STATE_TERMINATED;
+
+        }
+
+        if (state == CHANNEL_STATE_TERMINATED)
+        {
+
+            if (parent)
+                send(parent, EVENT_TERMRESPONSE, 0, 0);
 
             channel_close();
 
