@@ -141,7 +141,7 @@ struct hsv rgb2hsv(struct rgb rgb)
 
 }
 
-static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
+static void draw(unsigned int service, unsigned int data, struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
 
     unsigned char buffer[7680];
@@ -207,7 +207,7 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
         }
 
-        call_write_all(FILE_G2, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
+        fsp_write_all(service, data, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
 
     }
 
@@ -215,24 +215,6 @@ static void draw(struct ctrl_videosettings *settings, int x1, int y1, int x2, in
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("mouse")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G0, FILE_L0, "event"))
-        PANIC(source);
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G1, FILE_L0, "ctrl"))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G2, FILE_L0, "data"))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G3, FILE_L0, "colormap"))
-        PANIC(source);
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
@@ -252,6 +234,12 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int videoservice = fsp_auth(option_getstring("video"));
+    unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
+    unsigned int videodata = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "data");
+    unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
+    unsigned int mouseservice = fsp_auth(option_getstring("mouse"));
+    unsigned int mouseevent = fsp_walk(mouseservice, fsp_walk(mouseservice, 0, option_getstring("mouse")), "event");
     struct ctrl_videosettings settings;
 
     settings.width = option_getdecimal("width");
@@ -260,8 +248,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait_any(EVENT_WMACK);
-    call_write_all(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
-    call_read_all(FILE_G1, &settings, sizeof (struct ctrl_videosettings), 0);
+    fsp_write_all(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
+    fsp_read_all(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
 
     if (settings.bpp == 1)
     {
@@ -285,16 +273,16 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        call_notify(FILE_G3, EVENT_DATA, 768, colormap);
+        fsp_write(videoservice, videocolormap, colormap, 768, 0);
 
     }
 
-    draw(&settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    call_link(FILE_G0, 8000);
+    draw(videoservice, videodata, &settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    fsp_link(mouseservice, mouseevent);
 
     while (channel_process());
 
-    call_unlink(FILE_G0);
+    fsp_unlink(mouseservice, mouseevent);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
     channel_wait_any(EVENT_WMACK);
 
