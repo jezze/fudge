@@ -37,6 +37,9 @@ static unsigned int linebuffer[3840];
 static void setupvideo(unsigned int source)
 {
 
+    unsigned int videoservice = fsp_auth(option_getstring("video"));
+    unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
+    unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
@@ -45,18 +48,12 @@ static void setupvideo(unsigned int source)
     settings.bpp = option_getdecimal("bpp");
 
     buffer_clear(black, 768);
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
-        channel_send_fmt1(source, EVENT_ERROR, "Video device not found: %s\n", option_getstring("video"));
-
-    if (!call_walk_relative(FILE_L1, FILE_L0, "colormap"))
-        return;
-
-    if (!call_walk_relative(FILE_L2, FILE_L0, "ctrl"))
-        return;
-
-    call_notify(FILE_L1, EVENT_DATA, 768, black);
-    call_notify(FILE_L2, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
+    fsp_write(videoservice, videocolormap, black, 768, 0);
+    fsp_write(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
+    render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
+    render_cache();
+    render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
+    render_undamage();
 
 }
 
