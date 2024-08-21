@@ -114,27 +114,6 @@ static void run(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("keyboard")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G0, FILE_L0, "event"))
-        PANIC(source);
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("timer")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G1, FILE_L0, "event1"))
-        PANIC(source);
-
-    if (!call_walk_absolute(FILE_L0, option_getstring("video")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G2, FILE_L0, "event"))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G3, FILE_L0, "ctrl"))
-        PANIC(source);
-
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process());
@@ -159,6 +138,13 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int keyboardservice = fsp_auth(option_getstring("keyboard"));
+    unsigned int keyboardevent = fsp_walk(keyboardservice, fsp_walk(keyboardservice, 0, option_getstring("keyboard")), "event");
+    unsigned int timerservice = fsp_auth(option_getstring("timer"));
+    unsigned int timerevent = fsp_walk(timerservice, fsp_walk(timerservice, 0, option_getstring("timer")), "event1");
+    unsigned int videoservice = fsp_auth(option_getstring("video"));
+    unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
+    unsigned int videoevent = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "event");
     struct ctrl_videosettings settings;
 
     settings.width = option_getdecimal("width");
@@ -167,14 +153,14 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait_any(EVENT_WMACK);
-    call_link(FILE_G0, 8000);
-    call_link(FILE_G1, 8001);
-    call_link(FILE_G2, 8002);
-    call_notify(FILE_G3, EVENT_CONFIG, sizeof (struct ctrl_videosettings), &settings);
+    fsp_link(keyboardservice, keyboardevent);
+    fsp_link(timerservice, timerevent);
+    fsp_link(videoservice, videoevent);
+    fsp_write(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
     run();
-    call_unlink(FILE_G2);
-    call_unlink(FILE_G1);
-    call_unlink(FILE_G0);
+    fsp_unlink(videoservice, videoevent);
+    fsp_unlink(timerservice, timerevent);
+    fsp_unlink(keyboardservice, keyboardevent);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
     channel_wait_any(EVENT_WMACK);
 
