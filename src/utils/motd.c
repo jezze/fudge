@@ -23,7 +23,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("echo", "initrd:/bin/echo");
+    option_add("echo", "initrd:bin/echo");
     channel_bind(EVENT_MAIN, onmain);
 
 }
