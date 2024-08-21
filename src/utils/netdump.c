@@ -142,18 +142,23 @@ static void print_ethernet(unsigned int source, void *buffer)
 
 }
 
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    print_ethernet(source, mdata);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
     unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
-    char data[MESSAGE_SIZE];
-    unsigned int count;
 
+    channel_route(EVENT_DATA, EVENT_REDIRECT_TARGET, source, 0);
     fsp_link(ethernetservice, ethernetdata);
 
-    while ((count = channel_read_any(EVENT_DATA, MESSAGE_SIZE, data)))
-        print_ethernet(source, data);
+    while (channel_process());
 
     fsp_unlink(ethernetservice, ethernetdata);
 
@@ -164,6 +169,7 @@ void init(void)
 
     option_add("ethernet", "system:ethernet/if.0");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_DATA, ondata);
 
 }
 
