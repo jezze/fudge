@@ -6,7 +6,6 @@
 .set CALL_INDEX_STAT,                   0x05
 .set CALL_INDEX_LIST,                   0x06
 .set CALL_INDEX_READ,                   0x07
-.set CALL_INDEX_WRITE,                  0x08
 .set CALL_INDEX_NOTIFY,                 0x09
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
@@ -125,12 +124,6 @@ call_unload:
 .global call_walk
 call_walk:
     mov r7, $CALL_INDEX_WALK
-    swi #0
-    bx lr
-
-.global call_write
-call_write:
-    mov r7, $CALL_INDEX_WRITE
     swi #0
     bx lr
 

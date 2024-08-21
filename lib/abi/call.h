@@ -20,5 +20,3 @@ unsigned int call_walk(unsigned int idescriptor, unsigned int ipdescriptor, char
 unsigned int call_walk_duplicate(unsigned int idescriptor, unsigned int ipdescriptor);
 unsigned int call_walk_relative(unsigned int idescriptor, unsigned int ipdescriptor, char *path);
 unsigned int call_walk_absolute(unsigned int idescriptor, char *path);
-unsigned int call_write(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset);
-unsigned int call_write_all(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset);

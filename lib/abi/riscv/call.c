@@ -126,10 +126,3 @@ unsigned int call_walk(unsigned int idescriptor, unsigned int pdescriptor, char 
 
 }
 
-unsigned int call_write(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return 0;
-
-}
-

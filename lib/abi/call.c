@@ -34,15 +34,3 @@ unsigned int call_read_all(unsigned int idescriptor, void *buffer, unsigned int 
 
 }
 
-unsigned int call_write_all(unsigned int idescriptor, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    unsigned char *b = buffer;
-    unsigned int c;
-
-    for (c = 0; c < count; c += call_write(idescriptor, b + c, count - c, offset + c));
-
-    return c;
-
-}
-

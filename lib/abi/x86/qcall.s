@@ -8,7 +8,7 @@
 .set CALL_INDEX_STAT,                   0x05
 .set CALL_INDEX_LIST,                   0x06
 .set CALL_INDEX_READ,                   0x07
-.set CALL_INDEX_WRITE,                  0x08
+.set CALL_INDEX_ANNOUNCE,               0x08
 .set CALL_INDEX_NOTIFY,                 0x09
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
@@ -21,11 +21,11 @@
 
 .section .text
 
-.global call_close
-call_close:
+.global call_announce
+call_announce:
     pushl %ecx
     pushl %edx
-    movl $CALL_INDEX_CLOSE, %eax
+    movl $CALL_INDEX_ANNOUNCE, %eax
     movl %esp, %ecx
     movl $callreturn, %edx
     sysenter
@@ -35,6 +35,15 @@ call_create:
     pushl %ecx
     pushl %edx
     movl $CALL_INDEX_CREATE, %eax
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
+.global call_debug
+call_debug:
+    pushl %ecx
+    pushl %edx
+    movl $CALL_INDEX_DEBUG, %eax
     movl %esp, %ecx
     movl $callreturn, %edx
     sysenter
@@ -53,6 +62,15 @@ call_despawn:
     pushl %ecx
     pushl %edx
     movl $CALL_INDEX_DESPAWN, %eax
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
+.global call_kill
+call_kill:
+    pushl %ecx
+    pushl %edx
+    movl $CALL_INDEX_KILL, %eax
     movl %esp, %ecx
     movl $callreturn, %edx
     sysenter
@@ -84,11 +102,29 @@ call_load:
     movl $callreturn, %edx
     sysenter
 
-.global call_open
-call_open:
+.global call_notify
+call_notify:
     pushl %ecx
     pushl %edx
-    movl $CALL_INDEX_OPEN, %eax
+    movl $CALL_INDEX_NOTIFY, %eax
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
+.global call_pick
+call_pick:
+    pushl %ecx
+    pushl %edx
+    movl $CALL_INDEX_PICK, %eax
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
+.global call_place
+call_place:
+    pushl %ecx
+    pushl %edx
+    movl $CALL_INDEX_PLACE, %eax
     movl %esp, %ecx
     movl $callreturn, %edx
     sysenter
@@ -111,6 +147,24 @@ call_spawn:
     movl $callreturn, %edx
     sysenter
 
+.global call_stat
+call_stat:
+    pushl %ecx
+    pushl %edx
+    movl $CALL_INDEX_STAT, %eax
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
+.global call_unlink
+call_unlink:
+    pushl %ecx
+    pushl %edx
+    movl $CALL_INDEX_UNLINK, %eax
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
 .global call_unload
 call_unload:
     pushl %ecx
@@ -125,15 +179,6 @@ call_walk:
     pushl %ecx
     pushl %edx
     movl $CALL_INDEX_WALK, %eax
-    movl %esp, %ecx
-    movl $callreturn, %edx
-    sysenter
-
-.global call_write
-call_write:
-    pushl %ecx
-    pushl %edx
-    movl $CALL_INDEX_WRITE, %eax
     movl %esp, %ecx
     movl $callreturn, %edx
     sysenter

@@ -173,21 +173,6 @@ static unsigned int read(unsigned int itask, void *stack)
 
 }
 
-static unsigned int write(unsigned int itask, void *stack)
-{
-
-    struct {void *caller; unsigned int idescriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (checkbuffer(itask, args->buffer, args->count) && descriptor_check(descriptor))
-        return descriptor->service->write(descriptor->id, args->buffer, args->count, args->offset);
-
-    DEBUG_FMT0(DEBUG_ERROR, "write check failed");
-
-    return 0;
-
-}
-
 static unsigned int load(unsigned int itask, void *stack)
 {
 
@@ -399,7 +384,7 @@ void abi_setup(void)
     abi_setcallback(0x05, stat);
     abi_setcallback(0x06, list);
     abi_setcallback(0x07, read);
-    abi_setcallback(0x08, write);
+    abi_setcallback(0x08, announce);
     abi_setcallback(0x09, notify);
     abi_setcallback(0x0A, load);
     abi_setcallback(0x0B, unload);
@@ -409,7 +394,7 @@ void abi_setup(void)
     abi_setcallback(0x0F, place);
     abi_setcallback(0x10, link);
     abi_setcallback(0x11, unlink);
-    abi_setcallback(0x12, announce);
+    abi_setcallback(0x12, debug);
     abi_setcallback(0x13, debug);
     abi_setcallback(0x14, debug);
     abi_setcallback(0x15, debug);

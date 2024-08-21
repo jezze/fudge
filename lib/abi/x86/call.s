@@ -9,7 +9,7 @@
 .set CALL_INDEX_STAT,                   0x05
 .set CALL_INDEX_LIST,                   0x06
 .set CALL_INDEX_READ,                   0x07
-.set CALL_INDEX_WRITE,                  0x08
+.set CALL_INDEX_ANNOUNCE,               0x08
 .set CALL_INDEX_NOTIFY,                 0x09
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
@@ -19,7 +19,6 @@
 .set CALL_INDEX_PLACE,                  0x0F
 .set CALL_INDEX_LINK,                   0x10
 .set CALL_INDEX_UNLINK,                 0x11
-.set CALL_INDEX_ANNOUNCE,               0x12
 
 .section .text
 
@@ -128,12 +127,6 @@ call_unload:
 .global call_walk
 call_walk:
     movl $CALL_INDEX_WALK, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_write
-call_write:
-    movl $CALL_INDEX_WRITE, %eax
     int $CALL_INTERRUPT
     ret
 
