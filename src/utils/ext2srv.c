@@ -146,7 +146,7 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
 
     request_send(option_getdecimal("partoffset") + sector * diff, nblocks * diff);
 
-    while (channel_poll_any(EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         read += buffer_write(buffer, count, data, message_datasize(&message), read);

@@ -305,7 +305,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     settings.bpp = option_getdecimal("bpp");
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait_any(EVENT_WMACK);
+    channel_wait(EVENT_WMACK);
     fsp_link(keyboardservice, keyboardevent);
     fsp_link(timerservice, timerevent);
     fsp_link(videoservice, videoevent);
@@ -315,7 +315,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     fsp_unlink(timerservice, timerevent);
     fsp_unlink(keyboardservice, keyboardevent);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait_any(EVENT_WMACK);
+    channel_wait(EVENT_WMACK);
 
 }
 

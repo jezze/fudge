@@ -45,7 +45,7 @@ static unsigned int version(unsigned int source, unsigned short tag, unsigned in
     char data[MESSAGE_SIZE];
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
-    channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -70,7 +70,7 @@ static unsigned int attach(unsigned int source, unsigned short tag, unsigned int
     char data[MESSAGE_SIZE];
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -95,7 +95,7 @@ static unsigned int walk(unsigned int source, unsigned short tag, unsigned int f
     char data[MESSAGE_SIZE];
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
-    channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -120,7 +120,7 @@ static unsigned int read(unsigned int source, unsigned short tag, unsigned int f
     char data[MESSAGE_SIZE];
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
-    channel_poll_any(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;

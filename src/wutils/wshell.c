@@ -109,7 +109,7 @@ static void interpret(void)
     print(buffer, count);
     update();
 
-    while ((count = channel_read_any(EVENT_DATA, MESSAGE_SIZE, buffer)))
+    while ((count = channel_read(EVENT_DATA, MESSAGE_SIZE, buffer)))
     {
 
         job_init(&job, workers, JOBSIZE);
@@ -233,7 +233,7 @@ static void complete(void)
 
     runslang(buffer, count);
 
-    while ((count = channel_read_any(EVENT_DATA, MESSAGE_SIZE, buffer)))
+    while ((count = channel_read(EVENT_DATA, MESSAGE_SIZE, buffer)))
     {
 
         job_init(&job, workers, JOBSIZE);

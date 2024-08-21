@@ -27,7 +27,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             fsp_link(service, id);
 
-            while (channel_poll_any(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
+            while (channel_poll(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
             {
 
                 struct event_loginfo *loginfo = (void *)data;
