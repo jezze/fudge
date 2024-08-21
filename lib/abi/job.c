@@ -252,14 +252,7 @@ unsigned int job_pick(struct job *job, struct message *message, unsigned int cou
 {
 
     while (job_count(job) && channel_pick(message, count, data))
-    {
-
-        if (job_exist(job, message->source))
-            return message->source;
-
-        channel_dispatch(message, data);
-
-    }
+        return message->source;
 
     return 0;
 

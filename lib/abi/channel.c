@@ -217,7 +217,7 @@ unsigned int channel_listen(unsigned int channel, unsigned int event)
 unsigned int channel_forward(unsigned int channel, unsigned int event, unsigned int target)
 {
 
-    return redirect(channel, event, EVENT_REDIRECT_TARGET, target);
+    return redirect(channel, event, EVENT_REDIRECT_TARGET, (target) ? target : listeners[event].target);
 
 }
 
