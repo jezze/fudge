@@ -145,21 +145,17 @@ static void print_ethernet(unsigned int source, void *buffer)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     char data[MESSAGE_SIZE];
     unsigned int count;
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC(source);
-
-    call_link(FILE_G0, 8000);
+    fsp_link(ethernetservice, ethernetdata);
 
     while ((count = channel_read_any(EVENT_DATA, MESSAGE_SIZE, data)))
         print_ethernet(source, data);
 
-    call_unlink(FILE_G0);
+    fsp_unlink(ethernetservice, ethernetdata);
 
 }
 
