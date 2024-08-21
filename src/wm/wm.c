@@ -964,7 +964,6 @@ void init(void)
     option_add("mouse", "system:mouse");
     option_add("video", "system:video/if.0");
     option_add("wshell", "initrd:bin/wshell");
-    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);

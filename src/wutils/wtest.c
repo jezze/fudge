@@ -28,7 +28,6 @@ void init(void)
 {
 
     option_add("wm-service", "12345");
-    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);
 

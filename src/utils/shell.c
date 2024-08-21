@@ -518,7 +518,6 @@ void init(void)
     option_add("input", "system:console/if.0/event");
     option_add("slang", "initrd:bin/slang");
     option_add("tty-service", "101");
-    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

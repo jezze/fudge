@@ -13,7 +13,6 @@ static struct listener
 
     void (*callback)(unsigned int source, void *data, unsigned int size);
     unsigned int target;
-    unsigned int autoclose;
 
 } listeners[CHANNEL_LISTENERS];
 
@@ -70,16 +69,16 @@ void channel_dispatch(struct message *message, void *data)
 
         }
 
-        switch (listener->autoclose)
+        switch (message->event)
         {
 
-        case 1:
+        case EVENT_END:
             parent = message->source;
             state = CHANNEL_STATE_WAITING;
 
             break;
 
-        case 2:
+        case EVENT_TERMREQUEST:
             parent = message->source;
             state = CHANNEL_STATE_TERMINATED;
 
@@ -308,15 +307,6 @@ void channel_bind(unsigned int event, void (*callback)(unsigned int source, void
     struct listener *listener = &listeners[event];
 
     listener->callback = callback;
-
-}
-
-void channel_autoclose(unsigned int event, unsigned int autoclose)
-{
-
-    struct listener *listener = &listeners[event];
-
-    listener->autoclose = autoclose;
 
 }
 

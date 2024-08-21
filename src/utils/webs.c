@@ -192,7 +192,6 @@ void init(void)
     option_add("local-address", "10.0.5.1");
     option_add("local-port", "80");
     option_add("router-address", "10.0.5.80");
-    channel_autoclose(EVENT_END, 0);
     channel_bind(EVENT_MAIN, onmain);
 
 }
