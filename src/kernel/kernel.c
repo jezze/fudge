@@ -20,7 +20,8 @@ struct channel
 };
 
 static struct channel channels[KERNEL_CHANNELS];
-static struct taskrow {struct task task; struct mailbox mailbox; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
+static struct mailbox mailboxes[KERNEL_TASKS];
+static struct taskrow {struct task task; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
 static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
 static struct list freelinks;
 static struct list deadtasks;
@@ -303,8 +304,7 @@ void kernel_copydescriptor(unsigned int itask, unsigned int idescriptor, unsigne
 unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
-    struct taskrow *taskrow = &taskrows[source];
-    struct mailbox *mailbox = &taskrow->mailbox;
+    struct mailbox *mailbox = &mailboxes[source];
     unsigned int c;
 
     c = mailbox_pick(mailbox, message, count, data);
@@ -330,8 +330,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
         if (channel->target)
         {
 
-            struct taskrow *taskrow = &taskrows[channel->target];
-            struct mailbox *mailbox = &taskrow->mailbox;
+            struct mailbox *mailbox = &mailboxes[channel->target];
             struct message message;
             unsigned int c;
 
@@ -388,7 +387,7 @@ unsigned int kernel_createtask(void)
 
         struct taskrow *taskrow = taskitem->data;
         struct task *task = &taskrow->task;
-        struct mailbox *mailbox = &taskrow->mailbox;
+        struct mailbox *mailbox = &mailboxes[task->id];
         unsigned int i;
 
         task_reset(task);
@@ -460,7 +459,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
             coreassign(&taskrow->item);
 
-            return setchannel(itask, 0, itask);
+            return itask;
 
         }
 
@@ -502,13 +501,26 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
         task_init(&taskrow->task, i);
         task_register(&taskrow->task);
-        mailbox_init(&taskrow->mailbox, (void *)(mbaddress + i * mbsize), mbsize);
-        mailbox_register(&taskrow->mailbox);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
+
+    }
+
+    for (i = 1; i < KERNEL_TASKS; i++)
+    {
+
+        mailbox_init(&mailboxes[i], (void *)(mbaddress + i * mbsize), mbsize);
+        mailbox_register(&mailboxes[i]);
+
+    }
+
+    for (i = 1; i < KERNEL_TASKS; i++)
+    {
+
+        setchannel(i, 0, i);
 
     }
 

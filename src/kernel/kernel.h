@@ -1,7 +1,7 @@
 #define KERNEL_TASKS                    64
 #define KERNEL_LINKS                    128
 #define KERNEL_DESCRIPTORS              32
-#define KERNEL_CHANNELS                 1024
+#define KERNEL_CHANNELS                 0x4000
 
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
