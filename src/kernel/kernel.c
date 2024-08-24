@@ -44,19 +44,6 @@ static void coreassign0(struct list_item *item)
 
 }
 
-static unsigned int setchannel(unsigned short index, struct service *service, unsigned int target)
-{
-
-    struct channel *channel = &channels[index];
-
-    channel->service = service;
-    channel->target = target;
-    channel->uniqueness++;
-
-    return index;
-
-}
-
 static void unblocktasks(void)
 {
 
@@ -353,7 +340,11 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 void kernel_announce(unsigned short index, struct service *service, unsigned int target)
 {
 
-    setchannel(index, service, target);
+    struct channel *channel = &channels[index];
+
+    channel->service = service;
+    channel->target = target;
+    channel->uniqueness++;
 
 }
 
@@ -515,7 +506,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
 
-        setchannel(i, 0, i);
+        kernel_announce(i, 0, i);
 
     }
 
