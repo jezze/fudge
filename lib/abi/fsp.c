@@ -123,10 +123,10 @@ unsigned int fsp_auth(char *path)
     /* need to make syscall for this */
 
     if (cstring_length(path) >= 7 && buffer_match(path, "initrd:", 7))
-        return 666;
+        return 500;
 
     if (cstring_length(path) >= 7 && buffer_match(path, "system:", 7))
-        return 667;
+        return 501;
 
     return 0;
 
