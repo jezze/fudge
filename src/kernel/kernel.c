@@ -13,8 +13,9 @@
 struct channel
 {
 
-    struct service *service;
     unsigned int target;
+    struct service *service;
+    unsigned int root;
     unsigned short uniqueness;
 
 };
@@ -337,13 +338,14 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned short index, struct service *service, unsigned int target)
+void kernel_announce(unsigned short index, unsigned int target, struct service *service, unsigned int root)
 {
 
     struct channel *channel = &channels[index];
 
-    channel->service = service;
     channel->target = target;
+    channel->service = service;
+    channel->root = root;
     channel->uniqueness++;
 
 }
@@ -506,7 +508,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
 
-        kernel_announce(i, 0, i);
+        kernel_announce(i, i, 0, 0);
 
     }
 
