@@ -2,20 +2,21 @@
 #include "call.h"
 #include "channel.h"
 
-#define CHANNEL_LISTENERS               256
+#define CHANNEL_EVENTS                  256
 #define CHANNEL_STATE_CLOSED            0
 #define CHANNEL_STATE_OPENED            1
 #define CHANNEL_STATE_WAITING           2
 #define CHANNEL_STATE_TERMINATED        3
 
-static struct listener
+struct listener
 {
 
     void (*callback)(unsigned int source, void *data, unsigned int size);
-    unsigned int target;
 
-} listeners[CHANNEL_LISTENERS];
+};
 
+static struct listener listeners[CHANNEL_EVENTS];
+static unsigned int routes[CHANNEL_EVENTS];
 static unsigned int state = CHANNEL_STATE_CLOSED;
 static unsigned int pending;
 static unsigned int parent;
@@ -23,10 +24,8 @@ static unsigned int parent;
 static unsigned int send(unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
-    struct listener *listener = &listeners[event];
-
-    if (listener->target)
-        channel = listener->target;
+    if (routes[event])
+        channel = routes[event];
 
     if (!channel)
         return 0;
@@ -53,7 +52,7 @@ static unsigned int redirect(unsigned int channel, unsigned int event, unsigned 
 void channel_dispatch(struct message *message, void *data)
 {
 
-    if (message->event < CHANNEL_LISTENERS)
+    if (message->event < CHANNEL_EVENTS)
     {
 
         struct listener *listener = &listeners[message->event];
@@ -217,7 +216,7 @@ unsigned int channel_listen(unsigned int channel, unsigned int event)
 unsigned int channel_forward(unsigned int channel, unsigned int event, unsigned int target)
 {
 
-    return redirect(channel, event, EVENT_REDIRECT_TARGET, (target) ? target : listeners[event].target);
+    return redirect(channel, event, EVENT_REDIRECT_TARGET, (target) ? target : routes[event]);
 
 }
 
@@ -313,23 +312,21 @@ void channel_bind(unsigned int event, void (*callback)(unsigned int source, void
 void channel_route(unsigned int event, unsigned int mode, unsigned int target, unsigned int source)
 {
 
-    struct listener *listener = &listeners[event];
-
     switch (mode)
     {
 
     case EVENT_REDIRECT_TARGET:
-        listener->target = target;
+        routes[event] = target;
 
         break;
 
     case EVENT_REDIRECT_SOURCE:
-        listener->target = source;
+        routes[event] = source;
 
         break;
 
     default:
-        listener->target = 0;
+        routes[event] = 0;
 
         break;
 
