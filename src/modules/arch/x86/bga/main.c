@@ -63,8 +63,8 @@ static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
     setreg(REG_COMMAND_YRES, videointerface.height);
     setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
     setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
-    arch_mapvideo(4, framebuffer, framebuffer, 0x00400000);
-    arch_mapvideo(5, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
+    arch_mapvideo(10, framebuffer, framebuffer, 0x00400000);
+    arch_mapvideo(11, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
     video_notifymode(&videointerface, (void *)framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
 
 }

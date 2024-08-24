@@ -20,7 +20,7 @@ struct channel
 };
 
 static struct channel channels[KERNEL_CHANNELS];
-static struct mailbox mailboxes[KERNEL_TASKS];
+static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
 static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
 static struct list freelinks;
@@ -493,6 +493,14 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&deadtasks);
     list_init(&blockedtasks);
 
+    for (i = 1; i < KERNEL_MAILBOXES; i++)
+    {
+
+        mailbox_init(&mailboxes[i], (void *)(mbaddress + i * mbsize), mbsize);
+        mailbox_register(&mailboxes[i]);
+
+    }
+
     for (i = 1; i < KERNEL_TASKS; i++)
     {
 
@@ -506,19 +514,6 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
-
-    }
-
-    for (i = 1; i < KERNEL_TASKS; i++)
-    {
-
-        mailbox_init(&mailboxes[i], (void *)(mbaddress + i * mbsize), mbsize);
-        mailbox_register(&mailboxes[i]);
-
-    }
-
-    for (i = 1; i < KERNEL_TASKS; i++)
-    {
 
         setchannel(i, 0, i);
 
