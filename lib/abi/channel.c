@@ -309,6 +309,15 @@ void channel_bind(unsigned int event, void (*callback)(unsigned int source, void
 
 }
 
+void channel_unbind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
+{
+
+    struct listener *listener = &listeners[event];
+
+    listener->callback = 0;
+
+}
+
 void channel_route(unsigned int event, unsigned int mode, unsigned int target, unsigned int source)
 {
 
