@@ -14,6 +14,7 @@ struct channel
 {
 
     unsigned int target;
+    struct mailbox *mailbox;
     struct service *service;
     unsigned short uniqueness;
 
@@ -317,13 +318,12 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
         if (channel->target)
         {
 
-            struct mailbox *mailbox = &mailboxes[channel->target];
             struct message message;
             unsigned int c;
 
             message_init(&message, event, source, count);
 
-            c = mailbox_place(mailbox, &message, data);
+            c = mailbox_place(channel->mailbox, &message, data);
 
             kernel_signal(channel->target, TASK_SIGNAL_UNBLOCK);
 
@@ -343,6 +343,7 @@ void kernel_announce(unsigned short index, unsigned int target, struct service *
     struct channel *channel = &channels[index];
 
     channel->target = target;
+    channel->mailbox = &mailboxes[target];
     channel->service = service;
     channel->uniqueness++;
 
