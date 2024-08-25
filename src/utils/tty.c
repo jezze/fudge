@@ -30,8 +30,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("listen", "101");
-    option_add("output", "system:console/if.0/data");
+    option_add("listen", "");
+    option_add("output", "");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 
