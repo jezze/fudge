@@ -180,9 +180,7 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 
             struct event_listresponse *header = listsession.mdata;
 
-            buffer_write(records, sizeof (struct record) * nrecords, header + 1, sizeof (struct record) * header->nrecords, 0);
-
-            return header->nrecords;
+            return buffer_write(records, sizeof (struct record) * nrecords, header + 1, sizeof (struct record) * header->nrecords, 0) / sizeof (struct record);
 
         }
 
@@ -271,9 +269,7 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 
             struct event_statresponse *header = statsession.mdata;
 
-            buffer_write(record, sizeof (struct record), header + 1, sizeof (struct record) * header->nrecords, 0);
-
-            return header->nrecords;
+            return buffer_write(record, sizeof (struct record), header + 1, sizeof (struct record) * header->nrecords, 0) / sizeof (struct record);
 
         }
 
