@@ -8,14 +8,7 @@
 #define CHANNEL_STATE_WAITING           2
 #define CHANNEL_STATE_TERMINATED        3
 
-struct listener
-{
-
-    void (*callback)(unsigned int source, void *data, unsigned int size);
-
-};
-
-static struct listener listeners[CHANNEL_EVENTS];
+static void (*listeners[CHANNEL_EVENTS])(unsigned int source, void *data, unsigned int size);
 static unsigned int routes[CHANNEL_EVENTS];
 static unsigned int state = CHANNEL_STATE_CLOSED;
 static unsigned int pending;
@@ -55,14 +48,12 @@ void channel_dispatch(struct message *message, void *data)
     if (message->event < CHANNEL_EVENTS)
     {
 
-        struct listener *listener = &listeners[message->event];
-
-        if (listener->callback)
+        if (listeners[message->event])
         {
 
             pending++;
 
-            listener->callback(message->source, data, message_datasize(message));
+            listeners[message->event](message->source, data, message_datasize(message));
 
             pending--;
 
@@ -91,14 +82,12 @@ void channel_dispatch(struct message *message, void *data)
             if (parent)
             {
 
-                struct listener *exitlistener = &listeners[EVENT_EXIT];
-
-                if (exitlistener->callback)
+                if (listeners[EVENT_EXIT])
                 {
 
                     pending++;
 
-                    exitlistener->callback(parent, 0, 0);
+                    listeners[EVENT_EXIT](parent, 0, 0);
 
                     pending--;
 
@@ -303,18 +292,14 @@ unsigned int channel_wait(unsigned int event)
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 
-    struct listener *listener = &listeners[event];
-
-    listener->callback = callback;
+    listeners[event] = callback;
 
 }
 
 void channel_unbind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 
-    struct listener *listener = &listeners[event];
-
-    listener->callback = 0;
+    listeners[event] = 0;
 
 }
 
