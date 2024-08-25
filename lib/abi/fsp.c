@@ -6,7 +6,7 @@
 struct session
 {
 
-    unsigned int session;
+    unsigned int id;
     unsigned int ready;
     void *mdata;
 
@@ -21,10 +21,24 @@ static struct session unlinksession;
 static struct session walksession;
 static struct session writesession;
 
-static unsigned int getsession()
+static void session_init(struct session *session)
 {
 
-    return ++sessioncount;
+    session->id = ++sessioncount;
+    session->ready = 0;
+
+}
+
+static void session_match(struct session *session, unsigned int id, void *mdata)
+{
+
+    if (session->id == id)
+    {
+
+        session->mdata = mdata;
+        session->ready = 1;
+
+    }
 
 }
 
@@ -33,13 +47,7 @@ static void onlinkresponse(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_linkresponse *header = mdata;
 
-    if (header->session == linksession.session)
-    {
-
-        linksession.mdata = mdata;
-        linksession.ready = 1;
-
-    }
+    session_match(&linksession, header->session, mdata);
 
 }
 
@@ -48,13 +56,7 @@ static void onlistresponse(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_listresponse *header = mdata;
 
-    if (header->session == listsession.session)
-    {
-
-        listsession.mdata = mdata;
-        listsession.ready = 1;
-
-    }
+    session_match(&listsession, header->session, mdata);
 
 }
 
@@ -63,13 +65,7 @@ static void onreadresponse(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_readresponse *header = mdata;
 
-    if (header->session == readsession.session)
-    {
-
-        readsession.mdata = mdata;
-        readsession.ready = 1;
-
-    }
+    session_match(&readsession, header->session, mdata);
 
 }
 
@@ -78,13 +74,7 @@ static void onstatresponse(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_statresponse *header = mdata;
 
-    if (header->session == statsession.session)
-    {
-
-        statsession.mdata = mdata;
-        statsession.ready = 1;
-
-    }
+    session_match(&statsession, header->session, mdata);
 
 }
 
@@ -93,13 +83,7 @@ static void onunlinkresponse(unsigned int source, void *mdata, unsigned int msiz
 
     struct event_unlinkresponse *header = mdata;
 
-    if (header->session == unlinksession.session)
-    {
-
-        unlinksession.mdata = mdata;
-        unlinksession.ready = 1;
-
-    }
+    session_match(&unlinksession, header->session, mdata);
 
 }
 
@@ -108,13 +92,7 @@ static void onwalkresponse(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_walkresponse *header = mdata;
 
-    if (header->session == walksession.session)
-    {
-
-        walksession.mdata = mdata;
-        walksession.ready = 1;
-
-    }
+    session_match(&walksession, header->session, mdata);
 
 }
 
@@ -123,13 +101,7 @@ static void onwriteresponse(unsigned int source, void *mdata, unsigned int msize
 
     struct event_writeresponse *header = mdata;
 
-    if (header->session == writesession.session)
-    {
-
-        writesession.mdata = mdata;
-        writesession.ready = 1;
-
-    }
+    session_match(&writesession, header->session, mdata);
 
 }
 
@@ -153,9 +125,9 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
 
     struct event_linkrequest request;
 
-    linksession.session = getsession();
-    linksession.ready = 0;
-    request.session = linksession.session;
+    session_init(&linksession);
+
+    request.session = linksession.id;
     request.id = id;
 
     channel_send_buffer(target, EVENT_LINKREQUEST, sizeof (struct event_linkrequest), &request);
@@ -183,9 +155,9 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 
     struct event_listrequest request;
 
-    listsession.session = getsession();
-    listsession.ready = 0;
-    request.session = listsession.session;
+    session_init(&listsession);
+
+    request.session = listsession.id;
     request.id = id;
     request.offset = offset;
     request.nrecords = nrecords;
@@ -215,9 +187,9 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 
     struct event_readrequest request;
 
-    readsession.session = getsession();
-    readsession.ready = 0;
-    request.session = readsession.session;
+    session_init(&readsession);
+
+    request.session = readsession.id;
     request.id = id;
     request.offset = offset;
     request.count = count;
@@ -274,9 +246,9 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 
     struct event_statrequest request;
 
-    statsession.session = getsession();
-    statsession.ready = 0;
-    request.session = statsession.session;
+    session_init(&statsession);
+
+    request.session = statsession.id;
     request.id = id;
 
     channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
@@ -304,9 +276,9 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
 
     struct event_unlinkrequest request;
 
-    unlinksession.session = getsession();
-    unlinksession.ready = 0;
-    request.session = unlinksession.session;
+    session_init(&unlinksession);
+
+    request.session = unlinksession.id;
     request.id = id;
 
     channel_send_buffer(target, EVENT_UNLINKREQUEST, sizeof (struct event_unlinkrequest), &request);
@@ -334,9 +306,9 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 
     struct {struct event_walkrequest header; char path[64];} request;
 
-    walksession.session = getsession();
-    walksession.ready = 0;
-    request.header.session = walksession.session;
+    session_init(&walksession);
+
+    request.header.session = walksession.id;
     request.header.parent = parent;
     request.header.length = buffer_write(request.path, 64, path, cstring_length(path), 0);
 
@@ -365,9 +337,9 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 
     struct {struct event_writerequest header; char data[64];} request;
 
-    writesession.session = getsession();
-    writesession.ready = 0;
-    request.header.session = writesession.session;
+    session_init(&writesession);
+
+    request.header.session = writesession.id;
     request.header.id = id;
     request.header.offset = offset;
     request.header.count = buffer_write(request.data, 64, buffer, count, 0);
