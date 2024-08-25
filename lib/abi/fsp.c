@@ -137,14 +137,12 @@ unsigned int fsp_auth(char *path)
 unsigned int fsp_link(unsigned int target, unsigned int id)
 {
 
-    unsigned int session = getsession();
     struct event_linkrequest request;
 
-    request.session = session;
-    request.id = id;
-
+    linksession.session = getsession();
     linksession.ready = 0;
-    linksession.session = session;
+    request.session = linksession.session;
+    request.id = id;
 
     channel_send_buffer(target, EVENT_LINKREQUEST, sizeof (struct event_linkrequest), &request);
 
@@ -163,16 +161,14 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
 unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords)
 {
 
-    unsigned int session = getsession();
     struct event_listrequest request;
 
-    request.session = session;
+    listsession.session = getsession();
+    listsession.ready = 0;
+    request.session = listsession.session;
     request.id = id;
     request.offset = offset;
     request.nrecords = nrecords;
-
-    listsession.ready = 0;
-    listsession.session = session;
 
     channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
@@ -199,16 +195,14 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int session = getsession();
     struct event_readrequest request;
 
-    request.session = session;
+    readsession.session = getsession();
+    readsession.ready = 0;
+    request.session = readsession.session;
     request.id = id;
     request.offset = offset;
     request.count = count;
-
-    readsession.ready = 0;
-    readsession.session = session;
 
     channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
@@ -260,14 +254,12 @@ unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, un
 unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *record)
 {
 
-    unsigned int session = getsession();
     struct event_statrequest request;
 
-    request.session = session;
-    request.id = id;
-
+    statsession.session = getsession();
     statsession.ready = 0;
-    statsession.session = session;
+    request.session = statsession.session;
+    request.id = id;
 
     channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
@@ -294,14 +286,12 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 unsigned int fsp_unlink(unsigned int target, unsigned int id)
 {
 
-    unsigned int session = getsession();
     struct event_unlinkrequest request;
 
-    request.session = session;
-    request.id = id;
-
+    unlinksession.session = getsession();
     unlinksession.ready = 0;
-    unlinksession.session = session;
+    request.session = unlinksession.session;
+    request.id = id;
 
     channel_send_buffer(target, EVENT_UNLINKREQUEST, sizeof (struct event_unlinkrequest), &request);
 
@@ -320,15 +310,13 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
 unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 {
 
-    unsigned int session = getsession();
     struct {struct event_walkrequest header; char path[64];} request;
 
-    request.header.session = session;
+    walksession.session = getsession();
+    walksession.ready = 0;
+    request.header.session = walksession.session;
     request.header.parent = parent;
     request.header.length = buffer_write(request.path, 64, path, cstring_length(path), 0);
-
-    walksession.ready = 0;
-    walksession.session = session;
 
     channel_send_buffer(target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
@@ -353,16 +341,14 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int session = getsession();
     struct {struct event_writerequest header; char data[64];} request;
 
-    request.header.session = session;
+    writesession.session = getsession();
+    writesession.ready = 0;
+    request.header.session = writesession.session;
     request.header.id = id;
     request.header.offset = offset;
     request.header.count = buffer_write(request.data, 64, buffer, count, 0);
-
-    writesession.ready = 0;
-    writesession.session = session;
 
     channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
