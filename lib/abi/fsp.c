@@ -31,8 +31,15 @@ static unsigned int getsession()
 static void onlinkresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    linksession.mdata = mdata;
-    linksession.ready = 1;
+    struct event_linkresponse *header = mdata;
+
+    if (header->session == linksession.session)
+    {
+
+        linksession.mdata = mdata;
+        linksession.ready = 1;
+
+    }
 
 }
 
@@ -84,8 +91,15 @@ static void onstatresponse(unsigned int source, void *mdata, unsigned int msize)
 static void onunlinkresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unlinksession.mdata = mdata;
-    unlinksession.ready = 1;
+    struct event_unlinkresponse *header = mdata;
+
+    if (header->session == unlinksession.session)
+    {
+
+        unlinksession.mdata = mdata;
+        unlinksession.ready = 1;
+
+    }
 
 }
 
@@ -150,7 +164,13 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
     {
 
         if (linksession.ready)
-            return 1;
+        {
+
+            struct event_linkresponse *header = linksession.mdata;
+
+            return header->id;
+
+        }
 
     }
 
@@ -295,7 +315,13 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
     {
 
         if (unlinksession.ready)
-            return 1;
+        {
+
+            struct event_unlinkresponse *header = unlinksession.mdata;
+
+            return header->id;
+
+        }
 
     }
 

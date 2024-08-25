@@ -310,10 +310,12 @@ static unsigned int onlinkrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_linkrequest *linkrequest = data;
+    struct {struct event_linkresponse linkresponse;} message;
 
-    service_link(linkrequest->id, source, 0);
+    message.linkresponse.session = linkrequest->session;
+    message.linkresponse.id = service_link(linkrequest->id, source, 0);
 
-    return kernel_place(service.id, source, EVENT_LINKRESPONSE, 0, 0);
+    return kernel_place(service.id, source, EVENT_LINKRESPONSE, sizeof (struct event_linkresponse), &message);
 
 }
 
@@ -321,10 +323,12 @@ static unsigned int onunlinkrequest(unsigned int source, unsigned int count, voi
 {
 
     struct event_unlinkrequest *unlinkrequest = data;
+    struct {struct event_unlinkresponse unlinkresponse;} message;
 
-    service_unlink(unlinkrequest->id, source);
+    message.unlinkresponse.session = unlinkrequest->session;
+    message.unlinkresponse.id = service_unlink(unlinkrequest->id, source);
 
-    return kernel_place(service.id, source, EVENT_UNLINKRESPONSE, 0, 0);
+    return kernel_place(service.id, source, EVENT_UNLINKRESPONSE, sizeof (struct event_unlinkresponse), &message);
 
 }
 

@@ -303,7 +303,23 @@ struct event_linkrequest
 
 };
 
+struct event_linkresponse
+{
+
+    unsigned int session;
+    unsigned int id;
+
+};
+
 struct event_unlinkrequest
+{
+
+    unsigned int session;
+    unsigned int id;
+
+};
+
+struct event_unlinkresponse
 {
 
     unsigned int session;
