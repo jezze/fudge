@@ -3,14 +3,23 @@
 #include "channel.h"
 #include "fsp.h"
 
+struct session
+{
+
+    unsigned int session;
+    unsigned int ready;
+    void *mdata;
+
+};
+
 static unsigned int sessioncount;
-static struct {unsigned int session; unsigned int ready;} linksession;
-static struct {unsigned int session; unsigned int ready; struct event_listresponse header; struct record *records;} listsession;
-static struct {unsigned int session; unsigned int ready; struct event_readresponse header; void *buffer;} readsession;
-static struct {unsigned int session; unsigned int ready; struct event_statresponse header; struct record *record;} statsession;
-static struct {unsigned int session; unsigned int ready;} unlinksession;
-static struct {unsigned int session; unsigned int ready; struct event_walkresponse header; void *buffer;} walksession;
-static struct {unsigned int session; unsigned int ready; struct event_writeresponse header; void *buffer;} writesession;
+static struct session linksession;
+static struct session listsession;
+static struct session readsession;
+static struct session statsession;
+static struct session unlinksession;
+static struct session walksession;
+static struct session writesession;
 
 static unsigned int getsession()
 {
@@ -22,6 +31,7 @@ static unsigned int getsession()
 static void onlinkresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    linksession.mdata = mdata;
     linksession.ready = 1;
 
 }
@@ -34,9 +44,7 @@ static void onlistresponse(unsigned int source, void *mdata, unsigned int msize)
     if (response->header.session == listsession.session)
     {
 
-        buffer_write(&listsession.header, sizeof (struct event_listresponse), response, sizeof (struct event_listresponse), 0);
-        buffer_write(listsession.records, sizeof (struct record) * listsession.header.nrecords, response + 1, sizeof (struct record) * listsession.header.nrecords, 0);
-
+        listsession.mdata = mdata;
         listsession.ready = 1;
 
     }
@@ -51,9 +59,7 @@ static void onreadresponse(unsigned int source, void *mdata, unsigned int msize)
     if (response->header.session == readsession.session)
     {
 
-        buffer_write(&readsession.header, sizeof (struct event_readresponse), response, sizeof (struct event_readresponse), 0);
-        buffer_write(readsession.buffer, readsession.header.count, response + 1, readsession.header.count, 0);
-
+        readsession.mdata = mdata;
         readsession.ready = 1;
 
     }
@@ -68,9 +74,7 @@ static void onstatresponse(unsigned int source, void *mdata, unsigned int msize)
     if (response->header.session == statsession.session)
     {
 
-        buffer_write(&statsession.header, sizeof (struct event_statresponse), response, sizeof (struct event_statresponse), 0);
-        buffer_write(statsession.record, sizeof (struct record) * statsession.header.nrecords, response + 1, sizeof (struct record) * statsession.header.nrecords, 0);
-
+        statsession.mdata = mdata;
         statsession.ready = 1;
 
     }
@@ -80,6 +84,7 @@ static void onstatresponse(unsigned int source, void *mdata, unsigned int msize)
 static void onunlinkresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unlinksession.mdata = mdata;
     unlinksession.ready = 1;
 
 }
@@ -92,8 +97,7 @@ static void onwalkresponse(unsigned int source, void *mdata, unsigned int msize)
     if (response->header.session == walksession.session)
     {
 
-        buffer_write(&walksession.header, sizeof (struct event_walkresponse), response, sizeof (struct event_walkresponse), 0);
-
+        walksession.mdata = mdata;
         walksession.ready = 1;
 
     }
@@ -108,9 +112,7 @@ static void onwriteresponse(unsigned int source, void *mdata, unsigned int msize
     if (response->header.session == writesession.session)
     {
 
-        buffer_write(&writesession.header, sizeof (struct event_writeresponse), response, sizeof (struct event_writeresponse), 0);
-        buffer_write(writesession.buffer, writesession.header.count, response + 1, writesession.header.count, 0);
-
+        writesession.mdata = mdata;
         writesession.ready = 1;
 
     }
@@ -150,11 +152,11 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
     {
 
         if (linksession.ready)
-            break;
+            return 1;
 
     }
 
-    return 1;
+    return 0;
 
 }
 
@@ -171,7 +173,6 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 
     listsession.ready = 0;
     listsession.session = session;
-    listsession.records = records;
 
     channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
@@ -179,11 +180,19 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
     {
 
         if (listsession.ready)
-            break;
+        {
+
+            struct event_listresponse *header = listsession.mdata;
+
+            buffer_write(records, sizeof (struct record) * nrecords, header + 1, sizeof (struct record) * header->nrecords, 0);
+
+            return header->nrecords;
+
+        }
 
     }
 
-    return listsession.header.nrecords;
+    return 0;
 
 }
 
@@ -200,7 +209,6 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 
     readsession.ready = 0;
     readsession.session = session;
-    readsession.buffer = buffer;
 
     channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
@@ -208,11 +216,17 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
     {
 
         if (readsession.ready)
-            break;
+        {
+
+            struct event_readresponse *header = readsession.mdata;
+
+            return buffer_write(buffer, count, header + 1, header->count, 0);
+
+        }
 
     }
 
-    return readsession.header.count;
+    return 0;
 
 }
 
@@ -254,7 +268,6 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 
     statsession.ready = 0;
     statsession.session = session;
-    statsession.record = record;
 
     channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
@@ -262,11 +275,19 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
     {
 
         if (statsession.ready)
-            break;
+        {
+
+            struct event_statresponse *header = statsession.mdata;
+
+            buffer_write(record, sizeof (struct record), header + 1, sizeof (struct record) * header->nrecords, 0);
+
+            return header->nrecords;
+
+        }
 
     }
 
-    return statsession.header.nrecords;
+    return 0;
 
 }
 
@@ -288,11 +309,11 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
     {
 
         if (unlinksession.ready)
-            break;
+            return 1;
 
     }
 
-    return 1;
+    return 0;
 
 }
 
@@ -315,11 +336,17 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
     {
 
         if (walksession.ready)
-            break;
+        {
+
+            struct event_walkresponse *header = walksession.mdata;
+
+            return header->id;
+
+        }
 
     }
 
-    return walksession.header.id;
+    return 0;
 
 }
 
@@ -336,7 +363,6 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 
     writesession.ready = 0;
     writesession.session = session;
-    writesession.buffer = buffer;
 
     channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
@@ -344,11 +370,17 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
     {
 
         if (writesession.ready)
-            break;
+        {
+
+            struct event_writeresponse *header = writesession.mdata;
+
+            return buffer_write(buffer, count, header + 1, header->count, 0);
+
+        }
 
     }
 
-    return writesession.header.count;
+    return 0;
 
 }
 
