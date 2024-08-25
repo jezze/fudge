@@ -144,7 +144,6 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
     linksession.ready = 0;
     linksession.session = session;
 
-    channel_bind(EVENT_LINKRESPONSE, onlinkresponse);
     channel_send_buffer(target, EVENT_LINKREQUEST, sizeof (struct event_linkrequest), &request);
 
     while (channel_process())
@@ -154,8 +153,6 @@ unsigned int fsp_link(unsigned int target, unsigned int id)
             break;
 
     }
-
-    channel_unbind(EVENT_LINKRESPONSE, onlinkresponse);
 
     return 1;
 
@@ -176,7 +173,6 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
     listsession.session = session;
     listsession.records = records;
 
-    channel_bind(EVENT_LISTRESPONSE, onlistresponse);
     channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
     while (channel_process())
@@ -186,8 +182,6 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
             break;
 
     }
-
-    channel_unbind(EVENT_LISTRESPONSE, onlistresponse);
 
     return listsession.header.nrecords;
 
@@ -208,7 +202,6 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
     readsession.session = session;
     readsession.buffer = buffer;
 
-    channel_bind(EVENT_READRESPONSE, onreadresponse);
     channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
     while (channel_process())
@@ -218,8 +211,6 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
             break;
 
     }
-
-    channel_unbind(EVENT_READRESPONSE, onreadresponse);
 
     return readsession.header.count;
 
@@ -265,7 +256,6 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
     statsession.session = session;
     statsession.record = record;
 
-    channel_bind(EVENT_STATRESPONSE, onstatresponse);
     channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
     while (channel_process())
@@ -275,8 +265,6 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
             break;
 
     }
-
-    channel_unbind(EVENT_STATRESPONSE, onstatresponse);
 
     return statsession.header.nrecords;
 
@@ -294,7 +282,6 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
     unlinksession.ready = 0;
     unlinksession.session = session;
 
-    channel_bind(EVENT_UNLINKRESPONSE, onunlinkresponse);
     channel_send_buffer(target, EVENT_UNLINKREQUEST, sizeof (struct event_unlinkrequest), &request);
 
     while (channel_process())
@@ -304,8 +291,6 @@ unsigned int fsp_unlink(unsigned int target, unsigned int id)
             break;
 
     }
-
-    channel_unbind(EVENT_UNLINKRESPONSE, onunlinkresponse);
 
     return 1;
 
@@ -324,7 +309,6 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
     walksession.ready = 0;
     walksession.session = session;
 
-    channel_bind(EVENT_WALKRESPONSE, onwalkresponse);
     channel_send_buffer(target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
     while (channel_process())
@@ -334,8 +318,6 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
             break;
 
     }
-
-    channel_unbind(EVENT_WALKRESPONSE, onwalkresponse);
 
     return walksession.header.id;
 
@@ -356,7 +338,6 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
     writesession.session = session;
     writesession.buffer = buffer;
 
-    channel_bind(EVENT_WRITERESPONSE, onwriteresponse);
     channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
     while (channel_process())
@@ -366,8 +347,6 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
             break;
 
     }
-
-    channel_unbind(EVENT_WRITERESPONSE, onwriteresponse);
 
     return writesession.header.count;
 
@@ -423,3 +402,15 @@ unsigned int fsp_spawn_relative(char *path, char *parent)
 
 }
 
+void fsp_bind(void)
+{
+
+    channel_bind(EVENT_LINKRESPONSE, onlinkresponse);
+    channel_bind(EVENT_LISTRESPONSE, onlistresponse);
+    channel_bind(EVENT_READRESPONSE, onreadresponse);
+    channel_bind(EVENT_STATRESPONSE, onstatresponse);
+    channel_bind(EVENT_UNLINKRESPONSE, onunlinkresponse);
+    channel_bind(EVENT_WALKRESPONSE, onwalkresponse);
+    channel_bind(EVENT_WRITERESPONSE, onwriteresponse);
+
+}
