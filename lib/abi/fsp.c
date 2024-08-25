@@ -39,9 +39,9 @@ static void onlinkresponse(unsigned int source, void *mdata, unsigned int msize)
 static void onlistresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct {struct event_listresponse header;} *response = mdata;
+    struct event_listresponse *header = mdata;
 
-    if (response->header.session == listsession.session)
+    if (header->session == listsession.session)
     {
 
         listsession.mdata = mdata;
@@ -54,9 +54,9 @@ static void onlistresponse(unsigned int source, void *mdata, unsigned int msize)
 static void onreadresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct {struct event_readresponse header;} *response = mdata;
+    struct event_readresponse *header = mdata;
 
-    if (response->header.session == readsession.session)
+    if (header->session == readsession.session)
     {
 
         readsession.mdata = mdata;
@@ -69,9 +69,9 @@ static void onreadresponse(unsigned int source, void *mdata, unsigned int msize)
 static void onstatresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct {struct event_statresponse header;} *response = mdata;
+    struct event_statresponse *header = mdata;
 
-    if (response->header.session == statsession.session)
+    if (header->session == statsession.session)
     {
 
         statsession.mdata = mdata;
@@ -92,9 +92,9 @@ static void onunlinkresponse(unsigned int source, void *mdata, unsigned int msiz
 static void onwalkresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct {struct event_walkresponse header;} *response = mdata;
+    struct event_walkresponse *header = mdata;
 
-    if (response->header.session == walksession.session)
+    if (header->session == walksession.session)
     {
 
         walksession.mdata = mdata;
@@ -107,9 +107,9 @@ static void onwalkresponse(unsigned int source, void *mdata, unsigned int msize)
 static void onwriteresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct {struct event_writeresponse header;} *response = mdata;
+    struct event_writeresponse *header = mdata;
 
-    if (response->header.session == writesession.session)
+    if (header->session == writesession.session)
     {
 
         writesession.mdata = mdata;
