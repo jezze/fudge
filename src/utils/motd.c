@@ -10,7 +10,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         channel_forward(channel, EVENT_DATA, 0);
-        channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt0(channel, EVENT_PATH, "initrd:data/motd.txt\\0");
         channel_send(channel, EVENT_END);

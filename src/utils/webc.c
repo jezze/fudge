@@ -12,7 +12,6 @@ static void dnsresolve(char *domain, char address[32])
         char data[MESSAGE_SIZE];
         unsigned int count;
 
-        channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
         channel_send(channel, EVENT_END);
@@ -56,7 +55,6 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         char data[MESSAGE_SIZE];
         unsigned int count = cstring_write_fmt2(data, MESSAGE_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
 
-        channel_listen(channel, EVENT_TERMRESPONSE);
         channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
