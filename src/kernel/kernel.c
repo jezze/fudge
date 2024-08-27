@@ -293,9 +293,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 {
 
     struct mailbox *mailbox = &mailboxes[source];
-    unsigned int c;
-
-    c = mailbox_pick(mailbox, message, count, data);
+    unsigned int c = mailbox_pick(mailbox, message, count, data);
 
     if (!c)
         kernel_signal(source, TASK_SIGNAL_BLOCK);
@@ -315,7 +313,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
         if (channel->service)
             return channel->service->notify(channel->target, source, event, count, data);
 
-        if (channel->target)
+        if (channel->mailbox)
         {
 
             struct message message;
@@ -325,7 +323,8 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
             c = mailbox_place(channel->mailbox, &message, data);
 
-            kernel_signal(channel->target, TASK_SIGNAL_UNBLOCK);
+            if (channel->target)
+                kernel_signal(channel->target, TASK_SIGNAL_UNBLOCK);
 
             return c;
 
