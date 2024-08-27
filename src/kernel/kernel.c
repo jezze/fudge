@@ -336,13 +336,20 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned short index, unsigned int target, struct service *service)
+void kernel_announce(unsigned short index, unsigned int target, struct mailbox *mailbox, struct service *service)
 {
 
     struct channel *channel = &channels[index];
 
     channel->target = target;
-    channel->mailbox = &mailboxes[target];
+
+    if (mailbox)
+        channel->mailbox = mailbox;
+    else if (target)
+        channel->mailbox = &mailboxes[target];
+    else
+        channel->mailbox = 0;
+
     channel->service = service;
     channel->uniqueness++;
 
@@ -506,7 +513,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
 
-        kernel_announce(i, i, 0);
+        kernel_announce(i, i, 0, 0);
 
     }
 

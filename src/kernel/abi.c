@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "debug.h"
 #include "binary.h"
+#include "mailbox.h"
 #include "task.h"
 #include "service.h"
 #include "descriptor.h"
@@ -353,7 +354,7 @@ static unsigned int announce(unsigned int itask, void *stack)
 
     struct {void *caller; unsigned int ichannel;} *args = stack;
 
-    kernel_announce(args->ichannel, itask, 0);
+    kernel_announce(args->ichannel, itask, 0, 0);
 
     return 0;
 
