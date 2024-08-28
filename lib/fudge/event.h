@@ -40,20 +40,22 @@
 #define EVENT_WMEVENT                   0x2E
 #define EVENT_WMACK                     0x2F
 #define EVENT_P9P                       0x30
-#define EVENT_WALKREQUEST               0x41
-#define EVENT_WALKRESPONSE              0x42
-#define EVENT_READREQUEST               0x43
-#define EVENT_READRESPONSE              0x44
-#define EVENT_LISTREQUEST               0x45
-#define EVENT_LISTRESPONSE              0x46
-#define EVENT_WRITEREQUEST              0x47
-#define EVENT_WRITERESPONSE             0x48
-#define EVENT_LINKREQUEST               0x49
-#define EVENT_LINKRESPONSE              0x4A
-#define EVENT_UNLINKREQUEST             0x4B
-#define EVENT_UNLINKRESPONSE            0x4C
-#define EVENT_STATREQUEST               0x4D
-#define EVENT_STATRESPONSE              0x4E
+#define EVENT_WALKREQUEST               0x40
+#define EVENT_WALKRESPONSE              0x41
+#define EVENT_READREQUEST               0x42
+#define EVENT_READRESPONSE              0x43
+#define EVENT_LISTREQUEST               0x44
+#define EVENT_LISTRESPONSE              0x45
+#define EVENT_WRITEREQUEST              0x46
+#define EVENT_WRITERESPONSE             0x47
+#define EVENT_LINKREQUEST               0x48
+#define EVENT_LINKRESPONSE              0x49
+#define EVENT_UNLINKREQUEST             0x4A
+#define EVENT_UNLINKRESPONSE            0x4B
+#define EVENT_STATREQUEST               0x4C
+#define EVENT_STATRESPONSE              0x4D
+#define EVENT_MAPREQUEST                0x4E
+#define EVENT_MAPRESPONSE               0x4F
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 
@@ -223,6 +225,22 @@ struct event_listresponse
 
     unsigned int session;
     unsigned int nrecords;
+
+};
+
+struct event_maprequest
+{
+
+    unsigned int session;
+    unsigned int id;
+
+};
+
+struct event_mapresponse
+{
+
+    unsigned int session;
+    unsigned int address;
 
 };
 

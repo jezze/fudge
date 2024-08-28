@@ -305,6 +305,19 @@ static unsigned int service_unlink(unsigned int id, unsigned int target)
 
 }
 
+static unsigned int onmaprequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_maprequest *maprequest = data;
+    struct {struct event_mapresponse mapresponse;} message;
+
+    message.mapresponse.session = maprequest->session;
+    message.mapresponse.address = service_map(maprequest->id);
+
+    return kernel_place(service.id, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
+
+}
+
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -370,11 +383,14 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int service_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
+
+    case EVENT_MAPREQUEST:
+        return onmaprequest(source, count, data);
 
     case EVENT_WALKREQUEST:
         return onwalkrequest(source, count, data);
@@ -403,9 +419,9 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, "initrd", 500, service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink, service_notify);
+    service_init(&service, "initrd", 500, service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink);
     resource_register(&service.resource);
-    kernel_announce(service.id, 0, 0, &service);
+    kernel_announce(service.id, 0, &service, place);
 
 }
 

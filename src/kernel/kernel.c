@@ -14,9 +14,9 @@ struct channel
 {
 
     unsigned int target;
-    struct mailbox *mailbox;
     struct service *service;
     unsigned short uniqueness;
+    unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
 
@@ -121,6 +121,30 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
     }
 
     task_resetsignals(&task->signals);
+
+}
+
+static unsigned int placetask(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    if (id)
+    {
+
+        struct mailbox *mailbox = &mailboxes[id];
+        struct message message;
+        unsigned int c;
+
+        message_init(&message, event, source, count);
+
+        c = mailbox_place(mailbox, &message, data);
+
+        kernel_signal(id, TASK_SIGNAL_UNBLOCK);
+
+        return c;
+
+    }
+
+    return 0;
 
 }
 
@@ -307,49 +331,17 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
     struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
-    if (channel)
-    {
-
-        if (channel->service)
-            return channel->service->notify(channel->target, source, event, count, data);
-
-        if (channel->mailbox)
-        {
-
-            struct message message;
-            unsigned int c;
-
-            message_init(&message, event, source, count);
-
-            c = mailbox_place(channel->mailbox, &message, data);
-
-            if (channel->target)
-                kernel_signal(channel->target, TASK_SIGNAL_UNBLOCK);
-
-            return c;
-
-        }
-
-    }
-
-    return 0;
+    return (channel) ? channel->place(channel->target, source, event, count, data) : 0;
 
 }
 
-void kernel_announce(unsigned short index, unsigned int target, struct mailbox *mailbox, struct service *service)
+void kernel_announce(unsigned short index, unsigned int target, struct service *service, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = &channels[index];
 
     channel->target = target;
-
-    if (mailbox)
-        channel->mailbox = mailbox;
-    else if (target)
-        channel->mailbox = &mailboxes[target];
-    else
-        channel->mailbox = 0;
-
+    channel->place = (place) ? place : placetask;
     channel->service = service;
     channel->uniqueness++;
 
@@ -513,7 +505,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         for (j = 0; j < KERNEL_DESCRIPTORS; j++)
             descriptor_init(&taskrow->descriptors[j]);
 
-        kernel_announce(i, i, 0, 0);
+        kernel_announce(i, i, 0, placetask);
 
     }
 

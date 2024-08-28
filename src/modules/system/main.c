@@ -332,10 +332,8 @@ static unsigned int onunlinkrequest(unsigned int source, unsigned int count, voi
 
 }
 
-static unsigned int service_notify(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct system_node *node = getnode(id);
 
     switch (event)
     {
@@ -357,9 +355,6 @@ static unsigned int service_notify(unsigned int id, unsigned int source, unsigne
 
     case EVENT_UNLINKREQUEST:
         return onunlinkrequest(source, count, data);
-
-    default:
-        return (node->operations.notify) ? node->operations.notify(source, event, count, data) : 0;
 
     }
 
@@ -440,7 +435,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->operations.destroy = 0;
     node->operations.read = 0;
     node->operations.write = 0;
-    node->operations.notify = 0;
 
 }
 
@@ -448,9 +442,9 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
-    service_init(&service, "system", 501, service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink, service_notify);
+    service_init(&service, "system", 501, service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink);
     resource_register(&service.resource);
-    kernel_announce(service.id, 0, 0, &service);
+    kernel_announce(service.id, 0, &service, place);
 
 }
 

@@ -341,7 +341,7 @@ static unsigned int notify(unsigned int itask, void *stack)
     struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
 
     if (checkzerobuffer(itask, args->data, args->count) && descriptor_check(descriptor))
-        return descriptor->service->notify(descriptor->id, itask, args->event, args->count, args->data);
+        return kernel_place(descriptor->id, itask, args->event, args->count, args->data);
 
     DEBUG_FMT0(DEBUG_ERROR, "notify check failed");
 

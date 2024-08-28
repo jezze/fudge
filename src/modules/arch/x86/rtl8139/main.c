@@ -303,15 +303,6 @@ static unsigned int ethernetinterface_writedata(void *buffer, unsigned int count
 
 }
 
-static unsigned int ethernetinterface_notifydata(unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    ethernetinterface_send(data, count);
-
-    return count;
-
-}
-
 static void driver_init(unsigned int id)
 {
 
@@ -319,7 +310,6 @@ static void driver_init(unsigned int id)
 
     ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
     ethernetinterface.data.operations.write = ethernetinterface_writedata;
-    ethernetinterface.data.operations.notify = ethernetinterface_notifydata;
 
 }
 

@@ -15,6 +15,7 @@ struct session
 static unsigned int sessioncount;
 static struct session linksession;
 static struct session listsession;
+static struct session mapsession;
 static struct session readsession;
 static struct session statsession;
 static struct session unlinksession;
@@ -72,6 +73,15 @@ static void onlistresponse(unsigned int source, void *mdata, unsigned int msize)
     struct event_listresponse *header = mdata;
 
     session_match(&listsession, header->session, mdata);
+
+}
+
+static void onmapresponse(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_mapresponse *header = mdata;
+
+    session_match(&mapsession, header->session, mdata);
 
 }
 
@@ -180,6 +190,31 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
         struct event_listresponse *header = listsession.mdata;
 
         return buffer_write(records, sizeof (struct record) * nrecords, header + 1, sizeof (struct record) * header->nrecords, 0) / sizeof (struct record);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int fsp_map(unsigned int target, unsigned int id)
+{
+
+    struct event_maprequest request;
+
+    session_init(&mapsession);
+
+    request.session = mapsession.id;
+    request.id = id;
+
+    channel_send_buffer(target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
+
+    if (session_wait(&mapsession))
+    {
+
+        struct event_mapresponse *header = mapsession.mdata;
+
+        return header->address;
 
     }
 
@@ -399,6 +434,7 @@ void fsp_bind(void)
 
     channel_bind(EVENT_LINKRESPONSE, onlinkresponse);
     channel_bind(EVENT_LISTRESPONSE, onlistresponse);
+    channel_bind(EVENT_MAPRESPONSE, onmapresponse);
     channel_bind(EVENT_READRESPONSE, onreadresponse);
     channel_bind(EVENT_STATRESPONSE, onstatresponse);
     channel_bind(EVENT_UNLINKRESPONSE, onunlinkresponse);
