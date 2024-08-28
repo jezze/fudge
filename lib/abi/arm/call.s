@@ -6,7 +6,6 @@
 .set CALL_INDEX_STAT,                   0x05
 .set CALL_INDEX_LIST,                   0x06
 .set CALL_INDEX_READ,                   0x07
-.set CALL_INDEX_NOTIFY,                 0x09
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
 .set CALL_INDEX_SPAWN,                  0x0C
@@ -70,12 +69,6 @@ call_list:
 .global call_load
 call_load:
     mov r7, $CALL_INDEX_LOAD
-    swi #0
-    bx lr
-
-.global call_notify
-call_notify:
-    mov r7, $CALL_INDEX_NOTIFY
     swi #0
     bx lr
 

@@ -53,7 +53,7 @@ static void request_send(struct state *state)
     blockrequest.sector = state->blocksector;
     blockrequest.count = state->blockcount;
 
-    call_notify(FILE_G5, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send_buffer(502, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 

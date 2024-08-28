@@ -322,21 +322,6 @@ static unsigned int unlink(unsigned int itask, void *stack)
 
 }
 
-static unsigned int notify(unsigned int itask, void *stack)
-{
-
-    struct {void *caller; unsigned int idescriptor; unsigned int event; unsigned int count; void *data;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (checkzerobuffer(itask, args->data, args->count) && descriptor_check(descriptor))
-        return kernel_place(descriptor->id, itask, args->event, args->count, args->data);
-
-    DEBUG_FMT0(DEBUG_ERROR, "notify check failed");
-
-    return 0;
-
-}
-
 static unsigned int announce(unsigned int itask, void *stack)
 {
 
@@ -374,7 +359,7 @@ void abi_setup(void)
     abi_setcallback(0x06, list);
     abi_setcallback(0x07, read);
     abi_setcallback(0x08, announce);
-    abi_setcallback(0x09, notify);
+    abi_setcallback(0x09, debug);
     abi_setcallback(0x0A, load);
     abi_setcallback(0x0B, unload);
     abi_setcallback(0x0C, spawn);

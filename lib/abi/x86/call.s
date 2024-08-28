@@ -10,7 +10,6 @@
 .set CALL_INDEX_LIST,                   0x06
 .set CALL_INDEX_READ,                   0x07
 .set CALL_INDEX_ANNOUNCE,               0x08
-.set CALL_INDEX_NOTIFY,                 0x09
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
 .set CALL_INDEX_SPAWN,                  0x0C
@@ -73,12 +72,6 @@ call_list:
 .global call_load
 call_load:
     movl $CALL_INDEX_LOAD, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_notify
-call_notify:
-    movl $CALL_INDEX_NOTIFY, %eax
     int $CALL_INTERRUPT
     ret
 

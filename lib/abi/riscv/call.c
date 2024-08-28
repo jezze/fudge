@@ -63,13 +63,6 @@ unsigned int call_load(unsigned int idescriptor)
 
 }
 
-unsigned int call_notify(unsigned int idescriptor, unsigned int event, unsigned int count, void *data)
-{
-
-    return 0;
-
-}
-
 unsigned int call_pick(struct message *message, unsigned int count, void *data)
 {
 
