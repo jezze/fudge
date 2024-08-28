@@ -15,7 +15,6 @@ struct channel
 
     unsigned int target;
     struct service *service;
-    unsigned short uniqueness;
     unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
@@ -343,7 +342,6 @@ void kernel_announce(unsigned short index, unsigned int target, struct service *
     channel->target = target;
     channel->place = (place) ? place : placetask;
     channel->service = service;
-    channel->uniqueness++;
 
 }
 
