@@ -1,6 +1,7 @@
 unsigned int fsp_auth(char *path);
 unsigned int fsp_link(unsigned int target, unsigned int id);
 unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords);
+unsigned int fsp_map(unsigned int target, unsigned int id);
 unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fsp_read_full(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);

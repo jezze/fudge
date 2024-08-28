@@ -243,7 +243,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                     fsp_read_all(service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                     updateundefined();
                     resolve(source, service, id);
-                    relocate(call_load(service, id));
+                    relocate(call_load(fsp_map(service, id)));
                     savemap(mapname, mapdata, mapcount);
 
                 }

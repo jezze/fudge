@@ -177,41 +177,35 @@ static unsigned int read(unsigned int itask, void *stack)
 static unsigned int load(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int id;} *args = stack;
+    struct {void *caller; unsigned int address;} *args = stack;
+    struct binary_node node;
 
-    if (args->ichannel && args->id)
+    node.address = args->address;
+
+    if (node.address)
     {
 
-        struct binary_node node;
+        struct binary_format *format = binary_findformat(&node);
 
-        node.address = kernel_map(args->ichannel, args->id);
-
-        if (node.address)
+        if (format)
         {
 
-            struct binary_format *format = binary_findformat(&node);
+            void (*module_init)(void);
+            void (*module_register)(void);
 
-            if (format)
-            {
+            format->relocate(&node);
 
-                void (*module_init)(void);
-                void (*module_register)(void);
+            module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
 
-                format->relocate(&node);
+            if (module_init)
+                module_init();
 
-                module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
+            module_register = (void (*)(void))(format->findsymbol(&node, 15, "module_register"));
 
-                if (module_init)
-                    module_init();
+            if (module_register)
+                module_register();
 
-                module_register = (void (*)(void))(format->findsymbol(&node, 15, "module_register"));
-
-                if (module_register)
-                    module_register();
-
-                return node.address;
-
-            }
+            return node.address;
 
         }
 
@@ -224,33 +218,27 @@ static unsigned int load(unsigned int itask, void *stack)
 static unsigned int unload(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int id;} *args = stack;
+    struct {void *caller; unsigned int address;} *args = stack;
+    struct binary_node node;
 
-    if (args->ichannel && args->id)
+    node.address = args->address;
+
+    if (node.address)
     {
 
-        struct binary_node node;
+        struct binary_format *format = binary_findformat(&node);
 
-        node.address = kernel_map(args->ichannel, args->id);
-
-        if (node.address)
+        if (format)
         {
 
-            struct binary_format *format = binary_findformat(&node);
+            void (*module_unregister)(void);
 
-            if (format)
-            {
+            module_unregister = (void (*)(void))(format->findsymbol(&node, 17, "module_unregister"));
 
-                void (*module_unregister)(void);
+            if (module_unregister)
+                module_unregister();
 
-                module_unregister = (void (*)(void))(format->findsymbol(&node, 17, "module_unregister"));
-
-                if (module_unregister)
-                    module_unregister();
-
-                return node.address;
-
-            }
+            return node.address;
 
         }
 
