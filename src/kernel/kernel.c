@@ -416,8 +416,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
             kernel_setdescriptor(itask, FILE_PW, channel->service, channel->service->root());
             kernel_setdescriptor(itask, FILE_PP, channel->service, id);
 
-            task->node.address = channel->service->map(id);
-
         }
 
     }

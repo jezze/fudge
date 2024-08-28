@@ -402,7 +402,7 @@ unsigned int fsp_spawn(char *path)
         unsigned int id = fsp_walk(service, 0, path);
 
         if (id)
-            return call_spawn(service, id);
+            return call_spawn(service, id, fsp_map(service, id));
 
     }
 
@@ -421,7 +421,7 @@ unsigned int fsp_spawn_relative(char *path, char *parent)
         unsigned int id = fsp_walk(service, fsp_walk(service, 0, parent), path);
 
         if (id)
-            return call_spawn(service, id);
+            return call_spawn(service, id, fsp_map(service, id));
 
     }
 
