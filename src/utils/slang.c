@@ -24,28 +24,12 @@ struct tokenlist
 
 };
 
-static char stringdata[4096];
-static struct ring stringtable;
-static struct token infixdata[1024];
-static struct token postfixdata[1024];
-static struct token stackdata[8];
-static struct tokenlist infix;
-static struct tokenlist postfix;
-static struct tokenlist stack;
-
 static void tokenlist_init(struct tokenlist *list, unsigned int size, struct token *table)
 {
 
     list->head = 0;
     list->size = size;
     list->table = table;
-
-}
-
-static void tokenlist_reset(struct tokenlist *list)
-{
-
-    list->head = 0;
 
 }
 
@@ -332,11 +316,19 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     {
 
         char buffer[4096];
+        char stringdata[4096];
+        struct ring stringtable;
+        struct token infixdata[1024];
+        struct token postfixdata[1024];
+        struct token stackdata[8];
+        struct tokenlist infix;
+        struct tokenlist postfix;
+        struct tokenlist stack;
 
-        ring_reset(&stringtable);
-        tokenlist_reset(&infix);
-        tokenlist_reset(&postfix);
-        tokenlist_reset(&stack);
+        ring_init(&stringtable, 4096, stringdata);
+        tokenlist_init(&infix, 1024, infixdata);
+        tokenlist_init(&postfix, 1024, postfixdata);
+        tokenlist_init(&stack, 8, stackdata);
         tokenizebuffer(&infix, &stringtable, msize, mdata);
         translate(&postfix, &infix, &stack);
         parse(source, &postfix, &stack, 4096, buffer);
@@ -352,11 +344,19 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     {
 
         char buffer[4096];
+        char stringdata[4096];
+        struct ring stringtable;
+        struct token infixdata[1024];
+        struct token postfixdata[1024];
+        struct token stackdata[8];
+        struct tokenlist infix;
+        struct tokenlist postfix;
+        struct tokenlist stack;
 
-        ring_reset(&stringtable);
-        tokenlist_reset(&infix);
-        tokenlist_reset(&postfix);
-        tokenlist_reset(&stack);
+        ring_init(&stringtable, 4096, stringdata);
+        tokenlist_init(&infix, 1024, infixdata);
+        tokenlist_init(&postfix, 1024, postfixdata);
+        tokenlist_init(&stack, 8, stackdata);
         tokenizebuffer(&infix, &stringtable, call_read(FILE_L0, buffer, 4096, 0), buffer);
         translate(&postfix, &infix, &stack);
         parse(source, &postfix, &stack, 4096, buffer);
@@ -375,10 +375,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    ring_init(&stringtable, 4096, stringdata);
-    tokenlist_init(&infix, 1024, infixdata);
-    tokenlist_init(&postfix, 1024, postfixdata);
-    tokenlist_init(&stack, 8, stackdata);
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_PATH, onpath);
 
