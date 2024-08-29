@@ -16,6 +16,7 @@ static void runscripts(void)
         channel_send_fmt0(channel, EVENT_PATH, "initrd:config/arch.slang\\0");
         channel_send_fmt0(channel, EVENT_PATH, "initrd:config/init.slang\\0");
         channel_send(channel, EVENT_END);
+        channel_wait(EVENT_TERMRESPONSE);
 
     }
 
