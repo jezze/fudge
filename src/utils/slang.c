@@ -315,8 +315,8 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
     if (msize)
     {
 
-        char buffer[4096];
-        char stringdata[4096];
+        char buffer[1024];
+        char stringdata[1024];
         struct ring stringtable;
         struct token infixdata[1024];
         struct token postfixdata[1024];
@@ -325,13 +325,13 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
         struct tokenlist postfix;
         struct tokenlist stack;
 
-        ring_init(&stringtable, 4096, stringdata);
+        ring_init(&stringtable, 1024, stringdata);
         tokenlist_init(&infix, 1024, infixdata);
         tokenlist_init(&postfix, 1024, postfixdata);
         tokenlist_init(&stack, 8, stackdata);
         tokenizebuffer(&infix, &stringtable, msize, mdata);
         translate(&postfix, &infix, &stack);
-        parse(source, &postfix, &stack, 4096, buffer);
+        parse(source, &postfix, &stack, 1024, buffer);
 
     }
 
@@ -343,8 +343,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (call_walk_absolute(FILE_L0, mdata))
     {
 
-        char buffer[4096];
-        char stringdata[4096];
+        char buffer[1024];
+        char stringdata[1024];
         struct ring stringtable;
         struct token infixdata[1024];
         struct token postfixdata[1024];
@@ -353,13 +353,13 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         struct tokenlist postfix;
         struct tokenlist stack;
 
-        ring_init(&stringtable, 4096, stringdata);
+        ring_init(&stringtable, 1024, stringdata);
         tokenlist_init(&infix, 1024, infixdata);
         tokenlist_init(&postfix, 1024, postfixdata);
         tokenlist_init(&stack, 8, stackdata);
-        tokenizebuffer(&infix, &stringtable, call_read(FILE_L0, buffer, 4096, 0), buffer);
+        tokenizebuffer(&infix, &stringtable, call_read(FILE_L0, buffer, 1024, 0), buffer);
         translate(&postfix, &infix, &stack);
-        parse(source, &postfix, &stack, 4096, buffer);
+        parse(source, &postfix, &stack, 1024, buffer);
 
     }
 
