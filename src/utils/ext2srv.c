@@ -480,10 +480,10 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (!call_walk_absolute(FILE_G5, option_getstring("volume")))
-        PANIC(source);
+    unsigned int blockservice = fsp_auth(option_getstring("block"));
+    unsigned int blockdata = fsp_walk(blockservice, fsp_walk(blockservice, 0, option_getstring("block")), "data");
 
-    call_link(FILE_G5, 8001);
+    fsp_link(blockservice, blockdata);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
@@ -495,7 +495,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    call_unlink(FILE_G5);
+    fsp_unlink(blockservice, blockdata);
 
 }
 

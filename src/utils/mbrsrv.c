@@ -126,19 +126,22 @@ static void print(unsigned int source, struct mbr *mbr)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (call_walk_absolute(FILE_G5, option_getstring("volume")))
+    unsigned int blockservice = fsp_auth(option_getstring("block"));
+    unsigned int blockdata = fsp_walk(blockservice, fsp_walk(blockservice, 0, option_getstring("block")), "data");
+
+    if (blockdata)
     {
 
         unsigned char block[1024];
         struct mbr *mbr = (struct mbr *)block;
 
-        call_link(FILE_G5, 8000);
+        fsp_link(blockservice, blockdata);
         request_readblocks(block, 1024, 0, 1);
 
         if (isvalid(mbr))
             print(source, mbr);
 
-        call_unlink(FILE_G5);
+        fsp_unlink(blockservice, blockdata);
 
     }
 
