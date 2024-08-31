@@ -146,10 +146,18 @@ static unsigned int send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int consoleinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    return send(buffer, count);
+    switch (event)
+    {
+
+    case EVENT_DATA:
+        return send(data, count);
+
+    }
+
+    return 0;
 
 }
 
@@ -157,8 +165,6 @@ static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id);
-
-    consoleinterface.data.operations.write = consoleinterface_writedata;
 
 }
 
@@ -211,6 +217,7 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "uart", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
+    kernel_announce(100, 0, 0, place);
 
 }
 
