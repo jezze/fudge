@@ -118,21 +118,15 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(unsigned int source, struct mtwist_state *state)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC(source);
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(state), mtwist_rand(state), mtwist_rand(state));
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));
     socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(state), mtwist_rand(state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(FILE_L1, &local);
+    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
 
 }
 

@@ -86,38 +86,34 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(unsigned int source, struct mtwist_state *state)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC(source);
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
 
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_udpv(&local, mtwist_rand(state));
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));
     socket_bind_udpv(&remote, option_getdecimal("remote-port"));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(FILE_L1, &local);
+    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     unsigned char buffer[4096];
     unsigned int count;
     struct mtwist_state state;
 
     seed(&state);
     setupnetwork(source, &state);
-    call_link(FILE_G0, 8000);
-    socket_resolveremote(FILE_G0, &local, &router);
-    socket_send_udp(FILE_G0, &local, &remote, &router, buildrequest(4096, buffer), buffer);
+    fsp_link(ethernetservice, ethernetdata);
+    socket_resolveremote(108, &local, &router);
+    socket_send_udp(108, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
-    count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, 4096);
+    count = socket_receive(108, &local, &remote, 1, &router, buffer, 4096);
 
     if (count)
     {
@@ -157,7 +153,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    call_unlink(FILE_G0);
+    fsp_unlink(ethernetservice, ethernetdata);
 
 }
 

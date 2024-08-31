@@ -294,12 +294,20 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
 
 }
 
-static unsigned int ethernetinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    ethernetinterface_send(buffer, count);
+    switch (event)
+    {
 
-    return count;
+    case EVENT_DATA:
+        ethernetinterface_send(data, count);
+
+        return count;
+
+    }
+
+    return 0;
 
 }
 
@@ -309,7 +317,6 @@ static void driver_init(unsigned int id)
     ethernet_initinterface(&ethernetinterface, id);
 
     ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
-    ethernetinterface.data.operations.write = ethernetinterface_writedata;
 
 }
 
@@ -362,6 +369,7 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "rtl8139", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
+    kernel_announce(108, 0, 0, place);
 
 }
 

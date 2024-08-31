@@ -774,10 +774,10 @@ void socket_resolveremote(unsigned int channel, struct socket *local, struct soc
 
 }
 
-void socket_resolvelocal(unsigned int channel, struct socket *socket)
+void socket_resolvelocal(unsigned int service, unsigned int id, struct socket *socket)
 {
 
-    call_read_all(channel, socket->haddress, ETHERNET_ADDRSIZE, 0);
+    fsp_read(service, id, socket->haddress, ETHERNET_ADDRSIZE, 0);
 
     socket->resolved = 1;
 

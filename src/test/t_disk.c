@@ -405,7 +405,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     call_announce(option_getdecimal("listen"));
 
     if (call_walk_relative(FILE_L0, FILE_G0, "addr"))
-        socket_resolvelocal(FILE_L0, &local);
+        socket_resolvelocal(0, 0, &local);
 
     if (call_walk_relative(FILE_G1, FILE_G0, "data"))
     {

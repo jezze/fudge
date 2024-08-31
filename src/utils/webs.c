@@ -13,23 +13,22 @@ static char request[128];
 static void sendresponse(unsigned int source, struct socket *remote)
 {
 
+    unsigned int service = fsp_auth(option_getstring("initrd:"));
+    unsigned int root = fsp_walk(service, 0, "data/html");
+    unsigned int id;
     char buffer[4096];
     unsigned int count = 0;
-
-    if (!call_walk_absolute(FILE_L0, "initrd:data/html"))
-        PANIC(source);
-
-    if (cstring_length(request) == 0)
-        PANIC(source);
 
     if (cstring_length(request) == 1 && request[0] == '/')
         cstring_write_zero(request, 128, cstring_write(request, 128, "/index.html", 0));
 
-    if (call_walk_relative(FILE_L1, FILE_L0, request + 1))
+    id = fsp_walk(service, root, request + 1);
+
+    if (id)
     {
 
         char file[4096];
-        unsigned int filesize = call_read(FILE_L1, file, 4096, 0);
+        unsigned int filesize = fsp_read_full(service, id, file, 4096, 0);
 
         count += cstring_write(buffer, 4096, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
@@ -48,7 +47,7 @@ static void sendresponse(unsigned int source, struct socket *remote)
 
     }
 
-    socket_send_tcp(FILE_G0, &local, remote, &router, count, buffer);
+    socket_send_tcp(108, &local, remote, &router, count, buffer);
 
 }
 
@@ -108,34 +107,30 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(unsigned int source, struct mtwist_state *state)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC(source);
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
 
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(state), mtwist_rand(state));
-    socket_resolvelocal(FILE_L1, &local);
+    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     struct mtwist_state state;
     struct message message;
     char data[MESSAGE_SIZE];
 
     seed(&state);
     setupnetwork(source, &state);
-    call_link(FILE_G0, 8000);
-    socket_resolveremote(FILE_G0, &local, &router);
-    socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
+    fsp_link(ethernetservice, ethernetdata);
+    socket_resolveremote(108, &local, &router);
+    socket_listen_tcp(108, &local, remotes, 64, &router);
 
     while (channel_poll(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
@@ -147,7 +142,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (remote)
         {
 
-            socket_handle_arp(FILE_G0, &local, remote, message_datasize(&message), data);
+            socket_handle_arp(108, &local, remote, message_datasize(&message), data);
 
         }
 
@@ -157,7 +152,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             unsigned char buffer[4096];
-            unsigned int count = socket_handle_tcp(FILE_G0, &local, remote, &router, message_datasize(&message), data, 4096, buffer);
+            unsigned int count = socket_handle_tcp(108, &local, remote, &router, message_datasize(&message), data, 4096, buffer);
 
             if (count)
             {
@@ -171,7 +166,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    call_unlink(FILE_G0);
+    fsp_unlink(ethernetservice, ethernetdata);
 
 }
 

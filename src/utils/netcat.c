@@ -36,12 +36,12 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send_tcp(FILE_G0, &local, &remotes[0], &router, 1, &consoledata->data);
+        count = socket_send_tcp(108, &local, &remotes[0], &router, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send_tcp(FILE_G0, &local, &remotes[0], &router, 1, &consoledata->data);
+        count = socket_send_tcp(108, &local, &remotes[0], &router, 1, &consoledata->data);
 
         break;
 
@@ -79,39 +79,35 @@ static void seed(struct mtwist_state *state)
 static void setupnetwork(unsigned int source, struct mtwist_state *state)
 {
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("ethernet")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_L1, FILE_L0, "addr"))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_G0, FILE_L0, "data"))
-        PANIC(source);
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
 
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcps(&local, option_getstring("local-port"), mtwist_rand(state), mtwist_rand(state));
-    socket_resolvelocal(FILE_L1, &local);
+    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     char buffer[MESSAGE_SIZE];
     unsigned int count;
     struct mtwist_state state;
 
     seed(&state);
     setupnetwork(source, &state);
-    call_link(FILE_G0, 8000);
-    socket_resolveremote(FILE_G0, &local, &router);
-    socket_listen_tcp(FILE_G0, &local, remotes, 64, &router);
+    fsp_link(ethernetservice, ethernetdata);
+    socket_resolveremote(108, &local, &router);
+    socket_listen_tcp(108, &local, remotes, 64, &router);
 
-    while ((count = socket_receive(FILE_G0, &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
+    while ((count = socket_receive(108, &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
         channel_send_buffer(source, EVENT_DATA, count, buffer);
 
-    call_unlink(FILE_G0);
+    fsp_unlink(ethernetservice, ethernetdata);
 
 }
 
