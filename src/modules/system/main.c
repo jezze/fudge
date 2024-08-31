@@ -88,18 +88,14 @@ static unsigned int service_child(unsigned int id, char *path, unsigned int leng
 static unsigned int service_create(unsigned int id, char *name, unsigned int length)
 {
 
-    struct system_node *node = getnode(id);
-
-    return (node->operations.create) ? node->operations.create(name, length) : 0;
+    return 0;
 
 }
 
 static unsigned int service_destroy(unsigned int id)
 {
 
-    struct system_node *node = getnode(id);
-
-    return (node->operations.destroy) ? node->operations.destroy() : 0;
+    return 0;
 
 }
 
@@ -431,8 +427,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
     node->name = name;
     node->index = 0;
     node->parent = 0;
-    node->operations.create = 0;
-    node->operations.destroy = 0;
     node->operations.read = 0;
     node->operations.write = 0;
 
