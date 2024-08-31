@@ -162,6 +162,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     char urldata[4096];
     struct url url;
     unsigned char buffer[4096];
@@ -178,12 +180,12 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
 
-    call_link(FILE_G0, 8000);
-    socket_resolveremote(FILE_G0, &local, &router);
-    socket_connect_tcp(FILE_G0, &local, &remote, &router);
-    socket_send_tcp(FILE_G0, &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
+    fsp_link(ethernetservice, ethernetdata);
+    socket_resolveremote(108, &local, &router);
+    socket_connect_tcp(108, &local, &remote, &router);
+    socket_send_tcp(108, &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
 
-    while ((count = socket_receive(FILE_G0, &local, &remote, 1, &router, buffer, 4096)))
+    while ((count = socket_receive(108, &local, &remote, 1, &router, buffer, 4096)))
     {
 
         if (ring_write(&input, buffer, count))
@@ -191,7 +193,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    call_unlink(FILE_G0);
+    fsp_unlink(ethernetservice, ethernetdata);
 
 }
 
