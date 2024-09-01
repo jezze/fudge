@@ -100,8 +100,6 @@ static unsigned int request_walk(struct state *state, unsigned int length, char 
     unsigned int status = ERROR;
     unsigned int offset = 0;
 
-    call_link(FILE_G5, 8000);
-
     while (request_sendpoll(state, offset, sizeof (struct cpio_header) + 1024))
     {
 
@@ -136,8 +134,6 @@ static unsigned int request_walk(struct state *state, unsigned int length, char 
 
     }
 
-    call_unlink(FILE_G5);
-
     return status;
 
 }
@@ -146,8 +142,6 @@ static unsigned int request_read(struct state *state)
 {
 
     unsigned int status = ERROR;
-
-    call_link(FILE_G5, 8001);
 
     if (request_sendpoll(state, state->offset, sizeof (struct cpio_header) + 1024))
     {
@@ -167,8 +161,6 @@ static unsigned int request_read(struct state *state)
         }
 
     }
-
-    call_unlink(FILE_G5);
 
     return status;
 
@@ -402,31 +394,37 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
+    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
+    unsigned int blockservice = fsp_auth(option_getstring("block"));
+    unsigned int blockdata = fsp_walk(blockservice, fsp_walk(blockservice, 0, option_getstring("block")), "data");
+
     call_announce(option_getdecimal("listen"));
 
-    if (call_walk_relative(FILE_L0, FILE_G0, "addr"))
-        socket_resolvelocal(0, 0, &local);
-
-    if (call_walk_relative(FILE_G1, FILE_G0, "data"))
+    if (ethernetaddr)
     {
 
         char buffer[4096];
         unsigned int count;
 
-        call_link(FILE_G1, 8003);
-        socket_resolveremote(FILE_G1, &local, &router);
-        socket_listen_tcp(FILE_G1, &local, &remote, 1, &router);
+        socket_resolvelocal(ethernetservice, ethernetaddr, &local);
+        fsp_link(ethernetservice, ethernetdata);
+        fsp_link(blockservice, blockdata);
+        socket_resolveremote(108, &local, &router);
+        socket_listen_tcp(108, &local, &remote, 1, &router);
 
-        while ((count = socket_receive(FILE_G1, &local, &remote, 1, &router, buffer, 4096)))
+        while ((count = socket_receive(108, &local, &remote, 1, &router, buffer, 4096)))
         {
 
             char reply[MESSAGE_SIZE];
 
-            socket_send_tcp(FILE_G1, &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
+            socket_send_tcp(108, &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
 
         }
 
-        call_unlink(FILE_G1);
+        fsp_unlink(blockservice, blockdata);
+        fsp_unlink(ethernetservice, ethernetdata);
 
     }
 
@@ -436,8 +434,8 @@ void init(void)
 {
 
     option_add("listen", "5588");
-    call_walk_absolute(FILE_G5, "system:block/if.0/data");
-    call_walk_absolute(FILE_G0, "system:ethernet/if.0");
+    option_add("ethernet", "system:ethernet/if.0");
+    option_add("block", "system:block/if.0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "564", 42, 42);
