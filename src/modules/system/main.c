@@ -233,7 +233,7 @@ static unsigned int service_link(unsigned int id, unsigned int target, unsigned 
 
     struct system_node *node = getnode(id);
 
-    kernel_addlink(&node->links, target, source);
+    kernel_link(&node->links, target, source);
 
     return id;
 
@@ -244,7 +244,7 @@ static unsigned int service_unlink(unsigned int id, unsigned int target)
 
     struct system_node *node = getnode(id);
 
-    kernel_removelink(&node->links, target);
+    kernel_unlink(&node->links, target);
 
     return id;
 

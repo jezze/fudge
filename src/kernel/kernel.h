@@ -6,8 +6,8 @@
 
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
-void kernel_addlink(struct list *list, unsigned int target, unsigned int source);
-void kernel_removelink(struct list *list, unsigned int target);
+void kernel_link(struct list *list, unsigned int target, unsigned int source);
+void kernel_unlink(struct list *list, unsigned int target);
 unsigned int kernel_schedule(struct core *core);
 unsigned int kernel_codebase(unsigned int itask, unsigned int address);
 unsigned int kernel_loadprogram(unsigned int itask);

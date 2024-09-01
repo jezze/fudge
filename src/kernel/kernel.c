@@ -173,7 +173,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-void kernel_addlink(struct list *links, unsigned int target, unsigned int source)
+void kernel_link(struct list *links, unsigned int target, unsigned int source)
 {
 
     struct list_item *linkitem = list_picktail(&freelinks);
@@ -193,7 +193,7 @@ void kernel_addlink(struct list *links, unsigned int target, unsigned int source
 
 }
 
-void kernel_removelink(struct list *links, unsigned int target)
+void kernel_unlink(struct list *links, unsigned int target)
 {
 
     struct list_item *current;
