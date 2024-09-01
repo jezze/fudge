@@ -83,32 +83,23 @@ static void seed(struct mtwist_state *state)
 
 }
 
-static void setupnetwork(unsigned int source, struct mtwist_state *state)
-{
-
-    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
-    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
-
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_udpv(&local, mtwist_rand(state));
-    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
-    socket_bind_udpv(&remote, option_getdecimal("remote-port"));
-    socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
     unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     unsigned char buffer[4096];
     unsigned int count;
     struct mtwist_state state;
 
     seed(&state);
-    setupnetwork(source, &state);
+    socket_bind_ipv4s(&local, option_getstring("local-address"));
+    socket_bind_udpv(&local, mtwist_rand(&state));
+    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+    socket_bind_udpv(&remote, option_getdecimal("remote-port"));
+    socket_bind_ipv4s(&router, option_getstring("router-address"));
+    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
     fsp_link(ethernetservice, ethernetdata);
     socket_resolveremote(108, &local, &router);
     socket_send_udp(108, &local, &remote, &router, buildrequest(4096, buffer), buffer);

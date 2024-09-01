@@ -61,7 +61,6 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
-        channel_send(channel, EVENT_END);
 
         while ((count = channel_read(EVENT_QUERY, MESSAGE_SIZE, data)))
         {
@@ -86,6 +85,9 @@ static void dnsresolve(struct socket *socket, char *domain)
             }
 
         }
+
+        channel_send(channel, EVENT_END);
+        channel_wait(EVENT_TERMRESPONSE);
 
     }
 
@@ -112,21 +114,6 @@ static void seed(struct mtwist_state *state)
         }
 
     }
-
-}
-
-static void setupnetwork(unsigned int source, struct mtwist_state *state)
-{
-
-    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
-    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
-
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, mtwist_rand(state), mtwist_rand(state), mtwist_rand(state));
-    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
-    socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(state), mtwist_rand(state));
-    socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
 
 }
 
@@ -163,6 +150,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
+    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
     unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     char urldata[4096];
     struct url url;
@@ -171,7 +159,12 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     struct mtwist_state state;
 
     seed(&state);
-    setupnetwork(source, &state);
+    socket_bind_ipv4s(&local, option_getstring("local-address"));
+    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
+    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+    socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
+    socket_bind_ipv4s(&router, option_getstring("router-address"));
+    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
     parseurl(&url, urldata, 4096);
 
     if (url.host)
