@@ -6,16 +6,12 @@ static unsigned int counter = 1;
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int timerservice = fsp_auth(option_getstring("timer"));
+    unsigned int timerevent = fsp_walk(timerservice, fsp_walk(timerservice, 0, option_getstring("timer")), "event100");
     struct message message;
     char data[MESSAGE_SIZE];
 
-    if (!call_walk_absolute(FILE_L0, option_getstring("timer")))
-        PANIC(source);
-
-    if (!call_walk_relative(FILE_L1, FILE_L0, "event100"))
-        PANIC(source);
-
-    call_link(FILE_L1, 8000);
+    fsp_link(timerservice, timerevent);
 
     while (channel_poll(EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
     {
@@ -26,7 +22,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    call_unlink(FILE_L1);
+    fsp_unlink(timerservice, timerevent);
 
 }
 
