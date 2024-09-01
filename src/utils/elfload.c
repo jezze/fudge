@@ -1,19 +1,17 @@
 #include <fudge.h>
 #include <abi.h>
 
-static struct elf_header header;
-static struct elf_sectionheader sectionheaders[64];
 static char kerneldata[8192];
 static unsigned int kernelcount;
 static char mapdata[8192];
 static unsigned int mapcount;
 
-static unsigned int gettextsectionoffset(void)
+static unsigned int gettextsectionoffset(struct elf_header *header, struct elf_sectionheader *sectionheaders)
 {
 
     unsigned int i;
 
-    for (i = 0; i < header.shcount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
         if (sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
@@ -26,14 +24,14 @@ static unsigned int gettextsectionoffset(void)
 }
 
 /* this function should update the mapdata by parsing the module instead of the map */
-static void relocate(unsigned int address)
+static void relocate(struct elf_header *header, struct elf_sectionheader *sectionheaders, unsigned int address)
 {
 
     unsigned int offset = 0;
     unsigned int i;
 
     /* all symbols are relative to certain section. now we just assume .text but this should be fixed */
-    address += gettextsectionoffset();
+    address += gettextsectionoffset(header, sectionheaders);
 
     for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
     {
@@ -154,12 +152,12 @@ static void updateundefined(void)
 
 }
 
-static void resolve(unsigned int source, unsigned int service, unsigned int id)
+static void resolve(unsigned int source, unsigned int service, unsigned int id, struct elf_header *header, struct elf_sectionheader *sectionheaders)
 {
 
     unsigned int i;
 
-    for (i = 0; i < header.shcount; i++)
+    for (i = 0; i < header->shcount; i++)
     {
 
         if (sectionheaders[i].type == ELF_SECTION_TYPE_REL)
@@ -232,6 +230,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         if (id)
         {
 
+            struct elf_header header;
+
             fsp_read_all(service, id, &header, ELF_HEADER_SIZE, 0);
 
             if (elf_validate(&header))
@@ -240,10 +240,12 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                 if (header.shcount < 64)
                 {
 
+                    struct elf_sectionheader sectionheaders[64];
+
                     fsp_read_all(service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                     updateundefined();
-                    resolve(source, service, id);
-                    relocate(call_load(fsp_map(service, id)));
+                    resolve(source, service, id, &header, sectionheaders);
+                    relocate(&header, sectionheaders, call_load(fsp_map(service, id)));
                     savemap(mapname, mapdata, mapcount);
 
                 }
