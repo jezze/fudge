@@ -4,7 +4,6 @@
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"
-#include "service.h"
 #include "kernel.h"
 
 #define CALLS                           32

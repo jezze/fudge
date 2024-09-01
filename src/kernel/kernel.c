@@ -6,7 +6,6 @@
 #include "task.h"
 #include "core.h"
 #include "link.h"
-#include "service.h"
 #include "kernel.h"
 
 struct channel
