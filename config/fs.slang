@@ -1,1 +1,1 @@
-ext2srv ?listen 1111
+initrd:bin/ext2srv ?listen 1111

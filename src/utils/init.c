@@ -1,72 +1,174 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define JOBSIZE                         32
-
-static void runscripts(void)
-{
-
-    unsigned int channel = fsp_spawn(option_getstring("slang"));
-
-    if (channel)
-    {
-
-        channel_send(channel, EVENT_MAIN);
-        channel_send_fmt0(channel, EVENT_PATH, "initrd:config/base.slang\\0");
-        channel_send_fmt0(channel, EVENT_PATH, "initrd:config/arch.slang\\0");
-        channel_send_fmt0(channel, EVENT_PATH, "initrd:config/init.slang\\0");
-        channel_send(channel, EVENT_END);
-        channel_wait(EVENT_TERMRESPONSE);
-
-    }
-
-}
-
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    if (msize)
-    {
-
-        struct job_worker workers[JOBSIZE];
-        struct job job;
-
-        job_init(&job, workers, JOBSIZE);
-        job_parse(&job, mdata, msize);
-
-        if (job_spawn(&job, "initrd:bin"))
-        {
-
-            job_pipe(&job, EVENT_DATA);
-            job_run(&job, "initrd:");
-
-        }
-
-        else
-        {
-
-            job_killall(&job);
-
-        }
-
-    }
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    runscripts();
+    unsigned int channel;
+
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/base.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/system.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/log.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/block.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/clock.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/console.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/keyboard.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/mouse.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/timer.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/audio.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/video.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/ethernet.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/info.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/io.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/cpuid.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/msr.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/pat.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/acpi.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/pic.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/apic.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/platform.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/pci.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/pit.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/rtc.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/ps2.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/ps2-keyboard.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/ps2-mouse.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/bga.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/uart.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/vga.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/rtl8139.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/ide.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/ahci.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/nvme.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/ata.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+    channel = fsp_spawn("initrd:bin/elfload");
+    channel_send_fmt0(channel, EVENT_PATH, "initrd:kernel/virtio-network.ko\\0");
+    channel_send(channel, EVENT_END);
+    channel_wait(EVENT_TERMRESPONSE);
+
+    channel = fsp_spawn("initrd:bin/shell");
+    channel_send_fmt0(channel, EVENT_OPTION, "pwd\\0initrd:\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "input\\0system:console/if.0/event\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "tty-service\\0100\\0");
+    channel_send(channel, EVENT_MAIN);
+
+    channel = fsp_spawn("initrd:bin/wm");
+    channel_send_fmt0(channel, EVENT_OPTION, "pwd\\0initrd:\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "listen\\012345\\0");
+    channel_send(channel, EVENT_MAIN);
 
 }
 
 void init(void)
 {
 
-    option_add("initrd", "initrd:bin/initrd");
-    option_add("slang", "initrd:bin/slang");
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_DATA, ondata);
 
 }
 

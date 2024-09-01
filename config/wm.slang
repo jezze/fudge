@@ -1,1 +1,1 @@
-wm ?listen 12345
+initrd:bin/wm ?listen 12345
