@@ -344,22 +344,29 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     {
 
         char buffer[1024];
-        char stringdata[1024];
-        struct ring stringtable;
-        struct token infixdata[1024];
-        struct token postfixdata[1024];
-        struct token stackdata[8];
-        struct tokenlist infix;
-        struct tokenlist postfix;
-        struct tokenlist stack;
+        unsigned int count = call_read(FILE_L0, buffer, 1024, 0);
 
-        ring_init(&stringtable, 1024, stringdata);
-        tokenlist_init(&infix, 1024, infixdata);
-        tokenlist_init(&postfix, 1024, postfixdata);
-        tokenlist_init(&stack, 8, stackdata);
-        tokenizebuffer(&infix, &stringtable, call_read(FILE_L0, buffer, 1024, 0), buffer);
-        translate(&postfix, &infix, &stack);
-        parse(source, &postfix, &stack, 1024, buffer);
+        if (count)
+        {
+
+            char stringdata[1024];
+            struct ring stringtable;
+            struct token infixdata[1024];
+            struct token postfixdata[1024];
+            struct token stackdata[8];
+            struct tokenlist infix;
+            struct tokenlist postfix;
+            struct tokenlist stack;
+
+            ring_init(&stringtable, 1024, stringdata);
+            tokenlist_init(&infix, 1024, infixdata);
+            tokenlist_init(&postfix, 1024, postfixdata);
+            tokenlist_init(&stack, 8, stackdata);
+            tokenizebuffer(&infix, &stringtable, count, buffer);
+            translate(&postfix, &infix, &stack);
+            parse(source, &postfix, &stack, 1024, buffer);
+
+        }
 
     }
 
