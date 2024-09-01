@@ -217,7 +217,7 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "uart", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
-    kernel_announce(100, 0, 0, place);
+    kernel_announce(100, 0, place);
 
 }
 

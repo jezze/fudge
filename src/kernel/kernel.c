@@ -13,7 +13,6 @@ struct channel
 {
 
     unsigned int target;
-    struct service *service;
     struct list links;
     unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 
@@ -297,7 +296,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned short index, unsigned int target, struct service *service, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned short index, unsigned int target, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = &channels[index];
@@ -306,7 +305,6 @@ void kernel_announce(unsigned short index, unsigned int target, struct service *
 
     channel->target = target;
     channel->place = (place) ? place : placetask;
-    channel->service = service;
 
 }
 
@@ -354,7 +352,7 @@ unsigned int kernel_createtask(void)
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int ichannel, unsigned int id, unsigned int address)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address)
 {
 
     struct taskrow *taskrow = &taskrows[itask];
@@ -433,7 +431,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
-        kernel_announce(i, i, 0, placetask);
+        kernel_announce(i, i, placetask);
 
     }
 

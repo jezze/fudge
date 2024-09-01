@@ -51,9 +51,9 @@ static void map(struct mmu_directory *directory, unsigned int index, unsigned in
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int id; unsigned int address;} *args = stack;
+    struct {void *caller; unsigned int address;} *args = stack;
 
-    if (args->ichannel && args->id)
+    if (args->address)
     {
 
         unsigned int ntask = kernel_createtask();
@@ -63,7 +63,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
 
             initmap(ntask);
 
-            return kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL, args->ichannel, args->id, args->address);
+            return kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL, args->address);
 
         }
 
@@ -441,7 +441,7 @@ void arch_setup2(unsigned int address)
     {
 
         initmap(ntask);
-        kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL, 0, 0, address);
+        kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL, address);
         kernel_place(0, ntask, EVENT_MAIN, 0, 0);
 
     }

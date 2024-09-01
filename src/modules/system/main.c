@@ -438,7 +438,7 @@ void module_init(void)
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
     service_init(&service, "system", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink);
     resource_register(&service.resource);
-    kernel_announce(501, 0, &service, place);
+    kernel_announce(501, 0, place);
 
 }
 

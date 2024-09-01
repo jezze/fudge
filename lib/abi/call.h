@@ -5,6 +5,5 @@ unsigned int call_kill(unsigned int task);
 unsigned int call_load(unsigned int address);
 unsigned int call_pick(struct message *message, unsigned int count, void *data);
 unsigned int call_place(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
-unsigned int call_spawn(unsigned int ichannel, unsigned int id, unsigned int address);
-unsigned int call_unlink(unsigned int idescriptor);
+unsigned int call_spawn(unsigned int address);
 unsigned int call_unload(unsigned int address);

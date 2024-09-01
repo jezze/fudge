@@ -369,7 +369,7 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "rtl8139", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
-    kernel_announce(108, 0, 0, place);
+    kernel_announce(108, 0, place);
 
 }
 
