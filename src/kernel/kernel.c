@@ -15,6 +15,7 @@ struct channel
 
     unsigned int target;
     struct service *service;
+    struct list links;
     unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
@@ -331,6 +332,8 @@ void kernel_announce(unsigned short index, unsigned int target, struct service *
 {
 
     struct channel *channel = &channels[index];
+
+    list_init(&channel->links);
 
     channel->target = target;
     channel->place = (place) ? place : placetask;
