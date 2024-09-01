@@ -3,7 +3,7 @@
 
 static char kerneldata[8192];
 static unsigned int kernelcount;
-static char mapdata[8192];
+static char mapdata[4096];
 static unsigned int mapcount;
 
 static unsigned int gettextsectionoffset(struct elf_header *header, struct elf_sectionheader *sectionheaders)
@@ -125,12 +125,12 @@ static void updateundefined(void)
 
                 unsigned int underscore = buffer_findbyte(symbol, length, '_');
                 char module[32];
-                char data[8192];
+                char data[4096];
                 unsigned int count;
 
                 cstring_write_fmt2(module, 32, "initrd:kernel/%w.ko.map\\0", 0, symbol, &underscore);
 
-                count = loadmap(module, data, 8192);
+                count = loadmap(module, data, 4096);
 
                 if (count)
                     address = findsymbol(data, count, length, symbol);
@@ -220,7 +220,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
     cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
     kernelcount = loadmap("initrd:kernel/fudge.map", kerneldata, 8192);
-    mapcount = loadmap(mapname, mapdata, 8192);
+    mapcount = loadmap(mapname, mapdata, 4096);
 
     if (service)
     {
