@@ -173,7 +173,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-void kernel_addlink(struct list *list, unsigned int target, unsigned int source)
+void kernel_addlink(struct list *links, unsigned int target, unsigned int source)
 {
 
     struct list_item *linkitem = list_picktail(&freelinks);
@@ -187,21 +187,21 @@ void kernel_addlink(struct list *list, unsigned int target, unsigned int source)
         link->source = source;
         link->target = target;
 
-        list_add(list, linkitem);
+        list_add(links, linkitem);
 
     }
 
 }
 
-void kernel_removelink(struct list *list, unsigned int target)
+void kernel_removelink(struct list *links, unsigned int target)
 {
 
     struct list_item *current;
     struct list_item *next;
 
-    spinlock_acquire(&list->spinlock);
+    spinlock_acquire(&links->spinlock);
 
-    for (current = list->head; current; current = next)
+    for (current = links->head; current; current = next)
     {
 
         struct linkrow *linkrow = current->data;
@@ -212,14 +212,14 @@ void kernel_removelink(struct list *list, unsigned int target)
         if (link->target == target)
         {
 
-            list_remove_unsafe(list, current);
+            list_remove_unsafe(links, current);
             list_add(&freelinks, current);
 
         }
 
     }
 
-    spinlock_release(&list->spinlock);
+    spinlock_release(&links->spinlock);
 
 }
 
