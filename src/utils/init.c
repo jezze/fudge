@@ -25,24 +25,29 @@ static void runscripts(void)
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct job_worker workers[JOBSIZE];
-    struct job job;
-
-    job_init(&job, workers, JOBSIZE);
-    job_parse(&job, mdata, msize);
-
-    if (job_spawn(&job, "initrd:bin"))
+    if (msize)
     {
 
-        job_pipe(&job, EVENT_DATA);
-        job_run(&job, "initrd:");
+        struct job_worker workers[JOBSIZE];
+        struct job job;
 
-    }
+        job_init(&job, workers, JOBSIZE);
+        job_parse(&job, mdata, msize);
 
-    else
-    {
+        if (job_spawn(&job, "initrd:bin"))
+        {
 
-        job_killall(&job);
+            job_pipe(&job, EVENT_DATA);
+            job_run(&job, "initrd:");
+
+        }
+
+        else
+        {
+
+            job_killall(&job);
+
+        }
 
     }
 
