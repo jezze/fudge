@@ -45,54 +45,12 @@ static unsigned int debug(unsigned int itask, void *stack)
 
 }
 
-static unsigned int walk(unsigned int itask, void *stack)
-{
-
-    return 0;
-
-}
-
-static unsigned int create(unsigned int itask, void *stack)
-{
-
-    return 0;
-
-}
-
-static unsigned int destroy(unsigned int itask, void *stack)
-{
-
-    return 0;
-
-}
-
 static unsigned int kill(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int itask;} *args = stack;
 
     kernel_signal(args->itask, TASK_SIGNAL_KILL);
-
-    return 0;
-
-}
-
-static unsigned int stat(unsigned int itask, void *stack)
-{
-
-    return 0;
-
-}
-
-static unsigned int list(unsigned int itask, void *stack)
-{
-
-    return 0;
-
-}
-
-static unsigned int read(unsigned int itask, void *stack)
-{
 
     return 0;
 
@@ -216,20 +174,6 @@ static unsigned int place(unsigned int itask, void *stack)
 
 }
 
-static unsigned int link(unsigned int itask, void *stack)
-{
-
-    return 0;
-
-}
-
-static unsigned int unlink(unsigned int itask, void *stack)
-{
-
-    return 0;
-
-}
-
 static unsigned int announce(unsigned int itask, void *stack)
 {
 
@@ -259,13 +203,13 @@ void abi_setup(void)
 {
 
     abi_setcallback(0x00, debug);
-    abi_setcallback(0x01, walk);
-    abi_setcallback(0x02, create);
-    abi_setcallback(0x03, destroy);
+    abi_setcallback(0x01, debug);
+    abi_setcallback(0x02, debug);
+    abi_setcallback(0x03, debug);
     abi_setcallback(0x04, kill);
-    abi_setcallback(0x05, stat);
-    abi_setcallback(0x06, list);
-    abi_setcallback(0x07, read);
+    abi_setcallback(0x05, debug);
+    abi_setcallback(0x06, debug);
+    abi_setcallback(0x07, debug);
     abi_setcallback(0x08, announce);
     abi_setcallback(0x09, debug);
     abi_setcallback(0x0A, load);
@@ -274,8 +218,8 @@ void abi_setup(void)
     abi_setcallback(0x0D, despawn);
     abi_setcallback(0x0E, pick);
     abi_setcallback(0x0F, place);
-    abi_setcallback(0x10, link);
-    abi_setcallback(0x11, unlink);
+    abi_setcallback(0x10, debug);
+    abi_setcallback(0x11, debug);
     abi_setcallback(0x12, debug);
     abi_setcallback(0x13, debug);
     abi_setcallback(0x14, debug);
