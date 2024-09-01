@@ -3,7 +3,6 @@ L:=\
 
 O:=\
     $(DIR_LIB)/abi/channel.o \
-    $(DIR_LIB)/abi/call.o \
     $(DIR_LIB)/abi/crt0.o \
     $(DIR_LIB)/abi/fsp.o \
     $(DIR_LIB)/abi/job.o \
@@ -18,7 +17,6 @@ L:=\
 
 O:=\
     $(DIR_LIB)/abi/channel.o \
-    $(DIR_LIB)/abi/call.o \
     $(DIR_LIB)/abi/crt0.o \
     $(DIR_LIB)/abi/fsp.o \
     $(DIR_LIB)/abi/job.o \
