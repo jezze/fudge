@@ -5,7 +5,6 @@
 #include "mailbox.h"
 #include "task.h"
 #include "service.h"
-#include "descriptor.h"
 #include "kernel.h"
 
 #define CALLS                           32
@@ -35,15 +34,6 @@ static unsigned int checkzerobuffer(unsigned int itask, void *address, unsigned 
 
 }
 
-static struct service *findservice(char *path, unsigned int length)
-{
-
-    unsigned int offset = buffer_firstbyte(path, length, ':');
-
-    return (offset) ? service_find(offset - 1, path) : 0;
-
-}
-
 static unsigned int debug(unsigned int itask, void *stack)
 {
 
@@ -58,25 +48,6 @@ static unsigned int debug(unsigned int itask, void *stack)
 static unsigned int walk(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor; unsigned int ipdescriptor; char *path; unsigned int length;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->ipdescriptor);
-    struct service *service;
-
-    if (checkzerobuffer(itask, args->path, args->length) && descriptor_check(pdescriptor))
-    {
-
-        kernel_copydescriptor(itask, args->idescriptor, itask, args->ipdescriptor);
-
-        if ((service = findservice(args->path, args->length)))
-            kernel_setdescriptor(itask, args->idescriptor, service, service->root());
-
-        return descriptor->id = service_findpath(descriptor->service, descriptor->id, args->path, args->length);
-
-    }
-
-    DEBUG_FMT0(DEBUG_ERROR, "walk check failed");
-
     return 0;
 
 }
@@ -84,35 +55,12 @@ static unsigned int walk(unsigned int itask, void *stack)
 static unsigned int create(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor; unsigned int ipdescriptor; char *name; unsigned int length;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(itask, args->ipdescriptor);
-
-    if (checkbuffer(itask, args->name, args->length) && descriptor_check(pdescriptor))
-    {
-
-        kernel_copydescriptor(itask, args->idescriptor, itask, args->ipdescriptor);
-
-        return descriptor->id = descriptor->service->create(descriptor->id, args->name, args->length);
-
-    }
-
-    DEBUG_FMT0(DEBUG_ERROR, "create check failed");
-
     return 0;
 
 }
 
 static unsigned int destroy(unsigned int itask, void *stack)
 {
-
-    struct {void *caller; unsigned int idescriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (descriptor_check(descriptor))
-        return descriptor->id = descriptor->service->destroy(descriptor->id);
-
-    DEBUG_FMT0(DEBUG_ERROR, "destroy check failed");
 
     return 0;
 
@@ -132,14 +80,6 @@ static unsigned int kill(unsigned int itask, void *stack)
 static unsigned int stat(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor; struct record *record;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (checkbuffer(itask, args->record, sizeof (struct record)) && descriptor_check(descriptor))
-        return descriptor->service->stat(descriptor->id, args->record);
-
-    DEBUG_FMT0(DEBUG_ERROR, "stat check failed");
-
     return 0;
 
 }
@@ -147,28 +87,12 @@ static unsigned int stat(unsigned int itask, void *stack)
 static unsigned int list(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor; unsigned int offset; unsigned int count; struct record *records;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (checkbuffer(itask, args->records, args->count * sizeof (struct record)) && descriptor_check(descriptor))
-        return descriptor->service->list(descriptor->id, args->offset, args->count, args->records);
-
-    DEBUG_FMT0(DEBUG_ERROR, "list check failed");
-
     return 0;
 
 }
 
 static unsigned int read(unsigned int itask, void *stack)
 {
-
-    struct {void *caller; unsigned int idescriptor; void *buffer; unsigned int count; unsigned int offset;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (checkbuffer(itask, args->buffer, args->count) && descriptor_check(descriptor))
-        return descriptor->service->read(descriptor->id, args->buffer, args->count, args->offset);
-
-    DEBUG_FMT0(DEBUG_ERROR, "read check failed");
 
     return 0;
 
@@ -295,28 +219,12 @@ static unsigned int place(unsigned int itask, void *stack)
 static unsigned int link(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int idescriptor; unsigned int source;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (descriptor_check(descriptor))
-        return descriptor->service->link(descriptor->id, itask, args->source);
-
-    DEBUG_FMT0(DEBUG_ERROR, "link check failed");
-
     return 0;
 
 }
 
 static unsigned int unlink(unsigned int itask, void *stack)
 {
-
-    struct {void *caller; unsigned int idescriptor;} *args = stack;
-    struct descriptor *descriptor = kernel_getdescriptor(itask, args->idescriptor);
-
-    if (descriptor_check(descriptor))
-        return descriptor->service->unlink(descriptor->id, itask);
-
-    DEBUG_FMT0(DEBUG_ERROR, "unlink check failed");
 
     return 0;
 

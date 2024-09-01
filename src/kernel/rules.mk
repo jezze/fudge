@@ -9,7 +9,6 @@ O:=\
     $(DIR_SRC)/kernel/binary.o \
     $(DIR_SRC)/kernel/core.o \
     $(DIR_SRC)/kernel/debug.o \
-    $(DIR_SRC)/kernel/descriptor.o \
     $(DIR_SRC)/kernel/kernel.o \
     $(DIR_SRC)/kernel/link.o \
     $(DIR_SRC)/kernel/mailbox.o \

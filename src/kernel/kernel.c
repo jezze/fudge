@@ -7,7 +7,6 @@
 #include "core.h"
 #include "link.h"
 #include "service.h"
-#include "descriptor.h"
 #include "kernel.h"
 
 struct channel
@@ -22,7 +21,7 @@ struct channel
 
 static struct channel channels[KERNEL_CHANNELS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
-static struct taskrow {struct task task; struct descriptor descriptors[KERNEL_DESCRIPTORS]; struct list_item item;} taskrows[KERNEL_TASKS];
+static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
 static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
 static struct list freelinks;
 static struct list deadtasks;
@@ -276,36 +275,6 @@ struct task_thread *kernel_getthread(unsigned int itask)
 
 }
 
-struct descriptor *kernel_getdescriptor(unsigned int itask, unsigned int idescriptor)
-{
-
-    struct taskrow *taskrow = &taskrows[itask];
-
-    return &taskrow->descriptors[(idescriptor & (KERNEL_DESCRIPTORS - 1))];
-
-}
-
-void kernel_setdescriptor(unsigned int itask, unsigned int idescriptor, struct service *service, unsigned int id)
-{
-
-    struct descriptor *descriptor = kernel_getdescriptor(itask, idescriptor);
-
-    descriptor->service = service;
-    descriptor->id = id;
-
-}
-
-void kernel_copydescriptor(unsigned int itask, unsigned int idescriptor, unsigned int iptask, unsigned int ipdescriptor)
-{
-
-    struct descriptor *descriptor = kernel_getdescriptor(itask, idescriptor);
-    struct descriptor *pdescriptor = kernel_getdescriptor(iptask, ipdescriptor);
-
-    descriptor->service = pdescriptor->service;
-    descriptor->id = pdescriptor->id;
-
-}
-
 unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
@@ -372,13 +341,9 @@ unsigned int kernel_createtask(void)
         struct taskrow *taskrow = taskitem->data;
         struct task *task = &taskrow->task;
         struct mailbox *mailbox = &mailboxes[task->id];
-        unsigned int i;
 
         task_reset(task);
         mailbox_reset(mailbox);
-
-        for (i = 0; i < KERNEL_DESCRIPTORS; i++)
-            descriptor_reset(&taskrow->descriptors[i]);
 
         if (task_transition(task, TASK_STATE_NEW))
             return task->id;
@@ -398,21 +363,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
     task->thread.ip = ip;
     task->thread.sp = sp;
     task->node.address = address;
-
-    if (ichannel && id)
-    {
-
-        struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
-
-        if (channel)
-        {
-
-            kernel_setdescriptor(itask, FILE_PW, channel->service, channel->service->root());
-            kernel_setdescriptor(itask, FILE_PP, channel->service, id);
-
-        }
-
-    }
 
     if (task->node.address)
     {
@@ -478,16 +428,11 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     {
 
         struct taskrow *taskrow = &taskrows[i];
-        unsigned int j;
 
         task_init(&taskrow->task, i);
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
-
-        for (j = 0; j < KERNEL_DESCRIPTORS; j++)
-            descriptor_init(&taskrow->descriptors[j]);
-
         kernel_announce(i, i, 0, placetask);
 
     }

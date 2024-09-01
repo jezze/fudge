@@ -1,6 +1,5 @@
 #include "event.h"
 #include "buffer.h"
-#include "file.h"
 #include "cstring.h"
 #include "message.h"
 #include "p9p.h"
