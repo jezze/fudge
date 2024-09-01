@@ -8,6 +8,7 @@ static unsigned char cart_ram[0x20000];
 static unsigned int *framebuffer;
 static unsigned int w, h, scalew, scaleh, totw, toth, offx, offy;
 static struct keys keys;
+static char path[128];
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
 {
@@ -190,7 +191,7 @@ static void keyrelease(struct gb_s *gb, void *data)
 
 }
 
-static void run(unsigned int source)
+static void run(unsigned int source, unsigned int service, unsigned int id)
 {
 
     char romname[16];
@@ -199,7 +200,7 @@ static void run(unsigned int source)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    call_read(FILE_G5, rom, 0x80000, 0);
+    fsp_read_full(service, id, rom, 0x80000, 0);
 
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
 
@@ -221,7 +222,7 @@ static void run(unsigned int source)
     }
 
     if (getsavesize(&gb))
-        call_read(FILE_G5, cart_ram, getsavesize(&gb), 0x80000);
+        fsp_read_full(service, id, cart_ram, getsavesize(&gb), 0x80000);
 
     channel_send_fmt1(source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
@@ -291,6 +292,8 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int service = fsp_auth(path);
+    unsigned int id = fsp_walk(service, 0, path);
     unsigned int keyboardservice = fsp_auth(option_getstring("keyboard"));
     unsigned int keyboardevent = fsp_walk(keyboardservice, fsp_walk(keyboardservice, 0, option_getstring("keyboard")), "event");
     unsigned int timerservice = fsp_auth(option_getstring("timer"));
@@ -310,7 +313,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     fsp_link(timerservice, timerevent);
     fsp_link(videoservice, videoevent);
     fsp_write(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
-    run(source);
+    run(source, service, id);
     fsp_unlink(videoservice, videoevent);
     fsp_unlink(timerservice, timerevent);
     fsp_unlink(keyboardservice, keyboardevent);
@@ -322,10 +325,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (call_walk_absolute(FILE_L0, mdata))
-        call_walk_duplicate(FILE_G5, FILE_L0);
-    else
-        channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
+    buffer_write(path, 128, mdata, msize, 0);
 
 }
 
