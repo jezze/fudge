@@ -237,7 +237,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_ctrl(unsigned int source)
+static unsigned int ethernetinterface_info(unsigned int source)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -299,7 +299,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, 108, ethernetinterface_ctrl, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, id, 108, ethernetinterface_info, ethernetinterface_send);
 
 }
 

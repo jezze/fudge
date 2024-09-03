@@ -13,7 +13,7 @@ static void onclockinfo(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(option_getdecimal("clock-service"), EVENT_CTRL);
+    channel_send(option_getdecimal("clock-service"), EVENT_INFO);
     channel_wait(EVENT_CLOCKINFO);
     channel_send_fmt6(source, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &settings.year, &settings.month, &settings.day, &settings.hours, &settings.minutes, &settings.seconds);
 

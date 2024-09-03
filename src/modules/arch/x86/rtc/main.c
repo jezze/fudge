@@ -43,7 +43,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int clockinterface_ctrl(unsigned int source)
+static unsigned int clockinterface_info(unsigned int source)
 {
 
     struct ctrl_clocksettings settings;
@@ -65,7 +65,7 @@ static unsigned int clockinterface_ctrl(unsigned int source)
 static void driver_init(unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, id, 220, clockinterface_ctrl);
+    clock_initinterface(&clockinterface, id, 220, clockinterface_info);
 
 }
 

@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     static struct mtwist_state state;
     unsigned int value;
 
-    channel_send(option_getdecimal("clock-service"), EVENT_CTRL);
+    channel_send(option_getdecimal("clock-service"), EVENT_INFO);
     channel_wait(EVENT_CLOCKINFO);
     mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
