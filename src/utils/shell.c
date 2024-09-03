@@ -487,26 +487,12 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(option_getstring("input"));
+    printprompt();
+    channel_send(100, EVENT_LINK);
 
-    if (service)
-    {
+    while (channel_process());
 
-        unsigned int id = fsp_walk(service, 0, option_getstring("input"));
-
-        if (id)
-        {
-
-            printprompt();
-            fsp_link(service, id);
-
-            while (channel_process());
-
-            fsp_unlink(service, id);
-
-        }
-
-    }
+    channel_send(100, EVENT_UNLINK);
 
 }
 

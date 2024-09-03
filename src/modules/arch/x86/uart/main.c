@@ -122,7 +122,7 @@ static void handleirq(unsigned int irq)
 
     unsigned char data = uart_get();
 
-    console_notifydata(&consoleinterface, data);
+    console_notifydata(100, &consoleinterface, data);
 
 }
 
@@ -154,6 +154,16 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
     case EVENT_DATA:
         return send(data, count);
+
+    case EVENT_LINK:
+        kernel_link2(100, source, 100);
+
+        return 1;
+
+    case EVENT_UNLINK:
+        kernel_unlink2(100, source);
+
+        return 1;
 
     }
 

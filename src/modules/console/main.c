@@ -6,15 +6,14 @@
 static struct system_node root;
 static struct system_node event;
 
-void console_notifydata(struct console_interface *interface, unsigned char data)
+void console_notifydata(unsigned int ichannel, struct console_interface *interface, unsigned char data)
 {
 
     struct event_consoledata consoledata;
 
     consoledata.data = data;
 
-    kernel_notify(&event.links, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
-    kernel_notify(&interface->event.links, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify2(ichannel, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 

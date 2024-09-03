@@ -193,6 +193,15 @@ void kernel_link(struct list *links, unsigned int target, unsigned int source)
 
 }
 
+
+
+void kernel_link2(unsigned int ichannel, unsigned int target, unsigned int source)
+{
+
+    kernel_link(&channels[ichannel].links, target, source);
+
+}
+
 void kernel_unlink(struct list *links, unsigned int target)
 {
 
@@ -220,6 +229,13 @@ void kernel_unlink(struct list *links, unsigned int target)
     }
 
     spinlock_release(&links->spinlock);
+
+}
+
+void kernel_unlink2(unsigned int ichannel, unsigned int target)
+{
+
+    kernel_unlink(&channels[ichannel].links, target);
 
 }
 
@@ -324,6 +340,15 @@ void kernel_notify(struct list *links, unsigned int event, unsigned int count, v
     }
 
     spinlock_release(&links->spinlock);
+
+}
+
+void kernel_notify2(unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+{
+
+    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+
+    kernel_notify(&channel->links, event, count, data);
 
 }
 
