@@ -238,8 +238,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
     unsigned int videodata = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "data");
     unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
-    unsigned int mouseservice = fsp_auth(option_getstring("mouse"));
-    unsigned int mouseevent = fsp_walk(mouseservice, fsp_walk(mouseservice, 0, option_getstring("mouse")), "event");
     struct ctrl_videosettings settings;
 
     settings.width = option_getdecimal("width");
@@ -278,11 +276,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     }
 
     draw(videoservice, videodata, &settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    fsp_link(mouseservice, mouseevent);
+    channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
 
     while (channel_process());
 
-    fsp_unlink(mouseservice, mouseevent);
+    channel_send(option_getdecimal("mouse-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
     channel_wait(EVENT_WMACK);
 
@@ -294,7 +292,7 @@ void init(void)
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
-    option_add("mouse", "system:mouse");
+    option_add("mouse-service", "124");
     option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);

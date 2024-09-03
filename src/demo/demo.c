@@ -138,8 +138,6 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int keyboardservice = fsp_auth(option_getstring("keyboard"));
-    unsigned int keyboardevent = fsp_walk(keyboardservice, fsp_walk(keyboardservice, 0, option_getstring("keyboard")), "event");
     unsigned int timerservice = fsp_auth(option_getstring("timer"));
     unsigned int timerevent = fsp_walk(timerservice, fsp_walk(timerservice, 0, option_getstring("timer")), "event1");
     unsigned int videoservice = fsp_auth(option_getstring("video"));
@@ -153,14 +151,14 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(EVENT_WMACK);
-    fsp_link(keyboardservice, keyboardevent);
+    channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     fsp_link(timerservice, timerevent);
     fsp_link(videoservice, videoevent);
     fsp_write(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
     run();
     fsp_unlink(videoservice, videoevent);
     fsp_unlink(timerservice, timerevent);
-    fsp_unlink(keyboardservice, keyboardevent);
+    channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
     channel_wait(EVENT_WMACK);
 
@@ -172,7 +170,7 @@ void init(void)
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
-    option_add("keyboard", "system:keyboard");
+    option_add("keyboard-service", "110");
     option_add("timer", "system:timer/if.0");
     option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
