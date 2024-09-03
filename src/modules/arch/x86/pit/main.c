@@ -35,6 +35,7 @@ static struct base_driver driver;
 static struct timer_interface timerinterface;
 static unsigned short io;
 static unsigned short divisor;
+static unsigned int jiffies;
 
 void pit_wait(unsigned int ms)
 {
@@ -57,7 +58,18 @@ void pit_wait(unsigned int ms)
 static void handleirq(unsigned int irq)
 {
 
-    timer_notifytick(&timerinterface);
+    jiffies++;
+
+    timer_notifytick1(&timerinterface, jiffies);
+
+    if (!(jiffies % 10))
+        timer_notifytick10(&timerinterface, jiffies);
+
+    if (!(jiffies % 100))
+        timer_notifytick100(&timerinterface, jiffies);
+
+    if (!(jiffies % 1000))
+        timer_notifytick1000(&timerinterface, jiffies);
 
 }
 
@@ -66,7 +78,7 @@ static void driver_init(unsigned int id)
 
     divisor = FREQUENCY / 60;
 
-    timer_initinterface(&timerinterface, id, 410);
+    timer_initinterface(&timerinterface, id, 410, 411, 412, 413);
 
 }
 

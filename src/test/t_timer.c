@@ -6,12 +6,10 @@ static unsigned int counter = 1;
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int timerservice = fsp_auth(option_getstring("timer"));
-    unsigned int timerevent = fsp_walk(timerservice, fsp_walk(timerservice, 0, option_getstring("timer")), "event100");
     struct message message;
     char data[MESSAGE_SIZE];
 
-    fsp_link(timerservice, timerevent);
+    channel_send(option_getdecimal("timer-service"), EVENT_LINK);
 
     while (channel_poll(EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
     {
@@ -22,14 +20,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    fsp_unlink(timerservice, timerevent);
+    channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
 
 }
 
 void init(void)
 {
 
-    option_add("timer", "system:timer/if.0");
+    option_add("timer-service", "412");
     channel_bind(EVENT_MAIN, onmain);
 
 }

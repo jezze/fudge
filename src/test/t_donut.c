@@ -26,8 +26,6 @@ static void setmemto(char *buffer, int value, unsigned int length)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int timerservice = fsp_auth(option_getstring("timer"));
-    unsigned int timerevent = fsp_walk(timerservice, fsp_walk(timerservice, 0, option_getstring("timer")), "event1");
     char sequence[2] = {0x1B, 'c'};
     int sA = 1024;
     int cA = 0;
@@ -35,7 +33,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     int cB = 0;
     int f;
 
-    fsp_link(timerservice, timerevent);
+    channel_send(option_getdecimal("timer-service"), EVENT_LINK);
 
     while (channel_process())
     {
@@ -108,14 +106,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    fsp_unlink(timerservice, timerevent);
+    channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
 
 }
 
 void init(void)
 {
 
-    option_add("timer", "system:timer/if.0");
+    option_add("timer-service", "410");
     channel_bind(EVENT_MAIN, onmain);
 
 }
