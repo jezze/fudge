@@ -76,7 +76,7 @@ static void handleirq(unsigned int irq)
 static void driver_init(unsigned int id)
 {
 
-    keyboard_initinterface(&keyboardinterface, id);
+    keyboard_initinterface(&keyboardinterface, id, 110);
 
 }
 

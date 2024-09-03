@@ -193,12 +193,13 @@ void kernel_link(struct list *links, unsigned int target, unsigned int source)
 
 }
 
-
-
-void kernel_link2(unsigned int ichannel, unsigned int target, unsigned int source)
+unsigned int kernel_link2(unsigned int ichannel, unsigned int target, unsigned int source)
 {
 
-    kernel_link(&channels[ichannel].links, target, source);
+    if (ichannel)
+        kernel_link(&channels[ichannel].links, target, source);
+
+    return 1;
 
 }
 
@@ -232,10 +233,13 @@ void kernel_unlink(struct list *links, unsigned int target)
 
 }
 
-void kernel_unlink2(unsigned int ichannel, unsigned int target)
+unsigned int kernel_unlink2(unsigned int ichannel, unsigned int target)
 {
 
-    kernel_unlink(&channels[ichannel].links, target);
+    if (ichannel)
+        kernel_unlink(&channels[ichannel].links, target);
+
+    return 1;
 
 }
 
@@ -311,15 +315,20 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned short index, unsigned int target, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
-    struct channel *channel = &channels[index];
+    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
-    list_init(&channel->links);
+    if (channel)
+    {
 
-    channel->target = target;
-    channel->place = (place) ? place : placetask;
+        list_init(&channel->links);
+
+        channel->target = target;
+        channel->place = (place) ? place : placetask;
+
+    }
 
 }
 
@@ -333,7 +342,8 @@ void kernel_notify(struct list *links, unsigned int event, unsigned int count, v
     for (current = links->head; current; current = current->next)
     {
 
-        struct link *link = current->data;
+        struct linkrow *linkrow = current->data;
+        struct link *link = &linkrow->link;
 
         kernel_place(link->source, link->target, event, count, data);
 

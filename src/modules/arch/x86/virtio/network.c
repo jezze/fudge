@@ -133,7 +133,7 @@ static void setfeatures(void)
 
 }
 
-static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int ethernetinterface_ctrl(unsigned int source)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -145,16 +145,16 @@ static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count,
     address[4] = io_inb(io + 0x18);
     address[5] = io_inb(io + 0x19);
 
-    return buffer_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
+    kernel_place(ethernetinterface.ichannel, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
+
+    return ETHERNET_ADDRSIZE;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id);
-
-    ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
+    ethernet_initinterface(&ethernetinterface, id, 109, ethernetinterface_ctrl, 0);
 
 }
 

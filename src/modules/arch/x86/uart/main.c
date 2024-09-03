@@ -122,11 +122,11 @@ static void handleirq(unsigned int irq)
 
     unsigned char data = uart_get();
 
-    console_notifydata(100, &consoleinterface, data);
+    console_notifydata(&consoleinterface, data);
 
 }
 
-static unsigned int send(void *buffer, unsigned int count)
+static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -146,35 +146,10 @@ static unsigned int send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_DATA:
-        return send(data, count);
-
-    case EVENT_LINK:
-        kernel_link2(100, source, 100);
-
-        return 1;
-
-    case EVENT_UNLINK:
-        kernel_unlink2(100, source);
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id);
+    console_initinterface(&consoleinterface, id, 100, consoleinterface_send);
 
 }
 
@@ -227,7 +202,6 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "uart", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
-    kernel_announce(100, 0, place);
 
 }
 

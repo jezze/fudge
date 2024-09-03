@@ -3,6 +3,7 @@
 #include <abi.h>
 #include <socket.h>
 
+static struct ctrl_clocksettings settings;
 static struct socket router;
 static struct socket local;
 static struct socket remotes[64];
@@ -47,7 +48,7 @@ static void sendresponse(unsigned int source, struct socket *remote)
 
     }
 
-    socket_send_tcp(108, &local, remote, &router, count, buffer);
+    socket_send_tcp(option_getdecimal("ethernet-service"), &local, remote, &router, count, buffer);
 
 }
 
@@ -80,27 +81,10 @@ static void handlehttppacket(unsigned int source, struct socket *remote)
 
 }
 
-static void seed(struct mtwist_state *state)
+static void onclockinfo(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(option_getstring("clock"));
-
-    if (service)
-    {
-
-        unsigned int id = fsp_walk(service, fsp_walk(service, 0, option_getstring("clock")), "ctrl");
-
-        if (id)
-        {
-
-            struct ctrl_clocksettings settings;
-
-            fsp_read_all(service, id, &settings, sizeof (struct ctrl_clocksettings), 0);
-            mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
-
-        }
-
-    }
+    buffer_copy(&settings, mdata, msize);
 
 }
 
@@ -114,14 +98,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    seed(&state);
+    channel_send(option_getdecimal("clock-service"), EVENT_CTRL);
+    channel_wait(EVENT_CLOCKINFO);
+    mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
     socket_resolvelocal(ethernetservice, ethernetaddr, &local);
     fsp_link(ethernetservice, ethernetdata);
-    socket_resolveremote(108, &local, &router);
-    socket_listen_tcp(108, &local, remotes, 64, &router);
+    socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
+    socket_listen_tcp(option_getdecimal("ethernet-service"), &local, remotes, 64, &router);
 
     while (channel_poll(EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
@@ -133,7 +119,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (remote)
         {
 
-            socket_handle_arp(108, &local, remote, message_datasize(&message), data);
+            socket_handle_arp(option_getdecimal("ethernet-service"), &local, remote, message_datasize(&message), data);
 
         }
 
@@ -143,7 +129,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             unsigned char buffer[4096];
-            unsigned int count = socket_handle_tcp(108, &local, remote, &router, message_datasize(&message), data, 4096, buffer);
+            unsigned int count = socket_handle_tcp(option_getdecimal("ethernet-service"), &local, remote, &router, message_datasize(&message), data, 4096, buffer);
 
             if (count)
             {
@@ -173,11 +159,12 @@ void init(void)
     for (i = 0; i < 64; i++)
         socket_init(&remotes[i]);
 
-    option_add("clock", "system:clock/if.0");
-    option_add("ethernet", "system:ethernet/if.0");
+    option_add("clock-service", "220");
+    option_add("ethernet-service", "108");
     option_add("local-address", "10.0.5.1");
     option_add("local-port", "80");
     option_add("router-address", "10.0.5.80");
+    channel_bind(EVENT_CLOCKINFO, onclockinfo);
     channel_bind(EVENT_MAIN, onmain);
 
 }

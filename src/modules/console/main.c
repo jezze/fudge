@@ -3,17 +3,37 @@
 #include <modules/system/system.h>
 #include "console.h"
 
-static struct system_node root;
-static struct system_node event;
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
 
-void console_notifydata(unsigned int ichannel, struct console_interface *interface, unsigned char data)
+    struct console_interface *interface = (struct console_interface *)id;
+
+    switch (event)
+    {
+
+    case EVENT_DATA:
+        return interface->send(data, count);
+
+    case EVENT_LINK:
+        return kernel_link2(interface->ichannel, source, interface->ichannel);
+
+    case EVENT_UNLINK:
+        return kernel_unlink2(interface->ichannel, source);
+
+    }
+
+    return 0;
+
+}
+
+void console_notifydata(struct console_interface *interface, unsigned char data)
 {
 
     struct event_consoledata consoledata;
 
     consoledata.data = data;
 
-    kernel_notify2(ichannel, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify2(interface->ichannel, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
@@ -21,10 +41,7 @@ void console_registerinterface(struct console_interface *interface)
 {
 
     resource_register(&interface->resource);
-    system_addchild(&interface->root, &interface->ctrl);
-    system_addchild(&interface->root, &interface->data);
-    system_addchild(&interface->root, &interface->event);
-    system_addchild(&root, &interface->root);
+    kernel_announce(interface->ichannel, (unsigned int)interface, place);
 
 }
 
@@ -32,47 +49,17 @@ void console_unregisterinterface(struct console_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    system_removechild(&interface->root, &interface->ctrl);
-    system_removechild(&interface->root, &interface->data);
-    system_removechild(&interface->root, &interface->event);
-    system_removechild(&root, &interface->root);
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int id)
+void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
-    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
-    system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
-    system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;
-
-}
-
-void module_init(void)
-{
-
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "console");
-    system_initnode(&event, SYSTEM_NODETYPE_NORMAL, "event");
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-    system_addchild(&root, &event);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
-    system_removechild(&root, &event);
+    interface->ichannel = ichannel;
+    interface->send = send;
 
 }
 

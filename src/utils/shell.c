@@ -488,11 +488,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     printprompt();
-    channel_send(100, EVENT_LINK);
+    channel_send(option_getdecimal("tty-service"), EVENT_LINK);
+    channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
 
     while (channel_process());
 
-    channel_send(100, EVENT_UNLINK);
+    channel_send(option_getdecimal("tty-service"), EVENT_UNLINK);
+    channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
 
 }
 
@@ -501,9 +503,9 @@ void init(void)
 
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
-    option_add("input", "system:console/if.0/event");
     option_add("slang", "initrd:bin/slang");
-    option_add("tty-service", "100");
+    option_add("tty-service", "");
+    option_add("keyboard-service", "");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

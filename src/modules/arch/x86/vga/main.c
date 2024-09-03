@@ -41,7 +41,7 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int send(void *buffer, unsigned int count)
+static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 {
 
     unsigned int total = videointerface.width * videointerface.height;
@@ -217,25 +217,10 @@ static unsigned int videointerface_writecolormap(void *buffer, unsigned int coun
 
 }
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_DATA:
-        return send(data, count);
-
-    }
-
-    return 0;
-
-}
-
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id);
+    console_initinterface(&consoleinterface, id, 101, consoleinterface_send);
     video_initinterface(&videointerface, id);
 
     videointerface.width = 80;
@@ -286,7 +271,6 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "vga", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
-    kernel_announce(101, 0, place);
 
 }
 

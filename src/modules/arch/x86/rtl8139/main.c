@@ -237,6 +237,24 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int ethernetinterface_ctrl(unsigned int source)
+{
+
+    unsigned char address[ETHERNET_ADDRSIZE];
+
+    address[0] = io_inb(io + REG_IDR0);
+    address[1] = io_inb(io + REG_IDR1);
+    address[2] = io_inb(io + REG_IDR2);
+    address[3] = io_inb(io + REG_IDR3);
+    address[4] = io_inb(io + REG_IDR4);
+    address[5] = io_inb(io + REG_IDR5);
+
+    kernel_place(ethernetinterface.ichannel, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
+
+    return ETHERNET_ADDRSIZE;
+
+}
+
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
@@ -278,45 +296,10 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int ethernetinterface_readaddr(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    unsigned char address[ETHERNET_ADDRSIZE];
-
-    address[0] = io_inb(io + REG_IDR0);
-    address[1] = io_inb(io + REG_IDR1);
-    address[2] = io_inb(io + REG_IDR2);
-    address[3] = io_inb(io + REG_IDR3);
-    address[4] = io_inb(io + REG_IDR4);
-    address[5] = io_inb(io + REG_IDR5);
-
-    return buffer_read(buffer, count, address, ETHERNET_ADDRSIZE, offset);
-
-}
-
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_DATA:
-        ethernetinterface_send(data, count);
-
-        return count;
-
-    }
-
-    return 0;
-
-}
-
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id);
-
-    ethernetinterface.addr.operations.read = ethernetinterface_readaddr;
+    ethernet_initinterface(&ethernetinterface, id, 108, ethernetinterface_ctrl, ethernetinterface_send);
 
 }
 
@@ -369,7 +352,6 @@ void module_init(void)
 {
 
     base_initdriver(&driver, "rtl8139", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
-    kernel_announce(108, 0, place);
 
 }
 

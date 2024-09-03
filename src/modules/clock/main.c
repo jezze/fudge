@@ -3,14 +3,28 @@
 #include <modules/system/system.h>
 #include "clock.h"
 
-static struct system_node root;
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    struct clock_interface *interface = (struct clock_interface *)id;
+
+    switch (event)
+    {
+
+    case EVENT_CTRL:
+        return interface->ctrl(source);
+
+    }
+
+    return 0;
+
+}
 
 void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
-    system_addchild(&interface->root, &interface->ctrl);
-    system_addchild(&root, &interface->root);
+    kernel_announce(interface->ichannel, (unsigned int)interface, place);
 
 }
 
@@ -18,40 +32,17 @@ void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    system_removechild(&interface->root, &interface->ctrl);
-    system_removechild(&root, &interface->root);
 
 }
 
-void clock_initinterface(struct clock_interface *interface, unsigned int id)
+void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*ctrl)(unsigned int source))
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    system_initnode(&interface->root, SYSTEM_NODETYPE_MULTIGROUP, "if");
-    system_initnode(&interface->ctrl, SYSTEM_NODETYPE_NORMAL, "ctrl");
 
     interface->id = id;
-
-}
-
-void module_init(void)
-{
-
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "clock");
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
+    interface->ichannel = ichannel;
+    interface->ctrl = ctrl;
 
 }
 

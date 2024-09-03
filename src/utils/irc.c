@@ -3,6 +3,7 @@
 #include <abi.h>
 #include <socket.h>
 
+static struct ctrl_clocksettings settings;
 static struct socket local;
 static struct socket remote;
 static struct socket router;
@@ -24,7 +25,7 @@ static void interpret(void *buffer, unsigned int count)
     if (data[0] == '/')
     {
 
-        socket_send_tcp(108, &local, &remote, &router, count - 1, data + 1);
+        socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, count - 1, data + 1);
 
     }
 
@@ -33,7 +34,7 @@ static void interpret(void *buffer, unsigned int count)
 
         char outputdata[4096];
 
-        socket_send_tcp(108, &local, &remote, &router, cstring_write_fmt3(outputdata, 4096, "PRIVMSG %s :%w", 0, option_getstring("channel"), buffer, &count), outputdata);
+        socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, cstring_write_fmt3(outputdata, 4096, "PRIVMSG %s :%w", 0, option_getstring("channel"), buffer, &count), outputdata);
 
     }
 
@@ -84,27 +85,10 @@ static void dnsresolve(struct socket *socket, char *domain)
 
 }
 
-static void seed(struct mtwist_state *state)
+static void onclockinfo(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(option_getstring("clock"));
-
-    if (service)
-    {
-
-        unsigned int id = fsp_walk(service, fsp_walk(service, 0, option_getstring("clock")), "ctrl");
-
-        if (id)
-        {
-
-            struct ctrl_clocksettings settings;
-
-            fsp_read_all(service, id, &settings, sizeof (struct ctrl_clocksettings), 0);
-            mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
-
-        }
-
-    }
+    buffer_copy(&settings, mdata, msize);
 
 }
 
@@ -168,7 +152,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int count;
     struct mtwist_state state;
 
-    seed(&state);
+    channel_send(option_getdecimal("clock-service"), EVENT_CTRL);
+    channel_wait(EVENT_CLOCKINFO);
+    mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));
@@ -180,11 +166,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         dnsresolve(&remote, option_getstring("domain"));
 
     fsp_link(ethernetservice, ethernetdata);
-    socket_resolveremote(108, &local, &router);
-    socket_connect_tcp(108, &local, &remote, &router);
-    socket_send_tcp(108, &local, &remote, &router, buildrequest(4096, buffer), buffer);
+    socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
+    socket_connect_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router);
+    socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
-    while ((count = socket_receive(108, &local, &remote, 1, &router, buffer, 4096)))
+    while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
         channel_send_buffer(source, EVENT_DATA, count, buffer);
 
     fsp_unlink(ethernetservice, ethernetdata);
@@ -198,8 +184,8 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("clock", "system:clock/if.0");
-    option_add("ethernet", "system:ethernet/if.0");
+    option_add("clock-service", "220");
+    option_add("ethernet-service", "108");
     option_add("local-address", "10.0.5.1");
     option_add("remote-address", "");
     option_add("remote-port", "6667");
@@ -209,6 +195,7 @@ void init(void)
     option_add("nick", "");
     option_add("realname", "Anonymous User");
     option_add("dns", "initrd:bin/dns");
+    channel_bind(EVENT_CLOCKINFO, onclockinfo);
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
 

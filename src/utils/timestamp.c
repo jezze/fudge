@@ -1,38 +1,34 @@
 #include <fudge.h>
 #include <abi.h>
 
+struct ctrl_clocksettings settings;
+
+static void onclockinfo(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    buffer_copy(&settings, mdata, msize);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(option_getstring("clock"));
+    unsigned int timestamp;
 
-    if (service)
-    {
+    channel_send(option_getdecimal("clock-service"), EVENT_CTRL);
+    channel_wait(EVENT_CLOCKINFO);
 
-        unsigned int id = fsp_walk(service, fsp_walk(service, 0, option_getstring("clock")), "ctrl");
+    timestamp = time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds);
 
-        if (id)
-        {
-
-            struct ctrl_clocksettings settings;
-            unsigned int timestamp;
-
-            fsp_read_all(service, id, &settings, sizeof (struct ctrl_clocksettings), 0);
-
-            timestamp = time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds);
-
-            channel_send_fmt1(source, EVENT_DATA, "%u\n", &timestamp);
-
-        }
-
-    }
+    channel_send_fmt1(source, EVENT_DATA, "%u\n", &timestamp);
 
 }
 
 void init(void)
 {
 
-    option_add("clock", "system:clock/if.0");
+    option_add("clock-service", "220");
+    channel_bind(EVENT_CLOCKINFO, onclockinfo);
     channel_bind(EVENT_MAIN, onmain);
 
 }

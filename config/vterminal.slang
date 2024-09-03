@@ -1,1 +1,1 @@
-initrd:bin/shell ?input system:keyboard/if.0/event ?tty-service 101
+initrd:bin/shell ?tty-service 101

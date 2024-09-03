@@ -1,37 +1,24 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void seed(struct mtwist_state *state)
+static struct ctrl_clocksettings settings;
+
+static void onclockinfo(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(option_getstring("clock"));
-
-    if (service)
-    {
-
-        unsigned int id = fsp_walk(service, fsp_walk(service, 0, option_getstring("clock")), "ctrl");
-
-        if (id)
-        {
-
-            struct ctrl_clocksettings settings;
-
-            fsp_read_all(service, id, &settings, sizeof (struct ctrl_clocksettings), 0);
-            mtwist_seed1(state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
-
-        }
-
-    }
+    buffer_copy(&settings, mdata, msize);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct mtwist_state state;
+    static struct mtwist_state state;
     unsigned int value;
 
-    seed(&state);
+    channel_send(option_getdecimal("clock-service"), EVENT_CTRL);
+    channel_wait(EVENT_CLOCKINFO);
+    mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
 
     value = mtwist_rand(&state);
 
@@ -42,7 +29,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("clock", "system:clock/if.0");
+    option_add("clock-service", "220");
+    channel_bind(EVENT_CLOCKINFO, onclockinfo);
     channel_bind(EVENT_MAIN, onmain);
 
 }

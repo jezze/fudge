@@ -649,16 +649,12 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int keyboardservice = fsp_auth(option_getstring("keyboard"));
-    unsigned int keyboardevent = fsp_walk(keyboardservice, fsp_walk(keyboardservice, 0, option_getstring("keyboard")), "event");
-    unsigned int mouseservice = fsp_auth(option_getstring("mouse"));
-    unsigned int mouseevent = fsp_walk(mouseservice, fsp_walk(mouseservice, 0, option_getstring("mouse")), "event");
     unsigned int videoservice = fsp_auth(option_getstring("video"));
     unsigned int videoevent = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "event");
 
     call_announce(option_getdecimal("listen"));
-    fsp_link(keyboardservice, keyboardevent);
-    fsp_link(mouseservice, mouseevent);
+    channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
+    channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
     fsp_link(videoservice, videoevent);
     setupvideo(source);
 
@@ -683,8 +679,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     }
 
     fsp_unlink(videoservice, videoevent);
-    fsp_unlink(mouseservice, mouseevent);
-    fsp_unlink(keyboardservice, keyboardevent);
+    channel_send(option_getdecimal("mouse-service"), EVENT_UNLINK);
+    channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
 
 }
 
@@ -957,8 +953,8 @@ void init(void)
     option_add("height", "1080");
     option_add("bpp", "4");
     option_add("listen", "12345");
-    option_add("keyboard", "system:keyboard");
-    option_add("mouse", "system:mouse");
+    option_add("keyboard-service", "");
+    option_add("mouse-service", "");
     option_add("video", "system:video/if.0");
     option_add("wshell", "initrd:bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);

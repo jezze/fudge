@@ -285,7 +285,17 @@ unsigned int channel_wait(unsigned int event)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    return channel_poll(event, &message, MESSAGE_SIZE, data);
+    while (channel_pick(&message, MESSAGE_SIZE, data))
+    {
+
+        channel_dispatch(&message, data);
+
+        if (message.event == event)
+            return message.event;
+
+    }
+
+    return 0;
 
 }
 

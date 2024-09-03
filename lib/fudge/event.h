@@ -23,6 +23,8 @@
 #define EVENT_VIDEOMODE                 0x18
 #define EVENT_BLOCKREQUEST              0x19
 #define EVENT_BLOCKRESPONSE             0x1A
+#define EVENT_CLOCKINFO                 0x1B
+#define EVENT_ETHERNETINFO              0x1C
 #define EVENT_WMMAP                     0x20
 #define EVENT_WMUNMAP                   0x21
 #define EVENT_WMGRAB                    0x22
@@ -58,6 +60,7 @@
 #define EVENT_MAPRESPONSE               0x4F
 #define EVENT_LINK                      0x50
 #define EVENT_UNLINK                    0x51
+#define EVENT_CTRL                      0x52
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 

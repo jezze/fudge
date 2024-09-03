@@ -411,15 +411,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_resolvelocal(ethernetservice, ethernetaddr, &local);
         fsp_link(ethernetservice, ethernetdata);
         fsp_link(blockservice, blockdata);
-        socket_resolveremote(108, &local, &router);
-        socket_listen_tcp(108, &local, &remote, 1, &router);
+        socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
+        socket_listen_tcp(option_getdecimal("ethernet-service"), &local, &remote, 1, &router);
 
-        while ((count = socket_receive(108, &local, &remote, 1, &router, buffer, 4096)))
+        while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
         {
 
             char reply[MESSAGE_SIZE];
 
-            socket_send_tcp(108, &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
+            socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
 
         }
 
@@ -434,7 +434,7 @@ void init(void)
 {
 
     option_add("listen", "5588");
-    option_add("ethernet", "system:ethernet/if.0");
+    option_add("ethernet-service", "108");
     option_add("block", "system:block/if.0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");

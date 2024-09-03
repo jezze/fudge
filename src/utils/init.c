@@ -154,13 +154,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel = fsp_spawn("initrd:bin/shell");
     channel_send_fmt0(channel, EVENT_OPTION, "pwd\\0initrd:\\0");
-    channel_send_fmt0(channel, EVENT_OPTION, "input\\0system:console/if.0/event\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "tty-service\\0100\\0");
     channel_send(channel, EVENT_MAIN);
 
     channel = fsp_spawn("initrd:bin/wm");
     channel_send_fmt0(channel, EVENT_OPTION, "pwd\\0initrd:\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "listen\\012345\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "keyboard-service\\0110\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "mouse-service\\0124\\0");
     channel_send(channel, EVENT_MAIN);
 
 }

@@ -43,7 +43,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int clockinterface_readctrl(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int clockinterface_ctrl(unsigned int source)
 {
 
     struct ctrl_clocksettings settings;
@@ -56,16 +56,16 @@ static unsigned int clockinterface_readctrl(void *buffer, unsigned int count, un
     settings.month = read(REG_COMMAND_MONTH);
     settings.year = 2000 + read(REG_COMMAND_YEAR);
 
-    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_clocksettings), offset);
+    kernel_place(clockinterface.ichannel, source, EVENT_CLOCKINFO, sizeof (struct ctrl_clocksettings), &settings);
+
+    return sizeof (struct ctrl_clocksettings);
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, id);
-
-    clockinterface.ctrl.operations.read = clockinterface_readctrl;
+    clock_initinterface(&clockinterface, id, 220, clockinterface_ctrl);
 
 }
 
