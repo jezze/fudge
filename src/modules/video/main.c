@@ -43,7 +43,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id)
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int ichannel)
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
@@ -54,6 +54,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id)
     system_initnode(&interface->event, SYSTEM_NODETYPE_NORMAL, "event");
 
     interface->id = id;
+    interface->ichannel = ichannel;
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;

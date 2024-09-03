@@ -104,7 +104,7 @@ static unsigned int videointerface_writecolormap(void *buffer, unsigned int coun
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id);
+    video_initinterface(&videointerface, id, 400);
 
     videointerface.ctrl.operations.read = videointerface_readctrl;
     videointerface.ctrl.operations.write = videointerface_writectrl;

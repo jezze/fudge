@@ -221,7 +221,7 @@ static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id, 101, consoleinterface_send);
-    video_initinterface(&videointerface, id);
+    video_initinterface(&videointerface, id, 404);
 
     videointerface.width = 80;
     videointerface.height = 25;

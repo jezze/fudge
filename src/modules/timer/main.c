@@ -52,7 +52,7 @@ void timer_unregisterinterface(struct timer_interface *interface)
 
 }
 
-void timer_initinterface(struct timer_interface *interface, unsigned int id)
+void timer_initinterface(struct timer_interface *interface, unsigned int id, unsigned int ichannel)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
@@ -64,6 +64,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     system_initnode(&interface->event1000, SYSTEM_NODETYPE_NORMAL, "event1000");
 
     interface->id = id;
+    interface->ichannel = ichannel;
 
 }
 

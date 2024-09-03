@@ -171,7 +171,7 @@ static unsigned int videointerface_writedata(void *buffer, unsigned int count, u
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id);
+    video_initinterface(&videointerface, id, 403);
 
     videointerface.width = 80;
     videointerface.height = 25;

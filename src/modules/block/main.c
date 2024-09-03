@@ -30,7 +30,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id)
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int ichannel)
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
@@ -38,6 +38,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id)
     system_initnode(&interface->data, SYSTEM_NODETYPE_NORMAL, "data");
 
     interface->id = id;
+    interface->ichannel = ichannel;
 
 }
 

@@ -111,7 +111,7 @@ static void handleirq(unsigned int irq)
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id);
+    video_initinterface(&videointerface, id, 402);
 
 }
 

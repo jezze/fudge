@@ -66,7 +66,7 @@ static void driver_init(unsigned int id)
 
     divisor = FREQUENCY / 60;
 
-    timer_initinterface(&timerinterface, id);
+    timer_initinterface(&timerinterface, id, 410);
 
 }
 

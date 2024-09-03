@@ -8,6 +8,7 @@ struct video_interface
     struct system_node colormap;
     struct system_node event;
     unsigned int id;
+    unsigned int ichannel;
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
@@ -17,4 +18,4 @@ struct video_interface
 void video_notifymode(struct video_interface *interface, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp);
 void video_registerinterface(struct video_interface *interface);
 void video_unregisterinterface(struct video_interface *interface);
-void video_initinterface(struct video_interface *interface, unsigned int id);
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int ichannel);

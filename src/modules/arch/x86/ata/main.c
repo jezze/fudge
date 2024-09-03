@@ -38,7 +38,7 @@ static unsigned int blockinterface_writedata(void *buffer, unsigned int count, u
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id);
+    block_initinterface(&blockinterface, id, 231);
 
     blockinterface.data.operations.write = blockinterface_writedata;
 

@@ -9,10 +9,11 @@ struct timer_interface
     struct system_node event100;
     struct system_node event1000;
     unsigned int id;
+    unsigned int ichannel;
 
 };
 
 void timer_notifytick(struct timer_interface *interface);
 void timer_registerinterface(struct timer_interface *interface);
 void timer_unregisterinterface(struct timer_interface *interface);
-void timer_initinterface(struct timer_interface *interface, unsigned int id);
+void timer_initinterface(struct timer_interface *interface, unsigned int id, unsigned int ichannel);
