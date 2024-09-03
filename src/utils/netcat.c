@@ -65,7 +65,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
     unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
-    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     char buffer[MESSAGE_SIZE];
     unsigned int count;
     struct mtwist_state state;
@@ -77,14 +76,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcps(&local, option_getstring("local-port"), mtwist_rand(&state), mtwist_rand(&state));
     socket_resolvelocal(ethernetservice, ethernetaddr, &local);
-    fsp_link(ethernetservice, ethernetdata);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
     socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
     socket_listen_tcp(option_getdecimal("ethernet-service"), &local, remotes, 64, &router);
 
     while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
         channel_send_buffer(source, EVENT_DATA, count, buffer);
 
-    fsp_unlink(ethernetservice, ethernetdata);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

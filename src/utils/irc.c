@@ -147,7 +147,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
     unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
-    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
     char buffer[4096];
     unsigned int count;
     struct mtwist_state state;
@@ -165,7 +164,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (cstring_length(option_getstring("domain")))
         dnsresolve(&remote, option_getstring("domain"));
 
-    fsp_link(ethernetservice, ethernetdata);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
     socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
     socket_connect_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router);
     socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, buildrequest(4096, buffer), buffer);
@@ -173,7 +172,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
         channel_send_buffer(source, EVENT_DATA, count, buffer);
 
-    fsp_unlink(ethernetservice, ethernetdata);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

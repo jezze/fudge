@@ -152,15 +152,12 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
-    unsigned int ethernetdata = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "data");
-
     channel_route(EVENT_DATA, EVENT_REDIRECT_TARGET, source, 0);
-    fsp_link(ethernetservice, ethernetdata);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
 
     while (channel_process());
 
-    fsp_unlink(ethernetservice, ethernetdata);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 
