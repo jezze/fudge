@@ -12,45 +12,31 @@ static char *levels[5] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(option_getstring("klog"));
+    struct message message;
+    char data[MESSAGE_SIZE];
 
-    if (service)
+    channel_send(option_getdecimal("log-service"), EVENT_LINK);
+
+    while (channel_poll(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
     {
 
-        unsigned int id = fsp_walk(service, 0, option_getstring("klog"));
+        struct event_loginfo *loginfo = (void *)data;
+        char *description = (char *)(loginfo + 1);
+        unsigned int count = loginfo->count - sizeof (struct event_loginfo);
 
-        if (id)
-        {
-
-            struct message message;
-            char data[MESSAGE_SIZE];
-
-            fsp_link(service, id);
-
-            while (channel_poll(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
-            {
-
-                struct event_loginfo *loginfo = (void *)data;
-                char *description = (char *)(loginfo + 1);
-                unsigned int count = loginfo->count - sizeof (struct event_loginfo);
-
-                if (option_getdecimal("level") >= loginfo->level)
-                    channel_send_fmt3(source, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
-
-            }
-
-            fsp_unlink(service, id);
-
-        }
+        if (option_getdecimal("level") >= loginfo->level)
+            channel_send_fmt3(source, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
 
     }
+
+    channel_send(option_getdecimal("log-service"), EVENT_UNLINK);
 
 }
 
 void init(void)
 {
 
-    option_add("klog", "system:log/messages");
+    option_add("log-service", "99");
     option_add("level", "4");
     channel_bind(EVENT_MAIN, onmain);
 

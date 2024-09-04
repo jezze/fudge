@@ -3,8 +3,6 @@
 #include <modules/system/system.h>
 
 static struct debug_interface debuginterface;
-static struct system_node root;
-static struct system_node messages;
 
 static void debuginterface_write(unsigned int level, unsigned int count, char *string, char *file, unsigned int line)
 {
@@ -19,16 +17,14 @@ static void debuginterface_write(unsigned int level, unsigned int count, char *s
     else
         message.loginfo.count += cstring_write_fmt2(message.data, MESSAGE_SIZE, "%w", message.loginfo.count, string, &count);
 
-    kernel_notify(&messages.links, EVENT_LOGINFO, message.loginfo.count, &message);
+    kernel_notify2(debuginterface.ichannel, EVENT_LOGINFO, message.loginfo.count, &message);
 
 }
 
 void module_init(void)
 {
 
-    debug_initinterface(&debuginterface, debuginterface_write);
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "log");
-    system_initnode(&messages, SYSTEM_NODETYPE_NORMAL, "messages");
+    debug_initinterface(&debuginterface, 99, debuginterface_write);
 
 }
 
@@ -36,8 +32,6 @@ void module_register(void)
 {
 
     debug_registerinterface(&debuginterface);
-    system_registernode(&root);
-    system_addchild(&root, &messages);
 
 }
 
@@ -45,8 +39,6 @@ void module_unregister(void)
 {
 
     debug_unregisterinterface(&debuginterface);
-    system_unregisternode(&root);
-    system_removechild(&root, &messages);
 
 }
 
