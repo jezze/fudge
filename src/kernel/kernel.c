@@ -173,71 +173,71 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-static void _kernel_link(struct list *links, unsigned int target, unsigned int source)
-{
-
-    struct list_item *linkitem = list_picktail(&freelinks);
-
-    if (linkitem)
-    {
-
-        struct linkrow *linkrow = linkitem->data;
-        struct link *link = &linkrow->link;
-
-        link->source = source;
-        link->target = target;
-
-        list_add(links, linkitem);
-
-    }
-
-}
-
 unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned int source)
 {
 
-    if (ichannel)
-        _kernel_link(&channels[ichannel].links, target, source);
+    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
-    return 1;
-
-}
-
-static void _kernel_unlink(struct list *links, unsigned int target)
-{
-
-    struct list_item *current;
-    struct list_item *next;
-
-    spinlock_acquire(&links->spinlock);
-
-    for (current = links->head; current; current = next)
+    if (channel)
     {
 
-        struct linkrow *linkrow = current->data;
-        struct link *link = &linkrow->link;
+        struct list_item *linkitem = list_picktail(&freelinks);
 
-        next = current->next;
-
-        if (link->target == target)
+        if (linkitem)
         {
 
-            list_remove_unsafe(links, current);
-            list_add(&freelinks, current);
+            struct linkrow *linkrow = linkitem->data;
+            struct link *link = &linkrow->link;
+
+            link->source = source;
+            link->target = target;
+
+            list_add(&channel->links, linkitem);
+
+            return 1;
 
         }
 
     }
 
-    spinlock_release(&links->spinlock);
+    return 0;
 
 }
 
 unsigned int kernel_unlink(unsigned int ichannel, unsigned int target)
 {
 
-    if (ichannel)
-        _kernel_unlink(&channels[ichannel].links, target);
+    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+
+    if (channel)
+    {
+
+        struct list_item *current;
+        struct list_item *next;
+
+        spinlock_acquire(&channel->links.spinlock);
+
+        for (current = channel->links.head; current; current = next)
+        {
+
+            struct linkrow *linkrow = current->data;
+            struct link *link = &linkrow->link;
+
+            next = current->next;
+
+            if (link->target == target)
+            {
+
+                list_remove_unsafe(&channel->links, current);
+                list_add(&freelinks, current);
+
+            }
+
+        }
+
+        spinlock_release(&channel->links.spinlock);
+
+    }
 
     return 1;
 
@@ -332,33 +332,31 @@ void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*
 
 }
 
-static void _kernel_notify(struct list *links, unsigned int event, unsigned int count, void *data)
-{
-
-    struct list_item *current;
-
-    spinlock_acquire(&links->spinlock);
-
-    for (current = links->head; current; current = current->next)
-    {
-
-        struct linkrow *linkrow = current->data;
-        struct link *link = &linkrow->link;
-
-        kernel_place(link->source, link->target, event, count, data);
-
-    }
-
-    spinlock_release(&links->spinlock);
-
-}
-
 void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
-    _kernel_notify(&channel->links, event, count, data);
+    if (channel)
+    {
+
+        struct list_item *current;
+
+        spinlock_acquire(&channel->links.spinlock);
+
+        for (current = channel->links.head; current; current = current->next)
+        {
+
+            struct linkrow *linkrow = current->data;
+            struct link *link = &linkrow->link;
+
+            kernel_place(link->source, link->target, event, count, data);
+
+        }
+
+        spinlock_release(&channel->links.spinlock);
+
+    }
 
 }
 
