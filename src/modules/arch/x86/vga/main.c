@@ -95,41 +95,6 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 
 }
 
-static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
-{
-
-    if (width == 80)
-    {
-
-        if (videointerface.width == 320)
-            vga_restore();
-
-        videointerface.width = 80;
-        videointerface.height = 25;
-        videointerface.bpp = 2;
-
-        vga_settext();
-
-    }
-
-    else
-    {
-
-        if (videointerface.width == 80)
-            vga_save();
-
-        videointerface.width = 320;
-        videointerface.height = 200;
-        videointerface.bpp = 1;
-
-        vga_setgraphic();
-
-    }
-
-    video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
-
-}
-
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -140,17 +105,6 @@ static unsigned int videointerface_readctrl(void *buffer, unsigned int count, un
     settings.bpp = videointerface.bpp;
 
     return buffer_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
-
-}
-
-static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct ctrl_videosettings *settings = buffer;
-
-    setmode(settings->width, settings->height, settings->bpp);
-
-    return count;
 
 }
 
@@ -217,11 +171,48 @@ static unsigned int videointerface_writecolormap(void *buffer, unsigned int coun
 
 }
 
+static unsigned int videointerface_setmode(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    if (width == 80)
+    {
+
+        if (videointerface.width == 320)
+            vga_restore();
+
+        videointerface.width = 80;
+        videointerface.height = 25;
+        videointerface.bpp = 2;
+
+        vga_settext();
+
+    }
+
+    else
+    {
+
+        if (videointerface.width == 80)
+            vga_save();
+
+        videointerface.width = 320;
+        videointerface.height = 200;
+        videointerface.bpp = 1;
+
+        vga_setgraphic();
+
+    }
+
+    video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
+
+    return 1;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id, 101, consoleinterface_send);
-    video_initinterface(&videointerface, id, 404);
+    video_initinterface(&videointerface, id, 404, videointerface_setmode);
 
     videointerface.width = 80;
     videointerface.height = 25;
@@ -229,9 +220,7 @@ static void driver_init(unsigned int id)
 
     clear(0);
 
-    videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.ctrl.operations.read = videointerface_readctrl;
-    videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
     videointerface.colormap.operations.write = videointerface_writecolormap;

@@ -51,35 +51,6 @@ static unsigned int videointerface_readctrl(void *buffer, unsigned int count, un
 
 }
 
-static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
-{
-
-    videointerface.width = width;
-    videointerface.height = height;
-    videointerface.bpp = bpp;
-
-    setreg(REG_COMMAND_ENABLE, 0x00);
-    setreg(REG_COMMAND_XRES, videointerface.width);
-    setreg(REG_COMMAND_YRES, videointerface.height);
-    setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
-    setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
-    arch_mapvideo(10, framebuffer, framebuffer, 0x00400000);
-    arch_mapvideo(11, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
-    video_notifymode(&videointerface, (void *)framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
-
-}
-
-static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct ctrl_videosettings *settings = buffer;
-
-    setmode(settings->width, settings->height, settings->bpp);
-
-    return count;
-
-}
-
 static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -101,13 +72,33 @@ static unsigned int videointerface_writecolormap(void *buffer, unsigned int coun
 
 }
 
+static unsigned int videointerface_setmode(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    videointerface.width = width;
+    videointerface.height = height;
+    videointerface.bpp = bpp;
+
+    setreg(REG_COMMAND_ENABLE, 0x00);
+    setreg(REG_COMMAND_XRES, videointerface.width);
+    setreg(REG_COMMAND_YRES, videointerface.height);
+    setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
+    setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
+    arch_mapvideo(10, framebuffer, framebuffer, 0x00400000);
+    arch_mapvideo(11, framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
+
+    video_notifymode(&videointerface, (void *)framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
+
+    return 1;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 400);
+    video_initinterface(&videointerface, id, 400, videointerface_setmode);
 
     videointerface.ctrl.operations.read = videointerface_readctrl;
-    videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
     videointerface.colormap.operations.write = videointerface_writecolormap;

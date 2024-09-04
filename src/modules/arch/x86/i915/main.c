@@ -103,6 +103,13 @@ static void setpipemode(unsigned int width, unsigned int height)
 
 }
 
+static unsigned int videointerface_setmode(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    return 0;
+
+}
+
 static void handleirq(unsigned int irq)
 {
 
@@ -111,7 +118,7 @@ static void handleirq(unsigned int irq)
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 402);
+    video_initinterface(&videointerface, id, 402, videointerface_setmode);
 
 }
 

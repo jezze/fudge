@@ -39,7 +39,6 @@ static void setupvideo(unsigned int source)
 
     unsigned int videoservice = fsp_auth(option_getstring("video"));
     unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
-    unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
     struct ctrl_videosettings settings;
     unsigned char black[768];
 
@@ -49,11 +48,8 @@ static void setupvideo(unsigned int source)
 
     buffer_clear(black, 768);
     fsp_write(videoservice, videocolormap, black, 768, 0);
-    fsp_write(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
-    render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
-    render_cache();
-    render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
-    render_undamage();
+    channel_send_buffer(option_getdecimal("video-service"), EVENT_CONF, sizeof (struct ctrl_videosettings), &settings);
+    channel_wait(EVENT_VIDEOMODE);
 
 }
 
@@ -649,13 +645,10 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int videoservice = fsp_auth(option_getstring("video"));
-    unsigned int videoevent = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "event");
-
     call_announce(option_getdecimal("listen"));
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
-    fsp_link(videoservice, videoevent);
+    channel_send(option_getdecimal("video-service"), EVENT_LINK);
     setupvideo(source);
 
     while (channel_process())
@@ -678,7 +671,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    fsp_unlink(videoservice, videoevent);
+    channel_send(option_getdecimal("video-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("mouse-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
 
@@ -838,6 +831,11 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, 0, 0, display.size.w, display.size.h);
+    render_cache();
+    render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
+    render_undamage();
+
 }
 
 static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
@@ -955,6 +953,7 @@ void init(void)
     option_add("listen", "12345");
     option_add("keyboard-service", "");
     option_add("mouse-service", "");
+    option_add("video-service", "");
     option_add("video", "system:video/if.0");
     option_add("wshell", "initrd:bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);

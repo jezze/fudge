@@ -61,6 +61,7 @@
 #define EVENT_LINK                      0x50
 #define EVENT_UNLINK                    0x51
 #define EVENT_INFO                      0x52
+#define EVENT_CONF                      0x53
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 

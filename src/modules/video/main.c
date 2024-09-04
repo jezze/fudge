@@ -5,6 +5,40 @@
 
 static struct system_node root;
 
+static unsigned int onconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
+{
+
+    struct ctrl_videosettings *settings = data;
+
+    interface->setmode(source, settings->width, settings->height, settings->bpp);
+
+    return 1;
+
+}
+
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
+
+    struct video_interface *interface = (struct video_interface *)id;
+
+    switch (event)
+    {
+
+    case EVENT_CONF:
+        return onconf(interface, source, count, data);
+
+    case EVENT_LINK:
+        return kernel_link2(interface->ichannel, source, interface->ichannel);
+
+    case EVENT_UNLINK:
+        return kernel_unlink2(interface->ichannel, source);
+
+    }
+
+    return 0;
+
+}
+
 void video_notifymode(struct video_interface *interface, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
@@ -15,7 +49,7 @@ void video_notifymode(struct video_interface *interface, void *framebuffer, unsi
     videomode.h = h;
     videomode.bpp = bpp;
 
-    kernel_notify(&interface->event.links, EVENT_VIDEOMODE, sizeof (struct event_videomode), &videomode);
+    kernel_notify2(interface->ichannel, EVENT_VIDEOMODE, sizeof (struct event_videomode), &videomode);
 
 }
 
@@ -28,6 +62,7 @@ void video_registerinterface(struct video_interface *interface)
     system_addchild(&interface->root, &interface->colormap);
     system_addchild(&interface->root, &interface->event);
     system_addchild(&root, &interface->root);
+    kernel_announce(interface->ichannel, (unsigned int)interface, place);
 
 }
 
@@ -43,7 +78,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int ichannel)
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*setmode)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
@@ -58,6 +93,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
+    interface->setmode = setmode;
 
 }
 

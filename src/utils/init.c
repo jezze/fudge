@@ -162,6 +162,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     channel_send_fmt0(channel, EVENT_OPTION, "listen\\012345\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "keyboard-service\\0110\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "mouse-service\\0124\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "video-service\\0400\\0");
     channel_send(channel, EVENT_MAIN);
 
 }

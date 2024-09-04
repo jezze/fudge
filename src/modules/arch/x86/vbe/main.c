@@ -98,49 +98,6 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static void setmode(unsigned int width, unsigned int height, unsigned int bpp)
-{
-
-    unsigned short modenum;
-
-    buffer_copy((void *)0xA000, (void *)(unsigned int)vbe_lowmemstart, (unsigned int)vbe_lowmemend - (unsigned int)vbe_lowmemstart);
-
-    modenum = find(width, height, bpp);
-
-    if (modenum)
-    {
-
-        if (mode->framebuffer)
-        {
-
-            arch_mapvideo(14, mode->framebuffer, mode->framebuffer, 0x00400000);
-            arch_mapvideo(15, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
-
-        }
-
-        vbe_setvideomode(modenum | 0x4000);
-
-        videointerface.width = mode->width;
-        videointerface.height = mode->height;
-        videointerface.bpp = mode->bpp / 8;
-
-        video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
-
-    }
-
-}
-
-static unsigned int videointerface_writectrl(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct ctrl_videosettings *settings = buffer;
-
-    setmode(settings->width, settings->height, settings->bpp * 8);
-
-    return count;
-
-}
-
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -168,16 +125,51 @@ static unsigned int videointerface_writedata(void *buffer, unsigned int count, u
 
 }
 
+static unsigned int videointerface_setmode(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    unsigned short modenum;
+
+    buffer_copy((void *)0xA000, (void *)(unsigned int)vbe_lowmemstart, (unsigned int)vbe_lowmemend - (unsigned int)vbe_lowmemstart);
+
+    modenum = find(width, height, bpp);
+
+    if (modenum)
+    {
+
+        if (mode->framebuffer)
+        {
+
+            arch_mapvideo(14, mode->framebuffer, mode->framebuffer, 0x00400000);
+            arch_mapvideo(15, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
+
+        }
+
+        vbe_setvideomode(modenum | 0x4000);
+
+        videointerface.width = mode->width;
+        videointerface.height = mode->height;
+        videointerface.bpp = mode->bpp / 8;
+
+        video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 403);
+    video_initinterface(&videointerface, id, 403, videointerface_setmode);
 
     videointerface.width = 80;
     videointerface.height = 25;
     videointerface.bpp = 2;
     videointerface.ctrl.operations.read = videointerface_readctrl;
-    videointerface.ctrl.operations.write = videointerface_writectrl;
     videointerface.data.operations.read = videointerface_readdata;
     videointerface.data.operations.write = videointerface_writedata;
 
