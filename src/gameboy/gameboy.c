@@ -294,9 +294,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int service = fsp_auth(path);
     unsigned int id = fsp_walk(service, 0, path);
-    unsigned int videoservice = fsp_auth(option_getstring("video"));
-    unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
-    unsigned int videoevent = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "event");
     struct ctrl_videosettings settings;
 
     settings.width = option_getdecimal("width");
@@ -307,10 +304,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     channel_wait(EVENT_WMACK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("timer-service"), EVENT_LINK);
-    fsp_link(videoservice, videoevent);
-    fsp_write(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
+    channel_send(option_getdecimal("video-service"), EVENT_LINK);
+    channel_send_buffer(option_getdecimal("video-service"), EVENT_CONF, sizeof (struct ctrl_videosettings), &settings);
+    channel_wait(EVENT_VIDEOMODE);
     run(source, service, id);
-    fsp_unlink(videoservice, videoevent);
+    channel_send(option_getdecimal("video-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
@@ -334,6 +332,7 @@ void init(void)
     option_add("bpp", "4");
     option_add("keyboard-service", "110");
     option_add("timer-service", "410");
+    option_add("video-service", "400");
     option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);
