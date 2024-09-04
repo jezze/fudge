@@ -9,6 +9,7 @@ static void loaddriver(char *path)
     if (channel)
     {
 
+        channel_send(channel, EVENT_MAIN);
         channel_send_fmt1(channel, EVENT_PATH, "%s\\0", path);
         channel_send(channel, EVENT_END);
         channel_wait(EVENT_TERMRESPONSE);
