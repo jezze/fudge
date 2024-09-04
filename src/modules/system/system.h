@@ -20,7 +20,6 @@ struct system_node
     struct system_operations operations;
     struct list_item item;
     struct list children;
-    struct list links;
 
 };
 

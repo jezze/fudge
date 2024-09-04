@@ -21,10 +21,10 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
         return interface->info(source);
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel, source, interface->ichannel);
+        return kernel_link(interface->ichannel, source, interface->ichannel);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel, source);
+        return kernel_unlink(interface->ichannel, source);
 
     }
 
@@ -35,7 +35,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify2(interface->ichannel, EVENT_DATA, count, buffer);
+    kernel_notify(interface->ichannel, EVENT_DATA, count, buffer);
 
 }
 

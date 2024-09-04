@@ -228,28 +228,6 @@ static unsigned int service_map(unsigned int id)
 
 }
 
-static unsigned int service_link(unsigned int id, unsigned int target, unsigned int source)
-{
-
-    struct system_node *node = getnode(id);
-
-    kernel_link(&node->links, target, source);
-
-    return id;
-
-}
-
-static unsigned int service_unlink(unsigned int id, unsigned int target)
-{
-
-    struct system_node *node = getnode(id);
-
-    kernel_unlink(&node->links, target);
-
-    return id;
-
-}
-
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -302,32 +280,6 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int onlinkrequest(unsigned int source, unsigned int count, void *data)
-{
-
-    struct event_linkrequest *linkrequest = data;
-    struct {struct event_linkresponse linkresponse;} message;
-
-    message.linkresponse.session = linkrequest->session;
-    message.linkresponse.id = service_link(linkrequest->id, source, 0);
-
-    return kernel_place(501, source, EVENT_LINKRESPONSE, sizeof (struct event_linkresponse), &message);
-
-}
-
-static unsigned int onunlinkrequest(unsigned int source, unsigned int count, void *data)
-{
-
-    struct event_unlinkrequest *unlinkrequest = data;
-    struct {struct event_unlinkresponse unlinkresponse;} message;
-
-    message.unlinkresponse.session = unlinkrequest->session;
-    message.unlinkresponse.id = service_unlink(unlinkrequest->id, source);
-
-    return kernel_place(501, source, EVENT_UNLINKRESPONSE, sizeof (struct event_unlinkresponse), &message);
-
-}
-
 static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -345,12 +297,6 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
     case EVENT_WRITEREQUEST:
         return onwriterequest(source, count, data);
-
-    case EVENT_LINKREQUEST:
-        return onlinkrequest(source, count, data);
-
-    case EVENT_UNLINKREQUEST:
-        return onunlinkrequest(source, count, data);
 
     }
 
@@ -421,7 +367,6 @@ void system_initnode(struct system_node *node, unsigned int type, char *name)
 
     list_inititem(&node->item, node);
     list_init(&node->children);
-    list_init(&node->links);
 
     node->type = type;
     node->name = name;
@@ -436,7 +381,7 @@ void module_init(void)
 {
 
     system_initnode(&root, SYSTEM_NODETYPE_GROUP, "FUDGE_ROOT");
-    service_init(&service, "system", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink);
+    service_init(&service, "system", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map);
     resource_register(&service.resource);
     kernel_announce(501, 0, place);
 

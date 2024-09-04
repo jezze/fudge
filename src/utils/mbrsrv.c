@@ -135,13 +135,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         unsigned char block[1024];
         struct mbr *mbr = (struct mbr *)block;
 
-        fsp_link(blockservice, blockdata);
+        channel_send(option_getdecimal("block-service"), EVENT_LINK);
         request_readblocks(block, 1024, 0, 1);
 
         if (isvalid(mbr))
             print(source, mbr);
 
-        fsp_unlink(blockservice, blockdata);
+        channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
 
     }
 
@@ -157,7 +157,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("volume", "system:block/if.0/data");
+    option_add("block-service", "");
     channel_bind(EVENT_MAIN, onmain);
 
 }

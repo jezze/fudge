@@ -291,20 +291,6 @@ static unsigned int service_map(unsigned int id)
 
 }
 
-static unsigned int service_link(unsigned int id, unsigned int target, unsigned int source)
-{
-
-    return 0;
-
-}
-
-static unsigned int service_unlink(unsigned int id, unsigned int target)
-{
-
-    return 0;
-
-}
-
 static unsigned int onmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -419,7 +405,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map, service_link, service_unlink);
+    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map);
     resource_register(&service.resource);
     kernel_announce(500, 0, place);
 

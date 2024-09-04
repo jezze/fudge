@@ -12,10 +12,10 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
     {
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel, source, interface->ichannel);
+        return kernel_link(interface->ichannel, source, interface->ichannel);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel, source);
+        return kernel_unlink(interface->ichannel, source);
 
     }
 
@@ -30,7 +30,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 
     keypress.scancode = scancode;
 
-    kernel_notify2(interface->ichannel, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    kernel_notify(interface->ichannel, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
@@ -41,7 +41,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
     keyrelease.scancode = scancode;
 
-    kernel_notify2(interface->ichannel, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    kernel_notify(interface->ichannel, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 

@@ -28,10 +28,10 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
         return onconf(interface, source, count, data);
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel, source, interface->ichannel);
+        return kernel_link(interface->ichannel, source, interface->ichannel);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel, source);
+        return kernel_unlink(interface->ichannel, source);
 
     }
 
@@ -49,7 +49,7 @@ void video_notifymode(struct video_interface *interface, void *framebuffer, unsi
     videomode.h = h;
     videomode.bpp = bpp;
 
-    kernel_notify2(interface->ichannel, EVENT_VIDEOMODE, sizeof (struct event_videomode), &videomode);
+    kernel_notify(interface->ichannel, EVENT_VIDEOMODE, sizeof (struct event_videomode), &videomode);
 
 }
 

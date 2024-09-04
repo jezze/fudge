@@ -480,10 +480,7 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int blockservice = fsp_auth(option_getstring("block"));
-    unsigned int blockdata = fsp_walk(blockservice, fsp_walk(blockservice, 0, option_getstring("block")), "data");
-
-    fsp_link(blockservice, blockdata);
+    channel_send(option_getdecimal("block-service"), EVENT_LINK);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
@@ -495,7 +492,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    fsp_unlink(blockservice, blockdata);
+    channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
 
 }
 
@@ -503,7 +500,7 @@ void init(void)
 {
 
     option_add("listen", "1111");
-    option_add("volume", "system:block/if.0/data");
+    option_add("block-service", "");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_LISTREQUEST, onlistrequest);

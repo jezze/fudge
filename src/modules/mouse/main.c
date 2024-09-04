@@ -12,10 +12,10 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
     {
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel, source, interface->ichannel);
+        return kernel_link(interface->ichannel, source, interface->ichannel);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel, source);
+        return kernel_unlink(interface->ichannel, source);
 
     }
 
@@ -31,7 +31,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     mousemove.relx = relx;
     mousemove.rely = rely;
 
-    kernel_notify2(interface->ichannel, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+    kernel_notify(interface->ichannel, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
 }
 
@@ -42,7 +42,7 @@ void mouse_notifyscroll(struct mouse_interface *interface, char relz)
 
     mousescroll.relz = relz;
 
-    kernel_notify2(interface->ichannel, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
+    kernel_notify(interface->ichannel, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
 
 }
 
@@ -53,7 +53,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 
     mousepress.button = button;
 
-    kernel_notify2(interface->ichannel, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
+    kernel_notify(interface->ichannel, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
 
 }
 
@@ -64,7 +64,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 
     mouserelease.button = button;
 
-    kernel_notify2(interface->ichannel, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
+    kernel_notify(interface->ichannel, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
 
 }
 

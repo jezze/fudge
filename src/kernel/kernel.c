@@ -173,7 +173,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-void kernel_link(struct list *links, unsigned int target, unsigned int source)
+static void _kernel_link(struct list *links, unsigned int target, unsigned int source)
 {
 
     struct list_item *linkitem = list_picktail(&freelinks);
@@ -193,17 +193,17 @@ void kernel_link(struct list *links, unsigned int target, unsigned int source)
 
 }
 
-unsigned int kernel_link2(unsigned int ichannel, unsigned int target, unsigned int source)
+unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned int source)
 {
 
     if (ichannel)
-        kernel_link(&channels[ichannel].links, target, source);
+        _kernel_link(&channels[ichannel].links, target, source);
 
     return 1;
 
 }
 
-void kernel_unlink(struct list *links, unsigned int target)
+static void _kernel_unlink(struct list *links, unsigned int target)
 {
 
     struct list_item *current;
@@ -233,11 +233,11 @@ void kernel_unlink(struct list *links, unsigned int target)
 
 }
 
-unsigned int kernel_unlink2(unsigned int ichannel, unsigned int target)
+unsigned int kernel_unlink(unsigned int ichannel, unsigned int target)
 {
 
     if (ichannel)
-        kernel_unlink(&channels[ichannel].links, target);
+        _kernel_unlink(&channels[ichannel].links, target);
 
     return 1;
 
@@ -332,7 +332,7 @@ void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*
 
 }
 
-void kernel_notify(struct list *links, unsigned int event, unsigned int count, void *data)
+static void _kernel_notify(struct list *links, unsigned int event, unsigned int count, void *data)
 {
 
     struct list_item *current;
@@ -353,12 +353,12 @@ void kernel_notify(struct list *links, unsigned int event, unsigned int count, v
 
 }
 
-void kernel_notify2(unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
-    kernel_notify(&channel->links, event, count, data);
+    _kernel_notify(&channel->links, event, count, data);
 
 }
 

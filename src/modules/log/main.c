@@ -17,7 +17,7 @@ static void debuginterface_write(unsigned int level, unsigned int count, char *s
     else
         message.loginfo.count += cstring_write_fmt2(message.data, MESSAGE_SIZE, "%w", message.loginfo.count, string, &count);
 
-    kernel_notify2(debuginterface.ichannel, EVENT_LOGINFO, message.loginfo.count, &message);
+    kernel_notify(debuginterface.ichannel, EVENT_LOGINFO, message.loginfo.count, &message);
 
 }
 

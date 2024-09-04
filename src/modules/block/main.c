@@ -8,7 +8,7 @@ static struct system_node root;
 void block_notifyblockresponse(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->data.links, EVENT_BLOCKRESPONSE, count, buffer);
+    kernel_notify(interface->ichannel, EVENT_BLOCKRESPONSE, count, buffer);
 
 }
 

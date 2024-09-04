@@ -396,8 +396,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
     unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
-    unsigned int blockservice = fsp_auth(option_getstring("block"));
-    unsigned int blockdata = fsp_walk(blockservice, fsp_walk(blockservice, 0, option_getstring("block")), "data");
 
     call_announce(option_getdecimal("listen"));
 
@@ -409,7 +407,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         socket_resolvelocal(ethernetservice, ethernetaddr, &local);
         channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
-        fsp_link(blockservice, blockdata);
+        channel_send(option_getdecimal("block-service"), EVENT_LINK);
         socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
         socket_listen_tcp(option_getdecimal("ethernet-service"), &local, &remote, 1, &router);
 
@@ -422,7 +420,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        fsp_unlink(blockservice, blockdata);
+        channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
         channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
     }
@@ -433,8 +431,8 @@ void init(void)
 {
 
     option_add("listen", "5588");
+    option_add("block-service", "");
     option_add("ethernet-service", "108");
-    option_add("block", "system:block/if.0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "564", 42, 42);

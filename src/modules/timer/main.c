@@ -12,10 +12,10 @@ static unsigned int place1(unsigned int id, unsigned int source, unsigned int ev
     {
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel1, source, interface->ichannel1);
+        return kernel_link(interface->ichannel1, source, interface->ichannel1);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel1, source);
+        return kernel_unlink(interface->ichannel1, source);
 
     }
 
@@ -32,10 +32,10 @@ static unsigned int place10(unsigned int id, unsigned int source, unsigned int e
     {
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel10, source, interface->ichannel10);
+        return kernel_link(interface->ichannel10, source, interface->ichannel10);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel10, source);
+        return kernel_unlink(interface->ichannel10, source);
 
     }
 
@@ -52,10 +52,10 @@ static unsigned int place100(unsigned int id, unsigned int source, unsigned int 
     {
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel100, source, interface->ichannel100);
+        return kernel_link(interface->ichannel100, source, interface->ichannel100);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel100, source);
+        return kernel_unlink(interface->ichannel100, source);
 
     }
 
@@ -72,10 +72,10 @@ static unsigned int place1000(unsigned int id, unsigned int source, unsigned int
     {
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel1000, source, interface->ichannel1000);
+        return kernel_link(interface->ichannel1000, source, interface->ichannel1000);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel1000, source);
+        return kernel_unlink(interface->ichannel1000, source);
 
     }
 
@@ -90,7 +90,7 @@ void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify2(interface->ichannel1, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->ichannel1, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -101,7 +101,7 @@ void timer_notifytick10(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify2(interface->ichannel10, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->ichannel10, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -112,7 +112,7 @@ void timer_notifytick100(struct timer_interface *interface, unsigned int counter
 
     timertick.counter = counter;
 
-    kernel_notify2(interface->ichannel100, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->ichannel100, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -123,7 +123,7 @@ void timer_notifytick1000(struct timer_interface *interface, unsigned int counte
 
     timertick.counter = counter;
 
-    kernel_notify2(interface->ichannel1000, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->ichannel1000, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 

@@ -13,12 +13,10 @@ struct session
 };
 
 static unsigned int sessioncount;
-static struct session linksession;
 static struct session listsession;
 static struct session mapsession;
 static struct session readsession;
 static struct session statsession;
-static struct session unlinksession;
 static struct session walksession;
 static struct session writesession;
 
@@ -58,15 +56,6 @@ static unsigned int session_wait(struct session *session)
 
 }
 
-static void onlinkresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_linkresponse *header = mdata;
-
-    session_match(&linksession, header->session, mdata);
-
-}
-
 static void onlistresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -103,15 +92,6 @@ static void onstatresponse(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onunlinkresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_unlinkresponse *header = mdata;
-
-    session_match(&unlinksession, header->session, mdata);
-
-}
-
 static void onwalkresponse(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -140,31 +120,6 @@ unsigned int fsp_auth(char *path)
 
     if (cstring_length(path) >= 7 && buffer_match(path, "system:", 7))
         return 501;
-
-    return 0;
-
-}
-
-unsigned int fsp_link(unsigned int target, unsigned int id)
-{
-
-    struct event_linkrequest request;
-
-    session_init(&linksession);
-
-    request.session = linksession.id;
-    request.id = id;
-
-    channel_send_buffer(target, EVENT_LINKREQUEST, sizeof (struct event_linkrequest), &request);
-
-    if (session_wait(&linksession))
-    {
-
-        struct event_linkresponse *header = linksession.mdata;
-
-        return header->id;
-
-    }
 
     return 0;
 
@@ -301,31 +256,6 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 
 }
 
-unsigned int fsp_unlink(unsigned int target, unsigned int id)
-{
-
-    struct event_unlinkrequest request;
-
-    session_init(&unlinksession);
-
-    request.session = unlinksession.id;
-    request.id = id;
-
-    channel_send_buffer(target, EVENT_UNLINKREQUEST, sizeof (struct event_unlinkrequest), &request);
-
-    if (session_wait(&unlinksession))
-    {
-
-        struct event_unlinkresponse *header = unlinksession.mdata;
-
-        return header->id;
-
-    }
-
-    return 0;
-
-}
-
 unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 {
 
@@ -432,12 +362,10 @@ unsigned int fsp_spawn_relative(char *path, char *parent)
 void fsp_bind(void)
 {
 
-    channel_bind(EVENT_LINKRESPONSE, onlinkresponse);
     channel_bind(EVENT_LISTRESPONSE, onlistresponse);
     channel_bind(EVENT_MAPRESPONSE, onmapresponse);
     channel_bind(EVENT_READRESPONSE, onreadresponse);
     channel_bind(EVENT_STATRESPONSE, onstatresponse);
-    channel_bind(EVENT_UNLINKRESPONSE, onunlinkresponse);
     channel_bind(EVENT_WALKRESPONSE, onwalkresponse);
     channel_bind(EVENT_WRITERESPONSE, onwriteresponse);
 

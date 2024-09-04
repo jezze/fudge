@@ -15,10 +15,10 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
         return interface->send(data, count);
 
     case EVENT_LINK:
-        return kernel_link2(interface->ichannel, source, interface->ichannel);
+        return kernel_link(interface->ichannel, source, interface->ichannel);
 
     case EVENT_UNLINK:
-        return kernel_unlink2(interface->ichannel, source);
+        return kernel_unlink(interface->ichannel, source);
 
     }
 
@@ -33,7 +33,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify2(interface->ichannel, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(interface->ichannel, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
