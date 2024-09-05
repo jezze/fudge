@@ -486,7 +486,7 @@ void init(void)
 {
 
     option_add("listen", "1111");
-    option_add("block-service", "");
+    option_add("block-service", "231");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_LISTREQUEST, onlistrequest);
