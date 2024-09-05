@@ -20,11 +20,12 @@
 #define EVENT_MOUSERELEASE              0x15
 #define EVENT_CONSOLEDATA               0x16
 #define EVENT_TIMERTICK                 0x17
-#define EVENT_VIDEOMODE                 0x18
-#define EVENT_BLOCKREQUEST              0x19
-#define EVENT_BLOCKRESPONSE             0x1A
-#define EVENT_CLOCKINFO                 0x1B
-#define EVENT_ETHERNETINFO              0x1C
+#define EVENT_VIDEOCONF                 0x18
+#define EVENT_VIDEOINFO                 0x19
+#define EVENT_BLOCKREQUEST              0x1A
+#define EVENT_BLOCKRESPONSE             0x1B
+#define EVENT_CLOCKINFO                 0x1C
+#define EVENT_ETHERNETINFO              0x1D
 #define EVENT_WMMAP                     0x20
 #define EVENT_WMUNMAP                   0x21
 #define EVENT_WMGRAB                    0x22
@@ -57,7 +58,6 @@
 #define EVENT_LINK                      0x50
 #define EVENT_UNLINK                    0x51
 #define EVENT_INFO                      0x52
-#define EVENT_CONF                      0x53
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
 
@@ -135,12 +135,21 @@ struct event_timertick
 
 };
 
-struct event_videomode
+struct event_videoconf
+{
+
+    unsigned int width;
+    unsigned int height;
+    unsigned int bpp;
+
+};
+
+struct event_videoinfo
 {
 
     void *framebuffer;
-    unsigned int w;
-    unsigned int h;
+    unsigned int width;
+    unsigned int height;
     unsigned int bpp;
 
 };
@@ -344,5 +353,46 @@ struct event_unlinkresponse
 
     unsigned int session;
     unsigned int id;
+
+};
+
+struct event_clockinfo
+{
+
+    unsigned char seconds;
+    unsigned char minutes;
+    unsigned char hours;
+    unsigned char weekday;
+    unsigned char day;
+    unsigned char month;
+    unsigned short year;
+
+};
+
+struct event_coreinfo
+{
+
+    unsigned int id;
+    unsigned int sp;
+    unsigned int task;
+
+};
+
+struct event_taskinfo
+{
+
+    unsigned int id;
+    unsigned int state;
+    unsigned int signals_kills;
+    unsigned int signals_blocks;
+    unsigned int thread_ip;
+    unsigned int thread_sp;
+
+};
+
+struct event_mailboxinfo
+{
+
+    unsigned int address;
 
 };

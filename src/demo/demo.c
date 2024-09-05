@@ -122,14 +122,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
+static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_videomode *videomode = mdata;
+    struct event_videoinfo *videoinfo = mdata;
 
-    framebuffer = videomode->framebuffer;
-    wmax = videomode->w;
-    hmax = videomode->h;
+    framebuffer = videoinfo->framebuffer;
+    wmax = videoinfo->width;
+    hmax = videoinfo->height;
     wmid = wmax / 2;
     hmid = hmax / 2;
 
@@ -138,19 +138,19 @@ static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct ctrl_videosettings settings;
+    struct event_videoconf videoconf;
 
-    settings.width = option_getdecimal("width");
-    settings.height = option_getdecimal("height");
-    settings.bpp = option_getdecimal("bpp");
+    videoconf.width = option_getdecimal("width");
+    videoconf.height = option_getdecimal("height");
+    videoconf.bpp = option_getdecimal("bpp");
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(EVENT_WMACK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("timer-service"), EVENT_LINK);
     channel_send(option_getdecimal("video-service"), EVENT_LINK);
-    channel_send_buffer(option_getdecimal("video-service"), EVENT_CONF, sizeof (struct ctrl_videosettings), &settings);
-    channel_wait(EVENT_VIDEOMODE);
+    channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_wait(EVENT_VIDEOINFO);
     run();
     channel_send(option_getdecimal("video-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
@@ -172,7 +172,7 @@ void init(void)
     option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

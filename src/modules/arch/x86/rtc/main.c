@@ -46,19 +46,19 @@ static void handleirq(unsigned int irq)
 static unsigned int clockinterface_info(unsigned int source)
 {
 
-    struct ctrl_clocksettings settings;
+    struct event_clockinfo clockinfo;
 
-    settings.seconds = read(REG_COMMAND_SECONDS);
-    settings.minutes = read(REG_COMMAND_MINUTES);
-    settings.hours = read(REG_COMMAND_HOURS);
-    settings.weekday = read(REG_COMMAND_WEEKDAY);
-    settings.day = read(REG_COMMAND_DAY);
-    settings.month = read(REG_COMMAND_MONTH);
-    settings.year = 2000 + read(REG_COMMAND_YEAR);
+    clockinfo.seconds = read(REG_COMMAND_SECONDS);
+    clockinfo.minutes = read(REG_COMMAND_MINUTES);
+    clockinfo.hours = read(REG_COMMAND_HOURS);
+    clockinfo.weekday = read(REG_COMMAND_WEEKDAY);
+    clockinfo.day = read(REG_COMMAND_DAY);
+    clockinfo.month = read(REG_COMMAND_MONTH);
+    clockinfo.year = 2000 + read(REG_COMMAND_YEAR);
 
-    kernel_place(clockinterface.ichannel, source, EVENT_CLOCKINFO, sizeof (struct ctrl_clocksettings), &settings);
+    kernel_place(clockinterface.ichannel, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
-    return sizeof (struct ctrl_clocksettings);
+    return sizeof (struct event_clockinfo);
 
 }
 

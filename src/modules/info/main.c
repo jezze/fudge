@@ -11,8 +11,8 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
 {
 
     struct resource *resource = 0;
-    unsigned int n = offset / sizeof (struct ctrl_core);
-    unsigned int o = offset % sizeof (struct ctrl_core);
+    unsigned int n = offset / sizeof (struct event_coreinfo);
+    unsigned int o = offset % sizeof (struct event_coreinfo);
     unsigned int i;
 
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
@@ -22,13 +22,13 @@ static unsigned int cores_read(void *buffer, unsigned int count, unsigned int of
         {
 
             struct core *core = resource->data;
-            struct ctrl_core ctrl;
+            struct event_coreinfo coreinfo;
 
-            ctrl.id = core->id;
-            ctrl.sp = core->sp;
-            ctrl.task = core->itask;
+            coreinfo.id = core->id;
+            coreinfo.sp = core->sp;
+            coreinfo.task = core->itask;
 
-            return buffer_read(buffer, count, &ctrl, sizeof (struct core), o);
+            return buffer_read(buffer, count, &coreinfo, sizeof (struct event_coreinfo), o);
 
         }
 
@@ -42,8 +42,8 @@ static unsigned int tasks_read(void *buffer, unsigned int count, unsigned int of
 {
 
     struct resource *resource = 0;
-    unsigned int n = offset / sizeof (struct ctrl_task);
-    unsigned int o = offset % sizeof (struct ctrl_task);
+    unsigned int n = offset / sizeof (struct event_taskinfo);
+    unsigned int o = offset % sizeof (struct event_taskinfo);
     unsigned int i;
 
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_TASK)); i++)
@@ -53,16 +53,16 @@ static unsigned int tasks_read(void *buffer, unsigned int count, unsigned int of
         {
 
             struct task *task = resource->data;
-            struct ctrl_task ctrl;
+            struct event_taskinfo taskinfo;
 
-            ctrl.id = task->id;
-            ctrl.state = task->state;
-            ctrl.thread_ip = task->thread.ip;
-            ctrl.thread_sp = task->thread.sp;
-            ctrl.signals_kills = task->signals.kills;
-            ctrl.signals_blocks = task->signals.blocks;
+            taskinfo.id = task->id;
+            taskinfo.state = task->state;
+            taskinfo.thread_ip = task->thread.ip;
+            taskinfo.thread_sp = task->thread.sp;
+            taskinfo.signals_kills = task->signals.kills;
+            taskinfo.signals_blocks = task->signals.blocks;
 
-            return buffer_read(buffer, count, &ctrl, sizeof (struct task), o);
+            return buffer_read(buffer, count, &taskinfo, sizeof (struct event_taskinfo), o);
 
         }
 
@@ -76,8 +76,8 @@ static unsigned int mailboxes_read(void *buffer, unsigned int count, unsigned in
 {
 
     struct resource *resource = 0;
-    unsigned int n = offset / sizeof (struct ctrl_mailbox);
-    unsigned int o = offset % sizeof (struct ctrl_mailbox);
+    unsigned int n = offset / sizeof (struct event_mailboxinfo);
+    unsigned int o = offset % sizeof (struct event_mailboxinfo);
     unsigned int i;
 
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_MAILBOX)); i++)
@@ -87,11 +87,11 @@ static unsigned int mailboxes_read(void *buffer, unsigned int count, unsigned in
         {
 
             struct mailbox *mailbox = resource->data;
-            struct ctrl_mailbox ctrl;
+            struct event_mailboxinfo mailboxinfo;
 
-            ctrl.address = (unsigned int)mailbox->ring.buffer;
+            mailboxinfo.address = (unsigned int)mailbox->ring.buffer;
 
-            return buffer_read(buffer, count, &ctrl, sizeof (struct mailbox), o);
+            return buffer_read(buffer, count, &mailboxinfo, sizeof (struct event_mailboxinfo), o);
 
         }
 

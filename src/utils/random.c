@@ -4,13 +4,13 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct ctrl_clocksettings settings;
+    struct event_clockinfo clockinfo;
     struct mtwist_state state;
     unsigned int value;
 
     channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct ctrl_clocksettings), &settings);
-    mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
 
     value = mtwist_rand(&state);
 

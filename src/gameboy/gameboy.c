@@ -272,16 +272,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
+static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_videomode *videomode = mdata;
+    struct event_videoinfo *videoinfo = mdata;
 
-    framebuffer = videomode->framebuffer;
-    w = videomode->w;
-    h = videomode->h;
-    scalew = videomode->w / LCD_WIDTH;
-    scaleh = videomode->h / LCD_HEIGHT;
+    framebuffer = videoinfo->framebuffer;
+    w = videoinfo->width;
+    h = videoinfo->height;
+    scalew = videoinfo->width / LCD_WIDTH;
+    scaleh = videoinfo->height / LCD_HEIGHT;
     totw = LCD_WIDTH * scalew;
     toth = LCD_HEIGHT * scaleh;
     offx = (w - totw) / 2;
@@ -294,19 +294,19 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int service = fsp_auth(path);
     unsigned int id = fsp_walk(service, 0, path);
-    struct ctrl_videosettings settings;
+    struct event_videoconf videoconf;
 
-    settings.width = option_getdecimal("width");
-    settings.height = option_getdecimal("height");
-    settings.bpp = option_getdecimal("bpp");
+    videoconf.width = option_getdecimal("width");
+    videoconf.height = option_getdecimal("height");
+    videoconf.bpp = option_getdecimal("bpp");
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(EVENT_WMACK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("timer-service"), EVENT_LINK);
     channel_send(option_getdecimal("video-service"), EVENT_LINK);
-    channel_send_buffer(option_getdecimal("video-service"), EVENT_CONF, sizeof (struct ctrl_videosettings), &settings);
-    channel_wait(EVENT_VIDEOMODE);
+    channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_wait(EVENT_VIDEOINFO);
     run(source, service, id);
     channel_send(option_getdecimal("video-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
@@ -337,7 +337,7 @@ void init(void)
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

@@ -5,12 +5,12 @@
 
 static struct system_node root;
 
-static unsigned int onconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
+static unsigned int onvideoconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct ctrl_videosettings *settings = data;
+    struct event_videoconf *videoconf = data;
 
-    interface->setmode(source, settings->width, settings->height, settings->bpp);
+    interface->setmode(source, videoconf->width, videoconf->height, videoconf->bpp);
 
     return 1;
 
@@ -24,8 +24,8 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
     switch (event)
     {
 
-    case EVENT_CONF:
-        return onconf(interface, source, count, data);
+    case EVENT_VIDEOCONF:
+        return onvideoconf(interface, source, count, data);
 
     case EVENT_LINK:
         return kernel_link(interface->ichannel, source, interface->ichannel);
@@ -42,14 +42,14 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 void video_notifymode(struct video_interface *interface, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
-    struct event_videomode videomode;
+    struct event_videoinfo videoinfo;
 
-    videomode.framebuffer = framebuffer;
-    videomode.w = w;
-    videomode.h = h;
-    videomode.bpp = bpp;
+    videoinfo.framebuffer = framebuffer;
+    videoinfo.width = w;
+    videoinfo.height = h;
+    videoinfo.bpp = bpp;
 
-    kernel_notify(interface->ichannel, EVENT_VIDEOMODE, sizeof (struct event_videomode), &videomode);
+    kernel_notify(interface->ichannel, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
 }
 

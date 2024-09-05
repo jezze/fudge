@@ -141,12 +141,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
     char buffer[4096];
     unsigned int count;
-    struct ctrl_clocksettings settings;
+    struct event_clockinfo clockinfo;
     struct mtwist_state state;
 
     channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct ctrl_clocksettings), &settings);
-    mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
+    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));

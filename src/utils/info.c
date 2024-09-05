@@ -23,12 +23,12 @@ static void showcores(unsigned int source)
         if (id)
         {
 
-            struct ctrl_core ctrl;
+            struct event_coreinfo coreinfo;
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fsp_read(service, id, &ctrl, sizeof (struct ctrl_core), offset)); offset += count)
-                channel_send_fmt3(source, EVENT_DATA, "core\n  id %u\n  sp 0x%H8u\n  task %u\n", &ctrl.id, &ctrl.sp, &ctrl.task);
+            for (offset = 0; (count = fsp_read(service, id, &coreinfo, sizeof (struct event_coreinfo), offset)); offset += count)
+                channel_send_fmt3(source, EVENT_DATA, "core\n  id %u\n  sp 0x%H8u\n  task %u\n", &coreinfo.id, &coreinfo.sp, &coreinfo.task);
 
         }
 
@@ -50,15 +50,15 @@ static void showtasks(unsigned int source)
         {
 
 
-            struct ctrl_task ctrl;
+            struct event_taskinfo taskinfo;
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fsp_read(service, id, &ctrl, sizeof (struct ctrl_task), offset)); offset += count)
+            for (offset = 0; (count = fsp_read(service, id, &taskinfo, sizeof (struct event_taskinfo), offset)); offset += count)
             {
 
-                if (ctrl.state)
-                    channel_send_fmt6(source, EVENT_DATA, "task\n  id %u\n  state %s\n  thread.ip 0x%H8u\n  thread.sp 0x%H8u\n  signals.kills %u\n  signals.blocks %u\n", &ctrl.id, states[ctrl.state], &ctrl.thread_ip, &ctrl.thread_sp, &ctrl.signals_kills, &ctrl.signals_blocks);
+                if (taskinfo.state)
+                    channel_send_fmt6(source, EVENT_DATA, "task\n  id %u\n  state %s\n  thread.ip 0x%H8u\n  thread.sp 0x%H8u\n  signals.kills %u\n  signals.blocks %u\n", &taskinfo.id, states[taskinfo.state], &taskinfo.thread_ip, &taskinfo.thread_sp, &taskinfo.signals_kills, &taskinfo.signals_blocks);
 
             }
 
@@ -81,12 +81,12 @@ static void showmailboxes(unsigned int source)
         if (id)
         {
 
-            struct ctrl_mailbox ctrl;
+            struct event_mailboxinfo mailboxinfo;
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fsp_read(service, id, &ctrl, sizeof (struct ctrl_mailbox), offset)); offset += count)
-                channel_send_fmt1(source, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &ctrl.address);
+            for (offset = 0; (count = fsp_read(service, id, &mailboxinfo, sizeof (struct event_mailboxinfo), offset)); offset += count)
+                channel_send_fmt1(source, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &mailboxinfo.address);
 
         }
 

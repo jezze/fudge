@@ -101,13 +101,13 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct ctrl_videosettings settings;
+    struct event_videoinfo videoinfo;
 
-    settings.width = videointerface.width;
-    settings.height = videointerface.height;
-    settings.bpp = videointerface.bpp;
+    videoinfo.width = videointerface.width;
+    videoinfo.height = videointerface.height;
+    videoinfo.bpp = videointerface.bpp;
 
-    return buffer_read(buffer, count, &settings, sizeof (struct ctrl_videosettings), offset);
+    return buffer_read(buffer, count, &videoinfo, sizeof (struct event_videoinfo), offset);
 
 }
 

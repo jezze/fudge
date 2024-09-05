@@ -3,7 +3,6 @@
 #include <fudge/spinlock.h>
 #include <fudge/list.h>
 #include <fudge/cstring.h>
-#include <fudge/ctrl.h>
 #include <fudge/record.h>
 #include <fudge/regexp.h>
 #include <fudge/ring.h>

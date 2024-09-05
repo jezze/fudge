@@ -39,17 +39,17 @@ static void setupvideo(unsigned int source)
 
     unsigned int videoservice = fsp_auth(option_getstring("video"));
     unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
-    struct ctrl_videosettings settings;
+    struct event_videoconf videoconf;
     unsigned char black[768];
 
-    settings.width = option_getdecimal("width");
-    settings.height = option_getdecimal("height");
-    settings.bpp = option_getdecimal("bpp");
+    videoconf.width = option_getdecimal("width");
+    videoconf.height = option_getdecimal("height");
+    videoconf.bpp = option_getdecimal("bpp");
 
     buffer_clear(black, 768);
     fsp_write(videoservice, videocolormap, black, 768, 0);
-    channel_send_buffer(option_getdecimal("video-service"), EVENT_CONF, sizeof (struct ctrl_videosettings), &settings);
-    channel_wait(EVENT_VIDEOMODE);
+    channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_wait(EVENT_VIDEOINFO);
 
 }
 
@@ -801,18 +801,18 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onvideomode(unsigned int source, void *mdata, unsigned int msize)
+static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_videomode *videomode = mdata;
-    unsigned int factor = videomode->h / 320;
+    struct event_videoinfo *videoinfo = mdata;
+    unsigned int factor = videoinfo->height / 320;
 
-    blit_initdisplay(&display, videomode->framebuffer, videomode->w, videomode->h, videomode->bpp, linebuffer);
-    render_damage(0, 0, videomode->w, videomode->h);
+    blit_initdisplay(&display, videoinfo->framebuffer, videoinfo->width, videoinfo->height, videoinfo->bpp, linebuffer);
+    render_damage(0, 0, videoinfo->width, videoinfo->height);
     pool_loadfont(factor);
 
-    state.mouseposition.x = videomode->w / 4;
-    state.mouseposition.y = videomode->h / 4;
+    state.mouseposition.x = videoinfo->width / 4;
+    state.mouseposition.y = videoinfo->height / 4;
 
     switch (factor)
     {
@@ -849,7 +849,7 @@ static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
     channel_unbind(EVENT_MOUSEPRESS, onmousepress);
     channel_unbind(EVENT_MOUSESCROLL, onmousescroll);
     channel_unbind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_unbind(EVENT_VIDEOMODE, onvideomode);
+    channel_unbind(EVENT_VIDEOINFO, onvideoinfo);
     channel_send(source, EVENT_WMACK);
 
 }
@@ -882,7 +882,7 @@ static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_send(source, EVENT_WMACK);
     setupvideo(source);
 
@@ -963,7 +963,7 @@ void init(void)
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_bind(EVENT_VIDEOMODE, onvideomode);
+    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMMAP, onwmmap);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);

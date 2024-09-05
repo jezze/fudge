@@ -141,21 +141,21 @@ struct hsv rgb2hsv(struct rgb rgb)
 
 }
 
-static void draw(unsigned int service, unsigned int data, struct ctrl_videosettings *settings, int x1, int y1, int x2, int y2, unsigned int iterations)
+static void draw(unsigned int service, unsigned int data, struct event_videoinfo *videoinfo, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
 
     unsigned char buffer[7680];
-    int xs = (x2 - x1) / settings->width;
-    int ys = (y2 - y1) / settings->height;
+    int xs = (x2 - x1) / videoinfo->width;
+    int ys = (y2 - y1) / videoinfo->height;
     unsigned int x;
     unsigned int y;
 
-    for (y = 0; y < settings->height; y++)
+    for (y = 0; y < videoinfo->height; y++)
     {
 
         int yy = y1 + y * ys;
 
-        for (x = 0; x < settings->width; x++)
+        for (x = 0; x < videoinfo->width; x++)
         {
 
             unsigned int c;
@@ -180,7 +180,7 @@ static void draw(unsigned int service, unsigned int data, struct ctrl_videosetti
 
             }
 
-            if (settings->bpp == 4)
+            if (videoinfo->bpp == 4)
             {
 
                 unsigned char *p = buffer + x * 4;
@@ -207,7 +207,7 @@ static void draw(unsigned int service, unsigned int data, struct ctrl_videosetti
 
         }
 
-        fsp_write_all(service, data, buffer, settings->width * settings->bpp, settings->width * y * settings->bpp);
+        fsp_write_all(service, data, buffer, videoinfo->width * videoinfo->bpp, videoinfo->width * y * videoinfo->bpp);
 
     }
 
@@ -238,18 +238,19 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
     unsigned int videodata = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "data");
     unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
-    struct ctrl_videosettings settings;
+    struct event_videoconf videoconf;
+    struct event_videoinfo videoinfo;
 
-    settings.width = option_getdecimal("width");
-    settings.height = option_getdecimal("height");
-    settings.bpp = option_getdecimal("bpp");
+    videoconf.width = option_getdecimal("width");
+    videoconf.height = option_getdecimal("height");
+    videoconf.bpp = option_getdecimal("bpp");
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(EVENT_WMACK);
-    fsp_write_all(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
-    fsp_read_all(videoservice, videoctrl, &settings, sizeof (struct ctrl_videosettings), 0);
+    fsp_write_all(videoservice, videoctrl, &videoconf, sizeof (struct event_videoconf), 0);
+    fsp_read_all(videoservice, videoctrl, &videoinfo, sizeof (struct event_videoinfo), 0);
 
-    if (settings.bpp == 1)
+    if (videoinfo.bpp == 1)
     {
 
         unsigned char colormap[768];
@@ -275,7 +276,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    draw(videoservice, videodata, &settings, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    draw(videoservice, videodata, &videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
     channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
 
     while (channel_process());
