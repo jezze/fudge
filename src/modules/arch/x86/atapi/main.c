@@ -14,10 +14,17 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int blockinterface_request(unsigned int count, unsigned int sector)
+{
+
+    return count;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 232);
+    block_initinterface(&blockinterface, id, 232, blockinterface_request);
 
 }
 

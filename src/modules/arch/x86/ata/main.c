@@ -23,23 +23,19 @@ static void handleirq(unsigned int irq)
 
 }
 
-/*
-static unsigned int blockinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int blockinterface_request(unsigned int count, unsigned int sector)
 {
 
-    struct event_blockrequest *blockrequest = buffer;
-
-    ide_rpio28(blockinterface.id, 0, blockrequest->count, blockrequest->sector);
+    ide_rpio28(blockinterface.id, 0, count, sector);
 
     return count;
 
 }
-*/
 
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 231);
+    block_initinterface(&blockinterface, id, 231, blockinterface_request);
 
 }
 

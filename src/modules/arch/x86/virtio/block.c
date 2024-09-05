@@ -78,10 +78,17 @@ static void setfeatures(void)
 
 }
 
+static unsigned int blockinterface_request(unsigned int count, unsigned int sector)
+{
+
+    return count;
+
+}
+
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 481);
+    block_initinterface(&blockinterface, id, 481, blockinterface_request);
 
 }
 
