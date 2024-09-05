@@ -325,38 +325,6 @@ struct event_writeresponse
 
 };
 
-struct event_linkrequest
-{
-
-    unsigned int session;
-    unsigned int id;
-
-};
-
-struct event_linkresponse
-{
-
-    unsigned int session;
-    unsigned int id;
-
-};
-
-struct event_unlinkrequest
-{
-
-    unsigned int session;
-    unsigned int id;
-
-};
-
-struct event_unlinkresponse
-{
-
-    unsigned int session;
-    unsigned int id;
-
-};
-
 struct event_clockinfo
 {
 
