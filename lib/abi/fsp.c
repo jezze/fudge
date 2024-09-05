@@ -3,112 +3,7 @@
 #include "channel.h"
 #include "fsp.h"
 
-struct session
-{
-
-    unsigned int id;
-    unsigned int ready;
-    void *mdata;
-
-};
-
 static unsigned int sessioncount;
-static struct session listsession;
-static struct session mapsession;
-static struct session readsession;
-static struct session statsession;
-static struct session walksession;
-static struct session writesession;
-
-static void session_init(struct session *session)
-{
-
-    session->id = ++sessioncount;
-    session->ready = 0;
-
-}
-
-static void session_match(struct session *session, unsigned int id, void *mdata)
-{
-
-    if (session->id == id)
-    {
-
-        session->mdata = mdata;
-        session->ready = 1;
-
-    }
-
-}
-
-static unsigned int session_wait(struct session *session)
-{
-
-    while (channel_process())
-    {
-
-        if (session->ready)
-            return 1;
-
-    }
-
-    return 0;
-
-}
-
-static void onlistresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_listresponse *header = mdata;
-
-    session_match(&listsession, header->session, mdata);
-
-}
-
-static void onmapresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_mapresponse *header = mdata;
-
-    session_match(&mapsession, header->session, mdata);
-
-}
-
-static void onreadresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_readresponse *header = mdata;
-
-    session_match(&readsession, header->session, mdata);
-
-}
-
-static void onstatresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_statresponse *header = mdata;
-
-    session_match(&statsession, header->session, mdata);
-
-}
-
-static void onwalkresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_walkresponse *header = mdata;
-
-    session_match(&walksession, header->session, mdata);
-
-}
-
-static void onwriteresponse(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_writeresponse *header = mdata;
-
-    session_match(&writesession, header->session, mdata);
-
-}
 
 unsigned int fsp_auth(char *path)
 {
@@ -129,22 +24,22 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 {
 
     struct event_listrequest request;
+    unsigned char data[MESSAGE_SIZE];
 
-    session_init(&listsession);
-
-    request.session = listsession.id;
+    request.session = ++sessioncount;
     request.id = id;
     request.offset = offset;
     request.nrecords = nrecords;
 
     channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
-    if (session_wait(&listsession))
+    while (channel_wait_buffer(EVENT_LISTRESPONSE, MESSAGE_SIZE, data))
     {
 
-        struct event_listresponse *header = listsession.mdata;
+        struct event_listresponse *response = (void *)data;
 
-        return buffer_write(records, sizeof (struct record) * nrecords, header + 1, sizeof (struct record) * header->nrecords, 0) / sizeof (struct record);
+        if (response->session == request.session)
+            return buffer_write(records, sizeof (struct record) * nrecords, response + 1, sizeof (struct record) * response->nrecords, 0) / sizeof (struct record);
 
     }
 
@@ -156,20 +51,20 @@ unsigned int fsp_map(unsigned int target, unsigned int id)
 {
 
     struct event_maprequest request;
+    unsigned char data[MESSAGE_SIZE];
 
-    session_init(&mapsession);
-
-    request.session = mapsession.id;
+    request.session = ++sessioncount;
     request.id = id;
 
     channel_send_buffer(target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
 
-    if (session_wait(&mapsession))
+    while (channel_wait_buffer(EVENT_MAPRESPONSE, MESSAGE_SIZE, data))
     {
 
-        struct event_mapresponse *header = mapsession.mdata;
+        struct event_mapresponse *response = (void *)data;
 
-        return header->address;
+        if (response->session == request.session)
+            return response->address;
 
     }
 
@@ -181,22 +76,22 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 {
 
     struct event_readrequest request;
+    unsigned char data[MESSAGE_SIZE];
 
-    session_init(&readsession);
-
-    request.session = readsession.id;
+    request.session = ++sessioncount;
     request.id = id;
     request.offset = offset;
     request.count = count;
 
     channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
-    if (session_wait(&readsession))
+    while (channel_wait_buffer(EVENT_READRESPONSE, MESSAGE_SIZE, data))
     {
 
-        struct event_readresponse *header = readsession.mdata;
+        struct event_readresponse *response = (void *)data;
 
-        return buffer_write(buffer, count, header + 1, header->count, 0);
+        if (response->session == request.session)
+            return buffer_write(buffer, count, response + 1, response->count, 0);
 
     }
 
@@ -235,20 +130,20 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 {
 
     struct event_statrequest request;
+    unsigned char data[MESSAGE_SIZE];
 
-    session_init(&statsession);
-
-    request.session = statsession.id;
+    request.session = ++sessioncount;
     request.id = id;
 
     channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
-    if (session_wait(&statsession))
+    while (channel_wait_buffer(EVENT_STATRESPONSE, MESSAGE_SIZE, data))
     {
 
-        struct event_statresponse *header = statsession.mdata;
+        struct event_statresponse *response = (void *)data;
 
-        return buffer_write(record, sizeof (struct record), header + 1, sizeof (struct record) * header->nrecords, 0) / sizeof (struct record);
+        if (response->session == request.session)
+            return buffer_write(record, sizeof (struct record), response + 1, sizeof (struct record) * response->nrecords, 0) / sizeof (struct record);
 
     }
 
@@ -260,21 +155,21 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 {
 
     struct {struct event_walkrequest header; char path[64];} request;
+    unsigned char data[MESSAGE_SIZE];
 
-    session_init(&walksession);
-
-    request.header.session = walksession.id;
+    request.header.session = ++sessioncount;
     request.header.parent = parent;
     request.header.length = buffer_write(request.path, 64, path, cstring_length(path), 0);
 
     channel_send_buffer(target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
-    if (session_wait(&walksession))
+    while (channel_wait_buffer(EVENT_WALKRESPONSE, MESSAGE_SIZE, data))
     {
 
-        struct event_walkresponse *header = walksession.mdata;
+        struct event_walkresponse *response = (void *)data;
 
-        return header->id;
+        if (response->session == request.header.session)
+            return response->id;
 
     }
 
@@ -286,22 +181,22 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 {
 
     struct {struct event_writerequest header; char data[64];} request;
+    unsigned char data[MESSAGE_SIZE];
 
-    session_init(&writesession);
-
-    request.header.session = writesession.id;
+    request.header.session = ++sessioncount;
     request.header.id = id;
     request.header.offset = offset;
     request.header.count = buffer_write(request.data, 64, buffer, count, 0);
 
     channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
-    if (session_wait(&writesession))
+    while (channel_wait_buffer(EVENT_WRITERESPONSE, MESSAGE_SIZE, data))
     {
 
-        struct event_writeresponse *header = writesession.mdata;
+        struct event_writeresponse *response = (void *)data;
 
-        return buffer_write(buffer, count, header + 1, header->count, 0);
+        if (response->session == request.header.session)
+            return buffer_write(buffer, count, response + 1, response->count, 0);
 
     }
 
@@ -359,14 +254,3 @@ unsigned int fsp_spawn_relative(char *path, char *parent)
 
 }
 
-void fsp_bind(void)
-{
-
-    channel_bind(EVENT_LISTRESPONSE, onlistresponse);
-    channel_bind(EVENT_MAPRESPONSE, onmapresponse);
-    channel_bind(EVENT_READRESPONSE, onreadresponse);
-    channel_bind(EVENT_STATRESPONSE, onstatresponse);
-    channel_bind(EVENT_WALKRESPONSE, onwalkresponse);
-    channel_bind(EVENT_WRITERESPONSE, onwriteresponse);
-
-}

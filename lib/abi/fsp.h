@@ -10,4 +10,3 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 unsigned int fsp_write_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fsp_spawn(char *path);
 unsigned int fsp_spawn_relative(char *path, char *parent);
-void fsp_bind(void);

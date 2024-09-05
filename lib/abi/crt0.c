@@ -64,7 +64,6 @@ void main(void)
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_REDIRECT, onredirect);
     channel_bind(EVENT_STATUS, onstatus);
-    fsp_bind();
     init();
 
     while (channel_process());
