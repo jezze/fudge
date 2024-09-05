@@ -3,7 +3,6 @@
 #include <abi.h>
 #include <socket.h>
 
-static struct ctrl_clocksettings settings;
 static struct socket local;
 static struct socket remote;
 static struct socket router;
@@ -112,13 +111,6 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 
 }
 
-static void onclockinfo(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    buffer_copy(&settings, mdata, msize);
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -139,10 +131,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     struct url url;
     unsigned char buffer[4096];
     unsigned int count;
+    struct ctrl_clocksettings settings;
     struct mtwist_state state;
 
     channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait(EVENT_CLOCKINFO);
+    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct ctrl_clocksettings), &settings);
     mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
@@ -191,7 +184,6 @@ void init(void)
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
     option_add("dns", "initrd:bin/dns");
-    channel_bind(EVENT_CLOCKINFO, onclockinfo);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);
 

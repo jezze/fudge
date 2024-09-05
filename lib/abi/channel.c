@@ -299,6 +299,32 @@ unsigned int channel_wait(unsigned int event)
 
 }
 
+unsigned int channel_wait_buffer(unsigned int event, unsigned int count, void *data)
+{
+
+    struct message message;
+    char data2[MESSAGE_SIZE];
+
+    while (channel_pick(&message, MESSAGE_SIZE, data2))
+    {
+
+        channel_dispatch(&message, data2);
+
+        if (message.event == event)
+        {
+
+            buffer_copy(data, data2, count);
+
+            return message.event;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
 {
 

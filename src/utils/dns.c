@@ -3,7 +3,6 @@
 #include <abi.h>
 #include <socket.h>
 
-static struct ctrl_clocksettings settings;
 static struct socket local;
 static struct socket remote;
 static struct socket router;
@@ -60,13 +59,6 @@ static void reply(unsigned int source, unsigned short type, char *name, void *rd
 
 }
 
-static void onclockinfo(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    buffer_copy(&settings, mdata, msize);
-
-}
-
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -74,10 +66,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
     unsigned char buffer[4096];
     unsigned int count;
+    struct ctrl_clocksettings settings;
     struct mtwist_state state;
 
     channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait(EVENT_CLOCKINFO);
+    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct ctrl_clocksettings), &settings);
     mtwist_seed1(&state, time_unixtime(settings.year, settings.month, settings.day, settings.hours, settings.minutes, settings.seconds));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_udpv(&local, mtwist_rand(&state));
@@ -146,7 +139,6 @@ void init(void)
     option_add("remote-port", "53");
     option_add("router-address", "10.0.5.80");
     option_add("domain", "");
-    channel_bind(EVENT_CLOCKINFO, onclockinfo);
     channel_bind(EVENT_MAIN, onmain);
 
 }
