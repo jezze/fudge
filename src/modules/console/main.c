@@ -11,7 +11,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
     {
 
     case EVENT_DATA:
-        return interface->send(data, count);
+        return interface->ondata(data, count);
 
     case EVENT_LINK:
         return kernel_link(interface->ichannel, source, interface->ichannel);
@@ -21,7 +21,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
     }
 
-    return 0;
+    return EVENT_UNIMPLEMENTED;
 
 }
 
@@ -51,14 +51,14 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*send)(void *buffer, unsigned int count))
+void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*ondata)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
     interface->id = id;
     interface->ichannel = ichannel;
-    interface->send = send;
+    interface->ondata = ondata;
 
 }
 

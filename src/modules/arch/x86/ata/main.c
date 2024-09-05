@@ -23,19 +23,19 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_request(unsigned int count, unsigned int sector)
+static unsigned int blockinterface_onblockrequest(unsigned int count, unsigned int sector)
 {
 
     ide_rpio28(blockinterface.id, 0, count, sector);
 
-    return count;
+    return EVENT_OK;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 231, blockinterface_request);
+    block_initinterface(&blockinterface, id, 231, blockinterface_onblockrequest);
 
 }
 

@@ -73,18 +73,8 @@ static void interpret(void)
                 switch (message.event)
                 {
 
-                case EVENT_TERMRESPONSE:
-                    job_close(&job, message.source);
-
-                    break;
-
                 case EVENT_DATA:
                     print(data, message_datasize(&message));
-
-                    break;
-
-                default:
-                    channel_dispatch(&message, data);
 
                     break;
 
@@ -102,8 +92,6 @@ static void interpret(void)
         }
 
     }
-
-    printprompt();
 
 }
 
@@ -199,18 +187,8 @@ static void complete(void)
                 switch (message.event)
                 {
 
-                case EVENT_TERMRESPONSE:
-                    job_close(&job, message.source);
-
-                    break;
-
                 case EVENT_DATA:
                     ring_write(&output, data, message_datasize(&message));
-
-                    break;
-
-                default:
-                    channel_dispatch(&message, data);
 
                     break;
 
@@ -372,6 +350,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 print(&consoledata->data, 1);
                 ring_write(&input, &consoledata->data, 1);
                 interpret();
+                printprompt();
 
                 break;
 

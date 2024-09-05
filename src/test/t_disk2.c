@@ -40,12 +40,10 @@ static unsigned int validate(unsigned int source, void *buffer, unsigned short t
 static unsigned int version(unsigned int source, unsigned short tag, unsigned int msize, char *name)
 {
 
-    char buffer[MESSAGE_SIZE];
-    struct message message;
     char data[MESSAGE_SIZE];
 
-    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
-    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(data, tag, msize, name), data);
+    channel_wait_buffer(EVENT_P9P, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -66,11 +64,10 @@ static unsigned int attach(unsigned int source, unsigned short tag, unsigned int
 {
 
     char buffer[MESSAGE_SIZE];
-    struct message message;
     char data[MESSAGE_SIZE];
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_wait_buffer(EVENT_P9P, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -90,12 +87,10 @@ static unsigned int attach(unsigned int source, unsigned short tag, unsigned int
 static unsigned int walk(unsigned int source, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname)
 {
 
-    char buffer[MESSAGE_SIZE];
-    struct message message;
     char data[MESSAGE_SIZE];
 
-    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
-    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(data, tag, fid, newfid, 1, &wname), data);
+    channel_wait_buffer(EVENT_P9P, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -115,12 +110,10 @@ static unsigned int walk(unsigned int source, unsigned short tag, unsigned int f
 static unsigned int read(unsigned int source, unsigned short tag, unsigned int fid)
 {
 
-    char buffer[MESSAGE_SIZE];
-    struct message message;
     char data[MESSAGE_SIZE];
 
-    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
-    channel_poll(EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(data, tag, fid, 0, 0, 512), data);
+    channel_wait_buffer(EVENT_P9P, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;

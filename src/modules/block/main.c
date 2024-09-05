@@ -7,7 +7,7 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 
     struct event_blockrequest *blockrequest = data;
 
-    return interface->request(blockrequest->count, blockrequest->sector);
+    return interface->onblockrequest(blockrequest->count, blockrequest->sector);
 
 }
 
@@ -30,7 +30,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
     }
 
-    return 0;
+    return EVENT_UNIMPLEMENTED;
 
 }
 
@@ -56,14 +56,14 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*request)(unsigned int count, unsigned int sector))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*onblockrequest)(unsigned int count, unsigned int sector))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
     interface->id = id;
     interface->ichannel = ichannel;
-    interface->request = request;
+    interface->onblockrequest = onblockrequest;
 
 }
 

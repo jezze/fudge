@@ -5,9 +5,7 @@
 static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    interface->setcmap(source, count, data);
-
-    return 1;
+    return interface->onvideocmap(source, count, data);
 
 }
 
@@ -16,9 +14,7 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
     struct event_videoconf *videoconf = data;
 
-    interface->setmode(source, videoconf->width, videoconf->height, videoconf->bpp);
-
-    return 1;
+    return interface->onvideoconf(source, videoconf->width, videoconf->height, videoconf->bpp);
 
 }
 
@@ -44,7 +40,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
     }
 
-    return 0;
+    return EVENT_UNIMPLEMENTED;
 
 }
 
@@ -77,7 +73,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*setcmap)(unsigned int source, unsigned int count, void *data), unsigned int (*setmode)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*onvideocmap)(unsigned int source, unsigned int count, void *data), unsigned int (*onvideoconf)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
@@ -87,8 +83,8 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
-    interface->setcmap = setcmap;
-    interface->setmode = setmode;
+    interface->onvideocmap = onvideocmap;
+    interface->onvideoconf = onvideoconf;
 
 }
 

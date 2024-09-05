@@ -131,18 +131,8 @@ static void interpret(void)
                 switch (message.event)
                 {
 
-                case EVENT_TERMRESPONSE:
-                    job_close(&job, message.source);
-
-                    break;
-
                 case EVENT_DATA:
                     print(data, message_datasize(&message));
-
-                    break;
-
-                default:
-                    channel_dispatch(&message, data);
 
                     break;
 
@@ -257,18 +247,8 @@ static void complete(void)
                 switch (message.event)
                 {
 
-                case EVENT_TERMRESPONSE:
-                    job_close(&job, message.source);
-
-                    break;
-
                 case EVENT_DATA:
                     ring_write(&output, data, message_datasize(&message));
-
-                    break;
-
-                default:
-                    channel_dispatch(&message, data);
 
                     break;
 

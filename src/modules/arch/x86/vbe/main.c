@@ -97,14 +97,14 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static unsigned int videointerface_setcmap(unsigned int source, unsigned int count, void *buffer)
+static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    return count;
+    return EVENT_UNIMPLEMENTED;
 
 }
 
-static unsigned int videointerface_setmode(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     unsigned short modenum;
@@ -132,18 +132,18 @@ static unsigned int videointerface_setmode(unsigned int source, unsigned int wid
 
         video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
 
-        return 1;
+        return EVENT_OK;
 
     }
 
-    return 0;
+    return EVENT_ERROR;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 403, videointerface_setcmap, videointerface_setmode);
+    video_initinterface(&videointerface, id, 403, videointerface_onvideocmap, videointerface_onvideoconf);
 
     videointerface.width = 80;
     videointerface.height = 25;

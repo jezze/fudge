@@ -12,12 +12,11 @@ static char *levels[5] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message message;
     char data[MESSAGE_SIZE];
 
     channel_send(option_getdecimal("log-service"), EVENT_LINK);
 
-    while (channel_poll(EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(EVENT_LOGINFO, MESSAGE_SIZE, data))
     {
 
         struct event_loginfo *loginfo = (void *)data;

@@ -252,7 +252,16 @@ unsigned int job_pick(struct job *job, struct message *message, unsigned int cou
 {
 
     while (job_count(job) && channel_pick(message, count, data))
+    {
+
+        channel_dispatch(message, data);
+
+        if (message->event == EVENT_TERMRESPONSE)
+            job_close(job, message->source);
+
         return message->source;
+
+    }
 
     return 0;
 

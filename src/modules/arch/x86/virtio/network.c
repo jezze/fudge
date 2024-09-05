@@ -74,7 +74,7 @@ static void handleirq(unsigned int irq)
 }
 
 #if 0
-static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
+static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
 {
 
     struct virtio_queue *vq = &vqs[1];
@@ -132,7 +132,7 @@ static void setfeatures(void)
 
 }
 
-static unsigned int ethernetinterface_getinfo(unsigned int source)
+static unsigned int ethernetinterface_oninfo(unsigned int source)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -146,14 +146,21 @@ static unsigned int ethernetinterface_getinfo(unsigned int source)
 
     kernel_place(ethernetinterface.ichannel, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
 
-    return ETHERNET_ADDRSIZE;
+    return EVENT_OK;
+
+}
+
+static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
+{
+
+    return EVENT_UNIMPLEMENTED;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, 109, ethernetinterface_getinfo, 0);
+    ethernet_initinterface(&ethernetinterface, id, 109, ethernetinterface_oninfo, ethernetinterface_ondata);
 
 }
 

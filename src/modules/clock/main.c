@@ -11,11 +11,11 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
     {
 
     case EVENT_INFO:
-        return interface->getinfo(source);
+        return interface->oninfo(source);
 
     }
 
-    return 0;
+    return EVENT_UNIMPLEMENTED;
 
 }
 
@@ -34,14 +34,14 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*getinfo)(unsigned int source))
+void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*oninfo)(unsigned int source))
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
 
     interface->id = id;
     interface->ichannel = ichannel;
-    interface->getinfo = getinfo;
+    interface->oninfo = oninfo;
 
 }
 

@@ -42,7 +42,7 @@ static void clear(unsigned int offset)
 
 }
 
-static unsigned int consoleinterface_send(void *buffer, unsigned int count)
+static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
 {
 
     unsigned int total = videointerface.width * videointerface.height;
@@ -92,7 +92,7 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
     outcrt1(VGA_REG_CRTINDEX1_CRT0E, cursor.offset >> 8);
     outcrt1(VGA_REG_CRTINDEX1_CRT0F, cursor.offset);
 
-    return count;
+    return EVENT_OK;
 
 }
 
@@ -124,7 +124,7 @@ static unsigned int videointerface_getcmap(unsigned int source, unsigned int cou
 }
 */
 
-static unsigned int videointerface_setcmap(unsigned int source, unsigned int count, void *buffer)
+static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -143,11 +143,11 @@ static unsigned int videointerface_setcmap(unsigned int source, unsigned int cou
 
     }
 
-    return i;
+    return EVENT_OK;
 
 }
 
-static unsigned int videointerface_setmode(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     if (width == 80)
@@ -180,15 +180,15 @@ static unsigned int videointerface_setmode(unsigned int source, unsigned int wid
 
     video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
 
-    return 1;
+    return EVENT_OK;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id, 101, consoleinterface_send);
-    video_initinterface(&videointerface, id, 404, videointerface_setcmap, videointerface_setmode);
+    console_initinterface(&consoleinterface, id, 101, consoleinterface_ondata);
+    video_initinterface(&videointerface, id, 404, videointerface_onvideocmap, videointerface_onvideoconf);
 
     videointerface.width = 80;
     videointerface.height = 25;

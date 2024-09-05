@@ -125,7 +125,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int consoleinterface_send(void *buffer, unsigned int count)
+static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -141,14 +141,14 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 
     }
 
-    return count;
+    return EVENT_OK;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id, 100, consoleinterface_send);
+    console_initinterface(&consoleinterface, id, 100, consoleinterface_ondata);
 
 }
 

@@ -42,6 +42,20 @@ static void coreassign0(struct list_item *item)
 
 }
 
+static struct channel *getchannel(unsigned int ichannel)
+{
+
+    return (ichannel && ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+
+}
+
+static struct task *gettask(unsigned int itask)
+{
+
+    return (itask && itask < KERNEL_TASKS) ? &taskrows[itask].task : 0;
+
+}
+
 static void unblocktasks(void)
 {
 
@@ -176,7 +190,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned int source)
 {
 
-    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+    struct channel *channel = getchannel(ichannel);
 
     if (channel)
     {
@@ -194,20 +208,20 @@ unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned in
 
             list_add(&channel->links, linkitem);
 
-            return 1;
+            return EVENT_OK;
 
         }
 
     }
 
-    return 0;
+    return EVENT_FAILED;
 
 }
 
 unsigned int kernel_unlink(unsigned int ichannel, unsigned int target)
 {
 
-    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+    struct channel *channel = getchannel(ichannel);
 
     if (channel)
     {
@@ -239,7 +253,7 @@ unsigned int kernel_unlink(unsigned int ichannel, unsigned int target)
 
     }
 
-    return 1;
+    return EVENT_OK;
 
 }
 
@@ -258,38 +272,55 @@ unsigned int kernel_schedule(struct core *core)
 unsigned int kernel_codebase(unsigned int itask, unsigned int address)
 {
 
-    struct taskrow *taskrow = &taskrows[itask];
-    struct binary_format *format = binary_findformat(&taskrow->task.node);
+    struct task *task = gettask(itask);
 
-    return (format) ? format->findbase(&taskrow->task.node, address) : 0;
+    if (task)
+    {
+
+        struct binary_format *format = binary_findformat(&task->node);
+
+        return (format) ? format->findbase(&task->node, address) : 0;
+
+    }
+
+    return 0;
 
 }
 
 unsigned int kernel_loadprogram(unsigned int itask)
 {
 
-    struct taskrow *taskrow = &taskrows[itask];
-    struct binary_format *format = binary_findformat(&taskrow->task.node);
+    struct task *task = gettask(itask);
 
-    return (format) ? format->copyprogram(&taskrow->task.node) : 0;
+    if (task)
+    {
+
+        struct binary_format *format = binary_findformat(&task->node);
+
+        return (format) ? format->copyprogram(&task->node) : 0;
+
+    }
+
+    return 0;
 
 }
 
 void kernel_signal(unsigned int itask, unsigned int signal)
 {
 
-    struct taskrow *taskrow = &taskrows[itask];
+    struct task *task = gettask(itask);
 
-    task_signal(&taskrow->task, signal);
+    if (task)
+        task_signal(task, signal);
 
 }
 
 struct task_thread *kernel_getthread(unsigned int itask)
 {
 
-    struct taskrow *taskrow = &taskrows[itask];
+    struct task *task = gettask(itask);
 
-    return &taskrow->task.thread;
+    return (task) ? &task->thread : 0;
 
 }
 
@@ -309,7 +340,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+    struct channel *channel = getchannel(ichannel);
 
     return (channel) ? channel->place(channel->target, source, event, count, data) : 0;
 
@@ -318,7 +349,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
-    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+    struct channel *channel = getchannel(ichannel);
 
     if (channel)
     {
@@ -335,7 +366,7 @@ void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*
 void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    struct channel *channel = (ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
+    struct channel *channel = getchannel(ichannel);
 
     if (channel)
     {

@@ -18,7 +18,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
     }
 
-    return 0;
+    return EVENT_UNIMPLEMENTED;
 
 }
 

@@ -236,7 +236,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_getinfo(unsigned int source)
+static unsigned int ethernetinterface_oninfo(unsigned int source)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -250,11 +250,11 @@ static unsigned int ethernetinterface_getinfo(unsigned int source)
 
     kernel_place(ethernetinterface.ichannel, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
 
-    return ETHERNET_ADDRSIZE;
+    return EVENT_OK;
 
 }
 
-static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
+static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -291,14 +291,14 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
     txp++;
     txp %= 4;
 
-    return count;
+    return EVENT_OK;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, 108, ethernetinterface_getinfo, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, id, 108, ethernetinterface_oninfo, ethernetinterface_ondata);
 
 }
 

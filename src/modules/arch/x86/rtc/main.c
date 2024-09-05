@@ -42,7 +42,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int clockinterface_getinfo(unsigned int source)
+static unsigned int clockinterface_oninfo(unsigned int source)
 {
 
     struct event_clockinfo clockinfo;
@@ -57,14 +57,14 @@ static unsigned int clockinterface_getinfo(unsigned int source)
 
     kernel_place(clockinterface.ichannel, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
-    return sizeof (struct event_clockinfo);
+    return EVENT_OK;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, id, 220, clockinterface_getinfo);
+    clock_initinterface(&clockinterface, id, 220, clockinterface_oninfo);
 
 }
 

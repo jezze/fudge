@@ -13,9 +13,6 @@ unsigned int fs_auth(char *path)
     if (cstring_length(path) >= 7 && buffer_match(path, "initrd:", 7))
         return 500;
 
-    if (cstring_length(path) >= 7 && buffer_match(path, "system:", 7))
-        return 501;
-
     return 0;
 
 }

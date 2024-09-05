@@ -58,7 +58,7 @@ static int maphorizontalcrtc(int bpp, int pixelclock, int htiming)
 
 }
 
-static void videointerface_setmode(struct ctrl_videosettings *settings)
+static void videointerface_onvideoconf(struct ctrl_videosettings *settings)
 {
 
     unsigned char registers[60];
@@ -179,7 +179,7 @@ static void videointerface_setmode(struct ctrl_videosettings *settings)
 static void driver_init(void)
 {
 
-    video_initinterface(&videointerface, videointerface_setmode);
+    video_initinterface(&videointerface, videointerface_onvideoconf);
 
 }
 

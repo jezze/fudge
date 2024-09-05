@@ -249,10 +249,10 @@ unsigned int channel_poll(unsigned int event, struct message *message, unsigned 
     while (channel_pick(message, count, data))
     {
 
+        channel_dispatch(message, data);
+
         if (message->event == event)
             return message->event;
-
-        channel_dispatch(message, data);
 
     }
 
@@ -268,10 +268,10 @@ unsigned int channel_read(unsigned int event, unsigned int count, void *data)
     while (channel_pick(&message, count, data) != EVENT_TERMRESPONSE)
     {
 
+        channel_dispatch(&message, data);
+
         if (message.event == event)
             return message_datasize(&message);
-
-        channel_dispatch(&message, data);
 
     }
 
