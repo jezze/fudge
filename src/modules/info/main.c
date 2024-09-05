@@ -1,12 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/system/system.h>
 
-static struct system_node root;
-static struct system_node cores;
-static struct system_node tasks;
-static struct system_node mailboxes;
-
+/*
 static unsigned int cores_read(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -100,38 +95,5 @@ static unsigned int mailboxes_read(void *buffer, unsigned int count, unsigned in
     return 0;
 
 }
-
-void module_init(void)
-{
-
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "info");
-    system_initnode(&cores, SYSTEM_NODETYPE_NORMAL, "cores");
-    system_initnode(&tasks, SYSTEM_NODETYPE_NORMAL, "tasks");
-    system_initnode(&mailboxes, SYSTEM_NODETYPE_NORMAL, "mailboxes");
-
-    cores.operations.read = cores_read;
-    tasks.operations.read = tasks_read;
-    mailboxes.operations.read = mailboxes_read;
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-    system_addchild(&root, &cores);
-    system_addchild(&root, &tasks);
-    system_addchild(&root, &mailboxes);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
-    system_removechild(&root, &cores);
-    system_removechild(&root, &tasks);
-    system_removechild(&root, &mailboxes);
-
-}
+*/
 

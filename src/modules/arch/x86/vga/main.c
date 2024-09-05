@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/base/driver.h>
-#include <modules/system/system.h>
 #include <modules/console/console.h>
 #include <modules/video/video.h>
 #include <modules/arch/x86/io/io.h>

@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/base/bus.h>
-#include <modules/system/system.h>
 #include <modules/arch/x86/io/io.h>
 #include "ps2.h"
 
@@ -72,7 +71,6 @@ struct device
 };
 
 static struct base_bus bus;
-static struct system_node reset;
 
 static struct device devices[] = {
     {0},
@@ -336,6 +334,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
+/*
 static unsigned int reset_write(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -344,14 +343,12 @@ static unsigned int reset_write(void *buffer, unsigned int count, unsigned int o
     return 0;
 
 }
+*/
 
 void module_init(void)
 {
 
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
-    system_initnode(&reset, SYSTEM_NODETYPE_NORMAL, "reset");
-
-    reset.operations.write = reset_write;
 
 }
 
@@ -359,7 +356,6 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    system_registernode(&reset);
 
 }
 
@@ -367,7 +363,6 @@ void module_unregister(void)
 {
 
     base_unregisterbus(&bus);
-    system_unregisternode(&reset);
 
 }
 

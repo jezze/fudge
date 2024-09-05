@@ -1,10 +1,7 @@
 #include <fudge.h>
 #include <net.h>
 #include <kernel.h>
-#include <modules/system/system.h>
 #include "ethernet.h"
-
-static struct system_node root;
 
 static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
@@ -62,27 +59,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     interface->id = id;
     interface->ichannel = ichannel;
     interface->getinfo = getinfo;
-
-}
-
-void module_init(void)
-{
-
-    system_initnode(&root, SYSTEM_NODETYPE_GROUP, "ethernet");
-
-}
-
-void module_register(void)
-{
-
-    system_registernode(&root);
-
-}
-
-void module_unregister(void)
-{
-
-    system_unregisternode(&root);
 
 }
 

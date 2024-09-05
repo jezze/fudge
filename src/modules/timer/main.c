@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/system/system.h>
 #include "timer.h"
 
 static unsigned int place1(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)

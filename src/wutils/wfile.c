@@ -154,7 +154,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + select id \"volume\" in \"top\" label \"Volume\"\n"
         "        + layout id \"volume-list\" in \"volume\" flow \"vertical-stretch\"\n"
         "          + choice in \"volume-list\" label \"initrd:\" onclick \"q=abspath&path=initrd:\"\n"
-        "          + choice in \"volume-list\" label \"system:\" onclick \"q=abspath&path=system:\"\n"
         "      + textbox id \"pathbox\" in \"top\" span \"1\" cursor \"0\"\n"
         "        + text id \"path\" in \"pathbox\"\n"
         "      + button in \"top\" label \"Up\" onclick \"q=up\"\n"

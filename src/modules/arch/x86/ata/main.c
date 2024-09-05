@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/base/driver.h>
-#include <modules/system/system.h>
 #include <modules/block/block.h>
 #include <modules/arch/x86/ide/ide.h>
 #include <modules/arch/x86/pic/pic.h>
@@ -24,6 +23,7 @@ static void handleirq(unsigned int irq)
 
 }
 
+/*
 static unsigned int blockinterface_writedata(void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -34,13 +34,12 @@ static unsigned int blockinterface_writedata(void *buffer, unsigned int count, u
     return count;
 
 }
+*/
 
 static void driver_init(unsigned int id)
 {
 
     block_initinterface(&blockinterface, id, 231);
-
-    blockinterface.data.operations.write = blockinterface_writedata;
 
 }
 

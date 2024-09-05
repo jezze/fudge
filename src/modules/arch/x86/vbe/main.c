@@ -6,7 +6,6 @@
 #include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
 #include <modules/base/driver.h>
-#include <modules/system/system.h>
 #include <modules/video/video.h>
 #include <modules/arch/x86/pci/pci.h>
 #include "vbe.h"

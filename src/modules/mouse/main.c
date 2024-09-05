@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/system/system.h>
 #include "mouse.h"
 
 static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)

@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/system/system.h>
 #include "video.h"
 
 static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)

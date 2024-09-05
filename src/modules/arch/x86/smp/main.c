@@ -6,7 +6,6 @@
 #include <kernel/x86/tss.h>
 #include <kernel/x86/mmu.h>
 #include <kernel/x86/arch.h>
-#include <modules/system/system.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/pat/pat.h>

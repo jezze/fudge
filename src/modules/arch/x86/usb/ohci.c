@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/base/driver.h>
-#include <modules/system/system.h>
 #include <modules/arch/x86/pci/pci.h>
 
 #define REG_REVISION                    0x00

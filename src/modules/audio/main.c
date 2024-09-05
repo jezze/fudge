@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/system/system.h>
 #include "audio.h"
 
 void audio_registerinterface(struct audio_interface *interface)
