@@ -43,7 +43,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int clockinterface_info(unsigned int source)
+static unsigned int clockinterface_getinfo(unsigned int source)
 {
 
     struct event_clockinfo clockinfo;
@@ -65,7 +65,7 @@ static unsigned int clockinterface_info(unsigned int source)
 static void driver_init(unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, id, 220, clockinterface_info);
+    clock_initinterface(&clockinterface, id, 220, clockinterface_getinfo);
 
 }
 

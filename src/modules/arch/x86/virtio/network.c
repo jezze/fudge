@@ -133,7 +133,7 @@ static void setfeatures(void)
 
 }
 
-static unsigned int ethernetinterface_info(unsigned int source)
+static unsigned int ethernetinterface_getinfo(unsigned int source)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -154,7 +154,7 @@ static unsigned int ethernetinterface_info(unsigned int source)
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, 109, ethernetinterface_info, 0);
+    ethernet_initinterface(&ethernetinterface, id, 109, ethernetinterface_getinfo, 0);
 
 }
 

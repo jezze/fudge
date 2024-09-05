@@ -18,7 +18,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
         return interface->send(data, count);
 
     case EVENT_INFO:
-        return interface->info(source);
+        return interface->getinfo(source);
 
     case EVENT_LINK:
         return kernel_link(interface->ichannel, source, interface->ichannel);
@@ -54,14 +54,14 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*info)(unsigned int source), unsigned int (*send)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*getinfo)(unsigned int source), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
 
     interface->id = id;
     interface->ichannel = ichannel;
-    interface->info = info;
+    interface->getinfo = getinfo;
 
 }
 
