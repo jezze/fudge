@@ -29,26 +29,12 @@ struct mbr
 static void request_send(unsigned int sector, unsigned int count)
 {
 
-    unsigned int service = fsp_auth(option_getstring("volume"));
+    struct event_blockrequest blockrequest;
 
-    if (service)
-    {
+    blockrequest.sector = sector;
+    blockrequest.count = count;
 
-        unsigned int id = fsp_walk(service, 0, option_getstring("volume"));
-
-        if (id)
-        {
-
-            struct event_blockrequest blockrequest;
-
-            blockrequest.sector = sector;
-            blockrequest.count = count;
-
-            fsp_write(service, id, &blockrequest, sizeof (struct event_blockrequest), 0);
-
-        }
-
-    }
+    channel_send_buffer(option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -126,31 +112,16 @@ static void print(unsigned int source, struct mbr *mbr)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int blockservice = fsp_auth(option_getstring("block"));
-    unsigned int blockdata = fsp_walk(blockservice, fsp_walk(blockservice, 0, option_getstring("block")), "data");
+    unsigned char block[1024];
+    struct mbr *mbr = (struct mbr *)block;
 
-    if (blockdata)
-    {
+    channel_send(option_getdecimal("block-service"), EVENT_LINK);
+    request_readblocks(block, 1024, 0, 1);
 
-        unsigned char block[1024];
-        struct mbr *mbr = (struct mbr *)block;
+    if (isvalid(mbr))
+        print(source, mbr);
 
-        channel_send(option_getdecimal("block-service"), EVENT_LINK);
-        request_readblocks(block, 1024, 0, 1);
-
-        if (isvalid(mbr))
-            print(source, mbr);
-
-        channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
-
-    }
-
-    else
-    {
-
-        channel_send_fmt1(source, EVENT_ERROR, "Volume not found: %s\n", option_getstring("volume"));
-
-    }
+    channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
 
 }
 

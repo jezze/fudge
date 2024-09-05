@@ -112,26 +112,12 @@ struct ext2_entry
 static void request_send(unsigned int sector, unsigned int count)
 {
 
-    unsigned int service = fsp_auth(option_getstring("volume"));
+    struct event_blockrequest blockrequest;
 
-    if (service)
-    {
+    blockrequest.sector = sector;
+    blockrequest.count = count;
 
-        unsigned int id = fsp_walk(service, 0, option_getstring("volume"));
-
-        if (id)
-        {
-
-            struct event_blockrequest blockrequest;
-
-            blockrequest.sector = sector;
-            blockrequest.count = count;
-
-            fsp_write(service, id, &blockrequest, sizeof (struct event_blockrequest), 0);
-
-        }
-
-    }
+    channel_send_buffer(option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
