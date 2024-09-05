@@ -1,5 +1,4 @@
 initrd:bin/elfload initrd:kernel/base.ko
-initrd:bin/elfload initrd:kernel/system.ko
 initrd:bin/elfload initrd:kernel/log.ko
 initrd:bin/elfload initrd:kernel/block.ko
 initrd:bin/elfload initrd:kernel/clock.ko

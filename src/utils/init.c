@@ -24,7 +24,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int channel;
 
     loaddriver("initrd:kernel/base.ko");
-    loaddriver("initrd:kernel/system.ko");
     loaddriver("initrd:kernel/log.ko");
     loaddriver("initrd:kernel/block.ko");
     loaddriver("initrd:kernel/clock.ko");
