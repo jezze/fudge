@@ -15,12 +15,12 @@ static void updatepath(void)
 static void updatecontent(void)
 {
 
-    unsigned int service = fsp_auth(path);
+    unsigned int service = fs_auth(path);
 
     if (service)
     {
 
-        unsigned int id = fsp_walk(service, 0, path);
+        unsigned int id = fs_walk(service, 0, path);
 
         if (id)
         {
@@ -34,7 +34,7 @@ static void updatecontent(void)
 
             channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
 
-            for (offset = 0; (nrecords = fsp_list(service, id, offset, records, 8)); offset += nrecords)
+            for (offset = 0; (nrecords = fs_list(service, id, offset, records, 8)); offset += nrecords)
             {
 
                 unsigned int i;

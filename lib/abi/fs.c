@@ -1,11 +1,11 @@
 #include <fudge.h>
 #include "call.h"
 #include "channel.h"
-#include "fsp.h"
+#include "fs.h"
 
 static unsigned int sessioncount;
 
-unsigned int fsp_auth(char *path)
+unsigned int fs_auth(char *path)
 {
 
     /* need to make syscall for this */
@@ -20,7 +20,7 @@ unsigned int fsp_auth(char *path)
 
 }
 
-unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords)
+unsigned int fs_list(unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords)
 {
 
     struct event_listrequest request;
@@ -47,7 +47,7 @@ unsigned int fsp_list(unsigned int target, unsigned int id, unsigned int offset,
 
 }
 
-unsigned int fsp_map(unsigned int target, unsigned int id)
+unsigned int fs_map(unsigned int target, unsigned int id)
 {
 
     struct event_maprequest request;
@@ -72,7 +72,7 @@ unsigned int fsp_map(unsigned int target, unsigned int id)
 
 }
 
-unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_read(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct event_readrequest request;
@@ -99,7 +99,7 @@ unsigned int fsp_read(unsigned int target, unsigned int id, void *buffer, unsign
 
 }
 
-unsigned int fsp_read_full(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_read_full(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *rbuffer = buffer;
@@ -107,26 +107,26 @@ unsigned int fsp_read_full(unsigned int target, unsigned int id, void *buffer, u
     unsigned int roffset;
     unsigned int rcount;
 
-    for (roffset = offset; (rcount = fsp_read(target, id, rbuffer + rtotal, count - rtotal, roffset)); roffset += rcount)
+    for (roffset = offset; (rcount = fs_read(target, id, rbuffer + rtotal, count - rtotal, roffset)); roffset += rcount)
         rtotal += rcount;
 
     return rtotal;
 
 }
 
-unsigned int fsp_read_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_read_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
     unsigned int c;
 
-    for (c = 0; c < count; c += fsp_read(target, id, b + c, count - c, offset + c));
+    for (c = 0; c < count; c += fs_read(target, id, b + c, count - c, offset + c));
 
     return c;
 
 }
 
-unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *record)
+unsigned int fs_stat(unsigned int target, unsigned int id, struct record *record)
 {
 
     struct event_statrequest request;
@@ -151,7 +151,7 @@ unsigned int fsp_stat(unsigned int target, unsigned int id, struct record *recor
 
 }
 
-unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
+unsigned int fs_walk(unsigned int target, unsigned int parent, char *path)
 {
 
     struct {struct event_walkrequest header; char path[64];} request;
@@ -177,7 +177,7 @@ unsigned int fsp_walk(unsigned int target, unsigned int parent, char *path)
 
 }
 
-unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_write(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct {struct event_writerequest header; char data[64];} request;
@@ -204,30 +204,30 @@ unsigned int fsp_write(unsigned int target, unsigned int id, void *buffer, unsig
 
 }
 
-unsigned int fsp_write_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_write_all(unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
     unsigned int c;
 
-    for (c = 0; c < count; c += fsp_write(target, id, b + c, count - c, offset + c));
+    for (c = 0; c < count; c += fs_write(target, id, b + c, count - c, offset + c));
 
     return c;
 
 }
 
-unsigned int fsp_spawn(char *path)
+unsigned int fs_spawn(char *path)
 {
 
-    unsigned int service = fsp_auth(path);
+    unsigned int service = fs_auth(path);
 
     if (service)
     {
 
-        unsigned int id = fsp_walk(service, 0, path);
+        unsigned int id = fs_walk(service, 0, path);
 
         if (id)
-            return call_spawn(fsp_map(service, id));
+            return call_spawn(fs_map(service, id));
 
     }
 
@@ -235,18 +235,18 @@ unsigned int fsp_spawn(char *path)
 
 }
 
-unsigned int fsp_spawn_relative(char *path, char *parent)
+unsigned int fs_spawn_relative(char *path, char *parent)
 {
 
-    unsigned int service = fsp_auth(parent);
+    unsigned int service = fs_auth(parent);
 
     if (service)
     {
 
-        unsigned int id = fsp_walk(service, fsp_walk(service, 0, parent), path);
+        unsigned int id = fs_walk(service, fs_walk(service, 0, parent), path);
 
         if (id)
-            return call_spawn(fsp_map(service, id));
+            return call_spawn(fs_map(service, id));
 
     }
 

@@ -4,7 +4,7 @@ L:=\
 O:=\
     $(DIR_LIB)/abi/channel.o \
     $(DIR_LIB)/abi/crt0.o \
-    $(DIR_LIB)/abi/fsp.o \
+    $(DIR_LIB)/abi/fs.o \
     $(DIR_LIB)/abi/job.o \
     $(DIR_LIB)/abi/option.o \
 
@@ -18,7 +18,7 @@ L:=\
 O:=\
     $(DIR_LIB)/abi/channel.o \
     $(DIR_LIB)/abi/crt0.o \
-    $(DIR_LIB)/abi/fsp.o \
+    $(DIR_LIB)/abi/fs.o \
     $(DIR_LIB)/abi/job.o \
     $(DIR_LIB)/abi/option.o \
 

@@ -5,8 +5,8 @@
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(mdata);
-    unsigned int id = fsp_walk(service, 0, mdata);
+    unsigned int service = fs_auth(mdata);
+    unsigned int id = fs_walk(service, 0, mdata);
 
     if (id)
     {
@@ -18,8 +18,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned int offset = 0;
         unsigned int h;
 
-        fsp_stat(service, id, &record);
-        fsp_read_all(service, id, &header, sizeof (struct pcx_header), 0);
+        fs_stat(service, id, &record);
+        fs_read_all(service, id, &header, sizeof (struct pcx_header), 0);
 
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;
@@ -30,7 +30,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned char buffer[4096];
             unsigned char raw[4096];
 
-            fsp_read_full(service, id, raw, 4096, 128 + offset);
+            fs_read_full(service, id, raw, 4096, 128 + offset);
 
             offset = pcx_readline(raw, width, buffer);
 

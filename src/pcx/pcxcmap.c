@@ -5,8 +5,8 @@
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(mdata);
-    unsigned int id = fsp_walk(service, 0, mdata);
+    unsigned int service = fs_auth(mdata);
+    unsigned int id = fs_walk(service, 0, mdata);
 
     if (id)
     {
@@ -15,16 +15,16 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         struct record record;
         unsigned char magic;
 
-        fsp_stat(service, id, &record);
-        fsp_read_all(service, id, &header, sizeof (struct pcx_header), 0);
-        fsp_read_all(service, id, &magic, 1, record.size - 768 - 1);
+        fs_stat(service, id, &record);
+        fs_read_all(service, id, &header, sizeof (struct pcx_header), 0);
+        fs_read_all(service, id, &magic, 1, record.size - 768 - 1);
 
         if (magic == PCX_COLORMAP_MAGIC)
         {
 
             unsigned char colormap[768];
 
-            fsp_read_all(service, id, colormap, 768, record.size - 768);
+            fs_read_all(service, id, colormap, 768, record.size - 768);
             channel_send_buffer(source, EVENT_DATA, 768, colormap);
 
         }

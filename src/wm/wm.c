@@ -382,7 +382,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         if (buffer_match(cmd, "run=", 4))
         {
 
-            unsigned int channel = fsp_spawn(cmd + 4);
+            unsigned int channel = fs_spawn(cmd + 4);
 
             if (channel)
             {
@@ -577,7 +577,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
-                    unsigned int channel = fsp_spawn(option_getstring("wshell"));
+                    unsigned int channel = fs_spawn(option_getstring("wshell"));
 
                     if (channel)
                     {

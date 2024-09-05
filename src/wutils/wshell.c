@@ -83,7 +83,7 @@ static void moveright(unsigned int steps)
 static unsigned int runslang(void *ibuffer, unsigned int icount)
 {
 
-    unsigned int channel = fsp_spawn(option_getstring("slang"));
+    unsigned int channel = fs_spawn(option_getstring("slang"));
 
     if (channel)
     {

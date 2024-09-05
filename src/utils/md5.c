@@ -31,12 +31,12 @@ static void onexit(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(mdata);
+    unsigned int service = fs_auth(mdata);
 
     if (service)
     {
 
-        unsigned int id = fsp_walk(service, 0, mdata);
+        unsigned int id = fs_walk(service, 0, mdata);
 
         if (id)
         {
@@ -45,7 +45,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fsp_read(service, id, buffer, 4096, offset)); offset += count)
+            for (offset = 0; (count = fs_read(service, id, buffer, 4096, offset)); offset += count)
                 md5_read(&sum, buffer, count);
 
         }

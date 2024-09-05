@@ -4,7 +4,7 @@
 static void loaddriver(char *path)
 {
 
-    unsigned int channel = fsp_spawn("initrd:bin/elfload");
+    unsigned int channel = fs_spawn("initrd:bin/elfload");
 
     if (channel)
     {
@@ -59,12 +59,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     loaddriver("initrd:kernel/ata.ko");
     loaddriver("initrd:kernel/virtio-network.ko");
 
-    channel = fsp_spawn("initrd:bin/shell");
+    channel = fs_spawn("initrd:bin/shell");
     channel_send_fmt0(channel, EVENT_OPTION, "pwd\\0initrd:\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "tty-service\\0100\\0");
     channel_send(channel, EVENT_MAIN);
 
-    channel = fsp_spawn("initrd:bin/wm");
+    channel = fs_spawn("initrd:bin/wm");
     channel_send_fmt0(channel, EVENT_OPTION, "pwd\\0initrd:\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "listen\\012345\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "keyboard-service\\0110\\0");

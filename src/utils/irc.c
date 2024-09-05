@@ -42,7 +42,7 @@ static void interpret(void *buffer, unsigned int count)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int channel = fsp_spawn(option_getstring("dns"));
+    unsigned int channel = fs_spawn(option_getstring("dns"));
 
     if (channel)
     {

@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "call.h"
 #include "channel.h"
-#include "fsp.h"
+#include "fs.h"
 #include "job.h"
 
 static char *nextword(char *current)
@@ -92,10 +92,10 @@ unsigned int job_spawn(struct job *job, char *bindir)
 
         struct job_worker *worker = &job->workers[i];
 
-        worker->channel = fsp_spawn_relative(worker->program, bindir);
+        worker->channel = fs_spawn_relative(worker->program, bindir);
 
         if (!worker->channel)
-            worker->channel = fsp_spawn(worker->program);
+            worker->channel = fs_spawn(worker->program);
 
         if (!worker->channel)
             return 0;
@@ -189,7 +189,7 @@ void job_run(struct job *job, char *pwd)
 
                 char *path = worker->paths[j];
 
-                if (fsp_auth(path))
+                if (fs_auth(path))
                     channel_send_fmt1(worker->channel, EVENT_PATH, "%s\\0", path);
                 else
                     channel_send_fmt2(worker->channel, EVENT_PATH, "%s%s\\0", pwd, path);

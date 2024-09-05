@@ -281,7 +281,7 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
         unsigned char block[4096];
 
         request_readblocks(block, 4096, node.pointer0, 1, blocksize);
-        fsp_readresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
+        fs_readresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
 

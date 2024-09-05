@@ -16,8 +16,8 @@ static char *palettemodes[3] = {
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fsp_auth(mdata);
-    unsigned int id = fsp_walk(service, 0, mdata);
+    unsigned int service = fs_auth(mdata);
+    unsigned int id = fs_walk(service, 0, mdata);
 
     if (id)
     {
@@ -28,8 +28,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         unsigned int width;
         unsigned int height;
 
-        fsp_stat(service, id, &record);
-        fsp_read_all(service, id, &header, sizeof (struct pcx_header), 0);
+        fs_stat(service, id, &record);
+        fs_read_all(service, id, &header, sizeof (struct pcx_header), 0);
 
         width = header.xend - header.xstart + 1;
         height = header.yend - header.ystart + 1;
@@ -44,7 +44,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         if (header.palettemode)
         {
 
-            fsp_read_all(service, id, &magic, 1, record.size - 768 - 1);
+            fs_read_all(service, id, &magic, 1, record.size - 768 - 1);
             channel_send_fmt1(source, EVENT_DATA, "Palette exist: %s\n", (magic == PCX_COLORMAP_MAGIC) ? "Yes" : "No");
 
         }

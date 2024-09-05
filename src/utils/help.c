@@ -4,7 +4,7 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int channel = fsp_spawn(option_getstring("echo"));
+    unsigned int channel = fs_spawn(option_getstring("echo"));
 
     if (channel)
     {

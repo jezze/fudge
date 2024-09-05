@@ -4,7 +4,7 @@
 static void dnsresolve(char *domain, char address[32])
 {
 
-    unsigned int channel = fsp_spawn(option_getstring("dns"));
+    unsigned int channel = fs_spawn(option_getstring("dns"));
 
     if (channel)
     {
@@ -49,7 +49,7 @@ static void dnsresolve(char *domain, char address[32])
 static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
-    unsigned int channel = fsp_spawn(option_getstring("socket"));
+    unsigned int channel = fs_spawn(option_getstring("socket"));
 
     if (channel)
     {
