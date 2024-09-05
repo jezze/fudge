@@ -394,36 +394,27 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
-    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
+    char buffer[4096];
+    unsigned int count;
 
     call_announce(option_getdecimal("listen"));
+    socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
+    channel_send(option_getdecimal("block-service"), EVENT_LINK);
+    socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
+    socket_listen_tcp(option_getdecimal("ethernet-service"), &local, &remote, 1, &router);
 
-    if (ethernetaddr)
+    while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
     {
 
-        char buffer[4096];
-        unsigned int count;
+        char reply[MESSAGE_SIZE];
 
-        socket_resolvelocal(ethernetservice, ethernetaddr, &local);
-        channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
-        channel_send(option_getdecimal("block-service"), EVENT_LINK);
-        socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
-        socket_listen_tcp(option_getdecimal("ethernet-service"), &local, &remote, 1, &router);
-
-        while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
-        {
-
-            char reply[MESSAGE_SIZE];
-
-            socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
-
-        }
-
-        channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
-        channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
+        socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
 
     }
+
+    channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
+    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

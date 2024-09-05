@@ -83,8 +83,6 @@ static void handlehttppacket(unsigned int source, struct socket *remote)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
-    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
     struct event_clockinfo clockinfo;
     struct mtwist_state state;
     struct message message;
@@ -96,7 +94,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
-    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
+    socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
     channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
     socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
     socket_listen_tcp(option_getdecimal("ethernet-service"), &local, remotes, 64, &router);

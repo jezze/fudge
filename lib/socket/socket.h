@@ -40,7 +40,7 @@ unsigned int socket_receive(unsigned int channel, struct socket *local, struct s
 void socket_listen_tcp(unsigned int channel, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router);
 void socket_connect_tcp(unsigned int channel, struct socket *local, struct socket *remote, struct socket *router);
 void socket_resolveremote(unsigned int channel, struct socket *local, struct socket *remote);
-void socket_resolvelocal(unsigned int service, unsigned int id, struct socket *socket);
+void socket_resolvelocal(unsigned int channel, struct socket *socket);
 void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
 void socket_bind_ipv4s(struct socket *socket, char *address);
 void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq, unsigned int ack);

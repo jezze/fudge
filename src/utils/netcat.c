@@ -55,8 +55,6 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int ethernetservice = fsp_auth(option_getstring("ethernet"));
-    unsigned int ethernetaddr = fsp_walk(ethernetservice, fsp_walk(ethernetservice, 0, option_getstring("ethernet")), "addr");
     char buffer[MESSAGE_SIZE];
     unsigned int count;
     struct event_clockinfo clockinfo;
@@ -68,7 +66,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcps(&local, option_getstring("local-port"), mtwist_rand(&state), mtwist_rand(&state));
-    socket_resolvelocal(ethernetservice, ethernetaddr, &local);
+    socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
     channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
     socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
     socket_listen_tcp(option_getdecimal("ethernet-service"), &local, remotes, 64, &router);
