@@ -333,7 +333,6 @@ void init(void)
     option_add("keyboard-service", "110");
     option_add("timer-service", "410");
     option_add("video-service", "400");
-    option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);

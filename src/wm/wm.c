@@ -37,8 +37,6 @@ static unsigned int linebuffer[3840];
 static void setupvideo(unsigned int source)
 {
 
-    unsigned int videoservice = fsp_auth(option_getstring("video"));
-    unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
     struct event_videoconf videoconf;
     unsigned char black[768];
 
@@ -47,7 +45,7 @@ static void setupvideo(unsigned int source)
     videoconf.bpp = option_getdecimal("bpp");
 
     buffer_clear(black, 768);
-    fsp_write(videoservice, videocolormap, black, 768, 0);
+    channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCMAP, 768, &black);
     channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
     channel_wait(EVENT_VIDEOINFO);
 
@@ -954,7 +952,6 @@ void init(void)
     option_add("keyboard-service", "");
     option_add("mouse-service", "");
     option_add("video-service", "");
-    option_add("video", "system:video/if.0");
     option_add("wshell", "initrd:bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

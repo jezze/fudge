@@ -23,7 +23,9 @@ static struct console_interface consoleinterface;
 static struct video_interface videointerface;
 static struct {unsigned char color; unsigned int offset;} cursor = {0x0F, 0};
 static struct vga_character *taddress = (struct vga_character *)0x000B8000;
+/*
 static unsigned int framebuffer = 0x000A0000;
+*/
 
 static void clear(unsigned int offset)
 {
@@ -95,34 +97,8 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 
 }
 
-static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct event_videoinfo videoinfo;
-
-    videoinfo.width = videointerface.width;
-    videoinfo.height = videointerface.height;
-    videoinfo.bpp = videointerface.bpp;
-
-    return buffer_read(buffer, count, &videoinfo, sizeof (struct event_videoinfo), offset);
-
-}
-
-static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return buffer_read(buffer, count, (void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, offset);
-
-}
-
-static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return buffer_write((void *)framebuffer, videointerface.width * videointerface.height * videointerface.bpp, buffer, count, offset);
-
-}
-
-static unsigned int videointerface_readcolormap(void *buffer, unsigned int count, unsigned int offset)
+/*
+static unsigned int videointerface_getcmap(unsigned int source, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -147,8 +123,9 @@ static unsigned int videointerface_readcolormap(void *buffer, unsigned int count
     return i - offset;
 
 }
+*/
 
-static unsigned int videointerface_writecolormap(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_setcmap(unsigned int source, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -212,19 +189,13 @@ static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id, 101, consoleinterface_send);
-    video_initinterface(&videointerface, id, 404, videointerface_setmode);
+    video_initinterface(&videointerface, id, 404, videointerface_setcmap, videointerface_setmode);
 
     videointerface.width = 80;
     videointerface.height = 25;
     videointerface.bpp = 2;
 
     clear(0);
-
-    videointerface.ctrl.operations.read = videointerface_readctrl;
-    videointerface.data.operations.read = videointerface_readdata;
-    videointerface.data.operations.write = videointerface_writedata;
-    videointerface.colormap.operations.write = videointerface_writecolormap;
-    videointerface.colormap.operations.read = videointerface_readcolormap;
 
 }
 

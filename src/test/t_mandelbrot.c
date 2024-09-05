@@ -141,7 +141,7 @@ struct hsv rgb2hsv(struct rgb rgb)
 
 }
 
-static void draw(unsigned int service, unsigned int data, struct event_videoinfo *videoinfo, int x1, int y1, int x2, int y2, unsigned int iterations)
+static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int y2, unsigned int iterations)
 {
 
     unsigned char buffer[7680];
@@ -207,7 +207,9 @@ static void draw(unsigned int service, unsigned int data, struct event_videoinfo
 
         }
 
+        /*
         fsp_write_all(service, data, buffer, videoinfo->width * videoinfo->bpp, videoinfo->width * y * videoinfo->bpp);
+        */
 
     }
 
@@ -234,10 +236,6 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int videoservice = fsp_auth(option_getstring("video"));
-    unsigned int videoctrl = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "ctrl");
-    unsigned int videodata = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "data");
-    unsigned int videocolormap = fsp_walk(videoservice, fsp_walk(videoservice, 0, option_getstring("video")), "colormap");
     struct event_videoconf videoconf;
     struct event_videoinfo videoinfo;
 
@@ -247,8 +245,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(EVENT_WMACK);
-    fsp_write_all(videoservice, videoctrl, &videoconf, sizeof (struct event_videoconf), 0);
-    fsp_read_all(videoservice, videoctrl, &videoinfo, sizeof (struct event_videoinfo), 0);
+    channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_wait_buffer(EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
     if (videoinfo.bpp == 1)
     {
@@ -272,11 +270,11 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        fsp_write(videoservice, videocolormap, colormap, 768, 0);
+        channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCMAP, 768, &colormap);
 
     }
 
-    draw(videoservice, videodata, &videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+    draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
     channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
 
     while (channel_process());
@@ -294,7 +292,6 @@ void init(void)
     option_add("height", "480");
     option_add("bpp", "4");
     option_add("mouse-service", "124");
-    option_add("video", "system:video/if.0");
     option_add("wm-service", "12345");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);

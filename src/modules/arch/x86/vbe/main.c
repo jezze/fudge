@@ -98,30 +98,10 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static unsigned int videointerface_readctrl(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int videointerface_setcmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    struct event_videoinfo videoinfo;
-
-    videoinfo.width = videointerface.width;
-    videoinfo.height = videointerface.height;
-    videoinfo.bpp = videointerface.bpp;
-
-    return buffer_read(buffer, count, &videoinfo, sizeof (struct event_videoinfo), offset);
-
-}
-
-static unsigned int videointerface_readdata(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return buffer_read(buffer, count, (void *)mode->framebuffer, videointerface.width * videointerface.height * videointerface.bpp, offset);
-
-}
-
-static unsigned int videointerface_writedata(void *buffer, unsigned int count, unsigned int offset)
-{
-
-    return buffer_write((void *)mode->framebuffer, videointerface.width * videointerface.height * videointerface.bpp, buffer, count, offset);
+    return count;
 
 }
 
@@ -164,14 +144,11 @@ static unsigned int videointerface_setmode(unsigned int source, unsigned int wid
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 403, videointerface_setmode);
+    video_initinterface(&videointerface, id, 403, videointerface_setcmap, videointerface_setmode);
 
     videointerface.width = 80;
     videointerface.height = 25;
     videointerface.bpp = 2;
-    videointerface.ctrl.operations.read = videointerface_readctrl;
-    videointerface.data.operations.read = videointerface_readdata;
-    videointerface.data.operations.write = videointerface_writedata;
 
 }
 
