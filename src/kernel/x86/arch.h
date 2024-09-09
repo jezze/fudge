@@ -12,9 +12,6 @@
 #define ARCH_MAILBOXADDRESS             0x01000000
 #define ARCH_MAILBOXSIZE                0x00002000
 #define ARCH_TASKCODEADDRESS            0x02000000
-#define ARCH_TASKCODESIZE               0x000F8000
-#define ARCH_TASKSTACKSIZE              0x00008000
-#define ARCH_TASKSTACKVIRTUAL           0x80000000
 #define ARCH_KCODE                      0x01
 #define ARCH_KDATA                      0x02
 #define ARCH_UCODE                      0x03

@@ -63,7 +63,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
 
             initmap(ntask);
 
-            return kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL, args->address);
+            return kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
 
         }
 
@@ -314,8 +314,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (code)
         {
 
-            map(directory, 0, ARCH_TASKCODEADDRESS + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE), code, ARCH_TASKCODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            map(directory, 1, ARCH_TASKCODEADDRESS + core->itask * (ARCH_TASKCODESIZE + ARCH_TASKSTACKSIZE) + ARCH_TASKCODESIZE, ARCH_TASKSTACKVIRTUAL - ARCH_TASKSTACKSIZE, ARCH_TASKSTACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 0, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE), code, TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            map(directory, 1, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
             if (!kernel_loadprogram(core->itask))
                 kernel_signal(core->itask, TASK_SIGNAL_KILL);
@@ -441,7 +441,7 @@ void arch_setup2(unsigned int address)
     {
 
         initmap(ntask);
-        kernel_loadtask(ntask, 0, ARCH_TASKSTACKVIRTUAL, address);
+        kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
         kernel_place(0, ntask, EVENT_MAIN, 0, 0);
 
     }

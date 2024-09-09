@@ -15,7 +15,7 @@ static unsigned int checkuserspace(unsigned int itask, void *address, unsigned i
 
     unsigned int value = (unsigned int)address;
 
-    return ((((value >= (0x80000000 - 0x8000)) && ((value + count) < 0x80000000))) || kernel_codebase(itask, value));
+    return ((((value >= (TASK_STACKVIRTUAL - TASK_STACKSIZE)) && ((value + count) < TASK_STACKVIRTUAL))) || kernel_codebase(itask, value));
 
 }
 

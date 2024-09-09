@@ -1,3 +1,6 @@
+#define TASK_CODESIZE                   0x000F8000
+#define TASK_STACKSIZE                  0x00008000
+#define TASK_STACKVIRTUAL               0x80000000
 #define TASK_STATE_DEAD                 0
 #define TASK_STATE_NEW                  1
 #define TASK_STATE_BLOCKED              2
