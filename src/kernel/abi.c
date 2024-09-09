@@ -6,7 +6,7 @@
 #include "task.h"
 #include "kernel.h"
 
-#define CALLS                           32
+#define CALLS                           16
 
 static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 
@@ -217,22 +217,6 @@ void abi_setup(void)
     abi_setcallback(0x0D, despawn);
     abi_setcallback(0x0E, pick);
     abi_setcallback(0x0F, place);
-    abi_setcallback(0x10, debug);
-    abi_setcallback(0x11, debug);
-    abi_setcallback(0x12, debug);
-    abi_setcallback(0x13, debug);
-    abi_setcallback(0x14, debug);
-    abi_setcallback(0x15, debug);
-    abi_setcallback(0x16, debug);
-    abi_setcallback(0x17, debug);
-    abi_setcallback(0x18, debug);
-    abi_setcallback(0x19, debug);
-    abi_setcallback(0x1A, debug);
-    abi_setcallback(0x1B, debug);
-    abi_setcallback(0x1C, debug);
-    abi_setcallback(0x1D, debug);
-    abi_setcallback(0x1E, debug);
-    abi_setcallback(0x1F, debug);
 
 }
 
