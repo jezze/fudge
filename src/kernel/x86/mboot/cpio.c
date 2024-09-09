@@ -14,7 +14,7 @@ static struct cpio_header *getheader(unsigned int id)
 
 }
 
-unsigned int getnext(unsigned int id)
+static unsigned int getnext(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);
@@ -32,58 +32,7 @@ static char *getname(unsigned int id)
 
 }
 
-static unsigned int parent(struct cpio_header *header, unsigned int id)
-{
-
-    unsigned int length = buffer_lastbyte(getname(id), header->namesize - 1, '/');
-    unsigned int current = id;
-
-    do
-    {
-
-        struct cpio_header *cheader = getheader(current);
-
-        if (!cheader)
-            return 0;
-
-        if ((cheader->mode & 0xF000) != 0x4000)
-            continue;
-
-        if (cheader->namesize == length)
-            return current;
-
-    } while ((current = getnext(current)));
-
-    return 0;
-
-}
-
-static unsigned int child(struct cpio_header *header, unsigned int id, char *path, unsigned int length)
-{
-
-    unsigned int current = address;
-
-    do
-    {
-
-        struct cpio_header *cheader = getheader(current);
-
-        if (!cheader)
-            return 0;
-
-        if (cheader->namesize != header->namesize + length + 1)
-            continue;
-
-        if (buffer_match(getname(current) + header->namesize, path, length))
-            return current;
-
-    } while ((current = getnext(current)));
-
-    return 0;
-
-}
-
-static unsigned int service_root(void)
+static unsigned int getroot(void)
 {
 
     unsigned int current = address;
@@ -108,43 +57,54 @@ static unsigned int service_root(void)
 
 }
 
-static unsigned int service_parent(unsigned int id)
+static unsigned int getparent(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);
+    unsigned int length = buffer_lastbyte(getname(id), header->namesize - 1, '/');
+    unsigned int current = id;
 
-    return (header) ? parent(header, id) : 0;
-
-}
-
-static unsigned int service_child(unsigned int id, char *path, unsigned int length)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    return (header) ? child(header, id, path, length) : 0;
-
-}
-
-static unsigned int service_stat(unsigned int id, struct record *record)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    if (header)
+    do
     {
 
-        record->id = id;
-        record->size = cpio_filesize(header);
-        record->type = RECORD_TYPE_NORMAL;
-        record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(id), header->namesize - 1, header->namesize);
+        struct cpio_header *cheader = getheader(current);
 
-        if ((header->mode & 0xF000) == 0x4000)
-            record->type = RECORD_TYPE_DIRECTORY;
+        if (!cheader)
+            return 0;
 
-        return 1;
+        if ((cheader->mode & 0xF000) != 0x4000)
+            continue;
 
-    }
+        if (cheader->namesize == length)
+            return current;
+
+    } while ((current = getnext(current)));
+
+    return 0;
+
+}
+
+static unsigned int getchild(unsigned int id, char *path, unsigned int length)
+{
+
+    struct cpio_header *header = getheader(id);
+    unsigned int current = address;
+
+    do
+    {
+
+        struct cpio_header *cheader = getheader(current);
+
+        if (!cheader)
+            return 0;
+
+        if (cheader->namesize != header->namesize + length + 1)
+            continue;
+
+        if (buffer_match(getname(current) + header->namesize, path, length))
+            return current;
+
+    } while ((current = getnext(current)));
 
     return 0;
 
@@ -165,7 +125,7 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
         if (!cheader)
             break;
 
-        if (parent(cheader, cid) == id)
+        if (getparent(cid) == id)
         {
 
             if (offset > 0)
@@ -201,7 +161,7 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
 
 }
 
-static unsigned int service_list(unsigned int id, unsigned int offset, unsigned int count, struct record *record)
+static unsigned int list(unsigned int id, unsigned int offset, unsigned int count, struct record *record)
 {
 
     struct cpio_header *header = getheader(id);
@@ -223,7 +183,16 @@ static unsigned int service_list(unsigned int id, unsigned int offset, unsigned 
 
 }
 
-static unsigned int service_read(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int map(unsigned int id)
+{
+
+    struct cpio_header *header = getheader(id);
+
+    return (header) ? id + cpio_filedata(header) : 0;
+
+}
+
+static unsigned int read(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -245,7 +214,31 @@ static unsigned int service_read(unsigned int id, void *buffer, unsigned int cou
 
 }
 
-static unsigned int service_walk(unsigned int id, char *path, unsigned int length)
+static unsigned int stat(unsigned int id, struct record *record)
+{
+
+    struct cpio_header *header = getheader(id);
+
+    if (header)
+    {
+
+        record->id = id;
+        record->size = cpio_filesize(header);
+        record->type = RECORD_TYPE_NORMAL;
+        record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(id), header->namesize - 1, header->namesize);
+
+        if ((header->mode & 0xF000) == 0x4000)
+            record->type = RECORD_TYPE_DIRECTORY;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int walk(unsigned int id, char *path, unsigned int length)
 {
 
     unsigned int offset = buffer_firstbyte(path, length, ':');
@@ -259,22 +252,22 @@ static unsigned int service_walk(unsigned int id, char *path, unsigned int lengt
         if (cl == 0)
         {
 
-            id = service_root();
+            id = getroot();
 
         }
 
         else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
         {
 
-            if (id != service_root())
-                id = service_parent(id);
+            if (id != getroot())
+                id = getparent(id);
 
         }
 
         else
         {
 
-            id = service_child(id, cp, cl);
+            id = getchild(id, cp, cl);
 
         }
 
@@ -289,7 +282,7 @@ static unsigned int service_walk(unsigned int id, char *path, unsigned int lengt
 
 }
 
-static unsigned int service_write(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+static unsigned int write(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct cpio_header *header = getheader(id);
@@ -311,15 +304,6 @@ static unsigned int service_write(unsigned int id, void *buffer, unsigned int co
 
 }
 
-static unsigned int service_map(unsigned int id)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    return (header) ? id + cpio_filedata(header) : 0;
-
-}
-
 static unsigned int onmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -327,7 +311,7 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
     struct {struct event_mapresponse mapresponse;} message;
 
     message.mapresponse.session = maprequest->session;
-    message.mapresponse.address = service_map(maprequest->id);
+    message.mapresponse.address = map(maprequest->id);
 
     return kernel_place(500, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
 
@@ -340,7 +324,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct {struct event_walkresponse walkresponse;} message;
 
     message.walkresponse.session = walkrequest->session;
-    message.walkresponse.id = service_walk((walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
+    message.walkresponse.id = walk((walkrequest->parent) ? walkrequest->parent : getroot(), (char *)(walkrequest + 1), walkrequest->length);
 
     return kernel_place(500, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
 
@@ -353,7 +337,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct {struct event_statresponse statresponse; struct record record;} message;
 
     message.statresponse.session = statrequest->session;
-    message.statresponse.nrecords = service_stat(statrequest->id, &message.record);
+    message.statresponse.nrecords = stat(statrequest->id, &message.record);
 
     return kernel_place(500, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
 
@@ -366,7 +350,7 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     struct {struct event_listresponse listresponse; struct record records[8];} message;
 
     message.listresponse.session = listrequest->session;
-    message.listresponse.nrecords = service_list(listrequest->id, listrequest->offset, (listrequest->nrecords > 8) ? 8 : listrequest->nrecords, message.records);
+    message.listresponse.nrecords = list(listrequest->id, listrequest->offset, (listrequest->nrecords > 8) ? 8 : listrequest->nrecords, message.records);
 
     return kernel_place(500, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 
@@ -379,7 +363,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     struct {struct event_readresponse readresponse; char data[64];} message;
 
     message.readresponse.session = readrequest->session;
-    message.readresponse.count = service_read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
+    message.readresponse.count = read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
 
     return kernel_place(500, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
 
@@ -392,7 +376,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     struct {struct event_writeresponse writeresponse;} message;
 
     message.writeresponse.session = writerequest->session;
-    message.writeresponse.count = service_write(writerequest->id, writerequest + 1, writerequest->count, writerequest->offset);
+    message.writeresponse.count = write(writerequest->id, writerequest + 1, writerequest->count, writerequest->offset);
 
     return kernel_place(500, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
 
