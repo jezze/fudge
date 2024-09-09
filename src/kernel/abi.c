@@ -61,7 +61,7 @@ static unsigned int load(unsigned int itask, void *stack)
     struct {void *caller; unsigned int address;} *args = stack;
     struct binary_node node;
 
-    node.address = args->address;
+    binary_initnode(&node, args->address);
 
     if (node.address)
     {
@@ -102,7 +102,7 @@ static unsigned int unload(unsigned int itask, void *stack)
     struct {void *caller; unsigned int address;} *args = stack;
     struct binary_node node;
 
-    node.address = args->address;
+    binary_initnode(&node, args->address);
 
     if (node.address)
     {

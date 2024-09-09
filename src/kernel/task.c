@@ -161,7 +161,7 @@ void task_init(struct task *task, unsigned int id)
     resource_init(&task->resource, RESOURCE_TASK, task);
     task_initsignals(&task->signals);
     task_initthread(&task->thread);
-    binary_initnode(&task->node);
+    binary_initnode(&task->node, 0);
     spinlock_init(&task->spinlock);
 
     task->id = id;

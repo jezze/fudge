@@ -21,10 +21,10 @@ struct binary_format *binary_findformat(struct binary_node *node)
 
 }
 
-void binary_initnode(struct binary_node *node)
+void binary_initnode(struct binary_node *node, unsigned int address)
 {
 
-    node->address = 0;
+    node->address = address;
 
 }
 
