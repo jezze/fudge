@@ -14,7 +14,6 @@ O:=\
     $(DIR_SRC)/kernel/mailbox.o \
     $(DIR_SRC)/kernel/resource.o \
     $(DIR_SRC)/kernel/task.o \
-    $(DIR_SRC)/kernel/service.o \
 
 L:=\
     $(DIR_LIB)/fudge/fudge.a \

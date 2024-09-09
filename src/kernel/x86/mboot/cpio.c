@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "cpio.h"
 
-static struct service service;
 static unsigned int address;
 static unsigned int limit;
 
@@ -127,20 +126,6 @@ static unsigned int service_child(unsigned int id, char *path, unsigned int leng
 
 }
 
-static unsigned int service_create(unsigned int id, char *name, unsigned int length)
-{
-
-    return 0;
-
-}
-
-static unsigned int service_destroy(unsigned int id)
-{
-
-    return 0;
-
-}
-
 static unsigned int service_stat(unsigned int id, struct record *record)
 {
 
@@ -260,6 +245,50 @@ static unsigned int service_read(unsigned int id, void *buffer, unsigned int cou
 
 }
 
+static unsigned int service_walk(unsigned int id, char *path, unsigned int length)
+{
+
+    unsigned int offset = buffer_firstbyte(path, length, ':');
+
+    while (offset < length)
+    {
+
+        char *cp = path + offset;
+        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+        if (cl == 0)
+        {
+
+            id = service_root();
+
+        }
+
+        else if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+        {
+
+            if (id != service_root())
+                id = service_parent(id);
+
+        }
+
+        else
+        {
+
+            id = service_child(id, cp, cl);
+
+        }
+
+        if (!id)
+            return 0;
+
+        offset += cl + 1;
+
+    }
+
+    return id;
+
+}
+
 static unsigned int service_write(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -311,7 +340,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct {struct event_walkresponse walkresponse;} message;
 
     message.walkresponse.session = walkrequest->session;
-    message.walkresponse.id = service_findpath(&service, (walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
+    message.walkresponse.id = service_walk((walkrequest->parent) ? walkrequest->parent : service_root(), (char *)(walkrequest + 1), walkrequest->length);
 
     return kernel_place(500, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
 
@@ -405,8 +434,6 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, "initrd", service_root, service_parent, service_child, service_create, service_destroy, service_stat, service_list, service_read, service_write, service_map);
-    resource_register(&service.resource);
     kernel_announce(500, 0, place);
 
 }
