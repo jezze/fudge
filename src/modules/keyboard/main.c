@@ -56,6 +56,7 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+    kernel_unannounce(interface->ichannel);
 
 }
 

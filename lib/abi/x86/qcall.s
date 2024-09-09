@@ -1,14 +1,15 @@
 .code32
 
 .set CALL_INDEX_DEBUG,                  0x00
-.set CALL_INDEX_KILL,                   0x04
-.set CALL_INDEX_ANNOUNCE,               0x08
+.set CALL_INDEX_PICK,                   0x01
+.set CALL_INDEX_PLACE,                  0x02
+.set CALL_INDEX_ANNOUNCE,               0x03
+.set CALL_INDEX_UNANNOUNCE,             0x04
+.set CALL_INDEX_KILL,                   0x05
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
 .set CALL_INDEX_SPAWN,                  0x0C
 .set CALL_INDEX_DESPAWN,                0x0D
-.set CALL_INDEX_PICK,                   0x0E
-.set CALL_INDEX_PLACE,                  0x0F
 
 .section .text
 
@@ -80,6 +81,15 @@ call_spawn:
     pushl %ecx
     pushl %edx
     movl $CALL_INDEX_SPAWN, %eax
+    movl %esp, %ecx
+    movl $callreturn, %edx
+    sysenter
+
+.global call_unannounce
+call_unannounce:
+    pushl %ecx
+    pushl %edx
+    movl $CALL_INDEX_UNANNOUNCE, %eax
     movl %esp, %ecx
     movl $callreturn, %edx
     sysenter

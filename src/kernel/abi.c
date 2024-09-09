@@ -184,6 +184,17 @@ static unsigned int announce(unsigned int itask, void *stack)
 
 }
 
+static unsigned int unannounce(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int ichannel;} *args = stack;
+
+    kernel_unannounce(args->ichannel);
+
+    return 0;
+
+}
+
 unsigned int abi_call(unsigned int index, unsigned int itask, void *stack)
 {
 
@@ -202,21 +213,21 @@ void abi_setup(void)
 {
 
     abi_setcallback(0x00, debug);
-    abi_setcallback(0x01, debug);
-    abi_setcallback(0x02, debug);
-    abi_setcallback(0x03, debug);
-    abi_setcallback(0x04, kill);
-    abi_setcallback(0x05, debug);
+    abi_setcallback(0x01, pick);
+    abi_setcallback(0x02, place);
+    abi_setcallback(0x03, announce);
+    abi_setcallback(0x04, unannounce);
+    abi_setcallback(0x05, kill);
     abi_setcallback(0x06, debug);
     abi_setcallback(0x07, debug);
-    abi_setcallback(0x08, announce);
+    abi_setcallback(0x08, debug);
     abi_setcallback(0x09, debug);
     abi_setcallback(0x0A, load);
     abi_setcallback(0x0B, unload);
     abi_setcallback(0x0C, spawn);
     abi_setcallback(0x0D, despawn);
-    abi_setcallback(0x0E, pick);
-    abi_setcallback(0x0F, place);
+    abi_setcallback(0x0E, debug);
+    abi_setcallback(0x0F, debug);
 
 }
 

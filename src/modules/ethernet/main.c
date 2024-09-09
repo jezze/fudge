@@ -48,6 +48,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+    kernel_unannounce(interface->ichannel);
 
 }
 

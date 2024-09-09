@@ -6,4 +6,5 @@ unsigned int call_load(unsigned int address);
 unsigned int call_pick(struct message *message, unsigned int count, void *data);
 unsigned int call_place(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int call_spawn(unsigned int address);
+unsigned int call_unannounce(unsigned int ichannel);
 unsigned int call_unload(unsigned int address);

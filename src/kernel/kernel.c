@@ -363,6 +363,23 @@ void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*
 
 }
 
+void kernel_unannounce(unsigned int ichannel)
+{
+
+    struct channel *channel = getchannel(ichannel);
+
+    if (channel)
+    {
+
+        list_init(&channel->links);
+
+        channel->target = 0;
+        channel->place = 0;
+
+    }
+
+}
+
 void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 

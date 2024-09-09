@@ -141,6 +141,10 @@ void timer_unregisterinterface(struct timer_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+    kernel_unannounce(interface->ichannel1);
+    kernel_unannounce(interface->ichannel10);
+    kernel_unannounce(interface->ichannel100);
+    kernel_unannounce(interface->ichannel1000);
 
 }
 

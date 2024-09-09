@@ -2,14 +2,15 @@
 
 .set CALL_INTERRUPT,                    0x80
 .set CALL_INDEX_DEBUG,                  0x00
-.set CALL_INDEX_KILL,                   0x04
-.set CALL_INDEX_ANNOUNCE,               0x08
+.set CALL_INDEX_PICK,                   0x01
+.set CALL_INDEX_PLACE,                  0x02
+.set CALL_INDEX_ANNOUNCE,               0x03
+.set CALL_INDEX_UNANNOUNCE,             0x04
+.set CALL_INDEX_KILL,                   0x05
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
 .set CALL_INDEX_SPAWN,                  0x0C
 .set CALL_INDEX_DESPAWN,                0x0D
-.set CALL_INDEX_PICK,                   0x0E
-.set CALL_INDEX_PLACE,                  0x0F
 
 .section .text
 
@@ -58,6 +59,12 @@ call_place:
 .global call_spawn
 call_spawn:
     movl $CALL_INDEX_SPAWN, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_unannounce
+call_unannounce:
+    movl $CALL_INDEX_UNANNOUNCE, %eax
     int $CALL_INTERRUPT
     ret
 

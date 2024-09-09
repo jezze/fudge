@@ -31,6 +31,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+    kernel_unannounce(interface->ichannel);
 
 }
 
