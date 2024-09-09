@@ -41,7 +41,7 @@ static void cleanpath(unsigned int source, char *data, unsigned int count, unsig
         else if (length == 2 && buffer_match(data + offset, ".", 1))
         {
 
-            buffer_copy(data + offset, data + nextoffset, count - nextoffset);
+            buffer_copy(data + offset, data + nextoffset - 1, count - nextoffset + 2);
 
             length = 0;
 
@@ -50,7 +50,7 @@ static void cleanpath(unsigned int source, char *data, unsigned int count, unsig
         else if (length == 3 && buffer_match(data + offset, "..", 2))
         {
 
-            buffer_copy(data + offset, data + nextoffset - 1, count - nextoffset + 1);
+            buffer_copy(data + offset, data + nextoffset - 1, count - nextoffset + 2);
 
             length = 0;
 
@@ -66,7 +66,7 @@ static void cleanpath(unsigned int source, char *data, unsigned int count, unsig
 
                 nextoffset += nextlength;
 
-                buffer_copy(data + offset, data + nextoffset - 1, count - nextoffset + 1);
+                buffer_copy(data + offset, data + nextoffset - 1, count - nextoffset + 2);
 
                 length = 0;
                 offset = start;
