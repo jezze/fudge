@@ -69,13 +69,13 @@ static unsigned int spawn(unsigned int itask, void *stack)
 static void testtask(void)
 {
 
-    unsigned int ret;
+    unsigned int status;
 
     uart_puts("TEST TASK 1\n");
 
-    ret = call_place(10, EVENT_DATA, 5, "hello");
+    status = call_place(10, EVENT_DATA, 5, "hello");
 
-    if (ret == 5)
+    if (status == EVENT_OK)
         uart_puts("CORRECT\n");
     else
         uart_puts("INCORRECT\n");

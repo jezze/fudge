@@ -140,15 +140,15 @@ static unsigned int placetask(unsigned int target, unsigned int source, unsigned
 
     struct mailbox *mailbox = &mailboxes[target];
     struct message message;
-    unsigned int c;
+    unsigned int status;
 
     message_init(&message, event, source, count);
 
-    c = mailbox_place(mailbox, &message, data);
+    status = mailbox_place(mailbox, &message, data);
 
     kernel_signal(target, TASK_SIGNAL_UNBLOCK);
 
-    return c;
+    return status;
 
 }
 
@@ -328,12 +328,12 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 {
 
     struct mailbox *mailbox = &mailboxes[source];
-    unsigned int c = mailbox_pick(mailbox, message, count, data);
+    unsigned int status = mailbox_pick(mailbox, message, count, data);
 
-    if (!c)
+    if (status == EVENT_RETRY)
         kernel_signal(source, TASK_SIGNAL_BLOCK);
 
-    return c;
+    return status;
 
 }
 

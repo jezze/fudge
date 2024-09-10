@@ -23,7 +23,7 @@ static unsigned int send(unsigned int channel, unsigned int event, unsigned int 
     if (!channel)
         return 0;
 
-    while (!call_place(channel, event, count, data));
+    while (call_place(channel, event, count, data) == EVENT_RETRY);
 
     return count;
 
@@ -215,7 +215,7 @@ unsigned int channel_pick(struct message *message, unsigned int count, void *dat
     while (state != CHANNEL_STATE_CLOSED)
     {
 
-        if (call_pick(message, count, data))
+        if (call_pick(message, count, data) == EVENT_OK)
             return message->event;
 
     }
