@@ -17,7 +17,7 @@ static void handleirq(unsigned int irq)
 static unsigned int blockinterface_onblockrequest(unsigned int count, unsigned int sector)
 {
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 

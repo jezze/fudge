@@ -100,7 +100,7 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 
@@ -132,11 +132,11 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
 
         video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
 
-        return EVENT_OK;
+        return MESSAGE_OK;
 
     }
 
-    return EVENT_ERROR;
+    return MESSAGE_FAILED;
 
 }
 

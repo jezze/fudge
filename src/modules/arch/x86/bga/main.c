@@ -40,7 +40,7 @@ static void setreg(unsigned short index, unsigned short data)
 static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 
@@ -61,7 +61,7 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
 
     video_notifymode(&videointerface, (void *)framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 

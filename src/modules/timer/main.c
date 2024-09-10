@@ -18,7 +18,7 @@ static unsigned int place1(unsigned int id, unsigned int source, unsigned int ev
 
     }
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 
@@ -38,7 +38,7 @@ static unsigned int place10(unsigned int id, unsigned int source, unsigned int e
 
     }
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 
@@ -58,7 +58,7 @@ static unsigned int place100(unsigned int id, unsigned int source, unsigned int 
 
     }
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 
@@ -78,7 +78,7 @@ static unsigned int place1000(unsigned int id, unsigned int source, unsigned int
 
     }
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 

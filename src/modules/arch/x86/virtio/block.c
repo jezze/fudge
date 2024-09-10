@@ -81,7 +81,7 @@ static void setfeatures(void)
 static unsigned int blockinterface_onblockrequest(unsigned int count, unsigned int sector)
 {
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 

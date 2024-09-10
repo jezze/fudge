@@ -92,7 +92,7 @@ static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
     outcrt1(VGA_REG_CRTINDEX1_CRT0E, cursor.offset >> 8);
     outcrt1(VGA_REG_CRTINDEX1_CRT0F, cursor.offset);
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 
@@ -143,7 +143,7 @@ static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int
 
     }
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 
@@ -180,7 +180,7 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
 
     video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 

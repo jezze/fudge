@@ -146,14 +146,14 @@ static unsigned int ethernetinterface_oninfo(unsigned int source)
 
     kernel_place(ethernetinterface.ichannel, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 
 static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
 {
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 

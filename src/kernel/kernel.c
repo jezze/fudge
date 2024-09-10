@@ -208,13 +208,13 @@ unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned in
 
             list_add(&channel->links, linkitem);
 
-            return EVENT_OK;
+            return MESSAGE_OK;
 
         }
 
     }
 
-    return EVENT_FAILED;
+    return MESSAGE_FAILED;
 
 }
 
@@ -253,7 +253,7 @@ unsigned int kernel_unlink(unsigned int ichannel, unsigned int target)
 
     }
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 
@@ -330,7 +330,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
     struct mailbox *mailbox = &mailboxes[source];
     unsigned int status = mailbox_pick(mailbox, message, count, data);
 
-    if (status == EVENT_RETRY)
+    if (status == MESSAGE_RETRY)
         kernel_signal(source, TASK_SIGNAL_BLOCK);
 
     return status;

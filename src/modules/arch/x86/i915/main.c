@@ -105,14 +105,14 @@ static void setpipemode(unsigned int width, unsigned int height)
 static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 
 static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
 {
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 

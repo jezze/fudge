@@ -61,10 +61,6 @@
 #define EVENT_INFO                      0x52
 #define EVENT_REDIRECT_TARGET           0x01
 #define EVENT_REDIRECT_SOURCE           0x02
-#define EVENT_RETRY                     0x00
-#define EVENT_OK                        0x01
-#define EVENT_FAILED                    0x02
-#define EVENT_UNIMPLEMENTED             0x03
 
 struct event_redirect
 {

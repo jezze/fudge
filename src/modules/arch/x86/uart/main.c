@@ -141,7 +141,7 @@ static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
 
     }
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 

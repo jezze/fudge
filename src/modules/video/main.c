@@ -40,7 +40,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
     }
 
-    return EVENT_UNIMPLEMENTED;
+    return MESSAGE_UNIMPLEMENTED;
 
 }
 

@@ -28,7 +28,7 @@ static unsigned int blockinterface_onblockrequest(unsigned int count, unsigned i
 
     ide_rpio28(blockinterface.id, 0, count, sector);
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 

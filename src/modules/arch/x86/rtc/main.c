@@ -57,7 +57,7 @@ static unsigned int clockinterface_oninfo(unsigned int source)
 
     kernel_place(clockinterface.ichannel, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
-    return EVENT_OK;
+    return MESSAGE_OK;
 
 }
 

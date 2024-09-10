@@ -38,7 +38,7 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsi
 
     spinlock_release(&mailbox->spinlock);
 
-    return length ? EVENT_OK : EVENT_RETRY;
+    return length ? MESSAGE_OK : MESSAGE_RETRY;
 
 }
 
@@ -59,7 +59,7 @@ unsigned int mailbox_place(struct mailbox *mailbox, struct message *message, voi
 
     spinlock_release(&mailbox->spinlock);
 
-    return length ? EVENT_OK : EVENT_RETRY;
+    return length ? MESSAGE_OK : MESSAGE_RETRY;
 
 }
 
