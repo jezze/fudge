@@ -11,7 +11,7 @@ static unsigned int place1(unsigned int id, unsigned int source, unsigned int ev
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel1, source, interface->ichannel1);
+        return kernel_link(interface->ichannel1, source);
 
     case EVENT_UNLINK:
         return kernel_unlink(interface->ichannel1, source);
@@ -31,7 +31,7 @@ static unsigned int place10(unsigned int id, unsigned int source, unsigned int e
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel10, source, interface->ichannel10);
+        return kernel_link(interface->ichannel10, source);
 
     case EVENT_UNLINK:
         return kernel_unlink(interface->ichannel10, source);
@@ -51,7 +51,7 @@ static unsigned int place100(unsigned int id, unsigned int source, unsigned int 
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel100, source, interface->ichannel100);
+        return kernel_link(interface->ichannel100, source);
 
     case EVENT_UNLINK:
         return kernel_unlink(interface->ichannel100, source);
@@ -71,7 +71,7 @@ static unsigned int place1000(unsigned int id, unsigned int source, unsigned int
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel1000, source, interface->ichannel1000);
+        return kernel_link(interface->ichannel1000, source);
 
     case EVENT_UNLINK:
         return kernel_unlink(interface->ichannel1000, source);

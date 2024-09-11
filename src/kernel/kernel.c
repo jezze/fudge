@@ -11,9 +11,9 @@
 struct channel
 {
 
-    unsigned int target;
+    unsigned int id;
     struct list links;
-    unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
+    unsigned int (*place)(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
 
@@ -187,7 +187,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned int source)
+unsigned int kernel_link(unsigned int ichannel, unsigned int target)
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -203,9 +203,7 @@ unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned in
             struct linkrow *linkrow = linkitem->data;
             struct link *link = &linkrow->link;
 
-            link->source = source;
-            link->target = target;
-
+            link_init(link, target);
             list_add(&channel->links, linkitem);
 
             return MESSAGE_OK;
@@ -342,11 +340,11 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
     struct channel *channel = getchannel(ichannel);
 
-    return (channel) ? channel->place(channel->target, source, event, count, data) : 0;
+    return (channel) ? channel->place(channel->id, source, event, count, data) : 0;
 
 }
 
-void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned int ichannel, unsigned int id, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -356,7 +354,7 @@ void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*
 
         list_init(&channel->links);
 
-        channel->target = target;
+        channel->id = id;
         channel->place = (place) ? place : placetask;
 
     }
@@ -373,7 +371,7 @@ void kernel_unannounce(unsigned int ichannel)
 
         list_init(&channel->links);
 
-        channel->target = 0;
+        channel->id = 0;
         channel->place = 0;
 
     }
@@ -398,7 +396,7 @@ void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count
             struct linkrow *linkrow = current->data;
             struct link *link = &linkrow->link;
 
-            kernel_place(link->source, link->target, event, count, data);
+            kernel_place(ichannel, link->target, event, count, data);
 
         }
 
@@ -520,7 +518,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
         struct linkrow *linkrow = &linkrows[i];
 
-        link_init(&linkrow->link);
+        link_init(&linkrow->link, 0);
         list_inititem(&linkrow->item, linkrow);
         list_add(&freelinks, &linkrow->item);
 

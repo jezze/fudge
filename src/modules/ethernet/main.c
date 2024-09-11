@@ -18,7 +18,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
         return interface->oninfo(source);
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel, source, interface->ichannel);
+        return kernel_link(interface->ichannel, source);
 
     case EVENT_UNLINK:
         return kernel_unlink(interface->ichannel, source);

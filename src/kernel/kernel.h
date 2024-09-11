@@ -6,7 +6,7 @@
 
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
-unsigned int kernel_link(unsigned int ichannel, unsigned int target, unsigned int source);
+unsigned int kernel_link(unsigned int ichannel, unsigned int target);
 unsigned int kernel_unlink(unsigned int ichannel, unsigned int target);
 unsigned int kernel_schedule(struct core *core);
 unsigned int kernel_codebase(unsigned int itask, unsigned int address);
@@ -15,7 +15,7 @@ void kernel_signal(unsigned int itask, unsigned int signal);
 struct task_thread *kernel_getthread(unsigned int itask);
 unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
-void kernel_announce(unsigned int ichannel, unsigned int target, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data));
+void kernel_announce(unsigned int ichannel, unsigned int id, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data));
 void kernel_unannounce(unsigned int ichannel);
 void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);

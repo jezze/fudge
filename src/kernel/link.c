@@ -1,11 +1,10 @@
 #include <fudge.h>
 #include "link.h"
 
-void link_init(struct link *link)
+void link_init(struct link *link, unsigned int target)
 {
 
-    link->source = 0;
-    link->target = 0;
+    link->target = target;
 
 }
 

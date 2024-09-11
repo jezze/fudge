@@ -1,9 +1,8 @@
 struct link
 {
 
-    unsigned int source;
     unsigned int target;
 
 };
 
-void link_init(struct link *link);
+void link_init(struct link *link, unsigned int target);
