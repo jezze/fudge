@@ -40,7 +40,7 @@ static void handlequeue(struct virtio_queue *vq)
     if (buffer->flags == 2)
     {
 
-        ethernet_notify(&ethernetinterface, header + 1, usedring->length);
+        ethernet_notifydata(&ethernetinterface, header + 1, usedring->length);
         vq->availablehead->index = 0;
 
     }

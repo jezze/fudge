@@ -29,7 +29,7 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
 
 }
 
-void ethernet_notify(struct ethernet_interface *interface, void *buffer, unsigned int count)
+void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
     kernel_notify(interface->ichannel, EVENT_DATA, count, buffer);

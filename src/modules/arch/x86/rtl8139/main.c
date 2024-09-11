@@ -172,7 +172,7 @@ static void handleirq(unsigned int irq)
 
             struct header *header = (struct header *)(rx + rxp);
 
-            ethernet_notify(&ethernetinterface, header + 1, header->length);
+            ethernet_notifydata(&ethernetinterface, header + 1, header->length);
 
             rxp += (header->length + 4 + 3) & ~3;
 
