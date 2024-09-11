@@ -344,7 +344,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned int ichannel, unsigned int id, unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned int ichannel, unsigned int id, unsigned int (*place)(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
