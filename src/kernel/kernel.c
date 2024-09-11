@@ -135,10 +135,10 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placetask(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int placetask(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = &mailboxes[target];
+    struct mailbox *mailbox = &mailboxes[id];
     struct message message;
     unsigned int status;
 
@@ -146,7 +146,7 @@ static unsigned int placetask(unsigned int target, unsigned int source, unsigned
 
     status = mailbox_place(mailbox, &message, data);
 
-    kernel_signal(target, TASK_SIGNAL_UNBLOCK);
+    kernel_signal(id, TASK_SIGNAL_UNBLOCK);
 
     return status;
 
