@@ -104,54 +104,66 @@ static void interpret(void)
     char buffer[MESSAGE_SIZE];
     unsigned int count = ring_read(&input1, buffer, MESSAGE_SIZE);
 
-    runslang(buffer, count);
-    printprompt();
-    print(buffer, count);
-    update();
-
-    while ((count = channel_read(EVENT_DATA, MESSAGE_SIZE, buffer)))
+    if (count > 1)
     {
 
-        job_init(&job, workers, JOBSIZE);
-        job_parse(&job, buffer, count);
+        runslang(buffer, count);
+        printprompt();
+        print(buffer, count);
+        update();
 
-        if (job_spawn(&job, "initrd:bin"))
+        while ((count = channel_read(EVENT_DATA, MESSAGE_SIZE, buffer)))
         {
 
-            struct message message;
-            char data[MESSAGE_SIZE];
+            job_init(&job, workers, JOBSIZE);
+            job_parse(&job, buffer, count);
 
-            job_listen(&job, EVENT_DATA);
-            job_pipe(&job, EVENT_DATA);
-            job_run(&job, option_getstring("pwd"));
-
-            while (job_pick(&job, &message, MESSAGE_SIZE, data))
+            if (job_spawn(&job, "initrd:bin"))
             {
 
-                switch (message.event)
+                struct message message;
+                char data[MESSAGE_SIZE];
+
+                job_listen(&job, EVENT_DATA);
+                job_pipe(&job, EVENT_DATA);
+                job_run(&job, option_getstring("pwd"));
+
+                while (job_pick(&job, &message, MESSAGE_SIZE, data))
                 {
 
-                case EVENT_DATA:
-                    print(data, message_datasize(&message));
+                    switch (message.event)
+                    {
 
-                    break;
+                    case EVENT_DATA:
+                        print(data, message_datasize(&message));
+
+                        break;
+
+                    }
 
                 }
+
+                update();
+
+            }
+
+            else
+            {
+
+                job_killall(&job);
 
             }
 
         }
 
-        else
-        {
-
-            job_killall(&job);
-
-        }
-
     }
 
-    update();
+    else
+    {
+
+        update();
+
+    }
 
 }
 
