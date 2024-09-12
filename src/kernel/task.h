@@ -34,10 +34,10 @@ struct task
     struct resource resource;
     struct task_signals signals;
     struct task_thread thread;
-    struct binary_node node;
     struct spinlock spinlock;
     unsigned int id;
     unsigned int state;
+    unsigned int base;
 
 };
 

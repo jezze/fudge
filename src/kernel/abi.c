@@ -59,14 +59,11 @@ static unsigned int load(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int address;} *args = stack;
-    struct binary_node node;
 
-    binary_initnode(&node, args->address);
-
-    if (node.address)
+    if (args->address)
     {
 
-        struct binary_format *format = binary_findformat(&node);
+        struct binary_format *format = binary_findformat(args->address);
 
         if (format)
         {
@@ -74,19 +71,19 @@ static unsigned int load(unsigned int itask, void *stack)
             void (*module_init)(void);
             void (*module_register)(void);
 
-            format->relocate(&node);
+            format->relocate(args->address);
 
-            module_init = (void (*)(void))(format->findsymbol(&node, 11, "module_init"));
+            module_init = (void (*)(void))(format->findsymbol(args->address, 11, "module_init"));
 
             if (module_init)
                 module_init();
 
-            module_register = (void (*)(void))(format->findsymbol(&node, 15, "module_register"));
+            module_register = (void (*)(void))(format->findsymbol(args->address, 15, "module_register"));
 
             if (module_register)
                 module_register();
 
-            return node.address;
+            return args->address;
 
         }
 
@@ -100,26 +97,23 @@ static unsigned int unload(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int address;} *args = stack;
-    struct binary_node node;
 
-    binary_initnode(&node, args->address);
-
-    if (node.address)
+    if (args->address)
     {
 
-        struct binary_format *format = binary_findformat(&node);
+        struct binary_format *format = binary_findformat(args->address);
 
         if (format)
         {
 
             void (*module_unregister)(void);
 
-            module_unregister = (void (*)(void))(format->findsymbol(&node, 17, "module_unregister"));
+            module_unregister = (void (*)(void))(format->findsymbol(args->address, 17, "module_unregister"));
 
             if (module_unregister)
                 module_unregister();
 
-            return node.address;
+            return args->address;
 
         }
 
