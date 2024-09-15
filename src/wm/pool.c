@@ -309,8 +309,6 @@ void pool_loadfont(unsigned int factor)
     if (service)
     {
 
-        unsigned int lineheight = 12 + factor * 4;
-        unsigned int padding = 4 + factor * 2;
         unsigned int id1 = 0;
         unsigned int id2 = 0;
 
@@ -345,6 +343,9 @@ void pool_loadfont(unsigned int factor)
 
         if (id1 && id2)
         {
+
+            unsigned int lineheight = 12 + factor * 4;
+            unsigned int padding = 4 + factor * 2;
 
             fs_read_full(service, id1, fontnormal, FONTDATA_SIZE, 0);
             fs_read_full(service, id2, fontbold, FONTDATA_SIZE, 0);

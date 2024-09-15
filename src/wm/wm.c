@@ -764,11 +764,16 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_mousescroll *mousescroll = mdata;
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     if (scrollablewidget)
+    {
+
+        struct event_mousescroll *mousescroll = mdata;
+
         scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
+
+    }
 
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
