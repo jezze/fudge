@@ -841,13 +841,13 @@ static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
 
     state.paused = 1;
 
-    channel_unbind(EVENT_KEYPRESS, onkeypress);
-    channel_unbind(EVENT_KEYRELEASE, onkeyrelease);
-    channel_unbind(EVENT_MOUSEMOVE, onmousemove);
-    channel_unbind(EVENT_MOUSEPRESS, onmousepress);
-    channel_unbind(EVENT_MOUSESCROLL, onmousescroll);
-    channel_unbind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_unbind(EVENT_VIDEOINFO, onvideoinfo);
+    channel_bind(EVENT_KEYPRESS, 0);
+    channel_bind(EVENT_KEYRELEASE, 0);
+    channel_bind(EVENT_MOUSEMOVE, 0);
+    channel_bind(EVENT_MOUSEPRESS, 0);
+    channel_bind(EVENT_MOUSESCROLL, 0);
+    channel_bind(EVENT_MOUSERELEASE, 0);
+    channel_bind(EVENT_VIDEOINFO, 0);
     channel_send(source, EVENT_WMACK);
 
 }

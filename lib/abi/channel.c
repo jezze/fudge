@@ -29,22 +29,29 @@ static unsigned int send(unsigned int channel, unsigned int event, unsigned int 
 
 }
 
+static void dispatch(unsigned int source, unsigned int event, void *data, unsigned int size)
+{
+
+    if (listeners[event])
+    {
+
+        pending++;
+
+        listeners[event](source, data, size);
+
+        pending--;
+
+    }
+
+}
+
 void channel_dispatch(struct message *message, void *data)
 {
 
     if (message->event < CHANNEL_EVENTS)
     {
 
-        if (listeners[message->event])
-        {
-
-            pending++;
-
-            listeners[message->event](message->source, data, message_datasize(message));
-
-            pending--;
-
-        }
+        dispatch(message->source, message->event, data, message_datasize(message));
 
         switch (message->event)
         {
@@ -67,20 +74,7 @@ void channel_dispatch(struct message *message, void *data)
         {
 
             if (parent)
-            {
-
-                if (listeners[EVENT_EXIT])
-                {
-
-                    pending++;
-
-                    listeners[EVENT_EXIT](parent, 0, 0);
-
-                    pending--;
-
-                }
-
-            }
+                dispatch(parent, EVENT_EXIT, 0, 0);
 
         }
 
@@ -95,7 +89,7 @@ void channel_dispatch(struct message *message, void *data)
         {
 
             if (parent)
-                send(parent, EVENT_TERMRESPONSE, 0, 0);
+                channel_send(parent, EVENT_TERMRESPONSE);
 
             channel_close();
 
@@ -302,13 +296,6 @@ void channel_bind(unsigned int event, void (*callback)(unsigned int source, void
 {
 
     listeners[event] = callback;
-
-}
-
-void channel_unbind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
-{
-
-    listeners[event] = 0;
 
 }
 
