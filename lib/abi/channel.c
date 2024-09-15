@@ -29,19 +29,6 @@ static unsigned int send(unsigned int channel, unsigned int event, unsigned int 
 
 }
 
-static unsigned int redirect(unsigned int channel, unsigned int event, unsigned int mode, unsigned int target)
-{
-
-    struct event_redirect redirect;
-
-    redirect.event = event;
-    redirect.mode = mode;
-    redirect.target = target;
-
-    return send(channel, EVENT_REDIRECT, sizeof (struct event_redirect), &redirect);
-
-}
-
 void channel_dispatch(struct message *message, void *data)
 {
 
@@ -195,20 +182,6 @@ unsigned int channel_send_fmt8(unsigned int channel, unsigned int event, char *f
 
 }
 
-unsigned int channel_listen(unsigned int channel, unsigned int event)
-{
-
-    return redirect(channel, event, EVENT_REDIRECT_SOURCE, 0);
-
-}
-
-unsigned int channel_forward(unsigned int channel, unsigned int event, unsigned int target)
-{
-
-    return redirect(channel, event, EVENT_REDIRECT_TARGET, (target) ? target : routes[event]);
-
-}
-
 unsigned int channel_pick(struct message *message, unsigned int count, void *data)
 {
 
@@ -339,28 +312,10 @@ void channel_unbind(unsigned int event, void (*callback)(unsigned int source, vo
 
 }
 
-void channel_route(unsigned int event, unsigned int mode, unsigned int target, unsigned int source)
+void channel_route(unsigned int event, unsigned int target)
 {
 
-    switch (mode)
-    {
-
-    case EVENT_REDIRECT_TARGET:
-        routes[event] = target;
-
-        break;
-
-    case EVENT_REDIRECT_SOURCE:
-        routes[event] = source;
-
-        break;
-
-    default:
-        routes[event] = 0;
-
-        break;
-
-    }
+    routes[event] = target;
 
 }
 

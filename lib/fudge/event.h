@@ -3,15 +3,14 @@
 #define EVENT_END                       0x03
 #define EVENT_TERMREQUEST               0x04
 #define EVENT_TERMRESPONSE              0x05
-#define EVENT_REDIRECT                  0x06
-#define EVENT_OPTION                    0x07
-#define EVENT_PATH                      0x08
-#define EVENT_DATA                      0x09
-#define EVENT_ERROR                     0x0A
-#define EVENT_CONFIG                    0x0B
-#define EVENT_QUERY                     0x0C
-#define EVENT_STATUS                    0x0D
-#define EVENT_LOGINFO                   0x0E
+#define EVENT_OPTION                    0x06
+#define EVENT_PATH                      0x07
+#define EVENT_DATA                      0x08
+#define EVENT_ERROR                     0x09
+#define EVENT_CONFIG                    0x0A
+#define EVENT_QUERY                     0x0B
+#define EVENT_STATUS                    0x0C
+#define EVENT_LOGINFO                   0x0D
 #define EVENT_KEYPRESS                  0x10
 #define EVENT_KEYRELEASE                0x11
 #define EVENT_MOUSEMOVE                 0x12
@@ -59,8 +58,6 @@
 #define EVENT_LINK                      0x50
 #define EVENT_UNLINK                    0x51
 #define EVENT_INFO                      0x52
-#define EVENT_REDIRECT_TARGET           0x01
-#define EVENT_REDIRECT_SOURCE           0x02
 
 struct event_redirect
 {

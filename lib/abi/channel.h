@@ -8,8 +8,6 @@ unsigned int channel_send_fmt3(unsigned int channel, unsigned int event, char *f
 unsigned int channel_send_fmt4(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4);
 unsigned int channel_send_fmt6(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6);
 unsigned int channel_send_fmt8(unsigned int channel, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8);
-unsigned int channel_listen(unsigned int channel, unsigned int event);
-unsigned int channel_forward(unsigned int channel, unsigned int event, unsigned int target);
 unsigned int channel_pick(struct message *message, unsigned int count, void *data);
 unsigned int channel_process(void);
 unsigned int channel_poll(unsigned int event, struct message *message, unsigned int count, void *data);
@@ -18,6 +16,6 @@ unsigned int channel_wait(unsigned int event);
 unsigned int channel_wait_buffer(unsigned int event, unsigned int count, void *data);
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
 void channel_unbind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
-void channel_route(unsigned int event, unsigned int mode, unsigned int target, unsigned int source);
+void channel_route(unsigned int event, unsigned int target);
 void channel_open(void);
 void channel_close(void);

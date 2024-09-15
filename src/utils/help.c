@@ -1,6 +1,13 @@
 #include <fudge.h>
 #include <abi.h>
 
+static void ondata(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_send_buffer(source, EVENT_DATA, msize, mdata);
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -9,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (channel)
     {
 
-        channel_forward(channel, EVENT_DATA, 0);
+        channel_route(EVENT_DATA, source);
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt0(channel, EVENT_PATH, "initrd:data/help.txt\\0");
         channel_send(channel, EVENT_END);
@@ -23,6 +30,7 @@ void init(void)
 {
 
     option_add("echo", "initrd:bin/echo");
+    channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 
 }

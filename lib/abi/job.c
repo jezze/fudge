@@ -106,23 +106,6 @@ unsigned int job_spawn(struct job *job, char *bindir)
 
 }
 
-void job_listen(struct job *job, unsigned int event)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < job->count; i++)
-    {
-
-        struct job_worker *worker = &job->workers[i];
-
-        if (worker->channel)
-            channel_listen(worker->channel, event);
-
-    }
-
-}
-
 unsigned int job_pipe(struct job *job, unsigned int source, unsigned int event, void *buffer, unsigned int count)
 {
 

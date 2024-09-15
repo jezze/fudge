@@ -21,15 +21,6 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onredirect(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_redirect *redirect = mdata;
-
-    channel_route(redirect->event, redirect->mode, redirect->target, source);
-
-}
-
 static void onstatus(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -62,7 +53,6 @@ void main(void)
     option_add("pwd", "");
     channel_open();
     channel_bind(EVENT_OPTION, onoption);
-    channel_bind(EVENT_REDIRECT, onredirect);
     channel_bind(EVENT_STATUS, onstatus);
     init();
 
