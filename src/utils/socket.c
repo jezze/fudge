@@ -49,7 +49,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct mtwist_state state;
 
     channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    channel_wait_buffer(option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
     mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));

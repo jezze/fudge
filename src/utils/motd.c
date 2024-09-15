@@ -20,7 +20,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt0(channel, EVENT_PATH, "initrd:data/motd.txt\\0");
         channel_send(channel, EVENT_END);
-        channel_wait(EVENT_TERMRESPONSE);
+        channel_wait(channel, EVENT_TERMRESPONSE);
 
     }
 

@@ -30,7 +30,7 @@ unsigned int fs_list(unsigned int target, unsigned int id, unsigned int offset, 
 
     channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
-    while (channel_wait_buffer(EVENT_LISTRESPONSE, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(target, EVENT_LISTRESPONSE, MESSAGE_SIZE, data))
     {
 
         struct event_listresponse *response = (void *)data;
@@ -55,7 +55,7 @@ unsigned int fs_map(unsigned int target, unsigned int id)
 
     channel_send_buffer(target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
 
-    while (channel_wait_buffer(EVENT_MAPRESPONSE, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(target, EVENT_MAPRESPONSE, MESSAGE_SIZE, data))
     {
 
         struct event_mapresponse *response = (void *)data;
@@ -82,7 +82,7 @@ unsigned int fs_read(unsigned int target, unsigned int id, void *buffer, unsigne
 
     channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
-    while (channel_wait_buffer(EVENT_READRESPONSE, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(target, EVENT_READRESPONSE, MESSAGE_SIZE, data))
     {
 
         struct event_readresponse *response = (void *)data;
@@ -134,7 +134,7 @@ unsigned int fs_stat(unsigned int target, unsigned int id, struct record *record
 
     channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
-    while (channel_wait_buffer(EVENT_STATRESPONSE, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(target, EVENT_STATRESPONSE, MESSAGE_SIZE, data))
     {
 
         struct event_statresponse *response = (void *)data;
@@ -160,7 +160,7 @@ unsigned int fs_walk(unsigned int target, unsigned int parent, char *path)
 
     channel_send_buffer(target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
-    while (channel_wait_buffer(EVENT_WALKRESPONSE, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(target, EVENT_WALKRESPONSE, MESSAGE_SIZE, data))
     {
 
         struct event_walkresponse *response = (void *)data;
@@ -187,7 +187,7 @@ unsigned int fs_write(unsigned int target, unsigned int id, void *buffer, unsign
 
     channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
-    while (channel_wait_buffer(EVENT_WRITERESPONSE, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(target, EVENT_WRITERESPONSE, MESSAGE_SIZE, data))
     {
 
         struct event_writeresponse *response = (void *)data;

@@ -47,7 +47,7 @@ static void setupvideo(unsigned int source)
     buffer_clear(black, 768);
     channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCMAP, 768, &black);
     channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait(EVENT_VIDEOINFO);
+    channel_wait(option_getdecimal("video-service"), EVENT_VIDEOINFO);
 
 }
 

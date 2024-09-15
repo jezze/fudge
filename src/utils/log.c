@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("log-service"), EVENT_LINK);
 
-    while (channel_wait_buffer(EVENT_LOGINFO, MESSAGE_SIZE, data))
+    while (channel_wait_buffer(option_getdecimal("log-service"), EVENT_LOGINFO, MESSAGE_SIZE, data))
     {
 
         struct event_loginfo *loginfo = (void *)data;

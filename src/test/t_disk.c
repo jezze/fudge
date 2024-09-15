@@ -53,7 +53,7 @@ static void request_send(struct state *state)
     blockrequest.sector = state->blocksector;
     blockrequest.count = state->blockcount;
 
-    channel_send_buffer(502, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send_buffer(option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -63,7 +63,7 @@ static unsigned int request_poll(struct state *state)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_poll(EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message_datasize(&message), state->blockreads * BLOCKSIZE) / BLOCKSIZE;

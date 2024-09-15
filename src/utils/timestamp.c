@@ -8,7 +8,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int timestamp;
 
     channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    channel_wait_buffer(option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
     timestamp = time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);
 

@@ -244,9 +244,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     videoconf.bpp = option_getdecimal("bpp");
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait(EVENT_WMACK);
+    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
     channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait_buffer(EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+    channel_wait_buffer(option_getdecimal("video-service"), EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
     if (videoinfo.bpp == 1)
     {
@@ -281,7 +281,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("mouse-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait(EVENT_WMACK);
+    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
 
 }
 

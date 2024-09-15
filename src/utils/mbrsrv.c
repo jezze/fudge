@@ -48,7 +48,7 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
 
     request_send(sector, nblocks);
 
-    while (channel_poll(EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         read += buffer_write(buffer, count, data, message_datasize(&message), read);

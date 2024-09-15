@@ -11,7 +11,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(option_getdecimal("timer-service"), EVENT_LINK);
 
-    while (channel_poll(EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
+    while (channel_poll(option_getdecimal("timer-service"), EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
     {
 
         channel_send_fmt1(source, EVENT_DATA, "Tick: %u second(s)\n", &counter);

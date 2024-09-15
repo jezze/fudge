@@ -210,7 +210,7 @@ unsigned int channel_process(void)
 
 }
 
-unsigned int channel_poll(unsigned int event, struct message *message, unsigned int count, void *data)
+unsigned int channel_poll(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data)
 {
 
     while (channel_pick(message, count, data))
@@ -218,7 +218,7 @@ unsigned int channel_poll(unsigned int event, struct message *message, unsigned 
 
         channel_dispatch(message, data);
 
-        if (message->event == event)
+        if (message->source == source && message->event == event)
             return message->event;
 
     }
@@ -227,7 +227,7 @@ unsigned int channel_poll(unsigned int event, struct message *message, unsigned 
 
 }
 
-unsigned int channel_read(unsigned int event, unsigned int count, void *data)
+unsigned int channel_read(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct message message;
@@ -237,7 +237,7 @@ unsigned int channel_read(unsigned int event, unsigned int count, void *data)
 
         channel_dispatch(&message, data);
 
-        if (message.event == event)
+        if (message.source == source && message.event == event)
             return message_datasize(&message);
 
     }
@@ -246,7 +246,7 @@ unsigned int channel_read(unsigned int event, unsigned int count, void *data)
 
 }
 
-unsigned int channel_wait(unsigned int event)
+unsigned int channel_wait(unsigned int source, unsigned int event)
 {
 
     struct message message;
@@ -257,7 +257,7 @@ unsigned int channel_wait(unsigned int event)
 
         channel_dispatch(&message, data);
 
-        if (message.event == event)
+        if (message.source == source && message.event == event)
             return message.event;
 
     }
@@ -266,7 +266,7 @@ unsigned int channel_wait(unsigned int event)
 
 }
 
-unsigned int channel_wait_buffer(unsigned int event, unsigned int count, void *data)
+unsigned int channel_wait_buffer(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct message message;
@@ -277,7 +277,7 @@ unsigned int channel_wait_buffer(unsigned int event, unsigned int count, void *d
 
         channel_dispatch(&message, data2);
 
-        if (message.event == event)
+        if (message.source == source && message.event == event)
         {
 
             buffer_copy(data, data2, count);

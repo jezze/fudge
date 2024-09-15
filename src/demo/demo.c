@@ -145,18 +145,18 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     videoconf.bpp = option_getdecimal("bpp");
 
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait(EVENT_WMACK);
+    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("timer-service"), EVENT_LINK);
     channel_send(option_getdecimal("video-service"), EVENT_LINK);
     channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait(EVENT_VIDEOINFO);
+    channel_wait(option_getdecimal("video-service"), EVENT_VIDEOINFO);
     run();
     channel_send(option_getdecimal("video-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
     channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait(EVENT_WMACK);
+    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
 
 }
 

@@ -107,12 +107,13 @@ static void interpret(void)
     if (count > 1)
     {
 
-        runslang(buffer, count);
+        unsigned int channel = runslang(buffer, count);
+
         printprompt();
         print(buffer, count);
         update();
 
-        while ((count = channel_read(EVENT_DATA, MESSAGE_SIZE, buffer)))
+        while ((count = channel_read(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
         {
 
             job_init(&job, workers, JOBSIZE);
@@ -232,10 +233,9 @@ static void complete(void)
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
     unsigned int count = createcommand(&input1, buffer, prefix);
+    unsigned int channel = runslang(buffer, count);
 
-    runslang(buffer, count);
-
-    while ((count = channel_read(EVENT_DATA, MESSAGE_SIZE, buffer)))
+    while ((count = channel_read(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
     {
 
         job_init(&job, workers, JOBSIZE);

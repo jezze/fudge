@@ -654,7 +654,7 @@ unsigned int socket_receive(unsigned int channel, struct socket *local, struct s
     struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_poll(EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         struct socket *remote;
@@ -735,7 +735,7 @@ void socket_connect_tcp(unsigned int channel, struct socket *local, struct socke
 
     send(channel, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, 4096, 0, 0));
 
-    while (channel_poll(EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         char buffer[SOCKET_MTUSIZE];
@@ -762,7 +762,7 @@ void socket_resolveremote(unsigned int channel, struct socket *local, struct soc
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE);
     send(channel, data, buildarp(data, SOCKET_MTUSIZE, local, remote, &multicast, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_poll(EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         socket_handle_arp(channel, local, remote, message_datasize(&message), data);
@@ -778,7 +778,7 @@ void socket_resolvelocal(unsigned int channel, struct socket *socket)
 {
 
     channel_send(channel, EVENT_INFO);
-    channel_wait_buffer(EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
+    channel_wait_buffer(channel, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
 
     socket->resolved = 1;
 
