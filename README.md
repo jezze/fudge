@@ -24,11 +24,7 @@ if they wish.
 Each program has a channel which it uses to read messages from it's mailbox. For
 each type of message a program can register a callback that will be run when a
 message of a certain type appears. Messages without a registered callback will
-be dropped. By default the system has callbacks for MAIN, TERM and REDIRECT
-messages but these can be overridden. It is possible to poll messages manually
-from the channel, either from a certain sender or of a certain type. Anything
-that falls outside of that will be automatically dispatched to the default
-registered callbacks. It is also possible to dispatch a message manually.
+be dropped. It is also possible to poll messages manually from the channel.
 
 ## Building the cross-compiler (crosstool-ng)
 
