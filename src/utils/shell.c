@@ -66,7 +66,6 @@ static void interpret(void)
                 struct message message;
                 char data[MESSAGE_SIZE];
 
-                job_pipe(&job, EVENT_DATA);
                 job_run(&job, option_getstring("pwd"));
 
                 while (job_pick(&job, &message, MESSAGE_SIZE, data))
@@ -76,7 +75,8 @@ static void interpret(void)
                     {
 
                     case EVENT_DATA:
-                        print(data, message_datasize(&message));
+                        if (!job_pipe(&job, message.source, message.event, data, message_datasize(&message)))
+                            print(data, message_datasize(&message));
 
                         break;
 
@@ -190,7 +190,6 @@ static void complete(void)
             struct ring output;
 
             ring_init(&output, INPUTSIZE, buffer);
-            job_pipe(&job, EVENT_DATA);
             job_run(&job, option_getstring("pwd"));
 
             while (job_pick(&job, &message, MESSAGE_SIZE, data))
@@ -200,7 +199,8 @@ static void complete(void)
                 {
 
                 case EVENT_DATA:
-                    ring_write(&output, data, message_datasize(&message));
+                    if (!job_pipe(&job, message.source, message.event, data, message_datasize(&message)))
+                        ring_write(&output, data, message_datasize(&message));
 
                     break;
 

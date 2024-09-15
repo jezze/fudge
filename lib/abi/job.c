@@ -123,7 +123,7 @@ void job_listen(struct job *job, unsigned int event)
 
 }
 
-void job_pipe(struct job *job, unsigned int event)
+unsigned int job_pipe(struct job *job, unsigned int source, unsigned int event, void *buffer, unsigned int count)
 {
 
     unsigned int i;
@@ -133,20 +133,20 @@ void job_pipe(struct job *job, unsigned int event)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
-            channel_forward(worker->channel, event, job->workers[i + 1].channel);
+        if (worker->channel == source)
+        {
+
+            struct job_worker *next = &job->workers[i + 1];
+
+            channel_send_buffer(next->channel, event, count, buffer);
+
+            return 1;
+
+        }
 
     }
 
-    if (job->count > 1)
-    {
-
-        struct job_worker *worker = &job->workers[job->count - 1];
-
-        if (worker->channel)
-            channel_listen(worker->channel, event);
-
-    }
+    return 0;
 
 }
 
