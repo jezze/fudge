@@ -92,6 +92,7 @@ static void interpret(void)
             {
 
                 job_killall(&job);
+                printprompt();
 
             }
 
