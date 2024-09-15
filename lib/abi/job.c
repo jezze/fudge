@@ -138,6 +138,16 @@ void job_pipe(struct job *job, unsigned int event)
 
     }
 
+    if (job->count > 1)
+    {
+
+        struct job_worker *worker = &job->workers[job->count - 1];
+
+        if (worker->channel)
+            channel_listen(worker->channel, event);
+
+    }
+
 }
 
 void job_run(struct job *job, char *pwd)

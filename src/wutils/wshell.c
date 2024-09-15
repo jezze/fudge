@@ -124,7 +124,6 @@ static void interpret(void)
                 struct message message;
                 char data[MESSAGE_SIZE];
 
-                job_listen(&job, EVENT_DATA);
                 job_pipe(&job, EVENT_DATA);
                 job_run(&job, option_getstring("pwd"));
 
@@ -249,7 +248,6 @@ static void complete(void)
             struct ring output;
 
             ring_init(&output, INPUTSIZE, buffer);
-            job_listen(&job, EVENT_DATA);
             job_pipe(&job, EVENT_DATA);
             job_run(&job, option_getstring("pwd"));
 
