@@ -334,16 +334,22 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-/*
-static unsigned int reset_write(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    setcommand(REG_COMMAND_CTRLRESET);
+    switch (event)
+    {
 
-    return 0;
+    case EVENT_TERMREQUEST:
+        setcommand(REG_COMMAND_CTRLRESET);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_UNIMPLEMENTED;
 
 }
-*/
 
 void module_init(void)
 {
@@ -356,6 +362,7 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
+    kernel_announce(107, 0, place);
 
 }
 
@@ -363,6 +370,7 @@ void module_unregister(void)
 {
 
     base_unregisterbus(&bus);
+    kernel_unannounce(107);
 
 }
 

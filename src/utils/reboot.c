@@ -4,30 +4,14 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    /*
-    unsigned int service = fs_auth(option_getstring("reset"));
-
-    if (service)
-    {
-
-        unsigned int id = fs_walk(service, 0, option_getstring("reset"));
-
-        if (id)
-            fs_write(service, id, 0, 0, 0);
-        else
-            channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", option_getstring("reset"));
-
-    }
-    */
+    channel_send(option_getdecimal("reset-service"), EVENT_TERMREQUEST);
 
 }
 
 void init(void)
 {
 
-    /*
-    option_add("reset", "system:reset");
-    */
+    option_add("reset-service", "107");
     channel_bind(EVENT_MAIN, onmain);
 
 }
