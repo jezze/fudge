@@ -14,7 +14,7 @@ struct channel
     void *interface;
     unsigned int id;
     struct list links;
-    unsigned int (*place)(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data);
+    unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
 
@@ -136,20 +136,29 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placetask(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int placetask(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = &mailboxes[id];
-    struct message message;
-    unsigned int status;
+    struct channel *channel = getchannel(ichannel);
 
-    message_init(&message, event, source, count);
+    if (channel)
+    {
 
-    status = mailbox_place(mailbox, &message, data);
+        struct mailbox *mailbox = &mailboxes[channel->id];
+        struct message message;
+        unsigned int status;
 
-    kernel_signal(id, TASK_SIGNAL_UNBLOCK);
+        message_init(&message, event, source, count);
 
-    return status;
+        status = mailbox_place(mailbox, &message, data);
+
+        kernel_signal(channel->id, TASK_SIGNAL_UNBLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -341,11 +350,11 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
     struct channel *channel = getchannel(ichannel);
 
-    return (channel) ? channel->place(channel->interface, channel->id, source, event, count, data) : 0;
+    return (channel) ? channel->place(channel->interface, ichannel, source, event, count, data) : 0;
 
 }
 
-void kernel_announce(unsigned int ichannel, void *interface, unsigned int id, unsigned int (*place)(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned int ichannel, void *interface, unsigned int id, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
