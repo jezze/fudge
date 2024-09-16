@@ -11,9 +11,10 @@
 struct channel
 {
 
+    void *interface;
     unsigned int id;
     struct list links;
-    unsigned int (*place)(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data);
+    unsigned int (*place)(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
 
@@ -135,7 +136,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placetask(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int placetask(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct mailbox *mailbox = &mailboxes[id];
@@ -340,11 +341,11 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
     struct channel *channel = getchannel(ichannel);
 
-    return (channel) ? channel->place(channel->id, source, event, count, data) : 0;
+    return (channel) ? channel->place(channel->interface, channel->id, source, event, count, data) : 0;
 
 }
 
-void kernel_announce(unsigned int ichannel, unsigned int id, unsigned int (*place)(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned int ichannel, void *interface, unsigned int id, unsigned int (*place)(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -354,6 +355,7 @@ void kernel_announce(unsigned int ichannel, unsigned int id, unsigned int (*plac
 
         list_init(&channel->links);
 
+        channel->interface = interface;
         channel->id = id;
         channel->place = (place) ? place : placetask;
 
@@ -509,7 +511,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
-        kernel_announce(i, i, placetask);
+        kernel_announce(i, &taskrow->task, i, placetask);
 
     }
 

@@ -2,16 +2,21 @@
 #include <kernel.h>
 #include "clock.h"
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int oninfo(struct clock_interface *interface, unsigned int source)
 {
 
-    struct clock_interface *interface = (struct clock_interface *)id;
+    return interface->oninfo(source);
+
+}
+
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
 
     switch (event)
     {
 
     case EVENT_INFO:
-        return interface->oninfo(source);
+        return oninfo(interface, source);
 
     }
 
@@ -23,7 +28,7 @@ void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, (unsigned int)interface, place);
+    kernel_announce(interface->ichannel, interface, interface->ichannel, place);
 
 }
 

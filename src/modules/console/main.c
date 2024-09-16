@@ -2,22 +2,27 @@
 #include <kernel.h>
 #include "console.h"
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int ondata(struct console_interface *interface, void *data, unsigned int count)
 {
 
-    struct console_interface *interface = (struct console_interface *)id;
+    return interface->ondata(data, count);
+
+}
+
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
 
     switch (event)
     {
 
     case EVENT_DATA:
-        return interface->ondata(data, count);
+        return ondata(interface, data, count);
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -40,7 +45,7 @@ void console_registerinterface(struct console_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, (unsigned int)interface, place);
+    kernel_announce(interface->ichannel, interface, interface->ichannel, place);
 
 }
 

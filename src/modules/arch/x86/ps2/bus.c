@@ -334,7 +334,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -362,7 +362,7 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    kernel_announce(107, 0, place);
+    kernel_announce(107, 0, 0, place);
 
 }
 

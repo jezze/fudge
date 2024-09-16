@@ -2,19 +2,17 @@
 #include <kernel.h>
 #include "timer.h"
 
-static unsigned int place1(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place1(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct timer_interface *interface = (struct timer_interface *)id;
 
     switch (event)
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel1, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel1, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -22,19 +20,17 @@ static unsigned int place1(unsigned int id, unsigned int source, unsigned int ev
 
 }
 
-static unsigned int place10(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place10(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct timer_interface *interface = (struct timer_interface *)id;
 
     switch (event)
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel10, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel10, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -42,19 +38,17 @@ static unsigned int place10(unsigned int id, unsigned int source, unsigned int e
 
 }
 
-static unsigned int place100(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place100(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct timer_interface *interface = (struct timer_interface *)id;
 
     switch (event)
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel100, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel100, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -62,19 +56,17 @@ static unsigned int place100(unsigned int id, unsigned int source, unsigned int 
 
 }
 
-static unsigned int place1000(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place1000(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct timer_interface *interface = (struct timer_interface *)id;
 
     switch (event)
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel1000, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel1000, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -130,10 +122,10 @@ void timer_registerinterface(struct timer_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel1, (unsigned int)interface, place1);
-    kernel_announce(interface->ichannel10, (unsigned int)interface, place10);
-    kernel_announce(interface->ichannel100, (unsigned int)interface, place100);
-    kernel_announce(interface->ichannel1000, (unsigned int)interface, place1000);
+    kernel_announce(interface->ichannel1, interface, interface->ichannel1, place1);
+    kernel_announce(interface->ichannel10, interface, interface->ichannel10, place10);
+    kernel_announce(interface->ichannel100, interface, interface->ichannel100, place100);
+    kernel_announce(interface->ichannel1000, interface, interface->ichannel1000, place1000);
 
 }
 

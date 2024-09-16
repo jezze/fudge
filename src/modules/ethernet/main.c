@@ -3,25 +3,37 @@
 #include <kernel.h>
 #include "ethernet.h"
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int ondata(struct ethernet_interface *interface, void *data, unsigned int count)
 {
 
-    struct ethernet_interface *interface = (struct ethernet_interface *)id;
+    return interface->ondata(data, count);
+
+}
+
+static unsigned int oninfo(struct ethernet_interface *interface, unsigned int source)
+{
+
+    return interface->oninfo(source);
+
+}
+
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+{
 
     switch (event)
     {
 
     case EVENT_DATA:
-        return interface->ondata(data, count);
+        return ondata(interface, data, count);
 
     case EVENT_INFO:
-        return interface->oninfo(source);
+        return oninfo(interface, source);
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -40,7 +52,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, (unsigned int)interface, place);
+    kernel_announce(interface->ichannel, interface, interface->ichannel, place);
 
 }
 

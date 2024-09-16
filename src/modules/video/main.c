@@ -18,10 +18,8 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct video_interface *interface = (struct video_interface *)id;
 
     switch (event)
     {
@@ -33,10 +31,10 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
         return onvideoconf(interface, source, count, data);
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -62,7 +60,7 @@ void video_registerinterface(struct video_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, (unsigned int)interface, place);
+    kernel_announce(interface->ichannel, interface, interface->ichannel, place);
 
 }
 

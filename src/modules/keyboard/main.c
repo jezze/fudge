@@ -2,19 +2,17 @@
 #include <kernel.h>
 #include "keyboard.h"
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct keyboard_interface *interface = (struct keyboard_interface *)id;
 
     switch (event)
     {
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -48,7 +46,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, (unsigned int)interface, place);
+    kernel_announce(interface->ichannel, interface, interface->ichannel, place);
 
 }
 

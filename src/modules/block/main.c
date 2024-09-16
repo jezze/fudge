@@ -11,10 +11,8 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 
 }
 
-static unsigned int place(unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
-
-    struct block_interface *interface = (struct block_interface *)id;
 
     switch (event)
     {
@@ -23,10 +21,10 @@ static unsigned int place(unsigned int id, unsigned int source, unsigned int eve
         return onblockrequest(interface, source, count, data);
 
     case EVENT_LINK:
-        return kernel_link(interface->ichannel, source);
+        return kernel_link(id, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(interface->ichannel, source);
+        return kernel_unlink(id, source);
 
     }
 
@@ -45,7 +43,7 @@ void block_registerinterface(struct block_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, (unsigned int)interface, place);
+    kernel_announce(interface->ichannel, interface, interface->ichannel, place);
 
 }
 
