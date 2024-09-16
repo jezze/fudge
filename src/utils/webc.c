@@ -9,19 +9,19 @@ static void dnsresolve(char *domain, char address[32])
     if (channel)
     {
 
+        struct message message;
         char data[MESSAGE_SIZE];
-        unsigned int count;
 
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
 
-        while ((count = channel_read(channel, EVENT_QUERY, MESSAGE_SIZE, data)))
+        while (channel_poll(channel, EVENT_QUERY, &message, MESSAGE_SIZE, data))
         {
 
             unsigned int i;
             char *key;
 
-            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
+            for (i = 0; (key = buffer_tindex(data, message_datasize(&message), '\0', i)); i += 2)
             {
 
                 if (cstring_match(key, "data"))
@@ -54,6 +54,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
     if (channel)
     {
 
+        struct message message;
         char data[MESSAGE_SIZE];
         unsigned int count = cstring_write_fmt2(data, MESSAGE_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
 
@@ -61,8 +62,8 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         channel_send(channel, EVENT_MAIN);
         channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
 
-        while ((count = channel_read(channel, EVENT_DATA, MESSAGE_SIZE, data)))
-            channel_send_buffer(source, EVENT_DATA, count, data);
+        while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
+            channel_send_buffer(source, EVENT_DATA, message_datasize(&message), data);
 
         channel_send(channel, EVENT_END);
         channel_wait(channel, EVENT_TERMRESPONSE);

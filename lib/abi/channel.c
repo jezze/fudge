@@ -227,25 +227,6 @@ unsigned int channel_poll(unsigned int source, unsigned int event, struct messag
 
 }
 
-unsigned int channel_read(unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    struct message message;
-
-    while (channel_pick(&message, count, data) != EVENT_TERMRESPONSE)
-    {
-
-        channel_dispatch(&message, data);
-
-        if (message.source == source && message.event == event)
-            return message_datasize(&message);
-
-    }
-
-    return 0;
-
-}
-
 unsigned int channel_wait(unsigned int source, unsigned int event)
 {
 

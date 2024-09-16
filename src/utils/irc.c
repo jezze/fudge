@@ -47,19 +47,19 @@ static void dnsresolve(struct socket *socket, char *domain)
     if (channel)
     {
 
+        struct message message;
         char data[MESSAGE_SIZE];
-        unsigned int count;
 
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
 
-        while ((count = channel_read(channel, EVENT_QUERY, MESSAGE_SIZE, data)))
+        while (channel_poll(channel, EVENT_QUERY, &message, MESSAGE_SIZE, data))
         {
 
             unsigned int i;
             char *key;
 
-            for (i = 0; (key = buffer_tindex(data, count, '\0', i)); i += 2)
+            for (i = 0; (key = buffer_tindex(data, message_datasize(&message), '\0', i)); i += 2)
             {
 
                 if (cstring_match(key, "data"))
