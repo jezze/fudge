@@ -953,7 +953,7 @@ void init(void)
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
-    option_add("listen", "12345");
+    option_add("listen", "1234");
     option_add("keyboard-service", "");
     option_add("mouse-service", "");
     option_add("video-service", "");

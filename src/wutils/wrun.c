@@ -173,7 +173,7 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("wm-service", "12345");
+    option_add("wm-service", "1234");
     option_add("clock-service", "220");
     option_add("ethernet-service", "108");
     option_add("local-address", "10.0.5.1");
