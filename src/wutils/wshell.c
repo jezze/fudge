@@ -107,17 +107,18 @@ static void interpret(void)
     if (count > 1)
     {
 
+        struct message message1;
         unsigned int channel = runslang(buffer, count);
 
         printprompt();
         print(buffer, count);
         update();
 
-        while ((count = channel_read(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
+        while (channel_poll(channel, EVENT_DATA, &message1, MESSAGE_SIZE, buffer))
         {
 
             job_init(&job, workers, JOBSIZE);
-            job_parse(&job, buffer, count);
+            job_parse(&job, buffer, message_datasize(&message1));
 
             if (job_spawn(&job, "initrd:bin"))
             {
