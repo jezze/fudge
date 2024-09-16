@@ -2,61 +2,7 @@
 #include <kernel.h>
 #include "timer.h"
 
-static unsigned int place1(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_LINK:
-        return kernel_link(id, source);
-
-    case EVENT_UNLINK:
-        return kernel_unlink(id, source);
-
-    }
-
-    return MESSAGE_UNIMPLEMENTED;
-
-}
-
-static unsigned int place10(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_LINK:
-        return kernel_link(id, source);
-
-    case EVENT_UNLINK:
-        return kernel_unlink(id, source);
-
-    }
-
-    return MESSAGE_UNIMPLEMENTED;
-
-}
-
-static unsigned int place100(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_LINK:
-        return kernel_link(id, source);
-
-    case EVENT_UNLINK:
-        return kernel_unlink(id, source);
-
-    }
-
-    return MESSAGE_UNIMPLEMENTED;
-
-}
-
-static unsigned int place1000(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -122,10 +68,10 @@ void timer_registerinterface(struct timer_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel1, interface, interface->ichannel1, place1);
-    kernel_announce(interface->ichannel10, interface, interface->ichannel10, place10);
-    kernel_announce(interface->ichannel100, interface, interface->ichannel100, place100);
-    kernel_announce(interface->ichannel1000, interface, interface->ichannel1000, place1000);
+    kernel_announce(interface->ichannel1, interface, interface->ichannel1, place);
+    kernel_announce(interface->ichannel10, interface, interface->ichannel10, place);
+    kernel_announce(interface->ichannel100, interface, interface->ichannel100, place);
+    kernel_announce(interface->ichannel1000, interface, interface->ichannel1000, place);
 
 }
 
