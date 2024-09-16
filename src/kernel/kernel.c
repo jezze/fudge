@@ -528,7 +528,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
-        kernel_announce(i, &taskrow->task, placetask);
+        kernel_announce2(i, i);
 
     }
 
