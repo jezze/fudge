@@ -171,21 +171,21 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 static void complete(void)
 {
 
+    struct message message;
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
     unsigned int count = createcommand(&input, buffer, prefix);
     unsigned int channel = runslang(buffer, count);
 
-    while ((count = channel_read(channel, EVENT_DATA, MESSAGE_SIZE, buffer)))
+    while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, buffer))
     {
 
         job_init(&job, workers, JOBSIZE);
-        job_parse(&job, buffer, count);
+        job_parse(&job, buffer, message_datasize(&message));
 
         if (job_spawn(&job, "initrd:bin"))
         {
 
-            struct message message;
             char data[MESSAGE_SIZE];
             struct ring output;
 
