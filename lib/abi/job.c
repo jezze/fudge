@@ -252,7 +252,8 @@ unsigned int job_pick(struct job *job, struct message *message, unsigned int cou
         if (message->event == EVENT_TERMRESPONSE)
             job_close(job, message->source);
 
-        return message->source;
+        if (job_exist(job, message->source))
+            return message->source;
 
     }
 
