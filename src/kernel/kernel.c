@@ -364,26 +364,19 @@ void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*plac
 
         list_init(&channel->links);
 
-        if (place)
-        {
-
-            channel->interface = interface;
-            channel->place = place;
-
-        }
-
-        else
-        {
-
-            unsigned int itask = *(unsigned int *)interface;
-            struct taskrow *taskrow = &taskrows[itask];
-
-            channel->interface = &taskrow->task;
-            channel->place = placetask;
-
-        }
+        channel->interface = interface;
+        channel->place = place;
 
     }
+
+}
+
+void kernel_announce2(unsigned int ichannel, unsigned int itask)
+{
+
+    struct taskrow *taskrow = &taskrows[itask];
+
+    kernel_announce(ichannel, &taskrow->task, placetask);
 
 }
 

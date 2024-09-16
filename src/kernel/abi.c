@@ -172,7 +172,7 @@ static unsigned int announce(unsigned int itask, void *stack)
 
     struct {void *caller; unsigned int ichannel;} *args = stack;
 
-    kernel_announce(args->ichannel, &itask, 0);
+    kernel_announce2(args->ichannel, itask);
 
     return 0;
 
