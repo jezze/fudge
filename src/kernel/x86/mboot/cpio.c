@@ -418,7 +418,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    kernel_announce(500, 0, 0, place);
+    kernel_announce(500, 0, place);
 
 }
 

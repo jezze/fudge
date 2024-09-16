@@ -362,7 +362,7 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    kernel_announce(107, 0, 0, place);
+    kernel_announce(107, 0, place);
 
 }
 

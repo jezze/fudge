@@ -12,7 +12,6 @@ struct channel
 {
 
     void *interface;
-    unsigned int id;
     struct list links;
     unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 
@@ -144,7 +143,8 @@ static unsigned int placetask(void *interface, unsigned int ichannel, unsigned i
     if (channel)
     {
 
-        struct mailbox *mailbox = &mailboxes[channel->id];
+        struct task *task = interface;
+        struct mailbox *mailbox = &mailboxes[task->id];
         struct message message;
         unsigned int status;
 
@@ -152,7 +152,7 @@ static unsigned int placetask(void *interface, unsigned int ichannel, unsigned i
 
         status = mailbox_place(mailbox, &message, data);
 
-        kernel_signal(channel->id, TASK_SIGNAL_UNBLOCK);
+        kernel_signal(task->id, TASK_SIGNAL_UNBLOCK);
 
         return status;
 
@@ -354,7 +354,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned int ichannel, void *interface, unsigned int id, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -364,9 +364,24 @@ void kernel_announce(unsigned int ichannel, void *interface, unsigned int id, un
 
         list_init(&channel->links);
 
-        channel->interface = interface;
-        channel->id = id;
-        channel->place = (place) ? place : placetask;
+        if (place)
+        {
+
+            channel->interface = interface;
+            channel->place = place;
+
+        }
+
+        else
+        {
+
+            unsigned int itask = *(unsigned int *)interface;
+            struct taskrow *taskrow = &taskrows[itask];
+
+            channel->interface = &taskrow->task;
+            channel->place = placetask;
+
+        }
 
     }
 
@@ -382,7 +397,7 @@ void kernel_unannounce(unsigned int ichannel)
 
         list_init(&channel->links);
 
-        channel->id = 0;
+        channel->interface = 0;
         channel->place = 0;
 
     }
@@ -520,7 +535,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
-        kernel_announce(i, &taskrow->task, i, placetask);
+        kernel_announce(i, &taskrow->task, placetask);
 
     }
 

@@ -68,10 +68,10 @@ void timer_registerinterface(struct timer_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel1, interface, interface->ichannel1, place);
-    kernel_announce(interface->ichannel10, interface, interface->ichannel10, place);
-    kernel_announce(interface->ichannel100, interface, interface->ichannel100, place);
-    kernel_announce(interface->ichannel1000, interface, interface->ichannel1000, place);
+    kernel_announce(interface->ichannel1, interface, place);
+    kernel_announce(interface->ichannel10, interface, place);
+    kernel_announce(interface->ichannel100, interface, place);
+    kernel_announce(interface->ichannel1000, interface, place);
 
 }
 
