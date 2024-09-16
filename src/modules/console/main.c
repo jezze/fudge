@@ -9,7 +9,7 @@ static unsigned int ondata(struct console_interface *interface, void *data, unsi
 
 }
 
-static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -19,10 +19,10 @@ static unsigned int place(void *interface, unsigned int id, unsigned int source,
         return ondata(interface, data, count);
 
     case EVENT_LINK:
-        return kernel_link(id, source);
+        return kernel_link(ichannel, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(id, source);
+        return kernel_unlink(ichannel, source);
 
     }
 

@@ -9,7 +9,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
 
 }
 
-static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
