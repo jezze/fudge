@@ -8,12 +8,7 @@ static unsigned int sessioncount;
 unsigned int fs_auth(char *path)
 {
 
-    /* need to make syscall for this */
-
-    if (cstring_length(path) >= 7 && buffer_match(path, "initrd:", 7))
-        return 500;
-
-    return 0;
+    return call_find(cstring_length(path), path);
 
 }
 

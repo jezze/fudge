@@ -4,6 +4,7 @@
 .set CALL_INDEX_ANNOUNCE,               0x03
 .set CALL_INDEX_UNANNOUNCE,             0x04
 .set CALL_INDEX_KILL,                   0x05
+.set CALL_INDEX_FIND,                   0x06
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
 .set CALL_INDEX_SPAWN,                  0x0C
@@ -26,6 +27,12 @@ call_debug:
 .global call_despawn
 call_despawn:
     mov r7, $CALL_INDEX_DESPAWN
+    swi #0
+    bx lr
+
+.global call_find
+call_find:
+    mov r7, $CALL_INDEX_FIND
     swi #0
     bx lr
 

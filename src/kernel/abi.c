@@ -55,6 +55,15 @@ static unsigned int kill(unsigned int itask, void *stack)
 
 }
 
+static unsigned int find(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int count; char *name;} *args = stack;
+
+    return kernel_find(itask, args->count, args->name);
+
+}
+
 static unsigned int load(unsigned int itask, void *stack)
 {
 
@@ -212,7 +221,7 @@ void abi_setup(void)
     abi_setcallback(0x03, announce);
     abi_setcallback(0x04, unannounce);
     abi_setcallback(0x05, kill);
-    abi_setcallback(0x06, debug);
+    abi_setcallback(0x06, find);
     abi_setcallback(0x07, debug);
     abi_setcallback(0x08, debug);
     abi_setcallback(0x09, debug);

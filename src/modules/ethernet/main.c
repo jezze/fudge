@@ -52,7 +52,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, interface, place);
+    kernel_announce(interface->ichannel, interface, 0, place);
 
 }
 

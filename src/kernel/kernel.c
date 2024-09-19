@@ -13,6 +13,7 @@ struct channel
 
     void *interface;
     struct list links;
+    unsigned int (*find)(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name);
     unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
@@ -132,6 +133,13 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
     }
 
     task_resetsignals(&task->signals);
+
+}
+
+static unsigned int findtask(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name)
+{
+
+    return 0;
 
 }
 
@@ -354,7 +362,31 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
+{
+
+    unsigned int ichannel;
+
+    for (ichannel = 0; ichannel < KERNEL_CHANNELS; ichannel++)
+    {
+
+        struct channel *channel = getchannel(ichannel);
+
+        if (channel && channel->find)
+        {
+
+            if (channel->find(channel->interface, ichannel, source, count, name))
+                return ichannel;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*find)(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name), unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -365,6 +397,7 @@ void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*plac
         list_init(&channel->links);
 
         channel->interface = interface;
+        channel->find = find;
         channel->place = place;
 
     }
@@ -376,7 +409,7 @@ void kernel_announce2(unsigned int ichannel, unsigned int itask)
 
     struct taskrow *taskrow = &taskrows[itask];
 
-    kernel_announce(ichannel, &taskrow->task, placetask);
+    kernel_announce(ichannel, &taskrow->task, findtask, placetask);
 
 }
 
@@ -391,6 +424,7 @@ void kernel_unannounce(unsigned int ichannel)
         list_init(&channel->links);
 
         channel->interface = 0;
+        channel->find = 0;
         channel->place = 0;
 
     }

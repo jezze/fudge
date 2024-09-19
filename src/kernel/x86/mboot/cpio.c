@@ -382,6 +382,16 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
+static unsigned int find(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name)
+{
+
+    if (count >= 6 && buffer_match(name, "initrd", 6))
+        return 500;
+
+    return 0;
+
+}
+
 static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -418,7 +428,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    kernel_announce(500, 0, place);
+    kernel_announce(500, 0, find, place);
 
 }
 
