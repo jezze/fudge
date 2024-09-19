@@ -227,6 +227,23 @@ unsigned int channel_poll(unsigned int source, unsigned int event, struct messag
 
 }
 
+unsigned int channel_pollany(unsigned int source, struct message *message, unsigned int count, void *data)
+{
+
+    while (channel_pick(message, count, data))
+    {
+
+        channel_dispatch(message, data);
+
+        if (message->source == source)
+            return message->event;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int channel_wait(unsigned int source, unsigned int event)
 {
 

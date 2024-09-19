@@ -98,6 +98,49 @@ static unsigned int runslang(void *ibuffer, unsigned int icount)
 
 }
 
+static void interpretdata(struct message *message, void *buffer)
+{
+
+    job_init(&job, workers, JOBSIZE);
+    job_parse(&job, buffer, message_datasize(message));
+
+    if (job_spawn(&job, "initrd:bin"))
+    {
+
+        char data[MESSAGE_SIZE];
+
+        job_run(&job, option_getstring("pwd"));
+
+        while (job_pick(&job, message, MESSAGE_SIZE, data))
+        {
+
+            switch (message->event)
+            {
+
+            case EVENT_DATA:
+                if (!job_pipe(&job, message->source, message->event, data, message_datasize(message)))
+                    print(data, message_datasize(message));
+
+                break;
+
+            }
+
+        }
+
+        update();
+
+    }
+
+    else
+    {
+
+        job_killall(&job);
+        update();
+
+    }
+
+}
+
 static void interpret(void)
 {
 
@@ -114,44 +157,19 @@ static void interpret(void)
         print(buffer, count);
         update();
 
-        while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, buffer))
+        while (channel_pollany(channel, &message, MESSAGE_SIZE, buffer))
         {
 
-            job_init(&job, workers, JOBSIZE);
-            job_parse(&job, buffer, message_datasize(&message));
-
-            if (job_spawn(&job, "initrd:bin"))
+            switch (message.event)
             {
 
-                char data[MESSAGE_SIZE];
+            case EVENT_DATA:
+                interpretdata(&message, buffer);
 
-                job_run(&job, option_getstring("pwd"));
+                break;
 
-                while (job_pick(&job, &message, MESSAGE_SIZE, data))
-                {
-
-                    switch (message.event)
-                    {
-
-                    case EVENT_DATA:
-                        if (!job_pipe(&job, message.source, message.event, data, message_datasize(&message)))
-                            print(data, message_datasize(&message));
-
-                        break;
-
-                    }
-
-                }
-
-                update();
-
-            }
-
-            else
-            {
-
-                job_killall(&job);
-                update();
+            case EVENT_TERMRESPONSE:
+                return;
 
             }
 
@@ -227,6 +245,75 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
 }
 
+static void completedata(struct message *message, char *buffer, unsigned int count, char *prefix)
+{
+
+    job_init(&job, workers, JOBSIZE);
+    job_parse(&job, buffer, message_datasize(message));
+
+    if (job_spawn(&job, "initrd:bin"))
+    {
+
+        char data[MESSAGE_SIZE];
+        struct ring output;
+
+        ring_init(&output, INPUTSIZE, buffer);
+        job_run(&job, option_getstring("pwd"));
+
+        while (job_pick(&job, message, MESSAGE_SIZE, data))
+        {
+
+            switch (message->event)
+            {
+
+            case EVENT_DATA:
+                if (!job_pipe(&job, message->source, message->event, data, message_datasize(message)))
+                    ring_write(&output, data, message_datasize(message));
+
+                break;
+
+            }
+
+        }
+
+        if (ring_count(&output))
+        {
+
+            if (ring_each(&output, '\n') == ring_count(&output))
+            {
+
+                char *outputbuffer = buffer + cstring_length(prefix);
+                unsigned int outputcount = ring_count(&output) - cstring_length_zero(prefix);
+
+                ring_write(&input1, outputbuffer, outputcount);
+
+            }
+
+            else
+            {
+
+                char tbuffer[INPUTSIZE];
+
+                printprompt();
+                print(tbuffer, ring_readcopy(&input1, tbuffer, INPUTSIZE));
+                print("\n", 1);
+                print(buffer, ring_count(&output));
+
+            }
+
+        }
+
+    }
+
+    else
+    {
+
+        job_killall(&job);
+
+    }
+
+}
+
 static void complete(void)
 {
 
@@ -236,70 +323,19 @@ static void complete(void)
     unsigned int count = createcommand(&input1, buffer, prefix);
     unsigned int channel = runslang(buffer, count);
 
-    while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, buffer))
+    while (channel_pollany(channel, &message, MESSAGE_SIZE, buffer))
     {
 
-        job_init(&job, workers, JOBSIZE);
-        job_parse(&job, buffer, message_datasize(&message));
-
-        if (job_spawn(&job, "initrd:bin"))
+        switch (message.event)
         {
 
-            char data[MESSAGE_SIZE];
-            struct ring output;
+        case EVENT_DATA:
+            completedata(&message, buffer, count, prefix);
 
-            ring_init(&output, INPUTSIZE, buffer);
-            job_run(&job, option_getstring("pwd"));
+            break;
 
-            while (job_pick(&job, &message, MESSAGE_SIZE, data))
-            {
-
-                switch (message.event)
-                {
-
-                case EVENT_DATA:
-                    if (!job_pipe(&job, message.source, message.event, data, message_datasize(&message)))
-                        ring_write(&output, data, message_datasize(&message));
-
-                    break;
-
-                }
-
-            }
-
-            if (ring_count(&output))
-            {
-
-                if (ring_each(&output, '\n') == ring_count(&output))
-                {
-
-                    char *outputbuffer = buffer + cstring_length(prefix);
-                    unsigned int outputcount = ring_count(&output) - cstring_length_zero(prefix);
-
-                    ring_write(&input1, outputbuffer, outputcount);
-
-                }
-
-                else
-                {
-
-                    char tbuffer[INPUTSIZE];
-
-                    printprompt();
-                    print(tbuffer, ring_readcopy(&input1, tbuffer, INPUTSIZE));
-                    print("\n", 1);
-                    print(buffer, ring_count(&output));
-
-                }
-
-            }
-
-        }
-
-        else
-        {
-
-            job_killall(&job);
+        case EVENT_TERMRESPONSE:
+            return;
 
         }
 

@@ -11,6 +11,7 @@ unsigned int channel_send_fmt8(unsigned int channel, unsigned int event, char *f
 unsigned int channel_pick(struct message *message, unsigned int count, void *data);
 unsigned int channel_process(void);
 unsigned int channel_poll(unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data);
+unsigned int channel_pollany(unsigned int source, struct message *message, unsigned int count, void *data);
 unsigned int channel_wait(unsigned int source, unsigned int event);
 unsigned int channel_wait_buffer(unsigned int source, unsigned int event, unsigned int count, void *data);
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
