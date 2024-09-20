@@ -50,6 +50,7 @@ void panic(unsigned int source, char *file, unsigned int line)
 void main(void)
 {
 
+    option_add("env", "");
     option_add("pwd", "");
     channel_open();
     channel_bind(EVENT_OPTION, onoption);

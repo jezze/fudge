@@ -109,7 +109,7 @@ static void interpretdata(struct message *message, void *buffer)
 
         char data[MESSAGE_SIZE];
 
-        job_run(&job, option_getstring("pwd"));
+        job_run(&job, option_getstring("env"), option_getstring("pwd"));
 
         while (job_pick(&job, message, MESSAGE_SIZE, data))
         {
@@ -258,7 +258,7 @@ static void completedata(struct message *message, char *buffer, unsigned int cou
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
-        job_run(&job, option_getstring("pwd"));
+        job_run(&job, option_getstring("env"), option_getstring("pwd"));
 
         while (job_pick(&job, message, MESSAGE_SIZE, data))
         {

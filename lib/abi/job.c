@@ -133,7 +133,7 @@ unsigned int job_pipe(struct job *job, unsigned int source, unsigned int event, 
 
 }
 
-void job_run(struct job *job, char *pwd)
+void job_run(struct job *job, char *env, char *pwd)
 {
 
     unsigned int i;
@@ -148,7 +148,7 @@ void job_run(struct job *job, char *pwd)
 
             unsigned int j;
 
-            channel_send_fmt1(worker->channel, EVENT_OPTION, "pwd\\0%s\\0", pwd);
+            channel_send_fmt2(worker->channel, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", env, pwd);
 
             for (j = 0; j < worker->noptions; j++)
                 channel_send_fmt2(worker->channel, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
