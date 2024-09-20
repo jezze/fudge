@@ -472,7 +472,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        call_announce(option_getdecimal("listen"));
+        channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0ext2-service\\0!source");
 
         while (channel_process());
 
@@ -485,7 +485,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("listen", "1111");
     option_add("block-service", "231");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);

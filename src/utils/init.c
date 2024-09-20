@@ -73,7 +73,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     channel = fs_spawn("initrd:bin/wm");
 
     channel_send_fmt1(channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
-    channel_send_fmt0(channel, EVENT_OPTION, "listen\\01234\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "keyboard-service\\0110\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "mouse-service\\0124\\0");
     channel_send_fmt0(channel, EVENT_OPTION, "video-service\\0400\\0");
