@@ -428,7 +428,7 @@ void arch_setup1(void)
     mmu_enable();
     kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
     abi_setup();
-    abi_setcallback(0x0C, spawn);
+    abi_setcallback(0x03, spawn);
 
 }
 

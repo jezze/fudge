@@ -205,7 +205,7 @@ void arch_setup1(void)
     lcd_setup();
     kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
     abi_setup();
-    abi_setcallback(0x0C, spawn);
+    abi_setcallback(0x03, spawn);
 
 }
 

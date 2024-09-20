@@ -3,12 +3,12 @@
 .set CALL_INDEX_DEBUG,                  0x00
 .set CALL_INDEX_PICK,                   0x01
 .set CALL_INDEX_PLACE,                  0x02
+.set CALL_INDEX_SPAWN,                  0x03
+.set CALL_INDEX_DESPAWN,                0x04
 .set CALL_INDEX_KILL,                   0x05
 .set CALL_INDEX_FIND,                   0x06
 .set CALL_INDEX_LOAD,                   0x0A
 .set CALL_INDEX_UNLOAD,                 0x0B
-.set CALL_INDEX_SPAWN,                  0x0C
-.set CALL_INDEX_DESPAWN,                0x0D
 
 .section .text
 
