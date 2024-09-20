@@ -49,8 +49,7 @@ static char *find(char *key, unsigned int keylength)
 static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *query = mdata;
-    char *cmd = query;
+    char *cmd = mdata;
     unsigned int cmdlength = eachentry(mdata, msize, 0);
 
     if (matchkey(cmd, cmdlength, "get", 4))
@@ -68,9 +67,9 @@ static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
     else if (matchkey(cmd, cmdlength, "set", 4))
     {
 
-        char *key = query + cmdlength;
+        char *key = cmd + cmdlength;
         unsigned int keylength = eachentry(mdata, msize, cmdlength);
-        char *value = query + cmdlength + keylength;
+        char *value = key + keylength;
         unsigned int valuelength = eachentry(mdata, msize, cmdlength + keylength);
 
         if (keylength && valuelength)
