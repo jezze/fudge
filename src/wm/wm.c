@@ -643,7 +643,6 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    call_announce(option_getdecimal("listen"));
     channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm-service\\0!source");
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
@@ -954,7 +953,6 @@ void init(void)
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
-    option_add("listen", "1234");
     option_add("keyboard-service", "");
     option_add("mouse-service", "");
     option_add("video-service", "");
