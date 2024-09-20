@@ -200,11 +200,11 @@ void abi_setup(void)
     abi_setcallback(0x04, despawn);
     abi_setcallback(0x05, kill);
     abi_setcallback(0x06, find);
-    abi_setcallback(0x07, debug);
-    abi_setcallback(0x08, debug);
+    abi_setcallback(0x07, load);
+    abi_setcallback(0x08, unload);
     abi_setcallback(0x09, debug);
-    abi_setcallback(0x0A, load);
-    abi_setcallback(0x0B, unload);
+    abi_setcallback(0x0A, debug);
+    abi_setcallback(0x0B, debug);
     abi_setcallback(0x0C, debug);
     abi_setcallback(0x0D, debug);
     abi_setcallback(0x0E, debug);

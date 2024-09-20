@@ -7,8 +7,8 @@
 .set CALL_INDEX_DESPAWN,                0x04
 .set CALL_INDEX_KILL,                   0x05
 .set CALL_INDEX_FIND,                   0x06
-.set CALL_INDEX_LOAD,                   0x0A
-.set CALL_INDEX_UNLOAD,                 0x0B
+.set CALL_INDEX_LOAD,                   0x07
+.set CALL_INDEX_UNLOAD,                 0x08
 
 .section .text
 
