@@ -114,6 +114,7 @@ static void run(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    lookup("wm-service");
     channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process());
@@ -169,7 +170,7 @@ void init(void)
     option_add("keyboard-service", "110");
     option_add("timer-service", "410");
     option_add("video-service", "400");
-    option_add("wm-service", "12345");
+    option_add("wm-service", "");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMINIT, onwminit);

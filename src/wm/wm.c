@@ -644,6 +644,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     call_announce(option_getdecimal("listen"));
+    channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm-service\\0!source");
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
     channel_send(option_getdecimal("video-service"), EVENT_LINK);

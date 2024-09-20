@@ -38,6 +38,17 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+void lookup(char *key)
+{
+
+    char id[32];
+
+    channel_send_fmt1(option_getdecimal("env"), EVENT_QUERYREQUEST, "get\\0%s\\0", key);
+    channel_wait_buffer(option_getdecimal("env"), EVENT_QUERYRESPONSE, 32, id);
+    option_set(key, id);
+
+}
+
 void panic(unsigned int source, char *file, unsigned int line)
 {
 
