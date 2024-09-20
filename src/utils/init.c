@@ -63,6 +63,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     env = fs_spawn("initrd:bin/env");
 
     channel_send_fmt1(env, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
+    channel_send(env, EVENT_MAIN);
 
     channel = fs_spawn("initrd:bin/shell");
 
