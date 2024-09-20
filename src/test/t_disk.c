@@ -397,7 +397,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char buffer[4096];
     unsigned int count;
 
-    channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\09p-service\\0!source");
+    channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\09p-service\\0!source\\0");
     socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
     channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
     channel_send(option_getdecimal("block-service"), EVENT_LINK);

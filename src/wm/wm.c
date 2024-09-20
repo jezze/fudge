@@ -643,7 +643,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm-service\\0!source");
+    channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm-service\\0!source\\0");
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
     channel_send(option_getdecimal("video-service"), EVENT_LINK);

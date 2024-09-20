@@ -472,7 +472,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0ext2-service\\0!source");
+        channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0ext2-service\\0!source\\0");
 
         while (channel_process());
 
