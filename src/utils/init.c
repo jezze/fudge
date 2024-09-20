@@ -18,11 +18,50 @@ static void loaddriver(char *path)
 
 }
 
+static unsigned int spawnenv(void)
+{
+
+    unsigned int channel = fs_spawn("initrd:bin/env");
+
+    channel_send_fmt1(channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &channel);
+    channel_send(channel, EVENT_MAIN);
+
+    return channel;
+
+}
+
+static unsigned int spawnshell(unsigned int env)
+{
+
+    unsigned int channel = fs_spawn("initrd:bin/shell");
+
+    channel_send_fmt1(channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
+    channel_send_fmt0(channel, EVENT_OPTION, "tty-service\\0100\\0");
+    channel_send(channel, EVENT_MAIN);
+
+    return channel;
+
+}
+
+static unsigned int spawnwm(unsigned int env)
+{
+
+    unsigned int channel = fs_spawn("initrd:bin/wm");
+
+    channel_send_fmt1(channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
+    channel_send_fmt0(channel, EVENT_OPTION, "keyboard-service\\0110\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "mouse-service\\0124\\0");
+    channel_send_fmt0(channel, EVENT_OPTION, "video-service\\0400\\0");
+    channel_send(channel, EVENT_MAIN);
+
+    return channel;
+
+}
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int env;
-    unsigned int channel;
 
     loaddriver("initrd:kernel/base.ko");
     loaddriver("initrd:kernel/log.ko");
@@ -60,28 +99,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     loaddriver("initrd:kernel/ata.ko");
     loaddriver("initrd:kernel/virtio-network.ko");
 
-    env = fs_spawn("initrd:bin/env");
-
-    channel_send_fmt1(env, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
-    channel_send(env, EVENT_MAIN);
-
-    channel = fs_spawn("initrd:bin/shell");
-
-    channel_send_fmt1(channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
-    channel_send_fmt0(channel, EVENT_OPTION, "tty-service\\0100\\0");
-    channel_send(channel, EVENT_MAIN);
-
-    channel = fs_spawn("initrd:bin/wm");
-
-    channel_send_fmt1(channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
-    channel_send_fmt0(channel, EVENT_OPTION, "keyboard-service\\0110\\0");
-    channel_send_fmt0(channel, EVENT_OPTION, "mouse-service\\0124\\0");
-    channel_send_fmt0(channel, EVENT_OPTION, "video-service\\0400\\0");
-    channel_send(channel, EVENT_MAIN);
-
     /*
     loaddriver("initrd:kernel/smp.ko");
     */
+
+    env = spawnenv();
+
+    spawnshell(env);
+    spawnwm(env);
 
 }
 
