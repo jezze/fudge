@@ -4,7 +4,7 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(option_getdecimal("reset-service"), EVENT_TERMREQUEST);
+    channel_send(option_getdecimal("reset-service"), EVENT_TERM);
 
 }
 

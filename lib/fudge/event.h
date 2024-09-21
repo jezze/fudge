@@ -1,8 +1,8 @@
 #define EVENT_MAIN                      0x01
 #define EVENT_EXIT                      0x02
 #define EVENT_END                       0x03
-#define EVENT_TERMREQUEST               0x04
-#define EVENT_TERMRESPONSE              0x05
+#define EVENT_TERM                      0x04
+#define EVENT_DONE                      0x05
 #define EVENT_OPTION                    0x06
 #define EVENT_PATH                      0x07
 #define EVENT_DATA                      0x08

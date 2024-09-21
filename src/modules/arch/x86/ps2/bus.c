@@ -340,7 +340,7 @@ static unsigned int place(void *interface, unsigned int id, unsigned int source,
     switch (event)
     {
 
-    case EVENT_TERMREQUEST:
+    case EVENT_TERM:
         setcommand(REG_COMMAND_CTRLRESET);
 
         return MESSAGE_OK;

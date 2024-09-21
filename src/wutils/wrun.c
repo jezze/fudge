@@ -87,7 +87,7 @@ static void dnsresolve(struct socket *socket, char *domain)
         }
 
         channel_send(channel, EVENT_END);
-        channel_wait(channel, EVENT_TERMRESPONSE);
+        channel_wait(channel, EVENT_DONE);
 
     }
 

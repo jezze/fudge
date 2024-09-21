@@ -249,7 +249,7 @@ unsigned int job_pick(struct job *job, struct message *message, unsigned int cou
 
         channel_dispatch(message, data);
 
-        if (message->event == EVENT_TERMRESPONSE)
+        if (message->event == EVENT_DONE)
             job_close(job, message->source);
 
         if (job_exist(job, message->source))

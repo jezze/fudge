@@ -168,7 +168,7 @@ static void interpret(void)
 
                 break;
 
-            case EVENT_TERMRESPONSE:
+            case EVENT_DONE:
                 return;
 
             }
@@ -334,7 +334,7 @@ static void complete(void)
 
             break;
 
-        case EVENT_TERMRESPONSE:
+        case EVENT_DONE:
             return;
 
         }
@@ -394,7 +394,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_C:
-                job_sendfirst(&job, EVENT_TERMREQUEST, 0, 0);
+                job_sendfirst(&job, EVENT_TERM, 0, 0);
 
                 break;
 

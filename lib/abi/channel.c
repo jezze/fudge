@@ -63,7 +63,7 @@ void channel_dispatch(struct message *message, void *data)
 
         break;
 
-    case EVENT_TERMREQUEST:
+    case EVENT_TERM:
         state = CHANNEL_STATE_TERMINATED;
 
         break;
@@ -90,7 +90,7 @@ void channel_dispatch(struct message *message, void *data)
     {
 
         if (parent)
-            channel_send(parent, EVENT_TERMRESPONSE);
+            channel_send(parent, EVENT_DONE);
 
         channel_close();
 
