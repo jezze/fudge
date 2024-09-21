@@ -219,7 +219,13 @@ unsigned int fs_spawn(char *path)
         unsigned int id = fs_walk(service, 0, path);
 
         if (id)
-            return call_spawn(fs_map(service, id));
+        {
+
+            unsigned int address = fs_map(service, id);
+
+            return (address) ? call_spawn(address) : 0;
+
+        }
 
     }
 
@@ -238,7 +244,13 @@ unsigned int fs_spawn_relative(char *path, char *parent)
         unsigned int id = fs_walk(service, fs_walk(service, 0, parent), path);
 
         if (id)
-            return call_spawn(fs_map(service, id));
+        {
+
+            unsigned int address = fs_map(service, id);
+
+            return (address) ? call_spawn(address) : 0;
+
+        }
 
     }
 
