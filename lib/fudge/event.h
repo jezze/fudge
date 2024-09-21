@@ -13,6 +13,7 @@
 #define EVENT_INFO                      0x0D
 #define EVENT_QUERYREQUEST              0x0E
 #define EVENT_QUERYRESPONSE             0x0F
+#define EVENT_READY                     0x10
 #define EVENT_KEYPRESS                  0x20
 #define EVENT_KEYRELEASE                0x21
 #define EVENT_MOUSEMOVE                 0x22

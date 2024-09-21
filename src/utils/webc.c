@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void dnsresolve(char *domain, char address[32])
+static void dnsresolve(unsigned int source, char *domain, char address[32])
 {
 
     unsigned int channel = fs_spawn(option_getstring("dns"));
@@ -15,7 +15,7 @@ static void dnsresolve(char *domain, char address[32])
         channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
         channel_send(channel, EVENT_MAIN);
 
-        while (channel_poll(channel, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
+        if (channel_poll(channel, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             unsigned int i;
@@ -60,7 +60,8 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
 
         channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
         channel_send(channel, EVENT_MAIN);
-        channel_send_fmt2(channel, EVENT_DATA, "%w", data, &count);
+        channel_wait(channel, EVENT_READY);
+        channel_send_fmt2(channel, EVENT_QUERYREQUEST, "%w", data, &count);
 
         while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
             channel_send_buffer(source, EVENT_DATA, message_datasize(&message), data);
@@ -90,7 +91,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else
             url_parse(&url, urldata, 2048, opturl, URL_HOST);
 
-        dnsresolve(url.host, address);
+        dnsresolve(source, url.host, address);
         opensocket(source, &url, address);
 
     }

@@ -7,7 +7,7 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
+static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *optmode = option_getstring("mode");
@@ -38,8 +38,6 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(source, EVENT_DATA);
-
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
@@ -58,6 +56,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
     channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
+    channel_send(source, EVENT_READY);
 
     while (channel_process());
 
@@ -78,7 +77,7 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("mode", "");
-    channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_QUERYREQUEST, onqueryrequest);
     channel_bind(EVENT_MAIN, onmain);
 
 }

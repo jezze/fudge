@@ -277,7 +277,7 @@ unsigned int channel_wait_buffer(unsigned int source, unsigned int event, unsign
         if (message.source == source && message.event == event)
         {
 
-            buffer_copy(data, data2, count);
+            buffer_write(data, count, data2, message_datasize(&message), 0);
 
             return message.event;
 
