@@ -60,15 +60,6 @@
 #define EVENT_UNLINK                    0x51
 #define EVENT_INFO                      0x52
 
-struct event_redirect
-{
-
-    unsigned int event;
-    unsigned int mode;
-    unsigned int target;
-
-};
-
 struct event_loginfo
 {
 
