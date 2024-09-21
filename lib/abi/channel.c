@@ -17,7 +17,7 @@ static unsigned int parent;
 static unsigned int send(unsigned int channel, unsigned int event, unsigned int count, void *data)
 {
 
-    if (routes[event])
+    if (event < CHANNEL_EVENTS && routes[event])
         channel = routes[event];
 
     if (!channel)
@@ -32,7 +32,7 @@ static unsigned int send(unsigned int channel, unsigned int event, unsigned int 
 static void dispatch(unsigned int source, unsigned int event, void *data, unsigned int size)
 {
 
-    if (listeners[event])
+    if (event < CHANNEL_EVENTS && listeners[event])
     {
 
         pending++;
@@ -48,55 +48,50 @@ static void dispatch(unsigned int source, unsigned int event, void *data, unsign
 void channel_dispatch(struct message *message, void *data)
 {
 
-    if (message->event < CHANNEL_EVENTS)
+    dispatch(message->source, message->event, data, message_datasize(message));
+
+    switch (message->event)
     {
 
-        dispatch(message->source, message->event, data, message_datasize(message));
+    case EVENT_MAIN:
+        parent = message->source;
 
-        switch (message->event)
-        {
+        break;
 
-        case EVENT_MAIN:
-            parent = message->source;
+    case EVENT_END:
+        state = CHANNEL_STATE_WAITING;
 
-            break;
+        break;
 
-        case EVENT_END:
-            state = CHANNEL_STATE_WAITING;
+    case EVENT_TERMREQUEST:
+        state = CHANNEL_STATE_TERMINATED;
 
-            break;
+        break;
 
-        case EVENT_TERMREQUEST:
-            state = CHANNEL_STATE_TERMINATED;
+    }
 
-            break;
+    if (state == CHANNEL_STATE_WAITING && !pending)
+    {
 
-        }
+        if (parent)
+            dispatch(parent, EVENT_EXIT, 0, 0);
 
-        if (state == CHANNEL_STATE_WAITING && !pending)
-        {
+    }
 
-            if (parent)
-                dispatch(parent, EVENT_EXIT, 0, 0);
+    if (state == CHANNEL_STATE_WAITING && !pending)
+    {
 
-        }
+        state = CHANNEL_STATE_TERMINATED;
 
-        if (state == CHANNEL_STATE_WAITING && !pending)
-        {
+    }
 
-            state = CHANNEL_STATE_TERMINATED;
+    if (state == CHANNEL_STATE_TERMINATED)
+    {
 
-        }
+        if (parent)
+            channel_send(parent, EVENT_TERMRESPONSE);
 
-        if (state == CHANNEL_STATE_TERMINATED)
-        {
-
-            if (parent)
-                channel_send(parent, EVENT_TERMRESPONSE);
-
-            channel_close();
-
-        }
+        channel_close();
 
     }
 
