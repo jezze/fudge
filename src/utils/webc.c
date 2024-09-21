@@ -56,12 +56,11 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
 
         struct message message;
         char data[MESSAGE_SIZE];
-        unsigned int count = cstring_write_fmt2(data, MESSAGE_SIZE, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
 
         channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
         channel_send(channel, EVENT_MAIN);
         channel_wait(channel, EVENT_READY);
-        channel_send_fmt2(channel, EVENT_QUERYREQUEST, "%w", data, &count);
+        channel_send_fmt2(channel, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
 
         while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
             channel_send_buffer(source, EVENT_DATA, message_datasize(&message), data);
