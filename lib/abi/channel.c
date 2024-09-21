@@ -56,14 +56,17 @@ void channel_dispatch(struct message *message, void *data)
         switch (message->event)
         {
 
-        case EVENT_END:
+        case EVENT_MAIN:
             parent = message->source;
+
+            break;
+
+        case EVENT_END:
             state = CHANNEL_STATE_WAITING;
 
             break;
 
         case EVENT_TERMREQUEST:
-            parent = message->source;
             state = CHANNEL_STATE_TERMINATED;
 
             break;
