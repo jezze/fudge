@@ -70,18 +70,19 @@ void channel_dispatch(struct message *message, void *data)
 
     }
 
-    if (state == CHANNEL_STATE_WAITING && !pending)
+    if (state == CHANNEL_STATE_WAITING)
     {
 
-        if (parent)
+        if (!pending && parent)
             dispatch(parent, EVENT_EXIT, 0, 0);
 
     }
 
-    if (state == CHANNEL_STATE_WAITING && !pending)
+    if (state == CHANNEL_STATE_WAITING)
     {
 
-        state = CHANNEL_STATE_TERMINATED;
+        if (!pending)
+            state = CHANNEL_STATE_TERMINATED;
 
     }
 
