@@ -17,6 +17,7 @@ unsigned int fs_list(unsigned int target, unsigned int id, unsigned int offset, 
 
     struct event_listrequest request;
     unsigned char data[MESSAGE_SIZE];
+    struct message message;
 
     request.session = ++sessioncount;
     request.id = id;
@@ -25,7 +26,7 @@ unsigned int fs_list(unsigned int target, unsigned int id, unsigned int offset, 
 
     channel_send_buffer(target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
-    while (channel_wait_buffer(target, EVENT_LISTRESPONSE, MESSAGE_SIZE, data))
+    while (channel_poll(target, EVENT_LISTRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_listresponse *response = (void *)data;
@@ -44,13 +45,14 @@ unsigned int fs_map(unsigned int target, unsigned int id)
 
     struct event_maprequest request;
     unsigned char data[MESSAGE_SIZE];
+    struct message message;
 
     request.session = ++sessioncount;
     request.id = id;
 
     channel_send_buffer(target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
 
-    while (channel_wait_buffer(target, EVENT_MAPRESPONSE, MESSAGE_SIZE, data))
+    while (channel_poll(target, EVENT_MAPRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_mapresponse *response = (void *)data;
@@ -69,6 +71,7 @@ unsigned int fs_read(unsigned int target, unsigned int id, void *buffer, unsigne
 
     struct event_readrequest request;
     unsigned char data[MESSAGE_SIZE];
+    struct message message;
 
     request.session = ++sessioncount;
     request.id = id;
@@ -77,7 +80,7 @@ unsigned int fs_read(unsigned int target, unsigned int id, void *buffer, unsigne
 
     channel_send_buffer(target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
-    while (channel_wait_buffer(target, EVENT_READRESPONSE, MESSAGE_SIZE, data))
+    while (channel_poll(target, EVENT_READRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_readresponse *response = (void *)data;
@@ -123,13 +126,14 @@ unsigned int fs_stat(unsigned int target, unsigned int id, struct record *record
 
     struct event_statrequest request;
     unsigned char data[MESSAGE_SIZE];
+    struct message message;
 
     request.session = ++sessioncount;
     request.id = id;
 
     channel_send_buffer(target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
-    while (channel_wait_buffer(target, EVENT_STATRESPONSE, MESSAGE_SIZE, data))
+    while (channel_poll(target, EVENT_STATRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_statresponse *response = (void *)data;
@@ -148,6 +152,7 @@ unsigned int fs_walk(unsigned int target, unsigned int parent, char *path)
 
     struct {struct event_walkrequest header; char path[64];} request;
     unsigned char data[MESSAGE_SIZE];
+    struct message message;
 
     request.header.session = ++sessioncount;
     request.header.parent = parent;
@@ -155,7 +160,7 @@ unsigned int fs_walk(unsigned int target, unsigned int parent, char *path)
 
     channel_send_buffer(target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
-    while (channel_wait_buffer(target, EVENT_WALKRESPONSE, MESSAGE_SIZE, data))
+    while (channel_poll(target, EVENT_WALKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_walkresponse *response = (void *)data;
@@ -174,6 +179,7 @@ unsigned int fs_write(unsigned int target, unsigned int id, void *buffer, unsign
 
     struct {struct event_writerequest header; char data[64];} request;
     unsigned char data[MESSAGE_SIZE];
+    struct message message;
 
     request.header.session = ++sessioncount;
     request.header.id = id;
@@ -182,7 +188,7 @@ unsigned int fs_write(unsigned int target, unsigned int id, void *buffer, unsign
 
     channel_send_buffer(target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
-    while (channel_wait_buffer(target, EVENT_WRITERESPONSE, MESSAGE_SIZE, data))
+    while (channel_poll(target, EVENT_WRITERESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_writeresponse *response = (void *)data;

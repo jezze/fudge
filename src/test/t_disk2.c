@@ -41,9 +41,10 @@ static unsigned int version(unsigned int source, unsigned short tag, unsigned in
 {
 
     char data[MESSAGE_SIZE];
+    struct message message;
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(data, tag, msize, name), data);
-    channel_wait_buffer(option_getdecimal("9p-service"), EVENT_P9P, MESSAGE_SIZE, data);
+    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -65,9 +66,10 @@ static unsigned int attach(unsigned int source, unsigned short tag, unsigned int
 
     char buffer[MESSAGE_SIZE];
     char data[MESSAGE_SIZE];
+    struct message message;
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_wait_buffer(option_getdecimal("9p-service"), EVENT_P9P, MESSAGE_SIZE, data);
+    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -88,9 +90,10 @@ static unsigned int walk(unsigned int source, unsigned short tag, unsigned int f
 {
 
     char data[MESSAGE_SIZE];
+    struct message message;
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(data, tag, fid, newfid, 1, &wname), data);
-    channel_wait_buffer(option_getdecimal("9p-service"), EVENT_P9P, MESSAGE_SIZE, data);
+    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -111,9 +114,10 @@ static unsigned int read(unsigned int source, unsigned short tag, unsigned int f
 {
 
     char data[MESSAGE_SIZE];
+    struct message message;
 
     channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(data, tag, fid, 0, 0, 512), data);
-    channel_wait_buffer(option_getdecimal("9p-service"), EVENT_P9P, MESSAGE_SIZE, data);
+    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;

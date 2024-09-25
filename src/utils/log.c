@@ -13,10 +13,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char data[MESSAGE_SIZE];
+    struct message message;
 
     channel_send(option_getdecimal("log-service"), EVENT_LINK);
 
-    while (channel_wait_buffer(option_getdecimal("log-service"), EVENT_LOGINFO, MESSAGE_SIZE, data))
+    while (channel_poll(option_getdecimal("log-service"), EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
     {
 
         struct event_loginfo *loginfo = (void *)data;
