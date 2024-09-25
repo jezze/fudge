@@ -69,7 +69,7 @@ void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, interface, 0, place);
+    kernel_announce(interface->ichannel, interface, place);
 
 }
 

@@ -6,6 +6,7 @@
 #include "task.h"
 #include "core.h"
 #include "link.h"
+#include "service.h"
 #include "kernel.h"
 
 struct channel
@@ -13,7 +14,6 @@ struct channel
 
     void *interface;
     struct list links;
-    unsigned int (*find)(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name);
     unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 
 };
@@ -133,13 +133,6 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
     }
 
     task_resetsignals(&task->signals);
-
-}
-
-static unsigned int findtask(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name)
-{
-
-    return 0;
 
 }
 
@@ -365,20 +358,16 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
 {
 
-    unsigned int ichannel;
+    struct resource *current = 0;
 
-    for (ichannel = 0; ichannel < KERNEL_CHANNELS; ichannel++)
+    while ((current = resource_foreachtype(current, RESOURCE_SERVICE)))
     {
 
-        struct channel *channel = getchannel(ichannel);
+        struct service *service = current->data;
+        unsigned int channel = service->match(count, name);
 
-        if (channel && channel->find)
-        {
-
-            if (channel->find(channel->interface, ichannel, source, count, name))
-                return ichannel;
-
-        }
+        if (channel)
+            return channel;
 
     }
 
@@ -386,7 +375,7 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
 
 }
 
-void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*find)(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name), unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -397,7 +386,6 @@ void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*find
         list_init(&channel->links);
 
         channel->interface = interface;
-        channel->find = find;
         channel->place = place;
 
     }
@@ -409,7 +397,7 @@ void kernel_announce2(unsigned int ichannel, unsigned int itask)
 
     struct taskrow *taskrow = &taskrows[itask];
 
-    kernel_announce(ichannel, &taskrow->task, findtask, placetask);
+    kernel_announce(ichannel, &taskrow->task, placetask);
 
 }
 
@@ -424,7 +412,6 @@ void kernel_unannounce(unsigned int ichannel)
         list_init(&channel->links);
 
         channel->interface = 0;
-        channel->find = 0;
         channel->place = 0;
 
     }
@@ -562,7 +549,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
-        kernel_announce(i, &taskrow->task, findtask, placetask);
+        kernel_announce(i, &taskrow->task, placetask);
 
     }
 

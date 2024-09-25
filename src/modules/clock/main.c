@@ -28,7 +28,7 @@ void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, interface, 0, place);
+    kernel_announce(interface->ichannel, interface, place);
 
 }
 

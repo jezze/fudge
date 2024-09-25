@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include "cpio.h"
 
+static struct service service;
 static unsigned int address;
 static unsigned int limit;
 
@@ -382,7 +383,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int find(void *interface, unsigned int ichannel, unsigned int source, unsigned int count, char *name)
+static unsigned int service_match(unsigned int count, char *name)
 {
 
     if (count >= 6 && buffer_match(name, "initrd", 6))
@@ -428,7 +429,9 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    kernel_announce(500, 0, find, place);
+    service_init(&service, service_match);
+    resource_register(&service.resource);
+    kernel_announce(500, 0, place);
 
 }
 
