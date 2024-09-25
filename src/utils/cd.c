@@ -18,7 +18,7 @@ static unsigned int eachchar(char *data, unsigned int length, unsigned int offse
 
 }
 
-static unsigned int checkinput(char *path, unsigned int count)
+static unsigned int checkpath(char *path, unsigned int count)
 {
 
     return (count >= 2 && path[count - 1] == '\0' && ((path[count - 2] == '/') || (path[count - 2] == ':')));
@@ -40,11 +40,9 @@ static unsigned int cleanpath(char *path, unsigned int count)
         if (length == 1 && buffer_match(path + offset, "/", 1))
         {
 
-            count -= nextoffset;
+            buffer_copy(path + start, "", 1);
 
-            buffer_copy(path + offset, path + nextoffset, count);
-
-            length = 0;
+            return start + 1;
 
         }
 
@@ -99,20 +97,27 @@ static unsigned int cleanpath(char *path, unsigned int count)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    if (checkinput(mdata, msize) && cleanpath(mdata, msize))
+    if (checkpath(mdata, msize))
     {
 
-        unsigned int service = fs_auth(mdata);
+        msize = cleanpath(mdata, msize);
 
-        if (service)
+        if (msize)
         {
 
-            unsigned int id = fs_walk(service, 0, mdata);
+            unsigned int service = fs_auth(mdata);
 
-            if (id)
-                channel_send_fmt1(source, EVENT_OPTION, "pwd\\0%s\\0", mdata);
-            else
-                channel_send_fmt1(source, EVENT_ERROR, "Directory not found: %s\n", mdata);
+            if (service)
+            {
+
+                unsigned int id = fs_walk(service, 0, mdata);
+
+                if (id)
+                    channel_send_fmt1(source, EVENT_OPTION, "pwd\\0%s\\0", mdata);
+                else
+                    channel_send_fmt1(source, EVENT_ERROR, "Directory not found: %s\n", mdata);
+
+            }
 
         }
 
