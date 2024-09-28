@@ -644,6 +644,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup2("keyboard-service", "keyboard:0");
+    lookup2("mouse-service", "mouse:0");
     channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm-service\\0!source\\0");
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
