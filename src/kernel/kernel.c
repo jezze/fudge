@@ -496,7 +496,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            unsigned int ichannel = kernel_announce(itask, &taskrow->task, placetask);
+            unsigned int ichannel = kernel_announce(itask, task, placetask);
 
             coreassign(&taskrow->item);
 
