@@ -7,11 +7,12 @@ static struct service service;
 static unsigned int service_match(unsigned int count, char *name)
 {
 
-    if (count == 2 && buffer_match(name, ":", 1))
+    if (count >= 2 && buffer_match(name, ":", 1))
     {
 
         struct resource *current = 0;
         unsigned int index = cstring_toint(name[1]);
+        unsigned int channelnum = cstring_toint(name[3]);
         unsigned int i;
 
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_TIMERINTERFACE)); i++)
@@ -20,7 +21,28 @@ static unsigned int service_match(unsigned int count, char *name)
             struct timer_interface *interface = current->data;
 
             if (i == index)
-                return interface->ichannel10;
+            {
+
+                switch (channelnum)
+                {
+
+                case 0:
+                    return interface->ichannel1;
+
+                case 1:
+                    return interface->ichannel10;
+
+                case 2:
+                    return interface->ichannel100;
+
+                case 3:
+                    return interface->ichannel1000;
+
+                }
+
+                return interface->ichannel1;
+
+            }
 
         }
 

@@ -33,6 +33,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     int cB = 0;
     int f;
 
+    lookup2("timer-service", "timer:0/0");
     channel_send(option_getdecimal("timer-service"), EVENT_LINK);
 
     while (channel_process())
@@ -113,7 +114,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("timer-service", "410");
+    option_add("timer-service", "");
     channel_bind(EVENT_MAIN, onmain);
 
 }
