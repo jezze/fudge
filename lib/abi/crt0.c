@@ -53,10 +53,9 @@ void lookup2(char *key, char *value)
 {
 
     char id[32];
-
     unsigned int channel = call_find(cstring_length(value), value);
 
-    cstring_write_value(id, 32, channel, 10, 0, 0);
+    cstring_write_fmt1(id, 32, "%u\\0", 0, &channel);
     option_set(key, id);
 
 }

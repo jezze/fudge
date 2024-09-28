@@ -2,6 +2,34 @@
 #include <kernel.h>
 #include "timer.h"
 
+static struct service service;
+
+static unsigned int service_match(unsigned int count, char *name)
+{
+
+    if (count == 2 && buffer_match(name, ":", 1))
+    {
+
+        struct resource *current = 0;
+        unsigned int index = cstring_toint(name[1]);
+        unsigned int i;
+
+        for (i = 0; (current = resource_foreachtype(current, RESOURCE_TIMERINTERFACE)); i++)
+        {
+
+            struct timer_interface *interface = current->data;
+
+            if (i == index)
+                return interface->ichannel10;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -97,6 +125,14 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id, uns
     interface->ichannel10 = ichannel10;
     interface->ichannel100 = ichannel100;
     interface->ichannel1000 = ichannel1000;
+
+}
+
+void module_init(void)
+{
+
+    service_init(&service, "timer", service_match);
+    resource_register(&service.resource);
 
 }
 

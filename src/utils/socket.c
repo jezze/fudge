@@ -46,6 +46,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct event_clockinfo clockinfo;
     struct mtwist_state state;
 
+    lookup2("clock-service", "clock:0");
+    lookup2("ethernet-service", "ethernet:0");
     channel_send(option_getdecimal("clock-service"), EVENT_INFO);
     channel_wait_buffer(option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
     mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
@@ -70,8 +72,8 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("clock-service", "220");
-    option_add("ethernet-service", "108");
+    option_add("clock-service", "");
+    option_add("ethernet-service", "");
     option_add("local-address", "10.0.5.1");
     option_add("remote-address", "");
     option_add("remote-port", "80");

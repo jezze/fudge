@@ -2,6 +2,34 @@
 #include <kernel.h>
 #include "console.h"
 
+static struct service service;
+
+static unsigned int service_match(unsigned int count, char *name)
+{
+
+    if (count == 2 && buffer_match(name, ":", 1))
+    {
+
+        struct resource *current = 0;
+        unsigned int index = cstring_toint(name[1]);
+        unsigned int i;
+
+        for (i = 0; (current = resource_foreachtype(current, RESOURCE_CONSOLEINTERFACE)); i++)
+        {
+
+            struct console_interface *interface = current->data;
+
+            if (i == index)
+                return interface->ichannel;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int ondata(struct console_interface *interface, void *data, unsigned int count)
 {
 
@@ -66,6 +94,14 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     interface->id = id;
     interface->ichannel = ichannel;
     interface->ondata = ondata;
+
+}
+
+void module_init(void)
+{
+
+    service_init(&service, "console", service_match);
+    resource_register(&service.resource);
 
 }
 

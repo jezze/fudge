@@ -2,6 +2,34 @@
 #include <kernel.h>
 #include "video.h"
 
+static struct service service;
+
+static unsigned int service_match(unsigned int count, char *name)
+{
+
+    if (count == 2 && buffer_match(name, ":", 1))
+    {
+
+        struct resource *current = 0;
+        unsigned int index = cstring_toint(name[1]);
+        unsigned int i;
+
+        for (i = 0; (current = resource_foreachtype(current, RESOURCE_VIDEOINTERFACE)); i++)
+        {
+
+            struct video_interface *interface = current->data;
+
+            if (i == index)
+                return interface->ichannel;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
@@ -85,6 +113,14 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     interface->bpp = 0;
     interface->onvideocmap = onvideocmap;
     interface->onvideoconf = onvideoconf;
+
+}
+
+void module_init(void)
+{
+
+    service_init(&service, "video", service_match);
+    resource_register(&service.resource);
 
 }
 

@@ -466,6 +466,7 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    lookup2("block-service", "block:0");
     channel_send(option_getdecimal("block-service"), EVENT_LINK);
     readsuperblock(&sb);
 
@@ -485,7 +486,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("block-service", "231");
+    option_add("block-service", "");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_LISTREQUEST, onlistrequest);

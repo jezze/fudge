@@ -145,6 +145,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = option_getdecimal("bpp");
 
+    lookup2("keyboard-service", "keyboard:0");
+    lookup2("video-service", "video:0");
     channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
@@ -167,9 +169,9 @@ void init(void)
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
-    option_add("keyboard-service", "110");
+    option_add("keyboard-service", "");
     option_add("timer-service", "410");
-    option_add("video-service", "400");
+    option_add("video-service", "");
     option_add("wm-service", "");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
