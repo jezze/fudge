@@ -386,10 +386,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 static unsigned int service_match(unsigned int count, char *name)
 {
 
-    if (count >= 6 && buffer_match(name, "initrd", 6))
-        return 500;
-
-    return 0;
+    return 500;
 
 }
 
@@ -429,7 +426,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, service_match);
+    service_init(&service, "initrd", service_match);
     resource_register(&service.resource);
     kernel_announce(500, 0, place);
 
