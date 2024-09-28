@@ -369,7 +369,7 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
         if (count >= length && buffer_match(name, service->name, length))
         {
 
-            unsigned int channel = service->match(count, name + length);
+            unsigned int channel = service->match(count - length, name + length);
 
             if (channel)
                 return channel;

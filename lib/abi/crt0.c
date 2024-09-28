@@ -49,6 +49,18 @@ void lookup(char *key)
 
 }
 
+void lookup2(char *key, char *value)
+{
+
+    char id[32];
+
+    unsigned int channel = call_find(cstring_length(value), value);
+
+    cstring_write_value(id, 32, channel, 10, 0, 0);
+    option_set(key, id);
+
+}
+
 void panic(unsigned int source, char *file, unsigned int line)
 {
 

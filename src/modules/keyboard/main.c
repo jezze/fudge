@@ -2,6 +2,34 @@
 #include <kernel.h>
 #include "keyboard.h"
 
+static struct service service;
+
+static unsigned int service_match(unsigned int count, char *name)
+{
+
+    if (count == 2 && buffer_match(name, ":", 1))
+    {
+
+        struct resource *current = 0;
+        unsigned int index = cstring_toint(name[1]);
+        unsigned int i;
+
+        for (i = 0; (current = resource_foreachtype(current, RESOURCE_KEYBOARDINTERFACE)); i++)
+        {
+
+            struct keyboard_interface *interface = current->data;
+
+            if (i == index)
+                return interface->ichannel;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -67,6 +95,14 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 
     interface->id = id;
     interface->ichannel = ichannel;
+
+}
+
+void module_init(void)
+{
+
+    service_init(&service, "keyboard", service_match);
+    resource_register(&service.resource);
 
 }
 
