@@ -163,7 +163,7 @@ static unsigned int placetask(void *interface, unsigned int ichannel, unsigned i
 
 }
 
-unsigned int picknewtask(struct core *core)
+static unsigned int picknewtask(struct core *core)
 {
 
     struct list_item *taskitem = list_picktail(&core->tasks);
@@ -375,7 +375,7 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
 
 }
 
-void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_announce(unsigned int ichannel, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -390,14 +390,7 @@ void kernel_announce(unsigned int ichannel, void *interface, unsigned int (*plac
 
     }
 
-}
-
-void kernel_announce2(unsigned int ichannel, unsigned int itask)
-{
-
-    struct taskrow *taskrow = &taskrows[itask];
-
-    kernel_announce(ichannel, &taskrow->task, placetask);
+    return ichannel;
 
 }
 
@@ -496,9 +489,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
+            unsigned int ichannel = kernel_announce(itask, &taskrow->task, placetask);
+
             coreassign(&taskrow->item);
 
-            return itask;
+            return ichannel;
 
         }
 
@@ -549,7 +544,6 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
-        kernel_announce(i, &taskrow->task, placetask);
 
     }
 
