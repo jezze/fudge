@@ -60,7 +60,8 @@ void video_registerinterface(struct video_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, interface, place);
+
+    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
 
 }
 

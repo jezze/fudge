@@ -46,7 +46,8 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(interface->ichannel, interface, place);
+
+    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
 
 }
 
@@ -54,6 +55,7 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+
     kernel_unannounce(interface->ichannel);
 
 }
