@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct node *service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static unsigned int service_match(unsigned int count, char *name)
             struct mouse_interface *interface = current->data;
 
             if (i == index)
-                return interface->ichannel;
+                return &interface->node;
 
         }
 
@@ -38,7 +38,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     mousemove.relx = relx;
     mousemove.rely = rely;
 
-    kernel_notify(interface->ichannel, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+    kernel_notify(&interface->node, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
 }
 
@@ -49,7 +49,7 @@ void mouse_notifyscroll(struct mouse_interface *interface, char relz)
 
     mousescroll.relz = relz;
 
-    kernel_notify(interface->ichannel, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
+    kernel_notify(&interface->node, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
 
 }
 
@@ -60,7 +60,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 
     mousepress.button = button;
 
-    kernel_notify(interface->ichannel, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
+    kernel_notify(&interface->node, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
 
 }
 
@@ -71,7 +71,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 
     mouserelease.button = button;
 
-    kernel_notify(interface->ichannel, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
+    kernel_notify(&interface->node, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
 
 }
 
@@ -79,8 +79,7 @@ void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     resource_register(&interface->resource);
-
-    interface->ichannel = kernel_announce(interface, 0);
+    kernel_announce(&interface->node, interface, 0);
 
 }
 
@@ -88,7 +87,7 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(interface->ichannel);
+    kernel_unannounce(&interface->node);
 
 }
 
@@ -96,6 +95,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
+    node_init(&interface->node);
 
     interface->id = id;
 

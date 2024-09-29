@@ -4,14 +4,14 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct node *service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
     {
 
         struct resource *current = 0;
-        /*unsigned int index = cstring_toint(name[1]);*/
+        unsigned int index = cstring_toint(name[1]);
         unsigned int i;
 
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_CONSOLEINTERFACE)); i++)
@@ -19,8 +19,8 @@ static unsigned int service_match(unsigned int count, char *name)
 
             struct console_interface *interface = current->data;
 
-            /*if (i == index)*/
-                return interface->ichannel;
+            if (i == index)
+                return &interface->node;
 
         }
 
@@ -59,7 +59,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(interface->ichannel, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(&interface->node, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
@@ -67,8 +67,7 @@ void console_registerinterface(struct console_interface *interface)
 {
 
     resource_register(&interface->resource);
-
-    interface->ichannel = kernel_announce(interface, place);
+    kernel_announce(&interface->node, interface, place);
 
 }
 
@@ -76,7 +75,7 @@ void console_unregisterinterface(struct console_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(interface->ichannel);
+    kernel_unannounce(&interface->node);
 
 }
 
@@ -84,6 +83,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
+    node_init(&interface->node);
 
     interface->id = id;
     interface->ondata = ondata;

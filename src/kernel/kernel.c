@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "resource.h"
+#include "node.h"
 #include "debug.h"
 #include "binary.h"
 #include "mailbox.h"
@@ -141,7 +142,7 @@ static unsigned int placetask(void *interface, unsigned int ichannel, unsigned i
 {
 
     struct task *task = interface;
-    struct channel *channel = getchannel(task->ichannel);
+    struct channel *channel = getchannel(task->node.ichannel);
 
     if (channel)
     {
@@ -373,11 +374,11 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 
     struct task *task = gettask(itask);
 
-    return kernel_place(task->ichannel, ichannel, event, count, data);
+    return kernel_place(task->node.ichannel, ichannel, event, count, data);
 
 }
 
-unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
+unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 {
 
     struct resource *current = 0;
@@ -391,10 +392,10 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
         if (count >= length && buffer_match(name, service->name, length))
         {
 
-            unsigned int channel = service->match(count - length, name + length);
+            struct node *node = service->match(count - length, name + length);
 
-            if (channel)
-                return channel;
+            if (node)
+                return node->ichannel;
 
         }
 
@@ -404,7 +405,7 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
 
 }
 
-unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_announce(struct node *node, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
     unsigned int ichannel = ++channelcount;
@@ -420,14 +421,14 @@ unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interf
 
     }
 
-    return ichannel;
+    return node->ichannel = ichannel;
 
 }
 
-void kernel_unannounce(unsigned int ichannel)
+void kernel_unannounce(struct node *node)
 {
 
-    struct channel *channel = getchannel(ichannel);
+    struct channel *channel = getchannel(node->ichannel);
 
     if (channel)
     {
@@ -446,14 +447,14 @@ void kernel_unannouncetask(unsigned int itask)
 
     struct task *task = gettask(itask);
 
-    kernel_unannounce(task->ichannel);
+    kernel_unannounce(&task->node);
 
 }
 
-void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+void kernel_notify(struct node *node, unsigned int event, unsigned int count, void *data)
 {
 
-    struct channel *channel = getchannel(ichannel);
+    struct channel *channel = getchannel(node->ichannel);
 
     if (channel)
     {
@@ -468,7 +469,7 @@ void kernel_notify(unsigned int ichannel, unsigned int event, unsigned int count
             struct linkrow *linkrow = current->data;
             struct link *link = &linkrow->link;
 
-            kernel_place(ichannel, link->target, event, count, data);
+            kernel_place(node->ichannel, link->target, event, count, data);
 
         }
 
@@ -528,11 +529,10 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            task->ichannel = kernel_announce(task, placetask);
-
+            kernel_announce(&task->node, task, placetask);
             coreassign(&taskrow->item);
 
-            return task->ichannel;
+            return task->node.ichannel;
 
         }
 

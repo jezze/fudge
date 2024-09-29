@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct node *service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static unsigned int service_match(unsigned int count, char *name)
             struct clock_interface *interface = current->data;
 
             if (i == index)
-                return interface->ichannel;
+                return &interface->node;
 
         }
 
@@ -56,8 +56,7 @@ void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
-
-    interface->ichannel = kernel_announce(interface, place);
+    kernel_announce(&interface->node, interface, place);
 
 }
 
@@ -65,7 +64,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(interface->ichannel);
+    kernel_unannounce(&interface->node);
 
 }
 
@@ -73,6 +72,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
+    node_init(&interface->node);
 
     interface->id = id;
     interface->oninfo = oninfo;

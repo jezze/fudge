@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct node *service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static unsigned int service_match(unsigned int count, char *name)
             struct block_interface *interface = current->data;
 
             if (i == index)
-                return interface->ichannel;
+                return &interface->node;
 
         }
 
@@ -57,7 +57,7 @@ static unsigned int place(void *interface, unsigned int ichannel, unsigned int s
 void block_notifyblockresponse(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(interface->ichannel, EVENT_BLOCKRESPONSE, count, buffer);
+    kernel_notify(&interface->node, EVENT_BLOCKRESPONSE, count, buffer);
 
 }
 
@@ -65,8 +65,7 @@ void block_registerinterface(struct block_interface *interface)
 {
 
     resource_register(&interface->resource);
-
-    interface->ichannel = kernel_announce(interface, place);
+    kernel_announce(&interface->node, interface, place);
 
 }
 
@@ -74,7 +73,7 @@ void block_unregisterinterface(struct block_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(interface->ichannel);
+    kernel_unannounce(&interface->node);
 
 }
 
@@ -82,6 +81,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
+    node_init(&interface->node);
 
     interface->id = id;
     interface->onblockrequest = onblockrequest;

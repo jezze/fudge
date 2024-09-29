@@ -2,11 +2,11 @@ struct timer_interface
 {
 
     struct resource resource;
+    struct node node1;
+    struct node node10;
+    struct node node100;
+    struct node node1000;
     unsigned int id;
-    unsigned int ichannel1;
-    unsigned int ichannel10;
-    unsigned int ichannel100;
-    unsigned int ichannel1000;
 
 };
 

@@ -9,7 +9,7 @@ void service_register(struct service *service)
 
 }
 
-void service_init(struct service *service, char *name, unsigned int (*match)(unsigned int count, char *name))
+void service_init(struct service *service, char *name, struct node *(*match)(unsigned int count, char *name))
 {
 
     resource_init(&service->resource, RESOURCE_SERVICE, service);

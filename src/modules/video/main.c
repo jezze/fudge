@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct node *service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static unsigned int service_match(unsigned int count, char *name)
             struct video_interface *interface = current->data;
 
             if (i == index)
-                return interface->ichannel;
+                return &interface->node;
 
         }
 
@@ -74,7 +74,7 @@ void video_notifymode(struct video_interface *interface, void *framebuffer, unsi
     videoinfo.height = h;
     videoinfo.bpp = bpp;
 
-    kernel_notify(interface->ichannel, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+    kernel_notify(&interface->node, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
 }
 
@@ -82,8 +82,7 @@ void video_registerinterface(struct video_interface *interface)
 {
 
     resource_register(&interface->resource);
-
-    interface->ichannel = kernel_announce(interface, place);
+    kernel_announce(&interface->node, interface, place);
 
 }
 
@@ -91,7 +90,7 @@ void video_unregisterinterface(struct video_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(interface->ichannel);
+    kernel_unannounce(&interface->node);
 
 }
 
@@ -99,6 +98,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
+    node_init(&interface->node);
 
     interface->id = id;
     interface->width = 0;

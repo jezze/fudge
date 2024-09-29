@@ -5,7 +5,7 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct node *service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -21,7 +21,7 @@ static unsigned int service_match(unsigned int count, char *name)
             struct ethernet_interface *interface = current->data;
 
             if (i == index)
-                return interface->ichannel;
+                return &interface->node;
 
         }
 
@@ -66,7 +66,7 @@ static unsigned int place(void *interface, unsigned int ichannel, unsigned int s
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(interface->ichannel, EVENT_DATA, count, buffer);
+    kernel_notify(&interface->node, EVENT_DATA, count, buffer);
 
 }
 
@@ -74,8 +74,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
     resource_register(&interface->resource);
-
-    interface->ichannel = kernel_announce(interface, place);
+    kernel_announce(&interface->node, interface, place);
 
 }
 
@@ -83,7 +82,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(interface->ichannel);
+    kernel_unannounce(&interface->node);
 
 }
 
@@ -91,6 +90,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
+    node_init(&interface->node);
 
     interface->id = id;
     interface->oninfo = oninfo;

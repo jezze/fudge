@@ -2,8 +2,8 @@ struct block_interface
 {
 
     struct resource resource;
+    struct node node;
     unsigned int id;
-    unsigned int ichannel;
     unsigned int (*onblockrequest)(unsigned int count, unsigned int sector);
 
 };

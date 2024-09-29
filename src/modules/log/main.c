@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 
+static struct node node;
 static struct debug_interface debuginterface;
 
 static void debuginterface_write(unsigned int level, unsigned int count, char *string, char *file, unsigned int line)
@@ -16,7 +17,7 @@ static void debuginterface_write(unsigned int level, unsigned int count, char *s
     else
         message.loginfo.count += cstring_write_fmt2(message.data, MESSAGE_SIZE, "%w", message.loginfo.count, string, &count);
 
-    kernel_notify(debuginterface.ichannel, EVENT_LOGINFO, message.loginfo.count, &message);
+    kernel_notify(&node, EVENT_LOGINFO, message.loginfo.count, &message);
 
 }
 
@@ -24,6 +25,7 @@ void module_init(void)
 {
 
     debug_initinterface(&debuginterface, 99, debuginterface_write);
+    node_init(&node);
 
 }
 
@@ -31,6 +33,7 @@ void module_register(void)
 {
 
     debug_registerinterface(&debuginterface);
+    kernel_announce(&node, 0, 0);
 
 }
 
@@ -38,6 +41,7 @@ void module_unregister(void)
 {
 
     debug_unregisterinterface(&debuginterface);
+    kernel_unannounce(&node);
 
 }
 

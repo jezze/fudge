@@ -35,10 +35,10 @@ struct task
     struct task_signals signals;
     struct task_thread thread;
     struct spinlock spinlock;
+    struct node node;
     unsigned int id;
     unsigned int state;
     unsigned int base;
-    unsigned int ichannel;
 
 };
 

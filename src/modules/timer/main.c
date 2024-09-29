@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct node *service_match(unsigned int count, char *name)
 {
 
     if (count >= 2 && buffer_match(name, ":", 1))
@@ -27,20 +27,20 @@ static unsigned int service_match(unsigned int count, char *name)
                 {
 
                 case 0:
-                    return interface->ichannel1;
+                    return &interface->node1;
 
                 case 1:
-                    return interface->ichannel10;
+                    return &interface->node10;
 
                 case 2:
-                    return interface->ichannel100;
+                    return &interface->node100;
 
                 case 3:
-                    return interface->ichannel1000;
+                    return &interface->node1000;
 
                 }
 
-                return interface->ichannel1;
+                return &interface->node1;
 
             }
 
@@ -59,7 +59,7 @@ void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(interface->ichannel1, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(&interface->node1, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -70,7 +70,7 @@ void timer_notifytick10(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(interface->ichannel10, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(&interface->node10, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -81,7 +81,7 @@ void timer_notifytick100(struct timer_interface *interface, unsigned int counter
 
     timertick.counter = counter;
 
-    kernel_notify(interface->ichannel100, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(&interface->node100, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -92,7 +92,7 @@ void timer_notifytick1000(struct timer_interface *interface, unsigned int counte
 
     timertick.counter = counter;
 
-    kernel_notify(interface->ichannel1000, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(&interface->node1000, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -100,11 +100,10 @@ void timer_registerinterface(struct timer_interface *interface)
 {
 
     resource_register(&interface->resource);
-
-    interface->ichannel1 = kernel_announce(interface, 0);
-    interface->ichannel10 = kernel_announce(interface, 0);
-    interface->ichannel100 = kernel_announce(interface, 0);
-    interface->ichannel1000 = kernel_announce(interface, 0);
+    kernel_announce(&interface->node1, interface, 0);
+    kernel_announce(&interface->node10, interface, 0);
+    kernel_announce(&interface->node100, interface, 0);
+    kernel_announce(&interface->node1000, interface, 0);
 
 }
 
@@ -112,10 +111,10 @@ void timer_unregisterinterface(struct timer_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(interface->ichannel1);
-    kernel_unannounce(interface->ichannel10);
-    kernel_unannounce(interface->ichannel100);
-    kernel_unannounce(interface->ichannel1000);
+    kernel_unannounce(&interface->node1);
+    kernel_unannounce(&interface->node10);
+    kernel_unannounce(&interface->node100);
+    kernel_unannounce(&interface->node1000);
 
 }
 
@@ -123,6 +122,10 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
+    node_init(&interface->node1);
+    node_init(&interface->node10);
+    node_init(&interface->node100);
+    node_init(&interface->node1000);
 
     interface->id = id;
 
