@@ -397,7 +397,8 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
 unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
-    struct channel *channel = getchannel(++channelcount);
+    unsigned int ichannel = ++channelcount;
+    struct channel *channel = getchannel(ichannel);
 
     if (channel)
     {
@@ -409,7 +410,7 @@ unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interf
 
     }
 
-    return channelcount;
+    return ichannel;
 
 }
 
@@ -417,6 +418,24 @@ void kernel_unannounce(unsigned int ichannel)
 {
 
     struct channel *channel = getchannel(ichannel);
+
+    if (channel)
+    {
+
+        list_init(&channel->links);
+
+        channel->interface = 0;
+        channel->place = 0;
+
+    }
+
+}
+
+void kernel_unannouncetask(unsigned int itask)
+{
+
+    struct task *task = gettask(itask);
+    struct channel *channel = getchannel(task->ichannel);
 
     if (channel)
     {
