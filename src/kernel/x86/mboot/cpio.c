@@ -428,7 +428,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     limit = lim;
 
     service_init(&service, "initrd", service_match);
-    resource_register(&service.resource);
+    service_register(&service);
 
     ichannel = kernel_announce(0, place);
 

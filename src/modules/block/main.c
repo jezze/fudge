@@ -98,7 +98,7 @@ void module_init(void)
 {
 
     service_init(&service, "block", service_match);
-    resource_register(&service.resource);
+    service_register(&service);
 
 }
 
