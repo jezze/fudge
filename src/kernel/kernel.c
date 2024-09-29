@@ -18,7 +18,7 @@ struct channel
 
 };
 
-static unsigned int channelcount = 100;
+static unsigned int channelcount;
 static struct channel channels[KERNEL_CHANNELS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
