@@ -38,6 +38,7 @@ struct task
     unsigned int id;
     unsigned int state;
     unsigned int base;
+    unsigned int ichannel;
 
 };
 
