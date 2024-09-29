@@ -333,14 +333,15 @@ struct task_thread *kernel_getthread(unsigned int itask)
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
+unsigned int kernel_pick(unsigned int itask, struct message *message, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = &mailboxes[source];
+    struct task *task = gettask(itask);
+    struct mailbox *mailbox = &mailboxes[task->id];
     unsigned int status = mailbox_pick(mailbox, message, count, data);
 
     if (status == MESSAGE_RETRY)
-        kernel_signal(source, TASK_SIGNAL_BLOCK);
+        kernel_signal(itask, TASK_SIGNAL_BLOCK);
 
     return status;
 
