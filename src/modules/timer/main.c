@@ -52,24 +52,6 @@ static unsigned int service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_LINK:
-        return kernel_link(ichannel, source);
-
-    case EVENT_UNLINK:
-        return kernel_unlink(ichannel, source);
-
-    }
-
-    return MESSAGE_UNIMPLEMENTED;
-
-}
-
 void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 {
 
@@ -119,10 +101,10 @@ void timer_registerinterface(struct timer_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel1 = kernel_announce(interface, place);
-    interface->ichannel10 = kernel_announce(interface, place);
-    interface->ichannel100 = kernel_announce(interface, place);
-    interface->ichannel1000 = kernel_announce(interface, place);
+    interface->ichannel1 = kernel_announce(interface, 0);
+    interface->ichannel10 = kernel_announce(interface, 0);
+    interface->ichannel100 = kernel_announce(interface, 0);
+    interface->ichannel1000 = kernel_announce(interface, 0);
 
 }
 

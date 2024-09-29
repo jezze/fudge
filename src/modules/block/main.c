@@ -48,12 +48,6 @@ static unsigned int place(void *interface, unsigned int ichannel, unsigned int s
     case EVENT_BLOCKREQUEST:
         return onblockrequest(interface, source, count, data);
 
-    case EVENT_LINK:
-        return kernel_link(ichannel, source);
-
-    case EVENT_UNLINK:
-        return kernel_unlink(ichannel, source);
-
     }
 
     return MESSAGE_UNIMPLEMENTED;

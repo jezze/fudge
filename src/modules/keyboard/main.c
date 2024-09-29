@@ -30,24 +30,6 @@ static unsigned int service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_LINK:
-        return kernel_link(ichannel, source);
-
-    case EVENT_UNLINK:
-        return kernel_unlink(ichannel, source);
-
-    }
-
-    return MESSAGE_UNIMPLEMENTED;
-
-}
-
 void keyboard_notifypress(struct keyboard_interface *interface, unsigned char scancode)
 {
 
@@ -75,7 +57,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface, place);
+    interface->ichannel = kernel_announce(interface, 0);
 
 }
 

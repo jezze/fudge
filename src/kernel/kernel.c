@@ -353,7 +353,18 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
     struct channel *channel = getchannel(ichannel);
 
-    return (channel) ? channel->place(channel->interface, ichannel, source, event, count, data) : 0;
+    switch (event)
+    {
+
+    case EVENT_LINK:
+        return kernel_link(ichannel, source);
+
+    case EVENT_UNLINK:
+        return kernel_unlink(ichannel, source);
+
+    }
+
+    return (channel && channel->place) ? channel->place(channel->interface, ichannel, source, event, count, data) : 0;
 
 }
 
@@ -361,9 +372,8 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 {
 
     struct task *task = gettask(itask);
-    struct channel *channel = getchannel(ichannel);
 
-    return (channel) ? channel->place(channel->interface, ichannel, task->ichannel, event, count, data) : 0;
+    return kernel_place(task->ichannel, ichannel, event, count, data);
 
 }
 
