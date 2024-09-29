@@ -71,6 +71,7 @@ struct device
 };
 
 static struct base_bus bus;
+static unsigned int ichannel;
 
 static struct device devices[] = {
     {0},
@@ -362,7 +363,8 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    kernel_announce(107, 0, place);
+
+    ichannel = kernel_announce(107, 0, place);
 
 }
 
@@ -370,7 +372,7 @@ void module_unregister(void)
 {
 
     base_unregisterbus(&bus);
-    kernel_unannounce(107);
+    kernel_unannounce(ichannel);
 
 }
 
