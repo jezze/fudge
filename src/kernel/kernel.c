@@ -445,17 +445,8 @@ void kernel_unannouncetask(unsigned int itask)
 {
 
     struct task *task = gettask(itask);
-    struct channel *channel = getchannel(task->ichannel);
 
-    if (channel)
-    {
-
-        list_init(&channel->links);
-
-        channel->interface = 0;
-        channel->place = 0;
-
-    }
+    kernel_unannounce(task->ichannel);
 
 }
 
