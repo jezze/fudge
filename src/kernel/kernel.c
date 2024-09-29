@@ -140,12 +140,12 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 static unsigned int placetask(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct channel *channel = getchannel(ichannel);
+    struct task *task = interface;
+    struct channel *channel = getchannel(task->ichannel);
 
     if (channel)
     {
 
-        struct task *task = interface;
         struct mailbox *mailbox = &mailboxes[task->id];
         struct message message;
         unsigned int status;
