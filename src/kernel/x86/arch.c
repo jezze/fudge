@@ -446,7 +446,7 @@ void arch_setup2(unsigned int address)
 
         ichannel = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
 
-        kernel_place2(ntask, ichannel, EVENT_MAIN, 0, 0);
+        kernel_placetask(ntask, ichannel, EVENT_MAIN, 0, 0);
 
     }
 

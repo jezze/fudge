@@ -357,7 +357,7 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
 
 }
 
-unsigned int kernel_place2(unsigned int itask, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
