@@ -16,13 +16,12 @@ void audio_unregisterinterface(struct audio_interface *interface)
 
 }
 
-void audio_initinterface(struct audio_interface *interface, unsigned int id, unsigned int ichannel)
+void audio_initinterface(struct audio_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
 
 }
 

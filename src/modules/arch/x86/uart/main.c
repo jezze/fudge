@@ -148,7 +148,7 @@ static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id, 100, consoleinterface_ondata);
+    console_initinterface(&consoleinterface, id, consoleinterface_ondata);
 
 }
 

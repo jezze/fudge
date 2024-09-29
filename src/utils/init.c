@@ -44,7 +44,6 @@ static unsigned int spawnshell(unsigned int env)
     {
 
         channel_send_fmt1(channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
-        channel_send_fmt0(channel, EVENT_OPTION, "console-service\\0100\\0");
         channel_send(channel, EVENT_MAIN);
 
     }

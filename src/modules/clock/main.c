@@ -57,7 +57,7 @@ void clock_registerinterface(struct clock_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
+    interface->ichannel = kernel_announce(0, interface, place);
 
 }
 
@@ -69,13 +69,12 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*oninfo)(unsigned int source))
+void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source))
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
     interface->oninfo = oninfo;
 
 }

@@ -119,10 +119,10 @@ void timer_registerinterface(struct timer_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel1 = kernel_announce(interface->ichannel1, interface, place);
-    interface->ichannel10 = kernel_announce(interface->ichannel10, interface, place);
-    interface->ichannel100 = kernel_announce(interface->ichannel100, interface, place);
-    interface->ichannel1000 = kernel_announce(interface->ichannel1000, interface, place);
+    interface->ichannel1 = kernel_announce(0, interface, place);
+    interface->ichannel10 = kernel_announce(0, interface, place);
+    interface->ichannel100 = kernel_announce(0, interface, place);
+    interface->ichannel1000 = kernel_announce(0, interface, place);
 
 }
 
@@ -137,16 +137,12 @@ void timer_unregisterinterface(struct timer_interface *interface)
 
 }
 
-void timer_initinterface(struct timer_interface *interface, unsigned int id, unsigned int ichannel1, unsigned int ichannel10, unsigned int ichannel100, unsigned int ichannel1000)
+void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel1 = ichannel1;
-    interface->ichannel10 = ichannel10;
-    interface->ichannel100 = ichannel100;
-    interface->ichannel1000 = ichannel1000;
 
 }
 

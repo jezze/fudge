@@ -75,7 +75,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
+    interface->ichannel = kernel_announce(0, interface, place);
 
 }
 
@@ -88,13 +88,12 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 
 }
 
-void keyboard_initinterface(struct keyboard_interface *interface, unsigned int id, unsigned int ichannel)
+void keyboard_initinterface(struct keyboard_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
 
 }
 

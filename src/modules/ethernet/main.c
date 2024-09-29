@@ -81,7 +81,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
+    interface->ichannel = kernel_announce(0, interface, place);
 
 }
 
@@ -93,13 +93,12 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*oninfo)(unsigned int source), unsigned int (*ondata)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source), unsigned int (*ondata)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
     interface->oninfo = oninfo;
     interface->ondata = ondata;
 

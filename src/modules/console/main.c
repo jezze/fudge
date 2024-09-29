@@ -11,7 +11,7 @@ static unsigned int service_match(unsigned int count, char *name)
     {
 
         struct resource *current = 0;
-        unsigned int index = cstring_toint(name[1]);
+        /*unsigned int index = cstring_toint(name[1]);*/
         unsigned int i;
 
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_CONSOLEINTERFACE)); i++)
@@ -19,7 +19,7 @@ static unsigned int service_match(unsigned int count, char *name)
 
             struct console_interface *interface = current->data;
 
-            if (i == index)
+            /*if (i == index)*/
                 return interface->ichannel;
 
         }
@@ -74,7 +74,7 @@ void console_registerinterface(struct console_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
+    interface->ichannel = kernel_announce(0, interface, place);
 
 }
 
@@ -86,13 +86,12 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*ondata)(void *buffer, unsigned int count))
+void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
     interface->ondata = ondata;
 
 }

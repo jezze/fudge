@@ -513,10 +513,11 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    printprompt();
+    lookup2("console-service", "console:0");
     lookup2("keyboard-service", "keyboard:1");
     channel_send(option_getdecimal("console-service"), EVENT_LINK);
     channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
+    printprompt();
 
     while (channel_process());
 

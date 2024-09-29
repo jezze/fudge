@@ -98,7 +98,7 @@ void mouse_registerinterface(struct mouse_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
+    interface->ichannel = kernel_announce(0, interface, place);
 
 }
 
@@ -110,13 +110,12 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 
 }
 
-void mouse_initinterface(struct mouse_interface *interface, unsigned int id, unsigned int ichannel)
+void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
 
 }
 

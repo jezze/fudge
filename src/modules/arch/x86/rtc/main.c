@@ -64,7 +64,7 @@ static unsigned int clockinterface_oninfo(unsigned int source)
 static void driver_init(unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, id, 220, clockinterface_oninfo);
+    clock_initinterface(&clockinterface, id, clockinterface_oninfo);
 
 }
 

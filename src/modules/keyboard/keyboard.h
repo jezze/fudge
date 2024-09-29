@@ -11,4 +11,4 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char scancode);
 void keyboard_registerinterface(struct keyboard_interface *interface);
 void keyboard_unregisterinterface(struct keyboard_interface *interface);
-void keyboard_initinterface(struct keyboard_interface *interface, unsigned int id, unsigned int ichannel);
+void keyboard_initinterface(struct keyboard_interface *interface, unsigned int id);

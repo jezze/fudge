@@ -24,7 +24,7 @@ static unsigned int blockinterface_onblockrequest(unsigned int count, unsigned i
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 232, blockinterface_onblockrequest);
+    block_initinterface(&blockinterface, id, blockinterface_onblockrequest);
 
 }
 

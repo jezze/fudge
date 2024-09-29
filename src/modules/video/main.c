@@ -89,7 +89,7 @@ void video_registerinterface(struct video_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
+    interface->ichannel = kernel_announce(0, interface, place);
 
 }
 
@@ -101,13 +101,12 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*onvideocmap)(unsigned int source, unsigned int count, void *data), unsigned int (*onvideoconf)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int (*onvideocmap)(unsigned int source, unsigned int count, void *data), unsigned int (*onvideoconf)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;

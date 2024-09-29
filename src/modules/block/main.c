@@ -72,7 +72,7 @@ void block_registerinterface(struct block_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(interface->ichannel, interface, place);
+    interface->ichannel = kernel_announce(0, interface, place);
 
 }
 
@@ -84,13 +84,12 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int ichannel, unsigned int (*onblockrequest)(unsigned int count, unsigned int sector))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockrequest)(unsigned int count, unsigned int sector))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->ichannel = ichannel;
     interface->onblockrequest = onblockrequest;
 
 }

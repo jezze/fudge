@@ -68,7 +68,7 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 400, videointerface_onvideocmap, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_onvideocmap, videointerface_onvideoconf);
 
 }
 

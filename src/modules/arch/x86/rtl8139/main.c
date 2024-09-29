@@ -298,7 +298,7 @@ static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, 108, ethernetinterface_oninfo, ethernetinterface_ondata);
+    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, ethernetinterface_ondata);
 
 }
 

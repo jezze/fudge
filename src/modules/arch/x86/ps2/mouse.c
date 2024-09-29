@@ -118,7 +118,7 @@ static void handleirq(unsigned int irq)
 static void driver_init(unsigned int id)
 {
 
-    mouse_initinterface(&mouseinterface, id, 124);
+    mouse_initinterface(&mouseinterface, id);
 
 }
 

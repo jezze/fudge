@@ -18,6 +18,7 @@ struct channel
 
 };
 
+static unsigned int channelcount = 200;
 static struct channel channels[KERNEL_CHANNELS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
@@ -396,7 +397,7 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
 unsigned int kernel_announce(unsigned int ichannel, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
-    struct channel *channel = getchannel(ichannel);
+    struct channel *channel = (ichannel) ? getchannel(ichannel) : getchannel(++channelcount);
 
     if (channel)
     {
@@ -408,7 +409,7 @@ unsigned int kernel_announce(unsigned int ichannel, void *interface, unsigned in
 
     }
 
-    return ichannel;
+    return (ichannel) ? ichannel : channelcount;
 
 }
 
