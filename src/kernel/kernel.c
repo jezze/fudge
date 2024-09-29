@@ -18,7 +18,7 @@ struct channel
 
 };
 
-static unsigned int channelcount = 200;
+static unsigned int channelcount = 100;
 static struct channel channels[KERNEL_CHANNELS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
@@ -413,25 +413,6 @@ unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interf
 
 }
 
-static unsigned int announcetask(unsigned int itask, void *interface)
-{
-
-    struct channel *channel = getchannel(++channelcount);
-
-    if (channel)
-    {
-
-        list_init(&channel->links);
-
-        channel->interface = interface;
-        channel->place = placetask;
-
-    }
-
-    return channelcount;
-
-}
-
 void kernel_unannounce(unsigned int ichannel)
 {
 
@@ -527,7 +508,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            task->ichannel = announcetask(itask, task);
+            task->ichannel = kernel_announce(task, placetask);
 
             coreassign(&taskrow->item);
 
