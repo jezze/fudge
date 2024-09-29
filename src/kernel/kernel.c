@@ -394,10 +394,10 @@ unsigned int kernel_find(unsigned int source, unsigned int count, char *name)
 
 }
 
-unsigned int kernel_announce(unsigned int ichannel, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
 {
 
-    struct channel *channel = (ichannel) ? getchannel(ichannel) : getchannel(++channelcount);
+    struct channel *channel = getchannel(++channelcount);
 
     if (channel)
     {
@@ -409,7 +409,26 @@ unsigned int kernel_announce(unsigned int ichannel, void *interface, unsigned in
 
     }
 
-    return (ichannel) ? ichannel : channelcount;
+    return channelcount;
+
+}
+
+static unsigned int announcetask(unsigned int itask, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+{
+
+    struct channel *channel = getchannel(itask);
+
+    if (channel)
+    {
+
+        list_init(&channel->links);
+
+        channel->interface = interface;
+        channel->place = place;
+
+    }
+
+    return itask;
 
 }
 
@@ -508,7 +527,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            task->ichannel = kernel_announce(itask, task, placetask);
+            task->ichannel = announcetask(itask, task, placetask);
 
             coreassign(&taskrow->item);
 

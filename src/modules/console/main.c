@@ -74,7 +74,7 @@ void console_registerinterface(struct console_interface *interface)
 
     resource_register(&interface->resource);
 
-    interface->ichannel = kernel_announce(0, interface, place);
+    interface->ichannel = kernel_announce(interface, place);
 
 }
 

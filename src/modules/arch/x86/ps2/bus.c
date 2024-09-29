@@ -364,7 +364,7 @@ void module_register(void)
 
     base_registerbus(&bus);
 
-    ichannel = kernel_announce(0, 0, place);
+    ichannel = kernel_announce(0, place);
 
 }
 

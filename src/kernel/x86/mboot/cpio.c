@@ -430,7 +430,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     service_init(&service, "initrd", service_match);
     resource_register(&service.resource);
 
-    ichannel = kernel_announce(0, 0, place);
+    ichannel = kernel_announce(0, place);
 
 }
 
