@@ -349,7 +349,7 @@ unsigned int kernel_pick(unsigned int itask, struct message *message, unsigned i
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(struct node *node, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -358,14 +358,14 @@ unsigned int kernel_place(unsigned int source, unsigned int ichannel, unsigned i
     {
 
     case EVENT_LINK:
-        return kernel_link(ichannel, source);
+        return kernel_link(ichannel, node->ichannel);
 
     case EVENT_UNLINK:
-        return kernel_unlink(ichannel, source);
+        return kernel_unlink(ichannel, node->ichannel);
 
     }
 
-    return (channel && channel->place) ? channel->place(channel->interface, ichannel, source, event, count, data) : 0;
+    return (channel && channel->place) ? channel->place(channel->interface, ichannel, node->ichannel, event, count, data) : 0;
 
 }
 
@@ -374,7 +374,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 
     struct task *task = gettask(itask);
 
-    return kernel_place(task->node.ichannel, ichannel, event, count, data);
+    return kernel_place(&task->node, ichannel, event, count, data);
 
 }
 
@@ -469,7 +469,7 @@ void kernel_notify(struct node *node, unsigned int event, unsigned int count, vo
             struct linkrow *linkrow = current->data;
             struct link *link = &linkrow->link;
 
-            kernel_place(node->ichannel, link->target, event, count, data);
+            kernel_place(node, link->target, event, count, data);
 
         }
 
