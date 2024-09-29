@@ -413,7 +413,7 @@ unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interf
 
 }
 
-static unsigned int announcetask(unsigned int itask, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+static unsigned int announcetask(unsigned int itask, void *interface)
 {
 
     struct channel *channel = getchannel(itask);
@@ -424,7 +424,7 @@ static unsigned int announcetask(unsigned int itask, void *interface, unsigned i
         list_init(&channel->links);
 
         channel->interface = interface;
-        channel->place = place;
+        channel->place = placetask;
 
     }
 
@@ -527,7 +527,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            task->ichannel = announcetask(itask, task, placetask);
+            task->ichannel = announcetask(itask, task);
 
             coreassign(&taskrow->item);
 
