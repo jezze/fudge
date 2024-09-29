@@ -153,7 +153,7 @@ static unsigned int placetask(void *interface, unsigned int ichannel, unsigned i
 
         status = mailbox_place(mailbox, &message, data);
 
-        kernel_signal(task->id, TASK_SIGNAL_UNBLOCK);
+        task_signal(task, TASK_SIGNAL_UNBLOCK);
 
         return status;
 
@@ -341,7 +341,7 @@ unsigned int kernel_pick(unsigned int itask, struct message *message, unsigned i
     unsigned int status = mailbox_pick(mailbox, message, count, data);
 
     if (status == MESSAGE_RETRY)
-        kernel_signal(itask, TASK_SIGNAL_BLOCK);
+        task_signal(task, TASK_SIGNAL_BLOCK);
 
     return status;
 
