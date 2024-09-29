@@ -169,7 +169,7 @@ static unsigned int place(unsigned int itask, void *stack)
     struct {void *caller; unsigned int ichannel; unsigned int event; unsigned int count; void *data;} *args = stack;
 
     if (checkzerobuffer(itask, args->data, args->count))
-        return kernel_place(itask, args->ichannel, args->event, args->count, args->data);
+        return kernel_place2(itask, args->ichannel, args->event, args->count, args->data);
 
     DEBUG_FMT0(DEBUG_ERROR, "place check failed");
 
