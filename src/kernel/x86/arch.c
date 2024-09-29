@@ -440,9 +440,13 @@ void arch_setup2(unsigned int address)
     if (ntask)
     {
 
+        unsigned int ichannel;
+
         initmap(ntask);
-        kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
-        kernel_place(0, ntask, EVENT_MAIN, 0, 0);
+
+        ichannel = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
+
+        kernel_place2(ntask, ichannel, EVENT_MAIN, 0, 0);
 
     }
 

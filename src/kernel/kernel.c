@@ -416,7 +416,7 @@ unsigned int kernel_announce(void *interface, unsigned int (*place)(void *interf
 static unsigned int announcetask(unsigned int itask, void *interface)
 {
 
-    struct channel *channel = getchannel(itask);
+    struct channel *channel = getchannel(++channelcount);
 
     if (channel)
     {
@@ -428,7 +428,7 @@ static unsigned int announcetask(unsigned int itask, void *interface)
 
     }
 
-    return itask;
+    return channelcount;
 
 }
 
