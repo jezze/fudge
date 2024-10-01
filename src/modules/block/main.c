@@ -39,14 +39,14 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 
 }
 
-static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_BLOCKREQUEST:
-        return onblockrequest(interface, source, count, data);
+        return onblockrequest(interface, node->ichannel, count, data);
 
     }
 

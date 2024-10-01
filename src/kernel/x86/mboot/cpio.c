@@ -391,29 +391,29 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *node, void *interface, unsigned int id, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_MAPREQUEST:
-        return onmaprequest(source, count, data);
+        return onmaprequest(node->ichannel, count, data);
 
     case EVENT_WALKREQUEST:
-        return onwalkrequest(source, count, data);
+        return onwalkrequest(node->ichannel, count, data);
 
     case EVENT_STATREQUEST:
-        return onstatrequest(source, count, data);
+        return onstatrequest(node->ichannel, count, data);
 
     case EVENT_LISTREQUEST:
-        return onlistrequest(source, count, data);
+        return onlistrequest(node->ichannel, count, data);
 
     case EVENT_READREQUEST:
-        return onreadrequest(source, count, data);
+        return onreadrequest(node->ichannel, count, data);
 
     case EVENT_WRITEREQUEST:
-        return onwriterequest(source, count, data);
+        return onwriterequest(node->ichannel, count, data);
 
     }
 

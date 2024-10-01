@@ -46,17 +46,17 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_VIDEOCMAP:
-        return onvideocmap(interface, source, count, data);
+        return onvideocmap(interface, node->ichannel, count, data);
 
     case EVENT_VIDEOCONF:
-        return onvideoconf(interface, source, count, data);
+        return onvideoconf(interface, node->ichannel, count, data);
 
     }
 

@@ -335,7 +335,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int place(void *interface, unsigned int id, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *node, void *interface, unsigned int id, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)

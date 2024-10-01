@@ -15,7 +15,7 @@ struct channel
 
     void *interface;
     struct list links;
-    unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
+    unsigned int (*place)(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 
 };
 
@@ -138,7 +138,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placetask(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int placetask(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     struct task *task = interface;
@@ -151,7 +151,7 @@ static unsigned int placetask(void *interface, unsigned int ichannel, unsigned i
         struct message message;
         unsigned int status;
 
-        message_init(&message, event, source, count);
+        message_init(&message, event, node->ichannel, count);
 
         status = mailbox_place(mailbox, &message, data);
 
@@ -365,7 +365,7 @@ unsigned int kernel_place(struct node *node, unsigned int ichannel, unsigned int
 
     }
 
-    return (channel && channel->place) ? channel->place(channel->interface, ichannel, node->ichannel, event, count, data) : 0;
+    return (channel && channel->place) ? channel->place(node, channel->interface, ichannel, event, count, data) : 0;
 
 }
 
@@ -405,7 +405,7 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 
 }
 
-unsigned int kernel_announce(struct node *node, void *interface, unsigned int (*place)(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_announce(struct node *node, void *interface, unsigned int (*place)(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data))
 {
 
     unsigned int ichannel = ++channelcount;

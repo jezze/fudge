@@ -45,7 +45,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
 }
 
-static unsigned int place(void *interface, unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -55,7 +55,7 @@ static unsigned int place(void *interface, unsigned int ichannel, unsigned int s
         return ondata(interface, data, count);
 
     case EVENT_INFO:
-        return oninfo(interface, source);
+        return oninfo(interface, node->ichannel);
 
     }
 
