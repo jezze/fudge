@@ -410,15 +410,6 @@ unsigned int kernel_announce(struct node *target)
 void kernel_unannounce(struct node *target)
 {
 
-    struct channel *channel = getchannel(target->ichannel);
-
-    if (channel)
-    {
-
-        channel->target = 0;
-
-    }
-
 }
 
 void kernel_unannouncetask(unsigned int itask)
