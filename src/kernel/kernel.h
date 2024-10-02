@@ -6,18 +6,16 @@
 
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
-unsigned int kernel_link(unsigned int ichannel, unsigned int target);
-unsigned int kernel_unlink(unsigned int ichannel, unsigned int target);
 unsigned int kernel_schedule(struct core *core);
 unsigned int kernel_codebase(unsigned int itask, unsigned int address);
 unsigned int kernel_loadprogram(unsigned int itask);
 void kernel_signal(unsigned int itask, unsigned int signal);
 struct task_thread *kernel_getthread(unsigned int itask);
 unsigned int kernel_pick(unsigned int itask, struct message *message, unsigned int count, void *data);
-unsigned int kernel_place(struct node *node, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
+unsigned int kernel_place(struct node *source, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_find(unsigned int itask, unsigned int count, char *name);
-unsigned int kernel_announce(struct node *node, void *interface, unsigned int (*place)(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data));
+unsigned int kernel_announce(struct node *target);
 void kernel_unannounce(struct node *node);
 void kernel_unannouncetask(unsigned int itask);
 void kernel_notify(struct node *node, unsigned int event, unsigned int count, void *data);

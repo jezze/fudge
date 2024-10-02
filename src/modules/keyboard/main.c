@@ -56,7 +56,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node, interface, 0);
+    kernel_announce(&interface->node);
 
 }
 
@@ -72,7 +72,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
-    node_init(&interface->node);
+    node_init(&interface->node, interface, 0);
 
     interface->id = id;
 

@@ -45,17 +45,17 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
 }
 
-static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_DATA:
-        return ondata(interface, data, count);
+        return ondata(target->interface, data, count);
 
     case EVENT_INFO:
-        return oninfo(interface, node->ichannel);
+        return oninfo(target->interface, source->ichannel);
 
     }
 
@@ -74,7 +74,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node, interface, place);
+    kernel_announce(&interface->node);
 
 }
 
@@ -90,7 +90,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    node_init(&interface->node);
+    node_init(&interface->node, interface, place);
 
     interface->id = id;
     interface->oninfo = oninfo;

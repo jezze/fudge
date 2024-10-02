@@ -39,14 +39,14 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 
 }
 
-static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_BLOCKREQUEST:
-        return onblockrequest(interface, node->ichannel, count, data);
+        return onblockrequest(target->interface, source->ichannel, count, data);
 
     }
 
@@ -65,7 +65,7 @@ void block_registerinterface(struct block_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node, interface, place);
+    kernel_announce(&interface->node);
 
 }
 
@@ -81,7 +81,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    node_init(&interface->node);
+    node_init(&interface->node, interface, place);
 
     interface->id = id;
     interface->onblockrequest = onblockrequest;

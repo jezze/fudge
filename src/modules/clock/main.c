@@ -37,14 +37,14 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
 
 }
 
-static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_INFO:
-        return oninfo(interface, node->ichannel);
+        return oninfo(target->interface, source->ichannel);
 
     }
 
@@ -56,7 +56,7 @@ void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node, interface, place);
+    kernel_announce(&interface->node);
 
 }
 
@@ -72,7 +72,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    node_init(&interface->node);
+    node_init(&interface->node, interface, place);
 
     interface->id = id;
     interface->oninfo = oninfo;

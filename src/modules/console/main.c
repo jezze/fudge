@@ -37,14 +37,14 @@ static unsigned int ondata(struct console_interface *interface, void *data, unsi
 
 }
 
-static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_DATA:
-        return ondata(interface, data, count);
+        return ondata(target->interface, data, count);
 
     }
 
@@ -67,7 +67,7 @@ void console_registerinterface(struct console_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node, interface, place);
+    kernel_announce(&interface->node);
 
 }
 
@@ -83,7 +83,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    node_init(&interface->node);
+    node_init(&interface->node, interface, place);
 
     interface->id = id;
     interface->ondata = ondata;

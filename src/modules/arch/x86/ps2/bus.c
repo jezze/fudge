@@ -335,7 +335,7 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int place(struct node *node, void *interface, unsigned int id, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int id, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -356,6 +356,7 @@ void module_init(void)
 {
 
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
+    node_init(&node, 0, place);
 
 }
 
@@ -363,7 +364,7 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    kernel_announce(&node, 0, place);
+    kernel_announce(&node);
 
 }
 

@@ -13,9 +13,7 @@
 struct channel
 {
 
-    void *interface;
-    struct list links;
-    unsigned int (*place)(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
+    struct node *target;
 
 };
 
@@ -138,20 +136,20 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placetask(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int placetask(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    struct task *task = interface;
-    struct channel *channel = getchannel(task->node.ichannel);
+    struct channel *channel = getchannel(ichannel);
 
     if (channel)
     {
 
+        struct task *task = channel->target->interface;
         struct mailbox *mailbox = &mailboxes[task->id];
         struct message message;
         unsigned int status;
 
-        message_init(&message, event, node->ichannel, count);
+        message_init(&message, event, source->ichannel, count);
 
         status = mailbox_place(mailbox, &message, data);
 
@@ -200,28 +198,21 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-unsigned int kernel_link(unsigned int ichannel, unsigned int target)
+static unsigned int link(struct node *source, struct node *target)
 {
 
-    struct channel *channel = getchannel(ichannel);
+    struct list_item *linkitem = list_picktail(&freelinks);
 
-    if (channel)
+    if (linkitem)
     {
 
-        struct list_item *linkitem = list_picktail(&freelinks);
+        struct linkrow *linkrow = linkitem->data;
+        struct link *link = &linkrow->link;
 
-        if (linkitem)
-        {
+        link_init(link, target);
+        list_add(&source->links, linkitem);
 
-            struct linkrow *linkrow = linkitem->data;
-            struct link *link = &linkrow->link;
-
-            link_init(link, target);
-            list_add(&channel->links, linkitem);
-
-            return MESSAGE_OK;
-
-        }
+        return MESSAGE_OK;
 
     }
 
@@ -229,40 +220,33 @@ unsigned int kernel_link(unsigned int ichannel, unsigned int target)
 
 }
 
-unsigned int kernel_unlink(unsigned int ichannel, unsigned int target)
+static unsigned int unlink(struct node *source, struct node *target)
 {
 
-    struct channel *channel = getchannel(ichannel);
+    struct list_item *current;
+    struct list_item *next;
 
-    if (channel)
+    spinlock_acquire(&source->links.spinlock);
+
+    for (current = source->links.head; current; current = next)
     {
 
-        struct list_item *current;
-        struct list_item *next;
+        struct linkrow *linkrow = current->data;
+        struct link *link = &linkrow->link;
 
-        spinlock_acquire(&channel->links.spinlock);
+        next = current->next;
 
-        for (current = channel->links.head; current; current = next)
+        if (link->target == target)
         {
 
-            struct linkrow *linkrow = current->data;
-            struct link *link = &linkrow->link;
-
-            next = current->next;
-
-            if (link->target == target)
-            {
-
-                list_remove_unsafe(&channel->links, current);
-                list_add(&freelinks, current);
-
-            }
+            list_remove_unsafe(&source->links, current);
+            list_add(&freelinks, current);
 
         }
 
-        spinlock_release(&channel->links.spinlock);
-
     }
+
+    spinlock_release(&source->links.spinlock);
 
     return MESSAGE_OK;
 
@@ -349,7 +333,7 @@ unsigned int kernel_pick(unsigned int itask, struct message *message, unsigned i
 
 }
 
-unsigned int kernel_place(struct node *node, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(struct node *source, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     struct channel *channel = getchannel(ichannel);
@@ -358,14 +342,14 @@ unsigned int kernel_place(struct node *node, unsigned int ichannel, unsigned int
     {
 
     case EVENT_LINK:
-        return kernel_link(ichannel, node->ichannel);
+        return link(channel->target, source);
 
     case EVENT_UNLINK:
-        return kernel_unlink(ichannel, node->ichannel);
+        return unlink(channel->target, source);
 
     }
 
-    return (channel && channel->place) ? channel->place(node, channel->interface, ichannel, event, count, data) : 0;
+    return (channel && channel->target && channel->target->place) ? channel->target->place(source, channel->target, ichannel, event, count, data) : 0;
 
 }
 
@@ -405,7 +389,7 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 
 }
 
-unsigned int kernel_announce(struct node *node, void *interface, unsigned int (*place)(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_announce(struct node *target)
 {
 
     unsigned int ichannel = ++channelcount;
@@ -414,29 +398,24 @@ unsigned int kernel_announce(struct node *node, void *interface, unsigned int (*
     if (channel)
     {
 
-        list_init(&channel->links);
-
-        channel->interface = interface;
-        channel->place = place;
+        channel->target = target;
+        channel->target->ichannel = ichannel;
 
     }
 
-    return node->ichannel = ichannel;
+    return ichannel;
 
 }
 
-void kernel_unannounce(struct node *node)
+void kernel_unannounce(struct node *target)
 {
 
-    struct channel *channel = getchannel(node->ichannel);
+    struct channel *channel = getchannel(target->ichannel);
 
     if (channel)
     {
 
-        list_init(&channel->links);
-
-        channel->interface = 0;
-        channel->place = 0;
+        channel->target = 0;
 
     }
 
@@ -461,19 +440,19 @@ void kernel_notify(struct node *node, unsigned int event, unsigned int count, vo
 
         struct list_item *current;
 
-        spinlock_acquire(&channel->links.spinlock);
+        spinlock_acquire(&node->links.spinlock);
 
-        for (current = channel->links.head; current; current = current->next)
+        for (current = node->links.head; current; current = current->next)
         {
 
             struct linkrow *linkrow = current->data;
             struct link *link = &linkrow->link;
 
-            kernel_place(node, link->target, event, count, data);
+            kernel_place(node, link->target->ichannel, event, count, data);
 
         }
 
-        spinlock_release(&channel->links.spinlock);
+        spinlock_release(&node->links.spinlock);
 
     }
 
@@ -512,6 +491,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
     task->thread.ip = ip;
     task->thread.sp = sp;
     task->base = address;
+    task->node.place = placetask;
 
     if (task->base)
     {
@@ -529,7 +509,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            kernel_announce(&task->node, task, placetask);
+            kernel_announce(&task->node);
             coreassign(&taskrow->item);
 
             return task->node.ichannel;

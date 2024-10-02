@@ -79,7 +79,7 @@ void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node, interface, 0);
+    kernel_announce(&interface->node);
 
 }
 
@@ -95,7 +95,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
-    node_init(&interface->node);
+    node_init(&interface->node, interface, 0);
 
     interface->id = id;
 

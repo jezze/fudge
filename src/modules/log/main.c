@@ -25,7 +25,7 @@ void module_init(void)
 {
 
     debug_initinterface(&debuginterface, 99, debuginterface_write);
-    node_init(&node);
+    node_init(&node, &debuginterface, 0);
 
 }
 
@@ -33,7 +33,7 @@ void module_register(void)
 {
 
     debug_registerinterface(&debuginterface);
-    kernel_announce(&node, 0, 0);
+    kernel_announce(&node);
 
 }
 

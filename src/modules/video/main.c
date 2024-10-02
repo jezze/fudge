@@ -46,17 +46,17 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-static unsigned int place(struct node *node, void *interface, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_VIDEOCMAP:
-        return onvideocmap(interface, node->ichannel, count, data);
+        return onvideocmap(target->interface, source->ichannel, count, data);
 
     case EVENT_VIDEOCONF:
-        return onvideoconf(interface, node->ichannel, count, data);
+        return onvideoconf(target->interface, source->ichannel, count, data);
 
     }
 
@@ -82,7 +82,7 @@ void video_registerinterface(struct video_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node, interface, place);
+    kernel_announce(&interface->node);
 
 }
 
@@ -98,7 +98,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    node_init(&interface->node);
+    node_init(&interface->node, interface, place);
 
     interface->id = id;
     interface->width = 0;

@@ -100,10 +100,10 @@ void timer_registerinterface(struct timer_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node1, interface, 0);
-    kernel_announce(&interface->node10, interface, 0);
-    kernel_announce(&interface->node100, interface, 0);
-    kernel_announce(&interface->node1000, interface, 0);
+    kernel_announce(&interface->node1);
+    kernel_announce(&interface->node10);
+    kernel_announce(&interface->node100);
+    kernel_announce(&interface->node1000);
 
 }
 
@@ -122,10 +122,10 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    node_init(&interface->node1);
-    node_init(&interface->node10);
-    node_init(&interface->node100);
-    node_init(&interface->node1000);
+    node_init(&interface->node1, interface, 0);
+    node_init(&interface->node10, interface, 0);
+    node_init(&interface->node100, interface, 0);
+    node_init(&interface->node1000, interface, 0);
 
     interface->id = id;
 

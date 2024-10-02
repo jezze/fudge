@@ -391,29 +391,29 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int place(struct node *node, void *interface, unsigned int id, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_MAPREQUEST:
-        return onmaprequest(node->ichannel, count, data);
+        return onmaprequest(source->ichannel, count, data);
 
     case EVENT_WALKREQUEST:
-        return onwalkrequest(node->ichannel, count, data);
+        return onwalkrequest(source->ichannel, count, data);
 
     case EVENT_STATREQUEST:
-        return onstatrequest(node->ichannel, count, data);
+        return onstatrequest(source->ichannel, count, data);
 
     case EVENT_LISTREQUEST:
-        return onlistrequest(node->ichannel, count, data);
+        return onlistrequest(source->ichannel, count, data);
 
     case EVENT_READREQUEST:
-        return onreadrequest(node->ichannel, count, data);
+        return onreadrequest(source->ichannel, count, data);
 
     case EVENT_WRITEREQUEST:
-        return onwriterequest(node->ichannel, count, data);
+        return onwriterequest(source->ichannel, count, data);
 
     }
 
@@ -427,10 +427,10 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
+    node_init(&node, 0, place);
     service_init(&service, "initrd", service_match);
     service_register(&service);
-
-    kernel_announce(&node, 0, place);
+    kernel_announce(&node);
 
 }
 
