@@ -430,31 +430,24 @@ void kernel_unannouncetask(unsigned int itask)
 
 }
 
-void kernel_notify(struct node *node, unsigned int event, unsigned int count, void *data)
+void kernel_notify(struct node *source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct channel *channel = getchannel(node->ichannel);
+    struct list_item *current;
 
-    if (channel)
+    spinlock_acquire(&source->links.spinlock);
+
+    for (current = source->links.head; current; current = current->next)
     {
 
-        struct list_item *current;
+        struct linkrow *linkrow = current->data;
+        struct link *link = &linkrow->link;
 
-        spinlock_acquire(&node->links.spinlock);
-
-        for (current = node->links.head; current; current = current->next)
-        {
-
-            struct linkrow *linkrow = current->data;
-            struct link *link = &linkrow->link;
-
-            kernel_place(node, link->target->ichannel, event, count, data);
-
-        }
-
-        spinlock_release(&node->links.spinlock);
+        kernel_place(source, link->target->ichannel, event, count, data);
 
     }
+
+    spinlock_release(&source->links.spinlock);
 
 }
 
