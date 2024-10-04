@@ -466,10 +466,10 @@ unsigned int kernel_createtask(void)
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned int ip, unsigned int sp, unsigned int address)
 {
 
-    struct taskrow *taskrow = &taskrows[itask];
+    struct taskrow *taskrow = &taskrows[ntask];
     struct task *task = &taskrow->task;
 
     task->thread.ip = ip;

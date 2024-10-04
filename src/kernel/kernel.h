@@ -20,5 +20,5 @@ void kernel_unannounce(struct node *node);
 void kernel_unannouncetask(unsigned int itask);
 void kernel_notify(struct node *node, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
-unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address);
+unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned int ip, unsigned int sp, unsigned int address);
 void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize);
