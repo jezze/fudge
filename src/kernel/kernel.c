@@ -425,10 +425,13 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
             {
 
                 struct task *task = gettask(itask);
+                struct link *tlink = 0;
 
                 link(&task->node, node, 0);
 
-                return (unsigned int)node;
+                tlink = findlink(&task->node, node);
+
+                return (unsigned int)tlink->target;
 
             }
         }
