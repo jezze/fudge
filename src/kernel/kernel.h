@@ -1,7 +1,6 @@
 #define KERNEL_TASKS                    64
 #define KERNEL_LINKS                    1024
 #define KERNEL_MAILBOXES                512
-#define KERNEL_CHANNELS                 4096
 
 struct core *kernel_getcore(void);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
