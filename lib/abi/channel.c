@@ -181,7 +181,7 @@ unsigned int channel_pick(struct message *message, unsigned int count, void *dat
     while (state != CHANNEL_STATE_CLOSED)
     {
 
-        if (call_pick(message, count, data) == MESSAGE_OK)
+        if (call_pick(0, message, count, data) == MESSAGE_OK)
             return message->event;
 
     }

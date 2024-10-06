@@ -18,6 +18,7 @@ struct channel
 };
 
 static unsigned int channelcount;
+static unsigned int mailboxcount;
 static struct channel channels[KERNEL_CHANNELS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
@@ -54,6 +55,24 @@ static struct task *gettask(unsigned int itask)
 {
 
     return (itask && itask < KERNEL_TASKS) ? &taskrows[itask].task : 0;
+
+}
+
+static struct mailbox *getmailbox(struct task *task, unsigned int index)
+{
+
+    struct list_item *current = task->node.links.head;
+
+    if (current)
+    {
+
+        struct link *link = current->data;
+
+        return link->mailbox;
+
+    }
+
+    return 0;
 
 }
 
@@ -145,7 +164,7 @@ static unsigned int placetask(struct node *source, struct node *target, unsigned
     {
 
         struct task *task = channel->target->interface;
-        struct mailbox *mailbox = &mailboxes[task->id];
+        struct mailbox *mailbox = getmailbox(task, 0);
         struct message message;
         unsigned int status;
 
@@ -198,7 +217,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-static unsigned int link(struct node *source, struct node *target)
+static unsigned int link(struct node *source, struct node *target, struct mailbox *mailbox)
 {
 
     struct list_item *linkitem = list_picktail(&freelinks);
@@ -209,7 +228,7 @@ static unsigned int link(struct node *source, struct node *target)
         struct linkrow *linkrow = linkitem->data;
         struct link *link = &linkrow->link;
 
-        link_init(link, target);
+        link_init(link, target, mailbox);
         list_add(&source->links, linkitem);
 
         return MESSAGE_OK;
@@ -319,11 +338,11 @@ struct task_thread *kernel_getthread(unsigned int itask)
 
 }
 
-unsigned int kernel_pick(unsigned int itask, struct message *message, unsigned int count, void *data)
+unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
-    struct mailbox *mailbox = &mailboxes[task->id];
+    struct mailbox *mailbox = getmailbox(task, 0);
     unsigned int status = mailbox_pick(mailbox, message, count, data);
 
     if (status == MESSAGE_RETRY)
@@ -342,7 +361,7 @@ unsigned int kernel_place(struct node *source, unsigned int ichannel, unsigned i
     {
 
     case EVENT_LINK:
-        return link(channel->target, source);
+        return link(channel->target, source, 0);
 
     case EVENT_UNLINK:
         return unlink(channel->target, source);
@@ -452,10 +471,8 @@ unsigned int kernel_createtask(void)
 
         struct taskrow *taskrow = taskitem->data;
         struct task *task = &taskrow->task;
-        struct mailbox *mailbox = &mailboxes[task->id];
 
         task_reset(task);
-        mailbox_reset(mailbox);
 
         if (task_transition(task, TASK_STATE_NEW))
             return task->id;
@@ -493,6 +510,25 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
+            if (itask)
+            {
+
+                struct taskrow *parentrow = &taskrows[itask];
+                struct task *parent = &parentrow->task;
+
+                link(&parent->node, &task->node, &mailboxes[++mailboxcount]);
+                link(&task->node, &parent->node, &mailboxes[++mailboxcount]);
+
+            }
+
+            else
+            {
+
+                link(&task->node, &task->node, &mailboxes[++mailboxcount]);
+
+            }
+
+            mailbox_reset(getmailbox(task, 0));
             kernel_announce(&task->node);
             coreassign(&taskrow->item);
 
@@ -555,7 +591,6 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
         struct linkrow *linkrow = &linkrows[i];
 
-        link_init(&linkrow->link, 0);
         list_inititem(&linkrow->item, linkrow);
         list_add(&freelinks, &linkrow->item);
 

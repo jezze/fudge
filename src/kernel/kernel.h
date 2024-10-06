@@ -10,7 +10,7 @@ unsigned int kernel_codebase(unsigned int itask, unsigned int address);
 unsigned int kernel_loadprogram(unsigned int itask);
 void kernel_signal(unsigned int itask, unsigned int signal);
 struct task_thread *kernel_getthread(unsigned int itask);
-unsigned int kernel_pick(unsigned int itask, struct message *message, unsigned int count, void *data);
+unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data);
 unsigned int kernel_place(struct node *source, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_find(unsigned int itask, unsigned int count, char *name);
