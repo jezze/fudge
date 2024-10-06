@@ -58,21 +58,36 @@ static struct task *gettask(unsigned int itask)
 
 }
 
-static struct mailbox *getmailbox(struct task *task, unsigned int index)
+static struct link *getlink(struct node *node, unsigned int index)
 {
 
-    struct list_item *current = task->node.links.head;
+    struct list_item *current;
+    unsigned int i = 0;
 
-    if (current)
+    for (current = node->links.head; current; current = current->next)
     {
 
-        struct link *link = current->data;
+        if (i == index)
+        {
 
-        return link->mailbox;
+            struct link *link = current->data;
+
+            return link;
+
+        }
 
     }
 
     return 0;
+
+}
+
+static struct mailbox *getmailbox(struct node *node, unsigned int index)
+{
+
+    struct link *link = getlink(node, index);
+
+    return (link) ? link->mailbox : 0;
 
 }
 
@@ -159,7 +174,7 @@ static unsigned int placetask(struct node *source, struct node *target, unsigned
 {
 
     struct task *task = target->interface;
-    struct mailbox *mailbox = getmailbox(task, 0);
+    struct mailbox *mailbox = getmailbox(&task->node, 0);
     struct message message;
     unsigned int status;
 
@@ -333,7 +348,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
 {
 
     struct task *task = gettask(itask);
-    struct mailbox *mailbox = getmailbox(task, 0);
+    struct mailbox *mailbox = getmailbox(&task->node, 0);
     unsigned int status = mailbox_pick(mailbox, message, count, data);
 
     if (status == MESSAGE_RETRY)
@@ -519,7 +534,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
 
             }
 
-            mailbox_reset(getmailbox(task, 0));
+            mailbox_reset(getmailbox(&task->node, 0));
             kernel_announce(&task->node);
             coreassign(&taskrow->item);
 
