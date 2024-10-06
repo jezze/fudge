@@ -361,20 +361,18 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
 unsigned int kernel_place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    struct channel *channel = getchannel(ichannel);
-
     switch (event)
     {
 
     case EVENT_LINK:
-        return link(channel->target, source, getmailbox(source->interface, 0));
+        return link(target, source, getmailbox(source->interface, 0));
 
     case EVENT_UNLINK:
-        return unlink(channel->target, source);
+        return unlink(target, source);
 
     }
 
-    return (channel && channel->target && channel->target->place) ? channel->target->place(source, channel->target, ichannel, event, count, data) : 0;
+    return (target && target->place) ? target->place(source, target, ichannel, event, count, data) : 0;
 
 }
 
