@@ -158,27 +158,18 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 static unsigned int placetask(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
 {
 
-    struct channel *channel = getchannel(ichannel);
+    struct task *task = target->interface;
+    struct mailbox *mailbox = getmailbox(task, 0);
+    struct message message;
+    unsigned int status;
 
-    if (channel)
-    {
+    message_init(&message, event, source->ichannel, count);
 
-        struct task *task = channel->target->interface;
-        struct mailbox *mailbox = getmailbox(task, 0);
-        struct message message;
-        unsigned int status;
+    status = mailbox_place(mailbox, &message, data);
 
-        message_init(&message, event, source->ichannel, count);
+    task_signal(task, TASK_SIGNAL_UNBLOCK);
 
-        status = mailbox_place(mailbox, &message, data);
-
-        task_signal(task, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
+    return status;
 
 }
 
@@ -361,7 +352,7 @@ unsigned int kernel_place(struct node *source, unsigned int ichannel, unsigned i
     {
 
     case EVENT_LINK:
-        return link(channel->target, source, 0);
+        return link(channel->target, source, getmailbox(source->interface, 0));
 
     case EVENT_UNLINK:
         return unlink(channel->target, source);
