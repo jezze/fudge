@@ -157,18 +157,26 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 static unsigned int placetask(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct task *task = target->interface;
-    struct mailbox *mailbox = getmailbox(&task->node, 0);
-    struct message message;
-    unsigned int status;
+    struct mailbox *mailbox = getmailbox(target, 0);
 
-    message_init(&message, event, (unsigned int)source, count);
+    if (mailbox)
+    {
 
-    status = mailbox_place(mailbox, &message, data);
+        struct task *task = target->interface;
+        struct message message;
+        unsigned int status;
 
-    task_signal(task, TASK_SIGNAL_UNBLOCK);
+        message_init(&message, event, (unsigned int)source, count);
 
-    return status;
+        status = mailbox_place(mailbox, &message, data);
+
+        task_signal(task, TASK_SIGNAL_UNBLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
