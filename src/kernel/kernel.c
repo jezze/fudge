@@ -45,16 +45,16 @@ static struct task *gettask(unsigned int itask)
 static struct link *getlink(struct node *source, unsigned int index)
 {
 
-    struct list_item *linkitem;
+    struct list_item *linkrowitem;
     unsigned int i = 0;
 
-    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
+    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
     {
 
         if (i == index)
         {
 
-            struct linkrow *linkrow = linkitem->data;
+            struct linkrow *linkrow = linkrowitem->data;
 
             return &linkrow->link;
 
@@ -78,18 +78,18 @@ static struct mailbox *getmailbox(struct node *node, unsigned int index)
 static void unblocktasks(void)
 {
 
-    struct list_item *taskitem;
+    struct list_item *taskrowitem;
     struct list_item *next;
 
     spinlock_acquire(&blockedtasks.spinlock);
 
-    for (taskitem = blockedtasks.head; taskitem; taskitem = next)
+    for (taskrowitem = blockedtasks.head; taskrowitem; taskrowitem = next)
     {
 
-        struct taskrow *taskrow = taskitem->data;
+        struct taskrow *taskrow = taskrowitem->data;
         struct task *task = &taskrow->task;
 
-        next = taskitem->next;
+        next = taskrowitem->next;
 
         if (task->signals.unblocks)
         {
@@ -97,10 +97,10 @@ static void unblocktasks(void)
             if (task_transition(task, TASK_STATE_UNBLOCKED))
             {
 
-                list_remove_unsafe(&blockedtasks, taskitem);
+                list_remove_unsafe(&blockedtasks, taskrowitem);
 
                 if (task_transition(task, TASK_STATE_ASSIGNED))
-                    coreassign(taskitem);
+                    coreassign(taskrowitem);
 
             }
 
@@ -183,12 +183,12 @@ static unsigned int placetask(struct node *source, struct node *target, unsigned
 static unsigned int picknewtask(struct core *core)
 {
 
-    struct list_item *taskitem = list_picktail(&core->tasks);
+    struct list_item *taskrowitem = list_picktail(&core->tasks);
 
-    if (taskitem)
+    if (taskrowitem)
     {
 
-        struct taskrow *taskrow = taskitem->data;
+        struct taskrow *taskrow = taskrowitem->data;
         struct task *task = &taskrow->task;
 
         if (task_transition(task, TASK_STATE_RUNNING))
@@ -218,16 +218,16 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 static unsigned int link(struct node *source, struct node *target, struct mailbox *mailbox)
 {
 
-    struct list_item *linkitem = list_picktail(&freelinks);
+    struct list_item *linkrowitem = list_picktail(&freelinks);
 
-    if (linkitem)
+    if (linkrowitem)
     {
 
-        struct linkrow *linkrow = linkitem->data;
+        struct linkrow *linkrow = linkrowitem->data;
         struct link *link = &linkrow->link;
 
         link_init(link, target, mailbox);
-        list_add(&source->links, linkitem);
+        list_add(&source->links, linkrowitem);
 
         return MESSAGE_OK;
 
@@ -240,24 +240,24 @@ static unsigned int link(struct node *source, struct node *target, struct mailbo
 static unsigned int unlink(struct node *source, struct node *target)
 {
 
-    struct list_item *linkitem;
+    struct list_item *linkrowitem;
     struct list_item *next;
 
     spinlock_acquire(&source->links.spinlock);
 
-    for (linkitem = source->links.head; linkitem; linkitem = next)
+    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = next)
     {
 
-        struct linkrow *linkrow = linkitem->data;
+        struct linkrow *linkrow = linkrowitem->data;
         struct link *link = &linkrow->link;
 
-        next = linkitem->next;
+        next = linkrowitem->next;
 
         if (link->target == target)
         {
 
-            list_remove_unsafe(&source->links, linkitem);
-            list_add(&freelinks, linkitem);
+            list_remove_unsafe(&source->links, linkrowitem);
+            list_add(&freelinks, linkrowitem);
 
         }
 
@@ -388,12 +388,12 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 {
 
-    struct resource *current = 0;
+    struct resource *resourceitem = 0;
 
-    while ((current = resource_foreachtype(current, RESOURCE_SERVICE)))
+    while ((resourceitem = resource_foreachtype(resourceitem, RESOURCE_SERVICE)))
     {
 
-        struct service *service = current->data;
+        struct service *service = resourceitem->data;
         unsigned int length = cstring_length(service->name);
 
         if (count >= length && buffer_match(name, service->name, length))
@@ -422,14 +422,14 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 void kernel_notify(struct node *source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct list_item *linkitem;
+    struct list_item *linkrowitem;
 
     spinlock_acquire(&source->links.spinlock);
 
-    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
+    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
     {
 
-        struct linkrow *linkrow = linkitem->data;
+        struct linkrow *linkrow = linkrowitem->data;
         struct link *link = &linkrow->link;
 
         kernel_place(source, link->target, event, count, data);
@@ -443,12 +443,12 @@ void kernel_notify(struct node *source, unsigned int event, unsigned int count, 
 unsigned int kernel_createtask(void)
 {
 
-    struct list_item *taskitem = list_picktail(&deadtasks);
+    struct list_item *taskrowitem = list_picktail(&deadtasks);
 
-    if (taskitem)
+    if (taskrowitem)
     {
 
-        struct taskrow *taskrow = taskitem->data;
+        struct taskrow *taskrow = taskrowitem->data;
         struct task *task = &taskrow->task;
 
         task_reset(task);
