@@ -66,7 +66,7 @@ static struct link *getlink(struct node *source, unsigned int index)
 
 }
 
-static struct link *findlink(struct node *source, struct node *target)
+static unsigned int findlink(struct node *source, struct node *target)
 {
 
     struct list_item *linkrowitem;
@@ -78,7 +78,7 @@ static struct link *findlink(struct node *source, struct node *target)
         struct link *link = &linkrow->link;
 
         if (link->target == target)
-            return &linkrow->link;
+            return (unsigned int)link->target;
 
     }
 
@@ -425,13 +425,10 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
             {
 
                 struct task *task = gettask(itask);
-                struct link *tlink = 0;
 
                 link(&task->node, node, 0);
 
-                tlink = findlink(&task->node, node);
-
-                return (unsigned int)tlink->target;
+                return findlink(&task->node, node);
 
             }
         }
@@ -512,8 +509,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            struct link *tlink = 0;
-
             if (itask)
             {
 
@@ -525,7 +520,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
                 mailbox_reset(getmailbox(&task->node, 0));
                 coreassign(&taskrow->item);
 
-                tlink = findlink(&parent->node, &task->node);
+                return findlink(&parent->node, &task->node);
 
             }
 
@@ -536,11 +531,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
                 mailbox_reset(getmailbox(&task->node, 0));
                 coreassign(&taskrow->item);
 
-                tlink = findlink(&task->node, &task->node);
+                return findlink(&task->node, &task->node);
 
             }
 
-            return (unsigned int)tlink->target;
+            return 0;
 
         }
 
