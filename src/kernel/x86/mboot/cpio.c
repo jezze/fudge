@@ -430,7 +430,6 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     node_init(&node, 0, place);
     service_init(&service, "initrd", service_match);
     service_register(&service);
-    kernel_announce(&node);
 
 }
 

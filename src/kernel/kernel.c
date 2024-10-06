@@ -10,16 +10,7 @@
 #include "service.h"
 #include "kernel.h"
 
-struct channel
-{
-
-    struct node *target;
-
-};
-
-static unsigned int channelcount;
 static unsigned int mailboxcount;
-static struct channel channels[KERNEL_CHANNELS];
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
 static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
@@ -41,13 +32,6 @@ static void coreassign0(struct list_item *item)
 {
 
     list_add(&core0.tasks, item);
-
-}
-
-static struct channel *getchannel(unsigned int ichannel)
-{
-
-    return (ichannel && ichannel < KERNEL_CHANNELS) ? &channels[ichannel] : 0;
 
 }
 
@@ -178,7 +162,7 @@ static unsigned int placetask(struct node *source, struct node *target, unsigned
     struct message message;
     unsigned int status;
 
-    message_init(&message, event, source->ichannel, count);
+    message_init(&message, event, (unsigned int)source, count);
 
     status = mailbox_place(mailbox, &message, data);
 
@@ -380,9 +364,8 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 {
 
     struct task *task = gettask(itask);
-    struct channel *channel = getchannel(ichannel);
 
-    return (channel) ? kernel_place(&task->node, channel->target, event, count, data) : 0;
+    return (ichannel) ? kernel_place(&task->node, (struct node *)ichannel, event, count, data) : 0;
 
 }
 
@@ -403,45 +386,13 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
             struct node *node = service->match(count - length, name + length);
 
             if (node)
-                return node->ichannel;
+                return (unsigned int)node;
 
         }
 
     }
 
     return 0;
-
-}
-
-unsigned int kernel_announce(struct node *target)
-{
-
-    unsigned int ichannel = ++channelcount;
-    struct channel *channel = getchannel(ichannel);
-
-    if (channel)
-    {
-
-        channel->target = target;
-        channel->target->ichannel = ichannel;
-
-    }
-
-    return ichannel;
-
-}
-
-void kernel_unannounce(struct node *target)
-{
-
-}
-
-void kernel_unannouncetask(unsigned int itask)
-{
-
-    struct task *task = gettask(itask);
-
-    kernel_unannounce(&task->node);
 
 }
 
@@ -534,10 +485,9 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
             }
 
             mailbox_reset(getmailbox(&task->node, 0));
-            kernel_announce(&task->node);
             coreassign(&taskrow->item);
 
-            return task->node.ichannel;
+            return (unsigned int)&task->node;
 
         }
 

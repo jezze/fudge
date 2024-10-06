@@ -143,7 +143,6 @@ static unsigned int spawn(unsigned int itask, void *stack)
 static unsigned int despawn(unsigned int itask, void *stack)
 {
 
-    kernel_unannouncetask(itask);
     kernel_signal(itask, TASK_SIGNAL_KILL);
 
     return 0;

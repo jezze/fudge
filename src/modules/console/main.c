@@ -67,7 +67,6 @@ void console_registerinterface(struct console_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node);
 
 }
 
@@ -75,7 +74,6 @@ void console_unregisterinterface(struct console_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(&interface->node);
 
 }
 

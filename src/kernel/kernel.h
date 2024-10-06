@@ -14,9 +14,6 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
 unsigned int kernel_place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_find(unsigned int itask, unsigned int count, char *name);
-unsigned int kernel_announce(struct node *target);
-void kernel_unannounce(struct node *node);
-void kernel_unannouncetask(unsigned int itask);
 void kernel_notify(struct node *node, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned int ip, unsigned int sp, unsigned int address);

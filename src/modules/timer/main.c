@@ -100,10 +100,6 @@ void timer_registerinterface(struct timer_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node1);
-    kernel_announce(&interface->node10);
-    kernel_announce(&interface->node100);
-    kernel_announce(&interface->node1000);
 
 }
 
@@ -111,10 +107,6 @@ void timer_unregisterinterface(struct timer_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(&interface->node1);
-    kernel_unannounce(&interface->node10);
-    kernel_unannounce(&interface->node100);
-    kernel_unannounce(&interface->node1000);
 
 }
 

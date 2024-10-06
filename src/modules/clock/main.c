@@ -56,7 +56,6 @@ void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node);
 
 }
 
@@ -64,7 +63,6 @@ void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(&interface->node);
 
 }
 

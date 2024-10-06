@@ -79,7 +79,6 @@ void mouse_registerinterface(struct mouse_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node);
 
 }
 
@@ -87,7 +86,6 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(&interface->node);
 
 }
 

@@ -82,7 +82,6 @@ void video_registerinterface(struct video_interface *interface)
 {
 
     resource_register(&interface->resource);
-    kernel_announce(&interface->node);
 
 }
 
@@ -90,7 +89,6 @@ void video_unregisterinterface(struct video_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    kernel_unannounce(&interface->node);
 
 }
 

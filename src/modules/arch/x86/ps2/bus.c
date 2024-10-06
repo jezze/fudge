@@ -364,7 +364,6 @@ void module_register(void)
 {
 
     base_registerbus(&bus);
-    kernel_announce(&node);
 
 }
 
@@ -372,7 +371,6 @@ void module_unregister(void)
 {
 
     base_unregisterbus(&bus);
-    kernel_unannounce(&node);
 
 }
 

@@ -33,7 +33,6 @@ void module_register(void)
 {
 
     debug_registerinterface(&debuginterface);
-    kernel_announce(&node);
 
 }
 
@@ -41,7 +40,6 @@ void module_unregister(void)
 {
 
     debug_unregisterinterface(&debuginterface);
-    kernel_unannounce(&node);
 
 }
 
