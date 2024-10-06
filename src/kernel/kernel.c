@@ -188,6 +188,10 @@ static unsigned int placetask(struct node *source, struct node *target, unsigned
 
         message_init(&message, event, (unsigned int)source, count);
 
+        /*
+        message_init(&message, event, findlink(target, source), count);
+        */
+
         status = mailbox_place(mailbox, &message, data);
 
         task_signal(task, TASK_SIGNAL_UNBLOCK);
