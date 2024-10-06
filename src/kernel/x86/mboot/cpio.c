@@ -306,7 +306,7 @@ static unsigned int write(unsigned int id, void *buffer, unsigned int count, uns
 
 }
 
-static unsigned int onmaprequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onmaprequest(struct node *source, unsigned int count, void *data)
 {
 
     struct event_maprequest *maprequest = data;
@@ -315,11 +315,11 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
     message.mapresponse.session = maprequest->session;
     message.mapresponse.address = map(maprequest->id);
 
-    return kernel_place(&node, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
+    return kernel_place(&node, source, source->ichannel, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
 
 }
 
-static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onwalkrequest(struct node *source, unsigned int count, void *data)
 {
 
     struct event_walkrequest *walkrequest = data;
@@ -328,11 +328,11 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     message.walkresponse.session = walkrequest->session;
     message.walkresponse.id = walk((walkrequest->parent) ? walkrequest->parent : getroot(), (char *)(walkrequest + 1), walkrequest->length);
 
-    return kernel_place(&node, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
+    return kernel_place(&node, source, source->ichannel, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
 
 }
 
-static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onstatrequest(struct node *source, unsigned int count, void *data)
 {
 
     struct event_statrequest *statrequest = data;
@@ -341,11 +341,11 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     message.statresponse.session = statrequest->session;
     message.statresponse.nrecords = stat(statrequest->id, &message.record);
 
-    return kernel_place(&node, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
+    return kernel_place(&node, source, source->ichannel, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
 
 }
 
-static unsigned int onlistrequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onlistrequest(struct node *source, unsigned int count, void *data)
 {
 
     struct event_listrequest *listrequest = data;
@@ -354,11 +354,11 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     message.listresponse.session = listrequest->session;
     message.listresponse.nrecords = list(listrequest->id, listrequest->offset, (listrequest->nrecords > 8) ? 8 : listrequest->nrecords, message.records);
 
-    return kernel_place(&node, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+    return kernel_place(&node, source, source->ichannel, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 
 }
 
-static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onreadrequest(struct node *source, unsigned int count, void *data)
 {
 
     struct event_readrequest *readrequest = data;
@@ -367,11 +367,11 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     message.readresponse.session = readrequest->session;
     message.readresponse.count = read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
 
-    return kernel_place(&node, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+    return kernel_place(&node, source, source->ichannel, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
 
 }
 
-static unsigned int onwriterequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onwriterequest(struct node *source, unsigned int count, void *data)
 {
 
     struct event_writerequest *writerequest = data;
@@ -380,7 +380,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     message.writeresponse.session = writerequest->session;
     message.writeresponse.count = write(writerequest->id, writerequest + 1, writerequest->count, writerequest->offset);
 
-    return kernel_place(&node, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
+    return kernel_place(&node, source, source->ichannel, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
 
 }
 
@@ -398,22 +398,22 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_MAPREQUEST:
-        return onmaprequest(source->ichannel, count, data);
+        return onmaprequest(source, count, data);
 
     case EVENT_WALKREQUEST:
-        return onwalkrequest(source->ichannel, count, data);
+        return onwalkrequest(source, count, data);
 
     case EVENT_STATREQUEST:
-        return onstatrequest(source->ichannel, count, data);
+        return onstatrequest(source, count, data);
 
     case EVENT_LISTREQUEST:
-        return onlistrequest(source->ichannel, count, data);
+        return onlistrequest(source, count, data);
 
     case EVENT_READREQUEST:
-        return onreadrequest(source->ichannel, count, data);
+        return onreadrequest(source, count, data);
 
     case EVENT_WRITEREQUEST:
-        return onwriterequest(source->ichannel, count, data);
+        return onwriterequest(source, count, data);
 
     }
 

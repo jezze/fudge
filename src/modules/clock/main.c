@@ -30,7 +30,7 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int oninfo(struct clock_interface *interface, unsigned int source)
+static unsigned int oninfo(struct clock_interface *interface, struct node *source)
 {
 
     return interface->oninfo(source);
@@ -44,7 +44,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_INFO:
-        return oninfo(target->interface, source->ichannel);
+        return oninfo(target->interface, source);
 
     }
 
@@ -68,7 +68,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source))
+void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int (*oninfo)(struct node *source))
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);

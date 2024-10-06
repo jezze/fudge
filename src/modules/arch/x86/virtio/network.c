@@ -132,7 +132,7 @@ static void setfeatures(void)
 
 }
 
-static unsigned int ethernetinterface_oninfo(unsigned int source)
+static unsigned int ethernetinterface_oninfo(struct node *source)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -144,7 +144,7 @@ static unsigned int ethernetinterface_oninfo(unsigned int source)
     address[4] = io_inb(io + 0x18);
     address[5] = io_inb(io + 0x19);
 
-    kernel_place(&ethernetinterface.node, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
+    kernel_place(&ethernetinterface.node, source, source->ichannel, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
 
     return MESSAGE_OK;
 

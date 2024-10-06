@@ -42,7 +42,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int clockinterface_oninfo(unsigned int source)
+static unsigned int clockinterface_oninfo(struct node *source)
 {
 
     struct event_clockinfo clockinfo;
@@ -55,7 +55,7 @@ static unsigned int clockinterface_oninfo(unsigned int source)
     clockinfo.month = read(REG_COMMAND_MONTH);
     clockinfo.year = 2000 + read(REG_COMMAND_YEAR);
 
-    kernel_place(&clockinterface.node, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    kernel_place(&clockinterface.node, source, source->ichannel, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
     return MESSAGE_OK;
 
