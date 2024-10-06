@@ -402,8 +402,15 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
             struct node *node = service->match(count - length, name + length);
 
             if (node)
+            {
+
+                struct task *task = gettask(itask);
+
+                link(&task->node, node, 0);
+
                 return (unsigned int)node;
 
+            }
         }
 
     }
