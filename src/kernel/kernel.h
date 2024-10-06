@@ -1,5 +1,5 @@
 #define KERNEL_TASKS                    64
-#define KERNEL_LINKS                    64
+#define KERNEL_LINKS                    128
 #define KERNEL_MAILBOXES                512
 #define KERNEL_CHANNELS                 4096
 
