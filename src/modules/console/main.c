@@ -37,7 +37,7 @@ static unsigned int ondata(struct console_interface *interface, void *data, unsi
 
 }
 
-static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)

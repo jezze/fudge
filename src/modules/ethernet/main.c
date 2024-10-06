@@ -45,7 +45,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, struct node *so
 
 }
 
-static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)

@@ -170,7 +170,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placetask(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int placetask(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
     struct task *task = target->interface;
@@ -372,7 +372,7 @@ unsigned int kernel_place(struct node *source, struct node *target, unsigned int
 
     }
 
-    return (target && target->place) ? target->place(source, target, ichannel, event, count, data) : 0;
+    return (target && target->place) ? target->place(source, target, event, count, data) : 0;
 
 }
 

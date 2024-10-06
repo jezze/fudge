@@ -391,7 +391,7 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+static unsigned int place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
