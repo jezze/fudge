@@ -496,6 +496,10 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
 
                 link(&parent->node, &task->node, &mailboxes[++mailboxcount]);
                 link(&task->node, &parent->node, &mailboxes[++mailboxcount]);
+                mailbox_reset(getmailbox(&task->node, 0));
+                coreassign(&taskrow->item);
+
+                return (unsigned int)&task->node;
 
             }
 
@@ -503,13 +507,14 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
             {
 
                 link(&task->node, &task->node, &mailboxes[++mailboxcount]);
+                mailbox_reset(getmailbox(&task->node, 0));
+                coreassign(&taskrow->item);
+
+                return (unsigned int)&task->node;
 
             }
 
-            mailbox_reset(getmailbox(&task->node, 0));
-            coreassign(&taskrow->item);
-
-            return (unsigned int)&task->node;
+            return 0;
 
         }
 
