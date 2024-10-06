@@ -422,15 +422,14 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 void kernel_notify(struct node *source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct list_item *linkrowitem;
+    struct list_item *linkitem;
 
     spinlock_acquire(&source->links.spinlock);
 
-    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
+    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
     {
 
-        struct linkrow *linkrow = linkrowitem->data;
-        struct link *link = &linkrow->link;
+        struct link *link = linkitem->data;
 
         kernel_place(source, link->target, event, count, data);
 
