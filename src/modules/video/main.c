@@ -30,14 +30,14 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
+static unsigned int onvideocmap(struct video_interface *interface, struct node *source, unsigned int count, void *data)
 {
 
     return interface->onvideocmap(source, count, data);
 
 }
 
-static unsigned int onvideoconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
+static unsigned int onvideoconf(struct video_interface *interface, struct node *source, unsigned int count, void *data)
 {
 
     struct event_videoconf *videoconf = data;
@@ -53,10 +53,10 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_VIDEOCMAP:
-        return onvideocmap(target->interface, source->ichannel, count, data);
+        return onvideocmap(target->interface, source, count, data);
 
     case EVENT_VIDEOCONF:
-        return onvideoconf(target->interface, source->ichannel, count, data);
+        return onvideoconf(target->interface, source, count, data);
 
     }
 
@@ -92,7 +92,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int (*onvideocmap)(unsigned int source, unsigned int count, void *data), unsigned int (*onvideoconf)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int (*onvideocmap)(struct node *source, unsigned int count, void *data), unsigned int (*onvideoconf)(struct node *source, unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);

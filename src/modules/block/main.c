@@ -30,12 +30,12 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int onblockrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
+static unsigned int onblockrequest(struct block_interface *interface, struct node *source, unsigned int count, void *data)
 {
 
     struct event_blockrequest *blockrequest = data;
 
-    return interface->onblockrequest(blockrequest->count, blockrequest->sector);
+    return interface->onblockrequest(source, blockrequest->count, blockrequest->sector);
 
 }
 
@@ -46,7 +46,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_BLOCKREQUEST:
-        return onblockrequest(target->interface, source->ichannel, count, data);
+        return onblockrequest(target->interface, source, count, data);
 
     }
 
@@ -75,7 +75,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockrequest)(unsigned int count, unsigned int sector))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockrequest)(struct node *source, unsigned int count, unsigned int sector))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);

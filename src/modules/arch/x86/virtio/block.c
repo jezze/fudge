@@ -78,7 +78,7 @@ static void setfeatures(void)
 
 }
 
-static unsigned int blockinterface_onblockrequest(unsigned int count, unsigned int sector)
+static unsigned int blockinterface_onblockrequest(struct node *source, unsigned int count, unsigned int sector)
 {
 
     return MESSAGE_UNIMPLEMENTED;

@@ -126,7 +126,7 @@ static unsigned int videointerface_getcmap(unsigned int source, unsigned int cou
 }
 */
 
-static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
+static unsigned int videointerface_onvideocmap(struct node *source, unsigned int count, void *buffer)
 {
 
     char *c = buffer;
@@ -149,7 +149,7 @@ static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int
 
 }
 
-static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+static unsigned int videointerface_onvideoconf(struct node *source, unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     if (width == 80)

@@ -30,10 +30,10 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int ondata(struct console_interface *interface, void *data, unsigned int count)
+static unsigned int ondata(struct console_interface *interface, struct node *source, void *data, unsigned int count)
 {
 
-    return interface->ondata(data, count);
+    return interface->ondata(source, data, count);
 
 }
 
@@ -44,7 +44,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_DATA:
-        return ondata(target->interface, data, count);
+        return ondata(target->interface, source, data, count);
 
     }
 
@@ -77,7 +77,7 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(void *buffer, unsigned int count))
+void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(struct node *source, void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);

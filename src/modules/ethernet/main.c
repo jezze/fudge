@@ -31,10 +31,10 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int ondata(struct ethernet_interface *interface, void *data, unsigned int count)
+static unsigned int ondata(struct ethernet_interface *interface, struct node *source, void *data, unsigned int count)
 {
 
-    return interface->ondata(data, count);
+    return interface->ondata(source, data, count);
 
 }
 
@@ -52,7 +52,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_DATA:
-        return ondata(target->interface, data, count);
+        return ondata(target->interface, source, data, count);
 
     case EVENT_INFO:
         return oninfo(target->interface, source);
@@ -84,7 +84,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int (*oninfo)(struct node *source), unsigned int (*ondata)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int (*oninfo)(struct node *source), unsigned int (*ondata)(struct node *source, void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);

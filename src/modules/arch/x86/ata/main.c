@@ -23,7 +23,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_onblockrequest(unsigned int count, unsigned int sector)
+static unsigned int blockinterface_onblockrequest(struct node *source, unsigned int count, unsigned int sector)
 {
 
     ide_rpio28(blockinterface.id, 0, count, sector);

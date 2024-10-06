@@ -254,7 +254,7 @@ static unsigned int ethernetinterface_oninfo(struct node *source)
 
 }
 
-static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
+static unsigned int ethernetinterface_ondata(struct node *source, void *buffer, unsigned int count)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);

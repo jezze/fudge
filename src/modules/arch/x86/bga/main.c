@@ -37,14 +37,14 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
+static unsigned int videointerface_onvideocmap(struct node *source, unsigned int count, void *buffer)
 {
 
     return MESSAGE_UNIMPLEMENTED;
 
 }
 
-static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+static unsigned int videointerface_onvideoconf(struct node *source, unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     videointerface.width = width;

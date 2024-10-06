@@ -74,7 +74,7 @@ static void handleirq(unsigned int irq)
 }
 
 #if 0
-static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
+static unsigned int ethernetinterface_ondata(struct node *source, void *buffer, unsigned int count)
 {
 
     struct virtio_queue *vq = &vqs[1];
@@ -150,7 +150,7 @@ static unsigned int ethernetinterface_oninfo(struct node *source)
 
 }
 
-static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
+static unsigned int ethernetinterface_ondata(struct node *source, void *buffer, unsigned int count)
 {
 
     return MESSAGE_UNIMPLEMENTED;
