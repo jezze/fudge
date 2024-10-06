@@ -372,7 +372,7 @@ unsigned int kernel_place(struct node *source, struct node *target, unsigned int
 
     }
 
-    return (target && target->place) ? target->place(source, target, event, count, data) : 0;
+    return (target->place) ? target->place(source, target, event, count, data) : 0;
 
 }
 
