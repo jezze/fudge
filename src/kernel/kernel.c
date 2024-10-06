@@ -45,18 +45,18 @@ static struct task *gettask(unsigned int itask)
 static struct link *getlink(struct node *source, unsigned int index)
 {
 
-    struct list_item *linkitem;
+    struct list_item *linkrowitem;
     unsigned int i = 0;
 
-    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
+    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
     {
 
         if (i == index)
         {
 
-            struct link *link = linkitem->data;
+            struct linkrow *linkrow = linkrowitem->data;
 
-            return link;
+            return &linkrow->link;
 
         }
 
@@ -422,16 +422,16 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 void kernel_notify(struct node *source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct list_item *linkitem;
+    struct list_item *linkrowitem;
 
     spinlock_acquire(&source->links.spinlock);
 
-    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
+    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
     {
 
-        struct link *link = linkitem->data;
+        struct linkrow *linkrow = linkrowitem->data;
 
-        kernel_place(source, link->target, event, count, data);
+        kernel_place(source, linkrow->link.target, event, count, data);
 
     }
 
