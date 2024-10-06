@@ -450,8 +450,9 @@ void kernel_notify(struct node *source, unsigned int event, unsigned int count, 
     {
 
         struct linkrow *linkrow = linkrowitem->data;
+        struct link *link = &linkrow->link;
 
-        kernel_place(source, linkrow->link.target, event, count, data);
+        kernel_place(source, link->target, event, count, data);
 
     }
 
