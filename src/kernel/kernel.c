@@ -358,7 +358,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
 
 }
 
-unsigned int kernel_place(struct node *source, struct node *target, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -382,7 +382,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
     struct task *task = gettask(itask);
     struct channel *channel = getchannel(ichannel);
 
-    return (channel) ? kernel_place(&task->node, channel->target, ichannel, event, count, data) : 0;
+    return (channel) ? kernel_place(&task->node, channel->target, event, count, data) : 0;
 
 }
 
@@ -458,7 +458,7 @@ void kernel_notify(struct node *source, unsigned int event, unsigned int count, 
         struct linkrow *linkrow = current->data;
         struct link *link = &linkrow->link;
 
-        kernel_place(source, link->target, link->target->ichannel, event, count, data);
+        kernel_place(source, link->target, event, count, data);
 
     }
 
