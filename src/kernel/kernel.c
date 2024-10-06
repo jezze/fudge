@@ -45,18 +45,18 @@ static struct task *gettask(unsigned int itask)
 static struct link *getlink(struct node *source, unsigned int index)
 {
 
-    struct list_item *linkrowitem;
+    struct list_item *linkitem;
     unsigned int i = 0;
 
-    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
+    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
     {
 
         if (i == index)
         {
 
-            struct linkrow *linkrow = linkrowitem->data;
+            struct link *link = linkitem->data;
 
-            return &linkrow->link;
+            return link;
 
         }
 
