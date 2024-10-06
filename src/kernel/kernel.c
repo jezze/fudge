@@ -340,13 +340,21 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
 {
 
     struct task *task = gettask(itask);
-    struct mailbox *mailbox = getmailbox(&task->node, 0);
-    unsigned int status = mailbox_pick(mailbox, message, count, data);
+    struct mailbox *mailbox = getmailbox(&task->node, ichannel);
 
-    if (status == MESSAGE_RETRY)
-        task_signal(task, TASK_SIGNAL_BLOCK);
+    if (mailbox)
+    {
 
-    return status;
+        unsigned int status = mailbox_pick(mailbox, message, count, data);
+
+        if (status == MESSAGE_RETRY)
+            task_signal(task, TASK_SIGNAL_BLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
