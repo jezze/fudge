@@ -42,21 +42,21 @@ static struct task *gettask(unsigned int itask)
 
 }
 
-static struct link *getlink(struct node *node, unsigned int index)
+static struct link *getlink(struct node *source, unsigned int index)
 {
 
-    struct list_item *current;
+    struct list_item *linkitem;
     unsigned int i = 0;
 
-    for (current = node->links.head; current; current = current->next)
+    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
     {
 
         if (i == index)
         {
 
-            struct link *link = current->data;
+            struct linkrow *linkrow = linkitem->data;
 
-            return link;
+            return &linkrow->link;
 
         }
 
@@ -240,24 +240,24 @@ static unsigned int link(struct node *source, struct node *target, struct mailbo
 static unsigned int unlink(struct node *source, struct node *target)
 {
 
-    struct list_item *current;
+    struct list_item *linkitem;
     struct list_item *next;
 
     spinlock_acquire(&source->links.spinlock);
 
-    for (current = source->links.head; current; current = next)
+    for (linkitem = source->links.head; linkitem; linkitem = next)
     {
 
-        struct linkrow *linkrow = current->data;
+        struct linkrow *linkrow = linkitem->data;
         struct link *link = &linkrow->link;
 
-        next = current->next;
+        next = linkitem->next;
 
         if (link->target == target)
         {
 
-            list_remove_unsafe(&source->links, current);
-            list_add(&freelinks, current);
+            list_remove_unsafe(&source->links, linkitem);
+            list_add(&freelinks, linkitem);
 
         }
 
@@ -422,14 +422,14 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 void kernel_notify(struct node *source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct list_item *current;
+    struct list_item *linkitem;
 
     spinlock_acquire(&source->links.spinlock);
 
-    for (current = source->links.head; current; current = current->next)
+    for (linkitem = source->links.head; linkitem; linkitem = linkitem->next)
     {
 
-        struct linkrow *linkrow = current->data;
+        struct linkrow *linkrow = linkitem->data;
         struct link *link = &linkrow->link;
 
         kernel_place(source, link->target, event, count, data);
