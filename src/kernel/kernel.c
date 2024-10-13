@@ -66,26 +66,6 @@ static struct link *getlink(struct node *source, unsigned int index)
 
 }
 
-static unsigned int findlink(struct node *source, struct node *target)
-{
-
-    struct list_item *linkrowitem;
-
-    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
-    {
-
-        struct linkrow *linkrow = linkrowitem->data;
-        struct link *link = &linkrow->link;
-
-        if (link->target == target)
-            return (unsigned int)link->target;
-
-    }
-
-    return 0;
-
-}
-
 static struct mailbox *getmailbox(struct node *node, unsigned int index)
 {
 
@@ -187,10 +167,6 @@ static unsigned int placetask(struct node *source, struct node *target, unsigned
         unsigned int status;
 
         message_init(&message, event, (unsigned int)source, count);
-
-        /*
-        message_init(&message, event, findlink(target, source), count);
-        */
 
         status = mailbox_place(mailbox, &message, data);
 
@@ -426,15 +402,8 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
             struct node *node = service->match(count - length, name + length);
 
             if (node)
-            {
+                return (unsigned int)node;
 
-                struct task *task = gettask(itask);
-
-                link(&task->node, node, 0);
-
-                return findlink(&task->node, node);
-
-            }
         }
 
     }
@@ -519,12 +488,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
                 struct taskrow *parentrow = &taskrows[itask];
                 struct task *parent = &parentrow->task;
 
-                link(&parent->node, &task->node, &mailboxes[++mailboxcount]);
                 link(&task->node, &parent->node, &mailboxes[++mailboxcount]);
                 mailbox_reset(getmailbox(&task->node, 0));
                 coreassign(&taskrow->item);
 
-                return findlink(&parent->node, &task->node);
+                return (unsigned int)&task->node;
 
             }
 
@@ -535,7 +503,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
                 mailbox_reset(getmailbox(&task->node, 0));
                 coreassign(&taskrow->item);
 
-                return findlink(&task->node, &task->node);
+                return (unsigned int)&task->node;
 
             }
 
