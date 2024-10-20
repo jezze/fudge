@@ -6,15 +6,14 @@
 #include "mailbox.h"
 #include "task.h"
 #include "core.h"
-#include "link.h"
 #include "service.h"
 #include "kernel.h"
 
 static unsigned int mailboxcount;
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
-static struct linkrow {struct link link; struct list_item item;} linkrows[KERNEL_LINKS];
-static struct list freelinks;
+static struct noderow {struct node node; struct list_item item;} noderows[KERNEL_LINKS];
+static struct list freenodes;
 static struct list deadtasks;
 static struct list blockedtasks;
 static struct core *(*coreget)(void);
@@ -176,16 +175,16 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 static unsigned int link(struct node *source, struct node *target)
 {
 
-    struct list_item *linkrowitem = list_picktail(&freelinks);
+    struct list_item *noderowitem = list_picktail(&freenodes);
 
-    if (linkrowitem)
+    if (noderowitem)
     {
 
-        struct linkrow *linkrow = linkrowitem->data;
-        struct link *link = &linkrow->link;
+        struct noderow *noderow = noderowitem->data;
+        struct node *node = &noderow->node;
 
-        link_init(link, target);
-        list_add(&source->links, linkrowitem);
+        node_init(node, target->mailbox, target->interface, placetask);
+        list_add(&source->children, noderowitem);
 
         return MESSAGE_OK;
 
@@ -198,30 +197,30 @@ static unsigned int link(struct node *source, struct node *target)
 static unsigned int unlink(struct node *source, struct node *target)
 {
 
-    struct list_item *linkrowitem;
+    struct list_item *noderowitem;
     struct list_item *next;
 
-    spinlock_acquire(&source->links.spinlock);
+    spinlock_acquire(&source->children.spinlock);
 
-    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = next)
+    for (noderowitem = source->children.head; noderowitem; noderowitem = next)
     {
 
-        struct linkrow *linkrow = linkrowitem->data;
-        struct link *link = &linkrow->link;
+        struct noderow *noderow = noderowitem->data;
+        struct node *node = &noderow->node;
 
-        next = linkrowitem->next;
+        next = noderowitem->next;
 
-        if (link->target == target)
+        if (node->mailbox == target->mailbox)
         {
 
-            list_remove_unsafe(&source->links, linkrowitem);
-            list_add(&freelinks, linkrowitem);
+            list_remove_unsafe(&source->children, noderowitem);
+            list_add(&freenodes, noderowitem);
 
         }
 
     }
 
-    spinlock_release(&source->links.spinlock);
+    spinlock_release(&source->children.spinlock);
 
     return MESSAGE_OK;
 
@@ -364,21 +363,21 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 void kernel_notify(struct node *source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct list_item *linkrowitem;
+    struct list_item *noderowitem;
 
-    spinlock_acquire(&source->links.spinlock);
+    spinlock_acquire(&source->children.spinlock);
 
-    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
+    for (noderowitem = source->children.head; noderowitem; noderowitem = noderowitem->next)
     {
 
-        struct linkrow *linkrow = linkrowitem->data;
-        struct link *link = &linkrow->link;
+        struct noderow *noderow = noderowitem->data;
+        struct node *node = &noderow->node;
 
-        kernel_place(source, link->target, event, count, data);
+        kernel_place(source, node, event, count, data);
 
     }
 
-    spinlock_release(&source->links.spinlock);
+    spinlock_release(&source->children.spinlock);
 
 }
 
@@ -464,7 +463,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     unsigned int i;
 
     core_init(&core0, 0, saddress + ssize);
-    list_init(&freelinks);
+    list_init(&freenodes);
     list_init(&deadtasks);
     list_init(&blockedtasks);
 
@@ -494,10 +493,10 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     for (i = 0; i < KERNEL_LINKS; i++)
     {
 
-        struct linkrow *linkrow = &linkrows[i];
+        struct noderow *noderow = &noderows[i];
 
-        list_inititem(&linkrow->item, linkrow);
-        list_add(&freelinks, &linkrow->item);
+        list_inititem(&noderow->item, noderow);
+        list_add(&freenodes, &noderow->item);
 
     }
 

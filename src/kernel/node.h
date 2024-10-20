@@ -1,7 +1,7 @@
 struct node
 {
 
-    struct list links;
+    struct list children;
     struct mailbox *mailbox;
     void *interface;
     unsigned int (*place)(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data);
