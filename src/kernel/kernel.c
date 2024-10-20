@@ -482,32 +482,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            if (itask)
-            {
+            link(&task->node, 0, &mailboxes[++mailboxcount]);
+            mailbox_reset(getmailbox(&task->node, 0));
+            coreassign(&taskrow->item);
 
-                struct taskrow *parentrow = &taskrows[itask];
-                struct task *parent = &parentrow->task;
-
-                link(&task->node, &parent->node, &mailboxes[++mailboxcount]);
-                mailbox_reset(getmailbox(&task->node, 0));
-                coreassign(&taskrow->item);
-
-                return (unsigned int)&task->node;
-
-            }
-
-            else
-            {
-
-                link(&task->node, &task->node, &mailboxes[++mailboxcount]);
-                mailbox_reset(getmailbox(&task->node, 0));
-                coreassign(&taskrow->item);
-
-                return (unsigned int)&task->node;
-
-            }
-
-            return 0;
+            return (unsigned int)&task->node;
 
         }
 
