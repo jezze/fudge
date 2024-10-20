@@ -163,7 +163,6 @@ void task_init(struct task *task, unsigned int id)
     task_initsignals(&task->signals);
     task_initthread(&task->thread);
     spinlock_init(&task->spinlock);
-    node_init(&task->node, task, 0);
 
     task->id = id;
     task->state = TASK_STATE_DEAD;

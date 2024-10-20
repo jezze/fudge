@@ -356,7 +356,7 @@ void module_init(void)
 {
 
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
-    node_init(&node, 0, place);
+    node_init(&node, 0, 0, place);
 
 }
 

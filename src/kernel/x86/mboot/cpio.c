@@ -427,7 +427,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    node_init(&node, 0, place);
+    node_init(&node, 0, 0, place);
     service_init(&service, "initrd", service_match);
     service_register(&service);
 

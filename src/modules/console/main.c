@@ -81,7 +81,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    node_init(&interface->node, interface, place);
+    node_init(&interface->node, 0, interface, place);
 
     interface->id = id;
     interface->ondata = ondata;

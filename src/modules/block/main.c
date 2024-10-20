@@ -79,7 +79,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    node_init(&interface->node, interface, place);
+    node_init(&interface->node, 0, interface, place);
 
     interface->id = id;
     interface->onblockrequest = onblockrequest;

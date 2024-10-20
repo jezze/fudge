@@ -93,7 +93,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
-    node_init(&interface->node, interface, 0);
+    node_init(&interface->node, 0, interface, 0);
 
     interface->id = id;
 

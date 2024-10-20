@@ -96,7 +96,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    node_init(&interface->node, interface, place);
+    node_init(&interface->node, 0, interface, place);
 
     interface->id = id;
     interface->width = 0;

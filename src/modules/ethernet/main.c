@@ -88,7 +88,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    node_init(&interface->node, interface, place);
+    node_init(&interface->node, 0, interface, place);
 
     interface->id = id;
     interface->oninfo = oninfo;

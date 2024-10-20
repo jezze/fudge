@@ -70,7 +70,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    node_init(&interface->node, interface, place);
+    node_init(&interface->node, 0, interface, place);
 
     interface->id = id;
     interface->oninfo = oninfo;

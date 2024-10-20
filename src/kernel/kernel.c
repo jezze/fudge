@@ -42,39 +42,6 @@ static struct task *gettask(unsigned int itask)
 
 }
 
-static struct link *getlink(struct node *source, unsigned int index)
-{
-
-    struct list_item *linkrowitem;
-    unsigned int i = 0;
-
-    for (linkrowitem = source->links.head; linkrowitem; linkrowitem = linkrowitem->next)
-    {
-
-        if (i == index)
-        {
-
-            struct linkrow *linkrow = linkrowitem->data;
-
-            return &linkrow->link;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-static struct mailbox *getmailbox(struct node *node, unsigned int index)
-{
-
-    struct link *link = getlink(node, index);
-
-    return (link) ? link->mailbox : 0;
-
-}
-
 static void unblocktasks(void)
 {
 
@@ -157,26 +124,17 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 static unsigned int placetask(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = getmailbox(target, 0);
+    struct task *task = target->interface;
+    struct message message;
+    unsigned int status;
 
-    if (mailbox)
-    {
+    message_init(&message, event, (unsigned int)source, count);
 
-        struct task *task = target->interface;
-        struct message message;
-        unsigned int status;
+    status = mailbox_place(target->mailbox, &message, data);
 
-        message_init(&message, event, (unsigned int)source, count);
+    task_signal(task, TASK_SIGNAL_UNBLOCK);
 
-        status = mailbox_place(mailbox, &message, data);
-
-        task_signal(task, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
+    return status;
 
 }
 
@@ -215,7 +173,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-static unsigned int link(struct node *source, struct node *target, struct mailbox *mailbox)
+static unsigned int link(struct node *source, struct node *target)
 {
 
     struct list_item *linkrowitem = list_picktail(&freelinks);
@@ -226,7 +184,7 @@ static unsigned int link(struct node *source, struct node *target, struct mailbo
         struct linkrow *linkrow = linkrowitem->data;
         struct link *link = &linkrow->link;
 
-        link_init(link, target, mailbox);
+        link_init(link, target);
         list_add(&source->links, linkrowitem);
 
         return MESSAGE_OK;
@@ -340,21 +298,12 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
 {
 
     struct task *task = gettask(itask);
-    struct mailbox *mailbox = getmailbox(&task->node, index);
+    unsigned int status = mailbox_pick(task->node.mailbox, message, count, data);
 
-    if (mailbox)
-    {
+    if (status == MESSAGE_RETRY)
+        task_signal(task, TASK_SIGNAL_BLOCK);
 
-        unsigned int status = mailbox_pick(mailbox, message, count, data);
-
-        if (status == MESSAGE_RETRY)
-            task_signal(task, TASK_SIGNAL_BLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
+    return status;
 
 }
 
@@ -365,7 +314,7 @@ unsigned int kernel_place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_LINK:
-        return link(target, source, getmailbox(source->interface, 0));
+        return link(target, source);
 
     case EVENT_UNLINK:
         return unlink(target, source);
@@ -482,8 +431,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            link(&task->node, 0, &mailboxes[++mailboxcount]);
-            mailbox_reset(getmailbox(&task->node, 0));
+            mailbox_reset(task->node.mailbox);
             coreassign(&taskrow->item);
 
             return (unsigned int)&task->node;
@@ -537,6 +485,9 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&deadtasks, &taskrow->item);
+
+        /* Allow many nodes */
+        node_init(&taskrow->task.node, &mailboxes[++mailboxcount], &taskrow->task, placetask);
 
     }
 
