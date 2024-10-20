@@ -12,7 +12,7 @@
 static unsigned int mailboxcount;
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
-static struct noderow {struct node node; struct list_item item;} noderows[KERNEL_LINKS];
+static struct noderow {struct node node; struct list_item item;} noderows[KERNEL_NODES];
 static struct list freenodes;
 static struct list deadtasks;
 static struct list blockedtasks;
@@ -490,7 +490,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
     }
 
-    for (i = 0; i < KERNEL_LINKS; i++)
+    for (i = 0; i < KERNEL_NODES; i++)
     {
 
         struct noderow *noderow = &noderows[i];

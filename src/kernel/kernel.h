@@ -1,5 +1,5 @@
 #define KERNEL_TASKS                    64
-#define KERNEL_LINKS                    1024
+#define KERNEL_NODES                    1024
 #define KERNEL_MAILBOXES                512
 
 struct core *kernel_getcore(void);
