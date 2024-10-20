@@ -31,8 +31,8 @@ static void handlehttppacket(unsigned int source)
         if (isbody)
         {
 
-            channel_send_buffer(source, EVENT_DATA, count, buffer);
-            channel_send_buffer(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, buffer);
+            channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+            channel_send_buffer(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, buffer);
 
         }
 
@@ -51,7 +51,7 @@ static void handlehttppacket(unsigned int source)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int channel = fs_spawn(option_getstring("dns"));
+    unsigned int channel = fs_spawn(0, option_getstring("dns"));
 
     if (channel)
     {
@@ -59,10 +59,10 @@ static void dnsresolve(struct socket *socket, char *domain)
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_send(channel, EVENT_MAIN);
+        channel_send_fmt1(0, channel, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(0, channel, EVENT_MAIN);
 
-        while (channel_poll(channel, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
+        while (channel_poll(0, channel, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             unsigned int i;
@@ -86,8 +86,8 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         }
 
-        channel_send(channel, EVENT_END);
-        channel_wait(channel, EVENT_DONE);
+        channel_send(0, channel, EVENT_END);
+        channel_wait(0, channel, EVENT_DONE);
 
     }
 
@@ -115,11 +115,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
-    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -135,15 +135,15 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     lookup2("clock-service", "clock:0");
     lookup2("ethernet-service", "ethernet:0");
-    channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
+    channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
     mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&remote, option_getstring("remote-address"));
     socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
+    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
     parseurl(&url, urldata, 4096);
 
     if (url.host)
@@ -152,12 +152,12 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     if (url.port)
         socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
 
-    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
-    socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
-    socket_connect_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router);
-    socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
+    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
+    socket_connect_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router);
+    socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
 
-    while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
+    while ((count = socket_receive(0, option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
     {
 
         if (ring_write(&input, buffer, count))
@@ -165,7 +165,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

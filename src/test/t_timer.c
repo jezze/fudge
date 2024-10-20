@@ -10,18 +10,18 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char data[MESSAGE_SIZE];
 
     lookup2("timer-service", "timer:0/3");
-    channel_send(option_getdecimal("timer-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
 
-    while (channel_poll(option_getdecimal("timer-service"), EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, option_getdecimal("timer-service"), EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
     {
 
-        channel_send_fmt1(source, EVENT_DATA, "Tick: %u second(s)\n", &counter);
+        channel_send_fmt1(0, source, EVENT_DATA, "Tick: %u second(s)\n", &counter);
 
         counter++;
 
     }
 
-    channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("timer-service"), EVENT_UNLINK);
 
 }
 

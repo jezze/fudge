@@ -11,7 +11,7 @@ static void checkprefix(unsigned int source, void *buffer, unsigned int count)
     {
 
         if (buffer_match(buffer, prefix, prefixcount))
-            channel_send_buffer(source, EVENT_DATA, count, buffer);
+            channel_send_buffer(0, source, EVENT_DATA, count, buffer);
 
     }
 
@@ -34,7 +34,7 @@ static void checksubstr(unsigned int source, void *buffer, unsigned int count)
             if (buffer_match((char *)buffer + i, substr, substrcount))
             {
 
-                channel_send_buffer(source, EVENT_DATA, count, buffer);
+                channel_send_buffer(0, source, EVENT_DATA, count, buffer);
 
                 break;
 
@@ -85,7 +85,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, mdata);
+        unsigned int id = fs_walk(0, service, 0, mdata);
 
         if (id)
         {
@@ -94,7 +94,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(service, id, buffer, 4096, offset)); offset += count)
+            for (offset = 0; (count = fs_read(0, service, id, buffer, 4096, offset)); offset += count)
                 check(source, buffer, count);
 
         }

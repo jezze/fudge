@@ -15,7 +15,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
         char *value = key + cstring_length_zero(key);
 
         if (!option_set(key, value))
-            channel_send_fmt1(source, EVENT_ERROR, "Unrecognized option: %s\n", key);
+            channel_send_fmt1(0, source, EVENT_ERROR, "Unrecognized option: %s\n", key);
 
     }
 
@@ -32,7 +32,7 @@ static void onstatus(unsigned int source, void *mdata, unsigned int msize)
         struct option *option = option_get(i);
 
         if (option)
-            channel_send_fmt2(source, EVENT_DATA, "%s:%s\n", option->key, option->value);
+            channel_send_fmt2(0, source, EVENT_DATA, "%s:%s\n", option->key, option->value);
 
     }
 
@@ -43,8 +43,8 @@ void lookup(char *key)
 
     char id[32];
 
-    channel_send_fmt1(option_getdecimal("env"), EVENT_QUERYREQUEST, "get\\0%s\\0", key);
-    channel_wait_buffer(option_getdecimal("env"), EVENT_QUERYRESPONSE, 32, id);
+    channel_send_fmt1(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "get\\0%s\\0", key);
+    channel_wait_buffer(0, option_getdecimal("env"), EVENT_QUERYRESPONSE, 32, id);
     option_set(key, id);
 
 }
@@ -63,7 +63,7 @@ void lookup2(char *key, char *value)
 void panic(unsigned int source, char *file, unsigned int line)
 {
 
-    channel_send_fmt2(source, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
+    channel_send_fmt2(0, source, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
     channel_close();
     call_despawn();
 
@@ -79,7 +79,7 @@ void main(void)
     channel_bind(EVENT_STATUS, onstatus);
     init();
 
-    while (channel_process());
+    while (channel_process(0));
 
 }
 

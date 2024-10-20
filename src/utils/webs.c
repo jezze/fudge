@@ -14,7 +14,7 @@ static void sendresponse(unsigned int source, struct socket *remote)
 {
 
     unsigned int service = fs_auth(option_getstring("initrd:"));
-    unsigned int root = fs_walk(service, 0, "data/html");
+    unsigned int root = fs_walk(0, service, 0, "data/html");
     unsigned int id;
     char buffer[4096];
     unsigned int count = 0;
@@ -22,13 +22,13 @@ static void sendresponse(unsigned int source, struct socket *remote)
     if (cstring_length(request) == 1 && request[0] == '/')
         cstring_write_zero(request, 128, cstring_write(request, 128, "/index.html", 0));
 
-    id = fs_walk(service, root, request + 1);
+    id = fs_walk(0, service, root, request + 1);
 
     if (id)
     {
 
         char file[4096];
-        unsigned int filesize = fs_read_full(service, id, file, 4096, 0);
+        unsigned int filesize = fs_read_full(0, service, id, file, 4096, 0);
 
         count += cstring_write(buffer, 4096, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
@@ -47,7 +47,7 @@ static void sendresponse(unsigned int source, struct socket *remote)
 
     }
 
-    socket_send_tcp(option_getdecimal("ethernet-service"), &local, remote, &router, count, buffer);
+    socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, remote, &router, count, buffer);
 
 }
 
@@ -62,7 +62,7 @@ static void handlehttppacket(unsigned int source, struct socket *remote)
         char buffer[4096];
         unsigned int count = ring_read(&input, buffer, newline);
 
-        channel_send_buffer(source, EVENT_DATA, count, buffer);
+        channel_send_buffer(0, source, EVENT_DATA, count, buffer);
 
         if (count > 4 && buffer_match(buffer, "GET ", 4))
         {
@@ -90,18 +90,18 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     lookup2("clock-service", "clock:0");
     lookup2("ethernet-service", "ethernet:0");
-    channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
+    channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
     mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
-    socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
-    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
-    socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
+    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
+    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
     socket_listen_tcp(option_getdecimal("ethernet-service"), &local, remotes, 64, &router);
 
-    while (channel_poll(option_getdecimal("ethernet-service"), EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, option_getdecimal("ethernet-service"), EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         struct socket *remote;
@@ -111,7 +111,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (remote)
         {
 
-            socket_handle_arp(option_getdecimal("ethernet-service"), &local, remote, message_datasize(&message), data);
+            socket_handle_arp(0, option_getdecimal("ethernet-service"), &local, remote, message_datasize(&message), data);
 
         }
 
@@ -121,7 +121,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         {
 
             unsigned char buffer[4096];
-            unsigned int count = socket_handle_tcp(option_getdecimal("ethernet-service"), &local, remote, &router, message_datasize(&message), data, 4096, buffer);
+            unsigned int count = socket_handle_tcp(0, option_getdecimal("ethernet-service"), &local, remote, &router, message_datasize(&message), data, 4096, buffer);
 
             if (count)
             {
@@ -135,7 +135,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

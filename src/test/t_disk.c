@@ -53,7 +53,7 @@ static void request_send(struct state *state)
     blockrequest.sector = state->blocksector;
     blockrequest.count = state->blockcount;
 
-    channel_send_buffer(option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send_buffer(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -63,7 +63,7 @@ static unsigned int request_poll(struct state *state)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_poll(option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message_datasize(&message), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
@@ -373,7 +373,7 @@ static unsigned int handle(unsigned int source, void *reply, struct p9p_header *
         return protocol_getattr(reply, p9p);
 
     default:
-        channel_send_fmt0(source, EVENT_ERROR, "Packet has unknown type\n");
+        channel_send_fmt0(0, source, EVENT_ERROR, "Packet has unknown type\n");
 
         return protocol_error(reply, p9p, "Packet has unknown type", -1);
 
@@ -387,7 +387,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     struct p9p_header *p9p = mdata;
     char buffer[MESSAGE_SIZE];
 
-    channel_send_buffer(source, EVENT_P9P, handle(source, buffer, p9p), buffer);
+    channel_send_buffer(0, source, EVENT_P9P, handle(source, buffer, p9p), buffer);
 
 }
 
@@ -399,24 +399,24 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     lookup2("block-service", "block:0");
     lookup2("ethernet-service", "ethernet:0");
-    channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\09p-service\\0!source\\0");
-    socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
-    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
-    channel_send(option_getdecimal("block-service"), EVENT_LINK);
-    socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
+    channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\09p-service\\0!source\\0");
+    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
+    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
     socket_listen_tcp(option_getdecimal("ethernet-service"), &local, &remote, 1, &router);
 
-    while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
+    while ((count = socket_receive(0, option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
     {
 
         char reply[MESSAGE_SIZE];
 
-        socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
+        socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
 
     }
 
-    channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
-    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

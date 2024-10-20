@@ -34,9 +34,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     int f;
 
     lookup2("timer-service", "timer:0/0");
-    channel_send(option_getdecimal("timer-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
 
-    while (channel_process())
+    while (channel_process(0))
     {
 
         int sj = 0;
@@ -93,7 +93,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         R(5, 7, cA, sA)
         R(5, 8, cB, sB)
 
-        channel_send_buffer(source, EVENT_DATA, 2, sequence);
+        channel_send_buffer(0, source, EVENT_DATA, 2, sequence);
 
         for (k = 0; k < 1760; k += 80)
         {
@@ -101,13 +101,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             char *offset = b + k;
             unsigned int count = 80;
 
-            channel_send_fmt2(source, EVENT_DATA, "%w\n", offset, &count);
+            channel_send_fmt2(0, source, EVENT_DATA, "%w\n", offset, &count);
 
         }
 
     }
 
-    channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("timer-service"), EVENT_UNLINK);
 
 }
 

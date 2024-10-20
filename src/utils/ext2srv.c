@@ -117,7 +117,7 @@ static void request_send(unsigned int sector, unsigned int count)
     blockrequest.sector = sector;
     blockrequest.count = count;
 
-    channel_send_buffer(option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send_buffer(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -132,7 +132,7 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
 
     request_send(option_getdecimal("partoffset") + sector * diff, nblocks * diff);
 
-    while (channel_poll(option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         read += buffer_write(buffer, count, data, message_datasize(&message), read);
@@ -185,41 +185,41 @@ static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct 
 static void printsuperblock(struct ext2_superblock *superblock)
 {
 
-    channel_send_fmt1(source, EVENT_DATA, "Node Count: %u\n", &superblock->nodeCount);
-    channel_send_fmt1(source, EVENT_DATA, "Block Count: %u\n", &superblock->blockCount);
-    channel_send_fmt1(source, EVENT_DATA, "Block Count Super: %u\n", &superblock->blockCountSuper);
-    channel_send_fmt1(source, EVENT_DATA, "Superblock Index: %u\n", &superblock->superblockIndex);
-    channel_send_fmt1(source, EVENT_DATA, "Block Size: %u\n", &superblock->blockSize);
-    channel_send_fmt1(source, EVENT_DATA, "Fragment Size: %u\n", &superblock->fragmentSize);
-    channel_send_fmt1(source, EVENT_DATA, "Block Count Group: %u\n", &superblock->blockCountGroup);
-    channel_send_fmt1(source, EVENT_DATA, "Fragment Count Group: %u\n", &superblock->fragmentCountGroup);
-    channel_send_fmt1(source, EVENT_DATA, "Node Count Group: %u\n", &superblock->nodeCountGroup);
-    channel_send_fmt1(source, EVENT_DATA, "Signature: 0x%H4h\n", &superblock->signature);
-    channel_send_fmt1(source, EVENT_DATA, "Minor: %h\n", &superblock->minorVersion);
-    channel_send_fmt1(source, EVENT_DATA, "Major: %u\n", &superblock->majorVersion);
-    channel_send_fmt1(source, EVENT_DATA, "Node Size: %h\n", &superblock->nodeSize);
+    channel_send_fmt1(0, source, EVENT_DATA, "Node Count: %u\n", &superblock->nodeCount);
+    channel_send_fmt1(0, source, EVENT_DATA, "Block Count: %u\n", &superblock->blockCount);
+    channel_send_fmt1(0, source, EVENT_DATA, "Block Count Super: %u\n", &superblock->blockCountSuper);
+    channel_send_fmt1(0, source, EVENT_DATA, "Superblock Index: %u\n", &superblock->superblockIndex);
+    channel_send_fmt1(0, source, EVENT_DATA, "Block Size: %u\n", &superblock->blockSize);
+    channel_send_fmt1(0, source, EVENT_DATA, "Fragment Size: %u\n", &superblock->fragmentSize);
+    channel_send_fmt1(0, source, EVENT_DATA, "Block Count Group: %u\n", &superblock->blockCountGroup);
+    channel_send_fmt1(0, source, EVENT_DATA, "Fragment Count Group: %u\n", &superblock->fragmentCountGroup);
+    channel_send_fmt1(0, source, EVENT_DATA, "Node Count Group: %u\n", &superblock->nodeCountGroup);
+    channel_send_fmt1(0, source, EVENT_DATA, "Signature: 0x%H4h\n", &superblock->signature);
+    channel_send_fmt1(0, source, EVENT_DATA, "Minor: %h\n", &superblock->minorVersion);
+    channel_send_fmt1(0, source, EVENT_DATA, "Major: %u\n", &superblock->majorVersion);
+    channel_send_fmt1(0, source, EVENT_DATA, "Node Size: %h\n", &superblock->nodeSize);
 
 }
 
 static void printblockgroup(struct ext2_blockgroup *blockgroup)
 {
 
-    channel_send_fmt1(source, EVENT_DATA, "Block Usage Address: %u\n", &blockgroup->blockUsageAddress);
-    channel_send_fmt1(source, EVENT_DATA, "Node Usage Address: %u\n", &blockgroup->nodeUsageAddress);
-    channel_send_fmt1(source, EVENT_DATA, "Block Table Address: %u\n", &blockgroup->blockTableAddress);
-    channel_send_fmt1(source, EVENT_DATA, "Directory Count: %h\n", &blockgroup->directoryCount);
+    channel_send_fmt1(0, source, EVENT_DATA, "Block Usage Address: %u\n", &blockgroup->blockUsageAddress);
+    channel_send_fmt1(0, source, EVENT_DATA, "Node Usage Address: %u\n", &blockgroup->nodeUsageAddress);
+    channel_send_fmt1(0, source, EVENT_DATA, "Block Table Address: %u\n", &blockgroup->blockTableAddress);
+    channel_send_fmt1(0, source, EVENT_DATA, "Directory Count: %h\n", &blockgroup->directoryCount);
 
 }
 
 static void printnode(struct ext2_node *node)
 {
 
-    channel_send_fmt1(source, EVENT_DATA, "Type: 0x%H4h\n", &node->type);
-    channel_send_fmt1(source, EVENT_DATA, "Flags: 0x%H8u\n", &node->flags);
-    channel_send_fmt1(source, EVENT_DATA, "Pointer 0: 0x%H8u\n", &node->pointer0);
-    channel_send_fmt1(source, EVENT_DATA, "Pointer 1: 0x%H8u\n", &node->pointer1);
-    channel_send_fmt1(source, EVENT_DATA, "Pointer 2: 0x%H8u\n", &node->pointer2);
-    channel_send_fmt1(source, EVENT_DATA, "Pointer 3: 0x%H8u\n", &node->pointer4);
+    channel_send_fmt1(0, source, EVENT_DATA, "Type: 0x%H4h\n", &node->type);
+    channel_send_fmt1(0, source, EVENT_DATA, "Flags: 0x%H8u\n", &node->flags);
+    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 0: 0x%H8u\n", &node->pointer0);
+    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 1: 0x%H8u\n", &node->pointer1);
+    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 2: 0x%H8u\n", &node->pointer2);
+    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 3: 0x%H8u\n", &node->pointer4);
 
 }
 
@@ -228,10 +228,10 @@ static void printdir(struct ext2_entry *entry, char *name)
 
     unsigned int length = entry->length;
 
-    channel_send_fmt1(source, EVENT_DATA, "Inode: %u\n", &entry->node);
-    channel_send_fmt1(source, EVENT_DATA, "Size: %h\n", &entry->size);
-    channel_send_fmt1(source, EVENT_DATA, "Length: 0x%H2c\n", &entry->length);
-    channel_send_fmt2(source, EVENT_DATA, "Name: %w\n", name, &length);
+    channel_send_fmt1(0, source, EVENT_DATA, "Inode: %u\n", &entry->node);
+    channel_send_fmt1(0, source, EVENT_DATA, "Size: %h\n", &entry->size);
+    channel_send_fmt1(0, source, EVENT_DATA, "Length: 0x%H2c\n", &entry->length);
+    channel_send_fmt2(0, source, EVENT_DATA, "Name: %w\n", name, &length);
 
 }
 
@@ -267,7 +267,7 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
             name = (char *)entry + 8;
             length = entry->length;
 
-            channel_send_fmt3(source, EVENT_DATA, "(%u) %w\n", &entry->node, name, &length);
+            channel_send_fmt3(0, source, EVENT_DATA, "(%u) %w\n", &entry->node, name, &length);
 
             offset += entry->size;
 
@@ -347,14 +347,14 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
         response.header.nrecords = nrecords;
 
         buffer_write(response.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
-        channel_send_buffer(source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
+        channel_send_buffer(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
 
     }
 
     else
     {
 
-        channel_send_fmt1(source, EVENT_ERROR, "Not a directory: %u\n", &listrequest->id);
+        channel_send_fmt1(0, source, EVENT_ERROR, "Not a directory: %u\n", &listrequest->id);
 
     }
 
@@ -378,7 +378,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         response.header.session = readrequest->session;
         response.header.count = buffer_write(response.data, 64, block, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
 
-        channel_send_buffer(source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
+        channel_send_buffer(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
 
 
     }
@@ -386,7 +386,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(source, EVENT_ERROR, "Not a regular file: %u\n", &readrequest->id);
+        channel_send_fmt1(0, source, EVENT_ERROR, "Not a regular file: %u\n", &readrequest->id);
 
     }
 
@@ -408,7 +408,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
         response.session = walkrequest->session;
         response.id = id;
 
-        channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+        channel_send_buffer(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
         return;
 
@@ -437,7 +437,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
                 response.session = walkrequest->session;
                 response.id = entry->node;
 
-                channel_send_buffer(source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+                channel_send_buffer(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
                 break;
 
@@ -452,7 +452,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(source, EVENT_ERROR, "Not a directory: %u\n", &id);
+        channel_send_fmt1(0, source, EVENT_ERROR, "Not a directory: %u\n", &id);
 
     }
 
@@ -467,19 +467,19 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup2("block-service", "block:0");
-    channel_send(option_getdecimal("block-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
     {
 
-        channel_send_fmt0(option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0ext2-service\\0!source\\0");
+        channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0ext2-service\\0!source\\0");
 
-        while (channel_process());
+        while (channel_process(0));
 
     }
 
-    channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK);
 
 }
 

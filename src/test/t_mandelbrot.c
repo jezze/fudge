@@ -220,11 +220,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     lookup("wm-service");
     lookup2("mouse-service", "mouse:0");
-    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -245,10 +245,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = option_getdecimal("bpp");
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
-    channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait_buffer(option_getdecimal("video-service"), EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
+    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
+    channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_wait_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
     if (videoinfo.bpp == 1)
     {
@@ -272,18 +272,18 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCMAP, 768, &colormap);
+        channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCMAP, 768, &colormap);
 
     }
 
     draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    channel_send(option_getdecimal("mouse-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("mouse-service"), EVENT_LINK);
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("mouse-service"), EVENT_UNLINK);
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
+    channel_send(0, option_getdecimal("mouse-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
 
 }
 

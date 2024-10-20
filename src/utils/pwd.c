@@ -4,7 +4,7 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send_fmt1(source, EVENT_DATA, "%s\n", option_getstring("pwd"));
+    channel_send_fmt1(0, source, EVENT_DATA, "%s\n", option_getstring("pwd"));
 
 }
 

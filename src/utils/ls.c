@@ -11,7 +11,7 @@ static void list(unsigned int source, char *path)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, path);
+        unsigned int id = fs_walk(0, service, 0, path);
 
         if (id)
         {
@@ -20,9 +20,9 @@ static void list(unsigned int source, char *path)
             unsigned int nrecords;
             unsigned int offset;
 
-            channel_send_fmt0(source, EVENT_DATA, "../\n");
+            channel_send_fmt0(0, source, EVENT_DATA, "../\n");
 
-            for (offset = 0; (nrecords = fs_list(service, id, offset, records, 8)); offset += nrecords)
+            for (offset = 0; (nrecords = fs_list(0, service, id, offset, records, 8)); offset += nrecords)
             {
 
                 unsigned int i;
@@ -33,9 +33,9 @@ static void list(unsigned int source, char *path)
                     struct record *record = &records[i];
 
                     if (record->type == RECORD_TYPE_DIRECTORY)
-                        channel_send_fmt2(source, EVENT_DATA, "%w/\n", record->name, &record->length);
+                        channel_send_fmt2(0, source, EVENT_DATA, "%w/\n", record->name, &record->length);
                     else
-                        channel_send_fmt2(source, EVENT_DATA, "%w\n", record->name, &record->length);
+                        channel_send_fmt2(0, source, EVENT_DATA, "%w\n", record->name, &record->length);
 
                 }
 

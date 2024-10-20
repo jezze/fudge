@@ -4,7 +4,7 @@
 static void error(unsigned int source, void *data, unsigned int count)
 {
 
-    channel_send_fmt2(source, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
+    channel_send_fmt2(0, source, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
 
 }
 
@@ -43,8 +43,8 @@ static unsigned int version(unsigned int source, unsigned short tag, unsigned in
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(data, tag, msize, name), data);
-    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send_buffer(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(data, tag, msize, name), data);
+    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -68,8 +68,8 @@ static unsigned int attach(unsigned int source, unsigned short tag, unsigned int
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send_buffer(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
+    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -92,8 +92,8 @@ static unsigned int walk(unsigned int source, unsigned short tag, unsigned int f
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(data, tag, fid, newfid, 1, &wname), data);
-    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send_buffer(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(data, tag, fid, newfid, 1, &wname), data);
+    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -116,8 +116,8 @@ static unsigned int read(unsigned int source, unsigned short tag, unsigned int f
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send_buffer(option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(data, tag, fid, 0, 0, 512), data);
-    channel_poll(option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send_buffer(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(data, tag, fid, 0, 0, 512), data);
+    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -126,7 +126,7 @@ static unsigned int read(unsigned int source, unsigned short tag, unsigned int f
     {
 
     case P9P_RREAD:
-        channel_send_buffer(source, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
+        channel_send_buffer(0, source, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
 
         return 1;
 
@@ -140,13 +140,13 @@ static void sendrequest(unsigned int source)
 {
 
     if (!version(source, 40, 1200, "9P2000.F"))
-        channel_send_fmt0(source, EVENT_ERROR, "Unrcognized version\n");
+        channel_send_fmt0(0, source, EVENT_ERROR, "Unrcognized version\n");
 
     if (!attach(source, 41, 0, 0))
-        channel_send_fmt0(source, EVENT_ERROR, "Attach failed\n");
+        channel_send_fmt0(0, source, EVENT_ERROR, "Attach failed\n");
 
     if (!walk(source, 42, 0, 1, option_getstring("path")))
-        channel_send_fmt1(source, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
+        channel_send_fmt1(0, source, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
 
     read(source, 43, 1);
 

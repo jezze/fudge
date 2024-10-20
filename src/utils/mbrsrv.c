@@ -34,7 +34,7 @@ static void request_send(unsigned int sector, unsigned int count)
     blockrequest.sector = sector;
     blockrequest.count = count;
 
-    channel_send_buffer(option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send_buffer(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -48,7 +48,7 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
 
     request_send(sector, nblocks);
 
-    while (channel_poll(option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         read += buffer_write(buffer, count, data, message_datasize(&message), read);
@@ -70,7 +70,7 @@ static unsigned int isvalid(struct mbr *mbr)
 static void printpartition(unsigned int source, struct partition *partition, unsigned int num)
 {
 
-    channel_send_fmt1(source, EVENT_DATA, "Partition %u:\n", &num);
+    channel_send_fmt1(0, source, EVENT_DATA, "Partition %u:\n", &num);
 
     if (partition->systemid)
     {
@@ -85,13 +85,13 @@ static void printpartition(unsigned int source, struct partition *partition, uns
         unsigned int sstart = partition->sectorbase & 0x2F;
         unsigned int send = partition->sectorlimit & 0x2F;
 
-        channel_send_fmt1(source, EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
-        channel_send_fmt1(source, EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
-        channel_send_fmt1(source, EVENT_DATA, "    Start: %u\n", &start);
-        channel_send_fmt1(source, EVENT_DATA, "    End: %u\n", &end);
-        channel_send_fmt1(source, EVENT_DATA, "    Sectors: %u\n", &sectors);
-        channel_send_fmt3(source, EVENT_DATA, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
-        channel_send_fmt3(source, EVENT_DATA, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
+        channel_send_fmt1(0, source, EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
+        channel_send_fmt1(0, source, EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
+        channel_send_fmt1(0, source, EVENT_DATA, "    Start: %u\n", &start);
+        channel_send_fmt1(0, source, EVENT_DATA, "    End: %u\n", &end);
+        channel_send_fmt1(0, source, EVENT_DATA, "    Sectors: %u\n", &sectors);
+        channel_send_fmt3(0, source, EVENT_DATA, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
+        channel_send_fmt3(0, source, EVENT_DATA, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
 
     }
 
@@ -102,7 +102,7 @@ static void print(unsigned int source, struct mbr *mbr)
 
     unsigned int i;
 
-    channel_send_fmt2(source, EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
+    channel_send_fmt2(0, source, EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
 
     for (i = 0; i < 4; i++)
         printpartition(source, &mbr->partition[i], i);
@@ -116,13 +116,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct mbr *mbr = (struct mbr *)block;
 
     lookup2("block-service", "block:0");
-    channel_send(option_getdecimal("block-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
     request_readblocks(block, 1024, 0, 1);
 
     if (isvalid(mbr))
         print(source, mbr);
 
-    channel_send(option_getdecimal("block-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK);
 
 }
 

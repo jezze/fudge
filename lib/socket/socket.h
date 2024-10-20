@@ -27,20 +27,20 @@ struct socket
 
 };
 
-unsigned int socket_handle_arp(unsigned int channel, struct socket *local, struct socket *remote, unsigned int count, void *buffer);
-unsigned int socket_handle_icmp(unsigned int channel, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer);
-unsigned int socket_handle_tcp(unsigned int channel, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_handle_udp(unsigned int channel, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
-unsigned int socket_send_tcp(unsigned int channel, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
-unsigned int socket_send_udp(unsigned int channel, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
+unsigned int socket_handle_arp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, unsigned int count, void *buffer);
+unsigned int socket_handle_icmp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer);
+unsigned int socket_handle_tcp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_handle_udp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output);
+unsigned int socket_send_tcp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
+unsigned int socket_send_udp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata);
 struct socket *socket_accept_arp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer);
 struct socket *socket_accept_tcp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer);
 struct socket *socket_accept_udp(struct socket *local, struct socket *remotes, unsigned int nremotes, unsigned int count, void *buffer);
-unsigned int socket_receive(unsigned int channel, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count);
-void socket_listen_tcp(unsigned int channel, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router);
-void socket_connect_tcp(unsigned int channel, struct socket *local, struct socket *remote, struct socket *router);
-void socket_resolveremote(unsigned int channel, struct socket *local, struct socket *remote);
-void socket_resolvelocal(unsigned int channel, struct socket *socket);
+unsigned int socket_receive(unsigned int index, unsigned int target, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count);
+void socket_listen_tcp(unsigned int target, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router);
+void socket_connect_tcp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router);
+void socket_resolveremote(unsigned int index, unsigned int target, struct socket *local, struct socket *remote);
+void socket_resolvelocal(unsigned int index, unsigned int target, struct socket *socket);
 void socket_bind_ipv4(struct socket *socket, unsigned char address[IPV4_ADDRSIZE]);
 void socket_bind_ipv4s(struct socket *socket, char *address);
 void socket_bind_tcp(struct socket *socket, unsigned char port[TCP_PORTSIZE], unsigned int seq, unsigned int ack);

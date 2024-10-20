@@ -36,19 +36,19 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
         consoledata->data = '\n';
 
     case '\n':
-        count = socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remotes[0], &router, 1, &consoledata->data);
+        count = socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remotes[0], &router, 1, &consoledata->data);
 
         break;
 
     default:
-        count = socket_send_tcp(option_getdecimal("ethernet-service"), &local, &remotes[0], &router, 1, &consoledata->data);
+        count = socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remotes[0], &router, 1, &consoledata->data);
 
         break;
 
     }
 
     if (count)
-        channel_send_buffer(0 /* TODO: Should not be 0 */, EVENT_DATA, count, &consoledata->data);
+        channel_send_buffer(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, count, &consoledata->data);
 
 }
 
@@ -62,21 +62,21 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     lookup2("clock-service", "clock:0");
     lookup2("ethernet-service", "ethernet:0");
-    channel_send(option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
+    channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
     mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
     socket_bind_ipv4s(&router, option_getstring("router-address"));
     socket_bind_ipv4s(&local, option_getstring("local-address"));
     socket_bind_tcps(&local, option_getstring("local-port"), mtwist_rand(&state), mtwist_rand(&state));
-    socket_resolvelocal(option_getdecimal("ethernet-service"), &local);
-    channel_send(option_getdecimal("ethernet-service"), EVENT_LINK);
-    socket_resolveremote(option_getdecimal("ethernet-service"), &local, &router);
+    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
+    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
     socket_listen_tcp(option_getdecimal("ethernet-service"), &local, remotes, 64, &router);
 
-    while ((count = socket_receive(option_getdecimal("ethernet-service"), &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
-        channel_send_buffer(source, EVENT_DATA, count, buffer);
+    while ((count = socket_receive(0, option_getdecimal("ethernet-service"), &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
+        channel_send_buffer(0, source, EVENT_DATA, count, buffer);
 
-    channel_send(option_getdecimal("ethernet-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

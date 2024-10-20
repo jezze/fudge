@@ -74,10 +74,10 @@ static unsigned int loadmap(char *map, char *buffer, unsigned int count)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, map);
+        unsigned int id = fs_walk(0, service, 0, map);
 
         if (id)
-            return fs_read_full(service, id, buffer, count, 0);
+            return fs_read_full(0, service, id, buffer, count, 0);
 
     }
 
@@ -93,10 +93,10 @@ static unsigned int savemap(char *map, char *buffer, unsigned int count)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, map);
+        unsigned int id = fs_walk(0, service, 0, map);
 
         if (id)
-            return fs_write_all(service, id, buffer, count, 0);
+            return fs_write_all(0, service, id, buffer, count, 0);
 
     }
 
@@ -173,7 +173,7 @@ static void resolve(unsigned int source, unsigned int service, unsigned int id, 
             if (stringheader->size > 4096)
                 PANIC(source);
 
-            fs_read_all(service, id, strings, stringheader->size, stringheader->offset);
+            fs_read_all(0, service, id, strings, stringheader->size, stringheader->offset);
 
             for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
             {
@@ -181,8 +181,8 @@ static void resolve(unsigned int source, unsigned int service, unsigned int id, 
                 struct elf_relocation relocation;
                 struct elf_symbol symbol;
 
-                fs_read_all(service, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
-                fs_read_all(service, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+                fs_read_all(0, service, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fs_read_all(0, service, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
 
                 if (!symbol.shindex)
                 {
@@ -194,11 +194,11 @@ static void resolve(unsigned int source, unsigned int service, unsigned int id, 
 
                         unsigned int value;
 
-                        fs_read_all(service, id, &value, 4, dataheader->offset + relocation.offset);
+                        fs_read_all(0, service, id, &value, 4, dataheader->offset + relocation.offset);
 
                         value += address;
 
-                        fs_write_all(service, id, &value, 4, dataheader->offset + relocation.offset);
+                        fs_write_all(0, service, id, &value, 4, dataheader->offset + relocation.offset);
 
                     }
 
@@ -225,14 +225,14 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, mdata);
+        unsigned int id = fs_walk(0, service, 0, mdata);
 
         if (id)
         {
 
             struct elf_header header;
 
-            fs_read_all(service, id, &header, ELF_HEADER_SIZE, 0);
+            fs_read_all(0, service, id, &header, ELF_HEADER_SIZE, 0);
 
             if (elf_validate(&header))
             {
@@ -242,10 +242,10 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
                     struct elf_sectionheader sectionheaders[64];
 
-                    fs_read_all(service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
+                    fs_read_all(0, service, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                     updateundefined();
                     resolve(source, service, id, &header, sectionheaders);
-                    relocate(&header, sectionheaders, call_load(fs_map(service, id)));
+                    relocate(&header, sectionheaders, call_load(fs_map(0, service, id)));
                     savemap(mapname, mapdata, mapcount);
 
                 }

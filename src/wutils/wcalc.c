@@ -15,7 +15,7 @@ static int accumulator;
 static void refresh(int value)
 {
 
-    channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
+    channel_send_fmt1(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
 
 }
 
@@ -85,11 +85,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
-    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -145,8 +145,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "        + button in \"row4\" label \"+\" span \"1\" onclick \"q=add\"\n"
         "        + button in \"row4\" label \"=\" span \"1\" onclick \"q=sum\"\n";
 
-    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data0);
-    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data1);
+    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data0);
+    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data1);
 
 }
 

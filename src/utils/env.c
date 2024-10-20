@@ -60,7 +60,7 @@ static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
         char *value = find(key, keylength);
 
         if (value)
-            channel_send_fmt1(source, EVENT_QUERYRESPONSE, "%s\\0", value);
+            channel_send_fmt1(0, source, EVENT_QUERYRESPONSE, "%s\\0", value);
 
     }
 

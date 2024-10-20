@@ -24,13 +24,13 @@ static void update(void)
 
     count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
-    channel_send_fmt2(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input1, buffer, CONTENTSIZE);
     cursor = count;
     count += ring_readcopy(&input2, buffer + count, CONTENTSIZE);
 
-    channel_send_fmt3(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= output cursor \"%u\"\n= input content \"%w\"\n", &cursor, buffer, &count);
+    channel_send_fmt3(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= output cursor \"%u\"\n= input content \"%w\"\n", &cursor, buffer, &count);
 
 }
 
@@ -83,14 +83,14 @@ static void moveright(unsigned int steps)
 static unsigned int runslang(void *ibuffer, unsigned int icount)
 {
 
-    unsigned int channel = fs_spawn(option_getstring("slang"));
+    unsigned int channel = fs_spawn(0, option_getstring("slang"));
 
     if (channel)
     {
 
-        channel_send(channel, EVENT_MAIN);
-        channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
-        channel_send(channel, EVENT_END);
+        channel_send(0, channel, EVENT_MAIN);
+        channel_send_buffer(0, channel, EVENT_DATA, icount, ibuffer);
+        channel_send(0, channel, EVENT_END);
 
     }
 
@@ -104,21 +104,21 @@ static void interpretdata(struct message *message, void *buffer)
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message_datasize(message));
 
-    if (job_spawn(&job, "initrd:bin"))
+    if (job_spawn(&job, 0, "initrd:bin"))
     {
 
         char data[MESSAGE_SIZE];
 
-        job_run(&job, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, 0, option_getstring("env"), option_getstring("pwd"));
 
-        while (job_pick(&job, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, 0, message, MESSAGE_SIZE, data))
         {
 
             switch (message->event)
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, message->source, message->event, data, message_datasize(message)))
+                if (!job_pipe(&job, 0, message->source, message->event, data, message_datasize(message)))
                     print(data, message_datasize(message));
 
                 break;
@@ -157,7 +157,7 @@ static void interpret(void)
         print(buffer, count);
         update();
 
-        while (channel_pollany(channel, &message, MESSAGE_SIZE, buffer))
+        while (channel_pollany(0, channel, &message, MESSAGE_SIZE, buffer))
         {
 
             switch (message.event)
@@ -251,23 +251,23 @@ static void completedata(struct message *message, char *buffer, unsigned int cou
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message_datasize(message));
 
-    if (job_spawn(&job, "initrd:bin"))
+    if (job_spawn(&job, 0, "initrd:bin"))
     {
 
         char data[MESSAGE_SIZE];
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
-        job_run(&job, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, 0, option_getstring("env"), option_getstring("pwd"));
 
-        while (job_pick(&job, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, 0, message, MESSAGE_SIZE, data))
         {
 
             switch (message->event)
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, message->source, message->event, data, message_datasize(message)))
+                if (!job_pipe(&job, 0, message->source, message->event, data, message_datasize(message)))
                     ring_write(&output, data, message_datasize(message));
 
                 break;
@@ -323,7 +323,7 @@ static void complete(void)
     unsigned int count = createcommand(&input1, buffer, prefix);
     unsigned int channel = runslang(buffer, count);
 
-    while (channel_pollany(channel, &message, MESSAGE_SIZE, buffer))
+    while (channel_pollany(0, channel, &message, MESSAGE_SIZE, buffer))
     {
 
         switch (message.event)
@@ -356,11 +356,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
-    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -375,7 +375,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
         "      + text id \"input\" in \"output\" wrap \"char\" content \"\"\n";
 
-    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
 
 }
 
@@ -394,7 +394,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_C:
-                job_sendfirst(&job, EVENT_TERM, 0, 0);
+                job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
 
                 break;
 
@@ -405,7 +405,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            job_sendfirst(&job, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+            job_sendfirst(&job, 0, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         }
 

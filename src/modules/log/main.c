@@ -24,7 +24,7 @@ static void debuginterface_write(unsigned int level, unsigned int count, char *s
 void module_init(void)
 {
 
-    debug_initinterface(&debuginterface, 99, debuginterface_write);
+    debug_initinterface(&debuginterface, debuginterface_write);
     node_init(&node, &debuginterface, 0);
 
 }

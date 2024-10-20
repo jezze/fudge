@@ -3,7 +3,6 @@ struct node
 
     struct list links;
     void *interface;
-    unsigned int ichannel;
     unsigned int (*place)(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data);
 
 };

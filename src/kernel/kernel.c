@@ -336,11 +336,11 @@ struct task_thread *kernel_getthread(unsigned int itask)
 
 }
 
-unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data)
+unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message *message, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
-    struct mailbox *mailbox = getmailbox(&task->node, ichannel);
+    struct mailbox *mailbox = getmailbox(&task->node, index);
 
     if (mailbox)
     {
@@ -376,12 +376,12 @@ unsigned int kernel_place(struct node *source, struct node *target, unsigned int
 
 }
 
-unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
 
-    return (ichannel) ? kernel_place(&task->node, (struct node *)ichannel, event, count, data) : 0;
+    return (task && target) ? kernel_place(&task->node, (struct node *)target, event, count, data) : 0;
 
 }
 

@@ -129,7 +129,7 @@ static void keypress(struct gb_s *gb, void *data)
         break;
 
     case KEYS_KEY_ESCAPE:
-        channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+        channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
         channel_close();
 
         break;
@@ -200,7 +200,7 @@ static void run(unsigned int source, unsigned int service, unsigned int id)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    fs_read_full(service, id, rom, 0x80000, 0);
+    fs_read_full(0, service, id, rom, 0x80000, 0);
 
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
 
@@ -222,11 +222,11 @@ static void run(unsigned int source, unsigned int service, unsigned int id)
     }
 
     if (getsavesize(&gb))
-        fs_read_full(service, id, cart_ram, getsavesize(&gb), 0x80000);
+        fs_read_full(0, service, id, cart_ram, getsavesize(&gb), 0x80000);
 
-    channel_send_fmt1(source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
+    channel_send_fmt1(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
-    while (channel_pick(&message, MESSAGE_SIZE, data))
+    while (channel_pick(0, &message, MESSAGE_SIZE, data))
     {
 
         switch (message.event)
@@ -265,11 +265,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
-    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -294,7 +294,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int service = fs_auth(path);
-    unsigned int id = fs_walk(service, 0, path);
+    unsigned int id = fs_walk(0, service, 0, path);
     struct event_videoconf videoconf;
 
     videoconf.width = option_getdecimal("width");
@@ -304,19 +304,19 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     lookup2("keyboard-service", "keyboard:0");
     lookup2("timer-service", "timer:0/0");
     lookup2("video-service", "video:0");
-    channel_send(option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
-    channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
-    channel_send(option_getdecimal("timer-service"), EVENT_LINK);
-    channel_send(option_getdecimal("video-service"), EVENT_LINK);
-    channel_send_buffer(option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait(option_getdecimal("video-service"), EVENT_VIDEOINFO);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
+    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
+    channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("video-service"), EVENT_LINK);
+    channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_wait(0, option_getdecimal("video-service"), EVENT_VIDEOINFO);
     run(source, service, id);
-    channel_send(option_getdecimal("video-service"), EVENT_UNLINK);
-    channel_send(option_getdecimal("timer-service"), EVENT_UNLINK);
-    channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait(option_getdecimal("wm-service"), EVENT_WMACK);
+    channel_send(0, option_getdecimal("video-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("timer-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
 
 }
 

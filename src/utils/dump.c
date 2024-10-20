@@ -57,7 +57,7 @@ static void print(unsigned int source, unsigned int count, void *buffer)
         offset += cstring_write_fmt0(data, 120, "|\n", offset);
         page += 16;
 
-        channel_send_buffer(source, EVENT_DATA, offset, data);
+        channel_send_buffer(0, source, EVENT_DATA, offset, data);
 
     }
 
@@ -78,7 +78,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, mdata);
+        unsigned int id = fs_walk(0, service, 0, mdata);
 
         page = 0;
 
@@ -89,7 +89,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(service, id, buffer, 4096, offset)); offset += count)
+            for (offset = 0; (count = fs_read(0, service, id, buffer, 4096, offset)); offset += count)
                 print(source, count, buffer);
 
         }
@@ -97,7 +97,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
+            channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
         }
 

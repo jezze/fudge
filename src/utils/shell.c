@@ -14,7 +14,7 @@ static struct keys keys;
 static void print(void *buffer, unsigned int count)
 {
 
-    channel_send_buffer(option_getdecimal("console-service"), EVENT_DATA, count, buffer);
+    channel_send_buffer(0, option_getdecimal("console-service"), EVENT_DATA, count, buffer);
 
 }
 
@@ -28,14 +28,14 @@ static void printprompt(void)
 static unsigned int runslang(void *ibuffer, unsigned int icount)
 {
 
-    unsigned int channel = fs_spawn(option_getstring("slang"));
+    unsigned int channel = fs_spawn(0, option_getstring("slang"));
 
     if (channel)
     {
 
-        channel_send(channel, EVENT_MAIN);
-        channel_send_buffer(channel, EVENT_DATA, icount, ibuffer);
-        channel_send(channel, EVENT_END);
+        channel_send(0, channel, EVENT_MAIN);
+        channel_send_buffer(0, channel, EVENT_DATA, icount, ibuffer);
+        channel_send(0, channel, EVENT_END);
 
     }
 
@@ -49,21 +49,21 @@ static void interpretdata(struct message *message, void *buffer)
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message_datasize(message));
 
-    if (job_spawn(&job, "initrd:bin"))
+    if (job_spawn(&job, 0, "initrd:bin"))
     {
 
         char data[MESSAGE_SIZE];
 
-        job_run(&job, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, 0, option_getstring("env"), option_getstring("pwd"));
 
-        while (job_pick(&job, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, 0, message, MESSAGE_SIZE, data))
         {
 
             switch (message->event)
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, message->source, message->event, data, message_datasize(message)))
+                if (!job_pipe(&job, 0, message->source, message->event, data, message_datasize(message)))
                     print(data, message_datasize(message));
 
                 break;
@@ -98,7 +98,7 @@ static void interpret(void)
         struct message message;
         unsigned int channel = runslang(buffer, count);
 
-        while (channel_pollany(channel, &message, MESSAGE_SIZE, buffer))
+        while (channel_pollany(0, channel, &message, MESSAGE_SIZE, buffer))
         {
 
             switch (message.event)
@@ -192,23 +192,23 @@ static void completedata(struct message *message, char *buffer, unsigned int cou
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message_datasize(message));
 
-    if (job_spawn(&job, "initrd:bin"))
+    if (job_spawn(&job, 0, "initrd:bin"))
     {
 
         char data[MESSAGE_SIZE];
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
-        job_run(&job, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, 0, option_getstring("env"), option_getstring("pwd"));
 
-        while (job_pick(&job, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, 0, message, MESSAGE_SIZE, data))
         {
 
             switch (message->event)
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, message->source, message->event, data, message_datasize(message)))
+                if (!job_pipe(&job, 0, message->source, message->event, data, message_datasize(message)))
                     ring_write(&output, data, message_datasize(message));
 
                 break;
@@ -265,7 +265,7 @@ static void complete(void)
     unsigned int count = createcommand(&input, buffer, prefix);
     unsigned int channel = runslang(buffer, count);
 
-    while (channel_pollany(channel, &message, MESSAGE_SIZE, buffer))
+    while (channel_pollany(0, channel, &message, MESSAGE_SIZE, buffer))
     {
 
         switch (message.event)
@@ -312,12 +312,12 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
         {
 
         case 0x03:
-            job_sendfirst(&job, EVENT_TERM, 0, 0);
+            job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
 
             break;
 
         default:
-            job_sendfirst(&job, EVENT_CONSOLEDATA, msize, mdata);
+            job_sendfirst(&job, 0, EVENT_CONSOLEDATA, msize, mdata);
 
             break;
 
@@ -436,7 +436,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 {
 
                 case KEYS_KEY_C:
-                    job_sendfirst(&job, EVENT_TERM, 0, 0);
+                    job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
 
                     break;
 
@@ -447,7 +447,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             else
             {
 
-                job_sendfirst(&job, EVENT_CONSOLEDATA, keys.code.length, keys.code.value);
+                job_sendfirst(&job, 0, EVENT_CONSOLEDATA, keys.code.length, keys.code.value);
 
             }
 
@@ -515,14 +515,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     lookup2("console-service", "console:0");
     lookup2("keyboard-service", "keyboard:1");
-    channel_send(option_getdecimal("console-service"), EVENT_LINK);
-    channel_send(option_getdecimal("keyboard-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("console-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     printprompt();
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("console-service"), EVENT_UNLINK);
-    channel_send(option_getdecimal("keyboard-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("console-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK);
 
 }
 

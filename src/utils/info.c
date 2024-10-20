@@ -18,7 +18,7 @@ static void showcores(unsigned int source)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, "info/cores");
+        unsigned int id = fs_walk(0, service, 0, "info/cores");
 
         if (id)
         {
@@ -27,8 +27,8 @@ static void showcores(unsigned int source)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(service, id, &coreinfo, sizeof (struct event_coreinfo), offset)); offset += count)
-                channel_send_fmt3(source, EVENT_DATA, "core\n  id %u\n  sp 0x%H8u\n  task %u\n", &coreinfo.id, &coreinfo.sp, &coreinfo.task);
+            for (offset = 0; (count = fs_read(0, service, id, &coreinfo, sizeof (struct event_coreinfo), offset)); offset += count)
+                channel_send_fmt3(0, source, EVENT_DATA, "core\n  id %u\n  sp 0x%H8u\n  task %u\n", &coreinfo.id, &coreinfo.sp, &coreinfo.task);
 
         }
 
@@ -44,7 +44,7 @@ static void showtasks(unsigned int source)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, "info/tasks");
+        unsigned int id = fs_walk(0, service, 0, "info/tasks");
 
         if (id)
         {
@@ -54,11 +54,11 @@ static void showtasks(unsigned int source)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(service, id, &taskinfo, sizeof (struct event_taskinfo), offset)); offset += count)
+            for (offset = 0; (count = fs_read(0, service, id, &taskinfo, sizeof (struct event_taskinfo), offset)); offset += count)
             {
 
                 if (taskinfo.state)
-                    channel_send_fmt6(source, EVENT_DATA, "task\n  id %u\n  state %s\n  thread.ip 0x%H8u\n  thread.sp 0x%H8u\n  signals.kills %u\n  signals.blocks %u\n", &taskinfo.id, states[taskinfo.state], &taskinfo.thread_ip, &taskinfo.thread_sp, &taskinfo.signals_kills, &taskinfo.signals_blocks);
+                    channel_send_fmt6(0, source, EVENT_DATA, "task\n  id %u\n  state %s\n  thread.ip 0x%H8u\n  thread.sp 0x%H8u\n  signals.kills %u\n  signals.blocks %u\n", &taskinfo.id, states[taskinfo.state], &taskinfo.thread_ip, &taskinfo.thread_sp, &taskinfo.signals_kills, &taskinfo.signals_blocks);
 
             }
 
@@ -76,7 +76,7 @@ static void showmailboxes(unsigned int source)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, "info/mailboxes");
+        unsigned int id = fs_walk(0, service, 0, "info/mailboxes");
 
         if (id)
         {
@@ -85,8 +85,8 @@ static void showmailboxes(unsigned int source)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(service, id, &mailboxinfo, sizeof (struct event_mailboxinfo), offset)); offset += count)
-                channel_send_fmt1(source, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &mailboxinfo.address);
+            for (offset = 0; (count = fs_read(0, service, id, &mailboxinfo, sizeof (struct event_mailboxinfo), offset)); offset += count)
+                channel_send_fmt1(0, source, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &mailboxinfo.address);
 
         }
 

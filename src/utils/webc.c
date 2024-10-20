@@ -4,7 +4,7 @@
 static void dnsresolve(unsigned int source, char *domain, char address[32])
 {
 
-    unsigned int channel = fs_spawn(option_getstring("dns"));
+    unsigned int channel = fs_spawn(0, option_getstring("dns"));
 
     if (channel)
     {
@@ -12,10 +12,10 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send_fmt1(channel, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_send(channel, EVENT_MAIN);
+        channel_send_fmt1(0, channel, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(0, channel, EVENT_MAIN);
 
-        if (channel_poll(channel, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
+        if (channel_poll(0, channel, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             unsigned int i;
@@ -39,8 +39,8 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
 
         }
 
-        channel_send(channel, EVENT_END);
-        channel_wait(channel, EVENT_DONE);
+        channel_send(0, channel, EVENT_END);
+        channel_wait(0, channel, EVENT_DONE);
 
     }
 
@@ -49,7 +49,7 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
 static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
-    unsigned int channel = fs_spawn(option_getstring("socket"));
+    unsigned int channel = fs_spawn(0, option_getstring("socket"));
 
     if (channel)
     {
@@ -57,16 +57,16 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send_fmt1(channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
-        channel_send(channel, EVENT_MAIN);
-        channel_wait(channel, EVENT_READY);
-        channel_send_fmt2(channel, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
+        channel_send_fmt1(0, channel, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
+        channel_send(0, channel, EVENT_MAIN);
+        channel_wait(0, channel, EVENT_READY);
+        channel_send_fmt2(0, channel, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
 
-        while (channel_poll(channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
-            channel_send_buffer(source, EVENT_DATA, message_datasize(&message), data);
+        while (channel_poll(0, channel, EVENT_DATA, &message, MESSAGE_SIZE, data))
+            channel_send_buffer(0, source, EVENT_DATA, message_datasize(&message), data);
 
-        channel_send(channel, EVENT_END);
-        channel_wait(channel, EVENT_DONE);
+        channel_send(0, channel, EVENT_END);
+        channel_wait(0, channel, EVENT_DONE);
 
     }
 

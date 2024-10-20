@@ -16,7 +16,7 @@ static void onexit(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int crc = crc_finalize(&sum);
 
-    channel_send_fmt1(source, EVENT_DATA, "%u\n", &crc);
+    channel_send_fmt1(0, source, EVENT_DATA, "%u\n", &crc);
 
 }
 
@@ -28,7 +28,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, mdata);
+        unsigned int id = fs_walk(0, service, 0, mdata);
 
         if (id)
         {
@@ -37,7 +37,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(service, id, buffer, 4096, offset)); offset += count)
+            for (offset = 0; (count = fs_read(0, service, id, buffer, 4096, offset)); offset += count)
                 crc_read(&sum, buffer, count);
 
         }
@@ -45,7 +45,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            channel_send_fmt1(source, EVENT_ERROR, "Path not found: %s\n", mdata);
+            channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
         }
 

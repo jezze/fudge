@@ -8,7 +8,7 @@ static unsigned int cursor = 0;
 static void updatepath(void)
 {
 
-    channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
+    channel_send_fmt1(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
 
 }
 
@@ -20,7 +20,7 @@ static void updatecontent(void)
     if (service)
     {
 
-        unsigned int id = fs_walk(service, 0, path);
+        unsigned int id = fs_walk(0, service, 0, path);
 
         if (id)
         {
@@ -32,9 +32,9 @@ static void updatecontent(void)
             unsigned int maxsend = 50;
             unsigned int count = 0;
 
-            channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
+            channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
 
-            for (offset = 0; (nrecords = fs_list(service, id, offset, records, 8)); offset += nrecords)
+            for (offset = 0; (nrecords = fs_list(0, service, id, offset, records, 8)); offset += nrecords)
             {
 
                 unsigned int i;
@@ -53,7 +53,7 @@ static void updatecontent(void)
 
             }
 
-            channel_send_buffer(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, data);
+            channel_send_buffer(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, data);
 
         }
 
@@ -65,11 +65,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
-    channel_send(option_getdecimal("wm-service"), EVENT_WMMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
-    while (channel_process());
+    while (channel_process(0));
 
-    channel_send(option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
 
 }
 
@@ -166,7 +166,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"bottom\" label \"Paste\" onclick \"q=paste\"\n"
         "      + button in \"bottom\" label \"Delete\" onclick \"q=delete\"\n";
 
-    channel_send_fmt0(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
     cstring_write_fmt0(path, 256, "initrd:\\0", 0);
     updatepath();
     updatecontent();
@@ -187,7 +187,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor--;
 
-            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 
@@ -199,7 +199,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor++;
 
-            channel_send_fmt1(option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 

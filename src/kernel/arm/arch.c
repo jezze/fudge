@@ -22,7 +22,7 @@ extern unsigned int isr_swi;
 extern unsigned int isr_irq;
 extern unsigned int isr_fiq;
 extern unsigned int call_despawn(void);
-extern unsigned int call_place(unsigned int ichannel, unsigned int event, unsigned int count, void *data);
+extern unsigned int call_place(unsigned int index, unsigned int target, unsigned int event, unsigned int count, void *data);
 
 static struct cpu_general registers[KERNEL_TASKS];
 
@@ -48,15 +48,16 @@ static void isr_install(unsigned int index, void *addr)
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int id;} *args = stack;
+    struct {void *caller; unsigned int address;} *args = stack;
 
-    if (args->ichannel && args->id)
+    if (args->address)
     {
+
 
         unsigned int ntask = kernel_createtask();
 
         if (ntask)
-            return kernel_loadtask(ntask, 0, 0x6000, 0);
+            return kernel_loadtask(0, ntask, 0, 0x6000, 0);
 
     }
 
@@ -73,7 +74,7 @@ static void testtask(void)
 
     uart_puts("TEST TASK 1\n");
 
-    status = call_place(10, EVENT_DATA, 5, "hello");
+    status = call_place(0, 10, EVENT_DATA, 5, "hello");
 
     if (status == EVENT_OK)
         uart_puts("CORRECT\n");
