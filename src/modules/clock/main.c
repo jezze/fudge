@@ -44,7 +44,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_INFO:
-        return oninfo(target->interface, source);
+        return oninfo(target->resource->data, source);
 
     }
 
@@ -70,7 +70,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    node_init(&interface->node, 0, interface, place);
+    node_init(&interface->node, 0, &interface->resource, place);
 
     interface->id = id;
     interface->oninfo = oninfo;

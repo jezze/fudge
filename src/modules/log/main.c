@@ -25,7 +25,7 @@ void module_init(void)
 {
 
     debug_initinterface(&debuginterface, debuginterface_write);
-    node_init(&node, 0, &debuginterface, 0);
+    node_init(&node, 0, &debuginterface.resource, 0);
 
 }
 

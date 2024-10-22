@@ -44,7 +44,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_DATA:
-        return ondata(target->interface, source, data, count);
+        return ondata(target->resource->data, source, data, count);
 
     }
 
@@ -81,7 +81,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    node_init(&interface->node, 0, interface, place);
+    node_init(&interface->node, 0, &interface->resource, place);
 
     interface->id = id;
     interface->ondata = ondata;

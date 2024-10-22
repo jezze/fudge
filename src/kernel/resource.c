@@ -62,6 +62,7 @@ void resource_init(struct resource *resource, unsigned int type, void *data)
 {
 
     list_inititem(&resource->item, resource);
+    list_init(&resource->nodes);
 
     resource->type = type;
     resource->data = data;

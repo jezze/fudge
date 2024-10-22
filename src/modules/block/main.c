@@ -46,7 +46,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_BLOCKREQUEST:
-        return onblockrequest(target->interface, source, count, data);
+        return onblockrequest(target->resource->data, source, count, data);
 
     }
 
@@ -79,7 +79,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    node_init(&interface->node, 0, interface, place);
+    node_init(&interface->node, 0, &interface->resource, place);
 
     interface->id = id;
     interface->onblockrequest = onblockrequest;

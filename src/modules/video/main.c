@@ -53,10 +53,10 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
     {
 
     case EVENT_VIDEOCMAP:
-        return onvideocmap(target->interface, source, count, data);
+        return onvideocmap(target->resource->data, source, count, data);
 
     case EVENT_VIDEOCONF:
-        return onvideoconf(target->interface, source, count, data);
+        return onvideoconf(target->resource->data, source, count, data);
 
     }
 
@@ -96,7 +96,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    node_init(&interface->node, 0, interface, place);
+    node_init(&interface->node, 0, &interface->resource, place);
 
     interface->id = id;
     interface->width = 0;

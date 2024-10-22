@@ -70,7 +70,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
-    node_init(&interface->node, 0, interface, 0);
+    node_init(&interface->node, 0, &interface->resource, 0);
 
     interface->id = id;
 

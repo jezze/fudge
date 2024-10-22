@@ -114,10 +114,10 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    node_init(&interface->node1, 0, interface, 0);
-    node_init(&interface->node10, 0, interface, 0);
-    node_init(&interface->node100, 0, interface, 0);
-    node_init(&interface->node1000, 0, interface, 0);
+    node_init(&interface->node1, 0, &interface->resource, 0);
+    node_init(&interface->node10, 0, &interface->resource, 0);
+    node_init(&interface->node100, 0, &interface->resource, 0);
+    node_init(&interface->node1000, 0, &interface->resource, 0);
 
     interface->id = id;
 

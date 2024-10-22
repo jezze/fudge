@@ -123,7 +123,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 static unsigned int placetask(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct task *task = target->interface;
+    struct task *task = target->resource->data;
     struct message message;
     unsigned int status;
 
@@ -175,6 +175,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 static unsigned int link(struct node *source, struct node *target)
 {
 
+    struct list *nodes = &source->resource->nodes;
     struct list_item *noderowitem = list_picktail(&freenodes);
 
     if (noderowitem)
@@ -183,8 +184,8 @@ static unsigned int link(struct node *source, struct node *target)
         struct noderow *noderow = noderowitem->data;
         struct node *node = &noderow->node;
 
-        node_init(node, target->mailbox, target->interface, placetask);
-        list_add(&source->children, noderowitem);
+        node_init(node, target->mailbox, target->resource, placetask);
+        list_add(nodes, noderowitem);
 
         return MESSAGE_OK;
 
@@ -197,12 +198,13 @@ static unsigned int link(struct node *source, struct node *target)
 static unsigned int unlink(struct node *source, struct node *target)
 {
 
+    struct list *nodes = &source->resource->nodes;
     struct list_item *noderowitem;
     struct list_item *next;
 
-    spinlock_acquire(&source->children.spinlock);
+    spinlock_acquire(&nodes->spinlock);
 
-    for (noderowitem = source->children.head; noderowitem; noderowitem = next)
+    for (noderowitem = nodes->head; noderowitem; noderowitem = next)
     {
 
         struct noderow *noderow = noderowitem->data;
@@ -213,14 +215,14 @@ static unsigned int unlink(struct node *source, struct node *target)
         if (node->mailbox == target->mailbox)
         {
 
-            list_remove_unsafe(&source->children, noderowitem);
+            list_remove_unsafe(nodes, noderowitem);
             list_add(&freenodes, noderowitem);
 
         }
 
     }
 
-    spinlock_release(&source->children.spinlock);
+    spinlock_release(&nodes->spinlock);
 
     return MESSAGE_OK;
 
@@ -363,11 +365,12 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 void kernel_notify(struct node *source, unsigned int event, unsigned int count, void *data)
 {
 
+    struct list *nodes = &source->resource->nodes;
     struct list_item *noderowitem;
 
-    spinlock_acquire(&source->children.spinlock);
+    spinlock_acquire(&nodes->spinlock);
 
-    for (noderowitem = source->children.head; noderowitem; noderowitem = noderowitem->next)
+    for (noderowitem = nodes->head; noderowitem; noderowitem = noderowitem->next)
     {
 
         struct noderow *noderow = noderowitem->data;
@@ -377,7 +380,7 @@ void kernel_notify(struct node *source, unsigned int event, unsigned int count, 
 
     }
 
-    spinlock_release(&source->children.spinlock);
+    spinlock_release(&nodes->spinlock);
 
 }
 
@@ -486,7 +489,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         list_add(&deadtasks, &taskrow->item);
 
         /* Allow many nodes */
-        node_init(&taskrow->task.node, &mailboxes[++mailboxcount], &taskrow->task, placetask);
+        node_init(&taskrow->task.node, &mailboxes[++mailboxcount], &taskrow->task.resource, placetask);
 
     }
 
