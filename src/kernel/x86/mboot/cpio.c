@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include "cpio.h"
 
-static struct node node;
 static struct service service;
 static unsigned int address;
 static unsigned int limit;
@@ -315,7 +314,7 @@ static unsigned int onmaprequest(struct node *source, unsigned int count, void *
     message.mapresponse.session = maprequest->session;
     message.mapresponse.address = map(maprequest->id);
 
-    return kernel_place(&node, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
+    return kernel_place(0, &service.resource.sources, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
 
 }
 
@@ -328,7 +327,7 @@ static unsigned int onwalkrequest(struct node *source, unsigned int count, void 
     message.walkresponse.session = walkrequest->session;
     message.walkresponse.id = walk((walkrequest->parent) ? walkrequest->parent : getroot(), (char *)(walkrequest + 1), walkrequest->length);
 
-    return kernel_place(&node, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
+    return kernel_place(0, &service.resource.sources, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
 
 }
 
@@ -341,7 +340,7 @@ static unsigned int onstatrequest(struct node *source, unsigned int count, void 
     message.statresponse.session = statrequest->session;
     message.statresponse.nrecords = stat(statrequest->id, &message.record);
 
-    return kernel_place(&node, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
+    return kernel_place(0, &service.resource.sources, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
 
 }
 
@@ -354,7 +353,7 @@ static unsigned int onlistrequest(struct node *source, unsigned int count, void 
     message.listresponse.session = listrequest->session;
     message.listresponse.nrecords = list(listrequest->id, listrequest->offset, (listrequest->nrecords > 8) ? 8 : listrequest->nrecords, message.records);
 
-    return kernel_place(&node, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+    return kernel_place(0, &service.resource.sources, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 
 }
 
@@ -367,7 +366,7 @@ static unsigned int onreadrequest(struct node *source, unsigned int count, void 
     message.readresponse.session = readrequest->session;
     message.readresponse.count = read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
 
-    return kernel_place(&node, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+    return kernel_place(0, &service.resource.sources, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
 
 }
 
@@ -380,14 +379,14 @@ static unsigned int onwriterequest(struct node *source, unsigned int count, void
     message.writeresponse.session = writerequest->session;
     message.writeresponse.count = write(writerequest->id, writerequest + 1, writerequest->count, writerequest->offset);
 
-    return kernel_place(&node, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
+    return kernel_place(0, &service.resource.sources, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
 
 }
 
 static struct node *service_match(unsigned int count, char *name)
 {
 
-    return &node;
+    return kernel_getnode(&service.resource.sources, 0);
 
 }
 
@@ -427,8 +426,8 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    node_init(&node, 0, 0, place);
     service_init(&service, "initrd", service_match);
+    kernel_picknode(&service.resource.sources, 0, &service.resource, place);
     service_register(&service);
 
 }

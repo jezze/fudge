@@ -2,7 +2,6 @@ struct console_interface
 {
 
     struct resource resource;
-    struct node node;
     unsigned int id;
     unsigned int (*ondata)(struct node *source, void *buffer, unsigned int count);
 

@@ -2,7 +2,6 @@ struct mouse_interface
 {
 
     struct resource resource;
-    struct node node;
     unsigned int id;
 
 };

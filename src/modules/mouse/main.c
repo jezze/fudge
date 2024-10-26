@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct mouse_interface *interface = current->data;
 
             if (i == index)
-                return &interface->node;
+                return kernel_getnode(&interface->resource.sources, 0);
 
         }
 
@@ -38,7 +38,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     mousemove.relx = relx;
     mousemove.rely = rely;
 
-    kernel_notify(&interface->node, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
 }
 
@@ -49,7 +49,7 @@ void mouse_notifyscroll(struct mouse_interface *interface, char relz)
 
     mousescroll.relz = relz;
 
-    kernel_notify(&interface->node, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
 
 }
 
@@ -60,7 +60,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 
     mousepress.button = button;
 
-    kernel_notify(&interface->node, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
 
 }
 
@@ -71,7 +71,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 
     mouserelease.button = button;
 
-    kernel_notify(&interface->node, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
 
 }
 
@@ -93,7 +93,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
-    node_init(&interface->node, 0, &interface->resource, 0);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
 
     interface->id = id;
 

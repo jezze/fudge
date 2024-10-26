@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct clock_interface *interface = current->data;
 
             if (i == index)
-                return &interface->node;
+                return kernel_getnode(&interface->resource.sources, 0);
 
         }
 
@@ -70,7 +70,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    node_init(&interface->node, 0, &interface->resource, place);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
     interface->oninfo = oninfo;

@@ -2,7 +2,6 @@ struct ethernet_interface
 {
 
     struct resource resource;
-    struct node node;
     unsigned int id;
     unsigned int (*oninfo)(struct node *source);
     unsigned int (*ondata)(struct node *source, void *buffer, unsigned int count);

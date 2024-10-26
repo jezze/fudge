@@ -35,8 +35,6 @@ struct task
     struct task_signals signals;
     struct task_thread thread;
     struct spinlock spinlock;
-    struct node node;
-    unsigned int id;
     unsigned int state;
     unsigned int base;
 
@@ -51,4 +49,4 @@ void task_resetthread(struct task_thread *thread);
 void task_initsignals(struct task_signals *signals);
 void task_initthread(struct task_thread *thread);
 void task_reset(struct task *task);
-void task_init(struct task *task, unsigned int id);
+void task_init(struct task *task);

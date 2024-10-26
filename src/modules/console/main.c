@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct console_interface *interface = current->data;
 
             if (i == index)
-                return &interface->node;
+                return kernel_getnode(&interface->resource.sources, 0);
 
         }
 
@@ -59,7 +59,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(&interface->node, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
@@ -81,7 +81,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    node_init(&interface->node, 0, &interface->resource, place);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
     interface->ondata = ondata;

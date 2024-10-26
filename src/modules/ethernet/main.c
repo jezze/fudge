@@ -21,7 +21,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct ethernet_interface *interface = current->data;
 
             if (i == index)
-                return &interface->node;
+                return kernel_getnode(&interface->resource.sources, 0);
 
         }
 
@@ -66,7 +66,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->node, EVENT_DATA, count, buffer);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_DATA, count, buffer);
 
 }
 
@@ -88,7 +88,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    node_init(&interface->node, 0, &interface->resource, place);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
     interface->oninfo = oninfo;

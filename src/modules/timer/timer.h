@@ -2,10 +2,6 @@ struct timer_interface
 {
 
     struct resource resource;
-    struct node node1;
-    struct node node10;
-    struct node node100;
-    struct node node1000;
     unsigned int id;
 
 };

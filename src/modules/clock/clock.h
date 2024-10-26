@@ -2,7 +2,6 @@ struct clock_interface
 {
 
     struct resource resource;
-    struct node node;
     unsigned int id;
     unsigned int (*oninfo)(struct node *source);
 

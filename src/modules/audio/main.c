@@ -20,7 +20,6 @@ void audio_initinterface(struct audio_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
-    node_init(&interface->node, 0, &interface->resource, 0);
 
     interface->id = id;
 

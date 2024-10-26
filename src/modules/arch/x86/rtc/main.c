@@ -55,7 +55,7 @@ static unsigned int clockinterface_oninfo(struct node *source)
     clockinfo.month = read(REG_COMMAND_MONTH);
     clockinfo.year = 2000 + read(REG_COMMAND_YEAR);
 
-    kernel_place(&clockinterface.node, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+    kernel_place(0, &clockinterface.resource.sources, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
     return MESSAGE_OK;
 

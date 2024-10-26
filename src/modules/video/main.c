@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct video_interface *interface = current->data;
 
             if (i == index)
-                return &interface->node;
+                return kernel_getnode(&interface->resource.sources, 0);
 
         }
 
@@ -74,7 +74,7 @@ void video_notifymode(struct video_interface *interface, void *framebuffer, unsi
     videoinfo.height = h;
     videoinfo.bpp = bpp;
 
-    kernel_notify(&interface->node, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
 }
 
@@ -96,7 +96,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    node_init(&interface->node, 0, &interface->resource, place);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
     interface->width = 0;

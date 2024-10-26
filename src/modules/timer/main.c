@@ -27,20 +27,20 @@ static struct node *service_match(unsigned int count, char *name)
                 {
 
                 case 0:
-                    return &interface->node1;
+                    return kernel_getnode(&interface->resource.sources, 0);
 
                 case 1:
-                    return &interface->node10;
+                    return kernel_getnode(&interface->resource.sources, 1);
 
                 case 2:
-                    return &interface->node100;
+                    return kernel_getnode(&interface->resource.sources, 2);
 
                 case 3:
-                    return &interface->node1000;
+                    return kernel_getnode(&interface->resource.sources, 3);
 
                 }
 
-                return &interface->node1;
+                return kernel_getnode(&interface->resource.sources, 0);
 
             }
 
@@ -59,7 +59,7 @@ void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->node1, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -70,7 +70,7 @@ void timer_notifytick10(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->node10, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(1, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -81,7 +81,7 @@ void timer_notifytick100(struct timer_interface *interface, unsigned int counter
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->node100, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(2, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -92,7 +92,7 @@ void timer_notifytick1000(struct timer_interface *interface, unsigned int counte
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->node1000, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(3, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -114,10 +114,10 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    node_init(&interface->node1, 0, &interface->resource, 0);
-    node_init(&interface->node10, 0, &interface->resource, 0);
-    node_init(&interface->node100, 0, &interface->resource, 0);
-    node_init(&interface->node1000, 0, &interface->resource, 0);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
 
     interface->id = id;
 

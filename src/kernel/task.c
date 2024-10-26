@@ -156,7 +156,7 @@ void task_reset(struct task *task)
 
 }
 
-void task_init(struct task *task, unsigned int id)
+void task_init(struct task *task)
 {
 
     resource_init(&task->resource, RESOURCE_TASK, task);
@@ -164,7 +164,6 @@ void task_init(struct task *task, unsigned int id)
     task_initthread(&task->thread);
     spinlock_init(&task->spinlock);
 
-    task->id = id;
     task->state = TASK_STATE_DEAD;
     task->base = 0;
 

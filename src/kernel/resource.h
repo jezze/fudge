@@ -22,7 +22,8 @@ struct resource
     struct list_item item;
     unsigned int type;
     void *data;
-    struct list nodes;
+    struct list sources;
+    struct list targets;
 
 };
 

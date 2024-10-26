@@ -70,7 +70,6 @@ struct device
 
 };
 
-static struct node node;
 static struct base_bus bus;
 
 static struct device devices[] = {
@@ -356,7 +355,7 @@ void module_init(void)
 {
 
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
-    node_init(&node, 0, 0, place);
+    kernel_picknode(&bus.resource.sources, 0, 0, place);
 
 }
 

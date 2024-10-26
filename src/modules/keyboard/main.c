@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct keyboard_interface *interface = current->data;
 
             if (i == index)
-                return &interface->node;
+                return kernel_getnode(&interface->resource.sources, 0);
 
         }
 
@@ -37,7 +37,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 
     keypress.scancode = scancode;
 
-    kernel_notify(&interface->node, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
@@ -48,7 +48,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
     keyrelease.scancode = scancode;
 
-    kernel_notify(&interface->node, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 
@@ -70,7 +70,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
-    node_init(&interface->node, 0, &interface->resource, 0);
+    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
 
     interface->id = id;
 
