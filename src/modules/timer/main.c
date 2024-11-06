@@ -114,10 +114,10 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
-    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
-    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
-    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
 
     interface->id = id;
 

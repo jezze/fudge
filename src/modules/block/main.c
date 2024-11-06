@@ -79,7 +79,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    kernel_picknode(&interface->resource.sources, 0, &interface->resource, place);
+    kernel_link(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
     interface->onblockrequest = onblockrequest;

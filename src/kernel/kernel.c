@@ -190,7 +190,7 @@ struct node *kernel_getnode(struct list *list, unsigned int index)
 
 }
 
-void kernel_picknode(struct list *nodes, struct mailbox *mailbox, struct resource *resource, unsigned int (*place)(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data))
+struct node *kernel_link(struct list *nodes, struct mailbox *mailbox, struct resource *resource, unsigned int (*place)(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data))
 {
 
     struct list_item *noderowitem = list_picktail(&freenodes);
@@ -203,33 +203,15 @@ void kernel_picknode(struct list *nodes, struct mailbox *mailbox, struct resourc
         node_init(&noderow->node, mailbox, resource, place);
         list_add(nodes, noderowitem);
 
-    }
-
-}
-
-static unsigned int link(struct list *targets, struct node *target)
-{
-
-    struct list_item *noderowitem = list_picktail(&freenodes);
-
-    if (noderowitem)
-    {
-
-        struct noderow *noderow = noderowitem->data;
-        struct node *node = &noderow->node;
-
-        node_init(node, target->mailbox, target->resource, placetask);
-        list_add(targets, noderowitem);
-
-        return MESSAGE_OK;
+        return &noderow->node;
 
     }
 
-    return MESSAGE_FAILED;
+    return 0;
 
 }
 
-static unsigned int unlink(struct list *targets, struct node *target)
+void kernel_unlink(struct list *targets, struct node *target)
 {
 
     struct list_item *noderowitem;
@@ -256,8 +238,6 @@ static unsigned int unlink(struct list *targets, struct node *target)
     }
 
     spinlock_release(&targets->spinlock);
-
-    return MESSAGE_OK;
 
 }
 
@@ -368,10 +348,12 @@ unsigned int kernel_place(unsigned int index, struct list *sources, struct node 
         {
 
         case EVENT_LINK:
-            return link(&target->resource->targets, source);
+            return kernel_link(&target->resource->targets, source->mailbox, source->resource, source->place) ? MESSAGE_OK : MESSAGE_FAILED;
 
         case EVENT_UNLINK:
-            return unlink(&target->resource->targets, source);
+            kernel_unlink(&target->resource->targets, source);
+
+            return MESSAGE_OK;
 
         }
 
@@ -452,7 +434,7 @@ unsigned int kernel_createtask(void)
         struct task *task = &taskrow->task;
 
         task_reset(task);
-        kernel_picknode(&task->resource.sources, &mailboxes[++mailboxcount], &task->resource, placetask);
+        kernel_link(&task->resource.sources, &mailboxes[++mailboxcount], &task->resource, placetask);
 
         if (task_transition(task, TASK_STATE_NEW))
             return taskrow->id;

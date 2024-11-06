@@ -427,7 +427,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     limit = lim;
 
     service_init(&service, "initrd", service_match);
-    kernel_picknode(&service.resource.sources, 0, &service.resource, place);
+    kernel_link(&service.resource.sources, 0, &service.resource, place);
     service_register(&service);
 
 }

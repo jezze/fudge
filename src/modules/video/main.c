@@ -96,7 +96,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    kernel_picknode(&interface->resource.sources, 0, &interface->resource, place);
+    kernel_link(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
     interface->width = 0;

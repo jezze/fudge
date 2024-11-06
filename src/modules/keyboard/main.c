@@ -70,7 +70,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
-    kernel_picknode(&interface->resource.sources, 0, &interface->resource, 0);
+    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
 
     interface->id = id;
 
