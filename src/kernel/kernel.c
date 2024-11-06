@@ -332,7 +332,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
 
     }
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
