@@ -41,6 +41,24 @@ static struct task *gettask(unsigned int itask)
 
 }
 
+static unsigned int encodenode(struct node *node)
+{
+
+    unsigned int address = (unsigned int)node;
+
+    return address + 12345;
+
+}
+
+static struct node *decodenode(unsigned int inode)
+{
+
+    unsigned int address = inode - 12345;
+
+    return (struct node *)address;
+
+}
+
 static void unblocktasks(void)
 {
 
@@ -127,7 +145,7 @@ static unsigned int placetask(struct node *source, struct node *target, unsigned
     struct message message;
     unsigned int status;
 
-    message_init(&message, event, (unsigned int)source, count);
+    message_init(&message, event, encodenode(source), count);
 
     status = mailbox_place(target->mailbox, &message, data);
 
@@ -370,7 +388,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned i
 
     struct task *task = gettask(itask);
 
-    return (task && target) ? kernel_place(index, &task->resource.sources, (struct node *)target, event, count, data) : 0;
+    return (task && target) ? kernel_place(index, &task->resource.sources, decodenode(target), event, count, data) : 0;
 
 }
 
@@ -391,7 +409,7 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
             struct node *node = service->match(count - length, name + length);
 
             if (node)
-                return (unsigned int)node;
+                return encodenode(node);
 
         }
 
@@ -476,7 +494,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
             mailbox_reset(node->mailbox);
             coreassign(&taskrow->item);
 
-            return (unsigned int)node;
+            return encodenode(node);
 
         }
 
