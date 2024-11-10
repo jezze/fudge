@@ -11,8 +11,8 @@
 
 static unsigned int mailboxcount;
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
-static struct taskrow {unsigned int id; struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
-static struct noderow {unsigned int id; struct node node; struct list_item item;} noderows[KERNEL_NODES];
+static struct taskrow {struct task task; struct list_item item;} taskrows[KERNEL_TASKS];
+static struct noderow {struct node node; struct list_item item;} noderows[KERNEL_NODES];
 static struct list freenodes;
 static struct list deadtasks;
 static struct list blockedtasks;
@@ -41,21 +41,69 @@ static struct task *gettask(unsigned int itask)
 
 }
 
-static unsigned int encodenode(struct node *node)
+static struct node *getnode(unsigned int inode)
 {
 
-    unsigned int address = (unsigned int)node;
-
-    return address + 12345;
+    return (inode && inode < KERNEL_NODES) ? &noderows[inode].node : 0;
 
 }
 
-static struct node *decodenode(unsigned int inode)
+unsigned int kernel_encodetask(struct task *task)
 {
 
-    unsigned int address = inode - 12345;
+    unsigned int i;
 
-    return (struct node *)address;
+    for (i = 1; i < KERNEL_TASKS; i++)
+    {
+
+        if (&taskrows[i].task == task)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int kernel_encodenode(struct node *node)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < KERNEL_NODES; i++)
+    {
+
+        if (&noderows[i].node == node)
+            return i;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int kernel_encodenodelist(struct list *list, unsigned int index)
+{
+
+    struct list_item *noderowitem = list->head;
+
+    if (noderowitem)
+    {
+
+        struct noderow *noderow = noderowitem->data;
+
+        return kernel_encodenode(&noderow->node);
+
+    }
+
+    return 0;
+
+}
+
+struct node *kernel_decodenode(unsigned int inode)
+{
+
+    return getnode(inode);
 
 }
 
@@ -138,16 +186,17 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placetask(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
+static unsigned int placetask(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct task *task = target->resource->data;
+    struct node *tnode = getnode(target);
+    struct task *task = tnode->resource->data;
     struct message message;
     unsigned int status;
 
-    message_init(&message, event, encodenode(source), count);
+    message_init(&message, event, source, count);
 
-    status = mailbox_place(target->mailbox, &message, data);
+    status = mailbox_place(tnode->mailbox, &message, data);
 
     task_signal(task, TASK_SIGNAL_UNBLOCK);
 
@@ -167,7 +216,7 @@ static unsigned int picknewtask(struct core *core)
         struct task *task = &taskrow->task;
 
         if (task_transition(task, TASK_STATE_RUNNING))
-            return taskrow->id;
+            return kernel_encodetask(task);
 
     }
 
@@ -190,25 +239,7 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-struct node *kernel_getnode(struct list *list, unsigned int index)
-{
-
-    struct list_item *noderowitem = list->head;
-
-    if (noderowitem)
-    {
-
-        struct noderow *noderow = noderowitem->data;
-
-        return &noderow->node;
-
-    }
-
-    return 0;
-
-}
-
-struct node *kernel_link(struct list *nodes, struct mailbox *mailbox, struct resource *resource, unsigned int (*place)(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data))
+struct node *kernel_link(struct list *nodes, struct mailbox *mailbox, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
     struct list_item *noderowitem = list_picktail(&freenodes);
@@ -334,17 +365,24 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
     if (task)
     {
 
-        struct node *node = kernel_getnode(&task->resource.sources, index);
+        unsigned int source = kernel_encodenodelist(&task->resource.sources, index);
 
-        if (node)
+        if (source)
         {
 
-            unsigned int status = mailbox_pick(node->mailbox, message, count, data);
+            struct node *snode = kernel_decodenode(source);
 
-            if (status == MESSAGE_RETRY)
-                task_signal(task, TASK_SIGNAL_BLOCK);
+            if (snode)
+            {
 
-            return status;
+                unsigned int status = mailbox_pick(snode->mailbox, message, count, data);
+
+                if (status == MESSAGE_RETRY)
+                    task_signal(task, TASK_SIGNAL_BLOCK);
+
+                return status;
+
+            }
 
         }
 
@@ -354,32 +392,33 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
 
 }
 
-unsigned int kernel_place(unsigned int index, struct list *sources, struct node *target, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *source = kernel_getnode(sources, index);
+    struct node *snode = getnode(source);
+    struct node *tnode = getnode(target);
 
-    if (source)
+    if (snode && tnode)
     {
 
         switch (event)
         {
 
         case EVENT_LINK:
-            return kernel_link(&target->resource->targets, source->mailbox, source->resource, source->place) ? MESSAGE_OK : MESSAGE_FAILED;
+            return kernel_link(&tnode->resource->targets, snode->mailbox, snode->resource, snode->place) ? MESSAGE_OK : MESSAGE_FAILED;
 
         case EVENT_UNLINK:
-            kernel_unlink(&target->resource->targets, source);
+            kernel_unlink(&tnode->resource->targets, snode);
 
             return MESSAGE_OK;
 
         }
 
-        return (target->place) ? target->place(source, target, event, count, data) : 0;
+        return (tnode->place) ? tnode->place(source, target, event, count, data) : 0;
 
     }
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
@@ -388,7 +427,17 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned i
 
     struct task *task = gettask(itask);
 
-    return (task && target) ? kernel_place(index, &task->resource.sources, decodenode(target), event, count, data) : 0;
+    if (task)
+    {
+
+        unsigned int source = kernel_encodenodelist(&task->resource.sources, index);
+
+        if (source)
+            return (task && target) ? kernel_place(source, target, event, count, data) : 0;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -404,14 +453,7 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
         unsigned int length = cstring_length(service->name);
 
         if (count >= length && buffer_match(name, service->name, length))
-        {
-
-            struct node *node = service->match(count - length, name + length);
-
-            if (node)
-                return encodenode(node);
-
-        }
+            return service->match(count - length, name + length);
 
     }
 
@@ -419,7 +461,7 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 
 }
 
-void kernel_notify(unsigned int index, struct list *sources, struct list *targets, unsigned int event, unsigned int count, void *data)
+void kernel_notify(unsigned int source, struct list *targets, unsigned int event, unsigned int count, void *data)
 {
 
     struct list_item *noderowitem;
@@ -432,7 +474,7 @@ void kernel_notify(unsigned int index, struct list *sources, struct list *target
         struct noderow *noderow = noderowitem->data;
         struct node *target = &noderow->node;
 
-        kernel_place(index, sources, target, event, count, data);
+        kernel_place(source, kernel_encodenode(target), event, count, data);
 
     }
 
@@ -455,7 +497,7 @@ unsigned int kernel_createtask(void)
         kernel_link(&task->resource.sources, &mailboxes[++mailboxcount], &task->resource, placetask);
 
         if (task_transition(task, TASK_STATE_NEW))
-            return taskrow->id;
+            return kernel_encodetask(task);
 
     }
 
@@ -489,12 +531,26 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
         {
 
-            struct node *node = kernel_getnode(&task->resource.sources, 0);
+            unsigned int target = kernel_encodenodelist(&task->resource.sources, 0);
 
-            mailbox_reset(node->mailbox);
-            coreassign(&taskrow->item);
+            if (target)
+            {
 
-            return encodenode(node);
+                struct node *tnode = kernel_decodenode(target);
+
+                if (tnode)
+                {
+
+                    mailbox_reset(tnode->mailbox);
+                    coreassign(&taskrow->item);
+
+                    return target;
+
+                }
+
+            }
+
+            return 0;
 
         }
 
@@ -541,8 +597,6 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
         struct taskrow *taskrow = &taskrows[i];
 
-        taskrow->id = i;
-
         task_init(&taskrow->task);
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
@@ -550,12 +604,10 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
     }
 
-    for (i = 0; i < KERNEL_NODES; i++)
+    for (i = 1; i < KERNEL_NODES; i++)
     {
 
         struct noderow *noderow = &noderows[i];
-
-        noderow->id = i;
 
         list_inititem(&noderow->item, noderow);
         list_add(&freenodes, &noderow->item);

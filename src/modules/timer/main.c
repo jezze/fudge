@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static struct node *service_match(unsigned int count, char *name)
+static unsigned int service_match(unsigned int count, char *name)
 {
 
     if (count >= 2 && buffer_match(name, ":", 1))
@@ -27,20 +27,20 @@ static struct node *service_match(unsigned int count, char *name)
                 {
 
                 case 0:
-                    return kernel_getnode(&interface->resource.sources, 0);
+                    return kernel_encodenodelist(&interface->resource.sources, 0);
 
                 case 1:
-                    return kernel_getnode(&interface->resource.sources, 1);
+                    return kernel_encodenodelist(&interface->resource.sources, 1);
 
                 case 2:
-                    return kernel_getnode(&interface->resource.sources, 2);
+                    return kernel_encodenodelist(&interface->resource.sources, 2);
 
                 case 3:
-                    return kernel_getnode(&interface->resource.sources, 3);
+                    return kernel_encodenodelist(&interface->resource.sources, 3);
 
                 }
 
-                return kernel_getnode(&interface->resource.sources, 0);
+                return kernel_encodenodelist(&interface->resource.sources, 0);
 
             }
 
@@ -59,7 +59,7 @@ void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -70,7 +70,7 @@ void timer_notifytick10(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(1, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 1), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -81,7 +81,7 @@ void timer_notifytick100(struct timer_interface *interface, unsigned int counter
 
     timertick.counter = counter;
 
-    kernel_notify(2, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 2), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -92,7 +92,7 @@ void timer_notifytick1000(struct timer_interface *interface, unsigned int counte
 
     timertick.counter = counter;
 
-    kernel_notify(3, &interface->resource.sources, &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 3), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 

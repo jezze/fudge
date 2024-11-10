@@ -125,7 +125,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int consoleinterface_ondata(struct node *source, void *buffer, unsigned int count)
+static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;

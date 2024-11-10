@@ -236,7 +236,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_oninfo(struct node *source)
+static unsigned int ethernetinterface_oninfo(unsigned int source)
 {
 
     unsigned char address[ETHERNET_ADDRSIZE];
@@ -248,13 +248,13 @@ static unsigned int ethernetinterface_oninfo(struct node *source)
     address[4] = io_inb(io + REG_IDR4);
     address[5] = io_inb(io + REG_IDR5);
 
-    kernel_place(0, &ethernetinterface.resource.sources, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
+    kernel_place(kernel_encodenodelist(&ethernetinterface.resource.sources, 0), source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
 
     return MESSAGE_OK;
 
 }
 
-static unsigned int ethernetinterface_ondata(struct node *source, void *buffer, unsigned int count)
+static unsigned int ethernetinterface_ondata(unsigned int source, void *buffer, unsigned int count)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);

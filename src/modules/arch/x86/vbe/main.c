@@ -97,14 +97,14 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static unsigned int videointerface_onvideocmap(struct node *source, unsigned int count, void *buffer)
+static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
     return MESSAGE_UNIMPLEMENTED;
 
 }
 
-static unsigned int videointerface_onvideoconf(struct node *source, unsigned int width, unsigned int height, unsigned int bpp)
+static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     unsigned short modenum;

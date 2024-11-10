@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static struct node *service_match(unsigned int count, char *name)
+static unsigned int service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct clock_interface *interface = current->data;
 
             if (i == index)
-                return kernel_getnode(&interface->resource.sources, 0);
+                return kernel_encodenodelist(&interface->resource.sources, 0);
 
         }
 
@@ -30,21 +30,23 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int oninfo(struct clock_interface *interface, struct node *source)
+static unsigned int oninfo(struct clock_interface *interface, unsigned int source)
 {
 
     return interface->oninfo(source);
 
 }
 
-static unsigned int place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
+static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
+
+    struct node *tnode = kernel_decodenode(target);
 
     switch (event)
     {
 
     case EVENT_INFO:
-        return oninfo(target->resource->data, source);
+        return oninfo(tnode->resource->data, source);
 
     }
 
@@ -66,7 +68,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int (*oninfo)(struct node *source))
+void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source))
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);

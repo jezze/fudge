@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static struct node *service_match(unsigned int count, char *name)
+static unsigned int service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct console_interface *interface = current->data;
 
             if (i == index)
-                return kernel_getnode(&interface->resource.sources, 0);
+                return kernel_encodenodelist(&interface->resource.sources, 0);
 
         }
 
@@ -30,21 +30,23 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int ondata(struct console_interface *interface, struct node *source, void *data, unsigned int count)
+static unsigned int ondata(struct console_interface *interface, unsigned int source, void *data, unsigned int count)
 {
 
     return interface->ondata(source, data, count);
 
 }
 
-static unsigned int place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
+static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
+
+    struct node *tnode = kernel_decodenode(target);
 
     switch (event)
     {
 
     case EVENT_DATA:
-        return ondata(target->resource->data, source, data, count);
+        return ondata(tnode->resource->data, source, data, count);
 
     }
 
@@ -59,7 +61,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
@@ -77,7 +79,7 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(struct node *source, void *buffer, unsigned int count))
+void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(unsigned int source, void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);

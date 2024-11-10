@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static struct node *service_match(unsigned int count, char *name)
+static unsigned int service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct keyboard_interface *interface = current->data;
 
             if (i == index)
-                return kernel_getnode(&interface->resource.sources, 0);
+                return kernel_encodenodelist(&interface->resource.sources, 0);
 
         }
 
@@ -37,7 +37,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 
     keypress.scancode = scancode;
 
-    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
@@ -48,7 +48,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
     keyrelease.scancode = scancode;
 
-    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 

@@ -4,7 +4,7 @@
 
 static struct service service;
 
-static struct node *service_match(unsigned int count, char *name)
+static unsigned int service_match(unsigned int count, char *name)
 {
 
     if (count == 2 && buffer_match(name, ":", 1))
@@ -20,7 +20,7 @@ static struct node *service_match(unsigned int count, char *name)
             struct block_interface *interface = current->data;
 
             if (i == index)
-                return kernel_getnode(&interface->resource.sources, 0);
+                return kernel_encodenodelist(&interface->resource.sources, 0);
 
         }
 
@@ -30,7 +30,7 @@ static struct node *service_match(unsigned int count, char *name)
 
 }
 
-static unsigned int onblockrequest(struct block_interface *interface, struct node *source, unsigned int count, void *data)
+static unsigned int onblockrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
     struct event_blockrequest *blockrequest = data;
@@ -39,14 +39,16 @@ static unsigned int onblockrequest(struct block_interface *interface, struct nod
 
 }
 
-static unsigned int place(struct node *source, struct node *target, unsigned int event, unsigned int count, void *data)
+static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
+
+    struct node *tnode = kernel_decodenode(target);
 
     switch (event)
     {
 
     case EVENT_BLOCKREQUEST:
-        return onblockrequest(target->resource->data, source, count, data);
+        return onblockrequest(tnode->resource->data, source, count, data);
 
     }
 
@@ -57,7 +59,7 @@ static unsigned int place(struct node *source, struct node *target, unsigned int
 void block_notifyblockresponse(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(0, &interface->resource.sources, &interface->resource.targets, EVENT_BLOCKRESPONSE, count, buffer);
+    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_BLOCKRESPONSE, count, buffer);
 
 }
 
@@ -75,7 +77,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockrequest)(struct node *source, unsigned int count, unsigned int sector))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockrequest)(unsigned int source, unsigned int count, unsigned int sector))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
