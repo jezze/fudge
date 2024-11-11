@@ -17,10 +17,8 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_BLOCKINTERFACE)); i++)
         {
 
-            struct block_interface *interface = current->data;
-
             if (i == index)
-                return kernel_encodenodelist(&interface->resource.sources, 0);
+                return kernel_encodenodelist(&current->sources, 0);
 
         }
 

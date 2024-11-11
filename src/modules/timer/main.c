@@ -18,31 +18,8 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_TIMERINTERFACE)); i++)
         {
 
-            struct timer_interface *interface = current->data;
-
             if (i == index)
-            {
-
-                switch (channelnum)
-                {
-
-                case 0:
-                    return kernel_encodenodelist(&interface->resource.sources, 0);
-
-                case 1:
-                    return kernel_encodenodelist(&interface->resource.sources, 1);
-
-                case 2:
-                    return kernel_encodenodelist(&interface->resource.sources, 2);
-
-                case 3:
-                    return kernel_encodenodelist(&interface->resource.sources, 3);
-
-                }
-
-                return kernel_encodenodelist(&interface->resource.sources, 0);
-
-            }
+                return kernel_encodenodelist(&current->sources, channelnum);
 
         }
 
