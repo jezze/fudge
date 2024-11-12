@@ -18,8 +18,10 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_TIMERINTERFACE)); i++)
         {
 
+            struct timer_interface *interface = current->data;
+
             if (i == index)
-                return kernel_encodenodelist(&current->sources, channelnum);
+                return interface->inodes[channelnum];
 
         }
 
@@ -36,7 +38,7 @@ void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[0], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -47,7 +49,7 @@ void timer_notifytick10(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 1), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[1], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -58,7 +60,7 @@ void timer_notifytick100(struct timer_interface *interface, unsigned int counter
 
     timertick.counter = counter;
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 2), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[2], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -69,7 +71,7 @@ void timer_notifytick1000(struct timer_interface *interface, unsigned int counte
 
     timertick.counter = counter;
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 3), &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[3], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -91,12 +93,12 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
 
     interface->id = id;
+    interface->inodes[0] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    interface->inodes[1] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    interface->inodes[2] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    interface->inodes[3] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
 
 }
 

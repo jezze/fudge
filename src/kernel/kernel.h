@@ -2,13 +2,10 @@
 #define KERNEL_NODES                    1024
 #define KERNEL_MAILBOXES                512
 
-unsigned int kernel_encodetask(struct task *task);
-unsigned int kernel_encodenode(struct node *node);
-unsigned int kernel_encodenodelist(struct list *list, unsigned int index);
 void *kernel_getinterface(unsigned int inode);
 struct core *kernel_getcore(void);
-struct node *kernel_link(struct list *nodes, struct mailbox *mailbox, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data));
-void kernel_unlink(struct list *targets, struct node *target);
+unsigned int kernel_link(struct list *nodes, struct mailbox *mailbox, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data));
+unsigned int kernel_unlink(struct list *nodes, unsigned int inode);
 void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item));
 unsigned int kernel_schedule(struct core *core);
 unsigned int kernel_codebase(unsigned int itask, unsigned int address);

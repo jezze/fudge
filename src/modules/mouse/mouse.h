@@ -3,6 +3,7 @@ struct mouse_interface
 
     struct resource resource;
     unsigned int id;
+    unsigned int inode;
 
 };
 

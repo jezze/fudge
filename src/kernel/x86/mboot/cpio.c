@@ -5,6 +5,7 @@
 static struct service service;
 static unsigned int address;
 static unsigned int limit;
+static unsigned int inode;
 
 static struct cpio_header *getheader(unsigned int id)
 {
@@ -314,7 +315,7 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
     message.mapresponse.session = maprequest->session;
     message.mapresponse.address = map(maprequest->id);
 
-    return kernel_place(kernel_encodenodelist(&service.resource.sources, 0), source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
+    return kernel_place(inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
 
 }
 
@@ -327,7 +328,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     message.walkresponse.session = walkrequest->session;
     message.walkresponse.id = walk((walkrequest->parent) ? walkrequest->parent : getroot(), (char *)(walkrequest + 1), walkrequest->length);
 
-    return kernel_place(kernel_encodenodelist(&service.resource.sources, 0), source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
+    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
 
 }
 
@@ -340,7 +341,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     message.statresponse.session = statrequest->session;
     message.statresponse.nrecords = stat(statrequest->id, &message.record);
 
-    return kernel_place(kernel_encodenodelist(&service.resource.sources, 0), source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
+    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
 
 }
 
@@ -353,7 +354,7 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     message.listresponse.session = listrequest->session;
     message.listresponse.nrecords = list(listrequest->id, listrequest->offset, (listrequest->nrecords > 8) ? 8 : listrequest->nrecords, message.records);
 
-    return kernel_place(kernel_encodenodelist(&service.resource.sources, 0), source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+    return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
 
 }
 
@@ -366,7 +367,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     message.readresponse.session = readrequest->session;
     message.readresponse.count = read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
 
-    return kernel_place(kernel_encodenodelist(&service.resource.sources, 0), source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
 
 }
 
@@ -379,14 +380,14 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     message.writeresponse.session = writerequest->session;
     message.writeresponse.count = write(writerequest->id, writerequest + 1, writerequest->count, writerequest->offset);
 
-    return kernel_place(kernel_encodenodelist(&service.resource.sources, 0), source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
+    return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
 
 }
 
 static unsigned int service_match(unsigned int count, char *name)
 {
 
-    return kernel_encodenodelist(&service.resource.sources, 0);
+    return inode;
 
 }
 
@@ -427,8 +428,9 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     limit = lim;
 
     service_init(&service, "initrd", service_match);
-    kernel_link(&service.resource.sources, 0, &service.resource, place);
     service_register(&service);
+
+    inode = kernel_link(&service.resource.sources, 0, &service.resource, place);
 
 }
 

@@ -17,8 +17,10 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_VIDEOINTERFACE)); i++)
         {
 
+            struct video_interface *interface = current->data;
+
             if (i == index)
-                return kernel_encodenodelist(&current->sources, 0);
+                return interface->inode;
 
         }
 
@@ -74,7 +76,7 @@ void video_notifymode(struct video_interface *interface, void *framebuffer, unsi
     videoinfo.height = h;
     videoinfo.bpp = bpp;
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+    kernel_notify(interface->inode, &interface->resource.targets, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
 }
 
@@ -96,9 +98,9 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
+    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, place);
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;

@@ -5,6 +5,16 @@
 #include "debug.h"
 #include "task.h"
 
+static void resetnodes(struct task *task)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 32; i++)
+        task->inodes[i] = 0;
+
+}
+
 void task_signal(struct task *task, unsigned int signal)
 {
 
@@ -151,6 +161,7 @@ void task_reset(struct task *task)
 
     task_resetsignals(&task->signals);
     task_resetthread(&task->thread);
+    resetnodes(task);
 
     task->state = TASK_STATE_DEAD;
 
@@ -163,6 +174,7 @@ void task_init(struct task *task)
     task_initsignals(&task->signals);
     task_initthread(&task->thread);
     spinlock_init(&task->spinlock);
+    resetnodes(task);
 
     task->state = TASK_STATE_DEAD;
     task->base = 0;

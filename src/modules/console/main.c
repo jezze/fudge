@@ -17,8 +17,10 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_CONSOLEINTERFACE)); i++)
         {
 
+            struct console_interface *interface = current->data;
+
             if (i == index)
-                return kernel_encodenodelist(&current->sources, 0);
+                return interface->inode;
 
         }
 
@@ -59,7 +61,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(interface->inode, &interface->resource.targets, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
@@ -81,9 +83,9 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
+    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, place);
     interface->ondata = ondata;
 
 }

@@ -17,8 +17,10 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_CLOCKINTERFACE)); i++)
         {
 
+            struct clock_interface *interface = current->data;
+
             if (i == index)
-                return kernel_encodenodelist(&current->sources, 0);
+                return interface->inode;
 
         }
 
@@ -70,9 +72,9 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
+    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, place);
     interface->oninfo = oninfo;
 
 }

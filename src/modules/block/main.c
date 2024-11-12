@@ -17,8 +17,10 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_BLOCKINTERFACE)); i++)
         {
 
+            struct block_interface *interface = current->data;
+
             if (i == index)
-                return kernel_encodenodelist(&current->sources, 0);
+                return interface->inode;
 
         }
 
@@ -57,7 +59,7 @@ static unsigned int place(unsigned int source, unsigned int target, unsigned int
 void block_notifyblockresponse(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_BLOCKRESPONSE, count, buffer);
+    kernel_notify(interface->inode, &interface->resource.targets, EVENT_BLOCKRESPONSE, count, buffer);
 
 }
 
@@ -79,9 +81,9 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
+    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, place);
     interface->onblockrequest = onblockrequest;
 
 }

@@ -3,6 +3,7 @@ struct console_interface
 
     struct resource resource;
     unsigned int id;
+    unsigned int inode;
     unsigned int (*ondata)(unsigned int source, void *buffer, unsigned int count);
 
 };

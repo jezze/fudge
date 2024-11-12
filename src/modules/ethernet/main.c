@@ -18,8 +18,10 @@ static unsigned int service_match(unsigned int count, char *name)
         for (i = 0; (current = resource_foreachtype(current, RESOURCE_ETHERNETINTERFACE)); i++)
         {
 
+            struct ethernet_interface *interface = current->data;
+
             if (i == index)
-                return kernel_encodenodelist(&current->sources, 0);
+                return interface->inode;
 
         }
 
@@ -66,7 +68,7 @@ static unsigned int place(unsigned int source, unsigned int target, unsigned int
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(kernel_encodenodelist(&interface->resource.sources, 0), &interface->resource.targets, EVENT_DATA, count, buffer);
+    kernel_notify(interface->inode, &interface->resource.targets, EVENT_DATA, count, buffer);
 
 }
 
@@ -88,9 +90,9 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    kernel_link(&interface->resource.sources, 0, &interface->resource, place);
 
     interface->id = id;
+    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, place);
     interface->oninfo = oninfo;
     interface->ondata = ondata;
 
