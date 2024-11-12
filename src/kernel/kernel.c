@@ -452,7 +452,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned i
         unsigned int source = kernel_encodenodelist(&task->resource.sources, index);
 
         if (source)
-            return (task && target) ? kernel_place(source, target, event, count, data) : 0;
+            return kernel_place(source, target, event, count, data);
 
     }
 
