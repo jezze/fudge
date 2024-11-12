@@ -100,10 +100,21 @@ unsigned int kernel_encodenodelist(struct list *list, unsigned int index)
 
 }
 
-struct node *kernel_decodenode(unsigned int inode)
+void *kernel_getinterface(unsigned int inode)
 {
 
-    return getnode(inode);
+    struct node *node = getnode(inode);
+
+    return (node->resource) ? node->resource->data : 0;
+
+}
+
+static struct mailbox *getmailbox(unsigned int inode)
+{
+
+    struct node *node = getnode(inode);
+
+    return node->mailbox;
 
 }
 
@@ -370,12 +381,12 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
         if (source)
         {
 
-            struct node *snode = kernel_decodenode(source);
+            struct mailbox *mailbox = getmailbox(source);
 
-            if (snode)
+            if (mailbox)
             {
 
-                unsigned int status = mailbox_pick(snode->mailbox, message, count, data);
+                unsigned int status = mailbox_pick(mailbox, message, count, data);
 
                 if (status == MESSAGE_RETRY)
                     task_signal(task, TASK_SIGNAL_BLOCK);
@@ -536,12 +547,12 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
             if (target)
             {
 
-                struct node *tnode = kernel_decodenode(target);
+                struct mailbox *mailbox = getmailbox(target);
 
-                if (tnode)
+                if (mailbox)
                 {
 
-                    mailbox_reset(tnode->mailbox);
+                    mailbox_reset(mailbox);
                     coreassign(&taskrow->item);
 
                     return target;

@@ -40,13 +40,13 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = kernel_decodenode(target);
+    struct block_interface *interface = kernel_getinterface(target);
 
     switch (event)
     {
 
     case EVENT_BLOCKREQUEST:
-        return onblockrequest(tnode->resource->data, source, count, data);
+        return onblockrequest(interface, source, count, data);
 
     }
 

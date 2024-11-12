@@ -38,13 +38,13 @@ static unsigned int ondata(struct console_interface *interface, unsigned int sou
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = kernel_decodenode(target);
+    struct console_interface *interface = kernel_getinterface(target);
 
     switch (event)
     {
 
     case EVENT_DATA:
-        return ondata(tnode->resource->data, source, data, count);
+        return ondata(interface, source, data, count);
 
     }
 

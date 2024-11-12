@@ -46,16 +46,16 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = kernel_decodenode(target);
+    struct ethernet_interface *interface = kernel_getinterface(target);
 
     switch (event)
     {
 
     case EVENT_DATA:
-        return ondata(tnode->resource->data, source, data, count);
+        return ondata(interface, source, data, count);
 
     case EVENT_INFO:
-        return oninfo(tnode->resource->data, source);
+        return oninfo(interface, source);
 
     }
 

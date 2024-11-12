@@ -47,16 +47,16 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = kernel_decodenode(target);
+    struct video_interface *interface = kernel_getinterface(target);
 
     switch (event)
     {
 
     case EVENT_VIDEOCMAP:
-        return onvideocmap(tnode->resource->data, source, count, data);
+        return onvideocmap(interface, source, count, data);
 
     case EVENT_VIDEOCONF:
-        return onvideoconf(tnode->resource->data, source, count, data);
+        return onvideoconf(interface, source, count, data);
 
     }
 

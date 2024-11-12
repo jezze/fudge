@@ -5,7 +5,7 @@
 unsigned int kernel_encodetask(struct task *task);
 unsigned int kernel_encodenode(struct node *node);
 unsigned int kernel_encodenodelist(struct list *list, unsigned int index);
-struct node *kernel_decodenode(unsigned int inode);
+void *kernel_getinterface(unsigned int inode);
 struct core *kernel_getcore(void);
 struct node *kernel_link(struct list *nodes, struct mailbox *mailbox, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data));
 void kernel_unlink(struct list *targets, struct node *target);
