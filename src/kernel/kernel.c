@@ -446,17 +446,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned i
 
     struct task *task = gettask(itask);
 
-    if (task)
-    {
-
-        unsigned int source = kernel_encodenodelist(&task->resource.sources, index);
-
-        if (source)
-            return kernel_place(source, target, event, count, data);
-
-    }
-
-    return MESSAGE_FAILED;
+    return (task) ? kernel_place(kernel_encodenodelist(&task->resource.sources, index), target, event, count, data) : MESSAGE_FAILED;
 
 }
 
