@@ -4,29 +4,19 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct resource *service_foreach(struct resource *current)
 {
 
-    if (count == 2 && buffer_match(name, ":", 1))
-    {
+    return resource_foreachtype(current, RESOURCE_BLOCKINTERFACE);
 
-        struct resource *current = 0;
-        unsigned int index = cstring_toint(name[1]);
-        unsigned int i;
+}
 
-        for (i = 0; (current = resource_foreachtype(current, RESOURCE_BLOCKINTERFACE)); i++)
-        {
+static unsigned int service_getinode(struct resource *current, unsigned int index)
+{
 
-            struct block_interface *interface = current->data;
+    struct block_interface *interface = current->data;
 
-            if (i == index)
-                return interface->inode;
-
-        }
-
-    }
-
-    return 0;
+    return interface->inode;
 
 }
 
@@ -91,7 +81,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, "block", service_match);
+    service_init(&service, "block", service_foreach, service_getinode);
     service_register(&service);
 
 }

@@ -4,30 +4,19 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct resource *service_foreach(struct resource *current)
 {
 
-    if (count >= 2 && buffer_match(name, ":", 1))
-    {
+    return resource_foreachtype(current, RESOURCE_TIMERINTERFACE);
 
-        struct resource *current = 0;
-        unsigned int index = cstring_toint(name[1]);
-        unsigned int channelnum = cstring_toint(name[3]);
-        unsigned int i;
+}
 
-        for (i = 0; (current = resource_foreachtype(current, RESOURCE_TIMERINTERFACE)); i++)
-        {
+static unsigned int service_getinode(struct resource *current, unsigned int index)
+{
 
-            struct timer_interface *interface = current->data;
+    struct timer_interface *interface = current->data;
 
-            if (i == index)
-                return interface->inodes[channelnum];
-
-        }
-
-    }
-
-    return 0;
+    return interface->inodes[index];
 
 }
 
@@ -105,7 +94,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 void module_init(void)
 {
 
-    service_init(&service, "timer", service_match);
+    service_init(&service, "timer", service_foreach, service_getinode);
     service_register(&service);
 
 }

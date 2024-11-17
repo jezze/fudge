@@ -433,6 +433,31 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned i
 
 }
 
+static unsigned int matchservice(struct service *service, unsigned int count, char *name)
+{
+
+    if (count >= 2 && buffer_match(name, ":", 1))
+    {
+
+        struct resource *current = 0;
+        unsigned int index = cstring_toint(name[1]);
+        unsigned int channelnum = cstring_toint(name[3]);
+        unsigned int i;
+
+        for (i = 0; (current = service->foreach(current)); i++)
+        {
+
+            if (i == index)
+                return service->getinode(current, channelnum);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 {
 
@@ -445,7 +470,7 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
         unsigned int length = cstring_length(service->name);
 
         if (count >= length && buffer_match(name, service->name, length))
-            return service->match(count - length, name + length);
+            return (service->foreach) ? matchservice(service, count - length, name + length) : service->getinode(0, 0);
 
     }
 

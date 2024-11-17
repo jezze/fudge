@@ -5,29 +5,19 @@
 
 static struct service service;
 
-static unsigned int service_match(unsigned int count, char *name)
+static struct resource *service_foreach(struct resource *current)
 {
 
-    if (count == 2 && buffer_match(name, ":", 1))
-    {
+    return resource_foreachtype(current, RESOURCE_ETHERNETINTERFACE);
 
-        struct resource *current = 0;
-        unsigned int index = cstring_toint(name[1]);
-        unsigned int i;
+}
 
-        for (i = 0; (current = resource_foreachtype(current, RESOURCE_ETHERNETINTERFACE)); i++)
-        {
+static unsigned int service_getinode(struct resource *current, unsigned int index)
+{
 
-            struct ethernet_interface *interface = current->data;
+    struct ethernet_interface *interface = current->data;
 
-            if (i == index)
-                return interface->inode;
-
-        }
-
-    }
-
-    return 0;
+    return interface->inode;
 
 }
 
@@ -101,7 +91,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 void module_init(void)
 {
 
-    service_init(&service, "ethernet", service_match);
+    service_init(&service, "ethernet", service_foreach, service_getinode);
     service_register(&service);
 
 }
