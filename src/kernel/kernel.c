@@ -397,25 +397,26 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    if (source && target)
-    {
+    struct noderow *snoderow = &noderows[source];
+    struct noderow *tnoderow = &noderows[target];
 
-        struct list *targets = &noderows[target].targets;
+    if (snoderow && tnoderow)
+    {
 
         switch (event)
         {
 
         case EVENT_LINK:
-            return kernel_link(targets, noderows[source].mailbox, noderows[source].resource, noderows[source].place) ? MESSAGE_OK : MESSAGE_FAILED;
+            return kernel_link(&tnoderow->targets, snoderow->mailbox, snoderow->resource, snoderow->place) ? MESSAGE_OK : MESSAGE_FAILED;
 
         case EVENT_UNLINK:
-            kernel_unlink(targets, source);
+            kernel_unlink(&tnoderow->targets, source);
 
             return MESSAGE_OK;
 
         }
 
-        return (noderows[target].place) ? noderows[target].place(source, target, event, count, data) : MESSAGE_FAILED;
+        return (tnoderow->place) ? tnoderow->place(source, target, event, count, data) : MESSAGE_FAILED;
 
     }
 
