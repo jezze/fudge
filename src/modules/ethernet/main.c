@@ -68,7 +68,7 @@ static unsigned int place(unsigned int source, unsigned int target, unsigned int
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(interface->inode, &interface->resource.targets, EVENT_DATA, count, buffer);
+    kernel_notify(interface->inode, EVENT_DATA, count, buffer);
 
 }
 

@@ -59,7 +59,7 @@ static unsigned int place(unsigned int source, unsigned int target, unsigned int
 void block_notifyblockresponse(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(interface->inode, &interface->resource.targets, EVENT_BLOCKRESPONSE, count, buffer);
+    kernel_notify(interface->inode, EVENT_BLOCKRESPONSE, count, buffer);
 
 }
 

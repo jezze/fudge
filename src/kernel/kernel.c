@@ -11,7 +11,7 @@
 static unsigned int mailboxcount;
 static struct mailbox mailboxes[KERNEL_MAILBOXES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL_TASKS];
-static struct noderow {struct list_item item; struct mailbox *mailbox; struct resource *resource; unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);} noderows[KERNEL_NODES];
+static struct noderow {struct list_item item; struct mailbox *mailbox; struct resource *resource; struct list targets; unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);} noderows[KERNEL_NODES];
 static struct list freenodes;
 static struct list deadtasks;
 static struct list blockedtasks;
@@ -242,6 +242,8 @@ unsigned int kernel_link(struct list *nodes, struct mailbox *mailbox, struct res
 
         struct noderow *noderow = noderowitem->data;
 
+        list_init(&noderow->targets);
+
         noderow->resource = resource;
         noderow->mailbox = mailbox;
         noderow->place = place;
@@ -398,7 +400,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
     if (source && target)
     {
 
-        struct list *targets = &noderows[target].resource->targets;
+        struct list *targets = &noderows[target].targets;
 
         switch (event)
         {
@@ -450,9 +452,10 @@ unsigned int kernel_find(unsigned int itask, unsigned int count, char *name)
 
 }
 
-void kernel_notify(unsigned int source, struct list *targets, unsigned int event, unsigned int count, void *data)
+void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
+    struct list *targets = &noderows[source].targets;
     struct list_item *noderowitem;
 
     spinlock_acquire(&targets->spinlock);

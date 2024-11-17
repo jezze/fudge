@@ -16,7 +16,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_find(unsigned int itask, unsigned int count, char *name);
-void kernel_notify(unsigned int source, struct list *targets, unsigned int event, unsigned int count, void *data);
+void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned int ip, unsigned int sp, unsigned int address);
 void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize);

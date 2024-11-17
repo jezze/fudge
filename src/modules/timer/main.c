@@ -38,7 +38,7 @@ void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(interface->inodes[0], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[0], EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -49,7 +49,7 @@ void timer_notifytick10(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(interface->inodes[1], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[1], EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -60,7 +60,7 @@ void timer_notifytick100(struct timer_interface *interface, unsigned int counter
 
     timertick.counter = counter;
 
-    kernel_notify(interface->inodes[2], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[2], EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 
@@ -71,7 +71,7 @@ void timer_notifytick1000(struct timer_interface *interface, unsigned int counte
 
     timertick.counter = counter;
 
-    kernel_notify(interface->inodes[3], &interface->resource.targets, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(interface->inodes[3], EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
 
 }
 

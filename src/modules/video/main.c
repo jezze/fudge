@@ -76,7 +76,7 @@ void video_notifymode(struct video_interface *interface, void *framebuffer, unsi
     videoinfo.height = h;
     videoinfo.bpp = bpp;
 
-    kernel_notify(interface->inode, &interface->resource.targets, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+    kernel_notify(interface->inode, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
 }
 
