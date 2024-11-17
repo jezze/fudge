@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "node.h"
 #include "binary.h"
 #include "debug.h"
 #include "task.h"

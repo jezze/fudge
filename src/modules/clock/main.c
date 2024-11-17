@@ -74,7 +74,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, place);
+    interface->inode = kernel_link(0, 0, &interface->resource, place);
     interface->oninfo = oninfo;
 
 }

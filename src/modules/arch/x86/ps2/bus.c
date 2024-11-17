@@ -355,7 +355,7 @@ void module_init(void)
 {
 
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
-    kernel_link(&bus.resource.sources, 0, 0, place);
+    kernel_link(0, 0, 0, place);
 
 }
 

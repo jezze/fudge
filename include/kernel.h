@@ -1,5 +1,4 @@
 #include <kernel/resource.h>
-#include <kernel/node.h>
 #include <kernel/debug.h>
 #include <kernel/binary.h>
 #include <kernel/mailbox.h>

@@ -11,7 +11,6 @@ O:=\
     $(DIR_SRC)/kernel/debug.o \
     $(DIR_SRC)/kernel/kernel.o \
     $(DIR_SRC)/kernel/mailbox.o \
-    $(DIR_SRC)/kernel/node.o \
     $(DIR_SRC)/kernel/resource.o \
     $(DIR_SRC)/kernel/service.o \
     $(DIR_SRC)/kernel/task.o \

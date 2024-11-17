@@ -72,7 +72,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    interface->inode = kernel_link(0, 0, &interface->resource, 0);
 
 }
 

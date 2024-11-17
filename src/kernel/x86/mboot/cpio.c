@@ -430,7 +430,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     service_init(&service, "initrd", service_match);
     service_register(&service);
 
-    inode = kernel_link(&service.resource.sources, 0, &service.resource, place);
+    inode = kernel_link(0, 0, &service.resource, place);
 
 }
 

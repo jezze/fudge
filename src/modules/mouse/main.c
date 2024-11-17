@@ -95,7 +95,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    interface->inode = kernel_link(0, 0, &interface->resource, 0);
 
 }
 

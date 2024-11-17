@@ -95,10 +95,10 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
 
     interface->id = id;
-    interface->inodes[0] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
-    interface->inodes[1] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
-    interface->inodes[2] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
-    interface->inodes[3] = kernel_link(&interface->resource.sources, 0, &interface->resource, 0);
+    interface->inodes[0] = kernel_link(0, 0, &interface->resource, 0);
+    interface->inodes[1] = kernel_link(0, 0, &interface->resource, 0);
+    interface->inodes[2] = kernel_link(0, 0, &interface->resource, 0);
+    interface->inodes[3] = kernel_link(0, 0, &interface->resource, 0);
 
 }
 
