@@ -147,6 +147,15 @@ static struct task *gettask(unsigned int itask)
 
 }
 
+static struct mailbox *getmailbox(unsigned int imailbox)
+{
+
+    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
+
+    return mailboxrow ? &mailboxrow->mailbox : 0;
+
+}
+
 static void assign(struct list_item *item)
 {
 
@@ -275,9 +284,9 @@ static unsigned int placetask(unsigned int source, unsigned int target, unsigned
     {
 
         struct task *task = noderow->resource->data;
-        struct mailboxrow *mailboxrow = getmailboxrow(noderow->imailbox);
+        struct mailbox *mailbox = getmailbox(noderow->imailbox);
 
-        if (mailboxrow)
+        if (task && mailbox)
         {
 
             struct message message;
@@ -285,7 +294,7 @@ static unsigned int placetask(unsigned int source, unsigned int target, unsigned
 
             message_init(&message, event, source, count);
 
-            status = mailbox_place(&mailboxrow->mailbox, &message, data);
+            status = mailbox_place(mailbox, &message, data);
 
             task_signal(task, TASK_SIGNAL_UNBLOCK);
 
@@ -474,12 +483,12 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
             if (noderow)
             {
 
-                struct mailboxrow *mailboxrow = getmailboxrow(noderow->imailbox);
+                struct mailbox *mailbox = getmailbox(noderow->imailbox);
 
-                if (mailboxrow)
+                if (mailbox)
                 {
 
-                    unsigned int status = mailbox_pick(&mailboxrow->mailbox, message, count, data);
+                    unsigned int status = mailbox_pick(mailbox, message, count, data);
 
                     if (status == MESSAGE_RETRY)
                         task_signal(task, TASK_SIGNAL_BLOCK);
