@@ -138,25 +138,6 @@ static unsigned int encodetaskrow(struct taskrow *taskrow)
 
 }
 
-static struct mailbox *getnodemailbox(unsigned int inode)
-{
-
-    struct noderow *noderow = getnoderow(inode);
-
-    if (noderow)
-    {
-
-        struct mailboxrow *mailboxrow = getmailboxrow(noderow->imailbox);
-
-        if (mailboxrow)
-            return &mailboxrow->mailbox;
-
-    }
-
-    return 0;
-
-}
-
 static struct task *gettask(unsigned int itask)
 {
 
@@ -289,22 +270,28 @@ static unsigned int placetask(unsigned int source, unsigned int target, unsigned
 {
 
     struct noderow *noderow = getnoderow(target);
-    struct mailbox *mailbox = getnodemailbox(target);
 
-    if (noderow && mailbox)
+    if (noderow && noderow->imailbox)
     {
 
         struct task *task = noderow->resource->data;
-        struct message message;
-        unsigned int status;
+        struct mailboxrow *mailboxrow = getmailboxrow(noderow->imailbox);
 
-        message_init(&message, event, source, count);
+        if (mailboxrow)
+        {
 
-        status = mailbox_place(mailbox, &message, data);
+            struct message message;
+            unsigned int status;
 
-        task_signal(task, TASK_SIGNAL_UNBLOCK);
+            message_init(&message, event, source, count);
 
-        return status;
+            status = mailbox_place(&mailboxrow->mailbox, &message, data);
+
+            task_signal(task, TASK_SIGNAL_UNBLOCK);
+
+            return status;
+
+        }
 
     }
 
@@ -482,17 +469,24 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
         if (source)
         {
 
-            struct mailbox *mailbox = getnodemailbox(source);
+            struct noderow *noderow = getnoderow(source);
 
-            if (mailbox)
+            if (noderow)
             {
 
-                unsigned int status = mailbox_pick(mailbox, message, count, data);
+                struct mailboxrow *mailboxrow = getmailboxrow(noderow->imailbox);
 
-                if (status == MESSAGE_RETRY)
-                    task_signal(task, TASK_SIGNAL_BLOCK);
+                if (mailboxrow)
+                {
 
-                return status;
+                    unsigned int status = mailbox_pick(&mailboxrow->mailbox, message, count, data);
+
+                    if (status == MESSAGE_RETRY)
+                        task_signal(task, TASK_SIGNAL_BLOCK);
+
+                    return status;
+
+                }
 
             }
 
