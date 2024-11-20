@@ -83,7 +83,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->itask);
+        struct task_thread *thread = kernel_gettaskthread(core->itask);
 
         buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
 
@@ -97,7 +97,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->itask);
+        struct task_thread *thread = kernel_gettaskthread(core->itask);
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 

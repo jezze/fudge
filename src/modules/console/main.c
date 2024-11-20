@@ -30,7 +30,7 @@ static unsigned int ondata(struct console_interface *interface, unsigned int sou
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct console_interface *interface = kernel_getinterface(target);
+    struct console_interface *interface = kernel_getnodeinterface(target);
 
     switch (event)
     {

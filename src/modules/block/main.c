@@ -32,7 +32,7 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct block_interface *interface = kernel_getinterface(target);
+    struct block_interface *interface = kernel_getnodeinterface(target);
 
     switch (event)
     {

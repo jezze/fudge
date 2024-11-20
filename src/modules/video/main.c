@@ -39,7 +39,7 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct video_interface *interface = kernel_getinterface(target);
+    struct video_interface *interface = kernel_getnodeinterface(target);
 
     switch (event)
     {

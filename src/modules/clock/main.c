@@ -30,7 +30,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct clock_interface *interface = kernel_getinterface(target);
+    struct clock_interface *interface = kernel_getnodeinterface(target);
 
     switch (event)
     {

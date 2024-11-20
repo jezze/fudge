@@ -38,7 +38,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct ethernet_interface *interface = kernel_getinterface(target);
+    struct ethernet_interface *interface = kernel_getnodeinterface(target);
 
     switch (event)
     {

@@ -31,17 +31,34 @@ static void assign(struct list_item *item)
 
 }
 
-static struct mailbox *getmailbox(unsigned int inode)
+static struct noderow *getnoderow(unsigned int inode)
 {
 
-    return (inode && inode < KERNEL_NODES) ? noderows[inode].mailbox : 0;
+    return (inode && inode < KERNEL_NODES) ? &noderows[inode] : 0;
 
 }
 
-static struct task *gettask(unsigned int itask)
+static struct taskrow *gettaskrow(unsigned int itask)
 {
 
-    return (itask && itask < KERNEL_TASKS) ? &taskrows[itask].task : 0;
+    return (itask && itask < KERNEL_TASKS) ? &taskrows[itask] : 0;
+
+}
+
+static unsigned int encodenoderow(struct noderow *noderow)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < KERNEL_NODES; i++)
+    {
+
+        if (&noderows[i] == noderow)
+            return i;
+
+    }
+
+    return 0;
 
 }
 
@@ -62,20 +79,21 @@ static unsigned int encodetaskrow(struct taskrow *taskrow)
 
 }
 
-static unsigned int encodenoderow(struct noderow *noderow)
+static struct mailbox *getnodemailbox(unsigned int inode)
 {
 
-    unsigned int i;
+    struct noderow *noderow = getnoderow(inode);
 
-    for (i = 1; i < KERNEL_NODES; i++)
-    {
+    return noderow ? noderow->mailbox : 0;
 
-        if (&noderows[i] == noderow)
-            return i;
+}
 
-    }
+static struct task *gettask(unsigned int itask)
+{
 
-    return 0;
+    struct taskrow *taskrow = gettaskrow(itask);
+
+    return taskrow ? &taskrow->task : 0;
 
 }
 
@@ -161,12 +179,13 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 static unsigned int placetask(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct task *task = kernel_getinterface(target);
-    struct mailbox *mailbox = getmailbox(target);
+    struct noderow *noderow = getnoderow(target);
+    struct mailbox *mailbox = getnodemailbox(target);
 
-    if (task && mailbox)
+    if (noderow && mailbox)
     {
 
+        struct task *task = noderow->resource->data;
         struct message message;
         unsigned int status;
 
@@ -269,12 +288,21 @@ static unsigned int picknewtask(struct core *core)
 
 }
 
-void *kernel_getinterface(unsigned int inode)
+void *kernel_getnodeinterface(unsigned int inode)
 {
 
-    struct resource *resource = (inode && inode < KERNEL_NODES) ? noderows[inode].resource : 0;
+    struct noderow *noderow = getnoderow(inode);
 
-    return (resource) ? resource->data : 0;
+    return (noderow && noderow->resource) ? noderow->resource->data : 0;
+
+}
+
+struct task_thread *kernel_gettaskthread(unsigned int itask)
+{
+
+    struct taskrow *taskrow = gettaskrow(itask);
+
+    return (taskrow) ? &taskrow->task.thread : 0;
 
 }
 
@@ -282,14 +310,6 @@ struct core *kernel_getcore(void)
 {
 
     return (getcallback) ? getcallback() : &core0;
-
-}
-
-void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item))
-{
-
-    getcallback = get;
-    assigncallback = assign;
 
 }
 
@@ -318,7 +338,10 @@ unsigned int kernel_link(struct list *nodes, struct mailbox *mailbox, struct res
 unsigned int kernel_unlink(struct list *nodes, unsigned int inode)
 {
 
-    returnrow((nodes) ? nodes : &usednodes, &freenodes, &noderows[inode].item);
+    struct noderow *noderow = getnoderow(inode);
+
+    if (noderow)
+        returnrow(nodes ? nodes : &usednodes, &freenodes, &noderow->item);
 
     return 0;
 
@@ -382,15 +405,6 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
-struct task_thread *kernel_getthread(unsigned int itask)
-{
-
-    struct task *task = gettask(itask);
-
-    return (task) ? &task->thread : 0;
-
-}
-
 unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message *message, unsigned int count, void *data)
 {
 
@@ -404,7 +418,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
         if (source)
         {
 
-            struct mailbox *mailbox = getmailbox(source);
+            struct mailbox *mailbox = getnodemailbox(source);
 
             if (mailbox)
             {
@@ -429,8 +443,8 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct noderow *snoderow = &noderows[source];
-    struct noderow *tnoderow = &noderows[target];
+    struct noderow *snoderow = getnoderow(source);
+    struct noderow *tnoderow = getnoderow(target);
 
     if (snoderow && tnoderow)
     {
@@ -514,7 +528,7 @@ unsigned int kernel_createtask(void)
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned int ip, unsigned int sp, unsigned int address)
 {
 
-    struct taskrow *taskrow = &taskrows[ntask];
+    struct taskrow *taskrow = gettaskrow(ntask);
     struct task *task = &taskrow->task;
 
     task->thread.ip = ip;
@@ -534,7 +548,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
     if (task->thread.ip)
     {
 
-        if (task_transition(&taskrow->task, TASK_STATE_ASSIGNED))
+        if (task_transition(task, TASK_STATE_ASSIGNED))
         {
 
             assign(&taskrow->item);
@@ -550,12 +564,20 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
     else
     {
 
-        if (task_transition(&taskrow->task, TASK_STATE_DEAD))
+        if (task_transition(task, TASK_STATE_DEAD))
             list_add(&deadtasks, &taskrow->item);
 
     }
 
     return 0;
+
+}
+
+void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item))
+{
+
+    getcallback = get;
+    assigncallback = assign;
 
 }
 
