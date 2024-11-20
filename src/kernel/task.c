@@ -9,7 +9,7 @@ static void resetnodes(struct task *task)
 
     unsigned int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < TASK_NODES; i++)
         task->inodes[i] = 0;
 
 }

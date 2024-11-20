@@ -144,7 +144,26 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
     {
 
         if (task_transition(task, TASK_STATE_DEAD))
+        {
+
+            unsigned int i;
+
+            for (i = 0; i < TASK_NODES; i++)
+            {
+
+                if (task->inodes[i])
+                {
+
+                    /* return mailbox here */
+                    kernel_unlink(0, task->inodes[i]);
+
+                }
+
+            }
+
             list_add(&deadtasks, item);
+
+        }
 
     }
 
