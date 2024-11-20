@@ -603,43 +603,49 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
 {
 
     struct taskrow *taskrow = gettaskrow(ntask);
-    struct task *task = &taskrow->task;
 
-    task->thread.ip = ip;
-    task->thread.sp = sp;
-    task->base = address;
-
-    if (task->base)
+    if (taskrow)
     {
 
-        struct binary_format *format = binary_findformat(task->base);
+        struct task *task = &taskrow->task;
 
-        if (format)
-            task->thread.ip = format->findentry(task->base);
+        task->thread.ip = ip;
+        task->thread.sp = sp;
+        task->base = address;
 
-    }
-
-    if (task->thread.ip)
-    {
-
-        if (task_transition(task, TASK_STATE_ASSIGNED))
+        if (task->base)
         {
 
-            assign(&taskrow->item);
+            struct binary_format *format = binary_findformat(task->base);
 
-            task->inodes[0] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
-
-            return task->inodes[0];
+            if (format)
+                task->thread.ip = format->findentry(task->base);
 
         }
 
-    }
+        if (task->thread.ip)
+        {
 
-    else
-    {
+            if (task_transition(task, TASK_STATE_ASSIGNED))
+            {
 
-        if (task_transition(task, TASK_STATE_DEAD))
-            list_add(&freetasks, &taskrow->item);
+                assign(&taskrow->item);
+
+                task->inodes[0] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
+
+                return task->inodes[0];
+
+            }
+
+        }
+
+        else
+        {
+
+            if (task_transition(task, TASK_STATE_DEAD))
+                list_add(&freetasks, &taskrow->item);
+
+        }
 
     }
 
