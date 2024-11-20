@@ -542,10 +542,17 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned i
 
     struct task *task = gettask(itask);
 
-    if (!task->inodes[index])
-        task->inodes[index] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
+    if (task)
+    {
 
-    return (task) ? kernel_place(task->inodes[index], target, event, count, data) : MESSAGE_FAILED;
+        if (!task->inodes[index])
+            task->inodes[index] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
+
+        return kernel_place(task->inodes[index], target, event, count, data);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
