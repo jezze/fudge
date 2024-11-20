@@ -12,9 +12,9 @@ static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailbo
 static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL_TASKS];
 static struct noderow {struct list_item item; struct mailbox *mailbox; struct resource *resource; struct list targets; unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);} noderows[KERNEL_NODES];
 static struct list freenodes;
-static struct list deadtasks;
-static struct list blockedtasks;
 static struct list usednodes;
+static struct list freetasks;
+static struct list blockedtasks;
 static struct list freemailboxes;
 static struct list usedmailboxes;
 static struct core *(*getcallback)(void);
@@ -161,7 +161,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
             }
 
-            list_add(&deadtasks, item);
+            list_add(&freetasks, item);
 
         }
 
@@ -525,7 +525,7 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
 unsigned int kernel_createtask(void)
 {
 
-    struct list_item *taskrowitem = list_picktail(&deadtasks);
+    struct list_item *taskrowitem = list_picktail(&freetasks);
 
     if (taskrowitem)
     {
@@ -584,7 +584,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
     {
 
         if (task_transition(task, TASK_STATE_DEAD))
-            list_add(&deadtasks, &taskrow->item);
+            list_add(&freetasks, &taskrow->item);
 
     }
 
@@ -607,9 +607,9 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
     core_init(&core0, 0, saddress + ssize);
     list_init(&freenodes);
-    list_init(&deadtasks);
-    list_init(&blockedtasks);
     list_init(&usednodes);
+    list_init(&freetasks);
+    list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
 
@@ -633,7 +633,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_init(&taskrow->task);
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
-        list_add(&deadtasks, &taskrow->item);
+        list_add(&freetasks, &taskrow->item);
 
     }
 
