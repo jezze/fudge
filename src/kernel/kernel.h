@@ -15,7 +15,6 @@ struct task_thread *kernel_getthread(unsigned int itask);
 unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message *message, unsigned int count, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned int target, unsigned int event, unsigned int count, void *data);
-unsigned int kernel_find(unsigned int itask, unsigned int count, char *name);
 void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_createtask(void);
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned int ip, unsigned int sp, unsigned int address);

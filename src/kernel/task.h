@@ -37,7 +37,7 @@ struct task
     struct spinlock spinlock;
     unsigned int state;
     unsigned int base;
-    unsigned int inodes[32];
+    unsigned int inodes[8];
 
 };
 

@@ -4,6 +4,7 @@
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"
+#include "service.h"
 #include "kernel.h"
 
 #define CALLS                           16
@@ -55,12 +56,49 @@ static unsigned int kill(unsigned int itask, void *stack)
 
 }
 
+static unsigned int matchservice(struct service *service, unsigned int count, char *name)
+{
+
+    if (count >= 2 && buffer_match(name, ":", 1))
+    {
+
+        struct resource *current = 0;
+        unsigned int index = cstring_toint(name[1]);
+        unsigned int channelnum = cstring_toint(name[3]);
+        unsigned int i;
+
+        for (i = 0; (current = service->foreach(current)); i++)
+        {
+
+            if (i == index)
+                return service->getinode(current, channelnum);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int find(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int count; char *name;} *args = stack;
+    struct resource *resourceitem = 0;
 
-    return kernel_find(itask, args->count, args->name);
+    while ((resourceitem = resource_foreachtype(resourceitem, RESOURCE_SERVICE)))
+    {
+
+        struct service *service = resourceitem->data;
+        unsigned int length = cstring_length(service->name);
+
+        if (args->count >= length && buffer_match(args->name, service->name, length))
+            return (service->foreach) ? matchservice(service, args->count - length, args->name + length) : service->getinode(0, 0);
+
+    }
+
+    return 0;
 
 }
 
