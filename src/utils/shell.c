@@ -43,27 +43,27 @@ static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int c
 
 }
 
-static void interpretdata(struct message *message, void *buffer)
+static void interpretdata(unsigned int ichannel, struct message *message, void *buffer)
 {
 
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message_datasize(message));
 
-    if (job_spawn(&job, 0, "initrd:bin"))
+    if (job_spawn(&job, ichannel, "initrd:bin"))
     {
 
         char data[MESSAGE_SIZE];
 
-        job_run(&job, 0, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, ichannel, option_getstring("env"), option_getstring("pwd"));
 
-        while (job_pick(&job, 0, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
 
             switch (message->event)
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, 0, message->source, message->event, data, message_datasize(message)))
+                if (!job_pipe(&job, ichannel, message->source, message->event, data, message_datasize(message)))
                     print(data, message_datasize(message));
 
                 break;
@@ -105,7 +105,7 @@ static void interpret(void)
             {
 
             case EVENT_DATA:
-                interpretdata(&message, buffer);
+                interpretdata(0, &message, buffer);
 
                 break;
 
@@ -186,29 +186,29 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
 }
 
-static void completedata(struct message *message, char *buffer, unsigned int count, char *prefix)
+static void completedata(unsigned int ichannel, struct message *message, char *buffer, unsigned int count, char *prefix)
 {
 
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message_datasize(message));
 
-    if (job_spawn(&job, 0, "initrd:bin"))
+    if (job_spawn(&job, ichannel, "initrd:bin"))
     {
 
         char data[MESSAGE_SIZE];
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
-        job_run(&job, 0, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, ichannel, option_getstring("env"), option_getstring("pwd"));
 
-        while (job_pick(&job, 0, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
 
             switch (message->event)
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, 0, message->source, message->event, data, message_datasize(message)))
+                if (!job_pipe(&job, ichannel, message->source, message->event, data, message_datasize(message)))
                     ring_write(&output, data, message_datasize(message));
 
                 break;
@@ -272,7 +272,7 @@ static void complete(void)
         {
 
         case EVENT_DATA:
-            completedata(&message, buffer, count, prefix);
+            completedata(0, &message, buffer, count, prefix);
 
             break;
 
