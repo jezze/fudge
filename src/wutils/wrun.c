@@ -51,18 +51,18 @@ static void handlehttppacket(unsigned int source)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int channel = fs_spawn(0, option_getstring("dns"));
+    unsigned int target = fs_spawn(0, option_getstring("dns"));
 
-    if (channel)
+    if (target)
     {
 
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send_fmt1(0, channel, EVENT_OPTION, "domain\\0%s\\0", domain);
-        channel_send(0, channel, EVENT_MAIN);
+        channel_send_fmt1(0, target, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send(0, target, EVENT_MAIN);
 
-        while (channel_poll(0, channel, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
+        while (channel_poll(0, target, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
         {
 
             unsigned int i;
@@ -86,8 +86,8 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         }
 
-        channel_send(0, channel, EVENT_END);
-        channel_wait(0, channel, EVENT_DONE);
+        channel_send(0, target, EVENT_END);
+        channel_wait(0, target, EVENT_DONE);
 
     }
 

@@ -35,14 +35,14 @@ unsigned int call_load(unsigned int address)
 
 }
 
-unsigned int call_pick(unsigned int index, struct message *message, unsigned int count, void *data)
+unsigned int call_pick(unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
     return 0;
 
 }
 
-unsigned int call_place(unsigned int index, unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int call_place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     return 0;

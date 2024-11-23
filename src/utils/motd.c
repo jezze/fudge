@@ -11,16 +11,16 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int channel = fs_spawn(0, option_getstring("echo"));
+    unsigned int target = fs_spawn(1, option_getstring("echo"));
 
-    if (channel)
+    if (target)
     {
 
         channel_route(EVENT_DATA, source);
-        channel_send(0, channel, EVENT_MAIN);
-        channel_send_fmt0(0, channel, EVENT_PATH, "initrd:data/motd.txt\\0");
-        channel_send(0, channel, EVENT_END);
-        channel_wait(0, channel, EVENT_DONE);
+        channel_send(1, target, EVENT_MAIN);
+        channel_send_fmt0(1, target, EVENT_PATH, "initrd:data/motd.txt\\0");
+        channel_send(1, target, EVENT_END);
+        channel_wait(1, target, EVENT_DONE);
 
     }
 

@@ -12,7 +12,7 @@ unsigned int fs_auth(char *path)
 
 }
 
-unsigned int fs_list(unsigned int index, unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords)
+unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords)
 {
 
     struct event_listrequest request;
@@ -24,9 +24,9 @@ unsigned int fs_list(unsigned int index, unsigned int target, unsigned int id, u
     request.offset = offset;
     request.nrecords = nrecords;
 
-    channel_send_buffer(index, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
+    channel_send_buffer(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
-    while (channel_poll(index, target, EVENT_LISTRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_LISTRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_listresponse *response = (void *)data;
@@ -40,7 +40,7 @@ unsigned int fs_list(unsigned int index, unsigned int target, unsigned int id, u
 
 }
 
-unsigned int fs_map(unsigned int index, unsigned int target, unsigned int id)
+unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 {
 
     struct event_maprequest request;
@@ -50,9 +50,9 @@ unsigned int fs_map(unsigned int index, unsigned int target, unsigned int id)
     request.session = ++sessioncount;
     request.id = id;
 
-    channel_send_buffer(index, target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
+    channel_send_buffer(ichannel, target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
 
-    while (channel_poll(index, target, EVENT_MAPRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_MAPRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_mapresponse *response = (void *)data;
@@ -66,7 +66,7 @@ unsigned int fs_map(unsigned int index, unsigned int target, unsigned int id)
 
 }
 
-unsigned int fs_read(unsigned int index, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct event_readrequest request;
@@ -78,9 +78,9 @@ unsigned int fs_read(unsigned int index, unsigned int target, unsigned int id, v
     request.offset = offset;
     request.count = count;
 
-    channel_send_buffer(index, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
+    channel_send_buffer(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
-    while (channel_poll(index, target, EVENT_READRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_READRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_readresponse *response = (void *)data;
@@ -94,7 +94,7 @@ unsigned int fs_read(unsigned int index, unsigned int target, unsigned int id, v
 
 }
 
-unsigned int fs_read_full(unsigned int index, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *rbuffer = buffer;
@@ -102,26 +102,26 @@ unsigned int fs_read_full(unsigned int index, unsigned int target, unsigned int 
     unsigned int roffset;
     unsigned int rcount;
 
-    for (roffset = offset; (rcount = fs_read(index, target, id, rbuffer + rtotal, count - rtotal, roffset)); roffset += rcount)
+    for (roffset = offset; (rcount = fs_read(ichannel, target, id, rbuffer + rtotal, count - rtotal, roffset)); roffset += rcount)
         rtotal += rcount;
 
     return rtotal;
 
 }
 
-unsigned int fs_read_all(unsigned int index, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
     unsigned int c;
 
-    for (c = 0; c < count; c += fs_read(index, target, id, b + c, count - c, offset + c));
+    for (c = 0; c < count; c += fs_read(ichannel, target, id, b + c, count - c, offset + c));
 
     return c;
 
 }
 
-unsigned int fs_stat(unsigned int index, unsigned int target, unsigned int id, struct record *record)
+unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id, struct record *record)
 {
 
     struct event_statrequest request;
@@ -131,9 +131,9 @@ unsigned int fs_stat(unsigned int index, unsigned int target, unsigned int id, s
     request.session = ++sessioncount;
     request.id = id;
 
-    channel_send_buffer(index, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
+    channel_send_buffer(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
-    while (channel_poll(index, target, EVENT_STATRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_STATRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_statresponse *response = (void *)data;
@@ -147,7 +147,7 @@ unsigned int fs_stat(unsigned int index, unsigned int target, unsigned int id, s
 
 }
 
-unsigned int fs_walk(unsigned int index, unsigned int target, unsigned int parent, char *path)
+unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int parent, char *path)
 {
 
     struct {struct event_walkrequest header; char path[64];} request;
@@ -158,9 +158,9 @@ unsigned int fs_walk(unsigned int index, unsigned int target, unsigned int paren
     request.header.parent = parent;
     request.header.length = buffer_write(request.path, 64, path, cstring_length(path), 0);
 
-    channel_send_buffer(index, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
+    channel_send_buffer(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
-    while (channel_poll(index, target, EVENT_WALKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_WALKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_walkresponse *response = (void *)data;
@@ -174,7 +174,7 @@ unsigned int fs_walk(unsigned int index, unsigned int target, unsigned int paren
 
 }
 
-unsigned int fs_write(unsigned int index, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct {struct event_writerequest header; char data[64];} request;
@@ -186,9 +186,9 @@ unsigned int fs_write(unsigned int index, unsigned int target, unsigned int id, 
     request.header.offset = offset;
     request.header.count = buffer_write(request.data, 64, buffer, count, 0);
 
-    channel_send_buffer(index, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
+    channel_send_buffer(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
-    while (channel_poll(index, target, EVENT_WRITERESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_WRITERESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         struct event_writeresponse *response = (void *)data;
@@ -202,19 +202,19 @@ unsigned int fs_write(unsigned int index, unsigned int target, unsigned int id, 
 
 }
 
-unsigned int fs_write_all(unsigned int index, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+unsigned int fs_write_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     unsigned char *b = buffer;
     unsigned int c;
 
-    for (c = 0; c < count; c += fs_write(index, target, id, b + c, count - c, offset + c));
+    for (c = 0; c < count; c += fs_write(ichannel, target, id, b + c, count - c, offset + c));
 
     return c;
 
 }
 
-unsigned int fs_spawn(unsigned int index, char *path)
+unsigned int fs_spawn(unsigned int ichannel, char *path)
 {
 
     unsigned int service = fs_auth(path);
@@ -222,12 +222,12 @@ unsigned int fs_spawn(unsigned int index, char *path)
     if (service)
     {
 
-        unsigned int id = fs_walk(index, service, 0, path);
+        unsigned int id = fs_walk(ichannel, service, 0, path);
 
         if (id)
         {
 
-            unsigned int address = fs_map(index, service, id);
+            unsigned int address = fs_map(ichannel, service, id);
 
             return (address) ? call_spawn(address) : 0;
 
@@ -239,7 +239,7 @@ unsigned int fs_spawn(unsigned int index, char *path)
 
 }
 
-unsigned int fs_spawn_relative(unsigned int index, char *path, char *parent)
+unsigned int fs_spawn_relative(unsigned int ichannel, char *path, char *parent)
 {
 
     unsigned int service = fs_auth(parent);
@@ -247,12 +247,12 @@ unsigned int fs_spawn_relative(unsigned int index, char *path, char *parent)
     if (service)
     {
 
-        unsigned int id = fs_walk(index, service, fs_walk(index, service, 0, parent), path);
+        unsigned int id = fs_walk(ichannel, service, fs_walk(ichannel, service, 0, parent), path);
 
         if (id)
         {
 
-            unsigned int address = fs_map(index, service, id);
+            unsigned int address = fs_map(ichannel, service, id);
 
             return (address) ? call_spawn(address) : 0;
 

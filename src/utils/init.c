@@ -4,15 +4,15 @@
 static void loaddriver(char *path)
 {
 
-    unsigned int channel = fs_spawn(0, "initrd:bin/elfload");
+    unsigned int target = fs_spawn(0, "initrd:bin/elfload");
 
-    if (channel)
+    if (target)
     {
 
-        channel_send(0, channel, EVENT_MAIN);
-        channel_send_fmt1(0, channel, EVENT_PATH, "%s\\0", path);
-        channel_send(0, channel, EVENT_END);
-        channel_wait(0, channel, EVENT_DONE);
+        channel_send(0, target, EVENT_MAIN);
+        channel_send_fmt1(0, target, EVENT_PATH, "%s\\0", path);
+        channel_send(0, target, EVENT_END);
+        channel_wait(0, target, EVENT_DONE);
 
     }
 
@@ -21,51 +21,51 @@ static void loaddriver(char *path)
 static unsigned int spawnenv(void)
 {
 
-    unsigned int channel = fs_spawn(0, "initrd:bin/env");
+    unsigned int target = fs_spawn(0, "initrd:bin/env");
 
-    if (channel)
+    if (target)
     {
 
-        channel_send_fmt1(0, channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &channel);
-        channel_send(0, channel, EVENT_MAIN);
+        channel_send_fmt1(0, target, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &target);
+        channel_send(0, target, EVENT_MAIN);
 
     }
 
-    return channel;
+    return target;
 
 }
 
 static unsigned int spawnshell(unsigned int env)
 {
 
-    unsigned int channel = fs_spawn(0, "initrd:bin/shell");
+    unsigned int target = fs_spawn(0, "initrd:bin/shell");
 
-    if (channel)
+    if (target)
     {
 
-        channel_send_fmt1(0, channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
-        channel_send(0, channel, EVENT_MAIN);
+        channel_send_fmt1(0, target, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
+        channel_send(0, target, EVENT_MAIN);
 
     }
 
-    return channel;
+    return target;
 
 }
 
 static unsigned int spawnwm(unsigned int env)
 {
 
-    unsigned int channel = fs_spawn(0, "initrd:bin/wm");
+    unsigned int target = fs_spawn(0, "initrd:bin/wm");
 
-    if (channel)
+    if (target)
     {
 
-        channel_send_fmt1(0, channel, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
-        channel_send(0, channel, EVENT_MAIN);
+        channel_send_fmt1(0, target, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
+        channel_send(0, target, EVENT_MAIN);
 
     }
 
-    return channel;
+    return target;
 
 }
 

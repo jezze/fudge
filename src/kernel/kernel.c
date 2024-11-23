@@ -465,7 +465,7 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
-unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message *message, unsigned int count, void *data)
+unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
@@ -473,7 +473,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int index, struct message 
     if (task)
     {
 
-        unsigned int source = task->inodes[index];
+        unsigned int source = task->inodes[ichannel];
 
         if (source)
         {
@@ -537,7 +537,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
 }
 
-unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
@@ -545,10 +545,10 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int index, unsigned i
     if (task)
     {
 
-        if (!task->inodes[index])
-            task->inodes[index] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
+        if (!task->inodes[ichannel])
+            task->inodes[ichannel] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
 
-        return kernel_place(task->inodes[index], target, event, count, data);
+        return kernel_place(task->inodes[ichannel], target, event, count, data);
 
     }
 

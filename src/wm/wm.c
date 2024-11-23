@@ -382,14 +382,14 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         if (buffer_match(cmd, "run=", 4))
         {
 
-            unsigned int channel = fs_spawn(0, cmd + 4);
+            unsigned int target = fs_spawn(0, cmd + 4);
 
-            if (channel)
+            if (target)
             {
 
-                channel_send_fmt2(0, channel, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", option_getstring("env"), option_getstring("pwd"));
-                channel_send(0, channel, EVENT_MAIN);
-                channel_send(0, channel, EVENT_END);
+                channel_send_fmt2(0, target, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", option_getstring("env"), option_getstring("pwd"));
+                channel_send(0, target, EVENT_MAIN);
+                channel_send(0, target, EVENT_END);
 
             }
 
@@ -577,13 +577,13 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
-                    unsigned int channel = fs_spawn(0, option_getstring("wshell"));
+                    unsigned int target = fs_spawn(0, option_getstring("wshell"));
 
-                    if (channel)
+                    if (target)
                     {
 
-                        channel_send(0, channel, EVENT_MAIN);
-                        channel_send(0, channel, EVENT_END);
+                        channel_send(0, target, EVENT_MAIN);
+                        channel_send(0, target, EVENT_END);
 
                     }
 

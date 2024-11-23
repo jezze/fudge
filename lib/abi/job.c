@@ -59,7 +59,7 @@ void job_parse(struct job *job, void *buffer, unsigned int count)
 
 }
 
-static void activatenext(struct job *job, unsigned int index, unsigned int startindex)
+static void activatenext(struct job *job, unsigned int ichannel, unsigned int startindex)
 {
 
     unsigned int i;
@@ -72,7 +72,7 @@ static void activatenext(struct job *job, unsigned int index, unsigned int start
         if (worker->channel)
         {
 
-            channel_send(index, worker->channel, EVENT_END);
+            channel_send(ichannel, worker->channel, EVENT_END);
 
             break;
 
@@ -82,7 +82,7 @@ static void activatenext(struct job *job, unsigned int index, unsigned int start
 
 }
 
-unsigned int job_spawn(struct job *job, unsigned int index, char *bindir)
+unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir)
 {
 
     unsigned int i;
@@ -92,10 +92,10 @@ unsigned int job_spawn(struct job *job, unsigned int index, char *bindir)
 
         struct job_worker *worker = &job->workers[i];
 
-        worker->channel = fs_spawn_relative(index, worker->program, bindir);
+        worker->channel = fs_spawn_relative(ichannel, worker->program, bindir);
 
         if (!worker->channel)
-            worker->channel = fs_spawn(index, worker->program);
+            worker->channel = fs_spawn(ichannel, worker->program);
 
         if (!worker->channel)
             return 0;
@@ -106,7 +106,7 @@ unsigned int job_spawn(struct job *job, unsigned int index, char *bindir)
 
 }
 
-unsigned int job_pipe(struct job *job, unsigned int index, unsigned int source, unsigned int event, void *buffer, unsigned int count)
+unsigned int job_pipe(struct job *job, unsigned int ichannel, unsigned int source, unsigned int event, void *buffer, unsigned int count)
 {
 
     unsigned int i;
@@ -121,7 +121,7 @@ unsigned int job_pipe(struct job *job, unsigned int index, unsigned int source, 
 
             struct job_worker *next = &job->workers[i + 1];
 
-            channel_send_buffer(index, next->channel, event, count, buffer);
+            channel_send_buffer(ichannel, next->channel, event, count, buffer);
 
             return 1;
 
@@ -133,7 +133,7 @@ unsigned int job_pipe(struct job *job, unsigned int index, unsigned int source, 
 
 }
 
-void job_run(struct job *job, unsigned int index, char *env, char *pwd)
+void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd)
 {
 
     unsigned int i;
@@ -148,10 +148,10 @@ void job_run(struct job *job, unsigned int index, char *env, char *pwd)
 
             unsigned int j;
 
-            channel_send_fmt2(index, worker->channel, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", env, pwd);
+            channel_send_fmt2(ichannel, worker->channel, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", env, pwd);
 
             for (j = 0; j < worker->noptions; j++)
-                channel_send_fmt2(index, worker->channel, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
+                channel_send_fmt2(ichannel, worker->channel, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
 
         }
 
@@ -163,7 +163,7 @@ void job_run(struct job *job, unsigned int index, char *env, char *pwd)
         struct job_worker *worker = &job->workers[i];
 
         if (worker->channel)
-            channel_send(index, worker->channel, EVENT_MAIN);
+            channel_send(ichannel, worker->channel, EVENT_MAIN);
 
     }
 
@@ -183,9 +183,9 @@ void job_run(struct job *job, unsigned int index, char *env, char *pwd)
                 char *path = worker->paths[j];
 
                 if (fs_auth(path))
-                    channel_send_fmt1(index, worker->channel, EVENT_PATH, "%s\\0", path);
+                    channel_send_fmt1(ichannel, worker->channel, EVENT_PATH, "%s\\0", path);
                 else
-                    channel_send_fmt2(index, worker->channel, EVENT_PATH, "%s%s\\0", pwd, path);
+                    channel_send_fmt2(ichannel, worker->channel, EVENT_PATH, "%s%s\\0", pwd, path);
 
             }
 
@@ -193,11 +193,11 @@ void job_run(struct job *job, unsigned int index, char *env, char *pwd)
 
     }
 
-    activatenext(job, index, 0);
+    activatenext(job, ichannel, 0);
 
 }
 
-void job_close(struct job *job, unsigned int index, unsigned int channel)
+void job_close(struct job *job, unsigned int ichannel, unsigned int channel)
 {
 
     unsigned int i;
@@ -212,7 +212,7 @@ void job_close(struct job *job, unsigned int index, unsigned int channel)
 
             worker->channel = 0;
 
-            activatenext(job, index, i + 1);
+            activatenext(job, ichannel, i + 1);
 
             break;
 
@@ -241,7 +241,7 @@ unsigned int job_exist(struct job *job, unsigned int channel)
 
 }
 
-unsigned int job_pick(struct job *job, unsigned int index, struct message *message, unsigned int count, void *data)
+unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
     while (job_count(job) && channel_pick(0, message, count, data))
@@ -250,7 +250,7 @@ unsigned int job_pick(struct job *job, unsigned int index, struct message *messa
         channel_dispatch(message, data);
 
         if (message->event == EVENT_DONE)
-            job_close(job, index, message->source);
+            job_close(job, ichannel, message->source);
 
         if (job_exist(job, message->source))
             return message->source;
@@ -261,7 +261,7 @@ unsigned int job_pick(struct job *job, unsigned int index, struct message *messa
 
 }
 
-void job_sendfirst(struct job *job, unsigned int index, unsigned int event, unsigned int count, void *buffer)
+void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -274,7 +274,7 @@ void job_sendfirst(struct job *job, unsigned int index, unsigned int event, unsi
         if (worker->channel)
         {
 
-            channel_send_buffer(index, worker->channel, event, count, buffer);
+            channel_send_buffer(ichannel, worker->channel, event, count, buffer);
 
             break;
 
@@ -284,7 +284,7 @@ void job_sendfirst(struct job *job, unsigned int index, unsigned int event, unsi
 
 }
 
-void job_sendall(struct job *job, unsigned int index, unsigned int event, unsigned int count, void *buffer)
+void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer)
 {
 
     unsigned int i;
@@ -295,7 +295,7 @@ void job_sendall(struct job *job, unsigned int index, unsigned int event, unsign
         struct job_worker *worker = &job->workers[i];
 
         if (worker->channel)
-            channel_send_buffer(index, worker->channel, event, count, buffer);
+            channel_send_buffer(ichannel, worker->channel, event, count, buffer);
 
     }
 

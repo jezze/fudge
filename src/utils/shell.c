@@ -25,21 +25,21 @@ static void printprompt(void)
 
 }
 
-static unsigned int runslang(void *ibuffer, unsigned int icount)
+static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int count)
 {
 
-    unsigned int channel = fs_spawn(0, option_getstring("slang"));
+    unsigned int target = fs_spawn(ichannel, option_getstring("slang"));
 
-    if (channel)
+    if (target)
     {
 
-        channel_send(0, channel, EVENT_MAIN);
-        channel_send_buffer(0, channel, EVENT_DATA, icount, ibuffer);
-        channel_send(0, channel, EVENT_END);
+        channel_send(ichannel, target, EVENT_MAIN);
+        channel_send_buffer(ichannel, target, EVENT_DATA, count, buffer);
+        channel_send(ichannel, target, EVENT_END);
 
     }
 
-    return channel;
+    return target;
 
 }
 
@@ -96,9 +96,9 @@ static void interpret(void)
     {
 
         struct message message;
-        unsigned int channel = runslang(buffer, count);
+        unsigned int channel = runslang(1, buffer, count);
 
-        while (channel_pollany(0, channel, &message, MESSAGE_SIZE, buffer))
+        while (channel_pollany(1, channel, &message, MESSAGE_SIZE, buffer))
         {
 
             switch (message.event)
@@ -263,9 +263,9 @@ static void complete(void)
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
     unsigned int count = createcommand(&input, buffer, prefix);
-    unsigned int channel = runslang(buffer, count);
+    unsigned int channel = runslang(2, buffer, count);
 
-    while (channel_pollany(0, channel, &message, MESSAGE_SIZE, buffer))
+    while (channel_pollany(2, channel, &message, MESSAGE_SIZE, buffer))
     {
 
         switch (message.event)

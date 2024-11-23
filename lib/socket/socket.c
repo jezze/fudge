@@ -29,10 +29,10 @@ static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
 
 }
 
-static void send(unsigned int index, unsigned int target, void *buffer, unsigned int count)
+static void send(unsigned int ichannel, unsigned int target, void *buffer, unsigned int count)
 {
 
-    channel_send_buffer(index, target, EVENT_DATA, count, buffer);
+    channel_send_buffer(ichannel, target, EVENT_DATA, count, buffer);
 
 }
 
@@ -110,7 +110,7 @@ static unsigned int buildudp(void *odata, unsigned int ocount, struct socket *lo
 
 }
 
-static unsigned int handlearp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata, unsigned int psize)
+static unsigned int handlearp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct arp_header *header, unsigned char *pdata, unsigned int psize)
 {
 
     switch (net_load16(header->operation))
@@ -127,7 +127,7 @@ static unsigned int handlearp(unsigned int index, unsigned int target, struct so
             buffer_copy(answer.haddress, pdata, ETHERNET_ADDRSIZE);
             buffer_copy(answer.paddress, pdata + net_load8(header->hlength), IPV4_ADDRSIZE);
 
-            send(index, target, data, buildarp(data, SOCKET_MTUSIZE, local, &answer, &answer, ARP_REPLY, local->haddress, local->paddress, pdata, pdata + net_load8(header->hlength)));
+            send(ichannel, target, data, buildarp(data, SOCKET_MTUSIZE, local, &answer, &answer, ARP_REPLY, local->haddress, local->paddress, pdata, pdata + net_load8(header->hlength)));
 
         }
 
@@ -146,7 +146,7 @@ static unsigned int handlearp(unsigned int index, unsigned int target, struct so
 
 }
 
-static unsigned int handleicmp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, struct icmp_header *header, unsigned char *pdata, unsigned int psize)
+static unsigned int handleicmp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, struct icmp_header *header, unsigned char *pdata, unsigned int psize)
 {
 
     char data[SOCKET_MTUSIZE];
@@ -155,7 +155,7 @@ static unsigned int handleicmp(unsigned int index, unsigned int target, struct s
     {
 
     case ICMP_ECHOREQUEST:
-        send(index, target, data, buildicmp(data, SOCKET_MTUSIZE, local, remote, router, ICMP_ECHOREPLY, 0, psize, pdata));
+        send(ichannel, target, data, buildicmp(data, SOCKET_MTUSIZE, local, remote, router, ICMP_ECHOREPLY, 0, psize, pdata));
 
         break;
 
@@ -165,7 +165,7 @@ static unsigned int handleicmp(unsigned int index, unsigned int target, struct s
 
 }
 
-static unsigned int handletcp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, struct tcp_header *header, unsigned char *pdata, unsigned int psize)
+static unsigned int handletcp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, struct tcp_header *header, unsigned char *pdata, unsigned int psize)
 {
 
     char data[SOCKET_MTUSIZE];
@@ -180,7 +180,7 @@ static unsigned int handletcp(unsigned int index, unsigned int target, struct so
             remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 4096, 0, 0));
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK | TCP_FLAGS1_SYN, 4096, 0, 0));
 
         }
 
@@ -194,7 +194,7 @@ static unsigned int handletcp(unsigned int index, unsigned int target, struct so
             remote->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -204,7 +204,7 @@ static unsigned int handletcp(unsigned int index, unsigned int target, struct so
             remote->info.tcp.state = TCP_STATE_SYNRECEIVED;
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -229,7 +229,7 @@ static unsigned int handletcp(unsigned int index, unsigned int target, struct so
             remote->info.tcp.ack = net_load32(header->seq) + psize;
 
             if (psize)
-                send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
+                send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -240,7 +240,7 @@ static unsigned int handletcp(unsigned int index, unsigned int target, struct so
             remote->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.ack = net_load32(header->seq) + psize + 1;
 
-            send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -261,7 +261,7 @@ static unsigned int handletcp(unsigned int index, unsigned int target, struct so
             remote->info.tcp.state = TCP_STATE_CLOSING;
             remote->info.tcp.ack = net_load32(header->seq) + 1;
 
-            send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
 
         }
 
@@ -322,14 +322,14 @@ static unsigned int handletcp(unsigned int index, unsigned int target, struct so
 
 }
 
-static unsigned int handleudp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, struct udp_header *header, unsigned char *pdata, unsigned int psize)
+static unsigned int handleudp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, struct udp_header *header, unsigned char *pdata, unsigned int psize)
 {
 
     return psize;
 
 }
 
-unsigned int socket_handle_arp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, unsigned int count, void *buffer)
+unsigned int socket_handle_arp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -344,7 +344,7 @@ unsigned int socket_handle_arp(unsigned int index, unsigned int target, struct s
         void *pdata = data + elen + alen;
         unsigned int psize = 0; /* figure this out */
 
-        handlearp(index, target, local, remote, aheader, pdata, psize);
+        handlearp(ichannel, target, local, remote, aheader, pdata, psize);
 
     }
 
@@ -352,7 +352,7 @@ unsigned int socket_handle_arp(unsigned int index, unsigned int target, struct s
 
 }
 
-unsigned int socket_handle_icmp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer)
+unsigned int socket_handle_icmp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer)
 {
 
     unsigned char *data = buffer;
@@ -374,7 +374,7 @@ unsigned int socket_handle_icmp(unsigned int index, unsigned int target, struct 
             void *pdata = data + elen + ilen + icmplen;
             unsigned int psize = itot - (ilen + icmplen);
 
-            handleicmp(index, target, local, remote, router, icmpheader, pdata, psize);
+            handleicmp(ichannel, target, local, remote, router, icmpheader, pdata, psize);
 
         }
 
@@ -384,7 +384,7 @@ unsigned int socket_handle_icmp(unsigned int index, unsigned int target, struct 
 
 }
 
-unsigned int socket_handle_tcp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_handle_tcp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -410,7 +410,7 @@ unsigned int socket_handle_tcp(unsigned int index, unsigned int target, struct s
                 void *pdata = data + elen + ilen + tlen;
                 unsigned int psize = itot - (ilen + tlen);
 
-                if (handletcp(index, target, local, remote, router, theader, pdata, psize))
+                if (handletcp(ichannel, target, local, remote, router, theader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
             }
@@ -423,7 +423,7 @@ unsigned int socket_handle_tcp(unsigned int index, unsigned int target, struct s
 
 }
 
-unsigned int socket_handle_udp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
+unsigned int socket_handle_udp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int count, void *buffer, unsigned int outputcount, void *output)
 {
 
     unsigned char *data = buffer;
@@ -449,7 +449,7 @@ unsigned int socket_handle_udp(unsigned int index, unsigned int target, struct s
                 void *pdata = data + elen + ilen + ulen;
                 unsigned int psize = itot - (ilen + ulen);
 
-                if (handleudp(index, target, local, remote, router, uheader, pdata, psize))
+                if (handleudp(ichannel, target, local, remote, router, uheader, pdata, psize))
                     return buffer_write(output, outputcount, pdata, psize, 0);
 
             }
@@ -462,7 +462,7 @@ unsigned int socket_handle_udp(unsigned int index, unsigned int target, struct s
 
 }
 
-unsigned int socket_send_tcp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
+unsigned int socket_send_tcp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
 {
 
     char data[SOCKET_MTUSIZE];
@@ -471,7 +471,7 @@ unsigned int socket_send_tcp(unsigned int index, unsigned int target, struct soc
     {
 
     case TCP_STATE_ESTABLISHED:
-        send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, 4096, psize, pdata));
+        send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, 4096, psize, pdata));
 
         return psize;
 
@@ -481,12 +481,12 @@ unsigned int socket_send_tcp(unsigned int index, unsigned int target, struct soc
 
 }
 
-unsigned int socket_send_udp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
+unsigned int socket_send_udp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
 {
 
     char data[SOCKET_MTUSIZE];
 
-    send(index, target, data, buildudp(data, SOCKET_MTUSIZE, local, remote, router, psize, pdata));
+    send(ichannel, target, data, buildudp(data, SOCKET_MTUSIZE, local, remote, router, psize, pdata));
 
     return psize;
 
@@ -648,13 +648,13 @@ struct socket *socket_accept_udp(struct socket *local, struct socket *remotes, u
 
 }
 
-unsigned int socket_receive(unsigned int index, unsigned int target, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
+unsigned int socket_receive(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remotes, unsigned int nremotes, struct socket *router, void *buffer, unsigned int count)
 {
 
     struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_poll(index, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         struct socket *remote;
@@ -664,7 +664,7 @@ unsigned int socket_receive(unsigned int index, unsigned int target, struct sock
         if (remote)
         {
 
-            socket_handle_arp(index, target, local, remote, message_datasize(&message), data);
+            socket_handle_arp(ichannel, target, local, remote, message_datasize(&message), data);
 
         }
 
@@ -673,7 +673,7 @@ unsigned int socket_receive(unsigned int index, unsigned int target, struct sock
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_tcp(index, target, local, remote, router, message_datasize(&message), data, count, buffer);
+            unsigned int payloadcount = socket_handle_tcp(ichannel, target, local, remote, router, message_datasize(&message), data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -693,7 +693,7 @@ unsigned int socket_receive(unsigned int index, unsigned int target, struct sock
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_udp(index, target, local, remote, router, message_datasize(&message), data, count, buffer);
+            unsigned int payloadcount = socket_handle_udp(ichannel, target, local, remote, router, message_datasize(&message), data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -724,7 +724,7 @@ void socket_listen_tcp(unsigned int target, struct socket *local, struct socket 
 
 }
 
-void socket_connect_tcp(unsigned int index, unsigned int target, struct socket *local, struct socket *remote, struct socket *router)
+void socket_connect_tcp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router)
 {
 
     struct message message;
@@ -733,15 +733,15 @@ void socket_connect_tcp(unsigned int index, unsigned int target, struct socket *
     remote->info.tcp.state = TCP_STATE_SYNSENT;
     remote->info.tcp.ack = 0;
 
-    send(index, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, 4096, 0, 0));
+    send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, 4096, 0, 0));
 
-    while (channel_poll(index, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
         char buffer[SOCKET_MTUSIZE];
 
-        socket_handle_arp(index, target, local, remote, message_datasize(&message), data);
-        socket_handle_tcp(index, target, local, remote, router, message_datasize(&message), data, SOCKET_MTUSIZE, buffer);
+        socket_handle_arp(ichannel, target, local, remote, message_datasize(&message), data);
+        socket_handle_tcp(ichannel, target, local, remote, router, message_datasize(&message), data, SOCKET_MTUSIZE, buffer);
 
         if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
             break;
@@ -750,7 +750,7 @@ void socket_connect_tcp(unsigned int index, unsigned int target, struct socket *
 
 }
 
-void socket_resolveremote(unsigned int index, unsigned int target, struct socket *local, struct socket *remote)
+void socket_resolveremote(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote)
 {
 
     struct socket multicast;
@@ -760,12 +760,12 @@ void socket_resolveremote(unsigned int index, unsigned int target, struct socket
 
     buffer_copy(&multicast, remote, sizeof (struct socket));
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE);
-    send(index, target, data, buildarp(data, SOCKET_MTUSIZE, local, remote, &multicast, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
+    send(ichannel, target, data, buildarp(data, SOCKET_MTUSIZE, local, remote, &multicast, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_poll(index, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
+    while (channel_poll(ichannel, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
-        socket_handle_arp(index, target, local, remote, message_datasize(&message), data);
+        socket_handle_arp(ichannel, target, local, remote, message_datasize(&message), data);
 
         if (remote->resolved)
             break;
@@ -774,11 +774,11 @@ void socket_resolveremote(unsigned int index, unsigned int target, struct socket
 
 }
 
-void socket_resolvelocal(unsigned int index, unsigned int target, struct socket *socket)
+void socket_resolvelocal(unsigned int ichannel, unsigned int target, struct socket *socket)
 {
 
-    channel_send(index, target, EVENT_INFO);
-    channel_wait_buffer(index, target, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
+    channel_send(ichannel, target, EVENT_INFO);
+    channel_wait_buffer(ichannel, target, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
 
     socket->resolved = 1;
 
