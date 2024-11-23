@@ -69,10 +69,10 @@ static void activatenext(struct job *job, unsigned int ichannel, unsigned int st
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
+        if (worker->target)
         {
 
-            channel_send(ichannel, worker->channel, EVENT_END);
+            channel_send(ichannel, worker->target, EVENT_END);
 
             break;
 
@@ -92,12 +92,12 @@ unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir)
 
         struct job_worker *worker = &job->workers[i];
 
-        worker->channel = fs_spawn_relative(ichannel, worker->program, bindir);
+        worker->target = fs_spawn_relative(ichannel, worker->program, bindir);
 
-        if (!worker->channel)
-            worker->channel = fs_spawn(ichannel, worker->program);
+        if (!worker->target)
+            worker->target = fs_spawn(ichannel, worker->program);
 
-        if (!worker->channel)
+        if (!worker->target)
             return 0;
 
     }
@@ -116,12 +116,12 @@ unsigned int job_pipe(struct job *job, unsigned int ichannel, unsigned int sourc
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel == source)
+        if (worker->target == source)
         {
 
             struct job_worker *next = &job->workers[i + 1];
 
-            channel_send_buffer(ichannel, next->channel, event, count, buffer);
+            channel_send_buffer(ichannel, next->target, event, count, buffer);
 
             return 1;
 
@@ -143,15 +143,15 @@ void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
+        if (worker->target)
         {
 
             unsigned int j;
 
-            channel_send_fmt2(ichannel, worker->channel, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", env, pwd);
+            channel_send_fmt2(ichannel, worker->target, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", env, pwd);
 
             for (j = 0; j < worker->noptions; j++)
-                channel_send_fmt2(ichannel, worker->channel, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
+                channel_send_fmt2(ichannel, worker->target, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
 
         }
 
@@ -162,8 +162,8 @@ void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
-            channel_send(ichannel, worker->channel, EVENT_MAIN);
+        if (worker->target)
+            channel_send(ichannel, worker->target, EVENT_MAIN);
 
     }
 
@@ -172,7 +172,7 @@ void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
+        if (worker->target)
         {
 
             unsigned int j;
@@ -183,9 +183,9 @@ void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd)
                 char *path = worker->paths[j];
 
                 if (fs_auth(path))
-                    channel_send_fmt1(ichannel, worker->channel, EVENT_PATH, "%s\\0", path);
+                    channel_send_fmt1(ichannel, worker->target, EVENT_PATH, "%s\\0", path);
                 else
-                    channel_send_fmt2(ichannel, worker->channel, EVENT_PATH, "%s%s\\0", pwd, path);
+                    channel_send_fmt2(ichannel, worker->target, EVENT_PATH, "%s%s\\0", pwd, path);
 
             }
 
@@ -197,7 +197,7 @@ void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd)
 
 }
 
-void job_close(struct job *job, unsigned int ichannel, unsigned int channel)
+void job_close(struct job *job, unsigned int ichannel, unsigned int target)
 {
 
     unsigned int i;
@@ -207,10 +207,10 @@ void job_close(struct job *job, unsigned int ichannel, unsigned int channel)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel == channel)
+        if (worker->target == target)
         {
 
-            worker->channel = 0;
+            worker->target = 0;
 
             activatenext(job, ichannel, i + 1);
 
@@ -222,7 +222,7 @@ void job_close(struct job *job, unsigned int ichannel, unsigned int channel)
 
 }
 
-unsigned int job_exist(struct job *job, unsigned int channel)
+unsigned int job_exist(struct job *job, unsigned int target)
 {
 
     unsigned int i;
@@ -232,8 +232,8 @@ unsigned int job_exist(struct job *job, unsigned int channel)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel == channel)
-            return channel;
+        if (worker->target == target)
+            return target;
 
     }
 
@@ -271,10 +271,10 @@ void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, u
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
+        if (worker->target)
         {
 
-            channel_send_buffer(ichannel, worker->channel, event, count, buffer);
+            channel_send_buffer(ichannel, worker->target, event, count, buffer);
 
             break;
 
@@ -294,8 +294,8 @@ void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, uns
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
-            channel_send_buffer(ichannel, worker->channel, event, count, buffer);
+        if (worker->target)
+            channel_send_buffer(ichannel, worker->target, event, count, buffer);
 
     }
 
@@ -311,12 +311,12 @@ void job_killall(struct job *job)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
+        if (worker->target)
         {
 
-            call_kill(worker->channel);
+            call_kill(worker->target);
 
-            worker->channel = 0;
+            worker->target = 0;
 
         }
 
@@ -335,7 +335,7 @@ unsigned int job_count(struct job *job)
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->channel)
+        if (worker->target)
             count++;
 
     }
