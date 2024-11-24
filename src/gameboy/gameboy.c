@@ -200,7 +200,7 @@ static void run(unsigned int source, unsigned int service, unsigned int id)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    fs_read_full(0, service, id, rom, 0x80000, 0);
+    fs_read_full(1, service, id, rom, 0x80000, 0);
 
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
 
@@ -222,7 +222,7 @@ static void run(unsigned int source, unsigned int service, unsigned int id)
     }
 
     if (getsavesize(&gb))
-        fs_read_full(0, service, id, cart_ram, getsavesize(&gb), 0x80000);
+        fs_read_full(1, service, id, cart_ram, getsavesize(&gb), 0x80000);
 
     channel_send_fmt1(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
@@ -294,7 +294,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int service = fs_auth(path);
-    unsigned int id = fs_walk(0, service, 0, path);
+    unsigned int id = fs_walk(1, service, 0, path);
     struct event_videoconf videoconf;
 
     videoconf.width = option_getdecimal("width");

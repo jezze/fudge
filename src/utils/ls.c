@@ -11,7 +11,7 @@ static void list(unsigned int source, char *path)
     if (service)
     {
 
-        unsigned int id = fs_walk(0, service, 0, path);
+        unsigned int id = fs_walk(1, service, 0, path);
 
         if (id)
         {
@@ -22,7 +22,7 @@ static void list(unsigned int source, char *path)
 
             channel_send_fmt0(0, source, EVENT_DATA, "../\n");
 
-            for (offset = 0; (nrecords = fs_list(0, service, id, offset, records, 8)); offset += nrecords)
+            for (offset = 0; (nrecords = fs_list(1, service, id, offset, records, 8)); offset += nrecords)
             {
 
                 unsigned int i;

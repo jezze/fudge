@@ -20,7 +20,7 @@ static void updatecontent(void)
     if (service)
     {
 
-        unsigned int id = fs_walk(0, service, 0, path);
+        unsigned int id = fs_walk(1, service, 0, path);
 
         if (id)
         {
@@ -34,7 +34,7 @@ static void updatecontent(void)
 
             channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
 
-            for (offset = 0; (nrecords = fs_list(0, service, id, offset, records, 8)); offset += nrecords)
+            for (offset = 0; (nrecords = fs_list(1, service, id, offset, records, 8)); offset += nrecords)
             {
 
                 unsigned int i;

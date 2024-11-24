@@ -16,7 +16,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (service)
     {
 
-        unsigned int id = fs_walk(0, service, 0, mdata);
+        unsigned int id = fs_walk(1, service, 0, mdata);
 
         if (id)
         {
@@ -25,7 +25,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(0, service, id, buffer, MESSAGE_SIZE, offset)); offset += count)
+            for (offset = 0; (count = fs_read(1, service, id, buffer, MESSAGE_SIZE, offset)); offset += count)
                 channel_send_buffer(0, source, EVENT_DATA, count, buffer);
 
         }

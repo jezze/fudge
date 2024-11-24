@@ -9,10 +9,10 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     if (service)
     {
 
-        unsigned int id = fs_walk(0, service, 0, mdata);
+        unsigned int id = fs_walk(1, service, 0, mdata);
 
         if (id)
-            call_unload(fs_map(0, service, id));
+            call_unload(fs_map(1, service, id));
         else
             channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
 
