@@ -31,12 +31,12 @@ static void onexit(unsigned int source, void *mdata, unsigned int msize)
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fs_auth(mdata);
+    unsigned int target = fs_auth(mdata);
 
-    if (service)
+    if (target)
     {
 
-        unsigned int id = fs_walk(1, service, 0, mdata);
+        unsigned int id = fs_walk(1, target, 0, mdata);
 
         if (id)
         {
@@ -45,7 +45,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(1, service, id, buffer, 4096, offset)); offset += count)
+            for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
                 sha1_read(&sum, buffer, count);
 
         }

@@ -191,7 +191,7 @@ static void keyrelease(struct gb_s *gb, void *data)
 
 }
 
-static void run(unsigned int source, unsigned int service, unsigned int id)
+static void run(unsigned int source, unsigned int target, unsigned int id)
 {
 
     char romname[16];
@@ -200,7 +200,7 @@ static void run(unsigned int source, unsigned int service, unsigned int id)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    fs_read_full(1, service, id, rom, 0x80000, 0);
+    fs_read_full(1, target, id, rom, 0x80000, 0);
 
     gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
 
@@ -222,7 +222,7 @@ static void run(unsigned int source, unsigned int service, unsigned int id)
     }
 
     if (getsavesize(&gb))
-        fs_read_full(1, service, id, cart_ram, getsavesize(&gb), 0x80000);
+        fs_read_full(1, target, id, cart_ram, getsavesize(&gb), 0x80000);
 
     channel_send_fmt1(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
@@ -293,8 +293,8 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int service = fs_auth(path);
-    unsigned int id = fs_walk(1, service, 0, path);
+    unsigned int target = fs_auth(path);
+    unsigned int id = fs_walk(1, target, 0, path);
     struct event_videoconf videoconf;
 
     videoconf.width = option_getdecimal("width");
@@ -311,7 +311,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     channel_send(0, option_getdecimal("video-service"), EVENT_LINK);
     channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
     channel_wait(0, option_getdecimal("video-service"), EVENT_VIDEOINFO);
-    run(source, service, id);
+    run(source, target, id);
     channel_send(0, option_getdecimal("video-service"), EVENT_UNLINK);
     channel_send(0, option_getdecimal("timer-service"), EVENT_UNLINK);
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK);

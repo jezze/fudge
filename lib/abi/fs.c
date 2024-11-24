@@ -217,17 +217,17 @@ unsigned int fs_write_all(unsigned int ichannel, unsigned int target, unsigned i
 unsigned int fs_spawn(unsigned int ichannel, char *path)
 {
 
-    unsigned int service = fs_auth(path);
+    unsigned int target = fs_auth(path);
 
-    if (service)
+    if (target)
     {
 
-        unsigned int id = fs_walk(ichannel, service, 0, path);
+        unsigned int id = fs_walk(ichannel, target, 0, path);
 
         if (id)
         {
 
-            unsigned int address = fs_map(ichannel, service, id);
+            unsigned int address = fs_map(ichannel, target, id);
 
             return (address) ? call_spawn(address) : 0;
 
@@ -242,17 +242,17 @@ unsigned int fs_spawn(unsigned int ichannel, char *path)
 unsigned int fs_spawn_relative(unsigned int ichannel, char *path, char *parent)
 {
 
-    unsigned int service = fs_auth(parent);
+    unsigned int target = fs_auth(parent);
 
-    if (service)
+    if (target)
     {
 
-        unsigned int id = fs_walk(ichannel, service, fs_walk(ichannel, service, 0, parent), path);
+        unsigned int id = fs_walk(ichannel, target, fs_walk(ichannel, target, 0, parent), path);
 
         if (id)
         {
 
-            unsigned int address = fs_map(ichannel, service, id);
+            unsigned int address = fs_map(ichannel, target, id);
 
             return (address) ? call_spawn(address) : 0;
 

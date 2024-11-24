@@ -413,19 +413,19 @@ static void placeimagepcx(struct widget *widget, int x, int y, unsigned int minw
     if (!image->loaded)
     {
 
-        unsigned int service = fs_auth(strpool_getstring(image->source));
+        unsigned int target = fs_auth(strpool_getstring(image->source));
 
-        if (service)
+        if (target)
         {
 
-            unsigned int id = fs_walk(1, service, 0, strpool_getstring(image->source));
+            unsigned int id = fs_walk(1, target, 0, strpool_getstring(image->source));
 
             if (id)
             {
 
                 struct pcx_header header;
 
-                fs_read_all(1, service, id, &header, sizeof (struct pcx_header), 0);
+                fs_read_all(1, target, id, &header, sizeof (struct pcx_header), 0);
                 util_initsize(&image->size, header.xend - header.xstart + 1, header.yend - header.ystart + 1);
 
                 image->loaded = 1;

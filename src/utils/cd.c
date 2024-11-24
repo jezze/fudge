@@ -105,12 +105,12 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         if (msize)
         {
 
-            unsigned int service = fs_auth(mdata);
+            unsigned int target = fs_auth(mdata);
 
-            if (service)
+            if (target)
             {
 
-                unsigned int id = fs_walk(1, service, 0, mdata);
+                unsigned int id = fs_walk(1, target, 0, mdata);
 
                 if (id)
                     channel_send_fmt1(0, source, EVENT_OPTION, "pwd\\0%s\\0", mdata);

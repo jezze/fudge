@@ -13,12 +13,12 @@ static char *states[6] = {
 static void showcores(unsigned int source)
 {
 
-    unsigned int service = fs_auth("system:");
+    unsigned int target = fs_auth("system:");
 
-    if (service)
+    if (target)
     {
 
-        unsigned int id = fs_walk(1, service, 0, "info/cores");
+        unsigned int id = fs_walk(1, target, 0, "info/cores");
 
         if (id)
         {
@@ -27,7 +27,7 @@ static void showcores(unsigned int source)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(1, service, id, &coreinfo, sizeof (struct event_coreinfo), offset)); offset += count)
+            for (offset = 0; (count = fs_read(1, target, id, &coreinfo, sizeof (struct event_coreinfo), offset)); offset += count)
                 channel_send_fmt3(0, source, EVENT_DATA, "core\n  id %u\n  sp 0x%H8u\n  task %u\n", &coreinfo.id, &coreinfo.sp, &coreinfo.task);
 
         }
@@ -39,12 +39,12 @@ static void showcores(unsigned int source)
 static void showtasks(unsigned int source)
 {
 
-    unsigned int service = fs_auth("system:");
+    unsigned int target = fs_auth("system:");
 
-    if (service)
+    if (target)
     {
 
-        unsigned int id = fs_walk(1, service, 0, "info/tasks");
+        unsigned int id = fs_walk(1, target, 0, "info/tasks");
 
         if (id)
         {
@@ -54,7 +54,7 @@ static void showtasks(unsigned int source)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(1, service, id, &taskinfo, sizeof (struct event_taskinfo), offset)); offset += count)
+            for (offset = 0; (count = fs_read(1, target, id, &taskinfo, sizeof (struct event_taskinfo), offset)); offset += count)
             {
 
                 if (taskinfo.state)
@@ -71,12 +71,12 @@ static void showtasks(unsigned int source)
 static void showmailboxes(unsigned int source)
 {
 
-    unsigned int service = fs_auth("system:");
+    unsigned int target = fs_auth("system:");
 
-    if (service)
+    if (target)
     {
 
-        unsigned int id = fs_walk(1, service, 0, "info/mailboxes");
+        unsigned int id = fs_walk(1, target, 0, "info/mailboxes");
 
         if (id)
         {
@@ -85,7 +85,7 @@ static void showmailboxes(unsigned int source)
             unsigned int count;
             unsigned int offset;
 
-            for (offset = 0; (count = fs_read(1, service, id, &mailboxinfo, sizeof (struct event_mailboxinfo), offset)); offset += count)
+            for (offset = 0; (count = fs_read(1, target, id, &mailboxinfo, sizeof (struct event_mailboxinfo), offset)); offset += count)
                 channel_send_fmt1(0, source, EVENT_DATA, "mailbox\n  ring.buffer 0x%H8u\n", &mailboxinfo.address);
 
         }
