@@ -208,7 +208,7 @@ static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int 
         }
 
         /*
-        fs_write_all(service, data, buffer, videoinfo->width * videoinfo->bpp, videoinfo->width * y * videoinfo->bpp);
+        fs_write_all(1, service, data, buffer, videoinfo->width * videoinfo->bpp, videoinfo->width * y * videoinfo->bpp);
         */
 
     }

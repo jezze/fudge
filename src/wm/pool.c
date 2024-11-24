@@ -223,7 +223,7 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
         if (service)
         {
 
-            unsigned int id = fs_walk(0, service, 0, source);
+            unsigned int id = fs_walk(1, service, 0, source);
 
             if (id)
             {
@@ -232,17 +232,17 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
                 struct record record;
                 unsigned char magic;
 
-                fs_stat(0, service, id, &record);
-                fs_read_all(0, service, id, &header, sizeof (struct pcx_header), 0);
-                fs_read_full(0, service, id, pcxresource->data, 0x10000, 128);
+                fs_stat(1, service, id, &record);
+                fs_read_all(1, service, id, &header, sizeof (struct pcx_header), 0);
+                fs_read_full(1, service, id, pcxresource->data, 0x10000, 128);
 
                 pcxresource->width = header.xend - header.xstart + 1;
                 pcxresource->height = header.yend - header.ystart + 1;
 
-                fs_read_all(0, service, id, &magic, 1, record.size - 768 - 1);
+                fs_read_all(1, service, id, &magic, 1, record.size - 768 - 1);
 
                 if (magic == PCX_COLORMAP_MAGIC)
-                    fs_read_all(0, service, id, pcxresource->colormap, 768, record.size - 768);
+                    fs_read_all(1, service, id, pcxresource->colormap, 768, record.size - 768);
 
                 pcxresource->cached = 1;
 
@@ -316,26 +316,26 @@ void pool_loadfont(unsigned int factor)
         {
 
         case 0:
-            id1 = fs_walk(0, service, 0, "data/font/ter-112n.pcf");
-            id2 = fs_walk(0, service, 0, "data/font/ter-112b.pcf");
+            id1 = fs_walk(1, service, 0, "data/font/ter-112n.pcf");
+            id2 = fs_walk(1, service, 0, "data/font/ter-112b.pcf");
 
             break;
 
         case 1:
-            id1 = fs_walk(0, service, 0, "data/font/ter-114n.pcf");
-            id2 = fs_walk(0, service, 0, "data/font/ter-114b.pcf");
+            id1 = fs_walk(1, service, 0, "data/font/ter-114n.pcf");
+            id2 = fs_walk(1, service, 0, "data/font/ter-114b.pcf");
 
             break;
 
         case 2:
-            id1 = fs_walk(0, service, 0, "data/font/ter-116n.pcf");
-            id2 = fs_walk(0, service, 0, "data/font/ter-116b.pcf");
+            id1 = fs_walk(1, service, 0, "data/font/ter-116n.pcf");
+            id2 = fs_walk(1, service, 0, "data/font/ter-116b.pcf");
 
             break;
 
         default:
-            id1 = fs_walk(0, service, 0, "/data/font/ter-118n.pcf");
-            id2 = fs_walk(0, service, 0, "/data/font/ter-118b.pcf");
+            id1 = fs_walk(1, service, 0, "/data/font/ter-118n.pcf");
+            id2 = fs_walk(1, service, 0, "/data/font/ter-118b.pcf");
 
             break;
 
@@ -347,8 +347,8 @@ void pool_loadfont(unsigned int factor)
             unsigned int lineheight = 12 + factor * 4;
             unsigned int padding = 4 + factor * 2;
 
-            fs_read_full(0, service, id1, fontnormal, FONTDATA_SIZE, 0);
-            fs_read_full(0, service, id2, fontbold, FONTDATA_SIZE, 0);
+            fs_read_full(1, service, id1, fontnormal, FONTDATA_SIZE, 0);
+            fs_read_full(1, service, id2, fontbold, FONTDATA_SIZE, 0);
             pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
             pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
 

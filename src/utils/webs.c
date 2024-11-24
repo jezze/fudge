@@ -14,7 +14,7 @@ static void sendresponse(unsigned int source, struct socket *remote)
 {
 
     unsigned int service = fs_auth(option_getstring("initrd:"));
-    unsigned int root = fs_walk(0, service, 0, "data/html");
+    unsigned int root = fs_walk(1, service, 0, "data/html");
     unsigned int id;
     char buffer[4096];
     unsigned int count = 0;
@@ -22,13 +22,13 @@ static void sendresponse(unsigned int source, struct socket *remote)
     if (cstring_length(request) == 1 && request[0] == '/')
         cstring_write_zero(request, 128, cstring_write(request, 128, "/index.html", 0));
 
-    id = fs_walk(0, service, root, request + 1);
+    id = fs_walk(1, service, root, request + 1);
 
     if (id)
     {
 
         char file[4096];
-        unsigned int filesize = fs_read_full(0, service, id, file, 4096, 0);
+        unsigned int filesize = fs_read_full(1, service, id, file, 4096, 0);
 
         count += cstring_write(buffer, 4096, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
