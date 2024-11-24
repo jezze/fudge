@@ -127,7 +127,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     loadmodules(1, 18, modules0);
     loadmodules(1, 1, modules1);
     loadmodules(1, 16, modules2);
-
     spawnshell(1, env);
     spawnwm(1, env);
 
