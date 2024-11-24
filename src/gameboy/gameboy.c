@@ -251,7 +251,7 @@ static void run(unsigned int source, unsigned int service, unsigned int id)
             break;
 
         default:
-            channel_dispatch(&message, data);
+            channel_dispatch(0, &message, data);
 
             break;
 

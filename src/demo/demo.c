@@ -101,7 +101,7 @@ static void run(void)
             break;
 
         default:
-            channel_dispatch(&message, data);
+            channel_dispatch(0, &message, data);
 
             break;
 

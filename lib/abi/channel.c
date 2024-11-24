@@ -45,7 +45,7 @@ static void dispatch(unsigned int source, unsigned int event, void *data, unsign
 
 }
 
-void channel_dispatch(struct message *message, void *data)
+void channel_dispatch(unsigned int ichannel, struct message *message, void *data)
 {
 
     dispatch(message->source, message->event, data, message_datasize(message));
@@ -90,7 +90,7 @@ void channel_dispatch(struct message *message, void *data)
     {
 
         if (parent)
-            channel_send(0, parent, EVENT_DONE);
+            channel_send(ichannel, parent, EVENT_DONE);
 
         channel_close();
 
@@ -199,7 +199,7 @@ unsigned int channel_process(unsigned int ichannel)
     if (channel_pick(ichannel, &message, MESSAGE_SIZE, data))
     {
 
-        channel_dispatch(&message, data);
+        channel_dispatch(ichannel, &message, data);
 
         return message.event;
 
@@ -215,7 +215,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
     while (channel_pick(ichannel, message, count, data))
     {
 
-        channel_dispatch(message, data);
+        channel_dispatch(ichannel, message, data);
 
         if (message->source == source && message->event == event)
             return message->event;
@@ -232,7 +232,7 @@ unsigned int channel_pollany(unsigned int ichannel, unsigned int source, struct 
     while (channel_pick(ichannel, message, count, data))
     {
 
-        channel_dispatch(message, data);
+        channel_dispatch(ichannel, message, data);
 
         if (message->source == source)
             return message->event;
@@ -252,7 +252,7 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
     while (channel_pick(ichannel, &message, MESSAGE_SIZE, data))
     {
 
-        channel_dispatch(&message, data);
+        channel_dispatch(ichannel, &message, data);
 
         if (message.source == source && message.event == event)
             return message.event;
@@ -272,7 +272,7 @@ unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, uns
     while (channel_pick(ichannel, &message, MESSAGE_SIZE, data2))
     {
 
-        channel_dispatch(&message, data2);
+        channel_dispatch(ichannel, &message, data2);
 
         if (message.source == source && message.event == event)
         {

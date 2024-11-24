@@ -247,7 +247,7 @@ unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *me
     while (job_count(job) && channel_pick(0, message, count, data))
     {
 
-        channel_dispatch(message, data);
+        channel_dispatch(ichannel, message, data);
 
         if (message->event == EVENT_DONE)
             job_close(job, ichannel, message->source);
