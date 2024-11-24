@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void loaddriver(unsigned int ichannel, char *path)
+static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
 {
 
     unsigned int target = fs_spawn(ichannel, "initrd:bin/elfload");
@@ -9,8 +9,13 @@ static void loaddriver(unsigned int ichannel, char *path)
     if (target)
     {
 
+        unsigned int i;
+
         channel_send(ichannel, target, EVENT_MAIN);
-        channel_send_fmt1(ichannel, target, EVENT_PATH, "%s\\0", path);
+
+        for (i = 0; i < count; i++)
+            channel_send_fmt1(ichannel, target, EVENT_PATH, "%s\\0", paths[i]);
+
         channel_send(ichannel, target, EVENT_END);
         channel_wait(ichannel, target, EVENT_DONE);
 
@@ -69,50 +74,59 @@ static unsigned int spawnwm(unsigned int ichannel, unsigned int env)
 
 }
 
+static char *modules0[18] = {
+    "initrd:kernel/base.ko",
+    "initrd:kernel/log.ko",
+    "initrd:kernel/block.ko",
+    "initrd:kernel/clock.ko",
+    "initrd:kernel/console.ko",
+    "initrd:kernel/keyboard.ko",
+    "initrd:kernel/mouse.ko",
+    "initrd:kernel/timer.ko",
+    "initrd:kernel/audio.ko",
+    "initrd:kernel/video.ko",
+    "initrd:kernel/ethernet.ko",
+    "initrd:kernel/info.ko",
+    "initrd:kernel/io.ko",
+    "initrd:kernel/cpuid.ko",
+    "initrd:kernel/msr.ko",
+    "initrd:kernel/pat.ko",
+    "initrd:kernel/acpi.ko",
+    "initrd:kernel/pic.ko"
+};
+
+static char *modules1[1] = {
+    "initrd:kernel/apic.ko"
+};
+
+static char *modules2[16] = {
+    "initrd:kernel/platform.ko",
+    "initrd:kernel/pci.ko",
+    "initrd:kernel/pit.ko",
+    "initrd:kernel/rtc.ko",
+    "initrd:kernel/ps2.ko",
+    "initrd:kernel/ps2-keyboard.ko",
+    "initrd:kernel/ps2-mouse.ko",
+    "initrd:kernel/bga.ko",
+    "initrd:kernel/uart.ko",
+    "initrd:kernel/vga.ko",
+    "initrd:kernel/rtl8139.ko",
+    "initrd:kernel/ide.ko",
+    "initrd:kernel/ahci.ko",
+    "initrd:kernel/nvme.ko",
+    "initrd:kernel/ata.ko",
+    "initrd:kernel/virtio-network.ko"
+};
+
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int env;
 
-    loaddriver(1, "initrd:kernel/base.ko");
-    loaddriver(1, "initrd:kernel/log.ko");
-    loaddriver(1, "initrd:kernel/block.ko");
-    loaddriver(1, "initrd:kernel/clock.ko");
-    loaddriver(1, "initrd:kernel/console.ko");
-    loaddriver(1, "initrd:kernel/keyboard.ko");
-    loaddriver(1, "initrd:kernel/mouse.ko");
-    loaddriver(1, "initrd:kernel/timer.ko");
-    loaddriver(1, "initrd:kernel/audio.ko");
-    loaddriver(1, "initrd:kernel/video.ko");
-    loaddriver(1, "initrd:kernel/ethernet.ko");
-    loaddriver(1, "initrd:kernel/info.ko");
-    loaddriver(1, "initrd:kernel/io.ko");
-    loaddriver(1, "initrd:kernel/cpuid.ko");
-    loaddriver(1, "initrd:kernel/msr.ko");
-    loaddriver(1, "initrd:kernel/pat.ko");
-    loaddriver(1, "initrd:kernel/acpi.ko");
-    loaddriver(1, "initrd:kernel/pic.ko");
-    loaddriver(1, "initrd:kernel/apic.ko");
-    loaddriver(1, "initrd:kernel/platform.ko");
-    loaddriver(1, "initrd:kernel/pci.ko");
-    loaddriver(1, "initrd:kernel/pit.ko");
-    loaddriver(1, "initrd:kernel/rtc.ko");
-    loaddriver(1, "initrd:kernel/ps2.ko");
-    loaddriver(1, "initrd:kernel/ps2-keyboard.ko");
-    loaddriver(1, "initrd:kernel/ps2-mouse.ko");
-    loaddriver(1, "initrd:kernel/bga.ko");
-    loaddriver(1, "initrd:kernel/uart.ko");
-    loaddriver(1, "initrd:kernel/vga.ko");
-    loaddriver(1, "initrd:kernel/rtl8139.ko");
-    loaddriver(1, "initrd:kernel/ide.ko");
-    loaddriver(1, "initrd:kernel/ahci.ko");
-    loaddriver(1, "initrd:kernel/nvme.ko");
-    loaddriver(1, "initrd:kernel/ata.ko");
-    loaddriver(1, "initrd:kernel/virtio-network.ko");
-
-    /*
-    loaddriver("initrd:kernel/smp.ko");
-    */
+    /* FIXME: Because of an mmu bug, apic module needs to load seperately. It kills the process. */
+    loadmodules(1, 18, modules0);
+    loadmodules(1, 1, modules1);
+    loadmodules(1, 16, modules2);
 
     env = spawnenv(1);
 
