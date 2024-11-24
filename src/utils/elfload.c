@@ -212,6 +212,13 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
 
 }
 
+static void onmain(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    kernelcount = loadmap("initrd:kernel/fudge.map", kerneldata, 8192);
+
+}
+
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -219,7 +226,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     char mapname[256];
 
     cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
-    kernelcount = loadmap("initrd:kernel/fudge.map", kerneldata, 8192);
     mapcount = loadmap(mapname, mapdata, 4096);
 
     if (target)
@@ -261,6 +267,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
 
 }
