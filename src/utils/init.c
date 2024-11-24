@@ -121,14 +121,12 @@ static char *modules2[16] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int env;
+    unsigned int env = spawnenv(1);
 
     /* FIXME: Because of an mmu bug, apic module needs to load seperately. It kills the process. */
     loadmodules(1, 18, modules0);
     loadmodules(1, 1, modules1);
     loadmodules(1, 16, modules2);
-
-    env = spawnenv(1);
 
     spawnshell(1, env);
     spawnwm(1, env);
