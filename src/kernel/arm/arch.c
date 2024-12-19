@@ -52,7 +52,7 @@ static void testtask(void)
 
     uart_puts("TEST TASK 1\n");
 
-    status = call_place(0, 10, EVENT_DATA, 5, "hello");
+    status = call_place(0, 0, EVENT_DATA, 5, "hello");
 
     if (status == MESSAGE_OK)
         uart_puts("CORRECT\n");

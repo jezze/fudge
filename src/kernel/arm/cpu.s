@@ -40,7 +40,7 @@ cpu_halt:
 .global call_place
 call_place:
     push {r0-r12, lr}
-    mov r7, #0x0F
+    mov r7, #0x02
     swi #0
     pop {r0-r12, lr}
     bx lr
@@ -49,7 +49,7 @@ call_place:
 .global call_despawn
 call_despawn:
     push {r0-r12, lr}
-    mov r7, #0x0D
+    mov r7, #0x04
     swi #0
     pop {r0-r12, lr}
     bx lr
