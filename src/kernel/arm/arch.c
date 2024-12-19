@@ -147,24 +147,12 @@ void arch_syscall(void *stack)
 
 }
 
-static unsigned int TEMPX = 0;
-
 void arch_irq(void *stack)
 {
 
     struct {struct cpu_interrupt interrupt; struct cpu_general general; unsigned int lr;} *args = stack;
 
     pic_irq();
-
-    TEMPX++;
-
-    if (TEMPX == 10)
-    {
-
-        TEMPX = 0;
-
-    }
-
     schedule(&args->general, &args->interrupt);
 
 }
