@@ -45,28 +45,6 @@ static void isr_install(unsigned int index, void *addr)
 
 }
 
-static unsigned int spawn(unsigned int itask, void *stack)
-{
-
-    struct {void *caller; unsigned int address;} *args = stack;
-
-    if (args->address)
-    {
-
-
-        unsigned int ntask = kernel_createtask();
-
-        if (ntask)
-            return kernel_loadtask(0, ntask, 0, 0x6000, 0);
-
-    }
-
-    DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
-
-    return 0;
-
-}
-
 static void testtask(void)
 {
 
@@ -82,6 +60,27 @@ static void testtask(void)
         uart_puts("INCORRECT\n");
 
     call_despawn();
+
+}
+
+static unsigned int spawn(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int address;} *args = stack;
+
+    if (args->address)
+    {
+
+        unsigned int ntask = kernel_createtask();
+
+        if (ntask)
+            return kernel_loadtask(0, ntask, 0, 0x6000, (unsigned int)&testtask);
+
+    }
+
+    DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
+
+    return 0;
 
 }
 
@@ -162,11 +161,6 @@ void arch_irq(void *stack)
     if (TEMPX == 10)
     {
 
-        unsigned int ntask = kernel_createtask();
-
-        if (ntask)
-            kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
-
         TEMPX = 0;
 
     }
@@ -218,7 +212,7 @@ void arch_setup2(void)
     if (ntask)
     {
 
-        unsigned int target = kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
+        unsigned int target = kernel_loadtask(0, ntask, (unsigned int)&testtask, 0x6000, 0);
 
         kernel_placetask(ntask, 0, target, EVENT_MAIN, 0, 0);
 
