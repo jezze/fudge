@@ -150,10 +150,7 @@ void arch_syscall(void *stack)
 void arch_irq(void *stack)
 {
 
-    struct {struct cpu_interrupt interrupt; struct cpu_general general; unsigned int lr;} *args = stack;
-
     pic_irq();
-    schedule(&args->general, &args->interrupt);
 
 }
 
