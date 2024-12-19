@@ -76,7 +76,7 @@ static void testtask(void)
 
     status = call_place(0, 10, EVENT_DATA, 5, "hello");
 
-    if (status == EVENT_OK)
+    if (status == MESSAGE_OK)
         uart_puts("CORRECT\n");
     else
         uart_puts("INCORRECT\n");
@@ -93,7 +93,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->itask);
+        struct task_thread *thread = kernel_gettaskthread(core->itask);
 
         buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
 
@@ -109,7 +109,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_getthread(core->itask);
+        struct task_thread *thread = kernel_gettaskthread(core->itask);
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
@@ -165,7 +165,7 @@ void arch_irq(void *stack)
         unsigned int ntask = kernel_createtask();
 
         if (ntask)
-            kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0);
+            kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
 
         TEMPX = 0;
 
@@ -204,7 +204,7 @@ void arch_setup1(void)
     timer_setup();
     kmi_setup();
     lcd_setup();
-    kernel_setup(ARCH_KERNELSTACKPHYSICAL, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXPHYSICAL, ARCH_MAILBOXSIZE);
+    kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
     abi_setup();
     abi_setcallback(0x03, spawn);
 
@@ -218,8 +218,9 @@ void arch_setup2(void)
     if (ntask)
     {
 
-        kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0);
-        kernel_place(0, ntask, EVENT_MAIN, 0, 0);
+        unsigned int target = kernel_loadtask(ntask, (unsigned int)&testtask, 0x6000, 0, 0);
+
+        kernel_placetask(ntask, 0, target, EVENT_MAIN, 0, 0);
 
     }
 
