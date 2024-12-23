@@ -20,7 +20,6 @@ struct widget_button
 {
 
     unsigned int label;
-    unsigned int onclick;
 
 };
 
@@ -28,7 +27,6 @@ struct widget_choice
 {
 
     unsigned int label;
-    unsigned int onclick;
 
 };
 
@@ -71,7 +69,6 @@ struct widget_select
 {
 
     unsigned int label;
-    unsigned int onclick;
 
 };
 
@@ -112,7 +109,6 @@ struct widget_textbutton
 {
 
     unsigned int label;
-    unsigned int onclick;
 
 };
 
@@ -135,6 +131,7 @@ struct widget
     void *data;
     struct util_box bb;
     struct util_box clip;
+    unsigned int onclick;
 
 };
 

@@ -18,11 +18,6 @@ static void setattributebutton(struct widget *widget, unsigned int attribute, ch
 
         break;
 
-    case ATTR_ONCLICK:
-        button->onclick = attr_update(ATTR_ONCLICK, value, button->onclick);
-
-        break;
-
     }
 
 }
@@ -37,11 +32,6 @@ static void setattributechoice(struct widget *widget, unsigned int attribute, ch
 
     case ATTR_LABEL:
         choice->label = attr_update(ATTR_LABEL, value, choice->label);
-
-        break;
-
-    case ATTR_ONCLICK:
-        choice->onclick = attr_update(ATTR_ONCLICK, value, choice->onclick);
 
         break;
 
@@ -145,11 +135,6 @@ static void setattributeselect(struct widget *widget, unsigned int attribute, ch
 
         break;
 
-    case ATTR_ONCLICK:
-        select->onclick = attr_update(ATTR_ONCLICK, value, select->onclick);
-
-        break;
-
     }
 
 }
@@ -232,11 +217,6 @@ static void setattributetextbutton(struct widget *widget, unsigned int attribute
 
         break;
 
-    case ATTR_ONCLICK:
-        textbutton->onclick = attr_update(ATTR_ONCLICK, value, textbutton->onclick);
-
-        break;
-
     }
 
 }
@@ -276,6 +256,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_SPAN:
         widget->span = attr_update(ATTR_SPAN, value, widget->span);
+
+        break;
+
+    case ATTR_ONCLICK:
+        widget->onclick = attr_update(ATTR_ONCLICK, value, widget->onclick);
 
         break;
 
@@ -348,19 +333,18 @@ void widget_unsetattributes(struct widget *widget)
 
     widget->id = attr_update(ATTR_ID, 0, widget->id);
     widget->in = attr_update(ATTR_IN, 0, widget->in);
+    widget->onclick = attr_update(ATTR_ONCLICK, 0, widget->onclick);
 
     switch (widget->type)
     {
 
     case WIDGET_TYPE_BUTTON:
         setattributebutton(widget, ATTR_LABEL, 0);
-        setattributebutton(widget, ATTR_ONCLICK, 0);
 
         break;
 
     case WIDGET_TYPE_CHOICE:
         setattributechoice(widget, ATTR_LABEL, 0);
-        setattributechoice(widget, ATTR_ONCLICK, 0);
 
         break;
 
@@ -371,7 +355,6 @@ void widget_unsetattributes(struct widget *widget)
 
     case WIDGET_TYPE_SELECT:
         setattributeselect(widget, ATTR_LABEL, 0);
-        setattributeselect(widget, ATTR_ONCLICK, 0);
 
         break;
 
@@ -382,7 +365,6 @@ void widget_unsetattributes(struct widget *widget)
 
     case WIDGET_TYPE_TEXTBUTTON:
         setattributetextbutton(widget, ATTR_LABEL, 0);
-        setattributetextbutton(widget, ATTR_ONCLICK, 0);
 
         break;
 
@@ -542,7 +524,6 @@ static void initbutton(struct widget *widget)
     struct widget_button *button = widget->data;
 
     button->label = 0;
-    button->onclick = 0;
 
 }
 
@@ -552,7 +533,6 @@ static void initchoice(struct widget *widget)
     struct widget_choice *choice = widget->data;
 
     choice->label = 0;
-    choice->onclick = 0;
 
 }
 
@@ -606,7 +586,6 @@ static void initselect(struct widget *widget)
     struct widget_select *select = widget->data;
 
     select->label = 0;
-    select->onclick = 0;
 
 }
 
@@ -651,7 +630,6 @@ static void inittextbutton(struct widget *widget)
     struct widget_textbutton *textbutton = widget->data;
 
     textbutton->label = 0;
-    textbutton->onclick = 0;
 
 }
 

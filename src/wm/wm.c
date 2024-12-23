@@ -416,57 +416,13 @@ static void clickwidget(struct widget *widget)
 
         break;
 
-    case WIDGET_TYPE_BUTTON:
-        if (state.mousebuttonleft)
-        {
+    }
 
-            struct widget_button *button = widget->data;
+    if (state.mousebuttonleft)
+    {
 
-            if (button->onclick)
-                sendevent(widget->source, 1, button->onclick);
-
-        }
-
-        break;
-
-    case WIDGET_TYPE_CHOICE:
-        if (state.mousebuttonleft)
-        {
-
-            struct widget_choice *choice = widget->data;
-
-            if (choice->onclick)
-                sendevent(widget->source, 1, choice->onclick);
-
-        }
-
-        break;
-
-    case WIDGET_TYPE_SELECT:
-        if (state.mousebuttonleft)
-        {
-
-            struct widget_select *select = widget->data;
-
-            if (select->onclick)
-                sendevent(widget->source, 1, select->onclick);
-
-        }
-
-        break;
-
-    case WIDGET_TYPE_TEXTBUTTON:
-        if (state.mousebuttonleft)
-        {
-
-            struct widget_textbutton *textbutton = widget->data;
-
-            if (textbutton->onclick)
-                sendevent(widget->source, 1, textbutton->onclick);
-
-        }
-
-        break;
+        if (widget->onclick)
+            sendevent(widget->source, 1, widget->onclick);
 
     }
 
