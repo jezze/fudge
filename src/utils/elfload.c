@@ -180,14 +180,21 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
 
                 struct elf_relocation relocation;
                 struct elf_symbol symbol;
-                unsigned int addend;
+                unsigned int addend = 0;
                 unsigned int value;
 
                 fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
                 fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
-                if (!symbol.shindex)
+                if (symbol.shindex)
+                {
+
+                    addend = base + sectionheaders[symbol.shindex].offset + symbol.value;
+
+                }
+
+                else
                 {
 
                     unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
@@ -196,8 +203,6 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
                         value += address;
 
                 }
-
-                addend = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : 0;
 
                 switch (relocation.info & 0x0F)
                 {
