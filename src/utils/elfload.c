@@ -247,12 +247,18 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                 {
 
                     struct elf_sectionheader sectionheaders[64];
+                    unsigned int address = fs_map(1, target, id);
 
-                    fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
-                    updateundefined();
-                    resolve(source, target, id, &header, sectionheaders);
-                    relocate(&header, sectionheaders, call_load(fs_map(1, target, id)));
-                    savemap(mapname, mapdata, mapcount);
+                    if (address)
+                    {
+
+                        fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
+                        updateundefined();
+                        resolve(source, target, id, &header, sectionheaders);
+                        relocate(&header, sectionheaders, call_load(address));
+                        savemap(mapname, mapdata, mapcount);
+
+                    }
 
                 }
 
