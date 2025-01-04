@@ -272,7 +272,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                         fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                         updateundefined();
                         resolve(source, target, id, &header, sectionheaders, address);
-                        relocate(&header, sectionheaders, call_load(address));
+                        relocate(&header, sectionheaders, address);
+                        call_load(address);
                         savemap(mapname, mapdata, mapcount);
 
                     }
