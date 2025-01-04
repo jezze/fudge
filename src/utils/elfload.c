@@ -152,7 +152,7 @@ static void updateundefined(void)
 
 }
 
-static void resolve(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, struct elf_sectionheader *sectionheaders)
+static void resolve(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, struct elf_sectionheader *sectionheaders, unsigned int base)
 {
 
     unsigned int i;
@@ -180,6 +180,8 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
 
                 struct elf_relocation relocation;
                 struct elf_symbol symbol;
+                unsigned int addend;
+                unsigned int v;
 
                 fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
@@ -201,6 +203,31 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
                         fs_write_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
                     }
+
+                }
+
+                addend = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : 0;
+
+                switch (relocation.info & 0x0F)
+                {
+
+                case ELF_RELOC_TYPE_32:
+                    fs_read_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
+
+                    v += addend;
+
+                    fs_write_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
+
+                    break;
+
+                case ELF_RELOC_TYPE_PC32:
+                    fs_read_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
+
+                    v += addend - base - dataheader->offset - relocation.offset;
+
+                    fs_write_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
+
+                    break;
 
                 }
 
@@ -254,7 +281,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
                         fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                         updateundefined();
-                        resolve(source, target, id, &header, sectionheaders);
+                        resolve(source, target, id, &header, sectionheaders, address);
                         relocate(&header, sectionheaders, call_load(address));
                         savemap(mapname, mapdata, mapcount);
 

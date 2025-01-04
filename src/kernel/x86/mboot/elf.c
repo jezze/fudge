@@ -4,43 +4,6 @@
 
 static struct binary_format format;
 
-static unsigned int relocate(unsigned int base, struct elf_sectionheader *relocationheader)
-{
-
-    struct elf_header *header = (struct elf_header *)base;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(base + header->shoffset);
-    struct elf_relocation *relocations = (struct elf_relocation *)(base + relocationheader->offset);
-    struct elf_symbol *symbols = (struct elf_symbol *)(base + sectionheaders[relocationheader->link].offset);
-    unsigned int i;
-
-    for (i = 0; i < relocationheader->size / relocationheader->esize; i++)
-    {
-
-        struct elf_symbol *symbol = &symbols[(relocations[i].info >> 8)];
-        unsigned int *entry = (unsigned int *)(base + sectionheaders[relocationheader->info].offset + relocations[i].offset);
-        unsigned int addend = (symbol->shindex) ? base + sectionheaders[symbol->shindex].offset + symbol->value : 0;
-
-        switch (relocations[i].info & 0x0F)
-        {
-
-        case ELF_RELOC_TYPE_32:
-            *entry += addend;
-
-            break;
-
-        case ELF_RELOC_TYPE_PC32:
-            *entry += addend - (unsigned int)entry;
-
-            break;
-
-        }
-
-    }
-
-    return 1;
-
-}
-
 static unsigned int findsymbol(unsigned int base, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
 {
 
@@ -149,27 +112,10 @@ static unsigned int format_copyprogram(unsigned int base)
 
 }
 
-static void format_relocate(unsigned int base)
-{
-
-    struct elf_header *header = (struct elf_header *)base;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(base + header->shoffset);
-    unsigned int i;
-
-    for (i = 0; i < header->shcount; i++)
-    {
-
-        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL)
-            relocate(base, &sectionheaders[i]);
-
-    }
-
-}
-
 void elf_setup(void)
 {
 
-    binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_findbase, format_copyprogram, format_relocate);
+    binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_findbase, format_copyprogram);
     resource_register(&format.resource);
 
 }

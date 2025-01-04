@@ -118,8 +118,6 @@ static unsigned int load(unsigned int itask, void *stack)
             void (*module_init)(void);
             void (*module_register)(void);
 
-            format->relocate(args->address);
-
             module_init = (void (*)(void))(format->findsymbol(args->address, 11, "module_init"));
 
             if (module_init)
