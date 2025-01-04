@@ -273,8 +273,8 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                         updateundefined();
                         resolve(source, target, id, &header, sectionheaders, address);
                         relocate(&header, sectionheaders, address);
-                        call_load(address);
                         savemap(mapname, mapdata, mapcount);
+                        call_load(address);
 
                     }
 
