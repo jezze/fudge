@@ -181,10 +181,11 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
                 struct elf_relocation relocation;
                 struct elf_symbol symbol;
                 unsigned int addend;
-                unsigned int v;
+                unsigned int value;
 
                 fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+                fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
                 if (!symbol.shindex)
                 {
@@ -192,17 +193,7 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
                     unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
 
                     if (address)
-                    {
-
-                        unsigned int value;
-
-                        fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
-
                         value += address;
-
-                        fs_write_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
-
-                    }
 
                 }
 
@@ -212,24 +203,18 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
                 {
 
                 case ELF_RELOC_TYPE_32:
-                    fs_read_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
-
-                    v += addend;
-
-                    fs_write_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
+                    value += addend;
 
                     break;
 
                 case ELF_RELOC_TYPE_PC32:
-                    fs_read_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
-
-                    v += addend - base - dataheader->offset - relocation.offset;
-
-                    fs_write_all(1, target, id, &v, 4, dataheader->offset + relocation.offset);
+                    value += addend - base - dataheader->offset - relocation.offset;
 
                     break;
 
                 }
+
+                fs_write_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
             }
 
