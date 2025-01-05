@@ -240,10 +240,6 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int target = fs_auth(mdata);
-    char mapname[256];
-
-    cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
-    mapcount = loadmap(mapname, mapdata, 4096);
 
     if (target)
     {
@@ -269,12 +265,23 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                     if (address)
                     {
 
-                        fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
-                        updateundefined();
-                        resolve(source, target, id, &header, sectionheaders, address);
-                        relocate(&header, sectionheaders, address);
-                        savemap(mapname, mapdata, mapcount);
-                        call_load(address);
+                        char mapname[256];
+
+                        cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
+
+                        mapcount = loadmap(mapname, mapdata, 4096);
+
+                        if (mapcount)
+                        {
+
+                            fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
+                            updateundefined();
+                            resolve(source, target, id, &header, sectionheaders, address);
+                            relocate(&header, sectionheaders, address);
+                            savemap(mapname, mapdata, mapcount);
+                            call_load(address);
+
+                        }
 
                     }
 
