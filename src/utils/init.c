@@ -6,20 +6,20 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
 
     unsigned int target = fs_spawn(ichannel, "initrd:bin/elfload");
 
+    channel_send(ichannel, target, EVENT_MAIN);
+
     if (target)
     {
 
         unsigned int i;
 
-        channel_send(ichannel, target, EVENT_MAIN);
-
         for (i = 0; i < count; i++)
             channel_send_fmt1(ichannel, target, EVENT_PATH, "%s\\0", paths[i]);
 
-        channel_send(ichannel, target, EVENT_END);
-        channel_wait(ichannel, target, EVENT_DONE);
-
     }
+
+    channel_send(ichannel, target, EVENT_END);
+    channel_wait(ichannel, target, EVENT_DONE);
 
 }
 
