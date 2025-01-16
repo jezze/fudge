@@ -42,8 +42,7 @@ static void clear(unsigned int offset)
 
 }
 
-/*
-static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
+static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, unsigned int count)
 {
 
     unsigned int total = videointerface.width * videointerface.height;
@@ -96,7 +95,6 @@ static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
     return MESSAGE_OK;
 
 }
-*/
 
 /*
 static unsigned int videointerface_getcmap(unsigned int source, unsigned int count, void *buffer)
@@ -189,7 +187,7 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
 static void driver_init(unsigned int id)
 {
 
-    /*console_initinterface(&consoleinterface, id, consoleinterface_ondata);*/
+    console_initinterface(&consoleinterface, id, consoleinterface_ondata);
     video_initinterface(&videointerface, id, videointerface_onvideocmap, videointerface_onvideoconf);
 
     videointerface.width = 80;
