@@ -176,7 +176,7 @@ void task_init(struct task *task)
     resetnodes(task);
 
     task->state = TASK_STATE_DEAD;
-    task->base = 0;
+    task->address = 0;
 
 }
 

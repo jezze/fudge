@@ -37,7 +37,7 @@ struct task
     struct task_thread thread;
     struct spinlock spinlock;
     unsigned int state;
-    unsigned int base;
+    unsigned int address;
     unsigned int inodes[TASK_NODES];
 
 };

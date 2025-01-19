@@ -427,9 +427,9 @@ unsigned int kernel_codebase(unsigned int itask, unsigned int address)
     if (task)
     {
 
-        struct binary_format *format = binary_findformat(task->base);
+        struct binary_format *format = binary_findformat(task->address);
 
-        return (format) ? format->findbase(task->base, address) : 0;
+        return (format) ? format->findbase(task->address, address) : 0;
 
     }
 
@@ -445,9 +445,9 @@ unsigned int kernel_loadprogram(unsigned int itask)
     if (task)
     {
 
-        struct binary_format *format = binary_findformat(task->base);
+        struct binary_format *format = binary_findformat(task->address);
 
-        return (format) ? format->copyprogram(task->base) : 0;
+        return (format) ? format->copyprogram(task->address) : 0;
 
     }
 
@@ -611,15 +611,15 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
 
         task->thread.ip = ip;
         task->thread.sp = sp;
-        task->base = address;
+        task->address = address;
 
-        if (task->base)
+        if (task->address)
         {
 
-            struct binary_format *format = binary_findformat(task->base);
+            struct binary_format *format = binary_findformat(task->address);
 
             if (format)
-                task->thread.ip = format->findentry(task->base);
+                task->thread.ip = format->findentry(task->address);
 
         }
 
