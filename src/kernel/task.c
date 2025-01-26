@@ -138,23 +138,6 @@ void task_resetthread(struct task_thread *thread)
 
 }
 
-void task_initsignals(struct task_signals *signals)
-{
-
-    signals->kills = 0;
-    signals->blocks = 0;
-    signals->unblocks = 0;
-
-}
-
-void task_initthread(struct task_thread *thread)
-{
-
-    thread->ip = 0;
-    thread->sp = 0;
-
-}
-
 void task_reset(struct task *task)
 {
 
@@ -163,6 +146,7 @@ void task_reset(struct task *task)
     resetnodes(task);
 
     task->state = TASK_STATE_DEAD;
+    task->address = 0;
 
 }
 
@@ -170,13 +154,8 @@ void task_init(struct task *task)
 {
 
     resource_init(&task->resource, RESOURCE_TASK, task);
-    task_initsignals(&task->signals);
-    task_initthread(&task->thread);
     spinlock_init(&task->spinlock);
-    resetnodes(task);
-
-    task->state = TASK_STATE_DEAD;
-    task->address = 0;
+    task_reset(task);
 
 }
 
