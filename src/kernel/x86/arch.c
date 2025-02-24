@@ -145,6 +145,13 @@ void arch_mapvideo(unsigned char index, unsigned int paddress, unsigned int vadd
 
 }
 
+void arch_mapuser(unsigned int itask, unsigned char index, unsigned int paddress, unsigned int vaddress, unsigned int size)
+{
+
+    map(gettaskdirectory(itask), index, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+
+}
+
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
@@ -318,8 +325,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         {
 
             initmap(core->itask);
-            map(directory, 0, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE), code, TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            map(directory, 1, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            arch_mapuser(core->itask, 0, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE), code, TASK_CODESIZE);
+            arch_mapuser(core->itask, 1, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
             mmu_setdirectory(directory);
 
             if (!kernel_loadprogram(core->itask))
