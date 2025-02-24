@@ -324,9 +324,11 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (code)
         {
 
+            unsigned int paddress = ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE);
+
             initmap(core->itask);
-            arch_mapuser(core->itask, 0, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE), code, TASK_CODESIZE);
-            arch_mapuser(core->itask, 1, ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
+            arch_mapuser(core->itask, 0, paddress, code, TASK_CODESIZE);
+            arch_mapuser(core->itask, 1, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
             mmu_setdirectory(directory);
 
             if (!kernel_loadprogram(core->itask))
