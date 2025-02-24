@@ -119,8 +119,8 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
         if (mode->framebuffer)
         {
 
-            arch_mapvideo(14, mode->framebuffer, mode->framebuffer, 0x00400000);
-            arch_mapvideo(15, mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
+            arch_mapvideo(mode->framebuffer, mode->framebuffer, 0x00400000);
+            arch_mapvideo(mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
 
         }
 

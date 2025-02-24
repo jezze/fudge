@@ -436,7 +436,7 @@ void module_init(void)
 
         mmio = (msrdata.eax & 0xFFFFF000);
 
-        arch_mapuncached(13, 0xFEC00000, 0xFEC00000, 0x400000);
+        arch_mapuncached(0xFEC00000, 0xFEC00000, 0x400000);
         detect();
 
     }

@@ -68,7 +68,7 @@ void module_init(void)
     if (!rsdp)
         return;
 
-    arch_mapuncached(12, rsdp->rsdt, rsdp->rsdt, 0x00100000);
+    arch_mapuncached(rsdp->rsdt, rsdp->rsdt, 0x00100000);
 
 }
 
