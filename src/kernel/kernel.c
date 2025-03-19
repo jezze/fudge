@@ -10,7 +10,7 @@
 
 static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[KERNEL_MAILBOXES];
-static struct noderow {struct list_item item; struct resource *resource; unsigned int imailbox; struct list targets; unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);} noderows[KERNEL_NODES];
+static struct noderow {struct list_item item; struct resource *resource; unsigned int imailbox; struct list links; unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);} noderows[KERNEL_NODES];
 static struct list freenodes;
 static struct list usednodes;
 static struct list freetasks;
@@ -164,7 +164,7 @@ static unsigned int addnode(struct list *nodes, struct resource *resource, unsig
     if (noderow)
     {
 
-        list_init(&noderow->targets);
+        list_init(&noderow->links);
 
         noderow->resource = resource;
         noderow->imailbox = 0;
@@ -543,7 +543,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
         {
 
         case EVENT_LINK:
-            inode = addnode(&tnoderow->targets, snoderow->resource, snoderow->place);
+            inode = addnode(&tnoderow->links, snoderow->resource, snoderow->place);
 
             if (inode)
             {
@@ -557,7 +557,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
             return MESSAGE_FAILED;
 
         case EVENT_UNLINK:
-            removenode(&tnoderow->targets, source);
+            removenode(&tnoderow->links, source);
 
             return MESSAGE_OK;
 
@@ -599,21 +599,28 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct list *targets = &noderows[source].targets;
-    struct list_item *noderowitem;
+    struct noderow *snoderow = getnoderow(source);
 
-    spinlock_acquire(&targets->spinlock);
-
-    for (noderowitem = targets->head; noderowitem; noderowitem = noderowitem->next)
+    if (snoderow)
     {
 
-        struct noderow *noderow = noderowitem->data;
+        struct list *links = &snoderow->links;
+        struct list_item *noderowitem;
 
-        kernel_place(source, encodenoderow(noderow), event, count, data);
+        spinlock_acquire(&links->spinlock);
+
+        for (noderowitem = links->head; noderowitem; noderowitem = noderowitem->next)
+        {
+
+            struct noderow *tnoderow = noderowitem->data;
+
+            kernel_place(source, encodenoderow(tnoderow), event, count, data);
+
+        }
+
+        spinlock_release(&links->spinlock);
 
     }
-
-    spinlock_release(&targets->spinlock);
 
 }
 
