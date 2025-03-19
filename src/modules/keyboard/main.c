@@ -20,6 +20,13 @@ static unsigned int service_getinode(struct resource *current, unsigned int inde
 
 }
 
+static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    return MESSAGE_UNIMPLEMENTED;
+
+}
+
 void keyboard_notifypress(struct keyboard_interface *interface, unsigned char scancode)
 {
 
@@ -62,7 +69,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_link(0, 0, &interface->resource, 0);
+    interface->inode = kernel_addnode(&interface->resource, place);
 
 }
 

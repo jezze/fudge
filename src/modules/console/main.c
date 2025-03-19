@@ -75,7 +75,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_link(0, 0, &interface->resource, place);
+    interface->inode = kernel_addnode(&interface->resource, place);
     interface->ondata = ondata;
 
 }

@@ -5,8 +5,8 @@
 void *kernel_getnodeinterface(unsigned int inode);
 struct task_thread *kernel_gettaskthread(unsigned int itask);
 struct core *kernel_getcore(void);
-unsigned int kernel_link(struct list *nodes, unsigned int imailbox, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data));
-unsigned int kernel_unlink(struct list *nodes, unsigned int inode);
+unsigned int kernel_addnode(struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data));
+void kernel_removenode(unsigned int inode);
 unsigned int kernel_schedule(struct core *core);
 unsigned int kernel_codebase(unsigned int itask, unsigned int address);
 unsigned int kernel_loadprogram(unsigned int itask);

@@ -156,6 +156,48 @@ static struct mailbox *getmailbox(unsigned int imailbox)
 
 }
 
+static unsigned int addnode(struct list *nodes, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
+{
+
+    struct noderow *noderow = pickrow(&freenodes, nodes);
+
+    if (noderow)
+    {
+
+        list_init(&noderow->targets);
+
+        noderow->resource = resource;
+        noderow->imailbox = 0;
+        noderow->place = place;
+
+        return encodenoderow(noderow);
+
+    }
+
+    return 0;
+
+}
+
+static void removenode(struct list *nodes, unsigned int inode)
+{
+
+    struct noderow *noderow = getnoderow(inode);
+
+    if (noderow)
+        returnrow(nodes, &freenodes, &noderow->item);
+
+}
+
+static void linknode(unsigned int inode, unsigned int imailbox)
+{
+
+    struct noderow *noderow = getnoderow(inode);
+
+    if (noderow)
+        noderow->imailbox = imailbox;
+
+}
+
 static void assign(struct list_item *item)
 {
 
@@ -235,7 +277,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
                     }
 
-                    kernel_unlink(0, task->inodes[i]);
+                    kernel_removenode(task->inodes[i]);
 
                 }
 
@@ -353,7 +395,7 @@ void *kernel_getnodeinterface(unsigned int inode)
 
     struct noderow *noderow = getnoderow(inode);
 
-    return (noderow && noderow->resource) ? noderow->resource->data : 0;
+    return (noderow) ? noderow->resource->data : 0;
 
 }
 
@@ -373,37 +415,17 @@ struct core *kernel_getcore(void)
 
 }
 
-unsigned int kernel_link(struct list *nodes, unsigned int imailbox, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_addnode(struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
-    struct noderow *noderow = pickrow(&freenodes, (nodes) ? nodes : &usednodes);
-
-    if (noderow)
-    {
-
-        list_init(&noderow->targets);
-
-        noderow->resource = resource;
-        noderow->imailbox = imailbox;
-        noderow->place = place;
-
-        return encodenoderow(noderow);
-
-    }
-
-    return 0;
+    return addnode(&usednodes, resource, place);
 
 }
 
-unsigned int kernel_unlink(struct list *nodes, unsigned int inode)
+void kernel_removenode(unsigned int inode)
 {
 
-    struct noderow *noderow = getnoderow(inode);
-
-    if (noderow)
-        returnrow(nodes ? nodes : &usednodes, &freenodes, &noderow->item);
-
-    return 0;
+    removenode(&usednodes, inode);
 
 }
 
@@ -512,6 +534,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
     struct noderow *snoderow = getnoderow(source);
     struct noderow *tnoderow = getnoderow(target);
+    unsigned int inode;
 
     if (snoderow && tnoderow)
     {
@@ -520,16 +543,27 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
         {
 
         case EVENT_LINK:
-            return kernel_link(&tnoderow->targets, snoderow->imailbox, snoderow->resource, snoderow->place) ? MESSAGE_OK : MESSAGE_FAILED;
+            inode = addnode(&tnoderow->targets, snoderow->resource, snoderow->place);
+
+            if (inode)
+            {
+
+                linknode(inode, snoderow->imailbox);
+
+                return MESSAGE_OK;
+
+            }
+
+            return MESSAGE_FAILED;
 
         case EVENT_UNLINK:
-            kernel_unlink(&tnoderow->targets, source);
+            removenode(&tnoderow->targets, source);
 
             return MESSAGE_OK;
 
         }
 
-        return (tnoderow->place) ? tnoderow->place(source, target, event, count, data) : MESSAGE_FAILED;
+        return tnoderow->place(source, target, event, count, data);
 
     }
 
@@ -546,7 +580,13 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
     {
 
         if (!task->inodes[ichannel])
-            task->inodes[ichannel] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
+        {
+
+            task->inodes[ichannel] = kernel_addnode(&task->resource, placetask);
+
+            linknode(task->inodes[ichannel], picknewmailbox());
+
+        }
 
         return kernel_place(task->inodes[ichannel], target, event, count, data);
 
@@ -631,7 +671,9 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
 
                 assign(&taskrow->item);
 
-                task->inodes[0] = kernel_link(0, picknewmailbox(), &task->resource, placetask);
+                task->inodes[0] = kernel_addnode(&task->resource, placetask);
+
+                linknode(task->inodes[0], picknewmailbox());
 
                 return task->inodes[0];
 
