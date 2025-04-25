@@ -4,13 +4,14 @@
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"
+#include "node.h"
 #include "core.h"
 #include "service.h"
 #include "kernel.h"
 
 static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[KERNEL_MAILBOXES];
-static struct noderow {struct list_item item; struct resource *resource; unsigned int imailbox; struct list links; unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);} noderows[KERNEL_NODES];
+static struct noderow {struct list_item item; struct node node;} noderows[KERNEL_NODES];
 static struct list freenodes;
 static struct list usednodes;
 static struct list freetasks;
@@ -156,6 +157,15 @@ static struct mailbox *getmailbox(unsigned int imailbox)
 
 }
 
+static struct node *getnode(unsigned int inode)
+{
+
+    struct noderow *noderow = getnoderow(inode);
+
+    return noderow ? &noderow->node : 0;
+
+}
+
 static unsigned int addnode(struct list *nodes, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
@@ -164,11 +174,7 @@ static unsigned int addnode(struct list *nodes, struct resource *resource, unsig
     if (noderow)
     {
 
-        list_init(&noderow->links);
-
-        noderow->resource = resource;
-        noderow->imailbox = 0;
-        noderow->place = place;
+        node_init(&noderow->node, resource, 0, place);
 
         return encodenoderow(noderow);
 
@@ -191,10 +197,10 @@ static void removenode(struct list *nodes, unsigned int inode)
 static void linknode(unsigned int inode, unsigned int imailbox)
 {
 
-    struct noderow *noderow = getnoderow(inode);
+    struct node *node = getnode(inode);
 
-    if (noderow)
-        noderow->imailbox = imailbox;
+    if (node)
+        node->imailbox = imailbox;
 
 }
 
@@ -265,12 +271,12 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
                 if (task->inodes[i])
                 {
 
-                    struct noderow *noderow = getnoderow(task->inodes[i]);
+                    struct node *node = getnode(task->inodes[i]);
 
-                    if (noderow && noderow->imailbox)
+                    if (node && node->imailbox)
                     {
 
-                        struct mailboxrow *mailboxrow = getmailboxrow(noderow->imailbox);
+                        struct mailboxrow *mailboxrow = getmailboxrow(node->imailbox);
 
                         if (mailboxrow)
                             returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
@@ -320,13 +326,13 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 static unsigned int placetask(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct noderow *noderow = getnoderow(target);
+    struct node *node = getnode(target);
 
-    if (noderow && noderow->imailbox)
+    if (node && node->imailbox)
     {
 
-        struct task *task = noderow->resource->data;
-        struct mailbox *mailbox = getmailbox(noderow->imailbox);
+        struct task *task = node->resource->data;
+        struct mailbox *mailbox = getmailbox(node->imailbox);
 
         if (task && mailbox)
         {
@@ -395,7 +401,7 @@ void *kernel_getnodeinterface(unsigned int inode)
 
     struct noderow *noderow = getnoderow(inode);
 
-    return (noderow) ? noderow->resource->data : 0;
+    return (noderow) ? noderow->node.resource->data : 0;
 
 }
 
@@ -500,12 +506,12 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
         if (source)
         {
 
-            struct noderow *noderow = getnoderow(source);
+            struct node *node = getnode(source);
 
-            if (noderow)
+            if (node)
             {
 
-                struct mailbox *mailbox = getmailbox(noderow->imailbox);
+                struct mailbox *mailbox = getmailbox(node->imailbox);
 
                 if (mailbox)
                 {
@@ -532,23 +538,23 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct noderow *snoderow = getnoderow(source);
-    struct noderow *tnoderow = getnoderow(target);
+    struct node *snode = getnode(source);
+    struct node *tnode = getnode(target);
     unsigned int inode;
 
-    if (snoderow && tnoderow)
+    if (snode && tnode)
     {
 
         switch (event)
         {
 
         case EVENT_LINK:
-            inode = addnode(&tnoderow->links, snoderow->resource, snoderow->place);
+            inode = addnode(&tnode->links, snode->resource, snode->place);
 
             if (inode)
             {
 
-                linknode(inode, snoderow->imailbox);
+                linknode(inode, snode->imailbox);
 
                 return MESSAGE_OK;
 
@@ -557,13 +563,13 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
             return MESSAGE_FAILED;
 
         case EVENT_UNLINK:
-            removenode(&tnoderow->links, source);
+            removenode(&tnode->links, source);
 
             return MESSAGE_OK;
 
         }
 
-        return tnoderow->place(source, target, event, count, data);
+        return tnode->place(source, target, event, count, data);
 
     }
 
@@ -599,12 +605,12 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct noderow *snoderow = getnoderow(source);
+    struct node *snode = getnode(source);
 
-    if (snoderow)
+    if (snode)
     {
 
-        struct list *links = &snoderow->links;
+        struct list *links = &snode->links;
         struct list_item *noderowitem;
 
         spinlock_acquire(&links->spinlock);
