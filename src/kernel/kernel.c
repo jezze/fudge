@@ -588,9 +588,16 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
         if (!task->inodes[ichannel])
         {
 
-            task->inodes[ichannel] = kernel_addnode(&task->resource, placetask);
+            unsigned int imailbox = picknewmailbox();
 
-            linknode(task->inodes[ichannel], picknewmailbox());
+            if (imailbox)
+            {
+
+                task->inodes[ichannel] = kernel_addnode(&task->resource, placetask);
+
+                linknode(task->inodes[ichannel], imailbox);
+
+            }
 
         }
 
@@ -679,16 +686,23 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         if (task->thread.ip)
         {
 
-            if (task_transition(task, TASK_STATE_ASSIGNED))
+            unsigned int imailbox = picknewmailbox();
+
+            if (imailbox)
             {
 
-                assign(&taskrow->item);
+                if (task_transition(task, TASK_STATE_ASSIGNED))
+                {
 
-                task->inodes[0] = kernel_addnode(&task->resource, placetask);
+                    assign(&taskrow->item);
 
-                linknode(task->inodes[0], picknewmailbox());
+                    task->inodes[0] = kernel_addnode(&task->resource, placetask);
 
-                return task->inodes[0];
+                    linknode(task->inodes[0], imailbox);
+
+                    return task->inodes[0];
+
+                }
 
             }
 
