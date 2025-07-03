@@ -91,60 +91,30 @@ static struct taskrow *gettaskrow(unsigned int itask)
 static unsigned int encodenoderow(struct noderow *noderow)
 {
 
-    unsigned int i;
-
-    for (i = 1; i < KERNEL_NODES; i++)
-    {
-
-        if (&noderows[i] == noderow)
-            return i;
-
-    }
-
-    return 0;
+    return ((unsigned int)noderow - (unsigned int)noderows) / sizeof (struct noderow);
 
 }
 
 static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
 {
 
-    unsigned int i;
-
-    for (i = 1; i < KERNEL_MAILBOXES; i++)
-    {
-
-        if (&mailboxrows[i] == mailboxrow)
-            return i;
-
-    }
-
-    return 0;
+    return ((unsigned int)mailboxrow - (unsigned int)mailboxrows) / sizeof (struct mailboxrow);
 
 }
 
 static unsigned int encodetaskrow(struct taskrow *taskrow)
 {
 
-    unsigned int i;
-
-    for (i = 1; i < KERNEL_TASKS; i++)
-    {
-
-        if (&taskrows[i] == taskrow)
-            return i;
-
-    }
-
-    return 0;
+    return ((unsigned int)taskrow - (unsigned int)taskrows) / sizeof (struct taskrow);
 
 }
 
-static struct task *gettask(unsigned int itask)
+static struct node *getnode(unsigned int inode)
 {
 
-    struct taskrow *taskrow = gettaskrow(itask);
+    struct noderow *noderow = getnoderow(inode);
 
-    return taskrow ? &taskrow->task : 0;
+    return noderow ? &noderow->node : 0;
 
 }
 
@@ -157,12 +127,12 @@ static struct mailbox *getmailbox(unsigned int imailbox)
 
 }
 
-static struct node *getnode(unsigned int inode)
+static struct task *gettask(unsigned int itask)
 {
 
-    struct noderow *noderow = getnoderow(inode);
+    struct taskrow *taskrow = gettaskrow(itask);
 
-    return noderow ? &noderow->node : 0;
+    return taskrow ? &taskrow->task : 0;
 
 }
 
@@ -399,18 +369,18 @@ static unsigned int picknewtask(struct core *core)
 void *kernel_getnodeinterface(unsigned int inode)
 {
 
-    struct noderow *noderow = getnoderow(inode);
+    struct node *node = getnode(inode);
 
-    return (noderow) ? noderow->node.resource->data : 0;
+    return (node) ? node->resource->data : 0;
 
 }
 
 struct task_thread *kernel_gettaskthread(unsigned int itask)
 {
 
-    struct taskrow *taskrow = gettaskrow(itask);
+    struct task *task = gettask(itask);
 
-    return (taskrow) ? &taskrow->task.thread : 0;
+    return (task) ? &task->thread : 0;
 
 }
 
@@ -428,10 +398,55 @@ unsigned int kernel_addnode(struct resource *resource, unsigned int (*place)(uns
 
 }
 
+unsigned int kernel_linknode(unsigned int target, unsigned int source)
+{
+
+    struct node *snode = getnode(source);
+    struct node *tnode = getnode(target);
+
+    if (snode && tnode)
+    {
+
+        unsigned int inode = addnode(&tnode->links, snode->resource, snode->place);
+
+        if (inode)
+        {
+
+            linknode(inode, snode->imailbox);
+
+            return MESSAGE_OK;
+
+        }
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
 void kernel_removenode(unsigned int inode)
 {
 
     removenode(&usednodes, inode);
+
+}
+
+unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
+{
+
+    struct node *snode = getnode(source);
+    struct node *tnode = getnode(target);
+
+    if (snode && tnode)
+    {
+
+        removenode(&tnode->links, source);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -540,38 +555,9 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
     struct node *snode = getnode(source);
     struct node *tnode = getnode(target);
-    unsigned int inode;
 
     if (snode && tnode)
-    {
-
-        switch (event)
-        {
-
-        case EVENT_LINK:
-            inode = addnode(&tnode->links, snode->resource, snode->place);
-
-            if (inode)
-            {
-
-                linknode(inode, snode->imailbox);
-
-                return MESSAGE_OK;
-
-            }
-
-            return MESSAGE_FAILED;
-
-        case EVENT_UNLINK:
-            removenode(&tnode->links, source);
-
-            return MESSAGE_OK;
-
-        }
-
         return tnode->place(source, target, event, count, data);
-
-    }
 
     return MESSAGE_FAILED;
 

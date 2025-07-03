@@ -35,6 +35,12 @@ static unsigned int place(unsigned int source, unsigned int target, unsigned int
     switch (event)
     {
 
+    case EVENT_LINK:
+        return kernel_linknode(target, source);
+
+    case EVENT_UNLINK:
+        return kernel_unlinknode(target, source);
+
     case EVENT_DATA:
         return ondata(interface, source, data, count);
 

@@ -23,6 +23,17 @@ static unsigned int service_getinode(struct resource *current, unsigned int inde
 static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
+    switch (event)
+    {
+
+    case EVENT_LINK:
+        return kernel_linknode(target, source);
+
+    case EVENT_UNLINK:
+        return kernel_unlinknode(target, source);
+
+    }
+
     return MESSAGE_UNIMPLEMENTED;
 
 }
