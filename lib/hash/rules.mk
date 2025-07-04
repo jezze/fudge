@@ -3,6 +3,7 @@ L:=\
 
 O:=\
     $(DIR_LIB)/hash/crc.o \
+    $(DIR_LIB)/hash/djb.o \
     $(DIR_LIB)/hash/md5.o \
     $(DIR_LIB)/hash/sha1.o \
 
