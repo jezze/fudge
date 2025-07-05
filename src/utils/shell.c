@@ -147,7 +147,7 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
                 cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace + lastslash, count - lastspace - lastslash, 0));
 
-                return cstring_write_fmt3(ibuffer, INPUTSIZE, "/bin/ls %w | /bin/grep ?prefix %s\n", 0, buffer + lastspace, &lastslash, prefix);
+                return cstring_write_fmt3(ibuffer, INPUTSIZE, 0, "/bin/ls %w | /bin/grep ?prefix %s\n", buffer + lastspace, &lastslash, prefix);
 
             }
 
@@ -156,7 +156,7 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
                 cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer + lastspace, count - lastspace, 0));
 
-                return cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls | /bin/grep ?prefix %s\n", 0, prefix);
+                return cstring_write_fmt1(ibuffer, INPUTSIZE, 0, "/bin/ls | /bin/grep ?prefix %s\n", prefix);
 
             }
 
@@ -167,7 +167,7 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
             cstring_write_zero(prefix, INPUTSIZE, buffer_write(prefix, INPUTSIZE, buffer, count, 0));
 
-            return cstring_write_fmt1(ibuffer, INPUTSIZE, "/bin/ls /bin | /bin/grep ?prefix %s\n", 0, prefix);
+            return cstring_write_fmt1(ibuffer, INPUTSIZE, 0, "/bin/ls /bin | /bin/grep ?prefix %s\n", prefix);
 
         }
 
@@ -178,7 +178,7 @@ static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix
 
         cstring_write_zero(prefix, INPUTSIZE, 0);
 
-        return cstring_write_fmt0(ibuffer, INPUTSIZE, "/bin/ls\n", 0);
+        return cstring_write_fmt0(ibuffer, INPUTSIZE, 0, "/bin/ls\n");
 
     }
 

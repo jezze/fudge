@@ -33,7 +33,7 @@ static void sendresponse(unsigned int source, struct socket *remote)
         count += cstring_write(buffer, 4096, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
         count += cstring_write(buffer, 4096, "Content-Type: text/html\r\n", count);
-        count += cstring_write_fmt1(buffer, 4096, "Content-Length: %u\r\n\r\n", count, &filesize);
+        count += cstring_write_fmt1(buffer, 4096, count, "Content-Length: %u\r\n\r\n", &filesize);
         count += buffer_write(buffer, 4096, file, filesize, count);
 
     }

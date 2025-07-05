@@ -12,9 +12,9 @@ static void debuginterface_write(unsigned int level, unsigned int count, char *s
     message.loginfo.count = sizeof (struct event_loginfo);
 
     if (file)
-        message.loginfo.count += cstring_write_fmt4(message.data, MESSAGE_SIZE, "%w (%s:%u)", message.loginfo.count, string, &count, file, &line);
+        message.loginfo.count += cstring_write_fmt4(message.data, MESSAGE_SIZE, message.loginfo.count, "%w (%s:%u)", string, &count, file, &line);
     else
-        message.loginfo.count += cstring_write_fmt2(message.data, MESSAGE_SIZE, "%w", message.loginfo.count, string, &count);
+        message.loginfo.count += cstring_write_fmt2(message.data, MESSAGE_SIZE, message.loginfo.count, "%w", string, &count);
 
     /*
     kernel_notify(&node, &debuginterface.resource.targets, EVENT_LOGINFO, message.loginfo.count, &message);

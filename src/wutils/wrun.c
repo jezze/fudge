@@ -13,7 +13,7 @@ static unsigned int isbody;
 static unsigned int buildrequest(unsigned int count, void *buffer, struct url *url)
 {
 
-    return cstring_write_fmt2(buffer, count, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", 0, (url->path) ? url->path : "", url->host);
+    return cstring_write_fmt2(buffer, count, 0, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
 
 }
 

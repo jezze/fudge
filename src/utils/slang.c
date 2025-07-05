@@ -263,7 +263,7 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
             if (!u)
                 return;
 
-            count += cstring_write_fmt2(buffer, size, "O\\0%s\\0%s\\0", count, t->str, u->str);
+            count += cstring_write_fmt2(buffer, size, count, "O\\0%s\\0%s\\0", t->str, u->str);
 
             break;
 
@@ -274,9 +274,9 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 t = tokenlist_pop(stack);
 
                 if (tokenlist_check(stack) == TOKEN_IDENT)
-                    count += cstring_write_fmt1(buffer, size, "D\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, count, "D\\0%s\\0", t->str);
                 else
-                    count += cstring_write_fmt1(buffer, size, "P\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, count, "P\\0%s\\0", t->str);
 
             }
 
@@ -289,13 +289,13 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
                 t = tokenlist_pop(stack);
 
                 if (tokenlist_check(stack) == TOKEN_IDENT)
-                    count += cstring_write_fmt1(buffer, size, "D\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, count, "D\\0%s\\0", t->str);
                 else
-                    count += cstring_write_fmt1(buffer, size, "P\\0%s\\0", count, t->str);
+                    count += cstring_write_fmt1(buffer, size, count, "P\\0%s\\0", t->str);
 
             }
 
-            count += cstring_write_fmt0(buffer, size, "E\\0", count);
+            count += cstring_write_fmt0(buffer, size, count, "E\\0");
 
             channel_send_buffer(0, source, EVENT_DATA, count, buffer);
 

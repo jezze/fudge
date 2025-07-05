@@ -186,7 +186,7 @@ unsigned int cstring_write_value(char *out, unsigned int count, int value, unsig
 
 }
 
-unsigned int cstring_write_fmt(void *out, unsigned int count, char *fmt, unsigned int nargs, void **args, unsigned int offset)
+unsigned int cstring_write_fmt(void *out, unsigned int count, unsigned int offset, char *fmt, unsigned int nargs, void **args)
 {
 
     unsigned int length = cstring_length(fmt);
@@ -427,25 +427,25 @@ unsigned int cstring_write_fmt(void *out, unsigned int count, char *fmt, unsigne
 
 }
 
-unsigned int cstring_write_fmt0(void *out, unsigned int count, char *fmt, unsigned int offset)
+unsigned int cstring_write_fmt0(void *out, unsigned int count, unsigned int offset, char *fmt)
 {
 
-    return cstring_write_fmt(out, count, fmt, 0, 0, offset);
+    return cstring_write_fmt(out, count, offset, fmt, 0, 0);
 
 }
 
-unsigned int cstring_write_fmt1(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1)
+unsigned int cstring_write_fmt1(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1)
 {
 
     void *args[1];
 
     args[0] = arg1;
 
-    return cstring_write_fmt(out, count, fmt, 1, args, offset);
+    return cstring_write_fmt(out, count, offset, fmt, 1, args);
 
 }
 
-unsigned int cstring_write_fmt2(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2)
+unsigned int cstring_write_fmt2(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1, void *arg2)
 {
 
     void *args[2];
@@ -453,11 +453,11 @@ unsigned int cstring_write_fmt2(void *out, unsigned int count, char *fmt, unsign
     args[0] = arg1;
     args[1] = arg2;
 
-    return cstring_write_fmt(out, count, fmt, 2, args, offset);
+    return cstring_write_fmt(out, count, offset, fmt, 2, args);
 
 }
 
-unsigned int cstring_write_fmt3(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3)
+unsigned int cstring_write_fmt3(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1, void *arg2, void *arg3)
 {
 
     void *args[3];
@@ -466,11 +466,11 @@ unsigned int cstring_write_fmt3(void *out, unsigned int count, char *fmt, unsign
     args[1] = arg2;
     args[2] = arg3;
 
-    return cstring_write_fmt(out, count, fmt, 3, args, offset);
+    return cstring_write_fmt(out, count, offset, fmt, 3, args);
 
 }
 
-unsigned int cstring_write_fmt4(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4)
+unsigned int cstring_write_fmt4(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4)
 {
 
     void *args[4];
@@ -480,11 +480,11 @@ unsigned int cstring_write_fmt4(void *out, unsigned int count, char *fmt, unsign
     args[2] = arg3;
     args[3] = arg4;
 
-    return cstring_write_fmt(out, count, fmt, 4, args, offset);
+    return cstring_write_fmt(out, count, offset, fmt, 4, args);
 
 }
 
-unsigned int cstring_write_fmt6(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
+unsigned int cstring_write_fmt6(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6)
 {
 
     void *args[6];
@@ -496,11 +496,11 @@ unsigned int cstring_write_fmt6(void *out, unsigned int count, char *fmt, unsign
     args[4] = arg5;
     args[5] = arg6;
 
-    return cstring_write_fmt(out, count, fmt, 6, args, offset);
+    return cstring_write_fmt(out, count, offset, fmt, 6, args);
 
 }
 
-unsigned int cstring_write_fmt8(void *out, unsigned int count, char *fmt, unsigned int offset, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
+unsigned int cstring_write_fmt8(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8)
 {
 
     void *args[8];
@@ -514,7 +514,7 @@ unsigned int cstring_write_fmt8(void *out, unsigned int count, char *fmt, unsign
     args[6] = arg7;
     args[7] = arg8;
 
-    return cstring_write_fmt(out, count, fmt, 8, args, offset);
+    return cstring_write_fmt(out, count, offset, fmt, 8, args);
 
 }
 

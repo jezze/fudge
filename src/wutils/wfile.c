@@ -44,7 +44,7 @@ static void updatecontent(void)
 
                     struct record *record = &records[i];
 
-                    count += cstring_write_fmt6(data, MESSAGE_SIZE, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", count, record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+                    count += cstring_write_fmt6(data, MESSAGE_SIZE, count, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
                     if (!--maxsend)
                         return;
@@ -128,7 +128,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     else if (kv_match(event, "q=abspath"))
     {
 
-        cstring_write_fmt1(path, 256, "%s\\0", 0, kv_getstring(event, "path="));
+        cstring_write_fmt1(path, 256, 0, "%s\\0", kv_getstring(event, "path="));
         updatepath();
         updatecontent();
 
@@ -137,7 +137,7 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     else if (kv_match(event, "q=relpath"))
     {
 
-        cstring_write_fmt2(path, 256, "%s%s\\0", 0, path, kv_getstring(event, "path="));
+        cstring_write_fmt2(path, 256, 0, "%s%s\\0", path, kv_getstring(event, "path="));
         updatepath();
         updatecontent();
 
@@ -167,7 +167,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"bottom\" label \"Delete\" onclick \"q=delete\"\n";
 
     channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
-    cstring_write_fmt0(path, 256, "initrd:\\0", 0);
+    cstring_write_fmt0(path, 256, 0, "initrd:\\0");
     updatepath();
     updatecontent();
 

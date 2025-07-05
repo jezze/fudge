@@ -75,12 +75,12 @@ static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
         if (keylength && valuelength)
         {
 
-            stringslength += cstring_write_fmt1(strings, 8192, "%s\\0", stringslength, key);
+            stringslength += cstring_write_fmt1(strings, 8192, stringslength, "%s\\0", key);
 
             if (matchkey(value, valuelength, "!source", 8))
-                stringslength += cstring_write_fmt1(strings, 8192, "%u\\0", stringslength, &source);
+                stringslength += cstring_write_fmt1(strings, 8192, stringslength, "%u\\0", &source);
             else
-                stringslength += cstring_write_fmt1(strings, 8192, "%s\\0", stringslength, value);
+                stringslength += cstring_write_fmt1(strings, 8192, stringslength, "%s\\0", value);
 
         }
 

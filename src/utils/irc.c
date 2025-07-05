@@ -12,7 +12,7 @@ static struct ring input;
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
 
-    return cstring_write_fmt4(buffer, count, "NICK %s\nUSER %s 0 * :%s\nJOIN %s\n", 0, option_getstring("nick"), option_getstring("nick"), option_getstring("realname"), option_getstring("channel"));
+    return cstring_write_fmt4(buffer, count, 0, "NICK %s\nUSER %s 0 * :%s\nJOIN %s\n", option_getstring("nick"), option_getstring("nick"), option_getstring("realname"), option_getstring("channel"));
 
 }
 
@@ -33,7 +33,7 @@ static void interpret(void *buffer, unsigned int count)
 
         char outputdata[4096];
 
-        socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, cstring_write_fmt3(outputdata, 4096, "PRIVMSG %s :%w", 0, option_getstring("channel"), buffer, &count), outputdata);
+        socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, cstring_write_fmt3(outputdata, 4096, 0, "PRIVMSG %s :%w", option_getstring("channel"), buffer, &count), outputdata);
 
     }
 

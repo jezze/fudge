@@ -128,7 +128,7 @@ static void updateundefined(void)
                 char data[4096];
                 unsigned int count;
 
-                cstring_write_fmt2(module, 32, "initrd:kernel/%w.ko.map\\0", 0, symbol, &underscore);
+                cstring_write_fmt2(module, 32, 0, "initrd:kernel/%w.ko.map\\0", symbol, &underscore);
 
                 count = loadmap(module, data, 4096);
 
@@ -267,7 +267,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
                         char mapname[256];
 
-                        cstring_write_fmt1(mapname, 256, "%s.map\\0", 0, mdata);
+                        cstring_write_fmt1(mapname, 256, 0, "%s.map\\0", mdata);
 
                         mapcount = loadmap(mapname, mapdata, 4096);
 
