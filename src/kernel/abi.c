@@ -12,12 +12,19 @@
 
 static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 
-static unsigned int checkuserspace(unsigned int itask, void *address, unsigned int count)
+static unsigned int checkuserstack(void *address, unsigned int count)
 {
 
     unsigned int value = (unsigned int)address;
 
-    return ((((value >= (TASK_STACKVIRTUAL - TASK_STACKSIZE)) && ((value + count) < TASK_STACKVIRTUAL))) || kernel_codebase(itask, value));
+    return (value >= (TASK_STACKVIRTUAL - TASK_STACKSIZE)) && ((value + count) < TASK_STACKVIRTUAL);
+
+}
+
+static unsigned int checkuserspace(unsigned int itask, void *address, unsigned int count)
+{
+
+    return checkuserstack(address, count) || kernel_codebase(itask, (unsigned int)address);
 
 }
 
