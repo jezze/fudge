@@ -115,11 +115,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
+    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));
 
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNGRAB);
+    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
 
 }
 
@@ -145,11 +149,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = option_getdecimal("bpp");
 
-    lookup2("keyboard-service", "keyboard:0");
-    lookup2("timer-service", "timer:0/0");
-    lookup2("video-service", "video:0");
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
+    lookup2("keyboard-service", "keyboard", 0, 0);
+    lookup2("timer-service", "timer", 0, 0);
+    lookup2("video-service", "video", 0, 0);
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("video-service"), EVENT_LINK);
@@ -159,8 +161,6 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     channel_send(0, option_getdecimal("video-service"), EVENT_UNLINK);
     channel_send(0, option_getdecimal("timer-service"), EVENT_UNLINK);
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
 
 }
 

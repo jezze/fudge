@@ -1,14 +1,14 @@
 #include <fudge.h>
 #include "djb.h"
 
-unsigned int djb_hash(char *buffer)
+unsigned int djb_hash(unsigned int count, char *buffer)
 {
 
     unsigned int hash = 5381;
-    int c;
+    unsigned int i;
 
-    while ((c = *buffer++))
-        hash = ((hash << 5) + hash) + c;
+    for (i = 0; i < count; i++)
+        hash = ((hash << 5) + hash) + buffer[i];
 
     return hash;
 

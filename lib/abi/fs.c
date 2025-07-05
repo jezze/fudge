@@ -8,7 +8,9 @@ static unsigned int sessioncount;
 unsigned int fs_auth(char *path)
 {
 
-    return call_find(cstring_length(path), path);
+    /* TODO: Figure out how to get 6 here */
+
+    return call_find(6, path, 0, 0);
 
 }
 

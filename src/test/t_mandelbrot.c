@@ -219,7 +219,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
-    lookup2("mouse-service", "mouse:0");
+    lookup2("mouse-service", "mouse", 0, 0);
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));

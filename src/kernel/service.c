@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include "resource.h"
 #include "service.h"
 
@@ -15,6 +16,7 @@ void service_init(struct service *service, char *name, struct resource *(*foreac
     resource_init(&service->resource, RESOURCE_SERVICE, service);
 
     service->name = name;
+    service->hashname = djb_hash(cstring_length(name), name);
     service->foreach = foreach;
     service->getinode = getinode;
 

@@ -152,7 +152,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    lookup2("ethernet-service", "ethernet:0");
+    lookup2("ethernet-service", "ethernet", 0, 0);
     channel_route(EVENT_DATA, source);
     channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
 

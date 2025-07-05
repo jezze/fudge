@@ -1,1 +1,1 @@
-unsigned int djb_hash(char *buffer);
+unsigned int djb_hash(unsigned int count, char *buffer);

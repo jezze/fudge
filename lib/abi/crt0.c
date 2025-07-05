@@ -49,11 +49,11 @@ void lookup(char *key)
 
 }
 
-void lookup2(char *key, char *value)
+void lookup2(char *key, char *name, unsigned int index, unsigned int inode)
 {
 
     char id[32];
-    unsigned int channel = call_find(cstring_length(value), value);
+    unsigned int channel = call_find(cstring_length(name), name, index, inode);
 
     cstring_write_fmt1(id, 32, "%u\\0", 0, &channel);
     option_set(key, id);

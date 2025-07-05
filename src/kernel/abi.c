@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include "resource.h"
 #include "debug.h"
 #include "binary.h"
@@ -56,45 +57,47 @@ static unsigned int kill(unsigned int itask, void *stack)
 
 }
 
-static unsigned int matchservice(struct service *service, unsigned int count, char *name)
-{
-
-    if (count >= 2 && buffer_match(name, ":", 1))
-    {
-
-        struct resource *current = 0;
-        unsigned int index = cstring_toint(name[1]);
-        unsigned int channelnum = cstring_toint(name[3]);
-        unsigned int i;
-
-        for (i = 0; (current = service->foreach(current)); i++)
-        {
-
-            if (i == index)
-                return service->getinode(current, channelnum);
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int find(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int count; char *name;} *args = stack;
+    struct {void *caller; unsigned int count; char *name; unsigned int index; unsigned int inode;} *args = stack;
+    unsigned int hashname = djb_hash(args->count, args->name);
     struct resource *resourceitem = 0;
 
     while ((resourceitem = resource_foreachtype(resourceitem, RESOURCE_SERVICE)))
     {
 
         struct service *service = resourceitem->data;
-        unsigned int length = cstring_length(service->name);
 
-        if (args->count >= length && buffer_match(args->name, service->name, length))
-            return (service->foreach) ? matchservice(service, args->count - length, args->name + length) : service->getinode(0, 0);
+        if (service->hashname == hashname)
+        {
+
+            if (service->foreach)
+            {
+
+                struct resource *current = 0;
+                unsigned int i;
+
+                for (i = 0; (current = service->foreach(current)); i++)
+                {
+
+                    if (i == args->index)
+                        return service->getinode(current, args->inode);
+
+                }
+
+                return 0;
+
+            }
+
+            else
+            {
+
+                return service->getinode(0, 0);
+
+            }
+
+        }
 
     }
 
