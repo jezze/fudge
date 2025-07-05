@@ -75,6 +75,15 @@ char *option_getstring(char *key)
 
 }
 
+unsigned int option_setdecimal(char *key, int value)
+{
+
+    struct option *option = find(key);
+
+    return (option) ? cstring_write_zero(option->value, 64, cstring_write_value(option->value, 64, value, 10, 0, 0)) : 0;
+
+}
+
 unsigned int option_set(char *key, char *value)
 {
 
