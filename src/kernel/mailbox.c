@@ -42,18 +42,20 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsi
 
 }
 
-unsigned int mailbox_place(struct mailbox *mailbox, struct message *message, void *data)
+unsigned int mailbox_place(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
     unsigned int length = 0;
+    struct message message;
 
+    message_init(&message, event, source, count);
     spinlock_acquire(&mailbox->spinlock);
 
-    if (ring_avail(&mailbox->ring) > message->length)
+    if (ring_avail(&mailbox->ring) > message.length)
     {
 
-        length += ring_write_all(&mailbox->ring, message, sizeof (struct message));
-        length += ring_write_all(&mailbox->ring, data, message_datasize(message));
+        length += ring_write_all(&mailbox->ring, &message, sizeof (struct message));
+        length += ring_write_all(&mailbox->ring, data, message_datasize(&message));
 
     }
 

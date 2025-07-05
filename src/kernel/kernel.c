@@ -289,15 +289,7 @@ static unsigned int placemailbox(unsigned int source, unsigned int imailbox, uns
     struct mailbox *mailbox = getmailbox(imailbox);
 
     if (mailbox)
-    {
-
-        struct message message;
-
-        message_init(&message, event, source, count);
-
-        return mailbox_place(mailbox, &message, data);
-
-    }
+        return mailbox_place(mailbox, event, source, count, data);
 
     return MESSAGE_FAILED;
 
