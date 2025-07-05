@@ -13,7 +13,8 @@ static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[KERNEL_MAILBOXES];
 static struct noderow {struct list_item item; struct node node;} noderows[KERNEL_NODES];
 static struct list freenodes;
-static struct list usednodes;
+static struct list tasknodes;
+static struct list modulenodes;
 static struct list freetasks;
 static struct list blockedtasks;
 static struct list freemailboxes;
@@ -243,7 +244,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
                     }
 
-                    kernel_removenode(task->inodes[i]);
+                    removenode(&tasknodes, task->inodes[i]);
 
                 }
 
@@ -390,7 +391,7 @@ struct core *kernel_getcore(void)
 unsigned int kernel_addnode(struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
-    return addnode(&usednodes, resource, 0, place);
+    return addnode(&modulenodes, resource, 0, place);
 
 }
 
@@ -417,7 +418,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
 void kernel_removenode(unsigned int inode)
 {
 
-    removenode(&usednodes, inode);
+    removenode(&modulenodes, inode);
 
 }
 
@@ -567,7 +568,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
             unsigned int imailbox = picknewmailbox();
 
             if (imailbox)
-                task->inodes[ichannel] = addnode(&usednodes, &task->resource, imailbox, placetask);
+                task->inodes[ichannel] = addnode(&tasknodes, &task->resource, imailbox, placetask);
 
         }
 
@@ -677,7 +678,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
             if (imailbox)
             {
 
-                task->inodes[0] = addnode(&usednodes, &task->resource, imailbox, placetask);
+                task->inodes[0] = addnode(&tasknodes, &task->resource, imailbox, placetask);
 
                 return task->inodes[0];
 
@@ -706,7 +707,8 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
     core_init(&core0, 0, saddress + ssize);
     list_init(&freenodes);
-    list_init(&usednodes);
+    list_init(&tasknodes);
+    list_init(&modulenodes);
     list_init(&freetasks);
     list_init(&blockedtasks);
     list_init(&freemailboxes);
