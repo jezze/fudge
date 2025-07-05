@@ -86,8 +86,6 @@ static unsigned int find(unsigned int itask, void *stack)
 
                 }
 
-                return 0;
-
             }
 
             else
@@ -100,6 +98,8 @@ static unsigned int find(unsigned int itask, void *stack)
         }
 
     }
+
+    DEBUG_FMT0(DEBUG_ERROR, "find failed");
 
     return 0;
 
@@ -137,6 +137,8 @@ static unsigned int load(unsigned int itask, void *stack)
 
     }
 
+    DEBUG_FMT0(DEBUG_ERROR, "load failed");
+
     return 0;
 
 }
@@ -166,6 +168,8 @@ static unsigned int unload(unsigned int itask, void *stack)
         }
 
     }
+
+    DEBUG_FMT0(DEBUG_ERROR, "unload failed");
 
     return 0;
 
