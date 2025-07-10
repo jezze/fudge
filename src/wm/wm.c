@@ -387,7 +387,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
             if (target)
             {
 
-                channel_send_fmt2(1, target, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", option_getstring("env"), option_getstring("pwd"));
+                channel_send_fmt2(1, target, EVENT_OPTION, "env=%s&pwd=%s\n", option_getstring("env"), option_getstring("pwd"));
                 channel_send(1, target, EVENT_MAIN);
                 channel_send(1, target, EVENT_END);
 

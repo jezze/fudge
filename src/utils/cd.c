@@ -113,7 +113,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
                 unsigned int id = fs_walk(1, target, 0, mdata);
 
                 if (id)
-                    channel_send_fmt1(0, source, EVENT_OPTION, "pwd\\0%s\\0", mdata);
+                    channel_send_fmt1(0, source, EVENT_OPTION, "pwd=%s\n", mdata);
                 else
                     channel_send_fmt1(0, source, EVENT_ERROR, "Directory not found: %s\n", mdata);
 

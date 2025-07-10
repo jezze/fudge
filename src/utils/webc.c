@@ -12,7 +12,7 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send_fmt1(1, target, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
         channel_send(1, target, EVENT_MAIN);
 
         if (channel_poll(1, target, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
@@ -57,7 +57,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send_fmt1(2, target, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
+        channel_send_fmt1(2, target, EVENT_OPTION, "mode=tcp&remote-address=%s\n", address);
         channel_send(2, target, EVENT_MAIN);
         channel_wait(2, target, EVENT_READY);
         channel_send_fmt2(2, target, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);

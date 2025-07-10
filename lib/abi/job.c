@@ -148,10 +148,10 @@ void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd)
 
             unsigned int j;
 
-            channel_send_fmt2(ichannel, worker->target, EVENT_OPTION, "env\\0%s\\0pwd\\0%s\\0", env, pwd);
+            channel_send_fmt2(ichannel, worker->target, EVENT_OPTION, "env=%s&pwd=%s\n", env, pwd);
 
             for (j = 0; j < worker->noptions; j++)
-                channel_send_fmt2(ichannel, worker->target, EVENT_OPTION, "%s\\0%s\\0", worker->options[j].key, worker->options[j].value);
+                channel_send_fmt2(ichannel, worker->target, EVENT_OPTION, "%s=%s\n", worker->options[j].key, worker->options[j].value);
 
         }
 

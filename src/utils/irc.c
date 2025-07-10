@@ -50,7 +50,7 @@ static void dnsresolve(struct socket *socket, char *domain)
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send_fmt1(1, target, EVENT_OPTION, "domain\\0%s\\0", domain);
+        channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
         channel_send(1, target, EVENT_MAIN);
 
         while (channel_poll(1, target, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))

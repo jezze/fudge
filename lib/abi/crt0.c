@@ -3,16 +3,51 @@
 
 extern void init(void);
 
-static void onoption(unsigned int source, void *mdata, unsigned int msize)
+static unsigned int eachentry(char *data, unsigned int length, unsigned int offset, unsigned int xcount, char *x)
 {
 
     unsigned int i;
-    char *key;
 
-    for (i = 0; (key = buffer_tindex(mdata, msize, '\0', i)); i += 2)
+    for (i = offset; i < length; i++)
     {
 
-        char *value = key + cstring_length_zero(key);
+        unsigned int j;
+
+        for (j = 0; j < xcount; j++)
+        {
+
+            if (data[i] == x[j])
+                return i + 1 - offset;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static char *extract(char *data, unsigned int length, unsigned int offset)
+{
+
+    data[offset + length - 1] = '\0';
+
+    return data + offset;
+
+}
+
+static void onoption(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    unsigned int offset;
+    unsigned int keylength;
+    unsigned int valuelength;
+
+    for (offset = 0; (keylength = eachentry(mdata, msize, offset, 1, "=")) && (valuelength = eachentry(mdata, msize, offset + keylength, 3, "&\n\0")); offset += keylength + valuelength)
+    {
+
+        char *key = extract(mdata, keylength, offset);
+        char *value = extract(mdata, valuelength, offset + keylength);
 
         if (!option_set(key, value))
             channel_send_fmt1(0, source, EVENT_ERROR, "Unrecognized option: %s\n", key);

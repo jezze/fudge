@@ -31,7 +31,7 @@ static unsigned int spawnenv(unsigned int ichannel)
     if (target)
     {
 
-        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &target);
+        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env=%u&pwd=initrd:\n", &target);
         channel_send(ichannel, target, EVENT_MAIN);
 
     }
@@ -48,7 +48,7 @@ static unsigned int spawnshell(unsigned int ichannel, unsigned int env)
     if (target)
     {
 
-        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
+        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env=%u&pwd=initrd:\n", &env);
         channel_send(ichannel, target, EVENT_MAIN);
 
     }
@@ -65,7 +65,7 @@ static unsigned int spawnwm(unsigned int ichannel, unsigned int env)
     if (target)
     {
 
-        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env\\0%u\\0pwd\\0initrd:\\0", &env);
+        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env=%u&pwd=initrd:\n", &env);
         channel_send(ichannel, target, EVENT_MAIN);
 
     }
