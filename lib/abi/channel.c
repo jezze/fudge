@@ -20,12 +20,29 @@ static unsigned int send(unsigned int ichannel, unsigned int target, unsigned in
     if (event < CHANNEL_EVENTS && routes[event])
         target = routes[event];
 
-    if (!target)
-        return 0;
+    if (target)
+    {
 
-    while (call_place(ichannel, target, event, count, data) == MESSAGE_RETRY);
+        while (state != CHANNEL_STATE_CLOSED)
+        {
 
-    return count;
+            unsigned int status = call_place(ichannel, target, event, count, data);
+
+            switch (status)
+            {
+
+            case MESSAGE_RETRY:
+                continue;
+
+            }
+
+            return count;
+
+        }
+
+    }
+
+    return 0;
 
 }
 
@@ -181,8 +198,15 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message, unsign
     while (state != CHANNEL_STATE_CLOSED)
     {
 
-        if (call_pick(ichannel, message, count, data) == MESSAGE_OK)
+        unsigned int status = call_pick(ichannel, message, count, data);
+
+        switch (status)
+        {
+
+        case MESSAGE_OK:
             return message->event;
+
+        }
 
     }
 
