@@ -40,14 +40,14 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int offset;
-    unsigned int keylength;
-    unsigned int valuelength;
+    unsigned int klength;
+    unsigned int vlength;
 
-    for (offset = 0; (keylength = eachentry(mdata, msize, offset, 1, "=")) && (valuelength = eachentry(mdata, msize, offset + keylength, 3, "&\n\0")); offset += keylength + valuelength)
+    for (offset = 0; (klength = eachentry(mdata, msize, offset, 1, "=")) && (vlength = eachentry(mdata, msize, offset + klength, 3, "&\n\0")); offset += klength + vlength)
     {
 
-        char *key = extract(mdata, keylength, offset);
-        char *value = extract(mdata, valuelength, offset + keylength);
+        char *key = extract(mdata, klength, offset);
+        char *value = extract(mdata, vlength, offset + klength);
 
         if (!option_set(key, value))
             channel_send_fmt1(0, source, EVENT_ERROR, "Unrecognized option: %s\n", key);
