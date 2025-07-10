@@ -30,7 +30,7 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsi
 
             ring_skip(&mailbox->ring, datasize);
 
-            message->length = 0;
+            length = 0;
 
         }
 
