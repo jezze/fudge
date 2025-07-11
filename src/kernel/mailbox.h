@@ -4,6 +4,7 @@ struct mailbox
     struct resource resource;
     struct ring ring;
     struct spinlock spinlock;
+    unsigned int itask;
 
 };
 

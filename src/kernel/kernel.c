@@ -137,7 +137,7 @@ static struct task *gettask(unsigned int itask)
 
 }
 
-static unsigned int addnode(struct list *nodes, struct resource *resource, unsigned int imailbox, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
+static unsigned int addnode(struct list *nodes, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
     struct noderow *noderow = pickrow(&freenodes, nodes);
@@ -145,7 +145,7 @@ static unsigned int addnode(struct list *nodes, struct resource *resource, unsig
     if (noderow)
     {
 
-        node_init(&noderow->node, resource, imailbox, place);
+        node_init(&noderow->node, resource, place);
 
         return encodenoderow(noderow);
 
@@ -234,13 +234,13 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
                     struct node *node = getnode(task->inodes[i]);
 
-                    if (node && node->imailbox)
+                    if (node)
                     {
 
-                        struct mailboxrow *mailboxrow = getmailboxrow(node->imailbox);
+                        struct mailbox *mailbox = node->resource->data;
+                        struct mailboxrow *mailboxrow = (struct mailboxrow *)((unsigned int)mailbox - sizeof (struct list_item));
 
-                        if (mailboxrow)
-                            returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
+                        returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
 
                     }
 
@@ -284,19 +284,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placemailbox(unsigned int source, unsigned int imailbox, unsigned int event, unsigned int count, void *data)
-{
-
-    struct mailbox *mailbox = getmailbox(imailbox);
-
-    if (mailbox)
-        return mailbox_place(mailbox, event, source, count, data);
-
-    return MESSAGE_FAILED;
-
-}
-
-static unsigned int placetask(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int placemailbox(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct node *node = getnode(target);
@@ -304,14 +292,15 @@ static unsigned int placetask(unsigned int source, unsigned int target, unsigned
     if (node)
     {
 
-        struct task *task = node->resource->data;
+        struct mailbox *mailbox = node->resource->data;
 
-        if (task)
+        if (mailbox)
         {
 
-            unsigned int status = placemailbox(source, node->imailbox, event, count, data);
+            unsigned int status = mailbox_place(mailbox, event, source, count, data);
 
-            task_signal(task, TASK_SIGNAL_UNBLOCK);
+            /* TODO: Make this more generic */
+            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
 
             return status;
 
@@ -323,7 +312,7 @@ static unsigned int placetask(unsigned int source, unsigned int target, unsigned
 
 }
 
-static unsigned int picknewmailbox(void)
+static unsigned int picknewmailbox(unsigned int itask)
 {
 
     struct mailboxrow *mailboxrow = pickrow(&freemailboxes, &usedmailboxes);
@@ -334,6 +323,8 @@ static unsigned int picknewmailbox(void)
         struct mailbox *mailbox = &mailboxrow->mailbox;
 
         mailbox_reset(mailbox);
+
+        mailbox->itask = itask;
 
         return encodemailboxrow(mailboxrow);
 
@@ -391,7 +382,7 @@ struct core *kernel_getcore(void)
 unsigned int kernel_addnode(struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
-    return addnode(&modulenodes, resource, 0, place);
+    return addnode(&modulenodes, resource, place);
 
 }
 
@@ -404,7 +395,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        unsigned int inode = addnode(&tnode->links, snode->resource, snode->imailbox, snode->place);
+        unsigned int inode = addnode(&tnode->links, snode->resource, snode->place);
 
         if (inode)
             return MESSAGE_OK;
@@ -517,7 +508,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
             if (node)
             {
 
-                struct mailbox *mailbox = getmailbox(node->imailbox);
+                struct mailbox *mailbox = node->resource->data;
 
                 if (mailbox)
                 {
@@ -565,10 +556,16 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
         if (!task->inodes[ichannel])
         {
 
-            unsigned int imailbox = picknewmailbox();
+            unsigned int imailbox = picknewmailbox(itask);
 
             if (imailbox)
-                task->inodes[ichannel] = addnode(&tasknodes, &task->resource, imailbox, placetask);
+            {
+
+                struct mailbox *mailbox = getmailbox(imailbox);
+
+                task->inodes[ichannel] = addnode(&tasknodes, &mailbox->resource, placemailbox);
+
+            }
 
         }
 
@@ -673,12 +670,14 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         if (task->thread.ip)
         {
 
-            unsigned int imailbox = picknewmailbox();
+            unsigned int imailbox = picknewmailbox(ntask);
 
             if (imailbox)
             {
 
-                task->inodes[0] = addnode(&tasknodes, &task->resource, imailbox, placetask);
+                struct mailbox *mailbox = getmailbox(imailbox);
+
+                task->inodes[0] = addnode(&tasknodes, &mailbox->resource, placemailbox);
 
                 return task->inodes[0];
 
