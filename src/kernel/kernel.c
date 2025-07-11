@@ -145,7 +145,7 @@ static unsigned int addnode(struct list *nodes, struct resource *resource, unsig
     if (noderow)
     {
 
-        node_init(&noderow->node, resource, place);
+        node_reset(&noderow->node, resource, place);
 
         return encodenoderow(noderow);
 
@@ -742,6 +742,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
         struct noderow *noderow = &noderows[i];
 
+        node_init(&noderow->node);
         list_inititem(&noderow->item, noderow);
         list_add(&freenodes, &noderow->item);
 
