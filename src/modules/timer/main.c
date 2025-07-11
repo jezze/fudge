@@ -20,6 +20,24 @@ static unsigned int service_getinode(struct resource *current, unsigned int inde
 
 }
 
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    switch (event)
+    {
+
+    case EVENT_LINK:
+        return kernel_linknode(target, source);
+
+    case EVENT_UNLINK:
+        return kernel_unlinknode(target, source);
+
+    }
+
+    return MESSAGE_UNIMPLEMENTED;
+
+}
+
 void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
 {
 
@@ -84,17 +102,17 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
 
     interface->id = id;
-    interface->inodes[0] = kernel_addnode(&interface->resource, 0);
-    interface->inodes[1] = kernel_addnode(&interface->resource, 0);
-    interface->inodes[2] = kernel_addnode(&interface->resource, 0);
-    interface->inodes[3] = kernel_addnode(&interface->resource, 0);
+    interface->inodes[0] = kernel_addnode(&interface->resource, &service);
+    interface->inodes[1] = kernel_addnode(&interface->resource, &service);
+    interface->inodes[2] = kernel_addnode(&interface->resource, &service);
+    interface->inodes[3] = kernel_addnode(&interface->resource, &service);
 
 }
 
 void module_init(void)
 {
 
-    service_init(&service, "timer", service_foreach, service_getinode);
+    service_init(&service, "timer", service_foreach, service_getinode, service_place);
     service_register(&service);
 
 }

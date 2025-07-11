@@ -5,6 +5,7 @@ struct mailbox
     struct ring ring;
     struct spinlock spinlock;
     unsigned int itask;
+    unsigned int inode;
 
 };
 

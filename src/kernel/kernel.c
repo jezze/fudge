@@ -22,6 +22,7 @@ static struct list usedmailboxes;
 static struct core *(*getcallback)(void);
 static void (*assigncallback)(struct list_item *item);
 static struct core core0;
+static struct service mailboxservice;
 
 static void *pickrow(struct list *from, struct list *to)
 {
@@ -137,7 +138,7 @@ static struct task *gettask(unsigned int itask)
 
 }
 
-static unsigned int addnode(struct list *nodes, struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
+static unsigned int addnode(struct list *nodes, struct resource *resource, struct service *service)
 {
 
     struct noderow *noderow = pickrow(&freenodes, nodes);
@@ -145,7 +146,7 @@ static unsigned int addnode(struct list *nodes, struct resource *resource, unsig
     if (noderow)
     {
 
-        node_reset(&noderow->node, resource, place);
+        node_reset(&noderow->node, resource, service);
 
         return encodenoderow(noderow);
 
@@ -283,7 +284,7 @@ static void checksignals(struct core *core, struct taskrow *taskrow)
 
 }
 
-static unsigned int placemailbox(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct mailbox *mailbox = kernel_getnodeinterface(target);
@@ -371,10 +372,10 @@ struct core *kernel_getcore(void)
 
 }
 
-unsigned int kernel_addnode(struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
+unsigned int kernel_addnode(struct resource *resource, struct service *service)
 {
 
-    return addnode(&modulenodes, resource, place);
+    return addnode(&modulenodes, resource, service);
 
 }
 
@@ -387,7 +388,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        unsigned int inode = addnode(&tnode->links, snode->resource, snode->place);
+        unsigned int inode = addnode(&tnode->links, snode->resource, snode->service);
 
         if (inode)
             return MESSAGE_OK;
@@ -524,7 +525,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
     struct node *tnode = getnode(target);
 
     if (snode && tnode)
-        return tnode->place(source, target, event, count, data);
+        return tnode->service->place(source, target, event, count, data);
 
     return MESSAGE_FAILED;
 
@@ -548,7 +549,9 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
 
                 struct mailbox *mailbox = getmailbox(imailbox);
 
-                task->inodes[ichannel] = addnode(&tasknodes, &mailbox->resource, placemailbox);
+                mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
+
+                task->inodes[ichannel] = mailbox->inode;
 
             }
 
@@ -662,9 +665,9 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
 
                 struct mailbox *mailbox = getmailbox(imailbox);
 
-                task->inodes[0] = addnode(&tasknodes, &mailbox->resource, placemailbox);
+                mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
 
-                return task->inodes[0];
+                return task->inodes[0] = mailbox->inode;
 
             }
 
@@ -684,6 +687,22 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
+static struct resource *service_foreach(struct resource *current)
+{
+
+    return resource_foreachtype(current, RESOURCE_MAILBOX);
+
+}
+
+static unsigned int service_getinode(struct resource *current, unsigned int index)
+{
+
+    struct mailbox *mailbox = current->data;
+
+    return mailbox->inode;
+
+}
+
 void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize)
 {
 
@@ -697,6 +716,8 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
+    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_place);
+    service_register(&mailboxservice);
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)
     {

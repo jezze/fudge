@@ -36,7 +36,7 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct video_interface *interface = kernel_getnodeinterface(target);
@@ -96,7 +96,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode(&interface->resource, place);
+    interface->inode = kernel_addnode(&interface->resource, &service);
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
@@ -108,7 +108,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, "video", service_foreach, service_getinode);
+    service_init(&service, "video", service_foreach, service_getinode, service_place);
     service_register(&service);
 
 }

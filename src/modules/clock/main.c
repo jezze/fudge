@@ -27,7 +27,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
 
 }
 
-static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct clock_interface *interface = kernel_getnodeinterface(target);
@@ -70,7 +70,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode(&interface->resource, place);
+    interface->inode = kernel_addnode(&interface->resource, &service);
     interface->oninfo = oninfo;
 
 }
@@ -78,7 +78,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, "clock", service_foreach, service_getinode);
+    service_init(&service, "clock", service_foreach, service_getinode, service_place);
     service_register(&service);
 
 }

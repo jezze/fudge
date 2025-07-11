@@ -10,7 +10,7 @@ void service_register(struct service *service)
 
 }
 
-void service_init(struct service *service, char *name, struct resource *(*foreach)(struct resource *current), unsigned int (*getinode)(struct resource *current, unsigned int index))
+void service_init(struct service *service, char *name, struct resource *(*foreach)(struct resource *current), unsigned int (*getinode)(struct resource *current, unsigned int index), unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
     resource_init(&service->resource, RESOURCE_SERVICE, service);
@@ -19,6 +19,7 @@ void service_init(struct service *service, char *name, struct resource *(*foreac
     service->hashname = djb_hash(cstring_length(name), name);
     service->foreach = foreach;
     service->getinode = getinode;
+    service->place = place;
 
 }
 

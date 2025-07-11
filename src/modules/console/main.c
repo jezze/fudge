@@ -27,7 +27,7 @@ static unsigned int ondata(struct console_interface *interface, unsigned int sou
 
 }
 
-static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct console_interface *interface = kernel_getnodeinterface(target);
@@ -81,7 +81,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode(&interface->resource, place);
+    interface->inode = kernel_addnode(&interface->resource, &service);
     interface->ondata = ondata;
 
 }
@@ -89,7 +89,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 void module_init(void)
 {
 
-    service_init(&service, "console", service_foreach, service_getinode);
+    service_init(&service, "console", service_foreach, service_getinode, service_place);
     service_register(&service);
 
 }

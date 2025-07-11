@@ -334,28 +334,10 @@ static unsigned int bus_next(unsigned int id)
 
 }
 
-static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    switch (event)
-    {
-
-    case EVENT_TERM:
-        setcommand(REG_COMMAND_CTRLRESET);
-
-        return MESSAGE_OK;
-
-    }
-
-    return MESSAGE_UNIMPLEMENTED;
-
-}
-
 void module_init(void)
 {
 
     base_initbus(&bus, PS2_BUS, "ps2", bus_setup, bus_next);
-    kernel_addnode(&bus.resource, place);
 
 }
 

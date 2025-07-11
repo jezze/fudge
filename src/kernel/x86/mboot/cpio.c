@@ -391,7 +391,7 @@ static unsigned int service_getinode(struct resource *current, unsigned int inde
 
 }
 
-static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -427,10 +427,10 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, "initrd", 0, service_getinode);
+    service_init(&service, "initrd", 0, service_getinode, service_place);
     service_register(&service);
 
-    inode = kernel_addnode(&service.resource, place);
+    inode = kernel_addnode(&service.resource, &service);
 
 }
 

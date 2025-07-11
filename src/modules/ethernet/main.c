@@ -35,7 +35,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
 }
 
-static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct ethernet_interface *interface = kernel_getnodeinterface(target);
@@ -88,7 +88,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode(&interface->resource, place);
+    interface->inode = kernel_addnode(&interface->resource, &service);
     interface->oninfo = oninfo;
     interface->ondata = ondata;
 
@@ -97,7 +97,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 void module_init(void)
 {
 
-    service_init(&service, "ethernet", service_foreach, service_getinode);
+    service_init(&service, "ethernet", service_foreach, service_getinode, service_place);
     service_register(&service);
 
 }

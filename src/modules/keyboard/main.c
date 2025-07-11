@@ -20,7 +20,7 @@ static unsigned int service_getinode(struct resource *current, unsigned int inde
 
 }
 
-static unsigned int place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -80,14 +80,14 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode(&interface->resource, place);
+    interface->inode = kernel_addnode(&interface->resource, &service);
 
 }
 
 void module_init(void)
 {
 
-    service_init(&service, "keyboard", service_foreach, service_getinode);
+    service_init(&service, "keyboard", service_foreach, service_getinode, service_place);
     service_register(&service);
 
 }

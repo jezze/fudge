@@ -5,7 +5,7 @@
 void *kernel_getnodeinterface(unsigned int inode);
 struct task_thread *kernel_gettaskthread(unsigned int itask);
 struct core *kernel_getcore(void);
-unsigned int kernel_addnode(struct resource *resource, unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data));
+unsigned int kernel_addnode(struct resource *resource, struct service *service);
 unsigned int kernel_linknode(unsigned int target, unsigned int source);
 void kernel_removenode(unsigned int inode);
 unsigned int kernel_unlinknode(unsigned int target, unsigned int source);

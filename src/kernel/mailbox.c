@@ -72,6 +72,9 @@ void mailbox_reset(struct mailbox *mailbox)
     ring_reset(&mailbox->ring);
     spinlock_release(&mailbox->spinlock);
 
+    mailbox->itask = 0;
+    mailbox->inode = 0;
+
 }
 
 void mailbox_register(struct mailbox *mailbox)
@@ -94,6 +97,9 @@ void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     ring_init(&mailbox->ring, count, buffer);
     spinlock_init(&mailbox->spinlock);
+
+    mailbox->itask = 0;
+    mailbox->inode = 0;
 
 }
 
