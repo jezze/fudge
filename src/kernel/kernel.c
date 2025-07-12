@@ -213,95 +213,81 @@ static void unblocktasks(void)
 
 }
 
-static void checksignals(struct core *core, struct taskrow *taskrow)
+static void checksignals(struct core *core)
 {
 
-    struct task *task = &taskrow->task;
-    struct list_item *item = &taskrow->item;
+    struct taskrow *taskrow = gettaskrow(core->itask);
 
-    if (task->signals.kills)
+    if (taskrow)
     {
 
-        if (task_transition(task, TASK_STATE_DEAD))
+        struct task *task = &taskrow->task;
+        struct list_item *item = &taskrow->item;
+
+        if (task->signals.kills)
         {
 
-            unsigned int i;
-
-            for (i = 0; i < TASK_NODES; i++)
+            if (task_transition(task, TASK_STATE_DEAD))
             {
 
-                if (task->inodes[i])
+                unsigned int i;
+
+                for (i = 0; i < TASK_NODES; i++)
                 {
 
-                    struct mailbox *mailbox = kernel_getnodeinterface(task->inodes[i]);
-
-                    if (mailbox)
+                    if (task->inodes[i])
                     {
 
-                        struct mailboxrow *mailboxrow = (struct mailboxrow *)((unsigned int)mailbox - sizeof (struct list_item));
+                        struct mailbox *mailbox = kernel_getnodeinterface(task->inodes[i]);
 
-                        returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
+                        if (mailbox)
+                        {
+
+                            struct mailboxrow *mailboxrow = (struct mailboxrow *)((unsigned int)mailbox - sizeof (struct list_item));
+
+                            returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
+
+                        }
+
+                        removenode(&tasknodes, task->inodes[i]);
 
                     }
 
-                    removenode(&tasknodes, task->inodes[i]);
-
                 }
+
+                list_add(&freetasks, item);
 
             }
 
-            list_add(&freetasks, item);
+        }
+
+        else if (task->signals.unblocks)
+        {
+
+            if (task_transition(task, TASK_STATE_ASSIGNED))
+                list_add(&core->tasks, item);
 
         }
 
-    }
+        else if (task->signals.blocks)
+        {
 
-    else if (task->signals.unblocks)
-    {
+            if (task_transition(task, TASK_STATE_BLOCKED))
+                list_add(&blockedtasks, item);
 
-        if (task_transition(task, TASK_STATE_ASSIGNED))
-            list_add(&core->tasks, item);
+        }
 
-    }
+        else
+        {
 
-    else if (task->signals.blocks)
-    {
+            if (task_transition(task, TASK_STATE_ASSIGNED))
+                list_add(&core->tasks, item);
 
-        if (task_transition(task, TASK_STATE_BLOCKED))
-            list_add(&blockedtasks, item);
+        }
 
-    }
-
-    else
-    {
-
-        if (task_transition(task, TASK_STATE_ASSIGNED))
-            list_add(&core->tasks, item);
+        task_resetsignals(&task->signals);
 
     }
-
-    task_resetsignals(&task->signals);
-
-}
-
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    struct mailbox *mailbox = kernel_getnodeinterface(target);
-
-    if (mailbox)
-    {
-
-        unsigned int status = mailbox_place(mailbox, event, source, count, data);
-
-        /* TODO: Make this more generic */
-        kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
 
 }
 
@@ -347,6 +333,63 @@ static unsigned int picknewtask(struct core *core)
 
 }
 
+static unsigned int addchannel(struct task *task, unsigned int itask, unsigned int ichannel)
+{
+
+    unsigned int imailbox = picknewmailbox(itask);
+
+    if (imailbox)
+    {
+
+        struct mailbox *mailbox = getmailbox(imailbox);
+
+        mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
+
+        return task->inodes[ichannel] = mailbox->inode;
+
+    }
+
+    return 0;
+
+}
+
+static struct resource *service_foreach(struct resource *current)
+{
+
+    return resource_foreachtype(current, RESOURCE_MAILBOX);
+
+}
+
+static unsigned int service_getinode(struct resource *current, unsigned int index)
+{
+
+    struct mailbox *mailbox = current->data;
+
+    return mailbox->inode;
+
+}
+
+static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = kernel_getnodeinterface(target);
+
+    if (mailbox)
+    {
+
+        unsigned int status = mailbox_place(mailbox, event, source, count, data);
+
+        /* TODO: Make this more generic */
+        kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
 void *kernel_getnodeinterface(unsigned int inode)
 {
 
@@ -379,6 +422,13 @@ unsigned int kernel_addnode(struct resource *resource, struct service *service)
 
 }
 
+void kernel_removenode(unsigned int inode)
+{
+
+    removenode(&modulenodes, inode);
+
+}
+
 unsigned int kernel_linknode(unsigned int target, unsigned int source)
 {
 
@@ -396,13 +446,6 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     }
 
     return MESSAGE_FAILED;
-
-}
-
-void kernel_removenode(unsigned int inode)
-{
-
-    removenode(&modulenodes, inode);
 
 }
 
@@ -428,9 +471,7 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
 unsigned int kernel_schedule(struct core *core)
 {
 
-    if (core->itask)
-        checksignals(core, &taskrows[core->itask]);
-
+    checksignals(core);
     unblocktasks();
 
     return picknewtask(core);
@@ -540,22 +581,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
     {
 
         if (!task->inodes[ichannel])
-        {
-
-            unsigned int imailbox = picknewmailbox(itask);
-
-            if (imailbox)
-            {
-
-                struct mailbox *mailbox = getmailbox(imailbox);
-
-                mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
-
-                task->inodes[ichannel] = mailbox->inode;
-
-            }
-
-        }
+            addchannel(task, itask, ichannel);
 
         return kernel_place(task->inodes[ichannel], target, event, count, data);
 
@@ -656,22 +682,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         }
 
         if (task->thread.ip)
-        {
-
-            unsigned int imailbox = picknewmailbox(ntask);
-
-            if (imailbox)
-            {
-
-                struct mailbox *mailbox = getmailbox(imailbox);
-
-                mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
-
-                return task->inodes[0] = mailbox->inode;
-
-            }
-
-        }
+            return addchannel(task, ntask, 0);
 
     }
 
@@ -684,22 +695,6 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
     getcallback = get;
     assigncallback = assign;
-
-}
-
-static struct resource *service_foreach(struct resource *current)
-{
-
-    return resource_foreachtype(current, RESOURCE_MAILBOX);
-
-}
-
-static unsigned int service_getinode(struct resource *current, unsigned int index)
-{
-
-    struct mailbox *mailbox = current->data;
-
-    return mailbox->inode;
 
 }
 
