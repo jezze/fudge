@@ -333,7 +333,7 @@ static unsigned int picknewtask(struct core *core)
 
 }
 
-static unsigned int addchannel(struct task *task, unsigned int itask, unsigned int ichannel)
+static unsigned int addmailbox(unsigned int itask)
 {
 
     unsigned int imailbox = picknewmailbox(itask);
@@ -343,9 +343,7 @@ static unsigned int addchannel(struct task *task, unsigned int itask, unsigned i
 
         struct mailbox *mailbox = getmailbox(imailbox);
 
-        mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
-
-        return task->inodes[ichannel] = mailbox->inode;
+        return mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
 
     }
 
@@ -581,7 +579,7 @@ unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigne
     {
 
         if (!task->inodes[ichannel])
-            addchannel(task, itask, ichannel);
+            task->inodes[ichannel] = addmailbox(itask);
 
         return kernel_place(task->inodes[ichannel], target, event, count, data);
 
@@ -682,7 +680,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         }
 
         if (task->thread.ip)
-            return addchannel(task, ntask, 0);
+            return task->inodes[0] = addmailbox(ntask);
 
     }
 
