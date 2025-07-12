@@ -204,7 +204,7 @@ static unsigned int pick(unsigned int itask, void *stack)
     struct {void *caller; unsigned int ichannel; struct message *message; unsigned int count; void *data;} *args = stack;
 
     if (checkbuffer(itask, args->message, sizeof (struct message)) && checkbuffer(itask, args->data, args->count))
-        return kernel_pick(itask, args->ichannel, args->message, args->count, args->data);
+        return kernel_taskpick(itask, args->ichannel, args->message, args->count, args->data);
 
     DEBUG_FMT0(DEBUG_ERROR, "pick check failed");
 
@@ -218,7 +218,7 @@ static unsigned int place(unsigned int itask, void *stack)
     struct {void *caller; unsigned int ichannel; unsigned int target; unsigned int event; unsigned int count; void *data;} *args = stack;
 
     if (checkzerobuffer(itask, args->data, args->count))
-        return kernel_placetask(itask, args->ichannel, args->target, args->event, args->count, args->data);
+        return kernel_taskplace(itask, args->ichannel, args->target, args->event, args->count, args->data);
 
     DEBUG_FMT0(DEBUG_ERROR, "place check failed");
 

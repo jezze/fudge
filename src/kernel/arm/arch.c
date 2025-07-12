@@ -199,7 +199,7 @@ void arch_setup2(void)
 
         unsigned int target = kernel_loadtask(0, ntask, (unsigned int)&testtask, 0x6000, 0);
 
-        kernel_placetask(ntask, 0, target, EVENT_MAIN, 0, 0);
+        kernel_taskplace(ntask, 0, target, EVENT_MAIN, 0, 0);
 
     }
 

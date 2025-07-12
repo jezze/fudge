@@ -522,7 +522,20 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
-unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data)
+unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    struct node *snode = getnode(source);
+    struct node *tnode = getnode(target);
+
+    if (snode && tnode)
+        return tnode->service->place(source, target, event, count, data);
+
+    return MESSAGE_FAILED;
+
+}
+
+unsigned int kernel_taskpick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
@@ -557,20 +570,7 @@ unsigned int kernel_pick(unsigned int itask, unsigned int ichannel, struct messa
 
 }
 
-unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    struct node *snode = getnode(source);
-    struct node *tnode = getnode(target);
-
-    if (snode && tnode)
-        return tnode->service->place(source, target, event, count, data);
-
-    return MESSAGE_FAILED;
-
-}
-
-unsigned int kernel_placetask(unsigned int itask, unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int kernel_taskplace(unsigned int itask, unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct task *task = gettask(itask);
