@@ -9,9 +9,9 @@ unsigned int fs_auth(char *path)
 {
 
     unsigned int length = cstring_length(path);
-    unsigned int offcolon = buffer_eachbyte(path, length, ':', 0);
+    unsigned int offset = buffer_eachbyte(path, length, ':', 0);
 
-    return (offcolon > 0) ? call_find(offcolon - 1, path, 0, 0) : 0;
+    return (offset > 0) ? call_find(offset - 1, path, 0, 0) : 0;
 
 }
 
