@@ -56,14 +56,15 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-void lookup(char *key)
+unsigned int lookup(char *key)
 {
 
     char id[32];
 
     channel_send_fmt1(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "get\\0%s\\0", key);
     channel_wait_buffer(0, option_getdecimal("env"), EVENT_QUERYRESPONSE, 32, id);
-    option_set(key, id);
+
+    return cstring_read_value(id, cstring_length(id), 10);
 
 }
 
