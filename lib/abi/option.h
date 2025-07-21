@@ -3,7 +3,7 @@
 struct option
 {
 
-    char *key;
+    unsigned int keyhash;
     char value[64];
 
 };

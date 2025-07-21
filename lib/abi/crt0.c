@@ -56,23 +56,6 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onstatus(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < OPTION_MAX; i++)
-    {
-
-        struct option *option = option_get(i);
-
-        if (option)
-            channel_send_fmt2(0, source, EVENT_DATA, "%s:%s\n", option->key, option->value);
-
-    }
-
-}
-
 void lookup(char *key)
 {
 
@@ -107,7 +90,6 @@ void main(void)
     option_add("pwd", "");
     channel_open();
     channel_bind(EVENT_OPTION, onoption);
-    channel_bind(EVENT_STATUS, onstatus);
     init();
 
     while (channel_process(0));

@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include "option.h"
 
 static struct option options[OPTION_MAX];
@@ -6,6 +7,7 @@ static struct option options[OPTION_MAX];
 static struct option *find(char *key)
 {
 
+    unsigned int keyhash = djb_hash(cstring_length(key), key);
     unsigned int i;
 
     for (i = 0; i < OPTION_MAX; i++)
@@ -13,7 +15,7 @@ static struct option *find(char *key)
 
         struct option *option = &options[i];
 
-        if (option->key && cstring_match(option->key, key))
+        if (option->keyhash == keyhash)
             return option;
 
     }
@@ -32,7 +34,7 @@ static struct option *findfree(char *key)
 
         struct option *option = &options[i];
 
-        if (!option->key)
+        if (!option->keyhash)
             return option;
 
     }
@@ -53,7 +55,7 @@ unsigned int option_isvalid(char *key)
 struct option *option_get(unsigned int i)
 {
 
-    return (i < OPTION_MAX && options[i].key) ? &options[i] : 0;
+    return (i < OPTION_MAX && options[i].keyhash) ? &options[i] : 0;
 
 }
 
@@ -106,7 +108,7 @@ void option_add(char *key, char *value)
 void option_init(struct option *option, char *key, char *value)
 {
 
-    option->key = key;
+    option->keyhash = djb_hash(cstring_length(key), key);
 
     cstring_write_zero(option->value, 64, cstring_write(option->value, 64, value, 0));
 

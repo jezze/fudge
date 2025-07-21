@@ -12,6 +12,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
     $(DIR_LIB)/math/math.a \
 
 $(DIR_SRC)/demo/demo.o: CC_FLAGS:=$(filter-out -msoft-float, $(CC_FLAGS))
