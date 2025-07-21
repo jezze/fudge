@@ -64,7 +64,7 @@ static void updatecontent(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup("wm-service"));
+    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));
@@ -212,7 +212,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("wm-service", "");
+    option_add("wm-service", "wm:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);

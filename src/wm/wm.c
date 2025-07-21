@@ -602,7 +602,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     option_setdecimal("keyboard-service", lookup2(option_getstring("keyboard-service")));
     option_setdecimal("mouse-service", lookup2(option_getstring("mouse-service")));
     option_setdecimal("video-service", lookup2(option_getstring("video-service")));
-    channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm-service\\0!source\\0");
+    channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm:0\\0!source\\0");
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("mouse-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("video-service"), EVENT_LINK);

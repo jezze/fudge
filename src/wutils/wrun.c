@@ -114,7 +114,7 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup("wm-service"));
+    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));
@@ -176,7 +176,7 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("wm-service", "");
+    option_add("wm-service", "wm:0");
     option_add("clock-service", "clock:0:0");
     option_add("ethernet-service", "ethernet:0:0");
     option_add("local-address", "10.0.5.1");

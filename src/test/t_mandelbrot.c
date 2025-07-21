@@ -218,7 +218,7 @@ static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup("wm-service"));
+    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
     option_setdecimal("mouse-service", lookup2(option_getstring("mouse-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
@@ -294,7 +294,7 @@ void init(void)
     option_add("height", "480");
     option_add("bpp", "4");
     option_add("mouse-service", "mouse:0:0");
-    option_add("wm-service", "");
+    option_add("wm-service", "wm:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_WMINIT, onwminit);

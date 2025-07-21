@@ -264,7 +264,7 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup("wm-service"));
+    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
@@ -337,7 +337,7 @@ void init(void)
     option_add("keyboard-service", "keyboard:0:0");
     option_add("timer-service", "timer:0:0");
     option_add("video-service", "video:0:0");
-    option_add("wm-service", "");
+    option_add("wm-service", "wm:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);

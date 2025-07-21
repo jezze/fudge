@@ -355,7 +355,7 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup("wm-service"));
+    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));
@@ -520,7 +520,7 @@ void init(void)
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
-    option_add("wm-service", "");
+    option_add("wm-service", "wm:0");
     option_add("slang", "initrd:bin/slang");
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
