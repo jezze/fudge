@@ -67,10 +67,46 @@ void lookup(char *key)
 
 }
 
-void lookup2(char *key, char *name, unsigned int index, unsigned int inode)
+unsigned int lookup2(char *name)
 {
 
-    option_setdecimal(key, call_find(cstring_length(name), name, index, inode));
+    unsigned int length = cstring_length(name);
+    unsigned int offset = buffer_eachbyte(name, length, ':', 0);
+
+    if (offset > 0)
+    {
+
+        unsigned int offindex = buffer_eachbyte(name, length, ':', offset);
+
+        if (offindex > 0)
+        {
+
+            unsigned int index = name[offset] - '0';
+            unsigned int inode = name[offindex] - '0';
+
+            return call_find(offset - 1, name, index, inode);
+
+        }
+
+        else
+        {
+
+            unsigned int index = name[offset] - '0';
+
+            return call_find(offset - 1, name, index, 0);
+
+        }
+
+    }
+
+    else
+    {
+
+        return call_find(length, name, 0, 0);
+
+    }
+
+    return 0;
 
 }
 

@@ -397,8 +397,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char buffer[4096];
     unsigned int count;
 
-    lookup2("block-service", "block", 0, 0);
-    lookup2("ethernet-service", "ethernet", 0, 0);
+    option_setdecimal("block-service", lookup2(option_getstring("block-service")));
+    option_setdecimal("ethernet-service", lookup2(option_getstring("ethernet-service")));
     channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\09p-service\\0!source\\0");
     socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
     channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
@@ -423,8 +423,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("block-service", "");
-    option_add("ethernet-service", "");
+    option_add("block-service", "block:0:0");
+    option_add("ethernet-service", "ethernet:0:0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "564", 42, 42);

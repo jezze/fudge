@@ -219,7 +219,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     lookup("wm-service");
-    lookup2("mouse-service", "mouse", 0, 0);
+    option_setdecimal("mouse-service", lookup2(option_getstring("mouse-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));
@@ -293,7 +293,7 @@ void init(void)
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
-    option_add("mouse-service", "");
+    option_add("mouse-service", "mouse:0:0");
     option_add("wm-service", "");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);

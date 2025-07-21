@@ -599,9 +599,9 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    lookup2("keyboard-service", "keyboard", 0, 0);
-    lookup2("mouse-service", "mouse", 0, 0);
-    lookup2("video-service", "video", 0, 0);
+    option_setdecimal("keyboard-service", lookup2(option_getstring("keyboard-service")));
+    option_setdecimal("mouse-service", lookup2(option_getstring("mouse-service")));
+    option_setdecimal("video-service", lookup2(option_getstring("video-service")));
     channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm-service\\0!source\\0");
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("mouse-service"), EVENT_LINK);
@@ -912,9 +912,9 @@ void init(void)
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
-    option_add("keyboard-service", "");
-    option_add("mouse-service", "");
-    option_add("video-service", "");
+    option_add("keyboard-service", "keyboard:0:0");
+    option_add("mouse-service", "mouse:0:0");
+    option_add("video-service", "video:0:0");
     option_add("wshell", "initrd:bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
