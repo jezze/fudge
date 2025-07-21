@@ -34,9 +34,16 @@ static unsigned int send(unsigned int ichannel, unsigned int target, unsigned in
             case MESSAGE_RETRY:
                 continue;
 
-            }
+            case MESSAGE_OK:
+                return event;
 
-            return count;
+            case MESSAGE_FAILED:
+                return 0;
+
+            case MESSAGE_UNIMPLEMENTED:
+                return 0;
+
+            }
 
         }
 
@@ -203,8 +210,17 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message, unsign
         switch (status)
         {
 
+        case MESSAGE_RETRY:
+            continue;
+
         case MESSAGE_OK:
             return message->event;
+
+        case MESSAGE_FAILED:
+            return 0;
+
+        case MESSAGE_UNIMPLEMENTED:
+            return 0;
 
         }
 
