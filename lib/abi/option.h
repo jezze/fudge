@@ -9,7 +9,6 @@ struct option
 };
 
 unsigned int option_isvalid(char *key);
-struct option *option_get(unsigned int i);
 int option_getdecimal(char *key);
 char *option_getstring(char *key);
 unsigned int option_setdecimal(char *key, int value);

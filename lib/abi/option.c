@@ -52,13 +52,6 @@ unsigned int option_isvalid(char *key)
 
 }
 
-struct option *option_get(unsigned int i)
-{
-
-    return (i < OPTION_MAX && options[i].keyhash) ? &options[i] : 0;
-
-}
-
 int option_getdecimal(char *key)
 {
 
