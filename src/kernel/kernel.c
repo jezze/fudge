@@ -580,9 +580,7 @@ unsigned int kernel_taskpick(unsigned int itask, unsigned int ichannel, struct m
     if (task)
     {
 
-        unsigned int source = task->inodes[ichannel];
-
-        if (source)
+        if (task->inodes[ichannel])
         {
 
             struct mailbox *mailbox = kernel_getnodeinterface(task->inodes[ichannel]);
@@ -618,7 +616,8 @@ unsigned int kernel_taskplace(unsigned int itask, unsigned int ichannel, unsigne
         if (!task->inodes[ichannel])
             task->inodes[ichannel] = addmailbox(itask);
 
-        return kernel_place(task->inodes[ichannel], target, event, count, data);
+        if (task->inodes[ichannel])
+            return kernel_place(task->inodes[ichannel], target, event, count, data);
 
     }
 
@@ -634,10 +633,8 @@ unsigned int kernel_taskannounce(unsigned int itask, unsigned int ichannel, unsi
     if (task)
     {
 
-        unsigned int inode = task->inodes[ichannel];
-
-        if (inode)
-            return kernel_announce(inode, namehash);
+        if (task->inodes[ichannel])
+            return kernel_announce(task->inodes[ichannel], namehash);
 
     }
 
