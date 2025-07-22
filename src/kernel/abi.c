@@ -68,40 +68,46 @@ static unsigned int find(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int count; char *name; unsigned int index; unsigned int inode;} *args = stack;
-    unsigned int namehash = djb_hash(args->count, args->name);
-    struct resource *resource = 0;
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+    if (checkbuffer(itask, args->name, args->count))
     {
 
-        struct service *service = resource->data;
+        unsigned int namehash = djb_hash(args->count, args->name);
+        struct resource *resource = 0;
 
-        if (service->namehash == namehash)
+        while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
         {
 
-            if (args->index == 9)
-                return service->getinodename(djb_hash(4, "wm:0"));
+            struct service *service = resource->data;
 
-            if (service->foreach)
+            if (service->namehash == namehash)
             {
 
-                struct resource *current = 0;
-                unsigned int i;
+                if (args->index == 9)
+                    return service->getinodename(djb_hash(4, "wm:0"));
 
-                for (i = 0; (current = service->foreach(current)); i++)
+                if (service->foreach)
                 {
 
-                    if (i == args->index)
-                        return service->getinode(current, args->inode);
+                    struct resource *current = 0;
+                    unsigned int i;
+
+                    for (i = 0; (current = service->foreach(current)); i++)
+                    {
+
+                        if (i == args->index)
+                            return service->getinode(current, args->inode);
+
+                    }
 
                 }
 
-            }
+                else
+                {
 
-            else
-            {
+                    return service->getinode(0, 0);
 
-                return service->getinode(0, 0);
+                }
 
             }
 
