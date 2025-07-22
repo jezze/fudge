@@ -234,7 +234,7 @@ static unsigned int announce(unsigned int itask, void *stack)
     struct {void *caller; unsigned int ichannel; unsigned int count; char *name;} *args = stack;
 
     if (checkbuffer(itask, args->name, args->count))
-        return kernel_announce(itask, args->ichannel, djb_hash(args->count, args->name));
+        return kernel_announcetask(itask, args->ichannel, djb_hash(args->count, args->name));
 
     DEBUG_FMT0(DEBUG_ERROR, "announce check failed");
 
