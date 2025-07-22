@@ -78,6 +78,7 @@ static unsigned int find(unsigned int itask, void *stack)
         if (service->namehash == args->servicenamehash)
         {
 
+            /* TODO: Fix this hack */
             if (args->index == 9)
                 return service->getinodename(djb_hash(4, "wm:0"));
 

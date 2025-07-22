@@ -630,6 +630,7 @@ unsigned int kernel_taskplace(unsigned int itask, unsigned int ichannel, unsigne
     if (task)
     {
 
+        /* TODO: make this explicit maybe */
         if (!task->inodes[ichannel])
             task->inodes[ichannel] = addmailbox(itask);
 
