@@ -50,7 +50,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
         char *key = extract(mdata, klength, offset);
         char *value = extract(mdata, vlength, offset + klength);
 
-        if (!option_set(key, value))
+        if (!option_setstring(key, value))
             channel_send_fmt1(0, source, EVENT_ERROR, "Unrecognized option: %s\n", key);
 
     }

@@ -43,15 +43,6 @@ static struct option *findfree(char *key)
 
 }
 
-unsigned int option_isvalid(char *key)
-{
-
-    struct option *option = find(key);
-
-    return cstring_length(option->value) > 0;
-
-}
-
 int option_getdecimal(char *key)
 {
 
@@ -79,7 +70,7 @@ unsigned int option_setdecimal(char *key, int value)
 
 }
 
-unsigned int option_set(char *key, char *value)
+unsigned int option_setstring(char *key, char *value)
 {
 
     struct option *option = find(key);
