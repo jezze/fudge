@@ -28,7 +28,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("wm-service", "mailboxes:9:0");
+    option_add("wm-service", "wm:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);
 

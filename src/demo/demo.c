@@ -173,7 +173,7 @@ void init(void)
     option_add("keyboard-service", "keyboard:0:0");
     option_add("timer-service", "timer:0:0");
     option_add("video-service", "video:0:0");
-    option_add("wm-service", "mailboxes:9:0");
+    option_add("wm-service", "wm:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMINIT, onwminit);

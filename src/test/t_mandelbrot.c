@@ -294,7 +294,7 @@ void init(void)
     option_add("height", "480");
     option_add("bpp", "4");
     option_add("mouse-service", "mouse:0:0");
-    option_add("wm-service", "mailboxes:9:0");
+    option_add("wm-service", "wm:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_WMINIT, onwminit);

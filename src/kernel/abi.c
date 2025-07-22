@@ -74,7 +74,7 @@ static unsigned int find(unsigned int itask, void *stack)
     {
 
     case 1:
-        return kernel_findinode(djb_hash(4, "wm:0"));
+        return kernel_findinode(args->namehash);
 
     case 2:
         while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
