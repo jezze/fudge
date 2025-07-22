@@ -13,6 +13,7 @@ unsigned int kernel_schedule(struct core *core);
 unsigned int kernel_codebase(unsigned int itask, unsigned int address);
 unsigned int kernel_loadprogram(unsigned int itask);
 void kernel_signal(unsigned int itask, unsigned int signal);
+unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_announce(unsigned int inode, unsigned int namehash);
 unsigned int kernel_taskpick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data);

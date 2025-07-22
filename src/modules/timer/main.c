@@ -112,7 +112,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 void module_init(void)
 {
 
-    service_init(&service, "timer", service_foreach, service_getinode, 0, service_place);
+    service_init(&service, "timer", service_foreach, service_getinode, 0, 0, service_place);
     service_register(&service);
 
 }

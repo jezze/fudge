@@ -78,7 +78,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, "clock", service_foreach, service_getinode, 0, service_place);
+    service_init(&service, "clock", service_foreach, service_getinode, 0, 0, service_place);
     service_register(&service);
 
 }

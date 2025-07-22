@@ -386,6 +386,27 @@ static unsigned int service_getinodename(unsigned int namehash)
 
 }
 
+static unsigned int service_pick(unsigned int source, struct message *message, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = kernel_getnodeinterface(source);
+
+    if (mailbox)
+    {
+
+        unsigned int status = mailbox_pick(mailbox, message, count, data);
+
+        if (status == MESSAGE_RETRY)
+            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
 static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
@@ -541,6 +562,18 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
+unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
+{
+
+    struct node *snode = getnode(source);
+
+    if (snode)
+        return snode->service->pick(source, message, count, data);
+
+    return MESSAGE_FAILED;
+
+}
+
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
@@ -581,23 +614,7 @@ unsigned int kernel_taskpick(unsigned int itask, unsigned int ichannel, struct m
     {
 
         if (task->inodes[ichannel])
-        {
-
-            struct mailbox *mailbox = kernel_getnodeinterface(task->inodes[ichannel]);
-
-            if (mailbox)
-            {
-
-                unsigned int status = mailbox_pick(mailbox, message, count, data);
-
-                if (status == MESSAGE_RETRY)
-                    task_signal(task, TASK_SIGNAL_BLOCK);
-
-                return status;
-
-            }
-
-        }
+            return kernel_pick(task->inodes[ichannel], message, count, data);
 
     }
 
@@ -762,7 +779,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
-    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_getinodename, service_place);
+    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_getinodename, service_pick, service_place);
     service_register(&mailboxservice);
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)

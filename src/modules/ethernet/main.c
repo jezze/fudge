@@ -97,7 +97,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 void module_init(void)
 {
 
-    service_init(&service, "ethernet", service_foreach, service_getinode, 0, service_place);
+    service_init(&service, "ethernet", service_foreach, service_getinode, 0, 0, service_place);
     service_register(&service);
 
 }
