@@ -305,6 +305,7 @@ static void checksignals(struct core *core)
 
                             struct mailboxrow *mailboxrow = (struct mailboxrow *)((unsigned int)mailbox - sizeof (struct list_item));
 
+                            removenode(&tasknodes, mailbox->inode);
                             returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
 
                         }
