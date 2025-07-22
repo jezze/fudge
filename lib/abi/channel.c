@@ -14,42 +14,22 @@ static unsigned int state = CHANNEL_STATE_CLOSED;
 static unsigned int pending;
 static unsigned int parent;
 
-static unsigned int send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int reroute(unsigned int target, unsigned int event)
 {
 
     if (event < CHANNEL_EVENTS && routes[event])
-        target = routes[event];
+        return routes[event];
 
-    if (target)
-    {
+    return target;
 
-        while (state != CHANNEL_STATE_CLOSED)
-        {
+}
 
-            unsigned int status = call_place(ichannel, target, event, count, data);
+static unsigned int send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
 
-            switch (status)
-            {
+    target = reroute(target, event);
 
-            case MESSAGE_RETRY:
-                continue;
-
-            case MESSAGE_OK:
-                return event;
-
-            case MESSAGE_FAILED:
-                return 0;
-
-            case MESSAGE_UNIMPLEMENTED:
-                return 0;
-
-            }
-
-        }
-
-    }
-
-    return 0;
+    return (target) ? channel_place(ichannel, target, event, count, data) : 0;
 
 }
 
@@ -66,6 +46,68 @@ static void dispatch(unsigned int source, unsigned int event, void *data, unsign
         pending--;
 
     }
+
+}
+
+unsigned int channel_pick(unsigned int ichannel, struct message *message, unsigned int count, void *data)
+{
+
+    while (state != CHANNEL_STATE_CLOSED)
+    {
+
+        unsigned int status = call_pick(ichannel, message, count, data);
+
+        switch (status)
+        {
+
+        case MESSAGE_RETRY:
+            continue;
+
+        case MESSAGE_OK:
+            return message->event;
+
+        case MESSAGE_FAILED:
+            return 0;
+
+        case MESSAGE_UNIMPLEMENTED:
+            return 0;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    while (state != CHANNEL_STATE_CLOSED)
+    {
+
+        unsigned int status = call_place(ichannel, target, event, count, data);
+
+        switch (status)
+        {
+
+        case MESSAGE_RETRY:
+            continue;
+
+        case MESSAGE_OK:
+            return event;
+
+        case MESSAGE_FAILED:
+            return 0;
+
+        case MESSAGE_UNIMPLEMENTED:
+            return 0;
+
+        }
+
+    }
+
+    return 0;
 
 }
 
@@ -196,37 +238,6 @@ unsigned int channel_send_fmt8(unsigned int ichannel, unsigned int target, unsig
     char buffer[MESSAGE_SIZE];
 
     return send(ichannel, target, event, cstring_write_fmt8(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8), buffer);
-
-}
-
-unsigned int channel_pick(unsigned int ichannel, struct message *message, unsigned int count, void *data)
-{
-
-    while (state != CHANNEL_STATE_CLOSED)
-    {
-
-        unsigned int status = call_pick(ichannel, message, count, data);
-
-        switch (status)
-        {
-
-        case MESSAGE_RETRY:
-            continue;
-
-        case MESSAGE_OK:
-            return message->event;
-
-        case MESSAGE_FAILED:
-            return 0;
-
-        case MESSAGE_UNIMPLEMENTED:
-            return 0;
-
-        }
-
-    }
-
-    return 0;
 
 }
 
