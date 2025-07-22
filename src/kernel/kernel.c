@@ -554,6 +554,24 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
 }
 
+unsigned int kernel_announce(unsigned int inode, unsigned int namehash)
+{
+
+    struct node *node = getnode(inode);
+
+    if (node)
+    {
+
+        node->namehash = namehash;
+
+        return namehash;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int kernel_taskpick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
@@ -608,25 +626,7 @@ unsigned int kernel_taskplace(unsigned int itask, unsigned int ichannel, unsigne
 
 }
 
-unsigned int kernel_announce(unsigned int inode, unsigned int namehash)
-{
-
-    struct node *node = getnode(inode);
-
-    if (node)
-    {
-
-        node->namehash = namehash;
-
-        return namehash;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int kernel_announcetask(unsigned int itask, unsigned int ichannel, unsigned int namehash)
+unsigned int kernel_taskannounce(unsigned int itask, unsigned int ichannel, unsigned int namehash)
 {
 
     struct task *task = gettask(itask);
