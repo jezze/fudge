@@ -417,7 +417,6 @@ static unsigned int service_place(unsigned int source, unsigned int target, unsi
 
         unsigned int status = mailbox_place(mailbox, event, source, count, data);
 
-        /* TODO: Make this more generic */
         kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
 
         return status;
