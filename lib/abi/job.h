@@ -30,7 +30,7 @@ struct job
 void job_parse(struct job *job, void *buffer, unsigned int count);
 unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir);
 unsigned int job_pipe(struct job *job, unsigned int ichannel, unsigned int source, unsigned int event, void *buffer, unsigned int count);
-void job_run(struct job *job, unsigned int ichannel, char *env, char *pwd);
+void job_run(struct job *job, unsigned int ichannel, char *pwd);
 void job_close(struct job *job, unsigned int ichannel, unsigned int target);
 unsigned int job_exist(struct job *job, unsigned int target);
 unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message, unsigned int count, void *data);

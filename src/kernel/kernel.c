@@ -367,6 +367,25 @@ static unsigned int service_getinode(struct resource *current, unsigned int inde
 
 }
 
+static unsigned int service_getinodename(unsigned int namehash)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < KERNEL_NODES; i++)
+    {
+
+        struct noderow *noderow = &noderows[i];
+
+        if (noderow->node.namehash == namehash)
+            return encodenoderow(noderow);
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
@@ -589,6 +608,32 @@ unsigned int kernel_taskplace(unsigned int itask, unsigned int ichannel, unsigne
 
 }
 
+unsigned int kernel_announce(unsigned int itask, unsigned int ichannel, unsigned int namehash)
+{
+
+    struct task *task = gettask(itask);
+
+    if (task)
+    {
+
+        unsigned int inode = task->inodes[ichannel];
+
+        if (inode)
+        {
+
+            struct node *node = getnode(inode);
+
+            if (node)
+                node->namehash = namehash;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -709,7 +754,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
-    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_place);
+    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_getinodename, service_place);
     service_register(&mailboxservice);
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)

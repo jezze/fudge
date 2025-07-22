@@ -23,24 +23,7 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
 
 }
 
-static unsigned int spawnenv(unsigned int ichannel)
-{
-
-    unsigned int target = fs_spawn(ichannel, "initrd:bin/env");
-
-    if (target)
-    {
-
-        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env=%u&pwd=initrd:\n", &target);
-        channel_send(ichannel, target, EVENT_MAIN);
-
-    }
-
-    return target;
-
-}
-
-static unsigned int spawnshell(unsigned int ichannel, unsigned int env)
+static unsigned int spawnshell(unsigned int ichannel)
 {
 
     unsigned int target = fs_spawn(ichannel, "initrd:bin/shell");
@@ -48,7 +31,7 @@ static unsigned int spawnshell(unsigned int ichannel, unsigned int env)
     if (target)
     {
 
-        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env=%u&pwd=initrd:\n", &env);
+        channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:\n");
         channel_send(ichannel, target, EVENT_MAIN);
 
     }
@@ -57,7 +40,7 @@ static unsigned int spawnshell(unsigned int ichannel, unsigned int env)
 
 }
 
-static unsigned int spawnwm(unsigned int ichannel, unsigned int env)
+static unsigned int spawnwm(unsigned int ichannel)
 {
 
     unsigned int target = fs_spawn(ichannel, "initrd:bin/wm");
@@ -65,7 +48,7 @@ static unsigned int spawnwm(unsigned int ichannel, unsigned int env)
     if (target)
     {
 
-        channel_send_fmt1(ichannel, target, EVENT_OPTION, "env=%u&pwd=initrd:\n", &env);
+        channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:\n");
         channel_send(ichannel, target, EVENT_MAIN);
 
     }
@@ -121,14 +104,12 @@ static char *modules2[16] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int env = spawnenv(1);
-
     /* FIXME: Because of an mmu bug, apic module needs to load seperately. It kills the process. */
     loadmodules(1, 18, modules0);
     loadmodules(1, 1, modules1);
     loadmodules(1, 16, modules2);
-    spawnshell(1, env);
-    spawnwm(1, env);
+    spawnshell(1);
+    spawnwm(1);
 
 }
 

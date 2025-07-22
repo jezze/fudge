@@ -87,7 +87,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, "block", service_foreach, service_getinode, service_place);
+    service_init(&service, "block", service_foreach, service_getinode, 0, service_place);
     service_register(&service);
 
 }

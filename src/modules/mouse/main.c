@@ -110,7 +110,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 void module_init(void)
 {
 
-    service_init(&service, "mouse", service_foreach, service_getinode, service_place);
+    service_init(&service, "mouse", service_foreach, service_getinode, 0, service_place);
     service_register(&service);
 
 }

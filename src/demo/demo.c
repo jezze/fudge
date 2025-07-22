@@ -149,9 +149,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = option_getdecimal("bpp");
 
-    option_setdecimal("keyboard-service", lookup2(option_getstring("keyboard-service")));
-    option_setdecimal("timer-service", lookup2(option_getstring("timer-service")));
-    option_setdecimal("video-service", lookup2(option_getstring("video-service")));
+    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
+    option_setdecimal("timer-service", lookup(option_getstring("timer-service")));
+    option_setdecimal("video-service", lookup(option_getstring("video-service")));
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("video-service"), EVENT_LINK);
@@ -173,7 +173,7 @@ void init(void)
     option_add("keyboard-service", "keyboard:0:0");
     option_add("timer-service", "timer:0:0");
     option_add("video-service", "video:0:0");
-    option_add("wm-service", "wm:0");
+    option_add("wm-service", "mailboxes:9:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMINIT, onwminit);

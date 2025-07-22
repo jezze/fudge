@@ -10,6 +10,7 @@
 .set CALL_INDEX_FIND,                   0x06
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
+.set CALL_INDEX_ANNOUNCE,               0x09
 
 .section .text
 
@@ -64,6 +65,12 @@ call_spawn:
 .global call_unload
 call_unload:
     movl $CALL_INDEX_UNLOAD, %eax
+    int $CALL_INTERRUPT
+    ret
+
+.global call_announce
+call_announce:
+    movl $CALL_INDEX_ANNOUNCE, %eax
     int $CALL_INTERRUPT
     ret
 

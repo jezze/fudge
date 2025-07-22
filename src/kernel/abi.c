@@ -68,16 +68,19 @@ static unsigned int find(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int count; char *name; unsigned int index; unsigned int inode;} *args = stack;
-    unsigned int hashname = djb_hash(args->count, args->name);
-    struct resource *resourceitem = 0;
+    unsigned int namehash = djb_hash(args->count, args->name);
+    struct resource *resource = 0;
 
-    while ((resourceitem = resource_foreachtype(resourceitem, RESOURCE_SERVICE)))
+    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
     {
 
-        struct service *service = resourceitem->data;
+        struct service *service = resource->data;
 
-        if (service->hashname == hashname)
+        if (service->namehash == namehash)
         {
+
+            if (args->index == 9)
+                return service->getinodename(djb_hash(4, "wm:0"));
 
             if (service->foreach)
             {
@@ -226,6 +229,20 @@ static unsigned int place(unsigned int itask, void *stack)
 
 }
 
+static unsigned int announce(unsigned int itask, void *stack)
+{
+
+    struct {void *caller; unsigned int ichannel; unsigned int count; char *name;} *args = stack;
+
+    if (checkbuffer(itask, args->name, args->count))
+        return kernel_announce(itask, args->ichannel, djb_hash(args->count, args->name));
+
+    DEBUG_FMT0(DEBUG_ERROR, "announce check failed");
+
+    return 0;
+
+}
+
 unsigned int abi_call(unsigned int index, unsigned int itask, void *stack)
 {
 
@@ -252,7 +269,7 @@ void abi_setup(void)
     abi_setcallback(0x06, find);
     abi_setcallback(0x07, load);
     abi_setcallback(0x08, unload);
-    abi_setcallback(0x09, debug);
+    abi_setcallback(0x09, announce);
     abi_setcallback(0x0A, debug);
     abi_setcallback(0x0B, debug);
     abi_setcallback(0x0C, debug);

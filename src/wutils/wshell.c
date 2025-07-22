@@ -109,7 +109,7 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
 
         char data[MESSAGE_SIZE];
 
-        job_run(&job, ichannel, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, ichannel, option_getstring("pwd"));
 
         while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
@@ -258,7 +258,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
-        job_run(&job, ichannel, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, ichannel, option_getstring("pwd"));
 
         while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
@@ -520,7 +520,7 @@ void init(void)
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
-    option_add("wm-service", "wm:0");
+    option_add("wm-service", "mailboxes:9:0");
     option_add("slang", "initrd:bin/slang");
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);

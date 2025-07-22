@@ -387,7 +387,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
             if (target)
             {
 
-                channel_send_fmt2(1, target, EVENT_OPTION, "env=%s&pwd=%s\n", option_getstring("env"), option_getstring("pwd"));
+                channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
                 channel_send(1, target, EVENT_MAIN);
                 channel_send(1, target, EVENT_END);
 
@@ -599,10 +599,10 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("keyboard-service", lookup2(option_getstring("keyboard-service")));
-    option_setdecimal("mouse-service", lookup2(option_getstring("mouse-service")));
-    option_setdecimal("video-service", lookup2(option_getstring("video-service")));
-    channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0wm:0\\0!source\\0");
+    call_announce(0, 4, "wm:0");
+    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
+    option_setdecimal("mouse-service", lookup(option_getstring("mouse-service")));
+    option_setdecimal("video-service", lookup(option_getstring("video-service")));
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("mouse-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("video-service"), EVENT_LINK);

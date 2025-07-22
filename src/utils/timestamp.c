@@ -7,7 +7,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct event_clockinfo clockinfo;
     unsigned int timestamp;
 
-    option_setdecimal("clock-service", lookup2(option_getstring("clock-service")));
+    option_setdecimal("clock-service", lookup(option_getstring("clock-service")));
     channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
     channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 

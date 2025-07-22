@@ -33,7 +33,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     int cB = 0;
     int f;
 
-    option_setdecimal("timer-service", lookup2(option_getstring("timer-service")));
+    option_setdecimal("timer-service", lookup(option_getstring("timer-service")));
     channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
 
     while (channel_process(0))

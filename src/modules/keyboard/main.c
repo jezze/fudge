@@ -87,7 +87,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 void module_init(void)
 {
 
-    service_init(&service, "keyboard", service_foreach, service_getinode, service_place);
+    service_init(&service, "keyboard", service_foreach, service_getinode, 0, service_place);
     service_register(&service);
 
 }

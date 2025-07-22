@@ -133,8 +133,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     struct event_clockinfo clockinfo;
     struct mtwist_state state;
 
-    option_setdecimal("clock-service", lookup2(option_getstring("clock-service")));
-    option_setdecimal("ethernet-service", lookup2(option_getstring("ethernet-service")));
+    option_setdecimal("clock-service", lookup(option_getstring("clock-service")));
+    option_setdecimal("ethernet-service", lookup(option_getstring("ethernet-service")));
     channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
     channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
     mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
@@ -176,7 +176,7 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("wm-service", "wm:0");
+    option_add("wm-service", "mailboxes:9:0");
     option_add("clock-service", "clock:0:0");
     option_add("ethernet-service", "ethernet:0:0");
     option_add("local-address", "10.0.5.1");

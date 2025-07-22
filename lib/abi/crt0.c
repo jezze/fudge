@@ -56,19 +56,7 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-unsigned int lookup(char *key)
-{
-
-    char id[32];
-
-    channel_send_fmt1(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "get\\0%s\\0", key);
-    channel_wait_buffer(0, option_getdecimal("env"), EVENT_QUERYRESPONSE, 32, id);
-
-    return cstring_read_value(id, cstring_length(id), 10);
-
-}
-
-unsigned int lookup2(char *name)
+unsigned int lookup(char *name)
 {
 
     unsigned int length = cstring_length(name);
@@ -123,7 +111,6 @@ void panic(unsigned int source, char *file, unsigned int line)
 void main(void)
 {
 
-    option_add("env", "");
     option_add("pwd", "");
     channel_open();
     channel_bind(EVENT_OPTION, onoption);

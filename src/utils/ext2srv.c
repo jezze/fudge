@@ -466,14 +466,14 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("block-service", lookup2(option_getstring("block-service")));
+    option_setdecimal("block-service", lookup(option_getstring("block-service")));
     channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
     {
 
-        channel_send_fmt0(0, option_getdecimal("env"), EVENT_QUERYREQUEST, "set\\0ext2-service\\0!source\\0");
+        call_announce(0, 6, "ext2:0");
 
         while (channel_process(0));
 

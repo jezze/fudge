@@ -4,6 +4,7 @@ struct node
     struct list links;
     struct resource *resource;
     struct service *service;
+    unsigned int namehash;
 
 };
 

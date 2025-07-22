@@ -54,7 +54,7 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
 
         char data[MESSAGE_SIZE];
 
-        job_run(&job, ichannel, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, ichannel, option_getstring("pwd"));
 
         while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
@@ -199,7 +199,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
-        job_run(&job, ichannel, option_getstring("env"), option_getstring("pwd"));
+        job_run(&job, ichannel, option_getstring("pwd"));
 
         while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
@@ -513,8 +513,8 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("console-service", lookup2(option_getstring("console-service")));
-    option_setdecimal("keyboard-service", lookup2(option_getstring("keyboard-service")));
+    option_setdecimal("console-service", lookup(option_getstring("console-service")));
+    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
     channel_send(0, option_getdecimal("console-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     printprompt();

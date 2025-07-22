@@ -17,6 +17,7 @@ void node_init(struct node *node)
 
     node->resource = 0;
     node->service = 0;
+    node->namehash = 0;
 
 }
 
