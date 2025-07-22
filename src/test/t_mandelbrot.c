@@ -218,8 +218,8 @@ static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
-    option_setdecimal("mouse-service", lookup(option_getstring("mouse-service")));
+    option_setdecimal("wm-service", lookup(1, option_getstring("wm-service")));
+    option_setdecimal("mouse-service", lookup(2, option_getstring("mouse-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));

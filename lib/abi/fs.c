@@ -15,9 +15,9 @@ unsigned int fs_auth(char *path)
     if (offset)
     {
 
-        unsigned int servicenamehash = djb_hash(offset - 1, path);
+        unsigned int namehash = djb_hash(offset - 1, path);
 
-        return call_find(servicenamehash, 0, 0);
+        return call_find(2, namehash, 0, 0);
 
     }
 

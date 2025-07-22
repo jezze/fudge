@@ -368,25 +368,6 @@ static unsigned int service_getinode(struct resource *current, unsigned int inde
 
 }
 
-static unsigned int service_getinodename(unsigned int namehash)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < KERNEL_NODES; i++)
-    {
-
-        struct noderow *noderow = &noderows[i];
-
-        if (noderow->node.namehash == namehash)
-            return encodenoderow(noderow);
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int service_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
@@ -464,6 +445,25 @@ void kernel_removenode(unsigned int inode)
 {
 
     removenode(&modulenodes, inode);
+
+}
+
+unsigned int kernel_findinode(unsigned int namehash)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < KERNEL_NODES; i++)
+    {
+
+        struct noderow *noderow = &noderows[i];
+
+        if (noderow->node.namehash == namehash)
+            return encodenoderow(noderow);
+
+    }
+
+    return 0;
 
 }
 
@@ -780,7 +780,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
-    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_getinodename, service_pick, service_place);
+    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_pick, service_place);
     service_register(&mailboxservice);
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)

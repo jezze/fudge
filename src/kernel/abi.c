@@ -67,45 +67,52 @@ static unsigned int kill(unsigned int itask, void *stack)
 static unsigned int find(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int servicenamehash; unsigned int index; unsigned int inode;} *args = stack;
+    struct {void *caller; unsigned int type; unsigned int namehash; unsigned int index; unsigned int inode;} *args = stack;
     struct resource *resource = 0;
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+    switch (args->type)
     {
 
-        struct service *service = resource->data;
+    case 1:
+        return kernel_findinode(djb_hash(4, "wm:0"));
 
-        if (service->namehash == args->servicenamehash)
+    case 2:
+        while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
         {
 
-            /* TODO: Fix this hack */
-            if (args->index == 9)
-                return service->getinodename(djb_hash(4, "wm:0"));
+            struct service *service = resource->data;
 
-            if (service->foreach)
+            if (service->namehash == args->namehash)
             {
 
-                struct resource *current = 0;
-                unsigned int i;
-
-                for (i = 0; (current = service->foreach(current)); i++)
+                if (service->foreach)
                 {
 
-                    if (i == args->index)
-                        return service->getinode(current, args->inode);
+                    struct resource *current = 0;
+                    unsigned int i;
+
+                    for (i = 0; (current = service->foreach(current)); i++)
+                    {
+
+                        if (i == args->index)
+                            return service->getinode(current, args->inode);
+
+                    }
+
+                }
+
+                else
+                {
+
+                    return service->getinode(0, 0);
 
                 }
 
             }
 
-            else
-            {
-
-                return service->getinode(0, 0);
-
-            }
-
         }
+
+        return 0;
 
     }
 

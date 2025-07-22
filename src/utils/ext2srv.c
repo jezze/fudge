@@ -467,7 +467,7 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("block-service", lookup(option_getstring("block-service")));
+    option_setdecimal("block-service", lookup(2, option_getstring("block-service")));
     channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
     readsuperblock(&sb);
 

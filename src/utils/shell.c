@@ -513,8 +513,8 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("console-service", lookup(option_getstring("console-service")));
-    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
+    option_setdecimal("console-service", lookup(2, option_getstring("console-service")));
+    option_setdecimal("keyboard-service", lookup(2, option_getstring("keyboard-service")));
     channel_send(0, option_getdecimal("console-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     printprompt();

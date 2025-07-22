@@ -601,9 +601,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     call_announce(0, djb_hash(4, "wm:0"));
-    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
-    option_setdecimal("mouse-service", lookup(option_getstring("mouse-service")));
-    option_setdecimal("video-service", lookup(option_getstring("video-service")));
+    option_setdecimal("keyboard-service", lookup(2, option_getstring("keyboard-service")));
+    option_setdecimal("mouse-service", lookup(2, option_getstring("mouse-service")));
+    option_setdecimal("video-service", lookup(2, option_getstring("video-service")));
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("mouse-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("video-service"), EVENT_LINK);

@@ -64,7 +64,7 @@ static void updatecontent(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
+    option_setdecimal("wm-service", lookup(1, option_getstring("wm-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
 
     while (channel_process(0));

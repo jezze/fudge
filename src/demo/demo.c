@@ -114,7 +114,7 @@ static void run(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
+    option_setdecimal("wm-service", lookup(1, option_getstring("wm-service")));
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
     channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
     channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
@@ -149,9 +149,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = option_getdecimal("bpp");
 
-    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
-    option_setdecimal("timer-service", lookup(option_getstring("timer-service")));
-    option_setdecimal("video-service", lookup(option_getstring("video-service")));
+    option_setdecimal("keyboard-service", lookup(2, option_getstring("keyboard-service")));
+    option_setdecimal("timer-service", lookup(2, option_getstring("timer-service")));
+    option_setdecimal("video-service", lookup(2, option_getstring("video-service")));
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("video-service"), EVENT_LINK);

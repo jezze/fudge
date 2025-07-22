@@ -57,45 +57,60 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-unsigned int lookup(char *name)
+unsigned int lookup(unsigned int type, char *name)
 {
 
     unsigned int length = cstring_length(name);
-    unsigned int offset = buffer_eachbyte(name, length, ':', 0);
 
-    if (offset > 0)
+    if (type == 1)
     {
 
-        unsigned int servicenamehash = djb_hash(offset - 1, name);
-        unsigned int offindex = buffer_eachbyte(name, length, ':', offset);
+        unsigned int namehash = djb_hash(length, name);
 
-        if (offindex > 0)
+        return call_find(type, namehash, 0, 0);
+
+    }
+
+    else if (type == 2)
+    {
+
+        unsigned int offset = buffer_eachbyte(name, length, ':', 0);
+
+        if (offset > 0)
         {
 
-            unsigned int index = name[offset] - '0';
-            unsigned int inode = name[offindex] - '0';
+            unsigned int namehash = djb_hash(offset - 1, name);
+            unsigned int offindex = buffer_eachbyte(name, length, ':', offset);
 
-            return call_find(servicenamehash, index, inode);
+            if (offindex > 0)
+            {
+
+                unsigned int index = name[offset] - '0';
+                unsigned int inode = name[offindex] - '0';
+
+                return call_find(type, namehash, index, inode);
+
+            }
+
+            else
+            {
+
+                unsigned int index = name[offset] - '0';
+
+                return call_find(type, namehash, index, 0);
+
+            }
 
         }
 
         else
         {
 
-            unsigned int index = name[offset] - '0';
+            unsigned int namehash = djb_hash(length, name);
 
-            return call_find(servicenamehash, index, 0);
+            return call_find(type, namehash, 0, 0);
 
         }
-
-    }
-
-    else
-    {
-
-        unsigned int servicenamehash = djb_hash(length, name);
-
-        return call_find(servicenamehash, 0, 0);
 
     }
 
