@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include <net.h>
 #include <abi.h>
 #include <socket.h>
@@ -397,7 +398,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char buffer[4096];
     unsigned int count;
 
-    call_announce(0, 4, "9p:0");
+    call_announce(0, djb_hash(4, "9p:0"));
     option_setdecimal("block-service", lookup(option_getstring("block-service")));
     option_setdecimal("ethernet-service", lookup(option_getstring("ethernet-service")));
     socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);

@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <hash.h>
 
 struct ext2_superblock
 {
@@ -473,7 +474,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        call_announce(0, 6, "ext2:0");
+        call_announce(0, djb_hash(6, "ext2:0"));
 
         while (channel_process(0));
 

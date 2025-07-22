@@ -231,14 +231,9 @@ static unsigned int place(unsigned int itask, void *stack)
 static unsigned int announce(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int count; char *name;} *args = stack;
+    struct {void *caller; unsigned int ichannel; unsigned int namehash;} *args = stack;
 
-    if (checkbuffer(itask, args->name, args->count))
-        return kernel_taskannounce(itask, args->ichannel, djb_hash(args->count, args->name));
-
-    DEBUG_FMT0(DEBUG_ERROR, "announce check failed");
-
-    return 0;
+    return kernel_taskannounce(itask, args->ichannel, args->namehash);
 
 }
 
