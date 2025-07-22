@@ -67,47 +67,40 @@ static unsigned int kill(unsigned int itask, void *stack)
 static unsigned int find(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int count; char *name; unsigned int index; unsigned int inode;} *args = stack;
+    struct {void *caller; unsigned int servicenamehash; unsigned int index; unsigned int inode;} *args = stack;
+    struct resource *resource = 0;
 
-    if (checkbuffer(itask, args->name, args->count))
+    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
     {
 
-        unsigned int namehash = djb_hash(args->count, args->name);
-        struct resource *resource = 0;
+        struct service *service = resource->data;
 
-        while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+        if (service->namehash == args->servicenamehash)
         {
 
-            struct service *service = resource->data;
+            if (args->index == 9)
+                return service->getinodename(djb_hash(4, "wm:0"));
 
-            if (service->namehash == namehash)
+            if (service->foreach)
             {
 
-                if (args->index == 9)
-                    return service->getinodename(djb_hash(4, "wm:0"));
+                struct resource *current = 0;
+                unsigned int i;
 
-                if (service->foreach)
+                for (i = 0; (current = service->foreach(current)); i++)
                 {
 
-                    struct resource *current = 0;
-                    unsigned int i;
-
-                    for (i = 0; (current = service->foreach(current)); i++)
-                    {
-
-                        if (i == args->index)
-                            return service->getinode(current, args->inode);
-
-                    }
+                    if (i == args->index)
+                        return service->getinode(current, args->inode);
 
                 }
 
-                else
-                {
+            }
 
-                    return service->getinode(0, 0);
+            else
+            {
 
-                }
+                return service->getinode(0, 0);
 
             }
 

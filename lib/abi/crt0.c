@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <hash.h>
 
 extern void init(void);
 
@@ -65,6 +66,7 @@ unsigned int lookup(char *name)
     if (offset > 0)
     {
 
+        unsigned int servicenamehash = djb_hash(offset - 1, name);
         unsigned int offindex = buffer_eachbyte(name, length, ':', offset);
 
         if (offindex > 0)
@@ -73,7 +75,7 @@ unsigned int lookup(char *name)
             unsigned int index = name[offset] - '0';
             unsigned int inode = name[offindex] - '0';
 
-            return call_find(offset - 1, name, index, inode);
+            return call_find(servicenamehash, index, inode);
 
         }
 
@@ -82,7 +84,7 @@ unsigned int lookup(char *name)
 
             unsigned int index = name[offset] - '0';
 
-            return call_find(offset - 1, name, index, 0);
+            return call_find(servicenamehash, index, 0);
 
         }
 
@@ -91,7 +93,9 @@ unsigned int lookup(char *name)
     else
     {
 
-        return call_find(length, name, 0, 0);
+        unsigned int servicenamehash = djb_hash(length, name);
+
+        return call_find(servicenamehash, 0, 0);
 
     }
 
