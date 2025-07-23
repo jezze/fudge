@@ -114,7 +114,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("timer-service", "timer0:0");
+    option_add("timer-service", "timer0");
     channel_bind(EVENT_MAIN, onmain);
 
 }
