@@ -146,7 +146,7 @@ static void removenode(struct list *nodes, unsigned int inode)
 static unsigned int picknewtask(struct core *core)
 {
 
-    struct list_item *taskrowitem = list_picktail(&core->tasks);
+    struct list_item *taskrowitem = list_pickhead(&core->tasks);
 
     if (taskrowitem)
     {
@@ -640,7 +640,7 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
 unsigned int kernel_createtask(void)
 {
 
-    struct list_item *taskrowitem = list_picktail(&freetasks);
+    struct list_item *taskrowitem = list_pickhead(&freetasks);
 
     if (taskrowitem)
     {
