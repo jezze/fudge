@@ -263,7 +263,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("wm-service", "wm:0");
+    option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);

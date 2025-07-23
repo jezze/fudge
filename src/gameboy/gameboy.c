@@ -337,7 +337,7 @@ void init(void)
     option_add("keyboard-service", "keyboard0:0");
     option_add("timer-service", "timer0:0");
     option_add("video-service", "video0:1");
-    option_add("wm-service", "wm:0");
+    option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);

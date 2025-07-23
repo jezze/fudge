@@ -176,7 +176,7 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("wm-service", "wm:0");
+    option_add("wm-service", "wm");
     option_add("clock-service", "clock0:0");
     option_add("ethernet-service", "ethernet0:0");
     option_add("local-address", "10.0.5.1");
