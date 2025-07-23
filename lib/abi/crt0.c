@@ -65,9 +65,26 @@ unsigned int lookup(unsigned int type, char *name)
     if (type == 1)
     {
 
-        unsigned int namehash = djb_hash(length, name);
+        unsigned int offset = buffer_eachbyte(name, length, ':', 0);
 
-        return call_find(type, namehash, 0, 0);
+        if (offset > 0)
+        {
+
+            unsigned int namehash = djb_hash(offset - 1, name);
+            unsigned int index = name[offset] - '0';
+
+            return call_find(type, namehash, index, 0);
+
+        }
+
+        else
+        {
+
+            unsigned int namehash = djb_hash(length, name);
+
+            return call_find(type, namehash, 0, 0);
+
+        }
 
     }
 

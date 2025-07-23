@@ -600,7 +600,7 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    call_announce(0, djb_hash(4, "wm:0"));
+    call_announce(0, djb_hash(2, "wm"));
     option_setdecimal("keyboard-service", lookup(2, option_getstring("keyboard-service")));
     option_setdecimal("mouse-service", lookup(2, option_getstring("mouse-service")));
     option_setdecimal("video-service", lookup(2, option_getstring("video-service")));
