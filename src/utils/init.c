@@ -31,7 +31,7 @@ static unsigned int spawnshell(unsigned int ichannel)
     if (target)
     {
 
-        channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:\n");
+        channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:&keyboard-service=keyboard:1\n");
         channel_send(ichannel, target, EVENT_MAIN);
 
     }

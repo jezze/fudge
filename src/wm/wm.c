@@ -913,9 +913,9 @@ void init(void)
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
-    option_add("keyboard-service", "keyboard:0");
-    option_add("mouse-service", "mouse:0");
-    option_add("video-service", "video:1");
+    option_add("keyboard-service", "keyboard");
+    option_add("mouse-service", "mouse");
+    option_add("video-service", "video");
     option_add("wshell", "initrd:bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

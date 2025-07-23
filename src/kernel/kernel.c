@@ -27,7 +27,7 @@ static struct service mailboxservice;
 static void *pickrow(struct list *from, struct list *to)
 {
 
-    struct list_item *item = list_picktail(from);
+    struct list_item *item = list_pickhead(from);
 
     if (item)
     {

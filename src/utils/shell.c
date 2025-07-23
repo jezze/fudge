@@ -532,8 +532,8 @@ void init(void)
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("slang", "initrd:bin/slang");
-    option_add("console-service", "console:1");
-    option_add("keyboard-service", "keyboard:1");
+    option_add("console-service", "console");
+    option_add("keyboard-service", "keyboard");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

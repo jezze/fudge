@@ -293,7 +293,7 @@ void init(void)
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
-    option_add("mouse-service", "mouse:0");
+    option_add("mouse-service", "mouse");
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
