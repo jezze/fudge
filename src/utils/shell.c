@@ -533,7 +533,7 @@ void init(void)
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("slang", "initrd:bin/slang");
     option_add("console-service", "console0:1");
-    option_add("keyboard-service", "keyboard0:1");
+    option_add("keyboard-service", "keyboard:1");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
