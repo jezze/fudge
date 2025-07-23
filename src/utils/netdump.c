@@ -165,7 +165,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("ethernet-service", "ethernet0:0");
+    option_add("ethernet-service", "ethernet");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_DATA, ondata);
 

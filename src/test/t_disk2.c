@@ -162,7 +162,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("9p-service", "5588");
+    option_add("9p-service", "9p");
     option_add("path", "build/data/help.txt");
     channel_bind(EVENT_MAIN, onmain);
 

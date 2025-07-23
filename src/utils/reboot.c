@@ -11,7 +11,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("reset-service", "107");
+    option_add("reset-service", "0");
     channel_bind(EVENT_MAIN, onmain);
 
 }

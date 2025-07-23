@@ -151,8 +151,8 @@ void init(void)
     for (i = 0; i < 64; i++)
         socket_init(&remotes[i]);
 
-    option_add("clock-service", "clock0:0");
-    option_add("ethernet-service", "ethernet0:0");
+    option_add("clock-service", "clock");
+    option_add("ethernet-service", "ethernet");
     option_add("local-address", "10.0.5.1");
     option_add("local-port", "80");
     option_add("router-address", "10.0.5.80");

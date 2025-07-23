@@ -36,7 +36,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("log-service", "99");
+    option_add("log-service", "0");
     option_add("level", "4");
     channel_bind(EVENT_MAIN, onmain);
 

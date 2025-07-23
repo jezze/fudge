@@ -474,7 +474,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        call_announce(0, djb_hash(6, "ext2:0"));
+        call_announce(0, djb_hash(4, "ext2"));
 
         while (channel_process(0));
 
@@ -487,7 +487,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("block-service", "block0:0");
+    option_add("block-service", "block");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_LISTREQUEST, onlistrequest);

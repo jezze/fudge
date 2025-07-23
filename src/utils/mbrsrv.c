@@ -129,7 +129,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("block-service", "block0:0");
+    option_add("block-service", "block");
     channel_bind(EVENT_MAIN, onmain);
 
 }
