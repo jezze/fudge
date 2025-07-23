@@ -13,7 +13,7 @@ static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[KERNEL_MAILBOXES];
 static struct noderow {struct list_item item; struct node node;} noderows[KERNEL_NODES];
 static struct list freenodes;
-static struct list tasknodes;
+static struct list mailboxnodes;
 static struct list modulenodes;
 static struct list freetasks;
 static struct list blockedtasks;
@@ -173,7 +173,7 @@ static unsigned int addmailbox(unsigned int itask)
 
         struct mailbox *mailbox = &mailboxrow->mailbox;
 
-        mailbox_reset(mailbox, itask, addnode(&tasknodes, 0, &mailbox->resource, &mailboxservice));
+        mailbox_reset(mailbox, itask, addnode(&mailboxnodes, 0, &mailbox->resource, &mailboxservice));
 
         return mailbox->inode;
 
@@ -262,7 +262,7 @@ static void checksignals(struct core *core)
 
                             struct mailboxrow *mailboxrow = (struct mailboxrow *)((unsigned int)mailbox - sizeof (struct list_item));
 
-                            removenode(&tasknodes, mailbox->inode);
+                            removenode(&mailboxnodes, mailbox->inode);
                             returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
 
                         }
@@ -723,7 +723,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
     core_init(&core0, 0, saddress + ssize);
     list_init(&freenodes);
-    list_init(&tasknodes);
+    list_init(&mailboxnodes);
     list_init(&modulenodes);
     list_init(&freetasks);
     list_init(&blockedtasks);
