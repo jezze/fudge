@@ -310,7 +310,7 @@ static void checksignals(struct core *core)
 
                         }
 
-                        removenode(&tasknodes, task->inodes[i]);
+                        task->inodes[i] = 0;
 
                     }
 
@@ -448,9 +448,10 @@ void kernel_removenode(unsigned int inode)
 
 }
 
-unsigned int kernel_findinode(unsigned int namehash)
+unsigned int kernel_findinode(unsigned int namehash, unsigned int index)
 {
 
+    unsigned int n = 0;
     unsigned int i;
 
     for (i = 0; i < KERNEL_NODES; i++)
@@ -459,7 +460,14 @@ unsigned int kernel_findinode(unsigned int namehash)
         struct noderow *noderow = &noderows[i];
 
         if (noderow->node.namehash == namehash)
-            return encodenoderow(noderow);
+        {
+
+            if (n == index)
+                return encodenoderow(noderow);
+
+            n++;
+
+        }
 
     }
 

@@ -7,7 +7,7 @@ struct task_thread *kernel_gettaskthread(unsigned int itask);
 struct core *kernel_getcore(void);
 unsigned int kernel_addnode(struct resource *resource, struct service *service);
 void kernel_removenode(unsigned int inode);
-unsigned int kernel_findinode(unsigned int namehash);
+unsigned int kernel_findinode(unsigned int namehash, unsigned int index);
 unsigned int kernel_linknode(unsigned int target, unsigned int source);
 unsigned int kernel_unlinknode(unsigned int target, unsigned int source);
 unsigned int kernel_schedule(struct core *core);
