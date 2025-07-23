@@ -4,22 +4,6 @@
 
 static struct service service;
 
-static struct resource *service_foreach(struct resource *current)
-{
-
-    return resource_foreachtype(current, RESOURCE_VIDEOINTERFACE);
-
-}
-
-static unsigned int service_getinode(struct resource *current, unsigned int index)
-{
-
-    struct video_interface *interface = current->data;
-
-    return interface->inode;
-
-}
-
 static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
@@ -108,7 +92,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, "video", service_foreach, service_getinode, 0, service_place);
+    service_init(&service, 0, service_place);
     service_register(&service);
 
 }

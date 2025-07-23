@@ -384,13 +384,6 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int service_getinode(struct resource *current, unsigned int index)
-{
-
-    return inode;
-
-}
-
 static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
@@ -427,7 +420,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, "initrd", 0, service_getinode, 0, service_place);
+    service_init(&service, 0, service_place);
     service_register(&service);
 
     inode = kernel_addnode("initrd", &service.resource, &service);

@@ -352,22 +352,6 @@ static void checksignals(struct core *core)
 
 }
 
-static struct resource *service_foreach(struct resource *current)
-{
-
-    return resource_foreachtype(current, RESOURCE_MAILBOX);
-
-}
-
-static unsigned int service_getinode(struct resource *current, unsigned int index)
-{
-
-    struct mailbox *mailbox = current->data;
-
-    return mailbox->inode;
-
-}
-
 static unsigned int service_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
@@ -788,7 +772,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
-    service_init(&mailboxservice, "mailboxes", service_foreach, service_getinode, service_pick, service_place);
+    service_init(&mailboxservice, service_pick, service_place);
     service_register(&mailboxservice);
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)

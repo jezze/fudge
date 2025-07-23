@@ -4,22 +4,6 @@
 
 static struct service service;
 
-static struct resource *service_foreach(struct resource *current)
-{
-
-    return resource_foreachtype(current, RESOURCE_TIMERINTERFACE);
-
-}
-
-static unsigned int service_getinode(struct resource *current, unsigned int index)
-{
-
-    struct timer_interface *interface = current->data;
-
-    return interface->inodes[index];
-
-}
-
 static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
@@ -112,7 +96,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 void module_init(void)
 {
 
-    service_init(&service, "timer", service_foreach, service_getinode, 0, service_place);
+    service_init(&service, 0, service_place);
     service_register(&service);
 
 }

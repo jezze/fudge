@@ -4,22 +4,6 @@
 
 static struct service service;
 
-static struct resource *service_foreach(struct resource *current)
-{
-
-    return resource_foreachtype(current, RESOURCE_CONSOLEINTERFACE);
-
-}
-
-static unsigned int service_getinode(struct resource *current, unsigned int index)
-{
-
-    struct console_interface *interface = current->data;
-
-    return interface->inode;
-
-}
-
 static unsigned int ondata(struct console_interface *interface, unsigned int source, void *data, unsigned int count)
 {
 
@@ -89,7 +73,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 void module_init(void)
 {
 
-    service_init(&service, "console", service_foreach, service_getinode, 0, service_place);
+    service_init(&service, 0, service_place);
     service_register(&service);
 
 }

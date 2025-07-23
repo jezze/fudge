@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <hash.h>
 #include "resource.h"
 #include "debug.h"
 #include "binary.h"

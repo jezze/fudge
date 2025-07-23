@@ -4,22 +4,6 @@
 
 static struct service service;
 
-static struct resource *service_foreach(struct resource *current)
-{
-
-    return resource_foreachtype(current, RESOURCE_BLOCKINTERFACE);
-
-}
-
-static unsigned int service_getinode(struct resource *current, unsigned int index)
-{
-
-    struct block_interface *interface = current->data;
-
-    return interface->inode;
-
-}
-
 static unsigned int onblockrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
@@ -87,7 +71,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, "block", service_foreach, service_getinode, 0, service_place);
+    service_init(&service, 0, service_place);
     service_register(&service);
 
 }
