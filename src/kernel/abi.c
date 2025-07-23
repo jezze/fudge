@@ -66,7 +66,7 @@ static unsigned int kill(unsigned int itask, void *stack)
 static unsigned int find(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int namehash; unsigned int index; unsigned int inode;} *args = stack;
+    struct {void *caller; unsigned int namehash; unsigned int index;} *args = stack;
 
     return kernel_findinode(args->namehash, args->index);
 

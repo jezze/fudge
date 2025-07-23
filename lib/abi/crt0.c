@@ -69,7 +69,7 @@ unsigned int lookup(char *name)
         unsigned int namehash = djb_hash(offset - 1, name);
         unsigned int index = name[offset] - '0';
 
-        return call_find(namehash, index, 0);
+        return call_find(namehash, index);
 
     }
 
@@ -78,7 +78,7 @@ unsigned int lookup(char *name)
 
         unsigned int namehash = djb_hash(length, name);
 
-        return call_find(namehash, 0, 0);
+        return call_find(namehash, 0);
 
     }
 
