@@ -65,15 +65,15 @@ unsigned int mailbox_place(struct mailbox *mailbox, unsigned int event, unsigned
 
 }
 
-void mailbox_reset(struct mailbox *mailbox)
+void mailbox_reset(struct mailbox *mailbox, unsigned int itask, unsigned int inode)
 {
 
     spinlock_acquire(&mailbox->spinlock);
     ring_reset(&mailbox->ring);
     spinlock_release(&mailbox->spinlock);
 
-    mailbox->itask = 0;
-    mailbox->inode = 0;
+    mailbox->itask = itask;
+    mailbox->inode = inode;
 
 }
 

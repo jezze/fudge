@@ -76,13 +76,6 @@ static struct noderow *getnoderow(unsigned int inode)
 
 }
 
-static struct mailboxrow *getmailboxrow(unsigned int imailbox)
-{
-
-    return (imailbox && imailbox < KERNEL_MAILBOXES) ? &mailboxrows[imailbox] : 0;
-
-}
-
 static struct taskrow *gettaskrow(unsigned int itask)
 {
 
@@ -94,13 +87,6 @@ static unsigned int encodenoderow(struct noderow *noderow)
 {
 
     return ((unsigned int)noderow - (unsigned int)noderows) / sizeof (struct noderow);
-
-}
-
-static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
-{
-
-    return ((unsigned int)mailboxrow - (unsigned int)mailboxrows) / sizeof (struct mailboxrow);
 
 }
 
@@ -120,63 +106,12 @@ static struct node *getnode(unsigned int inode)
 
 }
 
-static struct mailbox *getmailbox(unsigned int imailbox)
-{
-
-    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
-
-    return mailboxrow ? &mailboxrow->mailbox : 0;
-
-}
-
 static struct task *gettask(unsigned int itask)
 {
 
     struct taskrow *taskrow = gettaskrow(itask);
 
     return taskrow ? &taskrow->task : 0;
-
-}
-
-static unsigned int picknewmailbox(unsigned int itask)
-{
-
-    struct mailboxrow *mailboxrow = pickrow(&freemailboxes, &usedmailboxes);
-
-    if (mailboxrow)
-    {
-
-        struct mailbox *mailbox = &mailboxrow->mailbox;
-
-        mailbox_reset(mailbox);
-
-        mailbox->itask = itask;
-
-        return encodemailboxrow(mailboxrow);
-
-    }
-
-    return 0;
-
-}
-
-static unsigned int picknewtask(struct core *core)
-{
-
-    struct list_item *taskrowitem = list_picktail(&core->tasks);
-
-    if (taskrowitem)
-    {
-
-        struct taskrow *taskrow = taskrowitem->data;
-        struct task *task = &taskrow->task;
-
-        if (task_transition(task, TASK_STATE_RUNNING))
-            return encodetaskrow(taskrow);
-
-    }
-
-    return 0;
 
 }
 
@@ -208,17 +143,39 @@ static void removenode(struct list *nodes, unsigned int inode)
 
 }
 
+static unsigned int picknewtask(struct core *core)
+{
+
+    struct list_item *taskrowitem = list_picktail(&core->tasks);
+
+    if (taskrowitem)
+    {
+
+        struct taskrow *taskrow = taskrowitem->data;
+        struct task *task = &taskrow->task;
+
+        if (task_transition(task, TASK_STATE_RUNNING))
+            return encodetaskrow(taskrow);
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int addmailbox(unsigned int itask)
 {
 
-    unsigned int imailbox = picknewmailbox(itask);
+    struct mailboxrow *mailboxrow = pickrow(&freemailboxes, &usedmailboxes);
 
-    if (imailbox)
+    if (mailboxrow)
     {
 
-        struct mailbox *mailbox = getmailbox(imailbox);
+        struct mailbox *mailbox = &mailboxrow->mailbox;
 
-        return mailbox->inode = addnode(&tasknodes, 0, &mailbox->resource, &mailboxservice);
+        mailbox_reset(mailbox, itask, addnode(&tasknodes, 0, &mailbox->resource, &mailboxservice));
+
+        return mailbox->inode;
 
     }
 
