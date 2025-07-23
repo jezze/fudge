@@ -399,8 +399,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int count;
 
     call_announce(0, djb_hash(4, "9p:0"));
-    option_setdecimal("block-service", lookup(2, option_getstring("block-service")));
-    option_setdecimal("ethernet-service", lookup(2, option_getstring("ethernet-service")));
+    option_setdecimal("block-service", lookup(option_getstring("block-service")));
+    option_setdecimal("ethernet-service", lookup(option_getstring("ethernet-service")));
     socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
     channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
@@ -424,8 +424,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("block-service", "block:0:0");
-    option_add("ethernet-service", "ethernet:0:0");
+    option_add("block-service", "block0:0");
+    option_add("ethernet-service", "ethernet0:0");
     socket_init(&local);
     socket_bind_ipv4s(&local, "10.0.5.1");
     socket_bind_tcps(&local, "564", 42, 42);

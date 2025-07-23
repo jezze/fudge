@@ -80,7 +80,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode(&interface->resource, &service);
+    interface->inode = kernel_addnode("keyboard0", &interface->resource, &service);
 
 }
 

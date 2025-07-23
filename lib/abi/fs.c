@@ -17,7 +17,7 @@ unsigned int fs_auth(char *path)
 
         unsigned int namehash = djb_hash(offset - 1, path);
 
-        return call_find(2, namehash, 0, 0);
+        return call_find(namehash, 0, 0);
 
     }
 

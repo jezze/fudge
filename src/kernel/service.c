@@ -16,7 +16,7 @@ void service_init(struct service *service, char *name, struct resource *(*foreac
     resource_init(&service->resource, RESOURCE_SERVICE, service);
 
     service->name = name;
-    service->namehash = djb_hash(cstring_length(name), name);
+    service->namehash = (name) ? djb_hash(cstring_length(name), name) : 0;
     service->foreach = foreach;
     service->getinode = getinode;
     service->pick = pick;

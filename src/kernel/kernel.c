@@ -180,7 +180,7 @@ static unsigned int picknewtask(struct core *core)
 
 }
 
-static unsigned int addnode(struct list *nodes, struct resource *resource, struct service *service)
+static unsigned int addnode(struct list *nodes, char *name, struct resource *resource, struct service *service)
 {
 
     struct noderow *noderow = pickrow(&freenodes, nodes);
@@ -188,7 +188,7 @@ static unsigned int addnode(struct list *nodes, struct resource *resource, struc
     if (noderow)
     {
 
-        node_reset(&noderow->node, resource, service);
+        node_reset(&noderow->node, name, resource, service);
 
         return encodenoderow(noderow);
 
@@ -218,7 +218,7 @@ static unsigned int addmailbox(unsigned int itask)
 
         struct mailbox *mailbox = getmailbox(imailbox);
 
-        return mailbox->inode = addnode(&tasknodes, &mailbox->resource, &mailboxservice);
+        return mailbox->inode = addnode(&tasknodes, 0, &mailbox->resource, &mailboxservice);
 
     }
 
@@ -434,10 +434,10 @@ struct core *kernel_getcore(void)
 
 }
 
-unsigned int kernel_addnode(struct resource *resource, struct service *service)
+unsigned int kernel_addnode(char *name, struct resource *resource, struct service *service)
 {
 
-    return addnode(&modulenodes, resource, service);
+    return addnode(&modulenodes, name, resource, service);
 
 }
 
@@ -484,7 +484,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        unsigned int inode = addnode(&tnode->links, snode->resource, snode->service);
+        unsigned int inode = addnode(&tnode->links, 0, snode->resource, snode->service);
 
         if (inode)
             return MESSAGE_OK;

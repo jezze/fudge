@@ -115,7 +115,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned char block[1024];
     struct mbr *mbr = (struct mbr *)block;
 
-    option_setdecimal("block-service", lookup(2, option_getstring("block-service")));
+    option_setdecimal("block-service", lookup(option_getstring("block-service")));
     channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
     request_readblocks(block, 1024, 0, 1);
 
@@ -129,7 +129,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("block-service", "block:0:0");
+    option_add("block-service", "block0:0");
     channel_bind(EVENT_MAIN, onmain);
 
 }

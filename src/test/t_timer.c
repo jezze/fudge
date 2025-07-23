@@ -9,7 +9,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     struct message message;
     char data[MESSAGE_SIZE];
 
-    option_setdecimal("clock-service", lookup(2, option_getstring("clock-service")));
+    option_setdecimal("clock-service", lookup(option_getstring("clock-service")));
     channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
 
     while (channel_poll(0, option_getdecimal("timer-service"), EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
@@ -28,7 +28,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("timer-service", "timer:0:3");
+    option_add("timer-service", "timer0:3");
     channel_bind(EVENT_MAIN, onmain);
 
 }

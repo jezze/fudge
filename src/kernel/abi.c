@@ -67,58 +67,9 @@ static unsigned int kill(unsigned int itask, void *stack)
 static unsigned int find(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int type; unsigned int namehash; unsigned int index; unsigned int inode;} *args = stack;
-    struct resource *resource = 0;
+    struct {void *caller; unsigned int namehash; unsigned int index; unsigned int inode;} *args = stack;
 
-    switch (args->type)
-    {
-
-    case 1:
-        return kernel_findinode(args->namehash, args->index);
-
-    case 2:
-        while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
-        {
-
-            struct service *service = resource->data;
-
-            if (service->namehash == args->namehash)
-            {
-
-                if (service->foreach)
-                {
-
-                    struct resource *current = 0;
-                    unsigned int i;
-
-                    for (i = 0; (current = service->foreach(current)); i++)
-                    {
-
-                        if (i == args->index)
-                            return service->getinode(current, args->inode);
-
-                    }
-
-                }
-
-                else
-                {
-
-                    return service->getinode(0, 0);
-
-                }
-
-            }
-
-        }
-
-        return 0;
-
-    }
-
-    DEBUG_FMT0(DEBUG_ERROR, "find failed");
-
-    return 0;
+    return kernel_findinode(args->namehash, args->index);
 
 }
 

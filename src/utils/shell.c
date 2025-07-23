@@ -513,8 +513,8 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("console-service", lookup(2, option_getstring("console-service")));
-    option_setdecimal("keyboard-service", lookup(2, option_getstring("keyboard-service")));
+    option_setdecimal("console-service", lookup(option_getstring("console-service")));
+    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
     channel_send(0, option_getdecimal("console-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
     printprompt();
@@ -532,8 +532,8 @@ void init(void)
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input, INPUTSIZE, inputbuffer);
     option_add("slang", "initrd:bin/slang");
-    option_add("console-service", "console:0:0");
-    option_add("keyboard-service", "keyboard:1:0");
+    option_add("console-service", "console0:1");
+    option_add("keyboard-service", "keyboard0:1");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
