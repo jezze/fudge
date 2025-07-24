@@ -186,6 +186,21 @@ static unsigned int addmailbox(unsigned int itask)
 
 }
 
+static void removemailbox(unsigned int imailbox)
+{
+
+    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
+
+    if (mailboxrow)
+    {
+
+        removenode(&mailboxnodes, mailboxrow->mailbox.inode);
+        returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
+
+    }
+
+}
+
 static void assign(struct list_item *item)
 {
 
@@ -221,15 +236,7 @@ static void checksignals(struct core *core)
                     if (task->imailbox[i])
                     {
 
-                        struct mailboxrow *mailboxrow = getmailboxrow(task->imailbox[i]);
-
-                        if (mailboxrow)
-                        {
-
-                            removenode(&mailboxnodes, mailboxrow->mailbox.inode);
-                            returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
-
-                        }
+                        removemailbox(task->imailbox[i]);
 
                         task->imailbox[i] = 0;
 
