@@ -4,13 +4,13 @@
 #include "debug.h"
 #include "task.h"
 
-static void resetnodes(struct task *task)
+static void resetmailboxes(struct task *task)
 {
 
     unsigned int i;
 
-    for (i = 0; i < TASK_NODES; i++)
-        task->inodes[i] = 0;
+    for (i = 0; i < TASK_MAILBOXES; i++)
+        task->imailbox[i] = 0;
 
 }
 
@@ -143,7 +143,7 @@ void task_reset(struct task *task)
 
     task_resetsignals(&task->signals);
     task_resetthread(&task->thread);
-    resetnodes(task);
+    resetmailboxes(task);
 
     task->state = TASK_STATE_DEAD;
     task->address = 0;

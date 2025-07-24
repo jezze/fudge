@@ -83,6 +83,13 @@ static struct taskrow *gettaskrow(unsigned int itask)
 
 }
 
+static struct mailboxrow *getmailboxrow(unsigned int imailbox)
+{
+
+    return (imailbox && imailbox < KERNEL_MAILBOXES) ? &mailboxrows[imailbox] : 0;
+
+}
+
 static unsigned int encodenoderow(struct noderow *noderow)
 {
 
@@ -94,6 +101,13 @@ static unsigned int encodetaskrow(struct taskrow *taskrow)
 {
 
     return ((unsigned int)taskrow - (unsigned int)taskrows) / sizeof (struct taskrow);
+
+}
+
+static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
+{
+
+    return ((unsigned int)mailboxrow - (unsigned int)mailboxrows) / sizeof (struct mailboxrow);
 
 }
 
@@ -112,6 +126,15 @@ static struct task *gettask(unsigned int itask)
     struct taskrow *taskrow = gettaskrow(itask);
 
     return taskrow ? &taskrow->task : 0;
+
+}
+
+static struct mailbox *getmailbox(unsigned int imailbox)
+{
+
+    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
+
+    return mailboxrow ? &mailboxrow->mailbox : 0;
 
 }
 
@@ -155,7 +178,7 @@ static unsigned int addmailbox(unsigned int itask)
 
         mailbox_reset(mailbox, itask, addnode(&mailboxnodes, 0, &mailbox->resource, &mailboxservice));
 
-        return mailbox->inode;
+        return encodemailboxrow(mailboxrow);
 
     }
 
@@ -192,25 +215,23 @@ static void checksignals(struct core *core)
 
                 unsigned int i;
 
-                for (i = 0; i < TASK_NODES; i++)
+                for (i = 0; i < TASK_MAILBOXES; i++)
                 {
 
-                    if (task->inodes[i])
+                    if (task->imailbox[i])
                     {
 
-                        struct mailbox *mailbox = kernel_getnodeinterface(task->inodes[i]);
+                        struct mailboxrow *mailboxrow = getmailboxrow(task->imailbox[i]);
 
-                        if (mailbox)
+                        if (mailboxrow)
                         {
 
-                            struct mailboxrow *mailboxrow = (struct mailboxrow *)((unsigned int)mailbox - sizeof (struct list_item));
-
-                            removenode(&mailboxnodes, mailbox->inode);
+                            removenode(&mailboxnodes, mailboxrow->mailbox.inode);
                             returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
 
                         }
 
-                        task->inodes[i] = 0;
+                        task->imailbox[i] = 0;
 
                     }
 
@@ -562,8 +583,9 @@ unsigned int kernel_taskpick(unsigned int itask, unsigned int ichannel, struct m
     if (task)
     {
 
-        if (task->inodes[ichannel])
-            return kernel_pick(task->inodes[ichannel], message, count, data);
+        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
+
+        return (mailbox) ? kernel_pick(mailbox->inode, message, count, data) : 0;
 
     }
 
@@ -579,12 +601,17 @@ unsigned int kernel_taskplace(unsigned int itask, unsigned int ichannel, unsigne
     if (task)
     {
 
-        /* TODO: make this explicit maybe */
-        if (!task->inodes[ichannel])
-            task->inodes[ichannel] = addmailbox(itask);
+        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
 
-        if (task->inodes[ichannel])
-            return kernel_place(task->inodes[ichannel], target, event, count, data);
+        if (!mailbox)
+        {
+
+            task->imailbox[ichannel] = addmailbox(itask);
+            mailbox = getmailbox(task->imailbox[ichannel]);
+
+        }
+
+        return (mailbox) ? kernel_place(mailbox->inode, target, event, count, data) : 0;
 
     }
 
@@ -600,8 +627,9 @@ unsigned int kernel_taskannounce(unsigned int itask, unsigned int ichannel, unsi
     if (task)
     {
 
-        if (task->inodes[ichannel])
-            return kernel_announce(task->inodes[ichannel], namehash);
+        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
+
+        return (mailbox) ? kernel_announce(mailbox->inode, namehash) : 0;
 
     }
 
@@ -700,7 +728,20 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         }
 
         if (task->thread.ip)
-            return task->inodes[0] = addmailbox(ntask);
+        {
+
+            task->imailbox[0] = addmailbox(ntask);
+
+            if (task->imailbox[0])
+            {
+
+                struct mailbox *mailbox = getmailbox(task->imailbox[0]);
+
+                return mailbox->inode;
+
+            }
+
+        }
 
     }
 

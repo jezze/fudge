@@ -1,7 +1,7 @@
 #define TASK_CODESIZE                   0x000F8000
 #define TASK_STACKSIZE                  0x00008000
 #define TASK_STACKVIRTUAL               0x80000000
-#define TASK_NODES                      8
+#define TASK_MAILBOXES                  8
 #define TASK_STATE_DEAD                 0
 #define TASK_STATE_NEW                  1
 #define TASK_STATE_BLOCKED              2
@@ -38,7 +38,7 @@ struct task
     struct spinlock spinlock;
     unsigned int state;
     unsigned int address;
-    unsigned int inodes[TASK_NODES];
+    unsigned int imailbox[TASK_MAILBOXES];
 
 };
 
