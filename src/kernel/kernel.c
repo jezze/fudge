@@ -544,10 +544,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 
     struct node *snode = getnode(source);
 
-    if (snode)
-        return snode->service->pick(source, message, count, data);
-
-    return MESSAGE_FAILED;
+    return (snode) ? snode->service->pick(source, message, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -557,10 +554,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
     struct node *snode = getnode(source);
     struct node *tnode = getnode(target);
 
-    if (snode && tnode)
-        return tnode->service->place(source, target, event, count, data);
-
-    return MESSAGE_FAILED;
+    return (snode && tnode) ? tnode->service->place(source, target, event, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -569,16 +563,7 @@ unsigned int kernel_announce(unsigned int inode, unsigned int namehash)
 
     struct node *node = getnode(inode);
 
-    if (node)
-    {
-
-        node->namehash = namehash;
-
-        return namehash;
-
-    }
-
-    return 0;
+    return (node) ? node->namehash = namehash : 0;
 
 }
 
