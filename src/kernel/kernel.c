@@ -143,26 +143,6 @@ static void removenode(struct list *nodes, unsigned int inode)
 
 }
 
-static unsigned int picknewtask(struct core *core)
-{
-
-    struct list_item *taskrowitem = list_pickhead(&core->tasks);
-
-    if (taskrowitem)
-    {
-
-        struct taskrow *taskrow = taskrowitem->data;
-        struct task *task = &taskrow->task;
-
-        if (task_transition(task, TASK_STATE_RUNNING))
-            return encodetaskrow(taskrow);
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int addmailbox(unsigned int itask)
 {
 
@@ -190,43 +170,6 @@ static void assign(struct list_item *item)
         assigncallback(item);
     else
         list_add(&core0.tasks, item);
-
-}
-
-static void unblocktasks(void)
-{
-
-    struct list_item *taskrowitem;
-    struct list_item *next;
-
-    spinlock_acquire(&blockedtasks.spinlock);
-
-    for (taskrowitem = blockedtasks.head; taskrowitem; taskrowitem = next)
-    {
-
-        struct taskrow *taskrow = taskrowitem->data;
-        struct task *task = &taskrow->task;
-
-        next = taskrowitem->next;
-
-        if (task->signals.unblocks)
-        {
-
-            if (task_transition(task, TASK_STATE_UNBLOCKED))
-            {
-
-                list_remove_unsafe(&blockedtasks, taskrowitem);
-
-                if (task_transition(task, TASK_STATE_ASSIGNED))
-                    assign(taskrowitem);
-
-            }
-
-        }
-
-    }
-
-    spinlock_release(&blockedtasks.spinlock);
 
 }
 
@@ -306,6 +249,63 @@ static void checksignals(struct core *core)
         task_resetsignals(&task->signals);
 
     }
+
+}
+
+static void unblocktasks(void)
+{
+
+    struct list_item *taskrowitem;
+    struct list_item *next;
+
+    spinlock_acquire(&blockedtasks.spinlock);
+
+    for (taskrowitem = blockedtasks.head; taskrowitem; taskrowitem = next)
+    {
+
+        struct taskrow *taskrow = taskrowitem->data;
+        struct task *task = &taskrow->task;
+
+        next = taskrowitem->next;
+
+        if (task->signals.unblocks)
+        {
+
+            if (task_transition(task, TASK_STATE_UNBLOCKED))
+            {
+
+                list_remove_unsafe(&blockedtasks, taskrowitem);
+
+                if (task_transition(task, TASK_STATE_ASSIGNED))
+                    assign(taskrowitem);
+
+            }
+
+        }
+
+    }
+
+    spinlock_release(&blockedtasks.spinlock);
+
+}
+
+static unsigned int picknewtask(struct core *core)
+{
+
+    struct list_item *taskrowitem = list_pickhead(&core->tasks);
+
+    if (taskrowitem)
+    {
+
+        struct taskrow *taskrow = taskrowitem->data;
+        struct task *task = &taskrow->task;
+
+        if (task_transition(task, TASK_STATE_RUNNING))
+            return encodetaskrow(taskrow);
+
+    }
+
+    return 0;
 
 }
 
