@@ -83,7 +83,7 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message, unsign
 unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    while (state != CHANNEL_STATE_CLOSED)
+    while (1)
     {
 
         unsigned int status = call_place(ichannel, target, event, count, data);

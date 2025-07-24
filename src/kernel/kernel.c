@@ -42,33 +42,6 @@ static void *pickrow(struct list *from, struct list *to)
 
 }
 
-static void returnrow(struct list *from, struct list *to, struct list_item *item)
-{
-
-    struct list_item *current;
-    struct list_item *next;
-
-    spinlock_acquire(&from->spinlock);
-
-    for (current = from->head; current; current = next)
-    {
-
-        next = current->next;
-
-        if (current == item)
-        {
-
-            list_remove_unsafe(from, item);
-            list_add(to, item);
-
-        }
-
-    }
-
-    spinlock_release(&from->spinlock);
-
-}
-
 static struct noderow *getnoderow(unsigned int inode)
 {
 
@@ -162,7 +135,7 @@ static void removenode(struct list *nodes, unsigned int inode)
     struct noderow *noderow = getnoderow(inode);
 
     if (noderow)
-        returnrow(nodes, &freenodes, &noderow->item);
+        list_move(&freenodes, nodes, &noderow->item);
 
 }
 
@@ -195,7 +168,7 @@ static void removemailbox(unsigned int imailbox)
     {
 
         removenode(&mailboxnodes, mailboxrow->mailbox.inode);
-        returnrow(&usedmailboxes, &freemailboxes, &mailboxrow->item);
+        list_move(&freemailboxes, &usedmailboxes, &mailboxrow->item);
 
     }
 
