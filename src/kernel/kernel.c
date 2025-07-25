@@ -390,6 +390,32 @@ void kernel_removenode(unsigned int inode)
 
 }
 
+unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel, unsigned int hack)
+{
+
+    struct task *task = gettask(itask);
+
+    if (task)
+    {
+
+        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
+
+        if (!mailbox && hack)
+        {
+
+            task->imailbox[ichannel] = addmailbox(itask);
+            mailbox = getmailbox(task->imailbox[ichannel]);
+
+        }
+
+        return (mailbox) ? mailbox->inode : 0;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int kernel_findinode(unsigned int namehash, unsigned int index)
 {
 
@@ -537,68 +563,6 @@ unsigned int kernel_announce(unsigned int inode, unsigned int namehash)
     struct node *node = getnode(inode);
 
     return (node) ? node->namehash = namehash : 0;
-
-}
-
-unsigned int kernel_taskpick(unsigned int itask, unsigned int ichannel, struct message *message, unsigned int count, void *data)
-{
-
-    struct task *task = gettask(itask);
-
-    if (task)
-    {
-
-        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
-
-        return (mailbox) ? kernel_pick(mailbox->inode, message, count, data) : 0;
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
-unsigned int kernel_taskplace(unsigned int itask, unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    struct task *task = gettask(itask);
-
-    if (task)
-    {
-
-        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
-
-        if (!mailbox)
-        {
-
-            task->imailbox[ichannel] = addmailbox(itask);
-            mailbox = getmailbox(task->imailbox[ichannel]);
-
-        }
-
-        return (mailbox) ? kernel_place(mailbox->inode, target, event, count, data) : 0;
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
-unsigned int kernel_taskannounce(unsigned int itask, unsigned int ichannel, unsigned int namehash)
-{
-
-    struct task *task = gettask(itask);
-
-    if (task)
-    {
-
-        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
-
-        return (mailbox) ? kernel_announce(mailbox->inode, namehash) : 0;
-
-    }
-
-    return 0;
 
 }
 

@@ -469,12 +469,14 @@ void arch_setup2(unsigned int address)
     {
 
         unsigned int target;
+        unsigned int source;
 
         initmap(ntask);
 
         target = kernel_loadtask(0, ntask, 0, TASK_STACKVIRTUAL, address);
+        source = kernel_getchannelinode(ntask, 0, 0);
 
-        kernel_taskplace(ntask, 0, target, EVENT_MAIN, 0, 0);
+        kernel_place(source, target, EVENT_MAIN, 0, 0);
 
     }
 
