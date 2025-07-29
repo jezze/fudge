@@ -695,7 +695,6 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
     service_init(&mailboxservice, service_pick, service_place);
-    service_register(&mailboxservice);
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)
     {

@@ -95,7 +95,6 @@ void module_init(void)
 {
 
     service_init(&service, 0, service_place);
-    service_register(&service);
 
 }
 
