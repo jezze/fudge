@@ -198,7 +198,7 @@ void arch_setup2(void)
     {
 
         unsigned int target = kernel_loadtask(0, ntask, (unsigned int)&testtask, 0x6000, 0);
-        unsigned int source = kernel_getchannelinode(ntask, 0, 0);
+        unsigned int source = kernel_getchannelinode(ntask, 0);
 
         kernel_place(source, target, EVENT_MAIN, 0, 0);
 

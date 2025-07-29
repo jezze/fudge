@@ -385,7 +385,7 @@ void kernel_removenode(unsigned int inode)
 
 }
 
-unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel, unsigned int hack)
+unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 {
 
     struct task *task = gettask(itask);
@@ -395,7 +395,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel, u
 
         struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
 
-        if (!mailbox && hack)
+        if (!mailbox)
         {
 
             task->imailbox[ichannel] = addmailbox(itask);

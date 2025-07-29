@@ -166,7 +166,7 @@ static unsigned int pick(unsigned int itask, void *stack)
     if (checkbuffer(itask, args->message, sizeof (struct message)) && checkbuffer(itask, args->data, args->count))
     {
 
-        unsigned int inode = kernel_getchannelinode(itask, args->ichannel, 0);
+        unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
 
         return (inode) ? kernel_pick(inode, args->message, args->count, args->data) : 0;
 
@@ -186,7 +186,7 @@ static unsigned int place(unsigned int itask, void *stack)
     if (checkzerobuffer(itask, args->data, args->count))
     {
 
-        unsigned int inode = kernel_getchannelinode(itask, args->ichannel, 1);
+        unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
 
         return (inode) ? kernel_place(inode, args->target, args->event, args->count, args->data) : 0;
 
@@ -202,8 +202,7 @@ static unsigned int announce(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int ichannel; unsigned int namehash;} *args = stack;
-
-    unsigned int inode = kernel_getchannelinode(itask, args->ichannel, 0);
+    unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
 
     return (inode) ? kernel_announce(inode, args->namehash) : 0;
 
