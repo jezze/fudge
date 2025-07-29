@@ -57,7 +57,7 @@ static unsigned int spawnwm(unsigned int ichannel)
 
 }
 
-/* FIXME: Because of an mmu bug, acpi and apic module needs to be loaded by sepearete processes. Thats why there are two lists. */
+/* FIXME: Because of some bug with acpi mmu mapping, the acpi and apic modules need to be loaded by seperate processes. Thats why there are two module lists. */
 
 static char *modules0[18] = {
     "initrd:kernel/base.ko",
