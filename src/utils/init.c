@@ -57,6 +57,8 @@ static unsigned int spawnwm(unsigned int ichannel)
 
 }
 
+/* FIXME: Because of an mmu bug, acpi and apic module needs to be loaded by sepearete processes. Thats why there are two lists. */
+
 static char *modules0[18] = {
     "initrd:kernel/base.ko",
     "initrd:kernel/log.ko",
@@ -78,11 +80,8 @@ static char *modules0[18] = {
     "initrd:kernel/pic.ko"
 };
 
-static char *modules1[1] = {
-    "initrd:kernel/apic.ko"
-};
-
-static char *modules2[16] = {
+static char *modules1[17] = {
+    "initrd:kernel/apic.ko",
     "initrd:kernel/platform.ko",
     "initrd:kernel/pci.ko",
     "initrd:kernel/pit.ko",
@@ -104,10 +103,8 @@ static char *modules2[16] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    /* FIXME: Because of an mmu bug, apic module needs to load seperately. It kills the process. */
     loadmodules(1, 18, modules0);
-    loadmodules(1, 1, modules1);
-    loadmodules(1, 16, modules2);
+    loadmodules(1, 17, modules1);
     spawnshell(1);
     spawnwm(1);
 
