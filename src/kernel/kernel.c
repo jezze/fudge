@@ -184,10 +184,10 @@ static void assign(struct list_item *item)
 
 }
 
-static void checksignals(struct core *core)
+static void checksignals(unsigned int itask)
 {
 
-    struct taskrow *taskrow = gettaskrow(core->itask);
+    struct taskrow *taskrow = gettaskrow(itask);
 
     if (taskrow)
     {
@@ -222,7 +222,7 @@ static void checksignals(struct core *core)
         {
 
             if (task_transition(task, TASK_STATE_ASSIGNED))
-                list_add(&core->tasks, item);
+                assign(item);
 
         }
 
@@ -238,7 +238,7 @@ static void checksignals(struct core *core)
         {
 
             if (task_transition(task, TASK_STATE_ASSIGNED))
-                list_add(&core->tasks, item);
+                assign(item);
 
         }
 
@@ -480,7 +480,7 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
 unsigned int kernel_schedule(struct core *core)
 {
 
-    checksignals(core);
+    checksignals(core->itask);
     unblocktasks();
 
     return picknewtask(core);
