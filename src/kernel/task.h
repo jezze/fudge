@@ -48,5 +48,6 @@ void task_register(struct task *task);
 void task_unregister(struct task *task);
 void task_resetsignals(struct task_signals *signals);
 void task_resetthread(struct task_thread *thread);
+void task_resetmailboxes(struct task *task);
 void task_reset(struct task *task);
 void task_init(struct task *task);

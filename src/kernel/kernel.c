@@ -207,16 +207,11 @@ static void checksignals(struct core *core)
                 {
 
                     if (task->imailbox[i])
-                    {
-
                         removemailbox(task->imailbox[i]);
-
-                        task->imailbox[i] = 0;
-
-                    }
 
                 }
 
+                task_resetmailboxes(task);
                 list_add(&freetasks, item);
 
             }
