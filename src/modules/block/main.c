@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "block.h"
 
-static struct service service;
+static struct node_operands operands;
 
 static unsigned int onblockrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
@@ -13,7 +13,7 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 
 }
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct block_interface *interface = kernel_getnodeinterface(target);
@@ -63,7 +63,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("block", &interface->resource, &service);
+    interface->inode = kernel_addnode("block", &interface->resource, &operands);
     interface->onblockrequest = onblockrequest;
 
 }
@@ -71,7 +71,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
 }
 

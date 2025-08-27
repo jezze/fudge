@@ -3,7 +3,7 @@
 #include <kernel.h>
 #include "ethernet.h"
 
-static struct service service;
+static struct node_operands operands;
 
 static unsigned int ondata(struct ethernet_interface *interface, unsigned int source, void *data, unsigned int count)
 {
@@ -19,7 +19,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
 }
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct ethernet_interface *interface = kernel_getnodeinterface(target);
@@ -72,7 +72,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("ethernet", &interface->resource, &service);
+    interface->inode = kernel_addnode("ethernet", &interface->resource, &operands);
     interface->oninfo = oninfo;
     interface->ondata = ondata;
 
@@ -81,7 +81,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 void module_init(void)
 {
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
 }
 

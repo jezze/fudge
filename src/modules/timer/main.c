@@ -2,9 +2,9 @@
 #include <kernel.h>
 #include "timer.h"
 
-static struct service service;
+static struct node_operands operands;
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -86,17 +86,17 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
 
     interface->id = id;
-    interface->inodes[0] = kernel_addnode("timer0", &interface->resource, &service);
-    interface->inodes[1] = kernel_addnode("timer1", &interface->resource, &service);
-    interface->inodes[2] = kernel_addnode("timer2", &interface->resource, &service);
-    interface->inodes[3] = kernel_addnode("timer3", &interface->resource, &service);
+    interface->inodes[0] = kernel_addnode("timer0", &interface->resource, &operands);
+    interface->inodes[1] = kernel_addnode("timer1", &interface->resource, &operands);
+    interface->inodes[2] = kernel_addnode("timer2", &interface->resource, &operands);
+    interface->inodes[3] = kernel_addnode("timer3", &interface->resource, &operands);
 
 }
 
 void module_init(void)
 {
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
 }
 

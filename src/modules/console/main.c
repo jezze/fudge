@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "console.h"
 
-static struct service service;
+static struct node_operands operands;
 
 static unsigned int ondata(struct console_interface *interface, unsigned int source, void *data, unsigned int count)
 {
@@ -11,7 +11,7 @@ static unsigned int ondata(struct console_interface *interface, unsigned int sou
 
 }
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct console_interface *interface = kernel_getnodeinterface(target);
@@ -65,7 +65,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("console", &interface->resource, &service);
+    interface->inode = kernel_addnode("console", &interface->resource, &operands);
     interface->ondata = ondata;
 
 }
@@ -73,7 +73,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 void module_init(void)
 {
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
 }
 

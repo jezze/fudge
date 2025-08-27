@@ -2,9 +2,9 @@
 #include <kernel.h>
 #include "mouse.h"
 
-static struct service service;
+static struct node_operands operands;
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -87,14 +87,14 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("mouse", &interface->resource, &service);
+    interface->inode = kernel_addnode("mouse", &interface->resource, &operands);
 
 }
 
 void module_init(void)
 {
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
 }
 

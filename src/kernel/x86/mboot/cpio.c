@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "cpio.h"
 
-static struct service service;
+static struct node_operands operands;
 static unsigned int address;
 static unsigned int limit;
 static unsigned int inode;
@@ -384,7 +384,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -420,9 +420,9 @@ void cpio_setup(unsigned int addr, unsigned int lim)
     address = addr;
     limit = lim;
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
-    inode = kernel_addnode("initrd", 0, &service);
+    inode = kernel_addnode("initrd", 0, &operands);
 
 }
 

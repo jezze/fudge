@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "video.h"
 
-static struct service service;
+static struct node_operands operands;
 
 static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
@@ -20,7 +20,7 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct video_interface *interface = kernel_getnodeinterface(target);
@@ -80,7 +80,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("video", &interface->resource, &service);
+    interface->inode = kernel_addnode("video", &interface->resource, &operands);
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
@@ -92,7 +92,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
 }
 

@@ -6,7 +6,6 @@
 #include "task.h"
 #include "node.h"
 #include "core.h"
-#include "service.h"
 #include "kernel.h"
 
 static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL_TASKS];
@@ -22,7 +21,7 @@ static struct list usedmailboxes;
 static struct core *(*getcallback)(void);
 static void (*assigncallback)(struct list_item *item);
 static struct core core0;
-static struct service mailboxservice;
+static struct node_operands mailboxoperands;
 
 static void *pickrow(struct list *from, struct list *to)
 {
@@ -111,7 +110,7 @@ static struct mailbox *getmailbox(unsigned int imailbox)
 
 }
 
-static unsigned int addnode(struct list *nodes, char *name, struct resource *resource, struct service *service)
+static unsigned int addnode(struct list *nodes, char *name, struct resource *resource, struct node_operands *operands)
 {
 
     struct noderow *noderow = pickrow(&freenodes, nodes);
@@ -119,7 +118,7 @@ static unsigned int addnode(struct list *nodes, char *name, struct resource *res
     if (noderow)
     {
 
-        node_reset(&noderow->node, name, resource, service);
+        node_reset(&noderow->node, name, resource, operands);
 
         return encodenoderow(noderow);
 
@@ -149,7 +148,7 @@ static unsigned int addmailbox(unsigned int itask)
 
         struct mailbox *mailbox = &mailboxrow->mailbox;
 
-        mailbox_reset(mailbox, itask, addnode(&mailboxnodes, 0, &mailbox->resource, &mailboxservice));
+        mailbox_reset(mailbox, itask, addnode(&mailboxnodes, 0, &mailbox->resource, &mailboxoperands));
 
         return encodemailboxrow(mailboxrow);
 
@@ -305,7 +304,7 @@ static unsigned int picknewtask(struct core *core)
 
 }
 
-static unsigned int service_pick(unsigned int source, struct message *message, unsigned int count, void *data)
+static unsigned int mailboxoperands_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
     struct mailbox *mailbox = kernel_getnodeinterface(source);
@@ -326,7 +325,7 @@ static unsigned int service_pick(unsigned int source, struct message *message, u
 
 }
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int mailboxoperands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     struct mailbox *mailbox = kernel_getnodeinterface(target);
@@ -371,10 +370,10 @@ struct core *kernel_getcore(void)
 
 }
 
-unsigned int kernel_addnode(char *name, struct resource *resource, struct service *service)
+unsigned int kernel_addnode(char *name, struct resource *resource, struct node_operands *operands)
 {
 
-    return addnode(&modulenodes, name, resource, service);
+    return addnode(&modulenodes, name, resource, operands);
 
 }
 
@@ -447,7 +446,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        unsigned int inode = addnode(&tnode->links, 0, snode->resource, snode->service);
+        unsigned int inode = addnode(&tnode->links, 0, snode->resource, snode->operands);
 
         if (inode)
             return MESSAGE_OK;
@@ -538,7 +537,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 
     struct node *snode = getnode(source);
 
-    return (snode) ? snode->service->pick(source, message, count, data) : MESSAGE_FAILED;
+    return (snode) ? snode->operands->pick(source, message, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -548,7 +547,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
     struct node *snode = getnode(source);
     struct node *tnode = getnode(target);
 
-    return (snode && tnode) ? tnode->service->place(source, target, event, count, data) : MESSAGE_FAILED;
+    return (snode && tnode) ? tnode->operands->place(source, target, event, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -694,7 +693,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
-    service_init(&mailboxservice, service_pick, service_place);
+    node_operands_init(&mailboxoperands, mailboxoperands_pick, mailboxoperands_place);
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)
     {

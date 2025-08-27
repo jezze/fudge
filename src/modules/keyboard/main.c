@@ -2,9 +2,9 @@
 #include <kernel.h>
 #include "keyboard.h"
 
-static struct service service;
+static struct node_operands operands;
 
-static unsigned int service_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -64,14 +64,14 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("keyboard", &interface->resource, &service);
+    interface->inode = kernel_addnode("keyboard", &interface->resource, &operands);
 
 }
 
 void module_init(void)
 {
 
-    service_init(&service, 0, service_place);
+    node_operands_init(&operands, 0, operands_place);
 
 }
 
