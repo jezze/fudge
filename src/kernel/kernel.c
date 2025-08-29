@@ -181,7 +181,6 @@ static void removemailboxes(unsigned int itask)
 
 }
 
-
 static void assign(struct list_item *item)
 {
 
