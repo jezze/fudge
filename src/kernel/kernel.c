@@ -599,7 +599,6 @@ unsigned int kernel_createtask(void)
         struct task *task = &taskrow->task;
 
         task_reset(task);
-        task_transition(task, TASK_STATE_NEW);
 
         return encodetaskrow(taskrow);
 
@@ -632,9 +631,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         }
 
         if (task->thread.ip)
-            task_transition(task, TASK_STATE_ASSIGNED);
-        else
-            task_transition(task, TASK_STATE_DEAD);
+            task_transition(task, TASK_STATE_NEW);
 
         checkstate(itask);
 
