@@ -229,12 +229,8 @@ static void checkstate(unsigned int itask)
 
             break;
 
-        case TASK_STATE_ASSIGNED:
-            assign(item);
-
-            break;
-
         case TASK_STATE_RUNNING:
+            task_transition(task, TASK_STATE_ASSIGNED);
             assign(item);
 
             break;
