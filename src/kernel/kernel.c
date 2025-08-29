@@ -472,9 +472,13 @@ unsigned int kernel_schedule(struct core *core)
     struct task *task = gettask(core->itask);
 
     if (task)
-        task_checksignals(task);
+    {
 
-    checkstate(core->itask);
+        task_checksignals(task);
+        checkstate(core->itask);
+
+    }
+
     unblocktasks();
 
     return picknewtask(core);
