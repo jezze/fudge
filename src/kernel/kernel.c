@@ -192,56 +192,60 @@ static void checksignals(unsigned int itask)
     {
 
         struct task *task = &taskrow->task;
-        struct list_item *item = &taskrow->item;
 
         if (task->signals.kills)
+            task_transition(task, TASK_STATE_DEAD);
+        else if (task->signals.blocks)
+            task_transition(task, TASK_STATE_BLOCKED);
+        else
+            task_transition(task, TASK_STATE_ASSIGNED);
+
+        task_resetsignals(&task->signals);
+
+    }
+
+}
+
+static void checkstate(unsigned int itask)
+{
+
+    struct taskrow *taskrow = gettaskrow(itask);
+
+    if (taskrow)
+    {
+
+        struct task *task = &taskrow->task;
+        struct list_item *item = &taskrow->item;
+        unsigned int i;
+
+        switch (task->state)
         {
 
-            if (task_transition(task, TASK_STATE_DEAD))
+        case TASK_STATE_DEAD:
+            for (i = 0; i < TASK_MAILBOXES; i++)
             {
 
-                unsigned int i;
-
-                for (i = 0; i < TASK_MAILBOXES; i++)
-                {
-
-                    if (task->imailbox[i])
-                        removemailbox(task->imailbox[i]);
-
-                }
-
-                task_resetmailboxes(task);
-                list_add(&freetasks, item);
+                if (task->imailbox[i])
+                    removemailbox(task->imailbox[i]);
 
             }
 
-        }
+            task_resetmailboxes(task);
+            list_add(&freetasks, item);
 
-        else if (task->signals.unblocks)
-        {
+            break;
 
-            if (task_transition(task, TASK_STATE_ASSIGNED))
-                assign(item);
+        case TASK_STATE_BLOCKED:
+            list_add(&blockedtasks, item);
 
-        }
+            break;
 
-        else if (task->signals.blocks)
-        {
+        case TASK_STATE_ASSIGNED:
+            assign(item);
 
-            if (task_transition(task, TASK_STATE_BLOCKED))
-                list_add(&blockedtasks, item);
-
-        }
-
-        else
-        {
-
-            if (task_transition(task, TASK_STATE_ASSIGNED))
-                assign(item);
+            break;
 
         }
-
-        task_resetsignals(&task->signals);
 
     }
 
@@ -295,8 +299,9 @@ static unsigned int picknewtask(struct core *core)
         struct taskrow *taskrow = taskrowitem->data;
         struct task *task = &taskrow->task;
 
-        if (task_transition(task, TASK_STATE_RUNNING))
-            return encodetaskrow(taskrow);
+        task_transition(task, TASK_STATE_RUNNING);
+
+        return encodetaskrow(taskrow);
 
     }
 
@@ -480,6 +485,7 @@ unsigned int kernel_schedule(struct core *core)
 {
 
     checksignals(core->itask);
+    checkstate(core->itask);
     unblocktasks();
 
     return picknewtask(core);
@@ -600,9 +606,9 @@ unsigned int kernel_createtask(void)
         struct task *task = &taskrow->task;
 
         task_reset(task);
+        task_transition(task, TASK_STATE_NEW);
 
-        if (task_transition(task, TASK_STATE_NEW))
-            return encodetaskrow(taskrow);
+        return encodetaskrow(taskrow);
 
     }
 
@@ -610,15 +616,13 @@ unsigned int kernel_createtask(void)
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned int ip, unsigned int sp, unsigned int address)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address)
 {
 
-    struct taskrow *taskrow = gettaskrow(ntask);
+    struct task *task = gettask(itask);
 
-    if (taskrow)
+    if (task)
     {
-
-        struct task *task = &taskrow->task;
 
         task->thread.ip = ip;
         task->thread.sp = sp;
@@ -635,25 +639,16 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ntask, unsigned in
         }
 
         if (task->thread.ip)
-        {
-
-            if (task_transition(task, TASK_STATE_ASSIGNED))
-                assign(&taskrow->item);
-
-        }
-
+            task_transition(task, TASK_STATE_ASSIGNED);
         else
-        {
+            task_transition(task, TASK_STATE_DEAD);
 
-            if (task_transition(task, TASK_STATE_DEAD))
-                list_add(&freetasks, &taskrow->item);
-
-        }
+        checkstate(itask);
 
         if (task->thread.ip)
         {
 
-            task->imailbox[0] = addmailbox(ntask);
+            task->imailbox[0] = addmailbox(itask);
 
             if (task->imailbox[0])
             {

@@ -77,7 +77,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
 
             initmap(ntask);
 
-            return kernel_loadtask(itask, ntask, 0, TASK_STACKVIRTUAL, args->address);
+            return kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
 
         }
 
@@ -473,7 +473,7 @@ void arch_setup2(unsigned int address)
 
         initmap(ntask);
 
-        target = kernel_loadtask(0, ntask, 0, TASK_STACKVIRTUAL, address);
+        target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
         source = kernel_getchannelinode(ntask, 0);
 
         kernel_place(source, target, EVENT_MAIN, 0, 0);
