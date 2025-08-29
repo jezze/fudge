@@ -186,12 +186,10 @@ static void assign(struct list_item *item)
 static void checksignals(unsigned int itask)
 {
 
-    struct taskrow *taskrow = gettaskrow(itask);
+    struct task *task = gettask(itask);
 
-    if (taskrow)
+    if (task)
     {
-
-        struct task *task = &taskrow->task;
 
         if (task->signals.kills)
             task_transition(task, TASK_STATE_DEAD);
