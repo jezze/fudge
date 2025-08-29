@@ -46,6 +46,7 @@ void task_signal(struct task *task, unsigned int signal);
 void task_transition(struct task *task, unsigned int state);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
+void task_checksignals(struct task *task);
 void task_resetsignals(struct task_signals *signals);
 void task_resetthread(struct task_thread *thread);
 void task_resetmailboxes(struct task *task);

@@ -183,27 +183,6 @@ static void assign(struct list_item *item)
 
 }
 
-static void checksignals(unsigned int itask)
-{
-
-    struct task *task = gettask(itask);
-
-    if (task)
-    {
-
-        if (task->signals.kills)
-            task_transition(task, TASK_STATE_DEAD);
-        else if (task->signals.blocks)
-            task_transition(task, TASK_STATE_BLOCKED);
-        else if (task->signals.unblocks)
-            task_transition(task, TASK_STATE_UNBLOCKED);
-
-        task_resetsignals(&task->signals);
-
-    }
-
-}
-
 static void checkstate(unsigned int itask)
 {
 
@@ -282,7 +261,7 @@ static void unblocktasks(void)
 
         next = taskrowitem->next;
 
-        checksignals(encodetaskrow(taskrow));
+        task_checksignals(task);
 
         if (task->state == TASK_STATE_UNBLOCKED)
         {
@@ -494,7 +473,11 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
 unsigned int kernel_schedule(struct core *core)
 {
 
-    checksignals(core->itask);
+    struct task *task = gettask(core->itask);
+
+    if (task)
+        task_checksignals(task);
+
     checkstate(core->itask);
     unblocktasks();
 
