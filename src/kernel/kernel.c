@@ -158,20 +158,29 @@ static unsigned int addmailbox(unsigned int itask)
 
 }
 
-static void removemailbox(unsigned int imailbox)
+static void removemailboxes(unsigned int itask)
 {
 
-    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
+    unsigned int i;
 
-    if (mailboxrow)
+    for (i = 0; i < KERNEL_MAILBOXES; i++)
     {
 
-        removenode(&mailboxnodes, mailboxrow->mailbox.inode);
-        list_move(&freemailboxes, &usedmailboxes, &mailboxrow->item);
+        struct mailboxrow *mailboxrow = &mailboxrows[i];
+        struct mailbox *mailbox = &mailboxrow->mailbox;
+
+        if (mailbox->itask == itask)
+        {
+
+            removenode(&mailboxnodes, mailboxrow->mailbox.inode);
+            list_move(&freemailboxes, &usedmailboxes, &mailboxrow->item);
+
+        }
 
     }
 
 }
+
 
 static void assign(struct list_item *item)
 {
@@ -193,21 +202,12 @@ static void checkstate(unsigned int itask)
 
         struct task *task = &taskrow->task;
         struct list_item *item = &taskrow->item;
-        unsigned int i;
 
         switch (task->state)
         {
 
         case TASK_STATE_DEAD:
-            for (i = 0; i < TASK_MAILBOXES; i++)
-            {
-
-                if (task->imailbox[i])
-                    removemailbox(task->imailbox[i]);
-
-            }
-
-            task_resetmailboxes(task);
+            removemailboxes(itask);
             list_add(&freetasks, item);
 
             break;
