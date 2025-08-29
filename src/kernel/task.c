@@ -33,10 +33,8 @@ void task_signal(struct task *task, unsigned int signal)
 
 }
 
-unsigned int task_transition(struct task *task, unsigned int state)
+void task_transition(struct task *task, unsigned int state)
 {
-
-    unsigned int valid = 0;
 
     spinlock_acquire(&task->spinlock);
 
@@ -84,16 +82,9 @@ unsigned int task_transition(struct task *task, unsigned int state)
 
         }
 
-        valid = task->state == state;
-
     }
 
     spinlock_release(&task->spinlock);
-
-    if (!valid)
-        DEBUG_FMT0(DEBUG_ERROR, "state transition failed");
-
-    return valid;
 
 }
 

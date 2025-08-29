@@ -197,8 +197,8 @@ static void checksignals(unsigned int itask)
             task_transition(task, TASK_STATE_DEAD);
         else if (task->signals.blocks)
             task_transition(task, TASK_STATE_BLOCKED);
-        else
-            task_transition(task, TASK_STATE_ASSIGNED);
+        else if (task->signals.unblocks)
+            task_transition(task, TASK_STATE_UNBLOCKED);
 
         task_resetsignals(&task->signals);
 
@@ -240,7 +240,24 @@ static void checkstate(unsigned int itask)
 
             break;
 
+        case TASK_STATE_UNBLOCKED:
+            task_transition(task, TASK_STATE_ASSIGNED);
+            assign(item);
+
+            break;
+
+        case TASK_STATE_NEW:
+            task_transition(task, TASK_STATE_ASSIGNED);
+            assign(item);
+
+            break;
+
         case TASK_STATE_ASSIGNED:
+            assign(item);
+
+            break;
+
+        case TASK_STATE_RUNNING:
             assign(item);
 
             break;
@@ -267,18 +284,13 @@ static void unblocktasks(void)
 
         next = taskrowitem->next;
 
-        if (task->signals.unblocks)
+        checksignals(encodetaskrow(taskrow));
+
+        if (task->state == TASK_STATE_UNBLOCKED)
         {
 
-            if (task_transition(task, TASK_STATE_UNBLOCKED))
-            {
-
-                list_remove_unsafe(&blockedtasks, taskrowitem);
-
-                if (task_transition(task, TASK_STATE_ASSIGNED))
-                    assign(taskrowitem);
-
-            }
+            list_remove_unsafe(&blockedtasks, taskrowitem);
+            checkstate(encodetaskrow(taskrow));
 
         }
 
