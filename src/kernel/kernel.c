@@ -534,7 +534,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 
     struct node *snode = getnode(source);
 
-    return (snode) ? snode->operands->pick(source, message, count, data) : MESSAGE_FAILED;
+    return (snode && snode->operands->pick) ? snode->operands->pick(source, message, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -544,7 +544,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
     struct node *snode = getnode(source);
     struct node *tnode = getnode(target);
 
-    return (snode && tnode) ? tnode->operands->place(source, target, event, count, data) : MESSAGE_FAILED;
+    return (snode && tnode && tnode->operands->place) ? tnode->operands->place(source, target, event, count, data) : MESSAGE_FAILED;
 
 }
 
