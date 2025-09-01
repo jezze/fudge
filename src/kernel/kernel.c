@@ -12,8 +12,7 @@ static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[KERNEL_MAILBOXES];
 static struct noderow {struct list_item item; struct node node;} noderows[KERNEL_NODES];
 static struct list freenodes;
-static struct list mailboxnodes;
-static struct list modulenodes;
+static struct list usednodes;
 static struct list freetasks;
 static struct list blockedtasks;
 static struct list freemailboxes;
@@ -148,7 +147,7 @@ static unsigned int addmailbox(unsigned int itask)
 
         struct mailbox *mailbox = &mailboxrow->mailbox;
 
-        mailbox_reset(mailbox, itask, addnode(&mailboxnodes, 0, &mailbox->resource, &mailboxoperands));
+        mailbox_reset(mailbox, itask, kernel_addnode("mailbox", &mailbox->resource, &mailboxoperands));
 
         return encodemailboxrow(mailboxrow);
 
@@ -172,7 +171,7 @@ static void removemailboxes(unsigned int itask)
         if (mailbox->itask == itask)
         {
 
-            removenode(&mailboxnodes, mailboxrow->mailbox.inode);
+            removenode(&usednodes, mailboxrow->mailbox.inode);
             list_move(&freemailboxes, &usedmailboxes, &mailboxrow->item);
 
         }
@@ -362,14 +361,14 @@ struct core *kernel_getcore(void)
 unsigned int kernel_addnode(char *name, struct resource *resource, struct node_operands *operands)
 {
 
-    return addnode(&modulenodes, name, resource, operands);
+    return addnode(&usednodes, name, resource, operands);
 
 }
 
 void kernel_removenode(unsigned int inode)
 {
 
-    removenode(&modulenodes, inode);
+    removenode(&usednodes, inode);
 
 }
 
@@ -671,8 +670,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
     core_init(&core0, 0, saddress + ssize);
     list_init(&freenodes);
-    list_init(&mailboxnodes);
-    list_init(&modulenodes);
+    list_init(&usednodes);
     list_init(&freetasks);
     list_init(&blockedtasks);
     list_init(&freemailboxes);
