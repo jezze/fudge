@@ -434,7 +434,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        unsigned int inode = addnode(&tnode->links, 0, snode->resource, snode->operands);
+        unsigned int inode = addnode(&tnode->links, "link", snode->resource, snode->operands);
 
         if (inode)
             return MESSAGE_OK;
