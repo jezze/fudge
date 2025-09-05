@@ -384,7 +384,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)

@@ -13,10 +13,10 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 
 }
 
-static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct block_interface *interface = kernel_getnodeinterface(target);
+    struct block_interface *interface = resource->data;
 
     switch (event)
     {

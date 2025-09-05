@@ -19,10 +19,10 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
 }
 
-static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct ethernet_interface *interface = kernel_getnodeinterface(target);
+    struct ethernet_interface *interface = resource->data;
 
     switch (event)
     {

@@ -20,7 +20,6 @@ static struct list usedmailboxes;
 static struct core *(*getcallback)(void);
 static void (*assigncallback)(struct list_item *item);
 static struct core core0;
-static struct node_operands mailboxoperands;
 
 static void *pickrow(struct list *from, struct list *to)
 {
@@ -147,7 +146,7 @@ static unsigned int addmailbox(unsigned int itask)
 
         struct mailbox *mailbox = &mailboxrow->mailbox;
 
-        mailbox_reset(mailbox, itask, kernel_addnode("mailbox", &mailbox->resource, &mailboxoperands));
+        mailbox_reset(mailbox, itask);
 
         return encodemailboxrow(mailboxrow);
 
@@ -171,7 +170,6 @@ static void removemailboxes(unsigned int itask)
         if (mailbox->itask == itask)
         {
 
-            removenode(&usednodes, mailboxrow->mailbox.inode);
             list_move(&freemailboxes, &usedmailboxes, &mailboxrow->item);
 
         }
@@ -289,56 +287,6 @@ static unsigned int picknewtask(struct core *core)
     }
 
     return 0;
-
-}
-
-static unsigned int mailboxoperands_pick(unsigned int source, struct message *message, unsigned int count, void *data)
-{
-
-    struct mailbox *mailbox = kernel_getnodeinterface(source);
-
-    if (mailbox)
-    {
-
-        unsigned int status = mailbox_pick(mailbox, message, count, data);
-
-        if (status == MESSAGE_RETRY)
-            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
-static unsigned int mailboxoperands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    struct mailbox *mailbox = kernel_getnodeinterface(target);
-
-    if (mailbox)
-    {
-
-        unsigned int status = mailbox_place(mailbox, event, source, count, data);
-
-        kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
-void *kernel_getnodeinterface(unsigned int inode)
-{
-
-    struct node *node = getnode(inode);
-
-    return (node) ? node->resource->data : 0;
 
 }
 
@@ -534,17 +482,16 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 
     struct node *snode = getnode(source);
 
-    return (snode && snode->operands->pick) ? snode->operands->pick(source, message, count, data) : MESSAGE_FAILED;
+    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->resource, source, message, count, data) : MESSAGE_FAILED;
 
 }
 
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *snode = getnode(source);
     struct node *tnode = getnode(target);
 
-    return (snode && tnode && tnode->operands->place) ? tnode->operands->place(source, target, event, count, data) : MESSAGE_FAILED;
+    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(tnode->resource, source, target, event, count, data) : MESSAGE_FAILED;
 
 }
 
@@ -668,6 +615,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
 
     unsigned int i;
 
+    mailbox_setup();
     core_init(&core0, 0, saddress + ssize);
     list_init(&freenodes);
     list_init(&usednodes);
@@ -675,7 +623,17 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
     list_init(&blockedtasks);
     list_init(&freemailboxes);
     list_init(&usedmailboxes);
-    node_operands_init(&mailboxoperands, mailboxoperands_pick, mailboxoperands_place);
+
+    for (i = 1; i < KERNEL_NODES; i++)
+    {
+
+        struct noderow *noderow = &noderows[i];
+
+        node_init(&noderow->node);
+        list_inititem(&noderow->item, noderow);
+        list_add(&freenodes, &noderow->item);
+
+    }
 
     for (i = 1; i < KERNEL_MAILBOXES; i++)
     {
@@ -698,17 +656,6 @@ void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddr
         task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&freetasks, &taskrow->item);
-
-    }
-
-    for (i = 1; i < KERNEL_NODES; i++)
-    {
-
-        struct noderow *noderow = &noderows[i];
-
-        node_init(&noderow->node);
-        list_inititem(&noderow->item, noderow);
-        list_add(&freenodes, &noderow->item);
 
     }
 

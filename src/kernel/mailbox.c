@@ -1,6 +1,52 @@
 #include <fudge.h>
 #include "resource.h"
+#include "node.h"
+#include "task.h"
+#include "kernel.h"
 #include "mailbox.h"
+
+static struct node_operands operands;
+
+static unsigned int operands_pick(struct resource *resource, unsigned int source, struct message *message, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = resource->data;
+
+    if (mailbox)
+    {
+
+        unsigned int status = mailbox_pick(mailbox, message, count, data);
+
+        if (status == MESSAGE_RETRY)
+            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = resource->data;
+
+    if (mailbox)
+    {
+
+        unsigned int status = mailbox_place(mailbox, event, source, count, data);
+
+        kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
 
 unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsigned int count, void *data)
 {
@@ -65,7 +111,7 @@ unsigned int mailbox_place(struct mailbox *mailbox, unsigned int event, unsigned
 
 }
 
-void mailbox_reset(struct mailbox *mailbox, unsigned int itask, unsigned int inode)
+void mailbox_reset(struct mailbox *mailbox, unsigned int itask)
 {
 
     spinlock_acquire(&mailbox->spinlock);
@@ -73,7 +119,6 @@ void mailbox_reset(struct mailbox *mailbox, unsigned int itask, unsigned int ino
     spinlock_release(&mailbox->spinlock);
 
     mailbox->itask = itask;
-    mailbox->inode = inode;
 
 }
 
@@ -97,7 +142,16 @@ void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     ring_init(&mailbox->ring, count, buffer);
     spinlock_init(&mailbox->spinlock);
-    mailbox_reset(mailbox, 0, 0);
+    mailbox_reset(mailbox, 0);
+
+    mailbox->inode = kernel_addnode("mailbox", &mailbox->resource, &operands);
+
+}
+
+void mailbox_setup(void)
+{
+
+    node_operands_init(&operands, operands_pick, operands_place);
 
 }
 

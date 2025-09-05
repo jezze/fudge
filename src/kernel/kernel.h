@@ -2,7 +2,6 @@
 #define KERNEL_NODES                    1024
 #define KERNEL_MAILBOXES                512
 
-void *kernel_getnodeinterface(unsigned int inode);
 struct task_thread *kernel_gettaskthread(unsigned int itask);
 struct core *kernel_getcore(void);
 unsigned int kernel_addnode(char *name, struct resource *resource, struct node_operands *operands);

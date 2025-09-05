@@ -3,7 +3,7 @@
 #include "resource.h"
 #include "node.h"
 
-void node_operands_init(struct node_operands *operands, unsigned int (*pick)(unsigned int source, struct message *message, unsigned int count, void *data), unsigned int (*place)(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
+void node_operands_init(struct node_operands *operands, unsigned int (*pick)(struct resource *resource, unsigned int source, struct message *message, unsigned int count, void *data), unsigned int (*place)(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data))
 {
 
     operands->pick = pick;

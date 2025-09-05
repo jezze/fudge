@@ -11,10 +11,10 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
 
 }
 
-static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct clock_interface *interface = kernel_getnodeinterface(target);
+    struct clock_interface *interface = resource->data;
 
     switch (event)
     {

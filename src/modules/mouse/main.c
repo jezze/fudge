@@ -4,7 +4,7 @@
 
 static struct node_operands operands;
 
-static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)

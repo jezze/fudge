@@ -20,10 +20,10 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-static unsigned int operands_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct video_interface *interface = kernel_getnodeinterface(target);
+    struct video_interface *interface = resource->data;
 
     switch (event)
     {
