@@ -8,11 +8,11 @@
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
 static struct noderow {struct list_item item; struct node node;} noderows[POOL_NODES];
-static struct list freenodes;
-static struct list usednodes;
 static struct list freetasks;
 static struct list freemailboxes;
+static struct list freenodes;
 static struct list usedmailboxes;
+static struct list usednodes;
 
 static void *pickrow(struct list *from, struct list *to)
 {
@@ -291,11 +291,11 @@ void pool_setup(unsigned int mbaddress, unsigned int mbsize)
 
     unsigned int i;
 
-    list_init(&freenodes);
-    list_init(&usednodes);
     list_init(&freetasks);
-    list_init(&usedmailboxes);
     list_init(&freemailboxes);
+    list_init(&freenodes);
+    list_init(&usedmailboxes);
+    list_init(&usednodes);
 
     for (i = 1; i < POOL_NODES; i++)
     {
