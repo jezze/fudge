@@ -2,7 +2,7 @@
 #include "resource.h"
 #include "node.h"
 #include "task.h"
-#include "kernel.h"
+#include "pool.h"
 #include "mailbox.h"
 
 static struct node_operands operands;
@@ -18,7 +18,14 @@ static unsigned int operands_pick(struct resource *resource, unsigned int source
         unsigned int status = mailbox_pick(mailbox, message, count, data);
 
         if (status == MESSAGE_RETRY)
-            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+        {
+
+            struct task *task = pool_gettask(mailbox->itask);
+
+            if (task)
+                task_signal(task, TASK_SIGNAL_BLOCK);
+
+        }
 
         return status;
 
@@ -37,8 +44,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
         unsigned int status = mailbox_place(mailbox, event, source, count, data);
+        struct task *task = pool_gettask(mailbox->itask);
 
-        kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+        if (task)
+            task_signal(task, TASK_SIGNAL_UNBLOCK);
 
         return status;
 
@@ -144,7 +153,7 @@ void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
     spinlock_init(&mailbox->spinlock);
     mailbox_reset(mailbox, 0);
 
-    mailbox->inode = kernel_addnode("mailbox", &mailbox->resource, &operands);
+    mailbox->inode = pool_addnode("mailbox", &mailbox->resource, &operands);
 
 }
 

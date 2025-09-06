@@ -422,7 +422,7 @@ void cpio_setup(unsigned int addr, unsigned int lim)
 
     node_operands_init(&operands, 0, operands_place);
 
-    inode = kernel_addnode("initrd", 0, &operands);
+    inode = pool_addnode("initrd", 0, &operands);
 
 }
 

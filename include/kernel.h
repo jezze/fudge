@@ -5,5 +5,6 @@
 #include <kernel/task.h>
 #include <kernel/core.h>
 #include <kernel/node.h>
+#include <kernel/pool.h>
 #include <kernel/kernel.h>
 #include <kernel/abi.h>

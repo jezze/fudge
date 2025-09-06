@@ -65,7 +65,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("console", &interface->resource, &operands);
+    interface->inode = pool_addnode("console", &interface->resource, &operands);
     interface->ondata = ondata;
 
 }

@@ -87,7 +87,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("mouse", &interface->resource, &operands);
+    interface->inode = pool_addnode("mouse", &interface->resource, &operands);
 
 }
 

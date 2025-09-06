@@ -1,182 +1,17 @@
 #include <fudge.h>
 #include "resource.h"
-#include "debug.h"
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"
 #include "node.h"
 #include "core.h"
+#include "pool.h"
 #include "kernel.h"
 
-static struct taskrow {struct list_item item; struct task task;} taskrows[KERNEL_TASKS];
-static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[KERNEL_MAILBOXES];
-static struct noderow {struct list_item item; struct node node;} noderows[KERNEL_NODES];
-static struct list freenodes;
-static struct list usednodes;
-static struct list freetasks;
 static struct list blockedtasks;
-static struct list freemailboxes;
-static struct list usedmailboxes;
 static struct core *(*getcallback)(void);
 static void (*assigncallback)(struct list_item *item);
 static struct core core0;
-
-static void *pickrow(struct list *from, struct list *to)
-{
-
-    struct list_item *item = list_pickhead(from);
-
-    if (item)
-    {
-
-        list_add(to, item);
-
-        return item->data;
-
-    }
-
-    return 0;
-
-}
-
-static struct noderow *getnoderow(unsigned int inode)
-{
-
-    return (inode && inode < KERNEL_NODES) ? &noderows[inode] : 0;
-
-}
-
-static struct taskrow *gettaskrow(unsigned int itask)
-{
-
-    return (itask && itask < KERNEL_TASKS) ? &taskrows[itask] : 0;
-
-}
-
-static struct mailboxrow *getmailboxrow(unsigned int imailbox)
-{
-
-    return (imailbox && imailbox < KERNEL_MAILBOXES) ? &mailboxrows[imailbox] : 0;
-
-}
-
-static unsigned int encodenoderow(struct noderow *noderow)
-{
-
-    return ((unsigned int)noderow - (unsigned int)noderows) / sizeof (struct noderow);
-
-}
-
-static unsigned int encodetaskrow(struct taskrow *taskrow)
-{
-
-    return ((unsigned int)taskrow - (unsigned int)taskrows) / sizeof (struct taskrow);
-
-}
-
-static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
-{
-
-    return ((unsigned int)mailboxrow - (unsigned int)mailboxrows) / sizeof (struct mailboxrow);
-
-}
-
-static struct node *getnode(unsigned int inode)
-{
-
-    struct noderow *noderow = getnoderow(inode);
-
-    return noderow ? &noderow->node : 0;
-
-}
-
-static struct task *gettask(unsigned int itask)
-{
-
-    struct taskrow *taskrow = gettaskrow(itask);
-
-    return taskrow ? &taskrow->task : 0;
-
-}
-
-static struct mailbox *getmailbox(unsigned int imailbox)
-{
-
-    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
-
-    return mailboxrow ? &mailboxrow->mailbox : 0;
-
-}
-
-static unsigned int addnode(struct list *nodes, char *name, struct resource *resource, struct node_operands *operands)
-{
-
-    struct noderow *noderow = pickrow(&freenodes, nodes);
-
-    if (noderow)
-    {
-
-        node_reset(&noderow->node, name, resource, operands);
-
-        return encodenoderow(noderow);
-
-    }
-
-    return 0;
-
-}
-
-static void removenode(struct list *nodes, unsigned int inode)
-{
-
-    struct noderow *noderow = getnoderow(inode);
-
-    if (noderow)
-        list_move(&freenodes, nodes, &noderow->item);
-
-}
-
-static unsigned int addmailbox(unsigned int itask)
-{
-
-    struct mailboxrow *mailboxrow = pickrow(&freemailboxes, &usedmailboxes);
-
-    if (mailboxrow)
-    {
-
-        struct mailbox *mailbox = &mailboxrow->mailbox;
-
-        mailbox_reset(mailbox, itask);
-
-        return encodemailboxrow(mailboxrow);
-
-    }
-
-    return 0;
-
-}
-
-static void removemailboxes(unsigned int itask)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < KERNEL_MAILBOXES; i++)
-    {
-
-        struct mailboxrow *mailboxrow = &mailboxrows[i];
-        struct mailbox *mailbox = &mailboxrow->mailbox;
-
-        if (mailbox->itask == itask)
-        {
-
-            list_move(&freemailboxes, &usedmailboxes, &mailboxrow->item);
-
-        }
-
-    }
-
-}
 
 static void assign(struct list_item *item)
 {
@@ -191,20 +26,18 @@ static void assign(struct list_item *item)
 static void checkstate(unsigned int itask)
 {
 
-    struct taskrow *taskrow = gettaskrow(itask);
+    struct task *task = pool_gettask(itask);
 
-    if (taskrow)
+    if (task)
     {
 
-        struct task *task = &taskrow->task;
-        struct list_item *item = &taskrow->item;
+        struct list_item *item = pool_gettaskitem(itask);
 
         switch (task->state)
         {
 
         case TASK_STATE_DEAD:
-            removemailboxes(itask);
-            list_add(&freetasks, item);
+            pool_destroytask(itask);
 
             break;
 
@@ -240,26 +73,26 @@ static void checkstate(unsigned int itask)
 static void unblocktasks(void)
 {
 
-    struct list_item *taskrowitem;
+    struct list_item *current;
     struct list_item *next;
 
     spinlock_acquire(&blockedtasks.spinlock);
 
-    for (taskrowitem = blockedtasks.head; taskrowitem; taskrowitem = next)
+    for (current = blockedtasks.head; current; current = next)
     {
 
-        struct taskrow *taskrow = taskrowitem->data;
-        struct task *task = &taskrow->task;
+        unsigned int itask = pool_getitaskfromitem(current);
+        struct task *task = pool_gettask(itask);
 
-        next = taskrowitem->next;
+        next = current->next;
 
         task_checksignals(task);
 
         if (task->state == TASK_STATE_UNBLOCKED)
         {
 
-            list_remove_unsafe(&blockedtasks, taskrowitem);
-            checkstate(encodetaskrow(taskrow));
+            list_remove_unsafe(&blockedtasks, current);
+            checkstate(itask);
 
         }
 
@@ -272,17 +105,17 @@ static void unblocktasks(void)
 static unsigned int picknewtask(struct core *core)
 {
 
-    struct list_item *taskrowitem = list_pickhead(&core->tasks);
+    struct list_item *item = list_pickhead(&core->tasks);
 
-    if (taskrowitem)
+    if (item)
     {
 
-        struct taskrow *taskrow = taskrowitem->data;
-        struct task *task = &taskrow->task;
+        unsigned int itask = pool_getitaskfromitem(item);
+        struct task *task = pool_gettask(itask);
 
         task_transition(task, TASK_STATE_RUNNING);
 
-        return encodetaskrow(taskrow);
+        return itask;
 
     }
 
@@ -293,7 +126,7 @@ static unsigned int picknewtask(struct core *core)
 struct task_thread *kernel_gettaskthread(unsigned int itask)
 {
 
-    struct task *task = gettask(itask);
+    struct task *task = pool_gettask(itask);
 
     return (task) ? &task->thread : 0;
 
@@ -306,35 +139,21 @@ struct core *kernel_getcore(void)
 
 }
 
-unsigned int kernel_addnode(char *name, struct resource *resource, struct node_operands *operands)
-{
-
-    return addnode(&usednodes, name, resource, operands);
-
-}
-
-void kernel_removenode(unsigned int inode)
-{
-
-    removenode(&usednodes, inode);
-
-}
-
 unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 {
 
-    struct task *task = gettask(itask);
+    struct task *task = pool_gettask(itask);
 
     if (task)
     {
 
-        struct mailbox *mailbox = getmailbox(task->imailbox[ichannel]);
+        struct mailbox *mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
         if (!mailbox)
         {
 
-            task->imailbox[ichannel] = addmailbox(itask);
-            mailbox = getmailbox(task->imailbox[ichannel]);
+            task->imailbox[ichannel] = pool_addmailbox(itask);
+            mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
         }
 
@@ -346,43 +165,16 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
 }
 
-unsigned int kernel_findinode(unsigned int namehash, unsigned int index)
-{
-
-    unsigned int n = 0;
-    unsigned int i;
-
-    for (i = 0; i < KERNEL_NODES; i++)
-    {
-
-        struct noderow *noderow = &noderows[i];
-
-        if (noderow->node.namehash == namehash)
-        {
-
-            if (n == index)
-                return encodenoderow(noderow);
-
-            n++;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 unsigned int kernel_linknode(unsigned int target, unsigned int source)
 {
 
-    struct node *snode = getnode(source);
-    struct node *tnode = getnode(target);
+    struct node *snode = pool_getnode(source);
+    struct node *tnode = pool_getnode(target);
 
     if (snode && tnode)
     {
 
-        unsigned int inode = addnode(&tnode->links, "link", snode->resource, snode->operands);
+        unsigned int inode = pool_addnodeto(&tnode->links, "link", snode->resource, snode->operands);
 
         if (inode)
             return MESSAGE_OK;
@@ -396,13 +188,13 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
 unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
 {
 
-    struct node *snode = getnode(source);
-    struct node *tnode = getnode(target);
+    struct node *snode = pool_getnode(source);
+    struct node *tnode = pool_getnode(target);
 
     if (snode && tnode)
     {
 
-        removenode(&tnode->links, source);
+        pool_removenodefrom(&tnode->links, source);
 
         return MESSAGE_OK;
 
@@ -415,7 +207,7 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
 unsigned int kernel_schedule(struct core *core)
 {
 
-    struct task *task = gettask(core->itask);
+    struct task *task = pool_gettask(core->itask);
 
     if (task)
     {
@@ -434,7 +226,7 @@ unsigned int kernel_schedule(struct core *core)
 unsigned int kernel_codebase(unsigned int itask, unsigned int address)
 {
 
-    struct task *task = gettask(itask);
+    struct task *task = pool_gettask(itask);
 
     if (task)
     {
@@ -452,7 +244,7 @@ unsigned int kernel_codebase(unsigned int itask, unsigned int address)
 unsigned int kernel_loadprogram(unsigned int itask)
 {
 
-    struct task *task = gettask(itask);
+    struct task *task = pool_gettask(itask);
 
     if (task)
     {
@@ -470,7 +262,7 @@ unsigned int kernel_loadprogram(unsigned int itask)
 void kernel_signal(unsigned int itask, unsigned int signal)
 {
 
-    struct task *task = gettask(itask);
+    struct task *task = pool_gettask(itask);
 
     if (task)
         task_signal(task, signal);
@@ -480,7 +272,7 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
-    struct node *snode = getnode(source);
+    struct node *snode = pool_getnode(source);
 
     return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->resource, source, message, count, data) : MESSAGE_FAILED;
 
@@ -489,7 +281,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message, unsigned 
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = getnode(target);
+    struct node *tnode = pool_getnode(target);
 
     return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(tnode->resource, source, target, event, count, data) : MESSAGE_FAILED;
 
@@ -498,7 +290,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 unsigned int kernel_announce(unsigned int inode, unsigned int namehash)
 {
 
-    struct node *node = getnode(inode);
+    struct node *node = pool_getnode(inode);
 
     return (node) ? node->namehash = namehash : 0;
 
@@ -507,22 +299,22 @@ unsigned int kernel_announce(unsigned int inode, unsigned int namehash)
 void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *snode = getnode(source);
+    struct node *snode = pool_getnode(source);
 
     if (snode)
     {
 
         struct list *links = &snode->links;
-        struct list_item *noderowitem;
+        struct list_item *current;
 
         spinlock_acquire(&links->spinlock);
 
-        for (noderowitem = links->head; noderowitem; noderowitem = noderowitem->next)
+        for (current = links->head; current; current = current->next)
         {
 
-            struct noderow *tnoderow = noderowitem->data;
+            unsigned int inode = pool_getinodefromitem(current);
 
-            kernel_place(source, encodenoderow(tnoderow), event, count, data);
+            kernel_place(source, inode, event, count, data);
 
         }
 
@@ -532,31 +324,10 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
 
 }
 
-unsigned int kernel_createtask(void)
-{
-
-    struct list_item *taskrowitem = list_pickhead(&freetasks);
-
-    if (taskrowitem)
-    {
-
-        struct taskrow *taskrow = taskrowitem->data;
-        struct task *task = &taskrow->task;
-
-        task_reset(task);
-
-        return encodetaskrow(taskrow);
-
-    }
-
-    return 0;
-
-}
-
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address)
 {
 
-    struct task *task = gettask(itask);
+    struct task *task = pool_gettask(itask);
 
     if (task)
     {
@@ -583,12 +354,12 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task->thread.ip)
         {
 
-            task->imailbox[0] = addmailbox(itask);
+            task->imailbox[0] = pool_addmailbox(itask);
 
             if (task->imailbox[0])
             {
 
-                struct mailbox *mailbox = getmailbox(task->imailbox[0]);
+                struct mailbox *mailbox = pool_getmailbox(task->imailbox[0]);
 
                 return mailbox->inode;
 
@@ -613,51 +384,10 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize)
 {
 
-    unsigned int i;
-
+    list_init(&blockedtasks);
     mailbox_setup();
     core_init(&core0, 0, saddress + ssize);
-    list_init(&freenodes);
-    list_init(&usednodes);
-    list_init(&freetasks);
-    list_init(&blockedtasks);
-    list_init(&freemailboxes);
-    list_init(&usedmailboxes);
-
-    for (i = 1; i < KERNEL_NODES; i++)
-    {
-
-        struct noderow *noderow = &noderows[i];
-
-        node_init(&noderow->node);
-        list_inititem(&noderow->item, noderow);
-        list_add(&freenodes, &noderow->item);
-
-    }
-
-    for (i = 1; i < KERNEL_MAILBOXES; i++)
-    {
-
-        struct mailboxrow *mailboxrow = &mailboxrows[i];
-
-        mailbox_init(&mailboxrow->mailbox, (void *)(mbaddress + i * mbsize), mbsize);
-        mailbox_register(&mailboxrow->mailbox);
-        list_inititem(&mailboxrow->item, mailboxrow);
-        list_add(&freemailboxes, &mailboxrow->item);
-
-    }
-
-    for (i = 1; i < KERNEL_TASKS; i++)
-    {
-
-        struct taskrow *taskrow = &taskrows[i];
-
-        task_init(&taskrow->task);
-        task_register(&taskrow->task);
-        list_inititem(&taskrow->item, taskrow);
-        list_add(&freetasks, &taskrow->item);
-
-    }
+    pool_setup(mbaddress, mbsize);
 
 }
 

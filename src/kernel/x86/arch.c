@@ -20,10 +20,10 @@ struct meminfo
 
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
-static struct cpu_general registers[KERNEL_TASKS];
+static struct cpu_general registers[POOL_TASKS];
 static struct arch_tss tss0;
 static struct meminfo kmeminfo;
-static struct meminfo umeminfo[KERNEL_TASKS];
+static struct meminfo umeminfo[POOL_TASKS];
 
 static void meminfo_init(struct meminfo *meminfo, unsigned int address)
 {
@@ -70,7 +70,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
     if (args->address)
     {
 
-        unsigned int ntask = kernel_createtask();
+        unsigned int ntask = pool_createtask();
 
         if (ntask)
         {
@@ -450,8 +450,8 @@ void arch_setup1(void)
     arch_map(0x00000000, 0x00000000, 0x00400000);
     arch_map(0x00400000, 0x00400000, 0x00400000);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, 0x00400000);
-    arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * KERNEL_TASKS);
-    arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * KERNEL_MAILBOXES);
+    arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
+    arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
     mmu_setdirectory(getdirectory(&kmeminfo));
     mmu_enable();
     kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
@@ -463,7 +463,7 @@ void arch_setup1(void)
 void arch_setup2(unsigned int address)
 {
 
-    unsigned int ntask = kernel_createtask();
+    unsigned int ntask = pool_createtask();
 
     if (ntask)
     {

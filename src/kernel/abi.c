@@ -5,6 +5,7 @@
 #include "mailbox.h"
 #include "task.h"
 #include "node.h"
+#include "pool.h"
 #include "kernel.h"
 
 #define CALLS                           16
@@ -68,7 +69,7 @@ static unsigned int find(unsigned int itask, void *stack)
 
     struct {void *caller; unsigned int namehash; unsigned int index;} *args = stack;
 
-    return kernel_findinode(args->namehash, args->index);
+    return pool_findinode(args->namehash, args->index);
 
 }
 

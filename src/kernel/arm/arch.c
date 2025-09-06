@@ -24,7 +24,7 @@ extern unsigned int isr_fiq;
 extern unsigned int call_despawn(void);
 extern unsigned int call_place(unsigned int index, unsigned int target, unsigned int event, unsigned int count, void *data);
 
-static struct cpu_general registers[KERNEL_TASKS];
+static struct cpu_general registers[POOL_TASKS];
 
 static void shownum(unsigned int n)
 {
@@ -71,7 +71,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
     if (args->address)
     {
 
-        unsigned int ntask = kernel_createtask();
+        unsigned int ntask = pool_createtask();
 
         if (ntask)
             return kernel_loadtask(ntask, 0, 0x6000, (unsigned int)&testtask);
@@ -192,7 +192,7 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    unsigned int ntask = kernel_createtask();
+    unsigned int ntask = pool_createtask();
 
     if (ntask)
     {

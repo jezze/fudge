@@ -80,7 +80,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("video", &interface->resource, &operands);
+    interface->inode = pool_addnode("video", &interface->resource, &operands);
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;

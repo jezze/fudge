@@ -63,7 +63,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("block", &interface->resource, &operands);
+    interface->inode = pool_addnode("block", &interface->resource, &operands);
     interface->onblockrequest = onblockrequest;
 
 }

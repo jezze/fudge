@@ -86,10 +86,10 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
 
     interface->id = id;
-    interface->inodes[0] = kernel_addnode("timer0", &interface->resource, &operands);
-    interface->inodes[1] = kernel_addnode("timer1", &interface->resource, &operands);
-    interface->inodes[2] = kernel_addnode("timer2", &interface->resource, &operands);
-    interface->inodes[3] = kernel_addnode("timer3", &interface->resource, &operands);
+    interface->inodes[0] = pool_addnode("timer0", &interface->resource, &operands);
+    interface->inodes[1] = pool_addnode("timer1", &interface->resource, &operands);
+    interface->inodes[2] = pool_addnode("timer2", &interface->resource, &operands);
+    interface->inodes[3] = pool_addnode("timer3", &interface->resource, &operands);
 
 }
 

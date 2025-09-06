@@ -54,7 +54,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = kernel_addnode("clock", &interface->resource, &operands);
+    interface->inode = pool_addnode("clock", &interface->resource, &operands);
     interface->oninfo = oninfo;
 
 }
