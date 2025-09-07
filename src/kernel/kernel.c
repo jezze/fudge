@@ -381,13 +381,11 @@ void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_it
 
 }
 
-void kernel_setup(unsigned int saddress, unsigned int ssize, unsigned int mbaddress, unsigned int mbsize)
+void kernel_setup(unsigned int saddress, unsigned int ssize)
 {
 
     list_init(&blockedtasks);
-    mailbox_setup();
     core_init(&core0, 0, saddress + ssize);
-    pool_setup(mbaddress, mbsize);
 
 }
 

@@ -7,57 +7,7 @@
 
 static struct node_operands operands;
 
-static unsigned int operands_pick(struct resource *resource, unsigned int source, struct message *message, unsigned int count, void *data)
-{
-
-    struct mailbox *mailbox = resource->data;
-
-    if (mailbox)
-    {
-
-        unsigned int status = mailbox_pick(mailbox, message, count, data);
-
-        if (status == MESSAGE_RETRY)
-        {
-
-            struct task *task = pool_gettask(mailbox->itask);
-
-            if (task)
-                task_signal(task, TASK_SIGNAL_BLOCK);
-
-        }
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
-{
-
-    struct mailbox *mailbox = resource->data;
-
-    if (mailbox)
-    {
-
-        unsigned int status = mailbox_place(mailbox, event, source, count, data);
-        struct task *task = pool_gettask(mailbox->itask);
-
-        if (task)
-            task_signal(task, TASK_SIGNAL_UNBLOCK);
-
-        return status;
-
-    }
-
-    return MESSAGE_FAILED;
-
-}
-
-unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsigned int count, void *data)
+static unsigned int pick(struct mailbox *mailbox, struct message *message, unsigned int count, void *data)
 {
 
     unsigned int length = 0;
@@ -97,7 +47,7 @@ unsigned int mailbox_pick(struct mailbox *mailbox, struct message *message, unsi
 
 }
 
-unsigned int mailbox_place(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data)
+static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
     unsigned int length = 0;
@@ -117,6 +67,56 @@ unsigned int mailbox_place(struct mailbox *mailbox, unsigned int event, unsigned
     spinlock_release(&mailbox->spinlock);
 
     return length ? MESSAGE_OK : MESSAGE_RETRY;
+
+}
+
+static unsigned int operands_pick(struct resource *resource, unsigned int source, struct message *message, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = resource->data;
+
+    if (mailbox)
+    {
+
+        unsigned int status = pick(mailbox, message, count, data);
+
+        if (status == MESSAGE_RETRY)
+        {
+
+            struct task *task = pool_gettask(mailbox->itask);
+
+            if (task)
+                task_signal(task, TASK_SIGNAL_BLOCK);
+
+        }
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    struct mailbox *mailbox = resource->data;
+
+    if (mailbox)
+    {
+
+        unsigned int status = place(mailbox, event, source, count, data);
+        struct task *task = pool_gettask(mailbox->itask);
+
+        if (task)
+            task_signal(task, TASK_SIGNAL_UNBLOCK);
+
+        return status;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 

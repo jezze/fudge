@@ -183,7 +183,9 @@ void arch_setup1(void)
     timer_setup();
     kmi_setup();
     lcd_setup();
-    kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
+    mailbox_setup();
+    pool_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
+    kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE);
     abi_setup();
     abi_setcallback(0x03, spawn);
 

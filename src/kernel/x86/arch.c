@@ -454,7 +454,9 @@ void arch_setup1(void)
     arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
     mmu_setdirectory(getdirectory(&kmeminfo));
     mmu_enable();
-    kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
+    mailbox_setup();
+    pool_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
+    kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE);
     abi_setup();
     abi_setcallback(0x03, spawn);
 
