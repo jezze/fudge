@@ -172,13 +172,6 @@ void pool_removenodefrom(struct list *nodes, unsigned int inode)
 
 }
 
-void pool_removenode(unsigned int inode)
-{
-
-    pool_removenodefrom(&usednodes, inode);
-
-}
-
 unsigned int pool_addmailbox(unsigned int itask)
 {
 
