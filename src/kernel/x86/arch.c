@@ -25,6 +25,13 @@ static struct arch_tss tss0;
 static struct meminfo kmeminfo;
 static struct meminfo umeminfo[POOL_TASKS];
 
+static struct mmu_directory *getdirectory(struct meminfo *meminfo)
+{
+
+    return (struct mmu_directory *)(meminfo->directory);
+
+}
+
 static void meminfo_init(struct meminfo *meminfo, unsigned int address)
 {
 
@@ -32,12 +39,7 @@ static void meminfo_init(struct meminfo *meminfo, unsigned int address)
     meminfo->tables = address + 4096;
     meminfo->entries = 0;
 
-}
-
-static struct mmu_directory *getdirectory(struct meminfo *meminfo)
-{
-
-    return (struct mmu_directory *)(meminfo->directory);
+    buffer_clear(getdirectory(meminfo), sizeof (struct mmu_directory));
 
 }
 
@@ -148,7 +150,17 @@ void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
 void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
+    /* Need to fix this workaround */
+    struct core *core = kernel_getcore();
+
     map(&kmeminfo, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+
+    if (core->itask)
+    {
+
+        map(&umeminfo[core->itask], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+
+    }
 
 }
 
@@ -340,7 +352,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
             unsigned int paddress = ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE);
 
-            initmap(core->itask);
             arch_mapuser(core->itask, paddress, code, TASK_CODESIZE);
             arch_mapuser(core->itask, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
             mmu_setdirectory(directory);
@@ -355,23 +366,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
             unsigned int index = address >> 22;
 
-            if (index != 0 && kdirectory->tables[index])
-            {
-
-                directory->tables[index] = kdirectory->tables[index];
-
-                mmu_setdirectory(directory);
-
-            }
-
-            else
-            {
-
-                DEBUG_FMT2(DEBUG_INFO, "Killing task %u on core %u", &core->itask, &core->id);
-
-                kernel_signal(core->itask, TASK_SIGNAL_KILL);
-
-            }
+            directory->tables[index] = kdirectory->tables[index];
 
         }
 

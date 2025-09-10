@@ -57,9 +57,7 @@ static unsigned int spawnwm(unsigned int ichannel)
 
 }
 
-/* FIXME: Because of some bug with acpi mmu mapping, the acpi and apic modules need to be loaded by seperate processes. Thats why there are two module lists. */
-
-static char *modules0[18] = {
+static char *modules[35] = {
     "initrd:kernel/base.ko",
     "initrd:kernel/log.ko",
     "initrd:kernel/block.ko",
@@ -77,10 +75,7 @@ static char *modules0[18] = {
     "initrd:kernel/msr.ko",
     "initrd:kernel/pat.ko",
     "initrd:kernel/acpi.ko",
-    "initrd:kernel/pic.ko"
-};
-
-static char *modules1[17] = {
+    "initrd:kernel/pic.ko",
     "initrd:kernel/apic.ko",
     "initrd:kernel/platform.ko",
     "initrd:kernel/pci.ko",
@@ -103,8 +98,7 @@ static char *modules1[17] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    loadmodules(1, 18, modules0);
-    loadmodules(1, 17, modules1);
+    loadmodules(1, 35, modules);
     spawnshell(1);
     spawnwm(1);
 
