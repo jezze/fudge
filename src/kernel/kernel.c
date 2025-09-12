@@ -223,42 +223,6 @@ unsigned int kernel_schedule(struct core *core)
 
 }
 
-unsigned int kernel_codebase(unsigned int itask, unsigned int address)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        struct binary_format *format = binary_findformat(task->address);
-
-        return (format) ? format->findbase(task->address, address) : 0;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int kernel_loadprogram(unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        struct binary_format *format = binary_findformat(task->address);
-
-        return (format) ? format->copyprogram(task->address) : 0;
-
-    }
-
-    return 0;
-
-}
-
 void kernel_signal(unsigned int itask, unsigned int signal)
 {
 

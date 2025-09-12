@@ -21,7 +21,7 @@ struct binary_format *binary_findformat(unsigned int base)
 
 }
 
-void binary_initformat(struct binary_format *format, unsigned int (*match)(unsigned int base), unsigned int (*findsymbol)(unsigned int base, unsigned int count, char *symbol), unsigned int (*findentry)(unsigned int base), unsigned int (*findbase)(unsigned int base, unsigned int address), unsigned int (*copyprogram)(unsigned int base))
+void binary_initformat(struct binary_format *format, unsigned int (*match)(unsigned int base), unsigned int (*findsymbol)(unsigned int base, unsigned int count, char *symbol), unsigned int (*findentry)(unsigned int base), unsigned int (*readsection)(unsigned int base, struct binary_section *section, unsigned int index))
 {
 
     resource_init(&format->resource, RESOURCE_BINARYFORMAT, format);
@@ -29,8 +29,7 @@ void binary_initformat(struct binary_format *format, unsigned int (*match)(unsig
     format->match = match;
     format->findsymbol = findsymbol;
     format->findentry = findentry;
-    format->findbase = findbase;
-    format->copyprogram = copyprogram;
+    format->readsection = readsection;
 
 }
 

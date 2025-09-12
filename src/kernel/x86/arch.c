@@ -9,7 +9,7 @@
 #include "pic.h"
 #include "arch.h"
 
-struct meminfo
+struct mmap
 {
 
     unsigned int directory;
@@ -22,45 +22,115 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[POOL_TASKS];
 static struct arch_tss tss0;
-static struct meminfo kmeminfo;
-static struct meminfo umeminfo[POOL_TASKS];
+static struct mmap kmmap;
+static struct mmap ummap[POOL_TASKS];
 
-static struct mmu_directory *getdirectory(struct meminfo *meminfo)
+static struct mmu_directory *mmap_getdirectory(struct mmap *mmap)
 {
 
-    return (struct mmu_directory *)(meminfo->directory);
+    return (struct mmu_directory *)(mmap->directory);
 
 }
 
-static void meminfo_init(struct meminfo *meminfo, unsigned int address)
+static struct mmu_table *mmap_gettable(struct mmap *mmap, unsigned int address)
 {
 
-    meminfo->directory = address;
-    meminfo->tables = address + 4096;
-    meminfo->entries = 0;
+    struct mmu_directory *directory = mmap_getdirectory(mmap);
+    unsigned int index = address >> 22;
 
-    buffer_clear(getdirectory(meminfo), sizeof (struct mmu_directory));
+    if (directory->tables[index])
+    {
+
+        return directory->tables[index];
+
+    }
+
+    else
+    {
+
+        struct mmu_table *table = (struct mmu_table *)(mmap->tables) + mmap->entries;
+
+        buffer_clear(table, sizeof (struct mmu_table));
+
+        mmap->entries++;
+
+        return table;
+
+    }
+
+    return 0;
 
 }
 
-static void initmap(unsigned int itask)
+static void mmap_init(struct mmap *mmap, unsigned int address)
 {
 
-    meminfo_init(&umeminfo[itask], ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * itask);
-    buffer_copy(getdirectory(&umeminfo[itask]), getdirectory(&kmeminfo), sizeof (struct mmu_directory));
+    mmap->directory = address;
+    mmap->tables = address + 4096;
+    mmap->entries = 0;
+
+    buffer_clear(mmap_getdirectory(mmap), sizeof (struct mmu_directory));
 
 }
 
-static void map(struct meminfo *meminfo, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int paddress)
 {
 
-    struct mmu_directory *directory = getdirectory(meminfo);
-    struct mmu_table *table = (struct mmu_table *)(meminfo->tables) + meminfo->entries;
+    struct mmu_directory *directory = mmap_getdirectory(map);
+    struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
+    struct task *task = pool_gettask(itask);
 
-    buffer_clear(table, sizeof (struct mmu_table));
+    buffer_copy(directory, kdirectory, sizeof (struct mmu_directory));
+    mmu_setdirectory(directory);
+
+    if (task)
+    {
+
+        struct binary_format *format = binary_findformat(task->address);
+
+        if (format)
+        {
+
+            struct binary_section section;
+            unsigned int i;
+
+            for (i = 0; format->readsection(task->address, &section, i); i++)
+            {
+
+                /* TODO: Figure out actual size to map */
+                arch_mapuser(itask, paddress, section.vaddress, TASK_CODESIZE);
+                mmu_setdirectory(directory);
+
+                /* TODO: Remove this break */
+                break;
+
+            }
+
+            /* TODO: Only copy sections that are writable */
+            for (i = 0; format->readsection(task->address, &section, i); i++)
+            {
+
+                buffer_copy((void *)section.vaddress, (void *)(task->address + section.offset), section.fsize);
+                buffer_clear((void *)(section.vaddress + section.fsize), section.msize - section.fsize);
+
+            }
+
+        }
+
+    }
+
+    arch_mapuser(itask, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
+    mmu_setdirectory(directory);
+
+}
+
+static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+{
+
+    struct mmu_directory *directory = mmap_getdirectory(mmap);
+    struct mmu_table *table = mmap_gettable(mmap, paddress);
+
     mmu_map(directory, table, paddress, vaddress, size, tflags, pflags);
-
-    meminfo->entries++;
 
 }
 
@@ -77,9 +147,12 @@ static unsigned int spawn(unsigned int itask, void *stack)
         if (ntask)
         {
 
-            initmap(ntask);
+            unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
 
-            return kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
+            mmap_init(&ummap[ntask], ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask);
+            mmap_inittask(&ummap[ntask], ntask, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+
+            return target;
 
         }
 
@@ -122,7 +195,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = thread->ip;
         interrupt->esp.value = thread->sp;
 
-        mmu_setdirectory(getdirectory(&umeminfo[core->itask]));
+        mmu_setdirectory(mmap_getdirectory(&ummap[core->itask]));
 
     }
 
@@ -134,7 +207,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = (unsigned int)cpu_halt;
         interrupt->esp.value = core->sp;
 
-        mmu_setdirectory(getdirectory(&kmeminfo));
+        mmu_setdirectory(mmap_getdirectory(&kmmap));
 
     }
 
@@ -143,7 +216,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    map(&kmeminfo, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -153,12 +226,12 @@ void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int
     /* Need to fix this workaround */
     struct core *core = kernel_getcore();
 
-    map(&kmeminfo, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+    map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
 
     if (core->itask)
     {
 
-        map(&umeminfo[core->itask], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+        map(&ummap[core->itask], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
 
     }
 
@@ -167,14 +240,14 @@ void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int
 void arch_mapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    map(&kmeminfo, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
+    map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
 
 }
 
 void arch_mapuser(unsigned int itask, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    map(&umeminfo[itask], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    map(&ummap[itask], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -333,42 +406,19 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    struct core *core = kernel_getcore();
     unsigned int address = cpu_getcr2();
+    struct core *core = kernel_getcore();
 
     DEBUG_FMT2(DEBUG_INFO, "exception: page fault at 0x%H8u type %u", &address, &type);
 
     if (core->itask)
     {
 
-        unsigned int code = kernel_codebase(core->itask, address);
-        struct mmu_directory *kdirectory = getdirectory(&kmeminfo);
-        struct mmu_directory *directory = getdirectory(&umeminfo[core->itask]);
+        struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
+        struct mmu_directory *directory = mmap_getdirectory(&ummap[core->itask]);
+        unsigned int index = address >> 22;
 
-        mmu_setdirectory(kdirectory);
-
-        if (code)
-        {
-
-            unsigned int paddress = ARCH_TASKCODEADDRESS + core->itask * (TASK_CODESIZE + TASK_STACKSIZE);
-
-            arch_mapuser(core->itask, paddress, code, TASK_CODESIZE);
-            arch_mapuser(core->itask, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
-            mmu_setdirectory(directory);
-
-            if (!kernel_loadprogram(core->itask))
-                kernel_signal(core->itask, TASK_SIGNAL_KILL);
-
-        }
-
-        else
-        {
-
-            unsigned int index = address >> 22;
-
-            directory->tables[index] = kdirectory->tables[index];
-
-        }
+        directory->tables[index] = kdirectory->tables[index];
 
     }
 
@@ -440,14 +490,14 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    meminfo_init(&kmeminfo, ARCH_MMUKERNELADDRESS);
-    buffer_clear(getdirectory(&kmeminfo), sizeof (struct mmu_directory));
+    mmap_init(&kmmap, ARCH_MMUKERNELADDRESS);
+    buffer_clear(mmap_getdirectory(&kmmap), sizeof (struct mmu_directory));
     arch_map(0x00000000, 0x00000000, 0x00400000);
     arch_map(0x00400000, 0x00400000, 0x00400000);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, 0x00400000);
     arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
     arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
-    mmu_setdirectory(getdirectory(&kmeminfo));
+    mmu_setdirectory(mmap_getdirectory(&kmmap));
     mmu_enable();
     mailbox_setup();
     pool_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
@@ -465,14 +515,11 @@ void arch_setup2(unsigned int address)
     if (ntask)
     {
 
-        unsigned int target;
-        unsigned int source;
+        unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
+        unsigned int source = kernel_getchannelinode(ntask, 0);
 
-        initmap(ntask);
-
-        target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
-        source = kernel_getchannelinode(ntask, 0);
-
+        mmap_init(&ummap[ntask], ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask);
+        mmap_inittask(&ummap[ntask], ntask, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
         kernel_place(source, target, EVENT_MAIN, 0, 0);
 
     }

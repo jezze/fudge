@@ -72,18 +72,21 @@ static unsigned int format_findentry(unsigned int base)
 
 }
 
-static unsigned int format_findbase(unsigned int base, unsigned int address)
+static unsigned int format_readsection(unsigned int base, struct binary_section *section, unsigned int index)
 {
 
     struct elf_header *header = (struct elf_header *)base;
     struct elf_programheader *programheaders = (struct elf_programheader *)(base + header->phoffset);
-    unsigned int i;
 
-    for (i = 0; i < header->phcount; i++)
+    if (index < header->phcount)
     {
 
-        if (programheaders[i].vaddress <= address && programheaders[i].vaddress + programheaders[i].msize > address)
-            return programheaders[i].vaddress;
+        section->vaddress = programheaders[index].vaddress;
+        section->msize = programheaders[index].msize;
+        section->fsize = programheaders[index].fsize;
+        section->offset = programheaders[index].offset;
+
+        return programheaders[index].vaddress;
 
     }
 
@@ -91,31 +94,10 @@ static unsigned int format_findbase(unsigned int base, unsigned int address)
 
 }
 
-static unsigned int format_copyprogram(unsigned int base)
-{
-
-    struct elf_header *header = (struct elf_header *)base;
-    struct elf_programheader *programheaders = (struct elf_programheader *)(base + header->phoffset);
-    unsigned int i;
-
-    for (i = 0; i < header->phcount; i++)
-    {
-
-        if (programheaders[i].fsize)
-            buffer_copy((void *)programheaders[i].vaddress, (void *)(base + programheaders[i].offset), programheaders[i].fsize);
-
-        buffer_clear((void *)(programheaders[i].vaddress + programheaders[i].fsize), programheaders[i].msize - programheaders[i].fsize);
-
-    }
-
-    return 1;
-
-}
-
 void elf_setup(void)
 {
 
-    binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_findbase, format_copyprogram);
+    binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_readsection);
     resource_register(&format.resource);
 
 }
