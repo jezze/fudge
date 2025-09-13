@@ -8,7 +8,7 @@
 #define ARCH_KERNELSTACKSIZE            0x00008000
 #define ARCH_MMUKERNELADDRESS           0x00800000
 #define ARCH_MMUTASKADDRESS             0x00C00000
-#define ARCH_MMUTASKSIZE                0x00004000
+#define ARCH_MMUTASKSIZE                0x00008000
 #define ARCH_MAILBOXADDRESS             0x01000000
 #define ARCH_MAILBOXSIZE                0x00002000
 #define ARCH_TASKCODEADDRESS            0x02000000
