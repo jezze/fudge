@@ -98,6 +98,8 @@ static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int pad
             {
 
                 /* TODO: Figure out actual size to map */
+                /* TODO: Map read-only sections directly to task->address with offset */
+                /* TODO: Map writable section as copy on write */
                 arch_mapuser(itask, paddress, section.vaddress, TASK_CODESIZE);
                 mmu_setdirectory(directory);
 
@@ -106,6 +108,7 @@ static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int pad
 
             }
 
+            /* TODO: Do this in the page fault handler */
             /* TODO: Only copy sections that are writable */
             for (i = 0; format->readsection(task->address, &section, i); i++)
             {
@@ -115,12 +118,12 @@ static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int pad
 
             }
 
+            arch_mapuser(itask, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
+            mmu_setdirectory(directory);
+
         }
 
     }
-
-    arch_mapuser(itask, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
-    mmu_setdirectory(directory);
 
 }
 
