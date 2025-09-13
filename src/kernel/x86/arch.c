@@ -28,47 +28,40 @@ static struct mmap ummap[POOL_TASKS];
 static struct mmu_directory *mmap_getdirectory(struct mmap *mmap)
 {
 
-    return (struct mmu_directory *)(mmap->directory);
+    return (struct mmu_directory *)mmap->directory;
 
 }
 
-static struct mmu_table *mmap_gettable(struct mmap *mmap, unsigned int address)
+static struct mmu_table *mmap_gettable(struct mmap *mmap, unsigned int vaddress, unsigned int tflags)
 {
 
     struct mmu_directory *directory = mmap_getdirectory(mmap);
-    unsigned int index = address >> 22;
+    struct mmu_table *table = mmu_getdirectorytable(directory, vaddress);
 
-    if (directory->tables[index])
+    if (!table)
     {
 
-        return directory->tables[index];
+        unsigned int address = mmap->tables + sizeof (struct mmu_table) * mmap->entries;
 
-    }
-
-    else
-    {
-
-        struct mmu_table *table = (struct mmu_table *)(mmap->tables) + mmap->entries;
-
-        buffer_clear(table, sizeof (struct mmu_table));
+        buffer_clear((void *)address, sizeof (struct mmu_table));
+        mmu_setdirectorytable(directory, address, vaddress, tflags);
 
         mmap->entries++;
 
-        return table;
-
     }
 
-    return 0;
+    return mmu_getdirectorytable(directory, vaddress);
 
 }
 
 static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_directory *directory = mmap_getdirectory(mmap);
-    struct mmu_table *table = mmap_gettable(mmap, paddress);
+    struct mmu_table *table = mmap_gettable(mmap, vaddress, tflags);
+    unsigned int i;
 
-    mmu_map(directory, table, paddress, vaddress, size, tflags, pflags);
+    for (i = 0; i < size; i += MMU_PAGESIZE)
+        mmu_settablepage(table, paddress + i, vaddress + i, pflags);
 
 }
 

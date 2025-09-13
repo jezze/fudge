@@ -2,33 +2,37 @@
 #include "cpu.h"
 #include "mmu.h"
 
-static void setdirectorytable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int tflags)
+struct mmu_directory *mmu_getdirectory(void)
+{
+
+    return (struct mmu_directory *)cpu_getcr3();
+
+}
+
+struct mmu_table *mmu_getdirectorytable(struct mmu_directory *directory, unsigned int vaddress)
 {
 
     unsigned int index = vaddress >> 22;
 
-    directory->tables[index] = (struct mmu_table *)(paddress | tflags);
+    return (struct mmu_table *)(directory->tables[index] & 0xFFFFF000);
 
 }
 
-static void settablepage(struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int pflags)
+void mmu_setdirectorytable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int tflags)
+{
+
+    unsigned int index = vaddress >> 22;
+
+    directory->tables[index] = paddress | tflags;
+
+}
+
+void mmu_settablepage(struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int pflags)
 {
 
     unsigned int index = (vaddress << 10) >> 22;
 
-    table->pages[index] = (void *)(paddress | pflags);
-
-}
-
-void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < size; i += MMU_PAGESIZE)
-        settablepage(table, paddress + i, vaddress + i, pflags);
-
-    setdirectorytable(directory, (unsigned int)table, vaddress, tflags);
+    table->pages[index] = paddress | pflags;
 
 }
 

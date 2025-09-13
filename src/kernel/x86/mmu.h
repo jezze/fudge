@@ -28,17 +28,21 @@
 struct mmu_table
 {
 
-    void *pages[MMU_PAGES];
+    unsigned int pages[MMU_PAGES];
 
 };
 
 struct mmu_directory
 {
 
-    struct mmu_table *tables[MMU_TABLES];
+    unsigned int tables[MMU_TABLES];
 
 };
 
+struct mmu_directory *mmu_getdirectory(void);
+struct mmu_table *mmu_getdirectorytable(struct mmu_directory *directory, unsigned int vaddress);
+void mmu_setdirectorytable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int tflags);
+void mmu_settablepage(struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int pflags);
 void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
 void mmu_setdirectory(struct mmu_directory *directory);
 void mmu_enable(void);
