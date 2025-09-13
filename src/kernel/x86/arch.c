@@ -97,11 +97,16 @@ static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int pad
             for (i = 0; format->readsection(task->address, &section, i); i++)
             {
 
-                /* TODO: Figure out actual size to map */
-                /* TODO: Map read-only sections directly to task->address with offset */
-                /* TODO: Map writable section as copy on write */
-                arch_mapuser(itask, paddress, section.vaddress, TASK_CODESIZE);
-                mmu_setdirectory(directory);
+                if (section.msize)
+                {
+
+                    /* TODO: Figure out actual size to map */
+                    /* TODO: Map read-only sections directly to task->address with offset */
+                    /* TODO: Map writable section as copy on write */
+                    arch_mapuser(itask, paddress, section.vaddress, TASK_CODESIZE);
+                    mmu_setdirectory(directory);
+
+                }
 
                 /* TODO: Remove this break */
                 break;
@@ -113,8 +118,13 @@ static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int pad
             for (i = 0; format->readsection(task->address, &section, i); i++)
             {
 
-                buffer_copy((void *)section.vaddress, (void *)(task->address + section.offset), section.fsize);
-                buffer_clear((void *)(section.vaddress + section.fsize), section.msize - section.fsize);
+                if (section.fsize && section.msize >= section.fsize)
+                {
+
+                    buffer_copy((void *)section.vaddress, (void *)(task->address + section.offset), section.fsize);
+                    buffer_clear((void *)(section.vaddress + section.fsize), section.msize - section.fsize);
+
+                }
 
             }
 
