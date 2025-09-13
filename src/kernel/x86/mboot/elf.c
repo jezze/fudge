@@ -81,12 +81,15 @@ static unsigned int format_readsection(unsigned int base, struct binary_section 
     if (index < header->phcount)
     {
 
-        section->vaddress = programheaders[index].vaddress;
-        section->msize = programheaders[index].msize;
-        section->fsize = programheaders[index].fsize;
-        section->offset = programheaders[index].offset;
+        struct elf_programheader *programheader = &programheaders[index];
 
-        return programheaders[index].vaddress;
+        section->vaddress = programheader->vaddress;
+        section->msize = programheader->msize;
+        section->fsize = programheader->fsize;
+        section->offset = programheader->offset;
+        section->flags = programheader->flags;
+
+        return programheader->vaddress;
 
     }
 

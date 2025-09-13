@@ -5,6 +5,7 @@ struct binary_section
     unsigned int msize;
     unsigned int fsize;
     unsigned int offset;
+    unsigned int flags;
 
 };
 
