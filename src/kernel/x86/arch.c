@@ -62,6 +62,16 @@ static struct mmu_table *mmap_gettable(struct mmap *mmap, unsigned int address)
 
 }
 
+static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+{
+
+    struct mmu_directory *directory = mmap_getdirectory(mmap);
+    struct mmu_table *table = mmap_gettable(mmap, paddress);
+
+    mmu_map(directory, table, paddress, vaddress, size, tflags, pflags);
+
+}
+
 static void mmap_init(struct mmap *mmap, unsigned int address)
 {
 
@@ -73,10 +83,10 @@ static void mmap_init(struct mmap *mmap, unsigned int address)
 
 }
 
-static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int paddress)
+static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int paddress)
 {
 
-    struct mmu_directory *directory = mmap_getdirectory(map);
+    struct mmu_directory *directory = mmap_getdirectory(mmap);
     struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
     struct task *task = pool_gettask(itask);
 
@@ -103,7 +113,7 @@ static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int pad
                     /* TODO: Figure out actual size to map */
                     /* TODO: Map read-only sections directly to task->address with offset */
                     /* TODO: Map writable section as copy on write */
-                    arch_mapuser(itask, paddress, section.vaddress, TASK_CODESIZE);
+                    map(mmap, paddress, section.vaddress, TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
                     mmu_setdirectory(directory);
 
                 }
@@ -128,22 +138,12 @@ static void mmap_inittask(struct mmap *map, unsigned int itask, unsigned int pad
 
             }
 
-            arch_mapuser(itask, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE);
+            map(mmap, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
             mmu_setdirectory(directory);
 
         }
 
     }
-
-}
-
-static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
-{
-
-    struct mmu_directory *directory = mmap_getdirectory(mmap);
-    struct mmu_table *table = mmap_gettable(mmap, paddress);
-
-    mmu_map(directory, table, paddress, vaddress, size, tflags, pflags);
 
 }
 
@@ -254,13 +254,6 @@ void arch_mapvideo(unsigned int paddress, unsigned int vaddress, unsigned int si
 {
 
     map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
-
-}
-
-void arch_mapuser(unsigned int itask, unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    map(&ummap[itask], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
