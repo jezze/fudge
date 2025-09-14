@@ -106,9 +106,10 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
 
                     /* TODO: Map read-only sections directly to task->address with offset */
                     /* TODO: Map writable section as copy on write */
+                    unsigned int pagestart = section.vaddress & 0xFFFFF000;
                     unsigned int pagesize = (section.msize + 0x1000) & 0xFFFFF000;
 
-                    map(mmap, paddress + pageoffset, section.vaddress, pagesize, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+                    map(mmap, paddress + pageoffset, pagestart, pagesize, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
                     pageoffset += pagesize;
 
