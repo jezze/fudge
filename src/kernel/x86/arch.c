@@ -96,6 +96,7 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
 
             struct binary_section section;
             unsigned int i;
+            unsigned int pageoffset = 0;
 
             for (i = 0; format->readsection(task->address, &section, i); i++)
             {
@@ -106,13 +107,14 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
                     /* TODO: Figure out actual size to map */
                     /* TODO: Map read-only sections directly to task->address with offset */
                     /* TODO: Map writable section as copy on write */
-                    map(mmap, paddress, section.vaddress, TASK_CODESIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+                    unsigned int pagesize = (section.msize + 0x1000) & 0xFFFFF000;
+
+                    map(mmap, paddress + pageoffset, section.vaddress, pagesize, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
                     mmu_setdirectory(directory);
 
-                }
+                    pageoffset += pagesize;
 
-                /* TODO: Remove this break */
-                break;
+                }
 
             }
 
