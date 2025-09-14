@@ -124,13 +124,11 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
             for (i = 0; format->readsection(task->address, &section, i); i++)
             {
 
-                if (section.fsize && section.msize >= section.fsize)
-                {
-
+                if (section.fsize)
                     buffer_copy((void *)section.vaddress, (void *)(task->address + section.offset), section.fsize);
-                    buffer_clear((void *)(section.vaddress + section.fsize), section.msize - section.fsize);
 
-                }
+                if (section.msize > section.fsize)
+                    buffer_clear((void *)(section.vaddress + section.fsize), section.msize - section.fsize);
 
             }
 
