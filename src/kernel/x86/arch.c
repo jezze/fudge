@@ -407,20 +407,13 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 {
 
     unsigned int address = cpu_getcr2();
-    struct core *core = kernel_getcore();
+    struct mmu_directory *directory = mmu_getdirectory();
+    struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
+    unsigned int index = address >> 22;
 
     DEBUG_FMT2(DEBUG_INFO, "exception: page fault at 0x%H8u type %u", &address, &type);
 
-    if (core->itask)
-    {
-
-        struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
-        struct mmu_directory *directory = mmap_getdirectory(&ummap[core->itask]);
-        unsigned int index = address >> 22;
-
-        directory->tables[index] = kdirectory->tables[index];
-
-    }
+    directory->tables[index] = kdirectory->tables[index];
 
     return arch_resume(&general, &interrupt);
 
