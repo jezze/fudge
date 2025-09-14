@@ -95,8 +95,8 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
         {
 
             struct binary_section section;
-            unsigned int i;
             unsigned int pageoffset = 0;
+            unsigned int i;
 
             for (i = 0; format->readsection(task->address, &section, i); i++)
             {
@@ -104,7 +104,6 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
                 if (section.msize)
                 {
 
-                    /* TODO: Figure out actual size to map */
                     /* TODO: Map read-only sections directly to task->address with offset */
                     /* TODO: Map writable section as copy on write */
                     unsigned int pagesize = (section.msize + 0x1000) & 0xFFFFF000;
