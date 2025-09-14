@@ -109,13 +109,15 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
                     unsigned int pagesize = (section.msize + 0x1000) & 0xFFFFF000;
 
                     map(mmap, paddress + pageoffset, section.vaddress, pagesize, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-                    mmu_setdirectory(directory);
 
                     pageoffset += pagesize;
 
                 }
 
             }
+
+            map(mmap, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+            mmu_setdirectory(directory);
 
             /* TODO: Do this in the page fault handler */
             /* TODO: Only copy sections that are writable */
@@ -131,9 +133,6 @@ static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int pa
                 }
 
             }
-
-            map(mmap, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            mmu_setdirectory(directory);
 
         }
 
