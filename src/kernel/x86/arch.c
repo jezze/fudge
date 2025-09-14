@@ -76,62 +76,55 @@ static void mmap_init(struct mmap *mmap, unsigned int address)
 
 }
 
-static void mmap_inittask(struct mmap *mmap, unsigned int itask, unsigned int paddress)
+static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int paddress)
 {
 
+    struct binary_format *format = binary_findformat(address);
     struct mmu_directory *directory = mmap_getdirectory(mmap);
     struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
-    struct task *task = pool_gettask(itask);
 
     buffer_copy(directory, kdirectory, sizeof (struct mmu_directory));
     mmu_setdirectory(directory);
 
-    if (task)
+    if (format)
     {
 
-        struct binary_format *format = binary_findformat(task->address);
+        struct binary_section section;
+        unsigned int pageoffset = 0;
+        unsigned int i;
 
-        if (format)
+        for (i = 0; format->readsection(address, &section, i); i++)
         {
 
-            struct binary_section section;
-            unsigned int pageoffset = 0;
-            unsigned int i;
-
-            for (i = 0; format->readsection(task->address, &section, i); i++)
+            if (section.msize)
             {
 
-                if (section.msize)
-                {
+                /* TODO: Map read-only sections directly to task->address with offset */
+                /* TODO: Map writable section as copy on write */
+                unsigned int pagestart = section.vaddress & 0xFFFFF000;
+                unsigned int pagesize = (section.msize + 0x1000) & 0xFFFFF000;
 
-                    /* TODO: Map read-only sections directly to task->address with offset */
-                    /* TODO: Map writable section as copy on write */
-                    unsigned int pagestart = section.vaddress & 0xFFFFF000;
-                    unsigned int pagesize = (section.msize + 0x1000) & 0xFFFFF000;
+                map(mmap, paddress + pageoffset, pagestart, pagesize, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
-                    map(mmap, paddress + pageoffset, pagestart, pagesize, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-
-                    pageoffset += pagesize;
-
-                }
+                pageoffset += pagesize;
 
             }
 
-            map(mmap, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-            mmu_setdirectory(directory);
+        }
 
-            /* TODO: Do this in the page fault handler */
-            /* TODO: Only copy sections that are writable */
-            for (i = 0; format->readsection(task->address, &section, i); i++)
-            {
+        map(mmap, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+        mmu_setdirectory(directory);
 
-                if (section.fsize)
-                    buffer_copy((void *)section.vaddress, (void *)(task->address + section.offset), section.fsize);
+        /* TODO: Do this in the page fault handler */
+        /* TODO: Only copy sections that are writable */
+        for (i = 0; format->readsection(address, &section, i); i++)
+        {
 
-                if (section.msize > section.fsize)
-                    buffer_clear((void *)(section.vaddress + section.fsize), section.msize - section.fsize);
+            if (section.fsize)
+                buffer_copy((void *)section.vaddress, (void *)(address + section.offset), section.fsize);
 
-            }
+            if (section.msize > section.fsize)
+                buffer_clear((void *)(section.vaddress + section.fsize), section.msize - section.fsize);
 
         }
 
@@ -155,7 +148,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
             unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
 
             mmap_init(&ummap[ntask], ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask);
-            mmap_inittask(&ummap[ntask], ntask, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+            mmap_inittask(&ummap[ntask], args->address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
 
             return target;
 
@@ -411,7 +404,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
     DEBUG_FMT2(DEBUG_INFO, "exception: page fault at 0x%H8u type %u", &address, &type);
 
-    directory->tables[index] = kdirectory->tables[index];
+    if (!directory->tables[index] && kdirectory->tables[index])
+        directory->tables[index] = kdirectory->tables[index];
 
     return arch_resume(&general, &interrupt);
 
@@ -510,7 +504,7 @@ void arch_setup2(unsigned int address)
         unsigned int source = kernel_getchannelinode(ntask, 0);
 
         mmap_init(&ummap[ntask], ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask);
-        mmap_inittask(&ummap[ntask], ntask, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+        mmap_inittask(&ummap[ntask], address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
         kernel_place(source, target, EVENT_MAIN, 0, 0);
 
     }
