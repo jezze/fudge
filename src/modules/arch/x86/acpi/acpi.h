@@ -103,16 +103,22 @@ struct acpi_srat
 struct acpi_rsdp
 {
 
-    char signature[8];
+    unsigned char signature[8];
     unsigned char checksum;
-    char oem[6];
+    unsigned char oem[6];
     unsigned char revision;
     unsigned int rsdt;
+
+};
+
+struct acpi_xsdp
+{
+
     unsigned int length;
     unsigned int xsdtLow;
     unsigned int xsdtHigh;
-    unsigned char checksum2;
-    unsigned char reserved[2];
+    unsigned char xchecksum;
+    unsigned char reserved[3];
 
 };
 

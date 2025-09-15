@@ -60,6 +60,20 @@ struct acpi_sdth *acpi_findheader(char *name)
 
 }
 
+unsigned int validate(void *address, unsigned int length)
+{
+
+    unsigned char *x = address;
+    unsigned int sum = 0;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+        sum += x[i];
+
+    return (sum & 0xFF) == 0;
+
+}
+
 void module_init(void)
 {
 
@@ -68,7 +82,25 @@ void module_init(void)
     if (!rsdp)
         return;
 
-    arch_mapuncached(rsdp->rsdt & 0xFFFFF000, rsdp->rsdt & 0xFFFFF000, 0x00100000);
+    if (!validate(rsdp, 20))
+        return;
+
+    if (rsdp->revision == 0)
+    {
+
+        arch_mapuncached(rsdp->rsdt & 0xFFFFF000, rsdp->rsdt & 0xFFFFF000, 0x00100000);
+
+    }
+
+    if (rsdp->revision == 2)
+    {
+
+        struct acpi_xsdp *xsdp = (struct acpi_xsdp *)(rsdp + 1);
+
+        if (!validate(xsdp, 16))
+            return;
+
+    }
 
 }
 
