@@ -107,17 +107,16 @@ struct acpi_rsdp
     unsigned char checksum;
     unsigned char oem[6];
     unsigned char revision;
-    unsigned int rsdt;
+    unsigned char rsdt[4];
 
 };
 
 struct acpi_xsdp
 {
 
-    unsigned int length;
-    unsigned int xsdtLow;
-    unsigned int xsdtHigh;
-    unsigned char xchecksum;
+    unsigned char length[4];
+    unsigned char xsdt[8];
+    unsigned char checksum;
     unsigned char reserved[3];
 
 };
