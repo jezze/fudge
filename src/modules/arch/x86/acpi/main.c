@@ -60,7 +60,7 @@ struct acpi_sdth *acpi_findheader(char *name)
 
 }
 
-unsigned int validate(void *address, unsigned int length)
+static unsigned int validate(void *address, unsigned int length)
 {
 
     unsigned char *x = address;
