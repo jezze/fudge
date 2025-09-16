@@ -73,7 +73,7 @@ static struct acpi_sdth *getsdth(struct acpi_rsdp *rsdp)
 
         struct acpi_xsdp *xsdp = (struct acpi_xsdp *)(rsdp + 1);
 
-        if (validate(xsdp, sizeof (struct acpi_xsdp)))
+        if (validate(rsdp, sizeof (struct acpi_rsdp)) && validate(xsdp, sizeof (struct acpi_xsdp)))
             return (struct acpi_sdth *)((xsdp->xsdt[0] << 0) | (xsdp->xsdt[1] << 8) | (xsdp->xsdt[2] << 16) | (xsdp->xsdt[3] << 24));
 
     }
