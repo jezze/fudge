@@ -10,7 +10,7 @@ static struct node_operands operands;
 static unsigned int pick(struct mailbox *mailbox, struct message *message, unsigned int count, void *data)
 {
 
-    unsigned int length = 0;
+    unsigned int status = MESSAGE_RETRY;
 
     spinlock_acquire(&mailbox->spinlock);
 
@@ -19,14 +19,16 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
         unsigned int datasize;
 
-        length += ring_read_all(&mailbox->ring, message, sizeof (struct message));
+        ring_read_all(&mailbox->ring, message, sizeof (struct message));
 
         datasize = message_datasize(message);
 
         if (datasize <= count)
         {
 
-            length += ring_read_all(&mailbox->ring, data, datasize);
+            ring_read_all(&mailbox->ring, data, datasize);
+
+            status = MESSAGE_OK;
 
         }
 
@@ -35,7 +37,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
             ring_skip(&mailbox->ring, datasize);
 
-            length = 0;
+            status = MESSAGE_RETRY;
 
         }
 
@@ -43,14 +45,14 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
     spinlock_release(&mailbox->spinlock);
 
-    return length ? MESSAGE_OK : MESSAGE_RETRY;
+    return status;
 
 }
 
 static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
-    unsigned int length = 0;
+    unsigned int status = MESSAGE_RETRY;
     struct message message;
 
     message_init(&message, event, source, count);
@@ -59,14 +61,16 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
     if (ring_avail(&mailbox->ring) > message.length)
     {
 
-        length += ring_write_all(&mailbox->ring, &message, sizeof (struct message));
-        length += ring_write_all(&mailbox->ring, data, message_datasize(&message));
+        ring_write_all(&mailbox->ring, &message, sizeof (struct message));
+        ring_write_all(&mailbox->ring, data, message_datasize(&message));
+
+        status = MESSAGE_OK;
 
     }
 
     spinlock_release(&mailbox->spinlock);
 
-    return length ? MESSAGE_OK : MESSAGE_RETRY;
+    return status;
 
 }
 
