@@ -57,11 +57,16 @@ static struct mmu_table *mmap_gettable(struct mmap *mmap, unsigned int vaddress,
 static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_table *table = mmap_gettable(mmap, vaddress, tflags);
     unsigned int i;
 
     for (i = 0; i < size; i += MMU_PAGESIZE)
+    {
+
+        struct mmu_table *table = mmap_gettable(mmap, vaddress + i, tflags);
+
         mmu_settablepage(table, paddress + i, vaddress + i, pflags);
+
+    }
 
 }
 
@@ -476,7 +481,6 @@ void arch_setup1(void)
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     mmap_init(&kmmap, ARCH_MMUKERNELADDRESS);
-    buffer_clear(mmap_getdirectory(&kmmap), sizeof (struct mmu_directory));
     arch_map(0x00000000, 0x00000000, 0x00400000);
     arch_map(0x00400000, 0x00400000, 0x00400000);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, 0x00400000);
