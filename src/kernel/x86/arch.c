@@ -85,17 +85,17 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
 {
 
     struct binary_format *format = binary_findformat(address);
-    struct mmu_directory *directory = mmap_getdirectory(mmap);
-    struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
-
-    buffer_copy(directory, kdirectory, sizeof (struct mmu_directory));
 
     if (format)
     {
 
+        struct mmu_directory *directory = mmap_getdirectory(mmap);
+        struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
         struct binary_section section;
         unsigned int pageoffset = 0;
         unsigned int i;
+
+        buffer_copy(directory, kdirectory, sizeof (struct mmu_directory));
 
         for (i = 0; format->readsection(address, &section, i); i++)
         {
