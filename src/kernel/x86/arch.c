@@ -89,7 +89,6 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
     struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
 
     buffer_copy(directory, kdirectory, sizeof (struct mmu_directory));
-    mmu_setdirectory(directory);
 
     if (format)
     {
