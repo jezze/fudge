@@ -114,12 +114,13 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
+    unsigned int wm = lookup(option_getstring("wm-service"));
+
+    channel_send(0, wm, EVENT_WMMAP);
 
     while (channel_process(0));
 
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, wm, EVENT_WMUNMAP);
 
 }
 

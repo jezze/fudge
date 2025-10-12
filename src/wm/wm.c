@@ -12,10 +12,14 @@
 #include "render.h"
 #include "parser.h"
 
+#define STATE_NORMAL        0
+#define STATE_GRABBED       1
+#define STATE_UNGRABBED     2
+
 struct state
 {
 
-    unsigned int paused;
+    unsigned int state;
     struct util_position mouseposition;
     struct util_position mousemovement;
     struct util_position mousepressed;
@@ -35,7 +39,7 @@ static struct blit_display display;
 static struct state state;
 static unsigned int linebuffer[3840];
 
-static void setupvideo(unsigned int source)
+static void setupvideo(unsigned int video)
 {
 
     struct event_videoconf videoconf;
@@ -46,9 +50,9 @@ static void setupvideo(unsigned int source)
     videoconf.bpp = option_getdecimal("bpp");
 
     buffer_clear(black, 768);
-    channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCMAP, 768, &black);
-    channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait(0, option_getdecimal("video-service"), EVENT_VIDEOINFO);
+    channel_send_buffer(0, video, EVENT_VIDEOCMAP, 768, &black);
+    channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_wait(0, video, EVENT_VIDEOINFO);
 
 }
 
@@ -600,19 +604,29 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int keyboard = lookup(option_getstring("keyboard-service"));
+    unsigned int mouse = lookup(option_getstring("mouse-service"));
+    unsigned int video = lookup(option_getstring("video-service"));
+
     call_announce(0, djb_hash(2, "wm"));
-    option_setdecimal("keyboard-service", lookup(option_getstring("keyboard-service")));
-    option_setdecimal("mouse-service", lookup(option_getstring("mouse-service")));
-    option_setdecimal("video-service", lookup(option_getstring("video-service")));
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
-    channel_send(0, option_getdecimal("mouse-service"), EVENT_LINK);
-    channel_send(0, option_getdecimal("video-service"), EVENT_LINK);
-    setupvideo(source);
+    channel_send(0, keyboard, EVENT_LINK);
+    channel_send(0, mouse, EVENT_LINK);
+    channel_send(0, video, EVENT_LINK);
+    setupvideo(video);
 
     while (channel_process(0))
     {
 
-        if (!state.paused)
+        if (state.state == STATE_UNGRABBED)
+        {
+
+            setupvideo(video);
+
+            state.state = STATE_NORMAL;
+
+        }
+
+        if (state.state == STATE_NORMAL)
         {
 
             if (display.framebuffer)
@@ -629,9 +643,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, option_getdecimal("video-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("mouse-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK);
+    channel_send(0, video, EVENT_UNLINK);
+    channel_send(0, mouse, EVENT_UNLINK);
+    channel_send(0, keyboard, EVENT_UNLINK);
 
 }
 
@@ -804,7 +818,7 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    state.paused = 1;
+    state.state = STATE_GRABBED;
 
     channel_bind(EVENT_KEYPRESS, 0);
     channel_bind(EVENT_KEYRELEASE, 0);
@@ -837,7 +851,7 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    state.paused = 0;
+    state.state = STATE_UNGRABBED;
 
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
@@ -847,7 +861,6 @@ static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_send(0, source, EVENT_WMACK);
-    setupvideo(source);
 
 }
 

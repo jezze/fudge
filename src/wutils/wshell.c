@@ -15,7 +15,7 @@ static struct ring result;
 static struct job_worker workers[JOBSIZE];
 static struct job job;
 
-static void update(void)
+static void update(unsigned int wm)
 {
 
     char buffer[CONTENTSIZE];
@@ -24,13 +24,13 @@ static void update(void)
 
     count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
-    channel_send_fmt2(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input1, buffer, CONTENTSIZE);
     cursor = count;
     count += ring_readcopy(&input2, buffer + count, CONTENTSIZE);
 
-    channel_send_fmt3(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= output cursor \"%u\"\n= input content \"%w\"\n", &cursor, buffer, &count);
+    channel_send_fmt3(0, wm, EVENT_WMRENDERDATA, "= output cursor \"%u\"\n= input content \"%w\"\n", &cursor, buffer, &count);
 
 }
 
@@ -98,7 +98,7 @@ static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int c
 
 }
 
-static void interpretdata(unsigned int ichannel, struct message *message, void *buffer)
+static void interpretdata(unsigned int wm, unsigned int ichannel, struct message *message, void *buffer)
 {
 
     job_init(&job, workers, JOBSIZE);
@@ -127,7 +127,7 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
 
         }
 
-        update();
+        update(wm);
 
     }
 
@@ -135,13 +135,13 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
     {
 
         job_killall(&job);
-        update();
+        update(wm);
 
     }
 
 }
 
-static void interpret(void)
+static void interpret(unsigned int wm)
 {
 
     char buffer[MESSAGE_SIZE];
@@ -155,7 +155,7 @@ static void interpret(void)
 
         printprompt();
         print(buffer, count);
-        update();
+        update(wm);
 
         while (channel_pollany(1, channel, &message, MESSAGE_SIZE, buffer))
         {
@@ -164,7 +164,7 @@ static void interpret(void)
             {
 
             case EVENT_DATA:
-                interpretdata(0, &message, buffer);
+                interpretdata(wm, 0, &message, buffer);
 
                 break;
 
@@ -180,7 +180,7 @@ static void interpret(void)
     else
     {
 
-        update();
+        update(wm);
 
     }
 
@@ -346,21 +346,24 @@ static void complete(void)
 static void onerror(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int wm = lookup(option_getstring("wm-service"));
+
     print("[ERROR] ", 8);
     print(mdata, msize);
-    update();
+    update(wm);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
+    unsigned int wm = lookup(option_getstring("wm-service"));
+
+    channel_send(0, wm, EVENT_WMMAP);
 
     while (channel_process(0));
 
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, wm, EVENT_WMUNMAP);
 
 }
 
@@ -375,7 +378,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
         "      + text id \"input\" in \"output\" wrap \"char\" content \"\"\n";
 
-    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
 
 }
 
@@ -459,7 +462,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             case KEYS_KEY_ENTER:
                 ring_move(&input1, &input2);
                 ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
-                interpret();
+                interpret(source);
 
                 break;
 
@@ -510,7 +513,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    update();
+    update(source);
 
 }
 

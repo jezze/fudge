@@ -5,14 +5,14 @@
 static char path[256];
 static unsigned int cursor = 0;
 
-static void updatepath(void)
+static void updatepath(unsigned int wm)
 {
 
-    channel_send_fmt1(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
+    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
 
 }
 
-static void updatecontent(void)
+static void updatecontent(unsigned int wm)
 {
 
     unsigned int target = fs_auth(path);
@@ -32,7 +32,7 @@ static void updatecontent(void)
             unsigned int maxsend = 50;
             unsigned int count = 0;
 
-            channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
+            channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" overflow \"vscroll\" span \"1\"\n");
 
             for (offset = 0; (nrecords = fs_list(1, target, id, offset, records, 8)); offset += nrecords)
             {
@@ -53,7 +53,7 @@ static void updatecontent(void)
 
             }
 
-            channel_send_buffer(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, data);
+            channel_send_buffer(0, wm, EVENT_WMRENDERDATA, count, data);
 
         }
 
@@ -64,12 +64,13 @@ static void updatecontent(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
+    unsigned int wm = lookup(option_getstring("wm-service"));
+
+    channel_send(0, wm, EVENT_WMMAP);
 
     while (channel_process(0));
 
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, wm, EVENT_WMUNMAP);
 
 }
 
@@ -120,8 +121,8 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        updatepath();
-        updatecontent();
+        updatepath(source);
+        updatecontent(source);
 
     }
 
@@ -129,8 +130,8 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     {
 
         cstring_write_fmt1(path, 256, 0, "%s\\0", kv_getstring(event, "path="));
-        updatepath();
-        updatecontent();
+        updatepath(source);
+        updatecontent(source);
 
     }
 
@@ -138,8 +139,8 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     {
 
         cstring_write_fmt2(path, 256, 0, "%s%s\\0", path, kv_getstring(event, "path="));
-        updatepath();
-        updatecontent();
+        updatepath(source);
+        updatecontent(source);
 
     }
 
@@ -166,10 +167,10 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + button in \"bottom\" label \"Paste\" onclick \"q=paste\"\n"
         "      + button in \"bottom\" label \"Delete\" onclick \"q=delete\"\n";
 
-    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
     cstring_write_fmt0(path, 256, 0, "initrd:\\0");
-    updatepath();
-    updatecontent();
+    updatepath(source);
+    updatecontent(source);
 
 }
 
@@ -187,7 +188,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor--;
 
-            channel_send_fmt1(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(0, source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 
@@ -199,7 +200,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor++;
 
-            channel_send_fmt1(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(0, source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 

@@ -4,12 +4,13 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
+    unsigned int wm = lookup(option_getstring("wm-service"));
+
+    channel_send(0, wm, EVENT_WMMAP);
 
     while (channel_process(0));
 
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, wm, EVENT_WMUNMAP);
 
 }
 
@@ -27,7 +28,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "    + text in \"base\" wrap \"word\" content \"tomByrer (Tom Byrer)\"\n"
         "    + text in \"base\" wrap \"word\" content \"LemonDMN2\"\n";
 
-    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
 
 }
 

@@ -4,12 +4,13 @@
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", lookup(option_getstring("wm-service")));
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
+    unsigned int wm = lookup(option_getstring("wm-service"));
+
+    channel_send(0, wm, EVENT_WMMAP);
 
     while (channel_process(0));
 
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+    channel_send(0, wm, EVENT_WMUNMAP);
 
 }
 
@@ -37,7 +38,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "      + text in \"mouse-acc-list\" wrap \"word\" span \"1\" content \"Mouse acceleration\"\n"
         "      + text in \"mouse-acc-list\" weight \"bold\" wrap \"word\" content \"Yes / No\"\n";
 
-    channel_send_fmt0(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, data);
+    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
 
 }
 
