@@ -9,7 +9,7 @@ struct mmu_directory *mmu_getdirectory(void)
 
 }
 
-struct mmu_table *mmu_getdirectorytable(struct mmu_directory *directory, unsigned int vaddress)
+struct mmu_table *mmu_gettable(struct mmu_directory *directory, unsigned int vaddress)
 {
 
     unsigned int index = vaddress >> 22;
@@ -18,28 +18,62 @@ struct mmu_table *mmu_getdirectorytable(struct mmu_directory *directory, unsigne
 
 }
 
-void mmu_setdirectorytable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int tflags)
-{
-
-    unsigned int index = vaddress >> 22;
-
-    directory->tables[index] = paddress | tflags;
-
-}
-
-void mmu_settablepage(struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int pflags)
-{
-
-    unsigned int index = (vaddress << 10) >> 22;
-
-    table->pages[index] = paddress | pflags;
-
-}
-
 void mmu_setdirectory(struct mmu_directory *directory)
 {
 
     cpu_setcr3((unsigned int)directory);
+
+}
+
+void mmu_settable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int flags)
+{
+
+    unsigned int index = vaddress >> 22;
+
+    directory->tables[index] = paddress | flags;
+
+}
+
+void mmu_settableflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags)
+{
+
+    unsigned int index = vaddress >> 22;
+
+    directory->tables[index] &= 0xFFFFF000;
+    directory->tables[index] |= flags;
+
+}
+
+void mmu_setpage(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int flags)
+{
+
+    struct mmu_table *table = mmu_gettable(directory, vaddress);
+
+    if (table)
+    {
+
+        unsigned int index = (vaddress << 10) >> 22;
+
+        table->pages[index] = paddress | flags;
+
+    }
+
+}
+
+void mmu_setpageflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags)
+{
+
+    struct mmu_table *table = mmu_gettable(directory, vaddress);
+
+    if (table)
+    {
+
+        unsigned int index = (vaddress << 10) >> 22;
+
+        table->pages[index] &= 0xFFFFF000;
+        table->pages[index] |= flags;
+
+    }
 
 }
 

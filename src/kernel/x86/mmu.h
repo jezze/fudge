@@ -43,10 +43,11 @@ struct mmu_directory
 };
 
 struct mmu_directory *mmu_getdirectory(void);
-struct mmu_table *mmu_getdirectorytable(struct mmu_directory *directory, unsigned int vaddress);
-void mmu_setdirectorytable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int tflags);
-void mmu_settablepage(struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int pflags);
-void mmu_map(struct mmu_directory *directory, struct mmu_table *table, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
+struct mmu_table *mmu_gettable(struct mmu_directory *directory, unsigned int vaddress);
 void mmu_setdirectory(struct mmu_directory *directory);
+void mmu_settable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int flags);
+void mmu_settableflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
+void mmu_setpage(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int flags);
+void mmu_setpageflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
 void mmu_enable(void);
 void mmu_disable(void);
