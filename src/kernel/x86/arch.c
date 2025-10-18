@@ -151,9 +151,11 @@ static void mmap_init(struct mmap *mmap, unsigned int mmuaddress, unsigned int m
 
 }
 
-static struct mmap_entry *mmap_find(struct mmap_header *header, struct mmap_entry *entries, unsigned int vaddress)
+static struct mmap_entry *mmap_find(unsigned int vaddress)
 {
 
+    struct mmap_header *header = (struct mmap_header *)ARCH_MMAPVADDRESS;
+    struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
     unsigned int i;
 
     for (i = 0; i < header->entries; i++)
@@ -491,26 +493,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (type & MMU_EFLAG_USER)
         {
 
-            struct mmap_header *header = (struct mmap_header *)ARCH_MMAPVADDRESS;
-            struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
-            struct mmap_entry *entry = mmap_find(header, entries, address);
             unsigned int directory = mmu_getdirectory();
-            unsigned int flags = mmu_gettableflags(directory, address);
-
-            if (flags & MMU_TFLAG_PRESENT)
-            {
-
-            }
-
-            else
-            {
-
-                unsigned int kflags = mmu_gettableflags(kmmap.directory, address);
-
-                if (kflags & MMU_TFLAG_PRESENT)
-                    mmu_settable(directory, address, mmu_gettable(kmmap.directory, address));
-
-            }
+            struct mmap_entry *entry = mmap_find(address);
 
             if (entry)
             {
@@ -522,6 +506,16 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
                 if (entry->msize > entry->fsize)
                     buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
+
+            }
+
+            else
+            {
+
+                unsigned int kflags = mmu_gettableflags(kmmap.directory, address);
+
+                if (kflags & MMU_TFLAG_PRESENT)
+                    mmu_settable(directory, address, mmu_gettable(kmmap.directory, address));
 
             }
 
