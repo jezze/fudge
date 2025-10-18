@@ -128,7 +128,7 @@ static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress,
 
 }
 
-static void mmap_initentry(struct mmap_entry *entry, unsigned int address, unsigned int fsize, unsigned int msize, unsigned int paddress, unsigned int vaddress, unsigned int vpaddress, unsigned int vpsize)
+static void mmap_initentry(struct mmap_entry *entry, unsigned int address, unsigned int fsize, unsigned int msize, unsigned int paddress, unsigned int vaddress)
 {
 
     entry->address = address;
@@ -136,8 +136,8 @@ static void mmap_initentry(struct mmap_entry *entry, unsigned int address, unsig
     entry->msize = msize;
     entry->paddress = paddress;
     entry->vaddress = vaddress;
-    entry->vpaddress = vpaddress;
-    entry->vpsize = vpsize;
+    entry->vpaddress = vaddress & 0xFFFFF000;
+    entry->vpsize = (msize + 0x1000) & 0xFFFFF000;
 
 }
 
@@ -207,7 +207,7 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
 
                 struct mmap_entry *entry = &entries[header->entries];
 
-                mmap_initentry(entry, address + section.offset, section.fsize, section.msize, paddress + header->offset, section.vaddress, section.vaddress & 0xFFFFF000, (section.msize + 0x1000) & 0xFFFFF000);
+                mmap_initentry(entry, address + section.offset, section.fsize, section.msize, paddress + header->offset, section.vaddress);
                 map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
                 header->offset += entry->vpsize;
