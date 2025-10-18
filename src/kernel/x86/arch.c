@@ -34,7 +34,6 @@ struct mmap
 {
 
     unsigned int directory;
-    unsigned int tables;
     unsigned int entries;
     unsigned int mmapdata;
 
