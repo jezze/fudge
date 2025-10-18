@@ -61,7 +61,7 @@ static void mmap_allocate(struct mmap *mmap, unsigned int paddress, unsigned int
         if (!mmu_gettable(mmap->directory, v))
         {
 
-            unsigned int address = mmap->tables + 4096 * mmap->entries;
+            unsigned int address = mmap->directory + 4096 + 4096 * mmap->entries;
 
             buffer_clear((void *)address, 4096);
             mmu_settableaddress(mmap->directory, v, address);
@@ -143,7 +143,6 @@ static void mmap_init(struct mmap *mmap, unsigned int mmuaddress, unsigned int m
 {
 
     mmap->directory = mmuaddress;
-    mmap->tables = mmuaddress + 4096;
     mmap->entries = 0;
     mmap->mmapdata = mmapdata;
 
