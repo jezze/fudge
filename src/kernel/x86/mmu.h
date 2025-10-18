@@ -43,13 +43,18 @@ struct mmu_directory
 };
 
 struct mmu_directory *mmu_getdirectory(void);
-struct mmu_table *mmu_gettable(struct mmu_directory *directory, unsigned int vaddress);
-unsigned int mmu_gettableflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
-unsigned int mmu_getpageflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
+unsigned int mmu_gettablevalue(struct mmu_directory *directory, unsigned int vaddress);
+unsigned int mmu_gettableaddress(struct mmu_directory *directory, unsigned int vaddress);
+unsigned int mmu_gettableflags(struct mmu_directory *directory, unsigned int vaddress);
+unsigned int mmu_getpagevalue(struct mmu_directory *directory, unsigned int vaddress);
+unsigned int mmu_getpageaddress(struct mmu_directory *directory, unsigned int vaddress);
+unsigned int mmu_getpageflags(struct mmu_directory *directory, unsigned int vaddress);
 void mmu_setdirectory(struct mmu_directory *directory);
-void mmu_settable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int flags);
+void mmu_settablevalue(struct mmu_directory *directory, unsigned int vaddress, unsigned int value);
+void mmu_settableaddress(struct mmu_directory *directory, unsigned int vaddress, unsigned int address);
 void mmu_settableflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
-void mmu_setpage(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int flags);
+void mmu_setpagevalue(struct mmu_directory *directory, unsigned int vaddress, unsigned int value);
+void mmu_setpageaddress(struct mmu_directory *directory, unsigned int vaddress, unsigned int address);
 void mmu_setpageflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
 void mmu_enable(void);
 void mmu_disable(void);

@@ -66,28 +66,27 @@ static void mmap_allocate(struct mmap *mmap, unsigned int paddress, unsigned int
         unsigned int p = paddress + i;
         unsigned int v = vaddress + i;
 
-        if (!mmu_gettable(directory, v))
+        if (!mmu_gettablevalue(directory, v))
         {
 
             unsigned int address = mmap->tables + sizeof (struct mmu_table) * mmap->entries;
 
             buffer_clear((void *)address, sizeof (struct mmu_table));
-            mmu_settable(directory, address, v, 0);
+            mmu_settableaddress(directory, v, address);
 
             mmap->entries++;
 
         }
 
-        mmu_setpage(directory, p, v, 0);
+        mmu_setpageaddress(directory, v, p);
 
     }
 
 }
 
-static void mmap_setflags(struct mmap *mmap, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static void mmap_setflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    struct mmu_directory *directory = mmap_getdirectory(mmap);
     unsigned int i;
 
     for (i = 0; i < size; i += MMU_PAGESIZE)
@@ -102,11 +101,30 @@ static void mmap_setflags(struct mmap *mmap, unsigned int vaddress, unsigned int
 
 }
 
+static void mmap_addflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < size; i += MMU_PAGESIZE)
+    {
+
+        unsigned int v = vaddress + i;
+
+        mmu_settableflags(directory, v, mmu_gettableflags(directory, v) | tflags);
+        mmu_setpageflags(directory, v, mmu_getpageflags(directory, v) | pflags);
+
+    }
+
+}
+
 static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
+    struct mmu_directory *directory = mmap_getdirectory(mmap);
+
     mmap_allocate(mmap, paddress, vaddress, size);
-    mmap_setflags(mmap, vaddress, size, tflags, pflags);
+    mmap_setflags(directory, vaddress, size, tflags, pflags);
 
 }
 
@@ -190,7 +208,7 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
                 struct mmap_entry *entry = &entries[header->entries];
 
                 mmap_initentry(entry, address + section.offset, section.fsize, section.msize, paddress + header->offset, section.vaddress, section.vaddress & 0xFFFFF000, (section.msize + 0x1000) & 0xFFFFF000);
-                map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+                map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
                 header->offset += entry->vpsize;
                 header->entries++;
@@ -214,6 +232,8 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
 
                 if (entry)
                 {
+
+                    mmap_addflags(directory, entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
 
                     if (entry->fsize)
                         buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->fsize);
@@ -523,8 +543,9 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             {
 
                 struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
+                unsigned int flags = mmu_gettableflags(kdirectory, address);
 
-                if (kdirectory->tables[index] & MMU_TFLAG_PRESENT)
+                if (flags & MMU_TFLAG_PRESENT)
                     directory->tables[index] = kdirectory->tables[index];
 
             }
