@@ -151,6 +151,7 @@ static void mmap_init(struct mmap *mmap, unsigned int mmuaddress, unsigned int m
 
 }
 
+/*
 static struct mmap_entry *mmap_find(struct mmap_header *header, struct mmap_entry *entries, unsigned int vaddress)
 {
 
@@ -169,6 +170,7 @@ static struct mmap_entry *mmap_find(struct mmap_header *header, struct mmap_entr
     return 0;
 
 }
+*/
 
 static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int paddress)
 {
@@ -213,10 +215,10 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
             header = (struct mmap_header *)ARCH_MMAPVADDRESS;
             entries = (struct mmap_entry *)(header + 1);
 
-            for (i = 0; format->readsection(address, &section, i); i++)
+            for (i = 0; i < header->entries; i++)
             {
 
-                struct mmap_entry *entry = mmap_find(header, entries, section.vaddress);
+                struct mmap_entry *entry = &entries[i];
 
                 if (entry)
                 {
