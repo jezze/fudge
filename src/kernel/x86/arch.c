@@ -151,10 +151,10 @@ static void mmap_init(struct mmap *mmap, unsigned int mmuaddress, unsigned int m
 
 }
 
-static struct mmap_entry *mmap_find(unsigned int vaddress)
+static struct mmap_entry *mmap_find(unsigned int address, unsigned int vaddress)
 {
 
-    struct mmap_header *header = (struct mmap_header *)ARCH_MMAPVADDRESS;
+    struct mmap_header *header = (struct mmap_header *)address;
     struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
     unsigned int i;
 
@@ -494,7 +494,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         {
 
             unsigned int directory = mmu_getdirectory();
-            struct mmap_entry *entry = mmap_find(address);
+            struct mmap_entry *entry = mmap_find(ARCH_MMAPVADDRESS, address);
 
             if (entry)
             {
