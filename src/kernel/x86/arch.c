@@ -532,9 +532,9 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         {
 
             struct mmu_directory *directory = mmu_getdirectory();
-            unsigned int index = address >> 22;
+            unsigned int flags = mmu_gettableflags(directory, address);
 
-            if (directory->tables[index] & MMU_TFLAG_PRESENT)
+            if (flags & MMU_TFLAG_PRESENT)
             {
 
             }
@@ -543,9 +543,9 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             {
 
                 struct mmu_directory *kdirectory = mmap_getdirectory(&kmmap);
-                unsigned int flags = mmu_gettableflags(kdirectory, address);
+                unsigned int kflags = mmu_gettableflags(kdirectory, address);
 
-                if (flags & MMU_TFLAG_PRESENT)
+                if (kflags & MMU_TFLAG_PRESENT)
                     mmu_settablevalue(directory, address, mmu_gettablevalue(kdirectory, address));
 
             }
