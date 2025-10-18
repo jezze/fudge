@@ -546,7 +546,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
                 unsigned int flags = mmu_gettableflags(kdirectory, address);
 
                 if (flags & MMU_TFLAG_PRESENT)
-                    directory->tables[index] = kdirectory->tables[index];
+                {
+
+                    mmu_settableaddress(directory, address, mmu_gettableaddress(kdirectory, address));
+                    mmu_settableflags(directory, address, mmu_gettableflags(kdirectory, address));
+
+                }
 
             }
 
