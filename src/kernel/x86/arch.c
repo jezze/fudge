@@ -622,13 +622,14 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    mmap_init(&kmmap, ARCH_MMUKERNELADDRESS, 0);
+    mmap_init(&kmmap, ARCH_MMUKERNELADDRESS, ARCH_MMAPADDRESS);
     arch_map(0x00000000, 0x00000000, 0x00400000);
     arch_map(0x00400000, 0x00400000, 0x00400000);
     arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, ARCH_MMAPSIZE * POOL_TASKS);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
     arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
     arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
+    arch_map(kmmap.mmapdata, 0xC0000000, ARCH_MMAPSIZE);
     mmu_setdirectory(mmap_getdirectory(&kmmap));
     mmu_enable();
     mailbox_setup();
