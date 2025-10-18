@@ -18,6 +18,33 @@ struct mmu_table *mmu_gettable(struct mmu_directory *directory, unsigned int vad
 
 }
 
+unsigned int mmu_gettableflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags)
+{
+
+    unsigned int index = vaddress >> 22;
+
+    return directory->tables[index] & 0xFFF;
+
+}
+
+unsigned int mmu_getpageflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags)
+{
+
+    struct mmu_table *table = mmu_gettable(directory, vaddress);
+
+    if (table)
+    {
+
+        unsigned int index = (vaddress << 10) >> 22;
+
+        return table->pages[index] & 0xFFF;
+
+    }
+
+    return 0;
+
+}
+
 void mmu_setdirectory(struct mmu_directory *directory)
 {
 

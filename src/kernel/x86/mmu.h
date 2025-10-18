@@ -44,6 +44,8 @@ struct mmu_directory
 
 struct mmu_directory *mmu_getdirectory(void);
 struct mmu_table *mmu_gettable(struct mmu_directory *directory, unsigned int vaddress);
+unsigned int mmu_gettableflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
+unsigned int mmu_getpageflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
 void mmu_setdirectory(struct mmu_directory *directory);
 void mmu_settable(struct mmu_directory *directory, unsigned int paddress, unsigned int vaddress, unsigned int flags);
 void mmu_settableflags(struct mmu_directory *directory, unsigned int vaddress, unsigned int flags);
