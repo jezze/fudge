@@ -89,7 +89,7 @@ static unsigned int format_readsection(unsigned int base, struct binary_section 
         section->offset = programheader->offset;
         section->flags = programheader->flags;
 
-        return 1;
+        return index + 1;
 
     }
 

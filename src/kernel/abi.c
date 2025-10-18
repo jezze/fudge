@@ -35,9 +35,9 @@ static unsigned int checkusercode(void *address, unsigned int count, unsigned in
         {
 
             struct binary_section section;
-            unsigned int i;
+            unsigned int i = 0;
 
-            for (i = 0; format->readsection(task->address, &section, i); i++)
+            while ((i = format->readsection(task->address, &section, i)))
             {
 
                 if ((unsigned int)address >= section.vaddress && (unsigned int)address < section.vaddress + section.msize)

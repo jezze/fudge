@@ -183,13 +183,13 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
         struct mmap_header *header = (struct mmap_header *)mmap->mmapdata;
         struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
         struct binary_section section;
-        unsigned int i;
+        unsigned int i = 0;
 
         mmap_initheader(header);
         buffer_copy((void *)mmap->directory, (void *)kmmap.directory, 4096);
         map(mmap, mmap->mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
-        for (i = 0; format->readsection(address, &section, i); i++)
+        while ((i = format->readsection(address, &section, i)))
         {
 
             if (section.msize)
