@@ -493,13 +493,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (type & MMU_EFLAG_USER)
         {
 
-            unsigned int directory = mmu_getdirectory();
             struct mmap_entry *entry = mmap_find(ARCH_MMAPVADDRESS, address);
 
             if (entry)
             {
 
-                mmap_addflags(directory, entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
+                mmap_addflags(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
 
                 if (entry->fsize)
                     buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->fsize);
@@ -515,7 +514,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
                 unsigned int kflags = mmu_gettableflags(kmmap.directory, address);
 
                 if (kflags & MMU_TFLAG_PRESENT)
-                    mmu_settable(directory, address, mmu_gettable(kmmap.directory, address));
+                    mmu_settable(mmu_getdirectory(), address, mmu_gettable(kmmap.directory, address));
 
             }
 
