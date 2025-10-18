@@ -197,7 +197,7 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
 
         mmap_initheader(header);
         buffer_copy(directory, kdirectory, sizeof (struct mmu_directory));
-        map(mmap, mmap->mmapdata, 0xC0000000, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+        map(mmap, mmap->mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
         for (i = 0; format->readsection(address, &section, i); i++)
         {
@@ -222,7 +222,7 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
 
         {
 
-            header = (struct mmap_header *)0xC0000000;
+            header = (struct mmap_header *)ARCH_MMAPVADDRESS;
             entries = (struct mmap_entry *)(header + 1);
 
             for (i = 0; format->readsection(address, &section, i); i++)
@@ -623,13 +623,12 @@ void arch_setup1(void)
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     mmap_init(&kmmap, ARCH_MMUKERNELADDRESS, ARCH_MMAPADDRESS);
-    arch_map(0x00000000, 0x00000000, 0x00400000);
-    arch_map(0x00400000, 0x00400000, 0x00400000);
+    arch_map(0x00000000, 0x00000000, 0x00800000);
     arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, ARCH_MMAPSIZE * POOL_TASKS);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
     arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
     arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
-    arch_map(kmmap.mmapdata, 0xC0000000, ARCH_MMAPSIZE);
+    arch_map(kmmap.mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE);
     mmu_setdirectory(mmap_getdirectory(&kmmap));
     mmu_enable();
     mailbox_setup();
