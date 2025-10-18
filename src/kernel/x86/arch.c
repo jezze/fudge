@@ -198,7 +198,11 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
                 struct mmap_entry *entry = &entries[header->entries];
 
                 mmap_initentry(entry, address + section.offset, section.fsize, section.msize, paddress + header->offset, section.vaddress);
-                map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+
+                if (section.flags & 0x02)
+                    map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+                else
+                    map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_USERMODE, MMU_PFLAG_USERMODE);
 
                 header->offset += entry->vpsize;
                 header->entries++;
