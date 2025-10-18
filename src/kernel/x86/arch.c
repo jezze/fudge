@@ -187,7 +187,6 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
 
         mmap_initheader(header);
         buffer_copy((void *)mmap->directory, (void *)kmmap.directory, 4096);
-        map(mmap, mmap->mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
         while ((i = format->readsection(address, &section, i)))
         {
@@ -211,6 +210,7 @@ static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int 
 
         }
 
+        map(mmap, mmap->mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
         map(mmap, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
     }
@@ -231,9 +231,10 @@ static unsigned int spawn(unsigned int itask, void *stack)
         {
 
             unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
+            struct mmap *mmap = &ummap[ntask];
 
-            mmap_init(&ummap[ntask], ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
-            mmap_inittask(&ummap[ntask], args->address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+            mmap_init(mmap, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
+            mmap_inittask(mmap, args->address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
 
             return target;
 
@@ -270,6 +271,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct mmap *mmap = &ummap[core->itask];
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
@@ -278,7 +280,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = thread->ip;
         interrupt->esp.value = thread->sp;
 
-        mmu_setdirectory(ummap[core->itask].directory);
+        mmu_setdirectory(mmap->directory);
 
     }
 
@@ -306,15 +308,17 @@ void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
 void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    /* Need to fix this workaround */
     struct core *core = kernel_getcore();
 
     map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
 
+    /* Need to fix this workaround */
     if (core->itask)
     {
 
-        map(&ummap[core->itask], paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+        struct mmap *mmap = &ummap[core->itask];
+
+        map(mmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
 
     }
 
@@ -621,9 +625,10 @@ void arch_setup2(unsigned int address)
 
         unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
         unsigned int source = kernel_getchannelinode(ntask, 0);
+        struct mmap *mmap = &ummap[ntask];
 
-        mmap_init(&ummap[ntask], ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
-        mmap_inittask(&ummap[ntask], address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+        mmap_init(mmap, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
+        mmap_inittask(mmap, address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
         kernel_place(source, target, EVENT_MAIN, 0, 0);
 
     }
