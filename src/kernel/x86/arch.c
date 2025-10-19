@@ -14,7 +14,11 @@ struct mapping
 
     unsigned int directory;
     unsigned int entries;
-    unsigned int mmapdata;
+    unsigned int code;
+    unsigned int stack;
+    unsigned int mmap;
+    struct mmap_header *mmapheader;
+    struct mmap_entry *mmapentries;
 
 };
 
@@ -25,14 +29,35 @@ static struct arch_tss tss0;
 static struct mapping kmapping;
 static struct mapping umapping[POOL_TASKS];
 
-static void mapping_init(struct mapping *mapping, unsigned int mmuaddress, unsigned int mmapdata)
+static void mapping_init(struct mapping *mapping)
 {
 
-    mapping->directory = mmuaddress;
+    mapping->directory = ARCH_MMUKERNELADDRESS;
     mapping->entries = 0;
-    mapping->mmapdata = mmapdata;
-
+    mapping->code = ARCH_KERNELCODEADDRESS;
+    mapping->stack = ARCH_KERNELSTACKADDRESS;
+    mapping->mmap = ARCH_MMAPADDRESS;
+    mapping->mmapheader = (struct mmap_header *)mapping->mmap;
+    mapping->mmapentries = (struct mmap_entry *)(mapping->mmapheader + 1);
+ 
     buffer_clear((void *)mapping->directory, 4096);
+    mmap_initheader(mapping->mmapheader);
+
+}
+
+static void mapping_inittask(struct mapping *mapping, unsigned int ntask)
+{
+
+    mapping->directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask;
+    mapping->entries = 0;
+    mapping->code = ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE);
+    mapping->stack = mapping->code + TASK_CODESIZE;
+    mapping->mmap = ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask;
+    mapping->mmapheader = (struct mmap_header *)mapping->mmap;
+    mapping->mmapentries = (struct mmap_entry *)(mapping->mmapheader + 1);
+ 
+    buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
+    mmap_initheader(mapping->mmapheader);
 
 }
 
@@ -81,17 +106,12 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsi
     if (format)
     {
 
-        struct mmap_header *header = (struct mmap_header *)mapping->mmapdata;
-        struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
         unsigned int i = 0;
 
-        mmap_initheader(header);
-        buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
-
-        while ((i = format->mapsection(address, &entries[header->entries], i)))
+        while ((i = format->mapsection(address, &mapping->mmapentries[mapping->mmapheader->entries], i)))
         {
 
-            struct mmap_entry *entry = &entries[header->entries];
+            struct mmap_entry *entry = &mapping->mmapentries[mapping->mmapheader->entries];
 
             if (entry->msize)
             {
@@ -99,7 +119,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsi
                 entry->address = address + entry->offset;
                 entry->vpaddress = entry->vaddress & 0xFFFFF000;
                 entry->vpsize = (entry->msize + 0x1000) & 0xFFFFF000;
-                entry->paddress = paddress + header->offset;
+                entry->paddress = paddress + mapping->mmapheader->offset;
 
                 mapping_map(mapping, entry->paddress, entry->vpaddress, entry->vpsize);
 
@@ -108,8 +128,8 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsi
                 else
                     mmu_setflagrange(mapping->directory, entry->vpaddress, entry->vpsize, MMU_TFLAG_USERMODE, MMU_PFLAG_USERMODE);
 
-                header->offset += entry->vpsize;
-                header->entries++;
+                mapping->mmapheader->offset += entry->vpsize;
+                mapping->mmapheader->entries++;
 
             }
 
@@ -122,7 +142,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsi
 static void mapping_loadmmap(struct mapping *mapping)
 {
 
-    map(mapping, mapping->mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(mapping, mapping->mmap, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -154,32 +174,36 @@ static struct mmap_entry *findmmap(unsigned int address, unsigned int vaddress)
 
 }
 
+static unsigned int createtask(unsigned int address)
+{
+
+    unsigned int ntask = pool_createtask();
+
+    if (ntask)
+    {
+
+        struct mapping *mapping = &umapping[ntask];
+
+        mapping_inittask(mapping, ntask);
+        mapping_loadcode(mapping, address, mapping->code);
+        mapping_loadstack(mapping, mapping->stack);
+        mapping_loadmmap(mapping);
+
+        return kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int address;} *args = stack;
 
     if (args->address)
-    {
-
-        unsigned int ntask = pool_createtask();
-
-        if (ntask)
-        {
-
-            unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
-            struct mapping *mapping = &umapping[ntask];
-
-            mapping_init(mapping, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
-            mapping_loadcode(mapping, args->address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
-            mapping_loadstack(mapping, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE);
-            mapping_loadmmap(mapping);
-
-            return target;
-
-        }
-
-    }
+        return createtask(args->address);
 
     DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
 
@@ -537,13 +561,13 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    mapping_init(&kmapping, ARCH_MMUKERNELADDRESS, ARCH_MMAPADDRESS);
+    mapping_init(&kmapping);
     arch_map(0x00000000, 0x00000000, 0x00800000);
     arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, ARCH_MMAPSIZE * POOL_TASKS);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
     arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
     arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
-    arch_map(kmapping.mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE);
+    arch_map(kmapping.mmap, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE);
     mmu_setdirectory(kmapping.directory);
     mmu_enable();
     mailbox_setup();
@@ -557,19 +581,13 @@ void arch_setup1(void)
 void arch_setup2(unsigned int address)
 {
 
-    unsigned int ntask = pool_createtask();
+    unsigned int target = createtask(address);
 
-    if (ntask)
+    if (target)
     {
 
-        unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
-        struct mapping *mapping = &umapping[ntask];
-
-        mapping_init(mapping, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
-        mapping_loadcode(mapping, address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
-        mapping_loadstack(mapping, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE);
-        mapping_loadmmap(mapping);
         kernel_place(0, target, EVENT_MAIN, 0, 0);
+        arch_leave();
 
     }
 
@@ -579,8 +597,6 @@ void arch_setup2(unsigned int address)
         DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
 
     }
-
-    arch_leave();
 
 }
 
