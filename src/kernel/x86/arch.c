@@ -153,10 +153,10 @@ static void mapping_loadstack(struct mapping *mapping, unsigned int paddress)
 
 }
 
-static struct mmap_entry *findmmap(unsigned int address, unsigned int vaddress)
+static struct mmap_entry *findmmap(unsigned int mmap, unsigned int vaddress)
 {
 
-    struct mmap_header *header = (struct mmap_header *)address;
+    struct mmap_header *header = (struct mmap_header *)mmap;
     struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
     unsigned int i;
 
