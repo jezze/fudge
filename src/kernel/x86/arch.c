@@ -98,7 +98,7 @@ static void map(struct mapping *mapping, unsigned int paddress, unsigned int vad
 
 }
 
-static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsigned int paddress)
+static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 {
 
     struct binary_format *format = binary_findformat(address);
@@ -119,7 +119,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsi
                 entry->address = address + entry->offset;
                 entry->vpaddress = entry->vaddress & ~MMU_PAGEMASK;
                 entry->vpsize = (entry->msize + MMU_PAGESIZE) & ~MMU_PAGEMASK;
-                entry->paddress = paddress + mapping->mmapheader->offset;
+                entry->paddress = mapping->code + mapping->mmapheader->offset;
 
                 mapping_map(mapping, entry->paddress, entry->vpaddress, entry->vpsize);
 
@@ -146,10 +146,10 @@ static void mapping_loadmmap(struct mapping *mapping)
 
 }
 
-static void mapping_loadstack(struct mapping *mapping, unsigned int paddress)
+static void mapping_loadstack(struct mapping *mapping)
 {
 
-    map(mapping, paddress, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    map(mapping, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -185,8 +185,8 @@ static unsigned int createtask(unsigned int address)
         struct mapping *mapping = &umapping[ntask];
 
         mapping_inittask(mapping, ntask);
-        mapping_loadcode(mapping, address, mapping->code);
-        mapping_loadstack(mapping, mapping->stack);
+        mapping_loadcode(mapping, address);
+        mapping_loadstack(mapping);
         mapping_loadmmap(mapping);
 
         return kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
