@@ -563,14 +563,13 @@ void arch_setup2(unsigned int address)
     {
 
         unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
-        unsigned int source = kernel_getchannelinode(ntask, 0);
         struct mapping *mapping = &umapping[ntask];
 
         mapping_init(mapping, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
         mapping_loadcode(mapping, address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
         mapping_loadstack(mapping, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE);
         mapping_loadmmap(mapping);
-        kernel_place(source, target, EVENT_MAIN, 0, 0);
+        kernel_place(0, target, EVENT_MAIN, 0, 0);
 
     }
 
