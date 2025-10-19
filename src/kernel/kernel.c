@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "resource.h"
+#include "mmap.h"
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"

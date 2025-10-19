@@ -72,7 +72,7 @@ static unsigned int format_findentry(unsigned int base)
 
 }
 
-static unsigned int format_readsection(unsigned int base, struct binary_section *section, unsigned int index)
+static unsigned int format_readsection(unsigned int base, struct mmap_entry *entry, unsigned int index)
 {
 
     struct elf_header *header = (struct elf_header *)base;
@@ -83,11 +83,11 @@ static unsigned int format_readsection(unsigned int base, struct binary_section 
 
         struct elf_programheader *programheader = &programheaders[index];
 
-        section->vaddress = programheader->vaddress;
-        section->msize = programheader->msize;
-        section->fsize = programheader->fsize;
-        section->offset = programheader->offset;
-        section->flags = programheader->flags;
+        entry->vaddress = programheader->vaddress;
+        entry->msize = programheader->msize;
+        entry->fsize = programheader->fsize;
+        entry->offset = programheader->offset;
+        entry->flags = programheader->flags;
 
         return index + 1;
 

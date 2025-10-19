@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "resource.h"
+#include "mmap.h"
 #include "binary.h"
 
 struct binary_format *binary_findformat(unsigned int base)
@@ -21,7 +22,7 @@ struct binary_format *binary_findformat(unsigned int base)
 
 }
 
-void binary_initformat(struct binary_format *format, unsigned int (*match)(unsigned int base), unsigned int (*findsymbol)(unsigned int base, unsigned int count, char *symbol), unsigned int (*findentry)(unsigned int base), unsigned int (*readsection)(unsigned int base, struct binary_section *section, unsigned int index))
+void binary_initformat(struct binary_format *format, unsigned int (*match)(unsigned int base), unsigned int (*findsymbol)(unsigned int base, unsigned int count, char *symbol), unsigned int (*findentry)(unsigned int base), unsigned int (*mapsection)(unsigned int base, struct mmap_entry *entry, unsigned int index))
 {
 
     resource_init(&format->resource, RESOURCE_BINARYFORMAT, format);
@@ -29,7 +30,7 @@ void binary_initformat(struct binary_format *format, unsigned int (*match)(unsig
     format->match = match;
     format->findsymbol = findsymbol;
     format->findentry = findentry;
-    format->readsection = readsection;
+    format->mapsection = mapsection;
 
 }
 

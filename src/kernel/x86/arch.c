@@ -9,28 +9,7 @@
 #include "pic.h"
 #include "arch.h"
 
-struct mmap_header
-{
-
-    unsigned int offset;
-    unsigned int entries;
-
-};
-
-struct mmap_entry
-{
-
-    unsigned int address;
-    unsigned int fsize;
-    unsigned int msize;
-    unsigned int paddress;
-    unsigned int vaddress;
-    unsigned int vpaddress;
-    unsigned int vpsize;
-
-};
-
-struct mmap
+struct mapping
 {
 
     unsigned int directory;
@@ -43,10 +22,21 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct cpu_general registers[POOL_TASKS];
 static struct arch_tss tss0;
-static struct mmap kmmap;
-static struct mmap ummap[POOL_TASKS];
+static struct mapping kmapping;
+static struct mapping umapping[POOL_TASKS];
 
-static void mmap_allocate(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size)
+static void mapping_init(struct mapping *mapping, unsigned int mmuaddress, unsigned int mmapdata)
+{
+
+    mapping->directory = mmuaddress;
+    mapping->entries = 0;
+    mapping->mmapdata = mmapdata;
+
+    buffer_clear((void *)mapping->directory, 4096);
+
+}
+
+static void mapping_map(struct mapping *mapping, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     unsigned int i;
@@ -57,99 +47,93 @@ static void mmap_allocate(struct mmap *mmap, unsigned int paddress, unsigned int
         unsigned int p = paddress + i;
         unsigned int v = vaddress + i;
 
-        if (!mmu_gettable(mmap->directory, v))
+        if (!mmu_gettable(mapping->directory, v))
         {
 
-            unsigned int address = mmap->directory + 4096 + 4096 * mmap->entries;
+            unsigned int address = mapping->directory + 4096 + 4096 * mapping->entries;
 
             buffer_clear((void *)address, 4096);
-            mmu_settableaddress(mmap->directory, v, address);
+            mmu_settableaddress(mapping->directory, v, address);
 
-            mmap->entries++;
+            mapping->entries++;
 
         }
 
-        mmu_setpageaddress(mmap->directory, v, p);
+        mmu_setpageaddress(mapping->directory, v, p);
 
     }
 
 }
 
-static void mmap_setflags(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static void map(struct mapping *mapping, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    unsigned int i;
+    mapping_map(mapping, paddress, vaddress, size);
+    mmu_setflagrange(mapping->directory, vaddress, size, tflags, pflags);
 
-    for (i = 0; i < size; i += MMU_PAGESIZE)
+}
+
+static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsigned int paddress)
+{
+
+    struct binary_format *format = binary_findformat(address);
+
+    if (format)
     {
 
-        unsigned int v = vaddress + i;
+        struct mmap_header *header = (struct mmap_header *)mapping->mmapdata;
+        struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
+        unsigned int i = 0;
 
-        mmu_settableflags(directory, v, tflags);
-        mmu_setpageflags(directory, v, pflags);
+        mmap_initheader(header);
+        buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
+
+        while ((i = format->mapsection(address, &entries[header->entries], i)))
+        {
+
+            struct mmap_entry *entry = &entries[header->entries];
+
+            if (entry->msize)
+            {
+
+                entry->address = address + entry->offset;
+                entry->vpaddress = entry->vaddress & 0xFFFFF000;
+                entry->vpsize = (entry->msize + 0x1000) & 0xFFFFF000;
+                entry->paddress = paddress + header->offset;
+
+                mapping_map(mapping, entry->paddress, entry->vpaddress, entry->vpsize);
+
+                if (entry->flags & 0x02)
+                    mmu_setflagrange(mapping->directory, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+                else
+                    mmu_setflagrange(mapping->directory, entry->vpaddress, entry->vpsize, MMU_TFLAG_USERMODE, MMU_PFLAG_USERMODE);
+
+                header->offset += entry->vpsize;
+                header->entries++;
+
+            }
+
+        }
 
     }
 
 }
 
-static void mmap_addflags(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static void mapping_loadmmap(struct mapping *mapping)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < size; i += MMU_PAGESIZE)
-    {
-
-        unsigned int v = vaddress + i;
-
-        mmu_settableflags(directory, v, mmu_gettableflags(directory, v) | tflags);
-        mmu_setpageflags(directory, v, mmu_getpageflags(directory, v) | pflags);
-
-    }
+    map(mapping, mapping->mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
-static void map(struct mmap *mmap, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+static void mapping_loadstack(struct mapping *mapping, unsigned int paddress)
 {
 
-    mmap_allocate(mmap, paddress, vaddress, size);
-    mmap_setflags(mmap->directory, vaddress, size, tflags, pflags);
+    map(mapping, paddress, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
-static void mmap_initentry(struct mmap_entry *entry, unsigned int address, unsigned int fsize, unsigned int msize, unsigned int paddress, unsigned int vaddress)
-{
-
-    entry->address = address;
-    entry->fsize = fsize;
-    entry->msize = msize;
-    entry->paddress = paddress;
-    entry->vaddress = vaddress;
-    entry->vpaddress = vaddress & 0xFFFFF000;
-    entry->vpsize = (msize + 0x1000) & 0xFFFFF000;
-
-}
-
-static void mmap_initheader(struct mmap_header *header)
-{
-
-    header->entries = 0;
-    header->offset = 0;
-
-}
- 
-static void mmap_init(struct mmap *mmap, unsigned int mmuaddress, unsigned int mmapdata)
-{
-
-    mmap->directory = mmuaddress;
-    mmap->entries = 0;
-    mmap->mmapdata = mmapdata;
-
-    buffer_clear((void *)mmap->directory, 4096);
-
-}
-
-static struct mmap_entry *mmap_find(unsigned int address, unsigned int vaddress)
+static struct mmap_entry *findmmap(unsigned int address, unsigned int vaddress)
 {
 
     struct mmap_header *header = (struct mmap_header *)address;
@@ -170,51 +154,6 @@ static struct mmap_entry *mmap_find(unsigned int address, unsigned int vaddress)
 
 }
 
-static void mmap_inittask(struct mmap *mmap, unsigned int address, unsigned int paddress)
-{
-
-    struct binary_format *format = binary_findformat(address);
-
-    if (format)
-    {
-
-        struct mmap_header *header = (struct mmap_header *)mmap->mmapdata;
-        struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
-        struct binary_section section;
-        unsigned int i = 0;
-
-        mmap_initheader(header);
-        buffer_copy((void *)mmap->directory, (void *)kmmap.directory, 4096);
-
-        while ((i = format->readsection(address, &section, i)))
-        {
-
-            if (section.msize)
-            {
-
-                struct mmap_entry *entry = &entries[header->entries];
-
-                mmap_initentry(entry, address + section.offset, section.fsize, section.msize, paddress + header->offset, section.vaddress);
-
-                if (section.flags & 0x02)
-                    map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-                else
-                    map(mmap, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_USERMODE, MMU_PFLAG_USERMODE);
-
-                header->offset += entry->vpsize;
-                header->entries++;
-
-            }
-
-        }
-
-        map(mmap, mmap->mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-        map(mmap, paddress + TASK_CODESIZE, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-
-    }
-
-}
-
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
@@ -229,10 +168,12 @@ static unsigned int spawn(unsigned int itask, void *stack)
         {
 
             unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, args->address);
-            struct mmap *mmap = &ummap[ntask];
+            struct mapping *mapping = &umapping[ntask];
 
-            mmap_init(mmap, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
-            mmap_inittask(mmap, args->address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+            mapping_init(mapping, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
+            mapping_loadcode(mapping, args->address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+            mapping_loadstack(mapping, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE);
+            mapping_loadmmap(mapping);
 
             return target;
 
@@ -269,7 +210,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task_thread *thread = kernel_gettaskthread(core->itask);
-        struct mmap *mmap = &ummap[core->itask];
+        struct mapping *mapping = &umapping[core->itask];
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
@@ -278,7 +219,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = thread->ip;
         interrupt->esp.value = thread->sp;
 
-        mmu_setdirectory(mmap->directory);
+        mmu_setdirectory(mapping->directory);
 
     }
 
@@ -290,7 +231,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = (unsigned int)cpu_halt;
         interrupt->esp.value = core->sp;
 
-        mmu_setdirectory(kmmap.directory);
+        mmu_setdirectory(kmapping.directory);
 
     }
 
@@ -299,7 +240,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(&kmapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -308,15 +249,15 @@ void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int
 
     struct core *core = kernel_getcore();
 
-    map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+    map(&kmapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
 
     /* Need to fix this workaround */
     if (core->itask)
     {
 
-        struct mmap *mmap = &ummap[core->itask];
+        struct mapping *mapping = &umapping[core->itask];
 
-        map(mmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+        map(mapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
 
     }
 
@@ -325,7 +266,7 @@ void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int
 void arch_mapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    map(&kmmap, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
+    map(&kmapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
 
 }
 
@@ -499,12 +440,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (type & MMU_EFLAG_USER)
         {
 
-            struct mmap_entry *entry = mmap_find(ARCH_MMAPVADDRESS, address);
+            struct mmap_entry *entry = findmmap(ARCH_MMAPVADDRESS, address);
 
             if (entry)
             {
 
-                mmap_addflags(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
+                mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
 
                 if (entry->fsize)
                     buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->fsize);
@@ -517,10 +458,10 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             else
             {
 
-                unsigned int kflags = mmu_gettableflags(kmmap.directory, address);
+                unsigned int kflags = mmu_gettableflags(kmapping.directory, address);
 
                 if (kflags & MMU_TFLAG_PRESENT)
-                    mmu_settable(mmu_getdirectory(), address, mmu_gettable(kmmap.directory, address));
+                    mmu_settable(mmu_getdirectory(), address, mmu_gettable(kmapping.directory, address));
 
             }
 
@@ -596,14 +537,14 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    mmap_init(&kmmap, ARCH_MMUKERNELADDRESS, ARCH_MMAPADDRESS);
+    mapping_init(&kmapping, ARCH_MMUKERNELADDRESS, ARCH_MMAPADDRESS);
     arch_map(0x00000000, 0x00000000, 0x00800000);
     arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, ARCH_MMAPSIZE * POOL_TASKS);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
     arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
     arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
-    arch_map(kmmap.mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE);
-    mmu_setdirectory(kmmap.directory);
+    arch_map(kmapping.mmapdata, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE);
+    mmu_setdirectory(kmapping.directory);
     mmu_enable();
     mailbox_setup();
     pool_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
@@ -623,10 +564,12 @@ void arch_setup2(unsigned int address)
 
         unsigned int target = kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
         unsigned int source = kernel_getchannelinode(ntask, 0);
-        struct mmap *mmap = &ummap[ntask];
+        struct mapping *mapping = &umapping[ntask];
 
-        mmap_init(mmap, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
-        mmap_inittask(mmap, address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+        mapping_init(mapping, ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask, ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask);
+        mapping_loadcode(mapping, address, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE));
+        mapping_loadstack(mapping, ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE) + TASK_CODESIZE);
+        mapping_loadmmap(mapping);
         kernel_place(source, target, EVENT_MAIN, 0, 0);
 
     }

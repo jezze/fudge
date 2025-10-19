@@ -42,5 +42,7 @@ void mmu_settableflags(unsigned int directory, unsigned int vaddress, unsigned i
 void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int value);
 void mmu_setpageaddress(unsigned int directory, unsigned int vaddress, unsigned int address);
 void mmu_setpageflags(unsigned int directory, unsigned int vaddress, unsigned int flags);
+void mmu_setflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
+void mmu_addflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
 void mmu_enable(void);
 void mmu_disable(void);

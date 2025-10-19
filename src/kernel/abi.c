@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include "resource.h"
 #include "debug.h"
+#include "mmap.h"
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"
@@ -34,13 +35,13 @@ static unsigned int checkusercode(void *address, unsigned int count, unsigned in
         if (format)
         {
 
-            struct binary_section section;
+            struct mmap_entry entry;
             unsigned int i = 0;
 
-            while ((i = format->readsection(task->address, &section, i)))
+            while ((i = format->mapsection(task->address, &entry, i)))
             {
 
-                if ((unsigned int)address >= section.vaddress && (unsigned int)address < section.vaddress + section.msize)
+                if ((unsigned int)address >= entry.vaddress && (unsigned int)address < entry.vaddress + entry.msize)
                     return (unsigned int)address;
 
             }

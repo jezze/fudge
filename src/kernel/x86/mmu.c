@@ -140,6 +140,40 @@ void mmu_setpageflags(unsigned int directory, unsigned int vaddress, unsigned in
 
 }
 
+void mmu_setflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < size; i += MMU_PAGESIZE)
+    {
+
+        unsigned int v = vaddress + i;
+
+        mmu_settableflags(directory, v, tflags);
+        mmu_setpageflags(directory, v, pflags);
+
+    }
+
+}
+
+void mmu_addflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < size; i += MMU_PAGESIZE)
+    {
+
+        unsigned int v = vaddress + i;
+
+        mmu_settableflags(directory, v, mmu_gettableflags(directory, v) | tflags);
+        mmu_setpageflags(directory, v, mmu_getpageflags(directory, v) | pflags);
+
+    }
+
+}
+
 void mmu_enable(void)
 {
 
