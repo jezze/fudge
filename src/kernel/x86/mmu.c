@@ -36,14 +36,14 @@ unsigned int mmu_gettable(unsigned int directory, unsigned int vaddress)
 unsigned int mmu_gettableaddress(unsigned int directory, unsigned int vaddress)
 {
 
-    return mmu_gettable(directory, vaddress) & 0xFFFFF000;
+    return mmu_gettable(directory, vaddress) & ~MMU_PAGEMASK;
 
 }
 
 unsigned int mmu_gettableflags(unsigned int directory, unsigned int vaddress)
 {
 
-    return mmu_gettable(directory, vaddress) & 0xFFF;
+    return mmu_gettable(directory, vaddress) & MMU_PAGEMASK;
 
 }
 
@@ -68,14 +68,14 @@ unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress)
 unsigned int mmu_getpageaddress(unsigned int directory, unsigned int vaddress)
 {
 
-    return mmu_getpage(directory, vaddress) & 0xFFFFF000;
+    return mmu_getpage(directory, vaddress) & ~MMU_PAGEMASK;
 
 }
 
 unsigned int mmu_getpageflags(unsigned int directory, unsigned int vaddress)
 {
 
-    return mmu_getpage(directory, vaddress) & 0xFFF;
+    return mmu_getpage(directory, vaddress) & MMU_PAGEMASK;
 
 }
 

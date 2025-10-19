@@ -1,4 +1,5 @@
-#define MMU_PAGESIZE                    4096
+#define MMU_PAGESIZE                    0x1000
+#define MMU_PAGEMASK                    (MMU_PAGESIZE - 1)
 #define MMU_TABLES                      1024
 #define MMU_PAGES                       1024
 #define MMU_TFLAG_PRESENT               0x0001

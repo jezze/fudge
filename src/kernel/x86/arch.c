@@ -117,8 +117,8 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address, unsi
             {
 
                 entry->address = address + entry->offset;
-                entry->vpaddress = entry->vaddress & 0xFFFFF000;
-                entry->vpsize = (entry->msize + 0x1000) & 0xFFFFF000;
+                entry->vpaddress = entry->vaddress & ~MMU_PAGEMASK;
+                entry->vpsize = (entry->msize + MMU_PAGESIZE) & ~MMU_PAGEMASK;
                 entry->paddress = paddress + mapping->mmapheader->offset;
 
                 mapping_map(mapping, entry->paddress, entry->vpaddress, entry->vpsize);
