@@ -83,17 +83,28 @@ static void unblocktasks(void)
     {
 
         unsigned int itask = pool_getitaskfromitem(current);
-        struct task *task = pool_gettask(itask);
 
         next = current->next;
 
-        task_checksignals(task);
-
-        if (task->state == TASK_STATE_UNBLOCKED)
+        if (itask)
         {
 
-            list_remove_unsafe(&blockedtasks, current);
-            checkstate(itask);
+            struct task *task = pool_gettask(itask);
+
+            if (task)
+            {
+
+                task_checksignals(task);
+
+                if (task->state == TASK_STATE_UNBLOCKED)
+                {
+
+                    list_remove_unsafe(&blockedtasks, current);
+                    checkstate(itask);
+
+                }
+
+            }
 
         }
 
@@ -112,11 +123,18 @@ static unsigned int picknewtask(struct core *core)
     {
 
         unsigned int itask = pool_getitaskfromitem(item);
-        struct task *task = pool_gettask(itask);
 
-        task_transition(task, TASK_STATE_RUNNING);
+        if (itask)
+        {
 
-        return itask;
+            struct task *task = pool_gettask(itask);
+
+            if (task)
+                task_transition(task, TASK_STATE_RUNNING);
+
+            return itask;
+
+        }
 
     }
 
