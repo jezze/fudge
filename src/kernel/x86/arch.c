@@ -52,7 +52,7 @@ static void mapping_inittask(struct mapping *mapping, unsigned int itask)
     mapping->entries = 0;
     mapping->code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask;
     mapping->stack = mapping->code + TASK_CODESIZE;
-    mapping->mmap = ARCH_MMAPADDRESS + ARCH_MMAPSIZE * itask;
+    mapping->mmap = ARCH_MMAPADDRESS + MMAP_SIZE * itask;
     mapping->mmapheader = (struct mmap_header *)mapping->mmap;
     mapping->mmapentries = (struct mmap_entry *)(mapping->mmapheader + 1);
  
@@ -138,7 +138,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 static void mapping_loadmmap(struct mapping *mapping)
 {
 
-    map(mapping, mapping->mmap, MMAP_VADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(mapping, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -565,15 +565,15 @@ void arch_setup1(void)
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     mapping_init(&kmapping);
     arch_map(0x00000000, 0x00000000, 0x00800000);
-    arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, ARCH_MMAPSIZE * POOL_TASKS);
+    arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
     arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
-    arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
-    arch_map(kmapping.mmap, MMAP_VADDRESS, ARCH_MMAPSIZE);
+    arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES);
+    arch_map(kmapping.mmap, MMAP_VADDRESS, MMAP_SIZE);
     mmu_setdirectory(kmapping.directory);
     mmu_enable();
     mailbox_setup();
-    pool_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
+    pool_setup(ARCH_MAILBOXADDRESS, MAILBOX_SIZE);
     kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE);
     abi_setup();
     abi_setcallback(0x03, spawn);

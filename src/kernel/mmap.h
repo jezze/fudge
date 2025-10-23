@@ -1,4 +1,5 @@
 #define MMAP_VADDRESS                   0xC0000000
+#define MMAP_SIZE                       0x00001000
 
 struct mmap_entry
 {
