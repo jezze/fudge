@@ -34,36 +34,41 @@ static void checkstate(unsigned int itask)
 
         struct list_item *item = pool_gettaskitem(itask);
 
-        switch (task->state)
+        if (item)
         {
 
-        case TASK_STATE_DEAD:
-            pool_destroytask(itask);
+            switch (task->state)
+            {
 
-            break;
+            case TASK_STATE_DEAD:
+                pool_destroytask(itask);
 
-        case TASK_STATE_BLOCKED:
-            list_add(&blockedtasks, item);
+                break;
 
-            break;
+            case TASK_STATE_BLOCKED:
+                list_add(&blockedtasks, item);
 
-        case TASK_STATE_UNBLOCKED:
-            task_transition(task, TASK_STATE_ASSIGNED);
-            assign(item);
+                break;
 
-            break;
+            case TASK_STATE_UNBLOCKED:
+                task_transition(task, TASK_STATE_ASSIGNED);
+                assign(item);
 
-        case TASK_STATE_NEW:
-            task_transition(task, TASK_STATE_ASSIGNED);
-            assign(item);
+                break;
 
-            break;
+            case TASK_STATE_NEW:
+                task_transition(task, TASK_STATE_ASSIGNED);
+                assign(item);
 
-        case TASK_STATE_RUNNING:
-            task_transition(task, TASK_STATE_ASSIGNED);
-            assign(item);
+                break;
 
-            break;
+            case TASK_STATE_RUNNING:
+                task_transition(task, TASK_STATE_ASSIGNED);
+                assign(item);
+
+                break;
+
+            }
 
         }
 
@@ -297,7 +302,8 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
 
             unsigned int inode = pool_getinodefromitem(current);
 
-            kernel_place(source, inode, event, count, data);
+            if (inode)
+                kernel_place(source, inode, event, count, data);
 
         }
 
@@ -344,7 +350,8 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
                 struct mailbox *mailbox = pool_getmailbox(task->imailbox[0]);
 
-                return mailbox->inode;
+                if (mailbox)
+                    return mailbox->inode;
 
             }
 
