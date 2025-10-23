@@ -45,14 +45,14 @@ static void mapping_init(struct mapping *mapping)
 
 }
 
-static void mapping_inittask(struct mapping *mapping, unsigned int ntask)
+static void mapping_inittask(struct mapping *mapping, unsigned int itask)
 {
 
-    mapping->directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * ntask;
+    mapping->directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * itask;
     mapping->entries = 0;
-    mapping->code = ARCH_TASKCODEADDRESS + ntask * (TASK_CODESIZE + TASK_STACKSIZE);
+    mapping->code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask;
     mapping->stack = mapping->code + TASK_CODESIZE;
-    mapping->mmap = ARCH_MMAPADDRESS + ARCH_MMAPSIZE * ntask;
+    mapping->mmap = ARCH_MMAPADDRESS + ARCH_MMAPSIZE * itask;
     mapping->mmapheader = (struct mmap_header *)mapping->mmap;
     mapping->mmapentries = (struct mmap_entry *)(mapping->mmapheader + 1);
  
@@ -116,11 +116,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
             if (entry->msize)
             {
 
-                entry->address = address + entry->offset;
-                entry->vpaddress = entry->vaddress & ~MMU_PAGEMASK;
-                entry->vpsize = (entry->msize + MMU_PAGESIZE) & ~MMU_PAGEMASK;
-                entry->paddress = mapping->code + mapping->mmapheader->offset;
-
+                mmap_setmapping(entry, mapping->code + mapping->mmapheader->offset, MMU_PAGESIZE, MMU_PAGEMASK);
                 mapping_map(mapping, entry->paddress, entry->vpaddress, entry->vpsize);
 
                 if (entry->flags & 0x02)
