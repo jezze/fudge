@@ -682,10 +682,10 @@ void blit_pcx(struct blit_display *display, int line, char *source, int x, int y
 
 }
 
-void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer)
+void blit_initdisplay(struct blit_display *display, unsigned int framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer)
 {
 
-    display->framebuffer = framebuffer;
+    display->framebuffer = (void *)framebuffer;
     display->size.w = w;
     display->size.h = h;
     display->bpp = bpp;

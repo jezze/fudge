@@ -137,7 +137,7 @@ struct event_videoconf
 struct event_videoinfo
 {
 
-    void *framebuffer;
+    unsigned int framebuffer;
     unsigned int width;
     unsigned int height;
     unsigned int bpp;

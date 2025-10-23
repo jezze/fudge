@@ -46,7 +46,7 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
-void video_notifymode(struct video_interface *interface, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
+void video_notifymode(struct video_interface *interface, unsigned int framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     struct event_videoinfo videoinfo;

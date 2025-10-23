@@ -56,10 +56,8 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
     setreg(REG_COMMAND_YRES, videointerface.height);
     setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
     setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
-    arch_umapvideo(framebuffer, framebuffer, 0x00400000);
-    arch_umapvideo(framebuffer + 0x00400000, framebuffer + 0x00400000, 0x00400000);
-
-    video_notifymode(&videointerface, (void *)framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
+    arch_umapvideo(framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp);
+    video_notifymode(&videointerface, 0xA0000000, videointerface.width, videointerface.height, videointerface.bpp);
 
     return MESSAGE_OK;
 

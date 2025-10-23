@@ -116,21 +116,13 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
     if (modenum)
     {
 
-        if (mode->framebuffer)
-        {
-
-            arch_umapvideo(mode->framebuffer, mode->framebuffer, 0x00400000);
-            arch_umapvideo(mode->framebuffer + 0x00400000, mode->framebuffer + 0x00400000, 0x00400000);
-
-        }
-
-        vbe_setvideomode(modenum | 0x4000);
-
         videointerface.width = mode->width;
         videointerface.height = mode->height;
         videointerface.bpp = mode->bpp / 8;
 
-        video_notifymode(&videointerface, (void *)mode->framebuffer, videointerface.width, videointerface.height, videointerface.bpp);
+        vbe_setvideomode(modenum | 0x4000);
+        arch_umapvideo(mode->framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp);
+        video_notifymode(&videointerface, 0xA0000000, videointerface.width, videointerface.height, videointerface.bpp);
 
         return MESSAGE_OK;
 

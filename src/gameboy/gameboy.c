@@ -282,7 +282,7 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_videoinfo *videoinfo = mdata;
 
-    framebuffer = videoinfo->framebuffer;
+    framebuffer = (unsigned int *)videoinfo->framebuffer;
     w = videoinfo->width;
     h = videoinfo->height;
     scalew = videoinfo->width / LCD_WIDTH;
