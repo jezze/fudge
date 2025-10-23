@@ -22,31 +22,21 @@ static unsigned int checkuserstack(void *address, unsigned int count)
 
 }
 
-static unsigned int checkusercode(void *address, unsigned int count, unsigned int itask)
+static unsigned int checkusercode(void *address, unsigned int count)
 {
 
-    struct task *task = pool_gettask(itask);
+    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
+    struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
+    unsigned int value = (unsigned int)address;
+    unsigned int i;
 
-    if (task)
+    for (i = 0; i < header->entries; i++)
     {
 
-        struct binary_format *format = binary_findformat(task->address);
+        struct mmap_entry *entry = &entries[i];
 
-        if (format)
-        {
-
-            struct mmap_entry entry;
-            unsigned int i = 0;
-
-            while ((i = format->mapsection(task->address, &entry, i)))
-            {
-
-                if ((unsigned int)address >= entry.vaddress && (unsigned int)address < entry.vaddress + entry.msize)
-                    return (unsigned int)address;
-
-            }
-
-        }
+        if (value >= entry->vaddress && ((value + count) < entry->vaddress + entry->msize))
+            return value;
 
     }
 
@@ -57,7 +47,7 @@ static unsigned int checkusercode(void *address, unsigned int count, unsigned in
 static unsigned int checkuserspace(void *address, unsigned int count, unsigned int itask)
 {
 
-    return checkuserstack(address, count) || checkusercode(address, count, itask);
+    return checkuserstack(address, count) || checkusercode(address, count);
 
 }
 

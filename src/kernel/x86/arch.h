@@ -8,7 +8,6 @@
 #define ARCH_KERNELSTACKSIZE            0x00008000
 #define ARCH_MMAPADDRESS                0x00800000
 #define ARCH_MMAPSIZE                   0x00001000
-#define ARCH_MMAPVADDRESS               0xC0000000
 #define ARCH_MMUKERNELADDRESS           0x00A00000
 #define ARCH_MMUKERNELSIZE              0x00200000
 #define ARCH_MMUTASKADDRESS             0x00C00000

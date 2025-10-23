@@ -142,7 +142,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 static void mapping_loadmmap(struct mapping *mapping)
 {
 
-    map(mapping, mapping->mmap, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(mapping, mapping->mmap, MMAP_VADDRESS, ARCH_MMAPSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -464,7 +464,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (type & MMU_EFLAG_USER)
         {
 
-            struct mmap_entry *entry = findmmap(ARCH_MMAPVADDRESS, address);
+            struct mmap_entry *entry = findmmap(MMAP_VADDRESS, address);
 
             if (entry)
             {
@@ -567,7 +567,7 @@ void arch_setup1(void)
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
     arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
     arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE * POOL_MAILBOXES);
-    arch_map(kmapping.mmap, ARCH_MMAPVADDRESS, ARCH_MMAPSIZE);
+    arch_map(kmapping.mmap, MMAP_VADDRESS, ARCH_MMAPSIZE);
     mmu_setdirectory(kmapping.directory);
     mmu_enable();
     mailbox_setup();

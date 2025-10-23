@@ -1,3 +1,5 @@
+#define MMAP_VADDRESS                   0xC0000000
+
 struct mmap_header
 {
 
