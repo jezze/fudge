@@ -46,8 +46,8 @@ struct arch_tss
 };
 
 void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size);
-void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int size);
-void arch_mapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size);
+void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size);
+void arch_umapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(void);
 void arch_configuregdt(void);

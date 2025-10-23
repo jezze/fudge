@@ -264,29 +264,35 @@ void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
 
 }
 
-void arch_mapuncached(unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     struct core *core = kernel_getcore();
 
-    map(&kmapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
-
-    /* Need to fix this workaround */
     if (core->itask)
     {
 
         struct mapping *mapping = &umapping[core->itask];
 
-        map(mapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_CACHEDISABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_CACHEDISABLE);
+        map(mapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
     }
 
 }
 
-void arch_mapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_umapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    map(&kmapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
+    struct core *core = kernel_getcore();
+
+    if (core->itask)
+    {
+
+        struct mapping *mapping = &umapping[core->itask];
+
+        map(mapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
+
+    }
 
 }
 

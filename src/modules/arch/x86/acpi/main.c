@@ -114,7 +114,12 @@ void module_init(void)
         struct acpi_sdth *sdth = getsdth(rsdp);
 
         if (sdth)
-            arch_mapuncached((unsigned int)sdth & 0xFFFFF000, (unsigned int)sdth & 0xFFFFF000, 0x00010000);
+        {
+
+            arch_map((unsigned int)sdth & 0xFFFFF000, (unsigned int)sdth & 0xFFFFF000, 0x00010000);
+            arch_umap((unsigned int)sdth & 0xFFFFF000, (unsigned int)sdth & 0xFFFFF000, 0x00010000);
+
+        }
 
     }
 
