@@ -686,10 +686,11 @@ void blit_initdisplay(struct blit_display *display, unsigned int framebuffer, un
 {
 
     display->framebuffer = (void *)framebuffer;
-    display->size.w = w;
-    display->size.h = h;
     display->bpp = bpp;
     display->linebuffer = linebuffer;
+
+    util_initregion(&display->size, 0, 0, w, h);
+    util_initregion(&display->clip, 0, 0, w, h);
 
 }
 

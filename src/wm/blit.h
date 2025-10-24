@@ -2,7 +2,8 @@ struct blit_display
 {
 
     void *framebuffer;
-    struct util_size size;
+    struct util_region size;
+    struct util_region clip;
     unsigned int bpp;
     unsigned int *linebuffer;
 

@@ -653,8 +653,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->in = attr_update(ATTR_IN, in, widget->in);
     widget->data = data;
 
-    util_initbox(&widget->bb, 0, 0, 0, 0);
-    util_initbox(&widget->clip, 0, 0, 0, 0);
+    util_initregion(&widget->bb, 0, 0, 0, 0);
+    util_initregion(&widget->clip, 0, 0, 0, 0);
 
     switch (widget->type)
     {

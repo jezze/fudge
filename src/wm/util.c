@@ -52,13 +52,13 @@ void util_initsize(struct util_size *size, int w, int h)
 
 }
 
-void util_initbox(struct util_box *box, int x, int y, unsigned int w, unsigned int h)
+void util_initregion(struct util_region *region, int x, int y, unsigned int w, unsigned int h)
 {
 
-    box->x = x;
-    box->y = y;
-    box->w = w;
-    box->h = h;
+    region->x = x;
+    region->y = y;
+    region->w = w;
+    region->h = h;
 
 }
 
