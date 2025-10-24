@@ -466,6 +466,8 @@ static void placelayout(struct widget *widget, int x, int y, struct util_size *m
 {
 
     struct widget_layout *layout = widget->data;
+    unsigned int paddingw = layout->padding * CONFIG_LAYOUT_PADDING_WIDTH;
+    unsigned int paddingh = layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT;
     struct util_size total;
     struct util_size cmin;
 
@@ -474,31 +476,31 @@ static void placelayout(struct widget *widget, int x, int y, struct util_size *m
 
     case ATTR_FLOW_DEFAULT:
         util_initsize(&cmin, 0, 0);
-        placechildren(widget, x, y, &cmin, max, clip, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 0, &total);
+        placechildren(widget, x, y, &cmin, max, clip, 0, 0, paddingw, paddingh, 0, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTAL:
         util_initsize(&cmin, 0, 0);
-        placechildren(widget, x, y, &cmin, max, clip, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
+        placechildren(widget, x, y, &cmin, max, clip, 0, 0, paddingw, paddingh, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_HORIZONTALSTRETCH:
         util_initsize(&cmin, 0, max->h);
-        placechildren(widget, x, y, &cmin, max, clip, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 1, 0, &total);
+        placechildren(widget, x, y, &cmin, max, clip, 0, 0, paddingw, paddingh, 1, 0, &total);
 
         break;
 
     case ATTR_FLOW_VERTICAL:
         util_initsize(&cmin, 0, 0);
-        placechildren(widget, x, y, &cmin, max, clip, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
+        placechildren(widget, x, y, &cmin, max, clip, 0, 0, paddingw, paddingh, 0, 1, &total);
 
         break;
 
     case ATTR_FLOW_VERTICALSTRETCH:
         util_initsize(&cmin, max->w, 0);
-        placechildren(widget, x, y, &cmin, max, clip, 0, 0, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT, 0, 1, &total);
+        placechildren(widget, x, y, &cmin, max, clip, 0, 0, paddingw, paddingh, 0, 1, &total);
 
         break;
 
