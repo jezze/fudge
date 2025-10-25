@@ -295,7 +295,7 @@ static void placechildren(struct widget *widget, int x, int y, struct util_size 
 
 }
 
-static void placetextflow(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, struct util_region *clip, unsigned int marginw, unsigned int marginh, unsigned int paddingw, unsigned int paddingh, struct util_size *total)
+static void placetextflow(struct widget *widget, int x, int y, struct util_size *min, struct util_size *max, struct util_region *clip, unsigned int marginw, unsigned int marginh, unsigned int paddingw, unsigned int paddingh, struct util_size *total)
 {
 
     struct list_item *current = 0;
@@ -313,8 +313,8 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
         struct util_size cmin;
 
         util_initposition(&cpos, x + marginw, y + marginh + offy);
-        util_initsize(&cmax, util_clamp(maxw, 0, maxw - marginw * 2), util_clamp(maxh, 0, maxh - marginh * 2));
-        util_initsize(&cmin, util_clamp(minw, 0, cmax.w), util_clamp(minh, 0, cmax.h));
+        util_initsize(&cmax, util_clamp(max->w, 0, max->w - marginw * 2), util_clamp(max->h, 0, max->h - marginh * 2));
+        util_initsize(&cmin, util_clamp(min->w, 0, cmax.w), util_clamp(min->h, 0, cmax.h));
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
@@ -581,8 +581,12 @@ static void placetextbox(struct widget *widget, int x, int y, struct util_size *
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
     struct util_size total;
+    struct util_size cmin;
+    struct util_size cmax;
 
-    placetextflow(widget, x, y, 0, 0, max->w, INFINITY, clip, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
+    util_initsize(&cmin, 0, 0);
+    util_initsize(&cmax, max->w, INFINITY);
+    placetextflow(widget, x, y, &cmin, &cmax, clip, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, min, max, clip, 0, 0);
     clipchildren(widget, &widget->bb, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
 
