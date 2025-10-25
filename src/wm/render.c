@@ -337,7 +337,7 @@ static void placetextflow(struct widget *widget, int x, int y, unsigned int minw
 
 }
 
-static void clipchildren(struct widget *widget, int x, int y, unsigned int w, unsigned int h, unsigned int marginw, unsigned int marginh)
+static void clipchildren(struct widget *widget, struct util_region *clip, unsigned int marginw, unsigned int marginh)
 {
 
     struct list_item *current = 0;
@@ -347,8 +347,8 @@ static void clipchildren(struct widget *widget, int x, int y, unsigned int w, un
 
         struct widget *child = current->data;
 
-        util_initregion(&child->clip, x + marginw, y + marginh, util_clamp(w, 0, w - marginw * 2), util_clamp(h, 0, h - marginh * 2));
-        clipchildren(child, x, y, w, h, marginw, marginh);
+        util_initregion(&child->clip, clip->x + marginw, clip->y + marginh, util_clamp(clip->w, 0, clip->w - marginw * 2), util_clamp(clip->h, 0, clip->h - marginh * 2));
+        clipchildren(child, clip, marginw, marginh);
 
     }
 
@@ -522,7 +522,7 @@ static void placelistbox(struct widget *widget, int x, int y, struct util_size *
     util_initsize(&cmax, max->w, INFINITY);
     placechildren(widget, x, y, &cmin, &cmax, clip, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_LISTBOX_PADDING_WIDTH, CONFIG_LISTBOX_PADDING_HEIGHT, 0, 1, &total);
     placewidget(widget, x, y, total.w, total.h, min, max, clip, 0, 0);
-    clipchildren(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
+    clipchildren(widget, &widget->bb, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
 
     listbox->vscroll = util_clamp(listbox->vscroll, widget->bb.h - total.h, 0);
 
@@ -547,7 +547,14 @@ static void placeselect(struct widget *widget, int x, int y, struct util_size *m
     placechildren(widget, x, widget->bb.y + widget->bb.h, &cmin, &cmax, clip, 0, 0, 0, 0, 0, 1, &total);
 
     if (widget->state != WIDGET_STATE_FOCUS)
-        clipchildren(widget, widget->bb.x, widget->bb.y, 0, 0, 0, 0);
+    {
+
+        struct util_region cclip;
+
+        util_initregion(&cclip, widget->bb.x, widget->bb.y, 0, 0);
+        clipchildren(widget, &cclip, 0, 0);
+
+    }
 
 }
 
@@ -577,7 +584,7 @@ static void placetextbox(struct widget *widget, int x, int y, struct util_size *
 
     placetextflow(widget, x, y, 0, 0, max->w, INFINITY, clip, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT, &total);
     placewidget(widget, x, y, total.w, total.h, min, max, clip, 0, 0);
-    clipchildren(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
+    clipchildren(widget, &widget->bb, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
 
     textbox->vscroll = util_clamp(textbox->vscroll, widget->bb.h - total.h, 0);
 
