@@ -200,10 +200,10 @@ static unsigned int getnumspans(struct widget *widget)
 
 }
 
-static void placewidget(struct widget *widget, int x, int y, int w, int h, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *padding)
+static void placewidget(struct widget *widget, struct util_region *region, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *padding)
 {
 
-    util_initregion(&widget->bb, x, y, util_clamp(w + padding->w * 2, min->w, max->w), util_clamp(h + padding->h * 2, min->h, max->h));
+    util_initregion(&widget->bb, region->x, region->y, util_clamp(region->w + padding->w * 2, min->w, max->w), util_clamp(region->h + padding->h * 2, min->h, max->h));
     util_initregion(&widget->clip, clip->x, clip->y, clip->w, clip->h);
 
 }
@@ -379,11 +379,13 @@ static void placebutton(struct widget *widget, int x, int y, struct util_size *m
     struct widget_button *button = widget->data;
     struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
     struct text_rowinfo rowinfo;
+    struct util_region region;
     struct util_size padding;
 
-    util_initsize(&padding, CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
     text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, max->w - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
-    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, min, max, clip, &padding);
+    util_initregion(&region, x, y, rowinfo.width, rowinfo.lineheight);
+    util_initsize(&padding, CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
+    placewidget(widget, &region, min, max, clip, &padding);
 
 }
 
@@ -393,21 +395,25 @@ static void placechoice(struct widget *widget, int x, int y, struct util_size *m
     struct widget_choice *choice = widget->data;
     struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
     struct text_rowinfo rowinfo;
+    struct util_region region;
     struct util_size padding;
 
-    util_initsize(&padding, CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
     text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, max->w - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
-    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, min, max, clip, &padding);
+    util_initregion(&region, x, y, rowinfo.width, rowinfo.lineheight);
+    util_initsize(&padding, CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
+    placewidget(widget, &region, min, max, clip, &padding);
 
 }
 
 static void placefill(struct widget *widget, int x, int y, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
+    struct util_region region;
     struct util_size padding;
 
+    util_initregion(&region, x, y, max->w, max->h);
     util_initsize(&padding, 0, 0);
-    placewidget(widget, x, y, max->w, max->h, min, max, clip, &padding);
+    placewidget(widget, &region, min, max, clip, &padding);
 
 }
 
@@ -415,9 +421,8 @@ static void placeimagepcx(struct widget *widget, int x, int y, struct util_size 
 {
 
     struct widget_image *image = widget->data;
+    struct util_region region;
     struct util_size padding;
-
-    util_initsize(&padding, 0, 0);
 
     /* This should be done in some preload state after placement but before rendering. Left in placement for now. */
     if (!image->loaded)
@@ -446,7 +451,9 @@ static void placeimagepcx(struct widget *widget, int x, int y, struct util_size 
 
     }
 
-    placewidget(widget, x, y, image->size.w, image->size.h, min, max, clip, &padding);
+    util_initregion(&region, x, y, image->size.w, image->size.h);
+    util_initsize(&padding, 0, 0);
+    placewidget(widget, &region, min, max, clip, &padding);
 
 }
 
@@ -462,7 +469,7 @@ static void placeimage(struct widget *widget, int x, int y, struct util_size *mi
     {
 
     case ATTR_MIMETYPE_FUDGEMOUSE:
-        placewidget(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, min, max, clip, &padding);
+        placewidget(widget, &widget->bb, min, max, clip, &padding);
 
         break;
 
@@ -479,13 +486,13 @@ static void placelayout(struct widget *widget, int x, int y, struct util_size *m
 {
 
     struct widget_layout *layout = widget->data;
+    struct util_region region;
     struct util_size padding;
     struct util_size total;
     struct util_size cmin;
     struct util_size cmargin;
     struct util_size cpadding;
 
-    util_initsize(&padding, 0, 0);
     util_initsize(&cmargin, 0, 0);
     util_initsize(&cpadding, layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT);
 
@@ -524,7 +531,9 @@ static void placelayout(struct widget *widget, int x, int y, struct util_size *m
 
     }
 
-    placewidget(widget, x, y, total.w, total.h, min, max, clip, &padding);
+    util_initregion(&region, x, y, total.w, total.h);
+    util_initsize(&padding, 0, 0);
+    placewidget(widget, &region, min, max, clip, &padding);
 
 }
 
@@ -532,6 +541,7 @@ static void placelistbox(struct widget *widget, int x, int y, struct util_size *
 {
 
     struct widget_listbox *listbox = widget->data;
+    struct util_region region;
     struct util_size padding;
     struct util_size total;
     struct util_size cmin;
@@ -539,13 +549,14 @@ static void placelistbox(struct widget *widget, int x, int y, struct util_size *
     struct util_size cmargin;
     struct util_size cpadding;
 
-    util_initsize(&padding, 0, 0);
     util_initsize(&cmin, 0, 0);
     util_initsize(&cmax, max->w, INFINITY);
     util_initsize(&cmargin, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
     util_initsize(&cpadding, CONFIG_LISTBOX_PADDING_WIDTH, CONFIG_LISTBOX_PADDING_HEIGHT);
     placechildren(widget, x, y, &cmin, &cmax, clip, &cmargin, &cpadding, 0, 1, &total);
-    placewidget(widget, x, y, total.w, total.h, min, max, clip, &padding);
+    util_initregion(&region, x, y, total.w, total.h);
+    util_initsize(&padding, 0, 0);
+    placewidget(widget, &region, min, max, clip, &padding);
     clipchildren(widget, &widget->bb, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
 
     listbox->vscroll = util_clamp(listbox->vscroll, widget->bb.h - total.h, 0);
@@ -560,6 +571,7 @@ static void placeselect(struct widget *widget, int x, int y, struct util_size *m
     struct widget_select *select = widget->data;
     struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
     struct text_rowinfo rowinfo;
+    struct util_region region;
     struct util_size padding;
     struct util_size total;
     struct util_size cmin;
@@ -567,9 +579,10 @@ static void placeselect(struct widget *widget, int x, int y, struct util_size *m
     struct util_size cmargin;
     struct util_size cpadding;
 
-    util_initsize(&padding, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, max->w - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
-    placewidget(widget, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH, rowinfo.lineheight, min, max, clip, &padding);
+    util_initregion(&region, x, y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH, rowinfo.lineheight);
+    util_initsize(&padding, CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
+    placewidget(widget, &region, min, max, clip, &padding);
     util_initsize(&cmin, 0, 0);
     util_initsize(&cmax, widget->bb.w * 2, INFINITY);
     util_initsize(&cmargin, 0, 0);
@@ -594,16 +607,18 @@ static void placetext(struct widget *widget, int x, int y, struct util_size *min
     struct widget_text *text = widget->data;
     struct text_font *font = pool_getfont(text->weight);
     struct text_info info;
+    struct util_region region;
     struct util_size padding;
 
-    util_initsize(&padding, 0, 0);
     text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, max->w, text->offx);
 
     text->rows = info.rows;
     text->lastrowx = info.lastrowx;
     text->lastrowy = info.lastrowy;
 
-    placewidget(widget, x, y, info.width, info.height, min, max, clip, &padding);
+    util_initregion(&region, x, y, info.width, info.height);
+    util_initsize(&padding, 0, 0);
+    placewidget(widget, &region, min, max, clip, &padding);
 
 }
 
@@ -612,6 +627,7 @@ static void placetextbox(struct widget *widget, int x, int y, struct util_size *
 
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
+    struct util_region region;
     struct util_size padding;
     struct util_size total;
     struct util_size cmin;
@@ -619,13 +635,14 @@ static void placetextbox(struct widget *widget, int x, int y, struct util_size *
     struct util_size cmargin;
     struct util_size cpadding;
 
-    util_initsize(&padding, 0, 0);
     util_initsize(&cmin, 0, 0);
     util_initsize(&cmax, max->w, INFINITY);
     util_initsize(&cmargin, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
     util_initsize(&cpadding, CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
     placetextflow(widget, x, y, &cmin, &cmax, clip, &cmargin, &cpadding, &total);
-    placewidget(widget, x, y, total.w, total.h, min, max, clip, &padding);
+    util_initregion(&region, x, y, total.w, total.h);
+    util_initsize(&padding, 0, 0);
+    placewidget(widget, &region, min, max, clip, &padding);
     clipchildren(widget, &widget->bb, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
 
     textbox->vscroll = util_clamp(textbox->vscroll, widget->bb.h - total.h, 0);
@@ -663,11 +680,13 @@ static void placetextbutton(struct widget *widget, int x, int y, struct util_siz
     struct widget_textbutton *textbutton = widget->data;
     struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
     struct text_rowinfo rowinfo;
+    struct util_region region;
     struct util_size padding;
 
-    util_initsize(&padding, CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
     text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, max->w - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);
-    placewidget(widget, x, y, rowinfo.width, rowinfo.lineheight, min, max, clip, &padding);
+    util_initregion(&region, x, y, rowinfo.width, rowinfo.lineheight);
+    util_initsize(&padding, CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
+    placewidget(widget, &region, min, max, clip, &padding);
 
 }
 
@@ -684,9 +703,9 @@ static void placewindow(struct widget *widget, int x, int y, struct util_size *m
     struct util_size cmargin;
     struct util_size cpadding;
 
-    util_initsize(&padding, 0, 0);
     text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, max->w, 0);
-    placewidget(widget, widget->bb.x, widget->bb.y, widget->bb.w, widget->bb.h, min, max, clip, &padding);
+    util_initsize(&padding, 0, 0);
+    placewidget(widget, &widget->bb, min, max, clip, &padding);
     util_initsize(&cmin, 0, 0);
     util_initsize(&cmax, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initsize(&cmargin, 0, 0);
