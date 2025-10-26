@@ -69,7 +69,7 @@ static struct cacherow *getcacherow(struct widget *widget, unsigned int num)
 
 }
 
-static void addcacherow(struct widget *widget, unsigned int num, unsigned int weight, unsigned int paddingx, unsigned int paddingy, unsigned int halign, unsigned int valign, int offx, int offy, int text, unsigned int wrap)
+static void addcacherow(struct widget *widget, unsigned int num, unsigned int weight, struct util_size *padding, unsigned int halign, unsigned int valign, int offx, int offy, int text, unsigned int wrap)
 {
 
     struct cacherow *cacherow = &cacherows[nrows++];
@@ -82,8 +82,8 @@ static void addcacherow(struct widget *widget, unsigned int num, unsigned int we
     text_getrowinfo(&rowinfo, font, textstring, textlength, wrap, widget->bb.w, icurrent);
 
     cacherow->num = num;
-    cacherow->rx = text_getrowx(&rowinfo, halign, paddingx, widget->bb.w - offx) + offx;
-    cacherow->ry = text_getrowy(&rowinfo, valign, paddingy, widget->bb.h - offy) + offy + rowinfo.lineheight * num;
+    cacherow->rx = text_getrowx(&rowinfo, halign, padding->w, widget->bb.w - offx) + offx;
+    cacherow->ry = text_getrowy(&rowinfo, valign, padding->h, widget->bb.h - offy) + offy + rowinfo.lineheight * num;
     cacherow->istart = rowinfo.istart;
     cacherow->iend = rowinfo.iend;
     cacherow->length = rowinfo.length;
@@ -96,8 +96,10 @@ static void cachebutton(struct widget *widget, int y0, int y2)
 {
 
     struct widget_button *button = widget->data;
+    struct util_size padding;
 
-    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE);
+    util_initsize(&padding, 0, 0);
+    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, &padding, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE);
 
 }
 
@@ -105,8 +107,10 @@ static void cachechoice(struct widget *widget, int y0, int y2)
 {
 
     struct widget_choice *choice = widget->data;
+    struct util_size padding;
 
-    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_CHOICE_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE);
+    util_initsize(&padding, CONFIG_CHOICE_PADDING_WIDTH, 0);
+    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, &padding, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE);
 
 }
 
@@ -134,8 +138,10 @@ static void cacheselect(struct widget *widget, int y0, int y2)
 {
 
     struct widget_select *select = widget->data;
+    struct util_size padding;
 
-    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_SELECT_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE);
+    util_initsize(&padding, CONFIG_SELECT_PADDING_WIDTH, 0);
+    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, &padding, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE);
 
 }
 
@@ -151,7 +157,14 @@ static void cachetext(struct widget *widget, int y0, int y2)
         unsigned int rownum = (line - widget->bb.y) / pool_getfont(text->weight)->lineheight;
 
         if (!getcacherow(widget, rownum))
-            addcacherow(widget, rownum, text->weight, 0, 0, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
+        {
+
+            struct util_size padding;
+
+            util_initsize(&padding, 0, 0);
+            addcacherow(widget, rownum, text->weight, &padding, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
+
+        }
 
     }
 
@@ -166,8 +179,10 @@ static void cachetextbutton(struct widget *widget, int y0, int y2)
 {
 
     struct widget_textbutton *textbutton = widget->data;
+    struct util_size padding;
 
-    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE);
+    util_initsize(&padding, CONFIG_TEXTBUTTON_PADDING_WIDTH, 0);
+    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, &padding, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE);
 
 }
 
@@ -175,8 +190,10 @@ static void cachewindow(struct widget *widget, int y0, int y2)
 {
 
     struct widget_window *window = widget->data;
+    struct util_size padding;
 
-    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, 0, 5, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE);
+    util_initsize(&padding, 0, 5);
+    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, &padding, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE);
 
 }
 
