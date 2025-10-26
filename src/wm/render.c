@@ -50,6 +50,42 @@ static struct calls calls[32];
 static struct cacherow cacherows[512];
 static unsigned int nrows;
 
+static struct util_position posshrink(int x, int y, struct util_size *padding)
+{
+
+    struct util_position p;
+
+    p.x = x + padding->w;
+    p.y = y + padding->h;
+
+    return p;
+
+}
+
+static struct util_size sizeshrink(struct util_size *size, struct util_size *padding)
+{
+
+    struct util_size n;
+
+    n.w = util_clamp(size->w, 0, size->w - padding->w * 2);
+    n.h = util_clamp(size->h, 0, size->h - padding->h * 2);
+
+    return n;
+
+}
+
+static struct util_size sizeclamp(struct util_size *min, struct util_size *max)
+{
+
+    struct util_size n;
+
+    n.w = util_clamp(min->w, 0, max->w);
+    n.h = util_clamp(min->h, 0, max->h);
+
+    return n;
+
+}
+
 static struct cacherow *getcacherow(struct widget *widget, unsigned int num)
 {
 
@@ -228,13 +264,9 @@ static void placewidget(struct widget *widget, struct util_region *region, struc
 static void placechild(struct widget *widget, int x, int y, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *padding)
 {
 
-    struct util_position cpos;
-    struct util_size cmax;
-    struct util_size cmin;
-
-    util_initposition(&cpos, x + padding->w, y + padding->h);
-    util_initsize(&cmax, util_clamp(max->w, 0, max->w - padding->w * 2), util_clamp(max->h, 0, max->h - padding->h * 2));
-    util_initsize(&cmin, util_clamp(min->w, 0, cmax.w), util_clamp(min->h, 0, cmax.h));
+    struct util_position cpos = posshrink(x, y, padding);
+    struct util_size cmax = sizeshrink(max, padding);
+    struct util_size cmin = sizeclamp(min, &cmax);
 
     calls[widget->type].place(widget, cpos.x, cpos.y, &cmin, &cmax, clip);
 
@@ -251,13 +283,9 @@ static void placechildren1(struct widget *widget, int x, int y, struct util_size
     {
 
         struct widget *child = current->data;
-        struct util_position cpos;
-        struct util_size cmax;
-        struct util_size cmin;
-
-        util_initposition(&cpos, x + margin->w, y + margin->h);
-        util_initsize(&cmax, util_clamp(max->w, 0, max->w - margin->w * 2), util_clamp(max->h, 0, max->h - margin->h * 2));
-        util_initsize(&cmin, util_clamp(min->w, 0, cmax.w), util_clamp(min->h, 0, cmax.h));
+        struct util_position cpos = posshrink(x, y, margin);
+        struct util_size cmax = sizeshrink(max, margin);
+        struct util_size cmin = sizeclamp(min, &cmax);
 
         if (incx)
         {
@@ -325,13 +353,9 @@ static void placetextflow(struct widget *widget, int x, int y, struct util_size 
     {
 
         struct widget *child = current->data;
-        struct util_position cpos;
-        struct util_size cmax;
-        struct util_size cmin;
-
-        util_initposition(&cpos, x + margin->w, y + margin->h + offy);
-        util_initsize(&cmax, util_clamp(max->w, 0, max->w - margin->w * 2), util_clamp(max->h, 0, max->h - margin->h * 2));
-        util_initsize(&cmin, util_clamp(min->w, 0, cmax.w), util_clamp(min->h, 0, cmax.h));
+        struct util_position cpos = posshrink(x, y, margin);
+        struct util_size cmax = sizeshrink(max, margin);
+        struct util_size cmin = sizeclamp(min, &cmax);
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
