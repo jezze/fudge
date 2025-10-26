@@ -87,10 +87,10 @@ static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int l
 
 }
 
-static void blitsegment(struct blit_display *display, struct rowsegment *rows, unsigned int count, unsigned int line, int x, int y, int w, int h, int x0, int x2, unsigned int *cmap)
+static void blitsegment(struct blit_display *display, struct rowsegment *rows, unsigned int count, unsigned int line, struct util_region *region, int x0, int x2, unsigned int *cmap)
 {
 
-    struct rowsegment *rs = findrowsegment(rows, count, line, y, h);
+    struct rowsegment *rs = findrowsegment(rows, count, line, region->y, region->h);
 
     if (rs)
     {
@@ -102,7 +102,7 @@ static void blitsegment(struct blit_display *display, struct rowsegment *rows, u
 
             struct linesegment *current = &rs->lines[i];
 
-            blit_alphaline(display, cmap[current->color], util_max(getpoint(current->t0, current->p0, x, w), x0), util_min(getpoint(current->t1, current->p1, x, w), x2));
+            blit_alphaline(display, cmap[current->color], util_max(getpoint(current->t0, current->p0, region->x, region->w), x0), util_min(getpoint(current->t1, current->p1, region->x, region->w), x2));
 
         }
 
@@ -219,7 +219,7 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
 
 }
 
-void blit_iconarrowdown(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_iconarrowdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -249,11 +249,11 @@ void blit_iconarrowdown(struct blit_display *display, int x, int y, int w, int h
         {REL1, REL1, 2, 3, line5, 1}
     };
 
-    blitsegment(display, rows, 6, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 6, line, region, x0, x2, cmap);
 
 }
 
-void blit_iconarrowup(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_iconarrowup(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -283,11 +283,11 @@ void blit_iconarrowup(struct blit_display *display, int x, int y, int w, int h, 
         {REL1, REL1, 2, 3, line5, 1}
     };
 
-    blitsegment(display, rows, 6, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 6, line, region, x0, x2, cmap);
 
 }
 
-void blit_iconcursor(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_iconcursor(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -297,11 +297,11 @@ void blit_iconcursor(struct blit_display *display, int x, int y, int w, int h, i
         {REL0, REL2, 0, 0, line0, 1}
     };
 
-    blitsegment(display, rows, 1, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 1, line, region, x0, x2, cmap);
 
 }
 
-void blit_icondropdown(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_icondropdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -332,11 +332,11 @@ void blit_icondropdown(struct blit_display *display, int x, int y, int w, int h,
         {REL1, REL1, 6, 7, line0, 1}
     };
 
-    blitsegment(display, rows, 10, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 10, line, region, x0, x2, cmap);
 
 }
 
-void blit_iconhamburger(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_iconhamburger(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -348,11 +348,11 @@ void blit_iconhamburger(struct blit_display *display, int x, int y, int w, int h
         {REL1, REL1, 4, 8, line0, 1}
     };
 
-    blitsegment(display, rows, 3, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 3, line, region, x0, x2, cmap);
 
 }
 
-void blit_iconminimize(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_iconminimize(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -362,11 +362,11 @@ void blit_iconminimize(struct blit_display *display, int x, int y, int w, int h,
         {REL1, REL1, 4, 8, line0, 1}
     };
 
-    blitsegment(display, rows, 1, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 1, line, region, x0, x2, cmap);
 
 }
 
-void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_iconx(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -416,11 +416,11 @@ void blit_iconx(struct blit_display *display, int x, int y, int w, int h, int li
         {REL1, REL1, 7, 8, line7, 2}
     };
 
-    blitsegment(display, rows, 15, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 15, line, region, x0, x2, cmap);
 
 }
 
-void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_mouse(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -602,11 +602,11 @@ void blit_mouse(struct blit_display *display, int x, int y, int w, int h, int li
         {REL0, REL0, 23, 24, line23, 1}
     };
 
-    blitsegment(display, rows, 24, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 24, line, region, x0, x2, cmap);
 
 }
 
-void blit_frame(struct blit_display *display, int x, int y, int w, int h, int line, int x0, int x2, unsigned int *cmap)
+void blit_frame(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
     static struct linesegment line0[1] = {
@@ -643,7 +643,7 @@ void blit_frame(struct blit_display *display, int x, int y, int w, int h, int li
         {REL2, REL2, -2, 0, line0, 1}
     };
 
-    blitsegment(display, rows, 7, line, x, y, w, h, x0, x2, cmap);
+    blitsegment(display, rows, 7, line, region, x0, x2, cmap);
 
 }
 
