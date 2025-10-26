@@ -796,13 +796,13 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
     case 0:
     case 1:
-        util_initregion(&state.mousewidget->bb, state.mouseposition.x, state.mouseposition.y, 12, 16);
+        state.mousewidget->bb = util_region(state.mouseposition.x, state.mouseposition.y, 12, 16);
 
         break;
 
     case 2:
     default:
-        util_initregion(&state.mousewidget->bb, state.mouseposition.x, state.mouseposition.y, 18, 24);
+        state.mousewidget->bb = util_region(state.mouseposition.x, state.mouseposition.y, 18, 24);
 
         break;
 

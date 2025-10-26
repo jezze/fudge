@@ -553,8 +553,7 @@ static void initimage(struct widget *widget)
     image->mimetype = ATTR_MIMETYPE_NONE;
     image->source = 0;
     image->loaded = 0;
-
-    util_initsize(&image->size, 0, 0);
+    image->size = util_size(0, 0);
 
 }
 
@@ -652,9 +651,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->id = attr_update(ATTR_ID, id, widget->id);
     widget->in = attr_update(ATTR_IN, in, widget->in);
     widget->data = data;
-
-    util_initregion(&widget->bb, 0, 0, 0, 0);
-    util_initregion(&widget->clip, 0, 0, 0, 0);
+    widget->bb = util_region(0, 0, 0, 0);
+    widget->clip = util_region(0, 0, 0, 0);
 
     switch (widget->type)
     {
