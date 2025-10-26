@@ -2,10 +2,17 @@
 #include <abi.h>
 #include "util.h"
 
-int util_intersects(int v, int min, int max)
+unsigned int util_intersects(int v, int min, int max)
 {
 
     return v >= min && v < max;
+
+}
+
+unsigned int util_intersects_region(struct util_region *region, int x, int y)
+{
+
+    return util_intersects(x, region->x, region->x + region->w) && util_intersects(y, region->y, region->y + region->h);
 
 }
 

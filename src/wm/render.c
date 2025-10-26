@@ -901,20 +901,25 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_window *window = widget->data;
-    unsigned int onhamburger = util_intersects(mx, widget->bb.x, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
-    unsigned int onminimize = util_intersects(mx, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
-    unsigned int onx = util_intersects(mx, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + widget->bb.w) && util_intersects(my, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_region a;
     struct util_region b;
     struct util_region c;
     struct util_region d;
     struct util_region e;
+    unsigned int onhamburger;
+    unsigned int onminimize;
+    unsigned int onx;
 
     util_initregion(&a, widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&b, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&c, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->bb.y, widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&d, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&e, widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT);
+
+    onhamburger = util_intersects_region(&a, mx, my);
+    onminimize = util_intersects_region(&b, mx, my);
+    onx = util_intersects_region(&d, mx, my);
+
     blit_frame(display, &a, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, &b, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, &c, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
@@ -930,14 +935,14 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 void render_place(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, struct util_region *clip)
 {
 
-    struct util_position cpos;
-    struct util_size cmin;
-    struct util_size cmax;
+    struct util_position pos;
+    struct util_size min;
+    struct util_size max;
 
-    util_initposition(&cpos, x, y);
-    util_initsize(&cmin, minw, minh);
-    util_initsize(&cmax, maxw, maxh);
-    calls[widget->type].place(widget, &cpos, &cmin, &cmax, clip);
+    util_initposition(&pos, x, y);
+    util_initsize(&min, minw, minh);
+    util_initsize(&max, maxw, maxh);
+    calls[widget->type].place(widget, &pos, &min, &max, clip);
 
 }
 

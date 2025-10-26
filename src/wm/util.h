@@ -32,7 +32,8 @@ struct util_token
 
 };
 
-int util_intersects(int x, int min, int max);
+unsigned int util_intersects(int x, int min, int max);
+unsigned int util_intersects_region(struct util_region *region, int x, int y);
 int util_min(int a, int b);
 int util_max(int a, int b);
 int util_clamp(int v, int min, int max);
