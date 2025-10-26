@@ -909,27 +909,21 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     struct util_region c;
     struct util_region d;
     struct util_region e;
-    struct util_region f;
-    struct util_region g;
-    struct util_region h;
 
     util_initregion(&a, widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&b, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&c, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->bb.y, widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&d, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     util_initregion(&e, widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT);
-    util_initregion(&f, widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    util_initregion(&g, widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    util_initregion(&h, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     blit_frame(display, &a, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, &b, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, &c, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, &d, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
     blit_frame(display, &e, line, x0, x2, cmap_get(widget->state, widget->type, 4, 0));
     rendercacherow(display, widget, 0, line, window->title, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 11, 0));
-    blit_iconhamburger(display, &f, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onhamburger) ? 1 : 0));
-    blit_iconminimize(display, &g, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onminimize) ? 1 : 0));
-    blit_iconx(display, &h, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onx) ? 1 : 0));
+    blit_iconhamburger(display, &a, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onhamburger) ? 1 : 0));
+    blit_iconminimize(display, &b, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onminimize) ? 1 : 0));
+    blit_iconx(display, &d, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onx) ? 1 : 0));
 
 }
 
