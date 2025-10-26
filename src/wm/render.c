@@ -750,9 +750,11 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_button *button = widget->data;
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
-    blit_frame(display, &widget->bb, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
-    rendercacherow(display, widget, 0, line, button->label, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+    blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
+    rendercacherow(display, widget, 0, line, button->label, x0, x2, 0, 0, cmaplabel);
 
 }
 
@@ -760,9 +762,11 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_choice *choice = widget->data;
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
-    blit_frame(display, &widget->bb, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
-    rendercacherow(display, widget, 0, line, choice->label, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+    blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
+    rendercacherow(display, widget, 0, line, choice->label, x0, x2, 0, 0, cmaplabel);
 
 }
 
@@ -835,8 +839,12 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
 {
 
     struct widget_listbox *listbox = widget->data;
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
 
-    blit_frame(display, &widget->bb, line, x0, x2, cmap_get(widget->state, widget->type, 0, (listbox->mode == ATTR_MODE_READONLY) ? 0 : 4));
+    if (listbox->mode == ATTR_MODE_READONLY)
+        cmapbody = cmap_get(widget->state, widget->type, 0, 0);
+
+    blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
 
 }
 
@@ -844,11 +852,14 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_select *select = widget->data;
-    struct util_region a = util_region(widget->bb.x + widget->bb.w - CONFIG_SELECT_PADDING_WIDTH - widget->bb.h / 2, widget->bb.y, widget->bb.h, widget->bb.h);
+    struct util_region body = util_region(widget->bb.x + widget->bb.w - CONFIG_SELECT_PADDING_WIDTH - widget->bb.h / 2, widget->bb.y, widget->bb.h, widget->bb.h);
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmapicon = cmap_get(widget->state, widget->type, 12, 0);
+    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 13, 0);
 
-    blit_frame(display, &widget->bb, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
-    blit_iconarrowdown(display, &a, line, x0, x2, cmap_get(widget->state, widget->type, 12, 0));
-    rendercacherow(display, widget, 0, line, select->label, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 13, 0));
+    blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
+    blit_iconarrowdown(display, &body, line, x0, x2, cmapicon);
+    rendercacherow(display, widget, 0, line, select->label, x0, x2, 0, 0, cmaplabel);
 
 }
 
@@ -858,9 +869,10 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     struct widget_text *text = widget->data;
     struct text_font *font = pool_getfont(text->weight);
     unsigned int rownum = (line - widget->bb.y) / font->lineheight;
+    unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
 
     if (rownum < text->rows)
-        rendercacherow(display, widget, rownum, line, text->content, x0, x2, text->markstart, text->markend, cmap_get(widget->state, widget->type, 0, 0));
+        rendercacherow(display, widget, rownum, line, text->content, x0, x2, text->markstart, text->markend, cmaptext);
 
 }
 
@@ -868,10 +880,15 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 {
 
     struct widget_textbox *textbox = widget->data;
-    struct util_region a = util_region(textbox->cursorx, textbox->cursory, textbox->cursorwidth, textbox->cursorheight);
+    struct util_region body = util_region(textbox->cursorx, textbox->cursory, textbox->cursorwidth, textbox->cursorheight);
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmapicon = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0);
 
-    blit_frame(display, &widget->bb, line, x0, x2, cmap_get(widget->state, widget->type, (textbox->mode == ATTR_MODE_READONLY) ? 12 : 0, (textbox->mode == ATTR_MODE_READONLY) ? 0 : 4));
-    blit_iconcursor(display, &a, line, x0, x2, cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0));
+    if (textbox->mode == ATTR_MODE_READONLY)
+        cmapbody = cmap_get(widget->state, widget->type, 12, 0);
+
+    blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
+    blit_iconcursor(display, &body, line, x0, x2, cmapicon);
 
 }
 
@@ -879,9 +896,11 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 {
 
     struct widget_textbutton *textbutton = widget->data;
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
-    blit_frame(display, &widget->bb, line, x0, x2, cmap_get(widget->state, widget->type, 0, 4));
-    rendercacherow(display, widget, 0, line, textbutton->label, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 12, 0));
+    blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
+    rendercacherow(display, widget, 0, line, textbutton->label, x0, x2, 0, 0, cmaplabel);
 
 }
 
@@ -889,24 +908,29 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_window *window = widget->data;
-    struct util_region a = util_region(widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region b = util_region(widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region c = util_region(widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->bb.y, widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region d = util_region(widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region e = util_region(widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT);
-    unsigned int onhamburger = util_intersects_region(&a, mx, my);
-    unsigned int onminimize = util_intersects_region(&b, mx, my);
-    unsigned int onx = util_intersects_region(&d, mx, my);
+    struct util_region rhamburger = util_region(widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rminimize = util_region(widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rtitle = util_region(widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->bb.y, widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rclose = util_region(widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rbody = util_region(widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT);
+    unsigned int onhamburger = util_intersects_region(&rhamburger, mx, my);
+    unsigned int onminimize = util_intersects_region(&rminimize, mx, my);
+    unsigned int onclose = util_intersects_region(&rclose, mx, my);
+    unsigned int *cmaptop = cmap_get(widget->state, widget->type, 0, 0);
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 4, 0);
+    unsigned int *cmaptitle = cmap_get(widget->state, widget->type, 11, 0);
+    unsigned int *cmapiconoff = cmap_get(widget->state, widget->type, 8, 0);
+    unsigned int *cmapiconon = cmap_get(widget->state, widget->type, 8, 1);
 
-    blit_frame(display, &a, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
-    blit_frame(display, &b, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
-    blit_frame(display, &c, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
-    blit_frame(display, &d, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
-    blit_frame(display, &e, line, x0, x2, cmap_get(widget->state, widget->type, 4, 0));
-    rendercacherow(display, widget, 0, line, window->title, x0, x2, 0, 0, cmap_get(widget->state, widget->type, 11, 0));
-    blit_iconhamburger(display, &a, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onhamburger) ? 1 : 0));
-    blit_iconminimize(display, &b, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onminimize) ? 1 : 0));
-    blit_iconx(display, &d, line, x0, x2, cmap_get(widget->state, widget->type, 8, (onx) ? 1 : 0));
+    blit_frame(display, &rhamburger, line, x0, x2, cmaptop);
+    blit_frame(display, &rminimize, line, x0, x2, cmaptop);
+    blit_frame(display, &rtitle, line, x0, x2, cmaptop);
+    blit_frame(display, &rclose, line, x0, x2, cmaptop);
+    blit_frame(display, &rbody, line, x0, x2, cmapbody);
+    rendercacherow(display, widget, 0, line, window->title, x0, x2, 0, 0, cmaptitle);
+    blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? cmapiconon : cmapiconoff);
+    blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? cmapiconon : cmapiconoff);
+    blit_iconx(display, &rclose, line, x0, x2, (onclose) ? cmapiconon : cmapiconoff);
 
 }
 
