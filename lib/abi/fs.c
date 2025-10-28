@@ -36,6 +36,7 @@ unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id
     request.id = id;
     request.offset = offset;
     request.nrecords = nrecords;
+    request.records = records;
 
     channel_send_buffer(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
@@ -45,7 +46,7 @@ unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id
         struct event_listresponse *response = (void *)data;
 
         if (response->session == request.session)
-            return buffer_write(records, sizeof (struct record) * nrecords, response + 1, sizeof (struct record) * response->nrecords, 0) / sizeof (struct record);
+            return response->nrecords;
 
     }
 
@@ -144,6 +145,7 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 
     request.session = ++sessioncount;
     request.id = id;
+    request.record = record;
 
     channel_send_buffer(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
@@ -153,7 +155,7 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
         struct event_statresponse *response = (void *)data;
 
         if (response->session == request.session)
-            return buffer_write(record, sizeof (struct record), response + 1, sizeof (struct record) * response->nrecords, 0) / sizeof (struct record);
+            return response->nrecords;
 
     }
 
@@ -164,13 +166,14 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int parent, char *path)
 {
 
-    struct {struct event_walkrequest header; char path[64];} request;
+    struct event_walkrequest request;
     unsigned char data[MESSAGE_SIZE];
     struct message message;
 
-    request.header.session = ++sessioncount;
-    request.header.parent = parent;
-    request.header.length = buffer_write(request.path, 64, path, cstring_length(path), 0);
+    request.session = ++sessioncount;
+    request.parent = parent;
+    request.length = cstring_length(path);
+    request.path = path;
 
     channel_send_buffer(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
@@ -179,7 +182,7 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
 
         struct event_walkresponse *response = (void *)data;
 
-        if (response->session == request.header.session)
+        if (response->session == request.session)
             return response->id;
 
     }
@@ -191,15 +194,15 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
 unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    struct {struct event_writerequest header; char data[64];} request;
+    struct event_writerequest request;
     unsigned char data[MESSAGE_SIZE];
     struct message message;
 
-    request.header.session = ++sessioncount;
-    request.header.id = id;
-    request.header.offset = offset;
-    request.header.count = count;
-    request.header.buffer = buffer;
+    request.session = ++sessioncount;
+    request.id = id;
+    request.offset = offset;
+    request.count = count;
+    request.buffer = buffer;
 
     channel_send_buffer(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
@@ -208,7 +211,7 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
 
         struct event_writeresponse *response = (void *)data;
 
-        if (response->session == request.header.session)
+        if (response->session == request.session)
             return response->count;
 
     }

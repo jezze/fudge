@@ -218,6 +218,7 @@ struct event_listrequest
     unsigned int id;
     unsigned int offset;
     unsigned int nrecords;
+    struct record *records;
 
 };
 
@@ -269,6 +270,7 @@ struct event_statrequest
 
     unsigned int session;
     unsigned int id;
+    struct record *record;
 
 };
 
@@ -286,6 +288,7 @@ struct event_walkrequest
     unsigned int session;
     unsigned int parent;
     unsigned int length;
+    char *path;
 
 };
 

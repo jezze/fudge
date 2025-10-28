@@ -310,12 +310,12 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
 {
 
     struct event_maprequest *maprequest = data;
-    struct {struct event_mapresponse mapresponse;} message;
+    struct event_mapresponse mapresponse;
 
-    message.mapresponse.session = maprequest->session;
-    message.mapresponse.address = map(maprequest->id);
+    mapresponse.session = maprequest->session;
+    mapresponse.address = map(maprequest->id);
 
-    return kernel_place(inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &message);
+    return kernel_place(inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &mapresponse);
 
 }
 
@@ -323,12 +323,12 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_walkrequest *walkrequest = data;
-    struct {struct event_walkresponse walkresponse;} message;
+    struct event_walkresponse walkresponse;
 
-    message.walkresponse.session = walkrequest->session;
-    message.walkresponse.id = walk((walkrequest->parent) ? walkrequest->parent : getroot(), (char *)(walkrequest + 1), walkrequest->length);
+    walkresponse.session = walkrequest->session;
+    walkresponse.id = walk((walkrequest->parent) ? walkrequest->parent : getroot(), walkrequest->path, walkrequest->length);
 
-    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &message);
+    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
 
 }
 
@@ -336,12 +336,12 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_statrequest *statrequest = data;
-    struct {struct event_statresponse statresponse; struct record record;} message;
+    struct event_statresponse statresponse;
 
-    message.statresponse.session = statrequest->session;
-    message.statresponse.nrecords = stat(statrequest->id, &message.record);
+    statresponse.session = statrequest->session;
+    statresponse.nrecords = stat(statrequest->id, statrequest->record);
 
-    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + sizeof (struct record), &message);
+    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse), &statresponse);
 
 }
 
@@ -349,12 +349,12 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_listrequest *listrequest = data;
-    struct {struct event_listresponse listresponse; struct record records[8];} message;
+    struct event_listresponse listresponse;
 
-    message.listresponse.session = listrequest->session;
-    message.listresponse.nrecords = list(listrequest->id, listrequest->offset, (listrequest->nrecords > 8) ? 8 : listrequest->nrecords, message.records);
+    listresponse.session = listrequest->session;
+    listresponse.nrecords = list(listrequest->id, listrequest->offset, listrequest->nrecords, listrequest->records);
 
-    return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * message.listresponse.nrecords, &message);
+    return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &listresponse);
 
 }
 
