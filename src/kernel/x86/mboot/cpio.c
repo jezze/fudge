@@ -362,12 +362,12 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_readrequest *readrequest = data;
-    struct {struct event_readresponse readresponse; char data[64];} message;
+    struct event_readresponse readresponse;
 
-    message.readresponse.session = readrequest->session;
-    message.readresponse.count = read(readrequest->id, message.data, (readrequest->count > 64) ? 64 : readrequest->count, readrequest->offset);
+    readresponse.session = readrequest->session;
+    readresponse.count = read(readrequest->id, readrequest->buffer, readrequest->count, readrequest->offset);
 
-    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + message.readresponse.count, &message);
+    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse), &readresponse);
 
 }
 
@@ -375,12 +375,12 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 {
 
     struct event_writerequest *writerequest = data;
-    struct {struct event_writeresponse writeresponse;} message;
+    struct event_writeresponse writeresponse;
 
-    message.writeresponse.session = writerequest->session;
-    message.writeresponse.count = write(writerequest->id, writerequest + 1, writerequest->count, writerequest->offset);
+    writeresponse.session = writerequest->session;
+    writeresponse.count = write(writerequest->id, writerequest->buffer, writerequest->count, writerequest->offset);
 
-    return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &message);
+    return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &writeresponse);
 
 }
 

@@ -90,6 +90,7 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
     request.id = id;
     request.offset = offset;
     request.count = count;
+    request.buffer = buffer;
 
     channel_send_buffer(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
@@ -99,7 +100,7 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
         struct event_readresponse *response = (void *)data;
 
         if (response->session == request.session)
-            return buffer_write(buffer, count, response + 1, response->count, 0);
+            return response->count;
 
     }
 
@@ -197,7 +198,8 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
     request.header.session = ++sessioncount;
     request.header.id = id;
     request.header.offset = offset;
-    request.header.count = buffer_write(request.data, 64, buffer, count, 0);
+    request.header.count = count;
+    request.header.buffer = buffer;
 
     channel_send_buffer(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
@@ -207,7 +209,7 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
         struct event_writeresponse *response = (void *)data;
 
         if (response->session == request.header.session)
-            return buffer_write(buffer, count, response + 1, response->count, 0);
+            return response->count;
 
     }
 

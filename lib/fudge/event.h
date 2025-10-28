@@ -252,6 +252,7 @@ struct event_readrequest
     unsigned int id;
     unsigned int offset;
     unsigned int count;
+    void *buffer;
 
 };
 
@@ -303,6 +304,7 @@ struct event_writerequest
     unsigned int id;
     unsigned int offset;
     unsigned int count;
+    void *buffer;
 
 };
 
