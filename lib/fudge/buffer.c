@@ -10,17 +10,6 @@ void buffer_clear(void *out, unsigned int count)
 
 }
 
-void buffer_copy(void *out, void *in, unsigned int count)
-{
-
-    unsigned char *op = out;
-    unsigned char *ip = in;
-
-    while (count--)
-        *op++ = *ip++;
-
-}
-
 unsigned int buffer_eachbyte(void *in, unsigned int count, unsigned char value, unsigned int offset)
 {
 
