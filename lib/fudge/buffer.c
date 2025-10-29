@@ -1,15 +1,5 @@
 #include "buffer.h"
 
-void buffer_clear(void *out, unsigned int count)
-{
-
-    unsigned char *op = out;
-
-    while (count--)
-        *op++ = 0;
-
-}
-
 unsigned int buffer_eachbyte(void *in, unsigned int count, unsigned char value, unsigned int offset)
 {
 

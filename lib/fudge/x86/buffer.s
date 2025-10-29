@@ -14,3 +14,13 @@ buffer_copy:
     pop %edi
     ret
 
+.global buffer_clear
+buffer_clear:
+    push %edi
+    movl 8(%esp), %edi
+    movl 12(%esp), %ecx
+    movl $0, %eax
+    rep stosb
+    pop %edi
+    ret
+
