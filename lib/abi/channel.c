@@ -114,7 +114,7 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
 void channel_dispatch(unsigned int ichannel, struct message *message, void *data)
 {
 
-    dispatch(message->source, message->event, data, message_datasize(message));
+    dispatch(message->source, message->event, data, message->length);
 
     switch (message->event)
     {
@@ -328,7 +328,7 @@ unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, uns
         if (message.source == source && message.event == event)
         {
 
-            buffer_write(data, count, data2, message_datasize(&message), 0);
+            buffer_write(data, count, data2, message.length, 0);
 
             return message.event;
 

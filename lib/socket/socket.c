@@ -659,21 +659,21 @@ unsigned int socket_receive(unsigned int ichannel, unsigned int target, struct s
 
         struct socket *remote;
 
-        remote = socket_accept_arp(local, remotes, nremotes, message_datasize(&message), data);
+        remote = socket_accept_arp(local, remotes, nremotes, message.length, data);
 
         if (remote)
         {
 
-            socket_handle_arp(ichannel, target, local, remote, message_datasize(&message), data);
+            socket_handle_arp(ichannel, target, local, remote, message.length, data);
 
         }
 
-        remote = socket_accept_tcp(local, remotes, nremotes, message_datasize(&message), data);
+        remote = socket_accept_tcp(local, remotes, nremotes, message.length, data);
 
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_tcp(ichannel, target, local, remote, router, message_datasize(&message), data, count, buffer);
+            unsigned int payloadcount = socket_handle_tcp(ichannel, target, local, remote, router, message.length, data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -688,12 +688,12 @@ unsigned int socket_receive(unsigned int ichannel, unsigned int target, struct s
 
         }
 
-        remote = socket_accept_udp(local, remotes, nremotes, message_datasize(&message), data);
+        remote = socket_accept_udp(local, remotes, nremotes, message.length, data);
 
         if (remote)
         {
 
-            unsigned int payloadcount = socket_handle_udp(ichannel, target, local, remote, router, message_datasize(&message), data, count, buffer);
+            unsigned int payloadcount = socket_handle_udp(ichannel, target, local, remote, router, message.length, data, count, buffer);
 
             if (payloadcount)
                 return payloadcount;
@@ -740,8 +740,8 @@ void socket_connect_tcp(unsigned int ichannel, unsigned int target, struct socke
 
         char buffer[SOCKET_MTUSIZE];
 
-        socket_handle_arp(ichannel, target, local, remote, message_datasize(&message), data);
-        socket_handle_tcp(ichannel, target, local, remote, router, message_datasize(&message), data, SOCKET_MTUSIZE, buffer);
+        socket_handle_arp(ichannel, target, local, remote, message.length, data);
+        socket_handle_tcp(ichannel, target, local, remote, router, message.length, data, SOCKET_MTUSIZE, buffer);
 
         if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
             break;
@@ -765,7 +765,7 @@ void socket_resolveremote(unsigned int ichannel, unsigned int target, struct soc
     while (channel_poll(ichannel, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
     {
 
-        socket_handle_arp(ichannel, target, local, remote, message_datasize(&message), data);
+        socket_handle_arp(ichannel, target, local, remote, message.length, data);
 
         if (remote->resolved)
             break;

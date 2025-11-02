@@ -102,7 +102,7 @@ static void interpretdata(unsigned int wm, unsigned int ichannel, struct message
 {
 
     job_init(&job, workers, JOBSIZE);
-    job_parse(&job, buffer, message_datasize(message));
+    job_parse(&job, buffer, message->length);
 
     if (job_spawn(&job, ichannel, "initrd:bin"))
     {
@@ -118,8 +118,8 @@ static void interpretdata(unsigned int wm, unsigned int ichannel, struct message
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, ichannel, message->source, message->event, data, message_datasize(message)))
-                    print(data, message_datasize(message));
+                if (!job_pipe(&job, ichannel, message->source, message->event, data, message->length))
+                    print(data, message->length);
 
                 break;
 
@@ -249,7 +249,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
 {
 
     job_init(&job, workers, JOBSIZE);
-    job_parse(&job, buffer, message_datasize(message));
+    job_parse(&job, buffer, message->length);
 
     if (job_spawn(&job, ichannel, "initrd:bin"))
     {
@@ -267,8 +267,8 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
             {
 
             case EVENT_DATA:
-                if (!job_pipe(&job, ichannel, message->source, message->event, data, message_datasize(message)))
-                    ring_write(&output, data, message_datasize(message));
+                if (!job_pipe(&job, ichannel, message->source, message->event, data, message->length))
+                    ring_write(&output, data, message->length);
 
                 break;
 

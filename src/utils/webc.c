@@ -21,7 +21,7 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
             unsigned int i;
             char *key;
 
-            for (i = 0; (key = buffer_tindex(data, message_datasize(&message), '\0', i)); i += 2)
+            for (i = 0; (key = buffer_tindex(data, message.length, '\0', i)); i += 2)
             {
 
                 if (cstring_match(key, "data"))
@@ -63,7 +63,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         channel_send_fmt2(2, target, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
 
         while (channel_poll(2, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
-            channel_send_buffer(2, source, EVENT_DATA, message_datasize(&message), data);
+            channel_send_buffer(2, source, EVENT_DATA, message.length, data);
 
         channel_send(2, target, EVENT_END);
         channel_wait(2, target, EVENT_DONE);

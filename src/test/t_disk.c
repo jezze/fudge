@@ -67,7 +67,7 @@ static unsigned int request_poll(struct state *state)
     while (channel_poll(0, option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
-        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message_datasize(&message), state->blockreads * BLOCKSIZE) / BLOCKSIZE;
+        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message.length, state->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
         if (state->blockreads == state->blockcount)
             return state->count;

@@ -17,16 +17,12 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
     if (ring_count(&mailbox->ring))
     {
 
-        unsigned int datasize;
-
         ring_read_all(&mailbox->ring, message, sizeof (struct message));
 
-        datasize = message_datasize(message);
-
-        if (datasize <= count)
+        if (message->length <= count)
         {
 
-            ring_read_all(&mailbox->ring, data, datasize);
+            ring_read_all(&mailbox->ring, data, message->length);
 
             status = MESSAGE_OK;
 
@@ -35,7 +31,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
         else
         {
 
-            ring_skip(&mailbox->ring, datasize);
+            ring_skip(&mailbox->ring, message->length);
 
             status = MESSAGE_RETRY;
 
@@ -58,11 +54,11 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
     message_init(&message, event, source, count);
     spinlock_acquire(&mailbox->spinlock);
 
-    if (ring_avail(&mailbox->ring) > message.length)
+    if (ring_avail(&mailbox->ring) > sizeof (struct message) + message.length)
     {
 
         ring_write_all(&mailbox->ring, &message, sizeof (struct message));
-        ring_write_all(&mailbox->ring, data, message_datasize(&message));
+        ring_write_all(&mailbox->ring, data, message.length);
 
         status = MESSAGE_OK;
 
