@@ -28,10 +28,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     for (i = offset; i < length; i++)
     {
 
-        unsigned short index = pcf_getindex(font->data, text[i]);
-        struct pcf_metricsdata metricsdata;
-
-        pcf_readmetricsdata(font->data, index, &metricsdata);
+        unsigned int index = text[i];
+        struct text_atlas *atlas = &font->atlas[index];
 
         if (text[i] == '\n')
         {
@@ -78,7 +76,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (rowinfo->width + metricsdata.width > maxw)
+        if (rowinfo->width + atlas->width > maxw)
         {
 
             switch (wrap)
@@ -125,8 +123,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        rowinfo->width = rowinfo->width + metricsdata.width;
-        rowinfo->height = util_max(rowinfo->height, metricsdata.ascent + metricsdata.descent);
+        rowinfo->width = rowinfo->width + atlas->width;
+        rowinfo->height = util_max(rowinfo->height, atlas->height);
 
     }
 

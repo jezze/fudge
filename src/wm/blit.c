@@ -185,35 +185,26 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
     for (i = 0; i < length; i++)
     {
 
-        unsigned short index = pcf_getindex(font->data, text[i]);
-        unsigned int offset = pcf_getbitmapoffset(font->data, index);
-        struct pcf_metricsdata metricsdata;
-        unsigned int lline;
-        unsigned int height;
-        unsigned int width;
+        unsigned int index = text[i];
+        struct text_atlas *atlas = &font->atlas[index];
+        unsigned int lline = (line - ry) % font->lineheight - (font->lineheight - atlas->height) / 2;
 
-        pcf_readmetricsdata(font->data, index, &metricsdata);
-
-        height = metricsdata.ascent + metricsdata.descent;
-        width = metricsdata.width;
-        lline = (line - ry) % font->lineheight - (font->lineheight - height) / 2;
-
-        if (util_intersects(lline, 0, height))
+        if (util_intersects(lline, 0, atlas->height))
         {
 
-            if (util_intersects(rx, x0, x2) || util_intersects(rx + width - 1, x0, x2))
+            if (util_intersects(rx, x0, x2) || util_intersects(rx + atlas->width - 1, x0, x2))
             {
 
                 if ((i >= ms && i < me))
-                    blitpcfbitmapinverted(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+                    blitpcfbitmapinverted(display, rx, x0, x2, color, atlas->bdata + lline * atlas->width, atlas->width);
                 else
-                    blitpcfbitmap(display, rx, x0, x2, color, font->bitmapdata + offset + lline * font->bitmapalign, width);
+                    blitpcfbitmap(display, rx, x0, x2, color, atlas->bdata + lline * atlas->width, atlas->width);
 
             }
 
         }
 
-        rx += width;
+        rx += atlas->width;
 
     }
 

@@ -9,8 +9,8 @@
 #include "pool.h"
 
 #define MAX_WIDGETS                     1024
-#define MAX_FONTS                       32
-#define FONTDATA_SIZE                   0x8000
+#define MAX_FONTS                       3
+#define FONTDATA_SIZE                   0x6000
 
 struct entry
 {
@@ -301,6 +301,48 @@ void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsig
 
 }
 
+static void loadatlas(struct text_font *font, unsigned int target, unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 128; i++)
+    {
+
+        unsigned short index = pcf_getindex(font->data, i);
+        unsigned int offset = pcf_getbitmapoffset(font->data, index);
+        struct text_atlas *atlas = &font->atlas[i];
+        struct pcf_metricsdata metrics;
+        unsigned int k = 0;
+        unsigned int w;
+        unsigned int h;
+
+        pcf_readmetricsdata(font->data, index, &metrics);
+
+        atlas->height = metrics.ascent + metrics.descent;
+        atlas->width = metrics.width;
+
+        for (h = 0; h < atlas->height; h++)
+        {
+
+            for (w = 0; w < atlas->width; w++)
+            {
+
+                atlas->bdata[k] = font->bitmapdata[offset + h * font->bitmapalign + w];
+                k++;
+
+            }
+
+            /*
+            fs_read_full(1, target, id, atlas->bdata + h * atlas->width, atlas->width, (offset - (unsigned int)font->bitmapdata) + h * font->bitmapalign);
+            */
+
+        }
+
+    }
+
+}
+
 void pool_loadfont(unsigned int factor)
 {
 
@@ -351,6 +393,8 @@ void pool_loadfont(unsigned int factor)
             fs_read_full(1, target, id2, fontbold, FONTDATA_SIZE, 0);
             pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
             pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
+            loadatlas(pool_getfont(ATTR_WEIGHT_NORMAL), target, id1);
+            loadatlas(pool_getfont(ATTR_WEIGHT_BOLD), target, id2);
 
         }
 

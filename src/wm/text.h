@@ -1,3 +1,12 @@
+struct text_atlas
+{
+
+    unsigned int height;
+    unsigned int width;
+    unsigned char bdata[256];
+
+};
+
 struct text_font
 {
 
@@ -6,6 +15,7 @@ struct text_font
     unsigned int bitmapalign;
     unsigned int lineheight;
     unsigned int padding;
+    struct text_atlas atlas[128];
 
 };
 
