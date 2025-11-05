@@ -633,7 +633,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             {
 
                 render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, &display.clip);
-                render_cache();
                 render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
                 render_undamage();
 
@@ -809,7 +808,6 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
     }
 
     render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, &display.clip);
-    render_cache();
     render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
     render_undamage();
 

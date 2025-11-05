@@ -23,32 +23,15 @@ struct
 
 } area;
 
-struct cacherow
-{
-
-    int num;
-    int rx;
-    int ry;
-    unsigned int istart;
-    unsigned int iend;
-    unsigned int length;
-    struct text_font *font;
-    struct widget *widget;
-
-};
-
 struct calls
 {
 
     void (*place)(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip);
     void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my);
-    void (*cache)(struct widget *widget, int y0, int y2);
 
 };
 
 static struct calls calls[32];
-static struct cacherow cacherows[512];
-static unsigned int nrows;
 
 static struct util_position posshrink(struct util_position *pos, struct util_size *padding)
 {
@@ -83,147 +66,6 @@ static struct util_size sizeclamp(struct util_size *min, struct util_size *max)
     n.h = util_clamp(min->h, 0, max->h);
 
     return n;
-
-}
-
-static struct cacherow *getcacherow(struct widget *widget, unsigned int num)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < nrows; i++)
-    {
-
-        struct cacherow *row = &cacherows[i];
-
-        if (row->num == num && row->widget == widget)
-            return row;
-
-    }
-
-    return 0;
-
-}
-
-static void addcacherow(struct widget *widget, unsigned int num, unsigned int weight, struct util_size *padding, unsigned int halign, unsigned int valign, int offx, int offy, int text, unsigned int wrap)
-{
-
-    struct cacherow *cacherow = &cacherows[nrows++];
-    struct text_font *font = pool_getfont(weight);
-    char *textstring = strpool_getstring(text);
-    unsigned int textlength = strpool_getcstringlength(text);
-    unsigned int icurrent = text_getrowstart(font, textstring, textlength, num, wrap, widget->bb.w, offx);
-    struct text_rowinfo rowinfo;
-
-    text_getrowinfo(&rowinfo, font, textstring, textlength, wrap, widget->bb.w, icurrent);
-
-    cacherow->num = num;
-    cacherow->rx = text_getrowx(&rowinfo, halign, padding->w, widget->bb.w - offx) + offx;
-    cacherow->ry = text_getrowy(&rowinfo, valign, padding->h, widget->bb.h - offy) + offy + rowinfo.lineheight * num;
-    cacherow->istart = rowinfo.istart;
-    cacherow->iend = rowinfo.iend;
-    cacherow->length = rowinfo.length;
-    cacherow->font = font;
-    cacherow->widget = widget;
-
-}
-
-static void cachebutton(struct widget *widget, int y0, int y2)
-{
-
-    struct widget_button *button = widget->data;
-    struct util_size padding = util_size(0, 0);
-
-    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, &padding, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, 0, 0, button->label, ATTR_WRAP_NONE);
-
-}
-
-static void cachechoice(struct widget *widget, int y0, int y2)
-{
-
-    struct widget_choice *choice = widget->data;
-    struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH, 0);
-
-    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, &padding, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, choice->label, ATTR_WRAP_NONE);
-
-}
-
-static void cachefill(struct widget *widget, int y0, int y2)
-{
-
-}
-
-static void cacheimage(struct widget *widget, int y0, int y2)
-{
-
-}
-
-static void cachelayout(struct widget *widget, int y0, int y2)
-{
-
-}
-
-static void cachelistbox(struct widget *widget, int y0, int y2)
-{
-
-}
-
-static void cacheselect(struct widget *widget, int y0, int y2)
-{
-
-    struct widget_select *select = widget->data;
-    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, 0);
-
-    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, &padding, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, select->label, ATTR_WRAP_NONE);
-
-}
-
-static void cachetext(struct widget *widget, int y0, int y2)
-{
-
-    struct widget_text *text = widget->data;
-    int line;
-
-    for (line = y0; line < y2; line++)
-    {
-
-        unsigned int rownum = (line - widget->bb.y) / pool_getfont(text->weight)->lineheight;
-
-        if (!getcacherow(widget, rownum))
-        {
-
-            struct util_size padding = util_size(0, 0);
-
-            addcacherow(widget, rownum, text->weight, &padding, text->halign, text->valign, text->offx, 0, text->content, text->wrap);
-
-        }
-
-    }
-
-}
-
-static void cachetextbox(struct widget *widget, int y0, int y2)
-{
-
-}
-
-static void cachetextbutton(struct widget *widget, int y0, int y2)
-{
-
-    struct widget_textbutton *textbutton = widget->data;
-    struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH, 0);
-
-    addcacherow(widget, 0, ATTR_WEIGHT_NORMAL, &padding, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, 0, 0, textbutton->label, ATTR_WRAP_NONE);
-
-}
-
-static void cachewindow(struct widget *widget, int y0, int y2)
-{
-
-    struct widget_window *window = widget->data;
-    struct util_size padding = util_size(0, 5);
-
-    addcacherow(widget, 0, ATTR_WEIGHT_BOLD, &padding, ATTR_HALIGN_CENTER, ATTR_VALIGN_TOP, 0, 0, window->title, ATTR_WRAP_NONE);
 
 }
 
@@ -724,23 +566,27 @@ static void placewindow(struct widget *widget, struct util_position *pos, struct
 
 }
 
-static void rendercacherow(struct blit_display *display, struct widget *widget, unsigned int num, unsigned int line, unsigned int text, int x0, int x2, unsigned int markstart, unsigned int markend, unsigned int *cmap)
+static void _renderx(struct blit_display *display, struct util_region *region, unsigned int text, unsigned int *cmap, int x0, int x2, int offx, int offy, int markstart, int markend, unsigned int halign, unsigned int valign, unsigned int weight, unsigned int wrap, struct util_size *padding, int num, int line)
 {
 
-    struct cacherow *row = getcacherow(widget, num);
+    struct text_font *font = pool_getfont(weight);
+    unsigned int icurrent = text_getrowstart(font, strpool_getstring(text), strpool_getcstringlength(text), num, wrap, region->w, offx);
+    struct text_rowinfo rowinfo;
+    int rx;
+    int ry;
 
-    if (row && row->length)
+    text_getrowinfo(&rowinfo, font, strpool_getstring(text), strpool_getcstringlength(text), wrap, region->w, icurrent);
+
+    rx = text_getrowx(&rowinfo, halign, padding->w, region->w - offx) + offx;
+    ry = text_getrowy(&rowinfo, valign, padding->h, region->h - offy) + offy + font->lineheight * num;
+
+    if (util_intersects(line, region->y + ry, region->y + ry + font->lineheight))
     {
 
-        if (util_intersects(line, widget->bb.y + row->ry, widget->bb.y + row->ry + row->font->lineheight))
-        {
+        unsigned int mstart = util_max(0, util_min(markstart, markend) - rowinfo.istart);
+        unsigned int mend = util_max(0, util_max(markstart, markend) - rowinfo.istart);
 
-            unsigned int mstart = util_max(0, util_min(markstart, markend) - row->istart);
-            unsigned int mend = util_max(0, util_max(markstart, markend) - row->istart);
-
-            blit_text(display, row->font, strpool_getstring(text) + row->istart, row->length, widget->bb.x + row->rx, widget->bb.y + row->ry, line, x0, x2, mstart, mend, cmap);
-
-        }
+        blit_text(display, font, strpool_getstring(text) + rowinfo.istart, rowinfo.length, region->x + rx, region->y + ry, line, x0, x2, mstart, mend, cmap);
 
     }
 
@@ -752,9 +598,10 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
     struct widget_button *button = widget->data;
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
+    struct util_size padding = util_size(0, 0);
 
     blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
-    rendercacherow(display, widget, 0, line, button->label, x0, x2, 0, 0, cmaplabel);
+    _renderx(display, &widget->bb, button->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_BOLD, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
@@ -764,9 +611,10 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
     struct widget_choice *choice = widget->data;
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
+    struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH, 0);
 
     blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
-    rendercacherow(display, widget, 0, line, choice->label, x0, x2, 0, 0, cmaplabel);
+    _renderx(display, &widget->bb, choice->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
@@ -856,10 +704,11 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmapicon = cmap_get(widget->state, widget->type, 12, 0);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 13, 0);
+    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, 0);
 
     blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
     blit_iconarrowdown(display, &body, line, x0, x2, cmapicon);
-    rendercacherow(display, widget, 0, line, select->label, x0, x2, 0, 0, cmaplabel);
+    _renderx(display, &widget->bb, select->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
@@ -870,9 +719,10 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     struct text_font *font = pool_getfont(text->weight);
     unsigned int rownum = (line - widget->bb.y) / font->lineheight;
     unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
+    struct util_size padding = util_size(0, 0);
 
     if (rownum < text->rows)
-        rendercacherow(display, widget, rownum, line, text->content, x0, x2, text->markstart, text->markend, cmaptext);
+        _renderx(display, &widget->bb, text->content, cmaptext, x0, x2, text->offx, 0, text->markstart, text->markend, text->halign, text->valign, text->weight, text->wrap, &padding, rownum, line);
 
 }
 
@@ -898,9 +748,10 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     struct widget_textbutton *textbutton = widget->data;
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
+    struct util_size padding = util_size(0, 0);
 
     blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
-    rendercacherow(display, widget, 0, line, textbutton->label, x0, x2, 0, 0, cmaplabel);
+    _renderx(display, &widget->bb, textbutton->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
@@ -921,13 +772,14 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     unsigned int *cmaptitle = cmap_get(widget->state, widget->type, 11, 0);
     unsigned int *cmapiconoff = cmap_get(widget->state, widget->type, 8, 0);
     unsigned int *cmapiconon = cmap_get(widget->state, widget->type, 8, 1);
+    struct util_size padding = util_size(0, 0);
 
     blit_frame(display, &rhamburger, line, x0, x2, cmaptop);
     blit_frame(display, &rminimize, line, x0, x2, cmaptop);
     blit_frame(display, &rtitle, line, x0, x2, cmaptop);
     blit_frame(display, &rclose, line, x0, x2, cmaptop);
     blit_frame(display, &rbody, line, x0, x2, cmapbody);
-    rendercacherow(display, widget, 0, line, window->title, x0, x2, 0, 0, cmaptitle);
+    _renderx(display, &rtitle, window->title, cmaptitle, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_BOLD, ATTR_WRAP_NONE, &padding, 0, line);
     blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? cmapiconon : cmapiconoff);
     blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? cmapiconon : cmapiconoff);
     blit_iconx(display, &rclose, line, x0, x2, (onclose) ? cmapiconon : cmapiconoff);
@@ -979,24 +831,6 @@ void render_undamage(void)
 
 }
 
-void render_cache(void)
-{
-
-    struct list_item *current = 0;
-
-    nrows = 0;
-
-    while ((current = pool_next(current)))
-    {
-
-        struct widget *widget = current->data;
-
-        calls[widget->type].cache(widget, area.position0.y, area.position2.y);
-
-    }
-
-}
-
 void render_update(struct blit_display *display, int mx, int my)
 {
 
@@ -1030,13 +864,12 @@ void render_update(struct blit_display *display, int mx, int my)
 
 }
 
-static void setupcall(unsigned int type, void (*place)(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my), void (*cache)(struct widget *widget, int y0, int y2))
+static void setupcall(unsigned int type, void (*place)(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my))
 {
 
     struct calls *call = &calls[type];
 
     call->place = place;
-    call->cache = cache;
     call->render = render;
 
 }
@@ -1044,17 +877,17 @@ static void setupcall(unsigned int type, void (*place)(struct widget *widget, st
 void render_init(void)
 {
 
-    setupcall(WIDGET_TYPE_BUTTON, placebutton, renderbutton, cachebutton);
-    setupcall(WIDGET_TYPE_CHOICE, placechoice, renderchoice, cachechoice);
-    setupcall(WIDGET_TYPE_FILL, placefill, renderfill, cachefill);
-    setupcall(WIDGET_TYPE_IMAGE, placeimage, renderimage, cacheimage);
-    setupcall(WIDGET_TYPE_LAYOUT, placelayout, renderlayout, cachelayout);
-    setupcall(WIDGET_TYPE_LISTBOX, placelistbox, renderlistbox, cachelistbox);
-    setupcall(WIDGET_TYPE_SELECT, placeselect, renderselect, cacheselect);
-    setupcall(WIDGET_TYPE_TEXT, placetext, rendertext, cachetext);
-    setupcall(WIDGET_TYPE_TEXTBOX, placetextbox, rendertextbox, cachetextbox);
-    setupcall(WIDGET_TYPE_TEXTBUTTON, placetextbutton, rendertextbutton, cachetextbutton);
-    setupcall(WIDGET_TYPE_WINDOW, placewindow, renderwindow, cachewindow);
+    setupcall(WIDGET_TYPE_BUTTON, placebutton, renderbutton);
+    setupcall(WIDGET_TYPE_CHOICE, placechoice, renderchoice);
+    setupcall(WIDGET_TYPE_FILL, placefill, renderfill);
+    setupcall(WIDGET_TYPE_IMAGE, placeimage, renderimage);
+    setupcall(WIDGET_TYPE_LAYOUT, placelayout, renderlayout);
+    setupcall(WIDGET_TYPE_LISTBOX, placelistbox, renderlistbox);
+    setupcall(WIDGET_TYPE_SELECT, placeselect, renderselect);
+    setupcall(WIDGET_TYPE_TEXT, placetext, rendertext);
+    setupcall(WIDGET_TYPE_TEXTBOX, placetextbox, rendertextbox);
+    setupcall(WIDGET_TYPE_TEXTBUTTON, placetextbutton, rendertextbutton);
+    setupcall(WIDGET_TYPE_WINDOW, placewindow, renderwindow);
 
 }
 
