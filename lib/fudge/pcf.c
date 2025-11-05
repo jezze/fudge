@@ -75,6 +75,18 @@ unsigned int *pcf_getbitmapsizes(void *base)
 
 }
 
+unsigned int pcf_getbitmapdataoffset(void *base)
+{
+
+    struct pcf_entry *entry = getentry(base, PCF_TYPE_BITMAPS);
+    struct pcf_bitmap bitmap;
+
+    pcf_readbitmap(base, &bitmap);
+
+    return entry->offset + sizeof (unsigned int) + sizeof (struct pcf_bitmap) + sizeof (unsigned int) * bitmap.count + sizeof (unsigned int) * 4;
+
+}
+
 unsigned char *pcf_getbitmapdata(void *base)
 {
 

@@ -294,7 +294,6 @@ void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsig
     struct text_font *font = pool_getfont(index);
 
     font->data = data;
-    font->bitmapdata = pcf_getbitmapdata(font->data);
     font->bitmapalign = pcf_getbitmapalign(font->data);
     font->lineheight = lineheight;
     font->padding = padding;
@@ -310,34 +309,18 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
     {
 
         unsigned short index = pcf_getindex(font->data, i);
-        unsigned int offset = pcf_getbitmapoffset(font->data, index);
+        unsigned int offset = pcf_getbitmapdataoffset(font->data) + pcf_getbitmapoffset(font->data, index);
         struct text_atlas *atlas = &font->atlas[i];
         struct pcf_metricsdata metrics;
-        unsigned int k = 0;
-        unsigned int w;
-        unsigned int h;
+        unsigned int i;
 
         pcf_readmetricsdata(font->data, index, &metrics);
 
         atlas->height = metrics.ascent + metrics.descent;
         atlas->width = metrics.width;
 
-        for (h = 0; h < atlas->height; h++)
-        {
-
-            for (w = 0; w < atlas->width; w++)
-            {
-
-                atlas->bdata[k] = font->bitmapdata[offset + h * font->bitmapalign + w];
-                k++;
-
-            }
-
-            /*
-            fs_read_full(1, target, id, atlas->bdata + h * atlas->width, atlas->width, (offset - (unsigned int)font->bitmapdata) + h * font->bitmapalign);
-            */
-
-        }
+        for (i = 0; i < atlas->height; i++)
+            fs_read_full(1, target, id, atlas->bdata + i * atlas->width, atlas->width, offset + i * font->bitmapalign);
 
     }
 

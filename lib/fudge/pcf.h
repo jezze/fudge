@@ -95,6 +95,7 @@ struct pcf_metricsdata_compressed
 void pcf_readbitmap(void *base, struct pcf_bitmap *data);
 unsigned int pcf_getbitmapoffset(void *base, unsigned short index);
 unsigned int *pcf_getbitmapsizes(void *base);
+unsigned int pcf_getbitmapdataoffset(void *base);
 unsigned char *pcf_getbitmapdata(void *base);
 unsigned int pcf_getbitmapalign(void *base);
 void pcf_readmetricsdata(void *base, unsigned int index, struct pcf_metricsdata *data);
