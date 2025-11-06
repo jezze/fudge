@@ -10,8 +10,6 @@ struct text_atlas
 struct text_font
 {
 
-    unsigned char *data;
-    unsigned int bitmapalign;
     unsigned int lineheight;
     unsigned int padding;
     struct text_atlas atlas[128];

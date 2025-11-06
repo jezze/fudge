@@ -9,8 +9,7 @@
 #include "pool.h"
 
 #define MAX_WIDGETS                     1024
-#define MAX_FONTS                       3
-#define FONTDATA_SIZE                   0x6000
+#define MAX_FONTS                       16
 
 struct entry
 {
@@ -41,8 +40,6 @@ static struct list freelist;
 static struct entry entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
-static unsigned char fontnormal[FONTDATA_SIZE];
-static unsigned char fontbold[FONTDATA_SIZE];
 
 struct list_item *pool_prev(struct list_item *current)
 {
@@ -288,39 +285,110 @@ struct text_font *pool_getfont(unsigned int index)
 
 }
 
-void pool_setfont(unsigned int index, void *data, unsigned int lineheight, unsigned int padding)
+void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding)
 {
 
     struct text_font *font = pool_getfont(index);
 
-    font->data = data;
-    font->bitmapalign = pcf_getbitmapalign(font->data);
     font->lineheight = lineheight;
     font->padding = padding;
 
 }
 
-static void loadatlas(struct text_font *font, unsigned int target, unsigned int id)
+static void loadatlas(struct text_font *font, unsigned int target, unsigned int id, struct pcf_header *header, struct pcf_entry *entries)
 {
 
-    unsigned int i;
+    struct pcf_entry *bdfentry = pcf_findentry(header, entries, PCF_TYPE_BDFENCODINGS);
+    struct pcf_entry *metricsentry = pcf_findentry(header, entries, PCF_TYPE_METRICS);
+    struct pcf_entry *bitmapentry = pcf_findentry(header, entries, PCF_TYPE_BITMAPS);
 
-    for (i = 0; i < 128; i++)
+    if (bdfentry && metricsentry && bitmapentry)
     {
 
-        unsigned short index = pcf_getindex(font->data, i);
-        unsigned int offset = pcf_getbitmapdataoffset(font->data) + pcf_getbitmapoffset(font->data, index);
-        struct text_atlas *atlas = &font->atlas[i];
-        struct pcf_metricsdata metrics;
+        struct pcf_bdfencoding bdfencoding;
+        unsigned int bdfformat;
+        unsigned int metricsformat;
+        unsigned int bitmapformat;
+        unsigned int bitmapalign;
+        unsigned int bitmapcount;
         unsigned int i;
 
-        pcf_readmetricsdata(font->data, index, &metrics);
+        fs_read_full(1, target, id, &bdfformat, sizeof (unsigned int), bdfentry->offset);
+        fs_read_full(1, target, id, &bdfencoding, sizeof (struct pcf_bdfencoding), bdfentry->offset + sizeof (unsigned int));
+        fs_read_full(1, target, id, &metricsformat, sizeof (unsigned int), metricsentry->offset);
+        fs_read_full(1, target, id, &bitmapformat, sizeof (unsigned int), bitmapentry->offset);
+        fs_read_full(1, target, id, &bitmapcount, sizeof (unsigned int), bitmapentry->offset + sizeof (unsigned int));
 
-        atlas->height = metrics.ascent + metrics.descent;
-        atlas->width = metrics.width;
+        bitmapalign = 1 << (bitmapformat & 0x03);
+        bitmapcount = pcf_convert32(bitmapcount, bitmapformat);
 
-        for (i = 0; i < atlas->height; i++)
-            fs_read_full(1, target, id, atlas->bdata + i * atlas->width, atlas->width, offset + i * font->bitmapalign);
+        for (i = 0; i < 128; i++)
+        {
+
+            struct text_atlas *atlas = &font->atlas[i];
+            unsigned short index;
+            unsigned int offset;
+            unsigned int bitmapoffset;
+            unsigned int j;
+
+            fs_read_full(1, target, id, &index, sizeof (unsigned short), bdfentry->offset + sizeof (unsigned int) + sizeof (struct pcf_bdfencoding) + sizeof (unsigned short) * pcf_getbdfoffset(bdfentry, &bdfencoding, bdfformat, i));
+
+            index = pcf_convert16(index, bdfformat);
+
+            if (metricsformat & PCF_FORMAT_COMPRESSED)
+            {
+
+                struct pcf_metricsdata_compressed metrics;
+
+                fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata_compressed), metricsentry->offset + sizeof (unsigned int) + sizeof (unsigned short) + sizeof (struct pcf_metricsdata_compressed) * index);
+
+                atlas->height = (metrics.ascent - 0x80) + (metrics.descent - 0x80);
+                atlas->width = metrics.width - 0x80;
+
+            }
+
+            else
+            {
+
+                struct pcf_metricsdata metrics;
+
+                fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata), metricsentry->offset + sizeof (unsigned int) + sizeof (unsigned int) + sizeof (struct pcf_metricsdata) * index);
+
+                atlas->height = pcf_convert16(metrics.ascent, metricsformat) + pcf_convert16(metrics.descent, metricsformat);
+                atlas->width = pcf_convert16(metrics.width, metricsformat);
+
+            }
+
+            fs_read_full(1, target, id, &bitmapoffset, sizeof (unsigned int), bitmapentry->offset + sizeof (unsigned int) + sizeof (unsigned int) + bitmapalign * index);
+
+            bitmapoffset = pcf_convert32(bitmapoffset, bitmapformat);
+
+            offset = bitmapentry->offset + sizeof (unsigned int) + sizeof (unsigned int) + bitmapalign * bitmapcount + sizeof (unsigned int) * 4 + bitmapoffset;
+
+            for (j = 0; j < atlas->height; j++)
+                fs_read_full(1, target, id, atlas->bdata + j * atlas->width, atlas->width, offset + j * bitmapalign);
+
+        }
+
+    }
+
+}
+
+static void loadfont(unsigned int target, unsigned int id, unsigned int weight, unsigned int lineheight, unsigned int padding)
+{
+
+    struct pcf_header header;
+
+    fs_read_full(1, target, id, &header, sizeof (struct pcf_header), 0);
+
+    if (buffer_match(header.magic, "\1fcp", 4) && header.entries < 64)
+    {
+
+        struct pcf_entry entries[64];
+
+        fs_read_full(1, target, id, entries, sizeof (struct pcf_entry) * header.entries, sizeof (struct pcf_header));
+        pool_setfont(weight, lineheight, padding);
+        loadatlas(pool_getfont(weight), target, id, &header, entries);
 
     }
 
@@ -372,12 +440,8 @@ void pool_loadfont(unsigned int factor)
             unsigned int lineheight = 12 + factor * 4;
             unsigned int padding = 4 + factor * 2;
 
-            fs_read_full(1, target, id1, fontnormal, FONTDATA_SIZE, 0);
-            fs_read_full(1, target, id2, fontbold, FONTDATA_SIZE, 0);
-            pool_setfont(ATTR_WEIGHT_NORMAL, fontnormal, lineheight, padding);
-            pool_setfont(ATTR_WEIGHT_BOLD, fontbold, lineheight, padding);
-            loadatlas(pool_getfont(ATTR_WEIGHT_NORMAL), target, id1);
-            loadatlas(pool_getfont(ATTR_WEIGHT_BOLD), target, id2);
+            loadfont(target, id1, ATTR_WEIGHT_NORMAL, lineheight, padding);
+            loadfont(target, id2, ATTR_WEIGHT_BOLD, lineheight, padding);
 
         }
 

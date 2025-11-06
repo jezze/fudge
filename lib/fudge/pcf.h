@@ -37,13 +37,6 @@ struct pcf_entry
 
 };
 
-struct pcf_bitmap
-{
-
-    unsigned int count;
-
-};
-
 struct pcf_bdfencoding
 {
 
@@ -52,20 +45,6 @@ struct pcf_bdfencoding
     unsigned short minbyte1;
     unsigned short maxbyte1;
     unsigned short defaultchar;
-
-};
-
-struct pcf_metrics
-{
-
-    unsigned int count;
-
-};
-
-struct pcf_metrics_compressed
-{
-
-    unsigned short count;
 
 };
 
@@ -92,12 +71,7 @@ struct pcf_metricsdata_compressed
 
 };
 
-void pcf_readbitmap(void *base, struct pcf_bitmap *data);
-unsigned int pcf_getbitmapoffset(void *base, unsigned short index);
-unsigned int *pcf_getbitmapsizes(void *base);
-unsigned int pcf_getbitmapdataoffset(void *base);
-unsigned char *pcf_getbitmapdata(void *base);
-unsigned int pcf_getbitmapalign(void *base);
-void pcf_readmetricsdata(void *base, unsigned int index, struct pcf_metricsdata *data);
-void pcf_readbdfencoding(void *base, struct pcf_bdfencoding *data);
-unsigned short pcf_getindex(void *base, unsigned short encoding);
+unsigned short pcf_convert16(unsigned short value, unsigned int format);
+unsigned int pcf_convert32(unsigned int value, unsigned int format);
+struct pcf_entry *pcf_findentry(struct pcf_header *header, struct pcf_entry *entries, unsigned int type);
+unsigned int pcf_getbdfoffset(struct pcf_entry *entry, struct pcf_bdfencoding *bdfencoding, unsigned int format, unsigned short encoding);
