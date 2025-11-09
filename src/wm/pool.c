@@ -357,8 +357,8 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
                 fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata_compressed), metricsentry->offset + 6 + sizeof (struct pcf_metricsdata_compressed) * index);
 
-                atlas->height = (metrics.ascent - 0x80) + (metrics.descent - 0x80);
                 atlas->width = metrics.width - 0x80;
+                atlas->height = (metrics.ascent - 0x80) + (metrics.descent - 0x80);
 
             }
 
@@ -369,8 +369,8 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
                 fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata), metricsentry->offset + 8 + sizeof (struct pcf_metricsdata) * index);
 
-                atlas->height = pcf_convert16(metrics.ascent, metricsentry->format) + pcf_convert16(metrics.descent, metricsentry->format);
                 atlas->width = pcf_convert16(metrics.width, metricsentry->format);
+                atlas->height = pcf_convert16(metrics.ascent, metricsentry->format) + pcf_convert16(metrics.descent, metricsentry->format);
 
             }
 
