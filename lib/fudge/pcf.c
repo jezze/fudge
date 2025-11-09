@@ -14,12 +14,12 @@ unsigned int pcf_convert32(unsigned int value, unsigned int format)
 
 }
 
-struct pcf_entry *pcf_findentry(struct pcf_header *header, struct pcf_entry *entries, unsigned int type)
+struct pcf_entry *pcf_findentry(struct pcf_entry *entries, unsigned int count, unsigned int type)
 {
 
     unsigned int i;
 
-    for (i = 0; i < header->entries; i++)
+    for (i = 0; i < count; i++)
     {
 
         struct pcf_entry *entry = &entries[i];

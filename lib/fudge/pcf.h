@@ -74,5 +74,5 @@ struct pcf_metricsdata_compressed
 
 unsigned short pcf_convert16(unsigned short value, unsigned int format);
 unsigned int pcf_convert32(unsigned int value, unsigned int format);
-struct pcf_entry *pcf_findentry(struct pcf_header *header, struct pcf_entry *entries, unsigned int type);
+struct pcf_entry *pcf_findentry(struct pcf_entry *entries, unsigned int count, unsigned int type);
 unsigned int pcf_getbdfoffset(struct pcf_entry *entry, struct pcf_bdfencoding *bdfencoding, unsigned int format, unsigned short encoding);

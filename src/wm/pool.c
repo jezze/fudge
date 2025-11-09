@@ -315,12 +315,12 @@ static void loadatlasdata(struct text_atlas *atlas, unsigned int target, unsigne
 
 }
 
-static void loadatlas(struct text_font *font, unsigned int target, unsigned int id, struct pcf_header *header, struct pcf_entry *entries)
+static void loadatlas(struct text_font *font, unsigned int target, unsigned int id, struct pcf_entry *entries, unsigned int count)
 {
 
-    struct pcf_entry *bdfentry = pcf_findentry(header, entries, PCF_TYPE_BDFENCODINGS);
-    struct pcf_entry *metricsentry = pcf_findentry(header, entries, PCF_TYPE_METRICS);
-    struct pcf_entry *bitmapentry = pcf_findentry(header, entries, PCF_TYPE_BITMAPS);
+    struct pcf_entry *bdfentry = pcf_findentry(entries, count, PCF_TYPE_BDFENCODINGS);
+    struct pcf_entry *metricsentry = pcf_findentry(entries, count, PCF_TYPE_METRICS);
+    struct pcf_entry *bitmapentry = pcf_findentry(entries, count, PCF_TYPE_BITMAPS);
 
     if (bdfentry && metricsentry && bitmapentry)
     {
@@ -400,7 +400,7 @@ static void loadfont(struct text_font *font, unsigned int target, unsigned int i
 
         setfont(font, lineheight, padding);
         fs_read_full(1, target, id, entries, sizeof (struct pcf_entry) * header.entries, sizeof (struct pcf_header));
-        loadatlas(font, target, id, &header, entries);
+        loadatlas(font, target, id, entries, header.entries);
 
     }
 
