@@ -331,7 +331,7 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
         fs_read_full(1, target, id, &bitmapformat, sizeof (unsigned int), bitmapentry->offset);
         fs_read_full(1, target, id, &bitmapcount, sizeof (unsigned int), bitmapentry->offset + sizeof (unsigned int));
 
-        bitmapalign = 1 << (bitmapformat & 0x03);
+        bitmapalign = 1 << (bitmapformat & PCF_FORMAT_PADMASK);
         bitmapcount = pcf_convert32(bitmapcount, bitmapformat);
 
         for (i = 0; i < 128; i++)
@@ -393,7 +393,7 @@ static void loadfont(unsigned int target, unsigned int id, unsigned int weight, 
 
     fs_read_full(1, target, id, &header, sizeof (struct pcf_header), 0);
 
-    if (buffer_match(header.magic, "\1fcp", 4) && header.entries < 64)
+    if (buffer_match(header.magic, PCF_MAGIC, 4) && header.entries < 64)
     {
 
         struct pcf_entry entries[64];

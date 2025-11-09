@@ -1,3 +1,4 @@
+#define PCF_MAGIC                       "\1fcp"
 #define PCF_TYPE_PROPERTIES             (1 << 0)
 #define PCF_TYPE_ACCELERATORS           (1 << 1)
 #define PCF_TYPE_METRICS                (1 << 2)
