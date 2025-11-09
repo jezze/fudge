@@ -305,6 +305,16 @@ static void setfont(struct text_font *font, unsigned int lineheight, unsigned in
 
 }
 
+static void loadatlasdata(struct text_atlas *atlas, unsigned int target, unsigned int id, unsigned int offset, unsigned int align)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < atlas->height; i++)
+        fs_read_full(1, target, id, atlas->bdata + i * atlas->width, atlas->width, offset + i * align);
+
+}
+
 static void loadatlas(struct text_font *font, unsigned int target, unsigned int id, struct pcf_header *header, struct pcf_entry *entries)
 {
 
@@ -320,8 +330,8 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
         unsigned int bitmapcount;
         unsigned int i;
 
-        fs_read_full(1, target, id, &bdfencoding, sizeof (struct pcf_bdfencoding), bdfentry->offset + sizeof (unsigned int));
-        fs_read_full(1, target, id, &bitmapcount, sizeof (unsigned int), bitmapentry->offset + sizeof (unsigned int));
+        fs_read_full(1, target, id, &bdfencoding, sizeof (struct pcf_bdfencoding), bdfentry->offset + 4);
+        fs_read_full(1, target, id, &bitmapcount, sizeof (unsigned int), bitmapentry->offset + 4);
 
         bitmapalign = 1 << (bitmapentry->format & PCF_FORMAT_PADMASK);
         bitmapcount = pcf_convert32(bitmapcount, bitmapentry->format);
@@ -331,11 +341,12 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
             struct text_atlas *atlas = &font->atlas[i];
             unsigned short index;
-            unsigned int offset;
+            unsigned int bdfoffset;
             unsigned int bitmapoffset;
-            unsigned int j;
 
-            fs_read_full(1, target, id, &index, sizeof (unsigned short), bdfentry->offset + sizeof (unsigned int) + sizeof (struct pcf_bdfencoding) + sizeof (unsigned short) * pcf_getbdfoffset(bdfentry, &bdfencoding, bdfentry->format, i));
+            bdfoffset = pcf_getbdfoffset(bdfentry, &bdfencoding, bdfentry->format, i);
+
+            fs_read_full(1, target, id, &index, sizeof (unsigned short), bdfentry->offset + 4 + sizeof (struct pcf_bdfencoding) + 2 * bdfoffset);
 
             index = pcf_convert16(index, bdfentry->format);
 
@@ -344,7 +355,7 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
                 struct pcf_metricsdata_compressed metrics;
 
-                fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata_compressed), metricsentry->offset + sizeof (unsigned int) + sizeof (unsigned short) + sizeof (struct pcf_metricsdata_compressed) * index);
+                fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata_compressed), metricsentry->offset + 6 + sizeof (struct pcf_metricsdata_compressed) * index);
 
                 atlas->height = (metrics.ascent - 0x80) + (metrics.descent - 0x80);
                 atlas->width = metrics.width - 0x80;
@@ -356,21 +367,18 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
                 struct pcf_metricsdata metrics;
 
-                fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata), metricsentry->offset + sizeof (unsigned int) + sizeof (unsigned int) + sizeof (struct pcf_metricsdata) * index);
+                fs_read_full(1, target, id, &metrics, sizeof (struct pcf_metricsdata), metricsentry->offset + 8 + sizeof (struct pcf_metricsdata) * index);
 
                 atlas->height = pcf_convert16(metrics.ascent, metricsentry->format) + pcf_convert16(metrics.descent, metricsentry->format);
                 atlas->width = pcf_convert16(metrics.width, metricsentry->format);
 
             }
 
-            fs_read_full(1, target, id, &bitmapoffset, sizeof (unsigned int), bitmapentry->offset + sizeof (unsigned int) + sizeof (unsigned int) + bitmapalign * index);
+            fs_read_full(1, target, id, &bitmapoffset, sizeof (unsigned int), bitmapentry->offset + 8 + bitmapalign * index);
 
             bitmapoffset = pcf_convert32(bitmapoffset, bitmapentry->format);
 
-            offset = bitmapentry->offset + sizeof (unsigned int) + sizeof (unsigned int) + bitmapalign * bitmapcount + sizeof (unsigned int) * 4 + bitmapoffset;
-
-            for (j = 0; j < atlas->height; j++)
-                fs_read_full(1, target, id, atlas->bdata + j * atlas->width, atlas->width, offset + j * bitmapalign);
+            loadatlasdata(atlas, target, id, bitmapentry->offset + 8 + bitmapalign * bitmapcount + 4 * 4 + bitmapoffset, bitmapalign);
 
         }
 
