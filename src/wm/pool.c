@@ -40,6 +40,18 @@ static struct list freelist;
 static struct entry entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
+static char *fontn[] = {
+    "initrd:data/font/ter-112n.pcf",
+    "initrd:data/font/ter-114n.pcf",
+    "initrd:data/font/ter-116n.pcf",
+    "initrd:data/font/ter-118n.pcf",
+};
+static char *fontb[] = {
+    "initrd:data/font/ter-112b.pcf",
+    "initrd:data/font/ter-114b.pcf",
+    "initrd:data/font/ter-116b.pcf",
+    "initrd:data/font/ter-118b.pcf",
+};
 
 struct list_item *pool_prev(struct list_item *current)
 {
@@ -402,48 +414,16 @@ void pool_loadfont(unsigned int factor)
     if (target)
     {
 
-        unsigned int id1 = 0;
-        unsigned int id2 = 0;
+        unsigned int idn = fs_walk(1, target, 0, fontn[factor]);
+        unsigned int idb = fs_walk(1, target, 0, fontb[factor]);
+        unsigned int lineheight = 12 + factor * 4;
+        unsigned int padding = 4 + factor * 2;
 
-        switch (factor)
-        {
+        if (idn)
+            loadfont(target, idn, ATTR_WEIGHT_NORMAL, lineheight, padding);
 
-        case 0:
-            id1 = fs_walk(1, target, 0, "data/font/ter-112n.pcf");
-            id2 = fs_walk(1, target, 0, "data/font/ter-112b.pcf");
-
-            break;
-
-        case 1:
-            id1 = fs_walk(1, target, 0, "data/font/ter-114n.pcf");
-            id2 = fs_walk(1, target, 0, "data/font/ter-114b.pcf");
-
-            break;
-
-        case 2:
-            id1 = fs_walk(1, target, 0, "data/font/ter-116n.pcf");
-            id2 = fs_walk(1, target, 0, "data/font/ter-116b.pcf");
-
-            break;
-
-        default:
-            id1 = fs_walk(1, target, 0, "/data/font/ter-118n.pcf");
-            id2 = fs_walk(1, target, 0, "/data/font/ter-118b.pcf");
-
-            break;
-
-        }
-
-        if (id1 && id2)
-        {
-
-            unsigned int lineheight = 12 + factor * 4;
-            unsigned int padding = 4 + factor * 2;
-
-            loadfont(target, id1, ATTR_WEIGHT_NORMAL, lineheight, padding);
-            loadfont(target, id2, ATTR_WEIGHT_BOLD, lineheight, padding);
-
-        }
+        if (idb)
+            loadfont(target, idb, ATTR_WEIGHT_BOLD, lineheight, padding);
 
     }
 
