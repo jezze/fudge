@@ -297,10 +297,8 @@ struct text_font *pool_getfont(unsigned int index)
 
 }
 
-void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding)
+static void setfont(struct text_font *font, unsigned int lineheight, unsigned int padding)
 {
-
-    struct text_font *font = pool_getfont(index);
 
     font->lineheight = lineheight;
     font->padding = padding;
@@ -386,7 +384,7 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
 }
 
-static void loadfont(unsigned int target, unsigned int id, unsigned int weight, unsigned int lineheight, unsigned int padding)
+static void loadfont(struct text_font *font, unsigned int target, unsigned int id, unsigned int lineheight, unsigned int padding)
 {
 
     struct pcf_header header;
@@ -398,9 +396,9 @@ static void loadfont(unsigned int target, unsigned int id, unsigned int weight, 
 
         struct pcf_entry entries[24];
 
+        setfont(font, lineheight, padding);
         fs_read_full(1, target, id, entries, sizeof (struct pcf_entry) * header.entries, sizeof (struct pcf_header));
-        pool_setfont(weight, lineheight, padding);
-        loadatlas(pool_getfont(weight), target, id, &header, entries);
+        loadatlas(font, target, id, &header, entries);
 
     }
 
@@ -420,10 +418,10 @@ void pool_loadfont(unsigned int factor)
         unsigned int padding = 4 + factor * 2;
 
         if (idn)
-            loadfont(target, idn, ATTR_WEIGHT_NORMAL, lineheight, padding);
+            loadfont(&fonts[0], target, idn, lineheight, padding);
 
         if (idb)
-            loadfont(target, idb, ATTR_WEIGHT_BOLD, lineheight, padding);
+            loadfont(&fonts[1], target, idb, lineheight, padding);
 
     }
 
