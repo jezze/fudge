@@ -393,10 +393,10 @@ static void loadfont(unsigned int target, unsigned int id, unsigned int weight, 
 
     fs_read_full(1, target, id, &header, sizeof (struct pcf_header), 0);
 
-    if (buffer_match(header.magic, PCF_MAGIC, 4) && header.entries < 64)
+    if (buffer_match(header.magic, PCF_MAGIC, 4) && header.entries < 24)
     {
 
-        struct pcf_entry entries[64];
+        struct pcf_entry entries[24];
 
         fs_read_full(1, target, id, entries, sizeof (struct pcf_entry) * header.entries, sizeof (struct pcf_header));
         pool_setfont(weight, lineheight, padding);
