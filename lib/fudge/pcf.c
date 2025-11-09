@@ -33,11 +33,11 @@ struct pcf_entry *pcf_findentry(struct pcf_entry *entries, unsigned int count, u
 
 }
 
-unsigned int pcf_getbdfoffset(struct pcf_entry *entry, struct pcf_bdfencoding *bdfencoding, unsigned int format, unsigned short encoding)
+unsigned int pcf_getbdfoffset(struct pcf_entry *entry, struct pcf_bdfencoding *bdfencoding, unsigned short encoding)
 {
 
-    unsigned short mincharorbyte2 = pcf_convert16(bdfencoding->mincharorbyte2, format);
-    unsigned short maxcharorbyte2 = pcf_convert16(bdfencoding->maxcharorbyte2, format);
+    unsigned short mincharorbyte2 = pcf_convert16(bdfencoding->mincharorbyte2, entry->format);
+    unsigned short maxcharorbyte2 = pcf_convert16(bdfencoding->maxcharorbyte2, entry->format);
     unsigned int index;
 
     if (encoding & 0xFF00)

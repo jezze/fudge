@@ -344,7 +344,7 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
             unsigned int bdfoffset;
             unsigned int bitmapoffset;
 
-            bdfoffset = pcf_getbdfoffset(bdfentry, &bdfencoding, bdfentry->format, i);
+            bdfoffset = pcf_getbdfoffset(bdfentry, &bdfencoding, i);
 
             fs_read_full(1, target, id, &index, sizeof (unsigned short), bdfentry->offset + 4 + sizeof (struct pcf_bdfencoding) + 2 * bdfoffset);
 
