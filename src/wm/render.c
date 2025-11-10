@@ -69,6 +69,20 @@ static struct util_size sizeclamp(struct util_size *min, struct util_size *max)
 
 }
 
+static struct util_region regionshrink(struct util_region *region, struct util_size *padding)
+{
+
+    struct util_region r;
+
+    r.x = region->x + padding->w;
+    r.y = region->y + padding->h;
+    r.w = util_clamp(region->w, 0, region->w - padding->w * 2);
+    r.h = util_clamp(region->h, 0, region->h - padding->h * 2);
+
+    return r;
+
+}
+
 static unsigned int getnumspans(struct widget *widget)
 {
 
@@ -108,7 +122,7 @@ static void placechild(struct widget *widget, struct util_position *pos, struct 
 
 }
 
-static struct util_size placechildren1(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *margin, struct util_size *padding, unsigned int incx, unsigned int incy, unsigned int spanw, unsigned int spanh)
+static struct util_size placechildren1(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *margin, struct util_size *padding, unsigned int incx, unsigned int incy, struct util_size *span)
 {
 
     struct list_item *current = 0;
@@ -131,8 +145,8 @@ static struct util_size placechildren1(struct widget *widget, struct util_positi
             if (child->span)
             {
 
-                cmin.w = spanw * child->span;
-                cmax.w = spanw * child->span;
+                cmin.w = span->w * child->span;
+                cmax.w = span->w * child->span;
 
             }
 
@@ -147,8 +161,8 @@ static struct util_size placechildren1(struct widget *widget, struct util_positi
             if (child->span)
             {
 
-                cmin.h = spanh * child->span;
-                cmax.h = spanh * child->span;
+                cmin.h = span->h * child->span;
+                cmax.h = span->h * child->span;
 
             }
 
@@ -169,10 +183,16 @@ static struct util_size placechildren(struct widget *widget, struct util_positio
 {
 
     unsigned int spans = getnumspans(widget);
-    struct util_size total = placechildren1(widget, pos, min, max, clip, margin, padding, incx, incy, 0, 0);
+    struct util_size span = util_size(0, 0);
+    struct util_size total = placechildren1(widget, pos, min, max, clip, margin, padding, incx, incy, &span);
 
     if (spans)
-        total = placechildren1(widget, pos, min, max, clip, margin, padding, incx, incy, (max->w - total.w) / spans, (max->h - total.h) / spans);
+    {
+
+        span = util_size((max->w - total.w) / spans, (max->h - total.h) / spans);
+        total = placechildren1(widget, pos, min, max, clip, margin, padding, incx, incy, &span);
+
+    }
 
     return total;
 
@@ -218,7 +238,7 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
 
 }
 
-static void clipchildren(struct widget *widget, struct util_region *clip, unsigned int marginw, unsigned int marginh)
+static void clipchildren(struct widget *widget, struct util_region *clip, struct util_size *padding)
 {
 
     struct list_item *current = 0;
@@ -228,9 +248,9 @@ static void clipchildren(struct widget *widget, struct util_region *clip, unsign
 
         struct widget *child = current->data;
 
-        child->clip = util_region(clip->x + marginw, clip->y + marginh, util_clamp(clip->w, 0, clip->w - marginw * 2), util_clamp(clip->h, 0, clip->h - marginh * 2));
+        child->clip = regionshrink(clip, padding);
 
-        clipchildren(child, clip, marginw, marginh);
+        clipchildren(child, clip, padding);
 
     }
 
@@ -415,9 +435,10 @@ static void placelistbox(struct widget *widget, struct util_position *pos, struc
     struct util_size cpadding = util_size(CONFIG_LISTBOX_PADDING_WIDTH, CONFIG_LISTBOX_PADDING_HEIGHT);
     struct util_size total = placechildren(widget, pos, &cmin, &cmax, clip, &cmargin, &cpadding, 0, 1);
     struct util_region region = util_region(pos->x, pos->y, total.w, total.h);
+    struct util_size clippad = util_size(CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
 
     placewidget(widget, &region, min, max, clip);
-    clipchildren(widget, &widget->bb, CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
+    clipchildren(widget, &widget->bb, &clippad);
 
     listbox->vscroll = util_clamp(listbox->vscroll, widget->bb.h - total.h, 0);
 
@@ -456,8 +477,9 @@ static void placeselect(struct widget *widget, struct util_position *pos, struct
     {
 
         struct util_region cclip = util_region(widget->bb.x, widget->bb.y, 0, 0);
+        struct util_size clippad = util_size(0, 0);
 
-        clipchildren(widget, &cclip, 0, 0);
+        clipchildren(widget, &cclip, &clippad);
 
     }
 
@@ -493,9 +515,10 @@ static void placetextbox(struct widget *widget, struct util_position *pos, struc
     struct util_size cpadding = util_size(CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
     struct util_size total = placetextflow(widget, pos, &cmin, &cmax, clip, &cmargin, &cpadding);
     struct util_region region = util_region(pos->x, pos->y, total.w, total.h);
+    struct util_size clippad = util_size(CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
 
     placewidget(widget, &region, min, max, clip);
-    clipchildren(widget, &widget->bb, CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
+    clipchildren(widget, &widget->bb, &clippad);
 
     textbox->vscroll = util_clamp(textbox->vscroll, widget->bb.h - total.h, 0);
 
