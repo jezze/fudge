@@ -596,21 +596,20 @@ static void _renderx(struct blit_display *display, struct util_region *region, u
     struct text_font *font = pool_getfont(weight);
     unsigned int icurrent = text_getrowstart(font, strpool_getstring(text), strpool_getcstringlength(text), num, wrap, region->w, offx);
     struct text_rowinfo rowinfo;
-    int rx;
-    int ry;
+    struct util_position offset;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(text), strpool_getcstringlength(text), wrap, region->w, icurrent);
 
-    rx = text_getrowx(&rowinfo, halign, padding->w, region->w - offx) + offx;
-    ry = text_getrowy(&rowinfo, valign, padding->h, region->h - offy) + offy + font->lineheight * num;
+    offset.x = text_getrowx(&rowinfo, halign, padding->w, region->w - offx) + offx;
+    offset.y = text_getrowy(&rowinfo, valign, padding->h, region->h - offy) + offy + font->lineheight * num;
 
-    if (util_intersects(line, region->y + ry, region->y + ry + font->lineheight))
+    if (util_intersects(line, region->y + offset.y, region->y + offset.y + font->lineheight))
     {
 
         unsigned int mstart = util_max(0, util_min(markstart, markend) - rowinfo.istart);
         unsigned int mend = util_max(0, util_max(markstart, markend) - rowinfo.istart);
 
-        blit_text(display, font, strpool_getstring(text) + rowinfo.istart, rowinfo.length, region->x + rx, region->y + ry, line, x0, x2, mstart, mend, cmap);
+        blit_text(display, font, strpool_getstring(text) + rowinfo.istart, rowinfo.length, region->x + offset.x, region->y + offset.y, line, x0, x2, mstart, mend, cmap);
 
     }
 
