@@ -190,7 +190,8 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
     {
 
         struct widget *child = current->data;
-        struct util_position cpos = posshrink(pos, margin);
+        struct util_position opos = util_position(pos->x, pos->y + offy);
+        struct util_position cpos = posshrink(&opos, margin);
         struct util_size cmax = sizeshrink(max, margin);
         struct util_size cmin = sizeclamp(min, &cmax);
 
