@@ -132,9 +132,9 @@ static struct util_size placechildren1(struct widget *widget, struct util_positi
     {
 
         struct widget *child = current->data;
-        struct util_position cpos = *pos;
-        struct util_size cmax = *max;
-        struct util_size cmin = *min;
+        struct util_position cpos = util_position(pos->x, pos->y);
+        struct util_size cmin = util_size(min->w, min->h);
+        struct util_size cmax = util_size(max->w, max->h);
 
         if (incx)
         {
@@ -428,10 +428,11 @@ static void placelistbox(struct widget *widget, struct util_position *pos, struc
 {
 
     struct widget_listbox *listbox = widget->data;
+    struct util_position cpos = util_position(pos->x + CONFIG_FRAME_WIDTH, pos->y + CONFIG_FRAME_HEIGHT);
     struct util_size cmin = util_size(0, 0);
-    struct util_size cmax = util_size(max->w, INFINITY);
-    struct util_size cpadding = util_size(CONFIG_LISTBOX_PADDING_WIDTH, CONFIG_LISTBOX_PADDING_HEIGHT);
-    struct util_size total = placechildren(widget, pos, &cmin, &cmax, clip, &cpadding, 0, 1);
+    struct util_size cmax = util_size(max->w - CONFIG_FRAME_WIDTH, INFINITY);
+    struct util_size cpadding = util_size(0, 0);
+    struct util_size total = placechildren(widget, &cpos, &cmin, &cmax, clip, &cpadding, 0, 1);
     struct util_region region = util_region(pos->x, pos->y, total.w, total.h);
     struct util_size clippad = util_size(CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
 
