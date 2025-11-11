@@ -34,10 +34,10 @@ int util_clamp(int v, int min, int max)
 {
 
     if (v < min)
-        v = min;
+        return min;
 
     if (v > max)
-        v = max;
+        return max;
 
     return v;
 

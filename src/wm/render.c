@@ -283,7 +283,7 @@ static void placebutton(struct widget *widget, struct util_position *pos, struct
     struct text_rowinfo rowinfo;
     struct util_region region;
 
-    text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, max->w - CONFIG_BUTTON_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, 0, 0);
 
     region = util_region(pos->x, pos->y, rowinfo.width + CONFIG_BUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
 
@@ -299,7 +299,7 @@ static void placechoice(struct widget *widget, struct util_position *pos, struct
     struct text_rowinfo rowinfo;
     struct util_region region;
 
-    text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, max->w - CONFIG_CHOICE_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, 0, 0);
 
     region = util_region(pos->x, pos->y, rowinfo.width + CONFIG_CHOICE_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_CHOICE_PADDING_HEIGHT * 2);
 
@@ -459,7 +459,7 @@ static void placeselect(struct widget *widget, struct util_position *pos, struct
     struct util_size cmargin;
     struct util_size cpadding;
 
-    text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, max->w - CONFIG_SELECT_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, 0, 0);
 
     region = util_region(pos->x, pos->y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 4, rowinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
 
@@ -557,7 +557,7 @@ static void placetextbutton(struct widget *widget, struct util_position *pos, st
     struct text_rowinfo rowinfo;
     struct util_region region;
 
-    text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, max->w - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, 0, 0);
 
     region = util_region(pos->x, pos->y, rowinfo.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
 
@@ -577,7 +577,7 @@ static void placewindow(struct widget *widget, struct util_position *pos, struct
     struct util_size cmargin;
     struct util_size cpadding;
 
-    text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, max->w, 0);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, 0, 0);
     placewidget(widget, &widget->bb, min, max, clip);
 
     cpos = util_position(widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
