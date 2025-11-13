@@ -458,17 +458,16 @@ static void placeselect(struct widget *widget, struct util_position *pos, struct
 
     region = util_region(pos->x, pos->y, rowinfo.width + CONFIG_SELECT_PADDING_WIDTH * 4, rowinfo.lineheight + CONFIG_SELECT_PADDING_HEIGHT * 2);
 
-    placewidget(widget, &region, min, max, clip);
-
-    cpos = util_position(pos->x, widget->bb.y + widget->bb.h);
-    cmax = util_size(widget->bb.w * 2, INFINITY);
+    cpos = util_position(pos->x, pos->y + region.h);
+    cmax = util_size(region.w * 2, INFINITY);
 
     placechildren(widget, &cpos, &zerosize, &cmax, clip, &zerosize, 0, 1);
+    placewidget(widget, &region, min, max, clip);
 
     if (widget->state != WIDGET_STATE_FOCUS)
     {
 
-        struct util_region cclip = util_region(widget->bb.x, widget->bb.y, 0, 0);
+        struct util_region cclip = util_region(pos->x, pos->y, 0, 0);
 
         clipchildren(widget, &cclip, &zerosize);
 
@@ -558,21 +557,16 @@ static void placetextbutton(struct widget *widget, struct util_position *pos, st
 static void placewindow(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
-    struct widget_window *window = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
-    struct text_rowinfo rowinfo;
     struct util_position cpos;
     struct util_size cmax;
     struct util_size cpadding;
-
-    text_getrowinfo(&rowinfo, font, strpool_getstring(window->title), strpool_getcstringlength(window->title), ATTR_WRAP_NONE, 0, 0);
-    placewidget(widget, &widget->bb, min, max, clip);
 
     cpos = util_position(widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     cmax = util_size(widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT);
     cpadding = util_size(CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
 
     placechildren(widget, &cpos, &zerosize, &cmax, clip, &cpadding, 0, 1);
+    placewidget(widget, &widget->bb, min, max, clip);
 
 }
 
