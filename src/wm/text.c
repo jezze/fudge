@@ -214,6 +214,8 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
 int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w)
 {
 
+    w = w - x * 2;
+
     switch (halign)
     {
 
@@ -234,6 +236,8 @@ int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, int w
 
 int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, int y, int h)
 {
+
+    h = h - y * 2;
 
     switch (valign)
     {
