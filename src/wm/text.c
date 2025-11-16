@@ -211,22 +211,20 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
 
 }
 
-int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, unsigned int w)
+int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, unsigned int w)
 {
-
-    w = w - x * 2;
 
     switch (halign)
     {
 
     case ATTR_HALIGN_LEFT:
-        return x;
+        return 0;
 
     case ATTR_HALIGN_CENTER:
-        return x + w / 2 - rowinfo->width / 2;
+        return w / 2 - rowinfo->width / 2;
 
     case ATTR_HALIGN_RIGHT:
-        return x + w - rowinfo->width;
+        return w - rowinfo->width;
 
     }
 
@@ -234,22 +232,20 @@ int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, int x, unsig
 
 }
 
-int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, int y, unsigned int h)
+int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, unsigned int h)
 {
-
-    h = h - y * 2;
 
     switch (valign)
     {
 
     case ATTR_VALIGN_TOP:
-        return y;
+        return 0;
 
     case ATTR_VALIGN_MIDDLE:
-        return y + h / 2 - rowinfo->height / 2 - (rowinfo->lineheight - rowinfo->height) / 2;
+        return h / 2 - rowinfo->height / 2 - (rowinfo->lineheight - rowinfo->height) / 2;
 
     case ATTR_VALIGN_BOTTOM:
-        return y + h - rowinfo->height;
+        return h - rowinfo->height;
 
     }
 

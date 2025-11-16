@@ -590,8 +590,8 @@ static void _renderx(struct blit_display *display, struct util_region *region, u
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(text), strpool_getcstringlength(text), wrap, region->w, icurrent);
 
-    offset.x = text_getrowx(&rowinfo, halign, padding->w, region->w - offx) + offx;
-    offset.y = text_getrowy(&rowinfo, valign, padding->h, region->h - offy) + offy + font->lineheight * num;
+    offset.x = text_getrowx(&rowinfo, halign, region->w - padding->w * 2 - offx) + padding->w + offx;
+    offset.y = text_getrowy(&rowinfo, valign, region->h - padding->h * 2 - offy) + padding->h + offy + font->lineheight * num;
 
     if (util_intersects(line, region->y + offset.y, region->y + offset.y + font->lineheight))
     {
