@@ -199,7 +199,7 @@ static struct util_size placechildren(struct widget *widget, struct util_positio
 
 }
 
-static struct util_size placetextflow(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *margin, struct util_size *padding)
+static struct util_size placetextflow(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *padding)
 {
 
     struct util_size total = zerosize;
@@ -211,10 +211,9 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
     {
 
         struct widget *child = current->data;
-        struct util_position opos = util_position(pos->x, pos->y + offy);
-        struct util_position cpos = posshrink(&opos, margin);
-        struct util_size cmax = sizeshrink(max, margin);
-        struct util_size cmin = sizeclamp(min, &cmax);
+        struct util_position cpos = util_position(pos->x, pos->y + offy);
+        struct util_size cmax = *max;
+        struct util_size cmin = *min;
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
@@ -225,8 +224,8 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
 
             placechild(child, &cpos, &cmin, &cmax, clip, padding);
 
-            total.w = util_max(total.w, ((child->bb.x + child->bb.w) - pos->x) + margin->w + padding->w);
-            total.h = util_max(total.h, ((child->bb.y + child->bb.h) - pos->y) + margin->h + padding->h);
+            total.w = util_max(total.w, ((child->bb.x + child->bb.w) - pos->x) + padding->w);
+            total.h = util_max(total.h, ((child->bb.y + child->bb.h) - pos->y) + padding->h);
 
             offx = text->lastrowx;
             offy += text->lastrowy;
@@ -508,11 +507,10 @@ static void placetextbox(struct widget *widget, struct util_position *pos, struc
     struct widget_textbox *textbox = widget->data;
     struct list_item *current = 0;
     struct util_size cmax = util_size(max->w, INFINITY);
-    struct util_size cmargin = util_size(CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
     struct util_size cpadding = util_size(CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
-    struct util_size total = placetextflow(widget, pos, &zerosize, &cmax, clip, &cmargin, &cpadding);
+    struct util_size total = placetextflow(widget, pos, &zerosize, &cmax, clip, &cpadding);
     struct util_size wsize = util_size(total.w, total.h);
-    struct util_size clippad = util_size(CONFIG_FRAME_WIDTH + CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_FRAME_HEIGHT + CONFIG_TEXTBOX_PADDING_HEIGHT);
+    struct util_size clippad = util_size(CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
 
     placewidget(widget, pos, &wsize, min, max, clip);
     clipchildren(widget, &widget->bb, &clippad);
