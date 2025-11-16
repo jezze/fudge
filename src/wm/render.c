@@ -453,7 +453,8 @@ static void placelistbox(struct widget *widget, struct util_position *pos, struc
     struct util_size padding = util_size(CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
     struct util_position cpos = posshrink(pos, &padding);
     struct util_size cmax = util_size(max->w - padding.w * 2, INFINITY);
-    struct util_size total = placechildren(widget, &cpos, &zerosize, &cmax, clip, &zerosize, 0, 1);
+    struct util_size cmin = util_size(cmax.w, 0);
+    struct util_size total = placechildren(widget, &cpos, &cmin, &cmax, clip, &zerosize, 0, 1);
     struct util_size wsize = sizegrow(&total, &padding);
 
     placewidget(widget, pos, &wsize, min, max, clip);
@@ -776,7 +777,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
 
     blit_frame(display, &widget->bb, line, x0, x2, cmapbody);
-    _renderx(display, &widget->bb, textbutton->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
+    _renderx(display, &widget->bb, textbutton->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
