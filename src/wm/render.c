@@ -87,10 +87,8 @@ static struct util_region regionshrink(struct util_region *region, struct util_s
 
     struct util_region r;
 
-    r.x = region->x + padding->w;
-    r.y = region->y + padding->h;
-    r.w = util_clamp(region->w, 0, region->w - padding->w * 2);
-    r.h = util_clamp(region->h, 0, region->h - padding->h * 2);
+    r.position = posshrink(&region->position, padding);
+    r.size = sizeshrink(&region->size, padding);
 
     return r;
 
@@ -183,8 +181,8 @@ static struct util_size placechildren1(struct widget *widget, struct util_positi
 
         placechild(child, &cpos, &cmin, &cmax, clip, padding);
 
-        total.w = util_max(total.w, (child->bb.x + child->bb.w) - pos->x);
-        total.h = util_max(total.h, (child->bb.y + child->bb.h) - pos->y);
+        total.w = util_max(total.w, (child->bb.position.x + child->bb.size.w) - pos->x);
+        total.h = util_max(total.h, (child->bb.position.y + child->bb.size.h) - pos->y);
 
     }
 
@@ -236,8 +234,8 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
 
             placechild(child, &cpos, &cmin, &cmax, clip, padding);
 
-            total.w = util_max(total.w, (child->bb.x + child->bb.w) - pos->x);
-            total.h = util_max(total.h, (child->bb.y + child->bb.h) - pos->y);
+            total.w = util_max(total.w, (child->bb.position.x + child->bb.size.w) - pos->x);
+            total.h = util_max(total.h, (child->bb.position.y + child->bb.size.h) - pos->y);
 
             offx = text->lastrowx;
             offy += text->lastrowy;
@@ -278,8 +276,8 @@ static void scrollchildren(struct widget *widget, int x, int y)
 
         struct widget *child = current->data;
 
-        child->bb.x += x;
-        child->bb.y += y;
+        child->bb.position.x += x;
+        child->bb.position.y += y;
 
         scrollchildren(child, x, y);
 
@@ -370,8 +368,8 @@ static void placeimagepcx(struct widget *widget, struct util_position *pos, stru
 static void placeimagefudgemouse(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
-    struct util_position wpos = util_position(widget->bb.x, widget->bb.y);
-    struct util_size wsize = util_size(widget->bb.w, widget->bb.h);
+    struct util_position wpos = util_position(widget->bb.position.x, widget->bb.position.y);
+    struct util_size wsize = util_size(widget->bb.size.w, widget->bb.size.h);
 
     placewidget(widget, &wpos, &wsize, min, max, clip);
 
@@ -460,7 +458,7 @@ static void placelistbox(struct widget *widget, struct util_position *pos, struc
     placewidget(widget, pos, &wsize, min, max, clip);
     clipchildren(widget, &widget->bb, &padding);
 
-    listbox->vscroll = util_clamp(listbox->vscroll, widget->bb.h - total.h, 0);
+    listbox->vscroll = util_clamp(listbox->vscroll, widget->bb.size.h - total.h, 0);
 
     scrollchildren(widget, 0, listbox->vscroll);
 
@@ -531,7 +529,7 @@ static void placetextbox(struct widget *widget, struct util_position *pos, struc
     placewidget(widget, pos, &wsize, min, max, clip);
     clipchildren(widget, &widget->bb, &padding);
 
-    textbox->vscroll = util_clamp(textbox->vscroll, widget->bb.h - total.h, 0);
+    textbox->vscroll = util_clamp(textbox->vscroll, widget->bb.size.h - total.h, 0);
 
     scrollchildren(widget, 0, textbox->vscroll);
 
@@ -551,8 +549,8 @@ static void placetextbox(struct widget *widget, struct util_position *pos, struc
 
             textbox->cursorheight = font->lineheight - font->lineheight / 4;
             textbox->cursorwidth = 2;
-            textbox->cursorx = child->bb.x + info.lastrowx;
-            textbox->cursory = child->bb.y + info.lastrowy + font->lineheight / 2 - textbox->cursorheight / 2;
+            textbox->cursorx = child->bb.position.x + info.lastrowx;
+            textbox->cursory = child->bb.position.y + info.lastrowy + font->lineheight / 2 - textbox->cursorheight / 2;
 
         }
 
@@ -582,8 +580,8 @@ static void placewindow(struct widget *widget, struct util_position *pos, struct
     struct util_position cpos;
     struct util_size cmax;
     struct util_size cpadding;
-    struct util_position wpos = util_position(widget->bb.x, widget->bb.y);
-    struct util_size wsize = util_size(widget->bb.w, widget->bb.h);
+    struct util_position wpos = util_position(widget->bb.position.x, widget->bb.position.y);
+    struct util_size wsize = util_size(widget->bb.size.w, widget->bb.size.h);
 
     cpos = util_position(wpos.x, wpos.y + CONFIG_WINDOW_BUTTON_HEIGHT);
     cmax = util_size(wsize.w, wsize.h - CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -598,22 +596,22 @@ static void _renderx(struct blit_display *display, struct util_region *region, u
 {
 
     struct text_font *font = pool_getfont(weight);
-    unsigned int icurrent = text_getrowstart(font, strpool_getstring(text), strpool_getcstringlength(text), num, wrap, region->w, offx);
+    unsigned int icurrent = text_getrowstart(font, strpool_getstring(text), strpool_getcstringlength(text), num, wrap, region->size.w, offx);
     struct text_rowinfo rowinfo;
     struct util_position offset;
 
-    text_getrowinfo(&rowinfo, font, strpool_getstring(text), strpool_getcstringlength(text), wrap, region->w, icurrent);
+    text_getrowinfo(&rowinfo, font, strpool_getstring(text), strpool_getcstringlength(text), wrap, region->size.w, icurrent);
 
-    offset.x = text_getrowx(&rowinfo, halign, region->w - padding->w * 2 - offx) + padding->w + offx;
-    offset.y = text_getrowy(&rowinfo, valign, region->h - padding->h * 2 - offy) + padding->h + offy + font->lineheight * num;
+    offset.x = text_getrowx(&rowinfo, halign, region->size.w - padding->w * 2 - offx) + padding->w + offx;
+    offset.y = text_getrowy(&rowinfo, valign, region->size.h - padding->h * 2 - offy) + padding->h + offy + font->lineheight * num;
 
-    if (util_intersects(line, region->y + offset.y, region->y + offset.y + font->lineheight))
+    if (util_intersects(line, region->position.y + offset.y, region->position.y + offset.y + font->lineheight))
     {
 
         unsigned int mstart = util_max(0, util_min(markstart, markend) - rowinfo.istart);
         unsigned int mend = util_max(0, util_max(markstart, markend) - rowinfo.istart);
 
-        blit_text(display, font, strpool_getstring(text) + rowinfo.istart, rowinfo.length, region->x + offset.x, region->y + offset.y, line, x0, x2, mstart, mend, cmap);
+        blit_text(display, font, strpool_getstring(text) + rowinfo.istart, rowinfo.length, region->position.x + offset.x, region->position.y + offset.y, line, x0, x2, mstart, mend, cmap);
 
     }
 
@@ -697,7 +695,7 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
         break;
 
     case ATTR_MIMETYPE_PCX:
-        blit_pcx(display, line, strpool_getstring(image->source), widget->bb.x, widget->bb.y, x0, x2);
+        blit_pcx(display, line, strpool_getstring(image->source), widget->bb.position.x, widget->bb.position.y, x0, x2);
 
         break;
 
@@ -728,7 +726,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     struct widget_select *select = widget->data;
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
-    struct util_region rarrow = util_region(widget->bb.x + widget->bb.w - padding.w - widget->bb.h / 2, widget->bb.y, widget->bb.h, widget->bb.h);
+    struct util_region rarrow = util_region(widget->bb.position.x + widget->bb.size.w - padding.w - widget->bb.size.h / 2, widget->bb.position.y, widget->bb.size.h, widget->bb.size.h);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmapicon = cmap_get(widget->state, widget->type, 12, 0);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 13, 0);
@@ -745,7 +743,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     struct widget_text *text = widget->data;
     struct text_font *font = pool_getfont(text->weight);
     unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
-    unsigned int rownum = (line - widget->bb.y) / font->lineheight;
+    unsigned int rownum = (line - widget->bb.position.y) / font->lineheight;
 
     if (rownum < text->rows)
         _renderx(display, &widget->bb, text->content, cmaptext, x0, x2, text->offx, 0, text->markstart, text->markend, text->halign, text->valign, text->weight, text->wrap, &zerosize, rownum, line);
@@ -785,11 +783,11 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 {
 
     struct widget_window *window = widget->data;
-    struct util_region rhamburger = util_region(widget->bb.x, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rminimize = util_region(widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rtitle = util_region(widget->bb.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->bb.y, widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rclose = util_region(widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rbody = util_region(widget->bb.x, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.w, widget->bb.h - CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rhamburger = util_region(widget->bb.position.x, widget->bb.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rminimize = util_region(widget->bb.position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rtitle = util_region(widget->bb.position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->bb.position.y, widget->bb.size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rclose = util_region(widget->bb.position.x + widget->bb.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rbody = util_region(widget->bb.position.x, widget->bb.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->bb.size.w, widget->bb.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onhamburger = util_intersects_region(&rhamburger, mx, my);
     unsigned int onminimize = util_intersects_region(&rminimize, mx, my);
     unsigned int onclose = util_intersects_region(&rclose, mx, my);
@@ -811,12 +809,12 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 
 }
 
-void render_place(struct widget *widget, int x, int y, unsigned int minw, unsigned int minh, unsigned int maxw, unsigned int maxh, struct util_region *clip)
+void render_place(struct widget *widget, struct util_region *region, struct util_region *clip)
 {
 
-    struct util_position pos = util_position(x, y);
-    struct util_size min = util_size(minw, minh);
-    struct util_size max = util_size(maxw, maxh);
+    struct util_position pos = util_position(region->position.x, region->position.y);
+    struct util_size min = util_size(0, 0);
+    struct util_size max = util_size(region->size.w, region->size.h);
 
     calls[widget->type].place(widget, &pos, &min, &max, clip);
 
@@ -874,8 +872,8 @@ void render_update(struct blit_display *display, int mx, int my)
             if (widget_intersectsy(widget, line))
             {
 
-                int x0 = util_max(widget->bb.x, area.position0.x);
-                int x2 = util_min(widget->bb.x + widget->bb.w, area.position2.x);
+                int x0 = util_max(widget->bb.position.x, area.position0.x);
+                int x2 = util_min(widget->bb.position.x + widget->bb.size.w, area.position2.x);
 
                 calls[widget->type].render(display, widget, line, x0, x2, mx, my);
 

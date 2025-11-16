@@ -122,10 +122,10 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 static void damage(struct widget *widget)
 {
 
-    int x0 = util_clamp(widget->bb.x, 0, display.size.w);
-    int y0 = util_clamp(widget->bb.y, 0, display.size.h);
-    int x2 = util_clamp(widget->bb.x + widget->bb.w, 0, display.size.w);
-    int y2 = util_clamp(widget->bb.y + widget->bb.h, 0, display.size.h);
+    int x0 = util_clamp(widget->bb.position.x, 0, display.region.size.w);
+    int y0 = util_clamp(widget->bb.position.y, 0, display.region.size.h);
+    int x2 = util_clamp(widget->bb.position.x + widget->bb.size.w, 0, display.region.size.w);
+    int y2 = util_clamp(widget->bb.position.y + widget->bb.size.h, 0, display.region.size.h);
 
     render_damage(x0, y0, x2, y2);
 
@@ -148,8 +148,8 @@ static void movewidget(struct widget *widget, int x, int y)
 
     damageall(widget);
 
-    widget->bb.x = x;
-    widget->bb.y = y;
+    widget->bb.position.x = x;
+    widget->bb.position.y = y;
 
     damageall(widget);
 
@@ -160,8 +160,8 @@ static void translatewidget(struct widget *widget, int x, int y)
 
     damageall(widget);
 
-    widget->bb.x += x;
-    widget->bb.y += y;
+    widget->bb.position.x += x;
+    widget->bb.position.y += y;
 
     damageall(widget);
 
@@ -172,8 +172,8 @@ static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 
     damageall(widget);
 
-    widget->bb.w = w;
-    widget->bb.h = h;
+    widget->bb.size.w = w;
+    widget->bb.size.h = h;
 
     damageall(widget);
 
@@ -339,16 +339,16 @@ static void placewindows(unsigned int source)
         if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
-            if (widget->bb.w == 0 && widget->bb.h == 0)
+            if (widget->bb.size.w == 0 && widget->bb.size.h == 0)
             {
 
-                unsigned int w8 = display.size.w / 8;
-                unsigned int h8 = display.size.h / 8;
+                unsigned int w8 = display.region.size.w / 8;
+                unsigned int h8 = display.region.size.h / 8;
 
-                widget->bb.x = w8;
-                widget->bb.y = h8;
-                widget->bb.w = w8 * 3;
-                widget->bb.h = h8 * 6;
+                widget->bb.position.x = w8;
+                widget->bb.position.y = h8;
+                widget->bb.size.w = w8 * 3;
+                widget->bb.size.h = h8 * 6;
 
                 setfocuswindow(widget);
                 setfocus(0);
@@ -414,7 +414,7 @@ static void clickwidget(struct widget *widget)
         if (state.mousebuttonleft)
         {
 
-            if (util_intersects(state.mousewidget->bb.x, widget->bb.x + widget->bb.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.x + widget->bb.w) && util_intersects(state.mousewidget->bb.y, widget->bb.y, widget->bb.y + CONFIG_WINDOW_BUTTON_HEIGHT))
+            if (util_intersects(state.mousewidget->bb.position.x, widget->bb.position.x + widget->bb.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->bb.position.x + widget->bb.size.w) && util_intersects(state.mousewidget->bb.position.y, widget->bb.position.y, widget->bb.position.y + CONFIG_WINDOW_BUTTON_HEIGHT))
                 channel_send(0, widget->source, EVENT_TERM);
 
         }
@@ -440,13 +440,13 @@ static void markwidget(struct widget *widget)
     {
 
         struct widget_text *text = widget->data;
-        int x0 = state.mousepressed.x - widget->bb.x;
-        int y0 = state.mousepressed.y - widget->bb.y;
-        int x1 = state.mouseposition.x - widget->bb.x;
-        int y1 = state.mouseposition.y - widget->bb.y;
+        int x0 = state.mousepressed.x - widget->bb.position.x;
+        int y0 = state.mousepressed.y - widget->bb.position.y;
+        int x1 = state.mouseposition.x - widget->bb.position.x;
+        int y1 = state.mouseposition.y - widget->bb.position.y;
 
-        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->offx, x0, y0);
-        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.w, text->offx, x1, y1);
+        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.size.w, text->offx, x0, y0);
+        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->bb.size.w, text->offx, x1, y1);
 
     }
 
@@ -632,8 +632,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             if (display.framebuffer)
             {
 
-                render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, &display.clip);
-                render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
+                render_place(state.rootwidget, &display.region, &display.clip);
+                render_update(&display, state.mousewidget->bb.position.x, state.mousewidget->bb.position.y);
                 render_undamage();
 
             }
@@ -652,8 +652,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_mousemove *mousemove = mdata;
-    int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.size.w);
-    int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.size.h);
+    int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.region.size.w);
+    int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.region.size.h);
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
@@ -688,7 +688,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         {
 
             if (widget_isresizable(state.focusedwindow))
-                scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->bb.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->bb.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
+                scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->bb.size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->bb.size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
 
         }
 
@@ -807,8 +807,8 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    render_place(state.rootwidget, 0, 0, 0, 0, display.size.w, display.size.h, &display.clip);
-    render_update(&display, state.mousewidget->bb.x, state.mousewidget->bb.y);
+    render_place(state.rootwidget, &display.region, &display.clip);
+    render_update(&display, state.mousewidget->bb.position.x, state.mousewidget->bb.position.y);
     render_undamage();
 
 }

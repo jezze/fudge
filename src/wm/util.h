@@ -17,10 +17,8 @@ struct util_size
 struct util_region
 {
 
-    int x;
-    int y;
-    unsigned int w;
-    unsigned int h;
+    struct util_position position;
+    struct util_size size;
 
 };
 

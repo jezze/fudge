@@ -90,7 +90,7 @@ static struct rowsegment *findrowsegment(struct rowsegment *rows, unsigned int l
 static void blitsegment(struct blit_display *display, struct rowsegment *rows, unsigned int count, unsigned int line, struct util_region *region, int x0, int x2, unsigned int *cmap)
 {
 
-    struct rowsegment *rs = findrowsegment(rows, count, line, region->y, region->h);
+    struct rowsegment *rs = findrowsegment(rows, count, line, region->position.y, region->size.h);
 
     if (rs)
     {
@@ -102,7 +102,7 @@ static void blitsegment(struct blit_display *display, struct rowsegment *rows, u
 
             struct linesegment *current = &rs->lines[i];
 
-            blit_alphaline(display, cmap[current->color], util_max(getpoint(current->t0, current->p0, region->x, region->w), x0), util_min(getpoint(current->t1, current->p1, region->x, region->w), x2));
+            blit_alphaline(display, cmap[current->color], util_max(getpoint(current->t0, current->p0, region->position.x, region->size.w), x0), util_min(getpoint(current->t1, current->p1, region->position.x, region->size.w), x2));
 
         }
 
@@ -679,7 +679,7 @@ void blit_initdisplay(struct blit_display *display, unsigned int framebuffer, un
     display->framebuffer = (void *)framebuffer;
     display->bpp = bpp;
     display->linebuffer = linebuffer;
-    display->size = util_region(0, 0, w, h);
+    display->region = util_region(0, 0, w, h);
     display->clip = util_region(0, 0, w, h);
 
 }
@@ -687,7 +687,7 @@ void blit_initdisplay(struct blit_display *display, unsigned int framebuffer, un
 void blit(struct blit_display *display, int line, int x0, int x2)
 {
 
-    buffer_copy((unsigned int *)display->framebuffer + (line * display->size.w) + x0, display->linebuffer + x0, (x2 - x0) * display->bpp);
+    buffer_copy((unsigned int *)display->framebuffer + (line * display->region.size.w) + x0, display->linebuffer + x0, (x2 - x0) * display->bpp);
 
 }
 
