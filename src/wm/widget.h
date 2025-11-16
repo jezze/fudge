@@ -129,7 +129,7 @@ struct widget
     unsigned int in;
     unsigned int span;
     void *data;
-    struct util_region bb;
+    struct util_region region;
     struct util_region clip;
     unsigned int onclick;
 

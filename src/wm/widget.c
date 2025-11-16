@@ -433,14 +433,14 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
-    return util_intersects(x, widget->bb.position.x, widget->bb.position.x + widget->bb.size.w) && util_intersects(x, widget->clip.position.x, widget->clip.position.x + widget->clip.size.w);
+    return util_intersects(x, widget->region.position.x, widget->region.position.x + widget->region.size.w) && util_intersects(x, widget->clip.position.x, widget->clip.position.x + widget->clip.size.w);
 
 }
 
 unsigned int widget_intersectsy(struct widget *widget, int y)
 {
 
-    return util_intersects(y, widget->bb.position.y, widget->bb.position.y + widget->bb.size.h) && util_intersects(y, widget->clip.position.y, widget->clip.position.y + widget->clip.size.h);
+    return util_intersects(y, widget->region.position.y, widget->region.position.y + widget->region.size.h) && util_intersects(y, widget->clip.position.y, widget->clip.position.y + widget->clip.size.h);
 
 }
 
@@ -651,7 +651,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->id = attr_update(ATTR_ID, id, widget->id);
     widget->in = attr_update(ATTR_IN, in, widget->in);
     widget->data = data;
-    widget->bb = util_region(0, 0, 0, 0);
+    widget->region = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
 
     switch (widget->type)
