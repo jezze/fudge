@@ -117,8 +117,9 @@ static struct util_size placechild(struct widget *widget, struct util_region *re
 
     struct util_region cregion = regionshrink(region, padding);
     struct util_size cmin = sizeclamp(min, &cregion.size);
+    struct util_size wsize = calls[widget->type].place(widget, &cregion.position, &cmin, &cregion.size, clip);
 
-    return calls[widget->type].place(widget, &cregion.position, &cmin, &cregion.size, clip);
+    return util_size(wsize.w + padding->w * 2, wsize.h + padding->h * 2);
 
 }
 
@@ -169,8 +170,8 @@ static struct util_size placechildren1(struct widget *widget, struct util_positi
         }
 
         csize = placechild(child, &cregion, &cmin, clip, padding);
-        total.w = util_max(total.w, (child->region.position.x + csize.w) - pos->x);
-        total.h = util_max(total.h, (child->region.position.y + csize.h) - pos->y);
+        total.w = util_max(total.w, (cregion.position.x + csize.w) - pos->x);
+        total.h = util_max(total.h, (cregion.position.y + csize.h) - pos->y);
 
     }
 
@@ -220,8 +221,8 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
 
             text->offx = offx;
             csize = placechild(child, &cregion, &cmin, clip, padding);
-            total.w = util_max(total.w, (child->region.position.x + csize.w) - pos->x);
-            total.h = util_max(total.h, (child->region.position.y + csize.h) - pos->y);
+            total.w = util_max(total.w, (cregion.position.x + csize.w) - pos->x);
+            total.h = util_max(total.h, (cregion.position.y + csize.h) - pos->y);
 
             offx = text->lastrowx;
             offy += text->lastrowy;
