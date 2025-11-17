@@ -112,14 +112,13 @@ static struct util_size placewidget(struct widget *widget, struct util_region *r
 
 }
 
-static struct util_size placechild(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *padding)
+static struct util_size placechild(struct widget *widget, struct util_region *region, struct util_size *min, struct util_region *clip, struct util_size *padding)
 {
 
-    struct util_position cpos = posshrink(pos, padding);
-    struct util_size cmax = sizeshrink(max, padding);
-    struct util_size cmin = sizeclamp(min, &cmax);
+    struct util_region cregion = regionshrink(region, padding);
+    struct util_size cmin = sizeclamp(min, &cregion.size);
 
-    return calls[widget->type].place(widget, &cpos, &cmin, &cmax, clip);
+    return calls[widget->type].place(widget, &cregion.position, &cmin, &cregion.size, clip);
 
 }
 
@@ -133,21 +132,21 @@ static struct util_size placechildren1(struct widget *widget, struct util_positi
     {
 
         struct widget *child = current->data;
-        struct util_position cpos = util_position(pos->x, pos->y);
+        struct util_region cregion = util_region(pos->x, pos->y, max->w, max->h);
         struct util_size cmin = util_size(min->w, min->h);
-        struct util_size cmax = util_size(max->w, max->h);
+        struct util_size csize;
 
         if (incx)
         {
 
-            cpos.x += total.w;
-            cmax.w -= total.w;
+            cregion.position.x += total.w;
+            cregion.size.w -= total.w;
 
             if (child->span)
             {
 
                 cmin.w = span->w * child->span;
-                cmax.w = span->w * child->span;
+                cregion.size.w = span->w * child->span;
 
             }
 
@@ -156,23 +155,22 @@ static struct util_size placechildren1(struct widget *widget, struct util_positi
         if (incy)
         {
 
-            cpos.y += total.h;
-            cmax.h -= total.h;
+            cregion.position.y += total.h;
+            cregion.size.h -= total.h;
 
             if (child->span)
             {
 
                 cmin.h = span->h * child->span;
-                cmax.h = span->h * child->span;
+                cregion.size.h = span->h * child->span;
 
             }
 
         }
 
-        placechild(child, &cpos, &cmin, &cmax, clip, padding);
-
-        total.w = util_max(total.w, (child->region.position.x + child->region.size.w) - pos->x);
-        total.h = util_max(total.h, (child->region.position.y + child->region.size.h) - pos->y);
+        csize = placechild(child, &cregion, &cmin, clip, padding);
+        total.w = util_max(total.w, (child->region.position.x + csize.w) - pos->x);
+        total.h = util_max(total.h, (child->region.position.y + csize.h) - pos->y);
 
     }
 
@@ -211,9 +209,9 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
     {
 
         struct widget *child = current->data;
-        struct util_position cpos = util_position(pos->x, pos->y + offy);
-        struct util_size cmax = *max;
-        struct util_size cmin = *min;
+        struct util_region cregion = util_region(pos->x, pos->y + offy, max->w, max->h);
+        struct util_size cmin = util_size(min->w, min->h);
+        struct util_size csize;
 
         if (child->type == WIDGET_TYPE_TEXT)
         {
@@ -221,11 +219,9 @@ static struct util_size placetextflow(struct widget *widget, struct util_positio
             struct widget_text *text = child->data;
 
             text->offx = offx;
-
-            placechild(child, &cpos, &cmin, &cmax, clip, padding);
-
-            total.w = util_max(total.w, (child->region.position.x + child->region.size.w) - pos->x);
-            total.h = util_max(total.h, (child->region.position.y + child->region.size.h) - pos->y);
+            csize = placechild(child, &cregion, &cmin, clip, padding);
+            total.w = util_max(total.w, (child->region.position.x + csize.w) - pos->x);
+            total.h = util_max(total.h, (child->region.position.y + csize.h) - pos->y);
 
             offx = text->lastrowx;
             offy += text->lastrowy;
