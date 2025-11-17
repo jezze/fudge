@@ -26,7 +26,7 @@ struct
 struct calls
 {
 
-    void (*place)(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip);
+    struct util_size (*place)(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip);
     void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my);
 
 };
@@ -102,22 +102,24 @@ static unsigned int getnumspans(struct widget *widget)
 
 }
 
-static void placewidget(struct widget *widget, struct util_region *region, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placewidget(struct widget *widget, struct util_region *region, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     widget->region = util_region(region->position.x, region->position.y, util_clamp(region->size.w, min->w, max->w), util_clamp(region->size.h, min->h, max->h));
-    widget->clip = *clip;
+    widget->clip = util_region(clip->position.x, clip->position.y, clip->size.w, clip->size.h);
+
+    return util_size(widget->region.size.w, widget->region.size.h);
 
 }
 
-static void placechild(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *padding)
+static struct util_size placechild(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip, struct util_size *padding)
 {
 
     struct util_position cpos = posshrink(pos, padding);
     struct util_size cmax = sizeshrink(max, padding);
     struct util_size cmin = sizeclamp(min, &cmax);
 
-    calls[widget->type].place(widget, &cpos, &cmin, &cmax, clip);
+    return calls[widget->type].place(widget, &cpos, &cmin, &cmax, clip);
 
 }
 
@@ -273,7 +275,7 @@ static void scrollchildren(struct widget *widget, int x, int y)
 
 }
 
-static void placebutton(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placebutton(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_button *button = widget->data;
@@ -286,11 +288,11 @@ static void placebutton(struct widget *widget, struct util_position *pos, struct
 
     wregion = util_region(pos->x, pos->y, rowinfo.width + padding.w * 2, rowinfo.lineheight + padding.h * 2);
 
-    placewidget(widget, &wregion, min, max, clip);
+    return placewidget(widget, &wregion, min, max, clip);
 
 }
 
-static void placechoice(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placechoice(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_choice *choice = widget->data;
@@ -303,20 +305,20 @@ static void placechoice(struct widget *widget, struct util_position *pos, struct
 
     wregion = util_region(pos->x, pos->y, rowinfo.width + padding.w * 2, rowinfo.lineheight + padding.h * 2);
 
-    placewidget(widget, &wregion, min, max, clip);
+    return placewidget(widget, &wregion, min, max, clip);
 
 }
 
-static void placefill(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placefill(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct util_region wregion = util_region(pos->x, pos->y, max->w, max->h);
 
-    placewidget(widget, &wregion, min, max, clip);
+    return placewidget(widget, &wregion, min, max, clip);
 
 }
 
-static void placeimagepcx(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placeimagepcx(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_image *image = widget->data;
@@ -351,18 +353,18 @@ static void placeimagepcx(struct widget *widget, struct util_position *pos, stru
 
     wregion = util_region(pos->x, pos->y, image->size.w, image->size.h);
 
-    placewidget(widget, &wregion, min, max, clip);
+    return placewidget(widget, &wregion, min, max, clip);
 
 }
 
-static void placeimagefudgemouse(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placeimagefudgemouse(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
-    placewidget(widget, &widget->region, min, max, clip);
+    return placewidget(widget, &widget->region, min, max, clip);
 
 }
 
-static void placeimage(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placeimage(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_image *image = widget->data;
@@ -371,20 +373,18 @@ static void placeimage(struct widget *widget, struct util_position *pos, struct 
     {
 
     case ATTR_MIMETYPE_FUDGEMOUSE:
-        placeimagefudgemouse(widget, pos, min, max, clip);
-
-        break;
+        return placeimagefudgemouse(widget, pos, min, max, clip);
 
     case ATTR_MIMETYPE_PCX:
-        placeimagepcx(widget, pos, min, max, clip);
-
-        break;
+        return placeimagepcx(widget, pos, min, max, clip);
 
     }
 
+    return zerosize;
+
 }
 
-static void placelayout(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placelayout(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_layout *layout = widget->data;
@@ -427,11 +427,11 @@ static void placelayout(struct widget *widget, struct util_position *pos, struct
 
     wregion = util_region(pos->x, pos->y, total.w, total.h);
 
-    placewidget(widget, &wregion, min, max, clip);
+    return placewidget(widget, &wregion, min, max, clip);
 
 }
 
-static void placelistbox(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placelistbox(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_listbox *listbox = widget->data;
@@ -441,17 +441,19 @@ static void placelistbox(struct widget *widget, struct util_position *pos, struc
     struct util_size cmin = util_size(cmax.w, 0);
     struct util_size total = placechildren(widget, &cpos, &cmin, &cmax, clip, &zerosize, 0, 1);
     struct util_region wregion = util_region(pos->x, pos->y, total.w + padding.w * 2, total.h + padding.h * 2);
+    struct util_size wsize = placewidget(widget, &wregion, min, max, clip);
 
-    placewidget(widget, &wregion, min, max, clip);
     clipchildren(widget, &widget->region, &padding);
 
     listbox->vscroll = util_clamp(listbox->vscroll, widget->region.size.h - total.h, 0);
 
     scrollchildren(widget, 0, listbox->vscroll);
 
+    return wsize;
+
 }
 
-static void placeselect(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placeselect(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_select *select = widget->data;
@@ -461,6 +463,7 @@ static void placeselect(struct widget *widget, struct util_position *pos, struct
     struct util_position cpos;
     struct util_size cmax;
     struct util_region wregion;
+    struct util_size wsize;
 
     text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, 0, 0);
 
@@ -470,7 +473,8 @@ static void placeselect(struct widget *widget, struct util_position *pos, struct
     cmax = util_size(wregion.size.w * 2, INFINITY);
 
     placechildren(widget, &cpos, &zerosize, &cmax, clip, &zerosize, 0, 1);
-    placewidget(widget, &wregion, min, max, clip);
+
+    wsize = placewidget(widget, &wregion, min, max, clip);
 
     if (widget->state != WIDGET_STATE_FOCUS)
     {
@@ -481,9 +485,11 @@ static void placeselect(struct widget *widget, struct util_position *pos, struct
 
     }
 
+    return wsize;
+
 }
 
-static void placetext(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placetext(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_text *text = widget->data;
@@ -498,11 +504,11 @@ static void placetext(struct widget *widget, struct util_position *pos, struct u
     text->lastrowy = info.lastrowy;
     wregion = util_region(pos->x, pos->y, info.width, info.height);
 
-    placewidget(widget, &wregion, min, max, clip);
+    return placewidget(widget, &wregion, min, max, clip);
 
 }
 
-static void placetextbox(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placetextbox(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_textbox *textbox = widget->data;
@@ -511,9 +517,9 @@ static void placetextbox(struct widget *widget, struct util_position *pos, struc
     struct util_size cmax = util_size(max->w - padding.w * 2, INFINITY);
     struct util_size total = placetextflow(widget, &cpos, &zerosize, &cmax, clip, &zerosize);
     struct util_region wregion = util_region(pos->x, pos->y, total.w + padding.w * 2, total.h + padding.h * 2);
+    struct util_size wsize = placewidget(widget, &wregion, min, max, clip);
     struct list_item *current = 0;
 
-    placewidget(widget, &wregion, min, max, clip);
     clipchildren(widget, &widget->region, &padding);
 
     textbox->vscroll = util_clamp(textbox->vscroll, widget->region.size.h - total.h, 0);
@@ -543,9 +549,11 @@ static void placetextbox(struct widget *widget, struct util_position *pos, struc
 
     }
 
+    return wsize;
+
 }
 
-static void placetextbutton(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placetextbutton(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct widget_textbutton *textbutton = widget->data;
@@ -557,11 +565,11 @@ static void placetextbutton(struct widget *widget, struct util_position *pos, st
 
     wregion = util_region(pos->x, pos->y, rowinfo.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
 
-    placewidget(widget, &wregion, min, max, clip);
+    return placewidget(widget, &wregion, min, max, clip);
 
 }
 
-static void placewindow(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
+static struct util_size placewindow(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip)
 {
 
     struct util_position cpos = util_position(widget->region.position.x, widget->region.position.y + CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -569,7 +577,8 @@ static void placewindow(struct widget *widget, struct util_position *pos, struct
     struct util_size cpadding = util_size(CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
 
     placechildren(widget, &cpos, &zerosize, &cmax, clip, &cpadding, 0, 1);
-    placewidget(widget, &widget->region, min, max, clip);
+
+    return placewidget(widget, &widget->region, min, max, clip);
 
 }
 
@@ -868,7 +877,7 @@ void render_update(struct blit_display *display, int mx, int my)
 
 }
 
-static void setupcall(unsigned int type, void (*place)(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my))
+static void setupcall(unsigned int type, struct util_size (*place)(struct widget *widget, struct util_position *pos, struct util_size *min, struct util_size *max, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2, int mx, int my))
 {
 
     struct calls *call = &calls[type];
