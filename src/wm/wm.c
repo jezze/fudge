@@ -632,7 +632,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             if (display.framebuffer)
             {
 
-                render_place(state.rootwidget, &display.region, &display.clip);
+                render_place(state.rootwidget, &display.region);
                 render_update(&display, state.mousewidget->region.position.x, state.mousewidget->region.position.y);
                 render_undamage();
 
@@ -807,7 +807,7 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    render_place(state.rootwidget, &display.region, &display.clip);
+    render_place(state.rootwidget, &display.region);
     render_update(&display, state.mousewidget->region.position.x, state.mousewidget->region.position.y);
     render_undamage();
 

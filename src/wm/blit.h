@@ -3,7 +3,6 @@ struct blit_display
 
     void *framebuffer;
     struct util_region region;
-    struct util_region clip;
     unsigned int bpp;
     unsigned int *linebuffer;
 
