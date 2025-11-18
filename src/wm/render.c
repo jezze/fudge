@@ -90,10 +90,10 @@ static unsigned int getnumspans(struct widget *widget)
 
 }
 
-static struct util_size placewidget(struct widget *widget, struct util_region *region, struct util_size *min, struct util_size *max)
+static struct util_size placewidget(struct widget *widget, struct util_region *region, struct util_region *wregion, struct util_size *min)
 {
 
-    widget->region = util_region(region->position.x, region->position.y, util_clamp(region->size.w, min->w, max->w), util_clamp(region->size.h, min->h, max->h));
+    widget->region = util_region(wregion->position.x, wregion->position.y, util_clamp(wregion->size.w, min->w, region->size.w), util_clamp(wregion->size.h, min->h, region->size.h));
     widget->clip = widget->region;
 
     return util_size(widget->region.size.w, widget->region.size.h);
@@ -313,7 +313,7 @@ static struct util_size placebutton(struct widget *widget, struct util_region *r
 
     wregion = util_region(region->position.x, region->position.y, rowinfo.width + padding.w * 2, rowinfo.lineheight + padding.h * 2);
 
-    return placewidget(widget, &wregion, min, &region->size);
+    return placewidget(widget, region, &wregion, min);
 
 }
 
@@ -330,14 +330,14 @@ static struct util_size placechoice(struct widget *widget, struct util_region *r
 
     wregion = util_region(region->position.x, region->position.y, rowinfo.width + padding.w * 2, rowinfo.lineheight + padding.h * 2);
 
-    return placewidget(widget, &wregion, min, &region->size);
+    return placewidget(widget, region, &wregion, min);
 
 }
 
 static struct util_size placefill(struct widget *widget, struct util_region *region, struct util_size *min)
 {
 
-    return placewidget(widget, region, min, &region->size);
+    return placewidget(widget, region, region, min);
 
 }
 
@@ -376,14 +376,14 @@ static struct util_size placeimagepcx(struct widget *widget, struct util_region 
 
     wregion = util_region(region->position.x, region->position.y, image->size.w, image->size.h);
 
-    return placewidget(widget, &wregion, min, &region->size);
+    return placewidget(widget, region, &wregion, min);
 
 }
 
 static struct util_size placeimagefudgemouse(struct widget *widget, struct util_region *region, struct util_size *min)
 {
 
-    return placewidget(widget, &widget->region, min, &region->size);
+    return placewidget(widget, region, &widget->region, min);
 
 }
 
@@ -448,7 +448,7 @@ static struct util_size placelayout(struct widget *widget, struct util_region *r
 
     wregion = util_region(region->position.x, region->position.y, total.w, total.h);
 
-    return placewidget(widget, &wregion, min, &region->size);
+    return placewidget(widget, region, &wregion, min);
 
 }
 
@@ -460,7 +460,7 @@ static struct util_size placelistbox(struct widget *widget, struct util_region *
     struct util_region cregion = util_region(region->position.x + padding.w, region->position.y + padding.h, region->size.w - padding.w * 2, INFINITY);
     struct util_size total = placechildren(widget, &cregion, &zerosize, 0, 1);
     struct util_region wregion = util_region(region->position.x, region->position.y, total.w + padding.w * 2, total.h + padding.h * 2);
-    struct util_size wsize = placewidget(widget, &wregion, min, &region->size);
+    struct util_size wsize = placewidget(widget, region, &wregion, min);
 
     clipchildren(widget, &padding);
 
@@ -490,7 +490,7 @@ static struct util_size placeselect(struct widget *widget, struct util_region *r
 
     placechildren(widget, &cregion, &zerosize, 0, 1);
 
-    wsize = placewidget(widget, &wregion, min, &region->size);
+    wsize = placewidget(widget, region, &wregion, min);
 
     if (widget->state != WIDGET_STATE_FOCUS)
         clipchildren(widget, &zerosize);
@@ -514,7 +514,7 @@ static struct util_size placetext(struct widget *widget, struct util_region *reg
     text->lastrowy = info.lastrowy;
     wregion = util_region(region->position.x, region->position.y, info.width, info.height);
 
-    return placewidget(widget, &wregion, min, &region->size);
+    return placewidget(widget, region, &wregion, min);
 
 }
 
@@ -526,7 +526,7 @@ static struct util_size placetextbox(struct widget *widget, struct util_region *
     struct util_region cregion = util_region(region->position.x + padding.w, region->position.y + padding.h, region->size.w - padding.w * 2, INFINITY);
     struct util_size total = placetextflow(widget, &cregion, &zerosize, &zerosize);
     struct util_region wregion = util_region(region->position.x, region->position.y, total.w + padding.w * 2, total.h + padding.h * 2);
-    struct util_size wsize = placewidget(widget, &wregion, min, &region->size);
+    struct util_size wsize = placewidget(widget, region, &wregion, min);
     struct list_item *current = 0;
 
     clipchildren(widget, &padding);
@@ -574,7 +574,7 @@ static struct util_size placetextbutton(struct widget *widget, struct util_regio
 
     wregion = util_region(region->position.x, region->position.y, rowinfo.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
 
-    return placewidget(widget, &wregion, min, &region->size);
+    return placewidget(widget, region, &wregion, min);
 
 }
 
@@ -586,7 +586,7 @@ static struct util_size placewindow(struct widget *widget, struct util_region *r
 
     placechildren(widget, &cregion, &cpadding, 0, 1);
 
-    return placewidget(widget, &widget->region, min, &region->size);
+    return placewidget(widget, region, &widget->region, min);
 
 }
 
