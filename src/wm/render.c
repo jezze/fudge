@@ -197,7 +197,6 @@ static struct util_size placetextflow(struct widget *widget, struct util_region 
 
         struct widget *child = current->data;
         struct util_region cregion = util_region(region->position.x, region->position.y + offy, region->size.w, region->size.h);
-        struct util_size cmin = util_size(min->w, min->h);
         struct util_size csize;
 
         if (child->type == WIDGET_TYPE_TEXT)
@@ -206,7 +205,7 @@ static struct util_size placetextflow(struct widget *widget, struct util_region 
             struct widget_text *text = child->data;
 
             text->offx = offx;
-            csize = placechild(child, &cregion, &cmin, padding);
+            csize = calls[child->type].place(child, &cregion.position, &zerosize, &cregion.size);
             total.w = util_max(total.w, (cregion.position.x + csize.w) - region->position.x);
             total.h = util_max(total.h, (cregion.position.y + csize.h) - region->position.y);
 
