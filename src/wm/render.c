@@ -77,7 +77,7 @@ static unsigned int getnumspans(struct widget *widget)
 {
 
     struct list_item *current = 0;
-    unsigned int totalspans = 0;
+    unsigned int spans = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -85,11 +85,11 @@ static unsigned int getnumspans(struct widget *widget)
         struct widget *child = current->data;
 
         if (child->span)
-            totalspans += child->span;
+            spans += child->span;
 
     }
 
-    return totalspans;
+    return spans;
 
 }
 
@@ -400,42 +400,42 @@ static struct util_size placelayout(struct widget *widget, struct util_region *r
 {
 
     struct widget_layout *layout = widget->data;
-    struct util_size total;
     struct util_size cpadding = util_size(layout->padding * CONFIG_LAYOUT_PADDING_WIDTH, layout->padding * CONFIG_LAYOUT_PADDING_HEIGHT);
     struct util_region cregion = util_region(region->position.x, region->position.y, region->size.w, region->size.h);
+    struct util_size csize;
     struct util_region wregion;
 
     switch (layout->flow)
     {
 
     case ATTR_FLOW_DEFAULT:
-        total = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NONE);
+        csize = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NONE);
 
         break;
 
     case ATTR_FLOW_HORIZONTAL:
-        total = placechildren(widget, &cregion, &cpadding, INC_NORMAL, INC_NONE);
+        csize = placechildren(widget, &cregion, &cpadding, INC_NORMAL, INC_NONE);
 
         break;
 
     case ATTR_FLOW_HORIZONTALSTRETCH:
-        total = placechildren(widget, &cregion, &cpadding, INC_STRETCHED, INC_NONE);
+        csize = placechildren(widget, &cregion, &cpadding, INC_STRETCHED, INC_NONE);
 
         break;
 
     case ATTR_FLOW_VERTICAL:
-        total = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NORMAL);
+        csize = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NORMAL);
 
         break;
 
     case ATTR_FLOW_VERTICALSTRETCH:
-        total = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_STRETCHED);
+        csize = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_STRETCHED);
 
         break;
 
     }
 
-    wregion = util_region(region->position.x, region->position.y, total.w, total.h);
+    wregion = util_region(region->position.x, region->position.y, csize.w, csize.h);
 
     return placewidget(widget, region, &wregion, min);
 
@@ -447,13 +447,13 @@ static struct util_size placelistbox(struct widget *widget, struct util_region *
     struct widget_listbox *listbox = widget->data;
     struct util_size padding = util_size(CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
     struct util_region cregion = util_region(region->position.x + padding.w, region->position.y + padding.h, region->size.w - padding.w * 2, INFINITY);
-    struct util_size total = placechildren(widget, &cregion, &zerosize, INC_NONE, INC_NORMAL);
-    struct util_region wregion = util_region(region->position.x, region->position.y, total.w + padding.w * 2, total.h + padding.h * 2);
+    struct util_size csize = placechildren(widget, &cregion, &zerosize, INC_NONE, INC_NORMAL);
+    struct util_region wregion = util_region(region->position.x, region->position.y, csize.w + padding.w * 2, csize.h + padding.h * 2);
     struct util_size wsize = placewidget(widget, region, &wregion, min);
 
     clipchildren(widget, &padding);
 
-    listbox->vscroll = util_clamp(listbox->vscroll, widget->region.size.h - total.h, 0);
+    listbox->vscroll = util_clamp(listbox->vscroll, widget->region.size.h - csize.h, 0);
 
     scrollchildren(widget, 0, listbox->vscroll);
 
@@ -466,8 +466,8 @@ static struct util_size placeselect(struct widget *widget, struct util_region *r
 
     struct widget_select *select = widget->data;
     struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
-    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     struct text_rowinfo rowinfo;
+    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     struct util_region cregion;
     struct util_region wregion;
     struct util_size wsize;
@@ -513,14 +513,14 @@ static struct util_size placetextbox(struct widget *widget, struct util_region *
     struct widget_textbox *textbox = widget->data;
     struct util_size padding = util_size(CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
     struct util_region cregion = util_region(region->position.x + padding.w, region->position.y + padding.h, region->size.w - padding.w * 2, INFINITY);
-    struct util_size total = placetextflow(widget, &cregion, &zerosize, &zerosize);
-    struct util_region wregion = util_region(region->position.x, region->position.y, total.w + padding.w * 2, total.h + padding.h * 2);
+    struct util_size csize = placetextflow(widget, &cregion, &zerosize, &zerosize);
+    struct util_region wregion = util_region(region->position.x, region->position.y, csize.w + padding.w * 2, csize.h + padding.h * 2);
     struct util_size wsize = placewidget(widget, region, &wregion, min);
     struct list_item *current = 0;
 
     clipchildren(widget, &padding);
 
-    textbox->vscroll = util_clamp(textbox->vscroll, widget->region.size.h - total.h, 0);
+    textbox->vscroll = util_clamp(textbox->vscroll, widget->region.size.h - csize.h, 0);
 
     scrollchildren(widget, 0, textbox->vscroll);
 
@@ -570,8 +570,8 @@ static struct util_size placetextbutton(struct widget *widget, struct util_regio
 static struct util_size placewindow(struct widget *widget, struct util_region *region, struct util_size *min)
 {
 
-    struct util_region cregion = util_region(widget->region.position.x, widget->region.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->region.size.w, widget->region.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_size cpadding = util_size(CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
+    struct util_region cregion = util_region(widget->region.position.x, widget->region.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->region.size.w, widget->region.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
 
     placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NORMAL);
 
