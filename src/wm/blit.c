@@ -45,8 +45,6 @@ struct rowsegment
 
 };
 
-static struct pool_pcxresource pcxresource;
-
 static int getpoint(unsigned int type, int p, int o, int m)
 {
 
@@ -638,25 +636,24 @@ void blit_frame(struct blit_display *display, struct util_region *region, int li
 
 }
 
-void blit_pcx(struct blit_display *display, int line, char *source, int x, int y, int x0, int x2)
+void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, int line, char *source, int x, int y, int x0, int x2)
 {
 
     unsigned char buffer[4096];
     int i;
 
-    pool_pcxload(&pcxresource, source);
-    pool_pcxreadline(&pcxresource, line, y, buffer);
+    pool_pcxreadline(resource, line, y, buffer);
 
     for (i = x0; i < x2; i++)
     {
 
-        if (util_intersects(line, y, y + pcxresource.height) && util_intersects(i, x, x + pcxresource.width))
+        if (util_intersects(line, y, y + resource->height) && util_intersects(i, x, x + resource->width))
         {
 
             unsigned int off = buffer[i - x] * 3;
-            unsigned char r = pcxresource.colormap[off + 0];
-            unsigned char g = pcxresource.colormap[off + 1];
-            unsigned char b = pcxresource.colormap[off + 2];
+            unsigned char r = resource->colormap[off + 0];
+            unsigned char g = resource->colormap[off + 1];
+            unsigned char b = resource->colormap[off + 2];
 
             display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
 

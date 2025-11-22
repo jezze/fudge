@@ -20,6 +20,6 @@ void blit_iconminimize(struct blit_display *display, struct util_region *region,
 void blit_iconx(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_mouse(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_frame(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
-void blit_pcx(struct blit_display *display, int line, char *source, int x, int y, int x0, int x2);
+void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, int line, char *source, int x, int y, int x0, int x2);
 void blit_initdisplay(struct blit_display *display, unsigned int framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer);
 void blit(struct blit_display *display, int line, int x0, int x2);

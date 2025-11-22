@@ -227,31 +227,30 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
     if (!pcxresource->cached)
     {
 
-        unsigned int target = fs_auth(source);
+        pcxresource->target = fs_auth(source);
 
-        if (target)
+        if (pcxresource->target)
         {
 
-            unsigned int id = fs_walk(1, target, 0, source);
+            pcxresource->id = fs_walk(1, pcxresource->target, 0, source);
 
-            if (id)
+            if (pcxresource->id)
             {
 
                 struct pcx_header header;
                 struct record record;
                 unsigned char magic;
 
-                fs_stat(1, target, id, &record);
-                fs_read_all(1, target, id, &header, sizeof (struct pcx_header), 0);
-                fs_read_full(1, target, id, pcxresource->data, 0x10000, 128);
+                fs_stat(1, pcxresource->target, pcxresource->id, &record);
+                fs_read_all(1, pcxresource->target, pcxresource->id, &header, sizeof (struct pcx_header), 0);
 
                 pcxresource->width = header.xend - header.xstart + 1;
                 pcxresource->height = header.yend - header.ystart + 1;
 
-                fs_read_all(1, target, id, &magic, 1, record.size - 768 - 1);
+                fs_read_all(1, pcxresource->target, pcxresource->id, &magic, 1, record.size - 768 - 1);
 
                 if (magic == PCX_COLORMAP_MAGIC)
-                    fs_read_all(1, target, id, pcxresource->colormap, 768, record.size - 768);
+                    fs_read_all(1, pcxresource->target, pcxresource->id, pcxresource->colormap, 768, record.size - 768);
 
                 pcxresource->cached = 1;
 
@@ -266,11 +265,14 @@ void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
 void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer)
 {
 
+    unsigned char data[4096];
+
     if (pcxresource->lastline == line - 1)
     {
 
-        pcxresource->lastoffset += pcx_readline(pcxresource->data + pcxresource->lastoffset, pcxresource->width, buffer);
-        pcxresource->lastline = line;
+        fs_read_full(1, pcxresource->target, pcxresource->id, data, 4096, 128 + pcxresource->lastoffset);
+
+        pcxresource->lastoffset += pcx_readline(data, pcxresource->width, buffer);
 
     }
 
@@ -282,11 +284,18 @@ void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, uns
         pcxresource->lastoffset = 0;
 
         for (h = 0; h < line - y + 1; h++)
-            pcxresource->lastoffset += pcx_readline(pcxresource->data + pcxresource->lastoffset, pcxresource->width, buffer);
+        {
 
-        pcxresource->lastline = line;
+            fs_read_full(1, pcxresource->target, pcxresource->id, data, 4096, 128 + pcxresource->lastoffset);
+
+            pcxresource->lastoffset += pcx_readline(data, pcxresource->width, buffer);
+
+        }
+
 
     }
+
+    pcxresource->lastline = line;
 
 }
 

@@ -550,6 +550,7 @@ static void initimage(struct widget *widget)
 
     struct widget_image *image = widget->data;
 
+    image->resource = 0;
     image->mimetype = ATTR_MIMETYPE_NONE;
     image->source = 0;
     image->loaded = 0;

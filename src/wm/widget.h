@@ -48,6 +48,7 @@ struct widget_fill
 struct widget_image
 {
 
+    void *resource;
     unsigned int mimetype;
     unsigned int source;
     unsigned int loaded;

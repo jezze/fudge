@@ -36,6 +36,8 @@ struct calls
 
 static struct calls calls[32];
 static struct util_size zerosize;
+static struct pool_pcxresource pcxresources[64];
+static unsigned int npcxresources;
 
 static struct util_position posshrink(struct util_position *pos, struct util_size *padding)
 {
@@ -336,30 +338,17 @@ static struct util_size placeimagepcx(struct widget *widget, struct util_region 
     struct widget_image *image = widget->data;
     struct util_region wregion;
 
-    /* This should be done in some preload state after placement but before rendering. Left in placement for now. */
     if (!image->loaded)
     {
 
-        unsigned int target = fs_auth(strpool_getstring(image->source));
+        struct pool_pcxresource *resource = &pcxresources[npcxresources++];
 
-        if (target)
-        {
+        image->resource = resource;
 
-            unsigned int id = fs_walk(1, target, 0, strpool_getstring(image->source));
+        pool_pcxload(resource, strpool_getstring(image->source));
 
-            if (id)
-            {
-
-                struct pcx_header header;
-
-                fs_read_all(1, target, id, &header, sizeof (struct pcx_header), 0);
-
-                image->size = util_size(header.xend - header.xstart + 1, header.yend - header.ystart + 1);
-                image->loaded = 1;
-
-            }
-
-        }
+        image->size = util_size(resource->width, resource->height);
+        image->loaded = 1;
 
     }
 
@@ -682,7 +671,7 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
         break;
 
     case ATTR_MIMETYPE_PCX:
-        blit_pcx(display, line, strpool_getstring(image->source), widget->region.position.x, widget->region.position.y, x0, x2);
+        blit_pcx(display, image->resource, line, strpool_getstring(image->source), widget->region.position.x, widget->region.position.y, x0, x2);
 
         break;
 
