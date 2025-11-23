@@ -442,7 +442,7 @@ static struct util_size placelistbox(struct widget *widget, struct util_region *
 
     clipchildren(widget, &padding);
 
-    listbox->vscroll = util_clamp(listbox->vscroll, widget->region.size.h - csize.h, 0);
+    listbox->vscroll = util_clamp(listbox->vscroll, widget->region.size.h - csize.h - padding.h * 2, 0);
 
     scrollchildren(widget, 0, listbox->vscroll);
 
@@ -509,7 +509,7 @@ static struct util_size placetextbox(struct widget *widget, struct util_region *
 
     clipchildren(widget, &padding);
 
-    textbox->vscroll = util_clamp(textbox->vscroll, widget->region.size.h - csize.h, 0);
+    textbox->vscroll = util_clamp(textbox->vscroll, widget->region.size.h - csize.h - padding.h * 2, 0);
 
     scrollchildren(widget, 0, textbox->vscroll);
 
