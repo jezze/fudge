@@ -36,8 +36,6 @@ struct calls
 
 static struct calls calls[32];
 static struct util_size zerosize;
-static struct pool_pcxresource pcxresources[64];
-static unsigned int npcxresources;
 
 static struct util_position posshrink(struct util_position *pos, struct util_size *padding)
 {
@@ -341,13 +339,7 @@ static struct util_size placeimagepcx(struct widget *widget, struct util_region 
     if (!image->loaded)
     {
 
-        struct pool_pcxresource *resource = &pcxresources[npcxresources++];
-
-        image->resource = resource;
-
-        pool_pcxload(resource, strpool_getstring(image->source));
-
-        image->size = util_size(resource->width, resource->height);
+        image->resource = pool_createpcx(image, strpool_getstring(image->source));
         image->loaded = 1;
 
     }

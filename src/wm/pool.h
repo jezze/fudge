@@ -8,7 +8,6 @@ struct pool_pcxresource
     unsigned int height;
     unsigned int lastoffset;
     unsigned int lastline;
-    unsigned int cached;
 
 };
 
@@ -20,7 +19,7 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id);
 void pool_bump(struct widget *widget);
 struct widget *pool_create(unsigned int source, unsigned int type, char *id, char *in);
 void pool_destroy(struct widget *widget);
-void pool_pcxload(struct pool_pcxresource *pcxresource, char *source);
+struct pool_pcxresource *pool_createpcx(struct widget_image *image, char *source);
 void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer);
 struct text_font *pool_getfont(unsigned int index);
 void pool_loadfont(unsigned int factor);

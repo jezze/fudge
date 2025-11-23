@@ -52,6 +52,8 @@ static char *fontb[] = {
     "initrd:data/font/ter-116b.pcf",
     "initrd:data/font/ter-118b.pcf",
 };
+static struct pool_pcxresource pcxresources[64];
+static unsigned int npcxresources;
 
 struct list_item *pool_prev(struct list_item *current)
 {
@@ -221,58 +223,55 @@ void pool_destroy(struct widget *widget)
 
 }
 
-void pool_pcxload(struct pool_pcxresource *pcxresource, char *source)
+struct pool_pcxresource *pool_createpcx(struct widget_image *image, char *source)
 {
 
-    if (!pcxresource->cached)
+    struct pool_pcxresource *resource = &pcxresources[npcxresources++];
+
+    resource->target = fs_auth(source);
+
+    if (resource->target)
     {
 
-        pcxresource->target = fs_auth(source);
+        resource->id = fs_walk(1, resource->target, 0, source);
 
-        if (pcxresource->target)
+        if (resource->id)
         {
 
-            pcxresource->id = fs_walk(1, pcxresource->target, 0, source);
+            struct pcx_header header;
+            struct record record;
+            unsigned char magic;
 
-            if (pcxresource->id)
-            {
+            fs_stat(1, resource->target, resource->id, &record);
+            fs_read_all(1, resource->target, resource->id, &header, sizeof (struct pcx_header), 0);
+            fs_read_all(1, resource->target, resource->id, &magic, 1, record.size - 768 - 1);
 
-                struct pcx_header header;
-                struct record record;
-                unsigned char magic;
+            if (magic == PCX_COLORMAP_MAGIC)
+                fs_read_all(1, resource->target, resource->id, resource->colormap, 768, record.size - 768);
 
-                fs_stat(1, pcxresource->target, pcxresource->id, &record);
-                fs_read_all(1, pcxresource->target, pcxresource->id, &header, sizeof (struct pcx_header), 0);
-
-                pcxresource->width = header.xend - header.xstart + 1;
-                pcxresource->height = header.yend - header.ystart + 1;
-
-                fs_read_all(1, pcxresource->target, pcxresource->id, &magic, 1, record.size - 768 - 1);
-
-                if (magic == PCX_COLORMAP_MAGIC)
-                    fs_read_all(1, pcxresource->target, pcxresource->id, pcxresource->colormap, 768, record.size - 768);
-
-                pcxresource->cached = 1;
-
-            }
+            resource->width = header.xend - header.xstart + 1;
+            resource->height = header.yend - header.ystart + 1;
+            image->size = util_size(resource->width, resource->height);
 
         }
 
     }
 
+    return resource;
+
 }
 
-void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer)
+void pool_pcxreadline(struct pool_pcxresource *resource, int line, int y, unsigned char *buffer)
 {
 
     unsigned char data[4096];
 
-    if (pcxresource->lastline == line - 1)
+    if (resource->lastline == line - 1)
     {
 
-        fs_read_full(1, pcxresource->target, pcxresource->id, data, 4096, 128 + pcxresource->lastoffset);
+        fs_read_full(1, resource->target, resource->id, data, 4096, 128 + resource->lastoffset);
 
-        pcxresource->lastoffset += pcx_readline(data, pcxresource->width, buffer);
+        resource->lastoffset += pcx_readline(data, resource->width, buffer);
 
     }
 
@@ -281,21 +280,21 @@ void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, uns
 
         int h;
 
-        pcxresource->lastoffset = 0;
+        resource->lastoffset = 0;
 
         for (h = 0; h < line - y + 1; h++)
         {
 
-            fs_read_full(1, pcxresource->target, pcxresource->id, data, 4096, 128 + pcxresource->lastoffset);
+            fs_read_full(1, resource->target, resource->id, data, 4096, 128 + resource->lastoffset);
 
-            pcxresource->lastoffset += pcx_readline(data, pcxresource->width, buffer);
+            resource->lastoffset += pcx_readline(data, resource->width, buffer);
 
         }
 
 
     }
 
-    pcxresource->lastline = line;
+    resource->lastline = line;
 
 }
 
