@@ -334,24 +334,14 @@ static struct util_size placeimage(struct widget *widget, struct util_region *re
 {
 
     struct widget_image *image = widget->data;
+    struct util_region wregion;
 
     if (image->mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
-    {
-
         return placewidget(widget, region, &widget->region, min);
 
-    }
+    wregion = util_region(region->position.x, region->position.y, image->size.w, image->size.h);
 
-    else
-    {
-
-        struct util_region wregion = util_region(region->position.x, region->position.y, image->size.w, image->size.h);
-
-        return placewidget(widget, region, &wregion, min);
-
-    }
-
-    return zerosize;
+    return placewidget(widget, region, &wregion, min);
 
 }
 
