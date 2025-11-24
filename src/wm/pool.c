@@ -437,6 +437,42 @@ void pool_loadfont(unsigned int factor)
 
 }
 
+void pool_loadresources(void)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct entry *entry = current->data;
+
+        if (entry->widget.type == WIDGET_TYPE_IMAGE)
+        {
+
+            struct widget_image *image = &entry->payload.image;
+
+            if (!image->resource && image->source && image->mimetype)
+            {
+
+                switch (image->mimetype)
+                {
+
+                case ATTR_MIMETYPE_PCX:
+                    image->resource = pool_createpcx(image, strpool_getstring(image->source));
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+    }
+
+}
+
 void pool_setup(void)
 {
 

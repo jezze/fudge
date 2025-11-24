@@ -330,46 +330,24 @@ static struct util_size placefill(struct widget *widget, struct util_region *reg
 
 }
 
-static struct util_size placeimagepcx(struct widget *widget, struct util_region *region, struct util_size *min)
-{
-
-    struct widget_image *image = widget->data;
-    struct util_region wregion;
-
-    if (!image->loaded)
-    {
-
-        image->resource = pool_createpcx(image, strpool_getstring(image->source));
-        image->loaded = 1;
-
-    }
-
-    wregion = util_region(region->position.x, region->position.y, image->size.w, image->size.h);
-
-    return placewidget(widget, region, &wregion, min);
-
-}
-
-static struct util_size placeimagefudgemouse(struct widget *widget, struct util_region *region, struct util_size *min)
-{
-
-    return placewidget(widget, region, &widget->region, min);
-
-}
-
 static struct util_size placeimage(struct widget *widget, struct util_region *region, struct util_size *min)
 {
 
     struct widget_image *image = widget->data;
 
-    switch (image->mimetype)
+    if (image->mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
     {
 
-    case ATTR_MIMETYPE_FUDGEMOUSE:
-        return placeimagefudgemouse(widget, region, min);
+        return placewidget(widget, region, &widget->region, min);
 
-    case ATTR_MIMETYPE_PCX:
-        return placeimagepcx(widget, region, min);
+    }
+
+    else
+    {
+
+        struct util_region wregion = util_region(region->position.x, region->position.y, image->size.w, image->size.h);
+
+        return placewidget(widget, region, &wregion, min);
 
     }
 

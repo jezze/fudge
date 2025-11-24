@@ -23,4 +23,5 @@ struct pool_pcxresource *pool_createpcx(struct widget_image *image, char *source
 void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer);
 struct text_font *pool_getfont(unsigned int index);
 void pool_loadfont(unsigned int factor);
+void pool_loadresources(void);
 void pool_setup(void);

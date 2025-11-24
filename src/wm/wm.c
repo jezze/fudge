@@ -840,6 +840,7 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 {
 
     parser_parse(source, "root", msize, mdata);
+    pool_loadresources();
     placewindows(source);
     removedestroyed(source);
     bump(state.mousewidget);
