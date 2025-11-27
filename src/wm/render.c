@@ -289,18 +289,36 @@ static void scrollchildren(struct widget *widget, int x, int y)
 
 }
 
+static struct util_size gettext(struct widget *widget, unsigned int weight, unsigned int string, unsigned int wrap, unsigned int maxw, unsigned int offset)
+{
+
+    struct text_font *font = pool_getfont(weight);
+    struct text_info info;
+
+    text_gettextinfo(&info, font, strpool_getstring(string), strpool_getcstringlength(string), wrap, maxw, offset);
+
+    if (widget->type == WIDGET_TYPE_TEXT)
+    {
+
+        struct widget_text *text = widget->data;
+
+        text->rows = info.rows;
+        text->lastrowx = info.lastrowx;
+        text->lastrowy = info.lastrowy;
+
+    }
+
+    return util_size(info.width, info.height);
+
+}
+
 static struct util_size placebutton(struct widget *widget, struct util_region *region, struct util_size *min)
 {
 
     struct widget_button *button = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_BOLD);
+    struct util_size tsize = gettext(widget, ATTR_WEIGHT_BOLD, button->label, ATTR_WRAP_NONE, 0, 0);
     struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
-    struct text_rowinfo rowinfo;
-    struct util_region wregion;
-
-    text_getrowinfo(&rowinfo, font, strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, 0, 0);
-
-    wregion = util_region(region->position.x, region->position.y, rowinfo.width + padding.w * 2, rowinfo.lineheight + padding.h * 2);
+    struct util_region wregion = util_region(region->position.x, region->position.y, tsize.w + padding.w * 2, tsize.h + padding.h * 2);
 
     return placewidget(widget, region, &wregion, min);
 
@@ -310,14 +328,9 @@ static struct util_size placechoice(struct widget *widget, struct util_region *r
 {
 
     struct widget_choice *choice = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
+    struct util_size tsize = gettext(widget, ATTR_WEIGHT_NORMAL, choice->label, ATTR_WRAP_NONE, 0, 0);
     struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
-    struct text_rowinfo rowinfo;
-    struct util_region wregion;
-
-    text_getrowinfo(&rowinfo, font, strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, 0, 0);
-
-    wregion = util_region(region->position.x, region->position.y, rowinfo.width + padding.w * 2, rowinfo.lineheight + padding.h * 2);
+    struct util_region wregion = util_region(region->position.x, region->position.y, tsize.w + padding.w * 2, tsize.h + padding.h * 2);
 
     return placewidget(widget, region, &wregion, min);
 
@@ -334,12 +347,10 @@ static struct util_size placeimage(struct widget *widget, struct util_region *re
 {
 
     struct widget_image *image = widget->data;
-    struct util_region wregion;
+    struct util_region wregion = util_region(region->position.x, region->position.y, image->size.w, image->size.h);
 
     if (image->mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
         return placewidget(widget, region, &widget->region, min);
-
-    wregion = util_region(region->position.x, region->position.y, image->size.w, image->size.h);
 
     return placewidget(widget, region, &wregion, min);
 
@@ -402,9 +413,18 @@ static struct util_size placelistbox(struct widget *widget, struct util_region *
 
     clipchildren(widget, &padding);
 
-    listbox->vscroll = util_clamp(listbox->vscroll, widget->region.size.h - csize.h - padding.h * 2, 0);
+    if (csize.h >= wsize.h - padding.h * 2)
+    {
 
-    scrollchildren(widget, 0, listbox->vscroll);
+        if (listbox->vscroll < 0)
+            listbox->vscroll = 0;
+
+        if (listbox->vscroll > csize.h - wsize.h + padding.h * 2)
+            listbox->vscroll = csize.h - wsize.h + padding.h * 2;
+
+        scrollchildren(widget, 0, -listbox->vscroll);
+
+    }
 
     return wsize;
 
@@ -414,21 +434,13 @@ static struct util_size placeselect(struct widget *widget, struct util_region *r
 {
 
     struct widget_select *select = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
-    struct text_rowinfo rowinfo;
+    struct util_size tsize = gettext(widget, ATTR_WEIGHT_NORMAL, select->label, ATTR_WRAP_NONE, 0, 0);
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
-    struct util_region cregion;
-    struct util_region wregion;
-    struct util_size wsize;
-
-    text_getrowinfo(&rowinfo, font, strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, 0, 0);
-
-    wregion = util_region(region->position.x, region->position.y, rowinfo.width + padding.w * 4, rowinfo.lineheight + padding.h * 2);
-    cregion = util_region(region->position.x, region->position.y + wregion.size.h, wregion.size.w * 2, INFINITY);
+    struct util_region wregion = util_region(region->position.x, region->position.y, tsize.w + padding.w * 4, tsize.h + padding.h * 2);
+    struct util_region cregion = util_region(region->position.x, region->position.y + wregion.size.h, wregion.size.w * 2, INFINITY);
+    struct util_size wsize = placewidget(widget, region, &wregion, min);
 
     placechildren(widget, &cregion, &zerosize, INC_NONE, INC_NORMAL);
-
-    wsize = placewidget(widget, region, &wregion, min);
 
     if (widget->state != WIDGET_STATE_FOCUS)
         clipchildren(widget, &zerosize);
@@ -441,16 +453,8 @@ static struct util_size placetext(struct widget *widget, struct util_region *reg
 {
 
     struct widget_text *text = widget->data;
-    struct text_font *font = pool_getfont(text->weight);
-    struct text_info info;
-    struct util_region wregion;
-
-    text_gettextinfo(&info, font, strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, region->size.w, text->offx);
-
-    text->rows = info.rows;
-    text->lastrowx = info.lastrowx;
-    text->lastrowy = info.lastrowy;
-    wregion = util_region(region->position.x, region->position.y, info.width, info.height);
+    struct util_size tsize = gettext(widget, text->weight, text->content, text->wrap, region->size.w, text->offx);
+    struct util_region wregion = util_region(region->position.x, region->position.y, tsize.w, tsize.h);
 
     return placewidget(widget, region, &wregion, min);
 
@@ -469,9 +473,18 @@ static struct util_size placetextbox(struct widget *widget, struct util_region *
 
     clipchildren(widget, &padding);
 
-    textbox->vscroll = util_clamp(textbox->vscroll, widget->region.size.h - csize.h - padding.h * 2, 0);
+    if (csize.h >= wsize.h - padding.h * 2)
+    {
 
-    scrollchildren(widget, 0, textbox->vscroll);
+        if (textbox->vscroll < 0)
+            textbox->vscroll = 0;
+
+        if (textbox->vscroll > csize.h - wsize.h + padding.h * 2)
+            textbox->vscroll = csize.h - wsize.h + padding.h * 2;
+
+        scrollchildren(widget, 0, -textbox->vscroll);
+
+    }
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -483,14 +496,11 @@ static struct util_size placetextbox(struct widget *widget, struct util_region *
 
             struct widget_text *text = child->data;
             struct text_font *font = pool_getfont(text->weight);
-            struct text_info info;
-
-            text_gettextinfo(&info, font, strpool_getstring(text->content), textbox->cursor, text->wrap, region->size.w, text->offx);
 
             textbox->cursorheight = font->lineheight - font->lineheight / 4;
             textbox->cursorwidth = 2;
-            textbox->cursorx = child->region.position.x + info.lastrowx;
-            textbox->cursory = child->region.position.y + info.lastrowy + font->lineheight / 2 - textbox->cursorheight / 2;
+            textbox->cursorx = child->region.position.x + text->lastrowx;
+            textbox->cursory = child->region.position.y + text->lastrowy + font->lineheight / 2 - textbox->cursorheight / 2;
 
         }
 
@@ -504,13 +514,8 @@ static struct util_size placetextbutton(struct widget *widget, struct util_regio
 {
 
     struct widget_textbutton *textbutton = widget->data;
-    struct text_font *font = pool_getfont(ATTR_WEIGHT_NORMAL);
-    struct text_rowinfo rowinfo;
-    struct util_region wregion;
-
-    text_getrowinfo(&rowinfo, font, strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, 0, 0);
-
-    wregion = util_region(region->position.x, region->position.y, rowinfo.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, rowinfo.lineheight + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
+    struct util_size tsize = gettext(widget, ATTR_WEIGHT_NORMAL, textbutton->label, ATTR_WRAP_NONE, 0, 0);
+    struct util_region wregion = util_region(region->position.x, region->position.y, tsize.w + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, tsize.h + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
 
     return placewidget(widget, region, &wregion, min);
 

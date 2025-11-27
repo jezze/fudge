@@ -140,7 +140,7 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
 
 }
 
-void blitpcfbitmap(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
+static void blitpcfbitmap(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
 {
 
     int r0 = util_max(0, x0 - rx);
@@ -157,7 +157,7 @@ void blitpcfbitmap(struct blit_display *display, int rx, int x0, int x2, unsigne
 
 }
 
-void blitpcfbitmapinverted(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
+static void blitpcfbitmapinverted(struct blit_display *display, int rx, int x0, int x2, unsigned int color, unsigned char *data, unsigned int width)
 {
 
     int r0 = util_max(0, x0 - rx);
@@ -647,7 +647,7 @@ void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, i
     for (i = x0; i < x2; i++)
     {
 
-        if (util_intersects(line, y, y + resource->height) && util_intersects(i, x, x + resource->width))
+        if (util_intersects(i, x, x + resource->width))
         {
 
             unsigned int off = buffer[i - x] * 3;
