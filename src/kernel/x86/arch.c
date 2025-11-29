@@ -117,12 +117,11 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
             {
 
                 mmap_setmapping(entry, mapping->code + mapping->mmapheader->offset, MMU_PAGESIZE, MMU_PAGEMASK);
-                mapping_map(mapping, entry->paddress, entry->vpaddress, entry->vpsize);
 
                 if (entry->flags & 0x02)
-                    mmu_setflagrange(mapping->directory, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+                    map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
                 else
-                    mmu_setflagrange(mapping->directory, entry->vpaddress, entry->vpsize, MMU_TFLAG_USERMODE, MMU_PFLAG_USERMODE);
+                    map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_USERMODE, MMU_PFLAG_USERMODE);
 
                 mapping->mmapheader->offset += entry->vpsize;
                 mapping->mmapheader->entries++;
