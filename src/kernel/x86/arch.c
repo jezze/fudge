@@ -119,15 +119,10 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 
                 mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, temp.vaddress);
                 mmap_setmapping(entry, mapping->code + mapping->mmapheader->offset, MMU_PAGESIZE, MMU_PAGEMASK);
-
-                if (entry->flags & 0x02)
-                    map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-                else
-                    map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, MMU_TFLAG_USERMODE, MMU_PFLAG_USERMODE);
+                map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, 0, 0);
 
                 mapping->mmapheader->offset += entry->vpsize;
                 mapping->mmapheader->entries++;
-
 
             }
 
@@ -470,23 +465,32 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
             struct mmap_entry *entry = findmmap(MMAP_VADDRESS, address);
 
-            if (entry)
+            if (entry && entry->size)
             {
 
-                mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
+                unsigned int tflags = MMU_TFLAG_PRESENT | MMU_TFLAG_USERMODE;
+                unsigned int pflags = MMU_PFLAG_PRESENT | MMU_PFLAG_USERMODE;
+
+                if (entry->flags & 0x02)
+                {
+
+                    tflags |= MMU_TFLAG_WRITEABLE;
+                    pflags |= MMU_PFLAG_WRITEABLE;
+
+                }
+
+                mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, tflags, pflags);
 
                 switch (entry->type)
                 {
 
                 case MMAP_TYPE_COPY:
-                    if (entry->size)
-                        buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->size);
+                    buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->size);
 
                     break;
 
                 case MMAP_TYPE_ZERO:
-                    if (entry->size)
-                        buffer_clear((void *)entry->vaddress, entry->size);
+                    buffer_clear((void *)entry->vaddress, entry->size);
 
                     break;
 
