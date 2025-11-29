@@ -113,7 +113,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 
             struct mmap_entry *entry = &mapping->mmapentries[mapping->mmapheader->entries];
 
-            if (entry->msize)
+            if (entry->size)
             {
 
                 mmap_setmapping(entry, mapping->code + mapping->mmapheader->offset, MMU_PAGESIZE, MMU_PAGEMASK);
@@ -160,7 +160,7 @@ static struct mmap_entry *findmmap(unsigned int mmap, unsigned int vaddress)
 
         struct mmap_entry *entry = &entries[i];
 
-        if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->msize)
+        if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->size)
             return entry;
 
     }
