@@ -488,16 +488,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
             }
 
-            else
-            {
-
-                unsigned int kflags = mmu_gettableflags(kmapping.directory, address);
-
-                if (kflags & MMU_TFLAG_PRESENT)
-                    mmu_settable(mmu_getdirectory(), address, mmu_gettable(kmapping.directory, address));
-
-            }
-
         }
 
     }
