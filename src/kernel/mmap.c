@@ -9,9 +9,10 @@ void mmap_setmapping(struct mmap_entry *entry, unsigned int paddress, unsigned i
 
 }
 
-void mmap_initentry(struct mmap_entry *entry, unsigned int address, unsigned int fsize, unsigned int msize, unsigned int flags, unsigned int vaddress)
+void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int address, unsigned int fsize, unsigned int msize, unsigned int flags, unsigned int vaddress)
 {
 
+    entry->type = type;
     entry->address = address;
     entry->fsize = fsize;
     entry->msize = msize;

@@ -470,13 +470,21 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             if (entry)
             {
 
-                mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
+                switch (entry->type)
+                {
 
-                if (entry->fsize)
-                    buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->fsize);
+                case MMAP_TYPE_FILE:
+                    mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
 
-                if (entry->msize > entry->fsize)
-                    buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
+                    if (entry->fsize)
+                        buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->fsize);
+
+                    if (entry->msize > entry->fsize)
+                        buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
+
+                    break;
+
+                }
 
             }
 
