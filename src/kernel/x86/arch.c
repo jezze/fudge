@@ -106,16 +106,18 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
     if (format)
     {
 
+        struct mmap_entry temp;
         unsigned int i = 0;
 
-        while ((i = format->mapsection(address, &mapping->mmapentries[mapping->mmapheader->entries], i)))
+        while ((i = format->mapsection(address, &temp, i)))
         {
 
-            struct mmap_entry *entry = &mapping->mmapentries[mapping->mmapheader->entries];
-
-            if (entry->size)
+            if (temp.size)
             {
 
+                struct mmap_entry *entry = &mapping->mmapentries[mapping->mmapheader->entries];
+
+                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, temp.vaddress);
                 mmap_setmapping(entry, mapping->code + mapping->mmapheader->offset, MMU_PAGESIZE, MMU_PAGEMASK);
 
                 if (entry->flags & 0x02)
@@ -125,6 +127,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 
                 mapping->mmapheader->offset += entry->vpsize;
                 mapping->mmapheader->entries++;
+
 
             }
 
@@ -470,12 +473,24 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             if (entry)
             {
 
+                mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
+
                 switch (entry->type)
                 {
 
-                case MMAP_TYPE_FILE:
-                    mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, MMU_TFLAG_PRESENT, MMU_PFLAG_PRESENT);
+                case MMAP_TYPE_COPY:
+                    if (entry->size)
+                        buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->size);
 
+                    break;
+
+                case MMAP_TYPE_ZERO:
+                    if (entry->size)
+                        buffer_clear((void *)entry->vaddress, entry->size);
+
+                    break;
+
+                case MMAP_TYPE_FILE:
                     if (entry->fsize)
                         buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->fsize);
 

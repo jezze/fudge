@@ -5,7 +5,7 @@ void mmap_setmapping(struct mmap_entry *entry, unsigned int paddress, unsigned i
 
     entry->paddress = paddress;
     entry->vpaddress = entry->vaddress & ~pagemask;
-    entry->vpsize = (entry->msize + pagesize) & ~pagemask;
+    entry->vpsize = (entry->size + pagesize) & ~pagemask;
 
 }
 
