@@ -43,6 +43,26 @@ static struct mmap_entry *getentry(unsigned int mmap, unsigned int i)
 
 }
 
+static struct mmap_entry *findentry(unsigned int mmap, unsigned int vaddress)
+{
+
+    struct mmap_header *header = getheader(mmap);
+    unsigned int i;
+
+    for (i = 0; i < header->entries; i++)
+    {
+
+        struct mmap_entry *entry = getentry(mmap, i);
+
+        if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->size)
+            return entry;
+
+    }
+
+    return 0;
+
+}
+
 static void mapping_initkernel(struct mapping *mapping)
 {
 
@@ -155,26 +175,6 @@ static void mapping_loadstack(struct mapping *mapping)
 {
 
     map(mapping->mmap, mapping->directory, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
-
-}
-
-static struct mmap_entry *findmmap(unsigned int mmap, unsigned int vaddress)
-{
-
-    struct mmap_header *header = getheader(mmap);
-    unsigned int i;
-
-    for (i = 0; i < header->entries; i++)
-    {
-
-        struct mmap_entry *entry = getentry(mmap, i);
-
-        if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->size)
-            return entry;
-
-    }
-
-    return 0;
 
 }
 
@@ -459,7 +459,7 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    struct mmap_entry *entry = findmmap(MMAP_VADDRESS, cpu_getcr2());
+    struct mmap_entry *entry = findentry(MMAP_VADDRESS, cpu_getcr2());
 
     if (entry && entry->size)
     {
