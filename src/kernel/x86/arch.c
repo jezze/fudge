@@ -51,8 +51,8 @@ static void mapping_initkernel(struct mapping *mapping)
     mapping->stack = ARCH_KERNELSTACKADDRESS;
     mapping->mmap = ARCH_MMAPADDRESS;
  
-    buffer_clear((void *)mapping->directory, 4096);
     mmap_initheader(getheader(mapping->mmap));
+    buffer_clear((void *)mapping->directory, 4096);
 
 }
 
@@ -64,25 +64,26 @@ static void mapping_inittask(struct mapping *mapping, unsigned int itask)
     mapping->stack = mapping->code + TASK_CODESIZE;
     mapping->mmap = ARCH_MMAPADDRESS + MMAP_SIZE * itask;
  
-    buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
     mmap_initheader(getheader(mapping->mmap));
+    buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
 
 }
 
-static void mapping_addtable(unsigned int mmap, unsigned int directory, unsigned int vaddress)
+static unsigned int addtable(unsigned int mmap, unsigned int directory, unsigned int vaddress)
 {
 
     struct mmap_header *header = getheader(mmap);
-    unsigned int paddress = directory + 4096 + header->ntables * 4096;
+    unsigned int address = directory + 4096 + header->ntables * 4096;
 
-    buffer_clear((void *)paddress, 4096);
-    mmu_settableaddress(directory, vaddress, paddress);
+    buffer_clear((void *)address, 4096);
 
     header->ntables++;
 
+    return address;
+
 }
 
-static void mapping_map(unsigned int mmap, unsigned int directory, unsigned int paddress, unsigned int vaddress, unsigned int size)
+static void map(unsigned int mmap, unsigned int directory, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
     unsigned int i;
@@ -94,19 +95,19 @@ static void mapping_map(unsigned int mmap, unsigned int directory, unsigned int 
         unsigned int v = vaddress + i;
 
         if (!mmu_gettable(directory, v))
-            mapping_addtable(mmap, directory, v);
+        {
+
+            unsigned int taddress = addtable(mmap, directory, v);
+
+            mmu_settableaddress(directory, v, taddress);
+
+        }
 
         mmu_setpageaddress(directory, v, p);
 
     }
 
-}
-
-static void map(struct mapping *mapping, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
-{
-
-    mapping_map(mapping->mmap, mapping->directory, paddress, vaddress, size);
-    mmu_setflagrange(mapping->directory, vaddress, size, tflags, pflags);
+    mmu_setflagrange(directory, vaddress, size, tflags, pflags);
 
 }
 
@@ -146,14 +147,14 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 static void mapping_loadmmap(struct mapping *mapping)
 {
 
-    map(mapping, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(mapping->mmap, mapping->directory, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
 static void mapping_loadstack(struct mapping *mapping)
 {
 
-    map(mapping, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    map(mapping->mmap, mapping->directory, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
 
 }
 
@@ -267,7 +268,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    map(&kmapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+    map(kmapping.mmap, kmapping.directory, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
@@ -281,7 +282,7 @@ void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size)
 
         struct mapping *mapping = &umapping[core->itask];
 
-        map(mapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
+        map(mapping->mmap, mapping->directory, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
     }
 
@@ -297,7 +298,7 @@ void arch_umapvideo(unsigned int paddress, unsigned int vaddress, unsigned int s
 
         struct mapping *mapping = &umapping[core->itask];
 
-        map(mapping, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
+        map(mapping->mmap, mapping->directory, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
 
     }
 
@@ -489,8 +490,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
                 }
 
-                mapping_map(MMAP_VADDRESS, mmu_getdirectory(), entry->paddress, entry->vaddress, entry->size);
-                mmu_setflagrange(mmu_getdirectory(), entry->vaddress, entry->size, tflags, pflags);
+                map(MMAP_VADDRESS, mmu_getdirectory(), entry->paddress, entry->vaddress, entry->size, tflags, pflags);
 
                 switch (entry->type)
                 {
