@@ -174,7 +174,13 @@ static void mapping_loadmmap(struct mapping *mapping)
 static void mapping_loadstack(struct mapping *mapping)
 {
 
-    map(mapping->mmap, mapping->directory, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE);
+    struct mmap_header *header = getheader(mapping->mmap);
+    struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
+
+    mmap_initentry(entry, 0, 0, TASK_STACKSIZE, 0, 0, 0x02, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE);
+
+    header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
+    header->entries++;
 
 }
 
