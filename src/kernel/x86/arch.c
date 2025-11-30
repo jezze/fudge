@@ -17,8 +17,6 @@ struct mapping
     unsigned int code;
     unsigned int stack;
     unsigned int mmap;
-    struct mmap_header *mmapheader;
-    struct mmap_entry *mmapentries;
 
 };
 
@@ -29,7 +27,7 @@ static struct arch_tss tss0;
 static struct mapping kmapping;
 static struct mapping umapping[POOL_TASKS];
 
-static void mapping_init(struct mapping *mapping)
+static void mapping_initkernel(struct mapping *mapping)
 {
 
     mapping->directory = ARCH_MMUKERNELADDRESS;
@@ -37,11 +35,9 @@ static void mapping_init(struct mapping *mapping)
     mapping->code = ARCH_KERNELCODEADDRESS;
     mapping->stack = ARCH_KERNELSTACKADDRESS;
     mapping->mmap = ARCH_MMAPADDRESS;
-    mapping->mmapheader = (struct mmap_header *)mapping->mmap;
-    mapping->mmapentries = (struct mmap_entry *)(mapping->mmapheader + 1);
  
     buffer_clear((void *)mapping->directory, 4096);
-    mmap_initheader(mapping->mmapheader);
+    mmap_initheader((struct mmap_header *)mapping->mmap);
 
 }
 
@@ -53,11 +49,21 @@ static void mapping_inittask(struct mapping *mapping, unsigned int itask)
     mapping->code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask;
     mapping->stack = mapping->code + TASK_CODESIZE;
     mapping->mmap = ARCH_MMAPADDRESS + MMAP_SIZE * itask;
-    mapping->mmapheader = (struct mmap_header *)mapping->mmap;
-    mapping->mmapentries = (struct mmap_entry *)(mapping->mmapheader + 1);
  
     buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
-    mmap_initheader(mapping->mmapheader);
+    mmap_initheader((struct mmap_header *)mapping->mmap);
+
+}
+
+static void mapping_addtable(struct mapping *mapping, unsigned int vaddress)
+{
+
+    unsigned int paddress = mapping->directory + 4096 + mapping->ntables * 4096;
+
+    buffer_clear((void *)paddress, 4096);
+    mmu_settableaddress(mapping->directory, vaddress, paddress);
+
+    mapping->ntables++;
 
 }
 
@@ -73,16 +79,7 @@ static void mapping_map(struct mapping *mapping, unsigned int paddress, unsigned
         unsigned int v = vaddress + i;
 
         if (!mmu_gettable(mapping->directory, v))
-        {
-
-            unsigned int address = mapping->directory + 4096 + 4096 * mapping->ntables;
-
-            buffer_clear((void *)address, 4096);
-            mmu_settableaddress(mapping->directory, v, address);
-
-            mapping->ntables++;
-
-        }
+            mapping_addtable(mapping, v);
 
         mmu_setpageaddress(mapping->directory, v, p);
 
@@ -115,13 +112,15 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
             if (temp.size)
             {
 
-                struct mmap_entry *entry = &mapping->mmapentries[mapping->mmapheader->entries];
+                struct mmap_header *header = (struct mmap_header *)mapping->mmap;
+                struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
+                struct mmap_entry *entry = &entries[header->entries];
 
-                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, mapping->code + mapping->mmapheader->offset, temp.vaddress, MMU_PAGESIZE, MMU_PAGEMASK);
+                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, mapping->code + header->offset, temp.vaddress, MMU_PAGESIZE, MMU_PAGEMASK);
                 map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, 0, 0);
 
-                mapping->mmapheader->offset += entry->vpsize;
-                mapping->mmapheader->entries++;
+                header->offset += entry->vpsize;
+                header->entries++;
 
             }
 
@@ -578,7 +577,7 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    mapping_init(&kmapping);
+    mapping_initkernel(&kmapping);
     arch_map(0x00000000, 0x00000000, 0x00800000);
     arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS);
     arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
