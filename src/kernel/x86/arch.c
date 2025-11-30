@@ -151,7 +151,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
                 struct mmap_header *header = getheader(mapping->mmap);
                 struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
 
-                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, mapping->code + header->offset, temp.vaddress);
+                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, 2, mapping->code + header->offset, temp.vaddress);
 
                 header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
                 header->entries++;
@@ -177,7 +177,7 @@ static void mapping_loadstack(struct mapping *mapping)
     struct mmap_header *header = getheader(mapping->mmap);
     struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
 
-    mmap_initentry(entry, 0, 0, TASK_STACKSIZE, 0, 0, 0x02, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE);
+    mmap_initentry(entry, 0, 0, TASK_STACKSIZE, 0, 0, 2, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE);
 
     header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
     header->entries++;
@@ -470,14 +470,23 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (entry && entry->size)
     {
 
-        unsigned int tflags = MMU_TFLAG_PRESENT | MMU_TFLAG_USERMODE;
-        unsigned int pflags = MMU_PFLAG_PRESENT | MMU_PFLAG_USERMODE;
+        unsigned int tflags = MMU_TFLAG_PRESENT;
+        unsigned int pflags = MMU_PFLAG_PRESENT;
 
-        if (entry->flags & 0x02)
+        switch (entry->flags)
         {
 
-            tflags |= MMU_TFLAG_WRITEABLE;
-            pflags |= MMU_PFLAG_WRITEABLE;
+        case 1:
+            tflags |= MMU_TFLAG_USERMODE;
+            pflags |= MMU_PFLAG_USERMODE;
+
+            break;
+
+        case 2:
+            tflags |= MMU_TFLAG_USERMODE | MMU_TFLAG_WRITEABLE;
+            pflags |= MMU_PFLAG_USERMODE | MMU_PFLAG_WRITEABLE;
+
+            break;
 
         }
 
