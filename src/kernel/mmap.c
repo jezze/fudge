@@ -19,6 +19,7 @@ void mmap_initheader(struct mmap_header *header)
 
     header->entries = 0;
     header->offset = 0;
+    header->ntables = 0;
 
 }
  

@@ -13,7 +13,6 @@ struct mapping
 {
 
     unsigned int directory;
-    unsigned int ntables;
     unsigned int code;
     unsigned int stack;
     unsigned int mmap;
@@ -27,17 +26,33 @@ static struct arch_tss tss0;
 static struct mapping kmapping;
 static struct mapping umapping[POOL_TASKS];
 
+static struct mmap_header *getheader(unsigned int mmap)
+{
+
+    return (struct mmap_header *)mmap;
+
+}
+
+static struct mmap_entry *getentry(unsigned int mmap, unsigned int i)
+{
+
+    struct mmap_header *header = (struct mmap_header *)mmap;
+    struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
+
+    return &entries[i];
+
+}
+
 static void mapping_initkernel(struct mapping *mapping)
 {
 
     mapping->directory = ARCH_MMUKERNELADDRESS;
-    mapping->ntables = 0;
     mapping->code = ARCH_KERNELCODEADDRESS;
     mapping->stack = ARCH_KERNELSTACKADDRESS;
     mapping->mmap = ARCH_MMAPADDRESS;
  
     buffer_clear((void *)mapping->directory, 4096);
-    mmap_initheader((struct mmap_header *)mapping->mmap);
+    mmap_initheader(getheader(mapping->mmap));
 
 }
 
@@ -45,29 +60,29 @@ static void mapping_inittask(struct mapping *mapping, unsigned int itask)
 {
 
     mapping->directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * itask;
-    mapping->ntables = 0;
     mapping->code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask;
     mapping->stack = mapping->code + TASK_CODESIZE;
     mapping->mmap = ARCH_MMAPADDRESS + MMAP_SIZE * itask;
  
     buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
-    mmap_initheader((struct mmap_header *)mapping->mmap);
+    mmap_initheader(getheader(mapping->mmap));
 
 }
 
-static void mapping_addtable(struct mapping *mapping, unsigned int vaddress)
+static void mapping_addtable(unsigned int mmap, unsigned int directory, unsigned int vaddress)
 {
 
-    unsigned int paddress = mapping->directory + 4096 + mapping->ntables * 4096;
+    struct mmap_header *header = getheader(mmap);
+    unsigned int paddress = directory + 4096 + header->ntables * 4096;
 
     buffer_clear((void *)paddress, 4096);
-    mmu_settableaddress(mapping->directory, vaddress, paddress);
+    mmu_settableaddress(directory, vaddress, paddress);
 
-    mapping->ntables++;
+    header->ntables++;
 
 }
 
-static void mapping_map(struct mapping *mapping, unsigned int paddress, unsigned int vaddress, unsigned int size)
+static void mapping_map(unsigned int mmap, unsigned int directory, unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     unsigned int i;
@@ -78,10 +93,10 @@ static void mapping_map(struct mapping *mapping, unsigned int paddress, unsigned
         unsigned int p = paddress + i;
         unsigned int v = vaddress + i;
 
-        if (!mmu_gettable(mapping->directory, v))
-            mapping_addtable(mapping, v);
+        if (!mmu_gettable(directory, v))
+            mapping_addtable(mmap, directory, v);
 
-        mmu_setpageaddress(mapping->directory, v, p);
+        mmu_setpageaddress(directory, v, p);
 
     }
 
@@ -90,7 +105,7 @@ static void mapping_map(struct mapping *mapping, unsigned int paddress, unsigned
 static void map(struct mapping *mapping, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
 {
 
-    mapping_map(mapping, paddress, vaddress, size);
+    mapping_map(mapping->mmap, mapping->directory, paddress, vaddress, size);
     mmu_setflagrange(mapping->directory, vaddress, size, tflags, pflags);
 
 }
@@ -112,12 +127,10 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
             if (temp.size)
             {
 
-                struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-                struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
-                struct mmap_entry *entry = &entries[header->entries];
+                struct mmap_header *header = getheader(mapping->mmap);
+                struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
 
                 mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, mapping->code + header->offset, temp.vaddress);
-                map(mapping, entry->paddress, entry->vaddress, entry->size, 0, 0);
 
                 header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
                 header->entries++;
@@ -147,14 +160,13 @@ static void mapping_loadstack(struct mapping *mapping)
 static struct mmap_entry *findmmap(unsigned int mmap, unsigned int vaddress)
 {
 
-    struct mmap_header *header = (struct mmap_header *)mmap;
-    struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
+    struct mmap_header *header = getheader(mmap);
     unsigned int i;
 
     for (i = 0; i < header->entries; i++)
     {
 
-        struct mmap_entry *entry = &entries[i];
+        struct mmap_entry *entry = getentry(mmap, i);
 
         if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->size)
             return entry;
@@ -477,7 +489,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
                 }
 
-                mmu_addflagrange(mmu_getdirectory(), entry->vaddress, entry->size, tflags, pflags);
+                mapping_map(MMAP_VADDRESS, mmu_getdirectory(), entry->paddress, entry->vaddress, entry->size);
+                mmu_setflagrange(mmu_getdirectory(), entry->vaddress, entry->size, tflags, pflags);
 
                 switch (entry->type)
                 {
