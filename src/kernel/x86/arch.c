@@ -117,8 +117,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 
                 struct mmap_entry *entry = &mapping->mmapentries[mapping->mmapheader->entries];
 
-                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, temp.vaddress);
-                mmap_setmapping(entry, mapping->code + mapping->mmapheader->offset, MMU_PAGESIZE, MMU_PAGEMASK);
+                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, mapping->code + mapping->mmapheader->offset, temp.vaddress, MMU_PAGESIZE, MMU_PAGEMASK);
                 map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, 0, 0);
 
                 mapping->mmapheader->offset += entry->vpsize;

@@ -83,7 +83,7 @@ static unsigned int format_readsection(unsigned int base, struct mmap_entry *ent
 
         struct elf_programheader *programheader = &programheaders[index];
 
-        mmap_initentry(entry, MMAP_TYPE_FILE, base + programheader->offset, programheader->msize, programheader->fsize, programheader->msize, programheader->flags, programheader->vaddress);
+        mmap_initentry(entry, MMAP_TYPE_FILE, base + programheader->offset, programheader->msize, programheader->fsize, programheader->msize, programheader->flags, programheader->paddress, programheader->vaddress, 0, 0);
 
         return index + 1;
 
