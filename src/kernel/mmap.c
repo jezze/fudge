@@ -1,6 +1,6 @@
 #include "mmap.h"
 
-void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int address, unsigned int size, unsigned int fsize, unsigned int msize, unsigned int flags, unsigned int paddress, unsigned int vaddress, unsigned int pagesize, unsigned int pagemask)
+void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int address, unsigned int size, unsigned int fsize, unsigned int msize, unsigned int flags, unsigned int paddress, unsigned int vaddress)
 {
 
     entry->type = type;
@@ -11,8 +11,6 @@ void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int ad
     entry->flags = flags;
     entry->paddress = paddress;
     entry->vaddress = vaddress;
-    entry->vpaddress = entry->vaddress & ~pagemask;
-    entry->vpsize = (entry->size + pagesize) & ~pagemask;
 
 }
 

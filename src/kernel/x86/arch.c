@@ -116,10 +116,10 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
                 struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
                 struct mmap_entry *entry = &entries[header->entries];
 
-                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, mapping->code + header->offset, temp.vaddress, MMU_PAGESIZE, MMU_PAGEMASK);
-                map(mapping, entry->paddress, entry->vpaddress, entry->vpsize, 0, 0);
+                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, temp.flags, mapping->code + header->offset, temp.vaddress);
+                map(mapping, entry->paddress, entry->vaddress, entry->size, 0, 0);
 
-                header->offset += entry->vpsize;
+                header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
                 header->entries++;
 
             }
@@ -477,7 +477,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
                 }
 
-                mmu_addflagrange(mmu_getdirectory(), entry->vpaddress, entry->vpsize, tflags, pflags);
+                mmu_addflagrange(mmu_getdirectory(), entry->vaddress, entry->size, tflags, pflags);
 
                 switch (entry->type)
                 {
