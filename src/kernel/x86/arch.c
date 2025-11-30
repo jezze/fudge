@@ -13,7 +13,7 @@ struct mapping
 {
 
     unsigned int directory;
-    unsigned int entries;
+    unsigned int ntables;
     unsigned int code;
     unsigned int stack;
     unsigned int mmap;
@@ -33,7 +33,7 @@ static void mapping_init(struct mapping *mapping)
 {
 
     mapping->directory = ARCH_MMUKERNELADDRESS;
-    mapping->entries = 0;
+    mapping->ntables = 0;
     mapping->code = ARCH_KERNELCODEADDRESS;
     mapping->stack = ARCH_KERNELSTACKADDRESS;
     mapping->mmap = ARCH_MMAPADDRESS;
@@ -49,7 +49,7 @@ static void mapping_inittask(struct mapping *mapping, unsigned int itask)
 {
 
     mapping->directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * itask;
-    mapping->entries = 0;
+    mapping->ntables = 0;
     mapping->code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask;
     mapping->stack = mapping->code + TASK_CODESIZE;
     mapping->mmap = ARCH_MMAPADDRESS + MMAP_SIZE * itask;
@@ -75,12 +75,12 @@ static void mapping_map(struct mapping *mapping, unsigned int paddress, unsigned
         if (!mmu_gettable(mapping->directory, v))
         {
 
-            unsigned int address = mapping->directory + 4096 + 4096 * mapping->entries;
+            unsigned int address = mapping->directory + 4096 + 4096 * mapping->ntables;
 
             buffer_clear((void *)address, 4096);
             mmu_settableaddress(mapping->directory, v, address);
 
-            mapping->entries++;
+            mapping->ntables++;
 
         }
 
