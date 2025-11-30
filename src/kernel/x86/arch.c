@@ -177,7 +177,7 @@ static void mapping_loadstack(struct mapping *mapping)
     struct mmap_header *header = getheader(mapping->mmap);
     struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
 
-    mmap_initentry(entry, 0, 0, TASK_STACKSIZE, 0, 0, 2, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE);
+    mmap_initentry(entry, MMAP_TYPE_NONE, 0, TASK_STACKSIZE, 0, 0, 2, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE);
 
     header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
     header->entries++;
