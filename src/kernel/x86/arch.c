@@ -152,8 +152,8 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
     {
 
         struct mmap_entry entry;
-        unsigned int i = 0;
         unsigned int offset = 0;
+        unsigned int i = 0;
 
         while ((i = format->mapsection(address, &entry, i)))
         {
