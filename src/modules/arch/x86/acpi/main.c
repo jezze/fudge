@@ -116,7 +116,7 @@ void module_init(void)
         if (sdth)
         {
 
-            arch_map((unsigned int)sdth & 0xFFFFF000, (unsigned int)sdth & 0xFFFFF000, 0x00010000);
+            arch_kmap((unsigned int)sdth & 0xFFFFF000, (unsigned int)sdth & 0xFFFFF000, 0x00010000);
             /* Remove this mapping. Should not be needed. */
             arch_umap((unsigned int)sdth & 0xFFFFF000, (unsigned int)sdth & 0xFFFFF000, 0x00010000);
 

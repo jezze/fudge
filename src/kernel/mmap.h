@@ -9,13 +9,14 @@ struct mmap_entry
 {
 
     unsigned int type;
-    unsigned int address;
-    unsigned int size;
-    unsigned int fsize;
-    unsigned int msize;
-    unsigned int flags;
     unsigned int paddress;
     unsigned int vaddress;
+    unsigned int size;
+    unsigned int flags;
+    unsigned int ioaddress;
+    unsigned int iofsize;
+    unsigned int iomsize;
+    unsigned int ioflags;
 
 };
 
@@ -28,5 +29,5 @@ struct mmap_header
 
 };
 
-void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int address, unsigned int size, unsigned int fsize, unsigned int msize, unsigned int flags, unsigned int paddress, unsigned int vaddress);
+void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags, unsigned int ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags);
 void mmap_initheader(struct mmap_header *header);

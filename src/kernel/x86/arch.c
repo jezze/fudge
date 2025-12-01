@@ -81,7 +81,7 @@ static void mapping_inittask(struct mapping *mapping, unsigned int itask)
 
     mapping->directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * itask;
     mapping->code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask;
-    mapping->stack = mapping->code + TASK_CODESIZE;
+    mapping->stack = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask + TASK_CODESIZE;
     mapping->mmap = ARCH_MMAPADDRESS + MMAP_SIZE * itask;
  
     mmap_initheader(getheader(mapping->mmap));
@@ -151,7 +151,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
                 struct mmap_header *header = getheader(mapping->mmap);
                 struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
 
-                mmap_initentry(entry, temp.type, temp.address, temp.size, temp.fsize, temp.msize, 2, mapping->code + header->offset, temp.vaddress);
+                mmap_initentry(entry, MMAP_TYPE_FILE, mapping->code + header->offset, temp.vaddress, temp.size, 2, temp.ioaddress, temp.iofsize, temp.iomsize, temp.ioflags);
 
                 header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
                 header->entries++;
@@ -177,7 +177,7 @@ static void mapping_loadstack(struct mapping *mapping)
     struct mmap_header *header = getheader(mapping->mmap);
     struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
 
-    mmap_initentry(entry, MMAP_TYPE_NONE, 0, TASK_STACKSIZE, 0, 0, 2, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE);
+    mmap_initentry(entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, 2, 0, 0, 0, 0);
 
     header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
     header->entries++;
@@ -271,7 +271,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
 }
 
-void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
     map(kmapping.mmap, kmapping.directory, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
@@ -281,32 +281,14 @@ void arch_map(unsigned int paddress, unsigned int vaddress, unsigned int size)
 void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct core *core = kernel_getcore();
-
-    if (core->itask)
-    {
-
-        struct mapping *mapping = &umapping[core->itask];
-
-        map(mapping->mmap, mapping->directory, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
-
-    }
+    map(MMAP_VADDRESS, mmu_getdirectory(), paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE);
 
 }
 
 void arch_umapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size)
 {
 
-    struct core *core = kernel_getcore();
-
-    if (core->itask)
-    {
-
-        struct mapping *mapping = &umapping[core->itask];
-
-        map(mapping->mmap, mapping->directory, paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
-
-    }
+    map(MMAP_VADDRESS, mmu_getdirectory(), paddress, vaddress, size, MMU_TFLAG_PRESENT | MMU_TFLAG_WRITEABLE | MMU_TFLAG_USERMODE | MMU_TFLAG_WRITETHROUGH, MMU_PFLAG_PRESENT | MMU_PFLAG_WRITEABLE | MMU_PFLAG_USERMODE | MMU_PFLAG_WRITETHROUGH);
 
 }
 
@@ -496,7 +478,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         {
 
         case MMAP_TYPE_COPY:
-            buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->size);
+            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
 
             break;
 
@@ -506,11 +488,11 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             break;
 
         case MMAP_TYPE_FILE:
-            if (entry->fsize)
-                buffer_copy((void *)entry->vaddress, (void *)entry->address, entry->fsize);
+            if (entry->iofsize)
+                buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
 
-            if (entry->msize > entry->fsize)
-                buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
+            if (entry->iomsize > entry->iofsize)
+                buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
 
             break;
 
@@ -587,12 +569,12 @@ void arch_setup1(void)
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     mapping_initkernel(&kmapping);
-    arch_map(0x00000000, 0x00000000, 0x00800000);
-    arch_map(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS);
-    arch_map(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
-    arch_map(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
-    arch_map(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES);
-    arch_map(kmapping.mmap, MMAP_VADDRESS, MMAP_SIZE);
+    arch_kmap(0x00000000, 0x00000000, 0x00800000);
+    arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS);
+    arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
+    arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
+    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES);
+    arch_kmap(kmapping.mmap, MMAP_VADDRESS, MMAP_SIZE);
     mmu_setdirectory(kmapping.directory);
     mmu_enable();
     mailbox_setup();

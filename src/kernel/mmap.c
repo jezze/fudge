@@ -1,16 +1,17 @@
 #include "mmap.h"
 
-void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int address, unsigned int size, unsigned int fsize, unsigned int msize, unsigned int flags, unsigned int paddress, unsigned int vaddress)
+void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags, unsigned int ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags)
 {
 
     entry->type = type;
-    entry->address = address;
-    entry->size = size;
-    entry->fsize = fsize;
-    entry->msize = msize;
-    entry->flags = flags;
     entry->paddress = paddress;
     entry->vaddress = vaddress;
+    entry->size = size;
+    entry->flags = flags;
+    entry->ioaddress = ioaddress;
+    entry->iofsize = iofsize;
+    entry->iomsize = iomsize;
+    entry->ioflags = ioflags;
 
 }
 
