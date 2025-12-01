@@ -16,12 +16,12 @@ struct mapping
     unsigned int code;
     unsigned int stack;
     unsigned int mmap;
+    struct cpu_general registers;
 
 };
 
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
-static struct cpu_general registers[POOL_TASKS];
 static struct arch_tss tss0;
 static struct mapping kmapping;
 static struct mapping umapping[POOL_TASKS];
@@ -239,8 +239,9 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct mapping *mapping = &umapping[core->itask];
 
-        buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
+        buffer_copy(&mapping->registers, general, sizeof (struct cpu_general));
 
         thread->ip = interrupt->eip.value;
         thread->sp = interrupt->esp.value;
@@ -255,7 +256,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         struct task_thread *thread = kernel_gettaskthread(core->itask);
         struct mapping *mapping = &umapping[core->itask];
 
-        buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
+        buffer_copy(general, &mapping->registers, sizeof (struct cpu_general));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
