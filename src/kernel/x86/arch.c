@@ -36,7 +36,7 @@ static struct mmap_header *getheader(unsigned int mmap)
 static struct mmap_entry *getentry(unsigned int mmap, unsigned int i)
 {
 
-    struct mmap_header *header = (struct mmap_header *)mmap;
+    struct mmap_header *header = getheader(mmap);
     struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
 
     return &entries[i];
