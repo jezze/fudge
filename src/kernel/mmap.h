@@ -1,9 +1,9 @@
 #define MMAP_VADDRESS                   0xC0000000
 #define MMAP_SIZE                       0x00001000
 #define MMAP_TYPE_NONE                  0
-#define MMAP_TYPE_COPY                  1
+#define MMAP_TYPE_COW                   1
 #define MMAP_TYPE_ZERO                  2
-#define MMAP_TYPE_FILE                  3
+#define MMAP_TYPE_IOCOW                 3
 
 struct mmap_entry
 {

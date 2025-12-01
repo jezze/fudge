@@ -159,9 +159,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 
                 struct mmap_header *header = getheader(mapping->mmap);
 
-                entry.type = MMAP_TYPE_FILE;
                 entry.paddress = mapping->code + offset;
-                entry.flags = 0x03;
 
                 addentry(header, &entry);
 
@@ -502,7 +500,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         switch (entry->type)
         {
 
-        case MMAP_TYPE_COPY:
+        case MMAP_TYPE_COW:
             buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
 
             break;
@@ -512,7 +510,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
             break;
 
-        case MMAP_TYPE_FILE:
+        case MMAP_TYPE_IOCOW:
             if (entry->iofsize)
                 buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
 
