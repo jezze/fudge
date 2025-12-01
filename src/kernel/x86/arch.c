@@ -63,6 +63,18 @@ static struct mmap_entry *findentry(unsigned int mmap, unsigned int vaddress)
 
 }
 
+static void addentry(unsigned int mmap, struct mmap_entry *from)
+{
+
+    struct mmap_header *header = getheader(mmap);
+    struct mmap_entry *entry = getentry(mmap, header->entries);
+
+    buffer_copy(entry, from, sizeof (struct mmap_entry));
+
+    header->entries++;
+
+}
+
 static void mapping_initkernel(struct mapping *mapping)
 {
 
@@ -139,22 +151,23 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
     if (format)
     {
 
-        struct mmap_entry temp;
+        struct mmap_entry entry;
         unsigned int i = 0;
+        unsigned int offset = 0;
 
-        while ((i = format->mapsection(address, &temp, i)))
+        while ((i = format->mapsection(address, &entry, i)))
         {
 
-            if (temp.size)
+            if (entry.size)
             {
 
-                struct mmap_header *header = getheader(mapping->mmap);
-                struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
+                entry.type = MMAP_TYPE_FILE;
+                entry.paddress = mapping->code + offset;
+                entry.flags = 0x03;
 
-                mmap_initentry(entry, MMAP_TYPE_FILE, mapping->code + header->offset, temp.vaddress, temp.size, 2, temp.ioaddress, temp.iofsize, temp.iomsize, temp.ioflags);
+                addentry(mapping->mmap, &entry);
 
-                header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
-                header->entries++;
+                offset += (entry.size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
 
             }
 
@@ -174,13 +187,10 @@ static void mapping_loadmmap(struct mapping *mapping)
 static void mapping_loadstack(struct mapping *mapping)
 {
 
-    struct mmap_header *header = getheader(mapping->mmap);
-    struct mmap_entry *entry = getentry(mapping->mmap, header->entries);
+    struct mmap_entry entry;
 
-    mmap_initentry(entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, 2, 0, 0, 0, 0);
-
-    header->offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
-    header->entries++;
+    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, 0x03, 0, 0, 0, 0);
+    addentry(mapping->mmap, &entry);
 
 }
 
@@ -455,20 +465,27 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         unsigned int tflags = MMU_TFLAG_PRESENT;
         unsigned int pflags = MMU_PFLAG_PRESENT;
 
-        switch (entry->flags)
+        if (entry->flags & 0x01)
         {
 
-        case 1:
             tflags |= MMU_TFLAG_USERMODE;
             pflags |= MMU_PFLAG_USERMODE;
 
-            break;
+        }
 
-        case 2:
-            tflags |= MMU_TFLAG_USERMODE | MMU_TFLAG_WRITEABLE;
-            pflags |= MMU_PFLAG_USERMODE | MMU_PFLAG_WRITEABLE;
+        if (entry->flags & 0x02)
+        {
 
-            break;
+            tflags |= MMU_TFLAG_WRITEABLE;
+            pflags |= MMU_PFLAG_WRITEABLE;
+
+        }
+
+        if (entry->flags & 0x04)
+        {
+
+            tflags |= MMU_TFLAG_WRITETHROUGH;
+            pflags |= MMU_PFLAG_WRITETHROUGH;
 
         }
 

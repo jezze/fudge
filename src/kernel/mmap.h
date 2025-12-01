@@ -23,7 +23,6 @@ struct mmap_entry
 struct mmap_header
 {
 
-    unsigned int offset;
     unsigned int entries;
     unsigned int ntables;
 
