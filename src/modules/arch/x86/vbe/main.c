@@ -121,7 +121,7 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
         videointerface.bpp = mode->bpp / 8;
 
         vbe_setvideomode(modenum | 0x4000);
-        arch_umapvideo(mode->framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp);
+        arch_umap(mode->framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
         video_notifymode(&videointerface, 0xA0000000, videointerface.width, videointerface.height, videointerface.bpp);
 
         return MESSAGE_OK;

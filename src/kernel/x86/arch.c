@@ -309,37 +309,25 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
 }
 
-void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags)
 {
 
     struct mmap_header *header = getheader(kmapping.mmap);
     struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
     addentry(header, &entry);
     map(kmapping.directory, header, &entry);
 
 }
 
-void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size)
+void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags)
 {
 
     struct mmap_header *header = getheader(MMAP_VADDRESS);
     struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
-    addentry(header, &entry);
-    map(mmu_getdirectory(), header, &entry);
-
-}
-
-void arch_umapvideo(unsigned int paddress, unsigned int vaddress, unsigned int size)
-{
-
-    struct mmap_header *header = getheader(MMAP_VADDRESS);
-    struct mmap_entry entry;
-
-    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
     addentry(header, &entry);
     map(mmu_getdirectory(), header, &entry);
 
@@ -603,12 +591,12 @@ void arch_setup1(void)
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     mapping_initkernel(&kmapping);
-    arch_kmap(0x00000000, 0x00000000, 0x00800000);
-    arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS);
-    arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE);
-    arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS);
-    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES);
-    arch_kmap(kmapping.mmap, MMAP_VADDRESS, MMAP_SIZE);
+    arch_kmap(0x00000000, 0x00000000, 0x00800000, MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES, MMAP_FLAG_WRITEABLE);
+    arch_kmap(kmapping.mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
     mmu_setdirectory(kmapping.directory);
     mmu_enable();
     mailbox_setup();
