@@ -118,25 +118,6 @@ static void map(unsigned int directory, struct mmap_header *header, struct mmap_
     unsigned int pflags = MMU_PFLAG_PRESENT;
     unsigned int i;
 
-    for (i = 0; i < entry->size; i += MMU_PAGESIZE)
-    {
-
-        unsigned int p = entry->paddress + i;
-        unsigned int v = entry->vaddress + i;
-
-        if (!mmu_gettable(directory, v))
-        {
-
-            unsigned int taddress = addtable(header, directory, v);
-
-            mmu_settableaddress(directory, v, taddress);
-
-        }
-
-        mmu_setpageaddress(directory, v, p);
-
-    }
-
     if (entry->flags & MMAP_FLAG_USERMODE)
     {
 
@@ -158,6 +139,25 @@ static void map(unsigned int directory, struct mmap_header *header, struct mmap_
 
         tflags |= MMU_TFLAG_WRITETHROUGH;
         pflags |= MMU_PFLAG_WRITETHROUGH;
+
+    }
+
+    for (i = 0; i < entry->size; i += MMU_PAGESIZE)
+    {
+
+        unsigned int p = entry->paddress + i;
+        unsigned int v = entry->vaddress + i;
+
+        if (!mmu_gettable(directory, v))
+        {
+
+            unsigned int taddress = addtable(header, directory, v);
+
+            mmu_settableaddress(directory, v, taddress);
+
+        }
+
+        mmu_setpageaddress(directory, v, p);
 
     }
 
