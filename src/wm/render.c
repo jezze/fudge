@@ -228,7 +228,7 @@ static struct util_size placeinlinechildren(struct widget *widget, struct util_r
             struct widget_text *text = child->data;
 
             text->offx = offx;
-            csize = calls[child->type].place(child, &cregion, &zerosize);
+            csize = placechild(child, &cregion, &zerosize, padding);
             total.w = util_max(total.w, (cregion.position.x + csize.w) - region->position.x);
             total.h = util_max(total.h, (cregion.position.y + csize.h) - region->position.y);
 
