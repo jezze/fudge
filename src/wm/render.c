@@ -302,7 +302,6 @@ static struct util_size gettext(struct widget *widget, unsigned int weight, unsi
 
         struct widget_text *text = widget->data;
 
-        text->rows = info.rows;
         text->lastrowx = info.lastrowx;
         text->lastrowy = info.lastrowy;
 

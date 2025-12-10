@@ -602,7 +602,6 @@ static void inittext(struct widget *widget)
     text->offx = 0;
     text->markstart = 0;
     text->markend = 0;
-    text->rows = 0;
     text->lastrowx = 0;
     text->lastrowy = 0;
 
