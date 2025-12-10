@@ -86,8 +86,6 @@ struct widget_text
     unsigned int offx;
     unsigned int markstart;
     unsigned int markend;
-    int lastrowx;
-    int lastrowy;
 
 };
 
