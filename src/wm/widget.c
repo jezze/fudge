@@ -652,6 +652,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->id = attr_update(ATTR_ID, id, widget->id);
     widget->in = attr_update(ATTR_IN, in, widget->in);
     widget->data = data;
+    widget->display = WIDGET_DISPLAY_BLOCK;
     widget->region = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
 

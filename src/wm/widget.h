@@ -15,6 +15,8 @@
 #define WIDGET_STATE_FOCUS              3
 #define WIDGET_STATE_FOCUSOFF           4
 #define WIDGET_STATE_DESTROYED          5
+#define WIDGET_DISPLAY_BLOCK            1
+#define WIDGET_DISPLAY_INLINE           2
 
 struct widget_button
 {
@@ -130,6 +132,7 @@ struct widget
     unsigned int in;
     unsigned int span;
     void *data;
+    unsigned int display;
     struct util_region region;
     struct util_region clip;
     unsigned int onclick;

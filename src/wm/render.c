@@ -114,7 +114,7 @@ static struct util_size placechild(struct widget *widget, struct util_region *re
 
 }
 
-static struct util_size placechildren1(struct widget *widget, struct util_region *region, struct util_size *padding, unsigned int incx, unsigned int incy, struct util_size *span)
+static struct util_size placeblockchildren1(struct widget *widget, struct util_region *region, struct util_size *padding, unsigned int incx, unsigned int incy, struct util_size *span)
 {
 
     struct list_item *current = 0;
@@ -188,18 +188,18 @@ static struct util_size placechildren1(struct widget *widget, struct util_region
 
 }
 
-static struct util_size placechildren(struct widget *widget, struct util_region *region, struct util_size *padding, unsigned int incx, unsigned int incy)
+static struct util_size placeblockchildren(struct widget *widget, struct util_region *region, struct util_size *padding, unsigned int incx, unsigned int incy)
 {
 
     unsigned int spans = getnumspans(widget);
-    struct util_size total = placechildren1(widget, region, padding, incx, incy, &zerosize);
+    struct util_size total = placeblockchildren1(widget, region, padding, incx, incy, &zerosize);
 
     if (spans)
     {
 
         struct util_size span = util_size((region->size.w - total.w) / spans, (region->size.h - total.h) / spans);
 
-        return placechildren1(widget, region, padding, incx, incy, &span);
+        return placeblockchildren1(widget, region, padding, incx, incy, &span);
 
     }
 
@@ -207,7 +207,7 @@ static struct util_size placechildren(struct widget *widget, struct util_region 
 
 }
 
-static struct util_size placetextflow(struct widget *widget, struct util_region *region, struct util_size *min, struct util_size *padding)
+static struct util_size placeinlinechildren(struct widget *widget, struct util_region *region, struct util_size *padding)
 {
 
     struct util_size total = zerosize;
@@ -369,27 +369,27 @@ static struct util_size placelayout(struct widget *widget, struct util_region *r
     {
 
     case ATTR_FLOW_DEFAULT:
-        csize = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NONE);
+        csize = placeblockchildren(widget, &cregion, &cpadding, INC_NONE, INC_NONE);
 
         break;
 
     case ATTR_FLOW_HORIZONTAL:
-        csize = placechildren(widget, &cregion, &cpadding, INC_NORMAL, INC_NONE);
+        csize = placeblockchildren(widget, &cregion, &cpadding, INC_NORMAL, INC_NONE);
 
         break;
 
     case ATTR_FLOW_HORIZONTALSTRETCH:
-        csize = placechildren(widget, &cregion, &cpadding, INC_STRETCHED, INC_NONE);
+        csize = placeblockchildren(widget, &cregion, &cpadding, INC_STRETCHED, INC_NONE);
 
         break;
 
     case ATTR_FLOW_VERTICAL:
-        csize = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NORMAL);
+        csize = placeblockchildren(widget, &cregion, &cpadding, INC_NONE, INC_NORMAL);
 
         break;
 
     case ATTR_FLOW_VERTICALSTRETCH:
-        csize = placechildren(widget, &cregion, &cpadding, INC_NONE, INC_STRETCHED);
+        csize = placeblockchildren(widget, &cregion, &cpadding, INC_NONE, INC_STRETCHED);
 
         break;
 
@@ -407,7 +407,7 @@ static struct util_size placelistbox(struct widget *widget, struct util_region *
     struct widget_listbox *listbox = widget->data;
     struct util_size padding = util_size(CONFIG_FRAME_WIDTH, CONFIG_FRAME_HEIGHT);
     struct util_region cregion = util_region(region->position.x + padding.w, region->position.y + padding.h, region->size.w - padding.w * 2, INFINITY);
-    struct util_size csize = placechildren(widget, &cregion, &zerosize, INC_NONE, INC_NORMAL);
+    struct util_size csize = placeblockchildren(widget, &cregion, &zerosize, INC_NONE, INC_NORMAL);
     struct util_region wregion = util_region(region->position.x, region->position.y, csize.w + padding.w * 2, csize.h + padding.h * 2);
     struct util_size wsize = placewidget(widget, region, &wregion, min);
 
@@ -440,7 +440,7 @@ static struct util_size placeselect(struct widget *widget, struct util_region *r
     struct util_region cregion = util_region(region->position.x, region->position.y + wregion.size.h, wregion.size.w * 2, INFINITY);
     struct util_size wsize = placewidget(widget, region, &wregion, min);
 
-    placechildren(widget, &cregion, &zerosize, INC_NONE, INC_NORMAL);
+    placeblockchildren(widget, &cregion, &zerosize, INC_NONE, INC_NORMAL);
 
     if (widget->state != WIDGET_STATE_FOCUS)
         clipchildren(widget, &zerosize);
@@ -466,7 +466,7 @@ static struct util_size placetextbox(struct widget *widget, struct util_region *
     struct widget_textbox *textbox = widget->data;
     struct util_size padding = util_size(CONFIG_TEXTBOX_PADDING_WIDTH, CONFIG_TEXTBOX_PADDING_HEIGHT);
     struct util_region cregion = util_region(region->position.x + padding.w, region->position.y + padding.h, region->size.w - padding.w * 2, INFINITY);
-    struct util_size csize = placetextflow(widget, &cregion, &zerosize, &zerosize);
+    struct util_size csize = placeinlinechildren(widget, &cregion, &zerosize);
     struct util_region wregion = util_region(region->position.x, region->position.y, csize.w + padding.w * 2, csize.h + padding.h * 2);
     struct util_size wsize = placewidget(widget, region, &wregion, min);
     struct list_item *current = 0;
@@ -527,7 +527,7 @@ static struct util_size placewindow(struct widget *widget, struct util_region *r
     struct util_size cpadding = util_size(CONFIG_WINDOW_BORDER_WIDTH, CONFIG_WINDOW_BORDER_HEIGHT);
     struct util_region cregion = util_region(widget->region.position.x, widget->region.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->region.size.w, widget->region.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
 
-    placechildren(widget, &cregion, &cpadding, INC_NONE, INC_NORMAL);
+    placeblockchildren(widget, &cregion, &cpadding, INC_NONE, INC_NORMAL);
 
     return placewidget(widget, region, &widget->region, min);
 
