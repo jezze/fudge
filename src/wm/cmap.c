@@ -25,8 +25,8 @@ static unsigned int cmaplistbox[12] = {
     0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8888888,
 };
 
-static unsigned int cmapmouse[3] = {
-    0xE8101010, 0xE8202020, 0xE8F0F0F0,
+static unsigned int cmapmouse[4] = {
+    0xE8101010, 0xE8202020, 0x00000000, 0xE8F0F0F0,
 };
 
 static unsigned int cmapselect[14] = {
