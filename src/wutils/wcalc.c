@@ -119,12 +119,12 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     char *data0 =
         "+ window id \"window\" title \"Calculator\"\n"
-        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\"\n"
-        "    + layout id \"display\" in \"base\" flow \"horizontal\"\n"
+        "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" padding \"1\" span \"1\"\n"
+        "    + layout id \"display\" in \"base\" flow \"horizontal-stretch\"\n"
         "      + textbox id \"output\" in \"display\" mode \"readonly\" span \"1\"\n"
         "        + text id \"result\" in \"output\" content \"0\" halign \"right\"\n";
     char *data1 =
-        "    + layout id \"buttons\" in \"base\" flow \"vertical\" span \"1\"\n"
+        "    + layout id \"buttons\" in \"base\" flow \"vertical-stretch\" span \"1\"\n"
         "      + layout id \"row1\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"
         "        + button in \"row1\" label \"7\" span \"1\" onclick \"q=num&value=7\"\n"
         "        + button in \"row1\" label \"8\" span \"1\" onclick \"q=num&value=8\"\n"

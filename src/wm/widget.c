@@ -599,7 +599,7 @@ static void inittext(struct widget *widget)
     text->valign = ATTR_VALIGN_TOP;
     text->weight = ATTR_WEIGHT_NORMAL;
     text->wrap = ATTR_WRAP_NONE;
-    text->offx = 0;
+    text->inlinex = 0;
     text->markstart = 0;
     text->markend = 0;
 

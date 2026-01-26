@@ -445,8 +445,8 @@ static void markwidget(struct widget *widget)
         int x1 = state.mouseposition.x - widget->region.position.x;
         int y1 = state.mouseposition.y - widget->region.position.y;
 
-        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->region.size.w, text->offx, x0, y0);
-        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->region.size.w, text->offx, x1, y1);
+        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->region.size.w, text->inlinex, x0, y0);
+        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, widget->region.size.w, text->inlinex, x1, y1);
 
     }
 

@@ -83,7 +83,7 @@ struct widget_text
     unsigned int valign;
     unsigned int weight;
     unsigned int wrap;
-    unsigned int offx;
+    unsigned int inlinex;
     unsigned int markstart;
     unsigned int markend;
 
