@@ -4,6 +4,12 @@
 #include "strpool.h"
 #include "attr.h"
 
+static struct util_token displays[2] =
+{
+    {ATTR_DISPLAY_BLOCK, "block"},
+    {ATTR_DISPLAY_INLINE, "inline"}
+};
+
 static struct util_token flows[5] =
 {
     {ATTR_FLOW_DEFAULT, "default"},
@@ -139,6 +145,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_CURSOR:
         return cstring_read_value(value, cstring_length(value), 10);
+
+    case ATTR_DISPLAY:
+        return util_getkey(displays, 2, value);
 
     case ATTR_FLOW:
         return util_getkey(flows, 5, value);

@@ -244,6 +244,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     switch (attribute)
     {
 
+    case ATTR_DISPLAY:
+        widget->display = attr_update(ATTR_DISPLAY, value, widget->display);
+
+        break;
+
     case ATTR_ID:
         widget->id = attr_update(ATTR_ID, value, widget->id);
 
@@ -433,12 +438,18 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
+    /* Move this */
+    widget->clip = widget->region;
+
     return util_intersects(x, widget->region.position.x, widget->region.position.x + widget->region.size.w) && util_intersects(x, widget->clip.position.x, widget->clip.position.x + widget->clip.size.w);
 
 }
 
 unsigned int widget_intersectsy(struct widget *widget, int y)
 {
+
+    /* Move this */
+    widget->clip = widget->region;
 
     return util_intersects(y, widget->region.position.y, widget->region.position.y + widget->region.size.h) && util_intersects(y, widget->clip.position.y, widget->clip.position.y + widget->clip.size.h);
 
