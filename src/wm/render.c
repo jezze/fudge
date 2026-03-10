@@ -14,10 +14,11 @@
 
 #define INFINITY                50000
 
+static unsigned int hasdamage;
+
 struct
 {
 
-    unsigned int hasdamage;
     struct util_position position0;
     struct util_position position2;
 
@@ -611,7 +612,7 @@ void render_place(struct widget *widget, struct util_region *region)
 void render_damage(int x0, int y0, int x2, int y2)
 {
 
-    if (area.hasdamage)
+    if (hasdamage)
     {
 
         area.position0.x = util_min(x0, area.position0.x);
@@ -631,14 +632,14 @@ void render_damage(int x0, int y0, int x2, int y2)
 
     }
 
-    area.hasdamage = 1;
+    hasdamage = 1;
 
 }
 
 void render_undamage(void)
 {
 
-    area.hasdamage = 0;
+    hasdamage = 0;
 
 }
 
@@ -646,6 +647,9 @@ void render_update(struct blit_display *display, int mx, int my)
 {
 
     int line;
+
+    if (!hasdamage)
+        return;
 
     for (line = area.position0.y; line < area.position2.y; line++)
     {
