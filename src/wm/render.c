@@ -33,13 +33,14 @@ struct calls
 
 };
 
-static struct calls calls[32];
+static struct util_position zeroposition;
 static struct util_size zerosize;
+static struct calls calls[32];
 
 static struct util_size childrengetsize(struct widget *widget, unsigned int flow)
 {
 
-    struct util_position offset = util_position(0, 0);
+    struct util_position offset = zeroposition;
     struct util_size total = zerosize;
     struct list_item *current = 0;
 
@@ -78,7 +79,7 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int flow
 static void childrenplace(struct widget *widget, struct util_region *region, unsigned int flow)
 {
 
-    struct util_position offset = util_position(0, 0);
+    struct util_position offset = zeroposition;
     struct util_size total = zerosize;
     struct util_size span = zerosize;
     struct list_item *current = 0;
