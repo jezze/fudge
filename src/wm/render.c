@@ -529,11 +529,9 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
 
     struct widget_listbox *listbox = widget->data;
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmapbodyro = cmap_get(widget->state, widget->type, 0, 0);
 
-    if (listbox->mode == ATTR_MODE_READONLY)
-        cmapbody = cmap_get(widget->state, widget->type, 0, 0);
-
-    blit_frame(display, &widget->region, line, x0, x2, cmapbody);
+    blit_frame(display, &widget->region, line, x0, x2, (listbox->mode == ATTR_MODE_READONLY) ? cmapbodyro : cmapbody);
 
 }
 
@@ -571,12 +569,10 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
     struct widget_textbox *textbox = widget->data;
     struct util_region rcursor = util_region(textbox->cursorx, textbox->cursory, textbox->cursorwidth, textbox->cursorheight);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmapbodyro = cmap_get(widget->state, widget->type, 12, 0);
     unsigned int *cmapicon = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0);
 
-    if (textbox->mode == ATTR_MODE_READONLY)
-        cmapbody = cmap_get(widget->state, widget->type, 12, 0);
-
-    blit_frame(display, &widget->region, line, x0, x2, cmapbody);
+    blit_frame(display, &widget->region, line, x0, x2, (textbox->mode == ATTR_MODE_READONLY) ? cmapbodyro : cmapbody);
     blit_iconcursor(display, &rcursor, line, x0, x2, cmapicon);
 
 }
