@@ -470,10 +470,31 @@ unsigned int widget_clip_intersectsy(struct widget *widget, int y)
 
 }
 
-unsigned int widget_clip_ntersects(struct widget *widget, int x, int y)
+unsigned int widget_clip_intersects(struct widget *widget, int x, int y)
 {
 
     return widget_clip_intersectsx(widget, x) && widget_clip_intersectsy(widget, y);
+
+}
+
+unsigned int widget_intersectsx(struct widget *widget, int x)
+{
+
+    return widget_region_intersectsx(widget, x) && widget_clip_intersectsx(widget, x);
+
+}
+
+unsigned int widget_intersectsy(struct widget *widget, int y)
+{
+
+    return widget_region_intersectsy(widget, y) && widget_clip_intersectsy(widget, y);
+
+}
+
+unsigned int widget_intersects(struct widget *widget, int x, int y)
+{
+
+    return widget_region_intersects(widget, x, y) && widget_clip_intersects(widget, x, y);
 
 }
 

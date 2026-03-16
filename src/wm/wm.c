@@ -69,7 +69,7 @@ static struct widget *getinteractivewidgetat(int x, int y)
         if (child == state.mousewidget)
             continue;
 
-        if (widget_isinteractive(child) && widget_region_intersects(child, x, y))
+        if (widget_isinteractive(child) && widget_intersects(child, x, y))
             return child;
 
     }
@@ -91,7 +91,7 @@ static struct widget *getscrollablewidgetat(int x, int y)
         if (child == state.mousewidget)
             continue;
 
-        if (widget_isscrollable(child) && widget_region_intersects(child, x, y))
+        if (widget_isscrollable(child) && widget_intersects(child, x, y))
             return child;
 
     }
@@ -110,7 +110,7 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 
         struct widget *child = current->data;
 
-        if (child->type == type && widget_region_intersects(child, x, y))
+        if (child->type == type && widget_intersects(child, x, y))
             return child;
 
     }

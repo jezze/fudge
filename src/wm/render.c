@@ -425,35 +425,35 @@ static void placewindow(struct widget *widget, struct util_region *region)
 static void clipbutton(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
 }
 
 static void clipchoice(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
 }
 
 static void clipfill(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
 }
 
 static void clipimage(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
 }
 
 static void cliplayout(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
     childrenclip(widget, &widget->clip);
 
@@ -462,7 +462,7 @@ static void cliplayout(struct widget *widget, struct util_region *clip)
 static void cliplistbox(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
     childrenclip(widget, &widget->clip);
 
@@ -471,9 +471,9 @@ static void cliplistbox(struct widget *widget, struct util_region *clip)
 static void clipselect(struct widget *widget, struct util_region *clip)
 {
 
-    if (widget->state == WIDGET_STATE_FOCUS)
-        widget->clip = util_region(0, 0, 1920, 1080);
-    else
+    widget->clip = *clip;
+
+    if (widget->state != WIDGET_STATE_FOCUS)
         widget->clip = util_region_intersection(&widget->region, clip);
 
     childrenclip(widget, &widget->clip);
@@ -483,14 +483,14 @@ static void clipselect(struct widget *widget, struct util_region *clip)
 static void cliptext(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
 }
 
 static void cliptextbox(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
     childrenclip(widget, &widget->clip);
 
@@ -499,14 +499,14 @@ static void cliptextbox(struct widget *widget, struct util_region *clip)
 static void cliptextbutton(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
 }
 
 static void clipwindow(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = util_region_intersection(&widget->region, clip);
+    widget->clip = *clip;
 
     childrenclip(widget, &widget->clip);
 
@@ -742,7 +742,7 @@ void render_place(struct widget *widget, struct util_region *region)
 {
 
     calls[widget->type].place(widget, region);
-    calls[widget->type].clip(widget, &widget->region);
+    calls[widget->type].clip(widget, region);
 
 }
 
@@ -798,7 +798,7 @@ void render_update(struct blit_display *display)
 
             struct widget *widget = current->data;
 
-            if (widget_clip_intersectsy(widget, line))
+            if (widget_intersectsy(widget, line))
             {
 
                 int x0 = util_max(widget->region.position.x, area.position0.x);
