@@ -374,9 +374,9 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ window id \"window\" title \"Shell\"\n"
         "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" padding \"1\" span \"1\"\n"
         "    + textbox id \"output\" in \"base\" overflow \"vscroll\" mode \"readonly\" span \"1\" cursor \"0\"\n"
-        "      + text id \"result\" in \"output\" wrap \"char\"\n"
-        "      + text id \"prompt\" in \"output\" wrap \"char\" weight \"bold\" content \"$ \"\n"
-        "      + text id \"input\" in \"output\" wrap \"char\" content \"\"\n";
+        "      + text id \"result\" in \"output\" display \"inline\" wrap \"char\"\n"
+        "      + text id \"prompt\" in \"output\" display \"inline\" wrap \"char\" weight \"bold\" content \"$ \"\n"
+        "      + text id \"input\" in \"output\" display \"inline\" wrap \"char\" content \"\"\n";
 
     channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
 

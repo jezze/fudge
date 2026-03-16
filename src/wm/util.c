@@ -79,6 +79,20 @@ struct util_region util_region(int x, int y, unsigned int w, unsigned int h)
 
 }
 
+struct util_region util_region_intersection(struct util_region *a, struct util_region *b)
+{
+
+    struct util_region result;
+
+    result.position.x = util_max(a->position.x, b->position.x);
+    result.position.y = util_max(a->position.y, b->position.y);
+    result.size.w = util_min(a->position.x + a->size.w, b->position.x + b->size.w) - result.position.x;
+    result.size.h = util_min(a->position.y + a->size.h, b->position.y + b->size.h) - result.position.y;
+
+    return result;
+
+}
+
 unsigned int util_getkey(struct util_token *tokens, unsigned int n, char *value)
 {
 

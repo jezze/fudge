@@ -435,30 +435,45 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 
 }
 
-unsigned int widget_intersectsx(struct widget *widget, int x)
+unsigned int widget_region_intersectsx(struct widget *widget, int x)
 {
 
-    /* Move this */
-    widget->clip = widget->region;
-
-    return util_intersects(x, widget->region.position.x, widget->region.position.x + widget->region.size.w) && util_intersects(x, widget->clip.position.x, widget->clip.position.x + widget->clip.size.w);
+    return util_intersects(x, widget->region.position.x, widget->region.position.x + widget->region.size.w);
 
 }
 
-unsigned int widget_intersectsy(struct widget *widget, int y)
+unsigned int widget_region_intersectsy(struct widget *widget, int y)
 {
 
-    /* Move this */
-    widget->clip = widget->region;
-
-    return util_intersects(y, widget->region.position.y, widget->region.position.y + widget->region.size.h) && util_intersects(y, widget->clip.position.y, widget->clip.position.y + widget->clip.size.h);
+    return util_intersects(y, widget->region.position.y, widget->region.position.y + widget->region.size.h);
 
 }
 
-unsigned int widget_intersects(struct widget *widget, int x, int y)
+unsigned int widget_region_intersects(struct widget *widget, int x, int y)
 {
 
-    return widget_intersectsx(widget, x) && widget_intersectsy(widget, y);
+    return widget_region_intersectsx(widget, x) && widget_region_intersectsy(widget, y);
+
+}
+
+unsigned int widget_clip_intersectsx(struct widget *widget, int x)
+{
+
+    return util_intersects(x, widget->clip.position.x, widget->clip.position.x + widget->clip.size.w);
+
+}
+
+unsigned int widget_clip_intersectsy(struct widget *widget, int y)
+{
+
+    return util_intersects(y, widget->clip.position.y, widget->clip.position.y + widget->clip.size.h);
+
+}
+
+unsigned int widget_clip_ntersects(struct widget *widget, int x, int y)
+{
+
+    return widget_clip_intersectsx(widget, x) && widget_clip_intersectsy(widget, y);
 
 }
 

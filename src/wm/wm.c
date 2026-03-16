@@ -69,7 +69,7 @@ static struct widget *getinteractivewidgetat(int x, int y)
         if (child == state.mousewidget)
             continue;
 
-        if (widget_isinteractive(child) && widget_intersects(child, x, y))
+        if (widget_isinteractive(child) && widget_region_intersects(child, x, y))
             return child;
 
     }
@@ -91,7 +91,7 @@ static struct widget *getscrollablewidgetat(int x, int y)
         if (child == state.mousewidget)
             continue;
 
-        if (widget_isscrollable(child) && widget_intersects(child, x, y))
+        if (widget_isscrollable(child) && widget_region_intersects(child, x, y))
             return child;
 
     }
@@ -110,7 +110,7 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 
         struct widget *child = current->data;
 
-        if (child->type == type && widget_intersects(child, x, y))
+        if (child->type == type && widget_region_intersects(child, x, y))
             return child;
 
     }
@@ -633,7 +633,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             {
 
                 render_place(state.rootwidget, &display.region);
-                render_update(&display, state.mousewidget->region.position.x, state.mousewidget->region.position.y);
+                render_update(&display);
                 render_undamage();
 
             }
@@ -693,6 +693,8 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
         }
 
     }
+
+    render_setmouse(state.mousewidget->region.position.x, state.mousewidget->region.position.y);
 
 }
 
@@ -808,7 +810,7 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
     }
 
     render_place(state.rootwidget, &display.region);
-    render_update(&display, state.mousewidget->region.position.x, state.mousewidget->region.position.y);
+    render_update(&display);
     render_undamage();
 
 }
