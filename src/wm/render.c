@@ -52,6 +52,25 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int flow
         struct widget *child = current->data;
         struct util_size csize = calls[child->type].getsize(child);
 
+        switch (flow)
+        {
+
+        case ATTR_FLOW_HORIZONTAL:
+        case ATTR_FLOW_HORIZONTALSTRETCH:
+            if (child->span)
+                csize.w = 0;
+
+            break;
+
+        case ATTR_FLOW_VERTICAL:
+        case ATTR_FLOW_VERTICALSTRETCH:
+            if (child->span)
+                csize.h = 0;
+
+            break;
+
+        }
+
         total.w = util_max(total.w, csize.w + offset.x);
         total.h = util_max(total.h, csize.h + offset.y);
 
@@ -82,7 +101,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
 {
 
     struct util_position offset = zeroposition;
-    struct util_size total = zerosize;
+    struct util_size total = childrengetsize(widget, flow);
     struct util_size span = zerosize;
     struct list_item *current = 0;
     unsigned int spans = 0;
@@ -91,15 +110,6 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
     {
 
         struct widget *child = current->data;
-        struct util_size csize = calls[child->type].getsize(child);
-
-        if (!child->span)
-        {
-
-            total.w += csize.w;
-            total.h += csize.h;
-
-        }
 
         spans += child->span;
 
@@ -699,9 +709,9 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     struct util_region rtitle = util_region(widget->region.position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->region.position.y, widget->region.size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_region rclose = util_region(widget->region.position.x + widget->region.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->region.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_region rbody = util_region(widget->region.position.x, widget->region.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->region.size.w, widget->region.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
-    unsigned int onhamburger = util_intersects_region(&rhamburger, mouse.x, mouse.y);
-    unsigned int onminimize = util_intersects_region(&rminimize, mouse.x, mouse.y);
-    unsigned int onclose = util_intersects_region(&rclose, mouse.x, mouse.y);
+    unsigned int onhamburger = util_region_intersects(&rhamburger, mouse.x, mouse.y);
+    unsigned int onminimize = util_region_intersects(&rminimize, mouse.x, mouse.y);
+    unsigned int onclose = util_region_intersects(&rclose, mouse.x, mouse.y);
     unsigned int *cmaptop = cmap_get(widget->state, widget->type, 0, 0);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 4, 0);
     unsigned int *cmaptitle = cmap_get(widget->state, widget->type, 11, 0);

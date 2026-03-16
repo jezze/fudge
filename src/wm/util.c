@@ -9,13 +9,6 @@ unsigned int util_intersects(int v, int min, int max)
 
 }
 
-unsigned int util_intersects_region(struct util_region *region, int x, int y)
-{
-
-    return util_intersects(x, region->position.x, region->position.x + region->size.w) && util_intersects(y, region->position.y, region->position.y + region->size.h);
-
-}
-
 int util_min(int a, int b)
 {
 
@@ -76,6 +69,13 @@ struct util_region util_region(int x, int y, unsigned int w, unsigned int h)
     region.size = util_size(w, h);
 
     return region;
+
+}
+
+unsigned int util_region_intersects(struct util_region *region, int x, int y)
+{
+
+    return util_intersects(x, region->position.x, region->position.x + region->size.w) && util_intersects(y, region->position.y, region->position.y + region->size.h);
 
 }
 
