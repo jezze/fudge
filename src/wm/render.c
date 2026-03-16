@@ -161,7 +161,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
             offset.y += cregion.size.h;
 
             break;
- 
+
         }
 
         switch (flow)
@@ -182,7 +182,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
             cregion.size.w = region->size.w;
 
             break;
- 
+
         }
 
         calls[child->type].place(child, &cregion);
@@ -368,11 +368,11 @@ static void placelayout(struct widget *widget, struct util_region *region)
 static void placelistbox(struct widget *widget, struct util_region *region)
 {
 
-    struct util_region cregion = util_region(region->position.x + CONFIG_FRAME_WIDTH, region->position.y + CONFIG_FRAME_HEIGHT, INFINITY, INFINITY);
+    struct util_region cregion = util_region(region->position.x + CONFIG_FRAME_WIDTH, region->position.y + CONFIG_FRAME_HEIGHT, region->size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
 
     widget->region = *region;
 
-    childrenplace(widget, &cregion, ATTR_FLOW_VERTICAL);
+    childrenplace(widget, &cregion, ATTR_FLOW_VERTICALSTRETCH);
 
 }
 
@@ -398,7 +398,7 @@ static void placetext(struct widget *widget, struct util_region *region)
 static void placetextbox(struct widget *widget, struct util_region *region)
 {
 
-    struct util_region cregion = util_region(region->position.x + CONFIG_TEXTBOX_PADDING_WIDTH, region->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, INFINITY, INFINITY);
+    struct util_region cregion = util_region(region->position.x + CONFIG_TEXTBOX_PADDING_WIDTH, region->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, region->position.x - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
 
     widget->region = *region;
 
