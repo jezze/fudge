@@ -462,7 +462,7 @@ static void cliplayout(struct widget *widget, struct util_region *clip)
 static void cliplistbox(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = *clip;
+    widget->clip = util_region_intersection(&widget->region, clip);
 
     childrenclip(widget, &widget->clip);
 
@@ -490,7 +490,7 @@ static void cliptext(struct widget *widget, struct util_region *clip)
 static void cliptextbox(struct widget *widget, struct util_region *clip)
 {
 
-    widget->clip = *clip;
+    widget->clip = util_region_intersection(&widget->region, clip);
 
     childrenclip(widget, &widget->clip);
 
