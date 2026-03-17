@@ -27,7 +27,7 @@ struct
 struct calls
 {
 
-    struct util_size (*getsize)(struct widget *widget, unsigned int maxw);
+    struct util_size (*getsize)(struct widget *widget, unsigned int maxw, unsigned int maxh);
     void (*place)(struct widget *widget, struct util_region *region);
     void (*clip)(struct widget *widget, struct util_region *clip);
     void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2);
@@ -39,7 +39,7 @@ static struct util_size zerosize;
 static struct util_position mouse;
 static struct calls calls[32];
 
-static struct util_size childrengetsize(struct widget *widget, unsigned int maxw, unsigned int flow)
+static struct util_size childrengetsize(struct widget *widget, unsigned int maxw, unsigned int maxh, unsigned int flow)
 {
 
     struct util_position offset = zeroposition;
@@ -50,7 +50,7 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int maxw
     {
 
         struct widget *child = current->data;
-        struct util_size csize = calls[child->type].getsize(child, maxw - total.w);
+        struct util_size csize = calls[child->type].getsize(child, maxw - total.w, maxh - total.h);
 
         switch (flow)
         {
@@ -76,6 +76,9 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int maxw
 
         if (total.w > maxw)
             total.w = maxw;
+
+        if (total.h > maxh)
+            total.h = maxh;
 
         switch (flow)
         {
@@ -104,7 +107,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
 {
 
     struct util_position offset = zeroposition;
-    struct util_size total = childrengetsize(widget, region->size.w, flow);
+    struct util_size total = childrengetsize(widget, region->size.w, region->size.h, flow);
     struct util_size span = zerosize;
     struct list_item *current = 0;
     unsigned int spans = 0;
@@ -132,7 +135,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
     {
 
         struct widget *child = current->data;
-        struct util_size csize = calls[child->type].getsize(child, region->size.w - offset.x);
+        struct util_size csize = calls[child->type].getsize(child, region->size.w - offset.x, region->size.h - offset.y);
         struct util_region cregion;
 
         cregion.position.x = region->position.x;
@@ -151,7 +154,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
             {
 
                 cregion.size.w = child->span * span.w;
-                csize = calls[child->type].getsize(child, cregion.size.w);
+                csize = calls[child->type].getsize(child, cregion.size.w, region->size.h - offset.y);
                 cregion.size.h = csize.h;
 
             }
@@ -168,7 +171,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
             {
 
                 cregion.size.h = child->span * span.h;
-                csize = calls[child->type].getsize(child, INFINITY);
+                csize = calls[child->type].getsize(child, region->size.w - offset.x, cregion.size.h);
                 cregion.size.w = csize.w;
 
             }
@@ -222,7 +225,7 @@ static void childrenclip(struct widget *widget, struct util_region *clip)
 
 }
 
-static struct util_size getsizebutton(struct widget *widget, unsigned int maxw)
+static struct util_size getsizebutton(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_button *button = widget->data;
@@ -234,7 +237,7 @@ static struct util_size getsizebutton(struct widget *widget, unsigned int maxw)
 
 }
 
-static struct util_size getsizechoice(struct widget *widget, unsigned int maxw)
+static struct util_size getsizechoice(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_choice *choice = widget->data;
@@ -246,14 +249,14 @@ static struct util_size getsizechoice(struct widget *widget, unsigned int maxw)
 
 }
 
-static struct util_size getsizefill(struct widget *widget, unsigned int maxw)
+static struct util_size getsizefill(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     return zerosize;
 
 }
 
-static struct util_size getsizeimage(struct widget *widget, unsigned int maxw)
+static struct util_size getsizeimage(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_image *image = widget->data;
@@ -265,26 +268,26 @@ static struct util_size getsizeimage(struct widget *widget, unsigned int maxw)
 
 }
 
-static struct util_size getsizelayout(struct widget *widget, unsigned int maxw)
+static struct util_size getsizelayout(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_layout *layout = widget->data;
-    struct util_size total = childrengetsize(widget, maxw, layout->flow);
+    struct util_size total = childrengetsize(widget, maxw, maxh, layout->flow);
 
     return util_size(total.w, total.h);
 
 }
 
-static struct util_size getsizelistbox(struct widget *widget, unsigned int maxw)
+static struct util_size getsizelistbox(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
-    struct util_size total = childrengetsize(widget, maxw, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, maxw, maxh, ATTR_FLOW_VERTICAL);
 
     return util_size(total.w + CONFIG_FRAME_WIDTH * 2, total.h + CONFIG_FRAME_HEIGHT * 2);
 
 }
 
-static struct util_size getsizeselect(struct widget *widget, unsigned int maxw)
+static struct util_size getsizeselect(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_select *select = widget->data;
@@ -296,7 +299,7 @@ static struct util_size getsizeselect(struct widget *widget, unsigned int maxw)
 
 }
 
-static struct util_size getsizetext(struct widget *widget, unsigned int maxw)
+static struct util_size getsizetext(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_text *text = widget->data;
@@ -308,16 +311,16 @@ static struct util_size getsizetext(struct widget *widget, unsigned int maxw)
 
 }
 
-static struct util_size getsizetextbox(struct widget *widget, unsigned int maxw)
+static struct util_size getsizetextbox(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
-    struct util_size total = childrengetsize(widget, maxw, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, maxw, maxh, ATTR_FLOW_VERTICAL);
 
     return util_size(total.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, total.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
 
 }
 
-static struct util_size getsizetextbutton(struct widget *widget, unsigned int maxw)
+static struct util_size getsizetextbutton(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     struct widget_textbutton *textbutton = widget->data;
@@ -329,7 +332,7 @@ static struct util_size getsizetextbutton(struct widget *widget, unsigned int ma
 
 }
 
-static struct util_size getsizewindow(struct widget *widget, unsigned int maxw)
+static struct util_size getsizewindow(struct widget *widget, unsigned int maxw, unsigned int maxh)
 {
 
     return widget->region.size;
@@ -363,7 +366,7 @@ static void placeimage(struct widget *widget, struct util_region *region)
     struct widget_image *image = widget->data;
 
     if (image->mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
-        widget->region.size = calls[widget->type].getsize(widget, INFINITY);
+        widget->region.size = calls[widget->type].getsize(widget, INFINITY, INFINITY);
     else
         widget->region = *region;
 
@@ -394,7 +397,7 @@ static void placelistbox(struct widget *widget, struct util_region *region)
 static void placeselect(struct widget *widget, struct util_region *region)
 {
 
-    struct util_size wsize = calls[widget->type].getsize(widget, INFINITY);
+    struct util_size wsize = calls[widget->type].getsize(widget, INFINITY, INFINITY);
     struct util_region cregion = util_region(region->position.x, region->position.y + wsize.h, INFINITY, INFINITY);
 
     widget->region = *region;
@@ -831,7 +834,7 @@ void render_update(struct blit_display *display)
 
 }
 
-static void setupcall(unsigned int type, struct util_size (*getsize)(struct widget *widget, unsigned int maxw), void (*place)(struct widget *widget, struct util_region *region), void (*clip)(struct widget *widget, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2))
+static void setupcall(unsigned int type, struct util_size (*getsize)(struct widget *widget, unsigned int maxw, unsigned int maxh), void (*place)(struct widget *widget, struct util_region *region), void (*clip)(struct widget *widget, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2))
 {
 
     struct calls *call = &calls[type];
