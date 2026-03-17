@@ -39,7 +39,7 @@ static struct util_size zerosize;
 static struct util_position mouse;
 static struct calls calls[32];
 
-static struct util_size childrengetsize(struct widget *widget, unsigned int maxw, unsigned int maxh, unsigned int flow)
+static struct util_size childrengetsize(struct widget *widget, struct util_size *limit, unsigned int flow)
 {
 
     struct util_position offset = zeroposition;
@@ -50,7 +50,7 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int maxw
     {
 
         struct widget *child = current->data;
-        struct util_size climit = util_size(maxw - total.w, maxh - total.h);
+        struct util_size climit = util_size(limit->w - total.w, limit->h - total.h);
         struct util_size csize = calls[child->type].getsize(child, &climit);
 
         switch (flow)
@@ -75,11 +75,11 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int maxw
         total.w = util_max(total.w, csize.w + offset.x);
         total.h = util_max(total.h, csize.h + offset.y);
 
-        if (total.w > maxw)
-            total.w = maxw;
+        if (total.w > limit->w)
+            total.w = limit->w;
 
-        if (total.h > maxh)
-            total.h = maxh;
+        if (total.h > limit->h)
+            total.h = limit->h;
 
         switch (flow)
         {
@@ -108,7 +108,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
 {
 
     struct util_position offset = zeroposition;
-    struct util_size total = childrengetsize(widget, region->size.w, region->size.h, flow);
+    struct util_size total = childrengetsize(widget, &region->size, flow);
     struct util_size span = zerosize;
     struct list_item *current = 0;
     unsigned int spans = 0;
@@ -276,7 +276,7 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 {
 
     struct widget_layout *layout = widget->data;
-    struct util_size total = childrengetsize(widget, limit->w, limit->h, layout->flow);
+    struct util_size total = childrengetsize(widget, limit, layout->flow);
 
     return util_size(total.w, total.h);
 
@@ -285,7 +285,7 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 static struct util_size getsizelistbox(struct widget *widget, struct util_size *limit)
 {
 
-    struct util_size total = childrengetsize(widget, limit->w, limit->h, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, limit, ATTR_FLOW_VERTICAL);
 
     return util_size(total.w + CONFIG_FRAME_WIDTH * 2, total.h + CONFIG_FRAME_HEIGHT * 2);
 
@@ -318,7 +318,7 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
 static struct util_size getsizetextbox(struct widget *widget, struct util_size *limit)
 {
 
-    struct util_size total = childrengetsize(widget, limit->w, limit->h, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, limit, ATTR_FLOW_VERTICAL);
 
     return util_size(total.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, total.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
 
