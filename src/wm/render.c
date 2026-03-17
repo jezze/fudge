@@ -360,21 +360,8 @@ static void placeimage(struct widget *widget, struct util_region *region)
 
     struct widget_image *image = widget->data;
 
-    if (image->mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
-    {
-
-        struct util_size limit = util_size(INFINITY, INFINITY);
-
-        widget->region.size = calls[widget->type].getsize(widget, &limit);
-
-    }
-
-    else
-    {
-
+    if (image->mimetype != ATTR_MIMETYPE_FUDGEMOUSE)
         widget->region = *region;
-
-    }
 
 }
 
