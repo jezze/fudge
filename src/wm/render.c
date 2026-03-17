@@ -398,7 +398,7 @@ static void placetext(struct widget *widget, struct util_region *region)
 static void placetextbox(struct widget *widget, struct util_region *region)
 {
 
-    struct util_region cregion = util_region(region->position.x + CONFIG_TEXTBOX_PADDING_WIDTH, region->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, region->position.x - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
+    struct util_region cregion = util_region(region->position.x + CONFIG_TEXTBOX_PADDING_WIDTH, region->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, region->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
 
     widget->region = *region;
 
