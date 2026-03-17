@@ -72,14 +72,8 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         }
 
-        total.w = util_max(total.w, csize.w + offset.x);
-        total.h = util_max(total.h, csize.h + offset.y);
-
-        if (total.w > limit->w)
-            total.w = limit->w;
-
-        if (total.h > limit->h)
-            total.h = limit->h;
+        total.w = util_clamp(util_max(total.w, csize.w + offset.x), 0, limit->w);
+        total.h = util_clamp(util_max(total.h, csize.h + offset.y), 0, limit->h);
 
         switch (flow)
         {
