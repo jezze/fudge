@@ -138,20 +138,13 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
         struct widget *child = current->data;
         struct util_size climit = util_size(region->size.w - offset.x, region->size.h - offset.y);
         struct util_size csize = calls[child->type].getsize(child, &climit);
-        struct util_region cregion;
-
-        cregion.position.x = region->position.x;
-        cregion.position.y = region->position.y;
-        cregion.size.w = csize.w;
-        cregion.size.h = csize.h;
+        struct util_region cregion = util_region(region->position.x + offset.x, region->position.y + offset.y, csize.w, csize.h);
 
         switch (flow)
         {
 
         case ATTR_FLOW_HORIZONTAL:
         case ATTR_FLOW_HORIZONTALSTRETCH:
-            cregion.position.x += offset.x;
-
             if (child->span)
             {
 
@@ -168,8 +161,6 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
 
         case ATTR_FLOW_VERTICAL:
         case ATTR_FLOW_VERTICALSTRETCH:
-            cregion.position.y += offset.y;
-
             if (child->span)
             {
 
