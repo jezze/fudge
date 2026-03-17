@@ -27,7 +27,7 @@ struct
 struct calls
 {
 
-    struct util_size (*getsize)(struct widget *widget);
+    struct util_size (*getsize)(struct widget *widget, unsigned int maxw);
     void (*place)(struct widget *widget, struct util_region *region);
     void (*clip)(struct widget *widget, struct util_region *clip);
     void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2);
@@ -39,7 +39,7 @@ static struct util_size zerosize;
 static struct util_position mouse;
 static struct calls calls[32];
 
-static struct util_size childrengetsize(struct widget *widget, unsigned int flow)
+static struct util_size childrengetsize(struct widget *widget, unsigned int maxw, unsigned int flow)
 {
 
     struct util_position offset = zeroposition;
@@ -50,7 +50,7 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int flow
     {
 
         struct widget *child = current->data;
-        struct util_size csize = calls[child->type].getsize(child);
+        struct util_size csize = calls[child->type].getsize(child, maxw - total.w);
 
         switch (flow)
         {
@@ -73,6 +73,9 @@ static struct util_size childrengetsize(struct widget *widget, unsigned int flow
 
         total.w = util_max(total.w, csize.w + offset.x);
         total.h = util_max(total.h, csize.h + offset.y);
+
+        if (total.w > maxw)
+            total.w = maxw;
 
         switch (flow)
         {
@@ -101,7 +104,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
 {
 
     struct util_position offset = zeroposition;
-    struct util_size total = childrengetsize(widget, flow);
+    struct util_size total = childrengetsize(widget, region->size.w, flow);
     struct util_size span = zerosize;
     struct list_item *current = 0;
     unsigned int spans = 0;
@@ -129,7 +132,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
     {
 
         struct widget *child = current->data;
-        struct util_size csize = calls[child->type].getsize(child);
+        struct util_size csize = calls[child->type].getsize(child, region->size.w - offset.x);
         struct util_region cregion;
 
         cregion.position.x = region->position.x;
@@ -145,7 +148,13 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
             cregion.position.x += offset.x;
 
             if (child->span)
+            {
+
                 cregion.size.w = child->span * span.w;
+                csize = calls[child->type].getsize(child, cregion.size.w);
+                cregion.size.h = csize.h;
+
+            }
 
             offset.x += cregion.size.w;
 
@@ -156,7 +165,13 @@ static void childrenplace(struct widget *widget, struct util_region *region, uns
             cregion.position.y += offset.y;
 
             if (child->span)
+            {
+
                 cregion.size.h = child->span * span.h;
+                csize = calls[child->type].getsize(child, INFINITY);
+                cregion.size.w = csize.w;
+
+            }
 
             offset.y += cregion.size.h;
 
@@ -207,38 +222,38 @@ static void childrenclip(struct widget *widget, struct util_region *clip)
 
 }
 
-static struct util_size getsizebutton(struct widget *widget)
+static struct util_size getsizebutton(struct widget *widget, unsigned int maxw)
 {
 
     struct widget_button *button = widget->data;
     struct text_info info;
 
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_BOLD), strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, INFINITY, 0);
+    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_BOLD), strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, maxw, 0);
 
     return util_size(info.width + CONFIG_BUTTON_PADDING_WIDTH * 2, info.height + CONFIG_BUTTON_PADDING_HEIGHT * 2);
 
 }
 
-static struct util_size getsizechoice(struct widget *widget)
+static struct util_size getsizechoice(struct widget *widget, unsigned int maxw)
 {
 
     struct widget_choice *choice = widget->data;
     struct text_info info;
 
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, INFINITY, 0);
+    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, maxw, 0);
 
     return util_size(info.width + CONFIG_CHOICE_PADDING_WIDTH * 2, info.height + CONFIG_CHOICE_PADDING_HEIGHT * 2);
 
 }
 
-static struct util_size getsizefill(struct widget *widget)
+static struct util_size getsizefill(struct widget *widget, unsigned int maxw)
 {
 
     return zerosize;
 
 }
 
-static struct util_size getsizeimage(struct widget *widget)
+static struct util_size getsizeimage(struct widget *widget, unsigned int maxw)
 {
 
     struct widget_image *image = widget->data;
@@ -250,71 +265,71 @@ static struct util_size getsizeimage(struct widget *widget)
 
 }
 
-static struct util_size getsizelayout(struct widget *widget)
+static struct util_size getsizelayout(struct widget *widget, unsigned int maxw)
 {
 
     struct widget_layout *layout = widget->data;
-    struct util_size total = childrengetsize(widget, layout->flow);
+    struct util_size total = childrengetsize(widget, maxw, layout->flow);
 
     return util_size(total.w, total.h);
 
 }
 
-static struct util_size getsizelistbox(struct widget *widget)
+static struct util_size getsizelistbox(struct widget *widget, unsigned int maxw)
 {
 
-    struct util_size total = childrengetsize(widget, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, maxw, ATTR_FLOW_VERTICAL);
 
     return util_size(total.w + CONFIG_FRAME_WIDTH * 2, total.h + CONFIG_FRAME_HEIGHT * 2);
 
 }
 
-static struct util_size getsizeselect(struct widget *widget)
+static struct util_size getsizeselect(struct widget *widget, unsigned int maxw)
 {
 
     struct widget_select *select = widget->data;
     struct text_info info;
 
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, INFINITY, 0);
+    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, maxw, 0);
 
     return util_size(info.width + CONFIG_SELECT_PADDING_WIDTH * 4, info.height + CONFIG_SELECT_PADDING_HEIGHT * 2);
 
 }
 
-static struct util_size getsizetext(struct widget *widget)
+static struct util_size getsizetext(struct widget *widget, unsigned int maxw)
 {
 
     struct widget_text *text = widget->data;
     struct text_info info;
 
-    text_gettextinfo(&info, pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, INFINITY, 0);
+    text_gettextinfo(&info, pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, maxw, 0);
 
     return util_size(info.width, info.height);
 
 }
 
-static struct util_size getsizetextbox(struct widget *widget)
+static struct util_size getsizetextbox(struct widget *widget, unsigned int maxw)
 {
 
-    struct util_size total = childrengetsize(widget, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, maxw, ATTR_FLOW_VERTICAL);
 
     return util_size(total.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, total.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
 
 }
 
-static struct util_size getsizetextbutton(struct widget *widget)
+static struct util_size getsizetextbutton(struct widget *widget, unsigned int maxw)
 {
 
     struct widget_textbutton *textbutton = widget->data;
     struct text_info info;
 
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, INFINITY, 0);
+    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, maxw, 0);
 
     return util_size(info.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, info.height + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
 
 }
 
-static struct util_size getsizewindow(struct widget *widget)
+static struct util_size getsizewindow(struct widget *widget, unsigned int maxw)
 {
 
     return widget->region.size;
@@ -348,7 +363,7 @@ static void placeimage(struct widget *widget, struct util_region *region)
     struct widget_image *image = widget->data;
 
     if (image->mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
-        widget->region.size = calls[widget->type].getsize(widget);
+        widget->region.size = calls[widget->type].getsize(widget, INFINITY);
     else
         widget->region = *region;
 
@@ -379,7 +394,7 @@ static void placelistbox(struct widget *widget, struct util_region *region)
 static void placeselect(struct widget *widget, struct util_region *region)
 {
 
-    struct util_size wsize = calls[widget->type].getsize(widget);
+    struct util_size wsize = calls[widget->type].getsize(widget, INFINITY);
     struct util_region cregion = util_region(region->position.x, region->position.y + wsize.h, INFINITY, INFINITY);
 
     widget->region = *region;
@@ -816,7 +831,7 @@ void render_update(struct blit_display *display)
 
 }
 
-static void setupcall(unsigned int type, struct util_size (*getsize)(struct widget *widget), void (*place)(struct widget *widget, struct util_region *region), void (*clip)(struct widget *widget, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2))
+static void setupcall(unsigned int type, struct util_size (*getsize)(struct widget *widget, unsigned int maxw), void (*place)(struct widget *widget, struct util_region *region), void (*clip)(struct widget *widget, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2))
 {
 
     struct calls *call = &calls[type];
