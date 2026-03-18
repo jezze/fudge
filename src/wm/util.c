@@ -60,6 +60,18 @@ struct util_size util_size(int w, int h)
 
 }
 
+struct util_size util_size_intersection(struct util_size *a, struct util_size *b)
+{
+
+    struct util_size result;
+
+    result.w = util_min(a->w, b->w);
+    result.h = util_min(a->h, b->h);
+
+    return result;
+
+}
+
 struct util_region util_region(int x, int y, unsigned int w, unsigned int h)
 {
 
