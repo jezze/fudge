@@ -299,8 +299,7 @@ static struct util_size getsizeimage(struct widget *widget, struct util_size *li
 static struct util_size getsizelayout(struct widget *widget, struct util_size *limit)
 {
 
-    struct widget_layout *layout = widget->data;
-    struct util_size total = childrengetsize(widget, limit, getdirection(layout->flow));
+    struct util_size total = childrengetsize(widget, limit, getdirection(widget->flow));
 
     return util_size(total.w, total.h);
 
@@ -406,12 +405,10 @@ static void placeimage(struct widget *widget, struct util_region *region, struct
 static void placelayout(struct widget *widget, struct util_region *region, struct util_region *clip)
 {
 
-    struct widget_layout *layout = widget->data;
-
     widget->region = *region;
     widget->clip = *clip;
 
-    childrenplace(widget, region, &widget->clip, getdirection(layout->flow), getstretch(layout->flow));
+    childrenplace(widget, region, &widget->clip, getdirection(widget->flow), getstretch(widget->flow));
 
 }
 

@@ -81,23 +81,6 @@ static void setattributeimage(struct widget *widget, unsigned int attribute, cha
 static void setattributelayout(struct widget *widget, unsigned int attribute, char *value)
 {
 
-    struct widget_layout *layout = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_FLOW:
-        layout->flow = attr_update(ATTR_FLOW, value, layout->flow);
-
-        break;
-
-    case ATTR_PADDING:
-        layout->padding = attr_update(ATTR_PADDING, value, layout->padding);
-
-        break;
-
-    }
-
 }
 
 static void setattributelistbox(struct widget *widget, unsigned int attribute, char *value)
@@ -249,6 +232,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_FLOW:
+        widget->flow = attr_update(ATTR_FLOW, value, widget->flow);
+
+        break;
+
     case ATTR_ID:
         widget->id = attr_update(ATTR_ID, value, widget->id);
 
@@ -259,13 +247,18 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case ATTR_SPAN:
-        widget->span = attr_update(ATTR_SPAN, value, widget->span);
+    case ATTR_PADDING:
+        widget->padding = attr_update(ATTR_PADDING, value, widget->padding);
 
         break;
 
     case ATTR_ONCLICK:
         widget->onclick = attr_update(ATTR_ONCLICK, value, widget->onclick);
+
+        break;
+
+    case ATTR_SPAN:
+        widget->span = attr_update(ATTR_SPAN, value, widget->span);
 
         break;
 
@@ -337,10 +330,12 @@ void widget_unsetattributes(struct widget *widget)
 {
 
     widget->display = attr_update(ATTR_DISPLAY, 0, widget->display);
+    widget->flow = attr_update(ATTR_FLOW, 0, widget->flow);
     widget->id = attr_update(ATTR_ID, 0, widget->id);
     widget->in = attr_update(ATTR_IN, 0, widget->in);
-    widget->onclick = attr_update(ATTR_ONCLICK, 0, widget->onclick);
+    widget->padding = attr_update(ATTR_PADDING, 0, widget->padding);
     widget->span = attr_update(ATTR_SPAN, 0, widget->span);
+    widget->onclick = attr_update(ATTR_ONCLICK, 0, widget->onclick);
 
     switch (widget->type)
     {
@@ -610,11 +605,6 @@ static void initimage(struct widget *widget)
 static void initlayout(struct widget *widget)
 {
 
-    struct widget_layout *layout = widget->data;
-
-    layout->flow = ATTR_FLOW_DEFAULT;
-    layout->padding = 0;
-
 }
 
 static void initlistbox(struct widget *widget)
@@ -694,11 +684,13 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->source = source;
     widget->type = type;
     widget->state = WIDGET_STATE_NORMAL;
-    widget->display = attr_update(ATTR_DISPLAY, 0, 0);
+    widget->display = ATTR_DISPLAY_BLOCK;
+    widget->flow = ATTR_FLOW_DEFAULT;
     widget->id = attr_update(ATTR_ID, id, 0);
     widget->in = attr_update(ATTR_IN, in, 0);
-    widget->onclick = attr_update(ATTR_ONCLICK, 0, 0);
-    widget->span = attr_update(ATTR_SPAN, 0, 0);
+    widget->onclick = 0;
+    widget->padding = 0;
+    widget->span = 0;
     widget->data = data;
     widget->region = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);

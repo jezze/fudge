@@ -35,8 +35,7 @@ struct widget_choice
 struct widget_layout
 {
 
-    unsigned int flow;
-    unsigned int padding;
+    unsigned int x;
 
 };
 
@@ -126,8 +125,10 @@ struct widget
     unsigned int type;
     unsigned int state;
     unsigned int display;
+    unsigned int flow;
     unsigned int id;
     unsigned int in;
+    unsigned int padding;
     unsigned int span;
     unsigned int onclick;
     void *data;
