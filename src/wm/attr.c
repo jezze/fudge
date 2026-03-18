@@ -129,6 +129,13 @@ unsigned int attr_isenum(unsigned int attribute)
 
 }
 
+static unsigned int getnum(char *value, unsigned int base)
+{
+
+    return (value) ? cstring_read_value(value, cstring_length(value), 16) : 0;
+
+}
+
 unsigned int attr_update(unsigned int attribute, char *value, unsigned int current)
 {
 
@@ -136,16 +143,16 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     {
 
     case ATTR_COLOR:
-        return cstring_read_value(value, cstring_length(value), 16);
+        return getnum(value, 16);
 
     case ATTR_COLUMNS:
-        return cstring_read_value(value, cstring_length(value), 10);
+        return getnum(value, 10);
 
     case ATTR_CONTENT:
         return strpool_updatestring(current, value);
 
     case ATTR_CURSOR:
-        return cstring_read_value(value, cstring_length(value), 10);
+        return getnum(value, 10);
 
     case ATTR_DISPLAY:
         return util_getkey(displays, 2, value);
@@ -178,13 +185,13 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(overflows, 4, value);
 
     case ATTR_PADDING:
-        return cstring_read_value(value, cstring_length(value), 10);
+        return getnum(value, 10);
 
     case ATTR_SOURCE:
         return strpool_updatestring(current, value);
 
     case ATTR_SPAN:
-        return cstring_read_value(value, cstring_length(value), 10);
+        return getnum(value, 10);
 
     case ATTR_TITLE:
         return strpool_updatestring(current, value);

@@ -336,9 +336,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 void widget_unsetattributes(struct widget *widget)
 {
 
+    widget->display = attr_update(ATTR_DISPLAY, 0, widget->display);
     widget->id = attr_update(ATTR_ID, 0, widget->id);
     widget->in = attr_update(ATTR_IN, 0, widget->in);
     widget->onclick = attr_update(ATTR_ONCLICK, 0, widget->onclick);
+    widget->span = attr_update(ATTR_SPAN, 0, widget->span);
 
     switch (widget->type)
     {
@@ -692,11 +694,12 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->source = source;
     widget->type = type;
     widget->state = WIDGET_STATE_NORMAL;
-    widget->span = 0;
-    widget->id = attr_update(ATTR_ID, id, widget->id);
-    widget->in = attr_update(ATTR_IN, in, widget->in);
+    widget->display = attr_update(ATTR_DISPLAY, 0, 0);
+    widget->id = attr_update(ATTR_ID, id, 0);
+    widget->in = attr_update(ATTR_IN, in, 0);
+    widget->onclick = attr_update(ATTR_ONCLICK, 0, 0);
+    widget->span = attr_update(ATTR_SPAN, 0, 0);
     widget->data = data;
-    widget->display = WIDGET_DISPLAY_BLOCK;
     widget->region = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
 
