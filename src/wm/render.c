@@ -176,9 +176,10 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
     {
 
         struct widget *child = current->data;
-        struct util_size climit = util_size(region->size.w - offset.x, region->size.h - offset.y);
-        struct util_size csize = calls[child->type].getsize(child, &climit);
-        struct util_region cregion = util_region(region->position.x + offset.x, region->position.y + offset.y, csize.w, csize.h);
+        struct util_region cregion;
+        struct util_size climit;
+
+        cregion.position = util_position(region->position.x + offset.x, region->position.y + offset.y);
 
         if (child->span)
         {
@@ -187,22 +188,28 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
             {
 
             case DIRECTION_HORIZONTAL:
-                climit.w = child->span * span.w;
-                csize = calls[child->type].getsize(child, &climit);
+                climit = util_size(child->span * span.w, region->size.h - offset.y);
+                cregion.size = calls[child->type].getsize(child, &climit);
                 cregion.size.w = climit.w;
-                cregion.size.h = csize.h;
 
                 break;
 
             case DIRECTION_VERTICAL:
-                climit.h = child->span * span.h;
-                csize = calls[child->type].getsize(child, &climit);
-                cregion.size.w = csize.w;
+                climit = util_size(region->size.w - offset.x, child->span * span.h);
+                cregion.size = calls[child->type].getsize(child, &climit);
                 cregion.size.h = climit.h;
 
                 break;
 
             }
+
+        }
+
+        else
+        {
+
+            climit = util_size(region->size.w - offset.x, region->size.h - offset.y);
+            cregion.size = calls[child->type].getsize(child, &climit);
 
         }
 
