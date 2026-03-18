@@ -13,6 +13,13 @@
 #include "render.h"
 
 #define INFINITY                    0xFFFF
+#define DIRECTION_NONE              0
+#define DIRECTION_HORIZONTAL        1
+#define DIRECTION_VERTICAL          2
+#define STRETCH_NONE                0
+#define STRETCH_HORIZONTAL          1
+#define STRETCH_VERTICAL            2
+#define STRETCH_BOTH                3
 
 static unsigned int hasdamage;
 
@@ -38,7 +45,48 @@ static struct util_size zerosize;
 static struct util_position mouse;
 static struct calls calls[32];
 
-static struct util_size childrengetsize(struct widget *widget, struct util_size *limit, unsigned int flow)
+static unsigned int getdirection(unsigned int flow)
+{
+
+    switch (flow)
+    {
+
+    case ATTR_FLOW_HORIZONTAL:
+    case ATTR_FLOW_HORIZONTALSTRETCH:
+        return DIRECTION_HORIZONTAL;
+
+    case ATTR_FLOW_VERTICAL:
+    case ATTR_FLOW_VERTICALSTRETCH:
+        return DIRECTION_VERTICAL;
+
+    }
+
+    return DIRECTION_NONE;
+
+}
+
+static unsigned int getstretch(unsigned int flow)
+{
+
+    switch (flow)
+    {
+
+    case ATTR_FLOW_STRETCH:
+        return STRETCH_BOTH;
+
+    case ATTR_FLOW_HORIZONTALSTRETCH:
+        return STRETCH_VERTICAL;
+
+    case ATTR_FLOW_VERTICALSTRETCH:
+        return STRETCH_HORIZONTAL;
+
+    }
+
+    return STRETCH_NONE;
+
+}
+
+static struct util_size childrengetsize(struct widget *widget, struct util_size *limit, unsigned int direction)
 {
 
     struct util_position offset = zeroposition;
@@ -55,17 +103,15 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         if (child->span)
         {
 
-            switch (flow)
+            switch (direction)
             {
 
-            case ATTR_FLOW_HORIZONTAL:
-            case ATTR_FLOW_HORIZONTALSTRETCH:
+            case DIRECTION_HORIZONTAL:
                 csize.w = 0;
 
                 break;
 
-            case ATTR_FLOW_VERTICAL:
-            case ATTR_FLOW_VERTICALSTRETCH:
+            case DIRECTION_VERTICAL:
                 csize.h = 0;
 
                 break;
@@ -77,17 +123,15 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         total.w = util_clamp(util_max(total.w, csize.w + offset.x), 0, limit->w);
         total.h = util_clamp(util_max(total.h, csize.h + offset.y), 0, limit->h);
 
-        switch (flow)
+        switch (direction)
         {
 
-        case ATTR_FLOW_HORIZONTAL:
-        case ATTR_FLOW_HORIZONTALSTRETCH:
+        case DIRECTION_HORIZONTAL:
             offset.x += csize.w;
 
             break;
 
-        case ATTR_FLOW_VERTICAL:
-        case ATTR_FLOW_VERTICALSTRETCH:
+        case DIRECTION_VERTICAL:
             offset.y += csize.h;
 
             break;
@@ -100,11 +144,11 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
 }
 
-static void childrenplace(struct widget *widget, struct util_region *region, struct util_region *clip, unsigned int flow)
+static void childrenplace(struct widget *widget, struct util_region *region, struct util_region *clip, unsigned int direction, unsigned int stretch)
 {
 
     struct util_position offset = zeroposition;
-    struct util_size total = childrengetsize(widget, &region->size, flow);
+    struct util_size total = childrengetsize(widget, &region->size, direction);
     struct util_size span = zerosize;
     struct list_item *current = 0;
     unsigned int spans = 0;
@@ -139,11 +183,10 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
         if (child->span)
         {
 
-            switch (flow)
+            switch (direction)
             {
 
-            case ATTR_FLOW_HORIZONTAL:
-            case ATTR_FLOW_HORIZONTALSTRETCH:
+            case DIRECTION_HORIZONTAL:
                 climit.w = child->span * span.w;
                 csize = calls[child->type].getsize(child, &climit);
                 cregion.size.w = climit.w;
@@ -151,8 +194,7 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
 
                 break;
 
-            case ATTR_FLOW_VERTICAL:
-            case ATTR_FLOW_VERTICALSTRETCH:
+            case DIRECTION_VERTICAL:
                 climit.h = child->span * span.h;
                 csize = calls[child->type].getsize(child, &climit);
                 cregion.size.w = csize.w;
@@ -164,38 +206,36 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
 
         }
 
-        switch (flow)
+        switch (stretch)
         {
 
-        case ATTR_FLOW_DEFAULT:
+        case STRETCH_HORIZONTAL:
             cregion.size.w = region->size.w;
+
+            break;
+
+        case STRETCH_VERTICAL:
             cregion.size.h = region->size.h;
 
             break;
 
-        case ATTR_FLOW_HORIZONTALSTRETCH:
-            cregion.size.h = region->size.h;
-
-            break;
-
-        case ATTR_FLOW_VERTICALSTRETCH:
+        case STRETCH_BOTH:
             cregion.size.w = region->size.w;
+            cregion.size.h = region->size.h;
 
             break;
 
         }
 
-        switch (flow)
+        switch (direction)
         {
 
-        case ATTR_FLOW_HORIZONTAL:
-        case ATTR_FLOW_HORIZONTALSTRETCH:
+        case DIRECTION_HORIZONTAL:
             offset.x += cregion.size.w;
 
             break;
 
-        case ATTR_FLOW_VERTICAL:
-        case ATTR_FLOW_VERTICALSTRETCH:
+        case DIRECTION_VERTICAL:
             offset.y += cregion.size.h;
 
             break;
@@ -255,7 +295,7 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 {
 
     struct widget_layout *layout = widget->data;
-    struct util_size total = childrengetsize(widget, limit, layout->flow);
+    struct util_size total = childrengetsize(widget, limit, getdirection(layout->flow));
 
     return util_size(total.w, total.h);
 
@@ -264,7 +304,7 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 static struct util_size getsizelistbox(struct widget *widget, struct util_size *limit)
 {
 
-    struct util_size total = childrengetsize(widget, limit, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, limit, DIRECTION_VERTICAL);
 
     return util_size(total.w + CONFIG_FRAME_WIDTH * 2, total.h + CONFIG_FRAME_HEIGHT * 2);
 
@@ -297,7 +337,7 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
 static struct util_size getsizetextbox(struct widget *widget, struct util_size *limit)
 {
 
-    struct util_size total = childrengetsize(widget, limit, ATTR_FLOW_VERTICAL);
+    struct util_size total = childrengetsize(widget, limit, DIRECTION_VERTICAL);
 
     return util_size(total.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, total.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
 
@@ -366,7 +406,7 @@ static void placelayout(struct widget *widget, struct util_region *region, struc
     widget->region = *region;
     widget->clip = *clip;
 
-    childrenplace(widget, region, &widget->clip, layout->flow);
+    childrenplace(widget, region, &widget->clip, getdirection(layout->flow), getstretch(layout->flow));
 
 }
 
@@ -378,7 +418,7 @@ static void placelistbox(struct widget *widget, struct util_region *region, stru
     widget->region = *region;
     widget->clip = util_region_intersection(&widget->region, clip);
 
-    childrenplace(widget, &cregion, &widget->clip, ATTR_FLOW_VERTICALSTRETCH);
+    childrenplace(widget, &cregion, &widget->clip, DIRECTION_VERTICAL, STRETCH_HORIZONTAL);
 
 }
 
@@ -394,7 +434,7 @@ static void placeselect(struct widget *widget, struct util_region *region, struc
     if (widget->state != WIDGET_STATE_FOCUS)
         widget->clip = util_region_intersection(&widget->region, clip);
 
-    childrenplace(widget, &cregion, &widget->clip, ATTR_FLOW_VERTICAL);
+    childrenplace(widget, &cregion, &widget->clip, DIRECTION_VERTICAL, STRETCH_NONE);
 
 }
 
@@ -414,7 +454,7 @@ static void placetextbox(struct widget *widget, struct util_region *region, stru
     widget->region = *region;
     widget->clip = util_region_intersection(&widget->region, clip);
 
-    childrenplace(widget, &cregion, &widget->clip, ATTR_FLOW_VERTICAL);
+    childrenplace(widget, &cregion, &widget->clip, DIRECTION_VERTICAL, STRETCH_NONE);
 
 }
 
@@ -433,7 +473,7 @@ static void placewindow(struct widget *widget, struct util_region *region, struc
 
     widget->clip = *clip;
 
-    childrenplace(widget, &cregion, &widget->clip, ATTR_FLOW_VERTICALSTRETCH);
+    childrenplace(widget, &cregion, &widget->clip, DIRECTION_NONE, STRETCH_BOTH);
 
 }
 

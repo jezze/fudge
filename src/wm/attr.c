@@ -10,9 +10,10 @@ static struct util_token displays[2] =
     {ATTR_DISPLAY_INLINE, "inline"}
 };
 
-static struct util_token flows[5] =
+static struct util_token flows[6] =
 {
     {ATTR_FLOW_DEFAULT, "default"},
+    {ATTR_FLOW_STRETCH, "stretch"},
     {ATTR_FLOW_HORIZONTAL, "horizontal"},
     {ATTR_FLOW_HORIZONTALSTRETCH, "horizontal-stretch"},
     {ATTR_FLOW_VERTICAL, "vertical"},
@@ -150,7 +151,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(displays, 2, value);
 
     case ATTR_FLOW:
-        return util_getkey(flows, 5, value);
+        return util_getkey(flows, 6, value);
 
     case ATTR_HALIGN:
         return util_getkey(haligns, 3, value);

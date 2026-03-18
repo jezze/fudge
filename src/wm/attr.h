@@ -22,10 +22,11 @@
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_FLOW_DEFAULT               0
-#define ATTR_FLOW_HORIZONTAL            1
-#define ATTR_FLOW_HORIZONTALSTRETCH     2
-#define ATTR_FLOW_VERTICAL              3
-#define ATTR_FLOW_VERTICALSTRETCH       4
+#define ATTR_FLOW_STRETCH               1
+#define ATTR_FLOW_HORIZONTAL            2
+#define ATTR_FLOW_HORIZONTALSTRETCH     3
+#define ATTR_FLOW_VERTICAL              4
+#define ATTR_FLOW_VERTICALSTRETCH       5
 #define ATTR_HALIGN_LEFT                0
 #define ATTR_HALIGN_CENTER              1
 #define ATTR_HALIGN_RIGHT               2
