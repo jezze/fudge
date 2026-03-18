@@ -290,7 +290,7 @@ static struct util_size getsizeimage(struct widget *widget, struct util_size *li
     struct widget_image *image = widget->data;
 
     if (image->mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
-        return widget->region.size;
+        return zerosize;
 
     return util_size(image->size.w, image->size.h);
 
