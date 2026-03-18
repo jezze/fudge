@@ -148,8 +148,6 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
 
             }
 
-            offset.x += cregion.size.w;
-
             break;
 
         case ATTR_FLOW_VERTICAL:
@@ -163,8 +161,6 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
                 cregion.size.w = csize.w;
 
             }
-
-            offset.y += cregion.size.h;
 
             break;
 
@@ -186,6 +182,23 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
 
         case ATTR_FLOW_VERTICALSTRETCH:
             cregion.size.w = region->size.w;
+
+            break;
+
+        }
+
+        switch (flow)
+        {
+
+        case ATTR_FLOW_HORIZONTAL:
+        case ATTR_FLOW_HORIZONTALSTRETCH:
+            offset.x += cregion.size.w;
+
+            break;
+
+        case ATTR_FLOW_VERTICAL:
+        case ATTR_FLOW_VERTICALSTRETCH:
+            offset.y += cregion.size.h;
 
             break;
 
