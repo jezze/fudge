@@ -125,14 +125,14 @@ struct widget
     unsigned int source;
     unsigned int type;
     unsigned int state;
+    unsigned int display;
     unsigned int id;
     unsigned int in;
     unsigned int span;
+    unsigned int onclick;
     void *data;
-    unsigned int display;
     struct util_region region;
     struct util_region clip;
-    unsigned int onclick;
 
 };
 
