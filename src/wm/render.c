@@ -12,7 +12,7 @@
 #include "cmap.h"
 #include "render.h"
 
-#define INFINITY                50000
+#define INFINITY                    0xFFFF
 
 static unsigned int hasdamage;
 
@@ -52,22 +52,25 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         struct util_size climit = util_size(limit->w - total.w, limit->h - total.h);
         struct util_size csize = calls[child->type].getsize(child, &climit);
 
-        switch (flow)
+        if (child->span)
         {
 
-        case ATTR_FLOW_HORIZONTAL:
-        case ATTR_FLOW_HORIZONTALSTRETCH:
-            if (child->span)
+            switch (flow)
+            {
+
+            case ATTR_FLOW_HORIZONTAL:
+            case ATTR_FLOW_HORIZONTALSTRETCH:
                 csize.w = 0;
 
-            break;
+                break;
 
-        case ATTR_FLOW_VERTICAL:
-        case ATTR_FLOW_VERTICALSTRETCH:
-            if (child->span)
+            case ATTR_FLOW_VERTICAL:
+            case ATTR_FLOW_VERTICALSTRETCH:
                 csize.h = 0;
 
-            break;
+                break;
+
+            }
 
         }
 
@@ -133,36 +136,31 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
         struct util_size csize = calls[child->type].getsize(child, &climit);
         struct util_region cregion = util_region(region->position.x + offset.x, region->position.y + offset.y, csize.w, csize.h);
 
-        switch (flow)
+        if (child->span)
         {
 
-        case ATTR_FLOW_HORIZONTAL:
-        case ATTR_FLOW_HORIZONTALSTRETCH:
-            if (child->span)
+            switch (flow)
             {
 
+            case ATTR_FLOW_HORIZONTAL:
+            case ATTR_FLOW_HORIZONTALSTRETCH:
                 climit.w = child->span * span.w;
-                cregion.size.w = climit.w;
                 csize = calls[child->type].getsize(child, &climit);
+                cregion.size.w = climit.w;
                 cregion.size.h = csize.h;
 
-            }
+                break;
 
-            break;
-
-        case ATTR_FLOW_VERTICAL:
-        case ATTR_FLOW_VERTICALSTRETCH:
-            if (child->span)
-            {
-
+            case ATTR_FLOW_VERTICAL:
+            case ATTR_FLOW_VERTICALSTRETCH:
                 climit.h = child->span * span.h;
-                cregion.size.h = climit.h;
                 csize = calls[child->type].getsize(child, &climit);
                 cregion.size.w = csize.w;
+                cregion.size.h = climit.h;
+
+                break;
 
             }
-
-            break;
 
         }
 
