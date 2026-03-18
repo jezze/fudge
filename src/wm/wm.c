@@ -889,7 +889,7 @@ static void setupwidgets(void)
     char *data0 =
         "+ layout id \"root\" flow \"stretch\"\n";
     char *data1 =
-        "+ layout id \"background\" in \"root\" flow \"stretch\"\n"
+        "+ layout id \"background\" flow \"stretch\"\n"
         "+   fill in \"background\" color \"FF202020\"\n"
         "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\"\n";
     char *data2 =
