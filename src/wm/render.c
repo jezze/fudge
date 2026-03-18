@@ -176,10 +176,8 @@ static void childrenplace(struct widget *widget, struct util_region *region, str
     {
 
         struct widget *child = current->data;
-        struct util_region cregion;
+        struct util_region cregion = util_region(region->position.x + offset.x, region->position.y + offset.y, 0, 0);
         struct util_size climit;
-
-        cregion.position = util_position(region->position.x + offset.x, region->position.y + offset.y);
 
         if (child->span)
         {
