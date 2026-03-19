@@ -678,7 +678,7 @@ static void initwindow(struct widget *widget)
 
 }
 
-void widget_init(struct widget *widget, unsigned int source, unsigned int type, char *id, char *in, void *data)
+void widget_init(struct widget *widget, unsigned int source, unsigned int type, void *data)
 {
 
     widget->source = source;
@@ -686,8 +686,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->state = WIDGET_STATE_NORMAL;
     widget->display = ATTR_DISPLAY_BLOCK;
     widget->flow = ATTR_FLOW_DEFAULT;
-    widget->id = attr_update(ATTR_ID, id, 0);
-    widget->in = attr_update(ATTR_IN, in, 0);
+    widget->id = 0;
+    widget->in = 0;
     widget->onclick = 0;
     widget->padding = 0;
     widget->span = 0;

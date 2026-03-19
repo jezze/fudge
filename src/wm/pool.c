@@ -197,7 +197,11 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
         struct entry *entry = item->data;
 
-        widget_init(&entry->widget, source, type, id, in, &entry->payload);
+        widget_init(&entry->widget, source, type, &entry->payload);
+
+        entry->widget.id = attr_update(ATTR_ID, id, 0);
+        entry->widget.in = attr_update(ATTR_IN, in, 0);
+ 
         list_move(&widgetlist, &freelist, item);
 
         return &entry->widget;
