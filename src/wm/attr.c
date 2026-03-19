@@ -113,6 +113,7 @@ unsigned int attr_isenum(unsigned int attribute)
     switch (attribute)
     {
 
+    case ATTR_DISPLAY:
     case ATTR_FLOW:
     case ATTR_HALIGN:
     case ATTR_MIMETYPE:
