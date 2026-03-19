@@ -64,22 +64,17 @@ static void setattributeimage(struct widget *widget, unsigned int attribute, cha
     switch (attribute)
     {
 
-    case ATTR_SOURCE:
-        image->source = attr_update(ATTR_SOURCE, value, image->source);
-
-        break;
-
     case ATTR_MIMETYPE:
         image->mimetype = attr_update(ATTR_MIMETYPE, value, image->mimetype);
 
         break;
 
+    case ATTR_SOURCE:
+        image->source = attr_update(ATTR_SOURCE, value, image->source);
+
+        break;
+
     }
-
-}
-
-static void setattributelayout(struct widget *widget, unsigned int attribute, char *value)
-{
 
 }
 
@@ -221,7 +216,7 @@ static void setattributewindow(struct widget *widget, unsigned int attribute, ch
 
 }
 
-void widget_setattribute(struct widget *widget, unsigned int attribute, char *value)
+static void setattribute(struct widget *widget, unsigned int attribute, char *value)
 {
 
     switch (attribute)
@@ -264,6 +259,13 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     }
 
+}
+
+void widget_setattribute(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    setattribute(widget, attribute, value);
+
     switch (widget->type)
     {
 
@@ -288,8 +290,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
         break;
 
     case WIDGET_TYPE_LAYOUT:
-        setattributelayout(widget, attribute, value);
-
         break;
 
     case WIDGET_TYPE_LISTBOX:
@@ -329,53 +329,26 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 void widget_unsetattributes(struct widget *widget)
 {
 
-    widget->display = attr_update(ATTR_DISPLAY, 0, widget->display);
-    widget->flow = attr_update(ATTR_FLOW, 0, widget->flow);
-    widget->id = attr_update(ATTR_ID, 0, widget->id);
-    widget->in = attr_update(ATTR_IN, 0, widget->in);
-    widget->padding = attr_update(ATTR_PADDING, 0, widget->padding);
-    widget->span = attr_update(ATTR_SPAN, 0, widget->span);
-    widget->onclick = attr_update(ATTR_ONCLICK, 0, widget->onclick);
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_BUTTON:
-        setattributebutton(widget, ATTR_LABEL, 0);
-
-        break;
-
-    case WIDGET_TYPE_CHOICE:
-        setattributechoice(widget, ATTR_LABEL, 0);
-
-        break;
-
-    case WIDGET_TYPE_IMAGE:
-        setattributeimage(widget, ATTR_SOURCE, 0);
-
-        break;
-
-    case WIDGET_TYPE_SELECT:
-        setattributeselect(widget, ATTR_LABEL, 0);
-
-        break;
-
-    case WIDGET_TYPE_TEXT:
-        setattributetext(widget, ATTR_CONTENT, 0);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBUTTON:
-        setattributetextbutton(widget, ATTR_LABEL, 0);
-
-        break;
-
-    case WIDGET_TYPE_WINDOW:
-        setattributewindow(widget, ATTR_TITLE, 0);
-
-        break;
-
-    }
+    widget_setattribute(widget, ATTR_COLOR, 0);
+    widget_setattribute(widget, ATTR_CONTENT, 0);
+    widget_setattribute(widget, ATTR_CURSOR, 0);
+    widget_setattribute(widget, ATTR_DISPLAY, 0);
+    widget_setattribute(widget, ATTR_FLOW, 0);
+    widget_setattribute(widget, ATTR_HALIGN, 0);
+    widget_setattribute(widget, ATTR_ID, 0);
+    widget_setattribute(widget, ATTR_IN, 0);
+    widget_setattribute(widget, ATTR_LABEL, 0);
+    widget_setattribute(widget, ATTR_MIMETYPE, 0);
+    widget_setattribute(widget, ATTR_MODE, 0);
+    widget_setattribute(widget, ATTR_ONCLICK, 0);
+    widget_setattribute(widget, ATTR_OVERFLOW, 0);
+    widget_setattribute(widget, ATTR_PADDING, 0);
+    widget_setattribute(widget, ATTR_SOURCE, 0);
+    widget_setattribute(widget, ATTR_SPAN, 0);
+    widget_setattribute(widget, ATTR_TITLE, 0);
+    widget_setattribute(widget, ATTR_VALIGN, 0);
+    widget_setattribute(widget, ATTR_WEIGHT, 0);
+    widget_setattribute(widget, ATTR_WRAP, 0);
 
 }
 
@@ -691,9 +664,9 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->onclick = 0;
     widget->padding = 0;
     widget->span = 0;
-    widget->data = data;
     widget->region = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
+    widget->data = data;
 
     switch (widget->type)
     {

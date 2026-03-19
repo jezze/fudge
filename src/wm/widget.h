@@ -131,9 +131,9 @@ struct widget
     unsigned int padding;
     unsigned int span;
     unsigned int onclick;
-    void *data;
     struct util_region region;
     struct util_region clip;
+    void *data;
 
 };
 

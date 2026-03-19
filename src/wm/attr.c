@@ -74,7 +74,6 @@ unsigned int attr_isvalue(unsigned int attribute)
     {
 
     case ATTR_COLOR:
-    case ATTR_COLUMNS:
     case ATTR_CURSOR:
     case ATTR_PADDING:
     case ATTR_SPAN:
@@ -145,9 +144,6 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_COLOR:
         return getnum(value, 16);
-
-    case ATTR_COLUMNS:
-        return getnum(value, 10);
 
     case ATTR_CONTENT:
         return strpool_updatestring(current, value);
