@@ -452,24 +452,7 @@ static void markwidget(struct widget *widget)
 
 }
 
-static void destroy(struct widget *widget)
-{
-
-    if (state.hoverwidget == widget)
-        sethover(0);
-
-    if (state.focusedwidget == widget)
-        setfocus(0);
-
-    if (state.focusedwindow == widget)
-        setfocuswindow(0);
-
-    damageall(widget);
-    pool_destroy(widget);
-
-}
-
-static void removedestroyed(unsigned int source)
+static void purge(unsigned int source)
 {
 
     struct list_item *current = 0;
@@ -482,7 +465,17 @@ static void removedestroyed(unsigned int source)
         if (widget->state == WIDGET_STATE_DESTROYED)
         {
 
-            destroy(widget);
+            if (state.hoverwidget == widget)
+                sethover(0);
+
+            if (state.focusedwidget == widget)
+                setfocus(0);
+
+            if (state.focusedwindow == widget)
+                setfocuswindow(0);
+
+            damageall(widget);
+            pool_destroy(widget);
 
             current = 0;
 
@@ -826,7 +819,7 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
     parser_parse(source, "root", msize, mdata);
     pool_loadresources();
     placewindows(source);
-    removedestroyed(source);
+    purge(source);
     bump(state.mousewidget);
 
 }
@@ -861,7 +854,7 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    removedestroyed(source);
+    purge(source);
 
 }
 
