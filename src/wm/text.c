@@ -135,32 +135,33 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
 }
 
-unsigned int text_gettextinfo(struct text_info *textinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx)
+struct text_info text_gettextinfo(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx)
 {
 
     struct text_rowinfo rowinfo;
+    struct text_info textinfo;
     unsigned int offset = 0;
 
-    textinfo->lastrowx = firstrowx;
-    textinfo->lastrowy = 0;
-    textinfo->width = 0;
-    textinfo->height = 0;
-    textinfo->rows = 0;
+    textinfo.lastrowx = firstrowx;
+    textinfo.lastrowy = 0;
+    textinfo.width = 0;
+    textinfo.height = 0;
+    textinfo.rows = 0;
 
     while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
-        textinfo->lastrowx = (rowinfo.linebreak) ? 0 : rowinfo.width + firstrowx;
-        textinfo->lastrowy += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
-        textinfo->width = util_max(textinfo->width, rowinfo.width + firstrowx);
-        textinfo->height = textinfo->lastrowy + rowinfo.lineheight;
-        textinfo->rows++;
+        textinfo.lastrowx = (rowinfo.linebreak) ? 0 : rowinfo.width + firstrowx;
+        textinfo.lastrowy += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
+        textinfo.width = util_max(textinfo.width, rowinfo.width + firstrowx);
+        textinfo.height = textinfo.lastrowy + rowinfo.lineheight;
+        textinfo.rows++;
 
         firstrowx = 0;
 
     }
 
-    return length;
+    return textinfo;
 
 }
 

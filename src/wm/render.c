@@ -256,9 +256,7 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *l
 {
 
     struct widget_button *button = widget->data;
-    struct text_info info;
-
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_BOLD), strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_gettextinfo(pool_getfont(ATTR_WEIGHT_BOLD), strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_BUTTON_PADDING_WIDTH * 2, info.height + CONFIG_BUTTON_PADDING_HEIGHT * 2);
 
@@ -268,9 +266,7 @@ static struct util_size getsizechoice(struct widget *widget, struct util_size *l
 {
 
     struct widget_choice *choice = widget->data;
-    struct text_info info;
-
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_gettextinfo(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_CHOICE_PADDING_WIDTH * 2, info.height + CONFIG_CHOICE_PADDING_HEIGHT * 2);
 
@@ -317,9 +313,7 @@ static struct util_size getsizeselect(struct widget *widget, struct util_size *l
 {
 
     struct widget_select *select = widget->data;
-    struct text_info info;
-
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_gettextinfo(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_SELECT_PADDING_WIDTH * 4, info.height + CONFIG_SELECT_PADDING_HEIGHT * 2);
 
@@ -329,9 +323,7 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
 {
 
     struct widget_text *text = widget->data;
-    struct text_info info;
-
-    text_gettextinfo(&info, pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, limit->w, 0);
+    struct text_info info = text_gettextinfo(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, limit->w, 0);
 
     return util_size(info.width, info.height);
 
@@ -350,9 +342,7 @@ static struct util_size getsizetextbutton(struct widget *widget, struct util_siz
 {
 
     struct widget_textbutton *textbutton = widget->data;
-    struct text_info info;
-
-    text_gettextinfo(&info, pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_gettextinfo(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, info.height + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
 
