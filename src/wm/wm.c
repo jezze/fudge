@@ -655,9 +655,7 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
     state.mouseposition.y = y;
 
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
-
-    if (state.mousewidget)
-        movewidget(state.mousewidget, state.mouseposition.x, state.mouseposition.y);
+    movewidget(state.mousewidget, state.mouseposition.x, state.mouseposition.y);
 
     if (state.mousebuttonleft)
     {
