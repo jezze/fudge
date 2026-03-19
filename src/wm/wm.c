@@ -482,9 +482,9 @@ static void removedestroyed(unsigned int source)
         if (widget->state == WIDGET_STATE_DESTROYED)
         {
 
-            current = current->prev;
-
             destroy(widget);
+
+            current = 0;
 
         }
 
