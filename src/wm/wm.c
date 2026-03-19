@@ -873,8 +873,7 @@ static void setupwidgets(void)
     char *data1 =
         "+ layout id \"background\" flow \"stretch\"\n"
         "+   fill in \"background\" color \"FF202020\"\n"
-        "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\"\n";
-    char *data2 =
+        "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\"\n"
         "+ layout id \"desktop\" flow \"vertical\"\n"
         "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "    + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"
@@ -891,7 +890,6 @@ static void setupwidgets(void)
 
     parser_parse(0, "", cstring_length(data0), data0);
     parser_parse(0, "root", cstring_length(data1), data1);
-    parser_parse(0, "root", cstring_length(data2), data2);
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
     state.mousewidget = pool_getwidgetbyid(0, "mouse");
