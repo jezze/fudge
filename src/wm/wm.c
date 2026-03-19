@@ -140,36 +140,36 @@ static void damageall(struct widget *widget)
 static void movewidget(struct widget *widget, int x, int y)
 {
 
-    damageall(widget);
+    damage(widget);
 
     widget->region.position.x = x;
     widget->region.position.y = y;
 
-    damageall(widget);
+    damage(widget);
 
 }
 
 static void translatewidget(struct widget *widget, int x, int y)
 {
 
-    damageall(widget);
+    damage(widget);
 
     widget->region.position.x += x;
     widget->region.position.y += y;
 
-    damageall(widget);
+    damage(widget);
 
 }
 
 static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 {
 
-    damageall(widget);
+    damage(widget);
 
     widget->region.size.w = w;
     widget->region.size.h = h;
 
-    damageall(widget);
+    damage(widget);
 
 }
 
