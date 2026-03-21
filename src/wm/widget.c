@@ -611,7 +611,6 @@ static void inittext(struct widget *widget)
     text->valign = ATTR_VALIGN_TOP;
     text->weight = ATTR_WEIGHT_NORMAL;
     text->wrap = ATTR_WRAP_NONE;
-    text->inlinex = 0;
     text->markstart = 0;
     text->markend = 0;
 
@@ -666,6 +665,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->span = 0;
     widget->region = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
+    widget->rowstart = util_position(0, 0);
+    widget->rowstop = util_position(0, 0);
     widget->data = data;
 
     switch (widget->type)

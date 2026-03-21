@@ -82,7 +82,6 @@ struct widget_text
     unsigned int valign;
     unsigned int weight;
     unsigned int wrap;
-    unsigned int inlinex;
     unsigned int markstart;
     unsigned int markend;
 
@@ -133,6 +132,8 @@ struct widget
     unsigned int onclick;
     struct util_region region;
     struct util_region clip;
+    struct util_position rowstart;
+    struct util_position rowstop;
     void *data;
 
 };

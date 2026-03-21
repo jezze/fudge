@@ -35,8 +35,7 @@ struct text_info
     unsigned int rows;
     unsigned int width;
     unsigned int height;
-    int lastrowx;
-    int lastrowy;
+    struct util_position lastrow;
 
 };
 

@@ -142,8 +142,8 @@ struct text_info text_info(struct text_font *font, char *text, unsigned int leng
     struct text_info textinfo;
     unsigned int offset = 0;
 
-    textinfo.lastrowx = firstrowx;
-    textinfo.lastrowy = 0;
+    textinfo.lastrow.x = firstrowx;
+    textinfo.lastrow.y = 0;
     textinfo.width = 0;
     textinfo.height = 0;
     textinfo.rows = 0;
@@ -151,10 +151,10 @@ struct text_info text_info(struct text_font *font, char *text, unsigned int leng
     while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
-        textinfo.lastrowx = (rowinfo.linebreak) ? 0 : rowinfo.width + firstrowx;
-        textinfo.lastrowy += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
+        textinfo.lastrow.x = (rowinfo.linebreak) ? 0 : rowinfo.width + firstrowx;
+        textinfo.lastrow.y += (rowinfo.linebreak) ? rowinfo.lineheight : 0;
         textinfo.width = util_max(textinfo.width, rowinfo.width + firstrowx);
-        textinfo.height = textinfo.lastrowy + rowinfo.lineheight;
+        textinfo.height = textinfo.lastrow.y + rowinfo.lineheight;
         textinfo.rows++;
 
         firstrowx = 0;
