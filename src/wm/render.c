@@ -139,7 +139,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         }
 
-        if (widget->display == ATTR_DISPLAY_INLINE)
+        if (child->display == ATTR_DISPLAY_INLINE)
         {
 
             rowstart = child->rowstop;
@@ -257,7 +257,7 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
         calls[child->type].place(child, &cplacement, clip);
 
-        if (widget->display == ATTR_DISPLAY_INLINE)
+        if (child->display == ATTR_DISPLAY_INLINE)
         {
 
             rowstart = child->rowstop;
@@ -319,7 +319,7 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 static struct util_size getsizelistbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size total = childrengetsize(widget, limit, DIRECTION_VERTICAL);
+    struct util_size total = childrengetsize(widget, limit, getdirection(widget->flow));
 
     return util_size(total.w + CONFIG_FRAME_WIDTH * 2, total.h + CONFIG_FRAME_HEIGHT * 2);
 
@@ -364,7 +364,7 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
 static struct util_size getsizetextbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size total = childrengetsize(widget, limit, DIRECTION_VERTICAL);
+    struct util_size total = childrengetsize(widget, limit, getdirection(widget->flow));
 
     return util_size(total.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, total.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
 
@@ -441,7 +441,7 @@ static void placelistbox(struct widget *widget, struct util_region *placement, s
     widget->placement = *placement;
     widget->clip = util_region_intersection(&widget->placement, clip);
 
-    childrenplace(widget, &cplacement, &widget->clip, DIRECTION_VERTICAL, STRETCH_HORIZONTAL);
+    childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->flow), getstretch(widget->flow));
 
 }
 
@@ -457,7 +457,7 @@ static void placeselect(struct widget *widget, struct util_region *placement, st
     if (widget->state != WIDGET_STATE_FOCUS)
         widget->clip = util_region_intersection(&widget->placement, clip);
 
-    childrenplace(widget, &cplacement, &widget->clip, DIRECTION_VERTICAL, STRETCH_NONE);
+    childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->flow), getstretch(widget->flow));
 
 }
 
@@ -477,7 +477,7 @@ static void placetextbox(struct widget *widget, struct util_region *placement, s
     widget->placement = *placement;
     widget->clip = util_region_intersection(&widget->placement, clip);
 
-    childrenplace(widget, &cplacement, &widget->clip, DIRECTION_VERTICAL, STRETCH_NONE);
+    childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->flow), getstretch(widget->flow));
 
 }
 
