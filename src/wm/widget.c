@@ -646,6 +646,7 @@ static void initwindow(struct widget *widget)
 
     struct widget_window *window = widget->data;
 
+    widget->flow = ATTR_FLOW_VERTICALSTRETCH;
     window->title = 0;
 
 }
