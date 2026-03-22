@@ -139,7 +139,12 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         }
 
-        rowstart = child->rowstop;
+        if (widget->display == ATTR_DISPLAY_INLINE)
+        {
+
+            rowstart = child->rowstop;
+
+        }
 
     }
 
@@ -252,7 +257,12 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
         calls[child->type].place(child, &cplacement, clip);
 
-        rowstart = child->rowstop;
+        if (widget->display == ATTR_DISPLAY_INLINE)
+        {
+
+            rowstart = child->rowstop;
+
+        }
 
     }
 
@@ -331,11 +341,21 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
     struct widget_text *text = widget->data;
     struct text_info info;
 
-    widget->rowstart = *rowstart;
+    if (widget->display == ATTR_DISPLAY_INLINE)
+    {
+
+        widget->rowstart = *rowstart;
+
+    }
 
     info = text_info(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, limit->w, widget->rowstart.x);
 
-    widget->rowstop = info.lastrow;
+    if (widget->display == ATTR_DISPLAY_INLINE)
+    {
+
+        widget->rowstop = info.lastrow;
+
+    }
 
     return util_size(info.width, info.height);
 
@@ -476,7 +496,7 @@ static void placewindow(struct widget *widget, struct util_region *placement, st
 
     widget->clip = *clip;
 
-    childrenplace(widget, &cplacement, &widget->clip, DIRECTION_NONE, STRETCH_BOTH);
+    childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->flow), getstretch(widget->flow));
 
 }
 
