@@ -34,7 +34,7 @@ struct
 struct calls
 {
 
-    struct util_size (*getsize)(struct widget *widget, struct util_size *limit, struct util_position *rowstart);
+    struct util_size (*getsize)(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart);
     void (*place)(struct widget *widget, struct util_region *placement, struct util_region *clip);
     void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2);
 
@@ -99,7 +99,8 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         struct widget *child = current->data;
         struct util_size climit = util_size(limit->w - total.w, limit->h - total.h);
-        struct util_size csize = calls[child->type].getsize(child, &climit, &rowstart);
+        struct util_size ccsize = childrengetsize(child, &climit, getdirection(child->flow));
+        struct util_size csize = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
 
         if (child->span)
         {
@@ -187,6 +188,7 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
         struct widget *child = current->data;
         struct util_region cplacement = util_region(placement->position.x + offset.x, placement->position.y + offset.y, 0, 0);
         struct util_size climit = util_size(placement->size.w - offset.x, placement->size.h - offset.y);
+        struct util_size ccsize = childrengetsize(child, &climit, getdirection(child->flow));
 
         if (child->span)
         {
@@ -196,14 +198,14 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
             case DIRECTION_HORIZONTAL:
                 climit.w = child->span * span.w;
-                cplacement.size = calls[child->type].getsize(child, &climit, &rowstart);
+                cplacement.size = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
                 cplacement.size.w = climit.w;
 
                 break;
 
             case DIRECTION_VERTICAL:
                 climit.h = child->span * span.h;
-                cplacement.size = calls[child->type].getsize(child, &climit, &rowstart);
+                cplacement.size = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
                 cplacement.size.h = climit.h;
 
                 break;
@@ -215,7 +217,7 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
         else
         {
 
-            cplacement.size = calls[child->type].getsize(child, &climit, &rowstart);
+            cplacement.size = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
 
         }
 
@@ -268,7 +270,7 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
 }
 
-static struct util_size getsizebutton(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizebutton(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     struct widget_button *button = widget->data;
@@ -278,7 +280,7 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *l
 
 }
 
-static struct util_size getsizechoice(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizechoice(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     struct widget_choice *choice = widget->data;
@@ -288,14 +290,14 @@ static struct util_size getsizechoice(struct widget *widget, struct util_size *l
 
 }
 
-static struct util_size getsizefill(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizefill(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     return zerosize;
 
 }
 
-static struct util_size getsizeimage(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizeimage(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     struct widget_image *image = widget->data;
@@ -307,25 +309,21 @@ static struct util_size getsizeimage(struct widget *widget, struct util_size *li
 
 }
 
-static struct util_size getsizelayout(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizelayout(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size total = childrengetsize(widget, limit, getdirection(widget->flow));
-
-    return util_size(total.w, total.h);
+    return util_size(csize->w, csize->h);
 
 }
 
-static struct util_size getsizelistbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizelistbox(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size total = childrengetsize(widget, limit, getdirection(widget->flow));
-
-    return util_size(total.w + CONFIG_FRAME_WIDTH * 2, total.h + CONFIG_FRAME_HEIGHT * 2);
+    return util_size(csize->w + CONFIG_FRAME_WIDTH * 2, csize->h + CONFIG_FRAME_HEIGHT * 2);
 
 }
 
-static struct util_size getsizeselect(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizeselect(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     struct widget_select *select = widget->data;
@@ -335,7 +333,7 @@ static struct util_size getsizeselect(struct widget *widget, struct util_size *l
 
 }
 
-static struct util_size getsizetext(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizetext(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     struct widget_text *text = widget->data;
@@ -361,16 +359,14 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
 
 }
 
-static struct util_size getsizetextbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizetextbox(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size total = childrengetsize(widget, limit, getdirection(widget->flow));
-
-    return util_size(total.w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, total.h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
+    return util_size(csize->w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, csize->h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
 
 }
 
-static struct util_size getsizetextbutton(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizetextbutton(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     struct widget_textbutton *textbutton = widget->data;
@@ -380,7 +376,7 @@ static struct util_size getsizetextbutton(struct widget *widget, struct util_siz
 
 }
 
-static struct util_size getsizewindow(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizewindow(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     return widget->placement.size;
@@ -448,7 +444,7 @@ static void placelistbox(struct widget *widget, struct util_region *placement, s
 static void placeselect(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
-    struct util_size wsize = calls[widget->type].getsize(widget, &placement->size, &widget->rowstart);
+    struct util_size wsize = calls[widget->type].getsize(widget, &zerosize, &placement->size, &widget->rowstart);
     struct util_region cplacement = util_region(placement->position.x, placement->position.y + wsize.h, INFINITY, INFINITY);
 
     widget->placement = *placement;
@@ -803,7 +799,7 @@ void render_update(struct blit_display *display)
 
 }
 
-static void setupcall(unsigned int type, struct util_size (*getsize)(struct widget *widget, struct util_size *limit, struct util_position *rowstart), void (*place)(struct widget *widget, struct util_region *placement, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2))
+static void setupcall(unsigned int type, struct util_size (*getsize)(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart), void (*place)(struct widget *widget, struct util_region *placement, struct util_region *clip), void (*render)(struct blit_display *display, struct widget *widget, int line, int x0, int x2))
 {
 
     struct calls *call = &calls[type];

@@ -140,36 +140,36 @@ static void damageall(struct widget *widget)
 static void movewidget(struct widget *widget, int x, int y)
 {
 
-    damage(widget);
+    damageall(widget);
 
     widget->placement.position.x = x;
     widget->placement.position.y = y;
 
-    damage(widget);
+    damageall(widget);
 
 }
 
 static void translatewidget(struct widget *widget, int x, int y)
 {
 
-    damage(widget);
+    damageall(widget);
 
     widget->placement.position.x += x;
     widget->placement.position.y += y;
 
-    damage(widget);
+    damageall(widget);
 
 }
 
 static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 {
 
-    damage(widget);
+    damageall(widget);
 
     widget->placement.size.w = w;
     widget->placement.size.h = h;
 
-    damage(widget);
+    damageall(widget);
 
 }
 
@@ -864,8 +864,7 @@ static void setupwidgets(void)
     char *data0 =
         "+ layout id \"root\" flow \"stretch\"\n";
     char *data1 =
-        "+ layout id \"background\" flow \"stretch\"\n"
-        "+   fill in \"background\" color \"FF202020\"\n"
+        "+ fill color \"FF202020\"\n"
         "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\"\n"
         "+ layout id \"desktop\" flow \"vertical\"\n"
         "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
