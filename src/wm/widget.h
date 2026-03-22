@@ -130,7 +130,7 @@ struct widget
     unsigned int padding;
     unsigned int span;
     unsigned int onclick;
-    struct util_region region;
+    struct util_region placement;
     struct util_region clip;
     struct util_position rowstart;
     struct util_position rowstop;

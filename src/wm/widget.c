@@ -408,14 +408,14 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 unsigned int widget_region_intersectsx(struct widget *widget, int x)
 {
 
-    return util_intersects(x, widget->region.position.x, widget->region.position.x + widget->region.size.w);
+    return util_intersects(x, widget->placement.position.x, widget->placement.position.x + widget->placement.size.w);
 
 }
 
 unsigned int widget_region_intersectsy(struct widget *widget, int y)
 {
 
-    return util_intersects(y, widget->region.position.y, widget->region.position.y + widget->region.size.h);
+    return util_intersects(y, widget->placement.position.y, widget->placement.position.y + widget->placement.size.h);
 
 }
 
@@ -663,7 +663,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->onclick = 0;
     widget->padding = 0;
     widget->span = 0;
-    widget->region = util_region(0, 0, 0, 0);
+    widget->placement = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
     widget->rowstart = util_position(0, 0);
     widget->rowstop = util_position(0, 0);
