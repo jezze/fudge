@@ -153,12 +153,10 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
 }
 
-static void childrenplace(struct widget *widget, struct util_region *placement, struct util_region *clip, unsigned int direction, unsigned int stretch)
+static struct util_size getspans(struct widget *widget, struct util_size *limit, unsigned int direction)
 {
 
-    struct util_size total = childrengetsize(widget, &placement->size, direction);
-    struct util_position rowstart = zeroposition;
-    struct util_position offset = zeroposition;
+    struct util_size total = childrengetsize(widget, limit, direction);
     struct util_size span = zerosize;
     struct list_item *current = 0;
     unsigned int spans = 0;
@@ -175,12 +173,22 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
     if (spans)
     {
 
-        span.w = (placement->size.w - total.w) / spans;
-        span.h = (placement->size.h - total.h) / spans;
+        span.w = (limit->w - total.w) / spans;
+        span.h = (limit->h - total.h) / spans;
 
     }
 
-    current = 0;
+    return span;
+
+}
+
+static void childrenplace(struct widget *widget, struct util_region *placement, struct util_region *clip, unsigned int direction, unsigned int stretch)
+{
+
+    struct util_size span = getspans(widget, &placement->size, direction);
+    struct util_position rowstart = zeroposition;
+    struct util_position offset = zeroposition;
+    struct list_item *current = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
