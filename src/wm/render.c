@@ -102,23 +102,20 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         struct util_size ccsize = childrengetsize(child, &climit, getdirection(child->flow));
         struct util_size csize = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
 
-        if (child->span)
+        switch (direction)
         {
 
-            switch (direction)
-            {
-
-            case DIRECTION_HORIZONTAL:
+        case DIRECTION_HORIZONTAL:
+            if (child->span)
                 csize.w = 0;
 
-                break;
+            break;
 
-            case DIRECTION_VERTICAL:
+        case DIRECTION_VERTICAL:
+            if (child->span)
                 csize.h = 0;
 
-                break;
-
-            }
+            break;
 
         }
 
@@ -194,38 +191,45 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
     {
 
         struct widget *child = current->data;
-        struct util_region cplacement = util_region(placement->position.x + offset.x, placement->position.y + offset.y, 0, 0);
-        struct util_size climit = util_size(placement->size.w - offset.x, placement->size.h - offset.y);
-        struct util_size ccsize = childrengetsize(child, &climit, getdirection(child->flow));
+        struct util_position cposition = util_position(placement->position.x + offset.x, placement->position.y + offset.y);
+        struct util_size csize = util_size(placement->size.w - offset.x, placement->size.h - offset.y);
+        struct util_size ccsize = childrengetsize(child, &csize, getdirection(child->flow));
+        struct util_region cplacement;
 
-        if (child->span)
+        switch (direction)
         {
 
-            switch (direction)
-            {
+        case DIRECTION_HORIZONTAL:
+            if (child->span)
+                csize.w = child->span * span.w;
 
-            case DIRECTION_HORIZONTAL:
-                climit.w = child->span * span.w;
-                cplacement.size = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
-                cplacement.size.w = climit.w;
+            break;
 
-                break;
+        case DIRECTION_VERTICAL:
+            if (child->span)
+                csize.h = child->span * span.h;
 
-            case DIRECTION_VERTICAL:
-                climit.h = child->span * span.h;
-                cplacement.size = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
-                cplacement.size.h = climit.h;
-
-                break;
-
-            }
+            break;
 
         }
 
-        else
+        cplacement.position = cposition;
+        cplacement.size = calls[child->type].getsize(child, &ccsize, &csize, &rowstart);
+
+        switch (direction)
         {
 
-            cplacement.size = calls[child->type].getsize(child, &ccsize, &climit, &rowstart);
+        case DIRECTION_HORIZONTAL:
+            if (child->span)
+                cplacement.size.w = csize.w;
+
+            break;
+
+        case DIRECTION_VERTICAL:
+            if (child->span)
+                cplacement.size.h = csize.h;
+
+            break;
 
         }
 
@@ -233,18 +237,18 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
         {
 
         case STRETCH_HORIZONTAL:
-            cplacement.size.w = placement->size.w;
+            cplacement.size.w = csize.w;
 
             break;
 
         case STRETCH_VERTICAL:
-            cplacement.size.h = placement->size.h;
+            cplacement.size.h = csize.h;
 
             break;
 
         case STRETCH_BOTH:
-            cplacement.size.w = placement->size.w;
-            cplacement.size.h = placement->size.h;
+            cplacement.size.w = csize.w;
+            cplacement.size.h = csize.h;
 
             break;
 

@@ -585,7 +585,6 @@ static void initlistbox(struct widget *widget)
 
     struct widget_listbox *listbox = widget->data;
 
-    widget->flow = ATTR_FLOW_VERTICALSTRETCH;
     listbox->mode = ATTR_MODE_NORMAL;
     listbox->overflow = ATTR_OVERFLOW_NONE;
     listbox->hscroll = 0;
@@ -598,7 +597,6 @@ static void initselect(struct widget *widget)
 
     struct widget_select *select = widget->data;
 
-    widget->flow = ATTR_FLOW_VERTICAL;
     select->label = 0;
 
 }
@@ -623,7 +621,6 @@ static void inittextbox(struct widget *widget)
 
     struct widget_textbox *textbox = widget->data;
 
-    widget->flow = ATTR_FLOW_VERTICAL;
     textbox->mode = ATTR_MODE_NORMAL;
     textbox->overflow = ATTR_OVERFLOW_NONE;
     textbox->hscroll = 0;
@@ -649,7 +646,6 @@ static void initwindow(struct widget *widget)
 
     struct widget_window *window = widget->data;
 
-    widget->flow = ATTR_FLOW_VERTICALSTRETCH;
     window->title = 0;
 
 }
