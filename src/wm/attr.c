@@ -91,7 +91,6 @@ unsigned int attr_isstring(unsigned int attribute)
     switch (attribute)
     {
 
-    case ATTR_CONTENT:
     case ATTR_ID:
     case ATTR_IN:
     case ATTR_LABEL:
@@ -143,9 +142,6 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_COLOR:
         return getnum(value, 16);
-
-    case ATTR_CONTENT:
-        return strpool_updatestring(current, value);
 
     case ATTR_CURSOR:
         return getnum(value, 10);

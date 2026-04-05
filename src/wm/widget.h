@@ -49,7 +49,6 @@ struct widget_listbox
 struct widget_text
 {
 
-    unsigned int content;
     unsigned int halign;
     unsigned int valign;
     unsigned int weight;

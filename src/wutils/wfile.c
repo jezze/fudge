@@ -8,7 +8,7 @@ static unsigned int cursor = 0;
 static void updatepath(unsigned int wm)
 {
 
-    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= path content \"%s\"\n", path);
+    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= path label \"%s\"\n", path);
 
 }
 

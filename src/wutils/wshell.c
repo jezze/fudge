@@ -24,13 +24,13 @@ static void update(unsigned int wm)
 
     count = ring_readcopy(&result, buffer, CONTENTSIZE);
 
-    channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "= result content \"%w\"\n", buffer, &count);
+    channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "= result label \"%w\"\n", buffer, &count);
 
     count = ring_readcopy(&input1, buffer, CONTENTSIZE);
     cursor = count;
     count += ring_readcopy(&input2, buffer + count, CONTENTSIZE);
 
-    channel_send_fmt3(0, wm, EVENT_WMRENDERDATA, "= output cursor \"%u\"\n= input content \"%w\"\n", &cursor, buffer, &count);
+    channel_send_fmt3(0, wm, EVENT_WMRENDERDATA, "= output cursor \"%u\"\n= input label \"%w\"\n", &cursor, buffer, &count);
 
 }
 
@@ -374,8 +374,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "+ window id \"window\" label \"Shell\" flow \"stretch\"\n"
         "  + textbox id \"output\" in \"window\" flow \"vertical\" overflow \"vscroll\" mode \"readonly\" span \"1\" cursor \"0\"\n"
         "    + text id \"result\" in \"output\" display \"inline\" wrap \"char\"\n"
-        "    + text id \"prompt\" in \"output\" display \"inline\" wrap \"char\" weight \"bold\" content \"$ \"\n"
-        "    + text id \"input\" in \"output\" display \"inline\" wrap \"char\" content \"\"\n";
+        "    + text id \"prompt\" in \"output\" display \"inline\" wrap \"char\" weight \"bold\" label \"$ \"\n"
+        "    + text id \"input\" in \"output\" display \"inline\" wrap \"char\" label \"\"\n";
 
     channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
 

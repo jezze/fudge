@@ -74,11 +74,6 @@ static void setattributetext(struct widget *widget, unsigned int attribute, char
     switch (attribute)
     {
 
-    case ATTR_CONTENT:
-        text->content = attr_update(ATTR_CONTENT, value, text->content);
-
-        break;
-
     case ATTR_HALIGN:
         text->halign = attr_update(ATTR_HALIGN, value, text->halign);
 
@@ -225,7 +220,6 @@ void widget_unsetattributes(struct widget *widget)
 {
 
     widget_setattribute(widget, ATTR_COLOR, 0);
-    widget_setattribute(widget, ATTR_CONTENT, 0);
     widget_setattribute(widget, ATTR_CURSOR, 0);
     widget_setattribute(widget, ATTR_DISPLAY, 0);
     widget_setattribute(widget, ATTR_FLOW, 0);
@@ -468,7 +462,6 @@ static void inittext(struct widget *widget)
 
     struct widget_text *text = widget->data;
 
-    text->content = 0;
     text->halign = ATTR_HALIGN_LEFT;
     text->valign = ATTR_VALIGN_TOP;
     text->weight = ATTR_WEIGHT_NORMAL;

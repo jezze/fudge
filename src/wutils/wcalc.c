@@ -15,7 +15,7 @@ static int accumulator;
 static void refresh(unsigned int wm, int value)
 {
 
-    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= result content \"%i\"\n", &value);
+    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= result label \"%i\"\n", &value);
 
 }
 
@@ -122,7 +122,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" padding \"1\" span \"1\"\n"
         "    + layout id \"display\" in \"base\" flow \"horizontal-stretch\"\n"
         "      + textbox id \"output\" in \"display\" mode \"readonly\" span \"1\"\n"
-        "        + text id \"result\" in \"output\" content \"0\" halign \"right\"\n";
+        "        + text id \"result\" in \"output\" label \"0\" halign \"right\"\n";
     char *data1 =
         "    + layout id \"buttons\" in \"base\" flow \"vertical-stretch\" span \"1\"\n"
         "      + layout id \"row1\" in \"buttons\" flow \"horizontal-stretch\" span \"1\"\n"

@@ -355,7 +355,7 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *csi
 
     }
 
-    info = text_info(pool_getfont(text->weight), strpool_getstring(text->content), strpool_getcstringlength(text->content), text->wrap, limit->w, widget->rowstart.x);
+    info = text_info(pool_getfont(text->weight), strpool_getstring(widget->label), strpool_getcstringlength(widget->label), text->wrap, limit->w, widget->rowstart.x);
 
     if (widget->display == ATTR_DISPLAY_INLINE)
     {
@@ -658,7 +658,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
     unsigned int rownum = (line - widget->placement.position.y) / font->lineheight;
 
-    _renderx(display, &widget->placement, text->content, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, text->markstart, text->markend, text->halign, text->valign, text->weight, text->wrap, &zerosize, rownum, line);
+    _renderx(display, &widget->placement, widget->label, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, text->markstart, text->markend, text->halign, text->valign, text->weight, text->wrap, &zerosize, rownum, line);
 
 }
 
