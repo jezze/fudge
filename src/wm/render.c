@@ -415,7 +415,7 @@ static void placeimage(struct widget *widget, struct util_region *placement, str
     if (widget->attributes.mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
     {
 
-        widget->placement = util_region(widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h);
+        widget->placement = util_region(widget->position.x, widget->position.y, widget->size.w, widget->size.h);
 
     }
 
@@ -499,9 +499,9 @@ static void placetextbutton(struct widget *widget, struct util_region *placement
 static void placewindow(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
-    struct util_region cplacement = util_region(widget->placement.position.x, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region cplacement = util_region(widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
 
-    widget->placement = util_region(widget->placement.position.x, widget->placement.position.y, widget->size.w, widget->size.h);
+    widget->placement = util_region(widget->position.x, widget->position.y, widget->size.w, widget->size.h);
     widget->clip = *clip;
 
     childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->attributes.flow), getstretch(widget->attributes.flow));

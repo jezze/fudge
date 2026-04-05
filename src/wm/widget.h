@@ -35,6 +35,7 @@ struct widget
     unsigned int cursorwidth;
     void *resource;
     unsigned int loaded;
+    struct util_position position;
     struct util_size size;
 
     struct

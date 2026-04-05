@@ -329,6 +329,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->cursorwidth = 0;
     widget->resource = 0;
     widget->loaded = 0;
+    widget->position = util_position(0, 0);
     widget->size = util_size(0, 0);
     widget->attributes.color = 0;
     widget->attributes.display = ATTR_DISPLAY_BLOCK;

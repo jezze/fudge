@@ -116,12 +116,17 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 static void damage(struct widget *widget)
 {
 
-    int maxw = util_max(widget->size.w, widget->placement.size.w);
-    int maxh = util_max(widget->size.h, widget->placement.size.h);
-    int x0 = util_clamp(widget->placement.position.x, 0, display.region.size.w);
-    int y0 = util_clamp(widget->placement.position.y, 0, display.region.size.h);
-    int x2 = util_clamp(widget->placement.position.x + maxw, 0, display.region.size.w);
-    int y2 = util_clamp(widget->placement.position.y + maxh, 0, display.region.size.h);
+    int x0 = util_clamp(widget->position.x, 0, display.region.size.w);
+    int y0 = util_clamp(widget->position.y, 0, display.region.size.h);
+    int x2 = util_clamp(widget->position.x + widget->size.w, 0, display.region.size.w);
+    int y2 = util_clamp(widget->position.y + widget->size.h, 0, display.region.size.h);
+
+    render_damage(x0, y0, x2, y2);
+
+    x0 = util_clamp(widget->placement.position.x, 0, display.region.size.w);
+    y0 = util_clamp(widget->placement.position.y, 0, display.region.size.h);
+    x2 = util_clamp(widget->placement.position.x + widget->placement.size.w, 0, display.region.size.w);
+    y2 = util_clamp(widget->placement.position.y + widget->placement.size.h, 0, display.region.size.h);
 
     render_damage(x0, y0, x2, y2);
 
@@ -144,8 +149,8 @@ static void movewidget(struct widget *widget, int x, int y)
 
     damageall(widget);
 
-    widget->placement.position.x = x;
-    widget->placement.position.y = y;
+    widget->position.x = x;
+    widget->position.y = y;
 
     damageall(widget);
 
@@ -156,8 +161,8 @@ static void translatewidget(struct widget *widget, int x, int y)
 
     damageall(widget);
 
-    widget->placement.position.x += x;
-    widget->placement.position.y += y;
+    widget->position.x += x;
+    widget->position.y += y;
 
     damageall(widget);
 
@@ -309,8 +314,8 @@ static void placewindows(unsigned int source)
                 unsigned int w8 = display.region.size.w / 8;
                 unsigned int h8 = display.region.size.h / 8;
 
-                widget->placement.position.x = w8;
-                widget->placement.position.y = h8;
+                widget->position.x = w8;
+                widget->position.y = h8;
                 widget->size.w = w8 * 3;
                 widget->size.h = h8 * 6;
 
@@ -751,13 +756,17 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
     case 0:
     case 1:
-        state.mousewidget->placement = util_region(state.mouseposition.x, state.mouseposition.y, 12, 16);
+        state.mousewidget->position = util_position(state.mouseposition.x, state.mouseposition.y);
+        state.mousewidget->size = util_size(12, 16);
+        state.mousewidget->placement = util_region(state.mousewidget->position.x, state.mousewidget->position.y, state.mousewidget->size.w, state.mousewidget->size.h);
 
         break;
 
     case 2:
     default:
-        state.mousewidget->placement = util_region(state.mouseposition.x, state.mouseposition.y, 18, 24);
+        state.mousewidget->position = util_position(state.mouseposition.x, state.mouseposition.y);
+        state.mousewidget->size = util_size(18, 24);
+        state.mousewidget->placement = util_region(state.mousewidget->position.x, state.mousewidget->position.y, state.mousewidget->size.w, state.mousewidget->size.h);
 
         break;
 
