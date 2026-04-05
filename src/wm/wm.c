@@ -116,10 +116,12 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 static void damage(struct widget *widget)
 {
 
+    int maxw = util_max(widget->size.w, widget->placement.size.w);
+    int maxh = util_max(widget->size.h, widget->placement.size.h);
     int x0 = util_clamp(widget->placement.position.x, 0, display.region.size.w);
     int y0 = util_clamp(widget->placement.position.y, 0, display.region.size.h);
-    int x2 = util_clamp(widget->placement.position.x + widget->placement.size.w, 0, display.region.size.w);
-    int y2 = util_clamp(widget->placement.position.y + widget->placement.size.h, 0, display.region.size.h);
+    int x2 = util_clamp(widget->placement.position.x + maxw, 0, display.region.size.w);
+    int y2 = util_clamp(widget->placement.position.y + maxh, 0, display.region.size.h);
 
     render_damage(x0, y0, x2, y2);
 
@@ -166,8 +168,8 @@ static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 
     damageall(widget);
 
-    widget->placement.size.w = w;
-    widget->placement.size.h = h;
+    widget->size.w = w;
+    widget->size.h = h;
 
     damageall(widget);
 
@@ -301,7 +303,7 @@ static void placewindows(unsigned int source)
         if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
-            if (widget->placement.size.w == 0 && widget->placement.size.h == 0)
+            if (widget->size.w == 0 && widget->size.h == 0)
             {
 
                 unsigned int w8 = display.region.size.w / 8;
@@ -309,8 +311,8 @@ static void placewindows(unsigned int source)
 
                 widget->placement.position.x = w8;
                 widget->placement.position.y = h8;
-                widget->placement.size.w = w8 * 3;
-                widget->placement.size.h = h8 * 6;
+                widget->size.w = w8 * 3;
+                widget->size.h = h8 * 6;
 
                 setfocuswindow(widget);
                 setfocus(0);
