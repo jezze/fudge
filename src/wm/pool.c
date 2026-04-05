@@ -66,7 +66,7 @@ struct list_item *pool_next(struct list_item *current)
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    if (!strpool_getcstringlength(parent->id))
+    if (!strpool_getcstringlength(parent->attributes.id))
         return 0;
 
     while ((current = pool_next(current)))
@@ -78,7 +78,7 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
         if (!parent->source || widget->source == parent->source)
         {
 
-            if (cstring_match(strpool_getstring(widget->in), strpool_getstring(parent->id)))
+            if (cstring_match(strpool_getstring(widget->attributes.in), strpool_getstring(parent->attributes.id)))
                 return current;
 
         }
@@ -119,7 +119,7 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
         if (entry->widget.source != source)
             continue;
 
-        if (cstring_match(strpool_getstring(entry->widget.id), id))
+        if (cstring_match(strpool_getstring(entry->widget.attributes.id), id))
             return &entry->widget;
 
     }

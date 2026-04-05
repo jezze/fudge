@@ -133,42 +133,42 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
     {
 
     case ATTR_DISPLAY:
-        widget->display = attr_update(ATTR_DISPLAY, value, widget->display);
+        widget->attributes.display = attr_update(ATTR_DISPLAY, value, widget->attributes.display);
 
         break;
 
     case ATTR_FLOW:
-        widget->flow = attr_update(ATTR_FLOW, value, widget->flow);
+        widget->attributes.flow = attr_update(ATTR_FLOW, value, widget->attributes.flow);
 
         break;
 
     case ATTR_ID:
-        widget->id = attr_update(ATTR_ID, value, widget->id);
+        widget->attributes.id = attr_update(ATTR_ID, value, widget->attributes.id);
 
         break;
 
     case ATTR_IN:
-        widget->in = attr_update(ATTR_IN, value, widget->in);
+        widget->attributes.in = attr_update(ATTR_IN, value, widget->attributes.in);
 
         break;
 
     case ATTR_LABEL:
-        widget->label = attr_update(ATTR_LABEL, value, widget->label);
+        widget->attributes.label = attr_update(ATTR_LABEL, value, widget->attributes.label);
 
         break;
 
     case ATTR_PADDING:
-        widget->padding = attr_update(ATTR_PADDING, value, widget->padding);
+        widget->attributes.padding = attr_update(ATTR_PADDING, value, widget->attributes.padding);
 
         break;
 
     case ATTR_ONCLICK:
-        widget->onclick = attr_update(ATTR_ONCLICK, value, widget->onclick);
+        widget->attributes.onclick = attr_update(ATTR_ONCLICK, value, widget->attributes.onclick);
 
         break;
 
     case ATTR_SPAN:
-        widget->span = attr_update(ATTR_SPAN, value, widget->span);
+        widget->attributes.span = attr_update(ATTR_SPAN, value, widget->attributes.span);
 
         break;
 
@@ -493,14 +493,14 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->source = source;
     widget->type = type;
     widget->state = WIDGET_STATE_NORMAL;
-    widget->display = ATTR_DISPLAY_BLOCK;
-    widget->flow = ATTR_FLOW_DEFAULT;
-    widget->id = 0;
-    widget->in = 0;
-    widget->label = 0;
-    widget->onclick = 0;
-    widget->padding = 0;
-    widget->span = 0;
+    widget->attributes.display = ATTR_DISPLAY_BLOCK;
+    widget->attributes.flow = ATTR_FLOW_DEFAULT;
+    widget->attributes.id = 0;
+    widget->attributes.in = 0;
+    widget->attributes.label = 0;
+    widget->attributes.onclick = 0;
+    widget->attributes.padding = 0;
+    widget->attributes.span = 0;
     widget->placement = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
     widget->rowstart = util_position(0, 0);

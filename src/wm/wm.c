@@ -410,8 +410,8 @@ static void clickwidget(struct widget *widget)
     if (state.mousebuttonleft)
     {
 
-        if (widget->onclick)
-            sendevent(widget->source, 1, widget->onclick);
+        if (widget->attributes.onclick)
+            sendevent(widget->source, 1, widget->attributes.onclick);
 
     }
 
@@ -429,8 +429,8 @@ static void markwidget(struct widget *widget)
         int x1 = state.mouseposition.x - widget->placement.position.x;
         int y1 = state.mouseposition.y - widget->placement.position.y;
 
-        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(widget->label), strpool_getcstringlength(widget->label), text->wrap, widget->placement.size.w, widget->rowstart.x, x0, y0);
-        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(widget->label), strpool_getcstringlength(widget->label), text->wrap, widget->placement.size.w, widget->rowstart.x, x1, y1);
+        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), text->wrap, widget->placement.size.w, widget->rowstart.x, x0, y0);
+        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), text->wrap, widget->placement.size.w, widget->rowstart.x, x1, y1);
 
     }
 

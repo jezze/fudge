@@ -80,14 +80,21 @@ struct widget
     unsigned int source;
     unsigned int type;
     unsigned int state;
-    unsigned int display;
-    unsigned int flow;
-    unsigned int id;
-    unsigned int in;
-    unsigned int label;
-    unsigned int padding;
-    unsigned int span;
-    unsigned int onclick;
+
+    struct
+    {
+
+        unsigned int display;
+        unsigned int flow;
+        unsigned int id;
+        unsigned int in;
+        unsigned int label;
+        unsigned int padding;
+        unsigned int span;
+        unsigned int onclick;
+
+    } attributes;
+
     struct util_region placement;
     struct util_region clip;
     struct util_position rowstart;
