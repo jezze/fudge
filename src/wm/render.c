@@ -666,7 +666,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 static void rendertextbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct util_region rcursor = util_region(widget->cursorx, widget->cursory, widget->cursorwidth, widget->cursorheight);
+    struct util_region rcursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmapbodyro = cmap_get(widget->state, widget->type, 12, 0);
     unsigned int *cmapicon = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0);

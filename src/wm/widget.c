@@ -312,82 +312,92 @@ unsigned int widget_isscrollable(struct widget *widget)
 
 }
 
+void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
+{
+
+    attributes->color = 0;
+    attributes->cursor = 0;
+    attributes->display = ATTR_DISPLAY_BLOCK;
+    attributes->flow = ATTR_FLOW_DEFAULT;
+    attributes->halign = ATTR_HALIGN_LEFT;
+    attributes->id = 0;
+    attributes->in = 0;
+    attributes->label = 0;
+    attributes->mimetype = ATTR_MIMETYPE_NONE;
+    attributes->mode = ATTR_MODE_NORMAL;
+    attributes->onclick = 0;
+    attributes->overflow = ATTR_OVERFLOW_NONE;
+    attributes->padding = 0;
+    attributes->span = 0;
+    attributes->source = 0;
+    attributes->valign = ATTR_VALIGN_TOP;
+    attributes->weight = ATTR_WEIGHT_NORMAL;
+    attributes->wrap = ATTR_WRAP_NONE;
+
+    switch (type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+        attributes->halign = ATTR_HALIGN_CENTER;
+        attributes->valign = ATTR_VALIGN_MIDDLE;
+        attributes->weight = ATTR_WEIGHT_BOLD;
+
+        break;
+
+    case WIDGET_TYPE_CHOICE:
+        attributes->valign = ATTR_VALIGN_MIDDLE;
+
+        break;
+
+    case WIDGET_TYPE_SELECT:
+        attributes->valign = ATTR_VALIGN_MIDDLE;
+
+        break;
+
+    case WIDGET_TYPE_TEXTBUTTON:
+        attributes->valign = ATTR_VALIGN_MIDDLE;
+
+        break;
+
+    case WIDGET_TYPE_WINDOW:
+        attributes->halign = ATTR_HALIGN_CENTER;
+        attributes->valign = ATTR_VALIGN_MIDDLE;
+        attributes->weight = ATTR_WEIGHT_BOLD;
+
+        break;
+
+    }
+
+}
+
 void widget_init(struct widget *widget, unsigned int source, unsigned int type)
 {
 
     widget->source = source;
     widget->type = type;
     widget->state = WIDGET_STATE_NORMAL;
-    widget->hscroll = 0;
-    widget->vscroll = 0;
     widget->markstart = 0;
     widget->markend = 0;
     widget->enablecursor = 0;
-    widget->cursorx = 0;
-    widget->cursory = 0;
-    widget->cursorheight = 0;
-    widget->cursorwidth = 0;
     widget->resource = 0;
     widget->loaded = 0;
     widget->position = util_position(0, 0);
     widget->size = util_size(0, 0);
-    widget->attributes.color = 0;
-    widget->attributes.cursor = 0;
-    widget->attributes.display = ATTR_DISPLAY_BLOCK;
-    widget->attributes.flow = ATTR_FLOW_DEFAULT;
-    widget->attributes.halign = ATTR_HALIGN_LEFT;
-    widget->attributes.id = 0;
-    widget->attributes.in = 0;
-    widget->attributes.label = 0;
-    widget->attributes.mimetype = ATTR_MIMETYPE_NONE;
-    widget->attributes.mode = ATTR_MODE_NORMAL;
-    widget->attributes.onclick = 0;
-    widget->attributes.overflow = ATTR_OVERFLOW_NONE;
-    widget->attributes.padding = 0;
-    widget->attributes.span = 0;
-    widget->attributes.source = 0;
-    widget->attributes.valign = ATTR_VALIGN_TOP;
-    widget->attributes.weight = ATTR_WEIGHT_NORMAL;
-    widget->attributes.wrap = ATTR_WRAP_NONE;
+    widget->scroll = util_position(0, 0);
+    widget->cursorposition = util_position(0, 0);
+    widget->cursorsize = util_size(0, 0);
     widget->placement = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
     widget->rowstart = util_position(0, 0);
     widget->rowstop = util_position(0, 0);
 
+    widget_init_attributes(&widget->attributes, widget->type);
+
     switch (widget->type)
     {
 
-    case WIDGET_TYPE_BUTTON:
-        widget->attributes.halign = ATTR_HALIGN_CENTER;
-        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
-        widget->attributes.weight = ATTR_WEIGHT_BOLD;
-
-        break;
-
-    case WIDGET_TYPE_CHOICE:
-        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
-
-        break;
-
-    case WIDGET_TYPE_SELECT:
-        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
-
-        break;
-
     case WIDGET_TYPE_TEXTBOX:
         widget->enablecursor = 1;
-
-        break;
-
-    case WIDGET_TYPE_TEXTBUTTON:
-        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
-
-        break;
-
-    case WIDGET_TYPE_WINDOW:
-        widget->attributes.halign = ATTR_HALIGN_CENTER;
-        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
-        widget->attributes.weight = ATTR_WEIGHT_BOLD;
 
         break;
 

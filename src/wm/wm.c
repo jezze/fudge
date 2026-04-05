@@ -180,14 +180,14 @@ static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 
 }
 
-static void scrollwidget(struct widget *widget, int hamount, int vamount)
+static void scrollwidget(struct widget *widget, int x, int y)
 {
 
     if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_HSCROLL)
-        widget->hscroll += hamount;
+        widget->scroll.x += x;
 
     if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_VSCROLL)
-        widget->vscroll += vamount;
+        widget->scroll.y += y;
 
     damage(widget);
 

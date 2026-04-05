@@ -16,54 +16,51 @@
 #define WIDGET_STATE_FOCUSOFF           4
 #define WIDGET_STATE_DESTROYED          5
 
+struct widget_attributes
+{
+
+    unsigned int color;
+    unsigned int cursor;
+    unsigned int display;
+    unsigned int flow;
+    unsigned int halign;
+    unsigned int id;
+    unsigned int in;
+    unsigned int label;
+    unsigned int mimetype;
+    unsigned int mode;
+    unsigned int onclick;
+    unsigned int overflow;
+    unsigned int padding;
+    unsigned int source;
+    unsigned int span;
+    unsigned int valign;
+    unsigned int weight;
+    unsigned int wrap;
+
+};
+
 struct widget
 {
 
     unsigned int source;
     unsigned int type;
     unsigned int state;
-    int hscroll;
-    int vscroll;
     unsigned int markstart;
     unsigned int markend;
     unsigned int enablecursor;
-    int cursorx;
-    int cursory;
-    unsigned int cursorheight;
-    unsigned int cursorwidth;
     void *resource;
     unsigned int loaded;
     struct util_position position;
     struct util_size size;
-
-    struct
-    {
-
-        unsigned int color;
-        unsigned int cursor;
-        unsigned int display;
-        unsigned int flow;
-        unsigned int halign;
-        unsigned int id;
-        unsigned int in;
-        unsigned int label;
-        unsigned int mimetype;
-        unsigned int mode;
-        unsigned int onclick;
-        unsigned int overflow;
-        unsigned int padding;
-        unsigned int source;
-        unsigned int span;
-        unsigned int valign;
-        unsigned int weight;
-        unsigned int wrap;
-
-    } attributes;
-
+    struct util_position scroll;
+    struct util_position cursorposition;
+    struct util_size cursorsize;
     struct util_region placement;
     struct util_region clip;
     struct util_position rowstart;
     struct util_position rowstop;
+    struct widget_attributes attributes;
 
 };
 
@@ -83,4 +80,5 @@ unsigned int widget_isdragable(struct widget *widget);
 unsigned int widget_isresizable(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
 unsigned int widget_isscrollable(struct widget *widget);
+void widget_init_attributes(struct widget_attributes *attributes, unsigned type);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type);
