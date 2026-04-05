@@ -303,15 +303,12 @@ static struct util_size getsizechoice(struct widget *widget, struct util_size *c
 static struct util_size getsizefill(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return zerosize;
+    return util_size(widget->size.w, widget->size.h);
 
 }
 
 static struct util_size getsizeimage(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
-
-    if (widget->attributes.mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
-        return zerosize;
 
     return util_size(widget->size.w, widget->size.h);
 
