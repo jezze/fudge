@@ -176,35 +176,13 @@ static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 static void scrollwidget(struct widget *widget, int hamount, int vamount)
 {
 
-    if (widget->type == WIDGET_TYPE_LISTBOX)
-    {
+    if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_HSCROLL)
+        widget->hscroll += hamount;
 
-        struct widget_listbox *listbox = widget->data;
+    if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_VSCROLL)
+        widget->vscroll += vamount;
 
-        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_HSCROLL)
-            listbox->hscroll += hamount;
-
-        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_VSCROLL)
-            listbox->vscroll += vamount;
-
-        damage(widget);
-
-    }
-
-    else if (widget->type == WIDGET_TYPE_TEXTBOX)
-    {
-
-        struct widget_textbox *textbox = widget->data;
-
-        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_HSCROLL)
-            textbox->hscroll += hamount;
-
-        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_VSCROLL)
-            textbox->vscroll += vamount;
-
-        damage(widget);
-
-    }
+    damage(widget);
 
 }
 
@@ -423,14 +401,13 @@ static void markwidget(struct widget *widget)
     if (widget->type == WIDGET_TYPE_TEXT)
     {
 
-        struct widget_text *text = widget->data;
         int x0 = state.mousepressed.x - widget->placement.position.x;
         int y0 = state.mousepressed.y - widget->placement.position.y;
         int x1 = state.mouseposition.x - widget->placement.position.x;
         int y1 = state.mouseposition.y - widget->placement.position.y;
 
-        text->markstart = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x0, y0);
-        text->markend = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x1, y1);
+        widget->markstart = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x0, y0);
+        widget->markend = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x1, y1);
 
     }
 

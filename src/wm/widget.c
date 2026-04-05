@@ -5,90 +5,21 @@
 #include "attr.h"
 #include "widget.h"
 
-static void setattributefill(struct widget *widget, unsigned int attribute, char *value)
+void widget_setattribute(struct widget *widget, unsigned int attribute, char *value)
 {
-
-    struct widget_fill *fill = widget->data;
 
     switch (attribute)
     {
 
     case ATTR_COLOR:
-        fill->color = attr_update(ATTR_COLOR, value, fill->color);
+        widget->attributes.color = attr_update(ATTR_COLOR, value, widget->attributes.color);
 
         break;
-
-    }
-
-}
-
-static void setattributeimage(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_image *image = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_MIMETYPE:
-        image->mimetype = attr_update(ATTR_MIMETYPE, value, image->mimetype);
-
-        break;
-
-    case ATTR_SOURCE:
-        image->source = attr_update(ATTR_SOURCE, value, image->source);
-
-        break;
-
-    }
-
-}
-
-static void setattributelistbox(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_listbox *listbox = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_MODE:
-        listbox->mode = attr_update(ATTR_MODE, value, listbox->mode);
-
-        break;
-
-    }
-
-}
-
-static void setattributetextbox(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_textbox *textbox = widget->data;
-
-    switch (attribute)
-    {
 
     case ATTR_CURSOR:
-        textbox->cursor = attr_update(ATTR_CURSOR, value, textbox->cursor);
-        textbox->enablecursor = 1; /* FIXME */
+        widget->attributes.cursor = attr_update(ATTR_CURSOR, value, widget->attributes.cursor);
 
         break;
-
-    case ATTR_MODE:
-        textbox->mode = attr_update(ATTR_MODE, value, textbox->mode);
-
-        break;
-
-    }
-
-}
-
-static void setattribute(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    switch (attribute)
-    {
 
     case ATTR_DISPLAY:
         widget->attributes.display = attr_update(ATTR_DISPLAY, value, widget->attributes.display);
@@ -120,6 +51,21 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_MIMETYPE:
+        widget->attributes.mimetype = attr_update(ATTR_MIMETYPE, value, widget->attributes.mimetype);
+
+        break;
+
+    case ATTR_MODE:
+        widget->attributes.mode = attr_update(ATTR_MODE, value, widget->attributes.mode);
+
+        break;
+
+    case ATTR_ONCLICK:
+        widget->attributes.onclick = attr_update(ATTR_ONCLICK, value, widget->attributes.onclick);
+
+        break;
+
     case ATTR_OVERFLOW:
         widget->attributes.overflow = attr_update(ATTR_OVERFLOW, value, widget->attributes.overflow);
 
@@ -130,8 +76,8 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case ATTR_ONCLICK:
-        widget->attributes.onclick = attr_update(ATTR_ONCLICK, value, widget->attributes.onclick);
+    case ATTR_SOURCE:
+        widget->attributes.source = attr_update(ATTR_SOURCE, value, widget->attributes.source);
 
         break;
 
@@ -152,41 +98,6 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_WRAP:
         widget->attributes.wrap = attr_update(ATTR_WRAP, value, widget->attributes.wrap);
-
-        break;
-
-    }
-
-}
-
-void widget_setattribute(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    setattribute(widget, attribute, value);
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_FILL:
-        setattributefill(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_IMAGE:
-        setattributeimage(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_LAYOUT:
-        break;
-
-    case WIDGET_TYPE_LISTBOX:
-        setattributelistbox(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBOX:
-        setattributetextbox(widget, attribute, value);
 
         break;
 
@@ -401,80 +312,38 @@ unsigned int widget_isscrollable(struct widget *widget)
 
 }
 
-static void initfill(struct widget *widget)
-{
-
-    struct widget_fill *fill = widget->data;
-
-    fill->color = 0;
-
-}
-
-static void initimage(struct widget *widget)
-{
-
-    struct widget_image *image = widget->data;
-
-    image->resource = 0;
-    image->mimetype = ATTR_MIMETYPE_NONE;
-    image->source = 0;
-    image->loaded = 0;
-    image->size = util_size(0, 0);
-
-}
-
-static void initlistbox(struct widget *widget)
-{
-
-    struct widget_listbox *listbox = widget->data;
-
-    listbox->mode = ATTR_MODE_NORMAL;
-    listbox->hscroll = 0;
-    listbox->vscroll = 0;
-
-}
-
-static void inittext(struct widget *widget)
-{
-
-    struct widget_text *text = widget->data;
-
-    text->markstart = 0;
-    text->markend = 0;
-
-}
-
-static void inittextbox(struct widget *widget)
-{
-
-    struct widget_textbox *textbox = widget->data;
-
-    textbox->mode = ATTR_MODE_NORMAL;
-    textbox->hscroll = 0;
-    textbox->vscroll = 0;
-    textbox->cursorx = 0;
-    textbox->cursory = 0;
-    textbox->cursorheight = 0;
-    textbox->cursorwidth = 0;
-
-}
-
-void widget_init(struct widget *widget, unsigned int source, unsigned int type, void *data)
+void widget_init(struct widget *widget, unsigned int source, unsigned int type)
 {
 
     widget->source = source;
     widget->type = type;
     widget->state = WIDGET_STATE_NORMAL;
+    widget->hscroll = 0;
+    widget->vscroll = 0;
+    widget->markstart = 0;
+    widget->markend = 0;
+    widget->enablecursor = 0;
+    widget->cursorx = 0;
+    widget->cursory = 0;
+    widget->cursorheight = 0;
+    widget->cursorwidth = 0;
+    widget->resource = 0;
+    widget->loaded = 0;
+    widget->size = util_size(0, 0);
+    widget->attributes.color = 0;
     widget->attributes.display = ATTR_DISPLAY_BLOCK;
     widget->attributes.flow = ATTR_FLOW_DEFAULT;
     widget->attributes.halign = ATTR_HALIGN_LEFT;
     widget->attributes.id = 0;
     widget->attributes.in = 0;
     widget->attributes.label = 0;
+    widget->attributes.mimetype = ATTR_MIMETYPE_NONE;
+    widget->attributes.mode = ATTR_MODE_NORMAL;
     widget->attributes.onclick = 0;
     widget->attributes.overflow = ATTR_OVERFLOW_NONE;
     widget->attributes.padding = 0;
     widget->attributes.span = 0;
+    widget->attributes.source = 0;
     widget->attributes.valign = ATTR_VALIGN_TOP;
     widget->attributes.weight = ATTR_WEIGHT_NORMAL;
     widget->attributes.wrap = ATTR_WRAP_NONE;
@@ -482,33 +351,41 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->clip = util_region(0, 0, 0, 0);
     widget->rowstart = util_position(0, 0);
     widget->rowstop = util_position(0, 0);
-    widget->data = data;
 
     switch (widget->type)
     {
 
-    case WIDGET_TYPE_FILL:
-        initfill(widget);
+    case WIDGET_TYPE_BUTTON:
+        widget->attributes.halign = ATTR_HALIGN_CENTER;
+        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
+        widget->attributes.weight = ATTR_WEIGHT_BOLD;
 
         break;
 
-    case WIDGET_TYPE_IMAGE:
-        initimage(widget);
+    case WIDGET_TYPE_CHOICE:
+        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
 
         break;
 
-    case WIDGET_TYPE_LISTBOX:
-        initlistbox(widget);
-
-        break;
-
-    case WIDGET_TYPE_TEXT:
-        inittext(widget);
+    case WIDGET_TYPE_SELECT:
+        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
 
         break;
 
     case WIDGET_TYPE_TEXTBOX:
-        inittextbox(widget);
+        widget->enablecursor = 1;
+
+        break;
+
+    case WIDGET_TYPE_TEXTBUTTON:
+        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
+
+        break;
+
+    case WIDGET_TYPE_WINDOW:
+        widget->attributes.halign = ATTR_HALIGN_CENTER;
+        widget->attributes.valign = ATTR_VALIGN_MIDDLE;
+        widget->attributes.weight = ATTR_WEIGHT_BOLD;
 
         break;
 

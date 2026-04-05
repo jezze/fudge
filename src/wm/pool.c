@@ -11,27 +11,10 @@
 #define MAX_WIDGETS                     1024
 #define MAX_FONTS                       16
 
-struct entry
-{
-
-    struct widget widget;
-    union
-    {
-
-        struct widget_fill fill;
-        struct widget_image image;
-        struct widget_listbox listbox;
-        struct widget_text text;
-        struct widget_textbox textbox;
-
-    } payload;
-
-};
-
 static struct list widgetlist;
 static struct list bumplist;
 static struct list freelist;
-static struct entry entries[MAX_WIDGETS];
+static struct widget entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
 static char *fontn[] = {
@@ -72,8 +55,7 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
     while ((current = pool_next(current)))
     {
 
-        struct entry *entry = current->data;
-        struct widget *widget = &entry->widget;
+        struct widget *widget = current->data;
 
         if (!parent->source || widget->source == parent->source)
         {
@@ -95,9 +77,9 @@ struct list_item *pool_nextsource(struct list_item *current, unsigned int source
     while ((current = pool_next(current)))
     {
 
-        struct entry *entry = current->data;
+        struct widget *widget = current->data;
 
-        if (entry->widget.source == source)
+        if (widget->source == source)
             return current;
 
     }
@@ -114,13 +96,13 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
     while ((current = pool_next(current)))
     {
 
-        struct entry *entry = current->data;
+        struct widget *widget = current->data;
 
-        if (entry->widget.source != source)
+        if (widget->source != source)
             continue;
 
-        if (cstring_match(strpool_getstring(entry->widget.attributes.id), id))
-            return &entry->widget;
+        if (cstring_match(strpool_getstring(widget->attributes.id), id))
+            return widget;
 
     }
 
@@ -136,9 +118,9 @@ static struct list_item *finditem(struct widget *widget)
     while ((current = pool_next(current)))
     {
 
-        struct entry *entry = current->data;
+        struct widget *w = current->data;
 
-        if (&entry->widget == widget)
+        if (w == widget)
             return current;
 
     }
@@ -150,12 +132,12 @@ static struct list_item *finditem(struct widget *widget)
 static void bump(struct list_item *item)
 {
 
-    struct entry *entry = item->data;
+    struct widget *widget = item->data;
     struct list_item *current = item->prev;
 
     list_move(&bumplist, &widgetlist, item);
 
-    while ((current = pool_nextin(current, &entry->widget)))
+    while ((current = pool_nextin(current, widget)))
     {
 
         struct list_item *prev = current->prev;
@@ -189,14 +171,14 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
     if (item)
     {
 
-        struct entry *entry = item->data;
+        struct widget *widget = item->data;
 
-        widget_init(&entry->widget, source, type, &entry->payload);
-        widget_setattribute(&entry->widget, ATTR_ID, id);
-        widget_setattribute(&entry->widget, ATTR_IN, in);
+        widget_init(widget, source, type);
+        widget_setattribute(widget, ATTR_ID, id);
+        widget_setattribute(widget, ATTR_IN, in);
         list_move(&widgetlist, &freelist, item);
 
-        return &entry->widget;
+        return widget;
 
     }
 
@@ -219,7 +201,7 @@ void pool_destroy(struct widget *widget)
 
 }
 
-struct pool_pcxresource *pool_createpcx(struct widget_image *image, char *source)
+struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
 {
 
     struct pool_pcxresource *resource = &pcxresources[npcxresources++];
@@ -247,7 +229,7 @@ struct pool_pcxresource *pool_createpcx(struct widget_image *image, char *source
 
             resource->width = header.xend - header.xstart + 1;
             resource->height = header.yend - header.ystart + 1;
-            image->size = util_size(resource->width, resource->height);
+            widget->size = util_size(resource->width, resource->height);
 
         }
 
@@ -441,21 +423,19 @@ void pool_loadresources(void)
     while ((current = pool_next(current)))
     {
 
-        struct entry *entry = current->data;
+        struct widget *widget = current->data;
 
-        if (entry->widget.type == WIDGET_TYPE_IMAGE)
+        if (widget->type == WIDGET_TYPE_IMAGE)
         {
 
-            struct widget_image *image = &entry->payload.image;
-
-            if (!image->resource && image->source && image->mimetype)
+            if (!widget->resource && widget->attributes.source && widget->attributes.mimetype)
             {
 
-                switch (image->mimetype)
+                switch (widget->attributes.mimetype)
                 {
 
                 case ATTR_MIMETYPE_PCX:
-                    image->resource = pool_createpcx(image, strpool_getstring(image->source));
+                    widget->resource = pool_createpcx(widget, strpool_getstring(widget->attributes.source));
 
                     break;
 
