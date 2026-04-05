@@ -18,16 +18,11 @@ struct entry
     union
     {
 
-        struct widget_button button;
-        struct widget_choice choice;
-        struct widget_layout layout;
         struct widget_fill fill;
         struct widget_image image;
         struct widget_listbox listbox;
-        struct widget_select select;
         struct widget_text text;
         struct widget_textbox textbox;
-        struct widget_textbutton textbutton;
         struct widget_window window;
 
     } payload;

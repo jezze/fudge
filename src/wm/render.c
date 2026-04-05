@@ -285,8 +285,7 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 static struct util_size getsizebutton(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct widget_button *button = widget->data;
-    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_BOLD), strpool_getstring(button->label), strpool_getcstringlength(button->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_BOLD), strpool_getstring(widget->label), strpool_getcstringlength(widget->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_BUTTON_PADDING_WIDTH * 2, info.height + CONFIG_BUTTON_PADDING_HEIGHT * 2);
 
@@ -295,8 +294,7 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *c
 static struct util_size getsizechoice(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct widget_choice *choice = widget->data;
-    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(choice->label), strpool_getcstringlength(choice->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->label), strpool_getcstringlength(widget->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_CHOICE_PADDING_WIDTH * 2, info.height + CONFIG_CHOICE_PADDING_HEIGHT * 2);
 
@@ -338,8 +336,7 @@ static struct util_size getsizelistbox(struct widget *widget, struct util_size *
 static struct util_size getsizeselect(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct widget_select *select = widget->data;
-    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(select->label), strpool_getcstringlength(select->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->label), strpool_getcstringlength(widget->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_SELECT_PADDING_WIDTH * 4, info.height + CONFIG_SELECT_PADDING_HEIGHT * 2);
 
@@ -381,8 +378,7 @@ static struct util_size getsizetextbox(struct widget *widget, struct util_size *
 static struct util_size getsizetextbutton(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct widget_textbutton *textbutton = widget->data;
-    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(textbutton->label), strpool_getcstringlength(textbutton->label), ATTR_WRAP_NONE, limit->w, 0);
+    struct text_info info = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->label), strpool_getcstringlength(widget->label), ATTR_WRAP_NONE, limit->w, 0);
 
     return util_size(info.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, info.height + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
 
@@ -542,26 +538,24 @@ static void _renderx(struct blit_display *display, struct util_region *placement
 static void renderbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct widget_button *button = widget->data;
     struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    _renderx(display, &widget->placement, button->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_BOLD, ATTR_WRAP_NONE, &padding, 0, line);
+    _renderx(display, &widget->placement, widget->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_BOLD, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
 static void renderchoice(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct widget_choice *choice = widget->data;
     struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    _renderx(display, &widget->placement, choice->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
+    _renderx(display, &widget->placement, widget->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
@@ -644,7 +638,6 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
 static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct widget_select *select = widget->data;
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     struct util_region rarrow = util_region(widget->placement.position.x + widget->placement.size.w - padding.w - widget->placement.size.h / 2, widget->placement.position.y, widget->placement.size.h, widget->placement.size.h);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
@@ -653,7 +646,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
     blit_iconarrowdown(display, &rarrow, line, x0, x2, cmapicon);
-    _renderx(display, &widget->placement, select->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
+    _renderx(display, &widget->placement, widget->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 
@@ -686,13 +679,12 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 static void rendertextbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct widget_textbutton *textbutton = widget->data;
     struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    _renderx(display, &widget->placement, textbutton->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
+    _renderx(display, &widget->placement, widget->label, cmaplabel, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_LEFT, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_NORMAL, ATTR_WRAP_NONE, &padding, 0, line);
 
 }
 

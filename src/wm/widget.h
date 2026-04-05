@@ -18,27 +18,6 @@
 #define WIDGET_DISPLAY_BLOCK            1
 #define WIDGET_DISPLAY_INLINE           2
 
-struct widget_button
-{
-
-    unsigned int label;
-
-};
-
-struct widget_choice
-{
-
-    unsigned int label;
-
-};
-
-struct widget_layout
-{
-
-    unsigned int x;
-
-};
-
 struct widget_fill
 {
 
@@ -64,13 +43,6 @@ struct widget_listbox
     unsigned int overflow;
     int hscroll;
     int vscroll;
-
-};
-
-struct widget_select
-{
-
-    unsigned int label;
 
 };
 
@@ -103,13 +75,6 @@ struct widget_textbox
 
 };
 
-struct widget_textbutton
-{
-
-    unsigned int label;
-
-};
-
 struct widget_window
 {
 
@@ -127,6 +92,7 @@ struct widget
     unsigned int flow;
     unsigned int id;
     unsigned int in;
+    unsigned int label;
     unsigned int padding;
     unsigned int span;
     unsigned int onclick;

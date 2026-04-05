@@ -5,40 +5,6 @@
 #include "attr.h"
 #include "widget.h"
 
-static void setattributebutton(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_button *button = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_LABEL:
-        button->label = attr_update(ATTR_LABEL, value, button->label);
-
-        break;
-
-    }
-
-}
-
-static void setattributechoice(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_choice *choice = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_LABEL:
-        choice->label = attr_update(ATTR_LABEL, value, choice->label);
-
-        break;
-
-    }
-
-}
-
 static void setattributefill(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -93,23 +59,6 @@ static void setattributelistbox(struct widget *widget, unsigned int attribute, c
 
     case ATTR_OVERFLOW:
         listbox->overflow = attr_update(ATTR_OVERFLOW, value, listbox->overflow);
-
-        break;
-
-    }
-
-}
-
-static void setattributeselect(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_select *select = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_LABEL:
-        select->label = attr_update(ATTR_LABEL, value, select->label);
 
         break;
 
@@ -182,23 +131,6 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
 }
 
-static void setattributetextbutton(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_textbutton *textbutton = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_LABEL:
-        textbutton->label = attr_update(ATTR_LABEL, value, textbutton->label);
-
-        break;
-
-    }
-
-}
-
 static void setattributewindow(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -242,6 +174,11 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_LABEL:
+        widget->label = attr_update(ATTR_LABEL, value, widget->label);
+
+        break;
+
     case ATTR_PADDING:
         widget->padding = attr_update(ATTR_PADDING, value, widget->padding);
 
@@ -269,16 +206,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     switch (widget->type)
     {
 
-    case WIDGET_TYPE_BUTTON:
-        setattributebutton(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_CHOICE:
-        setattributechoice(widget, attribute, value);
-
-        break;
-
     case WIDGET_TYPE_FILL:
         setattributefill(widget, attribute, value);
 
@@ -297,11 +224,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case WIDGET_TYPE_SELECT:
-        setattributeselect(widget, attribute, value);
-
-        break;
-
     case WIDGET_TYPE_TEXT:
         setattributetext(widget, attribute, value);
 
@@ -309,11 +231,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case WIDGET_TYPE_TEXTBOX:
         setattributetextbox(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBUTTON:
-        setattributetextbutton(widget, attribute, value);
 
         break;
 
@@ -535,24 +452,6 @@ unsigned int widget_isscrollable(struct widget *widget)
 
 }
 
-static void initbutton(struct widget *widget)
-{
-
-    struct widget_button *button = widget->data;
-
-    button->label = 0;
-
-}
-
-static void initchoice(struct widget *widget)
-{
-
-    struct widget_choice *choice = widget->data;
-
-    choice->label = 0;
-
-}
-
 static void initfill(struct widget *widget)
 {
 
@@ -575,11 +474,6 @@ static void initimage(struct widget *widget)
 
 }
 
-static void initlayout(struct widget *widget)
-{
-
-}
-
 static void initlistbox(struct widget *widget)
 {
 
@@ -589,15 +483,6 @@ static void initlistbox(struct widget *widget)
     listbox->overflow = ATTR_OVERFLOW_NONE;
     listbox->hscroll = 0;
     listbox->vscroll = 0;
-
-}
-
-static void initselect(struct widget *widget)
-{
-
-    struct widget_select *select = widget->data;
-
-    select->label = 0;
 
 }
 
@@ -632,15 +517,6 @@ static void inittextbox(struct widget *widget)
 
 }
 
-static void inittextbutton(struct widget *widget)
-{
-
-    struct widget_textbutton *textbutton = widget->data;
-
-    textbutton->label = 0;
-
-}
-
 static void initwindow(struct widget *widget)
 {
 
@@ -660,6 +536,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->flow = ATTR_FLOW_DEFAULT;
     widget->id = 0;
     widget->in = 0;
+    widget->label = 0;
     widget->onclick = 0;
     widget->padding = 0;
     widget->span = 0;
@@ -672,16 +549,6 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     switch (widget->type)
     {
 
-    case WIDGET_TYPE_BUTTON:
-        initbutton(widget);
-
-        break;
-
-    case WIDGET_TYPE_CHOICE:
-        initchoice(widget);
-
-        break;
-
     case WIDGET_TYPE_FILL:
         initfill(widget);
 
@@ -692,18 +559,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
         break;
 
-    case WIDGET_TYPE_LAYOUT:
-        initlayout(widget);
-
-        break;
-
     case WIDGET_TYPE_LISTBOX:
         initlistbox(widget);
-
-        break;
-
-    case WIDGET_TYPE_SELECT:
-        initselect(widget);
 
         break;
 
@@ -714,11 +571,6 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
     case WIDGET_TYPE_TEXTBOX:
         inittextbox(widget);
-
-        break;
-
-    case WIDGET_TYPE_TEXTBUTTON:
-        inittextbutton(widget);
 
         break;
 
