@@ -40,7 +40,6 @@ struct widget_listbox
 {
 
     unsigned int mode;
-    unsigned int overflow;
     int hscroll;
     int vscroll;
 
@@ -49,10 +48,6 @@ struct widget_listbox
 struct widget_text
 {
 
-    unsigned int halign;
-    unsigned int valign;
-    unsigned int weight;
-    unsigned int wrap;
     unsigned int markstart;
     unsigned int markend;
 
@@ -62,7 +57,6 @@ struct widget_textbox
 {
 
     unsigned int mode;
-    unsigned int overflow;
     int hscroll;
     int vscroll;
     unsigned int enablecursor;
@@ -86,12 +80,17 @@ struct widget
 
         unsigned int display;
         unsigned int flow;
+        unsigned int halign;
         unsigned int id;
         unsigned int in;
         unsigned int label;
+        unsigned int onclick;
+        unsigned int overflow;
         unsigned int padding;
         unsigned int span;
-        unsigned int onclick;
+        unsigned int valign;
+        unsigned int weight;
+        unsigned int wrap;
 
     } attributes;
 

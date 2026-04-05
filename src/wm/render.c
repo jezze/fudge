@@ -345,7 +345,6 @@ static struct util_size getsizeselect(struct widget *widget, struct util_size *c
 static struct util_size getsizetext(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct widget_text *text = widget->data;
     struct text_info info;
 
     if (widget->attributes.display == ATTR_DISPLAY_INLINE)
@@ -355,7 +354,7 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *csi
 
     }
 
-    info = text_info(pool_getfont(text->weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), text->wrap, limit->w, widget->rowstart.x);
+    info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, widget->rowstart.x);
 
     if (widget->attributes.display == ATTR_DISPLAY_INLINE)
     {
@@ -654,11 +653,11 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct widget_text *text = widget->data;
-    struct text_font *font = pool_getfont(text->weight);
+    struct text_font *font = pool_getfont(widget->attributes.weight);
     unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
     unsigned int rownum = (line - widget->placement.position.y) / font->lineheight;
 
-    _renderx(display, &widget->placement, widget->attributes.label, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, text->markstart, text->markend, text->halign, text->valign, text->weight, text->wrap, &zerosize, rownum, line);
+    _renderx(display, &widget->placement, widget->attributes.label, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, text->markstart, text->markend, widget->attributes.halign, widget->attributes.valign, widget->attributes.weight, widget->attributes.wrap, &zerosize, rownum, line);
 
 }
 

@@ -181,10 +181,10 @@ static void scrollwidget(struct widget *widget, int hamount, int vamount)
 
         struct widget_listbox *listbox = widget->data;
 
-        if (listbox->overflow == ATTR_OVERFLOW_SCROLL || listbox->overflow == ATTR_OVERFLOW_HSCROLL)
+        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_HSCROLL)
             listbox->hscroll += hamount;
 
-        if (listbox->overflow == ATTR_OVERFLOW_SCROLL || listbox->overflow == ATTR_OVERFLOW_VSCROLL)
+        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_VSCROLL)
             listbox->vscroll += vamount;
 
         damage(widget);
@@ -196,10 +196,10 @@ static void scrollwidget(struct widget *widget, int hamount, int vamount)
 
         struct widget_textbox *textbox = widget->data;
 
-        if (textbox->overflow == ATTR_OVERFLOW_SCROLL || textbox->overflow == ATTR_OVERFLOW_HSCROLL)
+        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_HSCROLL)
             textbox->hscroll += hamount;
 
-        if (textbox->overflow == ATTR_OVERFLOW_SCROLL || textbox->overflow == ATTR_OVERFLOW_VSCROLL)
+        if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_VSCROLL)
             textbox->vscroll += vamount;
 
         damage(widget);
@@ -429,8 +429,8 @@ static void markwidget(struct widget *widget)
         int x1 = state.mouseposition.x - widget->placement.position.x;
         int y1 = state.mouseposition.y - widget->placement.position.y;
 
-        text->markstart = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), text->wrap, widget->placement.size.w, widget->rowstart.x, x0, y0);
-        text->markend = text_getoffsetat(pool_getfont(text->weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), text->wrap, widget->placement.size.w, widget->rowstart.x, x1, y1);
+        text->markstart = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x0, y0);
+        text->markend = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x1, y1);
 
     }
 

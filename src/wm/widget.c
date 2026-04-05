@@ -57,43 +57,6 @@ static void setattributelistbox(struct widget *widget, unsigned int attribute, c
 
         break;
 
-    case ATTR_OVERFLOW:
-        listbox->overflow = attr_update(ATTR_OVERFLOW, value, listbox->overflow);
-
-        break;
-
-    }
-
-}
-
-static void setattributetext(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_text *text = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_HALIGN:
-        text->halign = attr_update(ATTR_HALIGN, value, text->halign);
-
-        break;
-
-    case ATTR_VALIGN:
-        text->valign = attr_update(ATTR_VALIGN, value, text->valign);
-
-        break;
-
-    case ATTR_WEIGHT:
-        text->weight = attr_update(ATTR_WEIGHT, value, text->weight);
-
-        break;
-
-    case ATTR_WRAP:
-        text->wrap = attr_update(ATTR_WRAP, value, text->wrap);
-
-        break;
-
     }
 
 }
@@ -117,11 +80,6 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
         break;
 
-    case ATTR_OVERFLOW:
-        textbox->overflow = attr_update(ATTR_OVERFLOW, value, textbox->overflow);
-
-        break;
-
     }
 
 }
@@ -142,6 +100,11 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_HALIGN:
+        widget->attributes.halign = attr_update(ATTR_HALIGN, value, widget->attributes.halign);
+
+        break;
+
     case ATTR_ID:
         widget->attributes.id = attr_update(ATTR_ID, value, widget->attributes.id);
 
@@ -157,6 +120,11 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_OVERFLOW:
+        widget->attributes.overflow = attr_update(ATTR_OVERFLOW, value, widget->attributes.overflow);
+
+        break;
+
     case ATTR_PADDING:
         widget->attributes.padding = attr_update(ATTR_PADDING, value, widget->attributes.padding);
 
@@ -169,6 +137,21 @@ static void setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_SPAN:
         widget->attributes.span = attr_update(ATTR_SPAN, value, widget->attributes.span);
+
+        break;
+
+    case ATTR_VALIGN:
+        widget->attributes.valign = attr_update(ATTR_VALIGN, value, widget->attributes.valign);
+
+        break;
+
+    case ATTR_WEIGHT:
+        widget->attributes.weight = attr_update(ATTR_WEIGHT, value, widget->attributes.weight);
+
+        break;
+
+    case ATTR_WRAP:
+        widget->attributes.wrap = attr_update(ATTR_WRAP, value, widget->attributes.wrap);
 
         break;
 
@@ -199,11 +182,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case WIDGET_TYPE_LISTBOX:
         setattributelistbox(widget, attribute, value);
-
-        break;
-
-    case WIDGET_TYPE_TEXT:
-        setattributetext(widget, attribute, value);
 
         break;
 
@@ -451,7 +429,6 @@ static void initlistbox(struct widget *widget)
     struct widget_listbox *listbox = widget->data;
 
     listbox->mode = ATTR_MODE_NORMAL;
-    listbox->overflow = ATTR_OVERFLOW_NONE;
     listbox->hscroll = 0;
     listbox->vscroll = 0;
 
@@ -462,10 +439,6 @@ static void inittext(struct widget *widget)
 
     struct widget_text *text = widget->data;
 
-    text->halign = ATTR_HALIGN_LEFT;
-    text->valign = ATTR_VALIGN_TOP;
-    text->weight = ATTR_WEIGHT_NORMAL;
-    text->wrap = ATTR_WRAP_NONE;
     text->markstart = 0;
     text->markend = 0;
 
@@ -477,7 +450,6 @@ static void inittextbox(struct widget *widget)
     struct widget_textbox *textbox = widget->data;
 
     textbox->mode = ATTR_MODE_NORMAL;
-    textbox->overflow = ATTR_OVERFLOW_NONE;
     textbox->hscroll = 0;
     textbox->vscroll = 0;
     textbox->cursorx = 0;
@@ -495,12 +467,17 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
     widget->state = WIDGET_STATE_NORMAL;
     widget->attributes.display = ATTR_DISPLAY_BLOCK;
     widget->attributes.flow = ATTR_FLOW_DEFAULT;
+    widget->attributes.halign = ATTR_HALIGN_LEFT;
     widget->attributes.id = 0;
     widget->attributes.in = 0;
     widget->attributes.label = 0;
     widget->attributes.onclick = 0;
+    widget->attributes.overflow = ATTR_OVERFLOW_NONE;
     widget->attributes.padding = 0;
     widget->attributes.span = 0;
+    widget->attributes.valign = ATTR_VALIGN_TOP;
+    widget->attributes.weight = ATTR_WEIGHT_NORMAL;
+    widget->attributes.wrap = ATTR_WRAP_NONE;
     widget->placement = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
     widget->rowstart = util_position(0, 0);
