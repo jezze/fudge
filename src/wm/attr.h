@@ -14,10 +14,9 @@
 #define ATTR_PADDING                    14
 #define ATTR_SOURCE                     15
 #define ATTR_SPAN                       16
-#define ATTR_TITLE                      17
-#define ATTR_VALIGN                     18
-#define ATTR_WEIGHT                     19
-#define ATTR_WRAP                       20
+#define ATTR_VALIGN                     17
+#define ATTR_WEIGHT                     18
+#define ATTR_WRAP                       19
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_FLOW_DEFAULT               0

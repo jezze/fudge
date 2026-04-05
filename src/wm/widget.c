@@ -131,23 +131,6 @@ static void setattributetextbox(struct widget *widget, unsigned int attribute, c
 
 }
 
-static void setattributewindow(struct widget *widget, unsigned int attribute, char *value)
-{
-
-    struct widget_window *window = widget->data;
-
-    switch (attribute)
-    {
-
-    case ATTR_TITLE:
-        window->title = attr_update(ATTR_TITLE, value, window->title);
-
-        break;
-
-    }
-
-}
-
 static void setattribute(struct widget *widget, unsigned int attribute, char *value)
 {
 
@@ -234,11 +217,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case WIDGET_TYPE_WINDOW:
-        setattributewindow(widget, attribute, value);
-
-        break;
-
     }
 
 }
@@ -262,7 +240,6 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_PADDING, 0);
     widget_setattribute(widget, ATTR_SOURCE, 0);
     widget_setattribute(widget, ATTR_SPAN, 0);
-    widget_setattribute(widget, ATTR_TITLE, 0);
     widget_setattribute(widget, ATTR_VALIGN, 0);
     widget_setattribute(widget, ATTR_WEIGHT, 0);
     widget_setattribute(widget, ATTR_WRAP, 0);
@@ -517,15 +494,6 @@ static void inittextbox(struct widget *widget)
 
 }
 
-static void initwindow(struct widget *widget)
-{
-
-    struct widget_window *window = widget->data;
-
-    window->title = 0;
-
-}
-
 void widget_init(struct widget *widget, unsigned int source, unsigned int type, void *data)
 {
 
@@ -571,11 +539,6 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type, 
 
     case WIDGET_TYPE_TEXTBOX:
         inittextbox(widget);
-
-        break;
-
-    case WIDGET_TYPE_WINDOW:
-        initwindow(widget);
 
         break;
 

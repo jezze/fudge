@@ -23,7 +23,6 @@ struct entry
         struct widget_listbox listbox;
         struct widget_text text;
         struct widget_textbox textbox;
-        struct widget_window window;
 
     } payload;
 

@@ -37,7 +37,7 @@ static struct util_token widgets[11] =
     {WIDGET_TYPE_WINDOW, "window"}
 };
 
-static struct util_token attributes[20] =
+static struct util_token attributes[19] =
 {
     {ATTR_COLOR, "color"},
     {ATTR_CONTENT, "content"},
@@ -55,7 +55,6 @@ static struct util_token attributes[20] =
     {ATTR_PADDING, "padding"},
     {ATTR_SPAN, "span"},
     {ATTR_SOURCE, "source"},
-    {ATTR_TITLE, "title"},
     {ATTR_VALIGN, "valign"},
     {ATTR_WEIGHT, "weight"},
     {ATTR_WRAP, "wrap"}
@@ -234,7 +233,7 @@ static unsigned int getattribute(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(attributes, 20, strbuffer) : 0;
+    return (count) ? util_getkey(attributes, 19, strbuffer) : 0;
 
 }
 

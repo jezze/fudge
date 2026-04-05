@@ -18,7 +18,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" title \"Test\"\n"
+        "+ window id \"window\" label \"Test\"\n"
         "  + image in \"window\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
 
     channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);

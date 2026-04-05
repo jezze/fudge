@@ -691,7 +691,6 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 static void renderwindow(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct widget_window *window = widget->data;
     struct util_region rhamburger = util_region(widget->placement.position.x, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_region rminimize = util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_region rtitle = util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->placement.position.y, widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -711,7 +710,7 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     blit_frame(display, &rtitle, line, x0, x2, cmaptop);
     blit_frame(display, &rclose, line, x0, x2, cmaptop);
     blit_frame(display, &rbody, line, x0, x2, cmapbody);
-    _renderx(display, &rtitle, window->title, cmaptitle, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_BOLD, ATTR_WRAP_NONE, &zerosize, 0, line);
+    _renderx(display, &rtitle, widget->label, cmaptitle, x0, x2, 0, 0, 0, 0, ATTR_HALIGN_CENTER, ATTR_VALIGN_MIDDLE, ATTR_WEIGHT_BOLD, ATTR_WRAP_NONE, &zerosize, 0, line);
     blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? cmapiconon : cmapiconoff);
     blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? cmapiconon : cmapiconoff);
     blit_iconx(display, &rclose, line, x0, x2, (onclose) ? cmapiconon : cmapiconoff);

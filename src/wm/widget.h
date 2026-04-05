@@ -75,13 +75,6 @@ struct widget_textbox
 
 };
 
-struct widget_window
-{
-
-    unsigned int title;
-
-};
-
 struct widget
 {
 
