@@ -412,19 +412,10 @@ static void placefill(struct widget *widget, struct util_region *placement, stru
 static void placeimage(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
-    if (widget->attributes.mimetype == ATTR_MIMETYPE_FUDGEMOUSE)
-    {
-
+    if (widget->attributes.display == ATTR_DISPLAY_FIXED)
         widget->placement = util_region(widget->position.x, widget->position.y, widget->size.w, widget->size.h);
-
-    }
-
     else
-    {
-
         widget->placement = *placement;
-
-    }
 
     widget->clip = *clip;
 
@@ -443,10 +434,12 @@ static void placelayout(struct widget *widget, struct util_region *placement, st
 static void placelistbox(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
-    struct util_region cplacement = util_region(placement->position.x + CONFIG_FRAME_WIDTH, placement->position.y + CONFIG_FRAME_HEIGHT, placement->size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
+    struct util_region cplacement;
 
     widget->placement = *placement;
     widget->clip = util_region_intersection(&widget->placement, clip);
+
+    cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
 
     childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->attributes.flow), getstretch(widget->attributes.flow));
 
@@ -456,13 +449,15 @@ static void placeselect(struct widget *widget, struct util_region *placement, st
 {
 
     struct util_size wsize = calls[widget->type].getsize(widget, &zerosize, &placement->size, &widget->rowstart);
-    struct util_region cplacement = util_region(placement->position.x, placement->position.y + wsize.h, INFINITY, INFINITY);
+    struct util_region cplacement;
 
     widget->placement = *placement;
     widget->clip = *clip;
 
     if (widget->state != WIDGET_STATE_FOCUS)
         widget->clip = util_region_intersection(&widget->placement, clip);
+
+    cplacement = util_region(widget->placement.position.x, widget->placement.position.y + wsize.h, INFINITY, INFINITY);
 
     childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->attributes.flow), getstretch(widget->attributes.flow));
 
@@ -479,10 +474,12 @@ static void placetext(struct widget *widget, struct util_region *placement, stru
 static void placetextbox(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
-    struct util_region cplacement = util_region(placement->position.x + CONFIG_TEXTBOX_PADDING_WIDTH, placement->position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, placement->size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
+    struct util_region cplacement;
 
     widget->placement = *placement;
     widget->clip = util_region_intersection(&widget->placement, clip);
+
+    cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
 
     childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->attributes.flow), getstretch(widget->attributes.flow));
 
@@ -499,9 +496,15 @@ static void placetextbutton(struct widget *widget, struct util_region *placement
 static void placewindow(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
-    struct util_region cplacement = util_region(widget->position.x, widget->position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->size.w, widget->size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region cplacement;
 
-    widget->placement = util_region(widget->position.x, widget->position.y, widget->size.w, widget->size.h);
+    if (widget->attributes.display == ATTR_DISPLAY_FIXED)
+        widget->placement = util_region(widget->position.x, widget->position.y, widget->size.w, widget->size.h);
+    else
+        widget->placement = *placement;
+
+    cplacement = util_region(widget->placement.position.x, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->placement.size.w, widget->placement.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
+
     widget->clip = *clip;
 
     childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->attributes.flow), getstretch(widget->attributes.flow));

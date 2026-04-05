@@ -308,6 +308,8 @@ static void placewindows(unsigned int source)
         if (widget->type == WIDGET_TYPE_WINDOW)
         {
 
+            widget->attributes.display = ATTR_DISPLAY_FIXED;
+
             if (widget->size.w == 0 && widget->size.h == 0)
             {
 
@@ -853,7 +855,7 @@ static void setupwidgets(void)
         "+ layout id \"root\" flow \"stretch\"\n";
     char *data1 =
         "+ fill color \"FF202020\"\n"
-        "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\"\n"
+        "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\" display \"fixed\"\n"
         "+ layout id \"desktop\" flow \"vertical\"\n"
         "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
         "    + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"

@@ -18,6 +18,7 @@
 #define ATTR_WRAP                       18
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
+#define ATTR_DISPLAY_FIXED              2
 #define ATTR_FLOW_DEFAULT               0
 #define ATTR_FLOW_STRETCH               1
 #define ATTR_FLOW_HORIZONTAL            2

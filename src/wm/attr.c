@@ -4,10 +4,11 @@
 #include "strpool.h"
 #include "attr.h"
 
-static struct util_token displays[2] =
+static struct util_token displays[3] =
 {
     {ATTR_DISPLAY_BLOCK, "block"},
-    {ATTR_DISPLAY_INLINE, "inline"}
+    {ATTR_DISPLAY_INLINE, "inline"},
+    {ATTR_DISPLAY_FIXED, "fixed"}
 };
 
 static struct util_token flows[6] =
@@ -147,7 +148,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return getnum(value, 10);
 
     case ATTR_DISPLAY:
-        return util_getkey(displays, 2, value);
+        return util_getkey(displays, 3, value);
 
     case ATTR_FLOW:
         return util_getkey(flows, 6, value);
