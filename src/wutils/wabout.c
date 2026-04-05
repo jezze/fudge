@@ -18,8 +18,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" label \"About\" flow \"stretch\"\n"
-        "  + layout id \"base\" in \"window\" flow \"vertical\" padding \"1\" span \"1\"\n"
+        "+ window id \"window\" label \"About\"\n"
+        "  + panel id \"base\" in \"window\" flow \"vertical\" padding \"1\" span \"1\"\n"
         "    + text in \"base\" weight \"bold\" wrap \"word\" label \"Fudge Operating System\"\n"
         "    + text in \"base\" wrap \"word\" label \"(more info will come soon)\"\n"
         "    + text in \"base\" weight \"bold\" wrap \"word\" label \"Contributors (in no particular order)\"\n"

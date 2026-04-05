@@ -360,6 +360,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
         break;
 
     case WIDGET_TYPE_WINDOW:
+        attributes->flow = ATTR_FLOW_STRETCH;
         attributes->halign = ATTR_HALIGN_CENTER;
         attributes->valign = ATTR_VALIGN_MIDDLE;
         attributes->weight = ATTR_WEIGHT_BOLD;

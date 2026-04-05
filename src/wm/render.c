@@ -320,6 +320,13 @@ static struct util_size getsizelistbox(struct widget *widget, struct util_size *
 
 }
 
+static struct util_size getsizepanel(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
+{
+
+    return util_size(csize->w, csize->h);
+
+}
+
 static struct util_size getsizeselect(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -434,6 +441,16 @@ static void placelistbox(struct widget *widget, struct util_region *placement, s
     cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
 
     childrenplace(widget, &cplacement, &widget->clip, getdirection(widget->attributes.flow), getstretch(widget->attributes.flow));
+
+}
+
+static void placepanel(struct widget *widget, struct util_region *placement, struct util_region *clip)
+{
+
+    widget->placement = *placement;
+    widget->clip = *clip;
+
+    childrenplace(widget, placement, &widget->clip, getdirection(widget->attributes.flow), getstretch(widget->attributes.flow));
 
 }
 
@@ -629,6 +646,15 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
 
 }
 
+static void renderpanel(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    unsigned int *cmapbody = cmap_get(widget->state, WIDGET_TYPE_WINDOW, 4, 0);
+
+    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+
+}
+
 static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -687,12 +713,10 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     struct util_region rminimize = util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_region rtitle = util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->placement.position.y, widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_region rclose = util_region(widget->placement.position.x + widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rbody = util_region(widget->placement.position.x, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->placement.size.w, widget->placement.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
     unsigned int onhamburger = util_region_intersects(&rhamburger, mouse.x, mouse.y);
     unsigned int onminimize = util_region_intersects(&rminimize, mouse.x, mouse.y);
     unsigned int onclose = util_region_intersects(&rclose, mouse.x, mouse.y);
     unsigned int *cmaptop = cmap_get(widget->state, widget->type, 0, 0);
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 4, 0);
     unsigned int *cmaptitle = cmap_get(widget->state, widget->type, 11, 0);
     unsigned int *cmapiconoff = cmap_get(widget->state, widget->type, 8, 0);
     unsigned int *cmapiconon = cmap_get(widget->state, widget->type, 8, 1);
@@ -701,7 +725,6 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     blit_frame(display, &rminimize, line, x0, x2, cmaptop);
     blit_frame(display, &rtitle, line, x0, x2, cmaptop);
     blit_frame(display, &rclose, line, x0, x2, cmaptop);
-    blit_frame(display, &rbody, line, x0, x2, cmapbody);
     _renderx(display, widget, &rtitle, widget->attributes.label, cmaptitle, x0, x2, 0, 0, &zerosize, 0, line);
     blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? cmapiconon : cmapiconoff);
     blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? cmapiconon : cmapiconoff);
@@ -814,6 +837,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
     setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
     setupcall(WIDGET_TYPE_LISTBOX, getsizelistbox, placelistbox, renderlistbox);
+    setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
     setupcall(WIDGET_TYPE_TEXT, getsizetext, placetext, rendertext);
     setupcall(WIDGET_TYPE_TEXTBOX, getsizetextbox, placetextbox, rendertextbox);

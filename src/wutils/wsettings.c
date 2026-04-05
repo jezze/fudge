@@ -18,8 +18,8 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
     char *data =
-        "+ window id \"window\" label \"Settings\" flow \"stretch\"\n"
-        "  + layout id \"base\" in \"window\" flow \"vertical-stretch\" padding \"1\" span \"1\"\n"
+        "+ window id \"window\" label \"Settings\"\n"
+        "  + panel id \"base\" in \"window\" flow \"vertical-stretch\" padding \"1\" span \"1\"\n"
         "    + layout id \"languages-list\" in \"base\" flow \"horizontal\"\n"
         "      + text in \"languages-list\" wrap \"word\" span \"1\" label \"Language\"\n"
         "      + select id \"languages\" in \"languages-list\" label \"English (en_US)\"\n"

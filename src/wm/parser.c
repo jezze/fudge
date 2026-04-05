@@ -22,7 +22,7 @@ static struct util_token commands[5] =
     {UPDATE, "="}
 };
 
-static struct util_token widgets[11] =
+static struct util_token widgets[12] =
 {
     {WIDGET_TYPE_BUTTON, "button"},
     {WIDGET_TYPE_CHOICE, "choice"},
@@ -30,6 +30,7 @@ static struct util_token widgets[11] =
     {WIDGET_TYPE_IMAGE, "image"},
     {WIDGET_TYPE_LAYOUT, "layout"},
     {WIDGET_TYPE_LISTBOX, "listbox"},
+    {WIDGET_TYPE_PANEL, "panel"},
     {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_TEXT, "text"},
     {WIDGET_TYPE_TEXTBOX, "textbox"},
@@ -241,7 +242,7 @@ static unsigned int getwidget(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(widgets, 11, strbuffer) : 0;
+    return (count) ? util_getkey(widgets, 12, strbuffer) : 0;
 
 }
 
