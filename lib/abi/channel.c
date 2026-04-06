@@ -5,7 +5,7 @@
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_STATE_CLOSED            0
 #define CHANNEL_STATE_OPENED            1
-#define CHANNEL_STATE_WAITING           2
+#define CHANNEL_STATE_CLOSING           2
 #define CHANNEL_STATE_TERMINATED        3
 
 static void (*listeners[CHANNEL_EVENTS])(unsigned int source, void *data, unsigned int size);
@@ -120,7 +120,7 @@ void channel_dispatch(unsigned int ichannel, struct message *message, void *data
         break;
 
     case EVENT_END:
-        state = CHANNEL_STATE_WAITING;
+        state = CHANNEL_STATE_CLOSING;
 
         break;
 
@@ -131,16 +131,11 @@ void channel_dispatch(unsigned int ichannel, struct message *message, void *data
 
     }
 
-    if (state == CHANNEL_STATE_WAITING)
+    if (state == CHANNEL_STATE_CLOSING)
     {
 
         if (!pending && parent)
             dispatch(parent, EVENT_EXIT, 0, 0);
-
-    }
-
-    if (state == CHANNEL_STATE_WAITING)
-    {
 
         if (!pending)
             state = CHANNEL_STATE_TERMINATED;
