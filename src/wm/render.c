@@ -277,18 +277,20 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 static struct util_size getsizebutton(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
+    struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH * 2, CONFIG_BUTTON_PADDING_HEIGHT * 2);
     struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
 
-    return util_size(info.width + CONFIG_BUTTON_PADDING_WIDTH * 2, info.height + CONFIG_BUTTON_PADDING_HEIGHT * 2);
+    return util_size(info.width + padding.w, info.height + padding.h);
 
 }
 
 static struct util_size getsizechoice(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
+    struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH * 2, CONFIG_CHOICE_PADDING_HEIGHT * 2);
     struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
 
-    return util_size(info.width + CONFIG_CHOICE_PADDING_WIDTH * 2, info.height + CONFIG_CHOICE_PADDING_HEIGHT * 2);
+    return util_size(info.width + padding.w, info.height + padding.h);
 
 }
 
@@ -316,7 +318,9 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *c
 static struct util_size getsizelistbox(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return util_size(csize->w + CONFIG_FRAME_WIDTH * 2, csize->h + CONFIG_FRAME_HEIGHT * 2);
+    struct util_size padding = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2);
+
+    return util_size(csize->w + padding.w, csize->h + padding.h);
 
 }
 
@@ -330,9 +334,10 @@ static struct util_size getsizepanel(struct widget *widget, struct util_size *cs
 static struct util_size getsizeselect(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
+    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH * 4, CONFIG_SELECT_PADDING_HEIGHT * 2);
     struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
 
-    return util_size(info.width + CONFIG_SELECT_PADDING_WIDTH * 4, info.height + CONFIG_SELECT_PADDING_HEIGHT * 2);
+    return util_size(info.width + padding.w, info.height + padding.h);
 
 }
 
@@ -364,16 +369,19 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *csi
 static struct util_size getsizetextbox(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return util_size(csize->w + CONFIG_TEXTBOX_PADDING_WIDTH * 2, csize->h + CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
+    struct util_size padding = util_size(CONFIG_TEXTBOX_PADDING_WIDTH * 2, CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
+
+    return util_size(csize->w + padding.w, csize->h + padding.h);
 
 }
 
 static struct util_size getsizetextbutton(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
+    struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
     struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
 
-    return util_size(info.width + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, info.height + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
+    return util_size(info.width + padding.w, info.height + padding.h);
 
 }
 
