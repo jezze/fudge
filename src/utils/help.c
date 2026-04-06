@@ -32,6 +32,9 @@ void init(void)
     option_add("echo", "initrd:bin/echo");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

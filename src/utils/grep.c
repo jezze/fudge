@@ -110,6 +110,9 @@ void init(void)
     option_add("substr", "");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_PATH, onpath);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

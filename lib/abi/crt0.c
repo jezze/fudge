@@ -99,11 +99,8 @@ void main(void)
 {
 
     option_add("pwd", "");
-    channel_open();
     channel_bind(EVENT_OPTION, onoption);
     init();
-
-    while (channel_process(0));
 
 }
 

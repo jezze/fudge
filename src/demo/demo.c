@@ -177,6 +177,9 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMINIT, onwminit);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

@@ -13,6 +13,9 @@ void init(void)
 
     option_add("reset-service", "0");
     channel_bind(EVENT_MAIN, onmain);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

@@ -81,6 +81,9 @@ void init(void)
     option_add("mode", "");
     channel_bind(EVENT_QUERYREQUEST, onqueryrequest);
     channel_bind(EVENT_MAIN, onmain);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

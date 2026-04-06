@@ -157,6 +157,9 @@ void init(void)
     option_add("local-port", "80");
     option_add("router-address", "10.0.5.80");
     channel_bind(EVENT_MAIN, onmain);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

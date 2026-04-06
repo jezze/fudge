@@ -433,6 +433,9 @@ void init(void)
     socket_bind_ipv4s(&router, "10.0.5.80");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_P9P, onp9p);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

@@ -165,6 +165,9 @@ void init(void)
     option_add("9p-service", "9p");
     option_add("path", "build/data/help.txt");
     channel_bind(EVENT_MAIN, onmain);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

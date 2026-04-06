@@ -39,6 +39,9 @@ void init(void)
     option_add("log-service", "0");
     option_add("level", "4");
     channel_bind(EVENT_MAIN, onmain);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 

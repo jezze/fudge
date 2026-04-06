@@ -298,6 +298,9 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_WMINIT, onwminit);
+    channel_open();
+
+    while (channel_process(0));
 
 }
 
