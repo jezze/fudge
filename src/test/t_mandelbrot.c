@@ -302,5 +302,7 @@ void init(void)
 
     while (channel_process(0));
 
+    channel_close();
+
 }
 

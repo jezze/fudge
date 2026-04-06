@@ -52,7 +52,7 @@ static void dispatch(unsigned int source, unsigned int event, void *data, unsign
 unsigned int channel_pick(unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
-    while (state != CHANNEL_STATE_CLOSED)
+    while (state != CHANNEL_STATE_CLOSED && state != CHANNEL_STATE_TERMINATED)
     {
 
         unsigned int status = call_pick(ichannel, message, count, data);
@@ -157,8 +157,6 @@ void channel_dispatch(unsigned int ichannel, struct message *message, void *data
 
         if (parent)
             channel_send(ichannel, parent, EVENT_DONE);
-
-        channel_close();
 
     }
 
