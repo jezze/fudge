@@ -19,7 +19,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         channel_route(EVENT_DATA, source);
         channel_send(1, target, EVENT_MAIN);
         channel_send_fmt0(1, target, EVENT_PATH, "initrd:data/help.txt\\0");
-        channel_send(1, target, EVENT_END);
+        channel_send(1, target, EVENT_TERM);
         channel_wait(1, target, EVENT_DONE);
 
     }

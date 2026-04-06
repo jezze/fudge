@@ -365,7 +365,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
 
                 channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
                 channel_send(1, target, EVENT_MAIN);
-                channel_send(1, target, EVENT_END);
+                channel_send(1, target, EVENT_TERM);
 
             }
 
@@ -386,7 +386,12 @@ static void clickwidget(struct widget *widget)
         {
 
             if (util_intersects(state.mousewidget->placement.position.x, widget->placement.position.x + widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.x + widget->placement.size.w) && util_intersects(state.mousewidget->placement.position.y, widget->placement.position.y, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT))
+            {
+
+                channel_send(0, widget->source, EVENT_WMCLOSE);
                 channel_send(0, widget->source, EVENT_TERM);
+
+            }
 
         }
 
@@ -491,7 +496,12 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 {
 
                     if (state.focusedwindow)
+                    {
+
+                        channel_send(0, state.focusedwindow->source, EVENT_WMCLOSE);
                         channel_send(0, state.focusedwindow->source, EVENT_TERM);
+
+                    }
 
                 }
 
@@ -507,7 +517,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                     {
 
                         channel_send(1, target, EVENT_MAIN);
-                        channel_send(1, target, EVENT_END);
+                        channel_send(1, target, EVENT_TERM);
 
                     }
 

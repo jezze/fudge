@@ -86,7 +86,7 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         }
 
-        channel_send(1, target, EVENT_END);
+        channel_send(1, target, EVENT_TERM);
         channel_wait(1, target, EVENT_DONE);
 
     }
@@ -118,7 +118,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(0, wm, EVENT_WMMAP);
 
-    while (channel_process(0));
+    while (channel_process(0) != EVENT_WMCLOSE);
 
     channel_send(0, wm, EVENT_WMUNMAP);
 

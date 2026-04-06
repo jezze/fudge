@@ -39,7 +39,7 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
 
         }
 
-        channel_send(1, target, EVENT_END);
+        channel_send(1, target, EVENT_TERM);
         channel_wait(1, target, EVENT_DONE);
 
     }
@@ -65,7 +65,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         while (channel_poll(2, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
             channel_send_buffer(2, source, EVENT_DATA, message.length, data);
 
-        channel_send(2, target, EVENT_END);
+        channel_send(2, target, EVENT_TERM);
         channel_wait(2, target, EVENT_DONE);
 
     }

@@ -72,7 +72,7 @@ static void activatenext(struct job *job, unsigned int ichannel, unsigned int st
         if (worker->target)
         {
 
-            channel_send(ichannel, worker->target, EVENT_END);
+            channel_send(ichannel, worker->target, EVENT_TERM);
 
             break;
 

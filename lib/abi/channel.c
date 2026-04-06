@@ -114,18 +114,9 @@ void channel_dispatch(unsigned int ichannel, struct message *message, void *data
     switch (message->event)
     {
 
-    case EVENT_MAIN:
-        parent = message->source;
-
-        break;
-
-    case EVENT_END:
-        state = CHANNEL_STATE_CLOSING;
-
-        break;
-
     case EVENT_TERM:
-        state = CHANNEL_STATE_TERMINATED;
+        parent = message->source;
+        state = CHANNEL_STATE_CLOSING;
 
         break;
 

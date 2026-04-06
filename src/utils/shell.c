@@ -35,7 +35,7 @@ static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int c
 
         channel_send(ichannel, target, EVENT_MAIN);
         channel_send_buffer(ichannel, target, EVENT_DATA, count, buffer);
-        channel_send(ichannel, target, EVENT_END);
+        channel_send(ichannel, target, EVENT_TERM);
 
     }
 
