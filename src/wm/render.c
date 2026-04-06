@@ -274,13 +274,38 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
 }
 
+static struct util_size textsize(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
+{
+
+    struct text_info info;
+
+    if (widget->attributes.display == ATTR_DISPLAY_INLINE)
+    {
+
+        widget->rowstart = *rowstart;
+
+    }
+
+    info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, widget->rowstart.x);
+
+    if (widget->attributes.display == ATTR_DISPLAY_INLINE)
+    {
+
+        widget->rowstop = info.lastrow;
+
+    }
+
+    return util_size(info.width, info.height);
+
+}
+
 static struct util_size getsizebutton(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
     struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH * 2, CONFIG_BUTTON_PADDING_HEIGHT * 2);
-    struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
+    struct util_size label = textsize(widget, csize, limit, rowstart);
 
-    return util_size(info.width + padding.w, info.height + padding.h);
+    return util_size(label.w + padding.w, label.h + padding.h);
 
 }
 
@@ -288,9 +313,9 @@ static struct util_size getsizechoice(struct widget *widget, struct util_size *c
 {
 
     struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH * 2, CONFIG_CHOICE_PADDING_HEIGHT * 2);
-    struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
+    struct util_size label = textsize(widget, csize, limit, rowstart);
 
-    return util_size(info.width + padding.w, info.height + padding.h);
+    return util_size(label.w + padding.w, label.h + padding.h);
 
 }
 
@@ -335,34 +360,18 @@ static struct util_size getsizeselect(struct widget *widget, struct util_size *c
 {
 
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH * 4, CONFIG_SELECT_PADDING_HEIGHT * 2);
-    struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
+    struct util_size label = textsize(widget, csize, limit, rowstart);
 
-    return util_size(info.width + padding.w, info.height + padding.h);
+    return util_size(label.w + padding.w, label.h + padding.h);
 
 }
 
 static struct util_size getsizetext(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct text_info info;
+    struct util_size label = textsize(widget, csize, limit, rowstart);
 
-    if (widget->attributes.display == ATTR_DISPLAY_INLINE)
-    {
-
-        widget->rowstart = *rowstart;
-
-    }
-
-    info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, widget->rowstart.x);
-
-    if (widget->attributes.display == ATTR_DISPLAY_INLINE)
-    {
-
-        widget->rowstop = info.lastrow;
-
-    }
-
-    return util_size(info.width, info.height);
+    return util_size(label.w, label.h);
 
 }
 
@@ -379,9 +388,9 @@ static struct util_size getsizetextbutton(struct widget *widget, struct util_siz
 {
 
     struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
-    struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, 0);
+    struct util_size label = textsize(widget, csize, limit, rowstart);
 
-    return util_size(info.width + padding.w, info.height + padding.h);
+    return util_size(label.w + padding.w, label.h + padding.h);
 
 }
 
@@ -528,19 +537,19 @@ static void placewindow(struct widget *widget, struct util_region *placement, st
 
 }
 
-static void _renderx(struct blit_display *display, struct widget *widget, struct util_region *placement, unsigned int text, unsigned int *cmap, int x0, int x2, int offx, int offy, struct util_size *padding, int num, int line)
+static void textrender(struct blit_display *display, struct widget *widget, struct util_region *placement, unsigned int *cmap, int x0, int x2, int offx, int offy, struct util_size *padding, int num, int line)
 {
 
     struct text_font *font = pool_getfont(widget->attributes.weight);
-    unsigned int icurrent = text_getrowstart(font, strpool_getstring(text), strpool_getcstringlength(text), num, widget->attributes.wrap, placement->size.w, offx);
+    unsigned int icurrent = text_getrowstart(font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), num, widget->attributes.wrap, placement->size.w, offx);
 
-    if (icurrent < strpool_getcstringlength(text))
+    if (icurrent < strpool_getcstringlength(widget->attributes.label))
     {
 
         struct text_rowinfo rowinfo;
         struct util_position offset;
 
-        text_getrowinfo(&rowinfo, font, strpool_getstring(text), strpool_getcstringlength(text), widget->attributes.wrap, placement->size.w, icurrent);
+        text_getrowinfo(&rowinfo, font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, placement->size.w, icurrent);
 
         offset.x = text_getrowx(&rowinfo, widget->attributes.halign, placement->size.w - padding->w * 2 - offx) + padding->w + offx;
         offset.y = text_getrowy(&rowinfo, widget->attributes.valign, placement->size.h - padding->h * 2 - offy) + padding->h + offy + font->lineheight * num;
@@ -551,7 +560,7 @@ static void _renderx(struct blit_display *display, struct widget *widget, struct
             unsigned int mstart = util_max(0, util_min(widget->markstart, widget->markend) - rowinfo.istart);
             unsigned int mend = util_max(0, util_max(widget->markstart, widget->markend) - rowinfo.istart);
 
-            blit_text(display, font, strpool_getstring(text) + rowinfo.istart, rowinfo.length, placement->position.x + offset.x, placement->position.y + offset.y, line, x0, x2, mstart, mend, cmap);
+            blit_text(display, font, strpool_getstring(widget->attributes.label) + rowinfo.istart, rowinfo.length, placement->position.x + offset.x, placement->position.y + offset.y, line, x0, x2, mstart, mend, cmap);
 
         }
 
@@ -567,7 +576,7 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    _renderx(display, widget, &widget->placement, widget->attributes.label, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -579,7 +588,7 @@ static void renderchoice(struct blit_display *display, struct widget *widget, in
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    _renderx(display, widget, &widget->placement, widget->attributes.label, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -674,7 +683,7 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
     blit_iconarrowdown(display, &rarrow, line, x0, x2, cmapicon);
-    _renderx(display, widget, &widget->placement, widget->attributes.label, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -685,7 +694,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
     unsigned int rownum = (line - widget->placement.position.y) / font->lineheight;
 
-    _renderx(display, widget, &widget->placement, widget->attributes.label, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, &zerosize, rownum, line);
+    textrender(display, widget, &widget->placement, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, &zerosize, rownum, line);
 
 }
 
@@ -710,7 +719,7 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    _renderx(display, widget, &widget->placement, widget->attributes.label, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -733,7 +742,7 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     blit_frame(display, &rminimize, line, x0, x2, cmaptop);
     blit_frame(display, &rtitle, line, x0, x2, cmaptop);
     blit_frame(display, &rclose, line, x0, x2, cmaptop);
-    _renderx(display, widget, &rtitle, widget->attributes.label, cmaptitle, x0, x2, 0, 0, &zerosize, 0, line);
+    textrender(display, widget, &rtitle, cmaptitle, x0, x2, 0, 0, &zerosize, 0, line);
     blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? cmapiconon : cmapiconoff);
     blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? cmapiconon : cmapiconoff);
     blit_iconx(display, &rclose, line, x0, x2, (onclose) ? cmapiconon : cmapiconoff);
