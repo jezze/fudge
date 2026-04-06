@@ -17,19 +17,14 @@ static unsigned int parent;
 static unsigned int reroute(unsigned int target, unsigned int event)
 {
 
-    if (event < CHANNEL_EVENTS && routes[event])
-        return routes[event];
-
-    return target;
+    return (event < CHANNEL_EVENTS && routes[event]) ? routes[event] : target;
 
 }
 
 static unsigned int send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    target = reroute(target, event);
-
-    return (target) ? channel_place(ichannel, target, event, count, data) : 0;
+    return channel_place(ichannel, reroute(target, event), event, count, data);
 
 }
 
