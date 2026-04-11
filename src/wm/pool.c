@@ -17,18 +17,6 @@ static struct list freelist;
 static struct widget entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
-static char *fontn[] = {
-    "initrd:data/font/ter-112n.pcf",
-    "initrd:data/font/ter-114n.pcf",
-    "initrd:data/font/ter-116n.pcf",
-    "initrd:data/font/ter-118n.pcf",
-};
-static char *fontb[] = {
-    "initrd:data/font/ter-112b.pcf",
-    "initrd:data/font/ter-114b.pcf",
-    "initrd:data/font/ter-116b.pcf",
-    "initrd:data/font/ter-118b.pcf",
-};
 static struct pool_pcxresource pcxresources[64];
 static unsigned int npcxresources;
 
@@ -283,8 +271,10 @@ struct text_font *pool_getfont(unsigned int index)
 
 }
 
-static void setfont(struct text_font *font, unsigned int lineheight, unsigned int padding)
+void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding)
 {
+
+    struct text_font *font = &fonts[index];
 
     font->lineheight = lineheight;
     font->padding = padding;
@@ -372,44 +362,35 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
 }
 
-static void loadfont(struct text_font *font, unsigned int target, unsigned int id, unsigned int lineheight, unsigned int padding)
+void pool_loadfont(unsigned int index, char *path)
 {
 
-    struct pcf_header header;
-
-    fs_read_full(1, target, id, &header, sizeof (struct pcf_header), 0);
-
-    if (buffer_match(header.magic, PCF_MAGIC, 4) && header.entries < 24)
-    {
-
-        struct pcf_entry entries[24];
-
-        setfont(font, lineheight, padding);
-        fs_read_full(1, target, id, entries, sizeof (struct pcf_entry) * header.entries, sizeof (struct pcf_header));
-        loadatlas(font, target, id, entries, header.entries);
-
-    }
-
-}
-
-void pool_loadfont(unsigned int factor)
-{
-
-    unsigned int target = fs_auth("initrd:");
+    unsigned int target = fs_auth(path);
 
     if (target)
     {
 
-        unsigned int idn = fs_walk(1, target, 0, fontn[factor]);
-        unsigned int idb = fs_walk(1, target, 0, fontb[factor]);
-        unsigned int lineheight = 12 + factor * 4;
-        unsigned int padding = 4 + factor * 2;
+        unsigned int id = fs_walk(1, target, 0, path);
 
-        if (idn)
-            loadfont(&fonts[0], target, idn, lineheight, padding);
+        if (id)
+        {
 
-        if (idb)
-            loadfont(&fonts[1], target, idb, lineheight, padding);
+            struct pcf_header header;
+
+            fs_read_full(1, target, id, &header, sizeof (struct pcf_header), 0);
+
+            if (buffer_match(header.magic, PCF_MAGIC, 4) && header.entries < 24)
+            {
+
+                struct text_font *font = &fonts[index];
+                struct pcf_entry entries[24];
+
+                fs_read_full(1, target, id, entries, sizeof (struct pcf_entry) * header.entries, sizeof (struct pcf_header));
+                loadatlas(font, target, id, entries, header.entries);
+
+            }
+
+        }
 
     }
 

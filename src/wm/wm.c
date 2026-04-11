@@ -38,6 +38,18 @@ struct state
 static struct blit_display display;
 static struct state state;
 static unsigned int linebuffer[3840];
+static char *fontn[] = {
+    "initrd:data/font/ter-112n.pcf",
+    "initrd:data/font/ter-114n.pcf",
+    "initrd:data/font/ter-116n.pcf",
+    "initrd:data/font/ter-118n.pcf",
+};
+static char *fontb[] = {
+    "initrd:data/font/ter-112b.pcf",
+    "initrd:data/font/ter-114b.pcf",
+    "initrd:data/font/ter-116b.pcf",
+    "initrd:data/font/ter-118b.pcf",
+};
 
 static void setupvideo(unsigned int video)
 {
@@ -755,35 +767,22 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
     struct event_videoinfo *videoinfo = mdata;
     unsigned int factor = videoinfo->height / 320;
+    unsigned int lineheight = 12 + factor * 4;
+    unsigned int padding = 4 + factor * 2;
 
     blit_initdisplay(&display, videoinfo->framebuffer, videoinfo->width, videoinfo->height, videoinfo->bpp, linebuffer);
-    render_damage(0, 0, videoinfo->width, videoinfo->height);
-    pool_loadfont(factor);
+    pool_loadfont(0, fontn[factor]);
+    pool_setfont(0, lineheight, padding);
+    pool_loadfont(1, fontb[factor]);
+    pool_setfont(1, lineheight, padding);
 
     state.mouseposition.x = videoinfo->width / 4;
     state.mouseposition.y = videoinfo->height / 4;
+    state.mousewidget->position = util_position(state.mouseposition.x, state.mouseposition.y);
+    state.mousewidget->size = util_size(12 + factor * 4, 16 + factor * 4);
+    state.mousewidget->placement = util_region(state.mousewidget->position.x, state.mousewidget->position.y, state.mousewidget->size.w, state.mousewidget->size.h);
 
-    switch (factor)
-    {
-
-    case 0:
-    case 1:
-        state.mousewidget->position = util_position(state.mouseposition.x, state.mouseposition.y);
-        state.mousewidget->size = util_size(12, 16);
-        state.mousewidget->placement = util_region(state.mousewidget->position.x, state.mousewidget->position.y, state.mousewidget->size.w, state.mousewidget->size.h);
-
-        break;
-
-    case 2:
-    default:
-        state.mousewidget->position = util_position(state.mouseposition.x, state.mouseposition.y);
-        state.mousewidget->size = util_size(18, 24);
-        state.mousewidget->placement = util_region(state.mousewidget->position.x, state.mousewidget->position.y, state.mousewidget->size.w, state.mousewidget->size.h);
-
-        break;
-
-    }
-
+    render_damage(0, 0, videoinfo->width, videoinfo->height);
     render_place(state.rootwidget, &display.region);
     render_update(&display);
     render_undamage();

@@ -22,6 +22,7 @@ void pool_destroy(struct widget *widget);
 struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source);
 void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer);
 struct text_font *pool_getfont(unsigned int index);
-void pool_loadfont(unsigned int factor);
+void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding);
+void pool_loadfont(unsigned int index, char *path);
 void pool_loadresources(void);
 void pool_setup(void);
