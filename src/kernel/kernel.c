@@ -177,7 +177,9 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
         {
 
             task->imailbox[ichannel] = pool_addmailbox(itask);
-            mailbox = pool_getmailbox(task->imailbox[ichannel]);
+
+            if (task->imailbox[ichannel])
+                mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
         }
 
@@ -341,21 +343,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         checkstate(itask);
 
         if (task->thread.ip)
-        {
-
-            task->imailbox[0] = pool_addmailbox(itask);
-
-            if (task->imailbox[0])
-            {
-
-                struct mailbox *mailbox = pool_getmailbox(task->imailbox[0]);
-
-                if (mailbox)
-                    return mailbox->inode;
-
-            }
-
-        }
+            return kernel_getchannelinode(itask, 0);
 
     }
 
