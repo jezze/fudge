@@ -448,8 +448,12 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int select
 unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
 {
 
-    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-    struct mmap_entry *entry = mmap_find(header, cpu_getcr2());
+    unsigned int vaddress = cpu_getcr2();
+    struct mmap_header *header;
+    struct mmap_entry *entry;
+
+    header = (struct mmap_header *)MMAP_VADDRESS;
+    entry = mmap_find(header, vaddress);
 
     if (entry && entry->size)
     {
@@ -479,6 +483,16 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
             break;
 
         }
+
+    }
+
+    header = (struct mmap_header *)ARCH_MMAPADDRESS;
+    entry = mmap_find(header, vaddress);
+
+    if (entry && entry->size)
+    {
+
+        map(mmu_getdirectory(), header, entry);
 
     }
 
