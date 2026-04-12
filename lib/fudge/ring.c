@@ -160,6 +160,16 @@ unsigned int ring_readcopy(struct ring *ring, void *buffer, unsigned int count)
 
 }
 
+unsigned int ring_readcopy_all(struct ring *ring, void *buffer, unsigned int count)
+{
+
+    if (count > ring_count(ring))
+        return 0;
+
+    return ring_readcopy(ring, buffer, count);
+
+}
+
 unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
 {
 
