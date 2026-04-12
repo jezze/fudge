@@ -29,13 +29,12 @@ static struct mapping umapping[POOL_TASKS];
 static struct mmap_entry *findentry(struct mmap_header *header, unsigned int vaddress)
 {
 
-    struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
     unsigned int i;
 
     for (i = 0; i < header->nentries; i++)
     {
 
-        struct mmap_entry *entry = &entries[i];
+        struct mmap_entry *entry = &header->entries[i];
 
         if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->size)
             return entry;
@@ -43,18 +42,6 @@ static struct mmap_entry *findentry(struct mmap_header *header, unsigned int vad
     }
 
     return 0;
-
-}
-
-static void addentry(struct mmap_header *header, struct mmap_entry *from)
-{
-
-    struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
-    struct mmap_entry *entry = &entries[header->nentries];
-
-    buffer_copy(entry, from, sizeof (struct mmap_entry));
-
-    header->nentries++;
 
 }
 
@@ -160,21 +147,20 @@ static void mapping_loadcode(struct mapping *mapping, unsigned int address)
     if (format)
     {
 
-        struct mmap_entry entry;
+        struct mmap_entry *entry = &header->entries[header->nentries];
         unsigned int offset = 0;
         unsigned int i = 0;
 
-        while ((i = format->mapsection(address, &entry, i)))
+        while ((i = format->mapsection(address, entry, i)))
         {
 
-            if (entry.size)
+            if (entry->size)
             {
 
-                entry.paddress = mapping->code + offset;
-
-                addentry(header, &entry);
-
-                offset += (entry.size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
+                entry->paddress = mapping->code + offset;
+                offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
+                header->nentries++;
+                entry++;
 
             }
 
@@ -188,11 +174,13 @@ static void mapping_loadmmap(struct mapping *mapping)
 {
 
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-    struct mmap_entry entry;
+    struct mmap_entry *entry = &header->entries[header->nentries];
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
-    addentry(header, &entry);
-    map(mapping->directory, header, &entry);
+    mmap_initentry(entry, MMAP_TYPE_NONE, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
+
+    header->nentries++;
+
+    map(mapping->directory, header, entry);
 
 }
 
@@ -200,10 +188,11 @@ static void mapping_loadstack(struct mapping *mapping)
 {
 
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-    struct mmap_entry entry;
+    struct mmap_entry *entry = &header->entries[header->nentries];
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE, 0, 0, 0, 0);
-    addentry(header, &entry);
+    mmap_initentry(entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+
+    header->nentries++;
 
 }
 
@@ -299,11 +288,13 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 {
 
     struct mmap_header *header = (struct mmap_header *)ARCH_MMAPADDRESS;
-    struct mmap_entry entry;
+    struct mmap_entry *entry = &header->entries[header->nentries];
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
-    addentry(header, &entry);
-    map(kmapping.directory, header, &entry);
+    mmap_initentry(entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
+
+    header->nentries++;
+
+    map(kmapping.directory, header, entry);
 
 }
 
@@ -311,11 +302,13 @@ void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 {
 
     struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-    struct mmap_entry entry;
+    struct mmap_entry *entry = &header->entries[header->nentries];
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
-    addentry(header, &entry);
-    map(mmu_getdirectory(), header, &entry);
+    mmap_initentry(entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
+
+    header->nentries++;
+
+    map(mmu_getdirectory(), header, entry);
 
 }
 

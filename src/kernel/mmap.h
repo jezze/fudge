@@ -28,6 +28,7 @@ struct mmap_header
 
     unsigned int nentries;
     unsigned int ntables;
+    struct mmap_entry entries[64];
 
 };
 
