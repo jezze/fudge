@@ -122,12 +122,12 @@ static void map(unsigned int directory, struct mmap_header *header, struct mmap_
 static void mapping_loadcode(struct mapping *mapping, unsigned int address)
 {
 
-    struct mmap_header *header = (struct mmap_header *)mapping->mmap;
     struct binary_format *format = binary_findformat(address);
 
     if (format)
     {
 
+        struct mmap_header *header = (struct mmap_header *)mapping->mmap;
         struct mmap_entry *entry = &header->entries[header->nentries];
         unsigned int offset = 0;
         unsigned int i = 0;
