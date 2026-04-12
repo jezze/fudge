@@ -206,14 +206,21 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
 
             struct pcx_header header;
             struct record record;
-            unsigned char magic;
 
             fs_stat(1, resource->target, resource->id, &record);
             fs_read_all(1, resource->target, resource->id, &header, sizeof (struct pcx_header), 0);
-            fs_read_all(1, resource->target, resource->id, &magic, 1, record.size - 768 - 1);
 
-            if (magic == PCX_COLORMAP_MAGIC)
-                fs_read_all(1, resource->target, resource->id, resource->colormap, 768, record.size - 768);
+            if (header.version == 5)
+            {
+
+                unsigned char magic;
+
+                fs_read_all(1, resource->target, resource->id, &magic, 1, record.size - 768 - 1);
+
+                if (magic == PCX_COLORMAP_MAGIC)
+                    fs_read_all(1, resource->target, resource->id, resource->colormap, 768, record.size - 768);
+
+            }
 
             resource->width = header.xend - header.xstart + 1;
             resource->height = header.yend - header.ystart + 1;
