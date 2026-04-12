@@ -1,6 +1,25 @@
 #include <fudge.h>
 #include "mmap.h"
 
+struct mmap_entry *mmap_find(struct mmap_header *header, unsigned int vaddress)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header->nentries; i++)
+    {
+
+        struct mmap_entry *entry = &header->entries[i];
+
+        if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->size)
+            return entry;
+
+    }
+
+    return 0;
+
+}
+
 void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags, unsigned int ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags)
 {
 

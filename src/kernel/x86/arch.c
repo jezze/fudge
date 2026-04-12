@@ -26,25 +26,6 @@ static struct arch_tss tss0;
 static struct mapping kmapping;
 static struct mapping umapping[POOL_TASKS];
 
-static struct mmap_entry *findentry(struct mmap_header *header, unsigned int vaddress)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < header->nentries; i++)
-    {
-
-        struct mmap_entry *entry = &header->entries[i];
-
-        if (vaddress >= entry->vaddress && vaddress < entry->vaddress + entry->size)
-            return entry;
-
-    }
-
-    return 0;
-
-}
-
 static void mapping_initkernel(struct mapping *mapping)
 {
 
@@ -468,7 +449,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 {
 
     struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-    struct mmap_entry *entry = findentry(header, cpu_getcr2());
+    struct mmap_entry *entry = mmap_find(header, cpu_getcr2());
 
     if (entry && entry->size)
     {

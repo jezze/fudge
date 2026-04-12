@@ -32,5 +32,6 @@ struct mmap_header
 
 };
 
+struct mmap_entry *mmap_find(struct mmap_header *header, unsigned int vaddress);
 void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags, unsigned int ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags);
 void mmap_initheader(struct mmap_header *header);
