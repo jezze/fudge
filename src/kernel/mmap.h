@@ -26,7 +26,7 @@ struct mmap_entry
 struct mmap_header
 {
 
-    unsigned int entries;
+    unsigned int nentries;
     unsigned int ntables;
 
 };

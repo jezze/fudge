@@ -32,7 +32,7 @@ static struct mmap_entry *findentry(struct mmap_header *header, unsigned int vad
     struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
     unsigned int i;
 
-    for (i = 0; i < header->entries; i++)
+    for (i = 0; i < header->nentries; i++)
     {
 
         struct mmap_entry *entry = &entries[i];
@@ -50,11 +50,11 @@ static void addentry(struct mmap_header *header, struct mmap_entry *from)
 {
 
     struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
-    struct mmap_entry *entry = &entries[header->entries];
+    struct mmap_entry *entry = &entries[header->nentries];
 
     buffer_copy(entry, from, sizeof (struct mmap_entry));
 
-    header->entries++;
+    header->nentries++;
 
 }
 
@@ -298,7 +298,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags)
 {
 
-    struct mmap_header *header = (struct mmap_header *)kmapping.mmap;
+    struct mmap_header *header = (struct mmap_header *)ARCH_MMAPADDRESS;
     struct mmap_entry entry;
 
     mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);

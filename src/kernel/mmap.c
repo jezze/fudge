@@ -1,3 +1,4 @@
+#include <fudge.h>
 #include "mmap.h"
 
 void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags, unsigned int ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags)
@@ -18,7 +19,7 @@ void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned int pa
 void mmap_initheader(struct mmap_header *header)
 {
 
-    header->entries = 0;
+    header->nentries = 0;
     header->ntables = 0;
 
 }
