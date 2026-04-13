@@ -23,32 +23,21 @@ struct mapping
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct arch_tss tss0;
-static struct mapping kmapping;
-static struct mapping umapping[POOL_TASKS];
+static struct mapping mappings[POOL_TASKS];
 
-static void mapping_initkernel(struct mapping *mapping)
+static void mapping_clear(struct mapping *mapping)
 {
 
-    mapping->directory = ARCH_MMUKERNELADDRESS;
-    mapping->code = ARCH_KERNELCODEADDRESS;
-    mapping->stack = ARCH_KERNELSTACKADDRESS;
-    mapping->mmap = ARCH_MMAPADDRESS;
- 
     mmap_initheader((struct mmap_header *)mapping->mmap);
     buffer_clear((void *)mapping->directory, 4096);
 
 }
 
-static void mapping_inittask(struct mapping *mapping, unsigned int itask)
+static void mapping_copy(struct mapping *mapping, struct mapping *from)
 {
 
-    mapping->directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * itask;
-    mapping->code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask;
-    mapping->stack = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * itask + TASK_CODESIZE;
-    mapping->mmap = ARCH_MMAPADDRESS + MMAP_SIZE * itask;
- 
     mmap_initheader((struct mmap_header *)mapping->mmap);
-    buffer_copy((void *)mapping->directory, (void *)kmapping.directory, 4096);
+    buffer_copy((void *)mapping->directory, (void *)from->directory, 4096);
 
 }
 
@@ -185,12 +174,10 @@ static unsigned int createtask(unsigned int address)
     if (ntask)
     {
 
-        struct mapping *mapping = &umapping[ntask];
-
-        mapping_inittask(mapping, ntask);
-        mapping_loadcode(mapping, address);
-        mapping_loadstack(mapping);
-        mapping_loadmmap(mapping);
+        mapping_copy(&mappings[ntask], &mappings[0]);
+        mapping_loadcode(&mappings[ntask], address);
+        mapping_loadstack(&mappings[ntask]);
+        mapping_loadmmap(&mappings[ntask]);
 
         return kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
 
@@ -223,7 +210,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task_thread *thread = kernel_gettaskthread(core->itask);
-        struct mapping *mapping = &umapping[core->itask];
+        struct mapping *mapping = &mappings[core->itask];
 
         buffer_copy(&mapping->registers, general, sizeof (struct cpu_general));
 
@@ -238,7 +225,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task_thread *thread = kernel_gettaskthread(core->itask);
-        struct mapping *mapping = &umapping[core->itask];
+        struct mapping *mapping = &mappings[core->itask];
 
         buffer_copy(general, &mapping->registers, sizeof (struct cpu_general));
 
@@ -259,7 +246,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = (unsigned int)cpu_halt;
         interrupt->esp.value = core->sp;
 
-        mmu_setdirectory(kmapping.directory);
+        mmu_setdirectory(mappings[0].directory);
 
     }
 
@@ -275,7 +262,7 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 
     header->nentries++;
 
-    map(kmapping.directory, header, entry);
+    map(mappings[0].directory, header, entry);
 
 }
 
@@ -556,6 +543,28 @@ void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 
 }
 
+static void setupmappings(void)
+{
+
+    unsigned int i;
+
+    mappings[0].directory = ARCH_MMUKERNELADDRESS;
+    mappings[0].code = ARCH_KERNELCODEADDRESS;
+    mappings[0].stack = ARCH_KERNELSTACKADDRESS;
+    mappings[0].mmap = ARCH_MMAPADDRESS;
+
+    for (i = 1; i < POOL_TASKS; i++)
+    {
+
+        mappings[i].directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * i;
+        mappings[i].code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * i;
+        mappings[i].stack = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * i + TASK_CODESIZE;
+        mappings[i].mmap = ARCH_MMAPADDRESS + MMAP_SIZE * i;
+
+    }
+
+}
+
 void arch_setup1(void)
 {
 
@@ -564,14 +573,15 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
-    mapping_initkernel(&kmapping);
+    setupmappings();
+    mapping_clear(&mappings[0]);
     arch_kmap(0x00000000, 0x00000000, 0x00800000, MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES, MMAP_FLAG_WRITEABLE);
-    arch_kmap(kmapping.mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
-    mmu_setdirectory(kmapping.directory);
+    arch_kmap(mappings[0].mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
+    mmu_setdirectory(mappings[0].directory);
     mmu_enable();
     mailbox_setup();
     pool_setup(ARCH_MAILBOXADDRESS, MAILBOX_SIZE);
