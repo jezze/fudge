@@ -210,9 +210,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task_thread *thread = kernel_gettaskthread(core->itask);
-        struct mapping *mapping = &mappings[core->itask];
 
-        buffer_copy(&mapping->registers, general, sizeof (struct cpu_general));
+        buffer_copy(&mappings[core->itask].registers, general, sizeof (struct cpu_general));
 
         thread->ip = interrupt->eip.value;
         thread->sp = interrupt->esp.value;
@@ -225,16 +224,13 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     {
 
         struct task_thread *thread = kernel_gettaskthread(core->itask);
-        struct mapping *mapping = &mappings[core->itask];
 
-        buffer_copy(general, &mapping->registers, sizeof (struct cpu_general));
+        buffer_copy(general, &mappings[core->itask].registers, sizeof (struct cpu_general));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
         interrupt->eip.value = thread->ip;
         interrupt->esp.value = thread->sp;
-
-        mmu_setdirectory(mapping->directory);
 
     }
 
@@ -246,9 +242,9 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = (unsigned int)cpu_halt;
         interrupt->esp.value = core->sp;
 
-        mmu_setdirectory(mappings[0].directory);
-
     }
+
+    mmu_setdirectory(mappings[core->itask].directory);
 
 }
 
