@@ -16,6 +16,7 @@ O:=\
     $(DIR_SRC)/kernel/pool.o \
     $(DIR_SRC)/kernel/resource.o \
     $(DIR_SRC)/kernel/task.o \
+    $(DIR_SRC)/kernel/udebug.o \
 
 L:=\
     $(DIR_LIB)/fudge/fudge.a \
