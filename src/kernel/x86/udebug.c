@@ -11,18 +11,15 @@ static struct debug_interface debug;
 static unsigned int udebug_offset = 0;
 static unsigned int udebug_count = 0;
 
-static void debug_write(unsigned int level, unsigned int count, char *buffer, char *file, unsigned int line)
+static void print(unsigned int count, char *buffer, unsigned char color)
 {
 
-    char message[DEBUG_MESSAGESIZE];
     unsigned int i;
-
-    count = cstring_write_fmt3(message, DEBUG_MESSAGESIZE, 0, "[%u] %w\n", &udebug_count, buffer, &count);
 
     for (i = 0; i < count; i++)
     {
 
-        if (message[i] == '\n')
+        if (buffer[i] == '\n')
         {
 
             udebug_offset = (udebug_offset + COLSIZE) - udebug_offset % COLSIZE;
@@ -32,8 +29,8 @@ static void debug_write(unsigned int level, unsigned int count, char *buffer, ch
         else
         {
 
-            framebuffer[udebug_offset++] = message[i];
-            framebuffer[udebug_offset++] = 0x07;
+            framebuffer[udebug_offset++] = buffer[i];
+            framebuffer[udebug_offset++] = color;
 
         }
 
@@ -48,6 +45,49 @@ static void debug_write(unsigned int level, unsigned int count, char *buffer, ch
         }
 
     }
+
+}
+
+static void debug_write(unsigned int level, unsigned int count, char *buffer, char *file, unsigned int line)
+{
+
+    char num[32];
+
+    print(cstring_write_value(num, 32, udebug_count, 16, 8, 0), num, 0x08);
+    print(1, " ", 0x08);
+    print(cstring_length(file), file, 0x07);
+    print(1, ":", 0x08);
+    print(cstring_write_value(num, 32, line, 10, 0, 0), num, 0x07);
+    print(1, "\n", 0x08);
+
+    switch (level)
+    {
+
+    case DEBUG_CRITICAL:
+        print(8, "CRITICAL", 0x04);
+
+        break;
+
+    case DEBUG_ERROR:
+        print(8, "   ERROR", 0x04);
+
+        break;
+
+    case DEBUG_WARNING:
+        print(8, " WARNING", 0x0E);
+
+        break;
+
+    case DEBUG_INFO:
+        print(8, "    INFO", 0x02);
+
+        break;
+
+    }
+
+    print(1, " ", 0x08);
+    print(count, buffer, 0x0F);
+    print(1, "\n", 0x08);
 
     udebug_count++;
 

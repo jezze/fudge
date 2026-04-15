@@ -307,7 +307,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
 
     struct core *core = kernel_getcore();
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: divide by zero");
+    DEBUG_FMT0(DEBUG_ERROR, "#DE");
 
     if (core->itask)
     {
@@ -324,7 +324,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
 unsigned short arch_debug(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: debug");
+    DEBUG_FMT0(DEBUG_INFO, "#DB");
 
     return arch_resume(&general, &interrupt);
 
@@ -333,7 +333,7 @@ unsigned short arch_debug(struct cpu_general general, struct cpu_interrupt inter
 unsigned short arch_nmi(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: non-maskable interrupt");
+    DEBUG_FMT0(DEBUG_INFO, "Non-maskable interrupt");
 
     return arch_resume(&general, &interrupt);
 
@@ -342,7 +342,7 @@ unsigned short arch_nmi(struct cpu_general general, struct cpu_interrupt interru
 unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: breakpoint");
+    DEBUG_FMT0(DEBUG_INFO, "#BP");
 
     return arch_resume(&general, &interrupt);
 
@@ -351,7 +351,7 @@ unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt 
 unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: overflow");
+    DEBUG_FMT0(DEBUG_INFO, "#OF");
 
     return arch_resume(&general, &interrupt);
 
@@ -360,7 +360,7 @@ unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt in
 unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: bound range exceeded");
+    DEBUG_FMT0(DEBUG_ERROR, "#BR");
 
     return arch_resume(&general, &interrupt);
 
@@ -369,7 +369,7 @@ unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt inter
 unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: invalid opcode");
+    DEBUG_FMT0(DEBUG_ERROR, "#UD");
 
     return arch_resume(&general, &interrupt);
 
@@ -378,7 +378,7 @@ unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt inte
 unsigned short arch_device(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "exception: device unavailable");
+    DEBUG_FMT0(DEBUG_ERROR, "#NM");
 
     return arch_resume(&general, &interrupt);
 
@@ -387,7 +387,7 @@ unsigned short arch_device(struct cpu_general general, struct cpu_interrupt inte
 unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_INFO, "exception: double fault %u", &zero);
+    DEBUG_FMT1(DEBUG_ERROR, "#DF %u", &zero);
 
     return arch_resume(&general, &interrupt);
 
@@ -396,7 +396,7 @@ unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, s
 unsigned short arch_tss(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_INFO, "exception: invalid tss %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#TS %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -405,7 +405,7 @@ unsigned short arch_tss(struct cpu_general general, unsigned int selector, struc
 unsigned short arch_segment(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_INFO, "exception: segment not present %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#NP %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -414,7 +414,7 @@ unsigned short arch_segment(struct cpu_general general, unsigned int selector, s
 unsigned short arch_stack(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_INFO, "exception: stack segment fault %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#SS %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -423,7 +423,7 @@ unsigned short arch_stack(struct cpu_general general, unsigned int selector, str
 unsigned short arch_generalfault(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_INFO, "exception: general fault %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#GP %u", &selector);
 
     return arch_resume(&general, &interrupt);
 
@@ -436,49 +436,61 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     struct mmap_header *header;
     struct mmap_entry *entry;
 
-    DEBUG_FMT1(DEBUG_INFO, "exception: page fault %u", &type);
-
-    header = (struct mmap_header *)MMAP_VADDRESS;
-    entry = mmap_find(header, vaddress);
-
-    if (entry && entry->size)
+    if (type & 0x04)
     {
 
-        map(mmu_getdirectory(), header, entry);
+        DEBUG_FMT2(DEBUG_INFO, "#PF %u 0x%H8u", &type, &vaddress);
 
-        switch (entry->type)
+        header = (struct mmap_header *)MMAP_VADDRESS;
+        entry = mmap_find(header, vaddress);
+
+        if (entry && entry->size)
         {
 
-        case MMAP_TYPE_COW:
-            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
+            map(mmu_getdirectory(), header, entry);
 
-            break;
+            switch (entry->type)
+            {
 
-        case MMAP_TYPE_ZERO:
-            buffer_clear((void *)entry->vaddress, entry->size);
+            case MMAP_TYPE_COW:
+                buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
 
-            break;
+                break;
 
-        case MMAP_TYPE_IOCOW:
-            if (entry->iofsize)
-                buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
+            case MMAP_TYPE_ZERO:
+                buffer_clear((void *)entry->vaddress, entry->size);
 
-            if (entry->iomsize > entry->iofsize)
-                buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+                break;
 
-            break;
+            case MMAP_TYPE_IOCOW:
+                if (entry->iofsize)
+                    buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
+
+                if (entry->iomsize > entry->iofsize)
+                    buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+
+                break;
+
+            }
+
+        }
+
+        header = (struct mmap_header *)ARCH_MMAPADDRESS;
+        entry = mmap_find(header, vaddress);
+
+        if (entry && entry->size)
+        {
+
+            map(mmu_getdirectory(), header, entry);
 
         }
 
     }
 
-    header = (struct mmap_header *)ARCH_MMAPADDRESS;
-    entry = mmap_find(header, vaddress);
-
-    if (entry && entry->size)
+    else
     {
 
-        map(mmu_getdirectory(), header, entry);
+        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &type, &vaddress);
 
     }
 
