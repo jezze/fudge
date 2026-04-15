@@ -44,4 +44,4 @@ void mmap_initheader(struct mmap_header *header)
     buffer_clear(header->entries, sizeof (struct mmap_entry) * 64);
 
 }
- 
+

@@ -23,7 +23,7 @@ void debug_fmt0(unsigned int level, char *fmt, char *file, unsigned int line)
 
     char buffer[DEBUG_MESSAGESIZE];
 
-    debug(level, cstring_write_fmt0(buffer, DEBUG_MESSAGESIZE, 0, fmt), buffer, file, line); 
+    debug(level, cstring_write_fmt0(buffer, DEBUG_MESSAGESIZE, 0, fmt), buffer, file, line);
 
 }
 
@@ -32,7 +32,7 @@ void debug_fmt1(unsigned int level, char *fmt, void *arg1, char *file, unsigned 
 
     char buffer[DEBUG_MESSAGESIZE];
 
-    debug(level, cstring_write_fmt1(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1), buffer, file, line); 
+    debug(level, cstring_write_fmt1(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1), buffer, file, line);
 
 }
 
@@ -41,7 +41,7 @@ void debug_fmt2(unsigned int level, char *fmt, void *arg1, void *arg2, char *fil
 
     char buffer[DEBUG_MESSAGESIZE];
 
-    debug(level, cstring_write_fmt2(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1, arg2), buffer, file, line); 
+    debug(level, cstring_write_fmt2(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1, arg2), buffer, file, line);
 
 }
 
@@ -50,7 +50,7 @@ void debug_fmt3(unsigned int level, char *fmt, void *arg1, void *arg2, void *arg
 
     char buffer[DEBUG_MESSAGESIZE];
 
-    debug(level, cstring_write_fmt3(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1, arg2, arg3), buffer, file, line); 
+    debug(level, cstring_write_fmt3(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1, arg2, arg3), buffer, file, line);
 
 }
 
@@ -59,7 +59,7 @@ void debug_fmt4(unsigned int level, char *fmt, void *arg1, void *arg2, void *arg
 
     char buffer[DEBUG_MESSAGESIZE];
 
-    debug(level, cstring_write_fmt4(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1, arg2, arg3, arg4), buffer, file, line); 
+    debug(level, cstring_write_fmt4(buffer, DEBUG_MESSAGESIZE, 0, fmt, arg1, arg2, arg3, arg4), buffer, file, line);
 
 }
 

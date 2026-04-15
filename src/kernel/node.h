@@ -1,4 +1,4 @@
-struct node_operands 
+struct node_operands
 {
 
     unsigned int (*pick)(struct resource *resource, unsigned int source, struct message *message, unsigned int count, void *data);
