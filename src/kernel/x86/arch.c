@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
+#include "udebug.h"
 #include "cpu.h"
 #include "gdt.h"
 #include "idt.h"
@@ -435,6 +436,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     struct mmap_header *header;
     struct mmap_entry *entry;
 
+    DEBUG_FMT1(DEBUG_INFO, "exception: page fault %u", &type);
+
     header = (struct mmap_header *)MMAP_VADDRESS;
     entry = mmap_find(header, vaddress);
 
@@ -565,6 +568,7 @@ void arch_setup1(void)
 {
 
     resource_setup();
+    udebug_setup();
     pic_init();
     arch_configuregdt();
     arch_configureidt();

@@ -8,6 +8,7 @@
 #define DEBUG_ERROR                     2
 #define DEBUG_WARNING                   3
 #define DEBUG_INFO                      4
+#define DEBUG_MESSAGESIZE               256
 
 struct debug_interface
 {
