@@ -509,6 +509,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
             }
 
+            else
+            {
+
+                DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &type, &vaddress);
+
+                for (;;);
+
+            }
+
         }
 
     }
@@ -517,6 +526,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     {
 
         DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &type, &vaddress);
+
+        for (;;);
 
     }
 
