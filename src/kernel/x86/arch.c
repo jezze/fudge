@@ -42,6 +42,42 @@ static void mapping_copy(struct mapping *mapping, struct mapping *from)
 
 }
 
+static void maptable(unsigned int directory, unsigned int vaddress, unsigned int taddress, unsigned int flags)
+{
+
+    unsigned int tflags = MMU_TFLAG_PRESENT;
+
+    if (flags & MMAP_FLAG_USERMODE)
+        tflags |= MMU_TFLAG_USERMODE;
+
+    if (flags & MMAP_FLAG_WRITEABLE)
+        tflags |= MMU_TFLAG_WRITEABLE;
+
+    if (flags & MMAP_FLAG_WRITETHROUGH)
+        tflags |= MMU_TFLAG_WRITETHROUGH;
+
+    mmu_settable(directory, vaddress, taddress | tflags);
+
+}
+
+static void mappage(unsigned int directory, unsigned int vaddress, unsigned int paddress, unsigned int flags)
+{
+
+    unsigned int pflags = MMU_PFLAG_PRESENT;
+
+    if (flags & MMAP_FLAG_USERMODE)
+        pflags |= MMU_PFLAG_USERMODE;
+
+    if (flags & MMAP_FLAG_WRITEABLE)
+        pflags |= MMU_PFLAG_WRITEABLE;
+
+    if (flags & MMAP_FLAG_WRITETHROUGH)
+        pflags |= MMU_PFLAG_WRITETHROUGH;
+
+    mmu_setpage(directory, vaddress, paddress | pflags);
+
+}
+
 static unsigned int addtable(struct mmap_header *header, unsigned int directory, unsigned int vaddress)
 {
 
@@ -58,33 +94,7 @@ static unsigned int addtable(struct mmap_header *header, unsigned int directory,
 static void map(unsigned int directory, struct mmap_header *header, struct mmap_entry *entry)
 {
 
-    unsigned int tflags = MMU_TFLAG_PRESENT;
-    unsigned int pflags = MMU_PFLAG_PRESENT;
     unsigned int i;
-
-    if (entry->flags & MMAP_FLAG_USERMODE)
-    {
-
-        tflags |= MMU_TFLAG_USERMODE;
-        pflags |= MMU_PFLAG_USERMODE;
-
-    }
-
-    if (entry->flags & MMAP_FLAG_WRITEABLE)
-    {
-
-        tflags |= MMU_TFLAG_WRITEABLE;
-        pflags |= MMU_PFLAG_WRITEABLE;
-
-    }
-
-    if (entry->flags & MMAP_FLAG_WRITETHROUGH)
-    {
-
-        tflags |= MMU_TFLAG_WRITETHROUGH;
-        pflags |= MMU_PFLAG_WRITETHROUGH;
-
-    }
 
     for (i = 0; i < entry->size; i += MMU_PAGESIZE)
     {
@@ -97,15 +107,13 @@ static void map(unsigned int directory, struct mmap_header *header, struct mmap_
 
             unsigned int taddress = addtable(header, directory, v);
 
-            mmu_settableaddress(directory, v, taddress);
+            maptable(directory, v, taddress, entry->flags);
 
         }
 
-        mmu_setpageaddress(directory, v, p);
+        mappage(directory, v, p, entry->flags);
 
     }
-
-    mmu_setflagrange(directory, entry->vaddress, entry->size, tflags, pflags);
 
 }
 
