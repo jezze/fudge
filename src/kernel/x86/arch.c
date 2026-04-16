@@ -81,39 +81,39 @@ static void mappage(unsigned int directory, unsigned int vaddress, unsigned int 
 static unsigned int addtable(struct mmap_header *header, unsigned int directory, unsigned int vaddress)
 {
 
-    unsigned int address = directory + 4096 + header->ntables * 4096;
+    unsigned int taddress = directory + 4096 + header->ntables * 4096;
 
-    buffer_clear((void *)address, 4096);
+    buffer_clear((void *)taddress, 4096);
 
     header->ntables++;
 
-    return address;
+    return taddress;
 
 }
 
-static void map(unsigned int directory, struct mmap_header *header, struct mmap_entry *entry)
+static void map(unsigned int directory, struct mmap_header *header, unsigned int vaddress, unsigned int paddress, unsigned int flags)
+{
+
+    if (!mmu_gettable(directory, vaddress))
+    {
+
+        unsigned int taddress = addtable(header, directory, vaddress);
+
+        maptable(directory, vaddress, taddress, flags);
+
+    }
+
+    mappage(directory, vaddress, paddress, flags);
+
+}
+
+static void mapfull(unsigned int directory, struct mmap_header *header, struct mmap_entry *entry)
 {
 
     unsigned int i;
 
     for (i = 0; i < entry->size; i += MMU_PAGESIZE)
-    {
-
-        unsigned int p = entry->paddress + i;
-        unsigned int v = entry->vaddress + i;
-
-        if (!mmu_gettable(directory, v))
-        {
-
-            unsigned int taddress = addtable(header, directory, v);
-
-            maptable(directory, v, taddress, entry->flags);
-
-        }
-
-        mappage(directory, v, p, entry->flags);
-
-    }
+        map(directory, header, entry->vaddress + i, entry->paddress + i, entry->flags);
 
 }
 
@@ -159,7 +159,7 @@ static void mapping_loadmmap(struct mapping *mapping)
 
     header->nentries++;
 
-    map(mapping->directory, header, entry);
+    mapfull(mapping->directory, header, entry);
 
 }
 
@@ -267,7 +267,7 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 
     header->nentries++;
 
-    map(mappings[0].directory, header, entry);
+    mapfull(mappings[0].directory, header, entry);
 
 }
 
@@ -281,7 +281,7 @@ void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 
     header->nentries++;
 
-    map(mmu_getdirectory(), header, entry);
+    mapfull(mmu_getdirectory(), header, entry);
 
 }
 
@@ -455,7 +455,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (entry && entry->size)
         {
 
-            map(mmu_getdirectory(), header, entry);
+            mapfull(mmu_getdirectory(), header, entry);
 
             switch (entry->type)
             {
@@ -489,7 +489,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (entry && entry->size)
         {
 
-            map(mmu_getdirectory(), header, entry);
+            mapfull(mmu_getdirectory(), header, entry);
 
         }
 
