@@ -455,22 +455,29 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (entry && entry->size)
         {
 
-            mapfull(mmu_getdirectory(), header, entry);
-
             switch (entry->type)
             {
 
+            case MMAP_TYPE_NONE:
+                mapfull(mmu_getdirectory(), header, entry);
+
+                break;
+
             case MMAP_TYPE_COW:
+                mapfull(mmu_getdirectory(), header, entry);
                 buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
 
                 break;
 
             case MMAP_TYPE_ZERO:
+                mapfull(mmu_getdirectory(), header, entry);
                 buffer_clear((void *)entry->vaddress, entry->size);
 
                 break;
 
             case MMAP_TYPE_IOCOW:
+                mapfull(mmu_getdirectory(), header, entry);
+
                 if (entry->iofsize)
                     buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
 
@@ -489,7 +496,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (entry && entry->size)
         {
 
-            mapfull(mmu_getdirectory(), header, entry);
+            switch (entry->type)
+            {
+
+            case MMAP_TYPE_NONE:
+                mapfull(mmu_getdirectory(), header, entry);
+
+                break;
+
+            }
 
         }
 
