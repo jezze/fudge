@@ -445,63 +445,55 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     if (type & 0x04)
     {
 
-        struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-        struct mmap_entry *entry = mmap_find(header, vaddress);
         unsigned int directory = mmu_getdirectory();
+        unsigned int table = mmu_gettable(mappings[0].directory, vaddress);
 
         DEBUG_FMT2(DEBUG_INFO, "#PF %u 0x%H8u", &type, &vaddress);
 
-        if (entry && entry->size)
+        if (table)
         {
 
-            switch (entry->type)
-            {
-
-            case MMAP_TYPE_NONE:
-                mapfull(directory, header, entry);
-
-                break;
-
-            case MMAP_TYPE_COW:
-                mapfull(directory, header, entry);
-                buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
-
-                break;
-
-            case MMAP_TYPE_ZERO:
-                mapfull(directory, header, entry);
-                buffer_clear((void *)entry->vaddress, entry->size);
-
-                break;
-
-            case MMAP_TYPE_IOCOW:
-                mapfull(directory, header, entry);
-
-                if (entry->iofsize)
-                    buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
-
-                if (entry->iomsize > entry->iofsize)
-                    buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
-
-                break;
-
-            }
+            mmu_settable(directory, vaddress, table);
 
         }
 
         else
         {
 
-            struct mmap_entry *kentry = mmap_find((struct mmap_header *)ARCH_MMAPADDRESS, vaddress);
+            struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
+            struct mmap_entry *entry = mmap_find(header, vaddress);
 
-            if (kentry && kentry->size)
+            if (entry && entry->size)
             {
 
-                switch (kentry->type)
+                switch (entry->type)
                 {
 
                 case MMAP_TYPE_NONE:
-                    mapfull(directory, header, kentry);
+                    mapfull(directory, header, entry);
+
+                    break;
+
+                case MMAP_TYPE_COW:
+                    mapfull(directory, header, entry);
+                    buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
+
+                    break;
+
+                case MMAP_TYPE_ZERO:
+                    mapfull(directory, header, entry);
+                    buffer_clear((void *)entry->vaddress, entry->size);
+
+                    break;
+
+                case MMAP_TYPE_IOCOW:
+                    mapfull(directory, header, entry);
+
+                    if (entry->iofsize)
+                        buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
+
+                    if (entry->iomsize > entry->iofsize)
+                        buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
 
                     break;
 
