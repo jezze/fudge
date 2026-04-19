@@ -36,7 +36,7 @@ unsigned int mmu_gettable(unsigned int directory, unsigned int vaddress)
 unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress)
 {
 
-    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & 0xFFFFF000);
+    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & ~MMU_PAGEMASK);
 
     if (t)
     {
@@ -64,21 +64,21 @@ void mmu_settable(unsigned int directory, unsigned int vaddress, unsigned int ta
     struct mmu_directory *d = (struct mmu_directory *)directory;
     unsigned int index = vaddress >> 22;
 
-    d->tables[index] = (taddress & 0xFFFFF000) | (flags & 0xFFF);
+    d->tables[index] = (taddress & ~MMU_PAGEMASK) | (flags & MMU_PAGEMASK);
 
 }
 
 void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int paddress, unsigned int flags)
 {
 
-    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & 0xFFFFF000);
+    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & ~MMU_PAGEMASK);
 
     if (t)
     {
 
         unsigned int index = (vaddress << 10) >> 22;
 
-        t->pages[index] = (paddress & 0xFFFFF000) | (flags & 0xFFF);
+        t->pages[index] = (paddress & ~MMU_PAGEMASK) | (flags & MMU_PAGEMASK);
 
     }
 
