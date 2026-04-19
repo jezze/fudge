@@ -23,27 +23,27 @@ unsigned int mmu_getdirectory(void)
 
 }
 
-unsigned int mmu_gettable(unsigned int directory, unsigned int vaddress)
+unsigned int mmu_gettable(unsigned int daddress, unsigned int vaddress)
 {
 
-    struct mmu_directory *d = (struct mmu_directory *)directory;
+    struct mmu_directory *directory = (struct mmu_directory *)daddress;
     unsigned int index = vaddress >> 22;
 
-    return d->tables[index];
+    return directory->tables[index];
 
 }
 
-unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress)
+unsigned int mmu_getpage(unsigned int daddress, unsigned int vaddress)
 {
 
-    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & ~MMU_PAGEMASK);
+    struct mmu_table *table = (struct mmu_table *)(mmu_gettable(daddress, vaddress) & ~MMU_PAGEMASK);
 
-    if (t)
+    if (table)
     {
 
         unsigned int index = (vaddress << 10) >> 22;
 
-        return t->pages[index];
+        return table->pages[index];
 
     }
 
@@ -51,34 +51,34 @@ unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress)
 
 }
 
-void mmu_setdirectory(unsigned int directory)
+void mmu_setdirectory(unsigned int daddress)
 {
 
-    cpu_setcr3(directory);
+    cpu_setcr3(daddress);
 
 }
 
-void mmu_settable(unsigned int directory, unsigned int vaddress, unsigned int taddress, unsigned int flags)
+void mmu_settable(unsigned int daddress, unsigned int vaddress, unsigned int taddress, unsigned int flags)
 {
 
-    struct mmu_directory *d = (struct mmu_directory *)directory;
+    struct mmu_directory *directory = (struct mmu_directory *)daddress;
     unsigned int index = vaddress >> 22;
 
-    d->tables[index] = (taddress & ~MMU_PAGEMASK) | (flags & MMU_PAGEMASK);
+    directory->tables[index] = (taddress & ~MMU_PAGEMASK) | (flags & MMU_PAGEMASK);
 
 }
 
-void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int paddress, unsigned int flags)
+void mmu_setpage(unsigned int daddress, unsigned int vaddress, unsigned int paddress, unsigned int flags)
 {
 
-    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & ~MMU_PAGEMASK);
+    struct mmu_table *table = (struct mmu_table *)(mmu_gettable(daddress, vaddress) & ~MMU_PAGEMASK);
 
-    if (t)
+    if (table)
     {
 
         unsigned int index = (vaddress << 10) >> 22;
 
-        t->pages[index] = (paddress & ~MMU_PAGEMASK) | (flags & MMU_PAGEMASK);
+        table->pages[index] = (paddress & ~MMU_PAGEMASK) | (flags & MMU_PAGEMASK);
 
     }
 

@@ -32,10 +32,10 @@
 #define MMU_EFLAG_SGX                   0x8000
 
 unsigned int mmu_getdirectory(void);
-unsigned int mmu_gettable(unsigned int directory, unsigned int vaddress);
-unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress);
-void mmu_setdirectory(unsigned int directory);
-void mmu_settable(unsigned int directory, unsigned int vaddress, unsigned int taddress, unsigned int flags);
-void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int paddress, unsigned int flags);
+unsigned int mmu_gettable(unsigned int daddress, unsigned int vaddress);
+unsigned int mmu_getpage(unsigned int daddress, unsigned int vaddress);
+void mmu_setdirectory(unsigned int daddress);
+void mmu_settable(unsigned int daddress, unsigned int vaddress, unsigned int taddress, unsigned int flags);
+void mmu_setpage(unsigned int daddress, unsigned int vaddress, unsigned int paddress, unsigned int flags);
 void mmu_enable(void);
 void mmu_disable(void);
