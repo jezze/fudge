@@ -4,6 +4,7 @@
 #define DEBUG_FMT3(l, s, a1, a2, a3)        debug_fmt3(l, s, a1, a2, a3, __FILE__, __LINE__)
 #define DEBUG_FMT4(l, s, a1, a2, a3, a4)    debug_fmt4(l, s, a1, a2, a3, a4, __FILE__, __LINE__)
 #define DEBUG_ASSERT(l, t)                  debug_assert(l, t, __FILE__, __LINE__)
+#define DEBUG_NONE                      0
 #define DEBUG_CRITICAL                  1
 #define DEBUG_ERROR                     2
 #define DEBUG_WARNING                   3

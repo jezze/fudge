@@ -261,34 +261,34 @@ static void debugpagefault(unsigned int error)
 {
 
     if (error & MMU_EFLAG_PRESENT)
-        DEBUG_FMT0(DEBUG_INFO, "Page protection");
+        DEBUG_FMT0(DEBUG_NONE, "Page protection");
     else
-        DEBUG_FMT0(DEBUG_INFO, "Non-present page");
+        DEBUG_FMT0(DEBUG_NONE, "Non-present page");
 
     if (error & MMU_EFLAG_RW)
-        DEBUG_FMT0(DEBUG_INFO, "Write access violation");
+        DEBUG_FMT0(DEBUG_NONE, "Write access violation");
     else
-        DEBUG_FMT0(DEBUG_INFO, "Read access violation");
+        DEBUG_FMT0(DEBUG_NONE, "Read access violation");
 
     if (error & MMU_EFLAG_USER)
-        DEBUG_FMT0(DEBUG_INFO, "Ring 3");
+        DEBUG_FMT0(DEBUG_NONE, "Ring 3");
     else
-        DEBUG_FMT0(DEBUG_INFO, "Ring 0");
+        DEBUG_FMT0(DEBUG_NONE, "Ring 0");
 
     if (error & MMU_EFLAG_RESERVED)
-        DEBUG_FMT0(DEBUG_INFO, "Reserved");
+        DEBUG_FMT0(DEBUG_NONE, "Reserved");
 
     if (error & MMU_EFLAG_INSTRUCTION)
-        DEBUG_FMT0(DEBUG_INFO, "No-Execute");
+        DEBUG_FMT0(DEBUG_NONE, "No-Execute");
 
     if (error & MMU_EFLAG_PROTECTIONKEY)
-        DEBUG_FMT0(DEBUG_INFO, "Protection key");
+        DEBUG_FMT0(DEBUG_NONE, "Protection key");
 
     if (error & MMU_EFLAG_SHADOWSTACK)
-        DEBUG_FMT0(DEBUG_INFO, "Shadow stack");
+        DEBUG_FMT0(DEBUG_NONE, "Shadow stack");
 
     if (error & MMU_EFLAG_SGX)
-        DEBUG_FMT0(DEBUG_INFO, "SGX violation");
+        DEBUG_FMT0(DEBUG_NONE, "SGX violation");
 
 }
 
@@ -298,28 +298,28 @@ static void debugselector(unsigned int error)
     unsigned int index = ((error >> 3) & 0x1FFF);
 
     if (error & 0x01)
-        DEBUG_FMT0(DEBUG_INFO, "External");
+        DEBUG_FMT0(DEBUG_NONE, "External");
 
     switch ((error >> 1) & 0x03)
     {
 
     case 0:
-        DEBUG_FMT1(DEBUG_INFO, "GDT: %u", &index);
+        DEBUG_FMT1(DEBUG_NONE, "GDT: %u", &index);
 
         break;
 
     case 1:
-        DEBUG_FMT1(DEBUG_INFO, "IDT: %u", &index);
+        DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
 
         break;
 
     case 2:
-        DEBUG_FMT1(DEBUG_INFO, "LDT: %u", &index);
+        DEBUG_FMT1(DEBUG_NONE, "LDT: %u", &index);
 
         break;
 
     case 3:
-        DEBUG_FMT1(DEBUG_INFO, "IDT: %u", &index);
+        DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
 
         break;
 

@@ -51,45 +51,59 @@ static void print(unsigned int count, char *buffer, unsigned char color)
 static void debug_write(unsigned int level, unsigned int count, char *buffer, char *file, unsigned int line)
 {
 
-    char num[32];
-
-    print(cstring_write_value(num, 32, udebug_count, 16, 8, 0), num, 0x08);
-    print(1, " ", 0x08);
-    print(cstring_length(file), file, 0x07);
-    print(1, ":", 0x08);
-    print(cstring_write_value(num, 32, line, 10, 0, 0), num, 0x07);
-    print(1, "\n", 0x08);
-
-    switch (level)
+    if (level)
     {
 
-    case DEBUG_CRITICAL:
-        print(8, "CRITICAL", 0x04);
+        char num[32];
 
-        break;
+        print(cstring_write_value(num, 32, udebug_count, 16, 8, 0), num, 0x03);
+        print(1, " ", 0x08);
+        print(cstring_length(file), file, 0x0D);
+        print(1, ":", 0x0F);
+        print(cstring_write_value(num, 32, line, 10, 0, 0), num, 0x0D);
+        print(1, "\n", 0x08);
 
-    case DEBUG_ERROR:
-        print(8, "   ERROR", 0x04);
+        switch (level)
+        {
 
-        break;
+        case DEBUG_CRITICAL:
+            print(8, "CRITICAL", 0x40);
 
-    case DEBUG_WARNING:
-        print(8, " WARNING", 0x0E);
+            break;
 
-        break;
+        case DEBUG_ERROR:
+            print(8, "   ERROR", 0x40);
 
-    case DEBUG_INFO:
-        print(8, "    INFO", 0x02);
+            break;
 
-        break;
+        case DEBUG_WARNING:
+            print(8, " WARNING", 0xE0);
+
+            break;
+
+        case DEBUG_INFO:
+            print(8, "    INFO", 0x20);
+
+            break;
+
+        }
+
+        print(1, " ", 0x08);
+        print(count, buffer, 0x0F);
+        print(1, "\n", 0x08);
+
+        udebug_count++;
 
     }
 
-    print(1, " ", 0x08);
-    print(count, buffer, 0x0F);
-    print(1, "\n", 0x08);
+    else
+    {
 
-    udebug_count++;
+        print(9, "     ... ", 0x08);
+        print(count, buffer, 0x07);
+        print(1, "\n", 0x08);
+
+    }
 
 }
 
