@@ -558,7 +558,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
 
     }
 
-    return arch_resume(&general, &interrupt);
+    return interrupt.ss.value;
 
 }
 
