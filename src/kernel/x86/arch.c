@@ -78,7 +78,7 @@ static void mappage(unsigned int directory, unsigned int vaddress, unsigned int 
 
 }
 
-static unsigned int addtable(struct mmap_header *header, unsigned int directory, unsigned int vaddress)
+static unsigned int addtable(unsigned int directory, struct mmap_header *header)
 {
 
     unsigned int taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
@@ -97,7 +97,7 @@ static void map(unsigned int directory, struct mmap_header *header, unsigned int
     if (!mmu_gettable(directory, vaddress))
     {
 
-        unsigned int taddress = addtable(header, directory, vaddress);
+        unsigned int taddress = addtable(directory, header);
 
         maptable(directory, vaddress, taddress, flags);
 
@@ -528,7 +528,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
                 if (entry && entry->size)
                 {
 
-                    unsigned int taddress = addtable(header, directory, vaddress);
+                    unsigned int taddress = addtable(directory, header);
 
                     maptable(directory, vaddress, taddress, entry->flags);
 
