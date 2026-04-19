@@ -1,3 +1,5 @@
+#define MMU_PDSIZE                      0x1000
+#define MMU_PTSIZE                      0x1000
 #define MMU_PAGESIZE                    0x1000
 #define MMU_PAGEMASK                    (MMU_PAGESIZE - 1)
 #define MMU_TABLES                      1024

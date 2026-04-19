@@ -30,7 +30,7 @@ static void mapping_clear(struct mapping *mapping)
 {
 
     mmap_initheader((struct mmap_header *)mapping->mmap);
-    buffer_clear((void *)mapping->directory, 4096);
+    buffer_clear((void *)mapping->directory, MMU_PDSIZE);
 
 }
 
@@ -38,7 +38,7 @@ static void mapping_copy(struct mapping *mapping, struct mapping *from)
 {
 
     mmap_initheader((struct mmap_header *)mapping->mmap);
-    buffer_copy((void *)mapping->directory, (void *)from->directory, 4096);
+    buffer_copy((void *)mapping->directory, (void *)from->directory, MMU_PDSIZE);
 
 }
 
@@ -81,9 +81,9 @@ static void mappage(unsigned int directory, unsigned int vaddress, unsigned int 
 static unsigned int addtable(struct mmap_header *header, unsigned int directory, unsigned int vaddress)
 {
 
-    unsigned int taddress = directory + 4096 + header->ntables * 4096;
+    unsigned int taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
 
-    buffer_clear((void *)taddress, 4096);
+    buffer_clear((void *)taddress, MMU_PTSIZE);
 
     header->ntables++;
 
