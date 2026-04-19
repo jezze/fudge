@@ -33,24 +33,10 @@ unsigned int mmu_gettable(unsigned int directory, unsigned int vaddress)
 
 }
 
-unsigned int mmu_gettableaddress(unsigned int directory, unsigned int vaddress)
-{
-
-    return mmu_gettable(directory, vaddress) & ~MMU_PAGEMASK;
-
-}
-
-unsigned int mmu_gettableflags(unsigned int directory, unsigned int vaddress)
-{
-
-    return mmu_gettable(directory, vaddress) & MMU_PAGEMASK;
-
-}
-
 unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress)
 {
 
-    struct mmu_table *t = (struct mmu_table *)mmu_gettableaddress(directory, vaddress);
+    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & 0xFFFFF000);
 
     if (t)
     {
@@ -65,20 +51,6 @@ unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress)
 
 }
 
-unsigned int mmu_getpageaddress(unsigned int directory, unsigned int vaddress)
-{
-
-    return mmu_getpage(directory, vaddress) & ~MMU_PAGEMASK;
-
-}
-
-unsigned int mmu_getpageflags(unsigned int directory, unsigned int vaddress)
-{
-
-    return mmu_getpage(directory, vaddress) & MMU_PAGEMASK;
-
-}
-
 void mmu_setdirectory(unsigned int directory)
 {
 
@@ -86,89 +58,27 @@ void mmu_setdirectory(unsigned int directory)
 
 }
 
-void mmu_settable(unsigned int directory, unsigned int vaddress, unsigned int value)
+void mmu_settable(unsigned int directory, unsigned int vaddress, unsigned int taddress, unsigned int flags)
 {
 
     struct mmu_directory *d = (struct mmu_directory *)directory;
     unsigned int index = vaddress >> 22;
 
-    d->tables[index] = value;
+    d->tables[index] = (taddress & 0xFFFFF000) | (flags & 0xFFF);
 
 }
 
-void mmu_settableaddress(unsigned int directory, unsigned int vaddress, unsigned int address)
+void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int paddress, unsigned int flags)
 {
 
-    mmu_settable(directory, vaddress, address | mmu_gettableflags(directory, vaddress));
-
-}
-
-void mmu_settableflags(unsigned int directory, unsigned int vaddress, unsigned int flags)
-{
-
-    mmu_settable(directory, vaddress, mmu_gettableaddress(directory, vaddress) | flags);
-
-}
-
-void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int value)
-{
-
-    struct mmu_table *t = (struct mmu_table *)mmu_gettableaddress(directory, vaddress);
+    struct mmu_table *t = (struct mmu_table *)(mmu_gettable(directory, vaddress) & 0xFFFFF000);
 
     if (t)
     {
 
         unsigned int index = (vaddress << 10) >> 22;
 
-        t->pages[index] = value;
-
-    }
-
-}
-
-void mmu_setpageaddress(unsigned int directory, unsigned int vaddress, unsigned int address)
-{
-
-    mmu_setpage(directory, vaddress, address | mmu_getpageflags(directory, vaddress));
-
-}
-
-void mmu_setpageflags(unsigned int directory, unsigned int vaddress, unsigned int flags)
-{
-
-    mmu_setpage(directory, vaddress, mmu_getpageaddress(directory, vaddress) | flags);
-
-}
-
-void mmu_setflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < size; i += MMU_PAGESIZE)
-    {
-
-        unsigned int v = vaddress + i;
-
-        mmu_settableflags(directory, v, tflags);
-        mmu_setpageflags(directory, v, pflags);
-
-    }
-
-}
-
-void mmu_addflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < size; i += MMU_PAGESIZE)
-    {
-
-        unsigned int v = vaddress + i;
-
-        mmu_settableflags(directory, v, mmu_gettableflags(directory, v) | tflags);
-        mmu_setpageflags(directory, v, mmu_getpageflags(directory, v) | pflags);
+        t->pages[index] = (paddress & 0xFFFFF000) | (flags & 0xFFF);
 
     }
 

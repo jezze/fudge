@@ -56,7 +56,7 @@ static void maptable(unsigned int directory, unsigned int vaddress, unsigned int
     if (flags & MMAP_FLAG_WRITETHROUGH)
         tflags |= MMU_TFLAG_WRITETHROUGH;
 
-    mmu_settable(directory, vaddress, taddress | tflags);
+    mmu_settable(directory, vaddress, taddress, tflags);
 
 }
 
@@ -74,7 +74,7 @@ static void mappage(unsigned int directory, unsigned int vaddress, unsigned int 
     if (flags & MMAP_FLAG_WRITETHROUGH)
         pflags |= MMU_PFLAG_WRITETHROUGH;
 
-    mmu_setpage(directory, vaddress, paddress | pflags);
+    mmu_setpage(directory, vaddress, paddress, pflags);
 
 }
 
@@ -455,7 +455,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
         if (ktable & MMU_TFLAG_PRESENT)
         {
 
-            mmu_settable(directory, vaddress, ktable);
+            mmu_settable(directory, vaddress, ktable, ktable);
 
         }
 

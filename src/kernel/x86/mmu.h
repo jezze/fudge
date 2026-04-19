@@ -33,19 +33,9 @@
 
 unsigned int mmu_getdirectory(void);
 unsigned int mmu_gettable(unsigned int directory, unsigned int vaddress);
-unsigned int mmu_gettableaddress(unsigned int directory, unsigned int vaddress);
-unsigned int mmu_gettableflags(unsigned int directory, unsigned int vaddress);
 unsigned int mmu_getpage(unsigned int directory, unsigned int vaddress);
-unsigned int mmu_getpageaddress(unsigned int directory, unsigned int vaddress);
-unsigned int mmu_getpageflags(unsigned int directory, unsigned int vaddress);
 void mmu_setdirectory(unsigned int directory);
-void mmu_settable(unsigned int directory, unsigned int vaddress, unsigned int value);
-void mmu_settableaddress(unsigned int directory, unsigned int vaddress, unsigned int address);
-void mmu_settableflags(unsigned int directory, unsigned int vaddress, unsigned int flags);
-void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int value);
-void mmu_setpageaddress(unsigned int directory, unsigned int vaddress, unsigned int address);
-void mmu_setpageflags(unsigned int directory, unsigned int vaddress, unsigned int flags);
-void mmu_setflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
-void mmu_addflagrange(unsigned int directory, unsigned int vaddress, unsigned int size, unsigned int tflags, unsigned int pflags);
+void mmu_settable(unsigned int directory, unsigned int vaddress, unsigned int taddress, unsigned int flags);
+void mmu_setpage(unsigned int directory, unsigned int vaddress, unsigned int paddress, unsigned int flags);
 void mmu_enable(void);
 void mmu_disable(void);
