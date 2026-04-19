@@ -35,7 +35,7 @@ struct tss_descriptor_segment
 struct tss_descriptor
 {
 
-    unsigned int previous;
+    unsigned int link;
     struct tss_descriptor_ring ring0;
     struct tss_descriptor_ring ring1;
     struct tss_descriptor_ring ring2;

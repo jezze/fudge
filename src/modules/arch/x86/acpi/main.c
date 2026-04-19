@@ -86,8 +86,6 @@ void module_init(void)
                 struct acpi_rsdt *rsdt = (struct acpi_rsdt *)address;
 
                 arch_kmap(address, address, 0x00010000, MMAP_FLAG_WRITEABLE);
-                /* Remove this mapping. Should not be needed. */
-                arch_umap(address, address, 0x00010000, MMAP_FLAG_WRITEABLE);
 
                 if (validate(rsdt, rsdt->base.length))
                     sdt = address;
@@ -108,8 +106,6 @@ void module_init(void)
                 struct acpi_xsdt *xsdt = (struct acpi_xsdt *)address;
 
                 arch_kmap(address, address, 0x00010000, MMAP_FLAG_WRITEABLE);
-                /* Remove this mapping. Should not be needed. */
-                arch_umap(address, address, 0x00010000, MMAP_FLAG_WRITEABLE);
 
                 if (validate(xsdt, xsdt->base.length))
                     sdt = address;

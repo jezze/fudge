@@ -341,20 +341,6 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 
 }
 
-void arch_umap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags)
-{
-
-    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-    struct mmap_entry *entry = &header->entries[header->nentries];
-
-    mmap_initentry(entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
-
-    header->nentries++;
-
-    mapfull(mmu_getdirectory(), header, entry);
-
-}
-
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt)
 {
 
@@ -629,10 +615,29 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
     else
     {
 
-        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-        debugpagefault(error);
+        unsigned int directory = mmu_getdirectory();
+        unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
 
-        for (;;);
+        if (ktable & MMU_TFLAG_PRESENT)
+        {
+
+            mmu_settable(directory, vaddress, ktable, ktable);
+
+        }
+
+        else
+        {
+
+            DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+            debugpagefault(error);
+
+            for (;;);
+
+        }
+
+        /* I do not know why I need to do this */
+        interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
+        interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
 
     }
 

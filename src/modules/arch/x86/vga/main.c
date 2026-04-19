@@ -194,8 +194,6 @@ static void driver_init(unsigned int id)
     videointerface.height = 25;
     videointerface.bpp = 2;
 
-    clear(0);
-
 }
 
 static unsigned int driver_match(unsigned int id)
