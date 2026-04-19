@@ -100,6 +100,13 @@ struct acpi_srat
 
 };
 
+struct acpi_rsdt
+{
+
+    struct acpi_sdth base;
+
+};
+
 struct acpi_rsdp
 {
 
@@ -108,6 +115,13 @@ struct acpi_rsdp
     unsigned char oem[6];
     unsigned char revision;
     unsigned char rsdt[4];
+
+};
+
+struct acpi_xsdt
+{
+
+    struct acpi_sdth base;
 
 };
 
