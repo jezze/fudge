@@ -257,6 +257,76 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
 }
 
+static void debugpagefault(unsigned int error)
+{
+
+    if (error & MMU_EFLAG_PRESENT)
+        DEBUG_FMT0(DEBUG_INFO, "Page protection");
+    else
+        DEBUG_FMT0(DEBUG_INFO, "Non-present page");
+
+    if (error & MMU_EFLAG_RW)
+        DEBUG_FMT0(DEBUG_INFO, "Write access violation");
+    else
+        DEBUG_FMT0(DEBUG_INFO, "Read access violation");
+
+    if (error & MMU_EFLAG_USER)
+        DEBUG_FMT0(DEBUG_INFO, "Ring 3");
+    else
+        DEBUG_FMT0(DEBUG_INFO, "Ring 0");
+
+    if (error & MMU_EFLAG_RESERVED)
+        DEBUG_FMT0(DEBUG_INFO, "Reserved");
+
+    if (error & MMU_EFLAG_INSTRUCTION)
+        DEBUG_FMT0(DEBUG_INFO, "No-Execute");
+
+    if (error & MMU_EFLAG_PROTECTIONKEY)
+        DEBUG_FMT0(DEBUG_INFO, "Protection key");
+
+    if (error & MMU_EFLAG_SHADOWSTACK)
+        DEBUG_FMT0(DEBUG_INFO, "Shadow stack");
+
+    if (error & MMU_EFLAG_SGX)
+        DEBUG_FMT0(DEBUG_INFO, "SGX violation");
+
+}
+
+static void debugselector(unsigned int error)
+{
+
+    unsigned int index = ((error >> 3) & 0x1FFF);
+
+    if (error & 0x01)
+        DEBUG_FMT0(DEBUG_INFO, "External");
+
+    switch ((error >> 1) & 0x03)
+    {
+
+    case 0:
+        DEBUG_FMT1(DEBUG_INFO, "GDT: %u", &index);
+
+        break;
+
+    case 1:
+        DEBUG_FMT1(DEBUG_INFO, "IDT: %u", &index);
+
+        break;
+
+    case 2:
+        DEBUG_FMT1(DEBUG_INFO, "LDT: %u", &index);
+
+        break;
+
+    case 3:
+        DEBUG_FMT1(DEBUG_INFO, "IDT: %u", &index);
+
+        break;
+
+    }
+
+}
+
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags)
 {
 
@@ -401,55 +471,60 @@ unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, s
 
 }
 
-unsigned short arch_tss(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
+unsigned short arch_tss(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#TS %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#TS %u", &error);
+    debugselector(error);
 
     return arch_resume(&general, &interrupt);
 
 }
 
-unsigned short arch_segment(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
+unsigned short arch_segment(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#NP %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#NP %u", &error);
+    debugselector(error);
 
     return arch_resume(&general, &interrupt);
 
 }
 
-unsigned short arch_stack(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
+unsigned short arch_stack(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#SS %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#SS %u", &error);
+    debugselector(error);
 
     return arch_resume(&general, &interrupt);
 
 }
 
-unsigned short arch_generalfault(struct cpu_general general, unsigned int selector, struct cpu_interrupt interrupt)
+unsigned short arch_generalfault(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#GP %u", &selector);
+    DEBUG_FMT1(DEBUG_ERROR, "#GP %u", &error);
+    debugselector(error);
 
     return arch_resume(&general, &interrupt);
 
 }
 
-unsigned short arch_pagefault(struct cpu_general general, unsigned int type, struct cpu_interrupt interrupt)
+unsigned short arch_pagefault(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
     unsigned int vaddress = cpu_getcr2();
 
-    if (type & 0x04)
+    if (error & MMU_EFLAG_USER)
     {
 
         unsigned int directory = mmu_getdirectory();
         unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
 
         /*
-        DEBUG_FMT2(DEBUG_INFO, "#PF %u 0x%H8u", &type, &vaddress);
+        DEBUG_FMT2(DEBUG_INFO, "#PF %u 0x%H8u", &error, &vaddress);
+        debugpagefault(error);
         */
 
         if (ktable & MMU_TFLAG_PRESENT)
@@ -511,7 +586,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
                 else
                 {
 
-                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &type, &vaddress);
+                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                    debugpagefault(error);
 
                     for (;;);
 
@@ -537,7 +613,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
                 else
                 {
 
-                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &type, &vaddress);
+                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                    debugpagefault(error);
 
                     for (;;);
 
@@ -552,7 +629,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int type, str
     else
     {
 
-        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &type, &vaddress);
+        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+        debugpagefault(error);
 
         for (;;);
 
