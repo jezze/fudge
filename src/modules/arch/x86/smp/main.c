@@ -46,14 +46,7 @@ static void enable(void)
 static struct core *coreget(void)
 {
 
-    unsigned int directory = cpu_getcr3();
-    unsigned int id;
-
-    cpu_setcr3(ARCH_MMUKERNELADDRESS);
-
-    id = apic_getid();
-
-    cpu_setcr3(directory);
+    unsigned int id = apic_getid();
 
     return &corerows[id].core;
 
@@ -68,16 +61,12 @@ static void coreassign(struct list_item *item)
 
         struct list_item *coreitem = corelist.head;
         struct core *core = coreitem->data;
-        unsigned int directory = cpu_getcr3();
 
         list_move_unsafe(&corelist, &corelist, coreitem);
         list_add(&core->tasks, item);
-        cpu_setcr3(ARCH_MMUKERNELADDRESS);
 
         if (core->id != apic_getid())
             apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
-
-        cpu_setcr3(directory);
 
     }
 
@@ -109,7 +98,7 @@ void smp_setupap(unsigned int stack)
     unsigned int id;
     struct corerow *corerow;
 
-    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+    mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
 
     id = apic_getid();
