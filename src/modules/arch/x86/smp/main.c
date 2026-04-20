@@ -33,8 +33,6 @@ static void enable(void)
             if (i == id)
                 continue;
 
-            DEBUG_FMT1(DEBUG_INFO, "enable processor id %u", &i);
-
             apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
             pit_wait(10);
             apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
@@ -94,9 +92,6 @@ static void smp_setupbp(unsigned int stack)
     unsigned int id = apic_getid();
     struct corerow *corerow = &corerows[id];
 
-    DEBUG_FMT1(DEBUG_INFO, "bp id %u", &id);
-    DEBUG_FMT1(DEBUG_INFO, "bp stack 0x%H8u", &stack);
-
     core_init(&corerow->core, id, stack);
     core_register(&corerow->core);
     core_migrate(&corerow->core, core0);
@@ -119,9 +114,6 @@ void smp_setupap(unsigned int stack)
 
     id = apic_getid();
     corerow = &corerows[id];
-
-    DEBUG_FMT1(DEBUG_INFO, "ap id %u", &id);
-    DEBUG_FMT1(DEBUG_INFO, "ap stack 0x%H8u", &stack);
 
     core_init(&corerow->core, id, stack);
     core_register(&corerow->core);

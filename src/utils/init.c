@@ -57,7 +57,7 @@ static unsigned int spawnwm(unsigned int ichannel)
 
 }
 
-static char *modules[35] = {
+static char *modules[36] = {
     "initrd:kernel/base.ko",
     "initrd:kernel/log.ko",
     "initrd:kernel/block.ko",
@@ -92,13 +92,14 @@ static char *modules[35] = {
     "initrd:kernel/ahci.ko",
     "initrd:kernel/nvme.ko",
     "initrd:kernel/ata.ko",
-    "initrd:kernel/virtio-network.ko"
+    "initrd:kernel/virtio-network.ko",
+    "initrd:kernel/smp.ko"
 };
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    loadmodules(1, 35, modules);
+    loadmodules(1, 36, modules);
     spawnshell(1);
     spawnwm(1);
 
