@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <abi.h>
-#include <hash.h>
 
 extern void init(void);
 
@@ -54,35 +53,6 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
             channel_send_fmt1(0, source, EVENT_ERROR, "Unrecognized option: %s\n", key);
 
     }
-
-}
-
-unsigned int lookup(char *name)
-{
-
-    unsigned int length = cstring_length(name);
-    unsigned int offset = buffer_eachbyte(name, length, ':', 0);
-
-    if (offset > 0)
-    {
-
-        unsigned int namehash = djb_hash(offset - 1, name);
-        unsigned int index = name[offset] - '0';
-
-        return call_find(namehash, index);
-
-    }
-
-    else
-    {
-
-        unsigned int namehash = djb_hash(length, name);
-
-        return call_find(namehash, 0);
-
-    }
-
-    return 0;
 
 }
 

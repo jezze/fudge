@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include "call.h"
 #include "channel.h"
 
@@ -312,6 +313,35 @@ unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, uns
             return message.event;
 
         }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int channel_lookup(char *name)
+{
+
+    unsigned int length = cstring_length(name);
+    unsigned int offset = buffer_eachbyte(name, length, ':', 0);
+
+    if (offset > 0)
+    {
+
+        unsigned int namehash = djb_hash(offset - 1, name);
+        unsigned int index = name[offset] - '0';
+
+        return call_find(namehash, index);
+
+    }
+
+    else
+    {
+
+        unsigned int namehash = djb_hash(length, name);
+
+        return call_find(namehash, 0);
 
     }
 

@@ -346,7 +346,7 @@ static void complete(void)
 static void onerror(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int wm = lookup(option_getstring("wm-service"));
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
     print("[ERROR] ", 8);
     print(mdata, msize);
@@ -357,7 +357,7 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int wm = lookup(option_getstring("wm-service"));
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
     channel_send(0, wm, EVENT_WMMAP);
 

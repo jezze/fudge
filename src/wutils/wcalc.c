@@ -84,7 +84,7 @@ static void updatevalue(unsigned int wm, int value)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int wm = lookup(option_getstring("wm-service"));
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
     channel_send(0, wm, EVENT_WMMAP);
 

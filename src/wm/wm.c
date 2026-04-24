@@ -589,9 +589,9 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int keyboard = lookup(option_getstring("keyboard-service"));
-    unsigned int mouse = lookup(option_getstring("mouse-service"));
-    unsigned int video = lookup(option_getstring("video-service"));
+    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
+    unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
+    unsigned int video = channel_lookup(option_getstring("video-service"));
 
     call_announce(0, djb_hash(2, "wm"));
     channel_send(0, keyboard, EVENT_LINK);
