@@ -47,6 +47,9 @@ static void maptable(unsigned int directory, unsigned int vaddress, unsigned int
 
     unsigned int tflags = MMU_TFLAG_PRESENT;
 
+    if (flags & MMAP_FLAG_GLOBAL)
+        tflags |= MMU_TFLAG_GLOBAL;
+
     if (flags & MMAP_FLAG_USERMODE)
         tflags |= MMU_TFLAG_USERMODE;
 
@@ -64,6 +67,9 @@ static void mappage(unsigned int directory, unsigned int vaddress, unsigned int 
 {
 
     unsigned int pflags = MMU_PFLAG_PRESENT;
+
+    if (flags & MMAP_FLAG_GLOBAL)
+        pflags |= MMU_PFLAG_GLOBAL;
 
     if (flags & MMAP_FLAG_USERMODE)
         pflags |= MMU_PFLAG_USERMODE;
@@ -734,12 +740,11 @@ void arch_setup1(void)
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     setupmappings();
     mapping_clear(&mappings[0]);
-    arch_kmap(0x00000000, 0x00000000, 0x00800000, MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES, MMAP_FLAG_WRITEABLE);
-    arch_kmap(mappings[0].mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
+    arch_kmap(0x00000000, 0x00000000, 0x00800000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MAILBOX_SIZE * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     mmu_setdirectory(mappings[0].directory);
     mmu_enable();
     mailbox_setup();

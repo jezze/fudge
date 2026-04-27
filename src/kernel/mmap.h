@@ -4,9 +4,10 @@
 #define MMAP_TYPE_COW                   1
 #define MMAP_TYPE_ZERO                  2
 #define MMAP_TYPE_IOCOW                 3
-#define MMAP_FLAG_USERMODE              0x01
-#define MMAP_FLAG_WRITEABLE             0x02
-#define MMAP_FLAG_WRITETHROUGH          0x04
+#define MMAP_FLAG_GLOBAL                0x01
+#define MMAP_FLAG_USERMODE              0x02
+#define MMAP_FLAG_WRITEABLE             0x04
+#define MMAP_FLAG_WRITETHROUGH          0x08
 
 struct mmap_entry
 {

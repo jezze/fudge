@@ -85,7 +85,7 @@ void module_init(void)
                 unsigned int address = (rsdp->rsdt[0] << 0) | (rsdp->rsdt[1] << 8) | (rsdp->rsdt[2] << 16) | (rsdp->rsdt[3] << 24);
                 struct acpi_rsdt *rsdt = (struct acpi_rsdt *)address;
 
-                arch_kmap(address, address, 0x00010000, MMAP_FLAG_WRITEABLE);
+                arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
                 if (validate(rsdt, rsdt->base.length))
                     sdt = address;
