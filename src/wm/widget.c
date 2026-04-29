@@ -81,6 +81,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_SPACING:
+        widget->attributes.spacing = attr_update(ATTR_SPACING, value, widget->attributes.spacing);
+
+        break;
+
     case ATTR_SPAN:
         widget->attributes.span = attr_update(ATTR_SPAN, value, widget->attributes.span);
 
@@ -122,6 +127,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_OVERFLOW, 0);
     widget_setattribute(widget, ATTR_PADDING, 0);
     widget_setattribute(widget, ATTR_SOURCE, 0);
+    widget_setattribute(widget, ATTR_SPACING, 0);
     widget_setattribute(widget, ATTR_SPAN, 0);
     widget_setattribute(widget, ATTR_VALIGN, 0);
     widget_setattribute(widget, ATTR_WEIGHT, 0);
@@ -328,6 +334,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->onclick = 0;
     attributes->overflow = ATTR_OVERFLOW_NONE;
     attributes->padding = 0;
+    attributes->spacing = 0;
     attributes->span = 0;
     attributes->source = 0;
     attributes->valign = ATTR_VALIGN_TOP;

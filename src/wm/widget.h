@@ -34,6 +34,7 @@ struct widget_attributes
     unsigned int overflow;
     unsigned int padding;
     unsigned int source;
+    unsigned int spacing;
     unsigned int span;
     unsigned int valign;
     unsigned int weight;

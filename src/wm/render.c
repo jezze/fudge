@@ -86,20 +86,20 @@ static unsigned int getstretch(unsigned int flow)
 
 }
 
-static struct util_size childgetsize(struct widget *widget, struct util_size *ccsize, struct util_size *limit, struct util_position *rowstart, struct util_size *padding)
+static struct util_size childgetsize(struct widget *widget, struct util_size *ccsize, struct util_size *limit, struct util_position *rowstart, struct util_size *spacing)
 {
 
-    struct util_size climit2 = util_size(limit->w - padding->w * 2, limit->h - padding->h * 2);
+    struct util_size climit2 = util_size(limit->w - spacing->w * 2, limit->h - spacing->h * 2);
     struct util_size csize = calls[widget->type].getsize(widget, ccsize, &climit2, rowstart);
 
-    return util_size(csize.w + padding->w * 2, csize.h + padding->h * 2);
+    return util_size(csize.w + spacing->w * 2, csize.h + spacing->h * 2);
 
 }
 
 static struct util_size childrengetsize(struct widget *widget, struct util_size *limit, unsigned int direction)
 {
 
-    struct util_size padding = util_size(widget->attributes.padding * 8, widget->attributes.padding * 8);
+    struct util_size spacing = util_size(widget->attributes.spacing, widget->attributes.spacing);
     struct util_position rowstart = zeroposition;
     struct util_position offset = zeroposition;
     struct util_size total = zerosize;
@@ -111,7 +111,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         struct widget *child = current->data;
         struct util_size climit = util_size(limit->w - total.w, limit->h - total.h);
         struct util_size ccsize = childrengetsize(child, &climit, getdirection(child->attributes.flow));
-        struct util_size csize = childgetsize(child, &ccsize, &climit, &rowstart, &padding);
+        struct util_size csize = childgetsize(child, &ccsize, &climit, &rowstart, &spacing);
 
         switch (direction)
         {
@@ -183,7 +183,7 @@ static struct util_size getspan(struct widget *widget, struct util_size *limit)
 static void childrenplace(struct widget *widget, struct util_region *placement, struct util_region *clip, unsigned int direction, unsigned int stretch)
 {
 
-    struct util_size padding = util_size(widget->attributes.padding * 8, widget->attributes.padding * 8);
+    struct util_size spacing = util_size(widget->attributes.spacing, widget->attributes.spacing);
     struct util_size total = childrengetsize(widget, &placement->size, direction);
     struct util_size freesize = util_size(placement->size.w - total.w, placement->size.h - total.h);
     struct util_size span = getspan(widget, &freesize);
@@ -201,7 +201,7 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
         struct util_region cplacement;
 
         cplacement.position = cposition;
-        cplacement.size = childgetsize(child, &ccsize, &climit, &rowstart, &padding);
+        cplacement.size = childgetsize(child, &ccsize, &climit, &rowstart, &spacing);
 
         switch (direction)
         {
@@ -256,10 +256,10 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
         }
 
-        cplacement.position.x += padding.w;
-        cplacement.position.y += padding.h;
-        cplacement.size.w -= padding.w * 2;
-        cplacement.size.h -= padding.h * 2;
+        cplacement.position.x += spacing.w;
+        cplacement.position.y += spacing.h;
+        cplacement.size.w -= spacing.w * 2;
+        cplacement.size.h -= spacing.h * 2;
 
         calls[child->type].place(child, &cplacement, clip);
 

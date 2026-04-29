@@ -12,10 +12,11 @@
 #define ATTR_OVERFLOW                   12
 #define ATTR_PADDING                    13
 #define ATTR_SOURCE                     14
-#define ATTR_SPAN                       15
-#define ATTR_VALIGN                     16
-#define ATTR_WEIGHT                     17
-#define ATTR_WRAP                       18
+#define ATTR_SPACING                    15
+#define ATTR_SPAN                       16
+#define ATTR_VALIGN                     17
+#define ATTR_WEIGHT                     18
+#define ATTR_WRAP                       19
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_DISPLAY_FIXED              2
