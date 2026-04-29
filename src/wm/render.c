@@ -180,6 +180,20 @@ static struct util_size getspan(struct widget *widget, struct util_size *limit)
 
 }
 
+static void childplace(struct widget *widget, struct util_region *placement, struct util_region *clip, struct util_size *spacing)
+{
+
+    struct util_region cplacement = *placement;
+
+    cplacement.position.x += spacing->w;
+    cplacement.position.y += spacing->h;
+    cplacement.size.w -= spacing->w * 2;
+    cplacement.size.h -= spacing->h * 2;
+
+    calls[widget->type].place(widget, &cplacement, clip);
+
+}
+
 static void childrenplace(struct widget *widget, struct util_region *placement, struct util_region *clip, unsigned int direction, unsigned int stretch)
 {
 
@@ -256,12 +270,7 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
         }
 
-        cplacement.position.x += spacing.w;
-        cplacement.position.y += spacing.h;
-        cplacement.size.w -= spacing.w * 2;
-        cplacement.size.h -= spacing.h * 2;
-
-        calls[child->type].place(child, &cplacement, clip);
+        childplace(child, &cplacement, clip, &spacing);
 
         if (child->attributes.display == ATTR_DISPLAY_INLINE)
         {
