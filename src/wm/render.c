@@ -283,23 +283,15 @@ static void childrenplace(struct widget *widget, struct util_region *placement, 
 
 }
 
-static struct util_size textsize(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
+static struct util_size textsize(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct text_info info;
+    struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, rowstart->x);
 
     if (widget->attributes.display == ATTR_DISPLAY_INLINE)
     {
 
         widget->rowstart = *rowstart;
-
-    }
-
-    info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, widget->rowstart.x);
-
-    if (widget->attributes.display == ATTR_DISPLAY_INLINE)
-    {
-
         widget->rowstop = info.lastrow;
 
     }
@@ -312,7 +304,7 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *c
 {
 
     struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH * 2, CONFIG_BUTTON_PADDING_HEIGHT * 2);
-    struct util_size label = textsize(widget, csize, limit, rowstart);
+    struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size(label.w + padding.w, label.h + padding.h);
 
@@ -322,7 +314,7 @@ static struct util_size getsizechoice(struct widget *widget, struct util_size *c
 {
 
     struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH * 2, CONFIG_CHOICE_PADDING_HEIGHT * 2);
-    struct util_size label = textsize(widget, csize, limit, rowstart);
+    struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size(label.w + padding.w, label.h + padding.h);
 
@@ -369,7 +361,7 @@ static struct util_size getsizeselect(struct widget *widget, struct util_size *c
 {
 
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH * 4, CONFIG_SELECT_PADDING_HEIGHT * 2);
-    struct util_size label = textsize(widget, csize, limit, rowstart);
+    struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size(label.w + padding.w, label.h + padding.h);
 
@@ -378,7 +370,7 @@ static struct util_size getsizeselect(struct widget *widget, struct util_size *c
 static struct util_size getsizetext(struct widget *widget, struct util_size *csize, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size label = textsize(widget, csize, limit, rowstart);
+    struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size(label.w, label.h);
 
@@ -397,7 +389,7 @@ static struct util_size getsizetextbutton(struct widget *widget, struct util_siz
 {
 
     struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
-    struct util_size label = textsize(widget, csize, limit, rowstart);
+    struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size(label.w + padding.w, label.h + padding.h);
 
