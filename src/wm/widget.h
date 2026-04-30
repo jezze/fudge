@@ -59,6 +59,7 @@ struct widget
     struct util_position cursorposition;
     struct util_size cursorsize;
     struct util_region placement;
+    struct util_region cplacement;
     struct util_region clip;
     struct util_position rowstart;
     struct util_position rowstop;
