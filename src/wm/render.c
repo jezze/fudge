@@ -153,36 +153,8 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
 }
 
-static struct util_size getspan(struct widget *widget, struct util_size *limit)
+static void placewidget(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
-
-    struct list_item *current = 0;
-    unsigned int spans = 0;
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        spans += child->attributes.span;
-
-    }
-
-    return (spans) ? util_size(limit->w / spans, limit->h / spans) : zerosize;
-
-}
-
-static void place(struct widget *widget, struct util_region *placement, struct util_region *clip)
-{
-
-    unsigned int direction = getdirection(widget->attributes.flow);
-    unsigned int stretch = getstretch(widget->attributes.flow);
-    struct util_size total = zerosize;
-    struct util_size freesize = zerosize;
-    struct util_size span = zerosize;
-    struct util_position rowstart = zeroposition;
-    struct util_position offset = zeroposition;
-    struct list_item *current = 0;
 
     if (widget->attributes.display == ATTR_DISPLAY_FIXED)
     {
@@ -204,73 +176,99 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     calls[widget->type].place(widget);
 
-    total = childrengetsize(widget, &widget->cplacement.size);
-    freesize = util_size_sub(&widget->cplacement.size, total.w, total.h);
-    span = getspan(widget, &freesize);
+}
 
-    while ((current = pool_nextin(current, widget)))
+static struct util_region getplacement(struct widget *widget, struct widget *child, struct util_position *offset, struct util_position *rowstart, struct util_size *span)
+{
+
+    unsigned int stretch = getstretch(widget->attributes.flow);
+    struct util_size climit = util_size_sub(&widget->cplacement.size, offset->x, offset->y);
+    struct util_region placement;
+
+    placement.position = util_position_add(&widget->cplacement.position, offset->x, offset->y);
+    placement.size = calls[child->type].getsize(child, &climit, rowstart);
+
+    if (child->attributes.span)
     {
 
-        struct widget *child = current->data;
-        struct util_size climit = util_size_sub(&widget->cplacement.size, offset.x, offset.y);
-        struct util_region cplacement;
-
-        cplacement.position = util_position_add(&widget->cplacement.position, offset.x, offset.y);
-        cplacement.size = calls[child->type].getsize(child, &climit, &rowstart);
-
-        if (child->attributes.span)
-        {
-
-            switch (direction)
-            {
-
-            case DIRECTION_HORIZONTAL:
-                cplacement.size.w = child->attributes.span * span.w;
-
-                break;
-
-            case DIRECTION_VERTICAL:
-                cplacement.size.h = child->attributes.span * span.h;
-
-                break;
-
-            }
-
-        }
-
-        switch (stretch)
-        {
-
-        case STRETCH_HORIZONTAL:
-            cplacement.size.w = climit.w;
-
-            break;
-
-        case STRETCH_VERTICAL:
-            cplacement.size.h = climit.h;
-
-            break;
-
-        case STRETCH_BOTH:
-            cplacement.size.w = climit.w;
-            cplacement.size.h = climit.h;
-
-            break;
-
-        }
-
-        place(child, &cplacement, &widget->clip);
+        unsigned int direction = getdirection(widget->attributes.flow);
 
         switch (direction)
         {
 
         case DIRECTION_HORIZONTAL:
-            offset.x += cplacement.size.w;
+            placement.size.w = child->attributes.span * span->w;
 
             break;
 
         case DIRECTION_VERTICAL:
-            offset.y += cplacement.size.h;
+            placement.size.h = child->attributes.span * span->h;
+
+            break;
+
+        }
+
+    }
+
+    switch (stretch)
+    {
+
+    case STRETCH_HORIZONTAL:
+        placement.size.w = climit.w;
+
+        break;
+
+    case STRETCH_VERTICAL:
+        placement.size.h = climit.h;
+
+        break;
+
+    case STRETCH_BOTH:
+        placement.size.w = climit.w;
+        placement.size.h = climit.h;
+
+        break;
+
+    }
+
+    return placement;
+
+}
+
+static void place(struct widget *widget, struct util_region *placement, struct util_region *clip)
+{
+
+    unsigned int direction = getdirection(widget->attributes.flow);
+    struct util_size total = zerosize;
+    struct util_position rowstart = zeroposition;
+    struct util_position offset = zeroposition;
+    struct list_item *current = 0;
+    unsigned int spans = 0;
+
+    placewidget(widget, placement, clip);
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+        struct util_region cplacement = getplacement(widget, child, &offset, &rowstart, &zerosize);
+
+        place(child, &cplacement, &widget->clip);
+
+        spans += child->attributes.span;
+        total.w = util_clamp(util_max(total.w, child->placement.size.w + offset.x), 0, widget->cplacement.size.w);
+        total.h = util_clamp(util_max(total.h, child->placement.size.h + offset.y), 0, widget->cplacement.size.h);
+
+        switch (direction)
+        {
+
+        case DIRECTION_HORIZONTAL:
+            offset.x += child->placement.size.w;
+
+            break;
+
+        case DIRECTION_VERTICAL:
+            offset.y += child->placement.size.h;
 
             break;
 
@@ -280,6 +278,50 @@ static void place(struct widget *widget, struct util_region *placement, struct u
         {
 
             rowstart = child->rowstop;
+
+        }
+
+    }
+
+    if (spans)
+    {
+
+        struct util_size freesize = util_size_sub(&widget->cplacement.size, total.w, total.h);
+        struct util_size span = util_size(freesize.w / spans, freesize.h / spans);
+
+        rowstart = zeroposition;
+        offset = zeroposition;
+        current = 0;
+
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+            struct util_region cplacement = getplacement(widget, child, &offset, &rowstart, &span);
+
+            place(child, &cplacement, &widget->clip);
+
+            switch (direction)
+            {
+
+            case DIRECTION_HORIZONTAL:
+                offset.x += child->placement.size.w;
+
+                break;
+
+            case DIRECTION_VERTICAL:
+                offset.y += child->placement.size.h;
+
+                break;
+
+            }
+
+            if (child->attributes.display == ATTR_DISPLAY_INLINE)
+            {
+
+                rowstart = child->rowstop;
+
+            }
 
         }
 
