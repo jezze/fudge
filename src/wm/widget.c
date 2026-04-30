@@ -191,14 +191,14 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 unsigned int widget_region_intersectsx(struct widget *widget, int x)
 {
 
-    return util_intersects(x, widget->placement.position.x, widget->placement.position.x + widget->placement.size.w);
+    return util_region_intersectsx(&widget->placement, x);
 
 }
 
 unsigned int widget_region_intersectsy(struct widget *widget, int y)
 {
 
-    return util_intersects(y, widget->placement.position.y, widget->placement.position.y + widget->placement.size.h);
+    return util_region_intersectsy(&widget->placement, y);
 
 }
 
@@ -212,14 +212,14 @@ unsigned int widget_region_intersects(struct widget *widget, int x, int y)
 unsigned int widget_clip_intersectsx(struct widget *widget, int x)
 {
 
-    return util_intersects(x, widget->clip.position.x, widget->clip.position.x + widget->clip.size.w);
+    return util_region_intersectsx(&widget->clip, x);
 
 }
 
 unsigned int widget_clip_intersectsy(struct widget *widget, int y)
 {
 
-    return util_intersects(y, widget->clip.position.y, widget->clip.position.y + widget->clip.size.h);
+    return util_region_intersectsy(&widget->clip, y);
 
 }
 
@@ -233,21 +233,21 @@ unsigned int widget_clip_intersects(struct widget *widget, int x, int y)
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
-    return widget_region_intersectsx(widget, x) && widget_clip_intersectsx(widget, x);
+    return util_region_intersectsx(&widget->placement, x) && util_region_intersectsx(&widget->clip, x);
 
 }
 
 unsigned int widget_intersectsy(struct widget *widget, int y)
 {
 
-    return widget_region_intersectsy(widget, y) && widget_clip_intersectsy(widget, y);
+    return util_region_intersectsy(&widget->placement, y) && util_region_intersectsy(&widget->clip, y);
 
 }
 
 unsigned int widget_intersects(struct widget *widget, int x, int y)
 {
 
-    return widget_region_intersects(widget, x, y) && widget_clip_intersects(widget, x, y);
+    return util_region_intersects(&widget->placement, x, y) && util_region_intersects(&widget->clip, x, y);
 
 }
 
