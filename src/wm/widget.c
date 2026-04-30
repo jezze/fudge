@@ -205,7 +205,7 @@ unsigned int widget_region_intersectsy(struct widget *widget, int y)
 unsigned int widget_region_intersects(struct widget *widget, int x, int y)
 {
 
-    return widget_region_intersectsx(widget, x) && widget_region_intersectsy(widget, y);
+    return util_region_intersects(&widget->placement, x, y);
 
 }
 
@@ -226,7 +226,7 @@ unsigned int widget_clip_intersectsy(struct widget *widget, int y)
 unsigned int widget_clip_intersects(struct widget *widget, int x, int y)
 {
 
-    return widget_clip_intersectsx(widget, x) && widget_clip_intersectsy(widget, y);
+    return util_region_intersects(&widget->clip, x, y);
 
 }
 
