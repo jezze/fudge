@@ -153,31 +153,6 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
 }
 
-static void placewidget(struct widget *widget, struct util_region *placement, struct util_region *clip)
-{
-
-    if (widget->attributes.display == ATTR_DISPLAY_FIXED)
-    {
-
-        widget->placement.position = widget->position;
-        widget->placement.size = widget->size;
-
-    }
-
-    else
-    {
-
-        widget->placement.position = placement->position;
-        widget->placement.size = placement->size;
-
-    }
-
-    widget->clip = *clip;
-
-    calls[widget->type].place(widget);
-
-}
-
 static struct util_region getplacement(struct widget *widget, struct widget *child, struct util_position *offset, struct util_position *rowstart, struct util_size *span)
 {
 
@@ -235,29 +210,43 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
 
 }
 
-static void place(struct widget *widget, struct util_region *placement, struct util_region *clip)
+static void place(struct widget *widget, struct util_region *placement, struct util_region *clip);
+
+struct placeinfo
+{
+
+    unsigned int spans;
+    struct util_size total;
+    struct util_size freesize;
+    struct util_size span;
+
+};
+
+static struct placeinfo placechildren(struct widget *widget, struct util_size *span)
 {
 
     unsigned int direction = getdirection(widget->attributes.flow);
-    struct util_size total = zerosize;
     struct util_position rowstart = zeroposition;
     struct util_position offset = zeroposition;
     struct list_item *current = 0;
-    unsigned int spans = 0;
+    struct placeinfo info;
 
-    placewidget(widget, placement, clip);
+    info.spans = 0;
+    info.total = zerosize;
+    info.freesize = zerosize;
+    info.span = zerosize;
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        struct util_region cplacement = getplacement(widget, child, &offset, &rowstart, &zerosize);
+        struct util_region cplacement = getplacement(widget, child, &offset, &rowstart, span);
 
         place(child, &cplacement, &widget->clip);
 
-        spans += child->attributes.span;
-        total.w = util_clamp(util_max(total.w, child->placement.size.w + offset.x), 0, widget->cplacement.size.w);
-        total.h = util_clamp(util_max(total.h, child->placement.size.h + offset.y), 0, widget->cplacement.size.h);
+        info.spans += child->attributes.span;
+        info.total.w = util_clamp(util_max(info.total.w, child->placement.size.w + offset.x), 0, widget->cplacement.size.w);
+        info.total.h = util_clamp(util_max(info.total.h, child->placement.size.h + offset.y), 0, widget->cplacement.size.h);
 
         switch (direction)
         {
@@ -283,49 +272,44 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     }
 
-    if (spans)
+    info.freesize = util_size_sub(&widget->cplacement.size, info.total.w, info.total.h);
+
+    if (info.spans)
+        info.span = util_size(info.freesize.w / info.spans, info.freesize.h / info.spans);
+
+    return info;
+
+}
+
+static void place(struct widget *widget, struct util_region *placement, struct util_region *clip)
+{
+
+    struct placeinfo info;
+
+    if (widget->attributes.display == ATTR_DISPLAY_FIXED)
     {
 
-        struct util_size freesize = util_size_sub(&widget->cplacement.size, total.w, total.h);
-        struct util_size span = util_size(freesize.w / spans, freesize.h / spans);
-
-        rowstart = zeroposition;
-        offset = zeroposition;
-        current = 0;
-
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-            struct util_region cplacement = getplacement(widget, child, &offset, &rowstart, &span);
-
-            place(child, &cplacement, &widget->clip);
-
-            switch (direction)
-            {
-
-            case DIRECTION_HORIZONTAL:
-                offset.x += child->placement.size.w;
-
-                break;
-
-            case DIRECTION_VERTICAL:
-                offset.y += child->placement.size.h;
-
-                break;
-
-            }
-
-            if (child->attributes.display == ATTR_DISPLAY_INLINE)
-            {
-
-                rowstart = child->rowstop;
-
-            }
-
-        }
+        widget->placement.position = widget->position;
+        widget->placement.size = widget->size;
 
     }
+
+    else
+    {
+
+        widget->placement.position = placement->position;
+        widget->placement.size = placement->size;
+
+    }
+
+    widget->clip = *clip;
+
+    calls[widget->type].place(widget);
+
+    info = placechildren(widget, &zerosize);
+
+    if (info.spans)
+        placechildren(widget, &info.span);
 
 }
 
