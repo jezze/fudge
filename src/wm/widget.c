@@ -188,48 +188,6 @@ unsigned int widget_setstate(struct widget *widget, unsigned int state)
 
 }
 
-unsigned int widget_region_intersectsx(struct widget *widget, int x)
-{
-
-    return util_region_intersectsx(&widget->placement, x);
-
-}
-
-unsigned int widget_region_intersectsy(struct widget *widget, int y)
-{
-
-    return util_region_intersectsy(&widget->placement, y);
-
-}
-
-unsigned int widget_region_intersects(struct widget *widget, int x, int y)
-{
-
-    return util_region_intersects(&widget->placement, x, y);
-
-}
-
-unsigned int widget_clip_intersectsx(struct widget *widget, int x)
-{
-
-    return util_region_intersectsx(&widget->clip, x);
-
-}
-
-unsigned int widget_clip_intersectsy(struct widget *widget, int y)
-{
-
-    return util_region_intersectsy(&widget->clip, y);
-
-}
-
-unsigned int widget_clip_intersects(struct widget *widget, int x, int y)
-{
-
-    return util_region_intersects(&widget->clip, x, y);
-
-}
-
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
@@ -334,9 +292,9 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->onclick = 0;
     attributes->overflow = ATTR_OVERFLOW_NONE;
     attributes->padding = 0;
+    attributes->source = 0;
     attributes->spacing = 0;
     attributes->span = 0;
-    attributes->source = 0;
     attributes->valign = ATTR_VALIGN_TOP;
     attributes->weight = ATTR_WEIGHT_NORMAL;
     attributes->wrap = ATTR_WRAP_NONE;

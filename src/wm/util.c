@@ -48,7 +48,14 @@ struct util_position util_position(int x, int y)
 
 }
 
-struct util_size util_size(int w, int h)
+struct util_position util_position_add(struct util_position *a, int x, int y)
+{
+
+    return util_position(a->x + x, a->y + y);
+
+}
+
+struct util_size util_size(unsigned int w, unsigned int h)
 {
 
     struct util_size size;
@@ -57,6 +64,33 @@ struct util_size util_size(int w, int h)
     size.h = h;
 
     return size;
+
+}
+
+struct util_size util_size_add(struct util_size *a, unsigned int w, unsigned int h)
+{
+
+    return util_size(a->w + w, a->h + h);
+
+}
+
+struct util_size util_size_sub(struct util_size *a, unsigned int w, unsigned int h)
+{
+
+    if (w > a->w)
+        w = a->w;
+
+    if (h > a->h)
+        h = a->h;
+
+    return util_size(a->w - w, a->h - h);
+
+}
+
+struct util_size util_size_union(struct util_size *a, struct util_size *b)
+{
+
+    return util_size(a->w + b->w, a->h + b->h);
 
 }
 
