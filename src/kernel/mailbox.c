@@ -33,7 +33,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
             ring_skip(&mailbox->ring, message->length);
 
-            status = MESSAGE_RETRY;
+            status = MESSAGE_TOOBIG;
 
         }
 
@@ -51,22 +51,36 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
     unsigned int status = MESSAGE_RETRY;
     struct message message;
 
-    message_init(&message, event, source, count);
-    spinlock_acquire(&mailbox->spinlock);
-
-    if (ring_avail(&mailbox->ring) > sizeof (struct message) + message.length)
+    if (count < MAILBOX_SIZE)
     {
 
-        ring_write_all(&mailbox->ring, &message, sizeof (struct message));
-        ring_write_all(&mailbox->ring, data, message.length);
+        message_init(&message, event, source, count);
+        spinlock_acquire(&mailbox->spinlock);
 
-        status = MESSAGE_OK;
+        if (ring_avail(&mailbox->ring) > sizeof (struct message) + message.length)
+        {
+
+            ring_write_all(&mailbox->ring, &message, sizeof (struct message));
+            ring_write_all(&mailbox->ring, data, message.length);
+
+            status = MESSAGE_OK;
+
+        }
+
+        else
+        {
+
+            status = MESSAGE_TOOBIG;
+
+        }
+
+        spinlock_release(&mailbox->spinlock);
+
+        return status;
 
     }
 
-    spinlock_release(&mailbox->spinlock);
-
-    return status;
+    return MESSAGE_TOOBIG;
 
 }
 
@@ -107,10 +121,16 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
         unsigned int status = place(mailbox, event, source, count, data);
-        struct task *task = pool_gettask(mailbox->itask);
 
-        if (task)
-            task_signal(task, TASK_SIGNAL_UNBLOCK);
+        if (status == MESSAGE_OK)
+        {
+
+            struct task *task = pool_gettask(mailbox->itask);
+
+            if (task)
+                task_signal(task, TASK_SIGNAL_UNBLOCK);
+
+        }
 
         return status;
 

@@ -179,6 +179,8 @@ static void mapping_loadstack(struct mapping *mapping)
 
     header->nentries++;
 
+    mapfull(mapping->directory, header, entry);
+
 }
 
 static unsigned int createtask(unsigned int address)
@@ -301,33 +303,30 @@ static void debugpagefault(unsigned int error)
 static void debugselector(unsigned int error)
 {
 
+    unsigned int external = (error & 0x01);
+    unsigned int idt = ((error >> 1) & 0x01);
+    unsigned int ti = ((error >> 2) & 0x01);
     unsigned int index = ((error >> 3) & 0x1FFF);
 
-    if (error & 0x01)
+    if (external)
         DEBUG_FMT0(DEBUG_NONE, "External");
+    else
+        DEBUG_FMT0(DEBUG_NONE, "Internal");
 
-    switch ((error >> 1) & 0x03)
+    if (ti)
     {
 
-    case 0:
-        DEBUG_FMT1(DEBUG_NONE, "GDT: %u", &index);
-
-        break;
-
-    case 1:
-        DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
-
-        break;
-
-    case 2:
         DEBUG_FMT1(DEBUG_NONE, "LDT: %u", &index);
 
-        break;
+    }
 
-    case 3:
-        DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
+    else
+    {
 
-        break;
+        if (idt)
+            DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
+        else
+            DEBUG_FMT1(DEBUG_NONE, "GDT: %u", &index);
 
     }
 
