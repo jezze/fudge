@@ -14,6 +14,11 @@ static struct core *(*getcallback)(void);
 static void (*assigncallback)(struct list_item *item);
 static struct core core0;
 
+static void core_notify(struct core *core)
+{
+
+}
+
 static void assign(struct list_item *item)
 {
 
@@ -363,7 +368,8 @@ void kernel_setup(unsigned int saddress, unsigned int ssize)
 {
 
     list_init(&blockedtasks);
-    core_init(&core0, 0, saddress + ssize);
+    core_init(&core0, 0, saddress + ssize, core_notify);
+    core_register(&core0);
 
 }
 

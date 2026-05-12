@@ -52,6 +52,14 @@ static struct core *coreget(void)
 
 }
 
+static void core_notify(struct core *core)
+{
+
+    if (core->id != apic_getid())
+        apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
+
+}
+
 static void coreassign(struct list_item *item)
 {
 
@@ -65,8 +73,7 @@ static void coreassign(struct list_item *item)
         list_move_unsafe(&corelist, &corelist, coreitem);
         list_add(&core->tasks, item);
 
-        if (core->id != apic_getid())
-            apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
+        core->notify(core);
 
     }
 
@@ -81,7 +88,7 @@ static void smp_setupbp(unsigned int stack)
     unsigned int id = apic_getid();
     struct corerow *corerow = &corerows[id];
 
-    core_init(&corerow->core, id, stack);
+    core_init(&corerow->core, id, stack, core_notify);
     core_register(&corerow->core);
     core_migrate(&corerow->core, core0);
 
@@ -104,7 +111,7 @@ void smp_setupap(unsigned int stack)
     id = apic_getid();
     corerow = &corerows[id];
 
-    core_init(&corerow->core, id, stack);
+    core_init(&corerow->core, id, stack, core_notify);
     core_register(&corerow->core);
     arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
     apic_setup_ap();

@@ -29,7 +29,7 @@ void core_unregister(struct core *core)
 
 }
 
-void core_init(struct core *core, unsigned int id, unsigned int sp)
+void core_init(struct core *core, unsigned int id, unsigned int sp, void (*notify)(struct core *core))
 {
 
     resource_init(&core->resource, RESOURCE_CORE, core);
@@ -38,6 +38,7 @@ void core_init(struct core *core, unsigned int id, unsigned int sp)
     core->id = id;
     core->sp = sp;
     core->itask = 0;
+    core->notify = notify;
 
 }
 
