@@ -16,7 +16,7 @@ static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 static unsigned int checkuserstack(void *address, unsigned int count)
 {
 
-    unsigned int value = (unsigned int)address;
+    unsigned long value = (unsigned long)address;
 
     return (value >= (TASK_STACKVIRTUAL - TASK_STACKSIZE)) && ((value + count) < TASK_STACKVIRTUAL);
 

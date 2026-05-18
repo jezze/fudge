@@ -13,10 +13,10 @@
 struct mapping
 {
 
-    unsigned int directory;
-    unsigned int code;
-    unsigned int stack;
-    unsigned int mmap;
+    unsigned long directory;
+    unsigned long code;
+    unsigned long stack;
+    unsigned long mmap;
     struct cpu_general registers;
 
 };
@@ -42,7 +42,7 @@ static void mapping_copy(struct mapping *mapping, struct mapping *from)
 
 }
 
-static void maptable(unsigned int directory, unsigned int vaddress, unsigned int taddress, unsigned int flags)
+static void maptable(unsigned long directory, unsigned long vaddress, unsigned long taddress, unsigned int flags)
 {
 
     unsigned int tflags = MMU_TFLAG_PRESENT;
@@ -63,7 +63,7 @@ static void maptable(unsigned int directory, unsigned int vaddress, unsigned int
 
 }
 
-static void mappage(unsigned int directory, unsigned int vaddress, unsigned int paddress, unsigned int flags)
+static void mappage(unsigned long directory, unsigned long vaddress, unsigned long paddress, unsigned int flags)
 {
 
     unsigned int pflags = MMU_PFLAG_PRESENT;
@@ -84,10 +84,10 @@ static void mappage(unsigned int directory, unsigned int vaddress, unsigned int 
 
 }
 
-static unsigned int addtable(unsigned int directory, struct mmap_header *header)
+static unsigned long addtable(unsigned long directory, struct mmap_header *header)
 {
 
-    unsigned int taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
+    unsigned long taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
 
     buffer_clear((void *)taddress, MMU_PTSIZE);
 
@@ -97,13 +97,13 @@ static unsigned int addtable(unsigned int directory, struct mmap_header *header)
 
 }
 
-static void map(unsigned int directory, struct mmap_header *header, unsigned int vaddress, unsigned int paddress, unsigned int flags)
+static void map(unsigned long directory, struct mmap_header *header, unsigned long vaddress, unsigned long paddress, unsigned int flags)
 {
 
     if (!mmu_gettable(directory, vaddress))
     {
 
-        unsigned int taddress = addtable(directory, header);
+        unsigned long taddress = addtable(directory, header);
 
         maptable(directory, vaddress, taddress, flags);
 
@@ -113,7 +113,7 @@ static void map(unsigned int directory, struct mmap_header *header, unsigned int
 
 }
 
-static void mapfull(unsigned int directory, struct mmap_header *header, struct mmap_entry *entry)
+static void mapfull(unsigned long directory, struct mmap_header *header, struct mmap_entry *entry)
 {
 
     unsigned int i;
@@ -123,7 +123,7 @@ static void mapfull(unsigned int directory, struct mmap_header *header, struct m
 
 }
 
-static void mapping_loadcode(struct mapping *mapping, unsigned int address)
+static void mapping_loadcode(struct mapping *mapping, unsigned long address)
 {
 
     struct binary_format *format = binary_findformat(address);
@@ -183,7 +183,7 @@ static void mapping_loadstack(struct mapping *mapping)
 
 }
 
-static unsigned int createtask(unsigned int address)
+static unsigned int createtask(unsigned long address)
 {
 
     unsigned int ntask = pool_createtask();
@@ -256,7 +256,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
-        interrupt->eip.value = (unsigned int)cpu_halt;
+        interrupt->eip.value = (unsigned long)cpu_halt;
         interrupt->esp.value = core->sp;
 
     }
@@ -701,7 +701,7 @@ void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 
     tss_init(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
     tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), sp);
-    gdt_setdescriptor(&gdt->pointer, ARCH_TSS + id, (unsigned int)tss->pointer.descriptors, (unsigned int)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    gdt_setdescriptor(&gdt->pointer, ARCH_TSS + id, (unsigned long)tss->pointer.descriptors, (unsigned long)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, ARCH_TSS + id));
 
 }

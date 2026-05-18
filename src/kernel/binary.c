@@ -3,7 +3,7 @@
 #include "mmap.h"
 #include "binary.h"
 
-struct binary_format *binary_findformat(unsigned int base)
+struct binary_format *binary_findformat(unsigned long base)
 {
 
     struct resource *current = 0;
@@ -22,7 +22,7 @@ struct binary_format *binary_findformat(unsigned int base)
 
 }
 
-void binary_initformat(struct binary_format *format, unsigned int (*match)(unsigned int base), unsigned int (*findsymbol)(unsigned int base, unsigned int count, char *symbol), unsigned int (*findentry)(unsigned int base), unsigned int (*mapsection)(unsigned int base, struct mmap_entry *entry, unsigned int index))
+void binary_initformat(struct binary_format *format, unsigned int (*match)(unsigned long base), unsigned long (*findsymbol)(unsigned long base, unsigned int count, char *symbol), unsigned long (*findentry)(unsigned long base), unsigned int (*mapsection)(unsigned long base, struct mmap_entry *entry, unsigned int index))
 {
 
     resource_init(&format->resource, RESOURCE_BINARYFORMAT, format);

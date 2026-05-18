@@ -770,7 +770,7 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
     unsigned int lineheight = 12 + factor * 4;
     unsigned int padding = 4 + factor * 2;
 
-    blit_initdisplay(&display, videoinfo->framebuffer, videoinfo->width, videoinfo->height, videoinfo->bpp, linebuffer);
+    blit_initdisplay(&display, (void *)(unsigned long)videoinfo->framebuffer, videoinfo->width, videoinfo->height, videoinfo->bpp, linebuffer);
     pool_loadfont(0, fontn[factor]);
     pool_setfont(0, lineheight, padding);
     pool_loadfont(1, fontb[factor]);

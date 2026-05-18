@@ -4,7 +4,7 @@
 
 static struct binary_format format;
 
-static unsigned int findsymbol(unsigned int base, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
+static unsigned long findsymbol(unsigned long base, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
 {
 
     struct elf_header *header = (struct elf_header *)base;
@@ -28,7 +28,7 @@ static unsigned int findsymbol(unsigned int base, struct elf_sectionheader *symb
 
 }
 
-static unsigned int format_match(unsigned int base)
+static unsigned int format_match(unsigned long base)
 {
 
     struct elf_header *header = (struct elf_header *)base;
@@ -37,7 +37,7 @@ static unsigned int format_match(unsigned int base)
 
 }
 
-static unsigned int format_findsymbol(unsigned int base, unsigned int count, char *symbolname)
+static unsigned long format_findsymbol(unsigned long base, unsigned int count, char *symbolname)
 {
 
     struct elf_header *header = (struct elf_header *)base;
@@ -47,7 +47,7 @@ static unsigned int format_findsymbol(unsigned int base, unsigned int count, cha
     for (i = 0; i < header->shcount; i++)
     {
 
-        unsigned int address;
+        unsigned long address;
 
         if (sectionheaders[i].type != ELF_SECTION_TYPE_SYMTAB)
             continue;
@@ -63,7 +63,7 @@ static unsigned int format_findsymbol(unsigned int base, unsigned int count, cha
 
 }
 
-static unsigned int format_findentry(unsigned int base)
+static unsigned long format_findentry(unsigned long base)
 {
 
     struct elf_header *header = (struct elf_header *)base;
@@ -72,7 +72,7 @@ static unsigned int format_findentry(unsigned int base)
 
 }
 
-static unsigned int format_readsection(unsigned int base, struct mmap_entry *entry, unsigned int index)
+static unsigned int format_readsection(unsigned long base, struct mmap_entry *entry, unsigned int index)
 {
 
     struct elf_header *header = (struct elf_header *)base;

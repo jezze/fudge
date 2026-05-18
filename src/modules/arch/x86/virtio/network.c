@@ -35,7 +35,7 @@ static void handlequeue(struct virtio_queue *vq)
 
     struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
     struct virtio_buffer *buffer = &vq->buffers[usedring->index];
-    struct header *header = (struct header *)buffer->address;
+    struct header *header = (struct header *)(unsigned long)buffer->address;
 
     if (buffer->flags == 2)
     {
@@ -117,7 +117,7 @@ static void setqueues(void)
     unsigned short i;
 
     for (i = 0; i < 16; i++)
-        virtio_setqueue(io, i, &vqs[i], (unsigned int)virtqbuffer[i]);
+        virtio_setqueue(io, i, &vqs[i], (unsigned long)virtqbuffer[i]);
 
 }
 

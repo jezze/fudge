@@ -56,21 +56,21 @@ static struct mailboxrow *getmailboxrow(unsigned int imailbox)
 static unsigned int encodenoderow(struct noderow *noderow)
 {
 
-    return ((unsigned int)noderow - (unsigned int)noderows) / sizeof (struct noderow);
+    return ((unsigned long)noderow - (unsigned long)noderows) / sizeof (struct noderow);
 
 }
 
 static unsigned int encodetaskrow(struct taskrow *taskrow)
 {
 
-    return ((unsigned int)taskrow - (unsigned int)taskrows) / sizeof (struct taskrow);
+    return ((unsigned long)taskrow - (unsigned long)taskrows) / sizeof (struct taskrow);
 
 }
 
 static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
 {
 
-    return ((unsigned int)mailboxrow - (unsigned int)mailboxrows) / sizeof (struct mailboxrow);
+    return ((unsigned long)mailboxrow - (unsigned long)mailboxrows) / sizeof (struct mailboxrow);
 
 }
 
@@ -279,7 +279,7 @@ void pool_destroytask(unsigned int itask)
 
 }
 
-void pool_setup(unsigned int mbaddress, unsigned int mbsize)
+void pool_setup(unsigned long mbaddress, unsigned int mbsize)
 {
 
     unsigned int i;

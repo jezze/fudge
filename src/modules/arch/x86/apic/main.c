@@ -22,16 +22,16 @@ static void (*routines[ROUTINES])(unsigned int gsi);
 static unsigned int overrides[OVERRIDES];
 static unsigned int mmio;
 
-static volatile unsigned int readio(unsigned int base, unsigned int offset)
+static volatile unsigned long readio(unsigned long base, unsigned int offset)
 {
 
-    *(volatile unsigned int *)(base) = offset;
+    *(volatile unsigned long *)(base) = offset;
 
-    return *(volatile unsigned int *)(base + 0x10);
+    return *(volatile unsigned long *)(base + 0x10);
 
 }
 
-static void writeio(unsigned int base, unsigned int offset, unsigned int value)
+static void writeio(unsigned long base, unsigned int offset, unsigned int value)
 {
 
     *(volatile unsigned int *)(base) = offset;
@@ -47,8 +47,8 @@ void apic_debug_ioapic(void)
     if (madt)
     {
 
-        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
-        unsigned int madtend = (unsigned int)madt + madt->base.length;
+        unsigned long madttable = (unsigned long)madt + sizeof (struct acpi_madt);
+        unsigned long madtend = (unsigned long)madt + madt->base.length;
 
         while (madttable < madtend)
         {
@@ -96,8 +96,8 @@ void apic_debug(void)
     if (madt)
     {
 
-        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
-        unsigned int madtend = (unsigned int)madt + madt->base.length;
+        unsigned long madttable = (unsigned long)madt + sizeof (struct acpi_madt);
+        unsigned long madtend = (unsigned long)madt + madt->base.length;
 
         while (madttable < madtend)
         {
@@ -156,8 +156,8 @@ void apic_setupisrs(void)
     if (madt)
     {
 
-        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
-        unsigned int madtend = (unsigned int)madt + madt->base.length;
+        unsigned long madttable = (unsigned long)madt + sizeof (struct acpi_madt);
+        unsigned long madtend = (unsigned long)madt + madt->base.length;
 
         while (madttable < madtend)
         {
@@ -172,13 +172,13 @@ void apic_setupisrs(void)
                 if (ioapic->gsibase == 0)
                 {
 
-                    idt_setdescriptor(&idt->pointer, 0x61, (void (*)(void))((unsigned int)apic_isr + 8 * 0x01), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x62, (void (*)(void))((unsigned int)apic_isr + 8 * 0x02), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x63, (void (*)(void))((unsigned int)apic_isr + 8 * 0x03), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x64, (void (*)(void))((unsigned int)apic_isr + 8 * 0x04), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x68, (void (*)(void))((unsigned int)apic_isr + 8 * 0x08), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x6C, (void (*)(void))((unsigned int)apic_isr + 8 * 0x0C), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x6E, (void (*)(void))((unsigned int)apic_isr + 8 * 0x0E), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x61, (void (*)(void))((unsigned long)apic_isr + 8 * 0x01), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x62, (void (*)(void))((unsigned long)apic_isr + 8 * 0x02), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x63, (void (*)(void))((unsigned long)apic_isr + 8 * 0x03), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x64, (void (*)(void))((unsigned long)apic_isr + 8 * 0x04), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x68, (void (*)(void))((unsigned long)apic_isr + 8 * 0x08), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x6C, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0C), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(&idt->pointer, 0x6E, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0E), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     writeio(ioapic->address, 0x10 + 0x01 * 2, 0x61);
                     writeio(ioapic->address, 0x10 + 0x02 * 2, 0x62);
                     writeio(ioapic->address, 0x10 + 0x03 * 2, 0x63);
@@ -210,8 +210,8 @@ static void detect(void)
     if (madt)
     {
 
-        unsigned int madttable = (unsigned int)madt + sizeof (struct acpi_madt);
-        unsigned int madtend = (unsigned int)madt + madt->base.length;
+        unsigned long madttable = (unsigned long)madt + sizeof (struct acpi_madt);
+        unsigned long madtend = (unsigned long)madt + madt->base.length;
 
         if (madt->flags & 0x01)
         {
@@ -275,19 +275,19 @@ static void detect(void)
 
 }
 
-static unsigned int apic_ind(unsigned int reg)
+static unsigned long apic_ind(unsigned long reg)
 {
 
-    volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
+    volatile unsigned long *address = (volatile unsigned long *)(mmio + reg);
 
     return *address;
 
 }
 
-static void apic_outd(unsigned int reg, unsigned int value)
+static void apic_outd(unsigned long reg, unsigned int value)
 {
 
-    volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
+    volatile unsigned long *address = (volatile unsigned long *)(mmio + reg);
 
     *address = value;
 

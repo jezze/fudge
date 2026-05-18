@@ -7,7 +7,7 @@
 #include <kernel/x86/arch.h>
 #include "acpi.h"
 
-static unsigned int sdt;
+static unsigned long sdt;
 
 static unsigned int validate(void *address, unsigned int length)
 {
@@ -27,7 +27,7 @@ static struct acpi_rsdp *findrsdp(void)
 {
 
     char *signature = "RSD PTR ";
-    unsigned int address;
+    unsigned long address;
 
     for (address = 0x000E0000; address < 0x00100000; address += 0x10)
     {
@@ -82,7 +82,7 @@ void module_init(void)
             if (validate(rsdp, sizeof (struct acpi_rsdp)))
             {
 
-                unsigned int address = (rsdp->rsdt[0] << 0) | (rsdp->rsdt[1] << 8) | (rsdp->rsdt[2] << 16) | (rsdp->rsdt[3] << 24);
+                unsigned long address = (rsdp->rsdt[0] << 0) | (rsdp->rsdt[1] << 8) | (rsdp->rsdt[2] << 16) | (rsdp->rsdt[3] << 24);
                 struct acpi_rsdt *rsdt = (struct acpi_rsdt *)address;
 
                 arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
@@ -102,7 +102,7 @@ void module_init(void)
             if (validate(rsdp, sizeof (struct acpi_rsdp)) && validate(xsdp, sizeof (struct acpi_xsdp)))
             {
 
-                unsigned int address = (xsdp->xsdt[0] << 0) | (xsdp->xsdt[1] << 8) | (xsdp->xsdt[2] << 16) | (xsdp->xsdt[3] << 24);
+                unsigned long address = (xsdp->xsdt[0] << 0) | (xsdp->xsdt[1] << 8) | (xsdp->xsdt[2] << 16) | (xsdp->xsdt[3] << 24);
                 struct acpi_xsdt *xsdt = (struct acpi_xsdt *)address;
 
                 arch_kmap(address, address, 0x00010000, MMAP_FLAG_WRITEABLE);

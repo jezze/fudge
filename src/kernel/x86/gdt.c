@@ -4,7 +4,7 @@
 static struct gdt_descriptor *getdescriptor(struct gdt_pointer *pointer, unsigned char index)
 {
 
-    return (struct gdt_descriptor *)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;
+    return (struct gdt_descriptor *)(unsigned long)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;
 
 }
 
@@ -36,7 +36,7 @@ void gdt_setdescriptor(struct gdt_pointer *pointer, unsigned char index, unsigne
 void gdt_init(struct gdt_pointer *pointer, unsigned int count, struct gdt_descriptor *descriptors)
 {
 
-    unsigned int base = (unsigned int)descriptors;
+    unsigned long base = (unsigned long)descriptors;
     unsigned short limit = (sizeof (struct gdt_descriptor) * count) - 1;
 
     pointer->base0 = base;

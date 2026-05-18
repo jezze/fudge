@@ -54,7 +54,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     if (header->flags & MBOOT_FLAG_MODULES)
     {
 
-        struct mboot_module *modules = (struct mboot_module *)header->modules.address;
+        struct mboot_module *modules = (struct mboot_module *)(unsigned long)header->modules.address;
 
         cpio_setup(modules[0].address + 512 * 4096, modules[0].limit);
         arch_setup2(modules[0].address + 512 * 3584);

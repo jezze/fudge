@@ -74,7 +74,7 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 {
 
     struct vbe_info *info = vbe_getinfo();
-    unsigned short *modes = (unsigned short *)((info->video_modes_segment * 16) + info->video_modes_offset);
+    unsigned short *modes = (unsigned short *)(unsigned long)((info->video_modes_segment * 16) + info->video_modes_offset);
     unsigned int i;
 
     for (i = 0; modes[i] != 0xFFFF; i++)
@@ -109,7 +109,7 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
 
     unsigned short modenum;
 
-    buffer_copy((void *)0xA000, (void *)(unsigned int)vbe_lowmemstart, (unsigned int)vbe_lowmemend - (unsigned int)vbe_lowmemstart);
+    buffer_copy((void *)0xA000, (void *)(unsigned long)vbe_lowmemstart, (unsigned long)vbe_lowmemend - (unsigned long)vbe_lowmemstart);
 
     modenum = find(width, height, bpp);
 

@@ -1,13 +1,13 @@
-AR=$(TARGET)-ar
-AS=$(TARGET)-as
-CC=$(TARGET)-cc
-DP=$(TARGET)-cc
-LD=$(TARGET)-ld
-NM=$(TARGET)-nm
-PP=$(TARGET)-cc
+AR=$(TARGET)-gcc-ar
+AS=$(TARGET)-gcc
+CC=$(TARGET)-gcc
+DP=$(TARGET)-gcc
+LD=$(TARGET)-gcc
+NM=$(TARGET)-gcc-nm
+PP=$(TARGET)-gcc
 AR_FLAGS=rcs
 AS_FLAGS=-c
-CC_FLAGS=-Wall -Werror -Wno-overlength-strings -msoft-float -ffreestanding -fno-asynchronous-unwind-tables -std=c89 -pedantic -O2 -S
+CC_FLAGS=-Wall -Werror -Wno-overlength-strings -msoft-float -ffreestanding -fno-asynchronous-unwind-tables -fno-stack-protector -std=c89 -pedantic -O2 -S
 DP_FLAGS=-I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -MM -MT
 LD_FLAGS_BIN=-s -static -nostdlib
 LD_FLAGS_KBIN=-static -nostdlib -T$(DIR_SRC)/kernel/$(ARCH)/$(LOADER)/linker.ld

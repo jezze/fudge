@@ -667,10 +667,10 @@ void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, i
 
 }
 
-void blit_initdisplay(struct blit_display *display, unsigned int framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer)
+void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer)
 {
 
-    display->framebuffer = (void *)framebuffer;
+    display->framebuffer = framebuffer;
     display->bpp = bpp;
     display->linebuffer = linebuffer;
     display->region = util_region(0, 0, w, h);

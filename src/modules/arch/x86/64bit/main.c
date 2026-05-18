@@ -21,7 +21,7 @@ static void idmap(unsigned int x)
     unsigned int *c;
     unsigned int i;
 
-    pdt[x] = (unsigned int)&pt[x] | 3;
+    pdt[x] = (unsigned long)&pt[x] | 3;
     c = &pt[x];
 
     for (i = x * 512; i < (x + 1) * 512; i++)
@@ -41,8 +41,8 @@ static void setuptables(void)
 
     buffer_clear(pml4t, 0x1000);
 
-    pml4t[0] = (unsigned int)pdpt | 3;
-    pdpt[0] = (unsigned int)pdt | 3;
+    pml4t[0] = (unsigned long)pdpt | 3;
+    pdpt[0] = (unsigned long)pdt | 3;
 
     idmap(0);
     idmap(1);
@@ -104,7 +104,7 @@ void module_init(void)
     uart_put('b');
     setuptables();
     uart_put('c');
-    cpu_setcr3((unsigned int)pml4t);
+    cpu_setcr3((unsigned long)pml4t);
     uart_put('d');
     cpu_setcr4(cpu_getcr4() | (1 << 5));
     uart_put('e');

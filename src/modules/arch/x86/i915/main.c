@@ -11,19 +11,19 @@
 static struct base_driver driver;
 static struct video_interface videointerface;
 
-static unsigned int read(unsigned int reg)
+static unsigned long read(unsigned long reg)
 {
 
-    unsigned int *value = (unsigned int *)(unsigned int)reg;
+    unsigned long *value = (unsigned long *)(unsigned long)reg;
 
     return *value;
 
 }
 
-static void write(unsigned int reg, unsigned int val)
+static void write(unsigned long reg, unsigned long val)
 {
 
-    unsigned int *value = (unsigned int *)(unsigned int)reg;
+    unsigned long *value = (unsigned long *)(unsigned long)reg;
 
     *value = val;
 

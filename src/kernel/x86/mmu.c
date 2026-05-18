@@ -16,14 +16,14 @@ struct mmu_directory
 
 };
 
-unsigned int mmu_getdirectory(void)
+unsigned long mmu_getdirectory(void)
 {
 
     return cpu_getcr3();
 
 }
 
-unsigned int mmu_gettable(unsigned int daddress, unsigned int vaddress)
+unsigned long mmu_gettable(unsigned long daddress, unsigned long vaddress)
 {
 
     struct mmu_directory *directory = (struct mmu_directory *)daddress;
@@ -33,7 +33,7 @@ unsigned int mmu_gettable(unsigned int daddress, unsigned int vaddress)
 
 }
 
-unsigned int mmu_getpage(unsigned int daddress, unsigned int vaddress)
+unsigned long mmu_getpage(unsigned long daddress, unsigned long vaddress)
 {
 
     struct mmu_table *table = (struct mmu_table *)(mmu_gettable(daddress, vaddress) & ~MMU_PAGEMASK);
@@ -51,14 +51,14 @@ unsigned int mmu_getpage(unsigned int daddress, unsigned int vaddress)
 
 }
 
-void mmu_setdirectory(unsigned int daddress)
+void mmu_setdirectory(unsigned long daddress)
 {
 
     cpu_setcr3(daddress);
 
 }
 
-void mmu_settable(unsigned int daddress, unsigned int vaddress, unsigned int taddress, unsigned int flags)
+void mmu_settable(unsigned long daddress, unsigned long vaddress, unsigned long taddress, unsigned int flags)
 {
 
     struct mmu_directory *directory = (struct mmu_directory *)daddress;
@@ -68,7 +68,7 @@ void mmu_settable(unsigned int daddress, unsigned int vaddress, unsigned int tad
 
 }
 
-void mmu_setpage(unsigned int daddress, unsigned int vaddress, unsigned int paddress, unsigned int flags)
+void mmu_setpage(unsigned long daddress, unsigned long vaddress, unsigned long paddress, unsigned int flags)
 {
 
     struct mmu_table *table = (struct mmu_table *)(mmu_gettable(daddress, vaddress) & ~MMU_PAGEMASK);

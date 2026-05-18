@@ -63,7 +63,7 @@ static void setqueues(void)
     unsigned short i;
 
     for (i = 0; i < 16; i++)
-        virtio_setqueue(io, i, &vqs[i], (unsigned int)virtqbuffer[i]);
+        virtio_setqueue(io, i, &vqs[i], (unsigned long)virtqbuffer[i]);
 
 }
 

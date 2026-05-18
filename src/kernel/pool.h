@@ -16,4 +16,4 @@ void pool_removemailboxes(unsigned int itask);
 unsigned int pool_findinode(unsigned int namehash, unsigned int index);
 unsigned int pool_createtask(void);
 void pool_destroytask(unsigned int itask);
-void pool_setup(unsigned int mbaddress, unsigned int mbsize);
+void pool_setup(unsigned long mbaddress, unsigned int mbsize);

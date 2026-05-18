@@ -228,8 +228,8 @@ void module_init(void)
     for (i = 0; i < 8; i++)
     {
 
-        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + i, (void (*)(void))((unsigned int)pic_isr0 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + i, (void (*)(void))((unsigned int)pic_isr1 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + i, (void (*)(void))((unsigned long)pic_isr0 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + i, (void (*)(void))((unsigned long)pic_isr1 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
     }
 

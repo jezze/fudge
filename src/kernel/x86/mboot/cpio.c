@@ -10,7 +10,7 @@ static unsigned int inode;
 static struct cpio_header *getheader(unsigned int id)
 {
 
-    struct cpio_header *header = (struct cpio_header *)id;
+    struct cpio_header *header = (struct cpio_header *)(unsigned long)id;
 
     return (cpio_validate(header)) ? header : 0;
 
@@ -206,7 +206,7 @@ static unsigned int read(unsigned int id, void *buffer, unsigned int count, unsi
         {
 
         case 0x8000:
-            return buffer_read(buffer, count, (void *)(id + cpio_filedata(header)), cpio_filesize(header), offset);
+            return buffer_read(buffer, count, (void *)((unsigned long)id + cpio_filedata(header)), cpio_filesize(header), offset);
 
         }
 
@@ -296,7 +296,7 @@ static unsigned int write(unsigned int id, void *buffer, unsigned int count, uns
         {
 
         case 0x8000:
-            return buffer_write((void *)(id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
+            return buffer_write((void *)((unsigned long)id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
 
         }
 
