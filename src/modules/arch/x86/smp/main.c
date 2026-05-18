@@ -14,10 +14,12 @@
 
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
+#define CORES                           256
 
-static struct arch_tss tss[256];
-static struct corerow {struct list_item item; struct core core;} corerows[256];
-static struct list corelist;
+static struct arch_tss tss[CORES];
+static struct corerow {struct list_item item; struct core core;} corerows[CORES];
+static struct list freecores;
+static struct list usedcores;
 
 static struct core *coreget(void)
 {
@@ -39,18 +41,18 @@ static void core_notify(struct core *core)
 static void coreassign(struct list_item *item)
 {
 
-    spinlock_acquire(&corelist.spinlock);
+    spinlock_acquire(&usedcores.spinlock);
 
     {
 
-        struct list_item *coreitem = corelist.head;
+        struct list_item *coreitem = usedcores.head;
 
         if (coreitem)
         {
 
             struct core *core = coreitem->data;
 
-            list_move_unsafe(&corelist, &corelist, coreitem);
+            list_move_unsafe(&usedcores, &usedcores, coreitem);
             list_add(&core->tasks, item);
 
             core->notify(core);
@@ -59,7 +61,7 @@ static void coreassign(struct list_item *item)
 
     }
 
-    spinlock_release(&corelist.spinlock);
+    spinlock_release(&usedcores.spinlock);
 
 }
 
@@ -75,8 +77,7 @@ static void smp_setupbp(unsigned int stack)
     core_migrate(&corerow->core, core0);
     arch_configuretss(&tss[id], corerow->core.id, corerow->core.sp);
     apic_setup_bp();
-    list_inititem(&corerow->item, &corerow->core);
-    list_add(&corelist, &corerow->item);
+    list_add(&usedcores, &corerow->item);
 
 }
 
@@ -91,10 +92,9 @@ void smp_setupap(unsigned int stack)
     arch_configuretss(&tss[id], corerow->core.id, corerow->core.sp);
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
-    apic_setup_ap();
     pat_setup();
-    list_inititem(&corerow->item, &corerow->core);
-    list_add(&corelist, &corerow->item);
+    apic_setup_ap();
+    list_add(&usedcores, &corerow->item);
     arch_leave();
 
 }
@@ -105,7 +105,8 @@ void module_init(void)
     unsigned int id = apic_getid();
     unsigned int i;
 
-    list_init(&corelist);
+    list_init(&freecores);
+    list_init(&usedcores);
     smp_setupbp(ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     kernel_setcallback(coreget, coreassign);
     buffer_copy((void *)INIT16ADDRESS, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
@@ -114,7 +115,16 @@ void module_init(void)
     pic_disable();
     apic_setupisrs();
 
-    for (i = 0; i < 256; i++)
+    for (i = 0; i < CORES; i++)
+    {
+
+        struct corerow *corerow = &corerows[i];
+
+        list_inititem(&corerow->item, &corerow->core);
+
+    }
+
+    for (i = 0; i < CORES; i++)
     {
 
         if (apic_checklapic(i))
