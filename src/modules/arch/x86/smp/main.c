@@ -41,27 +41,19 @@ static void core_notify(struct core *core)
 static void coreassign(struct list_item *item)
 {
 
-    spinlock_acquire(&usedcores.spinlock);
+    struct list_item *coreitem = list_pickhead(&usedcores);
 
+    if (coreitem)
     {
 
-        struct list_item *coreitem = usedcores.head;
+        struct core *core = coreitem->data;
 
-        if (coreitem)
-        {
+        list_add(&usedcores, coreitem);
+        list_add(&core->tasks, item);
 
-            struct core *core = coreitem->data;
-
-            list_move_unsafe(&usedcores, &usedcores, coreitem);
-            list_add(&core->tasks, item);
-
-            core->notify(core);
-
-        }
+        core->notify(core);
 
     }
-
-    spinlock_release(&usedcores.spinlock);
 
 }
 
@@ -130,14 +122,16 @@ void module_init(void)
         if (apic_checklapic(i))
         {
 
-            if (i == id)
-                continue;
+            if (i != id)
+            {
 
-            apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
-            pit_wait(10);
-            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
-            pit_wait(1);
-            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+                apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
+                pit_wait(10);
+                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+                pit_wait(1);
+                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+
+            }
 
         }
 
