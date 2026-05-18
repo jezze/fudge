@@ -72,6 +72,9 @@ config-target-riscv64-linux-gnu:
 config-target-riscv64-tcc:
 	@echo "TARGET:=riscv64-tcc" >> $(DIR_MK)/$(CONFIG).mk
 
+config-target-x86_64-linux-gnu:
+	@echo "TARGET:=x86_64-linux-gnu" >> $(DIR_MK)/$(CONFIG).mk
+
 x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-unknown-elf
 x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
 
