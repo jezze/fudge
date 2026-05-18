@@ -15,35 +15,9 @@
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
-static struct corerow {struct arch_tss tss; struct core core; struct list_item item;} corerows[256];
+static struct arch_tss tss[256];
+static struct corerow {struct list_item item; struct core core;} corerows[256];
 static struct list corelist;
-
-static void enable(void)
-{
-
-    unsigned int id = apic_getid();
-    unsigned int i;
-
-    for (i = 0; i < 256; i++)
-    {
-
-        if (apic_checklapic(i))
-        {
-
-            if (i == id)
-                continue;
-
-            apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
-            pit_wait(10);
-            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
-            pit_wait(1);
-            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
-
-        }
-
-    }
-
-}
 
 static struct core *coreget(void)
 {
@@ -99,8 +73,7 @@ static void smp_setupbp(unsigned int stack)
     core_init(&corerow->core, id, stack, core_notify);
     core_register(&corerow->core);
     core_migrate(&corerow->core, core0);
-
-    arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
+    arch_configuretss(&tss[id], corerow->core.id, corerow->core.sp);
     apic_setup_bp();
     list_inititem(&corerow->item, &corerow->core);
     list_add(&corelist, &corerow->item);
@@ -110,18 +83,14 @@ static void smp_setupbp(unsigned int stack)
 void smp_setupap(unsigned int stack)
 {
 
-    unsigned int id;
-    struct corerow *corerow;
-
-    mmu_setdirectory(ARCH_MMUKERNELADDRESS);
-    mmu_enable();
-
-    id = apic_getid();
-    corerow = &corerows[id];
+    unsigned int id = apic_getid();
+    struct corerow *corerow = &corerows[id];
 
     core_init(&corerow->core, id, stack, core_notify);
     core_register(&corerow->core);
-    arch_configuretss(&corerow->tss, corerow->core.id, corerow->core.sp);
+    arch_configuretss(&tss[id], corerow->core.id, corerow->core.sp);
+    mmu_setdirectory(ARCH_MMUKERNELADDRESS);
+    mmu_enable();
     apic_setup_ap();
     pat_setup();
     list_inititem(&corerow->item, &corerow->core);
@@ -133,6 +102,9 @@ void smp_setupap(unsigned int stack)
 void module_init(void)
 {
 
+    unsigned int id = apic_getid();
+    unsigned int i;
+
     list_init(&corelist);
     smp_setupbp(ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     kernel_setcallback(coreget, coreassign);
@@ -141,7 +113,25 @@ void module_init(void)
     smp_prep(ARCH_KERNELSTACKADDRESS + 2 * ARCH_KERNELSTACKSIZE);
     pic_disable();
     apic_setupisrs();
-    enable();
+
+    for (i = 0; i < 256; i++)
+    {
+
+        if (apic_checklapic(i))
+        {
+
+            if (i == id)
+                continue;
+
+            apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
+            pit_wait(10);
+            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+            pit_wait(1);
+            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+
+        }
+
+    }
 
 }
 
