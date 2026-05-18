@@ -82,7 +82,7 @@ getedid_real:
     movw %ax, %gs
     movw %ax, %ss
     movw $0xA000, %sp
-    movw $0x4F02, %ax
+    movw $0x4F15, %ax
     movw $0x0001, %bx
     xorw %cx, %cx
     xorw %dx, %dx
