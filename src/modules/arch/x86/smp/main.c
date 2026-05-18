@@ -36,6 +36,8 @@ static void enable(void)
             apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
             pit_wait(10);
             apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+            pit_wait(1);
+            apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
 
         }
 
@@ -68,12 +70,18 @@ static void coreassign(struct list_item *item)
     {
 
         struct list_item *coreitem = corelist.head;
-        struct core *core = coreitem->data;
 
-        list_move_unsafe(&corelist, &corelist, coreitem);
-        list_add(&core->tasks, item);
+        if (coreitem)
+        {
 
-        core->notify(core);
+            struct core *core = coreitem->data;
+
+            list_move_unsafe(&corelist, &corelist, coreitem);
+            list_add(&core->tasks, item);
+
+            core->notify(core);
+
+        }
 
     }
 
