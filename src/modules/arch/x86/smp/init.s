@@ -1,7 +1,5 @@
 .code32
 
-.section .text
-
 .set SMP_GDTADDRESS,                    0x1000
 .set SMP_IDTADDRESS,                    0x2000
 .set SMP_INIT16ADDRESS,                 0x8000
@@ -10,8 +8,12 @@
 .set SMP_KCODE,                         0x08
 .set SMP_KDATA,                         0x10
 
+.section .data
+
 stackaddr:
 .int 0
+
+.section .text
 
 .global smp_prep
 smp_prep:
