@@ -29,8 +29,7 @@ static void updatecontent(unsigned int wm)
             struct record records[8];
             unsigned int nrecords;
             unsigned int offset;
-            unsigned int maxsend = 50;
-            unsigned int count = 0;
+            unsigned int count;
 
             channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
 
@@ -39,6 +38,8 @@ static void updatecontent(unsigned int wm)
 
                 unsigned int i;
 
+                count = 0;
+
                 for (i = 0; i < nrecords; i++)
                 {
 
@@ -46,14 +47,12 @@ static void updatecontent(unsigned int wm)
 
                     count += cstring_write_fmt6(data, MESSAGE_SIZE, count, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
-                    if (!--maxsend)
-                        return;
 
                 }
 
-            }
+                channel_send_buffer(0, wm, EVENT_WMRENDERDATA, count, data);
 
-            channel_send_buffer(0, wm, EVENT_WMRENDERDATA, count, data);
+            }
 
         }
 
