@@ -1,21 +1,18 @@
 ENTRY (start);
 
-. = 0x80000000;
-
 SECTIONS
 {
 
-    .text : ALIGN(4K)
-    {
+    . = 0x80000000;
 
+    .text : ALIGN(4096)
+    {
         *(.init);
         *(.text);
-
     }
 
-    .bss : ALIGN(4K)
+    .bss : ALIGN(4096)
     {
-
         PROVIDE(bss_start = .);
         *(.bss);
         . += 4096;
@@ -23,21 +20,16 @@ SECTIONS
         . += 4096;
         PROVIDE(global_pointer = .);
         PROVIDE(bss_end = .);
-
     }
 
-    .rodata : ALIGN(4K)
+    .rodata : ALIGN(4096)
     {
-
         *(.rodata);
-
     }
 
-    .data : ALIGN(4K)
+    .data : ALIGN(4096)
     {
-
         *(.data);
-
     }
 
 }

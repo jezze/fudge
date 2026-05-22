@@ -5,13 +5,13 @@ SECTIONS
 
     . = 0x00010000;
 
-    .text :
+    .text : ALIGN(4096)
     {
         *(.text.boot)
         *(.text)
     }
 
-    .data :
+    .data : ALIGN(4096)
     {
         *(.data)
         *(.rodata*)

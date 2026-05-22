@@ -3,12 +3,12 @@ SECTIONS
 
     . = 0x00000000;
 
-    .text :
+    .text : ALIGN(4096)
     {
         *(.text)
     }
 
-    .data :
+    .data : ALIGN(4096)
     {
         *(.data)
         *(.rodata*)

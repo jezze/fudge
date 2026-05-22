@@ -5,17 +5,17 @@ SECTIONS
 
     . = 0x00100000;
 
-    .mboot :
+    .mboot : ALIGN(4096)
     {
         src/kernel/x86/mboot/init.o(.text.mboot)
     }
 
-    .text :
+    .text : ALIGN(4096)
     {
         *(.text)
     }
 
-    .data :
+    .data : ALIGN(4096)
     {
         *(.data)
         *(.rodata*)
