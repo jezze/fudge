@@ -13,7 +13,7 @@
 .set INIT_MBOOT_HEIGHT,                 1080
 .set INIT_MBOOT_DEPTH,                  32
 
-.section .text.mboot
+.section .text.boot
 
 .int INIT_MBOOT_HEADER_MAGIC
 .int INIT_MBOOT_HEADER_FLAGS
