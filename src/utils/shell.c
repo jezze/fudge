@@ -4,8 +4,8 @@
 #define JOBSIZE                         32
 #define INPUTSIZE                       128
 
-static char inputbuffer[INPUTSIZE];
-static struct ring input;
+static char inputdata1[INPUTSIZE];
+static struct ring input1;
 static struct job_worker workers[JOBSIZE];
 static struct job job;
 static unsigned int escaped;
@@ -87,7 +87,7 @@ static void interpret(void)
 {
 
     char buffer[MESSAGE_SIZE];
-    unsigned int count = ring_read(&input, buffer, MESSAGE_SIZE);
+    unsigned int count = ring_read(&input1, buffer, MESSAGE_SIZE);
 
     if (count > 1)
     {
@@ -216,7 +216,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
                 char *outputbuffer = buffer + cstring_length(prefix);
                 unsigned int outputcount = ring_count(&output) - cstring_length_zero(prefix);
 
-                ring_write(&input, outputbuffer, outputcount);
+                ring_write(&input1, outputbuffer, outputcount);
                 print(outputbuffer, outputcount);
 
             }
@@ -229,7 +229,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
                 print("\n", 1);
                 print(buffer, ring_count(&output));
                 printprompt();
-                print(tbuffer, ring_readcopy(&input, tbuffer, INPUTSIZE));
+                print(tbuffer, ring_readcopy(&input1, tbuffer, INPUTSIZE));
 
             }
 
@@ -252,7 +252,7 @@ static void complete(void)
     struct message message;
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
-    unsigned int count = createcommand(&input, buffer, prefix);
+    unsigned int count = createcommand(&input1, buffer, prefix);
     unsigned int channel = runslang(2, buffer, count);
 
     while (channel_pollany(2, channel, &message, MESSAGE_SIZE, buffer))
@@ -280,7 +280,7 @@ static void clear(void)
 
     char sequence[2] = {0x1B, 'c'};
     char buffer[INPUTSIZE];
-    unsigned int count = ring_readcopy(&input, buffer, INPUTSIZE);
+    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
 
     print(sequence, 2);
     printprompt();
@@ -374,7 +374,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
             case '\b':
             case 0x7F:
-                if (ring_skip_reverse(&input, 1))
+                if (ring_skip_reverse(&input1, 1))
                     print("\b \b", 3);
 
                 break;
@@ -383,7 +383,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 consoledata->data = '\n';
 
             case '\n':
-                if (ring_write(&input, &consoledata->data, 1))
+                if (ring_write(&input1, &consoledata->data, 1))
                     print(&consoledata->data, 1);
 
                 interpret();
@@ -392,7 +392,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             default:
-                if (ring_write(&input, &consoledata->data, 1))
+                if (ring_write(&input1, &consoledata->data, 1))
                     print(&consoledata->data, 1);
 
                 break;
@@ -450,7 +450,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                if (ring_skip_reverse(&input, 1))
+                if (ring_skip_reverse(&input1, 1))
                     print("\b \b", 3);
 
                 break;
@@ -461,7 +461,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_ENTER:
-                if (ring_write(&input, keys.code.value, keys.code.length))
+                if (ring_write(&input1, keys.code.value, keys.code.length))
                     print(keys.code.value, keys.code.length);
 
                 interpret();
@@ -469,7 +469,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             default:
-                if (ring_write(&input, keys.code.value, keys.code.length))
+                if (ring_write(&input1, keys.code.value, keys.code.length))
                     print(keys.code.value, keys.code.length);
 
                 break;
@@ -519,7 +519,7 @@ void init(void)
 {
 
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
-    ring_init(&input, INPUTSIZE, inputbuffer);
+    ring_init(&input1, INPUTSIZE, inputdata1);
     option_add("slang", "initrd:bin/slang");
     option_add("console-service", "console");
     option_add("keyboard-service", "keyboard");
