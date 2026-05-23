@@ -72,15 +72,12 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
 
         }
 
-        printprompt();
-
     }
 
     else
     {
 
         job_killall(&job);
-        printprompt();
 
     }
 
@@ -106,6 +103,7 @@ static void interpret(void)
 
             case EVENT_DATA:
                 interpretdata(0, &message, buffer);
+                printprompt();
 
                 break;
 
