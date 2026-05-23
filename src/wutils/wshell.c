@@ -62,6 +62,41 @@ static void printprompt(void)
 
 }
 
+static void pop(void)
+{
+
+    ring_skip_reverse(&input1, 1);
+
+}
+
+static void push(unsigned int count, void *data)
+{
+
+    ring_write(&input1, data, count);
+
+}
+
+static void clear(void)
+{
+
+    ring_reset(&result);
+
+}
+
+static void clearleft(void)
+{
+
+    ring_reset(&input1);
+
+}
+
+static void clearright(void)
+{
+
+    ring_reset(&input2);
+
+}
+
 static void moveleft(unsigned int steps)
 {
 
@@ -186,14 +221,14 @@ static void interpret(unsigned int wm)
 
 }
 
-static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix)
+static unsigned int createcommand(char *ibuffer, char *prefix)
 {
 
-    if (ring_count(ring))
+    if (ring_count(&input1))
     {
 
         char buffer[INPUTSIZE];
-        unsigned int count = ring_readcopy(ring, buffer, INPUTSIZE);
+        unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
         unsigned int lastspace = buffer_lastbyte(buffer, count, ' ');
 
         if (lastspace)
@@ -320,7 +355,7 @@ static void complete(void)
     struct message message;
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
-    unsigned int count = createcommand(&input1, buffer, prefix);
+    unsigned int count = createcommand(buffer, prefix);
     unsigned int channel = runslang(2, buffer, count);
 
     while (channel_pollany(2, channel, &message, MESSAGE_SIZE, buffer))
@@ -423,17 +458,17 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_U:
-                ring_reset(&input1);
+                clearleft();
 
                 break;
 
             case KEYS_KEY_K:
-                ring_reset(&input2);
+                clearright();
 
                 break;
 
             case KEYS_KEY_L:
-                ring_reset(&result);
+                clear();
 
                 break;
 
@@ -448,19 +483,17 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                ring_skip_reverse(&input1, 1);
+                pop();
 
                 break;
 
             case KEYS_KEY_TAB:
-                ring_move(&input1, &input2);
                 complete();
 
                 break;
 
             case KEYS_KEY_ENTER:
-                ring_move(&input1, &input2);
-                ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
+                push(wmkeypress->length, &wmkeypress->unicode);
                 interpret(source);
 
                 break;
@@ -502,7 +535,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             default:
-                ring_write(&input1, &wmkeypress->unicode, wmkeypress->length);
+                push(wmkeypress->length, &wmkeypress->unicode);
 
                 break;
 

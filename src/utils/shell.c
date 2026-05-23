@@ -27,6 +27,71 @@ static void printprompt(void)
 
 }
 
+static void pop(void)
+{
+
+    if (ring_skip_reverse(&input1, 1))
+        print("\b \b", 3);
+
+}
+
+static void push(unsigned int count, void *data)
+{
+
+    if (ring_write(&input1, data, count))
+        print(data, count);
+
+}
+
+static void clear(void)
+{
+
+    char sequence[2] = {0x1B, 'c'};
+    char buffer[INPUTSIZE];
+    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
+
+    print(sequence, 2);
+    printprompt();
+
+    if (count)
+        print(buffer, count);
+
+}
+
+/*
+static void clearleft(void)
+{
+
+    ring_reset(&input1);
+
+}
+
+static void clearright(void)
+{
+
+    ring_reset(&input2);
+
+}
+
+static void moveleft(unsigned int steps)
+{
+
+    char buffer[INPUTSIZE];
+
+    ring_write_reverse(&input2, buffer, ring_read_reverse(&input1, buffer, steps));
+
+}
+
+static void moveright(unsigned int steps)
+{
+
+    char buffer[INPUTSIZE];
+
+    ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
+
+}
+*/
+
 static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int count)
 {
 
@@ -119,14 +184,14 @@ static void interpret(void)
 
 }
 
-static unsigned int createcommand(struct ring *ring, char *ibuffer, char *prefix)
+static unsigned int createcommand(char *ibuffer, char *prefix)
 {
 
-    if (ring_count(ring))
+    if (ring_count(&input1))
     {
 
         char buffer[INPUTSIZE];
-        unsigned int count = ring_readcopy(ring, buffer, INPUTSIZE);
+        unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
         unsigned int lastspace = buffer_lastbyte(buffer, count, ' ');
 
         if (lastspace)
@@ -254,7 +319,7 @@ static void complete(void)
     struct message message;
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
-    unsigned int count = createcommand(&input1, buffer, prefix);
+    unsigned int count = createcommand(buffer, prefix);
     unsigned int channel = runslang(2, buffer, count);
 
     while (channel_pollany(2, channel, &message, MESSAGE_SIZE, buffer))
@@ -274,21 +339,6 @@ static void complete(void)
         }
 
     }
-
-}
-
-static void clear(void)
-{
-
-    char sequence[2] = {0x1B, 'c'};
-    char buffer[INPUTSIZE];
-    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
-
-    print(sequence, 2);
-    printprompt();
-
-    if (count)
-        print(buffer, count);
 
 }
 
@@ -370,15 +420,13 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case '\t':
-                ring_move(&input1, &input2);
                 complete();
 
                 break;
 
             case '\b':
             case 0x7F:
-                if (ring_skip_reverse(&input1, 1))
-                    print("\b \b", 3);
+                pop();
 
                 break;
 
@@ -386,19 +434,14 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 consoledata->data = '\n';
 
             case '\n':
-                ring_move(&input1, &input2);
-
-                if (ring_write(&input1, &consoledata->data, 1))
-                    print(&consoledata->data, 1);
-
+                push(1, &consoledata->data);
                 interpret();
                 printprompt();
 
                 break;
 
             default:
-                if (ring_write(&input1, &consoledata->data, 1))
-                    print(&consoledata->data, 1);
+                push(1, &consoledata->data);
 
                 break;
 
@@ -455,30 +498,23 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                if (ring_skip_reverse(&input1, 1))
-                    print("\b \b", 3);
+                pop();
 
                 break;
 
             case KEYS_KEY_TAB:
-                ring_move(&input1, &input2);
                 complete();
 
                 break;
 
             case KEYS_KEY_ENTER:
-                ring_move(&input1, &input2);
-
-                if (ring_write(&input1, keys.code.value, keys.code.length))
-                    print(keys.code.value, keys.code.length);
-
+                push(keys.code.length, keys.code.value);
                 interpret();
 
                 break;
 
             default:
-                if (ring_write(&input1, keys.code.value, keys.code.length))
-                    print(keys.code.value, keys.code.length);
+                push(keys.code.length, keys.code.value);
 
                 break;
 
