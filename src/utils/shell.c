@@ -374,10 +374,8 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
             case '\b':
             case 0x7F:
-                if (!ring_skip_reverse(&input, 1))
-                    break;
-
-                print("\b \b", 3);
+                if (ring_skip_reverse(&input, 1))
+                    print("\b \b", 3);
 
                 break;
 
@@ -385,16 +383,17 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 consoledata->data = '\n';
 
             case '\n':
-                print(&consoledata->data, 1);
-                ring_write(&input, &consoledata->data, 1);
+                if (ring_write(&input, &consoledata->data, 1))
+                    print(&consoledata->data, 1);
+
                 interpret();
                 printprompt();
 
                 break;
 
             default:
-                ring_write(&input, &consoledata->data, 1);
-                print(&consoledata->data, 1);
+                if (ring_write(&input, &consoledata->data, 1))
+                    print(&consoledata->data, 1);
 
                 break;
 
@@ -451,10 +450,8 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                if (!ring_skip_reverse(&input, 1))
-                    break;
-
-                print("\b \b", 3);
+                if (ring_skip_reverse(&input, 1))
+                    print("\b \b", 3);
 
                 break;
 
@@ -464,15 +461,16 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_ENTER:
-                print(keys.code.value, keys.code.length);
-                ring_write(&input, keys.code.value, keys.code.length);
+                if (ring_write(&input, keys.code.value, keys.code.length))
+                    print(keys.code.value, keys.code.length);
+
                 interpret();
 
                 break;
 
             default:
-                ring_write(&input, keys.code.value, keys.code.length);
-                print(keys.code.value, keys.code.length);
+                if (ring_write(&input, keys.code.value, keys.code.length))
+                    print(keys.code.value, keys.code.length);
 
                 break;
 
