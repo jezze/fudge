@@ -103,7 +103,6 @@ static void interpret(void)
 
             case EVENT_DATA:
                 interpretdata(0, &message, buffer);
-                printprompt();
 
                 break;
 
@@ -113,13 +112,6 @@ static void interpret(void)
             }
 
         }
-
-    }
-
-    else
-    {
-
-        printprompt();
 
     }
 
@@ -396,6 +388,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 print(&consoledata->data, 1);
                 ring_write(&input, &consoledata->data, 1);
                 interpret();
+                printprompt();
 
                 break;
 
