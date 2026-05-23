@@ -6,6 +6,8 @@
 
 static char inputdata1[INPUTSIZE];
 static struct ring input1;
+static char inputdata2[INPUTSIZE];
+static struct ring input2;
 static struct job_worker workers[JOBSIZE];
 static struct job job;
 static unsigned int escaped;
@@ -368,6 +370,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case '\t':
+                ring_move(&input1, &input2);
                 complete();
 
                 break;
@@ -383,6 +386,8 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 consoledata->data = '\n';
 
             case '\n':
+                ring_move(&input1, &input2);
+
                 if (ring_write(&input1, &consoledata->data, 1))
                     print(&consoledata->data, 1);
 
@@ -456,11 +461,14 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_TAB:
+                ring_move(&input1, &input2);
                 complete();
 
                 break;
 
             case KEYS_KEY_ENTER:
+                ring_move(&input1, &input2);
+
                 if (ring_write(&input1, keys.code.value, keys.code.length))
                     print(keys.code.value, keys.code.length);
 
@@ -520,6 +528,7 @@ void init(void)
 
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
     ring_init(&input1, INPUTSIZE, inputdata1);
+    ring_init(&input2, INPUTSIZE, inputdata2);
     option_add("slang", "initrd:bin/slang");
     option_add("console-service", "console");
     option_add("keyboard-service", "keyboard");
