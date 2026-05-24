@@ -58,11 +58,11 @@ static void clear(void)
 
 }
 
-/*
 static void clearleft(void)
 {
 
-    ring_reset(&input1);
+    while (ring_skip_reverse(&input1, 1))
+        print("\b \b", 3);
 
 }
 
@@ -73,6 +73,7 @@ static void clearright(void)
 
 }
 
+/*
 static void moveleft(unsigned int steps)
 {
 
@@ -406,7 +407,49 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
             switch (consoledata->data)
             {
 
-            case '\0':
+            case 0x00:
+                break;
+
+            case 0x07:
+                break;
+
+            case 0x08:
+                pop();
+
+                break;
+
+            case 0x09:
+                complete();
+
+                break;
+
+            case 0x0A:
+                push(1, "\n");
+                interpret();
+                printprompt();
+
+                break;
+
+            case 0x0B:
+                clearright();
+
+                break;
+
+            case 0x0C:
+                clear();
+
+                break;
+
+            case 0x0D:
+                push(1, "\n");
+                interpret();
+                printprompt();
+
+                break;
+
+            case 0x15:
+                clearleft();
+
                 break;
 
             case 0x1B:
@@ -414,29 +457,8 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
-            case '\f':
-                clear();
-
-                break;
-
-            case '\t':
-                complete();
-
-                break;
-
-            case '\b':
             case 0x7F:
                 pop();
-
-                break;
-
-            case '\r':
-                consoledata->data = '\n';
-
-            case '\n':
-                push(1, &consoledata->data);
-                interpret();
-                printprompt();
 
                 break;
 
