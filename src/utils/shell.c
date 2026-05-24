@@ -562,6 +562,26 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
+            case KEYS_KEY_HOME:
+                moveleft(ring_count(&input1));
+
+                break;
+
+            case KEYS_KEY_CURSORLEFT:
+                moveleft(1);
+
+                break;
+
+            case KEYS_KEY_CURSORRIGHT:
+                moveright(1);
+
+                break;
+
+            case KEYS_KEY_END:
+                moveright(ring_count(&input2));
+
+                break;
+
             default:
                 insert(keys.code.length, keys.code.value);
 

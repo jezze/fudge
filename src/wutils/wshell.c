@@ -457,8 +457,23 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             switch (wmkeypress->id)
             {
 
-            case KEYS_KEY_U:
-                clearleft();
+            case KEYS_KEY_A:
+                moveleft(ring_count(&input1));
+
+                break;
+
+            case KEYS_KEY_B:
+                moveleft(1);
+
+                break;
+
+            case KEYS_KEY_E:
+                moveright(ring_count(&input2));
+
+                break;
+
+            case KEYS_KEY_F:
+                moveright(1);
 
                 break;
 
@@ -469,6 +484,11 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             case KEYS_KEY_L:
                 clear();
+
+                break;
+
+            case KEYS_KEY_U:
+                clearleft();
 
                 break;
 
