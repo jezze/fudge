@@ -62,14 +62,14 @@ static void printprompt(void)
 
 }
 
-static void pop(void)
+static void deleteleft(void)
 {
 
     ring_skip_reverse(&input1, 1);
 
 }
 
-static void push(unsigned int count, void *data)
+static void insert(unsigned int count, void *data)
 {
 
     ring_write(&input1, data, count);
@@ -483,7 +483,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                pop();
+                deleteleft();
 
                 break;
 
@@ -493,7 +493,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_ENTER:
-                push(wmkeypress->length, &wmkeypress->unicode);
+                insert(wmkeypress->length, &wmkeypress->unicode);
                 interpret(source);
 
                 break;
@@ -535,7 +535,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             default:
-                push(wmkeypress->length, &wmkeypress->unicode);
+                insert(wmkeypress->length, &wmkeypress->unicode);
 
                 break;
 

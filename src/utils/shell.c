@@ -27,7 +27,7 @@ static void printprompt(void)
 
 }
 
-static void pop(void)
+static void deleteleft(void)
 {
 
     if (ring_skip_reverse(&input1, 1))
@@ -35,7 +35,7 @@ static void pop(void)
 
 }
 
-static void push(unsigned int count, void *data)
+static void insert(unsigned int count, void *data)
 {
 
     if (ring_write(&input1, data, count))
@@ -69,11 +69,19 @@ static void clearleft(void)
 static void clearright(void)
 {
 
+    unsigned int count = ring_count(&input2);
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+        print(" ", 1);
+
+    for (i = 0; i < count; i++)
+        print("\b", 1);
+
     ring_reset(&input2);
 
 }
 
-/*
 static void moveleft(unsigned int steps)
 {
 
@@ -91,7 +99,6 @@ static void moveright(unsigned int steps)
     ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
 
 }
-*/
 
 static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int count)
 {
@@ -410,11 +417,31 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
             case 0x00:
                 break;
 
+            case 0x01:
+                moveleft(ring_count(&input1));
+
+                break;
+
+            case 0x02:
+                moveleft(1);
+
+                break;
+
+            case 0x05:
+                moveright(ring_count(&input2));
+
+                break;
+
+            case 0x06:
+                moveright(1);
+
+                break;
+
             case 0x07:
                 break;
 
             case 0x08:
-                pop();
+                deleteleft();
 
                 break;
 
@@ -424,7 +451,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x0A:
-                push(1, "\n");
+                insert(1, "\n");
                 interpret();
                 printprompt();
 
@@ -441,7 +468,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x0D:
-                push(1, "\n");
+                insert(1, "\n");
                 interpret();
                 printprompt();
 
@@ -458,12 +485,12 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x7F:
-                pop();
+                deleteleft();
 
                 break;
 
             default:
-                push(1, &consoledata->data);
+                insert(1, &consoledata->data);
 
                 break;
 
@@ -520,7 +547,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                pop();
+                deleteleft();
 
                 break;
 
@@ -530,13 +557,13 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_ENTER:
-                push(keys.code.length, keys.code.value);
+                insert(keys.code.length, keys.code.value);
                 interpret();
 
                 break;
 
             default:
-                push(keys.code.length, keys.code.value);
+                insert(keys.code.length, keys.code.value);
 
                 break;
 
