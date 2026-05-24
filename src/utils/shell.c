@@ -27,22 +27,6 @@ static void printprompt(void)
 
 }
 
-static void deleteleft(void)
-{
-
-    if (ring_skip_reverse(&input1, 1))
-        print("\b \b", 3);
-
-}
-
-static void insert(unsigned int count, void *data)
-{
-
-    if (ring_write(&input1, data, count))
-        print(data, count);
-
-}
-
 static void clear(void)
 {
 
@@ -58,27 +42,55 @@ static void clear(void)
 
 }
 
-static void clearleft(void)
+static void insert(unsigned int count, void *data)
 {
 
-    while (ring_skip_reverse(&input1, 1))
-        print("\b \b", 3);
+    if (ring_write(&input1, data, count))
+        print(data, count);
 
 }
 
-static void clearright(void)
+static void deleteleft(unsigned int steps)
 {
 
-    unsigned int count = ring_count(&input2);
     unsigned int i;
 
-    for (i = 0; i < count; i++)
-        print(" ", 1);
+    for (i = 0; i < steps; i++)
+    {
 
-    for (i = 0; i < count; i++)
-        print("\b", 1);
+        if (ring_skip_reverse(&input1, 1))
+            print("\b \b", 3);
 
-    ring_reset(&input2);
+    }
+
+}
+
+static void deleteright(unsigned int steps)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < steps; i++)
+    {
+
+        if (ring_skip_reverse(&input2, 1))
+            print("\b \b", 3);
+
+    }
+
+}
+
+static void deletestart(void)
+{
+
+    deleteleft(ring_count(&input1));
+
+}
+
+static void deleteend(void)
+{
+
+    deleteright(ring_count(&input2));
 
 }
 
@@ -97,6 +109,20 @@ static void moveright(unsigned int steps)
     char buffer[INPUTSIZE];
 
     ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
+
+}
+
+static void movestart(void)
+{
+
+    moveleft(ring_count(&input1));
+
+}
+
+static void moveend(void)
+{
+
+    moveright(ring_count(&input2));
 
 }
 
@@ -418,7 +444,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x01:
-                moveleft(ring_count(&input1));
+                movestart();
 
                 break;
 
@@ -428,7 +454,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x05:
-                moveright(ring_count(&input2));
+                moveend();
 
                 break;
 
@@ -441,7 +467,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x08:
-                deleteleft();
+                deleteleft(1);
 
                 break;
 
@@ -458,7 +484,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x0B:
-                clearright();
+                deleteend();
 
                 break;
 
@@ -475,7 +501,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x15:
-                clearleft();
+                deletestart();
 
                 break;
 
@@ -485,7 +511,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x7F:
-                deleteleft();
+                deleteleft(1);
 
                 break;
 
@@ -547,7 +573,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                deleteleft();
+                deleteleft(1);
 
                 break;
 
@@ -563,7 +589,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_HOME:
-                moveleft(ring_count(&input1));
+                movestart();
 
                 break;
 
@@ -578,7 +604,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_END:
-                moveright(ring_count(&input2));
+                moveend();
 
                 break;
 

@@ -62,10 +62,10 @@ static void printprompt(void)
 
 }
 
-static void deleteleft(void)
+static void clear(void)
 {
 
-    ring_skip_reverse(&input1, 1);
+    ring_reset(&result);
 
 }
 
@@ -76,21 +76,28 @@ static void insert(unsigned int count, void *data)
 
 }
 
-static void clear(void)
+static void deleteleft(unsigned int steps)
 {
 
-    ring_reset(&result);
+    ring_skip_reverse(&input1, steps);
 
 }
 
-static void clearleft(void)
+static void deleteright(unsigned int steps)
+{
+
+    ring_skip(&input2, steps);
+
+}
+
+static void deletestart(void)
 {
 
     ring_reset(&input1);
 
 }
 
-static void clearright(void)
+static void deleteend(void)
 {
 
     ring_reset(&input2);
@@ -112,6 +119,20 @@ static void moveright(unsigned int steps)
     char buffer[INPUTSIZE];
 
     ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
+
+}
+
+static void movestart(void)
+{
+
+    moveleft(ring_count(&input1));
+
+}
+
+static void moveend(void)
+{
+
+    moveright(ring_count(&input2));
 
 }
 
@@ -458,7 +479,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_A:
-                moveleft(ring_count(&input1));
+                movestart();
 
                 break;
 
@@ -467,8 +488,13 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
+            case KEYS_KEY_D:
+                deleteright(1);
+
+                break;
+
             case KEYS_KEY_E:
-                moveright(ring_count(&input2));
+                moveend();
 
                 break;
 
@@ -477,8 +503,13 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
+            case KEYS_KEY_H:
+                deleteleft(1);
+
+                break;
+
             case KEYS_KEY_K:
-                clearright();
+                deleteend();
 
                 break;
 
@@ -488,7 +519,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_U:
-                clearleft();
+                deletestart();
 
                 break;
 
@@ -503,7 +534,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
             {
 
             case KEYS_KEY_BACKSPACE:
-                deleteleft();
+                deleteleft(1);
 
                 break;
 
@@ -519,7 +550,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_HOME:
-                moveleft(ring_count(&input1));
+                movestart();
 
                 break;
 
@@ -542,7 +573,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_END:
-                moveright(ring_count(&input2));
+                moveend();
 
                 break;
 
