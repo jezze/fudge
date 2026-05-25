@@ -390,25 +390,37 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
 static void complete(void)
 {
 
-    struct message message;
     char prefix[INPUTSIZE];
     char buffer[MESSAGE_SIZE];
     unsigned int count = createcommand(buffer, prefix);
-    unsigned int channel = runslang(2, buffer, count);
 
-    while (channel_pollany(2, channel, &message, MESSAGE_SIZE, buffer))
+    if (count)
     {
 
-        switch (message.event)
+        unsigned int channel = runslang(2, buffer, count);
+
+        if (channel)
         {
 
-        case EVENT_DATA:
-            completedata(0, &message, buffer, count, prefix);
+            struct message message;
 
-            break;
+            while (channel_pollany(2, channel, &message, MESSAGE_SIZE, buffer))
+            {
 
-        case EVENT_DONE:
-            return;
+                switch (message.event)
+                {
+
+                case EVENT_DATA:
+                    completedata(0, &message, buffer, count, prefix);
+
+                    break;
+
+                case EVENT_DONE:
+                    return;
+
+                }
+
+            }
 
         }
 
