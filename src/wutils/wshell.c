@@ -55,6 +55,17 @@ static void print(void *buffer, unsigned int count)
 
 }
 
+static void printring(struct ring *ring)
+{
+
+    char buffer[MESSAGE_SIZE];
+    unsigned int count = ring_readcopy(ring, buffer, MESSAGE_SIZE);
+
+    if (count)
+        print(buffer, count);
+
+}
+
 static void printprompt(void)
 {
 
@@ -62,45 +73,24 @@ static void printprompt(void)
 
 }
 
-static void clear(void)
+static void clearline(void)
 {
 
     ring_reset(&result);
 
 }
 
-static void insert(unsigned int count, void *data)
+static void insertleft(unsigned int count, void *data)
 {
 
     ring_write(&input1, data, count);
 
 }
 
-static void deleteleft(unsigned int steps)
+static void insertright(unsigned int count, void *data)
 {
 
-    ring_skip_reverse(&input1, steps);
-
-}
-
-static void deleteright(unsigned int steps)
-{
-
-    ring_skip(&input2, steps);
-
-}
-
-static void deletestart(void)
-{
-
-    ring_reset(&input1);
-
-}
-
-static void deleteend(void)
-{
-
-    ring_reset(&input2);
+    ring_write(&input2, data, count);
 
 }
 
@@ -136,6 +126,34 @@ static void moveend(void)
 
 }
 
+static void deleteleft(unsigned int steps)
+{
+
+    ring_skip_reverse(&input1, steps);
+
+}
+
+static void deleteright(unsigned int steps)
+{
+
+    ring_skip(&input2, steps);
+
+}
+
+static void deletestart(void)
+{
+
+    ring_reset(&input1);
+
+}
+
+static void deleteend(void)
+{
+
+    ring_reset(&input2);
+
+}
+
 static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int count)
 {
 
@@ -154,7 +172,7 @@ static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int c
 
 }
 
-static void interpretdata(unsigned int wm, unsigned int ichannel, struct message *message, void *buffer)
+static void interpretdata(unsigned int ichannel, struct message *message, void *buffer)
 {
 
     job_init(&job, workers, JOBSIZE);
@@ -183,15 +201,12 @@ static void interpretdata(unsigned int wm, unsigned int ichannel, struct message
 
         }
 
-        update(wm);
-
     }
 
     else
     {
 
         job_killall(&job);
-        update(wm);
 
     }
 
@@ -200,8 +215,11 @@ static void interpretdata(unsigned int wm, unsigned int ichannel, struct message
 static void interpret(unsigned int wm)
 {
 
-    char buffer[MESSAGE_SIZE];
-    unsigned int count = ring_read(&input1, buffer, MESSAGE_SIZE);
+    unsigned char buffer[MESSAGE_SIZE];
+    unsigned int count = 0;
+
+    count += ring_read(&input1, buffer + count, MESSAGE_SIZE - count);
+    count += ring_read(&input2, buffer + count, MESSAGE_SIZE - count);
 
     if (count > 1)
     {
@@ -220,7 +238,7 @@ static void interpret(unsigned int wm)
             {
 
             case EVENT_DATA:
-                interpretdata(wm, 0, &message, buffer);
+                interpretdata(0, &message, buffer);
 
                 break;
 
@@ -233,23 +251,20 @@ static void interpret(unsigned int wm)
 
     }
 
-    else
-    {
-
-        update(wm);
-
-    }
-
 }
 
 static unsigned int createcommand(char *ibuffer, char *prefix)
 {
 
-    if (ring_count(&input1))
+    unsigned char buffer[INPUTSIZE];
+    unsigned int count = 0;
+
+    count += ring_readcopy(&input1, buffer + count, INPUTSIZE - count);
+    count += ring_readcopy(&input2, buffer + count, INPUTSIZE - count);
+
+    if (count)
     {
 
-        char buffer[INPUTSIZE];
-        unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
         unsigned int lastspace = buffer_lastbyte(buffer, count, ' ');
 
         if (lastspace)
@@ -348,12 +363,11 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
             else
             {
 
-                char tbuffer[INPUTSIZE];
-
                 printprompt();
-                print(tbuffer, ring_readcopy(&input1, tbuffer, INPUTSIZE));
+                printring(&input1);
+                printring(&input2);
                 print("\n", 1);
-                print(buffer, ring_count(&output));
+                printring(&output);
 
             }
 
@@ -514,7 +528,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_L:
-                clear();
+                clearline();
 
                 break;
 
@@ -544,7 +558,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case KEYS_KEY_ENTER:
-                insert(wmkeypress->length, &wmkeypress->unicode);
+                insertright(wmkeypress->length, &wmkeypress->unicode);
                 interpret(source);
 
                 break;
@@ -586,7 +600,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             default:
-                insert(wmkeypress->length, &wmkeypress->unicode);
+                insertleft(wmkeypress->length, &wmkeypress->unicode);
 
                 break;
 

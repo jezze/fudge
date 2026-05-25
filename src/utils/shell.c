@@ -20,29 +20,90 @@ static void print(void *buffer, unsigned int count)
 
 }
 
-static void printprompt(void)
+static void printescape(void *buffer, unsigned int count)
 {
 
-    print("$ ", 2);
+    char escape[32];
+
+    escape[0] = 0x1B;
+
+    print(escape, buffer_write(escape, 32, buffer, count, 1) + 1);
 
 }
 
-static void clear(void)
+static void printring(struct ring *ring)
 {
 
-    char sequence[2] = {0x1B, 'c'};
-    char buffer[INPUTSIZE];
-    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
-
-    print(sequence, 2);
-    printprompt();
+    char buffer[MESSAGE_SIZE];
+    unsigned int count = ring_readcopy(ring, buffer, MESSAGE_SIZE);
 
     if (count)
         print(buffer, count);
 
 }
 
-static void insert(unsigned int count, void *data)
+static void printprompt(void)
+{
+
+    char buffer[INPUTSIZE];
+    unsigned int count = buffer_write(buffer, INPUTSIZE, "$ ", 2, 0);
+
+    count += ring_readcopy(&input1, buffer + count, INPUTSIZE - count);
+    count += ring_readcopy(&input2, buffer + count, INPUTSIZE - count);
+
+    print(buffer, count);
+
+}
+
+static void cursorleft(unsigned int steps)
+{
+
+    if (steps)
+    {
+
+        unsigned char num[32];
+
+        printescape(num, cstring_write_fmt1(num, 32, 0, "[%uD", &steps));
+
+    }
+
+}
+
+static void cursorright(unsigned int steps)
+{
+
+    if (steps)
+    {
+
+        unsigned char num[32];
+
+        printescape(num, cstring_write_fmt1(num, 32, 0, "[%uC", &steps));
+
+    }
+
+}
+
+static void clearline(void)
+{
+
+    printescape("[2K", 3);
+    printescape("[0G", 3);
+    printprompt();
+    cursorleft(ring_count(&input2));
+
+}
+
+static void clearscreen(void)
+{
+
+    printescape("[2J", 3);
+    printescape("[H", 2);
+    printprompt();
+    cursorleft(ring_count(&input2));
+
+}
+
+static void insertleft(unsigned int count, void *data)
 {
 
     if (ring_write(&input1, data, count))
@@ -50,47 +111,11 @@ static void insert(unsigned int count, void *data)
 
 }
 
-static void deleteleft(unsigned int steps)
+static void insertright(unsigned int count, void *data)
 {
 
-    unsigned int i;
-
-    for (i = 0; i < steps; i++)
-    {
-
-        if (ring_skip_reverse(&input1, 1))
-            print("\b \b", 3);
-
-    }
-
-}
-
-static void deleteright(unsigned int steps)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < steps; i++)
-    {
-
-        if (ring_skip_reverse(&input2, 1))
-            print("\b \b", 3);
-
-    }
-
-}
-
-static void deletestart(void)
-{
-
-    deleteleft(ring_count(&input1));
-
-}
-
-static void deleteend(void)
-{
-
-    deleteright(ring_count(&input2));
+    if (ring_write(&input2, data, count))
+        print(data, count);
 
 }
 
@@ -99,7 +124,7 @@ static void moveleft(unsigned int steps)
 
     char buffer[INPUTSIZE];
 
-    ring_write_reverse(&input2, buffer, ring_read_reverse(&input1, buffer, steps));
+    cursorleft(ring_write_reverse(&input2, buffer, ring_read_reverse(&input1, buffer, steps)));
 
 }
 
@@ -108,7 +133,7 @@ static void moveright(unsigned int steps)
 
     char buffer[INPUTSIZE];
 
-    ring_write(&input1, buffer, ring_read(&input2, buffer, steps));
+    cursorright(ring_write(&input1, buffer, ring_read(&input2, buffer, steps)));
 
 }
 
@@ -123,6 +148,36 @@ static void moveend(void)
 {
 
     moveright(ring_count(&input2));
+
+}
+
+static void deleteleft(unsigned int steps)
+{
+
+    if (ring_skip_reverse(&input1, steps))
+        clearline();
+
+}
+
+static void deleteright(unsigned int steps)
+{
+
+    if (ring_skip(&input2, steps))
+        clearline();
+
+}
+
+static void deletestart(void)
+{
+
+    deleteleft(ring_count(&input1));
+
+}
+
+static void deleteend(void)
+{
+
+    deleteright(ring_count(&input2));
 
 }
 
@@ -187,8 +242,11 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
 static void interpret(void)
 {
 
-    char buffer[MESSAGE_SIZE];
-    unsigned int count = ring_read(&input1, buffer, MESSAGE_SIZE);
+    unsigned char buffer[MESSAGE_SIZE];
+    unsigned int count = 0;
+
+    count += ring_read(&input1, buffer + count, MESSAGE_SIZE - count);
+    count += ring_read(&input2, buffer + count, MESSAGE_SIZE - count);
 
     if (count > 1)
     {
@@ -221,11 +279,15 @@ static void interpret(void)
 static unsigned int createcommand(char *ibuffer, char *prefix)
 {
 
-    if (ring_count(&input1))
+    unsigned char buffer[INPUTSIZE];
+    unsigned int count = 0;
+
+    count += ring_readcopy(&input1, buffer + count, MESSAGE_SIZE - count);
+    count += ring_readcopy(&input2, buffer + count, MESSAGE_SIZE - count);
+
+    if (count)
     {
 
-        char buffer[INPUTSIZE];
-        unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
         unsigned int lastspace = buffer_lastbyte(buffer, count, ' ');
 
         if (lastspace)
@@ -318,19 +380,14 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
                 unsigned int outputcount = ring_count(&output) - cstring_length_zero(prefix);
 
                 ring_write(&input1, outputbuffer, outputcount);
-                print(outputbuffer, outputcount);
 
             }
 
             else
             {
 
-                char tbuffer[INPUTSIZE];
-
                 print("\n", 1);
-                print(buffer, ring_count(&output));
-                printprompt();
-                print(tbuffer, ring_readcopy(&input1, tbuffer, INPUTSIZE));
+                printring(&output);
 
             }
 
@@ -453,6 +510,12 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
+            case 0x03:
+                break;
+
+            case 0x04:
+                break;
+
             case 0x05:
                 moveend();
 
@@ -473,13 +536,14 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
             case 0x09:
                 complete();
+                clearline();
 
                 break;
 
             case 0x0A:
-                insert(1, "\n");
+                insertright(1, "\n");
                 interpret();
-                printprompt();
+                clearline();
 
                 break;
 
@@ -489,15 +553,36 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             case 0x0C:
-                clear();
+                clearscreen();
 
                 break;
 
             case 0x0D:
-                insert(1, "\n");
+                insertright(1, "\n");
                 interpret();
-                printprompt();
+                clearline();
 
+                break;
+
+            case 0x0E:
+                break;
+
+            case 0x0F:
+                break;
+
+            case 0x10:
+                break;
+
+            case 0x11:
+                break;
+
+            case 0x12:
+                break;
+
+            case 0x13:
+                break;
+
+            case 0x14:
                 break;
 
             case 0x15:
@@ -505,9 +590,36 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
                 break;
 
+            case 0x16:
+                break;
+
+            case 0x17:
+                break;
+
+            case 0x18:
+                break;
+
+            case 0x19:
+                break;
+
+            case 0x1A:
+                break;
+
             case 0x1B:
                 escaped = 1;
 
+                break;
+
+            case 0x1C:
+                break;
+
+            case 0x1D:
+                break;
+
+            case 0x1E:
+                break;
+
+            case 0x1F:
                 break;
 
             case 0x7F:
@@ -516,7 +628,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             default:
-                insert(1, &consoledata->data);
+                insertleft(1, &consoledata->data);
 
                 break;
 
@@ -579,12 +691,14 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             case KEYS_KEY_TAB:
                 complete();
+                clearline();
 
                 break;
 
             case KEYS_KEY_ENTER:
-                insert(keys.code.length, keys.code.value);
+                insertright(keys.code.length, keys.code.value);
                 interpret();
+                clearline();
 
                 break;
 
@@ -609,7 +723,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 break;
 
             default:
-                insert(keys.code.length, keys.code.value);
+                insertleft(keys.code.length, keys.code.value);
 
                 break;
 
@@ -645,7 +759,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     option_setdecimal("keyboard-service", channel_lookup(option_getstring("keyboard-service")));
     channel_send(0, option_getdecimal("console-service"), EVENT_LINK);
     channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
-    printprompt();
+    clearline();
 
     while (channel_process(0));
 
