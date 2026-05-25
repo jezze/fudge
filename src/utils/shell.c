@@ -661,7 +661,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 {
 
                 case KEYS_KEY_C:
-                    job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
+                    job_sendfirst(&job, 0, EVENT_KILL, 0, 0);
 
                     break;
 
