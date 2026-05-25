@@ -215,26 +215,32 @@ static void interpret(unsigned int wm)
     if (count > 1)
     {
 
-        struct message message;
         unsigned int channel = runslang(1, buffer, count);
 
         printprompt();
         print(buffer, count);
         update(wm);
 
-        while (channel_pollany(1, channel, &message, MESSAGE_SIZE, buffer))
+        if (channel)
         {
 
-            switch (message.event)
+            struct message message;
+
+            while (channel_pollany(1, channel, &message, MESSAGE_SIZE, buffer))
             {
 
-            case EVENT_DATA:
-                interpretdata(0, &message, buffer);
+                switch (message.event)
+                {
 
-                break;
+                case EVENT_DATA:
+                    interpretdata(0, &message, buffer);
 
-            case EVENT_DONE:
-                return;
+                    break;
+
+                case EVENT_DONE:
+                    return;
+
+                }
 
             }
 
