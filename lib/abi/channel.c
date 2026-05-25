@@ -127,6 +127,12 @@ void channel_dispatch(unsigned int ichannel, struct message *message, void *data
 
         break;
 
+    case EVENT_KILL:
+        parent = message->source;
+        state = CHANNEL_STATE_TERMINATED;
+
+        break;
+
     }
 
     if (state == CHANNEL_STATE_CLOSING)
