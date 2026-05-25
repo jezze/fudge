@@ -344,6 +344,27 @@ unsigned int job_count(struct job *job)
 
 }
 
+unsigned int job_exec(struct job *job, unsigned int ichannel, char *bindir, char *pwd)
+{
+
+    if (job_spawn(job, ichannel, bindir))
+    {
+
+        job_run(job, ichannel, pwd);
+
+    }
+
+    else
+    {
+
+        job_killall(job);
+
+    }
+
+    return job_count(job);
+
+}
+
 void job_init(struct job *job, struct job_worker *workers, unsigned int capacity)
 {
 

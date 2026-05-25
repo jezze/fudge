@@ -38,4 +38,5 @@ void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, u
 void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer);
 void job_killall(struct job *job);
 unsigned int job_count(struct job *job);
+unsigned int job_exec(struct job *job, unsigned int ichannel, char *bindir, char *pwd);
 void job_init(struct job *job, struct job_worker *workers, unsigned int capacity);

@@ -205,12 +205,10 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message->length);
 
-    if (job_spawn(&job, ichannel, "initrd:bin"))
+    if (job_exec(&job, ichannel, "initrd:bin", option_getstring("pwd")))
     {
 
         char data[MESSAGE_SIZE];
-
-        job_run(&job, ichannel, option_getstring("pwd"));
 
         while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
@@ -227,13 +225,6 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
             }
 
         }
-
-    }
-
-    else
-    {
-
-        job_killall(&job);
 
     }
 
@@ -345,14 +336,13 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
     job_init(&job, workers, JOBSIZE);
     job_parse(&job, buffer, message->length);
 
-    if (job_spawn(&job, ichannel, "initrd:bin"))
+    if (job_exec(&job, ichannel, "initrd:bin", option_getstring("pwd")))
     {
 
         char data[MESSAGE_SIZE];
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
-        job_run(&job, ichannel, option_getstring("pwd"));
 
         while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
         {
@@ -392,13 +382,6 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
             }
 
         }
-
-    }
-
-    else
-    {
-
-        job_killall(&job);
 
     }
 
