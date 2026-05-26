@@ -9,34 +9,95 @@
 
 #define VGA_COLORMAP_LIMIT              256
 
-struct vga_character
-{
-
-    char character;
-    char color;
-
-};
-
 static struct base_driver driver;
 static struct console_interface consoleinterface;
 static struct video_interface videointerface;
-static struct {unsigned char color; unsigned int offset;} cursor = {0x0F, 0};
-static struct vga_character *taddress = (struct vga_character *)0x000B8000;
+static unsigned char *consoledata = (unsigned char *)0x000B8000;
 /*
-static unsigned int framebuffer = 0x000A0000;
+static unsigned char *videodata = (unsigned char *)0x000A0000;
 */
 
-static void clear(unsigned int offset)
+static void print(char c)
 {
 
-    unsigned int total = videointerface.width * videointerface.height;
+    consoledata[consoleinterface.cursor * 2] = c;
+    consoledata[consoleinterface.cursor * 2 + 1] = consoleinterface.color;
+
+}
+
+static void clearafter(unsigned int offset)
+{
+
+    unsigned int current = consoleinterface.cursor;
+    unsigned int total = consoleinterface.width * consoleinterface.height;
     unsigned int i;
+
+    console_cursorset(&consoleinterface, offset);
 
     for (i = offset; i < total; i++)
     {
 
-        taddress[i].character = ' ';
-        taddress[i].color = cursor.color;
+        print(' ');
+        console_cursorright(&consoleinterface, 1);
+
+    }
+
+    console_cursorset(&consoleinterface, current);
+
+}
+
+static void scrollup(unsigned int lines)
+{
+
+    buffer_copy(consoledata, consoledata + (consoleinterface.width * lines), consoleinterface.width * (consoleinterface.height - lines) * 2);
+
+}
+
+static void checkscroll(void)
+{
+
+    if (consoleinterface.cursor >= consoleinterface.width * consoleinterface.height)
+    {
+
+        scrollup(1);
+        clearafter(consoleinterface.width * (consoleinterface.height - 1));
+        console_cursorup(&consoleinterface, 1);
+
+    }
+
+}
+
+static void handle(char c)
+{
+
+    switch (c)
+    {
+
+    case '\b':
+        console_cursorleft(&consoleinterface, 1);
+
+        break;
+
+    case '\t':
+        console_cursorright(&consoleinterface, consoleinterface.cursor + 8 - (consoleinterface.cursor % 8));
+
+        break;
+
+    case '\r':
+        console_cursorhome(&consoleinterface);
+
+        break;
+
+    case '\n':
+        console_cursordown(&consoleinterface, 1);
+
+        break;
+
+    default:
+        print(c);
+        console_cursorright(&consoleinterface, 1);
+
+        break;
 
     }
 
@@ -45,52 +106,19 @@ static void clear(unsigned int offset)
 static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, unsigned int count)
 {
 
-    unsigned int total = videointerface.width * videointerface.height;
+    unsigned char *b = buffer;
     unsigned int i;
-
-    if (videointerface.width != 80)
-        return count;
 
     for (i = 0; i < count; i++)
     {
 
-        char c = ((char *)buffer)[i];
-
-        if (c == '\b')
-            cursor.offset--;
-
-        if (c == '\t')
-            cursor.offset = (cursor.offset + 8) & ~(8 - 1);
-
-        if (c == '\r')
-            cursor.offset -= (cursor.offset % videointerface.width);
-
-        if (c == '\n')
-            cursor.offset += videointerface.width - (cursor.offset % videointerface.width);
-
-        if (c >= ' ')
-        {
-
-            taddress[cursor.offset].character = c;
-            taddress[cursor.offset].color = cursor.color;
-            cursor.offset++;
-
-        }
-
-        if (cursor.offset >= total)
-        {
-
-            buffer_copy(taddress, taddress + videointerface.width, videointerface.width * (videointerface.height - 1) * sizeof (struct vga_character));
-            clear(videointerface.width * (videointerface.height - 1));
-
-            cursor.offset -= videointerface.width;
-
-        }
+        handle(b[i]);
+        checkscroll();
 
     }
 
-    outcrt1(VGA_REG_CRTINDEX1_CRT0E, cursor.offset >> 8);
-    outcrt1(VGA_REG_CRTINDEX1_CRT0F, cursor.offset);
+    outcrt1(VGA_REG_CRTINDEX1_CRT0E, consoleinterface.cursor >> 8);
+    outcrt1(VGA_REG_CRTINDEX1_CRT0F, consoleinterface.cursor);
 
     return MESSAGE_OK;
 
@@ -100,7 +128,7 @@ static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, u
 static unsigned int videointerface_getcmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    char *c = buffer;
+    unsigned char *b = buffer;
     unsigned int i;
 
     if (count > VGA_COLORMAP_LIMIT)
@@ -113,9 +141,9 @@ static unsigned int videointerface_getcmap(unsigned int source, unsigned int cou
     {
 
         io_outb(VGA_REG_DACRINDEX, i / 3);
-        c[i + 0] = io_inb(VGA_REG_DACDATA);
-        c[i + 1] = io_inb(VGA_REG_DACDATA);
-        c[i + 2] = io_inb(VGA_REG_DACDATA);
+        b[i + 0] = io_inb(VGA_REG_DACDATA);
+        b[i + 1] = io_inb(VGA_REG_DACDATA);
+        b[i + 2] = io_inb(VGA_REG_DACDATA);
 
     }
 
@@ -127,7 +155,7 @@ static unsigned int videointerface_getcmap(unsigned int source, unsigned int cou
 static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    char *c = buffer;
+    unsigned char *b = buffer;
     unsigned int i;
 
     if (count > VGA_COLORMAP_LIMIT)
@@ -137,9 +165,9 @@ static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int
     {
 
         io_outb(VGA_REG_DACWINDEX, i / 3);
-        io_outb(VGA_REG_DACDATA, c[i + 0]);
-        io_outb(VGA_REG_DACDATA, c[i + 1]);
-        io_outb(VGA_REG_DACDATA, c[i + 2]);
+        io_outb(VGA_REG_DACDATA, b[i + 0]);
+        io_outb(VGA_REG_DACDATA, b[i + 1]);
+        io_outb(VGA_REG_DACDATA, b[i + 2]);
 
     }
 
@@ -190,6 +218,9 @@ static void driver_init(unsigned int id)
     console_initinterface(&consoleinterface, id, consoleinterface_ondata);
     video_initinterface(&videointerface, id, videointerface_onvideocmap, videointerface_onvideoconf);
 
+    consoleinterface.width = 80;
+    consoleinterface.height = 25;
+    consoleinterface.color = 0x0F;
     videointerface.width = 80;
     videointerface.height = 25;
     videointerface.bpp = 2;

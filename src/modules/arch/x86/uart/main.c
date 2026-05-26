@@ -125,6 +125,13 @@ static void handleirq(unsigned int irq)
 
 }
 
+static void print(char c)
+{
+
+    uart_put(c);
+
+}
+
 static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, unsigned int count)
 {
 
@@ -132,14 +139,7 @@ static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, u
     unsigned int i;
 
     for (i = 0; i < count; i++)
-    {
-
-        if (b[i] == '\n')
-            uart_put('\r');
-
-        uart_put(b[i]);
-
-    }
+        print(b[i]);
 
     return MESSAGE_OK;
 

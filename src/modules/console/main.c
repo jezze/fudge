@@ -45,6 +45,55 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
 }
 
+void console_cursorset(struct console_interface *interface, unsigned int position)
+{
+
+    interface->cursor = position;
+
+}
+
+void console_cursorleft(struct console_interface *interface, unsigned int steps)
+{
+
+    interface->cursor -= steps;
+
+}
+
+void console_cursorright(struct console_interface *interface, unsigned int steps)
+{
+
+    interface->cursor += steps;
+
+}
+
+void console_cursorup(struct console_interface *interface, unsigned int steps)
+{
+
+    interface->cursor -= interface->width * steps;
+
+}
+
+void console_cursordown(struct console_interface *interface, unsigned int steps)
+{
+
+    interface->cursor += interface->width * steps;
+
+}
+
+void console_cursorhome(struct console_interface *interface)
+{
+
+    interface->cursor -= (interface->cursor % interface->width);
+
+}
+
+void console_cursorend(struct console_interface *interface)
+{
+
+    interface->cursor += interface->width - (interface->cursor % interface->width) - 1;
+
+}
+
 void console_registerinterface(struct console_interface *interface)
 {
 
@@ -65,6 +114,10 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
     interface->id = id;
+    interface->width = 0;
+    interface->height = 0;
+    interface->color = 0;
+    interface->cursor = 0;
     interface->inode = pool_addnode("console", &interface->resource, &operands);
     interface->ondata = ondata;
 
