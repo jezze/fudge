@@ -173,7 +173,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
     struct task *task = pool_gettask(itask);
 
-    if (task)
+    if (task && ichannel < TASK_MAILBOXES)
     {
 
         struct mailbox *mailbox = pool_getmailbox(task->imailbox[ichannel]);
