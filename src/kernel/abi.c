@@ -97,15 +97,11 @@ static unsigned int load(unsigned int itask, void *stack)
         if (format)
         {
 
-            void (*module_init)(void);
-            void (*module_register)(void);
-
-            module_init = (void (*)(void))(format->findsymbol(args->address, 11, "module_init"));
+            void (*module_init)(void) = (void (*)(void))(format->findsymbol(args->address, 11, "module_init"));
+            void (*module_register)(void) = (void (*)(void))(format->findsymbol(args->address, 15, "module_register"));
 
             if (module_init)
                 module_init();
-
-            module_register = (void (*)(void))(format->findsymbol(args->address, 15, "module_register"));
 
             if (module_register)
                 module_register();
@@ -135,9 +131,7 @@ static unsigned int unload(unsigned int itask, void *stack)
         if (format)
         {
 
-            void (*module_unregister)(void);
-
-            module_unregister = (void (*)(void))(format->findsymbol(args->address, 17, "module_unregister"));
+            void (*module_unregister)(void) = (void (*)(void))(format->findsymbol(args->address, 17, "module_unregister"));
 
             if (module_unregister)
                 module_unregister();
