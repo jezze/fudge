@@ -10,8 +10,8 @@
 #include "kernel.h"
 
 static struct list blockedtasks;
-static struct core *(*getcallback)(void);
-static void (*assigncallback)(struct list_item *item);
+static struct core *(*getcorecallback)(void);
+static void (*assigncorecallback)(struct list_item *item);
 static struct core core0;
 
 static void core_notify(struct core *core)
@@ -19,13 +19,17 @@ static void core_notify(struct core *core)
 
 }
 
-static void assign(struct list_item *item)
+static struct core *getcore0(void)
 {
 
-    if (assigncallback)
-        assigncallback(item);
-    else
-        list_add(&core0.tasks, item);
+    return &core0;
+
+}
+
+static void assign0(struct list_item *item)
+{
+
+    list_add(&core0.tasks, item);
 
 }
 
@@ -57,19 +61,19 @@ static void checkstate(unsigned int itask)
 
             case TASK_STATE_UNBLOCKED:
                 task_transition(task, TASK_STATE_ASSIGNED);
-                assign(item);
+                assigncorecallback(item);
 
                 break;
 
             case TASK_STATE_NEW:
                 task_transition(task, TASK_STATE_ASSIGNED);
-                assign(item);
+                assigncorecallback(item);
 
                 break;
 
             case TASK_STATE_RUNNING:
                 task_transition(task, TASK_STATE_ASSIGNED);
-                assign(item);
+                assigncorecallback(item);
 
                 break;
 
@@ -164,7 +168,7 @@ struct task_thread *kernel_gettaskthread(unsigned int itask)
 struct core *kernel_getcore(void)
 {
 
-    return (getcallback) ? getcallback() : &core0;
+    return getcorecallback();
 
 }
 
@@ -356,11 +360,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
 }
 
-void kernel_setcallback(struct core *(*get)(void), void (*assign)(struct list_item *item))
+void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(struct list_item *item))
 {
 
-    getcallback = get;
-    assigncallback = assign;
+    getcorecallback = getcore;
+    assigncorecallback = assigncore;
 
 }
 
@@ -370,6 +374,7 @@ void kernel_setup(unsigned int saddress, unsigned int ssize)
     list_init(&blockedtasks);
     core_init(&core0, 0, saddress + ssize, core_notify);
     core_register(&core0);
+    kernel_setcallback(getcore0, assign0);
 
 }
 
