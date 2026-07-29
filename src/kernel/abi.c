@@ -13,16 +13,7 @@
 
 static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 
-static unsigned int checkuserstack(void *address, unsigned int count)
-{
-
-    unsigned long value = (unsigned long)address;
-
-    return (value >= (TASK_STACKVIRTUAL - TASK_STACKSIZE)) && ((value + count) < TASK_STACKVIRTUAL);
-
-}
-
-static unsigned int checkusercode(void *address, unsigned int count)
+static unsigned int checkuserspace(void *address, unsigned int count)
 {
 
     struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
@@ -48,24 +39,17 @@ static unsigned int checkusercode(void *address, unsigned int count)
 
 }
 
-static unsigned int checkuserspace(void *address, unsigned int count, unsigned int itask)
-{
-
-    return checkuserstack(address, count) || checkusercode(address, count);
-
-}
-
 static unsigned int checkbuffer(unsigned int itask, void *address, unsigned int count)
 {
 
-    return (address && count) ? checkuserspace(address, count, itask) : 0;
+    return (address && count) ? checkuserspace(address, count) : 0;
 
 }
 
 static unsigned int checkzerobuffer(unsigned int itask, void *address, unsigned int count)
 {
 
-    return (address && count) ? checkuserspace(address, count, itask) : (address == 0 && count == 0);
+    return (address && count) ? checkuserspace(address, count) : (address == 0 && count == 0);
 
 }
 
