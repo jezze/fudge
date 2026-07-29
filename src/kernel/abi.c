@@ -25,24 +25,26 @@ static unsigned int checkuserstack(void *address, unsigned int count)
 static unsigned int checkusercode(void *address, unsigned int count)
 {
 
-    /*
     struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-    struct mmap_entry *entries = (struct mmap_entry *)(header + 1);
-    unsigned int value = (unsigned int)address;
+    unsigned long value = (unsigned long)address;
     unsigned int i;
 
-    for (i = 0; i < header->entries; i++)
+    for (i = 0; i < header->nentries; i++)
     {
 
-        struct mmap_entry *entry = &entries[i];
+        struct mmap_entry *entry = &header->entries[i];
 
-        if (value >= entry->vaddress && ((value + count) < entry->vaddress + entry->msize))
-            return 1;
+        if (entry->flags & MMAP_FLAG_USERMODE)
+        {
+
+            if (value >= entry->vaddress && value < entry->vaddress + entry->size)
+                return 1;
+
+        }
 
     }
-    */
 
-    return 1;
+    return 0;
 
 }
 
