@@ -28,7 +28,7 @@ static unsigned int checkuserspace(void *address, unsigned int count)
         if (entry->flags & MMAP_FLAG_USERMODE)
         {
 
-            if (value >= entry->vaddress && value < entry->vaddress + entry->size)
+            if (value >= entry->vaddress && (value + count) < (entry->vaddress + entry->size))
                 return 1;
 
         }
