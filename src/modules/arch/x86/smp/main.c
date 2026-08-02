@@ -16,7 +16,6 @@
 #define INIT32ADDRESS                   0x00008200
 
 static struct arch_tss tss[POOL_CORES];
-static struct list freecores;
 static struct list usedcores;
 
 static struct core *coreget(void)
@@ -97,7 +96,6 @@ void module_init(void)
     unsigned int id = apic_getid();
     unsigned int i;
 
-    list_init(&freecores);
     list_init(&usedcores);
     smp_setupbp(ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     kernel_setcallback(coreget, coreassign);
