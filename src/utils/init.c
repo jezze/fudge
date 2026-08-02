@@ -99,8 +99,7 @@ static char *modules[36] = {
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    /* should be 36 but skip smp, unstable */
-    loadmodules(1, 35, modules);
+    loadmodules(1, 36, modules);
     spawnshell(1);
     spawnwm(1);
 

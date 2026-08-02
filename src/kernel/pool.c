@@ -322,7 +322,7 @@ void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddr
 
         struct corerow *corerow = &corerows[i];
 
-        core_init(&corerow->core, i, saddress + i * ssize, 0);
+        core_init(&corerow->core, i, saddress + i * ssize + ssize, 0);
         core_register(&corerow->core);
         list_inititem(&corerow->item, corerow);
 

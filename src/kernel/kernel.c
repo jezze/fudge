@@ -32,6 +32,8 @@ static void assign0(struct list_item *item)
 
     list_add(&core->tasks, item);
 
+    core->notify(core);
+
 }
 
 static void checkstate(unsigned int itask)

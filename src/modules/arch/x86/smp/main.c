@@ -18,6 +18,14 @@
 static struct arch_tss tss[POOL_CORES];
 static struct list usedcores;
 
+static void core_notify(struct core *core)
+{
+
+    if (core->id != apic_getid())
+        apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
+
+}
+
 static struct core *coreget(void)
 {
 
@@ -27,17 +35,10 @@ static struct core *coreget(void)
 
 }
 
-static void core_notify(struct core *core)
-{
-
-    if (core->id != apic_getid())
-        apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
-
-}
-
 static void coreassign(struct list_item *item)
 {
 
+    /*
     struct list_item *coreitem = list_pickhead(&usedcores);
 
     if (coreitem)
@@ -51,33 +52,40 @@ static void coreassign(struct list_item *item)
         core->notify(core);
 
     }
+    */
+
+    struct core *core = pool_getcore(0);
+
+    list_add(&core->tasks, item);
+
+    core->notify(core);
 
 }
 
-static void smp_setupbp(unsigned int stack)
+static void smp_setupbp(void)
 {
 
-    struct core *core0 = kernel_getcore();
     unsigned int id = apic_getid();
     struct core *core = pool_getcore(id);
     struct list_item *coreitem = pool_getcoreitem(id);
 
-    core_init(core, id, stack, core_notify);
-    core_migrate(core, core0);
+    core->notify = core_notify;
+
     arch_configuretss(&tss[id], core->id, core->sp);
     apic_setup_bp();
     list_add(&usedcores, coreitem);
 
 }
 
-void smp_setupap(unsigned int stack)
+void smp_setupap(void)
 {
 
     unsigned int id = apic_getid();
     struct core *core = pool_getcore(id);
     struct list_item *coreitem = pool_getcoreitem(id);
 
-    core_init(core, id, stack, core_notify);
+    core->notify = core_notify;
+
     arch_configuretss(&tss[id], core->id, core->sp);
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
@@ -95,11 +103,10 @@ void module_init(void)
     unsigned int i;
 
     list_init(&usedcores);
-    smp_setupbp(ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
+    smp_setupbp();
     kernel_setcallback(coreget, coreassign);
     buffer_copy((void *)INIT16ADDRESS, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
     buffer_copy((void *)INIT32ADDRESS, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
-    smp_prep(ARCH_KERNELSTACKADDRESS + 2 * ARCH_KERNELSTACKSIZE);
     pic_disable();
     apic_setupisrs();
 

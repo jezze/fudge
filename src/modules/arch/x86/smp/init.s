@@ -10,24 +10,9 @@
 
 .section .data
 
-stackaddr:
-.int 0
-
 .section .text
 
-.global smp_prep
-smp_prep:
-    movl stackaddr, %eax
-    movl 4(%esp), %ebx
-    movl %ebx, (%eax)
-    ret
-
 setup:
-    movl stackaddr, %eax
-    movl $SMP_STACKSIZE, %ecx
-    lock xaddl %ecx, (%eax)
-    movl %ecx, %esp
-    pushl %ecx
     call smp_setupap
 
 .code16
