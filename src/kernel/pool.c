@@ -88,7 +88,7 @@ struct core *pool_getcore(unsigned int icore)
 
     struct corerow *corerow = getcorerow(icore);
 
-    return corerow ? &corerows->core : 0;
+    return corerow ? &corerow->core : 0;
 
 }
 
@@ -97,7 +97,7 @@ struct list_item *pool_getcoreitem(unsigned int icore)
 
     struct corerow *corerow = getcorerow(icore);
 
-    return corerow ? &corerows->item : 0;
+    return corerow ? &corerow->item : 0;
 
 }
 
