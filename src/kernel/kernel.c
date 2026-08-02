@@ -106,7 +106,7 @@ static void unblocktasks(void)
 
                 task_checksignals(task);
 
-                if (task->state == TASK_STATE_UNBLOCKED)
+                if (task->state != TASK_STATE_BLOCKED)
                 {
 
                     list_remove_unsafe(&blockedtasks, current);

@@ -46,8 +46,7 @@ void task_transition(struct task *task, unsigned int state)
         {
 
         case TASK_STATE_DEAD:
-            if (task->state == TASK_STATE_NEW || task->state == TASK_STATE_UNBLOCKED || task->state == TASK_STATE_RUNNING)
-                task->state = state;
+            task->state = state;
 
             break;
 
