@@ -38,7 +38,6 @@ static struct core *coreget(void)
 static void coreassign(struct list_item *item)
 {
 
-    /*
     struct list_item *coreitem = list_pickhead(&usedcores);
 
     if (coreitem)
@@ -52,13 +51,6 @@ static void coreassign(struct list_item *item)
         core->notify(core);
 
     }
-    */
-
-    struct core *core = pool_getcore(0);
-
-    list_add(&core->tasks, item);
-
-    core->notify(core);
 
 }
 

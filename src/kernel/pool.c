@@ -324,7 +324,7 @@ void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddr
 
         core_init(&corerow->core, i, saddress + i * ssize + ssize, 0);
         core_register(&corerow->core);
-        list_inititem(&corerow->item, corerow);
+        list_inititem(&corerow->item, &corerow->core);
 
     }
 
