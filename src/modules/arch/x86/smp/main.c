@@ -18,14 +18,6 @@
 static struct arch_tss tss[POOL_CORES];
 static struct list usedcores;
 
-static void core_notify(struct core *core)
-{
-
-    if (core->id != apic_getid())
-        apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
-
-}
-
 static struct core *coreget(void)
 {
 
@@ -48,7 +40,8 @@ static void coreassign(struct list_item *item)
         list_add(&usedcores, coreitem);
         list_add(&core->tasks, item);
 
-        core->notify(core);
+        if (core->id != apic_getid())
+            apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
 
     }
 
@@ -60,8 +53,6 @@ static void smp_setupbp(void)
     unsigned int id = apic_getid();
     struct core *core = pool_getcore(id);
     struct list_item *coreitem = pool_getcoreitem(id);
-
-    core->notify = core_notify;
 
     arch_configuretss(&tss[id], core->id, core->sp);
     apic_setup_bp();
@@ -75,8 +66,6 @@ void smp_setupap(void)
     unsigned int id = apic_getid();
     struct core *core = pool_getcore(id);
     struct list_item *coreitem = pool_getcoreitem(id);
-
-    core->notify = core_notify;
 
     arch_configuretss(&tss[id], core->id, core->sp);
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
