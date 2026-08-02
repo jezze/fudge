@@ -63,7 +63,6 @@ static void smp_setupbp(unsigned int stack)
     struct list_item *coreitem = pool_getcoreitem(id);
 
     core_init(core, id, stack, core_notify);
-    core_register(core);
     core_migrate(core, core0);
     arch_configuretss(&tss[id], core->id, core->sp);
     apic_setup_bp();
@@ -79,7 +78,6 @@ void smp_setupap(unsigned int stack)
     struct list_item *coreitem = pool_getcoreitem(id);
 
     core_init(core, id, stack, core_notify);
-    core_register(core);
     arch_configuretss(&tss[id], core->id, core->sp);
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
