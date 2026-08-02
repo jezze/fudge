@@ -57,5 +57,5 @@ struct tss_pointer
 
 };
 
-void tss_setdescriptor(struct tss_pointer *pointer, unsigned char index, unsigned int selector, unsigned int stack);
+void tss_setdescriptor(struct tss_pointer *pointer, unsigned short index, unsigned int selector, unsigned int stack);
 void tss_init(struct tss_pointer *pointer, unsigned int count, struct tss_descriptor *descriptors);

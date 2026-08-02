@@ -1,14 +1,14 @@
 #include <fudge.h>
 #include "gdt.h"
 
-static struct gdt_descriptor *getdescriptor(struct gdt_pointer *pointer, unsigned char index)
+static struct gdt_descriptor *getdescriptor(struct gdt_pointer *pointer, unsigned short index)
 {
 
     return (struct gdt_descriptor *)(unsigned long)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;
 
 }
 
-unsigned short gdt_getselector(struct gdt_pointer *pointer, unsigned char index)
+unsigned short gdt_getselector(struct gdt_pointer *pointer, unsigned short index)
 {
 
     struct gdt_descriptor *descriptor = getdescriptor(pointer, index);
@@ -17,7 +17,7 @@ unsigned short gdt_getselector(struct gdt_pointer *pointer, unsigned char index)
 
 }
 
-void gdt_setdescriptor(struct gdt_pointer *pointer, unsigned char index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags)
+void gdt_setdescriptor(struct gdt_pointer *pointer, unsigned short index, unsigned int base, unsigned int limit, unsigned char access, unsigned char flags)
 {
 
     struct gdt_descriptor *descriptor = getdescriptor(pointer, index);

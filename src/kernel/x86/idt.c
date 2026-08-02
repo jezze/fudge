@@ -1,14 +1,14 @@
 #include <fudge.h>
 #include "idt.h"
 
-static struct idt_descriptor *getdescriptor(struct idt_pointer *pointer, unsigned char index)
+static struct idt_descriptor *getdescriptor(struct idt_pointer *pointer, unsigned short index)
 {
 
     return (struct idt_descriptor *)(unsigned long)(pointer->base0 | pointer->base1 << 8 | pointer->base2 << 16 | pointer->base3 << 24) + index;
 
 }
 
-void idt_setdescriptor(struct idt_pointer *pointer, unsigned char index, void (*callback)(void), unsigned short selector, unsigned char flags)
+void idt_setdescriptor(struct idt_pointer *pointer, unsigned short index, void (*callback)(void), unsigned short selector, unsigned char flags)
 {
 
     struct idt_descriptor *descriptor = getdescriptor(pointer, index);

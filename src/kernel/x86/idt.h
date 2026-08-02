@@ -35,5 +35,5 @@ struct idt_pointer
 
 };
 
-void idt_setdescriptor(struct idt_pointer *pointer, unsigned char index, void (*callback)(void), unsigned short selector, unsigned char flags);
+void idt_setdescriptor(struct idt_pointer *pointer, unsigned short index, void (*callback)(void), unsigned short selector, unsigned char flags);
 void idt_init(struct idt_pointer *pointer, unsigned int count, struct idt_descriptor *descriptors);
