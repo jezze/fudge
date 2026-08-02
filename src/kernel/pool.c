@@ -1,10 +1,12 @@
 #include <fudge.h>
 #include "resource.h"
 #include "mailbox.h"
+#include "core.h"
 #include "task.h"
 #include "node.h"
 #include "pool.h"
 
+static struct corerow {struct list_item item; struct core core;} corerows[POOL_CORES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
 static struct noderow {struct list_item item; struct node node;} noderows[POOL_NODES];
@@ -29,6 +31,13 @@ static void *pickrow(struct list *from, struct list *to)
     }
 
     return 0;
+
+}
+
+static struct corerow *getcorerow(unsigned int icore)
+{
+
+    return (icore < POOL_CORES) ? &corerows[icore] : 0;
 
 }
 
@@ -71,6 +80,24 @@ static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
 {
 
     return ((unsigned long)mailboxrow - (unsigned long)mailboxrows) / sizeof (struct mailboxrow);
+
+}
+
+struct core *pool_getcore(unsigned int icore)
+{
+
+    struct corerow *corerow = getcorerow(icore);
+
+    return corerow ? &corerows->core : 0;
+
+}
+
+struct list_item *pool_getcoreitem(unsigned int icore)
+{
+
+    struct corerow *corerow = getcorerow(icore);
+
+    return corerow ? &corerows->item : 0;
 
 }
 
@@ -279,7 +306,7 @@ void pool_destroytask(unsigned int itask)
 
 }
 
-void pool_setup(unsigned long mbaddress, unsigned int mbsize)
+void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddress, unsigned int mbsize)
 {
 
     unsigned int i;
@@ -289,6 +316,16 @@ void pool_setup(unsigned long mbaddress, unsigned int mbsize)
     list_init(&freenodes);
     list_init(&usedmailboxes);
     list_init(&usednodes);
+
+    for (i = 0; i < POOL_CORES; i++)
+    {
+
+        struct corerow *corerow = &corerows[i];
+
+        core_init(&corerow->core, i, saddress + i * ssize, 0);
+        list_inititem(&corerow->item, corerow);
+
+    }
 
     for (i = 1; i < POOL_NODES; i++)
     {

@@ -1,10 +1,13 @@
+#define POOL_CORES                      256
 #define POOL_TASKS                      64
 #define POOL_NODES                      1024
 #define POOL_MAILBOXES                  512
 
+struct core *pool_getcore(unsigned int icore);
 struct node *pool_getnode(unsigned int inode);
 unsigned int pool_getinodefromitem(struct list_item *item);
 struct task *pool_gettask(unsigned int itask);
+struct list_item *pool_getcoreitem(unsigned int icore);
 struct list_item *pool_gettaskitem(unsigned int itask);
 unsigned int pool_getitaskfromitem(struct list_item *item);
 struct mailbox *pool_getmailbox(unsigned int imailbox);
@@ -16,4 +19,4 @@ void pool_removemailboxes(unsigned int itask);
 unsigned int pool_findinode(unsigned int namehash, unsigned int index);
 unsigned int pool_createtask(void);
 void pool_destroytask(unsigned int itask);
-void pool_setup(unsigned long mbaddress, unsigned int mbsize);
+void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddress, unsigned int mbsize);

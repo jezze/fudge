@@ -12,7 +12,6 @@
 static struct list blockedtasks;
 static struct core *(*getcorecallback)(void);
 static void (*assigncorecallback)(struct list_item *item);
-static struct core core0;
 
 static void core_notify(struct core *core)
 {
@@ -22,14 +21,16 @@ static void core_notify(struct core *core)
 static struct core *getcore0(void)
 {
 
-    return &core0;
+    return pool_getcore(0);
 
 }
 
 static void assign0(struct list_item *item)
 {
 
-    list_add(&core0.tasks, item);
+    struct core *core = pool_getcore(0);
+
+    list_add(&core->tasks, item);
 
 }
 
@@ -368,12 +369,14 @@ void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(struct
 
 }
 
-void kernel_setup(unsigned int saddress, unsigned int ssize)
+void kernel_setup(void)
 {
 
+    struct core *core = pool_getcore(0);
+
+    core->notify = core_notify;
+
     list_init(&blockedtasks);
-    core_init(&core0, 0, saddress + ssize, core_notify);
-    core_register(&core0);
     kernel_setcallback(getcore0, assign0);
 
 }

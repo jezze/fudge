@@ -14,10 +14,8 @@
 
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
-#define CORES                           256
 
-static struct arch_tss tss[CORES];
-static struct corerow {struct list_item item; struct core core;} corerows[CORES];
+static struct arch_tss tss[POOL_CORES];
 static struct list freecores;
 static struct list usedcores;
 
@@ -26,7 +24,7 @@ static struct core *coreget(void)
 
     unsigned int id = apic_getid();
 
-    return &corerows[id].core;
+    return pool_getcore(id);
 
 }
 
@@ -62,14 +60,15 @@ static void smp_setupbp(unsigned int stack)
 
     struct core *core0 = kernel_getcore();
     unsigned int id = apic_getid();
-    struct corerow *corerow = &corerows[id];
+    struct core *core = pool_getcore(id);
+    struct list_item *coreitem = pool_getcoreitem(id);
 
-    core_init(&corerow->core, id, stack, core_notify);
-    core_register(&corerow->core);
-    core_migrate(&corerow->core, core0);
-    arch_configuretss(&tss[id], corerow->core.id, corerow->core.sp);
+    core_init(core, id, stack, core_notify);
+    core_register(core);
+    core_migrate(core, core0);
+    arch_configuretss(&tss[id], core->id, core->sp);
     apic_setup_bp();
-    list_add(&usedcores, &corerow->item);
+    list_add(&usedcores, coreitem);
 
 }
 
@@ -77,16 +76,17 @@ void smp_setupap(unsigned int stack)
 {
 
     unsigned int id = apic_getid();
-    struct corerow *corerow = &corerows[id];
+    struct core *core = pool_getcore(id);
+    struct list_item *coreitem = pool_getcoreitem(id);
 
-    core_init(&corerow->core, id, stack, core_notify);
-    core_register(&corerow->core);
-    arch_configuretss(&tss[id], corerow->core.id, corerow->core.sp);
+    core_init(core, id, stack, core_notify);
+    core_register(core);
+    arch_configuretss(&tss[id], core->id, core->sp);
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
     pat_setup();
     apic_setup_ap();
-    list_add(&usedcores, &corerow->item);
+    list_add(&usedcores, coreitem);
     arch_leave();
 
 }
@@ -107,16 +107,7 @@ void module_init(void)
     pic_disable();
     apic_setupisrs();
 
-    for (i = 0; i < CORES; i++)
-    {
-
-        struct corerow *corerow = &corerows[i];
-
-        list_inititem(&corerow->item, &corerow->core);
-
-    }
-
-    for (i = 0; i < CORES; i++)
+    for (i = 0; i < POOL_CORES; i++)
     {
 
         if (apic_checklapic(i))

@@ -2,8 +2,8 @@
 
 qemu_bin="qemu-system-x86_64"
 qemu_flags="-nodefaults -enable-kvm"
-qemu_flags_run="-smp 4 -kernel fudge -initrd fudge.img -vga std -serial stdio"
-qemu_flags_runiso="-smp 4 -cdrom fudge.iso -vga std -serial stdio"
+qemu_flags_run="-smp 4 -m 64 -kernel fudge -initrd fudge.img -vga std -serial stdio"
+qemu_flags_runiso="-smp 4 -m 64 -cdrom fudge.iso -vga std -serial stdio"
 
 getdisk() {
     if test -f "disks/node-$1-sda.qcow2"
