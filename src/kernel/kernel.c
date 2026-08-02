@@ -324,6 +324,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 {
 
     struct task *task = pool_gettask(itask);
+    unsigned int inode = 0;
 
     if (task)
     {
@@ -343,16 +344,20 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         }
 
         if (task->thread.ip)
-            task_transition(task, TASK_STATE_NEW);
+        {
+
+            inode = kernel_getchannelinode(itask, 0);
+
+            if (inode)
+                task_transition(task, TASK_STATE_NEW);
+
+        }
 
         checkstate(itask);
 
-        if (task->thread.ip)
-            return kernel_getchannelinode(itask, 0);
-
     }
 
-    return 0;
+    return inode;
 
 }
 
