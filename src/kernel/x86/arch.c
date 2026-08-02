@@ -179,8 +179,6 @@ static void mapping_loadstack(struct mapping *mapping)
 
     header->nentries++;
 
-    mapfull(mapping->directory, header, entry);
-
 }
 
 static unsigned int createtask(unsigned long address)
