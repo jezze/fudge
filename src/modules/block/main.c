@@ -63,8 +63,17 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = pool_picknode("block", &interface->resource, &operands);
+    interface->inode = pool_picknode();
     interface->onblockrequest = onblockrequest;
+
+    if (interface->inode)
+    {
+
+        struct node *node = pool_getnode(interface->inode);
+
+        node_reset(node, "block", &interface->resource, &operands);
+
+    }
 
 }
 

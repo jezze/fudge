@@ -87,7 +87,16 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = pool_picknode("mouse", &interface->resource, &operands);
+    interface->inode = pool_picknode();
+
+    if (interface->inode)
+    {
+
+        struct node *node = pool_getnode(interface->inode);
+
+        node_reset(node, "mouse", &interface->resource, &operands);
+
+    }
 
 }
 

@@ -419,10 +419,18 @@ void cpio_setup(unsigned int addr, unsigned int lim)
 
     address = addr;
     limit = lim;
+    inode = pool_picknode();
 
     node_operands_init(&operands, 0, operands_place);
 
-    inode = pool_picknode("initrd", 0, &operands);
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, "initrd", 0, &operands);
+
+    }
 
 }
 

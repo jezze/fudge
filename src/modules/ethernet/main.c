@@ -72,9 +72,18 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = pool_picknode("ethernet", &interface->resource, &operands);
+    interface->inode = pool_picknode();
     interface->oninfo = oninfo;
     interface->ondata = ondata;
+
+    if (interface->inode)
+    {
+
+        struct node *node = pool_getnode(interface->inode);
+
+        node_reset(node, "ethernet", &interface->resource, &operands);
+
+    }
 
 }
 

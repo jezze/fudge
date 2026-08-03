@@ -118,8 +118,17 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     interface->height = 0;
     interface->color = 0;
     interface->cursor = 0;
-    interface->inode = pool_picknode("console", &interface->resource, &operands);
+    interface->inode = pool_picknode();
     interface->ondata = ondata;
+
+    if (interface->inode)
+    {
+
+        struct node *node = pool_getnode(interface->inode);
+
+        node_reset(node, "console", &interface->resource, &operands);
+
+    }
 
 }
 

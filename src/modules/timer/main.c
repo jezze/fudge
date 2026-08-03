@@ -86,10 +86,46 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
 
     interface->id = id;
-    interface->inodes[0] = pool_picknode("timer0", &interface->resource, &operands);
-    interface->inodes[1] = pool_picknode("timer1", &interface->resource, &operands);
-    interface->inodes[2] = pool_picknode("timer2", &interface->resource, &operands);
-    interface->inodes[3] = pool_picknode("timer3", &interface->resource, &operands);
+    interface->inodes[0] = pool_picknode();
+    interface->inodes[1] = pool_picknode();
+    interface->inodes[2] = pool_picknode();
+    interface->inodes[3] = pool_picknode();
+
+    if (interface->inodes[0])
+    {
+
+        struct node *node = pool_getnode(interface->inodes[0]);
+
+        node_reset(node, "timer0", &interface->resource, &operands);
+
+    }
+
+    if (interface->inodes[1])
+    {
+
+        struct node *node = pool_getnode(interface->inodes[1]);
+
+        node_reset(node, "timer1", &interface->resource, &operands);
+
+    }
+
+    if (interface->inodes[2])
+    {
+
+        struct node *node = pool_getnode(interface->inodes[2]);
+
+        node_reset(node, "timer2", &interface->resource, &operands);
+
+    }
+
+    if (interface->inodes[3])
+    {
+
+        struct node *node = pool_getnode(interface->inodes[3]);
+
+        node_reset(node, "timer3", &interface->resource, &operands);
+
+    }
 
 }
 

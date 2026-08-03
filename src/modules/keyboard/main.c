@@ -64,7 +64,16 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = pool_picknode("keyboard", &interface->resource, &operands);
+    interface->inode = pool_picknode();
+
+    if (interface->inode)
+    {
+
+        struct node *node = pool_getnode(interface->inode);
+
+        node_reset(node, "keyboard", &interface->resource, &operands);
+
+    }
 
 }
 

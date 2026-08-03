@@ -207,10 +207,16 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
         if (!mailbox)
         {
 
-            task->imailbox[ichannel] = pool_pickmailbox(itask);
+            task->imailbox[ichannel] = pool_pickmailbox();
 
             if (task->imailbox[ichannel])
+            {
+
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);
+
+                mailbox_reset(mailbox, itask);
+
+            }
 
         }
 
@@ -231,11 +237,14 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        unsigned int inode = pool_picknode("link", snode->resource, snode->operands);
+        unsigned int inode = pool_picknode();
 
         if (inode)
         {
 
+            struct node *node = pool_getnode(inode);
+
+            node_reset(node, "link", snode->resource, snode->operands);
             pool_addnode(&tnode->links, inode);
 
             return MESSAGE_OK;
@@ -360,6 +369,8 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
     if (task)
     {
+
+        task_reset(task);
 
         task->thread.ip = ip;
         task->thread.sp = sp;

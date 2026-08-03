@@ -54,8 +54,17 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
 
     interface->id = id;
-    interface->inode = pool_picknode("clock", &interface->resource, &operands);
+    interface->inode = pool_picknode();
     interface->oninfo = oninfo;
+
+    if (interface->inode)
+    {
+
+        struct node *node = pool_getnode(interface->inode);
+
+        node_reset(node, "clock", &interface->resource, &operands);
+
+    }
 
 }
 
