@@ -58,8 +58,8 @@ static void smp_setupbp(void)
     struct list_item *coreitem = pool_getcoreitem(id);
 
     arch_configuretss(&tss[id], core->id, core->sp);
-    apic_setup_bp();
     list_add(&usedcores, coreitem);
+    apic_setup_bp();
 
 }
 
@@ -71,11 +71,11 @@ void smp_setupap(void)
     struct list_item *coreitem = pool_getcoreitem(id);
 
     arch_configuretss(&tss[id], core->id, core->sp);
+    list_add(&usedcores, coreitem);
+    apic_setup_ap();
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
     pat_setup();
-    apic_setup_ap();
-    list_add(&usedcores, coreitem);
     arch_leave();
 
 }
