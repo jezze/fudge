@@ -307,10 +307,10 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
         for (current = links->head; current; current = current->next)
         {
 
-            unsigned int inode = pool_getinodefromitem(current);
+            unsigned int target = pool_getinodefromitem(current);
 
-            if (inode)
-                kernel_place(source, inode, event, count, data);
+            if (target)
+                kernel_place(source, target, event, count, data);
 
         }
 
