@@ -4,11 +4,8 @@
 .set SMP_IDTADDRESS,                    0x2000
 .set SMP_INIT16ADDRESS,                 0x8000
 .set SMP_INIT32ADDRESS,                 0x8200
-.set SMP_STACKSIZE,                     0x2000
 .set SMP_KCODE,                         0x08
 .set SMP_KDATA,                         0x10
-
-.section .data
 
 .section .text
 
