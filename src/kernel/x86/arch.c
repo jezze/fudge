@@ -312,21 +312,11 @@ static void debugselector(unsigned int error)
         DEBUG_FMT0(DEBUG_NONE, "Internal");
 
     if (ti)
-    {
-
         DEBUG_FMT1(DEBUG_NONE, "LDT: %u", &index);
-
-    }
-
+    else if (idt)
+        DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
     else
-    {
-
-        if (idt)
-            DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
-        else
-            DEBUG_FMT1(DEBUG_NONE, "GDT: %u", &index);
-
-    }
+        DEBUG_FMT1(DEBUG_NONE, "GDT: %u", &index);
 
 }
 
