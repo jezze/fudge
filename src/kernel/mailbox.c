@@ -173,7 +173,7 @@ void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
     spinlock_init(&mailbox->spinlock);
     mailbox_reset(mailbox, 0);
 
-    mailbox->inode = pool_addnode("mailbox", &mailbox->resource, &operands);
+    mailbox->inode = pool_picknode("mailbox", &mailbox->resource, &operands);
 
 }
 

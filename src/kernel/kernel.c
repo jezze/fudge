@@ -29,6 +29,32 @@ static void assign0(struct list_item *item)
 
 }
 
+static void destroytask(unsigned int itask)
+{
+
+    struct task *task = pool_gettask(itask);
+
+    if (task)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < TASK_MAILBOXES; i++)
+        {
+
+            if (task->imailbox[i])
+                pool_unpickmailbox(task->imailbox[i]);
+
+            task->imailbox[i] = 0;
+
+        }
+
+        pool_unpicktask(itask);
+
+    }
+
+}
+
 static void checkstate(unsigned int itask)
 {
 
@@ -46,7 +72,7 @@ static void checkstate(unsigned int itask)
             {
 
             case TASK_STATE_DEAD:
-                pool_destroytask(itask);
+                destroytask(itask);
 
                 break;
 
@@ -205,10 +231,16 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        unsigned int inode = pool_addnodeto(&tnode->links, "link", snode->resource, snode->operands);
+        unsigned int inode = pool_picknode("link", snode->resource, snode->operands);
 
         if (inode)
+        {
+
+            pool_addnode(&tnode->links, inode);
+
             return MESSAGE_OK;
+
+        }
 
     }
 
@@ -225,7 +257,7 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        pool_removenodefrom(&tnode->links, source);
+        pool_removenode(&tnode->links, source);
 
         return MESSAGE_OK;
 
