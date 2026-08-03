@@ -13,26 +13,7 @@ static struct noderow {struct list_item item; struct node node;} noderows[POOL_N
 static struct list freetasks;
 static struct list freemailboxes;
 static struct list freenodes;
-static struct list usedmailboxes;
 static struct list usednodes;
-
-static void *pickrow(struct list *from, struct list *to)
-{
-
-    struct list_item *item = list_pickhead(from);
-
-    if (item)
-    {
-
-        list_add(to, item);
-
-        return item->data;
-
-    }
-
-    return 0;
-
-}
 
 static struct corerow *getcorerow(unsigned int icore)
 {
@@ -167,12 +148,15 @@ struct mailbox *pool_getmailbox(unsigned int imailbox)
 unsigned int pool_addnodeto(struct list *nodes, char *name, struct resource *resource, struct node_operands *operands)
 {
 
-    struct noderow *noderow = pickrow(&freenodes, nodes);
+    struct list_item *item = list_pickhead(&freenodes);
 
-    if (noderow)
+    if (item)
     {
 
+        struct noderow *noderow = item->data;
+
         node_reset(&noderow->node, name, resource, operands);
+        list_add(nodes, item);
 
         return encodenoderow(noderow);
 
@@ -199,14 +183,36 @@ void pool_removenodefrom(struct list *nodes, unsigned int inode)
 
 }
 
-unsigned int pool_addmailbox(unsigned int itask)
+unsigned int pool_picktask(void)
 {
 
-    struct mailboxrow *mailboxrow = pickrow(&freemailboxes, &usedmailboxes);
+    struct list_item *item = list_pickhead(&freetasks);
 
-    if (mailboxrow)
+    if (item)
     {
 
+        struct taskrow *taskrow = item->data;
+        struct task *task = &taskrow->task;
+
+        task_reset(task);
+
+        return encodetaskrow(taskrow);
+
+    }
+
+    return 0;
+
+}
+
+unsigned int pool_pickmailbox(unsigned int itask)
+{
+
+    struct list_item *item = list_pickhead(&freemailboxes);
+
+    if (item)
+    {
+
+        struct mailboxrow *mailboxrow = item->data;
         struct mailbox *mailbox = &mailboxrow->mailbox;
 
         mailbox_reset(mailbox, itask);
@@ -216,28 +222,6 @@ unsigned int pool_addmailbox(unsigned int itask)
     }
 
     return 0;
-
-}
-
-void pool_removemailboxes(unsigned int itask)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < POOL_MAILBOXES; i++)
-    {
-
-        struct mailboxrow *mailboxrow = &mailboxrows[i];
-        struct mailbox *mailbox = &mailboxrow->mailbox;
-
-        if (mailbox->itask == itask)
-        {
-
-            list_move(&freemailboxes, &usedmailboxes, &mailboxrow->item);
-
-        }
-
-    }
 
 }
 
@@ -268,27 +252,6 @@ unsigned int pool_findinode(unsigned int namehash, unsigned int index)
 
 }
 
-unsigned int pool_createtask(void)
-{
-
-    struct list_item *taskrowitem = list_pickhead(&freetasks);
-
-    if (taskrowitem)
-    {
-
-        struct taskrow *taskrow = taskrowitem->data;
-        struct task *task = &taskrow->task;
-
-        task_reset(task);
-
-        return encodetaskrow(taskrow);
-
-    }
-
-    return 0;
-
-}
-
 void pool_destroytask(unsigned int itask)
 {
 
@@ -298,8 +261,24 @@ void pool_destroytask(unsigned int itask)
     {
 
         struct list_item *item = pool_gettaskitem(itask);
+        unsigned int i;
 
-        pool_removemailboxes(itask);
+        for (i = 0; i < TASK_MAILBOXES; i++)
+        {
+
+            if (task->imailbox[i])
+            {
+
+                struct mailboxrow *mailboxrow = &mailboxrows[i];
+
+                list_add(&freemailboxes, &mailboxrow->item);
+
+            }
+
+            task->imailbox[i] = 0;
+
+        }
+
         list_add(&freetasks, item);
 
     }
@@ -314,7 +293,6 @@ void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddr
     list_init(&freetasks);
     list_init(&freemailboxes);
     list_init(&freenodes);
-    list_init(&usedmailboxes);
     list_init(&usednodes);
 
     for (i = 0; i < POOL_CORES; i++)

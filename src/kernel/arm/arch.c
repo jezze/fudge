@@ -71,7 +71,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
     if (args->address)
     {
 
-        unsigned int ntask = pool_createtask();
+        unsigned int ntask = pool_picktask();
 
         if (ntask)
             return kernel_loadtask(ntask, 0, 0x6000, (unsigned int)&testtask);
@@ -194,7 +194,7 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    unsigned int ntask = pool_createtask();
+    unsigned int ntask = pool_picktask();
 
     if (ntask)
     {

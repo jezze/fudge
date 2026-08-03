@@ -181,7 +181,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
         if (!mailbox)
         {
 
-            task->imailbox[ichannel] = pool_addmailbox(itask);
+            task->imailbox[ichannel] = pool_pickmailbox(itask);
 
             if (task->imailbox[ichannel])
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);

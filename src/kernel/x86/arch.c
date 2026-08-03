@@ -184,7 +184,7 @@ static void mapping_loadstack(struct mapping *mapping)
 static unsigned int createtask(unsigned long address)
 {
 
-    unsigned int ntask = pool_createtask();
+    unsigned int ntask = pool_picktask();
 
     if (ntask)
     {
