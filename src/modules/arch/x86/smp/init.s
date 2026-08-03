@@ -16,8 +16,6 @@ setup:
 
 .global smp_begin16
 smp_begin16:
-
-init16:
     cli
     xorw %ax, %ax
     movw %ax, %ds
@@ -33,7 +31,6 @@ init16:
     orl $1, %eax
     movl %eax, %cr0
     ljmp $SMP_KCODE, $SMP_INIT32ADDRESS
-
 .global smp_end16
 smp_end16:
 
@@ -41,8 +38,6 @@ smp_end16:
 
 .global smp_begin32
 smp_begin32:
-
-init32:
     movw $SMP_KDATA, %ax
     movw %ax, %ds
     movw %ax, %es
@@ -50,7 +45,6 @@ init32:
     movw %ax, %gs
     movw %ax, %ss
     ljmp $SMP_KCODE, $setup
-
 .global smp_end32
 smp_end32:
 

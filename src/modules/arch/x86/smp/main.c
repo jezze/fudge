@@ -10,11 +10,14 @@
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/pat/pat.h>
 #include <modules/arch/x86/pit/pit.h>
-#include "smp.h"
 
 #define INIT16ADDRESS                   0x00008000
 #define INIT32ADDRESS                   0x00008200
 
+extern void smp_begin16(void);
+extern void smp_end16(void);
+extern void smp_begin32(void);
+extern void smp_end32(void);
 static struct arch_tss tss[POOL_CORES];
 static struct list usedcores;
 
