@@ -224,12 +224,12 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct task *task = pool_gettask(core->itask);
 
         buffer_copy(&mappings[core->itask].registers, general, sizeof (struct cpu_general));
 
-        thread->ip = interrupt->eip.value;
-        thread->sp = interrupt->esp.value;
+        task->thread.ip = interrupt->eip.value;
+        task->thread.sp = interrupt->esp.value;
 
     }
 
@@ -238,14 +238,14 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct task *task = pool_gettask(core->itask);
 
         buffer_copy(general, &mappings[core->itask].registers, sizeof (struct cpu_general));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
-        interrupt->eip.value = thread->ip;
-        interrupt->esp.value = thread->sp;
+        interrupt->eip.value = task->thread.ip;
+        interrupt->esp.value = task->thread.sp;
 
     }
 

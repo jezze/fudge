@@ -92,12 +92,12 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct task *task = pool_gettask(core->itask);
 
         buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
 
-        thread->ip = interrupt->pc.value;
-        thread->sp = interrupt->sp.value;
+        task->thread.ip = interrupt->pc.value;
+        task->thread.sp = interrupt->sp.value;
 
         uart_puts("SAVE TASK\n");
 
@@ -108,12 +108,12 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct task *task = pool_gettask(core->itask);
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
-        interrupt->pc.value = thread->ip;
-        interrupt->sp.value = thread->sp;
+        interrupt->pc.value = task->thread.ip;
+        interrupt->sp.value = task->thread.sp;
 
         uart_puts("LOAD TASK\n");
 

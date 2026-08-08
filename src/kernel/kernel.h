@@ -1,4 +1,3 @@
-struct task_thread *kernel_gettaskthread(unsigned int itask);
 struct core *kernel_getcore(void);
 unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel);
 unsigned int kernel_linknode(unsigned int target, unsigned int source);

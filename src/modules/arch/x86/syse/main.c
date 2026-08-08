@@ -16,10 +16,10 @@ void syse_resume(struct cpu_general *general)
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct task *task = pool_gettask(core->itask);
 
-        thread->ip = general->edx.value;
-        thread->sp = general->ecx.value;
+        task->thread.ip = general->edx.value;
+        task->thread.sp = general->ecx.value;
 
     }
 
@@ -28,10 +28,10 @@ void syse_resume(struct cpu_general *general)
     if (core->itask)
     {
 
-        struct task_thread *thread = kernel_gettaskthread(core->itask);
+        struct task *task = pool_gettask(core->itask);
 
-        general->edx.value = thread->ip;
-        general->ecx.value = thread->sp;
+        general->edx.value = task->thread.ip;
+        general->ecx.value = task->thread.sp;
 
     }
 

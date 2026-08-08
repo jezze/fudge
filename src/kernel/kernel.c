@@ -178,15 +178,6 @@ static unsigned int picknewtask(struct core *core)
 
 }
 
-struct task_thread *kernel_gettaskthread(unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    return (task) ? &task->thread : 0;
-
-}
-
 struct core *kernel_getcore(void)
 {
 
