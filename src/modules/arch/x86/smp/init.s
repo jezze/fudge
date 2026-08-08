@@ -13,9 +13,13 @@ setup:
     movl $1, %eax
     cpuid
     shrl $24, %ebx
+    movl %ebx, %edi
     shll $13, %ebx
     movl $0x00602000, %esp
     addl %ebx, %esp
+    movl %esp, %esi
+    pushl %esi
+    pushl %edi
     call smp_setupap
 
 .code16

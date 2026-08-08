@@ -47,26 +47,20 @@ static void coreassign(unsigned int itask)
 
 }
 
-static void smp_setupbp(void)
+static void smp_setupbp(unsigned int icore, unsigned int sp)
 {
 
-    unsigned int id = apic_getid();
-    struct core *core = pool_getcore(id);
-
-    arch_configuretss(&tss[id], core->id, core->sp);
-    pool_placecore(core->id, &usedcores);
+    arch_configuretss(&tss[icore], icore, sp);
+    pool_placecore(icore, &usedcores);
     apic_setup_bp();
 
 }
 
-void smp_setupap(void)
+void smp_setupap(unsigned int icore, unsigned int sp)
 {
 
-    unsigned int id = apic_getid();
-    struct core *core = pool_getcore(id);
-
-    arch_configuretss(&tss[id], core->id, core->sp);
-    pool_placecore(core->id, &usedcores);
+    arch_configuretss(&tss[icore], icore, sp);
+    pool_placecore(icore, &usedcores);
     apic_setup_ap();
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
@@ -78,11 +72,11 @@ void smp_setupap(void)
 void module_init(void)
 {
 
-    unsigned int id = apic_getid();
+    unsigned int icore = apic_getid();
     unsigned int i;
 
     list_init(&usedcores);
-    smp_setupbp();
+    smp_setupbp(apic_getid(), 0x00602000);
     kernel_setcallback(coreget, coreassign);
     buffer_copy((void *)INIT16ADDRESS, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
     buffer_copy((void *)INIT32ADDRESS, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
@@ -95,7 +89,7 @@ void module_init(void)
         if (apic_checklapic(i))
         {
 
-            if (i != id)
+            if (i != icore)
             {
 
                 apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
