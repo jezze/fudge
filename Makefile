@@ -66,6 +66,9 @@ config-target-arm-none-eabi:
 config-target-arm-unknown-eabi:
 	@echo "TARGET:=arm-unknown-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
+config-target-riscv64-elf:
+	@echo "TARGET:=riscv64-elf" >> $(DIR_MK)/$(CONFIG).mk
+
 config-target-riscv64-linux-gnu:
 	@echo "TARGET:=riscv64-linux-gnu" >> $(DIR_MK)/$(CONFIG).mk
 
@@ -81,6 +84,7 @@ x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i
 arm-integratorcp-none: config-init | config-arch-arm config-loader-integratorcp config-target-arm-none-eabi
 arm-integratorcp-unknown: config-init | config-arch-arm config-loader-integratorcp config-target-arm-unknown-eabi
 
+riscv-medany-elf: config-init | config-arch-riscv config-loader-medany config-target-riscv64-elf
 riscv-medany-linux: config-init | config-arch-riscv config-loader-medany config-target-riscv64-linux-gnu
 riscv-medany-tcc: config-init | config-arch-riscv config-loader-medany config-target-riscv64-tcc
 
@@ -103,6 +107,7 @@ help:
 	@echo "  arm-integratorcp-none"
 	@echo "  arm-integratorcp-unknown"
 	@echo "  arm-integratorcp-tcc"
+	@echo "  riscv-medany-elf"
 	@echo "  riscv-medany-linux"
 	@echo "  riscv-medany-tcc"
 	@echo ""
