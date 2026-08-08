@@ -30,6 +30,22 @@ static struct list_item *getcoreitem(unsigned int icore)
 
 }
 
+static struct mailboxrow *getmailboxrow(unsigned int imailbox)
+{
+
+    return (imailbox && imailbox < POOL_MAILBOXES) ? &mailboxrows[imailbox] : 0;
+
+}
+
+static struct list_item *getmailboxitem(unsigned int imailbox)
+{
+
+    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
+
+    return mailboxrow ? &mailboxrow->item : 0;
+
+}
+
 static struct noderow *getnoderow(unsigned int inode)
 {
 
@@ -62,26 +78,17 @@ static struct list_item *gettaskitem(unsigned int itask)
 
 }
 
-static struct mailboxrow *getmailboxrow(unsigned int imailbox)
-{
-
-    return (imailbox && imailbox < POOL_MAILBOXES) ? &mailboxrows[imailbox] : 0;
-
-}
-
-static struct list_item *getmailboxitem(unsigned int imailbox)
-{
-
-    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
-
-    return mailboxrow ? &mailboxrow->item : 0;
-
-}
-
 static unsigned int encodecorerow(struct corerow *corerow)
 {
 
     return ((unsigned long)corerow - (unsigned long)corerows) / sizeof (struct corerow);
+
+}
+
+static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
+{
+
+    return ((unsigned long)mailboxrow - (unsigned long)mailboxrows) / sizeof (struct mailboxrow);
 
 }
 
@@ -96,13 +103,6 @@ static unsigned int encodetaskrow(struct taskrow *taskrow)
 {
 
     return ((unsigned long)taskrow - (unsigned long)taskrows) / sizeof (struct taskrow);
-
-}
-
-static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
-{
-
-    return ((unsigned long)mailboxrow - (unsigned long)mailboxrows) / sizeof (struct mailboxrow);
 
 }
 
