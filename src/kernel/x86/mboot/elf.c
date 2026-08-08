@@ -13,14 +13,21 @@ static unsigned long findsymbol(unsigned long base, struct elf_sectionheader *sy
     char *strings = (char *)(base + sectionheaders[symbolheader->link].offset);
     unsigned int i;
 
-    for (i = 0; i < symbolheader->size / symbolheader->esize; i++)
+    if (symbolheader->size && symbolheader->esize)
     {
 
-        if (!symbols[i].shindex)
-            continue;
+        unsigned int nsymbols = symbolheader->size / symbolheader->esize;
 
-        if (strings[symbols[i].name + count] == '\0' && buffer_match(symbolname, &strings[symbols[i].name], count))
-            return base + symbols[i].value + sectionheaders[symbols[i].shindex].address + sectionheaders[symbols[i].shindex].offset;
+        for (i = 0; i < nsymbols; i++)
+        {
+
+            if (!symbols[i].shindex)
+                continue;
+
+            if (strings[symbols[i].name + count] == '\0' && buffer_match(symbolname, &strings[symbols[i].name], count))
+                return base + symbols[i].value + sectionheaders[symbols[i].shindex].address + sectionheaders[symbols[i].shindex].offset;
+
+        }
 
     }
 
