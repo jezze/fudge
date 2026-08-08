@@ -33,14 +33,12 @@ static struct core *coreget(void)
 static void coreassign(unsigned int itask)
 {
 
-    unsigned int icore = pool_pickcorefrom(&usedcores);
-    struct core *core = pool_getcore(icore);
+    struct core *core = pool_getcore(0);
 
     if (core)
     {
 
         pool_placetask(itask, &core->tasks);
-        pool_placecore(icore, &usedcores);
 
         if (core->id != apic_getid())
             apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
@@ -54,10 +52,9 @@ static void smp_setupbp(void)
 
     unsigned int id = apic_getid();
     struct core *core = pool_getcore(id);
-    struct list_item *coreitem = pool_getcoreitem(id);
 
     arch_configuretss(&tss[id], core->id, core->sp);
-    list_add(&usedcores, coreitem);
+    pool_placecore(core->id, &usedcores);
     apic_setup_bp();
 
 }
@@ -67,10 +64,9 @@ void smp_setupap(void)
 
     unsigned int id = apic_getid();
     struct core *core = pool_getcore(id);
-    struct list_item *coreitem = pool_getcoreitem(id);
 
     arch_configuretss(&tss[id], core->id, core->sp);
-    list_add(&usedcores, coreitem);
+    pool_placecore(core->id, &usedcores);
     apic_setup_ap();
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();

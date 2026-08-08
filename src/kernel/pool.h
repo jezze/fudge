@@ -4,7 +4,6 @@
 #define POOL_MAILBOXES                  512
 
 struct core *pool_getcore(unsigned int icore);
-struct list_item *pool_getcoreitem(unsigned int icore);
 struct mailbox *pool_getmailbox(unsigned int imailbox);
 struct node *pool_getnode(unsigned int inode);
 struct task *pool_gettask(unsigned int itask);

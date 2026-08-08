@@ -10,6 +10,12 @@
 .section .text
 
 setup:
+    movl $1, %eax
+    cpuid
+    shrl $24, %ebx
+    shll $10, %ebx
+    movl $0x00800000, %esp
+    subl %ebx, %esp
     call smp_setupap
 
 .code16

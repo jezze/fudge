@@ -115,15 +115,6 @@ struct core *pool_getcore(unsigned int icore)
 
 }
 
-struct list_item *pool_getcoreitem(unsigned int icore)
-{
-
-    struct corerow *corerow = getcorerow(icore);
-
-    return corerow ? &corerow->item : 0;
-
-}
-
 struct mailbox *pool_getmailbox(unsigned int imailbox)
 {
 
