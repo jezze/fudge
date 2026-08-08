@@ -11,7 +11,7 @@
 
 static struct list blockedtasks;
 static struct core *(*getcorecallback)(void);
-static void (*assigncorecallback)(struct list_item *item);
+static void (*assigncorecallback)(unsigned int itask);
 
 static struct core *getcore0(void)
 {
@@ -20,12 +20,13 @@ static struct core *getcore0(void)
 
 }
 
-static void assign0(struct list_item *item)
+static void assign0(unsigned int itask)
 {
 
     struct core *core = pool_getcore(0);
 
-    list_add(&core->tasks, item);
+    if (core)
+        pool_placetask(itask, &core->tasks);
 
 }
 
@@ -45,10 +46,9 @@ static void destroytask(unsigned int itask)
             if (task->imailbox[i])
                 pool_unpickmailbox(task->imailbox[i]);
 
-            task->imailbox[i] = 0;
-
         }
 
+        task_resetmailboxes(task);
         pool_unpicktask(itask);
 
     }
@@ -63,43 +63,36 @@ static void checkstate(unsigned int itask)
     if (task)
     {
 
-        struct list_item *item = pool_gettaskitem(itask);
-
-        if (item)
+        switch (task->state)
         {
 
-            switch (task->state)
-            {
+        case TASK_STATE_DEAD:
+            destroytask(itask);
 
-            case TASK_STATE_DEAD:
-                destroytask(itask);
+            break;
 
-                break;
+        case TASK_STATE_BLOCKED:
+            pool_placetask(itask, &blockedtasks);
 
-            case TASK_STATE_BLOCKED:
-                list_add(&blockedtasks, item);
+            break;
 
-                break;
+        case TASK_STATE_UNBLOCKED:
+            task_transition(task, TASK_STATE_ASSIGNED);
+            assigncorecallback(itask);
 
-            case TASK_STATE_UNBLOCKED:
-                task_transition(task, TASK_STATE_ASSIGNED);
-                assigncorecallback(item);
+            break;
 
-                break;
+        case TASK_STATE_NEW:
+            task_transition(task, TASK_STATE_ASSIGNED);
+            assigncorecallback(itask);
 
-            case TASK_STATE_NEW:
-                task_transition(task, TASK_STATE_ASSIGNED);
-                assigncorecallback(item);
+            break;
 
-                break;
+        case TASK_STATE_RUNNING:
+            task_transition(task, TASK_STATE_ASSIGNED);
+            assigncorecallback(itask);
 
-            case TASK_STATE_RUNNING:
-                task_transition(task, TASK_STATE_ASSIGNED);
-                assigncorecallback(item);
-
-                break;
-
-            }
+            break;
 
         }
 
@@ -153,24 +146,17 @@ static void unblocktasks(void)
 static unsigned int picknewtask(struct core *core)
 {
 
-    struct list_item *item = list_pickhead(&core->tasks);
+    unsigned int itask = pool_picktaskfrom(&core->tasks);
 
-    if (item)
+    if (itask)
     {
 
-        unsigned int itask = pool_getitaskfromitem(item);
+        struct task *task = pool_gettask(itask);
 
-        if (itask)
-        {
+        if (task)
+            task_transition(task, TASK_STATE_RUNNING);
 
-            struct task *task = pool_gettask(itask);
-
-            if (task)
-                task_transition(task, TASK_STATE_RUNNING);
-
-            return itask;
-
-        }
+        return itask;
 
     }
 
@@ -236,7 +222,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
             struct node *node = pool_getnode(inode);
 
             node_reset(node, "link", snode->resource, snode->operands);
-            pool_addnode(&tnode->links, inode);
+            pool_placenode(inode, &tnode->links);
 
             return MESSAGE_OK;
 
@@ -395,7 +381,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
 }
 
-void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(struct list_item *item))
+void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(unsigned int itask))
 {
 
     getcorecallback = getcore;

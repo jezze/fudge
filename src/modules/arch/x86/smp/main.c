@@ -30,18 +30,17 @@ static struct core *coreget(void)
 
 }
 
-static void coreassign(struct list_item *item)
+static void coreassign(unsigned int itask)
 {
 
-    struct list_item *coreitem = list_pickhead(&usedcores);
+    unsigned int icore = pool_pickcorefrom(&usedcores);
+    struct core *core = pool_getcore(icore);
 
-    if (coreitem)
+    if (core)
     {
 
-        struct core *core = coreitem->data;
-
-        list_add(&usedcores, coreitem);
-        list_add(&core->tasks, item);
+        pool_placetask(itask, &core->tasks);
+        pool_placecore(icore, &usedcores);
 
         if (core->id != apic_getid())
             apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);

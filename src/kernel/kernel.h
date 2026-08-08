@@ -9,5 +9,5 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 unsigned int kernel_announce(unsigned int inode, unsigned int namehash);
 void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address);
-void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(struct list_item *item));
+void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(unsigned int itask));
 void kernel_setup(void);
