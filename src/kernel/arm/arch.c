@@ -31,7 +31,7 @@ static void shownum(unsigned int n)
 
     char num[32];
 
-    cstring_write_fmt1(num, 32, "%u\n\\0", 0, &n);
+    cstring_write_fmt1(num, 32, 0, "%u\n\\0", &n);
     uart_puts(num);
 
 }
@@ -184,8 +184,8 @@ void arch_setup1(void)
     kmi_setup();
     lcd_setup();
     mailbox_setup();
-    pool_setup(ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
-    kernel_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE);
+    pool_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, ARCH_MAILBOXSIZE);
+    kernel_setup();
     abi_setup();
     abi_setcallback(0x03, spawn);
 

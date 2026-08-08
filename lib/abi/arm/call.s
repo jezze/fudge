@@ -66,7 +66,7 @@ call_unload:
     bx lr
 
 .global call_announce
-call_unload:
+call_announce:
     mov r7, $CALL_INDEX_ANNOUNCE
     swi #0
     bx lr
