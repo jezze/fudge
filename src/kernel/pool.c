@@ -211,6 +211,16 @@ void pool_unpickmailbox(unsigned int imailbox)
 
 }
 
+void pool_unpicknode(unsigned int inode)
+{
+
+    struct list_item *item = getnodeitem(inode);
+
+    if (item)
+        list_add(&freenodes, item);
+
+}
+
 void pool_unpicktask(unsigned int itask)
 {
 
@@ -248,16 +258,6 @@ void pool_placetask(unsigned int itask, struct list *list)
 
     if (item)
         list_add(list, item);
-
-}
-
-void pool_removenode(struct list *nodes, unsigned int inode)
-{
-
-    struct list_item *item = getnodeitem(inode);
-
-    if (item)
-        list_move(&freenodes, nodes, item);
 
 }
 

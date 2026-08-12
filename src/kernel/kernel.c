@@ -243,7 +243,30 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
     if (snode && tnode)
     {
 
-        pool_removenode(&tnode->links, source);
+        struct list_item *current;
+        struct list_item *next;
+
+        spinlock_acquire(&tnode->links.spinlock);
+
+        for (current = tnode->links.head; current; current = next)
+        {
+
+            unsigned int inode = pool_getinodefromitem(current);
+            struct node *node = pool_getnode(inode);
+
+            next = current->next;
+
+            if (node->resource == snode->resource)
+            {
+
+                list_remove_unsafe(&tnode->links, current);
+                pool_unpicknode(inode);
+
+            }
+
+        }
+
+        spinlock_release(&tnode->links.spinlock);
 
         return MESSAGE_OK;
 
