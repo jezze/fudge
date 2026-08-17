@@ -16,7 +16,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
 }
 
-static void interpret(void *buffer, unsigned int count)
+static void interpret(unsigned int ethernet, void *buffer, unsigned int count)
 {
 
     char *data = buffer;
@@ -24,7 +24,7 @@ static void interpret(void *buffer, unsigned int count)
     if (data[0] == '/')
     {
 
-        socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, count - 1, data + 1);
+        socket_send_tcp(0, ethernet, &local, &remote, &router, count - 1, data + 1);
 
     }
 
@@ -33,7 +33,7 @@ static void interpret(void *buffer, unsigned int count)
 
         char outputdata[4096];
 
-        socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, cstring_write_fmt3(outputdata, 4096, 0, "PRIVMSG %s :%w", option_getstring("channel"), buffer, &count), outputdata);
+        socket_send_tcp(0, ethernet, &local, &remote, &router, cstring_write_fmt3(outputdata, 4096, 0, "PRIVMSG %s :%w", option_getstring("channel"), buffer, &count), outputdata);
 
     }
 
@@ -87,48 +87,55 @@ static void dnsresolve(struct socket *socket, char *domain)
 static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_consoledata *consoledata = mdata;
-    char buffer[4096];
-    unsigned int count;
+    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
-    if (!remote.resolved)
-        return;
-
-    switch (consoledata->data)
+    if (ethernet)
     {
 
-    case '\0':
-        break;
+        struct event_consoledata *consoledata = mdata;
+        char buffer[4096];
+        unsigned int count;
 
-    case '\f':
-        break;
+        if (!remote.resolved)
+            return;
 
-    case '\t':
-        break;
+        switch (consoledata->data)
+        {
 
-    case '\b':
-    case 0x7F:
-        break;
+        case '\0':
+            break;
 
-    case '\r':
-        consoledata->data = '\n';
+        case '\f':
+            break;
 
-    case '\n':
-        ring_write(&input, &consoledata->data, 1);
-        channel_send_buffer(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
+        case '\t':
+            break;
 
-        count = ring_read(&input, buffer, 4096);
+        case '\b':
+        case 0x7F:
+            break;
 
-        if (count)
-            interpret(buffer, count);
+        case '\r':
+            consoledata->data = '\n';
 
-        break;
+        case '\n':
+            ring_write(&input, &consoledata->data, 1);
+            channel_send_buffer(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
 
-    default:
-        ring_write(&input, &consoledata->data, 1);
-        channel_send_buffer(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
+            count = ring_read(&input, buffer, 4096);
 
-        break;
+            if (count)
+                interpret(ethernet, buffer, count);
+
+            break;
+
+        default:
+            ring_write(&input, &consoledata->data, 1);
+            channel_send_buffer(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
+
+            break;
+
+        }
 
     }
 
@@ -137,35 +144,41 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char buffer[4096];
-    unsigned int count;
-    struct event_clockinfo clockinfo;
-    struct mtwist_state state;
+    unsigned int clock = channel_lookup(option_getstring("clock-service"));
+    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
-    option_setdecimal("clock-service", channel_lookup(option_getstring("clock-service")));
-    option_setdecimal("ethernet-service", channel_lookup(option_getstring("ethernet-service")));
-    channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-    mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
-    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
-    socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
-    socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
+    if (clock && ethernet)
+    {
 
-    if (cstring_length(option_getstring("domain")))
-        dnsresolve(&remote, option_getstring("domain"));
+        char buffer[4096];
+        unsigned int count;
+        struct event_clockinfo clockinfo;
+        struct mtwist_state state;
 
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
-    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
-    socket_connect_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router);
-    socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, buildrequest(4096, buffer), buffer);
+        channel_send(0, clock, EVENT_INFO);
+        channel_wait_buffer(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
+        socket_bind_ipv4s(&local, option_getstring("local-address"));
+        socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
+        socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+        socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
+        socket_bind_ipv4s(&router, option_getstring("router-address"));
+        socket_resolvelocal(0, ethernet, &local);
 
-    while ((count = socket_receive(0, option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
-        channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+        if (cstring_length(option_getstring("domain")))
+            dnsresolve(&remote, option_getstring("domain"));
 
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
+        channel_send(0, ethernet, EVENT_LINK);
+        socket_resolveremote(0, ethernet, &local, &router);
+        socket_connect_tcp(0, ethernet, &local, &remote, &router);
+        socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
+
+        while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
+            channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+
+        channel_send(0, ethernet, EVENT_UNLINK);
+
+    }
 
 }
 

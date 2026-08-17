@@ -6,22 +6,28 @@ static unsigned int counter = 1;
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct message message;
-    char data[MESSAGE_SIZE];
+    unsigned int timer = channel_lookup(option_getstring("timer-service"));
 
-    option_setdecimal("clock-service", channel_lookup(option_getstring("clock-service")));
-    channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
-
-    while (channel_poll(0, option_getdecimal("timer-service"), EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
+    if (timer)
     {
 
-        channel_send_fmt1(0, source, EVENT_DATA, "Tick: %u second(s)\n", &counter);
+        struct message message;
+        char data[MESSAGE_SIZE];
 
-        counter++;
+        channel_send(0, timer, EVENT_LINK);
+
+        while (channel_poll(0, timer, EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
+        {
+
+            channel_send_fmt1(0, source, EVENT_DATA, "Tick: %u second(s)\n", &counter);
+
+            counter++;
+
+        }
+
+        channel_send(0, timer, EVENT_UNLINK);
 
     }
-
-    channel_send(0, option_getdecimal("timer-service"), EVENT_UNLINK);
 
 }
 

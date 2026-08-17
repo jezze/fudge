@@ -218,13 +218,22 @@ static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", channel_lookup(option_getstring("wm-service")));
-    option_setdecimal("mouse-service", channel_lookup(option_getstring("mouse-service")));
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
-    while (channel_process(0));
+    if (wm)
+    {
 
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+        channel_send(0, wm, EVENT_WMGRAB);
+        channel_wait(0, wm, EVENT_WMACK);
+        channel_send(0, wm, EVENT_WMMAP);
+
+        while (channel_process(0));
+
+        channel_send(0, wm, EVENT_WMUNMAP);
+        channel_send(0, wm, EVENT_WMUNGRAB);
+        channel_wait(0, wm, EVENT_WMACK);
+
+    }
 
 }
 
@@ -238,52 +247,56 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_videoconf videoconf;
-    struct event_videoinfo videoinfo;
+    unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
+    unsigned int video = channel_lookup(option_getstring("video-service"));
 
-    videoconf.width = option_getdecimal("width");
-    videoconf.height = option_getdecimal("height");
-    videoconf.bpp = option_getdecimal("bpp");
-
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
-    channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
-
-    if (videoinfo.bpp == 1)
+    if (mouse && video)
     {
 
-        unsigned char colormap[768];
-        unsigned int i;
+        struct event_videoconf videoconf;
+        struct event_videoinfo videoinfo;
 
-        for (i = 0; i < 768; i += 3)
+        videoconf.width = option_getdecimal("width");
+        videoconf.height = option_getdecimal("height");
+        videoconf.bpp = option_getdecimal("bpp");
+
+        channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+        channel_wait_buffer(0, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+
+        if (videoinfo.bpp == 1)
         {
 
-            struct hsv hsv;
-            struct rgb rgb;
+            unsigned char colormap[768];
+            unsigned int i;
 
-            hsv.h = (64 * (i / 3)) / 256;
-            hsv.s = 255;
-            hsv.v = (i) ? 255 : 0;
-            rgb = hsv2rgb(hsv);
-            colormap[i + 0] = rgb.r;
-            colormap[i + 1] = rgb.g;
-            colormap[i + 2] = rgb.b;
+            for (i = 0; i < 768; i += 3)
+            {
+
+                struct hsv hsv;
+                struct rgb rgb;
+
+                hsv.h = (64 * (i / 3)) / 256;
+                hsv.s = 255;
+                hsv.v = (i) ? 255 : 0;
+                rgb = hsv2rgb(hsv);
+                colormap[i + 0] = rgb.r;
+                colormap[i + 1] = rgb.g;
+                colormap[i + 2] = rgb.b;
+
+            }
+
+            channel_send_buffer(0, video, EVENT_VIDEOCMAP, 768, &colormap);
 
         }
 
-        channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCMAP, 768, &colormap);
+        draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
+        channel_send(0, mouse, EVENT_LINK);
+
+        while (channel_process(0));
+
+        channel_send(0, mouse, EVENT_UNLINK);
 
     }
-
-    draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-    channel_send(0, option_getdecimal("mouse-service"), EVENT_LINK);
-
-    while (channel_process(0));
-
-    channel_send(0, option_getdecimal("mouse-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
 
 }
 

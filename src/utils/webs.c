@@ -10,7 +10,7 @@ static char inputdata[4096];
 static struct ring input;
 static char request[128];
 
-static void sendresponse(unsigned int source, struct socket *remote)
+static void sendresponse(unsigned int ethernet, unsigned int source, struct socket *remote)
 {
 
     unsigned int target = fs_auth(option_getstring("initrd:"));
@@ -47,11 +47,11 @@ static void sendresponse(unsigned int source, struct socket *remote)
 
     }
 
-    socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, remote, &router, count, buffer);
+    socket_send_tcp(0, ethernet, &local, remote, &router, count, buffer);
 
 }
 
-static void handlehttppacket(unsigned int source, struct socket *remote)
+static void handlehttppacket(unsigned int ethernet, unsigned int source, struct socket *remote)
 {
 
     unsigned int newline;
@@ -74,7 +74,7 @@ static void handlehttppacket(unsigned int source, struct socket *remote)
         }
 
         if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
-            sendresponse(source, remote);
+            sendresponse(ethernet, source, remote);
 
     }
 
@@ -83,59 +83,65 @@ static void handlehttppacket(unsigned int source, struct socket *remote)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_clockinfo clockinfo;
-    struct mtwist_state state;
-    struct message message;
-    char data[MESSAGE_SIZE];
+    unsigned int clock = channel_lookup(option_getstring("clock-service"));
+    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
-    option_setdecimal("clock-service", channel_lookup(option_getstring("clock-service")));
-    option_setdecimal("ethernet-service", channel_lookup(option_getstring("ethernet-service")));
-    channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-    mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
-    socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
-    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
-    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
-    socket_listen_tcp(option_getdecimal("ethernet-service"), &local, remotes, 64, &router);
-
-    while (channel_poll(0, option_getdecimal("ethernet-service"), EVENT_DATA, &message, MESSAGE_SIZE, data))
+    if (clock && ethernet)
     {
 
-        struct socket *remote;
+        struct event_clockinfo clockinfo;
+        struct mtwist_state state;
+        struct message message;
+        char data[MESSAGE_SIZE];
 
-        remote = socket_accept_arp(&local, remotes, 64, message.length, data);
+        channel_send(0, clock, EVENT_INFO);
+        channel_wait_buffer(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
+        socket_bind_ipv4s(&router, option_getstring("router-address"));
+        socket_bind_ipv4s(&local, option_getstring("local-address"));
+        socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
+        socket_resolvelocal(0, ethernet, &local);
+        channel_send(0, ethernet, EVENT_LINK);
+        socket_resolveremote(0, ethernet, &local, &router);
+        socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
-        if (remote)
+        while (channel_poll(0, ethernet, EVENT_DATA, &message, MESSAGE_SIZE, data))
         {
 
-            socket_handle_arp(0, option_getdecimal("ethernet-service"), &local, remote, message.length, data);
+            struct socket *remote;
 
-        }
+            remote = socket_accept_arp(&local, remotes, 64, message.length, data);
 
-        remote = socket_accept_tcp(&local, remotes, 64, message.length, data);
-
-        if (remote)
-        {
-
-            unsigned char buffer[4096];
-            unsigned int count = socket_handle_tcp(0, option_getdecimal("ethernet-service"), &local, remote, &router, message.length, data, 4096, buffer);
-
-            if (count)
+            if (remote)
             {
 
-                if (ring_write(&input, buffer, count))
-                    handlehttppacket(source, remote);
+                socket_handle_arp(0, ethernet, &local, remote, message.length, data);
+
+            }
+
+            remote = socket_accept_tcp(&local, remotes, 64, message.length, data);
+
+            if (remote)
+            {
+
+                unsigned char buffer[4096];
+                unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, message.length, data, 4096, buffer);
+
+                if (count)
+                {
+
+                    if (ring_write(&input, buffer, count))
+                        handlehttppacket(ethernet, source, remote);
+
+                }
 
             }
 
         }
 
-    }
+        channel_send(0, ethernet, EVENT_UNLINK);
 
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
+    }
 
 }
 

@@ -26,7 +26,7 @@ struct mbr
 
 };
 
-static void request_send(unsigned int sector, unsigned int count)
+static void request_send(unsigned int block, unsigned int sector, unsigned int count)
 {
 
     struct event_blockrequest blockrequest;
@@ -34,11 +34,11 @@ static void request_send(unsigned int sector, unsigned int count)
     blockrequest.sector = sector;
     blockrequest.count = count;
 
-    channel_send_buffer(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send_buffer(0, block, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
-static void request_readblocks(void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks)
+static void request_readblocks(unsigned int block, void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks)
 {
 
     unsigned int total = nblocks * 512;
@@ -46,9 +46,9 @@ static void request_readblocks(void *buffer, unsigned int count, unsigned int se
     struct message message;
     char data[MESSAGE_SIZE];
 
-    request_send(sector, nblocks);
+    request_send(block, sector, nblocks);
 
-    while (channel_poll(0, option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, block, EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         read += buffer_write(buffer, count, data, message.length, read);
@@ -112,17 +112,23 @@ static void print(unsigned int source, struct mbr *mbr)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char block[1024];
-    struct mbr *mbr = (struct mbr *)block;
+    unsigned int block = channel_lookup(option_getstring("block-service"));
 
-    option_setdecimal("block-service", channel_lookup(option_getstring("block-service")));
-    channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
-    request_readblocks(block, 1024, 0, 1);
+    if (block)
+    {
 
-    if (isvalid(mbr))
-        print(source, mbr);
+        unsigned char blockdata[1024];
+        struct mbr *mbr = (struct mbr *)blockdata;
 
-    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK);
+        channel_send(0, block, EVENT_LINK);
+        request_readblocks(block, blockdata, 1024, 0, 1);
+
+        if (isvalid(mbr))
+            print(source, mbr);
+
+        channel_send(0, block, EVENT_UNLINK);
+
+    }
 
 }
 

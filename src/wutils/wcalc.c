@@ -86,11 +86,16 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
-    channel_send(0, wm, EVENT_WMMAP);
+    if (wm)
+    {
 
-    while (channel_process(0) != EVENT_WMCLOSE);
+        channel_send(0, wm, EVENT_WMMAP);
 
-    channel_send(0, wm, EVENT_WMUNMAP);
+        while (channel_process(0) != EVENT_WMCLOSE);
+
+        channel_send(0, wm, EVENT_WMUNMAP);
+
+    }
 
 }
 

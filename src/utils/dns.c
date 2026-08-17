@@ -62,67 +62,73 @@ static void reply(unsigned int source, unsigned short type, char *name, void *rd
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned char buffer[4096];
-    unsigned int count;
-    struct event_clockinfo clockinfo;
-    struct mtwist_state state;
+    unsigned int clock = channel_lookup(option_getstring("clock-service"));
+    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
-    option_setdecimal("clock-service", channel_lookup(option_getstring("clock-service")));
-    option_setdecimal("ethernet-service", channel_lookup(option_getstring("ethernet-service")));
-    channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-    mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_udpv(&local, mtwist_rand(&state));
-    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
-    socket_bind_udpv(&remote, option_getdecimal("remote-port"));
-    socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
-    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
-    socket_send_udp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, buildrequest(4096, buffer), buffer);
-
-    count = socket_receive(0, option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096);
-
-    if (count)
+    if (clock && ethernet)
     {
 
-        struct dns_header *header = (struct dns_header *)buffer;
-        unsigned int responselength = sizeof (struct dns_header);
-        unsigned int i;
+        unsigned char buffer[4096];
+        unsigned int count;
+        struct event_clockinfo clockinfo;
+        struct mtwist_state state;
 
-        for (i = 0; i < net_load16(header->questions); i++)
+        channel_send(0, clock, EVENT_INFO);
+        channel_wait_buffer(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
+        socket_bind_ipv4s(&local, option_getstring("local-address"));
+        socket_bind_udpv(&local, mtwist_rand(&state));
+        socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+        socket_bind_udpv(&remote, option_getdecimal("remote-port"));
+        socket_bind_ipv4s(&router, option_getstring("router-address"));
+        socket_resolvelocal(0, ethernet, &local);
+        channel_send(0, ethernet, EVENT_LINK);
+        socket_resolveremote(0, ethernet, &local, &router);
+        socket_send_udp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
+
+        count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096);
+
+        if (count)
         {
 
-            char *name;
+            struct dns_header *header = (struct dns_header *)buffer;
+            unsigned int responselength = sizeof (struct dns_header);
+            unsigned int i;
 
-            name = (char *)(buffer + responselength);
-            responselength += dns_namesize(name);
-            responselength += sizeof (struct dns_question);
+            for (i = 0; i < net_load16(header->questions); i++)
+            {
+
+                char *name;
+
+                name = (char *)(buffer + responselength);
+                responselength += dns_namesize(name);
+                responselength += sizeof (struct dns_question);
+
+            }
+
+            for (i = 0; i < net_load16(header->answers); i++)
+            {
+
+                struct dns_answer *answer;
+                char *name;
+                void *rddata;
+
+                name = (char *)(buffer + responselength);
+                responselength += dns_namesize(name);
+                answer = (struct dns_answer *)(buffer + responselength);
+                responselength += sizeof (struct dns_answer);
+                rddata = (buffer + responselength);
+                responselength += net_load16(answer->rdlength);
+
+                reply(source, net_load16(answer->type), name, rddata, buffer);
+
+            }
 
         }
 
-        for (i = 0; i < net_load16(header->answers); i++)
-        {
-
-            struct dns_answer *answer;
-            char *name;
-            void *rddata;
-
-            name = (char *)(buffer + responselength);
-            responselength += dns_namesize(name);
-            answer = (struct dns_answer *)(buffer + responselength);
-            responselength += sizeof (struct dns_answer);
-            rddata = (buffer + responselength);
-            responselength += net_load16(answer->rdlength);
-
-            reply(source, net_load16(answer->type), name, rddata, buffer);
-
-        }
+        channel_send(0, ethernet, EVENT_UNLINK);
 
     }
-
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 

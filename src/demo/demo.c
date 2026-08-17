@@ -114,16 +114,22 @@ static void run(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("wm-service", channel_lookup(option_getstring("wm-service")));
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMGRAB);
-    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMMAP);
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
-    while (channel_process(0));
+    if (wm)
+    {
 
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
-    channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNGRAB);
-    channel_wait(0, option_getdecimal("wm-service"), EVENT_WMACK);
+        channel_send(0, wm, EVENT_WMGRAB);
+        channel_wait(0, wm, EVENT_WMACK);
+        channel_send(0, wm, EVENT_WMMAP);
+
+        while (channel_process(0));
+
+        channel_send(0, wm, EVENT_WMUNMAP);
+        channel_send(0, wm, EVENT_WMUNGRAB);
+        channel_wait(0, wm, EVENT_WMACK);
+
+    }
 
 }
 
@@ -143,24 +149,30 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_videoconf videoconf;
+    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
+    unsigned int timer = channel_lookup(option_getstring("timer-service"));
+    unsigned int video = channel_lookup(option_getstring("video-service"));
 
-    videoconf.width = option_getdecimal("width");
-    videoconf.height = option_getdecimal("height");
-    videoconf.bpp = option_getdecimal("bpp");
+    if (keyboard && timer && video)
+    {
 
-    option_setdecimal("keyboard-service", channel_lookup(option_getstring("keyboard-service")));
-    option_setdecimal("timer-service", channel_lookup(option_getstring("timer-service")));
-    option_setdecimal("video-service", channel_lookup(option_getstring("video-service")));
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
-    channel_send(0, option_getdecimal("timer-service"), EVENT_LINK);
-    channel_send(0, option_getdecimal("video-service"), EVENT_LINK);
-    channel_send_buffer(0, option_getdecimal("video-service"), EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait(0, option_getdecimal("video-service"), EVENT_VIDEOINFO);
-    run();
-    channel_send(0, option_getdecimal("video-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("timer-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK);
+        struct event_videoconf videoconf;
+
+        videoconf.width = option_getdecimal("width");
+        videoconf.height = option_getdecimal("height");
+        videoconf.bpp = option_getdecimal("bpp");
+
+        channel_send(0, keyboard, EVENT_LINK);
+        channel_send(0, timer, EVENT_LINK);
+        channel_send(0, video, EVENT_LINK);
+        channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+        channel_wait(0, video, EVENT_VIDEOINFO);
+        run();
+        channel_send(0, video, EVENT_UNLINK);
+        channel_send(0, timer, EVENT_UNLINK);
+        channel_send(0, keyboard, EVENT_UNLINK);
+
+    }
 
 }
 

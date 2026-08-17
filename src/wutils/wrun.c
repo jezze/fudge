@@ -127,46 +127,52 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char urldata[4096];
-    struct url url;
-    unsigned char buffer[4096];
-    unsigned int count;
-    struct event_clockinfo clockinfo;
-    struct mtwist_state state;
+    unsigned int clock = channel_lookup(option_getstring("clock-service"));
+    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
-    option_setdecimal("clock-service", channel_lookup(option_getstring("clock-service")));
-    option_setdecimal("ethernet-service", channel_lookup(option_getstring("ethernet-service")));
-    channel_send(0, option_getdecimal("clock-service"), EVENT_INFO);
-    channel_wait_buffer(0, option_getdecimal("clock-service"), EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-    mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
-    socket_bind_ipv4s(&local, option_getstring("local-address"));
-    socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
-    socket_bind_ipv4s(&remote, option_getstring("remote-address"));
-    socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
-    socket_bind_ipv4s(&router, option_getstring("router-address"));
-    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
-    parseurl(&url, urldata, 4096);
-
-    if (url.host)
-        dnsresolve(&remote, url.host);
-
-    if (url.port)
-        socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
-
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
-    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
-    socket_connect_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router);
-    socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
-
-    while ((count = socket_receive(0, option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
+    if (clock && ethernet)
     {
 
-        if (ring_write(&input, buffer, count))
-            handlehttppacket(source);
+        char urldata[4096];
+        struct url url;
+        unsigned char buffer[4096];
+        unsigned int count;
+        struct event_clockinfo clockinfo;
+        struct mtwist_state state;
+
+        channel_send(0, clock, EVENT_INFO);
+        channel_wait_buffer(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
+        socket_bind_ipv4s(&local, option_getstring("local-address"));
+        socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
+        socket_bind_ipv4s(&remote, option_getstring("remote-address"));
+        socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
+        socket_bind_ipv4s(&router, option_getstring("router-address"));
+        socket_resolvelocal(0, ethernet, &local);
+        parseurl(&url, urldata, 4096);
+
+        if (url.host)
+            dnsresolve(&remote, url.host);
+
+        if (url.port)
+            socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
+
+        channel_send(0, ethernet, EVENT_LINK);
+        socket_resolveremote(0, ethernet, &local, &router);
+        socket_connect_tcp(0, ethernet, &local, &remote, &router);
+        socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
+
+        while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
+        {
+
+            if (ring_write(&input, buffer, count))
+                handlehttppacket(source);
+
+        }
+
+        channel_send(0, ethernet, EVENT_UNLINK);
 
     }
-
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
 
 }
 
