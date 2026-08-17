@@ -494,11 +494,8 @@ void init(void)
     channel_bind(EVENT_READREQUEST, onreadrequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);
-    channel_open();
 
     while (channel_process(0));
-
-    channel_close();
 
 }
 

@@ -32,11 +32,8 @@ void init(void)
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);
-    channel_open();
 
     while (channel_process(0));
-
-    channel_close();
 
 }
 

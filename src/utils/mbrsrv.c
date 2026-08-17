@@ -131,11 +131,8 @@ void init(void)
 
     option_add("block-service", "block");
     channel_bind(EVENT_MAIN, onmain);
-    channel_open();
 
     while (channel_process(0));
-
-    channel_close();
 
 }
 

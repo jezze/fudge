@@ -189,11 +189,8 @@ void init(void)
     option_add("dns", "initrd:bin/dns");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
-    channel_open();
 
     while (channel_process(0));
-
-    channel_close();
 
 }
 

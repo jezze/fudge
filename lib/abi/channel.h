@@ -18,5 +18,4 @@ unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, uns
 unsigned int channel_lookup(char *name);
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
 void channel_route(unsigned int event, unsigned int target);
-void channel_open(void);
 void channel_close(void);

@@ -11,7 +11,7 @@
 
 static void (*listeners[CHANNEL_EVENTS])(unsigned int source, void *data, unsigned int size);
 static unsigned int routes[CHANNEL_EVENTS];
-static unsigned int state = CHANNEL_STATE_CLOSED;
+static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int pending;
 static unsigned int parent;
 
@@ -372,13 +372,6 @@ void channel_route(unsigned int event, unsigned int target)
 {
 
     routes[event] = target;
-
-}
-
-void channel_open(void)
-{
-
-    state = CHANNEL_STATE_OPENED;
 
 }
 

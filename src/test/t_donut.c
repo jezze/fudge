@@ -116,11 +116,8 @@ void init(void)
 
     option_add("timer-service", "timer0");
     channel_bind(EVENT_MAIN, onmain);
-    channel_open();
 
     while (channel_process(0));
-
-    channel_close();
 
 }
 

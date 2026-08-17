@@ -140,11 +140,8 @@ void init(void)
     option_add("router-address", "10.0.5.80");
     option_add("domain", "");
     channel_bind(EVENT_MAIN, onmain);
-    channel_open();
 
     while (channel_process(0));
-
-    channel_close();
 
 }
 
