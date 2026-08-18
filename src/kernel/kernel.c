@@ -221,7 +221,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
 
             struct node *node = pool_getnode(inode);
 
-            node_reset(node, "link", snode->resource, snode->operands);
+            node_reset(node, 0, snode->resource, snode->operands);
             pool_placenode(inode, &tnode->links);
 
             return MESSAGE_OK;

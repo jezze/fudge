@@ -181,7 +181,7 @@ void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
 
         struct node *node = pool_getnode(mailbox->inode);
 
-        node_reset(node, "mailbox", &mailbox->resource, &operands);
+        node_reset(node, 0, &mailbox->resource, &operands);
 
     }
 
