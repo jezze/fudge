@@ -123,7 +123,14 @@ static void unblocktasks(void)
             if (task)
             {
 
-                task_checksignals(task);
+                if (task->signals.blocks)
+                    task_transition(task, TASK_STATE_BLOCKED);
+
+                if (task->signals.unblocks)
+                    task_transition(task, TASK_STATE_UNBLOCKED);
+
+                if (task->signals.kills)
+                    task_transition(task, TASK_STATE_DEAD);
 
                 if (task->state != TASK_STATE_BLOCKED)
                 {
@@ -284,7 +291,15 @@ unsigned int kernel_schedule(struct core *core)
     if (task)
     {
 
-        task_checksignals(task);
+        if (task->signals.blocks)
+            task_transition(task, TASK_STATE_BLOCKED);
+
+        if (task->signals.unblocks)
+            task_transition(task, TASK_STATE_UNBLOCKED);
+
+        if (task->signals.kills)
+            task_transition(task, TASK_STATE_DEAD);
+
         checkstate(core->itask);
 
     }

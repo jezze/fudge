@@ -113,20 +113,6 @@ void task_unregister(struct task *task)
 
 }
 
-void task_checksignals(struct task *task)
-{
-
-    if (task->signals.blocks)
-        task_transition(task, TASK_STATE_BLOCKED);
-
-    if (task->signals.unblocks)
-        task_transition(task, TASK_STATE_UNBLOCKED);
-
-    if (task->signals.kills)
-        task_transition(task, TASK_STATE_DEAD);
-
-}
-
 void task_resetsignals(struct task_signals *signals)
 {
 
