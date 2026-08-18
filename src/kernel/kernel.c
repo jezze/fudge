@@ -341,11 +341,11 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
     {
 
         struct list *links = &snode->links;
-        struct list_item *current;
+        struct list_item *current = 0;
 
         spinlock_acquire(&links->spinlock);
 
-        for (current = links->head; current; current = current->next)
+        while ((current = list_next_unsafe(links, current)))
         {
 
             unsigned int target = pool_getinodefromitem(current);

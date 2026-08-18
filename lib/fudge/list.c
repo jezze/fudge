@@ -132,6 +132,20 @@ struct list_item *list_picktail(struct list *list)
 
 }
 
+struct list_item *list_next_unsafe(struct list *list, struct list_item *current)
+{
+
+    return (current) ? current->next : list->head;
+
+}
+
+struct list_item *list_prev_unsafe(struct list *list, struct list_item *current)
+{
+
+    return (current) ? current->prev : list->tail;
+
+}
+
 void list_inititem(struct list_item *item, void *data)
 {
 

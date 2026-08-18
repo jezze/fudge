@@ -6,9 +6,9 @@ static struct list resources;
 static struct resource *nextresource(struct resource *resource)
 {
 
-    struct list_item *current = (resource) ? resource->item.next : resources.head;
+    struct list_item *next = list_next_unsafe(&resources, &resource->item);
 
-    return (current) ? current->data : 0;
+    return (next) ? next->data : 0;
 
 }
 
