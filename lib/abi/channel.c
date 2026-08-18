@@ -138,9 +138,6 @@ void channel_dispatch(unsigned int ichannel, struct message *message, void *data
     if (state == CHANNEL_STATE_CLOSING)
     {
 
-        if (!pending && parent)
-            dispatch(parent, EVENT_EXIT, 0, 0);
-
         if (!pending)
             state = CHANNEL_STATE_TERMINATED;
 

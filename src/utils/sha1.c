@@ -11,23 +11,6 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onexit(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    unsigned char digest[20];
-    char output[40];
-    unsigned int l = 40;
-    unsigned int i;
-
-    sha1_write(&sum, digest);
-
-    for (i = 0; i < 20; i++)
-        cstring_write_value(output, 40, digest[i], 16, 2, i * 2);
-
-    channel_send_fmt2(0, source, EVENT_DATA, "%w\n", output, &l);
-
-}
-
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -61,13 +44,30 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onterm(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    unsigned char digest[20];
+    char output[40];
+    unsigned int l = 40;
+    unsigned int i;
+
+    sha1_write(&sum, digest);
+
+    for (i = 0; i < 20; i++)
+        cstring_write_value(output, 40, digest[i], 16, 2, i * 2);
+
+    channel_send_fmt2(0, source, EVENT_DATA, "%w\n", output, &l);
+
+}
+
 void init(void)
 {
 
     sha1_init(&sum);
     channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_PATH, onpath);
+    channel_bind(EVENT_TERM, onterm);
 
     while (channel_process(0));
 
