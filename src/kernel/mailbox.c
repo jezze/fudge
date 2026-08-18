@@ -4,6 +4,7 @@
 #include "task.h"
 #include "pool.h"
 #include "mailbox.h"
+#include "kernel.h"
 
 static struct node_operands operands;
 
@@ -94,13 +95,13 @@ static unsigned int operands_pick(struct resource *resource, unsigned int source
 
         unsigned int status = pick(mailbox, message, count, data);
 
-        if (status == MESSAGE_RETRY)
+        switch (status)
         {
 
-            struct task *task = pool_gettask(mailbox->itask);
+        case MESSAGE_RETRY:
+            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
 
-            if (task)
-                task_signal(task, TASK_SIGNAL_BLOCK);
+            break;
 
         }
 
@@ -122,13 +123,13 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
         unsigned int status = place(mailbox, event, source, count, data);
 
-        if (status == MESSAGE_OK)
+        switch (status)
         {
 
-            struct task *task = pool_gettask(mailbox->itask);
+        case MESSAGE_OK:
+            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
 
-            if (task)
-                task_signal(task, TASK_SIGNAL_UNBLOCK);
+            break;
 
         }
 
