@@ -47,6 +47,7 @@ void task_transition(struct task *task, unsigned int state)
 
         case TASK_STATE_DEAD:
             task->state = state;
+            task->signals.kills = 0;
 
             break;
 
@@ -58,13 +59,23 @@ void task_transition(struct task *task, unsigned int state)
 
         case TASK_STATE_BLOCKED:
             if (task->state == TASK_STATE_RUNNING)
+            {
+
                 task->state = state;
+                task->signals.blocks = 0;
+
+            }
 
             break;
 
         case TASK_STATE_UNBLOCKED:
             if (task->state == TASK_STATE_BLOCKED)
+            {
+
                 task->state = state;
+                task->signals.unblocks = 0;
+
+            }
 
             break;
 
@@ -105,14 +116,14 @@ void task_unregister(struct task *task)
 void task_checksignals(struct task *task)
 {
 
-    if (task->signals.kills)
-        task_transition(task, TASK_STATE_DEAD);
-    else if (task->signals.blocks)
+    if (task->signals.blocks)
         task_transition(task, TASK_STATE_BLOCKED);
-    else if (task->signals.unblocks)
+
+    if (task->signals.unblocks)
         task_transition(task, TASK_STATE_UNBLOCKED);
 
-    task_resetsignals(&task->signals);
+    if (task->signals.kills)
+        task_transition(task, TASK_STATE_DEAD);
 
 }
 
