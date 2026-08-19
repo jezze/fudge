@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "resource.h"
+#include "debug.h"
 #include "mmap.h"
 #include "binary.h"
 #include "mailbox.h"
@@ -55,6 +56,26 @@ static void destroytask(unsigned int itask)
 
 }
 
+static void assertstate(struct task *task, unsigned int state)
+{
+
+    if (task->state != state)
+    {
+
+        static char *names[7] = { "?", "DEAD", "NEW", "BLOCKED", "UNBLOCKED", "ASSIGNED", "RUNNING" };
+        char *cname = names[task->state];
+        char *ename = names[state];
+
+        DEBUG_FMT0(DEBUG_ERROR, "Task state assertion failed");
+        DEBUG_FMT1(DEBUG_NONE, "Current state: %s", cname);
+        DEBUG_FMT1(DEBUG_NONE, "Expected state: %s", ename);
+
+        for (;;);
+
+    }
+
+}
+
 static void transition(unsigned int itask, unsigned int state)
 {
 
@@ -87,46 +108,6 @@ static void transition(unsigned int itask, unsigned int state)
 
 }
 
-static void checkstate(unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        switch (task->state)
-        {
-
-        case TASK_STATE_BLOCKED:
-            pool_placetask(itask, &blockedtasks);
-
-            break;
-
-        case TASK_STATE_UNBLOCKED:
-            transition(itask, TASK_STATE_ASSIGNED);
-            assigncorecallback(itask);
-
-            break;
-
-        case TASK_STATE_NEW:
-            transition(itask, TASK_STATE_ASSIGNED);
-            assigncorecallback(itask);
-
-            break;
-
-        case TASK_STATE_RUNNING:
-            transition(itask, TASK_STATE_ASSIGNED);
-            assigncorecallback(itask);
-
-            break;
-
-        }
-
-    }
-
-}
-
 static void unblocktasks(void)
 {
 
@@ -150,20 +131,28 @@ static void unblocktasks(void)
             if (task)
             {
 
-                if (task->signals.blocks)
-                    transition(itask, TASK_STATE_BLOCKED);
-
-                if (task->signals.unblocks)
-                    transition(itask, TASK_STATE_UNBLOCKED);
+                assertstate(task, TASK_STATE_BLOCKED);
 
                 if (task->signals.kills)
-                    transition(itask, TASK_STATE_DEAD);
-
-                if (task->state != TASK_STATE_BLOCKED)
                 {
 
                     list_remove_unsafe(&blockedtasks, current);
-                    checkstate(itask);
+                    transition(itask, TASK_STATE_UNBLOCKED);
+                    assertstate(task, TASK_STATE_UNBLOCKED);
+                    transition(itask, TASK_STATE_DEAD);
+                    assertstate(task, TASK_STATE_DEAD);
+
+                }
+
+                if (task->signals.unblocks)
+                {
+
+                    list_remove_unsafe(&blockedtasks, current);
+                    transition(itask, TASK_STATE_UNBLOCKED);
+                    assertstate(task, TASK_STATE_UNBLOCKED);
+                    transition(itask, TASK_STATE_ASSIGNED);
+                    assertstate(task, TASK_STATE_ASSIGNED);
+                    assigncorecallback(itask);
 
                 }
 
@@ -174,27 +163,6 @@ static void unblocktasks(void)
     }
 
     spinlock_release(&blockedtasks.spinlock);
-
-}
-
-static unsigned int picknewtask(struct core *core)
-{
-
-    unsigned int itask = pool_picktaskfrom(&core->tasks);
-
-    if (itask)
-    {
-
-        struct task *task = pool_gettask(itask);
-
-        if (task)
-            transition(itask, TASK_STATE_RUNNING);
-
-        return itask;
-
-    }
-
-    return 0;
 
 }
 
@@ -310,30 +278,75 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
 
 }
 
-unsigned int kernel_schedule(struct core *core)
+void kernel_schedule(struct core *core)
 {
 
-    struct task *task = pool_gettask(core->itask);
-
-    if (task)
+    if (core->itask)
     {
 
-        if (task->signals.blocks)
-            transition(core->itask, TASK_STATE_BLOCKED);
+        struct task *task = pool_gettask(core->itask);
 
-        if (task->signals.unblocks)
-            transition(core->itask, TASK_STATE_UNBLOCKED);
+        if (task)
+        {
 
-        if (task->signals.kills)
-            transition(core->itask, TASK_STATE_DEAD);
+            assertstate(task, TASK_STATE_RUNNING);
 
-        checkstate(core->itask);
+            if (task->signals.kills)
+            {
+
+                transition(core->itask, TASK_STATE_DEAD);
+                assertstate(task, TASK_STATE_DEAD);
+
+                core->itask = 0;
+
+            }
+
+            if (task->signals.blocks)
+            {
+
+                transition(core->itask, TASK_STATE_BLOCKED);
+                assertstate(task, TASK_STATE_BLOCKED);
+                pool_placetask(core->itask, &blockedtasks);
+
+                core->itask = 0;
+
+            }
+
+            if (core->itask)
+            {
+
+                assertstate(task, TASK_STATE_RUNNING);
+                transition(core->itask, TASK_STATE_ASSIGNED);
+                assertstate(task, TASK_STATE_ASSIGNED);
+                assigncorecallback(core->itask);
+
+                core->itask = 0;
+
+            }
+
+        }
 
     }
 
     unblocktasks();
 
-    return picknewtask(core);
+    core->itask = pool_picktaskfrom(&core->tasks);
+
+    if (core->itask)
+    {
+
+        struct task *task = pool_gettask(core->itask);
+
+        if (task)
+        {
+
+            assertstate(task, TASK_STATE_ASSIGNED);
+            transition(core->itask, TASK_STATE_RUNNING);
+            assertstate(task, TASK_STATE_RUNNING);
+
+        }
+
+    }
 
 }
 
@@ -343,7 +356,13 @@ void kernel_signal(unsigned int itask, unsigned int signal)
     struct task *task = pool_gettask(itask);
 
     if (task)
+    {
+
+        spinlock_acquire(&task->spinlock);
         task_signal(task, signal);
+        spinlock_release(&task->spinlock);
+
+    }
 
 }
 
@@ -434,11 +453,17 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
             inode = kernel_getchannelinode(itask, 0);
 
             if (inode)
+            {
+
                 transition(itask, TASK_STATE_NEW);
+                assertstate(task, TASK_STATE_NEW);
+                transition(itask, TASK_STATE_ASSIGNED);
+                assertstate(task, TASK_STATE_ASSIGNED);
+                assigncorecallback(itask);
+
+            }
 
         }
-
-        checkstate(itask);
 
     }
 

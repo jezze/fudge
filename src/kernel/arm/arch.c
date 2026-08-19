@@ -103,7 +103,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
     }
 
-    core->itask = kernel_schedule(core);
+    kernel_schedule(core);
 
     if (core->itask)
     {

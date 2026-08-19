@@ -8,8 +8,6 @@
 void task_signal(struct task *task, unsigned int signal)
 {
 
-    spinlock_acquire(&task->spinlock);
-
     switch (signal)
     {
 
@@ -30,8 +28,6 @@ void task_signal(struct task *task, unsigned int signal)
 
     }
 
-    spinlock_release(&task->spinlock);
-
 }
 
 void task_transition(struct task *task, unsigned int state)
@@ -44,14 +40,27 @@ void task_transition(struct task *task, unsigned int state)
         {
 
         case TASK_STATE_DEAD:
-            task->state = state;
-            task->signals.kills = 0;
+            if (task->state == TASK_STATE_NEW || task->state == TASK_STATE_RUNNING || task->state == TASK_STATE_UNBLOCKED)
+            {
+
+                task->state = state;
+                task->signals.kills = 0;
+                task->signals.unblocks = 0;
+                task->signals.blocks = 0;
+
+            }
 
             break;
 
-        case TASK_STATE_NEW:
-            if (task->state == TASK_STATE_DEAD)
+        case TASK_STATE_UNBLOCKED:
+            if (task->state == TASK_STATE_BLOCKED)
+            {
+
                 task->state = state;
+                task->signals.unblocks = 0;
+                task->signals.blocks = 0;
+
+            }
 
             break;
 
@@ -66,19 +75,14 @@ void task_transition(struct task *task, unsigned int state)
 
             break;
 
-        case TASK_STATE_UNBLOCKED:
-            if (task->state == TASK_STATE_BLOCKED)
-            {
-
+        case TASK_STATE_NEW:
+            if (task->state == TASK_STATE_DEAD)
                 task->state = state;
-                task->signals.unblocks = 0;
-
-            }
 
             break;
 
         case TASK_STATE_ASSIGNED:
-            if (task->state == TASK_STATE_NEW || task->state == TASK_STATE_UNBLOCKED || task->state == TASK_STATE_RUNNING)
+            if (task->state == TASK_STATE_NEW || task->state == TASK_STATE_RUNNING || task->state == TASK_STATE_UNBLOCKED)
                 task->state = state;
 
             break;

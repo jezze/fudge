@@ -23,7 +23,7 @@ void syse_resume(struct cpu_general *general)
 
     }
 
-    core->itask = kernel_schedule(core);
+    kernel_schedule(core);
 
     if (core->itask)
     {
