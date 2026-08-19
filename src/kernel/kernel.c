@@ -97,6 +97,11 @@ static void transition(unsigned int itask, unsigned int state)
 
                 break;
 
+            case TASK_STATE_BLOCKED:
+                pool_placetask(itask, &blockedtasks);
+
+                break;
+
             case TASK_STATE_ASSIGNED:
                 assigncorecallback(itask);
 
@@ -309,7 +314,6 @@ void kernel_schedule(struct core *core)
 
                 transition(core->itask, TASK_STATE_BLOCKED);
                 assertstate(task, TASK_STATE_BLOCKED);
-                pool_placetask(core->itask, &blockedtasks);
 
                 core->itask = 0;
 

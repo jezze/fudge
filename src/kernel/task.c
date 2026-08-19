@@ -73,6 +73,7 @@ unsigned int task_transition(struct task *task, unsigned int state)
             {
 
                 task->state = state;
+                task->signals.unblocks = 0;
                 task->signals.blocks = 0;
 
                 return state;
