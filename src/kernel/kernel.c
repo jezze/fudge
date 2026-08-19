@@ -55,6 +55,15 @@ static void destroytask(unsigned int itask)
 
 }
 
+static void transition(struct task *task, unsigned int state)
+{
+
+    spinlock_acquire(&task->spinlock);
+    task_transition(task, state);
+    spinlock_release(&task->spinlock);
+
+}
+
 static void checkstate(unsigned int itask)
 {
 
@@ -77,19 +86,19 @@ static void checkstate(unsigned int itask)
             break;
 
         case TASK_STATE_UNBLOCKED:
-            task_transition(task, TASK_STATE_ASSIGNED);
+            transition(task, TASK_STATE_ASSIGNED);
             assigncorecallback(itask);
 
             break;
 
         case TASK_STATE_NEW:
-            task_transition(task, TASK_STATE_ASSIGNED);
+            transition(task, TASK_STATE_ASSIGNED);
             assigncorecallback(itask);
 
             break;
 
         case TASK_STATE_RUNNING:
-            task_transition(task, TASK_STATE_ASSIGNED);
+            transition(task, TASK_STATE_ASSIGNED);
             assigncorecallback(itask);
 
             break;
@@ -124,13 +133,13 @@ static void unblocktasks(void)
             {
 
                 if (task->signals.blocks)
-                    task_transition(task, TASK_STATE_BLOCKED);
+                    transition(task, TASK_STATE_BLOCKED);
 
                 if (task->signals.unblocks)
-                    task_transition(task, TASK_STATE_UNBLOCKED);
+                    transition(task, TASK_STATE_UNBLOCKED);
 
                 if (task->signals.kills)
-                    task_transition(task, TASK_STATE_DEAD);
+                    transition(task, TASK_STATE_DEAD);
 
                 if (task->state != TASK_STATE_BLOCKED)
                 {
@@ -161,7 +170,7 @@ static unsigned int picknewtask(struct core *core)
         struct task *task = pool_gettask(itask);
 
         if (task)
-            task_transition(task, TASK_STATE_RUNNING);
+            transition(task, TASK_STATE_RUNNING);
 
         return itask;
 
@@ -292,13 +301,13 @@ unsigned int kernel_schedule(struct core *core)
     {
 
         if (task->signals.blocks)
-            task_transition(task, TASK_STATE_BLOCKED);
+            transition(task, TASK_STATE_BLOCKED);
 
         if (task->signals.unblocks)
-            task_transition(task, TASK_STATE_UNBLOCKED);
+            transition(task, TASK_STATE_UNBLOCKED);
 
         if (task->signals.kills)
-            task_transition(task, TASK_STATE_DEAD);
+            transition(task, TASK_STATE_DEAD);
 
         checkstate(core->itask);
 
@@ -407,7 +416,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
             inode = kernel_getchannelinode(itask, 0);
 
             if (inode)
-                task_transition(task, TASK_STATE_NEW);
+                transition(task, TASK_STATE_NEW);
 
         }
 
