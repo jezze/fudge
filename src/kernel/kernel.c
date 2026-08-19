@@ -97,6 +97,11 @@ static void transition(unsigned int itask, unsigned int state)
 
                 break;
 
+            case TASK_STATE_ASSIGNED:
+                assigncorecallback(itask);
+
+                break;
+
             }
 
         }
@@ -151,7 +156,6 @@ static void unblocktasks(void)
                     assertstate(task, TASK_STATE_UNBLOCKED);
                     transition(itask, TASK_STATE_ASSIGNED);
                     assertstate(task, TASK_STATE_ASSIGNED);
-                    assigncorecallback(itask);
 
                 }
 
@@ -317,7 +321,6 @@ void kernel_schedule(struct core *core)
                 assertstate(task, TASK_STATE_RUNNING);
                 transition(core->itask, TASK_STATE_ASSIGNED);
                 assertstate(task, TASK_STATE_ASSIGNED);
-                assigncorecallback(core->itask);
 
                 core->itask = 0;
 
@@ -458,7 +461,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
                 assertstate(task, TASK_STATE_NEW);
                 transition(itask, TASK_STATE_ASSIGNED);
                 assertstate(task, TASK_STATE_ASSIGNED);
-                assigncorecallback(itask);
 
             }
 
