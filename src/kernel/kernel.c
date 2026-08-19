@@ -85,9 +85,8 @@ static void transition(unsigned int itask, unsigned int state)
     {
 
         spinlock_acquire(&task->spinlock);
-        task_transition(task, state);
 
-        if (task->state != state)
+        if (task_transition(task, state))
         {
 
             switch (task->state)

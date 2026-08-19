@@ -30,7 +30,7 @@ void task_signal(struct task *task, unsigned int signal)
 
 }
 
-void task_transition(struct task *task, unsigned int state)
+unsigned int task_transition(struct task *task, unsigned int state)
 {
 
     if (task->state != state)
@@ -48,6 +48,8 @@ void task_transition(struct task *task, unsigned int state)
                 task->signals.unblocks = 0;
                 task->signals.blocks = 0;
 
+                return state;
+
             }
 
             break;
@@ -60,6 +62,8 @@ void task_transition(struct task *task, unsigned int state)
                 task->signals.unblocks = 0;
                 task->signals.blocks = 0;
 
+                return state;
+
             }
 
             break;
@@ -71,31 +75,53 @@ void task_transition(struct task *task, unsigned int state)
                 task->state = state;
                 task->signals.blocks = 0;
 
+                return state;
+
             }
 
             break;
 
         case TASK_STATE_NEW:
             if (task->state == TASK_STATE_DEAD)
+            {
+
                 task->state = state;
+
+                return state;
+
+            }
 
             break;
 
         case TASK_STATE_ASSIGNED:
             if (task->state == TASK_STATE_NEW || task->state == TASK_STATE_RUNNING || task->state == TASK_STATE_UNBLOCKED)
+            {
+
                 task->state = state;
+
+                return state;
+
+            }
 
             break;
 
         case TASK_STATE_RUNNING:
             if (task->state == TASK_STATE_ASSIGNED)
+            {
+
                 task->state = state;
+
+                return state;
+
+            }
 
             break;
 
         }
 
     }
+
+    return 0;
 
 }
 
