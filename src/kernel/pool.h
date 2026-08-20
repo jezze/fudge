@@ -1,7 +1,7 @@
 #define POOL_CORES                      256
-#define POOL_TASKS                      64
-#define POOL_NODES                      1024
-#define POOL_MAILBOXES                  512
+#define POOL_TASKS                      32
+#define POOL_NODES                      512
+#define POOL_MAILBOXES                  64
 
 struct core *pool_getcore(unsigned int icore);
 struct mailbox *pool_getmailbox(unsigned int imailbox);
