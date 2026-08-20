@@ -56,26 +56,6 @@ static void destroytask(unsigned int itask)
 
 }
 
-static void assertstate(struct task *task, unsigned int state)
-{
-
-    if (task->state != state)
-    {
-
-        static char *names[7] = { "?", "DEAD", "NEW", "BLOCKED", "UNBLOCKED", "ASSIGNED", "RUNNING" };
-        char *cname = names[task->state];
-        char *ename = names[state];
-
-        DEBUG_FMT0(DEBUG_ERROR, "Task state assertion failed");
-        DEBUG_FMT1(DEBUG_NONE, "Current state: %s", cname);
-        DEBUG_FMT1(DEBUG_NONE, "Expected state: %s", ename);
-
-        for (;;);
-
-    }
-
-}
-
 static void transition(unsigned int itask, unsigned int state)
 {
 
@@ -140,16 +120,12 @@ static void unblocktasks(void)
             if (task)
             {
 
-                assertstate(task, TASK_STATE_BLOCKED);
-
                 if (task->signals.kills)
                 {
 
                     list_remove_unsafe(&blockedtasks, current);
                     transition(itask, TASK_STATE_UNBLOCKED);
-                    assertstate(task, TASK_STATE_UNBLOCKED);
                     transition(itask, TASK_STATE_DEAD);
-                    assertstate(task, TASK_STATE_DEAD);
 
                 }
 
@@ -158,9 +134,7 @@ static void unblocktasks(void)
 
                     list_remove_unsafe(&blockedtasks, current);
                     transition(itask, TASK_STATE_UNBLOCKED);
-                    assertstate(task, TASK_STATE_UNBLOCKED);
                     transition(itask, TASK_STATE_ASSIGNED);
-                    assertstate(task, TASK_STATE_ASSIGNED);
 
                 }
 
@@ -297,13 +271,10 @@ void kernel_schedule(struct core *core)
         if (task)
         {
 
-            assertstate(task, TASK_STATE_RUNNING);
-
             if (task->signals.kills)
             {
 
                 transition(core->itask, TASK_STATE_DEAD);
-                assertstate(task, TASK_STATE_DEAD);
 
                 core->itask = 0;
 
@@ -313,7 +284,6 @@ void kernel_schedule(struct core *core)
             {
 
                 transition(core->itask, TASK_STATE_BLOCKED);
-                assertstate(task, TASK_STATE_BLOCKED);
 
                 core->itask = 0;
 
@@ -322,9 +292,7 @@ void kernel_schedule(struct core *core)
             if (core->itask)
             {
 
-                assertstate(task, TASK_STATE_RUNNING);
                 transition(core->itask, TASK_STATE_ASSIGNED);
-                assertstate(task, TASK_STATE_ASSIGNED);
 
                 core->itask = 0;
 
@@ -346,9 +314,7 @@ void kernel_schedule(struct core *core)
         if (task)
         {
 
-            assertstate(task, TASK_STATE_ASSIGNED);
             transition(core->itask, TASK_STATE_RUNNING);
-            assertstate(task, TASK_STATE_RUNNING);
 
         }
 
@@ -462,9 +428,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
             {
 
                 transition(itask, TASK_STATE_NEW);
-                assertstate(task, TASK_STATE_NEW);
                 transition(itask, TASK_STATE_ASSIGNED);
-                assertstate(task, TASK_STATE_ASSIGNED);
 
             }
 
