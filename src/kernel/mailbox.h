@@ -1,4 +1,4 @@
-#define MAILBOX_SIZE                    0x00002000
+#define MAILBOX_SIZE                    0x00008000
 
 struct mailbox
 {

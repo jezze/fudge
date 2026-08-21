@@ -20,6 +20,17 @@ struct mmap_entry *mmap_find(struct mmap_header *header, unsigned long vaddress)
 
 }
 
+void mmap_register(struct mmap_header *header, struct mmap_entry *entry)
+{
+
+    struct mmap_entry *target = &header->entries[header->nentries];
+
+    buffer_copy(target, entry, sizeof (struct mmap_entry));
+
+    header->nentries++;
+
+}
+
 void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags, unsigned long ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags)
 {
 

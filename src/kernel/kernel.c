@@ -120,7 +120,7 @@ static void unblocktasks(void)
             if (task)
             {
 
-                if (task->signals.kills)
+                if (task->signals.kill)
                 {
 
                     list_remove_unsafe(&blockedtasks, current);
@@ -129,7 +129,7 @@ static void unblocktasks(void)
 
                 }
 
-                if (task->signals.unblocks)
+                if (task->signals.unblock)
                 {
 
                     list_remove_unsafe(&blockedtasks, current);
@@ -271,7 +271,7 @@ void kernel_schedule(struct core *core)
         if (task)
         {
 
-            if (task->signals.kills)
+            if (task->signals.kill)
             {
 
                 transition(core->itask, TASK_STATE_DEAD);
@@ -280,7 +280,7 @@ void kernel_schedule(struct core *core)
 
             }
 
-            if (task->signals.blocks)
+            if (task->signals.block)
             {
 
                 transition(core->itask, TASK_STATE_BLOCKED);

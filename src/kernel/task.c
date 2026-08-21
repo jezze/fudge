@@ -12,17 +12,17 @@ void task_signal(struct task *task, unsigned int signal)
     {
 
     case TASK_SIGNAL_KILL:
-        task->signals.kills++;
+        task->signals.kill++;
 
         break;
 
     case TASK_SIGNAL_BLOCK:
-        task->signals.blocks++;
+        task->signals.block++;
 
         break;
 
     case TASK_SIGNAL_UNBLOCK:
-        task->signals.unblocks++;
+        task->signals.unblock++;
 
         break;
 
@@ -44,9 +44,9 @@ unsigned int task_transition(struct task *task, unsigned int state)
             {
 
                 task->state = state;
-                task->signals.kills = 0;
-                task->signals.unblocks = 0;
-                task->signals.blocks = 0;
+                task->signals.kill = 0;
+                task->signals.unblock = 0;
+                task->signals.block = 0;
 
                 return state;
 
@@ -59,8 +59,8 @@ unsigned int task_transition(struct task *task, unsigned int state)
             {
 
                 task->state = state;
-                task->signals.unblocks = 0;
-                task->signals.blocks = 0;
+                task->signals.unblock = 0;
+                task->signals.block = 0;
 
                 return state;
 
@@ -73,8 +73,8 @@ unsigned int task_transition(struct task *task, unsigned int state)
             {
 
                 task->state = state;
-                task->signals.unblocks = 0;
-                task->signals.blocks = 0;
+                task->signals.unblock = 0;
+                task->signals.block = 0;
 
                 return state;
 
@@ -143,9 +143,9 @@ void task_unregister(struct task *task)
 void task_resetsignals(struct task_signals *signals)
 {
 
-    signals->kills = 0;
-    signals->blocks = 0;
-    signals->unblocks = 0;
+    signals->kill = 0;
+    signals->block = 0;
+    signals->unblock = 0;
 
 }
 

@@ -15,9 +15,9 @@
 struct task_signals
 {
 
-    unsigned int kills;
-    unsigned int blocks;
-    unsigned int unblocks;
+    unsigned int kill;
+    unsigned int block;
+    unsigned int unblock;
 
 };
 

@@ -132,20 +132,20 @@ static void mapping_loadcode(struct mapping *mapping, unsigned long address)
     {
 
         struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-        struct mmap_entry *entry = &header->entries[header->nentries];
+        struct mmap_entry entry;
         unsigned int offset = 0;
         unsigned int i = 0;
 
-        while ((i = format->mapsection(address, entry, i)))
+        while ((i = format->mapsection(address, &entry, i)))
         {
 
-            if (entry->size)
+            if (entry.size)
             {
 
-                entry->paddress = mapping->code + offset;
-                offset += (entry->size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
-                header->nentries++;
-                entry++;
+                entry.paddress = mapping->code + offset;
+                offset += (entry.size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
+
+                mmap_register(header, &entry);
 
             }
 
@@ -159,13 +159,12 @@ static void mapping_loadmmap(struct mapping *mapping)
 {
 
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-    struct mmap_entry *entry = &header->entries[header->nentries];
+    struct mmap_entry entry;
 
-    mmap_initentry(entry, MMAP_TYPE_NONE, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
+    mmap_register(header, &entry);
 
-    header->nentries++;
-
-    mapfull(mapping->directory, header, entry);
+    mapfull(mapping->directory, header, &entry);
 
 }
 
@@ -173,11 +172,10 @@ static void mapping_loadstack(struct mapping *mapping)
 {
 
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-    struct mmap_entry *entry = &header->entries[header->nentries];
+    struct mmap_entry entry;
 
-    mmap_initentry(entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE, 0, 0, 0, 0);
-
-    header->nentries++;
+    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+    mmap_register(header, &entry);
 
 }
 
@@ -324,13 +322,12 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 {
 
     struct mmap_header *header = (struct mmap_header *)ARCH_MMAPADDRESS;
-    struct mmap_entry *entry = &header->entries[header->nentries];
+    struct mmap_entry entry;
 
-    mmap_initentry(entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
+    mmap_register(header, &entry);
 
-    header->nentries++;
-
-    mapfull(mappings[0].directory, header, entry);
+    mapfull(mappings[0].directory, header, &entry);
 
 }
 
