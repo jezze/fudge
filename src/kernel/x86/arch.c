@@ -495,68 +495,88 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
     unsigned int vaddress = cpu_getcr2();
 
-    if (error & MMU_EFLAG_USER)
+    if (error & MMU_EFLAG_PRESENT)
     {
 
-        unsigned int directory = mmu_getdirectory();
-        unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
-
-        /*
-        DEBUG_FMT2(DEBUG_INFO, "#PF %u 0x%H8u", &error, &vaddress);
+        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
         debugpagefault(error);
-        */
 
-        if (ktable & MMU_TFLAG_PRESENT)
+        for (;;);
+
+    }
+
+    else
+    {
+
+        if (error & MMU_EFLAG_USER)
         {
 
-            mmu_settable(directory, vaddress, ktable, ktable);
+            unsigned int directory = mmu_getdirectory();
+            unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
 
-        }
-
-        else
-        {
-
-            unsigned int utable = mmu_gettable(directory, vaddress);
-
-            if (utable & MMU_TFLAG_PRESENT)
+            if (ktable & MMU_TFLAG_PRESENT)
             {
 
-                struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-                struct mmap_entry *entry = mmap_find(header, vaddress);
+                mmu_settable(directory, vaddress, ktable, ktable);
 
-                if (entry && entry->size)
+            }
+
+            else
+            {
+
+                unsigned int utable = mmu_gettable(directory, vaddress);
+
+                if (utable & MMU_TFLAG_PRESENT)
                 {
 
-                    switch (entry->type)
+                    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
+                    struct mmap_entry *entry = mmap_find(header, vaddress);
+
+                    if (entry && entry->size)
                     {
 
-                    case MMAP_TYPE_NONE:
-                        mapfull(directory, header, entry);
+                        switch (entry->type)
+                        {
 
-                        break;
+                        case MMAP_TYPE_NONE:
+                            mapfull(directory, header, entry);
 
-                    case MMAP_TYPE_COW:
-                        mapfull(directory, header, entry);
-                        buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
+                            break;
 
-                        break;
+                        case MMAP_TYPE_COW:
+                            mapfull(directory, header, entry);
+                            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
 
-                    case MMAP_TYPE_ZERO:
-                        mapfull(directory, header, entry);
-                        buffer_clear((void *)entry->vaddress, entry->size);
+                            break;
 
-                        break;
+                        case MMAP_TYPE_ZERO:
+                            mapfull(directory, header, entry);
+                            buffer_clear((void *)entry->vaddress, entry->size);
 
-                    case MMAP_TYPE_IOCOW:
-                        mapfull(directory, header, entry);
+                            break;
 
-                        if (entry->iofsize)
-                            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
+                        case MMAP_TYPE_IOCOW:
+                            mapfull(directory, header, entry);
 
-                        if (entry->iomsize > entry->iofsize)
-                            buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+                            if (entry->iofsize)
+                                buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
 
-                        break;
+                            if (entry->iomsize > entry->iofsize)
+                                buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+
+                            break;
+
+                        }
+
+                    }
+
+                    else
+                    {
+
+                        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                        debugpagefault(error);
+
+                        for (;;);
 
                     }
 
@@ -565,72 +585,62 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                 else
                 {
 
-                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                    debugpagefault(error);
+                    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
+                    struct mmap_entry *entry = mmap_find(header, vaddress);
 
-                    for (;;);
+                    if (entry && entry->size)
+                    {
 
-                }
+                        unsigned int taddress = addtable(directory, header);
 
-            }
+                        maptable(directory, vaddress, taddress, entry->flags);
 
-            else
-            {
+                    }
 
-                struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
-                struct mmap_entry *entry = mmap_find(header, vaddress);
+                    else
+                    {
 
-                if (entry && entry->size)
-                {
+                        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                        debugpagefault(error);
 
-                    unsigned int taddress = addtable(directory, header);
+                        for (;;);
 
-                    maptable(directory, vaddress, taddress, entry->flags);
-
-                }
-
-                else
-                {
-
-                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                    debugpagefault(error);
-
-                    for (;;);
+                    }
 
                 }
 
             }
-
-        }
-
-    }
-
-    else
-    {
-
-        unsigned int directory = mmu_getdirectory();
-        unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
-
-        if (ktable & MMU_TFLAG_PRESENT)
-        {
-
-            mmu_settable(directory, vaddress, ktable, ktable);
 
         }
 
         else
         {
 
-            DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-            debugpagefault(error);
+            unsigned int directory = mmu_getdirectory();
+            unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
 
-            for (;;);
+            if (ktable & MMU_TFLAG_PRESENT)
+            {
+
+                mmu_settable(directory, vaddress, ktable, ktable);
+
+            }
+
+            else
+            {
+
+                DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                debugpagefault(error);
+
+                for (;;);
+
+            }
+
+            /* I do not know why I need to do this */
+            interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
+            interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
 
         }
-
-        /* I do not know why I need to do this */
-        interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
-        interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
 
     }
 
