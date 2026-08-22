@@ -742,8 +742,7 @@ void arch_setup1(void)
     mmu_setdirectory(mappings[0].directory);
     mmu_enable();
     mailbox_setup();
-    /* TODO: change this later */
-    pool_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, 0x2000);
+    pool_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS, MAILBOX_SIZE);
     kernel_setup();
     abi_setup();
     abi_setcallback(0x03, spawn);

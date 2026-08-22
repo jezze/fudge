@@ -8,6 +8,20 @@
 
 static struct node_operands operands;
 
+unsigned int hasusedslot(struct mailbox *mailbox)
+{
+
+    return mailbox->head - mailbox->tail;
+
+}
+
+unsigned int hasfreeslot(struct mailbox *mailbox)
+{
+
+    return mailbox->slots - (mailbox->head - mailbox->tail);
+
+}
+
 static unsigned int pick(struct mailbox *mailbox, struct message *message, unsigned int count, void *data)
 {
 
@@ -15,15 +29,20 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
     spinlock_acquire(&mailbox->spinlock);
 
-    if (ring_count(&mailbox->ring))
+    if (hasusedslot(mailbox))
     {
 
-        ring_read_all(&mailbox->ring, message, sizeof (struct message));
+        unsigned int slot = mailbox->tail % mailbox->slots;
+        struct message *m = &mailbox->messages[slot];
 
-        if (message->length <= count)
+        buffer_copy(message, m, sizeof (struct message));
+
+        if (m->length <= count)
         {
 
-            ring_read_all(&mailbox->ring, data, message->length);
+            void *mdata = (void *)(((unsigned int)mailbox->data) + 0x1000 * slot);
+
+            buffer_copy(data, mdata, m->length);
 
             status = MESSAGE_OK;
 
@@ -32,11 +51,11 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
         else
         {
 
-            ring_skip(&mailbox->ring, message->length);
-
             status = MESSAGE_TOOBIG;
 
         }
+
+        mailbox->tail++;
 
     }
 
@@ -50,25 +69,34 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 {
 
     unsigned int status = MESSAGE_RETRY;
-    struct message message;
 
-    message_init(&message, event, source, count);
     spinlock_acquire(&mailbox->spinlock);
 
-    if (ring_avail(&mailbox->ring) > sizeof (struct message) + message.length)
+    if (hasfreeslot(mailbox))
     {
 
-        ring_write_all(&mailbox->ring, &message, sizeof (struct message));
-        ring_write_all(&mailbox->ring, data, message.length);
+        if (count <= 0x1000)
+        {
 
-        status = MESSAGE_OK;
+            unsigned int slot = mailbox->head % mailbox->slots;
+            struct message *m = &mailbox->messages[slot];
+            void *mdata = (void *)(((unsigned int)mailbox->data) + 0x1000 * slot);
 
-    }
+            message_init(m, event, source, count);
+            buffer_copy(mdata, data, count);
 
-    else
-    {
+            mailbox->head++;
 
-        status = MESSAGE_TOOBIG;
+            status = MESSAGE_OK;
+
+        }
+
+        else
+        {
+
+            status = MESSAGE_TOOBIG;
+
+        }
 
     }
 
@@ -137,9 +165,9 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void mailbox_reset(struct mailbox *mailbox, unsigned int itask)
 {
 
-    ring_reset(&mailbox->ring);
-
     mailbox->itask = itask;
+    mailbox->head = 0;
+    mailbox->tail = 0;
 
 }
 
@@ -157,14 +185,16 @@ void mailbox_unregister(struct mailbox *mailbox)
 
 }
 
-void mailbox_init(struct mailbox *mailbox, void *buffer, unsigned int count)
+void mailbox_init(struct mailbox *mailbox, void *messages, void *data, unsigned int count)
 {
 
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
-    ring_init(&mailbox->ring, count, buffer);
     spinlock_init(&mailbox->spinlock);
     mailbox_reset(mailbox, 0);
 
+    mailbox->messages = messages;
+    mailbox->data = data;
+    mailbox->slots = (count / 0x1000) - 1;
     mailbox->inode = pool_picknode();
 
     if (mailbox->inode)
