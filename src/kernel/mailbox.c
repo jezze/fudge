@@ -52,36 +52,29 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
     unsigned int status = MESSAGE_RETRY;
     struct message message;
 
-    if (count < MAILBOX_SIZE)
+    message_init(&message, event, source, count);
+    spinlock_acquire(&mailbox->spinlock);
+
+    if (ring_avail(&mailbox->ring) > sizeof (struct message) + message.length)
     {
 
-        message_init(&message, event, source, count);
-        spinlock_acquire(&mailbox->spinlock);
+        ring_write_all(&mailbox->ring, &message, sizeof (struct message));
+        ring_write_all(&mailbox->ring, data, message.length);
 
-        if (ring_avail(&mailbox->ring) > sizeof (struct message) + message.length)
-        {
-
-            ring_write_all(&mailbox->ring, &message, sizeof (struct message));
-            ring_write_all(&mailbox->ring, data, message.length);
-
-            status = MESSAGE_OK;
-
-        }
-
-        else
-        {
-
-            status = MESSAGE_TOOBIG;
-
-        }
-
-        spinlock_release(&mailbox->spinlock);
-
-        return status;
+        status = MESSAGE_OK;
 
     }
 
-    return MESSAGE_TOOBIG;
+    else
+    {
+
+        status = MESSAGE_TOOBIG;
+
+    }
+
+    spinlock_release(&mailbox->spinlock);
+
+    return status;
 
 }
 
