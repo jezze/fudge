@@ -137,9 +137,7 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void mailbox_reset(struct mailbox *mailbox, unsigned int itask)
 {
 
-    spinlock_acquire(&mailbox->spinlock);
     ring_reset(&mailbox->ring);
-    spinlock_release(&mailbox->spinlock);
 
     mailbox->itask = itask;
 
