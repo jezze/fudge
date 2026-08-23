@@ -21,4 +21,4 @@ void pool_placecore(unsigned int icore, struct list *list);
 void pool_placenode(unsigned int inode, struct list *list);
 void pool_placetask(unsigned int itask, struct list *list);
 unsigned int pool_findinode(unsigned int namehash, unsigned int index);
-void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddress, unsigned int mbsize);
+void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddress);

@@ -288,7 +288,7 @@ unsigned int pool_findinode(unsigned int namehash, unsigned int index)
 
 }
 
-void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddress, unsigned int mbsize)
+void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddress)
 {
 
     unsigned int i;
@@ -323,9 +323,8 @@ void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddr
     {
 
         struct mailboxrow *mailboxrow = &mailboxrows[i];
-        unsigned int address = mbaddress + i * mbsize;
 
-        mailbox_init(&mailboxrow->mailbox, (void *)address, (void *)(address + 0x1000), mbsize);
+        mailbox_init(&mailboxrow->mailbox, (void *)(mbaddress + i * MAILBOX_SIZE * MAILBOX_SLOTS));
         mailbox_register(&mailboxrow->mailbox);
         list_inititem(&mailboxrow->item, mailboxrow);
         list_add(&freemailboxes, &mailboxrow->item);
