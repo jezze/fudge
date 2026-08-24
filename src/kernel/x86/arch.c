@@ -161,7 +161,7 @@ static void mapping_loadmmap(struct mapping *mapping)
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
     struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->mmap, MMAP_VADDRESS, MMAP_SIZE, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->mmap, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
     mmap_register(header, &entry);
 
     mapfull(mapping->directory, header, &entry);
@@ -174,7 +174,7 @@ static void mapping_loadstack(struct mapping *mapping)
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
     struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->stack, TASK_STACKVIRTUAL - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE, 0, 0, 0, 0);
     mmap_register(header, &entry);
 
 }
@@ -192,7 +192,7 @@ static unsigned int createtask(unsigned long address)
         mapping_loadstack(&mappings[ntask]);
         mapping_loadmmap(&mappings[ntask]);
 
-        return kernel_loadtask(ntask, 0, TASK_STACKVIRTUAL, address);
+        return kernel_loadtask(ntask, 0, KERNEL_VSTACK, address);
 
     }
 
@@ -526,7 +526,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                 if (utable & MMU_TFLAG_PRESENT)
                 {
 
-                    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
+                    struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
                     struct mmap_entry *entry = mmap_find(header, vaddress);
 
                     if (entry && entry->size)
@@ -582,7 +582,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                 else
                 {
 
-                    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
+                    struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
                     struct mmap_entry *entry = mmap_find(header, vaddress);
 
                     if (entry && entry->size)

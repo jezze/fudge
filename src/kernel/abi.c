@@ -16,7 +16,7 @@ static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 static unsigned int checkuserspace(void *address, unsigned int count)
 {
 
-    struct mmap_header *header = (struct mmap_header *)MMAP_VADDRESS;
+    struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
     unsigned long value = (unsigned long)address;
     unsigned int i;
 

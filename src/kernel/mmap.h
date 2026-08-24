@@ -1,4 +1,3 @@
-#define MMAP_VADDRESS                   0xC0000000
 #define MMAP_SIZE                       0x00001000
 #define MMAP_TYPE_NONE                  0
 #define MMAP_TYPE_COW                   1
