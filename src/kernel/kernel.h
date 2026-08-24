@@ -1,6 +1,6 @@
 #define KERNEL_VSTACK                   0x80000000
-#define KERNEL_VMMAP                    0xC0000000
 #define KERNEL_VMAILBOX                 0xA0000000
+#define KERNEL_VMMAP                    0xC0000000
 
 struct core *kernel_getcore(void);
 unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel);
