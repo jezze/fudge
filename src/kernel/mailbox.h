@@ -12,6 +12,7 @@ struct mailbox
     void *data;
     unsigned int head;
     unsigned int tail;
+    unsigned int steps;
 
 };
 

@@ -29,6 +29,9 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
     spinlock_acquire(&mailbox->spinlock);
 
+    mailbox->tail += mailbox->steps;
+    mailbox->steps = 0;
+
     if (hasusedslot(mailbox))
     {
 
@@ -53,7 +56,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
         }
 
-        mailbox->tail++;
+        mailbox->steps = 1;
 
     }
 
@@ -165,6 +168,7 @@ void mailbox_reset(struct mailbox *mailbox, unsigned int itask)
     mailbox->itask = itask;
     mailbox->head = 0;
     mailbox->tail = 0;
+    mailbox->steps = 0;
 
 }
 
