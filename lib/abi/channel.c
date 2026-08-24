@@ -29,15 +29,15 @@ static unsigned int send(unsigned int ichannel, unsigned int target, unsigned in
 
 }
 
-static void dispatch(unsigned int source, unsigned int event, void *data, unsigned int size)
+static void dispatch(struct message *message, void *data)
 {
 
-    if (event < CHANNEL_EVENTS && listeners[event])
+    if (message->event < CHANNEL_EVENTS && listeners[message->event])
     {
 
         pending++;
 
-        listeners[event](source, data, size);
+        listeners[message->event](message->source, data, message->length);
 
         pending--;
 
@@ -118,7 +118,7 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
 void channel_dispatch(unsigned int ichannel, struct message *message, void *data)
 {
 
-    dispatch(message->source, message->event, data, message->length);
+    dispatch(message, data);
 
     switch (message->event)
     {
