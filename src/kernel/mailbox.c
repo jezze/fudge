@@ -79,11 +79,10 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
         {
 
             unsigned int slot = mailbox->head % MAILBOX_SLOTS;
-            struct message *m = &mailbox->messages[slot];
-            void *mdata = (void *)(((unsigned int)mailbox->data) + MAILBOX_SIZE * slot);
+            struct message *message = &mailbox->messages[slot];
 
-            message_init(m, event, source, count);
-            buffer_copy(mdata, data, count);
+            message_init(message, event, source, count, MAILBOX_SIZE * slot);
+            buffer_copy((void *)(((unsigned int)mailbox->data) + message->offset), data, count);
 
             mailbox->head++;
 

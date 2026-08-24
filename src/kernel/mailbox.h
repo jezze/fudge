@@ -8,7 +8,7 @@ struct mailbox
     struct spinlock spinlock;
     unsigned int itask;
     unsigned int inode;
-    struct message messages[8];
+    struct message messages[MAILBOX_SLOTS];
     void *data;
     unsigned int head;
     unsigned int tail;

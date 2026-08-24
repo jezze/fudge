@@ -11,7 +11,8 @@ struct message
     unsigned int event;
     unsigned int source;
     unsigned int length;
+    unsigned int offset;
 
 };
 
-void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length);
+void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, unsigned int offset);
