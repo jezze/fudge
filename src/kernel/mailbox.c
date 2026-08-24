@@ -36,9 +36,8 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message)
     {
 
         unsigned int slot = mailbox->tail % MAILBOX_SLOTS;
-        struct message *m = &mailbox->messages[slot];
 
-        buffer_copy(message, m, sizeof (struct message));
+        buffer_copy(message, &mailbox->messages[slot], sizeof (struct message));
 
         mailbox->steps = 1;
 
