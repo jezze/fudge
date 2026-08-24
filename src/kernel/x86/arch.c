@@ -505,11 +505,11 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
     else
     {
 
+        unsigned int directory = mmu_getdirectory();
+        unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
+
         if (error & MMU_EFLAG_USER)
         {
-
-            unsigned int directory = mmu_getdirectory();
-            unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
 
             if (ktable & MMU_TFLAG_PRESENT)
             {
@@ -521,15 +521,15 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
             else
             {
 
-                unsigned int utable = mmu_gettable(directory, vaddress);
+                struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
+                struct mmap_entry *entry = mmap_find(header, vaddress);
 
-                if (utable & MMU_TFLAG_PRESENT)
+                if (entry && entry->size)
                 {
 
-                    struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
-                    struct mmap_entry *entry = mmap_find(header, vaddress);
+                    unsigned int utable = mmu_gettable(directory, vaddress);
 
-                    if (entry && entry->size)
+                    if (utable & MMU_TFLAG_PRESENT)
                     {
 
                         switch (entry->type)
@@ -570,10 +570,9 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                     else
                     {
 
-                        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                        debugpagefault(error);
+                        unsigned int taddress = addtable(directory, header);
 
-                        for (;;);
+                        maptable(directory, vaddress, taddress, entry->flags);
 
                     }
 
@@ -582,27 +581,10 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                 else
                 {
 
-                    struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
-                    struct mmap_entry *entry = mmap_find(header, vaddress);
+                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                    debugpagefault(error);
 
-                    if (entry && entry->size)
-                    {
-
-                        unsigned int taddress = addtable(directory, header);
-
-                        maptable(directory, vaddress, taddress, entry->flags);
-
-                    }
-
-                    else
-                    {
-
-                        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                        debugpagefault(error);
-
-                        for (;;);
-
-                    }
+                    for (;;);
 
                 }
 
@@ -612,9 +594,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
         else
         {
-
-            unsigned int directory = mmu_getdirectory();
-            unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
 
             if (ktable & MMU_TFLAG_PRESENT)
             {
