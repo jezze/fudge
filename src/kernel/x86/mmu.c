@@ -87,14 +87,14 @@ void mmu_setpage(unsigned long daddress, unsigned long vaddress, unsigned long p
 void mmu_enable(void)
 {
 
-    cpu_setcr0(cpu_getcr0() | 0x80000000);
+    cpu_setcr0(cpu_getcr0() | CPU_CR0_PG);
 
 }
 
 void mmu_disable(void)
 {
 
-    cpu_setcr0(cpu_getcr0() & ~0x80000000);
+    cpu_setcr0(cpu_getcr0() & ~CPU_CR0_PG);
 
 }
 

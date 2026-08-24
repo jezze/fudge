@@ -106,7 +106,7 @@ void module_init(void)
     uart_put('c');
     cpu_setcr3((unsigned long)pml4t);
     uart_put('d');
-    cpu_setcr4(cpu_getcr4() | (1 << 5));
+    cpu_setcr4(cpu_getcr4() | CPU_CR4_PAE);
     uart_put('e');
     setlongmode();
     uart_put('f');
