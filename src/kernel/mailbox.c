@@ -40,9 +40,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
         if (m->length <= count)
         {
 
-            void *mdata = (void *)(((unsigned int)mailbox->data) + MAILBOX_SIZE * slot);
-
-            buffer_copy(data, mdata, m->length);
+            buffer_copy(data, (void *)(((unsigned int)mailbox->data) + m->offset), m->length);
 
             status = MESSAGE_OK;
 
