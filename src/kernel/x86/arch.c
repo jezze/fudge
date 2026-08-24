@@ -596,11 +596,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
                                 unsigned int ichannel = (vaddress - KERNEL_VMAILBOX) / (MAILBOX_SIZE * MAILBOX_SLOTS);
                                 unsigned int imailbox = task->imailbox[ichannel];
-                                unsigned int pmailboxaddress = ARCH_MAILBOXADDRESS + (MAILBOX_SIZE * MAILBOX_SLOTS) * imailbox;
-                                unsigned int vmailboxaddress = KERNEL_VMAILBOX + (MAILBOX_SIZE * MAILBOX_SLOTS) * ichannel;
+                                unsigned int size = MAILBOX_SIZE * MAILBOX_SLOTS;
+                                unsigned int paddress = ARCH_MAILBOXADDRESS + size * imailbox;
+                                unsigned int vaddress = KERNEL_VMAILBOX + size * ichannel;
                                 struct mmap_entry xentry;
 
-                                mmap_initentry(&xentry, MMAP_TYPE_NONE, pmailboxaddress, vmailboxaddress, MAILBOX_SIZE * MAILBOX_SLOTS, MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+                                mmap_initentry(&xentry, MMAP_TYPE_NONE, paddress, vaddress, size, MMAP_FLAG_USERMODE, 0, 0, 0, 0);
                                 mmap_register(header, &xentry);
 
                             }
