@@ -22,7 +22,7 @@ unsigned int hasfreeslot(struct mailbox *mailbox)
 
 }
 
-static unsigned int pick(struct mailbox *mailbox, struct message *message, unsigned int count, void *data)
+static unsigned int pick(struct mailbox *mailbox, struct message *message)
 {
 
     unsigned int status = MESSAGE_RETRY;
@@ -40,23 +40,9 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message, unsig
 
         buffer_copy(message, m, sizeof (struct message));
 
-        if (m->length <= count)
-        {
-
-            buffer_copy(data, (void *)(((unsigned int)mailbox->data) + m->offset), m->length);
-
-            status = MESSAGE_OK;
-
-        }
-
-        else
-        {
-
-            status = MESSAGE_TOOBIG;
-
-        }
-
         mailbox->steps = 1;
+
+        status = MESSAGE_OK;
 
     }
 
@@ -106,7 +92,7 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
 }
 
-static unsigned int operands_pick(struct resource *resource, unsigned int source, struct message *message, unsigned int count, void *data)
+static unsigned int operands_pick(struct resource *resource, unsigned int source, struct message *message)
 {
 
     struct mailbox *mailbox = resource->data;
@@ -114,7 +100,7 @@ static unsigned int operands_pick(struct resource *resource, unsigned int source
     if (mailbox)
     {
 
-        unsigned int status = pick(mailbox, message, count, data);
+        unsigned int status = pick(mailbox, message);
 
         switch (status)
         {

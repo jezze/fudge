@@ -51,7 +51,9 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message, unsign
     while (state != CHANNEL_STATE_CLOSED && state != CHANNEL_STATE_TERMINATED)
     {
 
-        unsigned int status = call_pick(ichannel, message, count, data);
+        unsigned int status = call_pick(ichannel, message);
+
+        buffer_read(data, count, message_data(message, ichannel), message->length, 0);
 
         switch (status)
         {

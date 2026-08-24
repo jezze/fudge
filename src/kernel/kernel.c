@@ -338,12 +338,12 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
-unsigned int kernel_pick(unsigned int source, struct message *message, unsigned int count, void *data)
+unsigned int kernel_pick(unsigned int source, struct message *message)
 {
 
     struct node *snode = pool_getnode(source);
 
-    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->resource, source, message, count, data) : MESSAGE_FAILED;
+    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->resource, source, message) : MESSAGE_FAILED;
 
 }
 

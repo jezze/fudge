@@ -581,10 +581,43 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                 else
                 {
 
-                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                    debugpagefault(error);
+                    if (vaddress >= KERNEL_VMAILBOX)
+                    {
 
-                    for (;;);
+                        struct core *core = kernel_getcore();
+
+                        if (core)
+                        {
+
+                            struct task *task = pool_gettask(core->itask);
+
+                            if (task)
+                            {
+
+                                unsigned int ichannel = (vaddress - KERNEL_VMAILBOX) / (MAILBOX_SIZE * MAILBOX_SLOTS);
+                                unsigned int imailbox = task->imailbox[ichannel];
+                                unsigned int pmailboxaddress = ARCH_MAILBOXADDRESS + (MAILBOX_SIZE * MAILBOX_SLOTS) * imailbox;
+                                unsigned int vmailboxaddress = KERNEL_VMAILBOX + (MAILBOX_SIZE * MAILBOX_SLOTS) * ichannel;
+                                struct mmap_entry xentry;
+
+                                mmap_initentry(&xentry, MMAP_TYPE_NONE, pmailboxaddress, vmailboxaddress, MAILBOX_SIZE * MAILBOX_SLOTS, MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+                                mmap_register(header, &xentry);
+
+                            }
+
+                        }
+
+                    }
+
+                    else
+                    {
+
+                        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                        debugpagefault(error);
+
+                        for (;;);
+
+                    }
 
                 }
 

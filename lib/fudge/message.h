@@ -15,4 +15,5 @@ struct message
 
 };
 
+void *message_data(struct message *message, unsigned int ichannel);
 void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, unsigned int offset);
