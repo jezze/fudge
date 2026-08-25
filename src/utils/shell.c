@@ -249,7 +249,7 @@ static void interpret(void)
 
             struct message message;
 
-            while (channel_pollany(1, channel, &message, MESSAGE_SIZE, buffer))
+            while (channel_poll(1, channel, EVENT_ALL, &message, MESSAGE_SIZE, buffer))
             {
 
                 switch (message.event)
@@ -410,7 +410,7 @@ static void complete(void)
 
             struct message message;
 
-            while (channel_pollany(2, channel, &message, MESSAGE_SIZE, buffer))
+            while (channel_poll(2, channel, EVENT_ALL, &message, MESSAGE_SIZE, buffer))
             {
 
                 switch (message.event)

@@ -253,7 +253,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         channel_dispatch(ichannel, message);
 
-        if (message->source == source && message->event == event)
+        if (message->source == source && (event == EVENT_ALL || event == message->event))
         {
 
             buffer_read(data, count, message_data(message, ichannel), message->length, 0);
@@ -261,29 +261,6 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
             return message->event;
 
         }
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_pollany(unsigned int ichannel, unsigned int source, struct message *message, unsigned int count, void *data)
-{
-
-    while (channel_pick(ichannel, message))
-    {
-
-        channel_dispatch(ichannel, message);
-
-        if (message->source == source)
-        {
-
-            buffer_read(data, count, message_data(message, ichannel), message->length, 0);
-
-            return message->event;
-
-        }
-
     }
 
     return 0;
@@ -300,7 +277,7 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
         channel_dispatch(ichannel, &message);
 
-        if (message.source == source && message.event == event)
+        if (message.source == source && (event == EVENT_ALL || event == message.event))
             return message.event;
 
     }
@@ -319,7 +296,7 @@ unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, uns
 
         channel_dispatch(ichannel, &message);
 
-        if (message.source == source && message.event == event)
+        if (message.source == source && (event == EVENT_ALL || event == message.event))
         {
 
             buffer_read(data, count, message_data(&message, ichannel), message.length, 0);
