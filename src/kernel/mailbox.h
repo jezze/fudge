@@ -1,5 +1,3 @@
-#define MAILBOX_SLOTS                   8
-
 struct mailbox
 {
 
@@ -7,7 +5,7 @@ struct mailbox
     struct spinlock spinlock;
     unsigned int itask;
     unsigned int inode;
-    struct message messages[MAILBOX_SLOTS];
+    struct message messages[MESSAGE_SLOTS];
     void *data;
     unsigned int head;
     unsigned int tail;

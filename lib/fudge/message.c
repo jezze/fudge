@@ -3,19 +3,17 @@
 void *message_data(struct message *message, unsigned int ichannel)
 {
 
-    unsigned int address = 0x40000000 + MESSAGE_SIZE * 8 * ichannel;
-
-    return (void *)(address + message->offset);
+    return (void *)(message->data + MESSAGE_SIZE * MESSAGE_SLOTS * ichannel);
 
 }
 
-void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, unsigned int offset)
+void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, unsigned long data)
 {
 
     message->event = event;
     message->source = source;
     message->length = length;
-    message->offset = offset;
+    message->data = data;
 
 }
 

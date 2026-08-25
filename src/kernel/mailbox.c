@@ -18,7 +18,7 @@ unsigned int hasusedslot(struct mailbox *mailbox)
 unsigned int hasfreeslot(struct mailbox *mailbox)
 {
 
-    return MAILBOX_SLOTS - (mailbox->head - mailbox->tail);
+    return MESSAGE_SLOTS - (mailbox->head - mailbox->tail);
 
 }
 
@@ -35,7 +35,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message)
     if (hasusedslot(mailbox))
     {
 
-        unsigned int slot = mailbox->tail % MAILBOX_SLOTS;
+        unsigned int slot = mailbox->tail % MESSAGE_SLOTS;
 
         buffer_copy(message, &mailbox->messages[slot], sizeof (struct message));
 
@@ -64,11 +64,11 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
         if (count <= MESSAGE_SIZE)
         {
 
-            unsigned int slot = mailbox->head % MAILBOX_SLOTS;
+            unsigned int slot = mailbox->head % MESSAGE_SLOTS;
             struct message *message = &mailbox->messages[slot];
 
-            message_init(message, event, source, count, MESSAGE_SIZE * slot);
-            buffer_copy((void *)(((unsigned int)mailbox->data) + message->offset), data, count);
+            message_init(message, event, source, count, KERNEL_VMAILBOX + MESSAGE_SIZE * slot);
+            buffer_copy((void *)(((unsigned int)mailbox->data) + MESSAGE_SIZE * slot), data, count);
 
             mailbox->head++;
 
@@ -170,7 +170,7 @@ void mailbox_init(struct mailbox *mailbox, void *data)
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     spinlock_init(&mailbox->spinlock);
     mailbox_reset(mailbox, 0);
-    buffer_clear(mailbox->messages, sizeof (struct message) * MAILBOX_SLOTS);
+    buffer_clear(mailbox->messages, sizeof (struct message) * MESSAGE_SLOTS);
 
     mailbox->inode = pool_picknode();
     mailbox->data = data;
