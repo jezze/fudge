@@ -65,9 +65,6 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message)
         case MESSAGE_RETRY:
             continue;
 
-        case MESSAGE_TOOBIG:
-            continue;
-
         case MESSAGE_FAILED:
             return 0;
 
@@ -98,9 +95,6 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
 
         case MESSAGE_RETRY:
             continue;
-
-        case MESSAGE_TOOBIG:
-            return 0;
 
         case MESSAGE_FAILED:
             return 0;

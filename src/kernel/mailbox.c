@@ -76,13 +76,6 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
         }
 
-        else
-        {
-
-            status = MESSAGE_TOOBIG;
-
-        }
-
     }
 
     spinlock_release(&mailbox->spinlock);
