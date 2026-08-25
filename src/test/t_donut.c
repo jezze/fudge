@@ -38,7 +38,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         int cB = 0;
         int f;
 
-        channel_send(0, timer, EVENT_LINK);
+        channel_send(0, timer, EVENT_LINK, 0, 0);
 
         while (channel_process(0))
         {
@@ -97,7 +97,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             R(5, 7, cA, sA)
             R(5, 8, cB, sB)
 
-            channel_send_buffer(0, source, EVENT_DATA, 2, sequence);
+            channel_send(0, source, EVENT_DATA, 2, sequence);
 
             for (k = 0; k < 1760; k += 80)
             {
@@ -111,7 +111,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        channel_send(0, timer, EVENT_UNLINK);
+        channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
     }
 

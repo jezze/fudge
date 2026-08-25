@@ -297,7 +297,7 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
 
             count += cstring_write_fmt0(buffer, size, count, "E\\0");
 
-            channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+            channel_send(0, source, EVENT_DATA, count, buffer);
 
             count = 0;
 

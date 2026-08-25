@@ -158,11 +158,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         channel_route(EVENT_DATA, source);
-        channel_send(0, ethernet, EVENT_LINK);
+        channel_send(0, ethernet, EVENT_LINK, 0, 0);
 
         while (channel_process(0));
 
-        channel_send(0, ethernet, EVENT_UNLINK);
+        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 
     }
 

@@ -118,7 +118,7 @@ static void request_send(unsigned int sector, unsigned int count)
     blockrequest.sector = sector;
     blockrequest.count = count;
 
-    channel_send_buffer(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -348,7 +348,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
         response.header.nrecords = nrecords;
 
         buffer_write(response.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
-        channel_send_buffer(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
+        channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
 
     }
 
@@ -379,7 +379,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         response.header.session = readrequest->session;
         response.header.count = buffer_write(response.data, 64, block, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
 
-        channel_send_buffer(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
+        channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
 
 
     }
@@ -409,7 +409,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
         response.session = walkrequest->session;
         response.id = id;
 
-        channel_send_buffer(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+        channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
         return;
 
@@ -438,7 +438,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
                 response.session = walkrequest->session;
                 response.id = entry->node;
 
-                channel_send_buffer(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+                channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
                 break;
 
@@ -468,7 +468,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     option_setdecimal("block-service", channel_lookup(option_getstring("block-service")));
-    channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_LINK, 0, 0);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
@@ -480,7 +480,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK, 0, 0);
 
 }
 

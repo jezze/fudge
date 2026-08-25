@@ -128,7 +128,7 @@ static void keypress(struct gb_s *gb, struct event_keypress *keypress)
         break;
 
     case KEYS_KEY_ESCAPE:
-        channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP);
+        channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP, 0, 0);
         channel_close();
 
         break;
@@ -266,14 +266,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMGRAB);
+        channel_send(0, wm, EVENT_WMGRAB, 0, 0);
         channel_wait(0, wm, EVENT_WMACK, 0, 0);
-        channel_send(0, wm, EVENT_WMMAP);
+        channel_send(0, wm, EVENT_WMMAP, 0, 0);
 
         while (channel_process(0));
 
-        channel_send(0, wm, EVENT_WMUNMAP);
-        channel_send(0, wm, EVENT_WMUNGRAB);
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
         channel_wait(0, wm, EVENT_WMACK, 0, 0);
 
     }
@@ -315,15 +315,15 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         videoconf.height = option_getdecimal("height");
         videoconf.bpp = option_getdecimal("bpp");
 
-        channel_send(0, keyboard, EVENT_LINK);
-        channel_send(0, timer, EVENT_LINK);
-        channel_send(0, video, EVENT_LINK);
-        channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+        channel_send(0, keyboard, EVENT_LINK, 0, 0);
+        channel_send(0, timer, EVENT_LINK, 0, 0);
+        channel_send(0, video, EVENT_LINK, 0, 0);
+        channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
         channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
         run(source, target, id);
-        channel_send(0, video, EVENT_UNLINK);
-        channel_send(0, timer, EVENT_UNLINK);
-        channel_send(0, keyboard, EVENT_UNLINK);
+        channel_send(0, video, EVENT_UNLINK, 0, 0);
+        channel_send(0, timer, EVENT_UNLINK, 0, 0);
+        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
 
     }
 

@@ -14,7 +14,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct message message;
         char data[MESSAGE_SIZE];
 
-        channel_send(0, timer, EVENT_LINK);
+        channel_send(0, timer, EVENT_LINK, 0, 0);
 
         while (channel_poll(0, timer, EVENT_TIMERTICK, &message, MESSAGE_SIZE, data))
         {
@@ -25,7 +25,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        channel_send(0, timer, EVENT_UNLINK);
+        channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
     }
 

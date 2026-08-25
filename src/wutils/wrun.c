@@ -31,8 +31,8 @@ static void handlehttppacket(unsigned int source)
         if (isbody)
         {
 
-            channel_send_buffer(0, source, EVENT_DATA, count, buffer);
-            channel_send_buffer(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, buffer);
+            channel_send(0, source, EVENT_DATA, count, buffer);
+            channel_send(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, buffer);
 
         }
 
@@ -60,7 +60,7 @@ static void dnsresolve(struct socket *socket, char *domain)
         char data[MESSAGE_SIZE];
 
         channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
-        channel_send(1, target, EVENT_MAIN);
+        channel_send(1, target, EVENT_MAIN, 0, 0);
 
         while (channel_poll(1, target, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
         {
@@ -86,7 +86,7 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         }
 
-        channel_send(1, target, EVENT_TERM);
+        channel_send(1, target, EVENT_TERM, 0, 0);
         channel_wait(1, target, EVENT_DONE, 0, 0);
 
     }
@@ -116,11 +116,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
-    channel_send(0, wm, EVENT_WMMAP);
+    channel_send(0, wm, EVENT_WMMAP, 0, 0);
 
     while (channel_process(0) != EVENT_WMCLOSE);
 
-    channel_send(0, wm, EVENT_WMUNMAP);
+    channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
 }
 
@@ -140,7 +140,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         struct event_clockinfo clockinfo;
         struct mtwist_state state;
 
-        channel_send(0, clock, EVENT_INFO);
+        channel_send(0, clock, EVENT_INFO, 0, 0);
         channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
         mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
         socket_bind_ipv4s(&local, option_getstring("local-address"));
@@ -157,7 +157,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         if (url.port)
             socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
 
-        channel_send(0, ethernet, EVENT_LINK);
+        channel_send(0, ethernet, EVENT_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
         socket_connect_tcp(0, ethernet, &local, &remote, &router);
         socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
@@ -170,7 +170,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        channel_send(0, ethernet, EVENT_UNLINK);
+        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 
     }
 

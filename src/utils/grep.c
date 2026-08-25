@@ -11,7 +11,7 @@ static void checkprefix(unsigned int source, void *buffer, unsigned int count)
     {
 
         if (buffer_match(buffer, prefix, prefixcount))
-            channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+            channel_send(0, source, EVENT_DATA, count, buffer);
 
     }
 
@@ -34,7 +34,7 @@ static void checksubstr(unsigned int source, void *buffer, unsigned int count)
             if (buffer_match((char *)buffer + i, substr, substrcount))
             {
 
-                channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+                channel_send(0, source, EVENT_DATA, count, buffer);
 
                 break;
 

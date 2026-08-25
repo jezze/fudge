@@ -25,7 +25,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned char colormap[768];
 
             fs_read_all(1, target, id, colormap, 768, record.size - 768);
-            channel_send_buffer(0, source, EVENT_DATA, 768, colormap);
+            channel_send(0, source, EVENT_DATA, 768, colormap);
 
         }
 

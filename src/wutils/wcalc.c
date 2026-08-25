@@ -89,11 +89,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMMAP);
+        channel_send(0, wm, EVENT_WMMAP, 0, 0);
 
         while (channel_process(0) != EVENT_WMCLOSE);
 
-        channel_send(0, wm, EVENT_WMUNMAP);
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
     }
 

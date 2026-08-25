@@ -223,14 +223,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMGRAB);
+        channel_send(0, wm, EVENT_WMGRAB, 0, 0);
         channel_wait(0, wm, EVENT_WMACK, 0, 0);
-        channel_send(0, wm, EVENT_WMMAP);
+        channel_send(0, wm, EVENT_WMMAP, 0, 0);
 
         while (channel_process(0));
 
-        channel_send(0, wm, EVENT_WMUNMAP);
-        channel_send(0, wm, EVENT_WMUNGRAB);
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
         channel_wait(0, wm, EVENT_WMACK, 0, 0);
 
     }
@@ -260,7 +260,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         videoconf.height = option_getdecimal("height");
         videoconf.bpp = option_getdecimal("bpp");
 
-        channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+        channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
         channel_wait(0, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
         if (videoinfo.bpp == 1)
@@ -285,16 +285,16 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
             }
 
-            channel_send_buffer(0, video, EVENT_VIDEOCMAP, 768, &colormap);
+            channel_send(0, video, EVENT_VIDEOCMAP, 768, &colormap);
 
         }
 
         draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-        channel_send(0, mouse, EVENT_LINK);
+        channel_send(0, mouse, EVENT_LINK, 0, 0);
 
         while (channel_process(0));
 
-        channel_send(0, mouse, EVENT_UNLINK);
+        channel_send(0, mouse, EVENT_UNLINK, 0, 0);
 
     }
 

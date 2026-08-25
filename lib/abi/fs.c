@@ -37,7 +37,7 @@ unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id
     request.nrecords = nrecords;
     request.records = records;
 
-    channel_send_buffer(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
+    channel_send(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
     while (channel_wait(ichannel, target, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response))
     {
@@ -60,7 +60,7 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
     request.session = ++sessioncount;
     request.id = id;
 
-    channel_send_buffer(ichannel, target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
+    channel_send(ichannel, target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
 
     while (channel_wait(ichannel, target, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response))
     {
@@ -86,7 +86,7 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
     request.count = count;
     request.buffer = buffer;
 
-    channel_send_buffer(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
+    channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
     while (channel_wait(ichannel, target, EVENT_READRESPONSE, sizeof (struct event_readresponse), &response))
     {
@@ -137,7 +137,7 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
     request.id = id;
     request.record = record;
 
-    channel_send_buffer(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
+    channel_send(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
     while (channel_wait(ichannel, target, EVENT_STATRESPONSE, sizeof (struct event_statresponse), &response))
     {
@@ -162,7 +162,7 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
     request.length = cstring_length(path);
     request.path = path;
 
-    channel_send_buffer(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
+    channel_send(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
     while (channel_wait(ichannel, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response))
     {
@@ -188,7 +188,7 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
     request.count = count;
     request.buffer = buffer;
 
-    channel_send_buffer(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
+    channel_send(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
     while (channel_wait(ichannel, target, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response))
     {

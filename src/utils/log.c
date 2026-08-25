@@ -15,7 +15,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, option_getdecimal("log-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("log-service"), EVENT_LINK, 0, 0);
 
     while (channel_poll(0, option_getdecimal("log-service"), EVENT_LOGINFO, &message, MESSAGE_SIZE, data))
     {
@@ -29,7 +29,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, option_getdecimal("log-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("log-service"), EVENT_UNLINK, 0, 0);
 
 }
 

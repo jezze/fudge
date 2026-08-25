@@ -13,7 +13,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct mtwist_state state;
         unsigned int value;
 
-        channel_send(0, clock, EVENT_INFO);
+        channel_send(0, clock, EVENT_INFO, 0, 0);
         channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
         mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
 

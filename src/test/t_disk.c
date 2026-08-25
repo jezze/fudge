@@ -54,7 +54,7 @@ static void request_send(struct state *state)
     blockrequest.sector = state->blocksector;
     blockrequest.count = state->blockcount;
 
-    channel_send_buffer(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -388,7 +388,7 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
     struct p9p_header *p9p = mdata;
     char buffer[MESSAGE_SIZE];
 
-    channel_send_buffer(0, source, EVENT_P9P, handle(source, buffer, p9p), buffer);
+    channel_send(0, source, EVENT_P9P, handle(source, buffer, p9p), buffer);
 
 }
 
@@ -402,8 +402,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     option_setdecimal("block-service", channel_lookup(option_getstring("block-service")));
     option_setdecimal("ethernet-service", channel_lookup(option_getstring("ethernet-service")));
     socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK);
-    channel_send(0, option_getdecimal("block-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK, 0, 0);
+    channel_send(0, option_getdecimal("block-service"), EVENT_LINK, 0, 0);
     socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
     socket_listen_tcp(option_getdecimal("ethernet-service"), &local, &remote, 1, &router);
 
@@ -416,8 +416,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK, 0, 0);
+    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK, 0, 0);
 
 }
 

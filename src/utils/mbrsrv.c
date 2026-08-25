@@ -34,7 +34,7 @@ static void request_send(unsigned int block, unsigned int sector, unsigned int c
     blockrequest.sector = sector;
     blockrequest.count = count;
 
-    channel_send_buffer(0, block, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send(0, block, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
@@ -120,13 +120,13 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         unsigned char blockdata[1024];
         struct mbr *mbr = (struct mbr *)blockdata;
 
-        channel_send(0, block, EVENT_LINK);
+        channel_send(0, block, EVENT_LINK, 0, 0);
         request_readblocks(block, blockdata, 1024, 0, 1);
 
         if (isvalid(mbr))
             print(source, mbr);
 
-        channel_send(0, block, EVENT_UNLINK);
+        channel_send(0, block, EVENT_UNLINK, 0, 0);
 
     }
 

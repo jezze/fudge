@@ -4,7 +4,7 @@
 static void ondata(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send_buffer(0, source, EVENT_DATA, msize, mdata);
+    channel_send(0, source, EVENT_DATA, msize, mdata);
 
 }
 
@@ -26,7 +26,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int offset;
 
             for (offset = 0; (count = fs_read(1, target, id, buffer, MESSAGE_SIZE, offset)); offset += count)
-                channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+                channel_send(0, source, EVENT_DATA, count, buffer);
 
         }
 

@@ -162,9 +162,9 @@ static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int c
     if (target)
     {
 
-        channel_send(ichannel, target, EVENT_MAIN);
-        channel_send_buffer(ichannel, target, EVENT_DATA, count, buffer);
-        channel_send(ichannel, target, EVENT_TERM);
+        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
+        channel_send(ichannel, target, EVENT_DATA, count, buffer);
+        channel_send(ichannel, target, EVENT_TERM, 0, 0);
 
     }
 
@@ -438,11 +438,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMMAP);
+        channel_send(0, wm, EVENT_WMMAP, 0, 0);
 
         while (channel_process(0) != EVENT_WMCLOSE);
 
-        channel_send(0, wm, EVENT_WMUNMAP);
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
     }
 

@@ -62,8 +62,8 @@ static void setupvideo(unsigned int video)
     videoconf.bpp = option_getdecimal("bpp");
 
     buffer_clear(black, 768);
-    channel_send_buffer(0, video, EVENT_VIDEOCMAP, 768, &black);
-    channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_send(0, video, EVENT_VIDEOCMAP, 768, &black);
+    channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
     channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
 
 }
@@ -358,7 +358,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         message.wmevent.type = type;
         message.wmevent.length = cstring_write_fmt2(message.data, 128, 0, "%w\\0", strpool_getstring(action), &length);
 
-        channel_send_buffer(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+        channel_send(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
 
     }
 
@@ -376,8 +376,8 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
             {
 
                 channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
-                channel_send(1, target, EVENT_MAIN);
-                channel_send(1, target, EVENT_TERM);
+                channel_send(1, target, EVENT_MAIN, 0, 0);
+                channel_send(1, target, EVENT_TERM, 0, 0);
 
             }
 
@@ -400,8 +400,8 @@ static void clickwidget(struct widget *widget)
             if (util_intersects(state.mousewidget->placement.position.x, widget->placement.position.x + widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.x + widget->placement.size.w) && util_intersects(state.mousewidget->placement.position.y, widget->placement.position.y, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT))
             {
 
-                channel_send(0, widget->source, EVENT_WMCLOSE);
-                channel_send(0, widget->source, EVENT_TERM);
+                channel_send(0, widget->source, EVENT_WMCLOSE, 0, 0);
+                channel_send(0, widget->source, EVENT_TERM, 0, 0);
 
             }
 
@@ -510,8 +510,8 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                     if (state.focusedwindow)
                     {
 
-                        channel_send(0, state.focusedwindow->source, EVENT_WMCLOSE);
-                        channel_send(0, state.focusedwindow->source, EVENT_TERM);
+                        channel_send(0, state.focusedwindow->source, EVENT_WMCLOSE, 0, 0);
+                        channel_send(0, state.focusedwindow->source, EVENT_TERM, 0, 0);
 
                     }
 
@@ -528,8 +528,8 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                     if (target)
                     {
 
-                        channel_send(1, target, EVENT_MAIN);
-                        channel_send(1, target, EVENT_TERM);
+                        channel_send(1, target, EVENT_MAIN, 0, 0);
+                        channel_send(1, target, EVENT_TERM, 0, 0);
 
                     }
 
@@ -567,7 +567,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 wmkeypress.length = state.keys.code.length;
                 wmkeypress.keymod = state.keys.mod;
 
-                channel_send_buffer(0, state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+                channel_send(0, state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
 
             }
 
@@ -594,9 +594,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int video = channel_lookup(option_getstring("video-service"));
 
     call_announce(0, djb_hash(2, "wm"));
-    channel_send(0, keyboard, EVENT_LINK);
-    channel_send(0, mouse, EVENT_LINK);
-    channel_send(0, video, EVENT_LINK);
+    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+    channel_send(0, mouse, EVENT_LINK, 0, 0);
+    channel_send(0, video, EVENT_LINK, 0, 0);
     setupvideo(video);
 
     while (channel_process(0))
@@ -627,9 +627,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, video, EVENT_UNLINK);
-    channel_send(0, mouse, EVENT_UNLINK);
-    channel_send(0, keyboard, EVENT_UNLINK);
+    channel_send(0, video, EVENT_UNLINK, 0, 0);
+    channel_send(0, mouse, EVENT_UNLINK, 0, 0);
+    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
 
 }
 
@@ -801,14 +801,14 @@ static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSESCROLL, 0);
     channel_bind(EVENT_MOUSERELEASE, 0);
     channel_bind(EVENT_VIDEOINFO, 0);
-    channel_send(0, source, EVENT_WMACK);
+    channel_send(0, source, EVENT_WMACK, 0, 0);
 
 }
 
 static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    channel_send(0, source, EVENT_WMINIT);
+    channel_send(0, source, EVENT_WMINIT, 0, 0);
 
 }
 
@@ -835,7 +835,7 @@ static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
-    channel_send(0, source, EVENT_WMACK);
+    channel_send(0, source, EVENT_WMACK, 0, 0);
 
 }
 

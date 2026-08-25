@@ -16,7 +16,7 @@ static struct keys keys;
 static void print(void *buffer, unsigned int count)
 {
 
-    channel_send_buffer(0, option_getdecimal("console-service"), EVENT_DATA, count, buffer);
+    channel_send(0, option_getdecimal("console-service"), EVENT_DATA, count, buffer);
 
 }
 
@@ -189,9 +189,9 @@ static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int c
     if (target)
     {
 
-        channel_send(ichannel, target, EVENT_MAIN);
-        channel_send_buffer(ichannel, target, EVENT_DATA, count, buffer);
-        channel_send(ichannel, target, EVENT_TERM);
+        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
+        channel_send(ichannel, target, EVENT_DATA, count, buffer);
+        channel_send(ichannel, target, EVENT_TERM, 0, 0);
 
     }
 
@@ -758,14 +758,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     option_setdecimal("console-service", channel_lookup(option_getstring("console-service")));
     option_setdecimal("keyboard-service", channel_lookup(option_getstring("keyboard-service")));
-    channel_send(0, option_getdecimal("console-service"), EVENT_LINK);
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK);
+    channel_send(0, option_getdecimal("console-service"), EVENT_LINK, 0, 0);
+    channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK, 0, 0);
     clearline();
 
     while (channel_process(0));
 
-    channel_send(0, option_getdecimal("console-service"), EVENT_UNLINK);
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK);
+    channel_send(0, option_getdecimal("console-service"), EVENT_UNLINK, 0, 0);
+    channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK, 0, 0);
 
 }
 

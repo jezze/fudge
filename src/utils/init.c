@@ -11,12 +11,12 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
 
         unsigned int i;
 
-        channel_send(ichannel, target, EVENT_MAIN);
+        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
 
         for (i = 0; i < count; i++)
             channel_send_fmt1(ichannel, target, EVENT_PATH, "%s\\0", paths[i]);
 
-        channel_send(ichannel, target, EVENT_TERM);
+        channel_send(ichannel, target, EVENT_TERM, 0, 0);
         channel_wait(ichannel, target, EVENT_DONE, 0, 0);
 
     }
@@ -32,7 +32,7 @@ static unsigned int spawnshell(unsigned int ichannel)
     {
 
         channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:&keyboard-service=keyboard:1\n");
-        channel_send(ichannel, target, EVENT_MAIN);
+        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
 
     }
 
@@ -49,7 +49,7 @@ static unsigned int spawnwm(unsigned int ichannel)
     {
 
         channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:\n");
-        channel_send(ichannel, target, EVENT_MAIN);
+        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
 
     }
 

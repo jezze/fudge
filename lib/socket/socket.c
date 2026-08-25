@@ -32,7 +32,7 @@ static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
 static void send(unsigned int ichannel, unsigned int target, void *buffer, unsigned int count)
 {
 
-    channel_send_buffer(ichannel, target, EVENT_DATA, count, buffer);
+    channel_send(ichannel, target, EVENT_DATA, count, buffer);
 
 }
 
@@ -777,7 +777,7 @@ void socket_resolveremote(unsigned int ichannel, unsigned int target, struct soc
 void socket_resolvelocal(unsigned int ichannel, unsigned int target, struct socket *socket)
 {
 
-    channel_send(ichannel, target, EVENT_INFO);
+    channel_send(ichannel, target, EVENT_INFO, 0, 0);
     channel_wait(ichannel, target, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
 
     socket->resolved = 1;

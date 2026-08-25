@@ -144,20 +144,13 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
     {
 
         if (parent)
-            channel_send(ichannel, parent, EVENT_DONE);
+            channel_send(ichannel, parent, EVENT_DONE, 0, 0);
 
     }
 
 }
 
-unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event)
-{
-
-    return send(ichannel, target, event, 0, 0);
-
-}
-
-unsigned int channel_send_buffer(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     return send(ichannel, target, event, count, data);

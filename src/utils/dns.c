@@ -73,7 +73,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct event_clockinfo clockinfo;
         struct mtwist_state state;
 
-        channel_send(0, clock, EVENT_INFO);
+        channel_send(0, clock, EVENT_INFO, 0, 0);
         channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
         mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
         socket_bind_ipv4s(&local, option_getstring("local-address"));
@@ -82,7 +82,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_bind_udpv(&remote, option_getdecimal("remote-port"));
         socket_bind_ipv4s(&router, option_getstring("router-address"));
         socket_resolvelocal(0, ethernet, &local);
-        channel_send(0, ethernet, EVENT_LINK);
+        channel_send(0, ethernet, EVENT_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
         socket_send_udp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
@@ -126,7 +126,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        channel_send(0, ethernet, EVENT_UNLINK);
+        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 
     }
 

@@ -51,7 +51,7 @@ static void dnsresolve(struct socket *socket, char *domain)
         char data[MESSAGE_SIZE];
 
         channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
-        channel_send(1, target, EVENT_MAIN);
+        channel_send(1, target, EVENT_MAIN, 0, 0);
 
         while (channel_poll(1, target, EVENT_QUERYRESPONSE, &message, MESSAGE_SIZE, data))
         {
@@ -77,7 +77,7 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         }
 
-        channel_send(1, target, EVENT_TERM);
+        channel_send(1, target, EVENT_TERM, 0, 0);
         channel_wait(1, target, EVENT_DONE, 0, 0);
 
     }
@@ -120,7 +120,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
         case '\n':
             ring_write(&input, &consoledata->data, 1);
-            channel_send_buffer(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
+            channel_send(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
 
             count = ring_read(&input, buffer, 4096);
 
@@ -131,7 +131,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
         default:
             ring_write(&input, &consoledata->data, 1);
-            channel_send_buffer(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
+            channel_send(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
 
             break;
 
@@ -155,7 +155,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct event_clockinfo clockinfo;
         struct mtwist_state state;
 
-        channel_send(0, clock, EVENT_INFO);
+        channel_send(0, clock, EVENT_INFO, 0, 0);
         channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
         mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
         socket_bind_ipv4s(&local, option_getstring("local-address"));
@@ -168,15 +168,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (cstring_length(option_getstring("domain")))
             dnsresolve(&remote, option_getstring("domain"));
 
-        channel_send(0, ethernet, EVENT_LINK);
+        channel_send(0, ethernet, EVENT_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
         socket_connect_tcp(0, ethernet, &local, &remote, &router);
         socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
         while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
-            channel_send_buffer(0, source, EVENT_DATA, count, buffer);
+            channel_send(0, source, EVENT_DATA, count, buffer);
 
-        channel_send(0, ethernet, EVENT_UNLINK);
+        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 
     }
 
