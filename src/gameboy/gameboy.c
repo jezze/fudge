@@ -79,10 +79,9 @@ static void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const unsign
 
 }
 
-static void keypress(struct gb_s *gb, void *data)
+static void keypress(struct gb_s *gb, struct event_keypress *keypress)
 {
 
-    struct event_keypress *keypress = data;
     unsigned int id = keys_getcode(&keys, keypress->scancode);
 
     switch (id)
@@ -138,10 +137,9 @@ static void keypress(struct gb_s *gb, void *data)
 
 }
 
-static void keyrelease(struct gb_s *gb, void *data)
+static void keyrelease(struct gb_s *gb, struct event_keyrelease *keyrelease)
 {
 
-    struct event_keyrelease *keyrelease = data;
     unsigned int id = keys_getcode(&keys, keyrelease->scancode);
 
     switch (id)
