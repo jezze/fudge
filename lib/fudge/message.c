@@ -3,7 +3,7 @@
 void *message_data(struct message *message, unsigned int ichannel)
 {
 
-    return (void *)(message->data + MESSAGE_SIZE * MESSAGE_SLOTS * ichannel);
+    return (void *)(message->data + MESSAGE_CAPACITY * ichannel);
 
 }
 

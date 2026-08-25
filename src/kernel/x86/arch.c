@@ -594,14 +594,13 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                             if (task)
                             {
 
-                                unsigned int ichannel = (vaddress - KERNEL_VMAILBOX) / (MESSAGE_SIZE * MESSAGE_SLOTS);
+                                unsigned int ichannel = (vaddress - KERNEL_VMAILBOX) / MESSAGE_CAPACITY;
                                 unsigned int imailbox = task->imailbox[ichannel];
-                                unsigned int size = MESSAGE_SIZE * MESSAGE_SLOTS;
-                                unsigned int paddress = ARCH_MAILBOXADDRESS + size * imailbox;
-                                unsigned int vaddress = KERNEL_VMAILBOX + size * ichannel;
+                                unsigned int paddress = ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * imailbox;
+                                unsigned int vaddress = KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel;
                                 struct mmap_entry xentry;
 
-                                mmap_initentry(&xentry, MMAP_TYPE_NONE, paddress, vaddress, size, MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+                                mmap_initentry(&xentry, MMAP_TYPE_NONE, paddress, vaddress, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE, 0, 0, 0, 0);
                                 mmap_register(header, &xentry);
 
                             }
@@ -751,7 +750,7 @@ void arch_setup1(void)
     arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MESSAGE_SIZE * MESSAGE_SLOTS * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     mmu_setdirectory(mappings[0].directory);
     mmu_enable();
     mailbox_setup();
