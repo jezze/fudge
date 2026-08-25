@@ -170,7 +170,6 @@ void mailbox_init(struct mailbox *mailbox, void *data)
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     spinlock_init(&mailbox->spinlock);
     mailbox_reset(mailbox, 0);
-    buffer_clear(mailbox->messages, sizeof (struct message) * MESSAGE_SLOTS);
 
     mailbox->inode = pool_picknode();
     mailbox->data = data;
