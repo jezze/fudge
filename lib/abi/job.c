@@ -244,16 +244,22 @@ unsigned int job_exist(struct job *job, unsigned int target)
 unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message, unsigned int count, void *data)
 {
 
-    while (job_count(job) && channel_pick(0, message, count, data))
+    while (job_count(job) && channel_pick(0, message))
     {
 
-        channel_dispatch(ichannel, message, data);
+        channel_dispatch(ichannel, message);
 
         if (message->event == EVENT_DONE)
             job_close(job, ichannel, message->source);
 
         if (job_exist(job, message->source))
+        {
+
+            buffer_read(data, count, message_data(message, ichannel), message->length, 0);
+
             return message->source;
+
+        }
 
     }
 

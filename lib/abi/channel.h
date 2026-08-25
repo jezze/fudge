@@ -1,6 +1,6 @@
-unsigned int channel_pick(unsigned int ichannel, struct message *message, unsigned int count, void *data);
+unsigned int channel_pick(unsigned int ichannel, struct message *message);
 unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
-void channel_dispatch(unsigned int ichannel, struct message *message, void *data);
+void channel_dispatch(unsigned int ichannel, struct message *message);
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event);
 unsigned int channel_send_buffer(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int channel_send_fmt0(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt);

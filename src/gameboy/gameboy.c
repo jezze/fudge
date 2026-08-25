@@ -198,7 +198,6 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
     enum gb_init_error_e gb_ret;
     struct gb_s gb;
     struct message message;
-    char data[MESSAGE_SIZE];
 
     fs_read_full(1, target, id, rom, 0x80000, 0);
 
@@ -226,7 +225,7 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
 
     channel_send_fmt1(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
-    while (channel_pick(0, &message, MESSAGE_SIZE, data))
+    while (channel_pick(0, &message))
     {
 
         switch (message.event)
@@ -241,17 +240,17 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
             break;
 
         case EVENT_KEYPRESS:
-            keypress(&gb, data);
+            keypress(&gb, message_data(&message, 0));
 
             break;
 
         case EVENT_KEYRELEASE:
-            keyrelease(&gb, data);
+            keyrelease(&gb, message_data(&message, 0));
 
             break;
 
         default:
-            channel_dispatch(0, &message, data);
+            channel_dispatch(0, &message);
 
             break;
 

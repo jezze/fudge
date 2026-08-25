@@ -29,14 +29,17 @@ static unsigned int send(unsigned int ichannel, unsigned int target, unsigned in
 
 }
 
-static void dispatch(struct message *message, void *data)
+static void dispatch(unsigned int ichannel, struct message *message)
 {
 
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
     {
 
+        char data[MESSAGE_SIZE];
+
         pending++;
 
+        buffer_read(data, MESSAGE_SIZE, message_data(message, ichannel), message->length, 0);
         listeners[message->event](message->source, data, message->length);
 
         pending--;
@@ -45,15 +48,13 @@ static void dispatch(struct message *message, void *data)
 
 }
 
-unsigned int channel_pick(unsigned int ichannel, struct message *message, unsigned int count, void *data)
+unsigned int channel_pick(unsigned int ichannel, struct message *message)
 {
 
     while (state != CHANNEL_STATE_CLOSED && state != CHANNEL_STATE_TERMINATED)
     {
 
         unsigned int status = call_pick(ichannel, message);
-
-        buffer_read(data, count, message_data(message, ichannel), message->length, 0);
 
         switch (status)
         {
@@ -115,10 +116,10 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
 
 }
 
-void channel_dispatch(unsigned int ichannel, struct message *message, void *data)
+void channel_dispatch(unsigned int ichannel, struct message *message)
 {
 
-    dispatch(message, data);
+    dispatch(ichannel, message);
 
     switch (message->event)
     {
@@ -236,12 +237,11 @@ unsigned int channel_process(unsigned int ichannel)
 {
 
     struct message message;
-    char data[MESSAGE_SIZE];
 
-    if (channel_pick(ichannel, &message, MESSAGE_SIZE, data))
+    if (channel_pick(ichannel, &message))
     {
 
-        channel_dispatch(ichannel, &message, data);
+        channel_dispatch(ichannel, &message);
 
         return message.event;
 
@@ -254,14 +254,19 @@ unsigned int channel_process(unsigned int ichannel)
 unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data)
 {
 
-    while (channel_pick(ichannel, message, count, data))
+    while (channel_pick(ichannel, message))
     {
 
-        channel_dispatch(ichannel, message, data);
+        channel_dispatch(ichannel, message);
 
         if (message->source == source && message->event == event)
+        {
+
+            buffer_read(data, count, message_data(message, ichannel), message->length, 0);
+
             return message->event;
 
+        }
     }
 
     return 0;
@@ -271,13 +276,19 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 unsigned int channel_pollany(unsigned int ichannel, unsigned int source, struct message *message, unsigned int count, void *data)
 {
 
-    while (channel_pick(ichannel, message, count, data))
+    while (channel_pick(ichannel, message))
     {
 
-        channel_dispatch(ichannel, message, data);
+        channel_dispatch(ichannel, message);
 
         if (message->source == source)
+        {
+
+            buffer_read(data, count, message_data(message, ichannel), message->length, 0);
+
             return message->event;
+
+        }
 
     }
 
@@ -289,12 +300,11 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 {
 
     struct message message;
-    char data[MESSAGE_SIZE];
 
-    while (channel_pick(ichannel, &message, MESSAGE_SIZE, data))
+    while (channel_pick(ichannel, &message))
     {
 
-        channel_dispatch(ichannel, &message, data);
+        channel_dispatch(ichannel, &message);
 
         if (message.source == source && message.event == event)
             return message.event;
@@ -309,17 +319,16 @@ unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, uns
 {
 
     struct message message;
-    char data2[MESSAGE_SIZE];
 
-    while (channel_pick(ichannel, &message, MESSAGE_SIZE, data2))
+    while (channel_pick(ichannel, &message))
     {
 
-        channel_dispatch(ichannel, &message, data2);
+        channel_dispatch(ichannel, &message);
 
         if (message.source == source && message.event == event)
         {
 
-            buffer_write(data, count, data2, message.length, 0);
+            buffer_read(data, count, message_data(&message, ichannel), message.length, 0);
 
             return message.event;
 

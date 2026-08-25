@@ -77,12 +77,11 @@ static void run(void)
 {
 
     struct message message;
-    char data[MESSAGE_SIZE];
     unsigned int frame = 0;
 
     setup();
 
-    while (channel_pick(0, &message, MESSAGE_SIZE, data))
+    while (channel_pick(0, &message))
     {
 
         switch (message.event)
@@ -101,7 +100,7 @@ static void run(void)
             break;
 
         default:
-            channel_dispatch(0, &message, data);
+            channel_dispatch(0, &message);
 
             break;
 

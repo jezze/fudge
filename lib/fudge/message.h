@@ -1,4 +1,4 @@
-#define MESSAGE_SIZE                    1536
+#define MESSAGE_SIZE                    0x1000
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_TOOBIG                  0x03
