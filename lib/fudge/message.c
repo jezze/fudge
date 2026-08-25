@@ -3,7 +3,7 @@
 void *message_data(struct message *message, unsigned int ichannel)
 {
 
-    unsigned int address = 0x40000000 + 0x8000 * ichannel;
+    unsigned int address = 0x40000000 + MESSAGE_SIZE * 8 * ichannel;
 
     return (void *)(address + message->offset);
 

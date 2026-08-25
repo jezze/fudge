@@ -1,4 +1,3 @@
-#define MAILBOX_SIZE                    0x1000
 #define MAILBOX_SLOTS                   8
 
 struct mailbox

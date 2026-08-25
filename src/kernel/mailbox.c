@@ -61,13 +61,13 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
     if (hasfreeslot(mailbox))
     {
 
-        if (count <= MAILBOX_SIZE)
+        if (count <= MESSAGE_SIZE)
         {
 
             unsigned int slot = mailbox->head % MAILBOX_SLOTS;
             struct message *message = &mailbox->messages[slot];
 
-            message_init(message, event, source, count, MAILBOX_SIZE * slot);
+            message_init(message, event, source, count, MESSAGE_SIZE * slot);
             buffer_copy((void *)(((unsigned int)mailbox->data) + message->offset), data, count);
 
             mailbox->head++;
