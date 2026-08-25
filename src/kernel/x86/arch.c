@@ -595,8 +595,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                             {
 
                                 unsigned int ichannel = (vaddress - KERNEL_VMAILBOX) / MESSAGE_CAPACITY;
-                                unsigned int imailbox = task->imailbox[ichannel];
-                                unsigned int paddress = ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * imailbox;
+                                unsigned int paddress = ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[ichannel];
                                 unsigned int vaddress = KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel;
                                 struct mmap_entry xentry;
 
