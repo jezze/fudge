@@ -12,8 +12,7 @@ unsigned int channel_send_fmt6(unsigned int ichannel, unsigned int target, unsig
 unsigned int channel_send_fmt8(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, void *arg1, void *arg2, void *arg3, void *arg4, void *arg5, void *arg6, void *arg7, void *arg8);
 unsigned int channel_process(unsigned int ichannel);
 unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data);
-unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event);
-unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
+unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int channel_lookup(char *name);
 void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
 void channel_route(unsigned int event, unsigned int target);

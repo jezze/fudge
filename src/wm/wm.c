@@ -64,7 +64,7 @@ static void setupvideo(unsigned int video)
     buffer_clear(black, 768);
     channel_send_buffer(0, video, EVENT_VIDEOCMAP, 768, &black);
     channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_wait(0, video, EVENT_VIDEOINFO);
+    channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
 
 }
 

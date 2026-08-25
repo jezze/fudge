@@ -267,14 +267,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     {
 
         channel_send(0, wm, EVENT_WMGRAB);
-        channel_wait(0, wm, EVENT_WMACK);
+        channel_wait(0, wm, EVENT_WMACK, 0, 0);
         channel_send(0, wm, EVENT_WMMAP);
 
         while (channel_process(0));
 
         channel_send(0, wm, EVENT_WMUNMAP);
         channel_send(0, wm, EVENT_WMUNGRAB);
-        channel_wait(0, wm, EVENT_WMACK);
+        channel_wait(0, wm, EVENT_WMACK, 0, 0);
 
     }
 
@@ -319,7 +319,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         channel_send(0, timer, EVENT_LINK);
         channel_send(0, video, EVENT_LINK);
         channel_send_buffer(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-        channel_wait(0, video, EVENT_VIDEOINFO);
+        channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
         run(source, target, id);
         channel_send(0, video, EVENT_UNLINK);
         channel_send(0, timer, EVENT_UNLINK);

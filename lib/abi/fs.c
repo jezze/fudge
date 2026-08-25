@@ -39,7 +39,7 @@ unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id
 
     channel_send_buffer(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
 
-    while (channel_wait_buffer(ichannel, target, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response))
+    while (channel_wait(ichannel, target, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response))
     {
 
         if (response.session == request.session)
@@ -62,7 +62,7 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 
     channel_send_buffer(ichannel, target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
 
-    while (channel_wait_buffer(ichannel, target, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response))
+    while (channel_wait(ichannel, target, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response))
     {
 
         if (response.session == request.session)
@@ -88,7 +88,7 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
 
     channel_send_buffer(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
 
-    while (channel_wait_buffer(ichannel, target, EVENT_READRESPONSE, sizeof (struct event_readresponse), &response))
+    while (channel_wait(ichannel, target, EVENT_READRESPONSE, sizeof (struct event_readresponse), &response))
     {
 
         if (response.session == request.session)
@@ -139,7 +139,7 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 
     channel_send_buffer(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
 
-    while (channel_wait_buffer(ichannel, target, EVENT_STATRESPONSE, sizeof (struct event_statresponse), &response))
+    while (channel_wait(ichannel, target, EVENT_STATRESPONSE, sizeof (struct event_statresponse), &response))
     {
 
         if (response.session == request.session)
@@ -164,7 +164,7 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
 
     channel_send_buffer(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
 
-    while (channel_wait_buffer(ichannel, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response))
+    while (channel_wait(ichannel, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response))
     {
 
         if (response.session == request.session)
@@ -190,7 +190,7 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
 
     channel_send_buffer(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
 
-    while (channel_wait_buffer(ichannel, target, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response))
+    while (channel_wait(ichannel, target, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response))
     {
 
         if (response.session == request.session)

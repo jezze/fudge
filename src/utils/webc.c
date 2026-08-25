@@ -40,7 +40,7 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
         }
 
         channel_send(1, target, EVENT_TERM);
-        channel_wait(1, target, EVENT_DONE);
+        channel_wait(1, target, EVENT_DONE, 0, 0);
 
     }
 
@@ -59,14 +59,14 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
 
         channel_send_fmt1(2, target, EVENT_OPTION, "mode=tcp&remote-address=%s\n", address);
         channel_send(2, target, EVENT_MAIN);
-        channel_wait(2, target, EVENT_READY);
+        channel_wait(2, target, EVENT_READY, 0, 0);
         channel_send_fmt2(2, target, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
 
         while (channel_poll(2, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
             channel_send_buffer(2, source, EVENT_DATA, message.length, data);
 
         channel_send(2, target, EVENT_TERM);
-        channel_wait(2, target, EVENT_DONE);
+        channel_wait(2, target, EVENT_DONE, 0, 0);
 
     }
 

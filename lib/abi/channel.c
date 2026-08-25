@@ -267,26 +267,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
 }
 
-unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event)
-{
-
-    struct message message;
-
-    while (channel_pick(ichannel, &message))
-    {
-
-        channel_dispatch(ichannel, &message);
-
-        if (message.source == source && (event == EVENT_ALL || event == message.event))
-            return message.event;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int channel_wait_buffer(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
+unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct message message;

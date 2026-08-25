@@ -778,7 +778,7 @@ void socket_resolvelocal(unsigned int ichannel, unsigned int target, struct sock
 {
 
     channel_send(ichannel, target, EVENT_INFO);
-    channel_wait_buffer(ichannel, target, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
+    channel_wait(ichannel, target, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
 
     socket->resolved = 1;
 

@@ -17,7 +17,7 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
             channel_send_fmt1(ichannel, target, EVENT_PATH, "%s\\0", paths[i]);
 
         channel_send(ichannel, target, EVENT_TERM);
-        channel_wait(ichannel, target, EVENT_DONE);
+        channel_wait(ichannel, target, EVENT_DONE, 0, 0);
 
     }
 
