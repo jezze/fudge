@@ -29,25 +29,6 @@ static unsigned int send(unsigned int ichannel, unsigned int target, unsigned in
 
 }
 
-static void dispatch(unsigned int ichannel, struct message *message)
-{
-
-    if (message->event < CHANNEL_EVENTS && listeners[message->event])
-    {
-
-        char data[MESSAGE_SIZE];
-
-        pending++;
-
-        buffer_read(data, MESSAGE_SIZE, message_data(message, ichannel), message->length, 0);
-        listeners[message->event](message->source, data, message->length);
-
-        pending--;
-
-    }
-
-}
-
 unsigned int channel_pick(unsigned int ichannel, struct message *message)
 {
 
@@ -113,7 +94,19 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
 void channel_dispatch(unsigned int ichannel, struct message *message)
 {
 
-    dispatch(ichannel, message);
+    if (message->event < CHANNEL_EVENTS && listeners[message->event])
+    {
+
+        char data[MESSAGE_SIZE];
+        unsigned int count = buffer_read(data, MESSAGE_SIZE, message_data(message, ichannel), message->length, 0);
+
+        pending++;
+
+        listeners[message->event](message->source, data, count);
+
+        pending--;
+
+    }
 
     switch (message->event)
     {
