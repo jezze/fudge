@@ -224,14 +224,14 @@ static void interpret(unsigned int wm)
 
             struct message message;
 
-            while (channel_poll(1, channel, EVENT_ALL, &message, MESSAGE_SIZE, buffer))
+            while (channel_poll(1, channel, EVENT_ALL, &message, 0, 0))
             {
 
                 switch (message.event)
                 {
 
                 case EVENT_DATA:
-                    interpretdata(0, &message, buffer);
+                    interpretdata(0, &message, message_data(&message, 1));
 
                     break;
 
@@ -388,14 +388,14 @@ static void complete(void)
 
             struct message message;
 
-            while (channel_poll(2, channel, EVENT_ALL, &message, MESSAGE_SIZE, buffer))
+            while (channel_poll(2, channel, EVENT_ALL, &message, 0, 0))
             {
 
                 switch (message.event)
                 {
 
                 case EVENT_DATA:
-                    completedata(0, &message, buffer, count, prefix);
+                    completedata(0, &message, message_data(&message, 2), count, prefix);
 
                     break;
 
