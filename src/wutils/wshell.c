@@ -224,7 +224,7 @@ static void interpret(unsigned int wm)
 
             struct message message;
 
-            while (channel_poll(1, channel, EVENT_ALL, &message, 0, 0))
+            while (channel_poll(1, channel, EVENT_ALL, &message))
             {
 
                 switch (message.event)
@@ -388,7 +388,7 @@ static void complete(void)
 
             struct message message;
 
-            while (channel_poll(2, channel, EVENT_ALL, &message, 0, 0))
+            while (channel_poll(2, channel, EVENT_ALL, &message))
             {
 
                 switch (message.event)

@@ -92,7 +92,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct event_clockinfo clockinfo;
         struct mtwist_state state;
         struct message message;
-        char data[MESSAGE_SIZE];
 
         channel_send(0, clock, EVENT_INFO, 0, 0);
         channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
@@ -105,27 +104,27 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_resolveremote(0, ethernet, &local, &router);
         socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
-        while (channel_poll(0, ethernet, EVENT_DATA, &message, MESSAGE_SIZE, data))
+        while (channel_poll(0, ethernet, EVENT_DATA, &message))
         {
 
             struct socket *remote;
 
-            remote = socket_accept_arp(&local, remotes, 64, message.length, data);
+            remote = socket_accept_arp(&local, remotes, 64, message.length, message_data(&message, 0));
 
             if (remote)
             {
 
-                socket_handle_arp(0, ethernet, &local, remote, message.length, data);
+                socket_handle_arp(0, ethernet, &local, remote, message.length, message_data(&message, 0));
 
             }
 
-            remote = socket_accept_tcp(&local, remotes, 64, message.length, data);
+            remote = socket_accept_tcp(&local, remotes, 64, message.length, message_data(&message, 0));
 
             if (remote)
             {
 
                 unsigned char buffer[4096];
-                unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, message.length, data, 4096, buffer);
+                unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, message.length, message_data(&message, 0), 4096, buffer);
 
                 if (count)
                 {

@@ -40,16 +40,16 @@ static unsigned int validate(unsigned int source, void *buffer, unsigned short t
 static unsigned int version(unsigned int target, unsigned int source, unsigned short tag, unsigned int msize, char *name)
 {
 
-    char data[MESSAGE_SIZE];
+    char buffer[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, target, EVENT_P9P, p9p_mktversion(data, tag, msize, name), data);
-    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send(0, target, EVENT_P9P, p9p_mktversion(buffer, tag, msize, name), buffer);
+    channel_poll(0, target, EVENT_P9P, &message);
 
-    if (!validate(source, data, tag))
+    if (!validate(source, message_data(&message, 0), tag))
         return 0;
 
-    switch (p9p_read1(data, P9P_OFFSET_TYPE))
+    switch (p9p_read1(message_data(&message, 0), P9P_OFFSET_TYPE))
     {
 
     case P9P_RVERSION:
@@ -65,16 +65,15 @@ static unsigned int attach(unsigned int target, unsigned int source, unsigned sh
 {
 
     char buffer[MESSAGE_SIZE];
-    char data[MESSAGE_SIZE];
     struct message message;
 
     channel_send(0, target, EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_poll(0, target, EVENT_P9P, &message);
 
-    if (!validate(source, data, tag))
+    if (!validate(source, message_data(&message, 0), tag))
         return 0;
 
-    switch (p9p_read1(data, P9P_OFFSET_TYPE))
+    switch (p9p_read1(message_data(&message, 0), P9P_OFFSET_TYPE))
     {
 
     case P9P_RATTACH:
@@ -89,16 +88,16 @@ static unsigned int attach(unsigned int target, unsigned int source, unsigned sh
 static unsigned int walk(unsigned int target, unsigned int source, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname)
 {
 
-    char data[MESSAGE_SIZE];
+    char buffer[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, target, EVENT_P9P, p9p_mktwalk(data, tag, fid, newfid, 1, &wname), data);
-    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send(0, target, EVENT_P9P, p9p_mktwalk(buffer, tag, fid, newfid, 1, &wname), buffer);
+    channel_poll(0, target, EVENT_P9P, &message);
 
-    if (!validate(source, data, tag))
+    if (!validate(source, message_data(&message, 0), tag))
         return 0;
 
-    switch (p9p_read1(data, P9P_OFFSET_TYPE))
+    switch (p9p_read1(message_data(&message, 0), P9P_OFFSET_TYPE))
     {
 
     case P9P_RWALK:
@@ -113,20 +112,20 @@ static unsigned int walk(unsigned int target, unsigned int source, unsigned shor
 static unsigned int read(unsigned int target, unsigned int source, unsigned short tag, unsigned int fid)
 {
 
-    char data[MESSAGE_SIZE];
+    char buffer[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, target, EVENT_P9P, p9p_mktread(data, tag, fid, 0, 0, 512), data);
-    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send(0, target, EVENT_P9P, p9p_mktread(buffer, tag, fid, 0, 0, 512), buffer);
+    channel_poll(0, target, EVENT_P9P, &message);
 
-    if (!validate(source, data, tag))
+    if (!validate(source, message_data(&message, 0), tag))
         return 0;
 
-    switch (p9p_read1(data, P9P_OFFSET_TYPE))
+    switch (p9p_read1(message_data(&message, 0), P9P_OFFSET_TYPE))
     {
 
     case P9P_RREAD:
-        channel_send(0, source, EVENT_DATA, p9p_read4(data, P9P_OFFSET_DATA), p9p_readbuffer(data, P9P_OFFSET_DATA + 4));
+        channel_send(0, source, EVENT_DATA, p9p_read4(message_data(&message, 0), P9P_OFFSET_DATA), p9p_readbuffer(message_data(&message, 0), P9P_OFFSET_DATA + 4));
 
         return 1;
 

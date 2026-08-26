@@ -224,7 +224,7 @@ unsigned int channel_process(unsigned int ichannel)
 
 }
 
-unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message, unsigned int count, void *data)
+unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message)
 {
 
     while (channel_pick(ichannel, message))
@@ -233,13 +233,8 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
         channel_dispatch(ichannel, message);
 
         if (message->source == source && (event == EVENT_ALL || event == message->event))
-        {
-
-            buffer_read(data, count, message_data(message, ichannel), message->length, 0);
-
             return message->event;
 
-        }
     }
 
     return 0;
@@ -251,23 +246,9 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
     struct message message;
 
-    while (channel_pick(ichannel, &message))
-    {
+    channel_poll(ichannel, source, event, &message);
 
-        channel_dispatch(ichannel, &message);
-
-        if (message.source == source && (event == EVENT_ALL || event == message.event))
-        {
-
-            buffer_read(data, count, message_data(&message, ichannel), message.length, 0);
-
-            return message.event;
-
-        }
-
-    }
-
-    return 0;
+    return buffer_read(data, count, message_data(&message, ichannel), message.length, 0);
 
 }
 

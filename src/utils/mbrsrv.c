@@ -44,14 +44,13 @@ static void request_readblocks(unsigned int block, void *buffer, unsigned int co
     unsigned int total = nblocks * 512;
     unsigned int read = 0;
     struct message message;
-    char data[MESSAGE_SIZE];
 
     request_send(block, sector, nblocks);
 
-    while (channel_poll(0, block, EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, block, EVENT_BLOCKRESPONSE, &message))
     {
 
-        read += buffer_write(buffer, count, data, message.length, read);
+        read += buffer_write(buffer, count, message_data(&message, 0), message.length, read);
 
         if (read == total)
             break;

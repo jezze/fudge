@@ -17,7 +17,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(0, log, EVENT_LINK, 0, 0);
 
-    while (channel_poll(0, log, EVENT_LOGINFO, &message, 0, 0))
+    while (channel_poll(0, log, EVENT_LOGINFO, &message))
     {
 
         struct event_loginfo *loginfo = message_data(&message, 0);

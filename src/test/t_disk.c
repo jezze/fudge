@@ -62,12 +62,11 @@ static unsigned int request_poll(unsigned int target, struct state *state)
 {
 
     struct message message;
-    char data[MESSAGE_SIZE];
 
-    while (channel_poll(0, target, EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, target, EVENT_BLOCKRESPONSE, &message))
     {
 
-        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message.length, state->blockreads * BLOCKSIZE) / BLOCKSIZE;
+        state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, message_data(&message, 0), message.length, state->blockreads * BLOCKSIZE) / BLOCKSIZE;
 
         if (state->blockreads == state->blockcount)
             return state->count;
