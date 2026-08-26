@@ -13,7 +13,6 @@ static void (*listeners[CHANNEL_EVENTS])(unsigned int source, void *data, unsign
 static unsigned int routes[CHANNEL_EVENTS];
 static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int pending;
-static unsigned int parent;
 
 static unsigned int reroute(unsigned int target, unsigned int event)
 {
@@ -105,13 +104,15 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
     {
 
     case EVENT_TERM:
-        parent = message->source;
+        channel_route(EVENT_DONE, message->source);
+
         state = CHANNEL_STATE_CLOSING;
 
         break;
 
     case EVENT_KILL:
-        parent = message->source;
+        channel_route(EVENT_DONE, message->source);
+
         state = CHANNEL_STATE_TERMINATED;
 
         break;
@@ -129,8 +130,7 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
     if (state == CHANNEL_STATE_TERMINATED)
     {
 
-        if (parent)
-            channel_place(ichannel, reroute(parent, EVENT_DONE), EVENT_DONE, 0, 0);
+        channel_place(ichannel, reroute(message->source, EVENT_DONE), EVENT_DONE, 0, 0);
 
     }
 
