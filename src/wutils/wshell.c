@@ -321,8 +321,9 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
     {
 
         struct ring output;
+        char outputdata[MESSAGE_SIZE];
 
-        ring_init(&output, INPUTSIZE, buffer);
+        ring_init(&output, MESSAGE_SIZE, outputdata);
 
         while (job_pick(&job, ichannel, message))
         {
@@ -346,7 +347,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
             if (ring_each(&output, '\n') == ring_count(&output))
             {
 
-                char *outputbuffer = buffer + cstring_length(prefix);
+                char *outputbuffer = outputdata + cstring_length(prefix);
                 unsigned int outputcount = ring_count(&output) - cstring_length_zero(prefix);
 
                 ring_write(&input1, outputbuffer, outputcount);
