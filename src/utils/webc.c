@@ -55,15 +55,14 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
     {
 
         struct message message;
-        char data[MESSAGE_SIZE];
 
         channel_send_fmt1(2, target, EVENT_OPTION, "mode=tcp&remote-address=%s\n", address);
         channel_send(2, target, EVENT_MAIN, 0, 0);
         channel_wait(2, target, EVENT_READY, 0, 0);
         channel_send_fmt2(2, target, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
 
-        while (channel_poll(2, target, EVENT_DATA, &message, MESSAGE_SIZE, data))
-            channel_send(2, source, EVENT_DATA, message.length, data);
+        while (channel_poll(2, target, EVENT_DATA, &message, 0, 0))
+            channel_send(2, source, EVENT_DATA, message.length, message_data(&message, 2));
 
         channel_send(2, target, EVENT_TERM, 0, 0);
         channel_wait(2, target, EVENT_DONE, 0, 0);
