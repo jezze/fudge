@@ -37,14 +37,14 @@ static unsigned int validate(unsigned int source, void *buffer, unsigned short t
 
 }
 
-static unsigned int version(unsigned int source, unsigned short tag, unsigned int msize, char *name)
+static unsigned int version(unsigned int target, unsigned int source, unsigned short tag, unsigned int msize, char *name)
 {
 
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktversion(data, tag, msize, name), data);
-    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send(0, target, EVENT_P9P, p9p_mktversion(data, tag, msize, name), data);
+    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -61,15 +61,15 @@ static unsigned int version(unsigned int source, unsigned short tag, unsigned in
 
 }
 
-static unsigned int attach(unsigned int source, unsigned short tag, unsigned int fid, unsigned int afid)
+static unsigned int attach(unsigned int target, unsigned int source, unsigned short tag, unsigned int fid, unsigned int afid)
 {
 
     char buffer[MESSAGE_SIZE];
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
-    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send(0, target, EVENT_P9P, p9p_mktattach(buffer, tag, fid, afid, "nobody", "nobody"), buffer);
+    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -86,14 +86,14 @@ static unsigned int attach(unsigned int source, unsigned short tag, unsigned int
 
 }
 
-static unsigned int walk(unsigned int source, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname)
+static unsigned int walk(unsigned int target, unsigned int source, unsigned short tag, unsigned int fid, unsigned int newfid, char *wname)
 {
 
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktwalk(data, tag, fid, newfid, 1, &wname), data);
-    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send(0, target, EVENT_P9P, p9p_mktwalk(data, tag, fid, newfid, 1, &wname), data);
+    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -110,14 +110,14 @@ static unsigned int walk(unsigned int source, unsigned short tag, unsigned int f
 
 }
 
-static unsigned int read(unsigned int source, unsigned short tag, unsigned int fid)
+static unsigned int read(unsigned int target, unsigned int source, unsigned short tag, unsigned int fid)
 {
 
     char data[MESSAGE_SIZE];
     struct message message;
 
-    channel_send(0, option_getdecimal("9p-service"), EVENT_P9P, p9p_mktread(data, tag, fid, 0, 0, 512), data);
-    channel_poll(0, option_getdecimal("9p-service"), EVENT_P9P, &message, MESSAGE_SIZE, data);
+    channel_send(0, target, EVENT_P9P, p9p_mktread(data, tag, fid, 0, 0, 512), data);
+    channel_poll(0, target, EVENT_P9P, &message, MESSAGE_SIZE, data);
 
     if (!validate(source, data, tag))
         return 0;
@@ -136,26 +136,28 @@ static unsigned int read(unsigned int source, unsigned short tag, unsigned int f
 
 }
 
-static void sendrequest(unsigned int source)
+static void sendrequest(unsigned int target, unsigned int source)
 {
 
-    if (!version(source, 40, 1200, "9P2000.F"))
+    if (!version(target, source, 40, 1200, "9P2000.F"))
         channel_send_fmt0(0, source, EVENT_ERROR, "Unrcognized version\n");
 
-    if (!attach(source, 41, 0, 0))
+    if (!attach(target, source, 41, 0, 0))
         channel_send_fmt0(0, source, EVENT_ERROR, "Attach failed\n");
 
-    if (!walk(source, 42, 0, 1, option_getstring("path")))
+    if (!walk(target, source, 42, 0, 1, option_getstring("path")))
         channel_send_fmt1(0, source, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
 
-    read(source, 43, 1);
+    read(target, source, 43, 1);
 
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    sendrequest(source);
+    unsigned int target = channel_lookup(option_getstring("9p-service"));
+
+    sendrequest(target, source);
 
 }
 
