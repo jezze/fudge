@@ -106,7 +106,7 @@ unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir)
 
 }
 
-unsigned int job_pipe(struct job *job, unsigned int ichannel, unsigned int source, unsigned int event, void *buffer, unsigned int count)
+unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *message)
 {
 
     unsigned int i;
@@ -116,12 +116,12 @@ unsigned int job_pipe(struct job *job, unsigned int ichannel, unsigned int sourc
 
         struct job_worker *worker = &job->workers[i];
 
-        if (worker->target == source)
+        if (worker->target == message->source)
         {
 
             struct job_worker *next = &job->workers[i + 1];
 
-            channel_send(ichannel, next->target, event, count, buffer);
+            channel_send(ichannel, next->target, message->event, message->length, message_data(message, ichannel));
 
             return 1;
 
