@@ -11,9 +11,6 @@
 #include <modules/arch/x86/pat/pat.h>
 #include <modules/arch/x86/pit/pit.h>
 
-#define INIT16ADDRESS                   0x00008000
-#define INIT32ADDRESS                   0x00008200
-
 extern void smp_begin16(void);
 extern void smp_end16(void);
 extern void smp_begin32(void);
@@ -73,8 +70,8 @@ void module_init(void)
     list_init(&usedcores);
     smp_setupbp(apic_getid(), 0x00602000);
     kernel_setcallback(coreget, coreassign);
-    buffer_copy((void *)INIT16ADDRESS, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
-    buffer_copy((void *)INIT32ADDRESS, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
+    buffer_copy((void *)ARCH_SMP16ADDRESS, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
+    buffer_copy((void *)ARCH_SMP32ADDRESS, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
     pic_disable();
     apic_setupisrs();
 
@@ -90,9 +87,9 @@ void module_init(void)
                 pool_placecore(icore, &usedcores);
                 apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
                 pit_wait(10);
-                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (ARCH_SMP16ADDRESS >> 12));
                 pit_wait(1);
-                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
+                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (ARCH_SMP16ADDRESS >> 12));
 
             }
 

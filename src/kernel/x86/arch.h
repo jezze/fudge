@@ -1,7 +1,9 @@
-#define ARCH_GDTADDRESS                 0x1000
+#define ARCH_GDTADDRESS                 0x00001000
 #define ARCH_GDTDESCRIPTORS             256
-#define ARCH_IDTADDRESS                 0x2000
+#define ARCH_IDTADDRESS                 0x00002000
 #define ARCH_IDTDESCRIPTORS             256
+#define ARCH_SMP16ADDRESS               0x00008000
+#define ARCH_SMP32ADDRESS               0x00008200
 #define ARCH_TSSDESCRIPTORS             1
 #define ARCH_KERNELCODEADDRESS          0x00100000
 #define ARCH_KERNELSTACKADDRESS         0x00600000
