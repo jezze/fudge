@@ -110,7 +110,7 @@ struct ext2_entry
 
 } __attribute__((packed));
 
-static void request_send(unsigned int sector, unsigned int count)
+static void request_send(unsigned int target, unsigned int sector, unsigned int count)
 {
 
     struct event_blockrequest blockrequest;
@@ -118,22 +118,23 @@ static void request_send(unsigned int sector, unsigned int count)
     blockrequest.sector = sector;
     blockrequest.count = count;
 
-    channel_send(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
 static void request_readblocks(void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks, unsigned int blocksize)
 {
 
+    unsigned int target = channel_lookup(option_getstring("block-service"));
     unsigned int diff = blocksize / 512;
     unsigned int total = nblocks * blocksize;
     unsigned int read = 0;
     struct message message;
     char data[MESSAGE_SIZE];
 
-    request_send(option_getdecimal("partoffset") + sector * diff, nblocks * diff);
+    request_send(target, option_getdecimal("partoffset") + sector * diff, nblocks * diff);
 
-    while (channel_poll(0, option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, target, EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         read += buffer_write(buffer, count, data, message.length, read);
@@ -467,8 +468,9 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("block-service", channel_lookup(option_getstring("block-service")));
-    channel_send(0, option_getdecimal("block-service"), EVENT_LINK, 0, 0);
+    unsigned int block = channel_lookup(option_getstring("block-service"));
+
+    channel_send(0, block, EVENT_LINK, 0, 0);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
@@ -480,7 +482,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK, 0, 0);
+    channel_send(0, block, EVENT_UNLINK, 0, 0);
 
 }
 

@@ -46,7 +46,7 @@ static void request_init(struct state *state, unsigned int offset, unsigned int 
 
 }
 
-static void request_send(struct state *state)
+static void request_send(unsigned int target, struct state *state)
 {
 
     struct event_blockrequest blockrequest;
@@ -54,17 +54,17 @@ static void request_send(struct state *state)
     blockrequest.sector = state->blocksector;
     blockrequest.count = state->blockcount;
 
-    channel_send(0, option_getdecimal("block-service"), EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
 }
 
-static unsigned int request_poll(struct state *state)
+static unsigned int request_poll(unsigned int target, struct state *state)
 {
 
     struct message message;
     char data[MESSAGE_SIZE];
 
-    while (channel_poll(0, option_getdecimal("block-service"), EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
+    while (channel_poll(0, target, EVENT_BLOCKRESPONSE, &message, MESSAGE_SIZE, data))
     {
 
         state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, data, message.length, state->blockreads * BLOCKSIZE) / BLOCKSIZE;
@@ -81,10 +81,12 @@ static unsigned int request_poll(struct state *state)
 static unsigned int request_sendpoll(struct state *state, unsigned int offset, unsigned int count)
 {
 
-    request_init(state, offset, count);
-    request_send(state);
+    unsigned int target = channel_lookup(option_getstring("block-service"));
 
-    return request_poll(state);
+    request_init(state, offset, count);
+    request_send(target, state);
+
+    return request_poll(target, state);
 
 }
 
@@ -395,29 +397,29 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int block = channel_lookup(option_getstring("block-service"));
+    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
     char buffer[4096];
     unsigned int count;
 
     call_announce(0, djb_hash(2, "9p"));
-    option_setdecimal("block-service", channel_lookup(option_getstring("block-service")));
-    option_setdecimal("ethernet-service", channel_lookup(option_getstring("ethernet-service")));
-    socket_resolvelocal(0, option_getdecimal("ethernet-service"), &local);
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_LINK, 0, 0);
-    channel_send(0, option_getdecimal("block-service"), EVENT_LINK, 0, 0);
-    socket_resolveremote(0, option_getdecimal("ethernet-service"), &local, &router);
-    socket_listen_tcp(option_getdecimal("ethernet-service"), &local, &remote, 1, &router);
+    socket_resolvelocal(0, ethernet, &local);
+    channel_send(0, ethernet, EVENT_LINK, 0, 0);
+    channel_send(0, block, EVENT_LINK, 0, 0);
+    socket_resolveremote(0, ethernet, &local, &router);
+    socket_listen_tcp(ethernet, &local, &remote, 1, &router);
 
-    while ((count = socket_receive(0, option_getdecimal("ethernet-service"), &local, &remote, 1, &router, buffer, 4096)))
+    while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
     {
 
         char reply[MESSAGE_SIZE];
 
-        socket_send_tcp(0, option_getdecimal("ethernet-service"), &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
+        socket_send_tcp(0, ethernet, &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
 
     }
 
-    channel_send(0, option_getdecimal("block-service"), EVENT_UNLINK, 0, 0);
-    channel_send(0, option_getdecimal("ethernet-service"), EVENT_UNLINK, 0, 0);
+    channel_send(0, block, EVENT_UNLINK, 0, 0);
+    channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 
 }
 

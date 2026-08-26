@@ -16,7 +16,9 @@ static struct keys keys;
 static void print(void *buffer, unsigned int count)
 {
 
-    channel_send(0, option_getdecimal("console-service"), EVENT_DATA, count, buffer);
+    unsigned int target = channel_lookup(option_getstring("console-service"));
+
+    channel_send(0, target, EVENT_DATA, count, buffer);
 
 }
 
@@ -754,16 +756,17 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    option_setdecimal("console-service", channel_lookup(option_getstring("console-service")));
-    option_setdecimal("keyboard-service", channel_lookup(option_getstring("keyboard-service")));
-    channel_send(0, option_getdecimal("console-service"), EVENT_LINK, 0, 0);
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_LINK, 0, 0);
+    unsigned int console = channel_lookup(option_getstring("console-service"));
+    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
+
+    channel_send(0, console, EVENT_LINK, 0, 0);
+    channel_send(0, keyboard, EVENT_LINK, 0, 0);
     clearline();
 
     while (channel_process(0));
 
-    channel_send(0, option_getdecimal("console-service"), EVENT_UNLINK, 0, 0);
-    channel_send(0, option_getdecimal("keyboard-service"), EVENT_UNLINK, 0, 0);
+    channel_send(0, console, EVENT_UNLINK, 0, 0);
+    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
 
 }
 
