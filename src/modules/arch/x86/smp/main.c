@@ -33,17 +33,14 @@ static struct core *coreget(void)
 static void coreassign(unsigned int itask)
 {
 
-    struct core *core = pool_getcore(0);
+    unsigned int icore = pool_pickcorefrom(&usedcores);
+    struct core *core = pool_getcore(icore);
 
-    if (core)
-    {
+    pool_placecore(icore, &usedcores);
+    pool_placetask(itask, &core->tasks);
 
-        pool_placetask(itask, &core->tasks);
-
-        if (core->id != apic_getid())
-            apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
-
-    }
+    if (core->id != apic_getid())
+        apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
 
 }
 
@@ -51,7 +48,6 @@ static void smp_setupbp(unsigned int icore, unsigned int sp)
 {
 
     arch_configuretss(&tss[icore], icore, sp);
-    pool_placecore(icore, &usedcores);
     apic_setup_bp();
 
 }
@@ -60,7 +56,6 @@ void smp_setupap(unsigned int icore, unsigned int sp)
 {
 
     arch_configuretss(&tss[icore], icore, sp);
-    pool_placecore(icore, &usedcores);
     apic_setup_ap();
     mmu_setdirectory(ARCH_MMUKERNELADDRESS);
     mmu_enable();
@@ -92,6 +87,7 @@ void module_init(void)
             if (i != icore)
             {
 
+                pool_placecore(icore, &usedcores);
                 apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
                 pit_wait(10);
                 apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (INIT16ADDRESS >> 12));
