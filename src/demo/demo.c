@@ -79,8 +79,6 @@ static void run(void)
     struct message message;
     unsigned int frame = 0;
 
-    setup();
-
     while (channel_pick(0, &message))
     {
 
@@ -178,6 +176,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    setup();
     option_add("width", "640");
     option_add("height", "480");
     option_add("bpp", "4");
