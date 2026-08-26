@@ -11,7 +11,7 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int target = fs_spawn(1, option_getstring("echo"));
+    unsigned int target = fs_spawn(1, "initrd:bin/echo");
 
     if (target)
     {
@@ -29,7 +29,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
-    option_add("echo", "initrd:bin/echo");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
 

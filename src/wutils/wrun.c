@@ -51,7 +51,7 @@ static void handlehttppacket(unsigned int source)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int target = fs_spawn(1, option_getstring("dns"));
+    unsigned int target = fs_spawn(1, "initrd:bin/dns");
 
     if (target)
     {
@@ -191,7 +191,6 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
-    option_add("dns", "initrd:bin/dns");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);
 

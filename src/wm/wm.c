@@ -523,7 +523,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
-                    unsigned int target = fs_spawn(1, option_getstring("wshell"));
+                    unsigned int target = fs_spawn(1, option_getstring("shell"));
 
                     if (target)
                     {
@@ -902,7 +902,7 @@ void init(void)
     option_add("keyboard-service", "keyboard");
     option_add("mouse-service", "mouse");
     option_add("video-service", "video");
-    option_add("wshell", "initrd:bin/wshell");
+    option_add("shell", "initrd:bin/wshell");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);

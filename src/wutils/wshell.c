@@ -157,7 +157,7 @@ static void deleteend(void)
 static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int count)
 {
 
-    unsigned int target = fs_spawn(ichannel, option_getstring("slang"));
+    unsigned int target = fs_spawn(ichannel, "initrd:bin/slang");
 
     if (target)
     {
@@ -629,7 +629,6 @@ void init(void)
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
     option_add("wm-service", "wm");
-    option_add("slang", "initrd:bin/slang");
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);

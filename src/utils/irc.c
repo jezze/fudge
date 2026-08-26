@@ -42,7 +42,7 @@ static void interpret(unsigned int ethernet, void *buffer, unsigned int count)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int target = fs_spawn(1, option_getstring("dns"));
+    unsigned int target = fs_spawn(1, "initrd:bin/dns");
 
     if (target)
     {
@@ -199,7 +199,6 @@ void init(void)
     option_add("channel", "#fudge");
     option_add("nick", "");
     option_add("realname", "Anonymous User");
-    option_add("dns", "initrd:bin/dns");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
 
