@@ -33,7 +33,7 @@ unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *me
 void job_run(struct job *job, unsigned int ichannel, char *pwd);
 void job_close(struct job *job, unsigned int ichannel, unsigned int target);
 unsigned int job_exist(struct job *job, unsigned int target);
-unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message, unsigned int count, void *data);
+unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message);
 void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer);
 void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer);
 void job_killall(struct job *job);

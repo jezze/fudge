@@ -241,7 +241,7 @@ unsigned int job_exist(struct job *job, unsigned int target)
 
 }
 
-unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message, unsigned int count, void *data)
+unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message)
 {
 
     while (job_count(job) && channel_pick(0, message))
@@ -253,13 +253,7 @@ unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *me
             job_close(job, ichannel, message->source);
 
         if (job_exist(job, message->source))
-        {
-
-            buffer_read(data, count, message_data(message, ichannel), message->length, 0);
-
             return message->source;
-
-        }
 
     }
 

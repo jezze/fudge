@@ -181,9 +181,7 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
     if (job_exec(&job, ichannel, "initrd:bin", option_getstring("pwd")))
     {
 
-        char data[MESSAGE_SIZE];
-
-        while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, ichannel, message))
         {
 
             switch (message->event)
@@ -191,7 +189,7 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
 
             case EVENT_DATA:
                 if (!job_pipe(&job, ichannel, message))
-                    print(data, message->length);
+                    print(message_data(message, ichannel), message->length);
 
                 break;
 
@@ -322,12 +320,11 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
     if (job_exec(&job, ichannel, "initrd:bin", option_getstring("pwd")))
     {
 
-        char data[MESSAGE_SIZE];
         struct ring output;
 
         ring_init(&output, INPUTSIZE, buffer);
 
-        while (job_pick(&job, ichannel, message, MESSAGE_SIZE, data))
+        while (job_pick(&job, ichannel, message))
         {
 
             switch (message->event)
@@ -335,7 +332,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
 
             case EVENT_DATA:
                 if (!job_pipe(&job, ichannel, message))
-                    ring_write(&output, data, message->length);
+                    ring_write(&output, message_data(message, ichannel), message->length);
 
                 break;
 
