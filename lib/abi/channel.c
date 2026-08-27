@@ -232,7 +232,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         channel_dispatch(ichannel, message);
 
-        if (message->source == source && (event == EVENT_ALL || event == message->event))
+        if (message->source == source && (message->event == event || event == EVENT_ALL))
             return message->event;
 
     }
