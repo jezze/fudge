@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <disk.h>
 #include <hash.h>
 #include <net.h>
 #include <abi.h>

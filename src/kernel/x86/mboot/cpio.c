@@ -1,6 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
-#include "cpio.h"
+#include <disk.h>
 
 static struct node_operands operands;
 static unsigned int address;

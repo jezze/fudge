@@ -4,7 +4,6 @@ L:=\
 O:=\
     $(DIR_LIB)/fudge/base64.o \
     $(DIR_LIB)/fudge/buffer.o \
-    $(DIR_LIB)/fudge/cpio.o \
     $(DIR_LIB)/fudge/cstring.o \
     $(DIR_LIB)/fudge/elf.o \
     $(DIR_LIB)/fudge/keys.o \
@@ -16,7 +15,6 @@ O:=\
     $(DIR_LIB)/fudge/regexp.o \
     $(DIR_LIB)/fudge/ring.o \
     $(DIR_LIB)/fudge/spinlock.o \
-    $(DIR_LIB)/fudge/tar.o \
     $(DIR_LIB)/fudge/time.o \
     $(DIR_LIB)/fudge/url.o \
     $(DIR_LIB)/fudge/utf8.o \

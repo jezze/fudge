@@ -9,10 +9,8 @@
 #include <fudge/message.h>
 #include <fudge/event.h>
 #include <fudge/elf.h>
-#include <fudge/cpio.h>
 #include <fudge/p9p.h>
 #include <fudge/pcf.h>
-#include <fudge/tar.h>
 #include <fudge/time.h>
 #include <fudge/keys.h>
 #include <fudge/mtwist.h>

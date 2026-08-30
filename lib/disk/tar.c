@@ -1,4 +1,4 @@
-#include "cstring.h"
+#include <fudge.h>
 #include "tar.h"
 
 unsigned int tar_readvalue(char *attribute)
