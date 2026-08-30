@@ -23,6 +23,7 @@ O:=\
 L:=\
     $(DIR_LIB)/abi/abi.a \
     $(DIR_LIB)/hash/hash.a \
+    $(DIR_LIB)/net/net.a \
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/bin.mk

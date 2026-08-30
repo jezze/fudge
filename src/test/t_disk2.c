@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <net.h>
 
 static void error(unsigned int source, void *data, unsigned int count)
 {

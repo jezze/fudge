@@ -10,5 +10,6 @@ O:=\
     $(DIR_LIB)/net/net.o \
     $(DIR_LIB)/net/tcp.o \
     $(DIR_LIB)/net/udp.o \
+    $(DIR_LIB)/net/p9p.o \
 
 include $(DIR_MK)/lib.mk

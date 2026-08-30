@@ -1,7 +1,4 @@
-#include "event.h"
-#include "buffer.h"
-#include "cstring.h"
-#include "message.h"
+#include <fudge.h>
 #include "p9p.h"
 
 unsigned char p9p_read1(void *buffer, unsigned int o)
