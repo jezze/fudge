@@ -26,36 +26,30 @@ struct mbr
 
 };
 
-static void request_send(unsigned int block, unsigned int sector, unsigned int count)
+static unsigned int readblocks(unsigned int block, void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks)
 {
 
     struct event_blockrequest blockrequest;
+    unsigned int c = 0;
+    unsigned int i;
 
     blockrequest.sector = sector;
     blockrequest.count = count;
 
     channel_send(0, block, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
 
-}
-
-static void request_readblocks(unsigned int block, void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks)
-{
-
-    unsigned int total = nblocks * 512;
-    unsigned int read = 0;
-    struct message message;
-
-    request_send(block, sector, nblocks);
-
-    while (channel_poll(0, block, EVENT_BLOCKRESPONSE, &message))
+    for (i = 0; i < nblocks; i++)
     {
 
-        read += buffer_write(buffer, count, message_data(&message, 0), message.length, read);
+        struct message message;
 
-        if (read == total)
-            break;
+        channel_poll(0, block, EVENT_BLOCKRESPONSE, &message);
+
+        c += buffer_read(buffer, count, message_data(&message, 0), message.length, i * 512);
 
     }
+
+    return c;
 
 }
 
@@ -116,13 +110,15 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (block)
     {
 
-        unsigned char blockdata[1024];
+        unsigned char blockdata[512];
         struct mbr *mbr = (struct mbr *)blockdata;
+        unsigned int count;
 
         channel_send(0, block, EVENT_LINK, 0, 0);
-        request_readblocks(block, blockdata, 1024, 0, 1);
 
-        if (isvalid(mbr))
+        count = readblocks(block, blockdata, 512, 0, 1);
+
+        if (count == 512 && isvalid(mbr))
             print(source, mbr);
 
         channel_send(0, block, EVENT_UNLINK, 0, 0);
