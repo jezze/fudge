@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <binary.h>
 
 static char kerneldata[8192];
 static unsigned int kernelcount;

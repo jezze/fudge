@@ -8,7 +8,6 @@
 #include <fudge/ring.h>
 #include <fudge/message.h>
 #include <fudge/event.h>
-#include <fudge/elf.h>
 #include <fudge/pcf.h>
 #include <fudge/time.h>
 #include <fudge/keys.h>

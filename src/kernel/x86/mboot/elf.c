@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <binary.h>
 #include "elf.h"
 
 static struct binary_format format;

@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <binary.h>
 
 static void onpath(unsigned int source, void *mdata, unsigned int msize)
 {
