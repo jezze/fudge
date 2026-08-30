@@ -9,7 +9,6 @@ O:=\
     $(DIR_LIB)/fudge/list.o \
     $(DIR_LIB)/fudge/message.o \
     $(DIR_LIB)/fudge/mtwist.o \
-    $(DIR_LIB)/fudge/pcf.o \
     $(DIR_LIB)/fudge/regexp.o \
     $(DIR_LIB)/fudge/ring.o \
     $(DIR_LIB)/fudge/spinlock.o \
