@@ -6,29 +6,65 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 
+struct session
+{
+
+    unsigned char data[4096];
+    unsigned int source;
+    unsigned int count;
+    unsigned int offset;
+
+};
+
 static struct base_driver driver;
 static struct block_interface blockinterface;
+static struct session session;
 
 static void handleirq(unsigned int irq)
 {
 
     unsigned char status = ide_getstatus(blockinterface.id);
-    unsigned char data[512];
 
     if (status & 1)
         return;
 
-    ide_rblock(blockinterface.id, data);
-    block_notifyblockresponse(&blockinterface, data, 512);
+    if (session.source)
+    {
+
+        ide_rblock(blockinterface.id, session.data + session.offset);
+
+        session.offset += 512;
+
+        if (session.offset == session.count)
+        {
+
+            session.source = 0;
+
+            block_notifyblockresponse(&blockinterface, session.data, session.count);
+
+        }
+
+    }
 
 }
 
 static unsigned int blockinterface_onblockrequest(unsigned int source, unsigned int count, unsigned int sector)
 {
 
-    ide_rpio28(blockinterface.id, 0, count, sector);
+    if (!session.source)
+    {
 
-    return MESSAGE_OK;
+        session.source = source;
+        session.count = count;
+        session.offset = 0;
+
+        ide_rpio28(blockinterface.id, 0, count / 512, sector);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_RETRY;
 
 }
 

@@ -2,30 +2,19 @@
 #include <abi.h>
 #include <disk.h>
 
-static unsigned int readblocks(unsigned int block, void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks)
+static unsigned int read(unsigned int target, void *buffer, unsigned int count, unsigned int sector)
 {
 
     struct event_blockrequest blockrequest;
-    unsigned int c = 0;
-    unsigned int i;
+    struct message message;
 
     blockrequest.sector = sector;
     blockrequest.count = count;
 
-    channel_send(0, block, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+    channel_poll(0, target, EVENT_BLOCKRESPONSE, &message);
 
-    for (i = 0; i < nblocks; i++)
-    {
-
-        struct message message;
-
-        channel_poll(0, block, EVENT_BLOCKRESPONSE, &message);
-
-        c += buffer_read(buffer, count, message_data(&message, 0), message.length, i * 512);
-
-    }
-
-    return c;
+    return buffer_read(buffer, count, message_data(&message, 0), message.length, 0);
 
 }
 
@@ -84,7 +73,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         channel_send(0, block, EVENT_LINK, 0, 0);
 
-        count = readblocks(block, blockdata, 512, 0, 1);
+        count = read(block, blockdata, 512, 0);
 
         if (count == 512 && mbr_validate(mbr))
             print(source, mbr);
