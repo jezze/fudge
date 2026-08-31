@@ -39,7 +39,7 @@ void syse_resume(struct cpu_general *general)
     {
 
         general->edx.value = (unsigned int)cpu_halt;
-        general->ecx.value = core->sp;
+        general->ecx.value = 0;
 
     }
 

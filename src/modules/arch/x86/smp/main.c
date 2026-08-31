@@ -36,8 +36,8 @@ static void coreassign(unsigned int itask)
     pool_placecore(icore, &usedcores);
     pool_placetask(itask, &core->tasks);
 
-    if (core->id != apic_getid())
-        apic_sendint(core->id, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
+    if (icore != apic_getid())
+        apic_sendint(icore, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
 
 }
 

@@ -288,7 +288,7 @@ unsigned int pool_findinode(unsigned int namehash, unsigned int index)
 
 }
 
-void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddress)
+void pool_setup(unsigned long mbaddress)
 {
 
     unsigned int i;
@@ -302,7 +302,7 @@ void pool_setup(unsigned long saddress, unsigned int ssize, unsigned long mbaddr
 
         struct corerow *corerow = &corerows[i];
 
-        core_init(&corerow->core, i, saddress + i * ssize + ssize);
+        core_init(&corerow->core);
         core_register(&corerow->core);
         list_inititem(&corerow->item, corerow);
 

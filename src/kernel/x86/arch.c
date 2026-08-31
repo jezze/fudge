@@ -253,7 +253,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
         interrupt->eip.value = (unsigned long)cpu_halt;
-        interrupt->esp.value = core->sp;
+        interrupt->esp.value = 0;
 
     }
 
@@ -753,7 +753,7 @@ void arch_setup1(void)
     cpu_setcr3(mappings[0].directory);
     mmu_enable();
     mailbox_setup();
-    pool_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS);
+    pool_setup(ARCH_MAILBOXADDRESS);
     kernel_setup();
     abi_setup();
     abi_setcallback(0x03, spawn);
