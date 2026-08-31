@@ -54,7 +54,7 @@ void smp_setupap(unsigned int icore, unsigned int sp)
 
     arch_configuretss(&tss[icore], icore, sp);
     apic_setup_ap();
-    mmu_setdirectory(ARCH_MMUKERNELADDRESS);
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
     mmu_enable();
     pat_setup();
     arch_leave();

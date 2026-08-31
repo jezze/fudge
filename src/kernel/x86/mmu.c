@@ -16,13 +16,6 @@ struct mmu_directory
 
 };
 
-unsigned long mmu_getdirectory(void)
-{
-
-    return cpu_getcr3();
-
-}
-
 unsigned long mmu_gettable(unsigned long daddress, unsigned long vaddress)
 {
 
@@ -48,13 +41,6 @@ unsigned long mmu_getpage(unsigned long daddress, unsigned long vaddress)
     }
 
     return 0;
-
-}
-
-void mmu_setdirectory(unsigned long daddress)
-{
-
-    cpu_setcr3(daddress);
 
 }
 

@@ -257,7 +257,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
     }
 
-    mmu_setdirectory(mappings[core->itask].directory);
+    cpu_setcr3(mappings[core->itask].directory);
 
 }
 
@@ -491,6 +491,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 {
 
     unsigned int vaddress = cpu_getcr2();
+    unsigned int directory = cpu_getcr3();
 
     if (error & MMU_EFLAG_PRESENT)
     {
@@ -505,7 +506,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
     else
     {
 
-        unsigned int directory = mmu_getdirectory();
         unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
 
         if (error & MMU_EFLAG_USER)
@@ -750,7 +750,7 @@ void arch_setup1(void)
     arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmu_setdirectory(mappings[0].directory);
+    cpu_setcr3(mappings[0].directory);
     mmu_enable();
     mailbox_setup();
     pool_setup(ARCH_KERNELSTACKADDRESS, ARCH_KERNELSTACKSIZE, ARCH_MAILBOXADDRESS);

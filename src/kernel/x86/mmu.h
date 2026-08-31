@@ -31,10 +31,8 @@
 #define MMU_EFLAG_SHADOWSTACK           0x0040
 #define MMU_EFLAG_SGX                   0x8000
 
-unsigned long mmu_getdirectory(void);
 unsigned long mmu_gettable(unsigned long daddress, unsigned long vaddress);
 unsigned long mmu_getpage(unsigned long daddress, unsigned long vaddress);
-void mmu_setdirectory(unsigned long daddress);
 void mmu_settable(unsigned long daddress, unsigned long vaddress, unsigned long taddress, unsigned int flags);
 void mmu_setpage(unsigned long daddress, unsigned long vaddress, unsigned long paddress, unsigned int flags);
 void mmu_enable(void);
