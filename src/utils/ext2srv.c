@@ -110,38 +110,28 @@ struct ext2_entry
 
 } __attribute__((packed));
 
-static void request_send(unsigned int target, unsigned int sector, unsigned int count)
-{
-
-    struct event_blockrequest blockrequest;
-
-    blockrequest.sector = sector;
-    blockrequest.count = count;
-
-    channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
-
-}
-
-static void request_readblocks(void *buffer, unsigned int count, unsigned int sector, unsigned int nblocks, unsigned int blocksize)
+static unsigned int read(void *buffer, unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
     unsigned int target = channel_lookup(option_getstring("block-service"));
-    unsigned int diff = blocksize / 512;
-    unsigned int total = nblocks * blocksize;
-    unsigned int read = 0;
-    struct message message;
 
-    request_send(target, option_getdecimal("partoffset") + sector * diff, nblocks * diff);
-
-    while (channel_poll(0, target, EVENT_BLOCKRESPONSE, &message))
+    if (target)
     {
 
-        read += buffer_write(buffer, count, message_data(&message, 0), message.length, read);
+        struct event_blockrequest blockrequest;
+        struct message message;
 
-        if (read == total)
-            break;
+        blockrequest.sector = option_getdecimal("partoffset") + sector * (blocksize / 512);
+        blockrequest.count = count;
+
+        channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+        channel_poll(0, target, EVENT_BLOCKRESPONSE, &message);
+
+        return buffer_read(buffer, count, message_data(&message, 0), message.length, 0);
 
     }
+
+    return 0;
 
 }
 
@@ -155,30 +145,30 @@ static unsigned int isvalid(struct ext2_superblock *superblock)
 static void readsuperblock(struct ext2_superblock *sb)
 {
 
-    unsigned char block[1024];
+    unsigned char data[1024];
 
-    request_readblocks(block, 1024, 1, 1, 1024);
-    buffer_copy(sb, block, sizeof (struct ext2_superblock));
+    read(data, 1024, 1, 1024);
+    buffer_copy(sb, data, sizeof (struct ext2_superblock));
 
 }
 
 static void readblockgroup(struct ext2_blockgroup *bg, struct ext2_superblock *sb, unsigned int blocksize, unsigned int blockindex, unsigned int blockgroup)
 {
 
-    unsigned char block[4096];
+    unsigned char data[4096];
 
-    request_readblocks(block, 4096, (blocksize == 1024) ? 2 : 1, 1, blocksize);
-    buffer_copy(bg, block, sizeof (struct ext2_blockgroup));
+    read(data, 4096, (blocksize == 1024) ? 2 : 1, blocksize);
+    buffer_copy(bg, data, sizeof (struct ext2_blockgroup));
 
 }
 
 static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct ext2_blockgroup *bg, unsigned int blocksize, unsigned int nodeindex)
 {
 
-    unsigned char block[4096];
+    unsigned char data[4096];
 
-    request_readblocks(block, 4096, bg->blockTableAddress, 1, blocksize);
-    buffer_copy(node, block + nodeindex * sb->nodeSize, sizeof (struct ext2_node));
+    read(data, 4096, bg->blockTableAddress, blocksize);
+    buffer_copy(node, data + nodeindex * sb->nodeSize, sizeof (struct ext2_node));
 
 }
 
@@ -256,7 +246,7 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
         unsigned char block[4096];
         unsigned int offset = 0;
 
-        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+        read(block, 4096, node.pointer0, blocksize);
 
         while (offset < 4096)
         {
@@ -281,7 +271,7 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
 
         unsigned char block[4096];
 
-        request_readblocks(block, 4096, node.pointer0, 1, blocksize);
+        read(block, 4096, node.pointer0, blocksize);
         fs_readresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
 
     }
@@ -317,17 +307,17 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct {struct event_listresponse header; struct record records[8];} response;
-        unsigned char block[4096];
+        unsigned char data[4096];
         unsigned int offset = 0;
         struct record records[8];
         unsigned int nrecords = 0;
 
-        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
+        read(data, 4096, node.pointer0, (1024 << sb.blockSize));
 
         while (offset < 4096)
         {
 
-            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
+            struct ext2_entry *entry = (struct ext2_entry *)(data + offset);
             struct record *record = &records[nrecords];
 
             record->id = entry->node;
@@ -373,11 +363,11 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
         struct {struct event_readresponse header; char data[64];} response;
-        unsigned char block[4096];
+        unsigned char data[4096];
 
-        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
+        read(data, 4096, node.pointer0, (1024 << sb.blockSize));
         response.header.session = readrequest->session;
-        response.header.count = buffer_write(response.data, 64, block, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
+        response.header.count = buffer_write(response.data, 64, data, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
 
         channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
 
@@ -420,15 +410,15 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     if ((node.type & 0xF000) == 0x4000)
     {
 
-        unsigned char block[4096];
+        unsigned char data[4096];
         unsigned int offset = 0;
 
-        request_readblocks(block, 4096, node.pointer0, 1, (1024 << sb.blockSize));
+        read(data, 4096, node.pointer0, (1024 << sb.blockSize));
 
         while (offset < 4096)
         {
 
-            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
+            struct ext2_entry *entry = (struct ext2_entry *)(data + offset);
 
             if (entry->length == walkrequest->length && buffer_match((char *)entry + 8, path, entry->length))
             {
@@ -467,9 +457,9 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int block = channel_lookup(option_getstring("block-service"));
+    unsigned int target = channel_lookup(option_getstring("block-service"));
 
-    channel_send(0, block, EVENT_LINK, 0, 0);
+    channel_send(0, target, EVENT_LINK, 0, 0);
     readsuperblock(&sb);
 
     if (isvalid(&sb))
@@ -481,7 +471,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, block, EVENT_UNLINK, 0, 0);
+    channel_send(0, target, EVENT_UNLINK, 0, 0);
 
 }
 
