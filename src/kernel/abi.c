@@ -13,27 +13,14 @@
 
 static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 
-static unsigned int checkuserspace(unsigned long vaddress, unsigned int count)
+static unsigned int checkargs(void *address, unsigned int count)
 {
 
+    unsigned long vaddress = (unsigned long)address;
     struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
     struct mmap_entry *entry = mmap_find(header, vaddress);
 
     return ((entry->flags & MMAP_FLAG_USERMODE) && (vaddress >= entry->vaddress) && (count <= entry->size) && ((vaddress - entry->vaddress) <= (entry->size - count)));
-
-}
-
-static unsigned int checkbuffer(unsigned int itask, void *address, unsigned int count)
-{
-
-    return (address && count) ? checkuserspace((unsigned long)address, count) : 0;
-
-}
-
-static unsigned int checkzerobuffer(unsigned int itask, void *address, unsigned int count)
-{
-
-    return (address && count) ? checkuserspace((unsigned long)address, count) : (address == 0 && count == 0);
 
 }
 
@@ -153,7 +140,7 @@ static unsigned int pick(unsigned int itask, void *stack)
 
     struct {void *caller; unsigned int ichannel; struct message *message;} *args = stack;
 
-    if (checkbuffer(itask, args->message, sizeof (struct message)))
+    if (args->message && checkargs(args->message, sizeof (struct message)))
     {
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
@@ -173,7 +160,7 @@ static unsigned int place(unsigned int itask, void *stack)
 
     struct {void *caller; unsigned int ichannel; unsigned int target; unsigned int event; unsigned int count; void *data;} *args = stack;
 
-    if (checkzerobuffer(itask, args->data, args->count))
+    if ((args->data && args->count && checkargs(args->data, args->count)) || (!args->data && !args->count))
     {
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
