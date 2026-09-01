@@ -41,9 +41,10 @@ void mmap_setbinary(struct mmap_entry *entry, unsigned long ioaddress, unsigned 
 
 }
 
-void mmap_setmailbox(struct mmap_entry *entry, unsigned int ichannel)
+void mmap_setmailbox(struct mmap_entry *entry, unsigned int itask, unsigned int ichannel)
 {
 
+    entry->itask = itask;
     entry->ichannel = ichannel;
 
 }
@@ -56,11 +57,9 @@ void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned long p
     entry->vaddress = vaddress;
     entry->size = size;
     entry->flags = flags;
-    entry->ioaddress = 0;
-    entry->iofsize = 0;
-    entry->iomsize = 0;
-    entry->ioflags = 0;
-    entry->ichannel = 0;
+
+    mmap_setbinary(entry, 0, 0, 0, 0);    
+    mmap_setmailbox(entry, 0, 0);    
 
 }
 

@@ -155,7 +155,7 @@ static void mapping_loadcode(struct mapping *mapping, unsigned long address)
 
 }
 
-static void mapping_loadmailboxes(struct mapping *mapping)
+static void mapping_loadmailboxes(struct mapping *mapping, unsigned int itask)
 {
 
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
@@ -167,7 +167,7 @@ static void mapping_loadmailboxes(struct mapping *mapping)
         struct mmap_entry entry;
 
         mmap_initentry(&entry, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
-        mmap_setmailbox(&entry, i);
+        mmap_setmailbox(&entry, itask, i);
         mmap_register(header, &entry);
 
     }
@@ -208,7 +208,7 @@ static unsigned int createtask(unsigned long address)
 
         mapping_copy(&mappings[ntask], &mappings[0]);
         mapping_loadcode(&mappings[ntask], address);
-        mapping_loadmailboxes(&mappings[ntask]);
+        mapping_loadmailboxes(&mappings[ntask], ntask);
         mapping_loadstack(&mappings[ntask]);
         mapping_loadmmap(&mappings[ntask]);
 
@@ -575,10 +575,10 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                     case MMAP_TYPE_MAILBOX:
                         {
 
-                            struct core *core = kernel_getcore();
-                            struct task *task = pool_gettask(core->itask);
+                            struct task *task = pool_gettask(entry->itask);
 
-                            maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
+                            if (task)
+                                maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
 
                         }
 
