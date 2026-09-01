@@ -13,43 +13,27 @@
 
 static unsigned int (*calls[CALLS])(unsigned int itask, void *stack);
 
-static unsigned int checkuserspace(void *address, unsigned int count)
+static unsigned int checkuserspace(unsigned long vaddress, unsigned int count)
 {
 
     struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
-    unsigned long value = (unsigned long)address;
-    unsigned int i;
+    struct mmap_entry *entry = mmap_find(header, vaddress);
 
-    for (i = 0; i < header->nentries; i++)
-    {
-
-        struct mmap_entry *entry = &header->entries[i];
-
-        if (entry->flags & MMAP_FLAG_USERMODE)
-        {
-
-            if (value >= entry->vaddress && count <= entry->size && (value - entry->vaddress) <= (entry->size - count))
-                return 1;
-
-        }
-
-    }
-
-    return 0;
+    return ((entry->flags & MMAP_FLAG_USERMODE) && (vaddress >= entry->vaddress) && (count <= entry->size) && ((vaddress - entry->vaddress) <= (entry->size - count)));
 
 }
 
 static unsigned int checkbuffer(unsigned int itask, void *address, unsigned int count)
 {
 
-    return (address && count) ? checkuserspace(address, count) : 0;
+    return (address && count) ? checkuserspace((unsigned long)address, count) : 0;
 
 }
 
 static unsigned int checkzerobuffer(unsigned int itask, void *address, unsigned int count)
 {
 
-    return (address && count) ? checkuserspace(address, count) : (address == 0 && count == 0);
+    return (address && count) ? checkuserspace((unsigned long)address, count) : (address == 0 && count == 0);
 
 }
 
