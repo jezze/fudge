@@ -113,13 +113,13 @@ static void map(unsigned long directory, struct mmap_header *header, unsigned lo
 
 }
 
-static void mapfull(unsigned long directory, struct mmap_header *header, struct mmap_entry *entry)
+static void maprange(unsigned long directory, struct mmap_header *header, unsigned long vaddress, unsigned long paddress, unsigned int size, unsigned int flags)
 {
 
     unsigned int i;
 
-    for (i = 0; i < entry->size; i += MMU_PAGESIZE)
-        map(directory, header, entry->vaddress + i, entry->paddress + i, entry->flags);
+    for (i = 0; i < size; i += MMU_PAGESIZE)
+        map(directory, header, vaddress + i, paddress + i, flags);
 
 }
 
@@ -164,7 +164,7 @@ static void mapping_loadmmap(struct mapping *mapping)
     mmap_initentry(&entry, MMAP_TYPE_NORMAL, mapping->mmap, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
     mmap_register(header, &entry);
 
-    mapfull(mapping->directory, header, &entry);
+    maprange(mapping->directory, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
 
 }
 
@@ -327,7 +327,7 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
     mmap_initentry(&entry, MMAP_TYPE_NORMAL, paddress, vaddress, size, flags);
     mmap_register(header, &entry);
 
-    mapfull(mappings[0].directory, header, &entry);
+    maprange(mappings[0].directory, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
 
 }
 
@@ -536,18 +536,18 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                         {
 
                         case MMAP_TYPE_NORMAL:
-                            mapfull(directory, header, entry);
+                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
                             break;
 
                         case MMAP_TYPE_ZERO:
-                            mapfull(directory, header, entry);
+                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
                             buffer_clear((void *)entry->vaddress, entry->size);
 
                             break;
 
                         case MMAP_TYPE_BINARY:
-                            mapfull(directory, header, entry);
+                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
                             if (entry->iofsize)
                                 buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
@@ -558,7 +558,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                             break;
 
                         case MMAP_TYPE_MAILBOX:
-                            mapfull(directory, header, entry);
+                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
                             break;
 
