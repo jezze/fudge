@@ -556,6 +556,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
     unsigned int vaddress = cpu_getcr2();
     unsigned int directory = cpu_getcr3();
+    unsigned int found = 0;
 
     if (error & MMU_EFLAG_PRESENT)
     {
@@ -570,71 +571,55 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
     else
     {
 
-        struct mmap_header *header;
-        struct mmap_entry *entry;
-
         if (error & MMU_EFLAG_USER)
         {
 
-            header = (struct mmap_header *)KERNEL_VMMAP;
-            entry = mmap_find(header, vaddress);
+            struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
+            struct mmap_entry *entry = mmap_find(header, vaddress);
 
-            if (entry && entry->size)
+            if (entry)
             {
 
                 mapentry(directory, header, entry);
 
-            }
-
-            else
-            {
-
-                header = (struct mmap_header *)ARCH_MMAPADDRESS;
-                entry = mmap_find(header, vaddress);
-
-                if (entry && entry->size)
-                {
-
-                    mapentry(directory, header, entry);
-
-                }
-
-                else
-                {
-
-                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                    debugpagefault(error);
-
-                    for (;;);
-
-                }
+                found = 1;
 
             }
 
         }
 
-        else
+        if (!found)
         {
 
-            header = (struct mmap_header *)ARCH_MMAPADDRESS;
-            entry = mmap_find(header, vaddress);
+            struct mmap_header *header = (struct mmap_header *)ARCH_MMAPADDRESS;
+            struct mmap_entry *entry = mmap_find(header, vaddress);
 
-            if (entry && entry->size)
+            if (entry)
             {
 
                 mapentry(directory, header, entry);
 
-            }
-
-            else
-            {
-
-                DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                debugpagefault(error);
-
-                for (;;);
+                found = 1;
 
             }
+
+        }
+
+        if (!found)
+        {
+
+            DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+            debugpagefault(error);
+
+        }
+
+        if (error & MMU_EFLAG_USER)
+        {
+
+        }
+
+        else
+        {
 
             interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
             interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
