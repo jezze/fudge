@@ -161,7 +161,7 @@ static void mapping_loadmmap(struct mapping *mapping)
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
     struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->mmap, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NORMAL, mapping->mmap, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
     mmap_register(header, &entry);
 
     mapfull(mapping->directory, header, &entry);
@@ -174,7 +174,7 @@ static void mapping_loadstack(struct mapping *mapping)
     struct mmap_header *header = (struct mmap_header *)mapping->mmap;
     struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, mapping->stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NORMAL, mapping->stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     mmap_register(header, &entry);
 
 }
@@ -324,7 +324,7 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
     struct mmap_header *header = (struct mmap_header *)ARCH_MMAPADDRESS;
     struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NONE, paddress, vaddress, size, flags, 0, 0, 0, 0);
+    mmap_initentry(&entry, MMAP_TYPE_NORMAL, paddress, vaddress, size, flags);
     mmap_register(header, &entry);
 
     mapfull(mappings[0].directory, header, &entry);
@@ -535,14 +535,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                         switch (entry->type)
                         {
 
-                        case MMAP_TYPE_NONE:
+                        case MMAP_TYPE_NORMAL:
                             mapfull(directory, header, entry);
-
-                            break;
-
-                        case MMAP_TYPE_COW:
-                            mapfull(directory, header, entry);
-                            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->size);
 
                             break;
 
@@ -552,7 +546,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
                             break;
 
-                        case MMAP_TYPE_IOCOW:
+                        case MMAP_TYPE_BINARY:
                             mapfull(directory, header, entry);
 
                             if (entry->iofsize)
@@ -560,6 +554,11 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
                             if (entry->iomsize > entry->iofsize)
                                 buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+
+                            break;
+
+                        case MMAP_TYPE_MAILBOX:
+                            mapfull(directory, header, entry);
 
                             break;
 
@@ -599,7 +598,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                                 unsigned int vaddress = KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel;
                                 struct mmap_entry xentry;
 
-                                mmap_initentry(&xentry, MMAP_TYPE_NONE, paddress, vaddress, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE, 0, 0, 0, 0);
+                                mmap_initentry(&xentry, MMAP_TYPE_MAILBOX, paddress, vaddress, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
+                                mmap_setmailbox(&xentry, ichannel);
                                 mmap_register(header, &xentry);
 
                             }
