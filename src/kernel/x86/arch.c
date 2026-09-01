@@ -577,10 +577,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
                             struct core *core = kernel_getcore();
                             struct task *task = pool_gettask(core->itask);
-                            unsigned int ichannel = (entry->vaddress - KERNEL_VMAILBOX) / MESSAGE_CAPACITY;
-                            unsigned int imailbox = task->imailbox[ichannel];
 
-                            maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * imailbox, entry->size, entry->flags);
+                            maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
 
                         }
 

@@ -44,7 +44,7 @@ void mmap_setbinary(struct mmap_entry *entry, unsigned long ioaddress, unsigned 
 void mmap_setmailbox(struct mmap_entry *entry, unsigned int ichannel)
 {
 
-    entry->ichannel = 0;
+    entry->ichannel = ichannel;
 
 }
 
