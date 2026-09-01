@@ -155,6 +155,25 @@ static void mapping_loadcode(struct mapping *mapping, unsigned long address)
 
 }
 
+static void mapping_loadmailboxes(struct mapping *mapping)
+{
+
+    struct mmap_header *header = (struct mmap_header *)mapping->mmap;
+    unsigned int i;
+
+    for (i = 0; i < TASK_MAILBOXES; i++)
+    {
+
+        struct mmap_entry entry;
+
+        mmap_initentry(&entry, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
+        mmap_setmailbox(&entry, i);
+        mmap_register(header, &entry);
+
+    }
+
+}
+
 static void mapping_loadmmap(struct mapping *mapping)
 {
 
@@ -189,6 +208,7 @@ static unsigned int createtask(unsigned long address)
 
         mapping_copy(&mappings[ntask], &mappings[0]);
         mapping_loadcode(&mappings[ntask], address);
+        mapping_loadmailboxes(&mappings[ntask]);
         mapping_loadstack(&mappings[ntask]);
         mapping_loadmmap(&mappings[ntask]);
 
@@ -553,7 +573,16 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                         break;
 
                     case MMAP_TYPE_MAILBOX:
-                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+                        {
+
+                            struct core *core = kernel_getcore();
+                            struct task *task = pool_gettask(core->itask);
+                            unsigned int ichannel = (entry->vaddress - KERNEL_VMAILBOX) / MESSAGE_CAPACITY;
+                            unsigned int imailbox = task->imailbox[ichannel];
+
+                            maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * imailbox, entry->size, entry->flags);
+
+                        }
 
                         break;
 
@@ -564,43 +593,10 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                 else
                 {
 
-                    if (vaddress >= KERNEL_VMAILBOX)
-                    {
+                    DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+                    debugpagefault(error);
 
-                        struct core *core = kernel_getcore();
-
-                        if (core)
-                        {
-
-                            struct task *task = pool_gettask(core->itask);
-
-                            if (task)
-                            {
-
-                                unsigned int ichannel = (vaddress - KERNEL_VMAILBOX) / MESSAGE_CAPACITY;
-                                unsigned int paddress = ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[ichannel];
-                                unsigned int vaddress = KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel;
-                                struct mmap_entry xentry;
-
-                                mmap_initentry(&xentry, MMAP_TYPE_MAILBOX, paddress, vaddress, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
-                                mmap_setmailbox(&xentry, ichannel);
-                                mmap_register(header, &xentry);
-
-                            }
-
-                        }
-
-                    }
-
-                    else
-                    {
-
-                        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
-                        debugpagefault(error);
-
-                        for (;;);
-
-                    }
+                    for (;;);
 
                 }
 
