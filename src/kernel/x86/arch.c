@@ -123,6 +123,50 @@ static void maprange(unsigned long directory, struct mmap_header *header, unsign
 
 }
 
+static void mapentry(unsigned long directory, struct mmap_header *header, struct mmap_entry *entry)
+{
+
+    switch (entry->type)
+    {
+
+    case MMAP_TYPE_NORMAL:
+        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+
+        break;
+
+    case MMAP_TYPE_ZERO:
+        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+        buffer_clear((void *)entry->vaddress, entry->size);
+
+        break;
+
+    case MMAP_TYPE_BINARY:
+        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+
+        if (entry->iofsize)
+            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
+
+        if (entry->iomsize > entry->iofsize)
+            buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+
+        break;
+
+    case MMAP_TYPE_MAILBOX:
+        {
+
+            struct task *task = pool_gettask(entry->itask);
+
+            if (task)
+                maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
+
+        }
+
+        break;
+
+    }
+
+}
+
 static void mapping_loadcode(struct mapping *mapping, unsigned long address)
 {
 
@@ -526,65 +570,32 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
     else
     {
 
-        unsigned int ktable = mmu_gettable(mappings[0].directory, vaddress);
+        struct mmap_header *header;
+        struct mmap_entry *entry;
 
         if (error & MMU_EFLAG_USER)
         {
 
-            if (ktable & MMU_TFLAG_PRESENT)
+            header = (struct mmap_header *)KERNEL_VMMAP;
+            entry = mmap_find(header, vaddress);
+
+            if (entry && entry->size)
             {
 
-                mmu_settable(directory, vaddress, ktable, ktable);
+                mapentry(directory, header, entry);
 
             }
 
             else
             {
 
-                struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
-                struct mmap_entry *entry = mmap_find(header, vaddress);
+                header = (struct mmap_header *)ARCH_MMAPADDRESS;
+                entry = mmap_find(header, vaddress);
 
                 if (entry && entry->size)
                 {
 
-                    switch (entry->type)
-                    {
-
-                    case MMAP_TYPE_NORMAL:
-                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
-
-                        break;
-
-                    case MMAP_TYPE_ZERO:
-                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
-                        buffer_clear((void *)entry->vaddress, entry->size);
-
-                        break;
-
-                    case MMAP_TYPE_BINARY:
-                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
-
-                        if (entry->iofsize)
-                            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
-
-                        if (entry->iomsize > entry->iofsize)
-                            buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
-
-                        break;
-
-                    case MMAP_TYPE_MAILBOX:
-                        {
-
-                            struct task *task = pool_gettask(entry->itask);
-
-                            if (task)
-                                maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
-
-                        }
-
-                        break;
-
-                    }
+                    mapentry(directory, header, entry);
 
                 }
 
@@ -605,10 +616,13 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
         else
         {
 
-            if (ktable & MMU_TFLAG_PRESENT)
+            header = (struct mmap_header *)ARCH_MMAPADDRESS;
+            entry = mmap_find(header, vaddress);
+
+            if (entry && entry->size)
             {
 
-                mmu_settable(directory, vaddress, ktable, ktable);
+                mapentry(directory, header, entry);
 
             }
 
@@ -622,7 +636,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
             }
 
-            /* I do not know why I need to do this */
             interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
             interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
 
