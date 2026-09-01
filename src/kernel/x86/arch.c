@@ -527,51 +527,35 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
                 if (entry && entry->size)
                 {
 
-                    unsigned int utable = mmu_gettable(directory, vaddress);
-
-                    if (utable & MMU_TFLAG_PRESENT)
+                    switch (entry->type)
                     {
 
-                        switch (entry->type)
-                        {
+                    case MMAP_TYPE_NORMAL:
+                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
-                        case MMAP_TYPE_NORMAL:
-                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+                        break;
 
-                            break;
+                    case MMAP_TYPE_ZERO:
+                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+                        buffer_clear((void *)entry->vaddress, entry->size);
 
-                        case MMAP_TYPE_ZERO:
-                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
-                            buffer_clear((void *)entry->vaddress, entry->size);
+                        break;
 
-                            break;
+                    case MMAP_TYPE_BINARY:
+                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
-                        case MMAP_TYPE_BINARY:
-                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+                        if (entry->iofsize)
+                            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
 
-                            if (entry->iofsize)
-                                buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
+                        if (entry->iomsize > entry->iofsize)
+                            buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
 
-                            if (entry->iomsize > entry->iofsize)
-                                buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+                        break;
 
-                            break;
+                    case MMAP_TYPE_MAILBOX:
+                        maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
-                        case MMAP_TYPE_MAILBOX:
-                            maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
-
-                            break;
-
-                        }
-
-                    }
-
-                    else
-                    {
-
-                        unsigned int taddress = addtable(directory, header);
-
-                        maptable(directory, vaddress, taddress, entry->flags);
+                        break;
 
                     }
 
