@@ -394,7 +394,7 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address, struct mmap_header *header, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
@@ -415,7 +415,15 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
             struct binary_format *format = binary_findformat(task->address);
 
             if (format)
+            {
+
                 task->thread.ip = format->findentry(task->address);
+
+                format->map(task->address, code, header);
+
+                mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+
+            }
 
         }
 
@@ -434,40 +442,26 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
         }
 
-    }
-
-    return inode;
-
-}
-
-void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned long code, unsigned long stack)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        struct binary_format *format = binary_findformat(task->address);
-        unsigned int i;
-
-        mmap_initheader(header);
-
-        if (format)
-            format->map(task->address, code, header);
-
-        mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-
-        for (i = 0; i < TASK_MAILBOXES; i++)
+        /* This should be done when mailboxes are allocated */
+        if (inode)
         {
 
-            struct mmap_entry *entry = mmap_allocate(header, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
+            unsigned int i;
 
-            mmap_setmailbox(entry, itask, i);
+            for (i = 0; i < TASK_MAILBOXES; i++)
+            {
+
+                struct mmap_entry *entry = mmap_allocate(header, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
+
+                mmap_setmailbox(entry, itask, i);
+
+            }
 
         }
 
     }
+
+    return inode;
 
 }
 

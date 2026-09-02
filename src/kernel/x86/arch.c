@@ -150,15 +150,17 @@ static unsigned int createtask(unsigned long address)
     if (ntask)
     {
 
-        unsigned int inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address);
+        struct mmap_header *header = (struct mmap_header *)mmap[ntask];
+        unsigned int inode;
+
+        mmap_initheader(header);
+
+        inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address, header, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE);
 
         if (inode)
         {
 
-            struct mmap_header *header = (struct mmap_header *)mmap[ntask];
-
             buffer_copy((void *)directories[ntask], (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
-            kernel_maptask(ntask, header, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE);
             mapentry(directories[ntask], header, mmap_allocate(header, MMAP_TYPE_NORMAL, (unsigned long)header, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
 
             return inode;
