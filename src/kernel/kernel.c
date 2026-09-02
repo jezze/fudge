@@ -457,21 +457,14 @@ void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned lon
         if (format)
         {
 
+            unsigned int paddress;
             unsigned int si = 0;
 
-            while ((si = format->mapsection(task->address, &entry, si)))
+            for (paddress = code; (si = format->mapsection(task->address, paddress, &entry, si)); paddress += (entry.size + pagesize) & ~pagemask)
             {
 
                 if (entry.size)
-                {
-
-                    entry.paddress = code;
-
                     mmap_register(header, &entry);
-
-                    code += (entry.size + pagesize) & ~pagemask;
-
-                }
 
             }
 
