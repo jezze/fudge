@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <kernel.h>
 #include "cpu.h"
 #include "mmu.h"
 
@@ -15,6 +16,48 @@ struct mmu_directory
     unsigned int tables[MMU_TABLES];
 
 };
+
+unsigned int mmu_tflags(unsigned int flags)
+{
+
+    unsigned int tflags = MMU_TFLAG_PRESENT;
+
+    if (flags & MMAP_FLAG_GLOBAL)
+        tflags |= MMU_TFLAG_GLOBAL;
+
+    if (flags & MMAP_FLAG_USERMODE)
+        tflags |= MMU_TFLAG_USERMODE;
+
+    if (flags & MMAP_FLAG_WRITEABLE)
+        tflags |= MMU_TFLAG_WRITEABLE;
+
+    if (flags & MMAP_FLAG_WRITETHROUGH)
+        tflags |= MMU_TFLAG_WRITETHROUGH;
+
+    return tflags;
+
+}
+
+unsigned int mmu_pflags(unsigned int flags)
+{
+
+    unsigned int pflags = MMU_PFLAG_PRESENT;
+
+    if (flags & MMAP_FLAG_GLOBAL)
+        pflags |= MMU_PFLAG_GLOBAL;
+
+    if (flags & MMAP_FLAG_USERMODE)
+        pflags |= MMU_PFLAG_USERMODE;
+
+    if (flags & MMAP_FLAG_WRITEABLE)
+        pflags |= MMU_PFLAG_WRITEABLE;
+
+    if (flags & MMAP_FLAG_WRITETHROUGH)
+        pflags |= MMU_PFLAG_WRITETHROUGH;
+
+    return pflags;
+
+}
 
 unsigned long mmu_gettable(unsigned long daddress, unsigned long vaddress)
 {

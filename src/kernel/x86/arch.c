@@ -17,74 +17,22 @@ static struct cpu_general registers[POOL_TASKS];
 static unsigned long directories[POOL_TASKS];
 static unsigned long mmap[POOL_TASKS];
 
-static unsigned int gettflags(unsigned int flags)
-{
-
-    unsigned int tflags = MMU_TFLAG_PRESENT;
-
-    if (flags & MMAP_FLAG_GLOBAL)
-        tflags |= MMU_TFLAG_GLOBAL;
-
-    if (flags & MMAP_FLAG_USERMODE)
-        tflags |= MMU_TFLAG_USERMODE;
-
-    if (flags & MMAP_FLAG_WRITEABLE)
-        tflags |= MMU_TFLAG_WRITEABLE;
-
-    if (flags & MMAP_FLAG_WRITETHROUGH)
-        tflags |= MMU_TFLAG_WRITETHROUGH;
-
-    return tflags;
-
-}
-
-static unsigned int getpflags(unsigned int flags)
-{
-
-    unsigned int pflags = MMU_PFLAG_PRESENT;
-
-    if (flags & MMAP_FLAG_GLOBAL)
-        pflags |= MMU_PFLAG_GLOBAL;
-
-    if (flags & MMAP_FLAG_USERMODE)
-        pflags |= MMU_PFLAG_USERMODE;
-
-    if (flags & MMAP_FLAG_WRITEABLE)
-        pflags |= MMU_PFLAG_WRITEABLE;
-
-    if (flags & MMAP_FLAG_WRITETHROUGH)
-        pflags |= MMU_PFLAG_WRITETHROUGH;
-
-    return pflags;
-
-}
-
-static unsigned long addtable(unsigned long directory, struct mmap_header *header)
-{
-
-    unsigned long taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
-
-    buffer_clear((void *)taddress, MMU_PTSIZE);
-
-    header->ntables++;
-
-    return taddress;
-
-}
-
 static void map(unsigned long directory, struct mmap_header *header, unsigned long vaddress, unsigned long paddress, unsigned int flags)
 {
 
     if (!mmu_gettable(directory, vaddress))
     {
 
-        unsigned long taddress = addtable(directory, header);
+        unsigned long taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
 
-        mmu_settable(directory, vaddress, taddress, gettflags(flags));
+        buffer_clear((void *)taddress, MMU_PTSIZE);
+        mmu_settable(directory, vaddress, taddress, mmu_tflags(flags));
+
+        header->ntables++;
 
     }
 
-    mmu_setpage(directory, vaddress, paddress, getpflags(flags));
+    mmu_setpage(directory, vaddress, paddress, mmu_pflags(flags));
 
 }
 
