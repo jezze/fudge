@@ -440,7 +440,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
 }
 
-void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned long code, unsigned long stack, unsigned int pagesize, unsigned int pagemask)
+void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
@@ -455,20 +455,7 @@ void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned lon
         mmap_initheader(header);
 
         if (format)
-        {
-
-            unsigned int paddress;
-            unsigned int si = 0;
-
-            for (paddress = code; (si = format->mapsection(task->address, paddress, &entry, si)); paddress += (entry.size + pagesize) & ~pagemask)
-            {
-
-                if (entry.size)
-                    mmap_register(header, &entry);
-
-            }
-
-        }
+            format->map(task->address, code, header);
 
         mmap_initentry(&entry, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
         mmap_register(header, &entry);

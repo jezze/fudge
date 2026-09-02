@@ -80,21 +80,24 @@ static unsigned long format_findentry(unsigned long base)
 
 }
 
-static unsigned int format_readsection(unsigned long base, unsigned long paddress, struct mmap_entry *entry, unsigned int index)
+static unsigned int format_map(unsigned long base, unsigned long paddress, struct mmap_header *mheader)
 {
 
     struct elf_header *header = (struct elf_header *)base;
     struct elf_programheader *programheaders = (struct elf_programheader *)(base + header->phoffset);
+    unsigned int i;
 
-    if (index < header->phcount)
+    for (i = 0; i < header->phcount; i++)
     {
 
-        struct elf_programheader *programheader = &programheaders[index];
+        struct elf_programheader *programheader = &programheaders[i];
+        struct mmap_entry entry;
 
-        mmap_initentry(entry, MMAP_TYPE_BINARY, paddress, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-        mmap_setbinary(entry, base + programheader->offset, programheader->fsize, programheader->msize, programheader->flags);
+        mmap_initentry(&entry, MMAP_TYPE_BINARY, paddress, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+        mmap_setbinary(&entry, base + programheader->offset, programheader->fsize, programheader->msize);
+        mmap_register(mheader, &entry);
 
-        return index + 1;
+        paddress += (entry.size + programheader->align) & ~(programheader->align - 1);
 
     }
 
@@ -105,7 +108,7 @@ static unsigned int format_readsection(unsigned long base, unsigned long paddres
 void elf_setup(void)
 {
 
-    binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_readsection);
+    binary_initformat(&format, format_match, format_findsymbol, format_findentry, format_map);
     resource_register(&format.resource);
 
 }

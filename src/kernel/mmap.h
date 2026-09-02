@@ -16,10 +16,9 @@ struct mmap_entry
     unsigned long vaddress;
     unsigned int size;
     unsigned int flags;
-    unsigned long ioaddress;
-    unsigned int iofsize;
-    unsigned int iomsize;
-    unsigned int ioflags;
+    unsigned long fbase;
+    unsigned int fsize;
+    unsigned int msize;
     unsigned int itask;
     unsigned int ichannel;
 
@@ -36,7 +35,7 @@ struct mmap_header
 
 struct mmap_entry *mmap_find(struct mmap_header *header, unsigned long vaddress);
 void mmap_register(struct mmap_header *header, struct mmap_entry *entry);
-void mmap_setbinary(struct mmap_entry *entry, unsigned long ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags); 
+void mmap_setbinary(struct mmap_entry *entry, unsigned long fbase, unsigned int fsize, unsigned int msize);
 void mmap_setmailbox(struct mmap_entry *entry, unsigned int itask, unsigned int ichannel);
 void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags);
 void mmap_initheader(struct mmap_header *header);

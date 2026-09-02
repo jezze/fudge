@@ -31,13 +31,12 @@ void mmap_register(struct mmap_header *header, struct mmap_entry *entry)
 
 }
 
-void mmap_setbinary(struct mmap_entry *entry, unsigned long ioaddress, unsigned int iofsize, unsigned int iomsize, unsigned int ioflags)
+void mmap_setbinary(struct mmap_entry *entry, unsigned long fbase, unsigned int fsize, unsigned int msize)
 {
 
-    entry->ioaddress = ioaddress;
-    entry->iofsize = iofsize;
-    entry->iomsize = iomsize;
-    entry->ioflags = ioflags;
+    entry->fbase = fbase;
+    entry->fsize = fsize;
+    entry->msize = msize;
 
 }
 
@@ -58,7 +57,7 @@ void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned long p
     entry->size = size;
     entry->flags = flags;
 
-    mmap_setbinary(entry, 0, 0, 0, 0);    
+    mmap_setbinary(entry, 0, 0, 0);    
     mmap_setmailbox(entry, 0, 0);    
 
 }

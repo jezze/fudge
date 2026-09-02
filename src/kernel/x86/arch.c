@@ -118,11 +118,11 @@ static void mapentry(unsigned long directory, struct mmap_header *header, struct
     case MMAP_TYPE_BINARY:
         maprange(directory, header, entry->vaddress, entry->paddress, entry->size, entry->flags);
 
-        if (entry->iofsize)
-            buffer_copy((void *)entry->vaddress, (void *)entry->ioaddress, entry->iofsize);
+        if (entry->fsize)
+            buffer_copy((void *)entry->vaddress, (void *)entry->fbase, entry->fsize);
 
-        if (entry->iomsize > entry->iofsize)
-            buffer_clear((void *)(entry->vaddress + entry->iofsize), entry->iomsize - entry->iofsize);
+        if (entry->msize > entry->fsize)
+            buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
 
         break;
 
@@ -161,7 +161,7 @@ static unsigned int createtask(unsigned long address)
             struct mmap_entry *entry;
 
             buffer_copy((void *)directories[ntask], (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
-            kernel_maptask(ntask, header, code, stack, MMU_PAGESIZE, MMU_PAGEMASK);
+            kernel_maptask(ntask, header, code, stack);
 
             entry = mmap_find(header, KERNEL_VMMAP);
 
