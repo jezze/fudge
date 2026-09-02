@@ -155,12 +155,10 @@ static unsigned int createtask(unsigned long address)
         if (inode)
         {
 
-            unsigned int code = ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask;
-            unsigned int stack = ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE;
             struct mmap_header *header = (struct mmap_header *)mmap[ntask];
 
             buffer_copy((void *)directories[ntask], (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
-            kernel_maptask(ntask, header, code, stack);
+            kernel_maptask(ntask, header, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE);
             mapentry(directories[ntask], header, mmap_allocate(header, MMAP_TYPE_NORMAL, (unsigned long)header, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
 
             return inode;
