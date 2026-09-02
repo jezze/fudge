@@ -176,7 +176,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
                 mailbox_reset(mailbox, itask);
-                mmap_allocate((struct mmap_header *)task->mmap, MMAP_TYPE_NORMAL, (unsigned long)mailbox->data, KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
+                mmap_allocate((struct mmap_header *)task->mmap, MMAP_TYPE_NORMAL, mailbox->data, KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
 
             }
 

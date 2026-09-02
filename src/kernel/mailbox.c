@@ -68,7 +68,7 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
             struct message *message = &mailbox->messages[slot];
 
             message_init(message, event, source, count, KERNEL_VMAILBOX + MESSAGE_SIZE * slot);
-            buffer_copy((void *)(((unsigned int)mailbox->data) + MESSAGE_SIZE * slot), data, count);
+            buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * slot), data, count);
 
             mailbox->head++;
 
