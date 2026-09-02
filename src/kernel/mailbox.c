@@ -3,7 +3,6 @@
 #include "node.h"
 #include "task.h"
 #include "pool.h"
-#include "mmap.h"
 #include "mailbox.h"
 #include "kernel.h"
 
