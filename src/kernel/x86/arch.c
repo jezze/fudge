@@ -519,11 +519,11 @@ void arch_configureidt(void)
 
 }
 
-void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
+void arch_configuretss(struct arch_tss *tss, unsigned int id)
 {
 
     tss_init(&tss->pointer, ARCH_TSS_DESCRIPTORS, tss->descriptors);
-    tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), sp);
+    tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE + KERNEL_STACKSIZE * id);
     gdt_setdescriptor(&gdt->pointer, ARCH_TSS + id, (unsigned long)tss->pointer.descriptors, (unsigned long)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, ARCH_TSS + id));
 
@@ -553,7 +553,7 @@ void arch_setup1(void)
     pic_init();
     arch_configuregdt();
     arch_configureidt();
-    arch_configuretss(&tss0, 0, ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE);
+    arch_configuretss(&tss0, 0);
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
     cpu_setcr3(ARCH_MMU_KERNELBASE);
     setupmmap();

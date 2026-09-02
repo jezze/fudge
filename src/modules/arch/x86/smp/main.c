@@ -41,18 +41,10 @@ static void coreassign(unsigned int itask)
 
 }
 
-static void smp_setupbp(unsigned int icore, unsigned int sp)
-{
-
-    arch_configuretss(&tss[icore], icore, sp);
-    apic_setup_bp();
-
-}
-
 void smp_setupap(unsigned int icore, unsigned int sp)
 {
 
-    arch_configuretss(&tss[icore], icore, sp);
+    arch_configuretss(&tss[icore], icore);
     apic_setup_ap();
     cpu_setcr3(ARCH_MMU_KERNELBASE);
     mmu_enable();
@@ -68,7 +60,7 @@ void module_init(void)
     unsigned int i;
 
     list_init(&usedcores);
-    smp_setupbp(apic_getid(), 0x00602000);
+    apic_setup_bp();
     kernel_setcallback(coreget, coreassign);
     buffer_copy((void *)ARCH_SMP_BASE16, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
     buffer_copy((void *)ARCH_SMP_BASE32, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
