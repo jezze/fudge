@@ -14,8 +14,6 @@ static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDT_BASE;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDT_BASE;
 static struct arch_tss tss0;
 static struct cpu_general registers[POOL_TASKS];
-static unsigned long directories[POOL_TASKS];
-static unsigned long mmap[POOL_TASKS];
 
 static void map(unsigned long directory, struct mmap_header *header, unsigned long vaddress, unsigned long paddress, unsigned int flags)
 {
@@ -98,7 +96,7 @@ static unsigned int createtask(unsigned long address)
     if (ntask)
     {
 
-        struct mmap_header *header = (struct mmap_header *)mmap[ntask];
+        struct mmap_header *header = (struct mmap_header *)(ARCH_MMAP_BASE + MMAP_SIZE * ntask);
         unsigned int inode;
 
         mmap_initheader(header);
@@ -108,8 +106,8 @@ static unsigned int createtask(unsigned long address)
         if (inode)
         {
 
-            buffer_copy((void *)directories[ntask], (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
-            mapentry(directories[ntask], header, mmap_allocate(header, MMAP_TYPE_NORMAL, (unsigned long)header, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
+            buffer_copy((void *)(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask), (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
+            mapentry(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE + MMAP_SIZE * ntask, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
 
             return inode;
 
@@ -166,7 +164,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = task->thread.ip;
         interrupt->esp.value = task->thread.sp;
 
-        cpu_setcr3(directories[core->itask]);
+        cpu_setcr3(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * core->itask);
 
     }
 
@@ -543,23 +541,6 @@ void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 
 }
 
-static void setupdirectories(void)
-{
-
-    unsigned int i;
-
-    buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
-
-    for (i = 1; i < POOL_TASKS; i++)
-    {
-
-        directories[i] = ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * i;
-        mmap[i] = ARCH_MMAP_BASE + MMAP_SIZE * i;
-
-    }
-
-}
-
 static void setupmmap(void)
 {
 
@@ -569,7 +550,7 @@ static void setupmmap(void)
     mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, 0x00000000, 0x00000000, 0x00100000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
-    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE, ARCH_MMAP_BASE, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE, ARCH_MMAP_BASE, ARCH_MMAP_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MAILBOX_BASE, ARCH_MAILBOX_BASE, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
@@ -585,9 +566,9 @@ void arch_setup1(void)
     arch_configuregdt();
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE);
-    setupdirectories();
-    setupmmap();
+    buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
     cpu_setcr3(ARCH_MMU_KERNELBASE);
+    setupmmap();
     mmu_enable();
     mailbox_setup();
     pool_setup(ARCH_MAILBOX_BASE);

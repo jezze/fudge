@@ -10,6 +10,7 @@
 #define ARCH_KERNEL_STACKBASE           0x00600000
 #define ARCH_KERNEL_STACKSIZE           (KERNEL_STACKSIZE * POOL_CORES)
 #define ARCH_MMAP_BASE                  0x00800000
+#define ARCH_MMAP_SIZE                  (MMAP_SIZE * POOL_TASKS)
 #define ARCH_MMU_KERNELBASE             0x00A00000
 #define ARCH_MMU_KERNELSIZE             0x00200000
 #define ARCH_MMU_TASKBASE               0x00C00000

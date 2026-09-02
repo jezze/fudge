@@ -1,4 +1,5 @@
 #define MMAP_SIZE                       0x00001000
+#define MMAP_SLOTS                      64
 #define MMAP_TYPE_NORMAL                0
 #define MMAP_TYPE_ZERO                  1
 #define MMAP_TYPE_BINARY                2
@@ -29,7 +30,7 @@ struct mmap_header
 
     unsigned int nentries;
     unsigned int ntables;
-    struct mmap_entry entries[64];
+    struct mmap_entry entries[MMAP_SLOTS];
 
 };
 
