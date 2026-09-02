@@ -324,7 +324,7 @@ void pool_setup(unsigned long mbaddress)
 
         struct mailboxrow *mailboxrow = &mailboxrows[i];
 
-        mailbox_init(&mailboxrow->mailbox, (void *)(mbaddress + i * MESSAGE_CAPACITY));
+        mailbox_init(&mailboxrow->mailbox, mbaddress + i * MESSAGE_CAPACITY);
         mailbox_register(&mailboxrow->mailbox);
         list_inititem(&mailboxrow->item, mailboxrow);
         list_add(&freemailboxes, &mailboxrow->item);

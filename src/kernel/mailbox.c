@@ -164,7 +164,7 @@ void mailbox_unregister(struct mailbox *mailbox)
 
 }
 
-void mailbox_init(struct mailbox *mailbox, void *data)
+void mailbox_init(struct mailbox *mailbox, unsigned long data)
 {
 
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
