@@ -449,7 +449,6 @@ void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned lon
     {
 
         struct binary_format *format = binary_findformat(task->address);
-        struct mmap_entry entry;
         unsigned int i;
 
         mmap_initheader(header);
@@ -457,20 +456,16 @@ void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned lon
         if (format)
             format->map(task->address, code, header);
 
-        mmap_initentry(&entry, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-        mmap_register(header, &entry);
+        mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
         for (i = 0; i < TASK_MAILBOXES; i++)
         {
 
-            mmap_initentry(&entry, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
-            mmap_setmailbox(&entry, itask, i);
-            mmap_register(header, &entry);
+            struct mmap_entry *entry = mmap_allocate(header, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
+
+            mmap_setmailbox(entry, itask, i);
 
         }
-
-        mmap_initentry(&entry, MMAP_TYPE_NORMAL, (unsigned long)header, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
-        mmap_register(header, &entry);
 
     }
 

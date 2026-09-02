@@ -158,14 +158,10 @@ static unsigned int createtask(unsigned long address)
             unsigned int code = ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask;
             unsigned int stack = ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE;
             struct mmap_header *header = (struct mmap_header *)mmap[ntask];
-            struct mmap_entry *entry;
 
             buffer_copy((void *)directories[ntask], (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
             kernel_maptask(ntask, header, code, stack);
-
-            entry = mmap_find(header, KERNEL_VMMAP);
-
-            maprange(directories[ntask], header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+            mapentry(directories[ntask], header, mmap_allocate(header, MMAP_TYPE_NORMAL, (unsigned long)header, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
 
             return inode;
 
@@ -301,12 +297,8 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
 {
 
     struct mmap_header *header = (struct mmap_header *)ARCH_MMAP_BASE;
-    struct mmap_entry entry;
 
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, paddress, vaddress, size, flags);
-    mmap_register(header, &entry);
-
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, paddress, vaddress, size, flags));
 
 }
 
@@ -624,30 +616,15 @@ static void setupmmap(void)
 {
 
     struct mmap_header *header = (struct mmap_header *)ARCH_MMAP_BASE;
-    struct mmap_entry entry;
 
     mmap_initheader(header);
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, 0x00000000, 0x00000000, 0x00100000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE, ARCH_MMAP_BASE, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, ARCH_MAILBOX_BASE, ARCH_MAILBOX_BASE, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, 0x00000000, 0x00000000, 0x00100000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE, ARCH_MMAP_BASE, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, header, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MAILBOX_BASE, ARCH_MAILBOX_BASE, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
 
 }
 

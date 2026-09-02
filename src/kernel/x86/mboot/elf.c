@@ -91,13 +91,11 @@ static unsigned int format_map(unsigned long base, unsigned long paddress, struc
     {
 
         struct elf_programheader *programheader = &programheaders[i];
-        struct mmap_entry entry;
+        struct mmap_entry *entry = mmap_allocate(mheader, MMAP_TYPE_BINARY, paddress, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
-        mmap_initentry(&entry, MMAP_TYPE_BINARY, paddress, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-        mmap_setbinary(&entry, base + programheader->offset, programheader->fsize, programheader->msize);
-        mmap_register(mheader, &entry);
+        mmap_setbinary(entry, base + programheader->offset, programheader->fsize, programheader->msize);
 
-        paddress += (entry.size + programheader->align) & ~(programheader->align - 1);
+        paddress += (entry->size + programheader->align) & ~(programheader->align - 1);
 
     }
 
