@@ -156,10 +156,10 @@ struct util_region util_region_intersection(struct util_region *a, struct util_r
 unsigned int util_getkey(struct util_token *tokens, unsigned int n, char *value)
 {
 
-    unsigned int i;
-
     if (value)
     {
+
+        unsigned int i;
 
         for (i = 0; i < n; i++)
         {
