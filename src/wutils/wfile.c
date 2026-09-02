@@ -29,16 +29,14 @@ static void updatecontent(unsigned int wm)
             struct record records[8];
             unsigned int nrecords;
             unsigned int offset;
-            unsigned int count;
 
             channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
 
             for (offset = 0; (nrecords = fs_list(1, target, id, offset, records, 8)); offset += nrecords)
             {
 
+                unsigned int count = 0;
                 unsigned int i;
-
-                count = 0;
 
                 for (i = 0; i < nrecords; i++)
                 {
