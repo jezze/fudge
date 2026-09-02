@@ -72,18 +72,6 @@ static void mapentry(unsigned long directory, struct mmap_header *header, struct
 
         break;
 
-    case MMAP_TYPE_MAILBOX:
-        {
-
-            struct task *task = pool_gettask(entry->itask);
-
-            if (task)
-                maprange(directory, header, entry->vaddress, ARCH_MAILBOX_BASE + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
-
-        }
-
-        break;
-
     }
 
 }
@@ -101,7 +89,7 @@ static unsigned int createtask(unsigned long address)
 
         mmap_initheader(header);
 
-        inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address, header, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE);
+        inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE);
 
         if (inode)
         {

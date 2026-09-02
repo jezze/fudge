@@ -37,6 +37,7 @@ struct task
     struct spinlock spinlock;
     unsigned int state;
     unsigned int address;
+    unsigned int mmap;
     unsigned int imailbox[TASK_MAILBOXES];
 
 };

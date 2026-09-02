@@ -3,7 +3,6 @@
 #define MMAP_TYPE_NORMAL                0
 #define MMAP_TYPE_ZERO                  1
 #define MMAP_TYPE_BINARY                2
-#define MMAP_TYPE_MAILBOX               3
 #define MMAP_FLAG_GLOBAL                0x01
 #define MMAP_FLAG_USERMODE              0x02
 #define MMAP_FLAG_WRITEABLE             0x04
@@ -20,8 +19,6 @@ struct mmap_entry
     unsigned long fbase;
     unsigned int fsize;
     unsigned int msize;
-    unsigned int itask;
-    unsigned int ichannel;
 
 };
 
@@ -36,7 +33,6 @@ struct mmap_header
 
 struct mmap_entry *mmap_find(struct mmap_header *header, unsigned long vaddress);
 void mmap_setbinary(struct mmap_entry *entry, unsigned long fbase, unsigned int fsize, unsigned int msize);
-void mmap_setmailbox(struct mmap_entry *entry, unsigned int itask, unsigned int ichannel);
 void mmap_initentry(struct mmap_entry *entry, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags);
 struct mmap_entry *mmap_allocate(struct mmap_header *header, unsigned int type, unsigned long paddress, unsigned long vaddress, unsigned int size, unsigned int flags);
 void mmap_initheader(struct mmap_header *header);

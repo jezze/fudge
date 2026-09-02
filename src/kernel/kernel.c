@@ -176,6 +176,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
                 mailbox_reset(mailbox, itask);
+                mmap_allocate((struct mmap_header *)task->mmap, MMAP_TYPE_NORMAL, (unsigned long)mailbox->data, KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
 
             }
 
@@ -394,7 +395,7 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address, struct mmap_header *header, unsigned long code, unsigned long stack)
+unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address, unsigned int mmap, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
@@ -408,6 +409,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         task->thread.ip = ip;
         task->thread.sp = sp;
         task->address = address;
+        task->mmap = mmap;
 
         if (task->address)
         {
@@ -416,6 +418,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
             if (format)
             {
+                struct mmap_header *header = (struct mmap_header *)task->mmap;
 
                 task->thread.ip = format->findentry(task->address);
 
@@ -437,23 +440,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
                 transition(itask, TASK_STATE_NEW);
                 transition(itask, TASK_STATE_ASSIGNED);
-
-            }
-
-        }
-
-        /* This should be done when mailboxes are allocated */
-        if (inode)
-        {
-
-            unsigned int i;
-
-            for (i = 0; i < TASK_MAILBOXES; i++)
-            {
-
-                struct mmap_entry *entry = mmap_allocate(header, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
-
-                mmap_setmailbox(entry, itask, i);
 
             }
 

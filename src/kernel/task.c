@@ -176,6 +176,7 @@ void task_reset(struct task *task)
 
     task->state = TASK_STATE_DEAD;
     task->address = 0;
+    task->mmap = 0;
 
 }
 
