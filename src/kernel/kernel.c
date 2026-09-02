@@ -440,6 +440,62 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
 }
 
+void kernel_maptask(unsigned int itask, struct mmap_header *header, unsigned long code, unsigned long stack, unsigned int pagesize, unsigned int pagemask)
+{
+
+    struct task *task = pool_gettask(itask);
+
+    if (task)
+    {
+
+        struct binary_format *format = binary_findformat(task->address);
+        struct mmap_entry entry;
+        unsigned int i;
+
+        mmap_initheader(header);
+
+        if (format)
+        {
+
+            unsigned int si = 0;
+
+            while ((si = format->mapsection(task->address, &entry, si)))
+            {
+
+                if (entry.size)
+                {
+
+                    entry.paddress = code;
+
+                    mmap_register(header, &entry);
+
+                    code += (entry.size + pagesize) & ~pagemask;
+
+                }
+
+            }
+
+        }
+
+        mmap_initentry(&entry, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+        mmap_register(header, &entry);
+
+        for (i = 0; i < TASK_MAILBOXES; i++)
+        {
+
+            mmap_initentry(&entry, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
+            mmap_setmailbox(&entry, itask, i);
+            mmap_register(header, &entry);
+
+        }
+
+        mmap_initentry(&entry, MMAP_TYPE_NORMAL, (unsigned long)header, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
+        mmap_register(header, &entry);
+
+    }
+
+}
+
 void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(unsigned int itask))
 {
 

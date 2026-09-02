@@ -10,37 +10,12 @@
 #include "pic.h"
 #include "arch.h"
 
-struct mapping
-{
-
-    unsigned long directory;
-    unsigned long code;
-    unsigned long stack;
-    unsigned long mmap;
-    struct cpu_general registers;
-
-};
-
 static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
 static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
 static struct arch_tss tss0;
-static struct mapping mappings[POOL_TASKS];
-
-static void mapping_clear(struct mapping *mapping)
-{
-
-    mmap_initheader((struct mmap_header *)mapping->mmap);
-    buffer_clear((void *)mapping->directory, MMU_PDSIZE);
-
-}
-
-static void mapping_copy(struct mapping *mapping, struct mapping *from)
-{
-
-    mmap_initheader((struct mmap_header *)mapping->mmap);
-    buffer_copy((void *)mapping->directory, (void *)from->directory, MMU_PDSIZE);
-
-}
+static struct cpu_general registers[POOL_TASKS];
+static unsigned long directories[POOL_TASKS];
+static unsigned long mmap[POOL_TASKS];
 
 static void maptable(unsigned long directory, unsigned long vaddress, unsigned long taddress, unsigned int flags)
 {
@@ -167,81 +142,6 @@ static void mapentry(unsigned long directory, struct mmap_header *header, struct
 
 }
 
-static void mapping_loadcode(struct mapping *mapping, unsigned long address)
-{
-
-    struct binary_format *format = binary_findformat(address);
-
-    if (format)
-    {
-
-        struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-        struct mmap_entry entry;
-        unsigned int offset = 0;
-        unsigned int i = 0;
-
-        while ((i = format->mapsection(address, &entry, i)))
-        {
-
-            if (entry.size)
-            {
-
-                entry.paddress = mapping->code + offset;
-                offset += (entry.size + MMU_PAGESIZE) & ~MMU_PAGEMASK;
-
-                mmap_register(header, &entry);
-
-            }
-
-        }
-
-    }
-
-}
-
-static void mapping_loadmailboxes(struct mapping *mapping, unsigned int itask)
-{
-
-    struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-    unsigned int i;
-
-    for (i = 0; i < TASK_MAILBOXES; i++)
-    {
-
-        struct mmap_entry entry;
-
-        mmap_initentry(&entry, MMAP_TYPE_MAILBOX, 0, KERNEL_VMAILBOX + MESSAGE_CAPACITY * i, MESSAGE_CAPACITY, MMAP_FLAG_USERMODE);
-        mmap_setmailbox(&entry, itask, i);
-        mmap_register(header, &entry);
-
-    }
-
-}
-
-static void mapping_loadmmap(struct mapping *mapping)
-{
-
-    struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-    struct mmap_entry entry;
-
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, mapping->mmap, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE);
-    mmap_register(header, &entry);
-
-    maprange(mapping->directory, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
-
-}
-
-static void mapping_loadstack(struct mapping *mapping)
-{
-
-    struct mmap_header *header = (struct mmap_header *)mapping->mmap;
-    struct mmap_entry entry;
-
-    mmap_initentry(&entry, MMAP_TYPE_NORMAL, mapping->stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
-    mmap_register(header, &entry);
-
-}
-
 static unsigned int createtask(unsigned long address)
 {
 
@@ -250,13 +150,26 @@ static unsigned int createtask(unsigned long address)
     if (ntask)
     {
 
-        mapping_copy(&mappings[ntask], &mappings[0]);
-        mapping_loadcode(&mappings[ntask], address);
-        mapping_loadmailboxes(&mappings[ntask], ntask);
-        mapping_loadstack(&mappings[ntask]);
-        mapping_loadmmap(&mappings[ntask]);
+        unsigned int inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address);
 
-        return kernel_loadtask(ntask, 0, KERNEL_VSTACK, address);
+        if (inode)
+        {
+
+            unsigned int code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * ntask;
+            unsigned int stack = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE;
+            struct mmap_header *header = (struct mmap_header *)mmap[ntask];
+            struct mmap_entry *entry;
+
+            buffer_copy((void *)directories[ntask], (void *)ARCH_MMUKERNELADDRESS, MMU_PDSIZE);
+            kernel_maptask(ntask, header, code, stack, MMU_PAGESIZE, MMU_PAGEMASK);
+
+            entry = mmap_find(header, KERNEL_VMMAP);
+
+            maprange(directories[ntask], header, entry->vaddress, entry->paddress, entry->size, entry->flags);
+
+            return inode;
+
+        }
 
     }
 
@@ -288,7 +201,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         struct task *task = pool_gettask(core->itask);
 
-        buffer_copy(&mappings[core->itask].registers, general, sizeof (struct cpu_general));
+        buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
 
         task->thread.ip = interrupt->eip.value;
         task->thread.sp = interrupt->esp.value;
@@ -302,12 +215,14 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         struct task *task = pool_gettask(core->itask);
 
-        buffer_copy(general, &mappings[core->itask].registers, sizeof (struct cpu_general));
+        buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
         interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
         interrupt->eip.value = task->thread.ip;
         interrupt->esp.value = task->thread.sp;
+
+        cpu_setcr3(directories[core->itask]);
 
     }
 
@@ -319,9 +234,9 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = (unsigned long)cpu_halt;
         interrupt->esp.value = 0;
 
-    }
+        cpu_setcr3(ARCH_MMUKERNELADDRESS);
 
-    cpu_setcr3(mappings[core->itask].directory);
+    }
 
 }
 
@@ -391,7 +306,7 @@ void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, 
     mmap_initentry(&entry, MMAP_TYPE_NORMAL, paddress, vaddress, size, flags);
     mmap_register(header, &entry);
 
-    maprange(mappings[0].directory, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
+    maprange(ARCH_MMUKERNELADDRESS, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
 
 }
 
@@ -693,18 +608,11 @@ static void setupmappings(void)
 
     unsigned int i;
 
-    mappings[0].directory = ARCH_MMUKERNELADDRESS;
-    mappings[0].code = ARCH_KERNELCODEADDRESS;
-    mappings[0].stack = ARCH_KERNELSTACKADDRESS;
-    mappings[0].mmap = ARCH_MMAPADDRESS;
-
     for (i = 1; i < POOL_TASKS; i++)
     {
 
-        mappings[i].directory = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * i;
-        mappings[i].code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * i;
-        mappings[i].stack = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * i + TASK_CODESIZE;
-        mappings[i].mmap = ARCH_MMAPADDRESS + MMAP_SIZE * i;
+        directories[i] = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * i;
+        mmap[i] = ARCH_MMAPADDRESS + MMAP_SIZE * i;
 
     }
 
@@ -720,13 +628,14 @@ void arch_setup1(void)
     arch_configureidt();
     arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
     setupmappings();
-    mapping_clear(&mappings[0]);
+    buffer_clear((void *)ARCH_MMUKERNELADDRESS, MMU_PDSIZE);
+    mmap_initheader((struct mmap_header *)ARCH_MMAPADDRESS);
     arch_kmap(0x00000000, 0x00000000, 0x00800000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    cpu_setcr3(mappings[0].directory);
+    cpu_setcr3(ARCH_MMUKERNELADDRESS);
     mmu_enable();
     mailbox_setup();
     pool_setup(ARCH_MAILBOXADDRESS);
