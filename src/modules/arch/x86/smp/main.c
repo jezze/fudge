@@ -77,7 +77,7 @@ void module_init(void)
             {
 
                 pool_placecore(icore, &usedcores);
-                apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT | 0x00);
+                apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT);
                 pit_wait(10);
                 apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (ARCH_SMP_BASE16 >> 12));
                 pit_wait(1);
