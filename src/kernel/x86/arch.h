@@ -6,15 +6,15 @@
 #define ARCH_SMP_BASE32                 0x00008200
 #define ARCH_TSS_DESCRIPTORS            1
 #define ARCH_KERNEL_CODEBASE            0x00100000
-#define ARCH_KERNEL_CODESIZE            0x00500000
+#define ARCH_KERNEL_CODESIZE            0x500000
 #define ARCH_KERNEL_STACKBASE           0x00600000
 #define ARCH_KERNEL_STACKSIZE           (KERNEL_STACKSIZE * POOL_CORES)
 #define ARCH_MMAP_BASE                  0x00800000
 #define ARCH_MMAP_SIZE                  (MMAP_SIZE * POOL_TASKS)
 #define ARCH_MMU_KERNELBASE             0x00A00000
-#define ARCH_MMU_KERNELSIZE             0x00200000
+#define ARCH_MMU_KERNELSIZE             0x200000
 #define ARCH_MMU_TASKBASE               0x00C00000
-#define ARCH_MMU_TASKSIZE               0x00008000
+#define ARCH_MMU_TASKSIZE               0x8000
 #define ARCH_MAILBOX_BASE               0x01000000
 #define ARCH_TASK_CODEBASE              0x02000000
 #define ARCH_KCODE                      0x01
