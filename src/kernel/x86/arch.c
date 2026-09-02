@@ -17,7 +17,7 @@ static struct cpu_general registers[POOL_TASKS];
 static unsigned long directories[POOL_TASKS];
 static unsigned long mmap[POOL_TASKS];
 
-static void maptable(unsigned long directory, unsigned long vaddress, unsigned long taddress, unsigned int flags)
+static unsigned int gettflags(unsigned int flags)
 {
 
     unsigned int tflags = MMU_TFLAG_PRESENT;
@@ -34,11 +34,11 @@ static void maptable(unsigned long directory, unsigned long vaddress, unsigned l
     if (flags & MMAP_FLAG_WRITETHROUGH)
         tflags |= MMU_TFLAG_WRITETHROUGH;
 
-    mmu_settable(directory, vaddress, taddress, tflags);
+    return tflags;
 
 }
 
-static void mappage(unsigned long directory, unsigned long vaddress, unsigned long paddress, unsigned int flags)
+static unsigned int getpflags(unsigned int flags)
 {
 
     unsigned int pflags = MMU_PFLAG_PRESENT;
@@ -55,7 +55,7 @@ static void mappage(unsigned long directory, unsigned long vaddress, unsigned lo
     if (flags & MMAP_FLAG_WRITETHROUGH)
         pflags |= MMU_PFLAG_WRITETHROUGH;
 
-    mmu_setpage(directory, vaddress, paddress, pflags);
+    return pflags;
 
 }
 
@@ -80,11 +80,11 @@ static void map(unsigned long directory, struct mmap_header *header, unsigned lo
 
         unsigned long taddress = addtable(directory, header);
 
-        maptable(directory, vaddress, taddress, flags);
+        mmu_settable(directory, vaddress, taddress, gettflags(flags));
 
     }
 
-    mappage(directory, vaddress, paddress, flags);
+    mmu_setpage(directory, vaddress, paddress, getpflags(flags));
 
 }
 
