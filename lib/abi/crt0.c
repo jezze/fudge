@@ -36,6 +36,13 @@ static char *extract(char *data, unsigned int length, unsigned int offset)
 
 }
 
+static void onkill(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_route(EVENT_DONE, source);
+
+}
+
 static void onoption(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -56,6 +63,13 @@ static void onoption(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onterm(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_route(EVENT_DONE, source);
+
+}
+
 void panic(unsigned int source, char *file, unsigned int line)
 {
 
@@ -68,7 +82,9 @@ void main(void)
 {
 
     option_add("pwd", "");
+    channel_bind(EVENT_KILL, onkill);
     channel_bind(EVENT_OPTION, onoption);
+    channel_bind(EVENT_TERM, onterm);
     init();
 
 }
