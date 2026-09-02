@@ -57,7 +57,7 @@ static unsigned int spawnwm(unsigned int ichannel)
 
 }
 
-static char *modules[36] = {
+static char *modules[35] = {
     "initrd:kernel/base.ko",
     "initrd:kernel/log.ko",
     "initrd:kernel/block.ko",
