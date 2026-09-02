@@ -21,8 +21,8 @@
 #define REG_DATA_VECTOR0                0x20
 #define REG_DATA_VECTOR1                0x28
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDT_BASE;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDT_BASE;
 static void (*routines[ROUTINES])(unsigned int irq);
 
 static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)

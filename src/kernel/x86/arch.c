@@ -10,8 +10,8 @@
 #include "pic.h"
 #include "arch.h"
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDT_BASE;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDT_BASE;
 static struct arch_tss tss0;
 static struct cpu_general registers[POOL_TASKS];
 static unsigned long directories[POOL_TASKS];
@@ -132,7 +132,7 @@ static void mapentry(unsigned long directory, struct mmap_header *header, struct
             struct task *task = pool_gettask(entry->itask);
 
             if (task)
-                maprange(directory, header, entry->vaddress, ARCH_MAILBOXADDRESS + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
+                maprange(directory, header, entry->vaddress, ARCH_MAILBOX_BASE + MESSAGE_CAPACITY * task->imailbox[entry->ichannel], entry->size, entry->flags);
 
         }
 
@@ -155,12 +155,12 @@ static unsigned int createtask(unsigned long address)
         if (inode)
         {
 
-            unsigned int code = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * ntask;
-            unsigned int stack = ARCH_TASKCODEADDRESS + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE;
+            unsigned int code = ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask;
+            unsigned int stack = ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE;
             struct mmap_header *header = (struct mmap_header *)mmap[ntask];
             struct mmap_entry *entry;
 
-            buffer_copy((void *)directories[ntask], (void *)ARCH_MMUKERNELADDRESS, MMU_PDSIZE);
+            buffer_copy((void *)directories[ntask], (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
             kernel_maptask(ntask, header, code, stack, MMU_PAGESIZE, MMU_PAGEMASK);
 
             entry = mmap_find(header, KERNEL_VMMAP);
@@ -234,7 +234,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         interrupt->eip.value = (unsigned long)cpu_halt;
         interrupt->esp.value = 0;
 
-        cpu_setcr3(ARCH_MMUKERNELADDRESS);
+        cpu_setcr3(ARCH_MMU_KERNELBASE);
 
     }
 
@@ -300,13 +300,13 @@ static void debugselector(unsigned int error)
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags)
 {
 
-    struct mmap_header *header = (struct mmap_header *)ARCH_MMAPADDRESS;
+    struct mmap_header *header = (struct mmap_header *)ARCH_MMAP_BASE;
     struct mmap_entry entry;
 
     mmap_initentry(&entry, MMAP_TYPE_NORMAL, paddress, vaddress, size, flags);
     mmap_register(header, &entry);
 
-    maprange(ARCH_MMUKERNELADDRESS, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
+    maprange(ARCH_MMU_KERNELBASE, header, entry.vaddress, entry.paddress, entry.size, entry.flags);
 
 }
 
@@ -506,7 +506,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
         if (!found)
         {
 
-            struct mmap_header *header = (struct mmap_header *)ARCH_MMAPADDRESS;
+            struct mmap_header *header = (struct mmap_header *)ARCH_MMAP_BASE;
             struct mmap_entry *entry = mmap_find(header, vaddress);
 
             if (entry)
@@ -561,7 +561,7 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 void arch_configuregdt(void)
 {
 
-    gdt_init(&gdt->pointer, ARCH_GDTDESCRIPTORS, gdt->descriptors);
+    gdt_init(&gdt->pointer, ARCH_GDT_DESCRIPTORS, gdt->descriptors);
     gdt_setdescriptor(&gdt->pointer, ARCH_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, ARCH_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(&gdt->pointer, ARCH_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -573,7 +573,7 @@ void arch_configuregdt(void)
 void arch_configureidt(void)
 {
 
-    idt_init(&idt->pointer, ARCH_IDTDESCRIPTORS, idt->descriptors);
+    idt_init(&idt->pointer, ARCH_IDT_DESCRIPTORS, idt->descriptors);
     idt_setdescriptor(&idt->pointer, 0x00, isr_zero, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x01, isr_debug, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(&idt->pointer, 0x02, isr_nmi, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -596,7 +596,7 @@ void arch_configureidt(void)
 void arch_configuretss(struct arch_tss *tss, unsigned int id, unsigned int sp)
 {
 
-    tss_init(&tss->pointer, ARCH_TSSDESCRIPTORS, tss->descriptors);
+    tss_init(&tss->pointer, ARCH_TSS_DESCRIPTORS, tss->descriptors);
     tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), sp);
     gdt_setdescriptor(&gdt->pointer, ARCH_TSS + id, (unsigned long)tss->pointer.descriptors, (unsigned long)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(gdt_getselector(&gdt->pointer, ARCH_TSS + id));
@@ -611,8 +611,8 @@ static void setupmappings(void)
     for (i = 1; i < POOL_TASKS; i++)
     {
 
-        directories[i] = ARCH_MMUTASKADDRESS + ARCH_MMUTASKSIZE * i;
-        mmap[i] = ARCH_MMAPADDRESS + MMAP_SIZE * i;
+        directories[i] = ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * i;
+        mmap[i] = ARCH_MMAP_BASE + MMAP_SIZE * i;
 
     }
 
@@ -626,19 +626,19 @@ void arch_setup1(void)
     pic_init();
     arch_configuregdt();
     arch_configureidt();
-    arch_configuretss(&tss0, 0, ARCH_KERNELSTACKADDRESS + ARCH_KERNELSTACKSIZE);
+    arch_configuretss(&tss0, 0, ARCH_KERNEL_STACKBASE + ARCH_KERNEL_STACKSIZE);
     setupmappings();
-    buffer_clear((void *)ARCH_MMUKERNELADDRESS, MMU_PDSIZE);
-    mmap_initheader((struct mmap_header *)ARCH_MMAPADDRESS);
+    buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
+    mmap_initheader((struct mmap_header *)ARCH_MMAP_BASE);
     arch_kmap(0x00000000, 0x00000000, 0x00800000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MMAPADDRESS, ARCH_MMAPADDRESS, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELADDRESS, ARCH_MMUKERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MMUTASKADDRESS, ARCH_MMUTASKADDRESS, ARCH_MMUTASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    arch_kmap(ARCH_MAILBOXADDRESS, ARCH_MAILBOXADDRESS, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    cpu_setcr3(ARCH_MMUKERNELADDRESS);
+    arch_kmap(ARCH_MMAP_BASE, ARCH_MMAP_BASE, MMAP_SIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELBASE, ARCH_MMU_KERNELSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(ARCH_MAILBOX_BASE, ARCH_MAILBOX_BASE, MESSAGE_CAPACITY * POOL_MAILBOXES, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    cpu_setcr3(ARCH_MMU_KERNELBASE);
     mmu_enable();
     mailbox_setup();
-    pool_setup(ARCH_MAILBOXADDRESS);
+    pool_setup(ARCH_MAILBOX_BASE);
     kernel_setup();
     abi_setup();
     abi_setcallback(0x03, spawn);

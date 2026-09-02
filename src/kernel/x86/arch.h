@@ -1,20 +1,20 @@
-#define ARCH_GDTADDRESS                 0x00001000
-#define ARCH_GDTDESCRIPTORS             256
-#define ARCH_IDTADDRESS                 0x00002000
-#define ARCH_IDTDESCRIPTORS             256
-#define ARCH_SMP16ADDRESS               0x00008000
-#define ARCH_SMP32ADDRESS               0x00008200
-#define ARCH_TSSDESCRIPTORS             1
-#define ARCH_KERNELCODEADDRESS          0x00100000
-#define ARCH_KERNELSTACKADDRESS         0x00600000
-#define ARCH_KERNELSTACKSIZE            0x00002000
-#define ARCH_MMAPADDRESS                0x00800000
-#define ARCH_MMUKERNELADDRESS           0x00A00000
-#define ARCH_MMUKERNELSIZE              0x00200000
-#define ARCH_MMUTASKADDRESS             0x00C00000
-#define ARCH_MMUTASKSIZE                0x00008000
-#define ARCH_MAILBOXADDRESS             0x01000000
-#define ARCH_TASKCODEADDRESS            0x02000000
+#define ARCH_GDT_BASE                   0x00001000
+#define ARCH_GDT_DESCRIPTORS            256
+#define ARCH_IDT_BASE                   0x00002000
+#define ARCH_IDT_DESCRIPTORS            256
+#define ARCH_SMP_BASE16                 0x00008000
+#define ARCH_SMP_BASE32                 0x00008200
+#define ARCH_TSS_DESCRIPTORS            1
+#define ARCH_KERNEL_CODEBASE            0x00100000
+#define ARCH_KERNEL_STACKBASE           0x00600000
+#define ARCH_KERNEL_STACKSIZE           0x00002000
+#define ARCH_MMAP_BASE                  0x00800000
+#define ARCH_MMU_KERNELBASE             0x00A00000
+#define ARCH_MMU_KERNELSIZE             0x00200000
+#define ARCH_MMU_TASKBASE               0x00C00000
+#define ARCH_MMU_TASKSIZE               0x00008000
+#define ARCH_MAILBOX_BASE               0x01000000
+#define ARCH_TASK_CODEBASE              0x02000000
 #define ARCH_KCODE                      0x01
 #define ARCH_KDATA                      0x02
 #define ARCH_UCODE                      0x03
@@ -25,7 +25,7 @@ struct arch_gdt
 {
 
     struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[ARCH_GDTDESCRIPTORS];
+    struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];
 
 };
 
@@ -33,7 +33,7 @@ struct arch_idt
 {
 
     struct idt_pointer pointer;
-    struct idt_descriptor descriptors[ARCH_IDTDESCRIPTORS];
+    struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];
 
 };
 
@@ -41,7 +41,7 @@ struct arch_tss
 {
 
     struct tss_pointer pointer;
-    struct tss_descriptor descriptors[ARCH_TSSDESCRIPTORS];
+    struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];
 
 };
 

@@ -18,8 +18,8 @@ enum regnames {EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI, PC, PS, CS, SS, DS, ES, F
 int registers[NUMREGS];
 int remcomStack[STACKSIZE / sizeof (int)];
 int *stackPtr = &remcomStack[STACKSIZE / sizeof (int) - 1];
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDTADDRESS;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDTADDRESS;
+static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDT_BASE;
+static struct arch_idt *idt = (struct arch_idt *)ARCH_IDT_BASE;
 
 extern void return_to_prog();
 __asm__(".text");
