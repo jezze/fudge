@@ -395,21 +395,16 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int sp, unsigned int address, unsigned int mmap, unsigned long code, unsigned long stack)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
-    unsigned int inode = 0;
 
     if (task)
     {
 
-        task_reset(task);
-
-        task->thread.ip = ip;
-        task->thread.sp = sp;
-        task->address = address;
-        task->mmap = mmap;
+        task_reset(task, address, mmap);
+        task_resetthread(&task->thread, ip, sp);
 
         if (task->address)
         {
@@ -418,6 +413,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
 
             if (format)
             {
+
                 struct mmap_header *header = (struct mmap_header *)task->mmap;
 
                 task->thread.ip = format->findentry(task->address);
@@ -433,7 +429,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
         if (task->thread.ip)
         {
 
-            inode = kernel_getchannelinode(itask, 0);
+            unsigned int inode = kernel_getchannelinode(itask, 0);
 
             if (inode)
             {
@@ -441,13 +437,15 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned int ip, unsigned int s
                 transition(itask, TASK_STATE_NEW);
                 transition(itask, TASK_STATE_ASSIGNED);
 
+                return inode;
+
             }
 
         }
 
     }
 
-    return inode;
+    return 0;
 
 }
 

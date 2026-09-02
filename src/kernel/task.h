@@ -23,8 +23,8 @@ struct task_signals
 struct task_thread
 {
 
-    unsigned int ip;
-    unsigned int sp;
+    unsigned long ip;
+    unsigned long sp;
 
 };
 
@@ -36,8 +36,8 @@ struct task
     struct task_thread thread;
     struct spinlock spinlock;
     unsigned int state;
-    unsigned int address;
-    unsigned int mmap;
+    unsigned long address;
+    unsigned long mmap;
     unsigned int imailbox[TASK_MAILBOXES];
 
 };
@@ -47,7 +47,7 @@ unsigned int task_transition(struct task *task, unsigned int state);
 void task_register(struct task *task);
 void task_unregister(struct task *task);
 void task_resetsignals(struct task_signals *signals);
-void task_resetthread(struct task_thread *thread);
+void task_resetthread(struct task_thread *thread, unsigned long ip, unsigned long sp);
 void task_resetmailboxes(struct task *task);
-void task_reset(struct task *task);
+void task_reset(struct task *task, unsigned long address, unsigned long mmap);
 void task_init(struct task *task);
