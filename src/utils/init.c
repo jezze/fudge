@@ -92,14 +92,13 @@ static char *modules[36] = {
     "initrd:kernel/ahci.ko",
     "initrd:kernel/nvme.ko",
     "initrd:kernel/ata.ko",
-    "initrd:kernel/virtio-network.ko",
-    "initrd:kernel/smp.ko"
+    "initrd:kernel/virtio-network.ko"
 };
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    loadmodules(1, 36, modules);
+    loadmodules(1, 35, modules);
     spawnshell(1);
     spawnwm(1);
 
