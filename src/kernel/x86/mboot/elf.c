@@ -12,12 +12,12 @@ static unsigned long findsymbol(unsigned long base, struct elf_sectionheader *sy
     struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(base + header->shoffset);
     struct elf_symbol *symbols = (struct elf_symbol *)(base + symbolheader->offset);
     char *strings = (char *)(base + sectionheaders[symbolheader->link].offset);
-    unsigned int i;
 
     if (symbolheader->size && symbolheader->esize)
     {
 
         unsigned int nsymbols = symbolheader->size / symbolheader->esize;
+        unsigned int i;
 
         for (i = 0; i < nsymbols; i++)
         {
