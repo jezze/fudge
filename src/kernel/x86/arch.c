@@ -397,7 +397,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
     unsigned int vaddress = cpu_getcr2();
     unsigned int directory = cpu_getcr3();
-    unsigned int found = 0;
 
     if (error & MMU_EFLAG_PRESENT)
     {
@@ -411,6 +410,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
     else
     {
+
+        unsigned int found = 0;
 
         if (error & MMU_EFLAG_USER)
         {
