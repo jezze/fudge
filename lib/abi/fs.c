@@ -119,6 +119,12 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
 
     struct event_walkrequest request;
     struct event_walkresponse response;
+    unsigned int length = cstring_length(path);
+    unsigned int offset = buffer_eachbyte(path, length, ':', 0);
+
+    /* TODO: Handle this stuff better */
+    if (offset)
+        path += offset;
 
     request.parent = parent;
     request.length = cstring_length(path);
