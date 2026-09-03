@@ -312,7 +312,6 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
     struct event_maprequest *maprequest = data;
     struct event_mapresponse mapresponse;
 
-    mapresponse.session = maprequest->session;
     mapresponse.address = map(maprequest->id);
 
     return kernel_place(inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &mapresponse);
@@ -325,7 +324,6 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct event_walkrequest *walkrequest = data;
     struct event_walkresponse walkresponse;
 
-    walkresponse.session = walkrequest->session;
     walkresponse.id = walk((walkrequest->parent) ? walkrequest->parent : getroot(), walkrequest->path, walkrequest->length);
 
     return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &walkresponse);
@@ -338,7 +336,6 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statrequest *statrequest = data;
     struct event_statresponse statresponse;
 
-    statresponse.session = statrequest->session;
     statresponse.nrecords = stat(statrequest->id, statrequest->record);
 
     return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse), &statresponse);
@@ -351,7 +348,6 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     struct event_listrequest *listrequest = data;
     struct event_listresponse listresponse;
 
-    listresponse.session = listrequest->session;
     listresponse.nrecords = list(listrequest->id, listrequest->offset, listrequest->nrecords, listrequest->records);
 
     return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &listresponse);
@@ -364,7 +360,6 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     struct event_readrequest *readrequest = data;
     struct event_readresponse readresponse;
 
-    readresponse.session = readrequest->session;
     readresponse.count = read(readrequest->id, readrequest->buffer, readrequest->count, readrequest->offset);
 
     return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse), &readresponse);
@@ -377,7 +372,6 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     struct event_writerequest *writerequest = data;
     struct event_writeresponse writeresponse;
 
-    writeresponse.session = writerequest->session;
     writeresponse.count = write(writerequest->id, writerequest->buffer, writerequest->count, writerequest->offset);
 
     return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &writeresponse);

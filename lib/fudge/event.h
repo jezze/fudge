@@ -215,7 +215,6 @@ struct event_wmevent
 struct event_listrequest
 {
 
-    unsigned int session;
     unsigned int id;
     unsigned int offset;
     unsigned int nrecords;
@@ -226,7 +225,6 @@ struct event_listrequest
 struct event_listresponse
 {
 
-    unsigned int session;
     unsigned int nrecords;
 
 };
@@ -234,7 +232,6 @@ struct event_listresponse
 struct event_maprequest
 {
 
-    unsigned int session;
     unsigned int id;
 
 };
@@ -242,7 +239,6 @@ struct event_maprequest
 struct event_mapresponse
 {
 
-    unsigned int session;
     unsigned int address;
 
 };
@@ -250,7 +246,6 @@ struct event_mapresponse
 struct event_readrequest
 {
 
-    unsigned int session;
     unsigned int id;
     unsigned int offset;
     unsigned int count;
@@ -261,7 +256,6 @@ struct event_readrequest
 struct event_readresponse
 {
 
-    unsigned int session;
     unsigned int count;
 
 };
@@ -269,7 +263,6 @@ struct event_readresponse
 struct event_statrequest
 {
 
-    unsigned int session;
     unsigned int id;
     struct record *record;
 
@@ -278,7 +271,6 @@ struct event_statrequest
 struct event_statresponse
 {
 
-    unsigned int session;
     unsigned int nrecords;
 
 };
@@ -286,7 +278,6 @@ struct event_statresponse
 struct event_walkrequest
 {
 
-    unsigned int session;
     unsigned int parent;
     unsigned int length;
     char *path;
@@ -296,7 +287,6 @@ struct event_walkrequest
 struct event_walkresponse
 {
 
-    unsigned int session;
     unsigned int id;
 
 };
@@ -304,7 +294,6 @@ struct event_walkresponse
 struct event_writerequest
 {
 
-    unsigned int session;
     unsigned int id;
     unsigned int offset;
     unsigned int count;
@@ -315,7 +304,6 @@ struct event_writerequest
 struct event_writeresponse
 {
 
-    unsigned int session;
     unsigned int count;
 
 };

@@ -334,7 +334,6 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        response.header.session = listrequest->session;
         response.header.nrecords = nrecords;
 
         buffer_write(response.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
@@ -366,7 +365,6 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         unsigned char data[4096];
 
         read(data, 4096, node.pointer0, (1024 << sb.blockSize));
-        response.header.session = readrequest->session;
         response.header.count = buffer_write(response.data, 64, data, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
 
         channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
@@ -396,7 +394,6 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 
         struct event_walkresponse response;
 
-        response.session = walkrequest->session;
         response.id = id;
 
         channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
@@ -425,7 +422,6 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 
                 struct event_walkresponse response;
 
-                response.session = walkrequest->session;
                 response.id = entry->node;
 
                 channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
