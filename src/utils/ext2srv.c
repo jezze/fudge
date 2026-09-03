@@ -172,8 +172,7 @@ static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct 
 
 }
 
-/*
-static void printsuperblock(struct ext2_superblock *superblock)
+static void printsuperblock(unsigned int source, struct ext2_superblock *superblock)
 {
 
     channel_send_fmt1(0, source, EVENT_DATA, "Node Count: %u\n", &superblock->nodeCount);
@@ -192,6 +191,7 @@ static void printsuperblock(struct ext2_superblock *superblock)
 
 }
 
+/*
 static void printblockgroup(struct ext2_blockgroup *blockgroup)
 {
 
@@ -280,6 +280,7 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
 */
 
 static struct ext2_superblock sb;
+static unsigned int xxx;
 
 static void simpleread(struct ext2_node *node, unsigned int id)
 {
@@ -290,6 +291,7 @@ static void simpleread(struct ext2_node *node, unsigned int id)
     unsigned int blockindex = (id * sb.nodeSize) / blocksize;
     struct ext2_blockgroup bg;
 
+    channel_send_fmt0(0, xxx, EVENT_DATA, "Simple read\n");
     readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
     readnode(node, &sb, &bg, blocksize, nodeindex);
 
@@ -301,6 +303,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
     struct event_readrequest *listrequest = mdata;
     struct ext2_node node;
 
+    channel_send_fmt0(0, xxx, EVENT_DATA, "On list request\n");
     simpleread(&node, listrequest->id);
 
     if ((node.type & 0xF000) == 0x4000)
@@ -356,6 +359,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     struct event_readrequest *readrequest = mdata;
     struct ext2_node node;
 
+    channel_send_fmt0(0, xxx, EVENT_DATA, "On read request\n");
     simpleread(&node, readrequest->id);
 
     if ((node.type & 0xF000) == 0x8000)
@@ -390,6 +394,8 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     char *path = (char *)(walkrequest + 1);
     struct ext2_node node;
 
+    channel_send_fmt0(0, xxx, EVENT_DATA, "On walk request\n");
+
     if (!walkrequest->length)
     {
 
@@ -411,12 +417,18 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
         unsigned char data[4096];
         unsigned int offset = 0;
 
+        channel_send_fmt0(0, xxx, EVENT_DATA, "Read data\n");
+
         read(data, 4096, node.pointer0, (1024 << sb.blockSize));
+
+        channel_send_fmt0(0, xxx, EVENT_DATA, "Read complete\n");
 
         while (offset < 4096)
         {
 
             struct ext2_entry *entry = (struct ext2_entry *)(data + offset);
+
+            channel_send_fmt0(0, xxx, EVENT_DATA, "Loop entries\n");
 
             if (entry->length == walkrequest->length && buffer_match((char *)entry + 8, path, entry->length))
             {
@@ -459,12 +471,17 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     channel_send(0, target, EVENT_LINK, 0, 0);
     readsuperblock(&sb);
 
+    xxx = source;
+
     if (isvalid(&sb))
     {
 
+        printsuperblock(source, &sb);
         call_announce(0, djb_hash(4, "ext2"));
 
         while (channel_process(0));
+
+        printsuperblock(source, &sb);
 
     }
 
