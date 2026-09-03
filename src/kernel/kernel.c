@@ -416,11 +416,12 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 
                 struct mmap_header *header = (struct mmap_header *)task->mmap;
 
-                task->thread.ip = format->findentry(task->address);
+                mmap_initheader(header);
+                mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
                 format->map(task->address, code, header);
 
-                mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+                task->thread.ip = format->findentry(task->address);
 
             }
 

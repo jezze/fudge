@@ -87,11 +87,7 @@ static unsigned int createtask(unsigned long address)
     {
 
         struct mmap_header *header = (struct mmap_header *)(ARCH_MMAP_BASE + MMAP_SIZE * ntask);
-        unsigned int inode;
-
-        mmap_initheader(header);
-
-        inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE);
+        unsigned int inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask, ARCH_TASK_CODEBASE + (TASK_CODESIZE + TASK_STACKSIZE) * ntask + TASK_CODESIZE);
 
         if (inode)
         {
