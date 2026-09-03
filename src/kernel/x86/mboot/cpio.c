@@ -334,11 +334,9 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_statrequest *statrequest = data;
-    struct event_statresponse statresponse;
+    struct record record;
 
-    statresponse.nrecords = stat(statrequest->id, statrequest->record);
-
-    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse), &statresponse);
+    return kernel_place(inode, source, EVENT_STATRESPONSE, stat(statrequest->id, &record) * sizeof (struct record), &record);
 
 }
 
@@ -346,11 +344,9 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_listrequest *listrequest = data;
-    struct event_listresponse listresponse;
+    struct record records[32];
 
-    listresponse.nrecords = list(listrequest->id, listrequest->offset, listrequest->nrecords, listrequest->records);
-
-    return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &listresponse);
+    return kernel_place(inode, source, EVENT_LISTRESPONSE, list(listrequest->id, listrequest->offset, listrequest->nrecords < 32 ? listrequest->nrecords : 32, records) * sizeof (struct record), records);
 
 }
 
@@ -358,11 +354,9 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_readrequest *readrequest = data;
-    struct event_readresponse readresponse;
+    unsigned char buffer[MESSAGE_SIZE];
 
-    readresponse.count = read(readrequest->id, readrequest->buffer, readrequest->count, readrequest->offset);
-
-    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse), &readresponse);
+    return kernel_place(inode, source, EVENT_READRESPONSE, read(readrequest->id, buffer, readrequest->count < MESSAGE_SIZE ? readrequest->count : MESSAGE_SIZE, readrequest->offset), buffer);
 
 }
 

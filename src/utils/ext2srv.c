@@ -361,6 +361,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     if ((node.type & 0xF000) == 0x8000)
     {
 
+        /*
         struct {struct event_readresponse header; char data[64];} response;
         unsigned char data[4096];
 
@@ -368,7 +369,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         response.header.count = buffer_write(response.data, 64, data, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
 
         channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
-
+        */
 
     }
 

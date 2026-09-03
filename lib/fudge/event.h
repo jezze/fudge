@@ -218,7 +218,6 @@ struct event_listrequest
     unsigned int id;
     unsigned int offset;
     unsigned int nrecords;
-    struct record *records;
 
 };
 
@@ -249,14 +248,6 @@ struct event_readrequest
     unsigned int id;
     unsigned int offset;
     unsigned int count;
-    void *buffer;
-
-};
-
-struct event_readresponse
-{
-
-    unsigned int count;
 
 };
 
@@ -264,14 +255,6 @@ struct event_statrequest
 {
 
     unsigned int id;
-    struct record *record;
-
-};
-
-struct event_statresponse
-{
-
-    unsigned int nrecords;
 
 };
 
@@ -297,6 +280,7 @@ struct event_writerequest
     unsigned int id;
     unsigned int offset;
     unsigned int count;
+    /* TODO: Remove this */
     void *buffer;
 
 };

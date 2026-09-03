@@ -27,17 +27,16 @@ unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id
 {
 
     struct event_listrequest request;
-    struct event_listresponse response;
+    struct message message;
 
     request.id = id;
     request.offset = offset;
     request.nrecords = nrecords;
-    request.records = records;
 
     channel_send(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
-    channel_wait(ichannel, target, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response);
+    channel_poll(ichannel, target, EVENT_LISTRESPONSE, &message);
 
-    return response.nrecords;
+    return buffer_read(records, nrecords * sizeof (struct record), message_data(&message, ichannel), message.length, 0) / sizeof (struct record);
 
 }
 
@@ -60,17 +59,16 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
 {
 
     struct event_readrequest request;
-    struct event_readresponse response;
+    struct message message;
 
     request.id = id;
     request.offset = offset;
     request.count = count;
-    request.buffer = buffer;
 
     channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
-    channel_wait(ichannel, target, EVENT_READRESPONSE, sizeof (struct event_readresponse), &response);
+    channel_poll(ichannel, target, EVENT_READRESPONSE, &message);
 
-    return response.count;
+    return buffer_read(buffer, count, message_data(&message, ichannel), message.length, 0);
 
 }
 
@@ -105,15 +103,14 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 {
 
     struct event_statrequest request;
-    struct event_statresponse response;
+    struct message message;
 
     request.id = id;
-    request.record = record;
 
     channel_send(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
-    channel_wait(ichannel, target, EVENT_STATRESPONSE, sizeof (struct event_statresponse), &response);
+    channel_poll(ichannel, target, EVENT_STATRESPONSE, &message);
 
-    return response.nrecords;
+    return buffer_read(record, sizeof (struct record), message_data(&message, ichannel), message.length, 0) / sizeof (struct record);
 
 }
 
@@ -134,6 +131,7 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
 
 }
 
+/* TODO: Send data as a seperate message after writerequest */
 unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -143,6 +141,7 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
     request.id = id;
     request.offset = offset;
     request.count = count;
+    /* TODO: Remove this buffer */
     request.buffer = buffer;
 
     channel_send(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
