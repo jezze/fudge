@@ -2,22 +2,6 @@
 #include <abi.h>
 #include <disk.h>
 
-static unsigned int read(unsigned int target, void *buffer, unsigned int count, unsigned int sector)
-{
-
-    struct event_blockrequest blockrequest;
-    struct message message;
-
-    blockrequest.sector = sector;
-    blockrequest.count = count;
-
-    channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
-    channel_poll(0, target, EVENT_BLOCKRESPONSE, &message);
-
-    return buffer_read(buffer, count, message_data(&message, 0), message.length, 0);
-
-}
-
 static void print(unsigned int source, struct mbr *mbr)
 {
 
@@ -62,23 +46,32 @@ static void print(unsigned int source, struct mbr *mbr)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int block = channel_lookup(option_getstring("block-service"));
+    unsigned int target = channel_lookup(option_getstring("block-service"));
 
-    if (block)
+    if (target)
     {
 
-        unsigned char blockdata[512];
-        struct mbr *mbr = (struct mbr *)blockdata;
-        unsigned int count;
+        struct event_blockrequest blockrequest;
+        struct message message;
 
-        channel_send(0, block, EVENT_LINK, 0, 0);
+        blockrequest.sector = 0;
+        blockrequest.count = 512;
 
-        count = read(block, blockdata, 512, 0);
+        channel_send(0, target, EVENT_LINK, 0, 0);
+        channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+        channel_poll(0, target, EVENT_BLOCKRESPONSE, &message);
 
-        if (count == 512 && mbr_validate(mbr))
-            print(source, mbr);
+        if (message.length == blockrequest.count)
+        {
 
-        channel_send(0, block, EVENT_UNLINK, 0, 0);
+            struct mbr *mbr = message_data(&message, 0);
+
+            if (mbr_validate(mbr))
+                print(source, mbr);
+
+        }
+
+        channel_send(0, target, EVENT_UNLINK, 0, 0);
 
     }
 
