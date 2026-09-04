@@ -36,8 +36,9 @@ unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id
 
     channel_send(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
     channel_wait(ichannel, target, EVENT_LISTRESPONSE, MESSAGE_SIZE, data);
+    buffer_copy(records, response + 1, response->nrecords * sizeof (struct record));
 
-    return buffer_read(records, nrecords * sizeof (struct record), data + sizeof (struct event_listresponse), response->nrecords * sizeof (struct record), 0) / sizeof (struct record);
+    return response->nrecords;
 
 }
 
@@ -69,8 +70,9 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
 
     channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
     channel_wait(ichannel, target, EVENT_READRESPONSE, MESSAGE_SIZE, data);
+    buffer_copy(buffer, response + 1, response->count);
 
-    return buffer_read(buffer, count, data + sizeof (struct event_readresponse), response->count, 0);
+    return response->count;
 
 }
 
@@ -105,14 +107,13 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 {
 
     struct event_statrequest request;
-    struct message message;
 
     request.id = id;
 
     channel_send(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
-    channel_poll(ichannel, target, EVENT_STATRESPONSE, &message);
+    channel_wait(ichannel, target, EVENT_STATRESPONSE, sizeof (struct record), record);
 
-    return buffer_read(record, sizeof (struct record), message_data(&message, ichannel), message.length, 0) / sizeof (struct record);
+    return 1;
 
 }
 
