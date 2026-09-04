@@ -291,7 +291,6 @@ static void simpleread(struct ext2_node *node, unsigned int id)
     unsigned int blockindex = (id * sb.nodeSize) / blocksize;
     struct ext2_blockgroup bg;
 
-    channel_send_fmt0(0, xxx, EVENT_DATA, "Simple read\n");
     readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
     readnode(node, &sb, &bg, blocksize, nodeindex);
 
@@ -306,6 +305,17 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
     channel_send_fmt0(0, xxx, EVENT_DATA, "On list request\n");
     simpleread(&node, listrequest->id);
 
+    if (listrequest->offset > 0)
+    {
+
+        struct event_listresponse response;
+
+        response.nrecords = 0;
+
+        channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response);
+
+    }
+
     if ((node.type & 0xF000) == 0x4000)
     {
 
@@ -313,25 +323,21 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
         unsigned char data[4096];
         unsigned int offset = 0;
         struct record records[8];
-        unsigned int nrecords = 0;
+        unsigned int nrecords = 3;
+        unsigned int i;
 
         read(data, 4096, node.pointer0, (1024 << sb.blockSize));
 
-        while (offset < 4096)
+        for (i = 0; i < nrecords; i++)
         {
 
             struct ext2_entry *entry = (struct ext2_entry *)(data + offset);
-            struct record *record = &records[nrecords];
+            struct record *record = &records[i];
 
             record->id = entry->node;
             record->size = 0; /* can not be determined */
             record->type = (entry->type == 2) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL;
             record->length = buffer_write(record->name, RECORD_NAMESIZE, (char *)entry + 8, entry->length, 0);
-
-            if (nrecords < 8)
-                nrecords++;
-            else
-                break;
 
             offset += entry->size;
 
