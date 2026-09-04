@@ -251,6 +251,13 @@ struct event_readrequest
 
 };
 
+struct event_readresponse
+{
+
+    unsigned int count;
+
+};
+
 struct event_statrequest
 {
 
@@ -263,7 +270,6 @@ struct event_walkrequest
 
     unsigned int parent;
     unsigned int length;
-    char *path;
 
 };
 
@@ -280,8 +286,6 @@ struct event_writerequest
     unsigned int id;
     unsigned int offset;
     unsigned int count;
-    /* TODO: Remove this */
-    void *buffer;
 
 };
 

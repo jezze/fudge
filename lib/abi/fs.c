@@ -27,16 +27,17 @@ unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id
 {
 
     struct event_listrequest request;
-    struct message message;
+    unsigned char data[MESSAGE_SIZE];
+    struct event_listresponse *response = (struct event_listresponse *)data;
 
     request.id = id;
     request.offset = offset;
     request.nrecords = nrecords;
 
     channel_send(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
-    channel_poll(ichannel, target, EVENT_LISTRESPONSE, &message);
+    channel_wait(ichannel, target, EVENT_LISTRESPONSE, MESSAGE_SIZE, data);
 
-    return buffer_read(records, nrecords * sizeof (struct record), message_data(&message, ichannel), message.length, 0) / sizeof (struct record);
+    return buffer_read(records, nrecords * sizeof (struct record), data + sizeof (struct event_listresponse), response->nrecords * sizeof (struct record), 0) / sizeof (struct record);
 
 }
 
@@ -59,16 +60,17 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
 {
 
     struct event_readrequest request;
-    struct message message;
+    unsigned char data[MESSAGE_SIZE];
+    struct event_readresponse *response = (struct event_readresponse *)data;
 
     request.id = id;
     request.offset = offset;
     request.count = count;
 
     channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
-    channel_poll(ichannel, target, EVENT_READRESPONSE, &message);
+    channel_wait(ichannel, target, EVENT_READRESPONSE, MESSAGE_SIZE, data);
 
-    return buffer_read(buffer, count, message_data(&message, ichannel), message.length, 0);
+    return buffer_read(buffer, count, data + sizeof (struct event_readresponse), response->count, 0);
 
 }
 
@@ -119,38 +121,35 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
 
     struct event_walkrequest request;
     struct event_walkresponse response;
-    unsigned int length = cstring_length(path);
-    unsigned int offset = buffer_eachbyte(path, length, ':', 0);
+    unsigned int offset = buffer_eachbyte(path, cstring_length(path), ':', 0);
+    char data[MESSAGE_SIZE];
 
     /* TODO: Handle this stuff better */
     if (offset)
         path += offset;
 
     request.parent = parent;
-    request.length = cstring_length(path);
-    request.path = path;
+    request.length = buffer_write(data, MESSAGE_SIZE, path, cstring_length(path), sizeof (struct event_walkrequest));
 
-    channel_send(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest), &request);
+    channel_send(ichannel, target, EVENT_WALKREQUEST, buffer_write(data, MESSAGE_SIZE, &request, sizeof (struct event_walkrequest), 0) + request.length, data);
     channel_wait(ichannel, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
     return response.id;
 
 }
 
-/* TODO: Send data as a seperate message after writerequest */
 unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
     struct event_writerequest request;
     struct event_writeresponse response;
+    char data[MESSAGE_SIZE];
 
     request.id = id;
     request.offset = offset;
-    request.count = count;
-    /* TODO: Remove this buffer */
-    request.buffer = buffer;
+    request.count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct event_writerequest));
 
-    channel_send(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest), &request);
+    channel_send(ichannel, target, EVENT_WRITEREQUEST, buffer_write(data, MESSAGE_SIZE, &request, sizeof (struct event_writerequest), 0) + request.count, data);
     channel_wait(ichannel, target, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
     return response.count;
