@@ -172,6 +172,7 @@ static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct 
 
 }
 
+/*
 static void printsuperblock(unsigned int source, struct ext2_superblock *superblock)
 {
 
@@ -191,7 +192,6 @@ static void printsuperblock(unsigned int source, struct ext2_superblock *superbl
 
 }
 
-/*
 static void printblockgroup(struct ext2_blockgroup *blockgroup)
 {
 
@@ -314,6 +314,8 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 
         channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response);
 
+        return;
+
     }
 
     if ((node.type & 0xF000) == 0x4000)
@@ -322,30 +324,42 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
         struct {struct event_listresponse header; struct record records[8];} response;
         unsigned char data[4096];
         unsigned int offset = 0;
-        struct record records[8];
-        unsigned int nrecords = 3;
-        unsigned int i;
+        unsigned int nrecords = 0;
 
-        read(data, 4096, node.pointer0, (1024 << sb.blockSize));
+        read(data, 4096, node.pointer0, 4096);
 
-        for (i = 0; i < nrecords; i++)
+        while (offset < 1024)
         {
 
             struct ext2_entry *entry = (struct ext2_entry *)(data + offset);
-            struct record *record = &records[i];
+            struct record *record = &response.records[nrecords];
 
             record->id = entry->node;
             record->size = 0; /* can not be determined */
-            record->type = (entry->type == 2) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL;
-            record->length = buffer_write(record->name, RECORD_NAMESIZE, (char *)entry + 8, entry->length, 0);
+            record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
 
+            switch (entry->type)
+            {
+
+            case 1:
+                record->type = RECORD_TYPE_NORMAL;
+
+                break;
+
+            case 2:
+                record->type = RECORD_TYPE_DIRECTORY;
+
+                break;
+
+            }
+
+            nrecords++;
             offset += entry->size;
 
         }
 
         response.header.nrecords = nrecords;
 
-        buffer_write(response.records, sizeof (struct record) * 8, records, sizeof (struct record) * nrecords, 0);
         channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
 
     }
@@ -482,12 +496,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (isvalid(&sb))
     {
 
-        printsuperblock(source, &sb);
         call_announce(0, djb_hash(4, "ext2"));
 
         while (channel_process(0));
-
-        printsuperblock(source, &sb);
 
     }
 
