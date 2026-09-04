@@ -347,7 +347,10 @@ static unsigned int onlistrequest(unsigned int source, unsigned int count, void 
     struct event_listrequest *request = data;
     struct event_listresponse *response = (struct event_listresponse *)buffer;
 
-    response->nrecords = list(request->id, request->offset, request->nrecords < 32 ? request->nrecords : 32, (struct record *)(response + 1));
+    if (request->nrecords >= 32)
+        request->nrecords = 32;
+
+    response->nrecords = list(request->id, request->offset, request->nrecords, (struct record *)(response + 1));
 
     return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + response->nrecords * sizeof (struct record), buffer);
 
@@ -360,7 +363,10 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
 
-    response->count = read(request->id, response + 1, request->count < (MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : (MESSAGE_SIZE - sizeof (struct event_readresponse)), request->offset);
+    if (request->count >= MESSAGE_SIZE - sizeof (struct event_readresponse))
+        request->count = MESSAGE_SIZE - sizeof (struct event_readresponse);
+
+    response->count = read(request->id, response + 1, request->count, request->offset);
 
     return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
