@@ -322,10 +322,9 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 {
 
     struct event_walkrequest *request = data;
-    char *path = (char *)(request + 1);
     struct event_walkresponse response;
 
-    response.id = walk((request->parent) ? request->parent : getroot(), path, request->length);
+    response.id = walk((request->parent) ? request->parent : getroot(), (char *)(request + 1), request->length);
 
     return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
@@ -344,21 +343,21 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 static unsigned int onlistrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_listrequest *request = data;
     unsigned char buffer[MESSAGE_SIZE];
+    struct event_listrequest *request = data;
     struct event_listresponse *response = (struct event_listresponse *)buffer;
 
     response->nrecords = list(request->id, request->offset, request->nrecords < 32 ? request->nrecords : 32, (struct record *)(buffer + sizeof (struct event_listresponse)));
 
-    return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_readresponse) + response->nrecords * sizeof (struct record), buffer);
+    return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + response->nrecords * sizeof (struct record), buffer);
 
 }
 
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_readrequest *request = data;
     unsigned char buffer[MESSAGE_SIZE];
+    struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
 
     response->count = read(request->id, buffer + sizeof (struct event_readresponse), request->count < (MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : (MESSAGE_SIZE - sizeof (struct event_readresponse)), request->offset);
@@ -371,10 +370,9 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 {
 
     struct event_writerequest *request = data;
-    void *buffer = (void *)(request + 1);
     struct event_writeresponse response;
 
-    response.count = write(request->id, buffer, request->count, request->offset);
+    response.count = write(request->id, request + 1, request->count, request->offset);
 
     return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
