@@ -16,21 +16,22 @@ static void list(unsigned int source, char *path)
         if (id)
         {
 
-            struct record records[8];
-            unsigned int nrecords;
+            unsigned char data[MESSAGE_SIZE];
+            unsigned int count;
             unsigned int offset;
 
             channel_send_fmt0(0, source, EVENT_DATA, "../\n");
 
-            for (offset = 0; (nrecords = fs_list(1, target, id, offset, records, 8)); offset += nrecords)
+            /* Should use MESSAGE_SIZE here */
+            for (offset = 0; (count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)); offset += count)
             {
 
                 unsigned int i;
 
-                for (i = 0; i < nrecords; i++)
+                for (i = 0; i < count; i += sizeof (struct record))
                 {
 
-                    struct record *record = &records[i];
+                    struct record *record = (struct record *)(data + i);
 
                     if (record->type == RECORD_TYPE_DIRECTORY)
                         channel_send_fmt2(0, source, EVENT_DATA, "%w/\n", record->name, &record->length);

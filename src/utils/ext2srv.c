@@ -296,6 +296,7 @@ static void simpleread(struct ext2_node *node, unsigned int id)
 
 }
 
+/*
 static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -310,7 +311,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 
         struct event_listresponse response;
 
-        response.nrecords = 0;
+        response.count = 0;
 
         channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response);
 
@@ -335,7 +336,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
             struct record *record = &response.records[nrecords];
 
             record->id = entry->node;
-            record->size = 0; /* can not be determined */
+            record->size = 0;
             record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
 
             switch (entry->type)
@@ -358,9 +359,9 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        response.header.nrecords = nrecords;
+        response.header.count = nrecords * sizeof (struct record);
 
-        channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + sizeof (struct record) * response.header.nrecords, &response);
+        channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + response.header.count, &response);
 
     }
 
@@ -372,6 +373,7 @@ static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
     }
 
 }
+*/
 
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
@@ -512,7 +514,6 @@ void init(void)
     option_add("block-service", "block");
     option_add("partoffset", "2048");
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_LISTREQUEST, onlistrequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);

@@ -25,30 +25,30 @@ static void updatecontent(unsigned int wm)
         if (id)
         {
 
-            char data[MESSAGE_SIZE];
-            struct record records[8];
-            unsigned int nrecords;
+            unsigned char data[MESSAGE_SIZE];
+            unsigned int count;
             unsigned int offset;
 
             channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
 
-            for (offset = 0; (nrecords = fs_list(1, target, id, offset, records, 8)); offset += nrecords)
+            /* Should use MESSAGE_SIZE here */
+            for (offset = 0; (count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)); offset += count)
             {
 
-                unsigned int count = 0;
+                unsigned char d[MESSAGE_SIZE];
+                unsigned int c = 0;
                 unsigned int i;
 
-                for (i = 0; i < nrecords; i++)
+                for (i = 0; i < count; i += sizeof (struct record))
                 {
 
-                    struct record *record = &records[i];
+                    struct record *record = (struct record *)(data + i);
 
-                    count += cstring_write_fmt6(data, MESSAGE_SIZE, count, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
-
+                    c += cstring_write_fmt6(d, MESSAGE_SIZE, c, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
 
                 }
 
-                channel_send(0, wm, EVENT_WMRENDERDATA, count, data);
+                channel_send(0, wm, EVENT_WMRENDERDATA, c, d);
 
             }
 

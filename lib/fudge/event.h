@@ -33,14 +33,12 @@
 #define EVENT_WALKRESPONSE              0x41
 #define EVENT_READREQUEST               0x42
 #define EVENT_READRESPONSE              0x43
-#define EVENT_LISTREQUEST               0x44
-#define EVENT_LISTRESPONSE              0x45
-#define EVENT_WRITEREQUEST              0x46
-#define EVENT_WRITERESPONSE             0x47
-#define EVENT_STATREQUEST               0x48
-#define EVENT_STATRESPONSE              0x49
-#define EVENT_MAPREQUEST                0x4A
-#define EVENT_MAPRESPONSE               0x4B
+#define EVENT_WRITEREQUEST              0x44
+#define EVENT_WRITERESPONSE             0x45
+#define EVENT_STATREQUEST               0x46
+#define EVENT_STATRESPONSE              0x47
+#define EVENT_MAPREQUEST                0x48
+#define EVENT_MAPRESPONSE               0x49
 #define EVENT_WMMAP                     0x50
 #define EVENT_WMUNMAP                   0x51
 #define EVENT_WMCLOSE                   0x52
@@ -209,22 +207,6 @@ struct event_wmevent
 
     unsigned int type;
     unsigned int length;
-
-};
-
-struct event_listrequest
-{
-
-    unsigned int id;
-    unsigned int offset;
-    unsigned int nrecords;
-
-};
-
-struct event_listresponse
-{
-
-    unsigned int nrecords;
 
 };
 

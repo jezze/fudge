@@ -23,25 +23,6 @@ unsigned int fs_auth(char *path)
 
 }
 
-unsigned int fs_list(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int offset, struct record *records, unsigned int nrecords)
-{
-
-    unsigned char data[MESSAGE_SIZE];
-    struct event_listrequest request;
-    struct event_listresponse *response = (struct event_listresponse *)data;
-
-    request.id = id;
-    request.offset = offset;
-    request.nrecords = nrecords;
-
-    channel_send(ichannel, target, EVENT_LISTREQUEST, sizeof (struct event_listrequest), &request);
-    channel_wait(ichannel, target, EVENT_LISTRESPONSE, MESSAGE_SIZE, data);
-    buffer_copy(records, response + 1, response->nrecords * sizeof (struct record));
-
-    return response->nrecords;
-
-}
-
 unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 {
 

@@ -112,12 +112,14 @@ static unsigned int getchild(unsigned int id, char *path, unsigned int length)
 
 }
 
-static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int count, struct record *records)
+static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
     struct cpio_header *header = getheader(id);
     unsigned int cid = address;
+    unsigned int i = 0;
     unsigned int n = 0;
+    struct record *records = (struct record *)buffer;
 
     do
     {
@@ -133,14 +135,14 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
             if (offset > 0)
             {
 
-                offset--;
+                offset -= sizeof (struct record);
 
             }
 
             else
             {
 
-                struct record *record = &records[n];
+                struct record *record = &records[i];
 
                 record->id = cid;
                 record->size = cpio_filesize(cheader);
@@ -150,7 +152,10 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
                 if ((cheader->mode & 0xF000) == 0x4000)
                     record->type = RECORD_TYPE_DIRECTORY;
 
-                if (++n >= count)
+                n += sizeof (struct record);
+                i += 1;
+
+                if (n >= count)
                     break;
 
             }
@@ -163,56 +168,12 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
 
 }
 
-static unsigned int list(unsigned int id, unsigned int offset, unsigned int count, struct record *record)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    if (header)
-    {
-
-        switch (header->mode & 0xF000)
-        {
-
-        case 0x4000:
-            return getlist(id, offset, count, record);
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int map(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);
 
     return (header) ? id + cpio_filedata(header) : 0;
-
-}
-
-static unsigned int read(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    if (header)
-    {
-
-        switch (header->mode & 0xF000)
-        {
-
-        case 0x8000:
-            return buffer_read(buffer, count, (void *)((unsigned long)id + cpio_filedata(header)), cpio_filesize(header), offset);
-
-        }
-
-    }
-
-    return 0;
 
 }
 
@@ -284,28 +245,6 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
 }
 
-static unsigned int write(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    if (header)
-    {
-
-        switch (header->mode & 0xF000)
-        {
-
-        case 0x8000:
-            return buffer_write((void *)((unsigned long)id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset);
-
-        }
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int onmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -340,33 +279,41 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
 }
 
-static unsigned int onlistrequest(unsigned int source, unsigned int count, void *data)
-{
-
-    unsigned char buffer[MESSAGE_SIZE];
-    struct event_listrequest *request = data;
-    struct event_listresponse *response = (struct event_listresponse *)buffer;
-
-    if (request->nrecords >= 32)
-        request->nrecords = 32;
-
-    response->nrecords = list(request->id, request->offset, request->nrecords, (struct record *)(response + 1));
-
-    return kernel_place(inode, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + response->nrecords * sizeof (struct record), buffer);
-
-}
-
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
     unsigned char buffer[MESSAGE_SIZE];
     struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
+    struct cpio_header *header = getheader(request->id);
 
     if (request->count >= MESSAGE_SIZE - sizeof (struct event_readresponse))
         request->count = MESSAGE_SIZE - sizeof (struct event_readresponse);
 
-    response->count = read(request->id, response + 1, request->count, request->offset);
+    if (header)
+    {
+
+        switch (header->mode & 0xF000)
+        {
+
+        case 0x4000:
+            response->count = getlist(request->id, request->offset, request->count, response + 1);
+
+            break;
+
+        case 0x8000:
+            response->count = buffer_read(response + 1, request->count, (void *)((unsigned long)request->id + cpio_filedata(header)), cpio_filesize(header), request->offset);
+
+            break;
+
+        default:
+            response->count = 0;
+
+            break;
+
+        }
+
+    }
 
     return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
@@ -377,8 +324,27 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     struct event_writerequest *request = data;
     struct event_writeresponse response;
+    struct cpio_header *header = getheader(request->id);
 
-    response.count = write(request->id, request + 1, request->count, request->offset);
+    if (header)
+    {
+
+        switch (header->mode & 0xF000)
+        {
+
+        case 0x8000:
+            response.count = buffer_write((void *)((unsigned long)request->id + cpio_filedata(header)), cpio_filesize(header), request + 1, request->count, request->offset);
+
+            break;
+
+        default:
+            response.count = 0;
+
+            break;
+
+        }
+
+    }
 
     return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
@@ -398,9 +364,6 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
     case EVENT_STATREQUEST:
         return onstatrequest(source, count, data);
-
-    case EVENT_LISTREQUEST:
-        return onlistrequest(source, count, data);
 
     case EVENT_READREQUEST:
         return onreadrequest(source, count, data);
