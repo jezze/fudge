@@ -296,113 +296,78 @@ static void simpleread(struct ext2_node *node, unsigned int id)
 
 }
 
-/*
-static void onlistrequest(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_readrequest *listrequest = mdata;
-    struct ext2_node node;
-
-    channel_send_fmt0(0, xxx, EVENT_DATA, "On list request\n");
-    simpleread(&node, listrequest->id);
-
-    if (listrequest->offset > 0)
-    {
-
-        struct event_listresponse response;
-
-        response.count = 0;
-
-        channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse), &response);
-
-        return;
-
-    }
-
-    if ((node.type & 0xF000) == 0x4000)
-    {
-
-        struct {struct event_listresponse header; struct record records[8];} response;
-        unsigned char data[4096];
-        unsigned int offset = 0;
-        unsigned int nrecords = 0;
-
-        read(data, 4096, node.pointer0, 4096);
-
-        while (offset < 1024)
-        {
-
-            struct ext2_entry *entry = (struct ext2_entry *)(data + offset);
-            struct record *record = &response.records[nrecords];
-
-            record->id = entry->node;
-            record->size = 0;
-            record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
-
-            switch (entry->type)
-            {
-
-            case 1:
-                record->type = RECORD_TYPE_NORMAL;
-
-                break;
-
-            case 2:
-                record->type = RECORD_TYPE_DIRECTORY;
-
-                break;
-
-            }
-
-            nrecords++;
-            offset += entry->size;
-
-        }
-
-        response.header.count = nrecords * sizeof (struct record);
-
-        channel_send(0, source, EVENT_LISTRESPONSE, sizeof (struct event_listresponse) + response.header.count, &response);
-
-    }
-
-    else
-    {
-
-        channel_send_fmt1(0, source, EVENT_ERROR, "Not a directory: %u\n", &listrequest->id);
-
-    }
-
-}
-*/
-
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_readrequest *readrequest = mdata;
+    unsigned char data[MESSAGE_SIZE];
+    struct event_readrequest *request = mdata;
+    struct event_readresponse *response = (struct event_readresponse *)data;
+    unsigned char blocks[4096];
     struct ext2_node node;
 
     channel_send_fmt0(0, xxx, EVENT_DATA, "On read request\n");
-    simpleread(&node, readrequest->id);
+    simpleread(&node, request->id);
 
-    if ((node.type & 0xF000) == 0x8000)
+    response->count = 0;
+
+    switch (node.type & 0xF000)
     {
 
-        /*
-        struct {struct event_readresponse header; char data[64];} response;
-        unsigned char data[4096];
+    case 0x4000:
+        if (request->offset == 0)
+        {
 
-        read(data, 4096, node.pointer0, (1024 << sb.blockSize));
-        response.header.count = buffer_write(response.data, 64, data, (node.sizeLow < 64) ? node.sizeLow : 64, 0);
+            unsigned int c = 0;
+            unsigned int o = 0;
 
-        channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response.header.count, &response);
-        */
+            read(blocks, 4096, node.pointer0, (1024 << sb.blockSize));
 
-    }
+            while (o < 1024)
+            {
 
-    else
-    {
+                struct ext2_entry *entry = (struct ext2_entry *)(blocks + o);
+                struct record *records = (struct record *)(response + 1);
+                struct record *record = &records[c];
 
-        channel_send_fmt1(0, source, EVENT_ERROR, "Not a regular file: %u\n", &readrequest->id);
+                record->id = entry->node;
+                record->size = 0;
+                record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
+
+                switch (entry->type)
+                {
+
+                case 1:
+                    record->type = RECORD_TYPE_NORMAL;
+
+                    break;
+
+                case 2:
+                    record->type = RECORD_TYPE_DIRECTORY;
+
+                    break;
+
+                }
+
+                o += entry->size;
+                c += 1;
+                response->count += sizeof (struct record);
+
+            }
+
+        }
+
+        channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
+
+        break;
+
+    case 0x8000:
+        read(blocks, 4096, node.pointer0, (1024 << sb.blockSize));
+
+        response->count = buffer_write(data + sizeof (struct event_readresponse), MESSAGE_SIZE - sizeof (struct event_readresponse), blocks, response->count, 0);
+
+        channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
+ 
+        break;
 
     }
 
