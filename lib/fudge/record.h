@@ -6,9 +6,10 @@ struct record
 {
 
     unsigned int id;
-    unsigned int length;
-    unsigned int size;
     unsigned int type;
+    unsigned int size;
+    unsigned int offset;
+    unsigned int length;
     char name[RECORD_NAMESIZE];
 
 };

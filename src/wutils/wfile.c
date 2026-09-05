@@ -27,12 +27,12 @@ static void updatecontent(unsigned int wm)
 
             unsigned char data[MESSAGE_SIZE];
             unsigned int count;
-            unsigned int offset;
+            unsigned int offset = 0;
 
             channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
 
             /* Should use MESSAGE_SIZE here */
-            for (offset = 0; (count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)); offset += count)
+            while ((count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)))
             {
 
                 unsigned char d[MESSAGE_SIZE];
@@ -45,6 +45,7 @@ static void updatecontent(unsigned int wm)
                     struct record *record = (struct record *)(data + i);
 
                     c += cstring_write_fmt6(d, MESSAGE_SIZE, c, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+                    offset = record->offset;
 
                 }
 

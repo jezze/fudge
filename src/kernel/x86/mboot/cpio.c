@@ -116,11 +116,10 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
 {
 
     struct cpio_header *header = getheader(id);
-    unsigned int cid = address;
+    unsigned int cid = address + offset;
     unsigned int i = 0;
     unsigned int n = 0;
     struct record *records = (struct record *)buffer;
-    unsigned int c = 0;
 
     do
     {
@@ -135,26 +134,31 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
 
             struct record *record = &records[i];
 
-            if (c >= offset)
+            record->id = cid;
+            record->size = cpio_filesize(cheader);
+            record->offset = getnext(cid) - address;
+            record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(cid), cheader->namesize - 1, header->namesize);
+
+            switch (cheader->mode & 0xF000)
             {
 
-                record->id = cid;
-                record->size = cpio_filesize(cheader);
+            case 0x4000:
+                record->type = RECORD_TYPE_DIRECTORY;
+
+                break;
+
+            case 0x8000:
                 record->type = RECORD_TYPE_NORMAL;
-                record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(cid), cheader->namesize - 1, header->namesize);
 
-                if ((cheader->mode & 0xF000) == 0x4000)
-                    record->type = RECORD_TYPE_DIRECTORY;
-
-                n += sizeof (struct record);
-                i += 1;
-
-                if (n >= count)
-                    break;
+                break;
 
             }
 
-            c += sizeof (struct record);
+            n += sizeof (struct record);
+            i += 1;
+
+            if (n >= count)
+                break;
 
         }
 
@@ -183,11 +187,23 @@ static unsigned int stat(unsigned int id, struct record *record)
 
         record->id = id;
         record->size = cpio_filesize(header);
-        record->type = RECORD_TYPE_NORMAL;
+        record->offset = getnext(id) - address;
         record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(id), header->namesize - 1, header->namesize);
 
-        if ((header->mode & 0xF000) == 0x4000)
+        switch (header->mode & 0xF000)
+        {
+
+        case 0x4000:
             record->type = RECORD_TYPE_DIRECTORY;
+
+            break;
+
+        case 0x8000:
+            record->type = RECORD_TYPE_NORMAL;
+
+            break;
+
+        }
 
         return 1;
 

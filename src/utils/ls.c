@@ -18,12 +18,12 @@ static void list(unsigned int source, char *path)
 
             unsigned char data[MESSAGE_SIZE];
             unsigned int count;
-            unsigned int offset;
+            unsigned int offset = 0;
 
             channel_send_fmt0(0, source, EVENT_DATA, "../\n");
 
             /* Should use MESSAGE_SIZE here */
-            for (offset = 0; (count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)); offset += count)
+            while ((count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)))
             {
 
                 unsigned int i;
@@ -37,6 +37,8 @@ static void list(unsigned int source, char *path)
                         channel_send_fmt2(0, source, EVENT_DATA, "%w/\n", record->name, &record->length);
                     else
                         channel_send_fmt2(0, source, EVENT_DATA, "%w\n", record->name, &record->length);
+
+                    offset = record->offset;
 
                 }
 

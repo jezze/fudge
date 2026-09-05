@@ -331,6 +331,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
                 record->id = entry->node;
                 record->size = 0;
+                record->offset = 1024; /* fix this */
                 record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
 
                 switch (entry->type)
