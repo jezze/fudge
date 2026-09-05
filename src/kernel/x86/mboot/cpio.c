@@ -120,6 +120,7 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
     unsigned int i = 0;
     unsigned int n = 0;
     struct record *records = (struct record *)buffer;
+    unsigned int c = 0;
 
     do
     {
@@ -132,17 +133,10 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
         if (getparent(cid) == id)
         {
 
-            if (offset > 0)
+            struct record *record = &records[i];
+
+            if (c >= offset)
             {
-
-                offset -= sizeof (struct record);
-
-            }
-
-            else
-            {
-
-                struct record *record = &records[i];
 
                 record->id = cid;
                 record->size = cpio_filesize(cheader);
@@ -159,6 +153,8 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
                     break;
 
             }
+
+            c += sizeof (struct record);
 
         }
 
