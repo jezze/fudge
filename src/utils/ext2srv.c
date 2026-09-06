@@ -2,6 +2,8 @@
 #include <abi.h>
 #include <hash.h>
 
+#define EXT2_MAXBLOCKSIZE               4096
+
 struct ext2_superblock
 {
 
@@ -156,11 +158,11 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blocksize, u
 {
 
     unsigned int perblock = blocksize / sizeof (struct ext2_blockgroup);
-    unsigned int block = 1 + blockgroup / perblock;
+    unsigned int sector = 1 + blockgroup / perblock;
     unsigned int offset = (blockgroup % perblock) * sizeof (struct ext2_blockgroup);
-    unsigned char data[4096];
+    unsigned char data[EXT2_MAXBLOCKSIZE];
 
-    read(data, 4096, block, blocksize);
+    read(data, EXT2_MAXBLOCKSIZE, sector, blocksize);
     buffer_copy(bg, data + offset, sizeof (struct ext2_blockgroup));
 
 }
@@ -169,121 +171,14 @@ static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned i
 {
 
     unsigned int perblock = blocksize / nodesize;
-    unsigned int block = blocktable + nodeindex / perblock;
+    unsigned int sector = blocktable + nodeindex / perblock;
     unsigned int offset = (nodeindex % perblock) * nodesize;
-    unsigned char data[4096];
+    unsigned char data[EXT2_MAXBLOCKSIZE];
 
-    read(data, 4096, block, blocksize);
+    read(data, EXT2_MAXBLOCKSIZE, sector, blocksize);
     buffer_copy(node, data + offset, sizeof (struct ext2_node));
 
 }
-
-/*
-static void printsuperblock(unsigned int source, struct ext2_superblock *superblock)
-{
-
-    channel_send_fmt1(0, source, EVENT_DATA, "Node Count: %u\n", &superblock->nodeCount);
-    channel_send_fmt1(0, source, EVENT_DATA, "Block Count: %u\n", &superblock->blockCount);
-    channel_send_fmt1(0, source, EVENT_DATA, "Block Count Super: %u\n", &superblock->blockCountSuper);
-    channel_send_fmt1(0, source, EVENT_DATA, "Superblock Index: %u\n", &superblock->superblockIndex);
-    channel_send_fmt1(0, source, EVENT_DATA, "Block Size: %u\n", &superblock->blockSize);
-    channel_send_fmt1(0, source, EVENT_DATA, "Fragment Size: %u\n", &superblock->fragmentSize);
-    channel_send_fmt1(0, source, EVENT_DATA, "Block Count Group: %u\n", &superblock->blockCountGroup);
-    channel_send_fmt1(0, source, EVENT_DATA, "Fragment Count Group: %u\n", &superblock->fragmentCountGroup);
-    channel_send_fmt1(0, source, EVENT_DATA, "Node Count Group: %u\n", &superblock->nodeCountGroup);
-    channel_send_fmt1(0, source, EVENT_DATA, "Signature: 0x%H4h\n", &superblock->signature);
-    channel_send_fmt1(0, source, EVENT_DATA, "Minor: %h\n", &superblock->minorVersion);
-    channel_send_fmt1(0, source, EVENT_DATA, "Major: %u\n", &superblock->majorVersion);
-    channel_send_fmt1(0, source, EVENT_DATA, "Node Size: %h\n", &superblock->nodeSize);
-
-}
-
-static void printblockgroup(struct ext2_blockgroup *blockgroup)
-{
-
-    channel_send_fmt1(0, source, EVENT_DATA, "Block Usage Address: %u\n", &blockgroup->blockUsageAddress);
-    channel_send_fmt1(0, source, EVENT_DATA, "Node Usage Address: %u\n", &blockgroup->nodeUsageAddress);
-    channel_send_fmt1(0, source, EVENT_DATA, "Block Table Address: %u\n", &blockgroup->blockTableAddress);
-    channel_send_fmt1(0, source, EVENT_DATA, "Directory Count: %h\n", &blockgroup->directoryCount);
-
-}
-
-static void printnode(struct ext2_node *node)
-{
-
-    channel_send_fmt1(0, source, EVENT_DATA, "Type: 0x%H4h\n", &node->type);
-    channel_send_fmt1(0, source, EVENT_DATA, "Flags: 0x%H8u\n", &node->flags);
-    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 0: 0x%H8u\n", &node->pointer0);
-    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 1: 0x%H8u\n", &node->pointer1);
-    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 2: 0x%H8u\n", &node->pointer2);
-    channel_send_fmt1(0, source, EVENT_DATA, "Pointer 3: 0x%H8u\n", &node->pointer4);
-
-}
-
-static void printdir(struct ext2_entry *entry, char *name)
-{
-
-    unsigned int length = entry->length;
-
-    channel_send_fmt1(0, source, EVENT_DATA, "Inode: %u\n", &entry->node);
-    channel_send_fmt1(0, source, EVENT_DATA, "Size: %h\n", &entry->size);
-    channel_send_fmt1(0, source, EVENT_DATA, "Length: 0x%H2c\n", &entry->length);
-    channel_send_fmt2(0, source, EVENT_DATA, "Name: %w\n", name, &length);
-
-}
-
-static void showinode(unsigned int source, struct event_readrequest *readrequest, struct ext2_superblock *sb)
-{
-
-    unsigned int blocksize = (1024 << sb->blockSize);
-    unsigned int blockgroup = (readrequest->id - 1) / sb->nodeCountGroup;
-    unsigned int nodeindex = (readrequest->id - 1) % sb->nodeCountGroup;
-    unsigned int blockindex = (readrequest->id * sb->nodeSize) / blocksize;
-    struct ext2_blockgroup bg;
-    struct ext2_node node;
-
-    readblockgroup(&bg, blocksize, blockindex, blockgroup);
-    readnode(&node, bg.blockTableAddress, blocksize, nodeindex, sb->nodeSize);
-
-    if ((node.type & 0xF000) == 0x4000)
-    {
-
-        struct ext2_entry *entry;
-        unsigned char block[4096];
-        unsigned int offset = 0;
-
-        read(block, 4096, node.pointer0, blocksize);
-
-        while (offset < 4096)
-        {
-
-            unsigned int length;
-            char *name;
-
-            entry = (struct ext2_entry *)(block + offset);
-            name = (char *)entry + 8;
-            length = entry->length;
-
-            channel_send_fmt3(0, source, EVENT_DATA, "(%u) %w\n", &entry->node, name, &length);
-
-            offset += entry->size;
-
-        }
-
-    }
-
-    if ((node.type & 0xF000) == 0x8000)
-    {
-
-        unsigned char block[4096];
-
-        read(block, 4096, node.pointer0, blocksize);
-        fs_readresponse(source, readrequest->session, (node.sizeLow < 4096) ? node.sizeLow : 4096, block);
-
-    }
-
-}
-*/
 
 static struct ext2_superblock sb;
 
@@ -300,21 +195,25 @@ static void simpleread(struct ext2_node *node, unsigned int id)
 
 }
 
-static unsigned int getindirect(unsigned int table_block, unsigned int index, unsigned int blocksize)
+static unsigned int getindirect(unsigned int sector, unsigned int index, unsigned int blocksize)
 {
 
-    unsigned int table[1024];   /* blocksize/4 pointers max, blocksize capped at 4096 */
+    if (sector)
+    {
 
-    if (!table_block)
-        return 0;
+        unsigned int table[1024];
 
-    read(table, blocksize, table_block, blocksize);
+        read(table, blocksize, sector, blocksize);
 
-    return table[index];
+        return table[index];
+
+    }
+
+    return 0;
 
 }
 
-static unsigned int getblock(struct ext2_node *node, unsigned int index, unsigned int blocksize)
+static unsigned int getsector(struct ext2_node *node, unsigned int index, unsigned int blocksize)
 {
 
     unsigned int ptrsperblock = blocksize / sizeof (unsigned int);
@@ -382,7 +281,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     struct event_readrequest *request = mdata;
     struct event_readresponse *response = (struct event_readresponse *)data;
     unsigned int blocksize = (1024 << sb.blockSize);
-    unsigned char block[4096];
+    unsigned char block[EXT2_MAXBLOCKSIZE];
     struct ext2_node node;
 
     simpleread(&node, request->id);
@@ -399,30 +298,19 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
             unsigned int capacity = MESSAGE_SIZE - sizeof (struct event_readresponse);
             struct record *records = (struct record *)(response + 1);
             unsigned int i = 0;
-            unsigned int currentblock = 0xFFFFFFFF;
 
             while (offset < node.sizeLow && (i + 1) * sizeof (struct record) <= capacity)
             {
 
-                unsigned int logicalblock = offset / blocksize;
+                unsigned int blockindex = offset / blocksize;
                 unsigned int blockoffset = offset % blocksize;
-                struct ext2_entry *entry;
+                unsigned int sector = getsector(&node, blockindex, blocksize);
+                struct ext2_entry *entry = (struct ext2_entry *)(block + blockoffset);
 
-                if (logicalblock != currentblock)
-                {
+                if (!sector)
+                    break;
 
-                    unsigned int physicalblock = getblock(&node, logicalblock, blocksize);
-
-                    if (!physicalblock)
-                        break;
-
-                    read(block, 4096, physicalblock, blocksize);
-
-                    currentblock = logicalblock;
-
-                }
-
-                entry = (struct ext2_entry *)(block + blockoffset);
+                read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
 
                 if (!entry->size)
                     break;
@@ -468,7 +356,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 0x8000:
-        read(block, 4096, node.pointer0, blocksize);
+        read(block, EXT2_MAXBLOCKSIZE, node.pointer0, blocksize);
 
         response->count = buffer_write(data + sizeof (struct event_readresponse), MESSAGE_SIZE - sizeof (struct event_readresponse), block, response->count, 0);
 
@@ -507,12 +395,12 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
         unsigned int blocksize = (1024 << sb.blockSize);
-        unsigned char block[4096];
+        unsigned char block[EXT2_MAXBLOCKSIZE];
         unsigned int offset = 0;
 
-        read(block, 4096, node.pointer0, blocksize);
+        read(block, EXT2_MAXBLOCKSIZE, node.pointer0, blocksize);
 
-        while (offset < 4096)
+        while (offset < EXT2_MAXBLOCKSIZE)
         {
 
             struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
