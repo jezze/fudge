@@ -152,23 +152,29 @@ static void readsuperblock(struct ext2_superblock *sb)
 
 }
 
-static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blocksize, unsigned int blockindex, unsigned int blockgroup)
+static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blocksize, unsigned int blockgroup)
 {
 
+    unsigned int perblock = blocksize / sizeof (struct ext2_blockgroup);
+    unsigned int block = 1 + blockgroup / perblock;
+    unsigned int offset = (blockgroup % perblock) * sizeof (struct ext2_blockgroup);
     unsigned char data[4096];
 
-    read(data, 4096, 1, blocksize);
-    buffer_copy(bg, data, sizeof (struct ext2_blockgroup));
+    read(data, 4096, block, blocksize);
+    buffer_copy(bg, data + offset, sizeof (struct ext2_blockgroup));
 
 }
 
 static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned int blocksize, unsigned int nodeindex, unsigned int nodesize)
 {
 
+    unsigned int perblock = blocksize / nodesize;
+    unsigned int block = blocktable + nodeindex / perblock;
+    unsigned int offset = (nodeindex % perblock) * nodesize;
     unsigned char data[4096];
 
-    read(data, 4096, blocktable, blocksize);
-    buffer_copy(node, data + nodeindex * nodesize, sizeof (struct ext2_node));
+    read(data, 4096, block, blocksize);
+    buffer_copy(node, data + offset, sizeof (struct ext2_node));
 
 }
 
@@ -287,10 +293,9 @@ static void simpleread(struct ext2_node *node, unsigned int id)
     unsigned int blocksize = (1024 << sb.blockSize);
     unsigned int blockgroup = (id - 1) / sb.nodeCountGroup;
     unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
-    unsigned int blockindex = (id * sb.nodeSize) / blocksize;
     struct ext2_blockgroup bg;
 
-    readblockgroup(&bg, blocksize, blockindex, blockgroup);
+    readblockgroup(&bg, blocksize, blockgroup);
     readnode(node, bg.blockTableAddress, blocksize, nodeindex, sb.nodeSize);
 
 }
