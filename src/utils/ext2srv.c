@@ -205,35 +205,34 @@ static unsigned int getindirect(unsigned int sector, unsigned int index, unsigne
 static unsigned int getsector(struct ext2_node *node, unsigned int index, unsigned int blocksize)
 {
 
-    unsigned int ptrsperblock = blocksize / sizeof (unsigned int);
+    unsigned int perblock = blocksize / sizeof (unsigned int);
+    unsigned int singlestart = 12;
+    unsigned int doublestart = singlestart + perblock;
+    unsigned int triplestart = doublestart + perblock * perblock;
 
-    if (index < 12)
+    if (index < singlestart)
         return node->pointer[index];
 
-    index -= 12;
+    if (index < doublestart)
+        return getindirect(node->singlyIndirectPointer, index - singlestart, blocksize);
 
-    if (index < ptrsperblock)
-        return getindirect(node->singlyIndirectPointer, index, blocksize);
-
-    index -= ptrsperblock;
-
-    if (index < ptrsperblock * ptrsperblock)
+    if (index < triplestart)
     {
 
-        unsigned int outer = index / ptrsperblock;
-        unsigned int inner = index % ptrsperblock;
+        unsigned int relative = index - doublestart;
+        unsigned int outer = relative / perblock;
+        unsigned int inner = relative % perblock;
 
         return getindirect(getindirect(node->doublyIndirectPointer, outer, blocksize), inner, blocksize);
 
     }
 
-    index -= ptrsperblock * ptrsperblock;
-
     {
 
-        unsigned int outer = index / (ptrsperblock * ptrsperblock);
-        unsigned int mid = (index / ptrsperblock) % ptrsperblock;
-        unsigned int inner = index % ptrsperblock;
+        unsigned int relative = index - triplestart;
+        unsigned int outer = relative / (perblock * perblock);
+        unsigned int mid = (relative / perblock) % perblock;
+        unsigned int inner = relative % perblock;
 
         return getindirect(getindirect(getindirect(node->tripplyIndirectPointer, outer, blocksize), mid, blocksize), inner, blocksize);
 
