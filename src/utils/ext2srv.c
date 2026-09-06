@@ -401,22 +401,20 @@ static unsigned int matchentry(struct ext2_node *node, unsigned int blocksize, c
 static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    struct event_walkrequest *walkrequest = mdata;
-    unsigned int id = (walkrequest->parent) ? walkrequest->parent : 2;
-    char *path = (char *)(walkrequest + 1);
-    unsigned int length = walkrequest->length;
-    unsigned int offset = 0;
+    struct event_walkrequest *request = mdata;
     struct event_walkresponse response;
+    unsigned int id = (request->parent) ? request->parent : 2;
+    char *path = (char *)(request + 1);
+    unsigned int offset = 0;
 
-
-    while (offset < length && id)
+    while (offset < request->length)
     {
 
         unsigned int blocksize = (1024 << sb.blockSize);
         unsigned int seglength = 0;
         struct ext2_node node;
 
-        while (offset + seglength < length && path[offset + seglength] != '/')
+        while (offset + seglength < request->length && path[offset + seglength] != '/')
             seglength++;
 
         if (seglength)
@@ -434,6 +432,9 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
             }
 
             id = matchentry(&node, blocksize, path + offset, seglength);
+
+            if (!id)
+                break;
 
         }
 
