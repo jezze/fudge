@@ -40,6 +40,23 @@ static unsigned int spawnshell(unsigned int ichannel)
 
 }
 
+static unsigned int spawnservices(unsigned int ichannel)
+{
+
+    unsigned int target = fs_spawn(ichannel, "initrd:bin/ext2srv");
+
+    if (target)
+    {
+
+        channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=ext2:\n");
+        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
+
+    }
+
+    return target;
+
+}
+
 static unsigned int spawnwm(unsigned int ichannel)
 {
 
@@ -101,6 +118,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     loadmodules(1, 36, modules);
     spawnshell(1);
+    spawnservices(1);
     spawnwm(1);
 
 }
