@@ -393,7 +393,11 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
         unsigned int blocksize = (1024 << sb.blockSize);
         unsigned char block[EXT2_MAXBLOCKSIZE];
         unsigned int offset = 0;
+        unsigned int length = walkrequest->length;
         struct event_walkresponse response;
+
+        if (length && path[length - 1] == '/')
+            length--;
 
         response.id = 0;
 
@@ -415,7 +419,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
             if (!entry->size)
                 break;
 
-            if (entry->node && walkrequest->length == entry->length + 1 && buffer_match(entry + 1, path, entry->length))
+            if (entry->node && length == entry->length && buffer_match(entry + 1, path, entry->length))
             {
 
                 response.id = entry->node;
