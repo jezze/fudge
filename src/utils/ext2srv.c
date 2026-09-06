@@ -318,21 +318,21 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         if (request->offset == 0)
         {
 
-            unsigned int c = 0;
-            unsigned int o = 0;
+            unsigned int offset = 0;
+            unsigned int i;
 
             read(block, 4096, node.pointer0, blocksize);
 
-            while (o < blocksize)
+            for (i = 0; offset < blocksize; i++)
             {
 
-                struct ext2_entry *entry = (struct ext2_entry *)(block + o);
+                struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
                 struct record *records = (struct record *)(response + 1);
-                struct record *record = &records[c];
+                struct record *record = &records[i];
 
                 record->id = entry->node;
                 record->size = 0;
-                record->offset = o + entry->size;
+                record->offset = offset + entry->size;
                 record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
 
                 switch (entry->type)
@@ -350,8 +350,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
                 }
 
-                o += entry->size;
-                c += 1;
+                offset += entry->size;
                 response->count += sizeof (struct record);
 
             }
