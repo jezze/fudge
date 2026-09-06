@@ -110,6 +110,13 @@ struct ext2_entry
 
 } __attribute__((packed));
 
+static unsigned int ext2_validate(struct ext2_superblock *superblock)
+{
+
+    return superblock->signature == 0xEF53;
+
+}
+
 static unsigned int read(void *buffer, unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
@@ -132,13 +139,6 @@ static unsigned int read(void *buffer, unsigned int count, unsigned int sector, 
     }
 
     return 0;
-
-}
-
-static unsigned int isvalid(struct ext2_superblock *superblock)
-{
-
-    return superblock->signature == 0xEF53;
 
 }
 
@@ -462,7 +462,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     xxx = source;
 
-    if (isvalid(&sb))
+    if (ext2_validate(&sb))
     {
 
         call_announce(0, djb_hash(4, "ext2"));
