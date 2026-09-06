@@ -152,23 +152,23 @@ static void readsuperblock(struct ext2_superblock *sb)
 
 }
 
-static void readblockgroup(struct ext2_blockgroup *bg, struct ext2_superblock *sb, unsigned int blocksize, unsigned int blockindex, unsigned int blockgroup)
+static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blocksize, unsigned int blockindex, unsigned int blockgroup)
 {
 
     unsigned char data[4096];
 
-    read(data, 4096, (blocksize == 1024) ? 2 : 1, blocksize);
+    read(data, 4096, 1, blocksize);
     buffer_copy(bg, data, sizeof (struct ext2_blockgroup));
 
 }
 
-static void readnode(struct ext2_node *node, struct ext2_superblock *sb, struct ext2_blockgroup *bg, unsigned int blocksize, unsigned int nodeindex)
+static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned int blocksize, unsigned int nodeindex, unsigned int nodesize)
 {
 
     unsigned char data[4096];
 
-    read(data, 4096, bg->blockTableAddress, blocksize);
-    buffer_copy(node, data + nodeindex * sb->nodeSize, sizeof (struct ext2_node));
+    read(data, 4096, blocktable, blocksize);
+    buffer_copy(node, data + nodeindex * nodesize, sizeof (struct ext2_node));
 
 }
 
@@ -236,8 +236,8 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
     struct ext2_blockgroup bg;
     struct ext2_node node;
 
-    readblockgroup(&bg, sb, blocksize, blockindex, blockgroup);
-    readnode(&node, sb, &bg, blocksize, nodeindex);
+    readblockgroup(&bg, blocksize, blockindex, blockgroup);
+    readnode(&node, bg.blockTableAddress, blocksize, nodeindex, sb->nodeSize);
 
     if ((node.type & 0xF000) == 0x4000)
     {
@@ -288,11 +288,12 @@ static void simpleread(struct ext2_node *node, unsigned int id)
     unsigned int blocksize = (1024 << sb.blockSize);
     unsigned int blockgroup = (id - 1) / sb.nodeCountGroup;
     unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
+    unsigned int nodesize = sb.nodeSize;
     unsigned int blockindex = (id * sb.nodeSize) / blocksize;
     struct ext2_blockgroup bg;
 
-    readblockgroup(&bg, &sb, blocksize, blockindex, blockgroup);
-    readnode(node, &sb, &bg, blocksize, nodeindex);
+    readblockgroup(&bg, blocksize, blockindex, blockgroup);
+    readnode(node, bg.blockTableAddress, blocksize, nodeindex, nodesize);
 
 }
 
@@ -302,7 +303,8 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     unsigned char data[MESSAGE_SIZE];
     struct event_readrequest *request = mdata;
     struct event_readresponse *response = (struct event_readresponse *)data;
-    unsigned char blocks[4096];
+    unsigned int blocksize = (1024 << sb.blockSize);
+    unsigned char block[4096];
     struct ext2_node node;
 
     channel_send_fmt0(0, xxx, EVENT_DATA, "On read request\n");
@@ -320,12 +322,12 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
             unsigned int c = 0;
             unsigned int o = 0;
 
-            read(blocks, 4096, node.pointer0, (1024 << sb.blockSize));
+            read(block, 4096, node.pointer0, blocksize);
 
-            while (o < 1024)
+            while (o < blocksize)
             {
 
-                struct ext2_entry *entry = (struct ext2_entry *)(blocks + o);
+                struct ext2_entry *entry = (struct ext2_entry *)(block + o);
                 struct record *records = (struct record *)(response + 1);
                 struct record *record = &records[c];
 
@@ -362,9 +364,9 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 0x8000:
-        read(blocks, 4096, node.pointer0, (1024 << sb.blockSize));
+        read(block, 4096, node.pointer0, blocksize);
 
-        response->count = buffer_write(data + sizeof (struct event_readresponse), MESSAGE_SIZE - sizeof (struct event_readresponse), blocks, response->count, 0);
+        response->count = buffer_write(data + sizeof (struct event_readresponse), MESSAGE_SIZE - sizeof (struct event_readresponse), block, response->count, 0);
 
         channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
  
