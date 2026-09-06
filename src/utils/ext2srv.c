@@ -414,7 +414,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 
             struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
 
-            if (buffer_match(entry + 1, path, entry->length))
+            if (walkrequest->length == entry->length + 1 && buffer_match(entry + 1, path, entry->length))
             {
 
                 struct event_walkresponse response;
