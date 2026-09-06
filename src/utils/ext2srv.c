@@ -280,7 +280,6 @@ static void showinode(unsigned int source, struct event_readrequest *readrequest
 */
 
 static struct ext2_superblock sb;
-static unsigned int xxx;
 
 static void simpleread(struct ext2_node *node, unsigned int id)
 {
@@ -306,7 +305,6 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     unsigned char block[4096];
     struct ext2_node node;
 
-    channel_send_fmt0(0, xxx, EVENT_DATA, "On read request\n");
     simpleread(&node, request->id);
 
     response->count = 0;
@@ -382,8 +380,6 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     char *path = (char *)(walkrequest + 1);
     struct ext2_node node;
 
-    channel_send_fmt0(0, xxx, EVENT_DATA, "On walk request\n");
-
     if (!walkrequest->length)
     {
 
@@ -453,8 +449,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     channel_send(0, target, EVENT_LINK, 0, 0);
     readsuperblock(&sb);
-
-    xxx = source;
 
     if (ext2_validate(&sb))
     {
