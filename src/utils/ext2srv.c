@@ -247,6 +247,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     unsigned char data[MESSAGE_SIZE];
     struct event_readrequest *request = mdata;
     struct event_readresponse *response = (struct event_readresponse *)data;
+    unsigned int capacity = MESSAGE_SIZE - sizeof (struct event_readresponse);
     unsigned int blocksize = (1024 << sb.blockSize);
     unsigned char block[EXT2_MAXBLOCKSIZE];
     struct ext2_node node;
@@ -262,7 +263,6 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         {
 
             unsigned int offset = request->offset;
-            unsigned int capacity = MESSAGE_SIZE - sizeof (struct event_readresponse);
             struct record *records = (struct record *)(response + 1);
             unsigned int i = 0;
 
@@ -323,9 +323,38 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 0x8000:
-        read(block, EXT2_MAXBLOCKSIZE, node.pointer[0], blocksize);
+        {
 
-        response->count = buffer_write(data + sizeof (struct event_readresponse), MESSAGE_SIZE - sizeof (struct event_readresponse), block, response->count, 0);
+            if (request->offset < node.sizeLow)
+            {
+
+                unsigned int remaining = node.sizeLow - request->offset;
+                unsigned int blockindex = request->offset / blocksize;
+                unsigned int blockoffset = request->offset % blocksize;
+                unsigned int sector = getsector(&node, blockindex, blocksize);
+                unsigned int count = capacity;
+
+                if (count > request->count)
+                    count = request->count;
+
+                if (count > remaining)
+                    count = remaining;
+
+                if (count > blocksize - blockoffset)
+                    count = blocksize - blockoffset;
+
+                if (sector)
+                {
+
+                    read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+                    response->count = buffer_write(data + sizeof (struct event_readresponse), capacity, block + blockoffset, count, 0);
+
+                }
+
+            }
+
+        }
 
         channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
  
