@@ -300,6 +300,81 @@ static void simpleread(struct ext2_node *node, unsigned int id)
 
 }
 
+static unsigned int getindirect(unsigned int table_block, unsigned int index, unsigned int blocksize)
+{
+
+    unsigned int table[1024];   /* blocksize/4 pointers max, blocksize capped at 4096 */
+
+    if (!table_block)
+        return 0;
+
+    read(table, blocksize, table_block, blocksize);
+
+    return table[index];
+
+}
+
+static unsigned int getblock(struct ext2_node *node, unsigned int index, unsigned int blocksize)
+{
+
+    unsigned int ptrsperblock = blocksize / sizeof (unsigned int);
+
+    if (index < 12)
+    {
+
+        switch (index)
+        {
+
+        case 0: return node->pointer0;
+        case 1: return node->pointer1;
+        case 2: return node->pointer2;
+        case 3: return node->pointer3;
+        case 4: return node->pointer4;
+        case 5: return node->pointer5;
+        case 6: return node->pointer6;
+        case 7: return node->pointer7;
+        case 8: return node->pointer8;
+        case 9: return node->pointer9;
+        case 10: return node->pointer10;
+        case 11: return node->pointer11;
+
+        }
+
+    }
+
+    index -= 12;
+
+    if (index < ptrsperblock)
+        return getindirect(node->singlyIndirectPointer, index, blocksize);
+
+    index -= ptrsperblock;
+
+    if (index < ptrsperblock * ptrsperblock)
+    {
+
+        unsigned int outer = index / ptrsperblock;
+        unsigned int inner = index % ptrsperblock;
+
+        return getindirect(getindirect(node->doublyIndirectPointer, outer, blocksize), inner, blocksize);
+
+    }
+
+    index -= ptrsperblock * ptrsperblock;
+
+    {
+
+        unsigned int outer = index / (ptrsperblock * ptrsperblock);
+        unsigned int mid = (index / ptrsperblock) % ptrsperblock;
+        unsigned int inner = index % ptrsperblock;
+        unsigned int b1 = getindirect(node->tripplyIndirectPointer, outer, blocksize);
+        unsigned int b2 = getindirect(b1, mid, blocksize);
+
+        return getindirect(b2, inner, blocksize);
+
+    }
+
+}
+
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -324,13 +399,30 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
             unsigned int capacity = MESSAGE_SIZE - sizeof (struct event_readresponse);
             struct record *records = (struct record *)(response + 1);
             unsigned int i = 0;
+            unsigned int currentblock = 0xFFFFFFFF;
 
-            read(block, 4096, node.pointer0, blocksize);
-
-            while (offset < blocksize && (i + 1) * sizeof (struct record) <= capacity)
+            while (offset < node.sizeLow && (i + 1) * sizeof (struct record) <= capacity)
             {
 
-                struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
+                unsigned int logicalblock = offset / blocksize;
+                unsigned int blockoffset = offset % blocksize;
+                struct ext2_entry *entry;
+
+                if (logicalblock != currentblock)
+                {
+
+                    unsigned int physicalblock = getblock(&node, logicalblock, blocksize);
+
+                    if (!physicalblock)
+                        break;
+
+                    read(block, 4096, physicalblock, blocksize);
+
+                    currentblock = logicalblock;
+
+                }
+
+                entry = (struct ext2_entry *)(block + blockoffset);
 
                 if (!entry->size)
                     break;
