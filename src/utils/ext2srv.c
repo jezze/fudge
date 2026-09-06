@@ -288,12 +288,11 @@ static void simpleread(struct ext2_node *node, unsigned int id)
     unsigned int blocksize = (1024 << sb.blockSize);
     unsigned int blockgroup = (id - 1) / sb.nodeCountGroup;
     unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
-    unsigned int nodesize = sb.nodeSize;
     unsigned int blockindex = (id * sb.nodeSize) / blocksize;
     struct ext2_blockgroup bg;
 
     readblockgroup(&bg, blocksize, blockindex, blockgroup);
-    readnode(node, bg.blockTableAddress, blocksize, nodeindex, nodesize);
+    readnode(node, bg.blockTableAddress, blocksize, nodeindex, sb.nodeSize);
 
 }
 
