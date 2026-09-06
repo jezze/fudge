@@ -133,17 +133,22 @@ static unsigned int read(void *buffer, unsigned int count, unsigned int sector, 
 
 }
 
-static void readsuperblock(struct ext2_superblock *sb)
+static struct ext2_superblock sb;
+static unsigned int blocksize;
+
+static void readsuperblock(void)
 {
 
     unsigned char data[1024];
 
     read(data, 1024, 1, 1024);
-    buffer_copy(sb, data, sizeof (struct ext2_superblock));
+    buffer_copy(&sb, data, sizeof (struct ext2_superblock));
+
+    blocksize = (1024 << sb.blockSize);
 
 }
 
-static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blocksize, unsigned int blockgroup)
+static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blockgroup)
 {
 
     unsigned int perblock = blocksize / sizeof (struct ext2_blockgroup);
@@ -156,7 +161,7 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blocksize, u
 
 }
 
-static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned int blocksize, unsigned int nodeindex, unsigned int nodesize)
+static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned int nodeindex, unsigned int nodesize)
 {
 
     unsigned int perblock = blocksize / nodesize;
@@ -169,22 +174,19 @@ static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned i
 
 }
 
-static struct ext2_superblock sb;
-
 static void simpleread(struct ext2_node *node, unsigned int id)
 {
 
-    unsigned int blocksize = (1024 << sb.blockSize);
     unsigned int blockgroup = (id - 1) / sb.nodeCountGroup;
     unsigned int nodeindex = (id - 1) % sb.nodeCountGroup;
     struct ext2_blockgroup bg;
 
-    readblockgroup(&bg, blocksize, blockgroup);
-    readnode(node, bg.blockTableAddress, blocksize, nodeindex, sb.nodeSize);
+    readblockgroup(&bg, blockgroup);
+    readnode(node, bg.blockTableAddress, nodeindex, sb.nodeSize);
 
 }
 
-static unsigned int getindirect(unsigned int sector, unsigned int index, unsigned int blocksize)
+static unsigned int getindirect(unsigned int sector, unsigned int index)
 {
 
     if (sector)
@@ -202,7 +204,7 @@ static unsigned int getindirect(unsigned int sector, unsigned int index, unsigne
 
 }
 
-static unsigned int getsector(struct ext2_node *node, unsigned int index, unsigned int blocksize)
+static unsigned int getsector(struct ext2_node *node, unsigned int index)
 {
 
     unsigned int perblock = blocksize / sizeof (unsigned int);
@@ -214,7 +216,7 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index, unsign
         return node->pointer[index];
 
     if (index < doublestart)
-        return getindirect(node->singlyIndirectPointer, index - singlestart, blocksize);
+        return getindirect(node->singlyIndirectPointer, index - singlestart);
 
     if (index < triplestart)
     {
@@ -223,7 +225,7 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index, unsign
         unsigned int outer = relative / perblock;
         unsigned int inner = relative % perblock;
 
-        return getindirect(getindirect(node->doublyIndirectPointer, outer, blocksize), inner, blocksize);
+        return getindirect(getindirect(node->doublyIndirectPointer, outer), inner);
 
     }
 
@@ -234,7 +236,7 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index, unsign
         unsigned int mid = (relative / perblock) % perblock;
         unsigned int inner = relative % perblock;
 
-        return getindirect(getindirect(getindirect(node->tripplyIndirectPointer, outer, blocksize), mid, blocksize), inner, blocksize);
+        return getindirect(getindirect(getindirect(node->tripplyIndirectPointer, outer), mid), inner);
 
     }
 
@@ -247,7 +249,6 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     struct event_readrequest *request = mdata;
     struct event_readresponse *response = (struct event_readresponse *)data;
     unsigned int capacity = MESSAGE_SIZE - sizeof (struct event_readresponse);
-    unsigned int blocksize = (1024 << sb.blockSize);
     unsigned char block[EXT2_MAXBLOCKSIZE];
     struct ext2_node node;
 
@@ -270,7 +271,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
                 unsigned int blockindex = offset / blocksize;
                 unsigned int blockoffset = offset % blocksize;
-                unsigned int sector = getsector(&node, blockindex, blocksize);
+                unsigned int sector = getsector(&node, blockindex);
                 struct ext2_entry *entry = (struct ext2_entry *)(block + blockoffset);
 
                 if (!sector)
@@ -330,7 +331,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
                 unsigned int remaining = node.sizeLow - request->offset;
                 unsigned int blockindex = request->offset / blocksize;
                 unsigned int blockoffset = request->offset % blocksize;
-                unsigned int sector = getsector(&node, blockindex, blocksize);
+                unsigned int sector = getsector(&node, blockindex);
                 unsigned int count = capacity;
 
                 if (count > request->count)
@@ -363,7 +364,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static unsigned int matchentry(struct ext2_node *node, unsigned int blocksize, char *name, unsigned int namelength)
+static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int namelength)
 {
 
     unsigned char block[EXT2_MAXBLOCKSIZE];
@@ -374,7 +375,7 @@ static unsigned int matchentry(struct ext2_node *node, unsigned int blocksize, c
 
         unsigned int blockindex = offset / blocksize;
         unsigned int blockoffset = offset % blocksize;
-        unsigned int sector = getsector(node, blockindex, blocksize);
+        unsigned int sector = getsector(node, blockindex);
         struct ext2_entry *entry;
 
         if (!sector)
@@ -410,7 +411,6 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     while (offset < request->length)
     {
 
-        unsigned int blocksize = (1024 << sb.blockSize);
         unsigned int seglength = 0;
         struct ext2_node node;
 
@@ -431,7 +431,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 
             }
 
-            id = matchentry(&node, blocksize, path + offset, seglength);
+            id = matchentry(&node, path + offset, seglength);
 
             if (!id)
                 break;
@@ -459,7 +459,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int target = channel_lookup(option_getstring("block-service"));
 
     channel_send(0, target, EVENT_LINK, 0, 0);
-    readsuperblock(&sb);
+    readsuperblock();
 
     if (ext2_validate(&sb))
     {
