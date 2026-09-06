@@ -31,8 +31,7 @@ static void updatecontent(unsigned int wm)
 
             channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
 
-            /* Should use MESSAGE_SIZE here */
-            while ((count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)))
+            while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
             {
 
                 unsigned char d[MESSAGE_SIZE];

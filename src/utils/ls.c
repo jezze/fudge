@@ -22,8 +22,7 @@ static void list(unsigned int source, char *path)
 
             channel_send_fmt0(0, source, EVENT_DATA, "../\n");
 
-            /* Should use MESSAGE_SIZE here */
-            while ((count = fs_read(1, target, id, data, sizeof (struct record) * 8, offset)))
+            while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
             {
 
                 unsigned int i;

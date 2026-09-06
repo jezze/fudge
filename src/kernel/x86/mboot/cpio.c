@@ -134,6 +134,9 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
 
             struct record *record = &records[i];
 
+            if (n + sizeof (struct record) >= count)
+                break;
+
             record->id = cid;
             record->size = cpio_filesize(cheader);
             record->offset = getnext(cid) - address;
@@ -156,9 +159,6 @@ static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int c
 
             n += sizeof (struct record);
             i += 1;
-
-            if (n >= count)
-                break;
 
         }
 
