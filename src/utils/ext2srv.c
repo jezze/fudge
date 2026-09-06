@@ -80,18 +80,7 @@ struct ext2_node
     unsigned int sectorCount;
     unsigned int flags;
     unsigned int osSpecific;
-    unsigned int pointer0;
-    unsigned int pointer1;
-    unsigned int pointer2;
-    unsigned int pointer3;
-    unsigned int pointer4;
-    unsigned int pointer5;
-    unsigned int pointer6;
-    unsigned int pointer7;
-    unsigned int pointer8;
-    unsigned int pointer9;
-    unsigned int pointer10;
-    unsigned int pointer11;
+    unsigned int pointer[12];
     unsigned int singlyIndirectPointer;
     unsigned int doublyIndirectPointer;
     unsigned int tripplyIndirectPointer;
@@ -219,27 +208,7 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index, unsign
     unsigned int ptrsperblock = blocksize / sizeof (unsigned int);
 
     if (index < 12)
-    {
-
-        switch (index)
-        {
-
-        case 0: return node->pointer0;
-        case 1: return node->pointer1;
-        case 2: return node->pointer2;
-        case 3: return node->pointer3;
-        case 4: return node->pointer4;
-        case 5: return node->pointer5;
-        case 6: return node->pointer6;
-        case 7: return node->pointer7;
-        case 8: return node->pointer8;
-        case 9: return node->pointer9;
-        case 10: return node->pointer10;
-        case 11: return node->pointer11;
-
-        }
-
-    }
+        return node->pointer[index];
 
     index -= 12;
 
@@ -265,10 +234,8 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index, unsign
         unsigned int outer = index / (ptrsperblock * ptrsperblock);
         unsigned int mid = (index / ptrsperblock) % ptrsperblock;
         unsigned int inner = index % ptrsperblock;
-        unsigned int b1 = getindirect(node->tripplyIndirectPointer, outer, blocksize);
-        unsigned int b2 = getindirect(b1, mid, blocksize);
 
-        return getindirect(b2, inner, blocksize);
+        return getindirect(getindirect(getindirect(node->tripplyIndirectPointer, outer, blocksize), mid, blocksize), inner, blocksize);
 
     }
 
@@ -356,7 +323,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
         break;
 
     case 0x8000:
-        read(block, EXT2_MAXBLOCKSIZE, node.pointer0, blocksize);
+        read(block, EXT2_MAXBLOCKSIZE, node.pointer[0], blocksize);
 
         response->count = buffer_write(data + sizeof (struct event_readresponse), MESSAGE_SIZE - sizeof (struct event_readresponse), block, response->count, 0);
 
@@ -398,7 +365,7 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
         unsigned char block[EXT2_MAXBLOCKSIZE];
         unsigned int offset = 0;
 
-        read(block, EXT2_MAXBLOCKSIZE, node.pointer0, blocksize);
+        read(block, EXT2_MAXBLOCKSIZE, node.pointer[0], blocksize);
 
         while (offset < EXT2_MAXBLOCKSIZE)
         {
