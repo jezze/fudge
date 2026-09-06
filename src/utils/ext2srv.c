@@ -403,23 +403,18 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
     if ((node.type & 0xF000) == 0x4000)
     {
 
-        unsigned char data[4096];
+        unsigned int blocksize = (1024 << sb.blockSize);
+        unsigned char block[4096];
         unsigned int offset = 0;
 
-        channel_send_fmt0(0, xxx, EVENT_DATA, "Read data\n");
-
-        read(data, 4096, node.pointer0, (1024 << sb.blockSize));
-
-        channel_send_fmt0(0, xxx, EVENT_DATA, "Read complete\n");
+        read(block, 4096, node.pointer0, blocksize);
 
         while (offset < 4096)
         {
 
-            struct ext2_entry *entry = (struct ext2_entry *)(data + offset);
+            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
 
-            channel_send_fmt0(0, xxx, EVENT_DATA, "Loop entries\n");
-
-            if (entry->length == walkrequest->length && buffer_match((char *)entry + 8, path, entry->length))
+            if (buffer_match(entry + 1, path, entry->length))
             {
 
                 struct event_walkresponse response;
