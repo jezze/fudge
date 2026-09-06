@@ -364,84 +364,87 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static unsigned int matchentry(struct ext2_node *node, unsigned int blocksize, char *name, unsigned int namelength)
+{
+
+    unsigned char block[EXT2_MAXBLOCKSIZE];
+    unsigned int offset = 0;
+
+    while (offset < node->sizeLow)
+    {
+
+        unsigned int blockindex = offset / blocksize;
+        unsigned int blockoffset = offset % blocksize;
+        unsigned int sector = getsector(node, blockindex, blocksize);
+        struct ext2_entry *entry;
+
+        if (!sector)
+            break;
+
+        read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+        entry = (struct ext2_entry *)(block + blockoffset);
+
+        if (!entry->size)
+            break;
+
+        if (entry->node && namelength == entry->length && buffer_match(entry + 1, name, entry->length))
+            return entry->node;
+
+        offset += entry->size;
+
+    }
+
+    return 0;
+
+}
+
 static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_walkrequest *walkrequest = mdata;
     unsigned int id = (walkrequest->parent) ? walkrequest->parent : 2;
     char *path = (char *)(walkrequest + 1);
-    struct ext2_node node;
+    unsigned int length = walkrequest->length;
+    unsigned int offset = 0;
+    struct event_walkresponse response;
 
-    if (!walkrequest->length)
-    {
 
-        struct event_walkresponse response;
-
-        response.id = id;
-
-        channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
-
-        return;
-
-    }
-
-    simpleread(&node, id);
-
-    if ((node.type & 0xF000) == 0x4000)
+    while (offset < length && id)
     {
 
         unsigned int blocksize = (1024 << sb.blockSize);
-        unsigned char block[EXT2_MAXBLOCKSIZE];
-        unsigned int offset = 0;
-        unsigned int length = walkrequest->length;
-        struct event_walkresponse response;
+        unsigned int seglength = 0;
+        struct ext2_node node;
 
-        if (length && path[length - 1] == '/')
-            length--;
+        while (offset + seglength < length && path[offset + seglength] != '/')
+            seglength++;
 
-        response.id = 0;
-
-        while (offset < node.sizeLow)
+        if (seglength)
         {
 
-            unsigned int blockindex = offset / blocksize;
-            unsigned int blockoffset = offset % blocksize;
-            unsigned int sector = getsector(&node, blockindex, blocksize);
-            struct ext2_entry *entry;
+            simpleread(&node, id);
 
-            if (!sector)
-                break;
-
-            read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-            entry = (struct ext2_entry *)(block + blockoffset);
-
-            if (!entry->size)
-                break;
-
-            if (entry->node && length == entry->length && buffer_match(entry + 1, path, entry->length))
+            if ((node.type & 0xF000) != 0x4000)
             {
 
-                response.id = entry->node;
+                id = 0;
 
                 break;
 
             }
 
-            offset += entry->size;
+            id = matchentry(&node, blocksize, path + offset, seglength);
 
         }
 
-        channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+        offset += seglength + 1;
 
     }
 
-    else
-    {
+    response.id = id;
 
-        channel_send_fmt1(0, source, EVENT_ERROR, "Not a directory: %u\n", &id);
-
-    }
+    channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
