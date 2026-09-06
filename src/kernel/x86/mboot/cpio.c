@@ -25,15 +25,6 @@ static unsigned int getnext(unsigned int id)
 
 }
 
-static char *getname(unsigned int id)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    return (header) ? (char *)(header + 1) : 0;
-
-}
-
 static unsigned int getroot(void)
 {
 
@@ -63,7 +54,7 @@ static unsigned int getparent(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);
-    unsigned int length = buffer_lastbyte(getname(id), header->namesize - 1, '/');
+    unsigned int length = buffer_lastbyte(header + 1, header->namesize - 1, '/');
     unsigned int current = id;
 
     do
@@ -103,7 +94,7 @@ static unsigned int getchild(unsigned int id, char *path, unsigned int length)
         if (cheader->namesize != header->namesize + length + 1)
             continue;
 
-        if (buffer_match(getname(current) + header->namesize, path, length))
+        if (buffer_match((char *)(cheader + 1) + header->namesize, path, length))
             return current;
 
     } while ((current = getnext(current)));
@@ -112,57 +103,87 @@ static unsigned int getchild(unsigned int id, char *path, unsigned int length)
 
 }
 
-static unsigned int getlist(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+static unsigned int getrecord(unsigned int id, struct record *record)
 {
 
     struct cpio_header *header = getheader(id);
-    unsigned int cid = address + offset;
+
+    if (header)
+    {
+
+        unsigned int pid = getparent(id);
+
+        if (pid)
+        {
+
+            struct cpio_header *pheader = getheader(pid);
+
+            if (pheader)
+            {
+
+                record->id = id;
+                record->size = cpio_filesize(header);
+                record->offset = getnext(id) - address;
+                record->length = buffer_read(record->name, RECORD_NAMESIZE, header + 1, header->namesize - 1, pheader->namesize);
+
+                switch (header->mode & 0xF000)
+                {
+
+                case 0x4000:
+                    record->type = RECORD_TYPE_DIRECTORY;
+
+                    break;
+
+                case 0x8000:
+                    record->type = RECORD_TYPE_NORMAL;
+
+                    break;
+
+                }
+
+                return sizeof (struct record);
+
+            }
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int getrecords(unsigned int id, unsigned int offset, unsigned int count, struct record *records)
+{
+
+    unsigned int current = address + offset;
     unsigned int i = 0;
     unsigned int n = 0;
-    struct record *records = (struct record *)buffer;
 
     do
     {
 
-        struct cpio_header *cheader = getheader(cid);
+        struct cpio_header *cheader = getheader(current);
 
         if (!cheader)
             break;
 
-        if (getparent(cid) == id)
+        if (getparent(current) == id)
         {
 
-            struct record *record = &records[i];
-
-            if (n + sizeof (struct record) >= count)
-                break;
-
-            record->id = cid;
-            record->size = cpio_filesize(cheader);
-            record->offset = getnext(cid) - address;
-            record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(cid), cheader->namesize - 1, header->namesize);
-
-            switch (cheader->mode & 0xF000)
+            if (n + sizeof (struct record) < count)
             {
 
-            case 0x4000:
-                record->type = RECORD_TYPE_DIRECTORY;
+                struct record *record = &records[i];
 
-                break;
-
-            case 0x8000:
-                record->type = RECORD_TYPE_NORMAL;
-
-                break;
+                n += getrecord(current, record);
+                i += 1;
 
             }
 
-            n += sizeof (struct record);
-            i += 1;
-
         }
 
-    } while ((cid = getnext(cid)));
+    } while ((current = getnext(current)));
 
     return n;
 
@@ -180,36 +201,7 @@ static unsigned int map(unsigned int id)
 static unsigned int stat(unsigned int id, struct record *record)
 {
 
-    struct cpio_header *header = getheader(id);
-
-    if (header)
-    {
-
-        record->id = id;
-        record->size = cpio_filesize(header);
-        record->offset = getnext(id) - address;
-        record->length = buffer_read(record->name, RECORD_NAMESIZE, getname(id), header->namesize - 1, header->namesize);
-
-        switch (header->mode & 0xF000)
-        {
-
-        case 0x4000:
-            record->type = RECORD_TYPE_DIRECTORY;
-
-            break;
-
-        case 0x8000:
-            record->type = RECORD_TYPE_NORMAL;
-
-            break;
-
-        }
-
-        return 1;
-
-    }
-
-    return 0;
+    return getrecord(id, record);
 
 }
 
@@ -309,7 +301,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
         {
 
         case 0x4000:
-            response->count = getlist(request->id, request->offset, request->count, response + 1);
+            response->count = getrecords(request->id, request->offset, request->count, (struct record *)(response + 1));
 
             break;
 
