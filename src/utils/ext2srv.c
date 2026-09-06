@@ -318,43 +318,54 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case 0x4000:
-        if (request->offset == 0)
         {
 
-            unsigned int offset = 0;
-            unsigned int i;
+            unsigned int offset = request->offset;
+            unsigned int capacity = MESSAGE_SIZE - sizeof (struct event_readresponse);
+            struct record *records = (struct record *)(response + 1);
+            unsigned int i = 0;
 
             read(block, 4096, node.pointer0, blocksize);
 
-            for (i = 0; offset < blocksize; i++)
+            while (offset < blocksize && (i + 1) * sizeof (struct record) <= capacity)
             {
 
                 struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
-                struct record *records = (struct record *)(response + 1);
-                struct record *record = &records[i];
 
-                record->id = entry->node;
-                record->size = 0;
-                record->offset = offset + entry->size;
-                record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
+                if (!entry->size)
+                    break;
 
-                switch (entry->type)
+                if (entry->node)
                 {
 
-                case 1:
-                    record->type = RECORD_TYPE_NORMAL;
+                    struct record *record = &records[i];
 
-                    break;
+                    record->id = entry->node;
+                    record->size = 0;
+                    record->offset = offset + entry->size;
+                    record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
 
-                case 2:
-                    record->type = RECORD_TYPE_DIRECTORY;
+                    switch (entry->type)
+                    {
 
-                    break;
+                    case 1:
+                        record->type = RECORD_TYPE_NORMAL;
+
+                        break;
+
+                    case 2:
+                        record->type = RECORD_TYPE_DIRECTORY;
+
+                        break;
+
+                    }
+
+                    i++;
+                    response->count += sizeof (struct record);
 
                 }
 
                 offset += entry->size;
-                response->count += sizeof (struct record);
 
             }
 
