@@ -393,22 +393,32 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
         unsigned int blocksize = (1024 << sb.blockSize);
         unsigned char block[EXT2_MAXBLOCKSIZE];
         unsigned int offset = 0;
+        struct event_walkresponse response;
 
-        read(block, EXT2_MAXBLOCKSIZE, node.pointer[0], blocksize);
+        response.id = 0;
 
-        while (offset < EXT2_MAXBLOCKSIZE)
+        while (offset < node.sizeLow)
         {
 
-            struct ext2_entry *entry = (struct ext2_entry *)(block + offset);
+            unsigned int blockindex = offset / blocksize;
+            unsigned int blockoffset = offset % blocksize;
+            unsigned int sector = getsector(&node, blockindex, blocksize);
+            struct ext2_entry *entry;
 
-            if (walkrequest->length == entry->length + 1 && buffer_match(entry + 1, path, entry->length))
+            if (!sector)
+                break;
+
+            read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+            entry = (struct ext2_entry *)(block + blockoffset);
+
+            if (!entry->size)
+                break;
+
+            if (entry->node && walkrequest->length == entry->length + 1 && buffer_match(entry + 1, path, entry->length))
             {
 
-                struct event_walkresponse response;
-
                 response.id = entry->node;
-
-                channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
                 break;
 
@@ -417,6 +427,8 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
             offset += entry->size;
 
         }
+
+        channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
     }
 
