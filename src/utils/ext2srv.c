@@ -161,12 +161,12 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int blockgroup)
 
 }
 
-static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned int nodeindex, unsigned int nodesize)
+static void readnode(struct ext2_node *node, unsigned int blocktable, unsigned int nodeindex)
 {
 
-    unsigned int perblock = blocksize / nodesize;
+    unsigned int perblock = blocksize / sb.nodeSize;
     unsigned int sector = blocktable + nodeindex / perblock;
-    unsigned int offset = (nodeindex % perblock) * nodesize;
+    unsigned int offset = (nodeindex % perblock) * sb.nodeSize;
     unsigned char data[EXT2_MAXBLOCKSIZE];
 
     read(data, EXT2_MAXBLOCKSIZE, sector, blocksize);
@@ -182,7 +182,7 @@ static void simpleread(struct ext2_node *node, unsigned int id)
     struct ext2_blockgroup bg;
 
     readblockgroup(&bg, blockgroup);
-    readnode(node, bg.blockTableAddress, nodeindex, sb.nodeSize);
+    readnode(node, bg.blockTableAddress, nodeindex);
 
 }
 
@@ -242,6 +242,31 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index)
 
 }
 
+static void getrecord(struct ext2_entry *entry, struct record *record, unsigned int offset)
+{
+
+    record->id = entry->node;
+    record->size = 0;
+    record->offset = offset + entry->size;
+    record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
+
+    switch (entry->type)
+    {
+
+    case 1:
+        record->type = RECORD_TYPE_NORMAL;
+
+        break;
+
+    case 2:
+        record->type = RECORD_TYPE_DIRECTORY;
+
+        break;
+
+    }
+
+}
+
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -285,27 +310,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
                 if (entry->node)
                 {
 
-                    struct record *record = &records[i];
-
-                    record->id = entry->node;
-                    record->size = 0;
-                    record->offset = offset + entry->size;
-                    record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
-
-                    switch (entry->type)
-                    {
-
-                    case 1:
-                        record->type = RECORD_TYPE_NORMAL;
-
-                        break;
-
-                    case 2:
-                        record->type = RECORD_TYPE_DIRECTORY;
-
-                        break;
-
-                    }
+                    getrecord(entry, &records[i], offset);
 
                     i++;
                     response->count += sizeof (struct record);
@@ -364,31 +369,29 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int namelength)
+static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int length)
 {
 
-    unsigned char block[EXT2_MAXBLOCKSIZE];
     unsigned int offset = 0;
 
     while (offset < node->sizeLow)
     {
 
+        unsigned char block[EXT2_MAXBLOCKSIZE];
         unsigned int blockindex = offset / blocksize;
         unsigned int blockoffset = offset % blocksize;
         unsigned int sector = getsector(node, blockindex);
-        struct ext2_entry *entry;
+        struct ext2_entry *entry = (struct ext2_entry *)(block + blockoffset);
 
         if (!sector)
             break;
 
         read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
 
-        entry = (struct ext2_entry *)(block + blockoffset);
-
         if (!entry->size)
             break;
 
-        if (entry->node && namelength == entry->length && buffer_match(entry + 1, name, entry->length))
+        if (entry->node && entry->length == length && buffer_match(entry + 1, name, length))
             return entry->node;
 
         offset += entry->size;
@@ -451,26 +454,37 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    struct event_writeresponse response;
+ 
+    response.count = 0;
+
+    channel_send(0, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
+
 }
 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int target = channel_lookup(option_getstring("block-service"));
+    unsigned int block = channel_lookup(option_getstring("block-service"));
 
-    channel_send(0, target, EVENT_LINK, 0, 0);
-    readsuperblock();
-
-    if (ext2_validate(&sb))
+    if (block)
     {
 
-        call_announce(0, djb_hash(4, "ext2"));
+        channel_send(0, block, EVENT_LINK, 0, 0);
+        readsuperblock();
 
-        while (channel_process(0));
+        if (ext2_validate(&sb))
+        {
+
+            call_announce(0, djb_hash(4, "ext2"));
+
+            while (channel_process(0));
+
+        }
+
+        channel_send(0, block, EVENT_UNLINK, 0, 0);
 
     }
-
-    channel_send(0, target, EVENT_UNLINK, 0, 0);
 
 }
 
