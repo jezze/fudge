@@ -153,7 +153,25 @@ static unsigned int getrecord(unsigned int id, struct record *record)
 
 }
 
-static unsigned int getrecords(unsigned int id, unsigned int offset, unsigned int count, struct record *records)
+static unsigned int map(unsigned int id)
+{
+
+    struct cpio_header *header = getheader(id);
+
+    return (header) ? id + cpio_filedata(header) : 0;
+
+}
+
+static unsigned int read(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct cpio_header *header = getheader(id);
+
+    return (header) ? buffer_read(buffer, count, (void *)((unsigned long)id + cpio_filedata(header)), cpio_filesize(header), offset) : 0;
+
+}
+
+static unsigned int readrecords(unsigned int id, struct record *records, unsigned int count, unsigned int offset)
 {
 
     unsigned int current = address + offset;
@@ -186,15 +204,6 @@ static unsigned int getrecords(unsigned int id, unsigned int offset, unsigned in
     } while ((current = getnext(current)));
 
     return n;
-
-}
-
-static unsigned int map(unsigned int id)
-{
-
-    struct cpio_header *header = getheader(id);
-
-    return (header) ? id + cpio_filedata(header) : 0;
 
 }
 
@@ -249,6 +258,15 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
 }
 
+static unsigned int write(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct cpio_header *header = getheader(id);
+
+    return (header) ? buffer_write((void *)((unsigned long)id + cpio_filedata(header)), cpio_filesize(header), buffer, count, offset) : 0;
+
+}
+
 static unsigned int onmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -279,12 +297,12 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
         {
 
         case 0x4000:
-            response->count = getrecords(request->id, request->offset, request->count, (struct record *)(response + 1));
+            response->count = readrecords(request->id, (struct record *)(response + 1), request->count, request->offset);
 
             break;
 
         case 0x8000:
-            response->count = buffer_read(response + 1, request->count, (void *)((unsigned long)request->id + cpio_filedata(header)), cpio_filesize(header), request->offset);
+            response->count = read(request->id, response + 1, request->count, request->offset);
 
             break;
 
@@ -337,7 +355,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
         {
 
         case 0x8000:
-            response.count = buffer_write((void *)((unsigned long)request->id + cpio_filedata(header)), cpio_filesize(header), request + 1, request->count, request->offset);
+            response.count = write(request->id, request + 1, request->count, request->offset);
 
             break;
 
