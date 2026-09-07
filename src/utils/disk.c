@@ -51,17 +51,17 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (target)
     {
 
-        struct event_blockrequest blockrequest;
+        struct event_blockrequest request;
         struct message message;
 
-        blockrequest.offset = 0;
-        blockrequest.count = 512;
+        request.offset = 0;
+        request.count = 512;
 
         channel_send(0, target, EVENT_LINK, 0, 0);
-        channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
+        channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &request);
         channel_poll(0, target, EVENT_BLOCKRESPONSE, &message);
 
-        if (message.length == blockrequest.count)
+        if (message.length == request.count)
         {
 
             struct mbr *mbr = message_data(&message, 0);
