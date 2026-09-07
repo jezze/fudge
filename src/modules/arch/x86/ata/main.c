@@ -48,7 +48,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_onblockrequest(unsigned int source, unsigned int count, unsigned int sector)
+static unsigned int blockinterface_onblockrequest(unsigned int source, unsigned int count, unsigned int offset)
 {
 
     if (!session.source)
@@ -58,7 +58,7 @@ static unsigned int blockinterface_onblockrequest(unsigned int source, unsigned 
         session.count = count;
         session.offset = 0;
 
-        ide_rpio28(blockinterface.id, 0, count / 512, sector / 512);
+        ide_rpio28(blockinterface.id, 0, count / 512, offset / 512);
 
         return MESSAGE_OK;
 

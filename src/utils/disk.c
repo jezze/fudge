@@ -54,7 +54,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         struct event_blockrequest blockrequest;
         struct message message;
 
-        blockrequest.sector = 0;
+        blockrequest.offset = 0;
         blockrequest.count = 512;
 
         channel_send(0, target, EVENT_LINK, 0, 0);

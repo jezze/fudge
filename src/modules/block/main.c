@@ -9,7 +9,7 @@ static unsigned int onblockrequest(struct block_interface *interface, unsigned i
 
     struct event_blockrequest *blockrequest = data;
 
-    return interface->onblockrequest(source, blockrequest->count, blockrequest->sector);
+    return interface->onblockrequest(source, blockrequest->count, blockrequest->offset);
 
 }
 
@@ -57,7 +57,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockrequest)(unsigned int source, unsigned int count, unsigned int sector))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockrequest)(unsigned int source, unsigned int count, unsigned int offset))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);

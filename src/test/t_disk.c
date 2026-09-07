@@ -52,7 +52,7 @@ static void request_send(unsigned int target, struct state *state)
 
     struct event_blockrequest blockrequest;
 
-    blockrequest.sector = state->blocksector;
+    blockrequest.offset = state->blocksector;
     blockrequest.count = state->blockcount;
 
     channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);

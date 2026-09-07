@@ -119,7 +119,7 @@ static unsigned int read(void *buffer, unsigned int count, unsigned int sector, 
         struct event_blockrequest blockrequest;
         struct message message;
 
-        blockrequest.sector = option_getdecimal("partoffset") + sector * blocksize;
+        blockrequest.offset = option_getdecimal("partoffset") + sector * blocksize;
         blockrequest.count = count;
 
         channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);

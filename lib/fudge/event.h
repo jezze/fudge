@@ -146,8 +146,8 @@ struct event_videoinfo
 struct event_blockrequest
 {
 
-    unsigned int sector;
     unsigned int count;
+    unsigned int offset;
 
 };
 
