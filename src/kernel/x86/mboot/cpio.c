@@ -261,28 +261,6 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
 
 }
 
-static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
-{
-
-    struct event_walkrequest *request = data;
-    struct event_walkresponse response;
-
-    response.id = walk((request->parent) ? request->parent : getroot(), (char *)(request + 1), request->length);
-
-    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
-
-}
-
-static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
-{
-
-    struct event_statrequest *request = data;
-    struct record record;
-
-    return kernel_place(inode, source, EVENT_STATRESPONSE, stat(request->id, &record) * sizeof (struct record), &record);
-
-}
-
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -320,6 +298,28 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     }
 
     return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+
+}
+
+static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_statrequest *request = data;
+    struct record record;
+
+    return kernel_place(inode, source, EVENT_STATRESPONSE, stat(request->id, &record) * sizeof (struct record), &record);
+
+}
+
+static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_walkrequest *request = data;
+    struct event_walkresponse response;
+
+    response.id = walk((request->parent) ? request->parent : getroot(), (char *)(request + 1), request->length);
+
+    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
@@ -363,14 +363,14 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     case EVENT_MAPREQUEST:
         return onmaprequest(source, count, data);
 
-    case EVENT_WALKREQUEST:
-        return onwalkrequest(source, count, data);
+    case EVENT_READREQUEST:
+        return onreadrequest(source, count, data);
 
     case EVENT_STATREQUEST:
         return onstatrequest(source, count, data);
 
-    case EVENT_READREQUEST:
-        return onreadrequest(source, count, data);
+    case EVENT_WALKREQUEST:
+        return onwalkrequest(source, count, data);
 
     case EVENT_WRITEREQUEST:
         return onwriterequest(source, count, data);
