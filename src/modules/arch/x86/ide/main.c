@@ -7,7 +7,7 @@
 #include "ide.h"
 
 #define REG_FEATURE                     0x01
-#define REG_COUNT0                      0x02
+#define REG_COUNT                       0x02
 #define REG_LBA0                        0x03
 #define REG_LBA1                        0x04
 #define REG_LBA2                        0x05
@@ -93,7 +93,7 @@ static void setcommand(unsigned short data, unsigned char command)
 static void setlba(unsigned short data, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
 {
 
-    io_outb(data + REG_COUNT0, count);
+    io_outb(data + REG_COUNT, count);
     io_outb(data + REG_LBA0, lba0);
     io_outb(data + REG_LBA1, lba1);
     io_outb(data + REG_LBA2, lba2);
