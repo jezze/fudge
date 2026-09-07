@@ -119,7 +119,7 @@ static unsigned int read(void *buffer, unsigned int count, unsigned int sector, 
         struct event_blockrequest blockrequest;
         struct message message;
 
-        blockrequest.sector = option_getdecimal("partoffset") + sector * (blocksize / 512);
+        blockrequest.sector = option_getdecimal("partoffset") + sector * blocksize;
         blockrequest.count = count;
 
         channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &blockrequest);
@@ -492,7 +492,7 @@ void init(void)
 {
 
     option_add("block-service", "block");
-    option_add("partoffset", "2048");
+    option_add("partoffset", "1048576");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_READREQUEST, onreadrequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
