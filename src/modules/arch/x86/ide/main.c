@@ -26,10 +26,6 @@
 #define REG_COMMAND_DMA28READ           0xC8
 #define REG_COMMAND_DMA28WRITE          0xCA
 #define REG_COMMAND_IDATA               0xEC
-#define REG_COUNT1                      0x08
-#define REG_LBA3                        0x09
-#define REG_LBA4                        0x0A
-#define REG_LBA5                        0x0B
 #define REG_STATUS_ERROR                0x01
 #define REG_STATUS_DRQ                  0x08
 #define REG_STATUS_SRV                  0x10
@@ -104,16 +100,6 @@ static void setlba(unsigned short data, unsigned char count, unsigned char lba0,
 
 }
 
-static void setlba2(unsigned short data, unsigned char count, unsigned char lba3, unsigned char lba4, unsigned char lba5)
-{
-
-    io_outb(data + REG_COUNT1, count);
-    io_outb(data + REG_LBA3, lba3);
-    io_outb(data + REG_LBA4, lba4);
-    io_outb(data + REG_LBA5, lba5);
-
-}
-
 static void setpio28(unsigned short data, unsigned short control, unsigned int slave, unsigned int sector, unsigned int count, unsigned char command)
 {
 
@@ -127,8 +113,8 @@ static void setpio48(unsigned short data, unsigned short control, unsigned int s
 {
 
     select(data, control, 0x40, slave);
+    setlba(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setlba2(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
     setcommand(data, command);
 
 }

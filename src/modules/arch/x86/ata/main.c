@@ -58,7 +58,7 @@ static unsigned int blockinterface_onblockrequest(unsigned int source, unsigned 
         session.count = count;
         session.offset = 0;
 
-        ide_rpio28(blockinterface.id, 0, count / 512, offset / 512);
+        ide_rpio48(blockinterface.id, 0, count / 512, offset / 512);
 
         return MESSAGE_OK;
 
