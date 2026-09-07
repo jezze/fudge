@@ -287,15 +287,14 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     case 0x4000:
         {
 
-            unsigned int offset = request->offset;
             struct record *records = (struct record *)(response + 1);
             unsigned int i = 0;
 
-            while (offset < node.sizeLow && (i + 1) * sizeof (struct record) <= capacity)
+            while (request->offset < node.sizeLow && (i + 1) * sizeof (struct record) <= capacity)
             {
 
-                unsigned int blockindex = offset / blocksize;
-                unsigned int blockoffset = offset % blocksize;
+                unsigned int blockindex = request->offset / blocksize;
+                unsigned int blockoffset = request->offset % blocksize;
                 unsigned int sector = getsector(&node, blockindex);
                 struct ext2_entry *entry = (struct ext2_entry *)(block + blockoffset);
 
@@ -310,14 +309,14 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
                 if (entry->node)
                 {
 
-                    getrecord(entry, &records[i], offset);
+                    getrecord(entry, &records[i], request->offset);
 
                     i++;
                     response->count += sizeof (struct record);
 
                 }
 
-                offset += entry->size;
+                request->offset += entry->size;
 
             }
 
