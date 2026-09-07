@@ -267,6 +267,76 @@ static void getrecord(struct ext2_entry *entry, struct record *record, unsigned 
 
 }
 
+static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int length)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < node->sizeLow)
+    {
+
+        unsigned char block[EXT2_MAXBLOCKSIZE];
+        unsigned int blockindex = offset / blocksize;
+        unsigned int blockoffset = offset % blocksize;
+        unsigned int sector = getsector(node, blockindex);
+        struct ext2_entry *entry = (struct ext2_entry *)(block + blockoffset);
+
+        if (!sector)
+            break;
+
+        read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+        if (!entry->size)
+            break;
+
+        if (entry->node && entry->length == length && buffer_match(entry + 1, name, length))
+            return entry->node;
+
+        offset += entry->size;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int walk(unsigned int id, char *path, unsigned int length)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < length)
+    {
+
+        unsigned int seglength = 0;
+        struct ext2_node node;
+
+        while (offset + seglength < length && path[offset + seglength] != '/')
+            seglength++;
+
+        if (seglength)
+        {
+
+            simpleread(&node, id);
+
+            id = 0;
+
+            if ((node.type & 0xF000) == 0x4000)
+                id = matchentry(&node, path + offset, seglength);
+
+        }
+
+        if (!id)
+            return 0;
+
+        offset += seglength + 1;
+
+    }
+
+    return id;
+
+}
+
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -364,77 +434,13 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int length)
-{
-
-    unsigned int offset = 0;
-
-    while (offset < node->sizeLow)
-    {
-
-        unsigned char block[EXT2_MAXBLOCKSIZE];
-        unsigned int blockindex = offset / blocksize;
-        unsigned int blockoffset = offset % blocksize;
-        unsigned int sector = getsector(node, blockindex);
-        struct ext2_entry *entry = (struct ext2_entry *)(block + blockoffset);
-
-        if (!sector)
-            break;
-
-        read(block, EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-        if (!entry->size)
-            break;
-
-        if (entry->node && entry->length == length && buffer_match(entry + 1, name, length))
-            return entry->node;
-
-        offset += entry->size;
-
-    }
-
-    return 0;
-
-}
-
 static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     struct event_walkrequest *request = mdata;
     struct event_walkresponse response;
-    unsigned int id = (request->parent) ? request->parent : 2;
-    char *path = (char *)(request + 1);
-    unsigned int offset = 0;
 
-    while (offset < request->length)
-    {
-
-        unsigned int seglength = 0;
-        struct ext2_node node;
-
-        while (offset + seglength < request->length && path[offset + seglength] != '/')
-            seglength++;
-
-        if (seglength)
-        {
-
-            simpleread(&node, id);
-
-            id = 0;
-
-            if ((node.type & 0xF000) == 0x4000)
-                id = matchentry(&node, path + offset, seglength);
-
-        }
-
-        if (!id)
-            break;
-
-        offset += seglength + 1;
-
-    }
-
-    response.id = id;
+    response.id = walk((request->parent) ? request->parent : 2, (char *)(request + 1), request->length);
 
     channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
