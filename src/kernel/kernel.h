@@ -1,3 +1,4 @@
+#define KERNEL_CODESIZE                 0x500000
 #define KERNEL_STACKSIZE                0x2000
 #define KERNEL_VSTACK                   0x80000000
 #define KERNEL_VMAILBOX                 0x40000000
