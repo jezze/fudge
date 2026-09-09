@@ -38,7 +38,7 @@ static void handleirq(unsigned int irq)
         if (session.offset == session.count)
         {
 
-            block_placeblockresponse(&blockinterface, session.source, session.data, session.count);
+            kernel_place(blockinterface.inode, session.source, EVENT_BLOCKRESPONSE, session.count, session.data);
 
             session.source = 0;
 

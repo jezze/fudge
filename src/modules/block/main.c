@@ -36,13 +36,6 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
-void block_placeblockresponse(struct block_interface *interface, unsigned int source, void *buffer, unsigned int count)
-{
-
-    kernel_place(interface->inode, source, EVENT_BLOCKRESPONSE, count, buffer);
-
-}
-
 void block_notifyblockresponse(struct block_interface *interface, void *buffer, unsigned int count)
 {
 
