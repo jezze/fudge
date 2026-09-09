@@ -4,12 +4,21 @@
 
 static struct node_operands operands;
 
-static unsigned int onreadblockrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
+static unsigned int onblockreadrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_blockrequest *blockrequest = data;
+    struct event_blockrequest *request = data;
 
-    return interface->onreadblockrequest(source, blockrequest->count, blockrequest->offset);
+    return interface->onblockreadrequest(source, request->count, request->offset);
+
+}
+
+static unsigned int onblockwriterequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_blockrequest *request = data;
+
+    return interface->onblockwriterequest(source, request->count, request->offset);
 
 }
 
@@ -28,18 +37,14 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
         return kernel_unlinknode(target, source);
 
     case EVENT_BLOCKREADREQUEST:
-        return onreadblockrequest(interface, source, count, data);
+        return onblockreadrequest(interface, source, count, data);
+
+    case EVENT_BLOCKWRITEREQUEST:
+        return onblockwriterequest(interface, source, count, data);
 
     }
 
     return MESSAGE_UNIMPLEMENTED;
-
-}
-
-void block_notifyblockresponse(struct block_interface *interface, void *buffer, unsigned int count)
-{
-
-    kernel_notify(interface->inode, EVENT_BLOCKREADRESPONSE, count, buffer);
 
 }
 
@@ -57,14 +62,15 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onreadblockrequest)(unsigned int source, unsigned int count, unsigned int offset))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockreadrequest)(unsigned int source, unsigned int count, unsigned int offset), unsigned int (*onblockwriterequest)(unsigned int source, unsigned int count, unsigned int offset))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
     interface->id = id;
     interface->inode = pool_picknode();
-    interface->onreadblockrequest = onreadblockrequest;
+    interface->onblockreadrequest = onblockreadrequest;
+    interface->onblockwriterequest = onblockwriterequest;
 
     if (interface->inode)
     {
