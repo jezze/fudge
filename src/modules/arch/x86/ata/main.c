@@ -38,9 +38,9 @@ static void handleirq(unsigned int irq)
         if (session.offset == session.count)
         {
 
-            session.source = 0;
+            block_placeblockresponse(&blockinterface, session.source, session.data, session.count);
 
-            block_notifyblockresponse(&blockinterface, session.data, session.count);
+            session.source = 0;
 
         }
 
