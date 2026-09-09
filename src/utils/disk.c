@@ -58,8 +58,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         request.count = 512;
 
         channel_send(0, target, EVENT_LINK, 0, 0);
-        channel_send(0, target, EVENT_BLOCKREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_poll(0, target, EVENT_BLOCKRESPONSE, &message);
+        channel_send(0, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_poll(0, target, EVENT_BLOCKREADRESPONSE, &message);
 
         if (message.length == request.count)
         {
