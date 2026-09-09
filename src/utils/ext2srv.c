@@ -205,10 +205,11 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
         unsigned int next = buffer_eachbyte(path, length, '/', offset);
         unsigned int count = (next ? next : length + 1) - offset - 1;
-        struct ext2_node node;
 
         if (count)
         {
+
+            struct ext2_node node;
 
             simpleread(&node, id);
 
