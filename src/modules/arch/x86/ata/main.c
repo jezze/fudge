@@ -32,9 +32,10 @@ static void handleirq(unsigned int irq)
     if (session.source)
     {
 
-        if (session.type == 1)
+        switch (session.type)
         {
 
+        case 1:
             ide_rblock(blockinterface.id, session.data + session.offset);
 
             session.offset += 512;
@@ -47,6 +48,24 @@ static void handleirq(unsigned int irq)
                 session.source = 0;
 
             }
+
+            break;
+
+        case 2:
+            ide_wblock(blockinterface.id, session.data + session.offset);
+
+            session.offset += 512;
+
+            if (session.offset == session.count)
+            {
+
+                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKWRITERESPONSE, session.count, session.data);
+
+                session.source = 0;
+
+            }
+
+            break;
 
         }
 
