@@ -10,6 +10,7 @@ struct session
 {
 
     unsigned char data[4096];
+    unsigned int type;
     unsigned int source;
     unsigned int count;
     unsigned int offset;
@@ -31,16 +32,21 @@ static void handleirq(unsigned int irq)
     if (session.source)
     {
 
-        ide_rblock(blockinterface.id, session.data + session.offset);
-
-        session.offset += 512;
-
-        if (session.offset == session.count)
+        if (session.type == 1)
         {
 
-            kernel_place(blockinterface.inode, session.source, EVENT_BLOCKREADRESPONSE, session.count, session.data);
+            ide_rblock(blockinterface.id, session.data + session.offset);
 
-            session.source = 0;
+            session.offset += 512;
+
+            if (session.offset == session.count)
+            {
+
+                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKREADRESPONSE, session.count, session.data);
+
+                session.source = 0;
+
+            }
 
         }
 
@@ -54,6 +60,7 @@ static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsig
     if (!session.source)
     {
 
+        session.type = 1;
         session.source = source;
         session.count = count;
         session.offset = 0;
@@ -71,7 +78,21 @@ static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsig
 static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsigned int count, unsigned int offset)
 {
 
-    return MESSAGE_UNIMPLEMENTED;
+    if (!session.source)
+    {
+
+        session.type = 2;
+        session.source = source;
+        session.count = count;
+        session.offset = 0;
+
+        ide_wpio48(blockinterface.id, 0, count / 512, offset / 512);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_RETRY;
 
 }
 
