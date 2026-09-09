@@ -102,6 +102,13 @@ static void setpipemode(unsigned int width, unsigned int height)
 
 }
 
+static unsigned int videointerface_oninfo(unsigned int source)
+{
+
+    return MESSAGE_UNIMPLEMENTED;
+
+}
+
 static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
@@ -124,7 +131,7 @@ static void handleirq(unsigned int irq)
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, videointerface_onvideocmap, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_onvideocmap, videointerface_onvideoconf);
 
 }
 

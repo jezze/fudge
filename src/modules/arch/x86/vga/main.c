@@ -124,6 +124,22 @@ static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, u
 
 }
 
+static unsigned int videointerface_oninfo(unsigned int source)
+{
+
+    struct event_videoinfo videoinfo;
+
+    videoinfo.framebuffer = 0x000B8000;
+    videoinfo.width = videointerface.width;
+    videoinfo.height = videointerface.height;
+    videoinfo.bpp = videointerface.bpp;
+
+    kernel_place(videointerface.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+
+    return MESSAGE_OK;
+
+}
+
 /*
 static unsigned int videointerface_getcmap(unsigned int source, unsigned int count, void *buffer)
 {
@@ -206,8 +222,6 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
 
     }
 
-    video_notifymode(&videointerface, 0, videointerface.width, videointerface.height, videointerface.bpp);
-
     return MESSAGE_OK;
 
 }
@@ -216,7 +230,7 @@ static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id, consoleinterface_ondata);
-    video_initinterface(&videointerface, id, videointerface_onvideocmap, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_onvideocmap, videointerface_onvideoconf);
 
     consoleinterface.width = 80;
     consoleinterface.height = 25;

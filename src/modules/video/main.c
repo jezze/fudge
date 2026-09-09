@@ -4,6 +4,13 @@
 
 static struct node_operands operands;
 
+static unsigned int oninfo(struct video_interface *interface, unsigned int source)
+{
+
+    return interface->oninfo(source);
+
+}
+
 static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
@@ -33,6 +40,9 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
     case EVENT_UNLINK:
         return kernel_unlinknode(target, source);
+
+    case EVENT_INFO:
+        return oninfo(interface, source);
 
     case EVENT_VIDEOCMAP:
         return onvideocmap(interface, source, count, data);
@@ -74,7 +84,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int (*onvideocmap)(unsigned int source, unsigned int count, void *data), unsigned int (*onvideoconf)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source), unsigned int (*onvideocmap)(unsigned int source, unsigned int count, void *data), unsigned int (*onvideoconf)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
@@ -84,6 +94,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
+    interface->oninfo = oninfo;
     interface->onvideocmap = onvideocmap;
     interface->onvideoconf = onvideoconf;
 

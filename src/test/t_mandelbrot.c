@@ -261,6 +261,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         videoconf.bpp = option_getdecimal("bpp");
 
         channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+        channel_send(0, video, EVENT_INFO, 0, 0);
         channel_wait(0, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
         if (videoinfo.bpp == 1)

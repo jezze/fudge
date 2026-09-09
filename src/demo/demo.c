@@ -163,6 +163,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         channel_send(0, timer, EVENT_LINK, 0, 0);
         channel_send(0, video, EVENT_LINK, 0, 0);
         channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+        channel_send(0, video, EVENT_INFO, 0, 0);
         channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
         run();
         channel_send(0, video, EVENT_UNLINK, 0, 0);
