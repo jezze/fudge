@@ -65,57 +65,39 @@ static unsigned short getdata(unsigned int id)
 
 }
 
-static void sleep(unsigned short control)
-{
-
-    io_inb(control);
-    io_inb(control);
-    io_inb(control);
-    io_inb(control);
-
-}
-
-static void select(unsigned short data, unsigned short control, unsigned char operation, unsigned int slave)
-{
-
-    io_outb(data + REG_SELECT, operation | slave << 4);
-    sleep(control);
-
-}
-
-static void setcommand(unsigned short data, unsigned char command)
-{
-
-    io_outb(data + REG_COMMAND, command);
-
-}
-
-static void setlba(unsigned short data, unsigned char count, unsigned char lba0, unsigned char lba1, unsigned char lba2)
-{
-
-    io_outb(data + REG_COUNT, count);
-    io_outb(data + REG_LBA0, lba0);
-    io_outb(data + REG_LBA1, lba1);
-    io_outb(data + REG_LBA2, lba2);
-
-}
-
 static void setpio28(unsigned short data, unsigned short control, unsigned int slave, unsigned int sector, unsigned int count, unsigned char command)
 {
 
-    select(data, control, 0xE0 | ((sector >> 24) & 0x0F), slave);
-    setlba(data, count, sector, sector >> 8, sector >> 16);
-    setcommand(data, command);
+    io_outb(data + REG_SELECT, 0xE0 | ((sector >> 24) & 0x0F) | slave << 4);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_outb(data + REG_COUNT, count);
+    io_outb(data + REG_LBA0, sector);
+    io_outb(data + REG_LBA1, sector >> 8);
+    io_outb(data + REG_LBA2, sector >> 16);
+    io_outb(data + REG_COMMAND, command);
 
 }
 
 static void setpio48(unsigned short data, unsigned short control, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, unsigned char command)
 {
 
-    select(data, control, 0x40, slave);
-    setlba(data, count >> 8, sectorhigh, sectorhigh >> 8, sectorhigh >> 16);
-    setlba(data, count, sectorlow, sectorlow >> 8, sectorlow >> 16);
-    setcommand(data, command);
+    io_outb(data + REG_SELECT, 0x40 | slave << 4);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_outb(data + REG_COUNT, count >> 8);
+    io_outb(data + REG_LBA0, sectorhigh);
+    io_outb(data + REG_LBA1, sectorhigh >> 8);
+    io_outb(data + REG_LBA2, sectorhigh >> 16);
+    io_outb(data + REG_COUNT, count);
+    io_outb(data + REG_LBA0, sectorlow);
+    io_outb(data + REG_LBA1, sectorlow >> 8);
+    io_outb(data + REG_LBA2, sectorlow >> 16);
+    io_outb(data + REG_COMMAND, command);
 
 }
 
@@ -143,7 +125,7 @@ unsigned int ide_rblock(unsigned int id, void *buffer)
     unsigned int i;
 
     for (i = 0; i < 256; i++)
-        *out++ = io_inw(data);
+        out[i] = io_inw(data);
 
     return 1;
 
@@ -157,7 +139,7 @@ unsigned int ide_wblock(unsigned int id, void *buffer)
     unsigned int i;
 
     for (i = 0; i < 256; i++)
-        io_outw(data, *out++);
+        io_outw(data, out[i]);
 
     return 1;
 
