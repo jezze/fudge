@@ -355,7 +355,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (block)
     {
 
-        channel_send(0, block, EVENT_LINK, 0, 0);
         readsuperblock();
 
         if (ext2_validate(&sb))
@@ -366,8 +365,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             while (channel_process(0));
 
         }
-
-        channel_send(0, block, EVENT_UNLINK, 0, 0);
 
     }
 
