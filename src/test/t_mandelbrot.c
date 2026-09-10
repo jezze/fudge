@@ -218,6 +218,8 @@ static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int 
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
+    unsigned int video = channel_lookup(option_getstring("video-service"));
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
     if (wm)
@@ -225,30 +227,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         channel_send(0, wm, EVENT_WMGRAB, 0, 0);
         channel_wait(0, wm, EVENT_WMACK, 0, 0);
-        channel_send(0, wm, EVENT_WMMAP, 0, 0);
-
-        while (channel_process(0));
-
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
-        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(0, wm, EVENT_WMACK, 0, 0);
 
     }
-
-}
-
-static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    channel_close();
-
-}
-
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
-    unsigned int video = channel_lookup(option_getstring("video-service"));
 
     if (mouse && video)
     {
@@ -299,6 +279,21 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
+    if (wm)
+    {
+
+        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+}
+
+static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    channel_close();
+
 }
 
 void init(void)
@@ -311,7 +306,6 @@ void init(void)
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
-    channel_bind(EVENT_WMINIT, onwminit);
 
     while (channel_process(0));
 

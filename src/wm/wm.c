@@ -65,6 +65,7 @@ static void setupvideo(unsigned int video)
     channel_send(0, video, EVENT_VIDEOCMAP, 768, &black);
     channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
     channel_send(0, video, EVENT_INFO, 0, 0);
+    channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
 
 }
 
@@ -597,7 +598,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     call_announce(0, djb_hash(2, "wm"));
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, mouse, EVENT_LINK, 0, 0);
-    channel_send(0, video, EVENT_LINK, 0, 0);
     setupvideo(video);
 
     while (channel_process(0))
@@ -628,7 +628,6 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    channel_send(0, video, EVENT_UNLINK, 0, 0);
     channel_send(0, mouse, EVENT_UNLINK, 0, 0);
     channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
 

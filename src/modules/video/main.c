@@ -56,20 +56,6 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
-void video_notifymode(struct video_interface *interface, unsigned int framebuffer, unsigned int w, unsigned int h, unsigned int bpp)
-{
-
-    struct event_videoinfo videoinfo;
-
-    videoinfo.framebuffer = framebuffer;
-    videoinfo.width = w;
-    videoinfo.height = h;
-    videoinfo.bpp = bpp;
-
-    kernel_notify(interface->inode, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
-
-}
-
 void video_registerinterface(struct video_interface *interface)
 {
 

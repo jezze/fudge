@@ -111,6 +111,9 @@ static void run(void)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
+    unsigned int timer = channel_lookup(option_getstring("timer-service"));
+    unsigned int video = channel_lookup(option_getstring("video-service"));
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
     if (wm)
@@ -118,11 +121,32 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         channel_send(0, wm, EVENT_WMGRAB, 0, 0);
         channel_wait(0, wm, EVENT_WMACK, 0, 0);
-        channel_send(0, wm, EVENT_WMMAP, 0, 0);
 
-        while (channel_process(0));
+    }
 
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+    if (keyboard && timer && video)
+    {
+
+        struct event_videoconf videoconf;
+
+        videoconf.width = option_getdecimal("width");
+        videoconf.height = option_getdecimal("height");
+        videoconf.bpp = option_getdecimal("bpp");
+
+        channel_send(0, keyboard, EVENT_LINK, 0, 0);
+        channel_send(0, timer, EVENT_LINK, 0, 0);
+        channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+        channel_send(0, video, EVENT_INFO, 0, 0);
+        channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
+        run();
+        channel_send(0, timer, EVENT_UNLINK, 0, 0);
+        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+
+    }
+
+    if (wm)
+    {
+
         channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
         channel_wait(0, wm, EVENT_WMACK, 0, 0);
 
@@ -143,37 +167,6 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
-    unsigned int timer = channel_lookup(option_getstring("timer-service"));
-    unsigned int video = channel_lookup(option_getstring("video-service"));
-
-    if (keyboard && timer && video)
-    {
-
-        struct event_videoconf videoconf;
-
-        videoconf.width = option_getdecimal("width");
-        videoconf.height = option_getdecimal("height");
-        videoconf.bpp = option_getdecimal("bpp");
-
-        channel_send(0, keyboard, EVENT_LINK, 0, 0);
-        channel_send(0, timer, EVENT_LINK, 0, 0);
-        channel_send(0, video, EVENT_LINK, 0, 0);
-        channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-        channel_send(0, video, EVENT_INFO, 0, 0);
-        channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
-        run();
-        channel_send(0, video, EVENT_UNLINK, 0, 0);
-        channel_send(0, timer, EVENT_UNLINK, 0, 0);
-        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
-
-    }
-
-}
-
 void init(void)
 {
 
@@ -187,7 +180,6 @@ void init(void)
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
-    channel_bind(EVENT_WMINIT, onwminit);
 
     while (channel_process(0));
 
