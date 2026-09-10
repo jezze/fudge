@@ -1,13 +1,6 @@
 #include "message.h"
 
-void *message_data(struct message *message, unsigned int ichannel)
-{
-
-    return (void *)(message->data + MESSAGE_CAPACITY * ichannel);
-
-}
-
-void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, unsigned long data)
+void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, void *data)
 {
 
     message->event = event;

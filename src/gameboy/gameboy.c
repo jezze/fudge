@@ -238,12 +238,12 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
             break;
 
         case EVENT_KEYPRESS:
-            keypress(&gb, message_data(&message, 0));
+            keypress(&gb, message.data);
 
             break;
 
         case EVENT_KEYRELEASE:
-            keyrelease(&gb, message_data(&message, 0));
+            keyrelease(&gb, message.data);
 
             break;
 

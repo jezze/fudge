@@ -5,6 +5,7 @@ struct mailbox
     struct spinlock spinlock;
     unsigned int itask;
     unsigned int inode;
+    unsigned int ichannel;
     struct message messages[MESSAGE_SLOTS];
     unsigned long data;
     unsigned int head;
@@ -13,7 +14,7 @@ struct mailbox
 
 };
 
-void mailbox_reset(struct mailbox *mailbox, unsigned int itask);
+void mailbox_reset(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel);
 void mailbox_register(struct mailbox *mailbox);
 void mailbox_unregister(struct mailbox *mailbox);
 void mailbox_init(struct mailbox *mailbox, unsigned long data);

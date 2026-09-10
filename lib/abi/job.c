@@ -121,7 +121,7 @@ unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *me
 
             struct job_worker *next = &job->workers[i + 1];
 
-            channel_send(ichannel, next->target, message->event, message->length, message_data(message, ichannel));
+            channel_send(ichannel, next->target, message->event, message->length, message->data);
 
             return 1;
 

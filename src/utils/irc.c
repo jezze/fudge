@@ -58,7 +58,7 @@ static void dnsresolve(struct socket *socket, char *domain)
             unsigned int i;
             char *key;
 
-            for (i = 0; (key = buffer_tindex(message_data(&message, 1), message.length, '\0', i)); i += 2)
+            for (i = 0; (key = buffer_tindex(message.data, message.length, '\0', i)); i += 2)
             {
 
                 if (cstring_match(key, "data"))

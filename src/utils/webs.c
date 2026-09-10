@@ -109,22 +109,22 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
             struct socket *remote;
 
-            remote = socket_accept_arp(&local, remotes, 64, message.length, message_data(&message, 0));
+            remote = socket_accept_arp(&local, remotes, 64, message.length, message.data);
 
             if (remote)
             {
 
-                socket_handle_arp(0, ethernet, &local, remote, message.length, message_data(&message, 0));
+                socket_handle_arp(0, ethernet, &local, remote, message.length, message.data);
 
             }
 
-            remote = socket_accept_tcp(&local, remotes, 64, message.length, message_data(&message, 0));
+            remote = socket_accept_tcp(&local, remotes, 64, message.length, message.data);
 
             if (remote)
             {
 
                 unsigned char buffer[4096];
-                unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, message.length, message_data(&message, 0), 4096, buffer);
+                unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, message.length, message.data, 4096, buffer);
 
                 if (count)
                 {

@@ -83,7 +83,7 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
     {
 
         char data[MESSAGE_SIZE];
-        unsigned int count = buffer_read(data, MESSAGE_SIZE, message_data(message, ichannel), message->length, 0);
+        unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
 
         pending++;
 
@@ -243,7 +243,7 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
     channel_poll(ichannel, source, event, &message);
 
-    return buffer_read(data, count, message_data(&message, ichannel), message.length, 0);
+    return buffer_read(data, count, message.data, message.length, 0);
 
 }
 

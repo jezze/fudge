@@ -20,7 +20,7 @@ static unsigned int sendblockreadrequest(void *buffer, unsigned int count, unsig
         channel_send(0, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
         channel_poll(0, target, EVENT_BLOCKREADRESPONSE, &message);
 
-        return buffer_read(buffer, count, message_data(&message, 0), message.length, 0);
+        return buffer_read(buffer, count, message.data, message.length, 0);
 
     }
 

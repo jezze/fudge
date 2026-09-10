@@ -218,7 +218,7 @@ static void interpretdata(unsigned int ichannel, struct message *message, void *
 
             case EVENT_DATA:
                 if (!job_pipe(&job, ichannel, message))
-                    print(message_data(message, ichannel), message->length);
+                    print(message->data, message->length);
 
                 break;
 
@@ -256,7 +256,7 @@ static void interpret(void)
                 {
 
                 case EVENT_DATA:
-                    interpretdata(0, &message, message_data(&message, 1));
+                    interpretdata(0, &message, message.data);
 
                     break;
 
@@ -358,7 +358,7 @@ static void completedata(unsigned int ichannel, struct message *message, char *b
 
             case EVENT_DATA:
                 if (!job_pipe(&job, ichannel, message))
-                    ring_write(&output, message_data(message, ichannel), message->length);
+                    ring_write(&output, message->data, message->length);
 
                 break;
 
@@ -417,7 +417,7 @@ static void complete(void)
                 {
 
                 case EVENT_DATA:
-                    completedata(0, &message, message_data(&message, 2), count, prefix);
+                    completedata(0, &message, message.data, count, prefix);
 
                     break;
 

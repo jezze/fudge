@@ -67,7 +67,7 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
             unsigned int slot = mailbox->head % MESSAGE_SLOTS;
             struct message *message = &mailbox->messages[slot];
 
-            message_init(message, event, source, count, KERNEL_VMAILBOX + MESSAGE_SIZE * slot);
+            message_init(message, event, source, count, (void *)(KERNEL_VMAILBOX + MESSAGE_SIZE * slot + MESSAGE_CAPACITY * mailbox->ichannel));
             buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * slot), data, count);
 
             mailbox->head++;
@@ -140,10 +140,11 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
-void mailbox_reset(struct mailbox *mailbox, unsigned int itask)
+void mailbox_reset(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel)
 {
 
     mailbox->itask = itask;
+    mailbox->ichannel = ichannel;
     mailbox->head = 0;
     mailbox->tail = 0;
     mailbox->steps = 0;
@@ -169,7 +170,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     spinlock_init(&mailbox->spinlock);
-    mailbox_reset(mailbox, 0);
+    mailbox_reset(mailbox, 0, 0);
 
     mailbox->inode = pool_picknode();
     mailbox->data = data;

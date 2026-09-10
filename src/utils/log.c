@@ -20,7 +20,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     while (channel_poll(0, log, EVENT_LOGINFO, &message))
     {
 
-        struct event_loginfo *loginfo = message_data(&message, 0);
+        struct event_loginfo *loginfo = message.data;
         char *description = (char *)(loginfo + 1);
         unsigned int count = loginfo->count - sizeof (struct event_loginfo);
 

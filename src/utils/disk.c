@@ -64,7 +64,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (message.length == request.count)
         {
 
-            struct mbr *mbr = message_data(&message, 0);
+            struct mbr *mbr = message.data;
 
             if (mbr_validate(mbr))
                 print(source, mbr);

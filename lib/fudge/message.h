@@ -11,9 +11,8 @@ struct message
     unsigned int event;
     unsigned int source;
     unsigned int length;
-    unsigned long data;
+    void *data;
 
 };
 
-void *message_data(struct message *message, unsigned int ichannel);
-void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, unsigned long data);
+void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, void *data);
