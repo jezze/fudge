@@ -81,14 +81,14 @@ static void setfeatures(void)
 static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsigned int count, unsigned int sector)
 {
 
-    return MESSAGE_UNIMPLEMENTED;
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsigned int count, unsigned int sector)
 {
 
-    return MESSAGE_UNIMPLEMENTED;
+    return MESSAGE_FAILED;
 
 }
 

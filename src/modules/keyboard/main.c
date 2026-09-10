@@ -18,7 +18,7 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
     }
 
-    return MESSAGE_UNIMPLEMENTED;
+    return MESSAGE_FAILED;
 
 }
 

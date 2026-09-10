@@ -56,7 +56,7 @@ static unsigned int videointerface_oninfo(unsigned int source)
 static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
 {
 
-    return MESSAGE_UNIMPLEMENTED;
+    return MESSAGE_FAILED;
 
 }
 

@@ -153,7 +153,7 @@ static unsigned int ethernetinterface_oninfo(unsigned int source)
 static unsigned int ethernetinterface_ondata(unsigned int source, void *buffer, unsigned int count)
 {
 
-    return MESSAGE_UNIMPLEMENTED;
+    return MESSAGE_FAILED;
 
 }
 

@@ -40,9 +40,6 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message)
         case MESSAGE_FAILED:
             return 0;
 
-        case MESSAGE_UNIMPLEMENTED:
-            return 0;
-
         }
 
     }
@@ -69,9 +66,6 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
             continue;
 
         case MESSAGE_FAILED:
-            return 0;
-
-        case MESSAGE_UNIMPLEMENTED:
             return 0;
 
         }
