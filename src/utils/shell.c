@@ -759,14 +759,21 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     unsigned int console = channel_lookup(option_getstring("console-service"));
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
 
-    channel_send(0, console, EVENT_LINK, 0, 0);
-    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+    if (console)
+        channel_send(0, console, EVENT_LINK, 0, 0);
+
+    if (keyboard)
+        channel_send(0, keyboard, EVENT_LINK, 0, 0);
+
     clearline();
 
     while (channel_process(0));
 
-    channel_send(0, console, EVENT_UNLINK, 0, 0);
-    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+    if (console)
+        channel_send(0, console, EVENT_UNLINK, 0, 0);
+
+    if (keyboard)
+        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
 
 }
 
