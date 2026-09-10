@@ -172,11 +172,11 @@ static unsigned int runslang(unsigned int ichannel, void *buffer, unsigned int c
 
 }
 
-static void interpretdata(unsigned int ichannel, struct message *message, void *buffer)
+static void interpretdata(unsigned int ichannel, struct message *message)
 {
 
     job_init(&job, workers, JOBSIZE);
-    job_parse(&job, buffer, message->length);
+    job_parse(&job, message->data, message->length);
 
     if (job_exec(&job, ichannel, "initrd:bin", option_getstring("pwd")))
     {
@@ -231,7 +231,7 @@ static void interpret(unsigned int wm)
                 {
 
                 case EVENT_DATA:
-                    interpretdata(0, &message, message.data);
+                    interpretdata(0, &message);
 
                     break;
 
@@ -311,11 +311,11 @@ static unsigned int createcommand(char *ibuffer, char *prefix)
 
 }
 
-static void completedata(unsigned int ichannel, struct message *message, char *buffer, unsigned int count, char *prefix)
+static void completedata(unsigned int ichannel, struct message *message, unsigned int count, char *prefix)
 {
 
     job_init(&job, workers, JOBSIZE);
-    job_parse(&job, buffer, message->length);
+    job_parse(&job, message->data, message->length);
 
     if (job_exec(&job, ichannel, "initrd:bin", option_getstring("pwd")))
     {
@@ -395,7 +395,7 @@ static void complete(void)
                 {
 
                 case EVENT_DATA:
-                    completedata(0, &message, message.data, count, prefix);
+                    completedata(0, &message, count, prefix);
 
                     break;
 
