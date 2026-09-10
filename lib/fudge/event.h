@@ -1,6 +1,6 @@
 #define EVENT_MAIN                      0x01
 #define EVENT_TERM                      0x02
-#define EVENT_KILL                      0x03
+#define EVENT_INTERRUPT                 0x03
 #define EVENT_DONE                      0x04
 #define EVENT_OPTION                    0x05
 #define EVENT_PATH                      0x06

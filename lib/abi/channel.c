@@ -101,7 +101,7 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
 
         break;
 
-    case EVENT_KILL:
+    case EVENT_INTERRUPT:
         state = CHANNEL_STATE_CLOSED;
 
         break;

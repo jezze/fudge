@@ -446,7 +446,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
         {
 
         case 0x03:
-            job_sendfirst(&job, 0, EVENT_KILL, 0, 0);
+            job_sendfirst(&job, 0, EVENT_INTERRUPT, 0, 0);
 
             break;
 
@@ -662,7 +662,7 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
                 {
 
                 case KEYS_KEY_C:
-                    job_sendfirst(&job, 0, EVENT_KILL, 0, 0);
+                    job_sendfirst(&job, 0, EVENT_INTERRUPT, 0, 0);
 
                     break;
 
