@@ -78,6 +78,13 @@ static void setfeatures(void)
 
 }
 
+static unsigned int blockinterface_oninfo(unsigned int source)
+{
+
+    return MESSAGE_FAILED;
+
+}
+
 static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsigned int count, unsigned int sector)
 {
 
@@ -95,7 +102,7 @@ static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsi
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, blockinterface_onblockreadrequest, blockinterface_onblockwriterequest);
+    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_onblockreadrequest, blockinterface_onblockwriterequest);
 
 }
 

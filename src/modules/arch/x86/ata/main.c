@@ -88,6 +88,21 @@ static void handleirq(unsigned int irq)
 
 }
 
+static unsigned int blockinterface_oninfo(unsigned int source)
+{
+
+    struct event_blockinfo info;
+
+    info.buffer = ARCH_MEM_BASE;
+    info.buffersize = 0x8000;
+    info.blocksize = 512;
+
+    kernel_place(blockinterface.inode, source, EVENT_VIDEOINFO, sizeof (struct event_blockinfo), &info);
+
+    return MESSAGE_OK;
+
+}
+
 static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsigned int count, unsigned int offset)
 {
 
@@ -135,7 +150,7 @@ static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsi
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, blockinterface_onblockreadrequest, blockinterface_onblockwriterequest);
+    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_onblockreadrequest, blockinterface_onblockwriterequest);
 
 }
 

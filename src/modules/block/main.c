@@ -4,6 +4,13 @@
 
 static struct node_operands operands;
 
+static unsigned int oninfo(struct block_interface *interface, unsigned int source)
+{
+
+    return interface->oninfo(source);
+
+}
+
 static unsigned int onblockreadrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
@@ -36,6 +43,9 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     case EVENT_UNLINK:
         return kernel_unlinknode(target, source);
 
+    case EVENT_INFO:
+        return oninfo(interface, source);
+
     case EVENT_BLOCKREADREQUEST:
         return onblockreadrequest(interface, source, count, data);
 
@@ -62,13 +72,14 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*onblockreadrequest)(unsigned int source, unsigned int count, unsigned int offset), unsigned int (*onblockwriterequest)(unsigned int source, unsigned int count, unsigned int offset))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source), unsigned int (*onblockreadrequest)(unsigned int source, unsigned int count, unsigned int offset), unsigned int (*onblockwriterequest)(unsigned int source, unsigned int count, unsigned int offset))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
     interface->id = id;
     interface->inode = pool_picknode();
+    interface->oninfo = oninfo;
     interface->onblockreadrequest = onblockreadrequest;
     interface->onblockwriterequest = onblockwriterequest;
 

@@ -145,6 +145,15 @@ struct event_videoinfo
 
 };
 
+struct event_blockinfo
+{
+
+    unsigned int buffer;
+    unsigned int buffersize;
+    unsigned int blocksize;
+
+};
+
 struct event_blockrequest
 {
 
