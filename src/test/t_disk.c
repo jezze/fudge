@@ -397,12 +397,13 @@ static void onp9p(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char *service = option_getstring("service");
     unsigned int block = channel_lookup(option_getstring("block-service"));
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
     char buffer[4096];
     unsigned int count;
 
-    call_announce(0, djb_hash(2, "9p"));
+    call_announce(0, djb_hash(cstring_length(service), service));
     socket_resolvelocal(0, ethernet, &local);
     channel_send(0, ethernet, EVENT_LINK, 0, 0);
     channel_send(0, block, EVENT_LINK, 0, 0);
@@ -426,6 +427,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("service", "9p");
     option_add("block-service", "block");
     option_add("ethernet-service", "ethernet");
     socket_init(&local);
