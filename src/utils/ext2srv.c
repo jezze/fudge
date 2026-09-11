@@ -218,6 +218,66 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index)
 
 }
 
+static unsigned int allocsector(struct ext2_node *node, unsigned int index, unsigned int igroup)
+{
+
+    unsigned int slots = blocksize / 4;
+
+    if (index < 12)
+    {
+
+        unsigned int sector = allocblock(igroup);
+
+        if (sector)
+            node->pointer[index] = sector;
+
+        return sector;
+
+    }
+
+    index -= 12;
+
+    if (index < slots)
+    {
+
+        unsigned int *table;
+        unsigned int sector;
+
+        if (!node->singlyIndirectPointer)
+        {
+
+            unsigned int tableblock = allocblock(igroup);
+
+            if (!tableblock)
+                return 0;
+
+            buffer_clear(blockbuffer, EXT2_MAXBLOCKSIZE);
+            sendblockwriterequest(EXT2_MAXBLOCKSIZE, tableblock, blocksize);
+
+            node->singlyIndirectPointer = tableblock;
+
+        }
+
+        sector = allocblock(igroup);
+
+        if (!sector)
+            return 0;
+
+        sendblockreadrequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+
+        table = (unsigned int *)blockbuffer;
+        table[index] = sector;
+
+        sendblockwriterequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+
+        return sector;
+
+    }
+
+    return 0;
+
+}
+
 static void getrecord(struct ext2_entry *entry, struct record *record, unsigned int offset)
 {
 
@@ -441,20 +501,15 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
             if (count > blocksize - blockoffset)
                 count = blocksize - blockoffset;
 
-            if (!sector && blockindex < 12)
+            if (!sector)
             {
 
                 unsigned int igroup = (request->id - 1) / sb.nodeCountGroup;
 
-                sector = allocblock(igroup);
+                sector = allocsector(&node, blockindex, igroup);
 
                 if (sector)
-                {
-
-                    node.pointer[blockindex] = sector;
                     allocated = 1;
-
-                }
 
             }
 
