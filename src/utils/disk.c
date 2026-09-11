@@ -2,6 +2,9 @@
 #include <abi.h>
 #include <disk.h>
 
+static void *blockbuffer;
+static unsigned int blockbuffersize;
+
 static void print(unsigned int source, struct mbr *mbr)
 {
 
@@ -46,32 +49,35 @@ static void print(unsigned int source, struct mbr *mbr)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    unsigned int target = channel_lookup(option_getstring("block-service"));
+    unsigned int block = channel_lookup(option_getstring("block-service"));
 
-    if (target)
+    if (block)
     {
 
+        struct event_blockinfo info;
         struct event_blockrequest request;
-        struct message message;
+        struct event_blockresponse response;
 
+        channel_send(0, block, EVENT_INFO, 0, 0);
+        channel_wait(0, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &info);
+
+        blockbuffer = (void *)info.buffer;
+        blockbuffersize = info.buffersize;
         request.offset = 0;
         request.count = 512;
 
-        channel_send(0, target, EVENT_LINK, 0, 0);
-        channel_send(0, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_poll(0, target, EVENT_BLOCKREADRESPONSE, &message);
+        channel_send(0, block, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_wait(0, block, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
-        if (message.length == request.count)
+        if (response.count == request.count)
         {
 
-            struct mbr *mbr = message.data;
+            struct mbr *mbr = blockbuffer;
 
             if (mbr_validate(mbr))
                 print(source, mbr);
 
         }
-
-        channel_send(0, target, EVENT_UNLINK, 0, 0);
 
     }
 
