@@ -16,8 +16,8 @@
 
 static struct {unsigned int detected;} lapics[256];
 static struct {unsigned int detected; unsigned int address; unsigned int gsibase;} ioapics[256];
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDT_BASE;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDT_BASE;
+static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
+static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
 static void (*routines[ROUTINES])(unsigned int gsi);
 static unsigned int overrides[OVERRIDES];
 static unsigned int mmio;
@@ -172,13 +172,13 @@ void apic_setupisrs(void)
                 if (ioapic->gsibase == 0)
                 {
 
-                    idt_setdescriptor(&idt->pointer, 0x61, (void (*)(void))((unsigned long)apic_isr + 8 * 0x01), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x62, (void (*)(void))((unsigned long)apic_isr + 8 * 0x02), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x63, (void (*)(void))((unsigned long)apic_isr + 8 * 0x03), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x64, (void (*)(void))((unsigned long)apic_isr + 8 * 0x04), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x68, (void (*)(void))((unsigned long)apic_isr + 8 * 0x08), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x6C, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0C), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    idt_setdescriptor(&idt->pointer, 0x6E, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0E), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x61, (void (*)(void))((unsigned long)apic_isr + 8 * 0x01), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x62, (void (*)(void))((unsigned long)apic_isr + 8 * 0x02), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x63, (void (*)(void))((unsigned long)apic_isr + 8 * 0x03), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x64, (void (*)(void))((unsigned long)apic_isr + 8 * 0x04), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x68, (void (*)(void))((unsigned long)apic_isr + 8 * 0x08), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x6C, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0C), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x6E, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0E), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     writeio(ioapic->address, 0x10 + 0x01 * 2, 0x61);
                     writeio(ioapic->address, 0x10 + 0x02 * 2, 0x62);
                     writeio(ioapic->address, 0x10 + 0x03 * 2, 0x63);
@@ -197,8 +197,8 @@ void apic_setupisrs(void)
 
     }
 
-    idt_setdescriptor(&idt->pointer, 0xFE, apic_test, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0xFF, apic_spurious, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0xFE, apic_test, gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0xFF, apic_spurious, gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
 }
 

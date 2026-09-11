@@ -21,8 +21,8 @@
 #define REG_DATA_VECTOR0                0x20
 #define REG_DATA_VECTOR1                0x28
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDT_BASE;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDT_BASE;
+static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
+static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
 static void (*routines[ROUTINES])(unsigned int irq);
 
 static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
@@ -228,8 +228,8 @@ void module_init(void)
     for (i = 0; i < 8; i++)
     {
 
-        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR0 + i, (void (*)(void))((unsigned long)pic_isr0 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-        idt_setdescriptor(&idt->pointer, REG_DATA_VECTOR1 + i, (void (*)(void))((unsigned long)pic_isr1 + 8 * i), gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        idt_setdescriptor(idt, REG_DATA_VECTOR0 + i, (void (*)(void))((unsigned long)pic_isr0 + 8 * i), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        idt_setdescriptor(idt, REG_DATA_VECTOR1 + i, (void (*)(void))((unsigned long)pic_isr1 + 8 * i), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
 
     }
 

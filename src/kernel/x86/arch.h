@@ -28,35 +28,11 @@
 #define ARCH_UDATA                      0x04
 #define ARCH_TSS                        0x05
 
-struct arch_gdt
-{
-
-    struct gdt_pointer pointer;
-    struct gdt_descriptor descriptors[ARCH_GDT_DESCRIPTORS];
-
-};
-
-struct arch_idt
-{
-
-    struct idt_pointer pointer;
-    struct idt_descriptor descriptors[ARCH_IDT_DESCRIPTORS];
-
-};
-
-struct arch_tss
-{
-
-    struct tss_pointer pointer;
-    struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];
-
-};
-
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(void);
-void arch_configuregdt(void);
-void arch_configureidt(void);
-void arch_configuretss(struct arch_tss *tss, unsigned int id);
+void arch_configuregdt(struct gdt_pointer *gdt, struct gdt_descriptor *descriptors, unsigned int count);
+void arch_configureidt(struct idt_pointer *idt, struct idt_descriptor *descriptors, unsigned int count, unsigned short selector);
+void arch_configuretss(struct tss_pointer *tss, struct tss_descriptor *descriptors, unsigned int count, unsigned int id, unsigned short selector1, unsigned short selector2);
 void arch_setup1(void);
 void arch_setup2(unsigned int address);

@@ -10,9 +10,10 @@
 #include "pic.h"
 #include "arch.h"
 
-static struct arch_gdt *gdt = (struct arch_gdt *)ARCH_GDT_BASE;
-static struct arch_idt *idt = (struct arch_idt *)ARCH_IDT_BASE;
-static struct arch_tss tss0;
+static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
+static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
+static struct tss_pointer tss0;
+static struct tss_descriptor tssdescriptors0[ARCH_TSS_DESCRIPTORS];
 static struct cpu_general registers[POOL_TASKS];
 
 static void map(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int flags)
@@ -145,8 +146,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
 
-        interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_UCODE);
-        interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_UDATA);
+        interrupt->cs.value = gdt_getselector(gdt, ARCH_UCODE);
+        interrupt->ss.value = gdt_getselector(gdt, ARCH_UDATA);
         interrupt->eip.value = task->thread.ip;
         interrupt->esp.value = task->thread.sp;
 
@@ -157,8 +158,8 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
     else
     {
 
-        interrupt->cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
-        interrupt->ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
+        interrupt->cs.value = gdt_getselector(gdt, ARCH_KCODE);
+        interrupt->ss.value = gdt_getselector(gdt, ARCH_KDATA);
         interrupt->eip.value = (unsigned long)cpu_halt;
         interrupt->esp.value = 0;
 
@@ -267,7 +268,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     if (core->itask)
     {
 
-        if (interrupt.cs.value == gdt_getselector(&gdt->pointer, ARCH_UCODE))
+        if (interrupt.cs.value == gdt_getselector(gdt, ARCH_UCODE))
             kernel_signal(core->itask, TASK_SIGNAL_KILL);
 
     }
@@ -457,8 +458,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
         else
         {
 
-            interrupt.cs.value = gdt_getselector(&gdt->pointer, ARCH_KCODE);
-            interrupt.ss.value = gdt_getselector(&gdt->pointer, ARCH_KDATA);
+            interrupt.cs.value = gdt_getselector(gdt, ARCH_KCODE);
+            interrupt.ss.value = gdt_getselector(gdt, ARCH_KDATA);
 
         }
 
@@ -479,48 +480,48 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-void arch_configuregdt(void)
+void arch_configuregdt(struct gdt_pointer *gdt, struct gdt_descriptor *descriptors, unsigned int count)
 {
 
-    gdt_init(&gdt->pointer, ARCH_GDT_DESCRIPTORS, gdt->descriptors);
-    gdt_setdescriptor(&gdt->pointer, ARCH_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    gdt_setdescriptor(&gdt->pointer, ARCH_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    gdt_setdescriptor(&gdt->pointer, ARCH_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    gdt_setdescriptor(&gdt->pointer, ARCH_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
-    cpu_setgdt(&gdt->pointer, gdt_getselector(&gdt->pointer, ARCH_KCODE), gdt_getselector(&gdt->pointer, ARCH_KDATA));
+    gdt_init(gdt, count, descriptors);
+    gdt_setdescriptor(gdt, ARCH_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    gdt_setdescriptor(gdt, ARCH_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    gdt_setdescriptor(gdt, ARCH_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    gdt_setdescriptor(gdt, ARCH_UDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
+    cpu_setgdt(gdt, gdt_getselector(gdt, ARCH_KCODE), gdt_getselector(gdt, ARCH_KDATA));
 
 }
 
-void arch_configureidt(void)
+void arch_configureidt(struct idt_pointer *idt, struct idt_descriptor *descriptors, unsigned int count, unsigned short selector)
 {
 
-    idt_init(&idt->pointer, ARCH_IDT_DESCRIPTORS, idt->descriptors);
-    idt_setdescriptor(&idt->pointer, 0x00, isr_zero, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x01, isr_debug, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x02, isr_nmi, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x03, isr_breakpoint, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    idt_setdescriptor(&idt->pointer, 0x04, isr_overflow, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x05, isr_bound, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x06, isr_opcode, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x07, isr_device, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x08, isr_doublefault, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0A, isr_tss, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0B, isr_segment, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0C, isr_stack, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0D, isr_generalfault, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x0E, isr_pagefault, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-    idt_setdescriptor(&idt->pointer, 0x80, isr_syscall, gdt_getselector(&gdt->pointer, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
-    cpu_setidt(&idt->pointer);
+    idt_init(idt, count, descriptors);
+    idt_setdescriptor(idt, 0x00, isr_zero, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x01, isr_debug, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x02, isr_nmi, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x03, isr_breakpoint, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
+    idt_setdescriptor(idt, 0x04, isr_overflow, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x05, isr_bound, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x06, isr_opcode, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x07, isr_device, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x08, isr_doublefault, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x0A, isr_tss, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x0B, isr_segment, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x0C, isr_stack, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x0D, isr_generalfault, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x0E, isr_pagefault, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+    idt_setdescriptor(idt, 0x80, isr_syscall, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT | IDT_FLAG_RING3);
+    cpu_setidt(idt);
 
 }
 
-void arch_configuretss(struct arch_tss *tss, unsigned int id)
+void arch_configuretss(struct tss_pointer *tss, struct tss_descriptor *descriptors, unsigned int count, unsigned int id, unsigned short selector1, unsigned short selector2)
 {
 
-    tss_init(&tss->pointer, ARCH_TSS_DESCRIPTORS, tss->descriptors);
-    tss_setdescriptor(&tss->pointer, 0, gdt_getselector(&gdt->pointer, ARCH_KDATA), ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE + KERNEL_STACKSIZE * id);
-    gdt_setdescriptor(&gdt->pointer, ARCH_TSS + id, (unsigned long)tss->pointer.descriptors, (unsigned long)tss->pointer.descriptors + tss->pointer.limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(gdt_getselector(&gdt->pointer, ARCH_TSS + id));
+    tss_init(tss, count, descriptors);
+    tss_setdescriptor(tss, 0, selector1, ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE + KERNEL_STACKSIZE * id);
+    gdt_setdescriptor(gdt, ARCH_TSS + id, (unsigned long)descriptors, (unsigned long)descriptors + tss->limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    cpu_settss(selector2);
 
 }
 
@@ -546,9 +547,9 @@ void arch_setup1(void)
     resource_setup();
     udebug_setup();
     pic_init();
-    arch_configuregdt();
-    arch_configureidt();
-    arch_configuretss(&tss0, 0);
+    arch_configuregdt(gdt, (struct gdt_descriptor *)(gdt + 1), ARCH_GDT_DESCRIPTORS);
+    arch_configureidt(idt, (struct idt_descriptor *)(idt + 1), ARCH_IDT_DESCRIPTORS, gdt_getselector(gdt, ARCH_KCODE));
+    arch_configuretss(&tss0, tssdescriptors0, ARCH_TSS_DESCRIPTORS, 0, gdt_getselector(gdt, ARCH_KDATA), gdt_getselector(gdt, ARCH_TSS + 0));
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
     cpu_setcr3(ARCH_MMU_KERNELBASE);
     setupmmap();

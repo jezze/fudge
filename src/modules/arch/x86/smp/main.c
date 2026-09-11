@@ -15,7 +15,16 @@ extern void smp_begin16(void);
 extern void smp_end16(void);
 extern void smp_begin32(void);
 extern void smp_end32(void);
-static struct arch_tss tss[POOL_CORES];
+
+static struct
+{
+
+    struct tss_pointer pointer;
+    struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];
+
+} tss[POOL_CORES];
+
+static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct list usedcores;
 
 static struct core *coreget(void)
@@ -44,7 +53,7 @@ static void coreassign(unsigned int itask)
 void smp_setupap(unsigned int icore, unsigned int sp)
 {
 
-    arch_configuretss(&tss[icore], icore);
+    arch_configuretss(&tss[icore].pointer, tss[icore].descriptors, ARCH_TSS_DESCRIPTORS, icore, gdt_getselector(gdt, ARCH_KDATA), gdt_getselector(gdt, ARCH_TSS + icore));
     apic_setup_ap();
     cpu_setcr3(ARCH_MMU_KERNELBASE);
     mmu_enable();
