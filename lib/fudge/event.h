@@ -42,6 +42,10 @@
 #define EVENT_STATRESPONSE              0x47
 #define EVENT_MAPREQUEST                0x48
 #define EVENT_MAPRESPONSE               0x49
+#define EVENT_CREATEREQUEST             0x4A
+#define EVENT_CREATERESPONSE            0x4B
+#define EVENT_REMOVEREQUEST             0x4C
+#define EVENT_REMOVERESPONSE            0x4D
 #define EVENT_WMMAP                     0x50
 #define EVENT_WMUNMAP                   0x51
 #define EVENT_WMCLOSE                   0x52
@@ -229,6 +233,21 @@ struct event_wmevent
 
 };
 
+struct event_createrequest
+{
+
+    unsigned int parent;
+    unsigned int count;
+
+};
+
+struct event_createresponse
+{
+
+    unsigned int id;
+
+};
+
 struct event_maprequest
 {
 
@@ -256,6 +275,13 @@ struct event_readresponse
 {
 
     unsigned int count;
+
+};
+
+struct event_removerequest
+{
+
+    unsigned int id;
 
 };
 

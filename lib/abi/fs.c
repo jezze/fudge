@@ -23,6 +23,23 @@ unsigned int fs_auth(char *path)
 
 }
 
+unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int parent, void *buffer, unsigned int count)
+{
+
+    char data[MESSAGE_SIZE];
+    struct event_createrequest *request = (struct event_createrequest *)data;
+    struct event_createresponse response;
+
+    request->parent = parent;
+    request->count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct event_createrequest));
+
+    channel_send(ichannel, target, EVENT_CREATEREQUEST, sizeof (struct event_createrequest) + request->count, data);
+    channel_wait(ichannel, target, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+
+    return response.id;
+
+}
+
 unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 {
 
@@ -81,6 +98,20 @@ unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned in
     for (c = 0; c < count; c += fs_read(ichannel, target, id, b + c, count - c, offset + c));
 
     return c;
+
+}
+
+unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int id)
+{
+
+    struct event_removerequest request;
+
+    request.id = id;
+
+    channel_send(ichannel, target, EVENT_REMOVEREQUEST, sizeof (struct event_removerequest), &request);
+    channel_wait(ichannel, target, EVENT_REMOVERESPONSE, 0, 0);
+
+    return 1;
 
 }
 
