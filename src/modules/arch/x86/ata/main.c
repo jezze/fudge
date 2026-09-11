@@ -1,5 +1,10 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <kernel/x86/gdt.h>
+#include <kernel/x86/idt.h>
+#include <kernel/x86/tss.h>
+#include <kernel/x86/cpu.h>
+#include <kernel/x86/arch.h>
 #include <modules/base/driver.h>
 #include <modules/block/block.h>
 #include <modules/arch/x86/ide/ide.h>
@@ -9,11 +14,11 @@
 struct session
 {
 
-    unsigned char data[4096];
     unsigned int type;
     unsigned int source;
     unsigned int count;
     unsigned int offset;
+    void *data;
 
 };
 
@@ -36,7 +41,7 @@ static void handleirq(unsigned int irq)
         {
 
         case 1:
-            ide_rblock(blockinterface.id, session.data + session.offset);
+            ide_rblock(blockinterface.id, (char *)session.data + session.offset);
 
             session.offset += 512;
 
@@ -52,7 +57,7 @@ static void handleirq(unsigned int irq)
             break;
 
         case 2:
-            ide_wblock(blockinterface.id, session.data + session.offset);
+            ide_wblock(blockinterface.id, (char *)session.data + session.offset);
 
             session.offset += 512;
 
@@ -83,6 +88,7 @@ static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsig
         session.source = source;
         session.count = count;
         session.offset = 0;
+        session.data = (void *)ARCH_MEM_BASE;
 
         ide_rpio48(blockinterface.id, 0, count / 512, offset / 512);
 
@@ -104,6 +110,7 @@ static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsi
         session.source = source;
         session.count = count;
         session.offset = 0;
+        session.data = (void *)ARCH_MEM_BASE;
 
         ide_wpio48(blockinterface.id, 0, count / 512, offset / 512);
 
@@ -159,6 +166,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
+    arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, 0x8000, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     base_initdriver(&driver, "ata", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }

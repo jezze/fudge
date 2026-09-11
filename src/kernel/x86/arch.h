@@ -16,7 +16,9 @@
 #define ARCH_MMU_TASKBASE               0x00C00000
 #define ARCH_MMU_TASKSIZE               0x8000
 #define ARCH_MAILBOX_BASE               0x01000000
-#define ARCH_TASK_CODEBASE              0x02000000
+#define ARCH_MAILBOX_SIZE               (MESSAGE_CAPACITY * POOL_MAILBOXES)
+#define ARCH_MEM_BASE                   0x02000000
+#define ARCH_TASK_CODEBASE              0x04000000
 #define ARCH_TASK_CODESIZE              (TASK_CODESIZE * POOL_TASKS)
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_CODEBASE + ARCH_TASK_CODESIZE)
 #define ARCH_TASK_STACKSIZE             (TASK_STACKSIZE + POOL_TASKS)
