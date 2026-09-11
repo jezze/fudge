@@ -93,6 +93,19 @@ static void readnode(struct ext2_node *node, unsigned int start, unsigned int in
 
 }
 
+static void writenode(struct ext2_node *node, unsigned int start, unsigned int index)
+{
+
+    unsigned int slots = blocksize / sb.nodeSize;
+    unsigned int sector = start + index / slots;
+    unsigned int offset = (index % slots) * sb.nodeSize;
+
+    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    buffer_copy((char *)blockbuffer + offset, node, sizeof (struct ext2_node));
+    sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+}
+
 static void simpleread(struct ext2_node *node, unsigned int id)
 {
 
@@ -102,6 +115,50 @@ static void simpleread(struct ext2_node *node, unsigned int id)
 
     readblockgroup(&bg, 1, igroup);
     readnode(node, bg.blockTableAddress, inode);
+
+}
+
+static void simplewrite(struct ext2_node *node, unsigned int id)
+{
+
+    unsigned int igroup = (id - 1) / sb.nodeCountGroup;
+    unsigned int inode = (id - 1) % sb.nodeCountGroup;
+    struct ext2_blockgroup bg;
+
+    readblockgroup(&bg, 1, igroup);
+    writenode(node, bg.blockTableAddress, inode);
+
+}
+
+static unsigned int allocblock(unsigned int blockgroup)
+{
+
+    struct ext2_blockgroup bg;
+    unsigned char *bitmap;
+    unsigned int i;
+
+    readblockgroup(&bg, 1, blockgroup);
+    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+
+    bitmap = (unsigned char *)blockbuffer;
+
+    for (i = 0; i < sb.blockCountGroup; i++)
+    {
+
+        if (!(bitmap[i / 8] & (1 << (i % 8))))
+        {
+
+            bitmap[i / 8] |= 1 << (i % 8);
+
+            sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+
+            return sb.superblockIndex + blockgroup * sb.blockCountGroup + i;
+
+        }
+
+    }
+
+    return 0;
 
 }
 
@@ -305,7 +362,6 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-
         break;
 
     case 0x8000:
@@ -338,7 +394,6 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
- 
         break;
 
     }
@@ -377,26 +432,52 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
         if (request->offset < node.sizeLow)
         {
 
-            unsigned int remaining = node.sizeLow - request->offset;
             unsigned int blockindex = request->offset / blocksize;
             unsigned int blockoffset = request->offset % blocksize;
             unsigned int sector = getsector(&node, blockindex);
             unsigned int count = request->count;
-
-            if (count > remaining)
-                count = remaining;
+            unsigned int allocated = 0;
 
             if (count > blocksize - blockoffset)
                 count = blocksize - blockoffset;
 
+            if (!sector && blockindex < 12)
+            {
+
+                unsigned int igroup = (request->id - 1) / sb.nodeCountGroup;
+
+                sector = allocblock(igroup);
+
+                if (sector)
+                {
+
+                    node.pointer[blockindex] = sector;
+                    allocated = 1;
+
+                }
+
+            }
+
             if (sector)
             {
 
-                sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+                if (allocated)
+                    buffer_clear(blockbuffer, EXT2_MAXBLOCKSIZE);
+                else
+                    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
                 buffer_copy((char *)blockbuffer + blockoffset, request + 1, count);
                 sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
                 response.count = count;
+
+                if (request->offset + count > node.sizeLow)
+                {
+
+                    node.sizeLow = request->offset + count;
+                    simplewrite(&node, request->id);
+
+                }
 
             }
 
