@@ -97,7 +97,7 @@ static unsigned int blockinterface_oninfo(unsigned int source)
     info.buffersize = 0x8000;
     info.blocksize = 512;
 
-    kernel_place(blockinterface.inode, source, EVENT_VIDEOINFO, sizeof (struct event_blockinfo), &info);
+    kernel_place(blockinterface.inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &info);
 
     return MESSAGE_OK;
 

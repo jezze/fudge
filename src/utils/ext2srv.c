@@ -3,6 +3,9 @@
 #include <disk.h>
 #include <hash.h>
 
+static void *blockbuffer;
+static unsigned int blockbuffersize;
+
 static unsigned int sendblockreadrequest(void *buffer, unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
@@ -20,13 +23,43 @@ static unsigned int sendblockreadrequest(void *buffer, unsigned int count, unsig
         channel_send(0, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
         channel_wait(0, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
-        return buffer_read(buffer, count, response.data, response.count, 0);
+        buffer_copy(buffer, blockbuffer, response.count);
+
+        return response.count;
 
     }
 
     return 0;
 
 }
+
+/*
+static unsigned int sendblockwriterequest(void *buffer, unsigned int count, unsigned int sector, unsigned int blocksize)
+{
+
+    unsigned int target = channel_lookup(option_getstring("block-service"));
+
+    if (target)
+    {
+
+        struct event_blockrequest request;
+        struct event_blockresponse response;
+
+        request.offset = option_getdecimal("partoffset") + sector * blocksize;
+        request.count = count;
+
+        buffer_write(blockbuffer, blockbuffersize, buffer, count, 0);
+        channel_send(0, target, EVENT_BLOCKWRITEREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_wait(0, target, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
+
+        return response.count;
+
+    }
+
+    return 0;
+
+}
+*/
 
 static struct ext2_superblock sb;
 static unsigned int blocksize;
@@ -355,6 +388,14 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     if (block)
     {
+
+        struct event_blockinfo info;
+
+        channel_send(0, block, EVENT_INFO, 0, 0);
+        channel_wait(0, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &info);
+
+        blockbuffer = (void *)info.buffer;
+        blockbuffersize = info.buffersize;
 
         readsuperblock();
 
