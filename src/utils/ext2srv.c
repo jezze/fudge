@@ -12,15 +12,15 @@ static unsigned int sendblockreadrequest(void *buffer, unsigned int count, unsig
     {
 
         struct event_blockrequest request;
-        struct message message;
+        struct event_blockresponse response;
 
         request.offset = option_getdecimal("partoffset") + sector * blocksize;
         request.count = count;
 
         channel_send(0, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_poll(0, target, EVENT_BLOCKREADRESPONSE, &message);
+        channel_wait(0, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
-        return buffer_read(buffer, count, message.data, message.length, 0);
+        return buffer_read(buffer, count, response.data, response.count, 0);
 
     }
 

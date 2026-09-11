@@ -153,6 +153,14 @@ struct event_blockrequest
 
 };
 
+struct event_blockresponse
+{
+
+    unsigned int count;
+    void *data;
+
+};
+
 struct event_wmkeypress
 {
 

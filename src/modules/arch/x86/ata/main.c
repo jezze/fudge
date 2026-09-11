@@ -48,7 +48,12 @@ static void handleirq(unsigned int irq)
             if (session.offset == session.count)
             {
 
-                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKREADRESPONSE, session.count, session.data);
+                struct event_blockresponse response;
+
+                response.count = session.count;
+                response.data = session.data;
+
+                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
                 session.source = 0;
 
@@ -64,7 +69,12 @@ static void handleirq(unsigned int irq)
             if (session.offset == session.count)
             {
 
-                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKWRITERESPONSE, session.count, session.data);
+                struct event_blockresponse response;
+
+                response.count = session.count;
+                response.data = session.data;
+
+                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
 
                 session.source = 0;
 
