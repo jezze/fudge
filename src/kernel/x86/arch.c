@@ -448,6 +448,8 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
             DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
             debugpagefault(error);
 
+            for (;;);
+
         }
 
         if (error & MMU_EFLAG_USER)
