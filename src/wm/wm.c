@@ -591,11 +591,12 @@ static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
 static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    char *service = option_getstring("service");
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
     unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
     unsigned int video = channel_lookup(option_getstring("video-service"));
 
-    call_announce(0, djb_hash(2, "wm"));
+    call_announce(0, djb_hash(cstring_length(service), service));
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, mouse, EVENT_LINK, 0, 0);
     setupvideo(video);
@@ -896,6 +897,7 @@ void init(void)
     pool_setup();
     setupwidgets();
     render_init();
+    option_add("service", "ext2");
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
