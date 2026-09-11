@@ -3,8 +3,7 @@
 #include <disk.h>
 #include <hash.h>
 
-static void *blockbuffer;
-static unsigned int blockbuffersize;
+static struct event_blockinfo blockinfo;
 
 static unsigned int sendblockreadrequest(unsigned int count, unsigned int sector, unsigned int blocksize)
 {
@@ -63,7 +62,7 @@ static void readsuperblock(void)
 {
 
     sendblockreadrequest(1024, 1, 1024);
-    buffer_copy(&sb, blockbuffer, sizeof (struct ext2_superblock));
+    buffer_copy(&sb, (void *)blockinfo.buffer, sizeof (struct ext2_superblock));
 
     blocksize = (1024 << sb.blockSize);
 
@@ -73,7 +72,7 @@ static void writesuperblock(void)
 {
 
     sendblockreadrequest(1024, 1, 1024);
-    buffer_copy(blockbuffer, &sb, sizeof (struct ext2_superblock));
+    buffer_copy((void *)blockinfo.buffer, &sb, sizeof (struct ext2_superblock));
     sendblockwriterequest(1024, 1, 1024);
 
 }
@@ -86,7 +85,7 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsig
     unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
 
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-    buffer_copy(bg, (char *)blockbuffer + offset, sizeof (struct ext2_blockgroup));
+    buffer_copy(bg, (char *)blockinfo.buffer + offset, sizeof (struct ext2_blockgroup));
 
 }
 
@@ -98,7 +97,7 @@ static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsi
     unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
 
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-    buffer_copy((char *)blockbuffer + offset, bg, sizeof (struct ext2_blockgroup));
+    buffer_copy((char *)blockinfo.buffer + offset, bg, sizeof (struct ext2_blockgroup));
     sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
 }
@@ -111,7 +110,7 @@ static void readnode(struct ext2_node *node, unsigned int start, unsigned int in
     unsigned int offset = (index % slots) * sb.nodeSize;
 
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-    buffer_copy(node, (char *)blockbuffer + offset, sizeof (struct ext2_node));
+    buffer_copy(node, (char *)blockinfo.buffer + offset, sizeof (struct ext2_node));
 
 }
 
@@ -123,7 +122,7 @@ static void writenode(struct ext2_node *node, unsigned int start, unsigned int i
     unsigned int offset = (index % slots) * sb.nodeSize;
 
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-    buffer_copy((char *)blockbuffer + offset, node, sizeof (struct ext2_node));
+    buffer_copy((char *)blockinfo.buffer + offset, node, sizeof (struct ext2_node));
     sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
 }
@@ -156,7 +155,7 @@ static unsigned int allocblock(unsigned int blockgroup)
 {
 
     struct ext2_blockgroup bg;
-    unsigned char *bitmap = (unsigned char *)blockbuffer;
+    unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
     unsigned int i;
 
     readblockgroup(&bg, 1, blockgroup);
@@ -196,7 +195,7 @@ static unsigned int getindirect(unsigned int sector, unsigned int index)
     if (sector)
     {
 
-        unsigned int *table = (unsigned int *)blockbuffer;
+        unsigned int *table = (unsigned int *)blockinfo.buffer;
 
         sendblockreadrequest(blocksize, sector, blocksize);
 
@@ -279,7 +278,7 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int index, unsi
             if (!tableblock)
                 return 0;
 
-            buffer_clear(blockbuffer, EXT2_MAXBLOCKSIZE);
+            buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, tableblock, blocksize);
 
             node->singlyIndirectPointer = tableblock;
@@ -293,7 +292,7 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int index, unsi
 
         sendblockreadrequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
 
-        table = (unsigned int *)blockbuffer;
+        table = (unsigned int *)blockinfo.buffer;
         table[index] = sector;
 
         sendblockwriterequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
@@ -342,7 +341,7 @@ static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int 
         unsigned int blockindex = offset / blocksize;
         unsigned int blockoffset = offset % blocksize;
         unsigned int sector = getsector(node, blockindex);
-        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockbuffer + blockoffset);
+        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
 
         if (!sector)
             break;
@@ -437,7 +436,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
                 unsigned int blockindex = request->offset / blocksize;
                 unsigned int blockoffset = request->offset % blocksize;
                 unsigned int sector = getsector(&node, blockindex);
-                struct ext2_entry *entry = (struct ext2_entry *)((char *)blockbuffer + blockoffset);
+                struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
 
                 if (!sector)
                     break;
@@ -489,7 +488,7 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
                 sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
-                response->count = buffer_write(data + sizeof (struct event_readresponse), capacity, (char *)blockbuffer + blockoffset, count, 0);
+                response->count = buffer_write(data + sizeof (struct event_readresponse), capacity, (char *)blockinfo.buffer + blockoffset, count, 0);
 
             }
 
@@ -558,11 +557,11 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
             {
 
                 if (allocated)
-                    buffer_clear(blockbuffer, EXT2_MAXBLOCKSIZE);
+                    buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
                 else
                     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
-                buffer_copy((char *)blockbuffer + blockoffset, request + 1, count);
+                buffer_copy((char *)blockinfo.buffer + blockoffset, request + 1, count);
                 sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
                 response.count = count;
@@ -596,14 +595,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (block)
     {
 
-        struct event_blockinfo info;
-
         channel_send(0, block, EVENT_INFO, 0, 0);
-        channel_wait(0, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &info);
-
-        blockbuffer = (void *)info.buffer;
-        blockbuffersize = info.buffersize;
-
+        channel_wait(0, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
         readsuperblock();
 
         if (ext2_validate(&sb))
