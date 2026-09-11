@@ -44,7 +44,7 @@ static void mountext2(unsigned int source, unsigned int offset)
         if (target)
         {
 
-            channel_send_fmt1(1, target, EVENT_OPTION, "service=fd0&partoffset=%u\n", &offset);
+            channel_send_fmt1(1, target, EVENT_OPTION, "pwd=disk0:&service=disk0&partoffset=%u\n", &offset);
             channel_send(1, target, EVENT_MAIN, 0, 0);
 
         }

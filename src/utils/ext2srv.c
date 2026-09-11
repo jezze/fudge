@@ -602,7 +602,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (ext2_validate(&sb))
         {
 
-            call_announce(0, djb_hash(4, option_getstring("service")));
+            char *name = option_getstring("service");
+
+            call_announce(0, djb_hash(cstring_length(name), name));
 
             while (channel_process(0));
 

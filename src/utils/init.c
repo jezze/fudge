@@ -40,15 +40,15 @@ static unsigned int spawnshell(unsigned int ichannel)
 
 }
 
-static unsigned int spawnservices(unsigned int ichannel)
+static unsigned int spawnautomount(unsigned int ichannel)
 {
 
-    unsigned int target = fs_spawn(ichannel, "initrd:bin/ext2srv");
+    unsigned int target = fs_spawn(ichannel, "initrd:bin/automount");
 
     if (target)
     {
 
-        channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=ext2:\n");
+        channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:\n");
         channel_send(ichannel, target, EVENT_MAIN, 0, 0);
 
     }
@@ -118,7 +118,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
     loadmodules(1, 36, modules);
     spawnshell(1);
-    spawnservices(1);
+    spawnautomount(1);
     spawnwm(1);
 
 }

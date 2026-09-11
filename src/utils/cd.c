@@ -119,6 +119,13 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
             }
 
+            else
+            {
+
+                channel_send_fmt1(0, source, EVENT_ERROR, "Service not found: %s\n", mdata);
+
+            }
+
         }
 
     }
