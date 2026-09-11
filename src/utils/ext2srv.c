@@ -69,6 +69,15 @@ static void readsuperblock(void)
 
 }
 
+static void writesuperblock(void)
+{
+
+    sendblockreadrequest(1024, 1, 1024);
+    buffer_copy(blockbuffer, &sb, sizeof (struct ext2_superblock));
+    sendblockwriterequest(1024, 1, 1024);
+
+}
+
 static void readblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsigned int index)
 {
 
@@ -78,6 +87,19 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsig
 
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
     buffer_copy(bg, (char *)blockbuffer + offset, sizeof (struct ext2_blockgroup));
+
+}
+
+static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsigned int index)
+{
+
+    unsigned int slots = blocksize / sizeof (struct ext2_blockgroup);
+    unsigned int sector = start + index / slots;
+    unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
+
+    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    buffer_copy((char *)blockbuffer + offset, bg, sizeof (struct ext2_blockgroup));
+    sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
 }
 
@@ -151,6 +173,12 @@ static unsigned int allocblock(unsigned int blockgroup)
             bitmap[i / 8] |= 1 << (i % 8);
 
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+
+            bg.blockCountUnalloc--;
+            writeblockgroup(&bg, 1, blockgroup);
+
+            sb.blockCountUnalloc--;
+            writesuperblock();
 
             return sb.superblockIndex + blockgroup * sb.blockCountGroup + i;
 
