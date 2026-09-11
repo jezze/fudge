@@ -31,8 +31,7 @@ static unsigned int sendblockreadrequest(unsigned int count, unsigned int sector
 
 }
 
-/*
-static unsigned int sendblockwriterequest(void *buffer, unsigned int count, unsigned int sector, unsigned int blocksize)
+static unsigned int sendblockwriterequest(unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
     unsigned int target = channel_lookup(option_getstring("block-service"));
@@ -56,7 +55,6 @@ static unsigned int sendblockwriterequest(void *buffer, unsigned int count, unsi
     return 0;
 
 }
-*/
 
 static struct ext2_superblock sb;
 static unsigned int blocksize;
@@ -364,9 +362,49 @@ static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    struct event_writerequest *request = mdata;
     struct event_writeresponse response;
- 
+    struct ext2_node node;
+
     response.count = 0;
+
+    simpleread(&node, request->id);
+
+    switch (node.type & 0xF000)
+    {
+
+    case 0x8000:
+        if (request->offset < node.sizeLow)
+        {
+
+            unsigned int remaining = node.sizeLow - request->offset;
+            unsigned int blockindex = request->offset / blocksize;
+            unsigned int blockoffset = request->offset % blocksize;
+            unsigned int sector = getsector(&node, blockindex);
+            unsigned int count = request->count;
+
+            if (count > remaining)
+                count = remaining;
+
+            if (count > blocksize - blockoffset)
+                count = blocksize - blockoffset;
+
+            if (sector)
+            {
+
+                sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+                buffer_copy((char *)blockbuffer + blockoffset, request + 1, count);
+                sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+                response.count = count;
+
+            }
+
+        }
+
+        break;
+
+    }
 
     channel_send(0, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
