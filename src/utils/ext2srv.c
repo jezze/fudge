@@ -366,9 +366,9 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
     struct event_writeresponse response;
     struct ext2_node node;
 
-    response.count = 0;
-
     simpleread(&node, request->id);
+
+    response.count = 0;
 
     switch (node.type & 0xF000)
     {
