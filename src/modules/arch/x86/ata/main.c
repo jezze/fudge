@@ -18,10 +18,10 @@ struct session
     unsigned int source;
     unsigned int count;
     unsigned int offset;
-    void *data;
 
 };
 
+static void *blockbuffer;
 static struct base_driver driver;
 static struct block_interface blockinterface;
 static struct session session;
@@ -41,7 +41,7 @@ static void handleirq(unsigned int irq)
         {
 
         case 1:
-            ide_rblock(blockinterface.id, (char *)session.data + session.offset);
+            ide_rblock(blockinterface.id, (char *)blockbuffer + session.offset);
 
             session.offset += 512;
 
@@ -51,7 +51,6 @@ static void handleirq(unsigned int irq)
                 struct event_blockresponse response;
 
                 response.count = session.count;
-                response.data = session.data;
 
                 kernel_place(blockinterface.inode, session.source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
@@ -62,7 +61,7 @@ static void handleirq(unsigned int irq)
             break;
 
         case 2:
-            ide_wblock(blockinterface.id, (char *)session.data + session.offset);
+            ide_wblock(blockinterface.id, (char *)blockbuffer + session.offset);
 
             session.offset += 512;
 
@@ -72,7 +71,6 @@ static void handleirq(unsigned int irq)
                 struct event_blockresponse response;
 
                 response.count = session.count;
-                response.data = session.data;
 
                 kernel_place(blockinterface.inode, session.source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
 
@@ -113,7 +111,6 @@ static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsig
         session.source = source;
         session.count = count;
         session.offset = 0;
-        session.data = (void *)ARCH_MEM_BASE;
 
         ide_rpio48(blockinterface.id, 0, count / 512, offset / 512);
 
@@ -135,7 +132,6 @@ static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsi
         session.source = source;
         session.count = count;
         session.offset = 0;
-        session.data = (void *)ARCH_MEM_BASE;
 
         ide_wpio48(blockinterface.id, 0, count / 512, offset / 512);
 
@@ -190,6 +186,8 @@ static void driver_detach(unsigned int id)
 
 void module_init(void)
 {
+
+    blockbuffer = (void *)ARCH_MEM_BASE;
 
     arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, 0x8000, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     base_initdriver(&driver, "ata", driver_init, driver_match, driver_reset, driver_attach, driver_detach);

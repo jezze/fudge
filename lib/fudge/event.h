@@ -167,7 +167,6 @@ struct event_blockresponse
 {
 
     unsigned int count;
-    void *data;
 
 };
 
