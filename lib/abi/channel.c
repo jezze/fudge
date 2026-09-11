@@ -82,12 +82,9 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
     {
 
-        char data[MESSAGE_SIZE];
-        unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
-
         pending++;
 
-        listeners[message->event](message->source, data, count);
+        listeners[message->event](message->source, message->data, message->length);
 
         pending--;
 
