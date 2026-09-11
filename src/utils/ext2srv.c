@@ -602,7 +602,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (ext2_validate(&sb))
         {
 
-            call_announce(0, djb_hash(4, "ext2"));
+            call_announce(0, djb_hash(4, option_getstring("service")));
 
             while (channel_process(0));
 
@@ -615,6 +615,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 void init(void)
 {
 
+    option_add("service", "ext2");
     option_add("block-service", "block");
     option_add("partoffset", "1048576");
     channel_bind(EVENT_MAIN, onmain);
