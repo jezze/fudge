@@ -429,7 +429,7 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case 0x8000:
-        if (request->offset < node.sizeLow)
+        if (request->offset <= node.sizeLow)
         {
 
             unsigned int blockindex = request->offset / blocksize;
