@@ -46,7 +46,6 @@ static unsigned int sendblockwriterequest(void *buffer, unsigned int count, unsi
         request.offset = option_getdecimal("partoffset") + sector * blocksize;
         request.count = count;
 
-        buffer_write(blockbuffer, blockbuffersize, buffer, count, 0);
         channel_send(0, target, EVENT_BLOCKWRITEREQUEST, sizeof (struct event_blockrequest), &request);
         channel_wait(0, target, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
 
