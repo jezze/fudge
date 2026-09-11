@@ -156,13 +156,11 @@ static unsigned int allocblock(unsigned int blockgroup)
 {
 
     struct ext2_blockgroup bg;
-    unsigned char *bitmap;
+    unsigned char *bitmap = (unsigned char *)blockbuffer;
     unsigned int i;
 
     readblockgroup(&bg, 1, blockgroup);
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
-
-    bitmap = (unsigned char *)blockbuffer;
 
     for (i = 0; i < sb.blockCountGroup; i++)
     {
@@ -175,9 +173,11 @@ static unsigned int allocblock(unsigned int blockgroup)
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
 
             bg.blockCountUnalloc--;
+
             writeblockgroup(&bg, 1, blockgroup);
 
             sb.blockCountUnalloc--;
+
             writesuperblock();
 
             return sb.superblockIndex + blockgroup * sb.blockCountGroup + i;
@@ -381,7 +381,20 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
             simpleread(&node, id);
 
-            id = ((node.type & 0xF000) == 0x4000) ? matchentry(&node, path + offset, count) : 0;
+            switch (node.type & 0xF000)
+            {
+
+            case 0x4000:
+                id = matchentry(&node, path + offset, count);
+
+                break;
+
+            default:
+                id = 0;
+
+                break;
+
+            }
 
             if (!id)
                 return 0;
@@ -558,6 +571,7 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
                 {
 
                     node.sizeLow = request->offset + count;
+
                     simplewrite(&node, request->id);
 
                 }
