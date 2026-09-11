@@ -897,7 +897,7 @@ void init(void)
     pool_setup();
     setupwidgets();
     render_init();
-    option_add("service", "ext2");
+    option_add("service", "wm");
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
