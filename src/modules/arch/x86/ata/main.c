@@ -61,9 +61,14 @@ static void handleirq(unsigned int irq)
             break;
 
         case 2:
-            ide_wblock(blockinterface.id, (char *)blockbuffer + session.offset);
+            if (session.offset < session.count)
+            {
 
-            session.offset += 512;
+                ide_wblock(blockinterface.id, (char *)blockbuffer + session.offset);
+
+                session.offset += 512;
+
+            }
 
             if (session.offset == session.count)
             {
@@ -134,6 +139,15 @@ static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsi
         session.offset = 0;
 
         ide_wpio48(blockinterface.id, 0, count / 512, offset / 512);
+
+        if (ide_wait(blockinterface.id))
+        {
+
+            ide_wblock(blockinterface.id, blockbuffer);
+
+            session.offset = 512;
+
+        }
 
         return MESSAGE_OK;
 

@@ -117,6 +117,23 @@ unsigned short ide_getirq(unsigned int id)
 
 }
 
+unsigned int ide_wait(unsigned int id)
+{
+
+    unsigned char status;
+
+    do
+    {
+
+        status = ide_getstatus(id);
+
+    }
+    while (status & REG_STATUS_BUSY);
+
+    return (status & REG_STATUS_DRQ) && !(status & REG_STATUS_ERROR);
+
+}
+
 unsigned int ide_rblock(unsigned int id, void *buffer)
 {
 
