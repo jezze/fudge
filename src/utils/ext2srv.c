@@ -189,6 +189,44 @@ static unsigned int allocblock(unsigned int blockgroup)
 
 }
 
+static unsigned int allocnode(unsigned int igroup)
+{
+
+    struct ext2_blockgroup bg;
+    unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
+    unsigned int i;
+
+    readblockgroup(&bg, 1, igroup);
+    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+
+    for (i = 0; i < sb.nodeCountGroup; i++)
+    {
+
+        if (!(bitmap[i / 8] & (1 << (i % 8))))
+        {
+
+            bitmap[i / 8] |= 1 << (i % 8);
+
+            sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+
+            bg.nodeCountUnalloc--;
+
+            writeblockgroup(&bg, 1, igroup);
+
+            sb.nodeCountUnalloc--;
+
+            writesuperblock();
+
+            return igroup * sb.nodeCountGroup + i + 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int getindirect(unsigned int sector, unsigned int index)
 {
 
@@ -408,6 +446,141 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
 }
 
+static unsigned int addentry(struct ext2_node *dir, unsigned int igroup, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
+{
+
+    unsigned int realsize = (8 + namelength + 3) & ~3;
+    unsigned int offset = 0;
+
+    while (offset < dir->sizeLow)
+    {
+
+        unsigned int blockindex = offset / blocksize;
+        unsigned int blockoffset = offset % blocksize;
+        unsigned int sector = getsector(dir, blockindex);
+        struct ext2_entry *entry;
+        unsigned int used;
+
+        if (!sector)
+            break;
+
+        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+        entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
+
+        if (!entry->size)
+            break;
+
+        used = entry->node ? (8 + entry->length + 3) & ~3 : 0;
+
+        if (entry->size - used >= realsize)
+        {
+
+            struct ext2_entry *fresh = (struct ext2_entry *)((char *)entry + used);
+            unsigned int freshsize = entry->size - used;
+
+            if (used)
+                entry->size = used;
+
+            fresh->node = newid;
+            fresh->size = freshsize;
+            fresh->length = namelength;
+            fresh->type = type;
+
+            buffer_copy(fresh + 1, name, namelength);
+
+            sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+            return 1;
+
+        }
+
+        offset += entry->size;
+
+    }
+
+    {
+
+        unsigned int blockindex = dir->sizeLow / blocksize;
+        unsigned int sector = allocsector(dir, blockindex, igroup);
+        struct ext2_entry *fresh;
+
+        if (!sector)
+            return 0;
+
+        buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
+
+        fresh = (struct ext2_entry *)blockinfo.buffer;
+        fresh->node = newid;
+        fresh->size = blocksize;
+        fresh->length = namelength;
+        fresh->type = type;
+
+        buffer_copy(fresh + 1, name, namelength);
+
+        sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+        dir->sizeLow += blocksize;
+
+        return 1;
+
+    }
+
+}
+
+static void oncreaterequest(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_createrequest *request = mdata;
+    struct event_createresponse response;
+    struct ext2_node parent;
+
+    response.id = 0;
+
+    simpleread(&parent, request->parent);
+
+    switch (parent.type & 0xF000)
+    {
+
+    case 0x4000:
+        {
+
+            unsigned int igroup = (request->parent - 1) / sb.nodeCountGroup;
+            unsigned int id = allocnode(igroup);
+
+            if (id)
+            {
+
+                struct ext2_node node;
+
+                buffer_clear(&node, sizeof (struct ext2_node));
+
+                node.type = 0x81A4;
+                node.hardCount = 1;
+
+                simplewrite(&node, id);
+
+                if (addentry(&parent, igroup, id, (char *)(request + 1), request->count, 1))
+                {
+
+                    simplewrite(&parent, request->parent);
+
+                    response.id = id;
+
+                }
+
+            }
+
+        }
+
+        break;
+
+    }
+
+    channel_send(0, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+
+}
+
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -621,6 +794,7 @@ void init(void)
     option_add("block-service", "block");
     option_add("partoffset", "1048576");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_CREATEREQUEST, oncreaterequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);
