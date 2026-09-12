@@ -753,6 +753,29 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onremoverequest(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_removerequest *request = mdata;
+    struct ext2_node node;
+
+    simpleread(&node, request->id);
+
+    switch (node.type & 0xF000)
+    {
+
+    case 0x4000:
+        break;
+
+    case 0x8000:
+        break;
+
+    }
+
+    channel_send(0, source, EVENT_REMOVERESPONSE, 0, 0);
+
+}
+
 static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -831,6 +854,7 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_CREATEREQUEST, oncreaterequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);
+    channel_bind(EVENT_REMOVEREQUEST, onremoverequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);
 
