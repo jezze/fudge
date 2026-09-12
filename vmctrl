@@ -5,6 +5,11 @@ qemu_flags="-nodefaults -enable-kvm"
 qemu_flags_run="-smp 4 -m 128 -kernel fudge -initrd fudge.img -vga std -serial stdio"
 qemu_flags_runiso="-smp 4 -m 128 -cdrom fudge.iso -vga std -serial stdio"
 
+error() {
+    echo "${1}" 2>&1
+    exit 1
+}
+
 getdisk() {
     if test -f "disks/node-$1-sda.qcow2"
     then
@@ -94,36 +99,76 @@ cmd_disconnect() {
     done
 }
 
-cmd_mkdisk() {
+checkdisk() {
+    test -n "${1}" || error "Missing argument: id"
+
+    disk="disks/node-$1-sda.qcow2"
+
+    test -f "${disk}" || error "File not found: ${disk}"
+
+    echo "${disk}"
+}
+
+cmd_disk_connect() {
+    disk=$(checkdisk "${1}")
+
+    modprobe nbd
+    qemu-nbd --connect /dev/nbd0 "${disk}"
+}
+
+cmd_disk_disconnect() {
+    modprobe nbd
+    qemu-nbd --disconnect /dev/nbd0
+}
+
+cmd_disk_create() {
+    test -n "${1}" || error "Missing argument: id"
+
+    disk="disks/node-$1-sda.qcow2"
+    size="5G"
+
     mkdir -p disks
     echo -n "Creating sda disk... "
-    qemu-img create -q -f qcow2 disks/node-$1-sda.qcow2 5G
+    qemu-img create -q -f qcow2 "${disk}" "${size}"
     echo "done"
 }
 
-cmd_nbd_connect() {
-    device="$1"
-    disk="disks/node-$2-sda.qcow2"
-
-    modprobe nbd
-    qemu-nbd --connect $device $disk
+cmd_disk_create_mbr() {
+    cmd_disk_connect "${1}"
+    echo -e "o\nw\n" | fdisk /dev/nbd0
+    mkfs.ext2 /dev/nbd0p1
+    cmd_disk_disconnect
 }
 
-cmd_nbd_disconnect() {
-    device="$1"
-
-    modprobe nbd
-    qemu-nbd --disconnect $device
+cmd_disk_create_ext2() {
+    cmd_disk_connect "${1}"
+    echo -e "n\n\n\n\n${2}\nw\n" | fdisk /dev/nbd0
+    mkfs.ext2 "${3}"
+    cmd_disk_disconnect
 }
 
-cmd_prepdisk() {
-    device="/dev/nbd0"
-    part="/dev/nbd0p1"
+cmd_disk_generate() {
+    mnt="disks/mnt"
 
-    cmd_nbd_connect $device $1
-    echo -e "o\nn\n\n\n\n\nw\n" | fdisk $device
-    mkfs.ext2 $part
-    cmd_nbd_disconnect $device
+    cmd_disk_connect "${1}"
+    sleep 1
+    mkdir -p "${mnt}"
+    mount "${2}" "${mnt}"
+
+    if test -d "build"
+    then
+        cp -r build/* "${mnt}"
+    fi
+
+    umount "${mnt}"
+    cmd_disk_disconnect
+}
+
+cmd_disk_setup() {
+    cmd_disk_create_mbr "${1}"
+    cmd_disk_create_ext2 "${1}" "+1G" "/dev/nbd0p1"
+    cmd_disk_create_ext2 "${1}" "+512M" "/dev/nbd0p2"
+    cmd_disk_generate "${1}" "/dev/nbd0p1"
 }
 
 cmd_help() {
@@ -135,14 +180,14 @@ cmd_help() {
     echo "    nat <iface>"
     echo "    connect"
     echo "    disconnect"
-    echo "    mkdisk <id>"
-    echo "    nbd_connect <dev> <id>"
-    echo "    nbd_disconnect <dev>"
-    echo "    prepdisk <id>"
+    echo "    disk_connect <id>"
+    echo "    disk_disconnect"
+    echo "    disk_create <id>"
+    echo "    disk_setup <id>"
 }
 
 case "$1" in
-run|runiso|runsimple|runisosimple|nat|connect|disconnect|mkdisk|nbd_connect|nbd_disconnect|prepdisk)
+run|runiso|runsimple|runisosimple|nat|connect|disconnect|disk_create|disk_connect|disk_disconnect|disk_setup)
     "cmd_$@"
     ;;
 *)
