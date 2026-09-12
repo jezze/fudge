@@ -426,10 +426,17 @@ static void writeentry(struct ext2_entry *entry, unsigned int node, unsigned int
 
 }
 
-static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
+static unsigned int entrysize(unsigned int namelength)
 {
 
-    unsigned int realsize = (8 + namelength + 3) & ~3;
+    return (8 + namelength + 3) & ~3;
+
+}
+
+static unsigned int spliceentry(struct ext2_node *node, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
+{
+
+    unsigned int realsize = entrysize(namelength);
     unsigned int offset = 0;
 
     while (offset < node->sizeLow)
@@ -437,17 +444,18 @@ static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsign
 
         struct ext2_entry *entry = getentry(node, offset);
         unsigned int used;
+        unsigned int size;
 
         if (!entry)
             break;
 
-        used = entry->node ? (8 + entry->length + 3) & ~3 : 0;
+        used = entry->node ? entrysize(entry->length) : 0;
+        size = entry->size - used;
 
-        if (entry->size - used >= realsize)
+        if (size >= realsize)
         {
 
             unsigned int sector = getsector(node, offset / blocksize);
-            unsigned int size = entry->size - used;
 
             if (used)
                 entry->size = used;
@@ -463,12 +471,17 @@ static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsign
 
     }
 
+    return 0;
+
+}
+
+static unsigned int growentry(struct ext2_node *node, unsigned int igroup, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
+{
+
+    unsigned int sector = allocsector(node, node->sizeLow / blocksize, igroup);
+
+    if (sector)
     {
-
-        unsigned int sector = allocsector(node, node->sizeLow / blocksize, igroup);
-
-        if (!sector)
-            return 0;
 
         buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
         writeentry((struct ext2_entry *)blockinfo.buffer, newid, blocksize, namelength, type, name);
@@ -479,6 +492,18 @@ static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsign
         return 1;
 
     }
+
+    return 0;
+
+}
+
+static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
+{
+
+    if (spliceentry(node, newid, name, namelength, type))
+        return 1;
+
+    return growentry(node, igroup, newid, name, namelength, type);
 
 }
 
