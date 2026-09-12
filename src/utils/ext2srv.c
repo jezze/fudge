@@ -414,29 +414,31 @@ static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int 
 
 }
 
-static unsigned int addentry(struct ext2_node *dir, unsigned int igroup, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
+static void writeentry(struct ext2_entry *entry, unsigned int node, unsigned int size, unsigned int length, unsigned int type, char *name)
+{
+
+    entry->node = node;
+    entry->size = size;
+    entry->length = length;
+    entry->type = type;
+
+    buffer_copy(entry + 1, name, length);
+
+}
+
+static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
 {
 
     unsigned int realsize = (8 + namelength + 3) & ~3;
     unsigned int offset = 0;
 
-    while (offset < dir->sizeLow)
+    while (offset < node->sizeLow)
     {
 
-        unsigned int blockindex = offset / blocksize;
-        unsigned int blockoffset = offset % blocksize;
-        unsigned int sector = getsector(dir, blockindex);
-        struct ext2_entry *entry;
+        struct ext2_entry *entry = getentry(node, offset);
         unsigned int used;
 
-        if (!sector)
-            break;
-
-        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-        entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
-
-        if (!entry->size)
+        if (!entry)
             break;
 
         used = entry->node ? (8 + entry->length + 3) & ~3 : 0;
@@ -444,19 +446,13 @@ static unsigned int addentry(struct ext2_node *dir, unsigned int igroup, unsigne
         if (entry->size - used >= realsize)
         {
 
-            struct ext2_entry *fresh = (struct ext2_entry *)((char *)entry + used);
-            unsigned int freshsize = entry->size - used;
+            unsigned int sector = getsector(node, offset / blocksize);
+            unsigned int size = entry->size - used;
 
             if (used)
                 entry->size = used;
 
-            fresh->node = newid;
-            fresh->size = freshsize;
-            fresh->length = namelength;
-            fresh->type = type;
-
-            buffer_copy(fresh + 1, name, namelength);
-
+            writeentry((struct ext2_entry *)((char *)entry + used), newid, size, namelength, type, name);
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
             return 1;
@@ -469,26 +465,16 @@ static unsigned int addentry(struct ext2_node *dir, unsigned int igroup, unsigne
 
     {
 
-        unsigned int blockindex = dir->sizeLow / blocksize;
-        unsigned int sector = allocsector(dir, blockindex, igroup);
-        struct ext2_entry *fresh;
+        unsigned int sector = allocsector(node, node->sizeLow / blocksize, igroup);
 
         if (!sector)
             return 0;
 
         buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
-
-        fresh = (struct ext2_entry *)blockinfo.buffer;
-        fresh->node = newid;
-        fresh->size = blocksize;
-        fresh->length = namelength;
-        fresh->type = type;
-
-        buffer_copy(fresh + 1, name, namelength);
-
+        writeentry((struct ext2_entry *)blockinfo.buffer, newid, blocksize, namelength, type, name);
         sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
-        dir->sizeLow += blocksize;
+        node->sizeLow += blocksize;
 
         return 1;
 
