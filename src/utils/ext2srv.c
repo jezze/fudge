@@ -400,52 +400,6 @@ static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int 
 
 }
 
-static unsigned int walk(unsigned int id, char *path, unsigned int length)
-{
-
-    unsigned int offset = 0;
-
-    while (offset < length)
-    {
-
-        unsigned int next = buffer_eachbyte(path, length, '/', offset);
-        unsigned int count = (next ? next : length + 1) - offset - 1;
-
-        if (count)
-        {
-
-            struct ext2_node node;
-
-            simpleread(&node, id);
-
-            switch (node.type & 0xF000)
-            {
-
-            case 0x4000:
-                id = matchentry(&node, path + offset, count);
-
-                break;
-
-            default:
-                id = 0;
-
-                break;
-
-            }
-
-            if (!id)
-                return 0;
-
-        }
-
-        offset += count + 1;
-
-    }
-
-    return id;
-
-}
-
 static unsigned int addentry(struct ext2_node *dir, unsigned int igroup, unsigned int newid, char *name, unsigned int namelength, unsigned int type)
 {
 
@@ -528,59 +482,6 @@ static unsigned int addentry(struct ext2_node *dir, unsigned int igroup, unsigne
 
 }
 
-static void oncreaterequest(unsigned int source, void *mdata, unsigned int msize)
-{
-
-    struct event_createrequest *request = mdata;
-    struct event_createresponse response;
-    struct ext2_node parent;
-
-    response.id = 0;
-
-    simpleread(&parent, request->parent);
-
-    switch (parent.type & 0xF000)
-    {
-
-    case 0x4000:
-        {
-
-            unsigned int igroup = (request->parent - 1) / sb.nodeCountGroup;
-            unsigned int id = allocnode(igroup);
-
-            if (id)
-            {
-
-                struct ext2_node node;
-
-                buffer_clear(&node, sizeof (struct ext2_node));
-
-                node.type = 0x81A4;
-                node.hardCount = 1;
-
-                simplewrite(&node, id);
-
-                if (addentry(&parent, igroup, id, (char *)(request + 1), request->count, 1))
-                {
-
-                    simplewrite(&parent, request->parent);
-
-                    response.id = id;
-
-                }
-
-            }
-
-        }
-
-        break;
-
-    }
-
-    channel_send(0, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
-
-}
-
 static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
 {
 
@@ -658,6 +559,162 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 
 }
 
+static unsigned int walk(unsigned int id, char *path, unsigned int length)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < length)
+    {
+
+        unsigned int next = buffer_eachbyte(path, length, '/', offset);
+        unsigned int count = (next ? next : length + 1) - offset - 1;
+
+        if (count)
+        {
+
+            struct ext2_node node;
+
+            simpleread(&node, id);
+
+            switch (node.type & 0xF000)
+            {
+
+            case 0x4000:
+                id = matchentry(&node, path + offset, count);
+
+                break;
+
+            default:
+                id = 0;
+
+                break;
+
+            }
+
+            if (!id)
+                return 0;
+
+        }
+
+        offset += count + 1;
+
+    }
+
+    return id;
+
+}
+
+static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int rid, void *data)
+{
+
+    if (roffset <= node->sizeLow)
+    {
+
+        unsigned int blockindex = roffset / blocksize;
+        unsigned int blockoffset = roffset % blocksize;
+        unsigned int sector = getsector(node, blockindex);
+        unsigned int count = rcount;
+        unsigned int allocated = 0;
+
+        if (count > blocksize - blockoffset)
+            count = blocksize - blockoffset;
+
+        if (!sector)
+        {
+
+            unsigned int igroup = (rid - 1) / sb.nodeCountGroup;
+
+            sector = allocsector(node, blockindex, igroup);
+
+            if (sector)
+                allocated = 1;
+
+        }
+
+        if (sector)
+        {
+
+            if (allocated)
+                buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
+            else
+                sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+            buffer_copy((char *)blockinfo.buffer + blockoffset, data, count);
+            sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+            if (roffset + count > node->sizeLow)
+            {
+
+                node->sizeLow = roffset + count;
+
+                simplewrite(node, rid);
+
+            }
+
+            return count;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static void oncreaterequest(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_createrequest *request = mdata;
+    struct event_createresponse response;
+    struct ext2_node parent;
+
+    simpleread(&parent, request->parent);
+
+    response.id = 0;
+
+    switch (parent.type & 0xF000)
+    {
+
+    case 0x4000:
+        {
+
+            unsigned int igroup = (request->parent - 1) / sb.nodeCountGroup;
+            unsigned int id = allocnode(igroup);
+
+            if (id)
+            {
+
+                struct ext2_node node;
+
+                buffer_clear(&node, sizeof (struct ext2_node));
+
+                node.type = 0x81A4;
+                node.hardCount = 1;
+
+                simplewrite(&node, id);
+
+                if (addentry(&parent, igroup, id, (char *)(request + 1), request->count, 1))
+                {
+
+                    simplewrite(&parent, request->parent);
+
+                    response.id = id;
+
+                }
+
+            }
+
+        }
+
+        break;
+
+    }
+
+    channel_send(0, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+
+}
+
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -716,55 +773,7 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case 0x8000:
-        if (request->offset <= node.sizeLow)
-        {
-
-            unsigned int blockindex = request->offset / blocksize;
-            unsigned int blockoffset = request->offset % blocksize;
-            unsigned int sector = getsector(&node, blockindex);
-            unsigned int count = request->count;
-            unsigned int allocated = 0;
-
-            if (count > blocksize - blockoffset)
-                count = blocksize - blockoffset;
-
-            if (!sector)
-            {
-
-                unsigned int igroup = (request->id - 1) / sb.nodeCountGroup;
-
-                sector = allocsector(&node, blockindex, igroup);
-
-                if (sector)
-                    allocated = 1;
-
-            }
-
-            if (sector)
-            {
-
-                if (allocated)
-                    buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
-                else
-                    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-                buffer_copy((char *)blockinfo.buffer + blockoffset, request + 1, count);
-                sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-                response.count = count;
-
-                if (request->offset + count > node.sizeLow)
-                {
-
-                    node.sizeLow = request->offset + count;
-
-                    simplewrite(&node, request->id);
-
-                }
-
-            }
-
-        }
+        response.count = writefile(&node, request->offset, request->count, request->id, request + 1);
 
         break;
 
