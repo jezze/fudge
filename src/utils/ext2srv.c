@@ -368,6 +368,28 @@ static void getrecord(struct ext2_entry *entry, struct record *record, unsigned 
 
 }
 
+static struct ext2_entry *getentry(struct ext2_node *node, unsigned int offset)
+{
+
+    unsigned int blockindex = offset / blocksize;
+    unsigned int blockoffset = offset % blocksize;
+    unsigned int sector = getsector(node, blockindex);
+    struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
+
+    if (sector)
+    {
+
+        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+        if (entry->size)
+            return entry;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int length)
 {
 
@@ -376,17 +398,9 @@ static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int 
     while (offset < node->sizeLow)
     {
 
-        unsigned int blockindex = offset / blocksize;
-        unsigned int blockoffset = offset % blocksize;
-        unsigned int sector = getsector(node, blockindex);
-        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
+        struct ext2_entry *entry = getentry(node, offset);
 
-        if (!sector)
-            break;
-
-        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-        if (!entry->size)
+        if (!entry)
             break;
 
         if (entry->node && entry->length == length && buffer_match(entry + 1, name, length))
@@ -492,17 +506,9 @@ static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, 
     while (roffset < node->sizeLow && (i + 1) * sizeof (struct record) <= capacity)
     {
 
-        unsigned int blockindex = roffset / blocksize;
-        unsigned int blockoffset = roffset % blocksize;
-        unsigned int sector = getsector(node, blockindex);
-        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
+        struct ext2_entry *entry = getentry(node, roffset);
 
-        if (!sector)
-            break;
-
-        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-        if (!entry->size)
+        if (!entry)
             break;
 
         if (entry->node)
