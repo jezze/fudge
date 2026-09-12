@@ -523,6 +523,13 @@ static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, 
 
 }
 
+static unsigned int writedirectory(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int rid, void *data)
+{
+
+    return 0;
+
+}
+
 static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
 {
 
@@ -556,52 +563,6 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
     }
 
     return 0;
-
-}
-
-static unsigned int walk(unsigned int id, char *path, unsigned int length)
-{
-
-    unsigned int offset = 0;
-
-    while (offset < length)
-    {
-
-        unsigned int next = buffer_eachbyte(path, length, '/', offset);
-        unsigned int count = (next ? next : length + 1) - offset - 1;
-
-        if (count)
-        {
-
-            struct ext2_node node;
-
-            simpleread(&node, id);
-
-            switch (node.type & 0xF000)
-            {
-
-            case 0x4000:
-                id = matchentry(&node, path + offset, count);
-
-                break;
-
-            default:
-                id = 0;
-
-                break;
-
-            }
-
-            if (!id)
-                return 0;
-
-        }
-
-        offset += count + 1;
-
-    }
-
-    return id;
 
 }
 
@@ -659,6 +620,52 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
     }
 
     return 0;
+
+}
+
+static unsigned int walk(unsigned int id, char *path, unsigned int length)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < length)
+    {
+
+        unsigned int next = buffer_eachbyte(path, length, '/', offset);
+        unsigned int count = (next ? next : length + 1) - offset - 1;
+
+        if (count)
+        {
+
+            struct ext2_node node;
+
+            simpleread(&node, id);
+
+            switch (node.type & 0xF000)
+            {
+
+            case 0x4000:
+                id = matchentry(&node, path + offset, count);
+
+                break;
+
+            default:
+                id = 0;
+
+                break;
+
+            }
+
+            if (!id)
+                return 0;
+
+        }
+
+        offset += count + 1;
+
+    }
+
+    return id;
 
 }
 
@@ -771,6 +778,11 @@ static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
 
     switch (node.type & 0xF000)
     {
+
+    case 0x4000:
+        response.count = writedirectory(&node, request->offset, request->count, request->id, request + 1);
+
+        break;
 
     case 0x8000:
         response.count = writefile(&node, request->offset, request->count, request->id, request + 1);
