@@ -395,7 +395,7 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
     }
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
