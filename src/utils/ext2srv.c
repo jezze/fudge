@@ -581,13 +581,89 @@ static void oncreaterequest(unsigned int source, void *mdata, unsigned int msize
 
 }
 
+static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
+{
+
+    struct record *records = data;
+    unsigned int count = 0;
+    unsigned int i = 0;
+
+    while (roffset < node->sizeLow && (i + 1) * sizeof (struct record) <= capacity)
+    {
+
+        unsigned int blockindex = roffset / blocksize;
+        unsigned int blockoffset = roffset % blocksize;
+        unsigned int sector = getsector(node, blockindex);
+        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
+
+        if (!sector)
+            break;
+
+        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+        if (!entry->size)
+            break;
+
+        if (entry->node)
+        {
+
+            getrecord(entry, &records[i], roffset);
+
+            i++;
+            count += sizeof (struct record);
+
+        }
+
+        roffset += entry->size;
+
+    }
+
+    return count;
+
+}
+
+static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
+{
+
+    if (roffset < node->sizeLow)
+    {
+
+        unsigned int remaining = node->sizeLow - roffset;
+        unsigned int blockindex = roffset / blocksize;
+        unsigned int blockoffset = roffset % blocksize;
+        unsigned int sector = getsector(node, blockindex);
+        unsigned int count = capacity;
+
+        if (count > rcount)
+            count = rcount;
+
+        if (count > remaining)
+            count = remaining;
+
+        if (count > blocksize - blockoffset)
+            count = blocksize - blockoffset;
+
+        if (sector)
+        {
+
+            sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+            return buffer_write(data, capacity, (char *)blockinfo.buffer + blockoffset, count, 0);
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned char data[MESSAGE_SIZE];
     struct event_readrequest *request = mdata;
     struct event_readresponse *response = (struct event_readresponse *)data;
-    unsigned int capacity = MESSAGE_SIZE - sizeof (struct event_readresponse);
     struct ext2_node node;
 
     simpleread(&node, request->id);
@@ -598,74 +674,12 @@ static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
     {
 
     case 0x4000:
-        {
-
-            struct record *records = (struct record *)(response + 1);
-            unsigned int i = 0;
-
-            while (request->offset < node.sizeLow && (i + 1) * sizeof (struct record) <= capacity)
-            {
-
-                unsigned int blockindex = request->offset / blocksize;
-                unsigned int blockoffset = request->offset % blocksize;
-                unsigned int sector = getsector(&node, blockindex);
-                struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
-
-                if (!sector)
-                    break;
-
-                sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-                if (!entry->size)
-                    break;
-
-                if (entry->node)
-                {
-
-                    getrecord(entry, &records[i], request->offset);
-
-                    i++;
-                    response->count += sizeof (struct record);
-
-                }
-
-                request->offset += entry->size;
-
-            }
-
-        }
+        response->count = readdirectory(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
 
         break;
 
     case 0x8000:
-        if (request->offset < node.sizeLow)
-        {
-
-            unsigned int remaining = node.sizeLow - request->offset;
-            unsigned int blockindex = request->offset / blocksize;
-            unsigned int blockoffset = request->offset % blocksize;
-            unsigned int sector = getsector(&node, blockindex);
-            unsigned int count = capacity;
-
-            if (count > request->count)
-                count = request->count;
-
-            if (count > remaining)
-                count = remaining;
-
-            if (count > blocksize - blockoffset)
-                count = blocksize - blockoffset;
-
-            if (sector)
-            {
-
-                sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
-
-                response->count = buffer_write(data + sizeof (struct event_readresponse), capacity, (char *)blockinfo.buffer + blockoffset, count, 0);
-
-            }
-
-        }
+        response->count = readfile(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
 
         break;
 
