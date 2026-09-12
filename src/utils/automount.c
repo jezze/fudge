@@ -29,7 +29,7 @@ static unsigned int sendblockreadrequest(unsigned int offset, unsigned int count
 
 }
 
-static void mountext2(unsigned int source, unsigned int offset)
+static void mountext2(unsigned int source, unsigned int offset, char *service)
 {
 
     struct ext2_superblock *sb = (struct ext2_superblock *)blockinfo.buffer;
@@ -44,7 +44,7 @@ static void mountext2(unsigned int source, unsigned int offset)
         if (target)
         {
 
-            channel_send_fmt1(1, target, EVENT_OPTION, "pwd=disk0:&service=disk0&partoffset=%u\n", &offset);
+            channel_send_fmt3(1, target, EVENT_OPTION, "pwd=%s:&service=%s&partoffset=%u\n", service, service, &offset);
             channel_send(1, target, EVENT_MAIN, 0, 0);
 
         }
@@ -53,7 +53,7 @@ static void mountext2(unsigned int source, unsigned int offset)
 
 }
 
-static void mountpartition(unsigned int source, struct mbr_partition *partition)
+static void mountpartition(unsigned int source, struct mbr_partition *partition, char *service)
 {
 
     unsigned int start = (partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0]);
@@ -61,7 +61,7 @@ static void mountpartition(unsigned int source, struct mbr_partition *partition)
     if (partition->systemid == 0x83)
     {
 
-        mountext2(source, start * blockinfo.blocksize);
+        mountext2(source, start * blockinfo.blocksize, service);
 
     }
 
@@ -71,6 +71,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 {
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
+    char *service[4] = {
+        "disk0",
+        "disk1",
+        "disk2",
+        "disk3"
+    };
 
     if (block)
     {
@@ -97,7 +103,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                     struct mbr_partition *partition = &mbr->partition[i];
 
                     if (partition->systemid)
-                        mountpartition(source, partition);
+                        mountpartition(source, partition, service[i]);
 
                 }
 
