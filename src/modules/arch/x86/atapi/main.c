@@ -45,7 +45,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == IDE_ATAPI;
+    return 0;
 
 }
 

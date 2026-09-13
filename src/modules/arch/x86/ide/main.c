@@ -54,21 +54,58 @@ static unsigned int busmaster;
 static unsigned short getcontrol(unsigned int id)
 {
 
-    return pcontrol;
+    switch (id)
+    {
+
+    case IDE_PM:
+    case IDE_PS:
+        return pcontrol;
+
+    case IDE_SM:
+    case IDE_SS:
+        return scontrol;
+
+    }
+
+    return 0;
 
 }
 
 static unsigned short getdata(unsigned int id)
 {
 
-    return pdata;
+    switch (id)
+    {
+
+    case IDE_PM:
+    case IDE_PS:
+        return pdata;
+
+    case IDE_SM:
+    case IDE_SS:
+        return sdata;
+
+    }
+
+    return 0;
 
 }
 
-static void setpio28(unsigned short data, unsigned short control, unsigned int slave, unsigned int sector, unsigned int count, unsigned char command)
+static void setpio28(unsigned int id, unsigned short data, unsigned short control, unsigned int sector, unsigned int count, unsigned char command)
 {
 
-    io_outb(data + REG_SELECT, 0xE0 | ((sector >> 24) & 0x0F) | slave << 4);
+    unsigned int select = 0xE0 | ((sector >> 24) & 0x0F);
+
+    switch (id)
+    {
+
+    case IDE_SM:
+    case IDE_SS:
+        select |= 0x10;
+
+    }
+
+    io_outb(data + REG_SELECT, select);
     io_inb(control);
     io_inb(control);
     io_inb(control);
@@ -81,10 +118,21 @@ static void setpio28(unsigned short data, unsigned short control, unsigned int s
 
 }
 
-static void setpio48(unsigned short data, unsigned short control, unsigned int slave, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, unsigned char command)
+static void setpio48(unsigned int id, unsigned short data, unsigned short control, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, unsigned char command)
 {
 
-    io_outb(data + REG_SELECT, 0x40 | slave << 4);
+    unsigned int select = 0x40;
+
+    switch (id)
+    {
+
+    case IDE_SM:
+    case IDE_SS:
+        select |= 0x10;
+
+    }
+
+    io_outb(data + REG_SELECT, select);
     io_inb(control);
     io_inb(control);
     io_inb(control);
@@ -113,7 +161,20 @@ unsigned char ide_getstatus(unsigned int id)
 unsigned short ide_getirq(unsigned int id)
 {
 
-    return IRQ_PRIMARY;
+    switch (id)
+    {
+
+    case IDE_PM:
+    case IDE_PS:
+        return IRQ_PRIMARY;
+
+    case IDE_SM:
+    case IDE_SS:
+        return IRQ_SECONDARY;
+
+    }
+
+    return 0;
 
 }
 
@@ -162,43 +223,43 @@ unsigned int ide_wblock(unsigned int id, void *buffer)
 
 }
 
-void ide_rpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
+void ide_rpio28(unsigned int id, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
 
-    setpio28(data, control, slave, sector, count, REG_COMMAND_PIO28READ);
+    setpio28(id, data, control, sector, count, REG_COMMAND_PIO28READ);
 
 }
 
-void ide_wpio28(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
+void ide_wpio28(unsigned int id, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
 
-    setpio28(data, control, slave, sector, count, REG_COMMAND_PIO28WRITE);
+    setpio28(id, data, control, sector, count, REG_COMMAND_PIO28WRITE);
 
 }
 
-void ide_rpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
+void ide_rpio48(unsigned int id, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
 
-    setpio48(data, control, slave, sector, 0, count, REG_COMMAND_PIO48READ);
+    setpio48(id, data, control, sector, 0, count, REG_COMMAND_PIO48READ);
 
 }
 
-void ide_wpio48(unsigned int id, unsigned int slave, unsigned int count, unsigned int sector)
+void ide_wpio48(unsigned int id, unsigned int count, unsigned int sector)
 {
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
 
-    setpio48(data, control, slave, sector, 0, count, REG_COMMAND_PIO48WRITE);
+    setpio48(id, data, control, sector, 0, count, REG_COMMAND_PIO48WRITE);
 
 }
 
@@ -211,7 +272,16 @@ static unsigned int bus_next(unsigned int id)
 {
 
     if (id == 0)
-        return IDE_ATA;
+        return IDE_PM;
+
+    if (id == IDE_PM)
+        return IDE_PS;
+
+    if (id == IDE_PS)
+        return IDE_SM;
+
+    if (id == IDE_SS)
+        return IDE_SS;
 
     return 0;
 

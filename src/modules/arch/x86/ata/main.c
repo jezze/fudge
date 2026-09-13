@@ -117,7 +117,7 @@ static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsig
         session.count = count;
         session.offset = 0;
 
-        ide_rpio48(blockinterface.id, 0, count / 512, offset / 512);
+        ide_rpio48(blockinterface.id, count / 512, offset / 512);
 
         return MESSAGE_OK;
 
@@ -138,7 +138,7 @@ static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsi
         session.count = count;
         session.offset = 0;
 
-        ide_wpio48(blockinterface.id, 0, count / 512, offset / 512);
+        ide_wpio48(blockinterface.id, count / 512, offset / 512);
 
         if (ide_wait(blockinterface.id))
         {
@@ -167,7 +167,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == IDE_ATA;
+    return id == IDE_PM;
 
 }
 
