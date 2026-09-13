@@ -57,6 +57,15 @@ static unsigned int sendblockwriterequest(unsigned int count, unsigned int secto
 }
 */
 
+static unsigned int stat(unsigned int id, struct record *record)
+{
+
+    buffer_clear(&record, sizeof (struct record));
+
+    return sizeof (struct record);
+
+}
+
 static void oncreaterequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -88,6 +97,16 @@ static void onremoverequest(unsigned int source, void *mdata, unsigned int msize
     /*struct event_removerequest *request = mdata;*/
 
     channel_send(0, source, EVENT_REMOVERESPONSE, 0, 0);
+
+}
+
+static void onstatrequest(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_statrequest *request = mdata;
+    struct record record;
+
+    channel_send(0, source, EVENT_STATRESPONSE, stat(request->id, &record), &record);
 
 }
 
@@ -140,6 +159,7 @@ void init(void)
     channel_bind(EVENT_CREATEREQUEST, oncreaterequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);
     channel_bind(EVENT_REMOVEREQUEST, onremoverequest);
+    channel_bind(EVENT_STATREQUEST, onstatrequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);
 

@@ -644,6 +644,15 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
 
 }
 
+static unsigned int stat(unsigned int id, struct record *record)
+{
+
+    buffer_clear(&record, sizeof (struct record));
+
+    return sizeof (struct record);
+
+}
+
 static unsigned int walk(unsigned int id, char *path, unsigned int length)
 {
 
@@ -797,6 +806,16 @@ static void onremoverequest(unsigned int source, void *mdata, unsigned int msize
 
 }
 
+static void onstatrequest(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    struct event_statrequest *request = mdata;
+    struct record record;
+
+    channel_send(0, source, EVENT_STATRESPONSE, stat(request->id, &record), &record);
+
+}
+
 static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -876,6 +895,7 @@ void init(void)
     channel_bind(EVENT_CREATEREQUEST, oncreaterequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);
     channel_bind(EVENT_REMOVEREQUEST, onremoverequest);
+    channel_bind(EVENT_STATREQUEST, onstatrequest);
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);
 
