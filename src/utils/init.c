@@ -50,6 +50,7 @@ static unsigned int spawnautomount(unsigned int ichannel)
 
         channel_send_fmt0(ichannel, target, EVENT_OPTION, "pwd=initrd:\n");
         channel_send(ichannel, target, EVENT_MAIN, 0, 0);
+        channel_send(ichannel, target, EVENT_TERM, 0, 0);
 
     }
 
