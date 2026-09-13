@@ -134,18 +134,17 @@ cmd_disk_create() {
 }
 
 cmd_disk_copy() {
-    test -n "${1}" || error "Missing argument: root"
+    test -n "${1}" || error "Missing argument: file"
     test -n "${2}" || error "Missing argument: device"
 
     mnt="disks/mnt"
 
     mkdir -p "${mnt}"
+
     mount "${2}" "${mnt}"
 
-    if test -d "${1}"
-    then
-        cp -r "${1}" "${mnt}"
-    fi
+    test -f "${1}" && cp "${1}" "${mnt}"
+    test -d "${1}" && cp -r "${1}" "${mnt}"
 
     umount "${mnt}"
 }
@@ -170,7 +169,7 @@ cmd_disk_setup() {
     mkfs.ext2 "${partboot}"
     mkfs.ext2 "${partroot}"
     cmd_disk_copy "fudge" "${partboot}"
-    cmd_disk_copy "initrd.cpio" "${partboot}"
+    cmd_disk_copy "fudge.cpio" "${partboot}"
     cmd_disk_copy "build/." "${partroot}"
     cmd_disk_disconnect "${1}"
 }
