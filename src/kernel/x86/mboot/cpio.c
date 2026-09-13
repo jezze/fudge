@@ -325,7 +325,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statrequest *request = data;
     struct record record;
 
-    return kernel_place(inode, source, EVENT_STATRESPONSE, stat(request->id, &record) * sizeof (struct record), &record);
+    return kernel_place(inode, source, EVENT_STATRESPONSE, stat(request->id, &record), &record);
 
 }
 
