@@ -871,7 +871,7 @@ void init(void)
 
     option_add("service", "ext2");
     option_add("block-service", "block");
-    option_add("partoffset", "1048576");
+    option_add("partoffset", "0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_CREATEREQUEST, oncreaterequest);
     channel_bind(EVENT_READREQUEST, onreadrequest);

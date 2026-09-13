@@ -4,6 +4,7 @@ L:=\
 O:=\
     $(DIR_LIB)/disk/cpio.o \
     $(DIR_LIB)/disk/ext2.o \
+    $(DIR_LIB)/disk/fat.o \
     $(DIR_LIB)/disk/mbr.o \
     $(DIR_LIB)/disk/tar.o \
 

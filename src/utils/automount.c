@@ -29,6 +29,30 @@ static unsigned int sendblockreadrequest(unsigned int offset, unsigned int count
 
 }
 
+static void mountfat(unsigned int source, unsigned int offset, char *service)
+{
+
+    struct fat *fat = (struct fat *)blockinfo.buffer;
+
+    sendblockreadrequest(offset, 512);
+
+    if (fat_validate(fat))
+    {
+
+        unsigned int target = fs_spawn(1, "initrd:bin/fatsrv");
+
+        if (target)
+        {
+
+            channel_send_fmt3(1, target, EVENT_OPTION, "pwd=%s:&service=%s&partoffset=%u\n", service, service, &offset);
+            channel_send(1, target, EVENT_MAIN, 0, 0);
+
+        }
+
+    }
+
+}
+
 static void mountext2(unsigned int source, unsigned int offset, char *service)
 {
 
@@ -58,10 +82,19 @@ static void mountpartition(unsigned int source, struct mbr_partition *partition,
 
     unsigned int start = (partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0]);
 
-    if (partition->systemid == 0x83)
+    switch (partition->systemid)
     {
 
+    case 0x83:
+        mountfat(source, start * blockinfo.blocksize, service);
         mountext2(source, start * blockinfo.blocksize, service);
+
+        break;
+
+    case 0xEF:
+        mountfat(source, start * blockinfo.blocksize, service);
+
+        break;
 
     }
 
