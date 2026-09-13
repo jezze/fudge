@@ -105,13 +105,14 @@ unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int 
 {
 
     struct event_removerequest request;
+    struct event_removeresponse response;
 
     request.id = id;
 
     channel_send(ichannel, target, EVENT_REMOVEREQUEST, sizeof (struct event_removerequest), &request);
-    channel_wait(ichannel, target, EVENT_REMOVERESPONSE, 0, 0);
+    channel_wait(ichannel, target, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
-    return 1;
+    return response.status;
 
 }
 

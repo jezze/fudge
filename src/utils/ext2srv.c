@@ -787,9 +787,12 @@ static void onremoverequest(unsigned int source, void *mdata, unsigned int msize
 {
 
     struct event_removerequest *request = mdata;
+    struct event_removeresponse response;
     struct ext2_node node;
 
     simpleread(&node, request->id);
+
+    response.status = 0;
 
     switch (node.type & 0xF000)
     {
@@ -802,7 +805,7 @@ static void onremoverequest(unsigned int source, void *mdata, unsigned int msize
 
     }
 
-    channel_send(0, source, EVENT_REMOVERESPONSE, 0, 0);
+    channel_send(0, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
 }
 

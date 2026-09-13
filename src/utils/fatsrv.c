@@ -95,8 +95,11 @@ static void onremoverequest(unsigned int source, void *mdata, unsigned int msize
 {
 
     /*struct event_removerequest *request = mdata;*/
+    struct event_removeresponse response;
 
-    channel_send(0, source, EVENT_REMOVERESPONSE, 0, 0);
+    response.status = 0;
+
+    channel_send(0, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
 }
 

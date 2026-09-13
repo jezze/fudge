@@ -285,6 +285,13 @@ struct event_removerequest
 
 };
 
+struct event_removeresponse
+{
+
+    unsigned int status;
+
+};
+
 struct event_statrequest
 {
 
