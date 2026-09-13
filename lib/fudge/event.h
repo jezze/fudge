@@ -292,6 +292,13 @@ struct event_statrequest
 
 };
 
+struct event_statresponse
+{
+
+    unsigned int count;
+
+};
+
 struct event_walkrequest
 {
 

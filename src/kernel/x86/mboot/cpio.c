@@ -322,10 +322,13 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
 {
 
+    unsigned char buffer[MESSAGE_SIZE];
     struct event_statrequest *request = data;
-    struct record record;
+    struct event_statresponse *response = (struct event_statresponse *)buffer;
 
-    return kernel_place(inode, source, EVENT_STATRESPONSE, stat(request->id, &record), &record);
+    response->count = stat(request->id, (struct record *)(response + 1));
+
+    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
 
 }
 

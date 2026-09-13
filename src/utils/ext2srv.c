@@ -809,10 +809,13 @@ static void onremoverequest(unsigned int source, void *mdata, unsigned int msize
 static void onstatrequest(unsigned int source, void *mdata, unsigned int msize)
 {
 
+    unsigned char data[MESSAGE_SIZE];
     struct event_statrequest *request = mdata;
-    struct record record;
+    struct event_statresponse *response = (struct event_statresponse *)data;
 
-    channel_send(0, source, EVENT_STATRESPONSE, stat(request->id, &record), &record);
+    response->count = stat(request->id, (struct record *)(response + 1));
+
+    channel_send(0, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, data);
 
 }
 

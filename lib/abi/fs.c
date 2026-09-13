@@ -67,7 +67,7 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
     request.count = count;
 
     channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
-    channel_wait(ichannel, target, EVENT_READRESPONSE, MESSAGE_SIZE, data);
+    channel_wait(ichannel, target, EVENT_READRESPONSE, MESSAGE_SIZE, response);
     buffer_copy(buffer, response + 1, response->count);
 
     return response->count;
@@ -118,14 +118,17 @@ unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int 
 unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id, struct record *record)
 {
 
+    unsigned char data[MESSAGE_SIZE];
     struct event_statrequest request;
+    struct event_statresponse *response = (struct event_statresponse *)data;
 
     request.id = id;
 
     channel_send(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
-    channel_wait(ichannel, target, EVENT_STATRESPONSE, sizeof (struct record), record);
+    channel_wait(ichannel, target, EVENT_STATRESPONSE, MESSAGE_SIZE, response);
+    buffer_copy(record, response + 1, response->count);
 
-    return 1;
+    return response->count;
 
 }
 
