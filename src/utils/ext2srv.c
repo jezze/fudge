@@ -245,9 +245,10 @@ static unsigned int getindirect(unsigned int sector, unsigned int index)
 
 }
 
-static unsigned int getsector(struct ext2_node *node, unsigned int index)
+static unsigned int getsector(struct ext2_node *node, unsigned int offset)
 {
 
+    unsigned int index = offset / blocksize;
     unsigned int slots = blocksize / 4;
     unsigned int singlestart = 12;
     unsigned int doublestart = singlestart + slots;
@@ -283,9 +284,10 @@ static unsigned int getsector(struct ext2_node *node, unsigned int index)
 
 }
 
-static unsigned int allocsector(struct ext2_node *node, unsigned int index, unsigned int igroup)
+static unsigned int allocsector(struct ext2_node *node, unsigned int offset, unsigned int igroup)
 {
 
+    unsigned int index = offset / blocksize;
     unsigned int slots = blocksize / 4;
 
     if (index < 12)
@@ -371,13 +373,13 @@ static void getrecord(struct ext2_entry *entry, struct record *record, unsigned 
 static struct ext2_entry *getentry(struct ext2_node *node, unsigned int offset)
 {
 
-    unsigned int blockindex = offset / blocksize;
-    unsigned int blockoffset = offset % blocksize;
-    unsigned int sector = getsector(node, blockindex);
-    struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
+    unsigned int sector = getsector(node, offset);
 
     if (sector)
     {
+
+        unsigned int blockoffset = offset % blocksize;
+        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
 
         sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
@@ -455,7 +457,7 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
         if (size >= realsize)
         {
 
-            unsigned int sector = getsector(node, offset / blocksize);
+            unsigned int sector = getsector(node, offset);
 
             if (used)
                 entry->size = used;
@@ -478,7 +480,7 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
 static unsigned int growentry(struct ext2_node *node, unsigned int igroup, unsigned int id, unsigned int length, unsigned int type, char *name)
 {
 
-    unsigned int sector = allocsector(node, node->sizeLow / blocksize, igroup);
+    unsigned int sector = allocsector(node, node->sizeLow, igroup);
 
     if (sector)
     {
@@ -554,9 +556,8 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
     {
 
         unsigned int remaining = node->sizeLow - roffset;
-        unsigned int blockindex = roffset / blocksize;
         unsigned int blockoffset = roffset % blocksize;
-        unsigned int sector = getsector(node, blockindex);
+        unsigned int sector = getsector(node, roffset);
         unsigned int count = capacity;
 
         if (count > rcount)
@@ -589,9 +590,8 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
     if (roffset <= node->sizeLow)
     {
 
-        unsigned int blockindex = roffset / blocksize;
         unsigned int blockoffset = roffset % blocksize;
-        unsigned int sector = getsector(node, blockindex);
+        unsigned int sector = getsector(node, roffset);
         unsigned int count = rcount;
         unsigned int allocated = 0;
 
@@ -603,7 +603,7 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
 
             unsigned int igroup = (rid - 1) / sb.nodeCountGroup;
 
-            sector = allocsector(node, blockindex, igroup);
+            sector = allocsector(node, roffset, igroup);
 
             if (sector)
                 allocated = 1;
