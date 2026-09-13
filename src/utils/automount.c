@@ -90,9 +90,11 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (count == 512)
         {
 
-            struct mbr *mbr = (struct mbr *)blockinfo.buffer;
+            struct mbr mbr;
 
-            if (mbr_validate(mbr))
+            buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
+
+            if (mbr_validate(&mbr))
             {
 
                 unsigned int i;
@@ -100,7 +102,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                 for (i = 0; i < 4; i++)
                 {
 
-                    struct mbr_partition *partition = &mbr->partition[i];
+                    struct mbr_partition *partition = &mbr.partition[i];
 
                     if (partition->systemid)
                         mountpartition(source, partition, service[i]);
