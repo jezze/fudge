@@ -307,7 +307,6 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
     if (index < slots)
     {
 
-        unsigned int *table;
         unsigned int sector;
 
         if (!node->singlyIndirectPointer)
@@ -327,17 +326,22 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
 
         sector = allocblock(igroup);
 
-        if (!sector)
-            return 0;
+        if (sector)
+        {
 
-        sendblockreadrequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+            unsigned int *table = (unsigned int *)blockinfo.buffer;
 
-        table = (unsigned int *)blockinfo.buffer;
-        table[index] = sector;
+            sendblockreadrequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
 
-        sendblockwriterequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+            table[index] = sector;
 
-        return sector;
+            sendblockwriterequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+
+            return sector;
+
+        }
+
+        return 0;
 
     }
 
