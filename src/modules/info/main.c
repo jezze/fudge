@@ -23,7 +23,7 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
 static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
 {
 
-    unsigned int total = 3;
+    unsigned int total = (nrecords < 3) ? nrecords : 3;
     unsigned int c = 0;
     unsigned int i;
 
