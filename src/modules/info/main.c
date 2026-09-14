@@ -12,16 +12,27 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
 
     struct record *records = data;
     unsigned int nrecords = count / sizeof (struct record);
-    struct resource *resource = (struct resource *)offset;
-    unsigned int c;
+    struct resource *resource = 0;
+    unsigned int c = 0;
+    unsigned int i;
 
-    for (c = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); c++)
+    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
     {
 
-        if (c >= nrecords)
-            break;
+        if (i >= offset)
+        {
 
-        record_init(&records[c], (unsigned int)resource, RECORD_TYPE_NORMAL, 0, (unsigned int)resource_foreachtype(resource, RESOURCE_CORE), 5, "core0");
+            char name[RECORD_NAMESIZE];
+            unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "core%u", &i);
+
+            if (c >= nrecords)
+                break;
+
+            record_init(&records[c], 0x4000 + i, RECORD_TYPE_NORMAL, 0, i + 1, cname, name);
+
+            c++;
+
+        }
 
     }
 
@@ -116,7 +127,7 @@ static unsigned int walkroot(unsigned int parent, unsigned int length, char *pat
 
         struct record *record = &rootrecords[i];
 
-        if (record->length == length && buffer_match(record->name, path, record->length))
+        if (record->length == length - 1 && buffer_match(record->name, path, record->length))
             return record->id;
 
     }
@@ -127,6 +138,9 @@ static unsigned int walkroot(unsigned int parent, unsigned int length, char *pat
 
 static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 {
+
+    if (!length)
+        return parent;
 
     switch (parent)
     {
@@ -172,10 +186,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct event_walkrequest *request = data;
     struct event_walkresponse response;
 
-    if (request->parent)
-        response.id = walk(request->parent, request->length, (char *)(request + 1));
-    else
-        response.id = 1;
+    response.id = walk(request->parent ? request->parent : 1, request->length, (char *)(request + 1));
 
     return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
