@@ -388,8 +388,7 @@ static struct ext2_entry *getentry(struct ext2_node *node, unsigned int offset)
     if (sector)
     {
 
-        unsigned int blockoffset = offset % blocksize;
-        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + blockoffset);
+        struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + (offset % blocksize));
 
         sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
 
