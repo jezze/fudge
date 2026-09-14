@@ -1,99 +1,104 @@
 #include <fudge.h>
 #include <kernel.h>
 
-/*
-static unsigned int cores_read(void *buffer, unsigned int count, unsigned int offset)
+static struct node_operands operands;
+static unsigned int inode;
+
+static unsigned int read(unsigned int id)
 {
-
-    struct resource *resource = 0;
-    unsigned int n = offset / sizeof (struct event_coreinfo);
-    unsigned int o = offset % sizeof (struct event_coreinfo);
-    unsigned int i;
-
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
-    {
-
-        if (i == n)
-        {
-
-            struct core *core = resource->data;
-            struct event_coreinfo coreinfo;
-
-            coreinfo.id = core->id;
-            coreinfo.sp = core->sp;
-            coreinfo.task = core->itask;
-
-            return buffer_read(buffer, count, &coreinfo, sizeof (struct event_coreinfo), o);
-
-        }
-
-    }
 
     return 0;
 
 }
 
-static unsigned int tasks_read(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int stat(unsigned int id)
 {
-
-    struct resource *resource = 0;
-    unsigned int n = offset / sizeof (struct event_taskinfo);
-    unsigned int o = offset % sizeof (struct event_taskinfo);
-    unsigned int i;
-
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_TASK)); i++)
-    {
-
-        if (i == n)
-        {
-
-            struct task *task = resource->data;
-            struct event_taskinfo taskinfo;
-
-            taskinfo.id = task->id;
-            taskinfo.state = task->state;
-            taskinfo.thread_ip = task->thread.ip;
-            taskinfo.thread_sp = task->thread.sp;
-            taskinfo.signals_kills = task->signals.kills;
-            taskinfo.signals_blocks = task->signals.blocks;
-
-            return buffer_read(buffer, count, &taskinfo, sizeof (struct event_taskinfo), o);
-
-        }
-
-    }
 
     return 0;
 
 }
 
-static unsigned int mailboxes_read(void *buffer, unsigned int count, unsigned int offset)
+static unsigned int walk(unsigned int parent)
 {
 
-    struct resource *resource = 0;
-    unsigned int n = offset / sizeof (struct event_mailboxinfo);
-    unsigned int o = offset % sizeof (struct event_mailboxinfo);
-    unsigned int i;
+    return 1;
 
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_MAILBOX)); i++)
+}
+
+static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    unsigned char buffer[MESSAGE_SIZE];
+    struct event_readrequest *request = data;
+    struct event_readresponse *response = (struct event_readresponse *)buffer;
+
+    response->count = read(request->id);
+
+    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+
+}
+
+static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    unsigned char buffer[MESSAGE_SIZE];
+    struct event_statrequest *request = data;
+    struct event_statresponse *response = (struct event_statresponse *)buffer;
+
+    response->count = stat(request->id);
+
+    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
+
+}
+
+static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
+{
+
+    struct event_walkrequest *request = data;
+    struct event_walkresponse response;
+
+    response.id = walk(request->parent);;
+
+    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+
+}
+
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+{
+
+    switch (event)
     {
 
-        if (i == n)
-        {
+    case EVENT_READREQUEST:
+        return onreadrequest(source, count, data);
 
-            struct mailbox *mailbox = resource->data;
-            struct event_mailboxinfo mailboxinfo;
+    case EVENT_STATREQUEST:
+        return onstatrequest(source, count, data);
 
-            mailboxinfo.address = (unsigned int)mailbox->ring.buffer;
-
-            return buffer_read(buffer, count, &mailboxinfo, sizeof (struct event_mailboxinfo), o);
-
-        }
+    case EVENT_WALKREQUEST:
+        return onwalkrequest(source, count, data);
 
     }
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
-*/
+
+void module_init(void)
+{
+
+    inode = pool_picknode();
+
+    node_operands_init(&operands, 0, operands_place);
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, "sysinfo", 0, &operands);
+
+    }
+
+}
 
