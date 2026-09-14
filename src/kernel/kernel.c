@@ -45,7 +45,19 @@ static void destroytask(unsigned int itask)
         {
 
             if (task->imailbox[i])
-                pool_unpickmailbox(task->imailbox[i]);
+            {
+
+                struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
+
+                if (mailbox)
+                {
+
+                    mailbox_reset(mailbox, 0, 0);
+                    pool_unpickmailbox(task->imailbox[i]);
+
+                }
+
+            }
 
         }
 
