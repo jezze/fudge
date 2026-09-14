@@ -3,6 +3,7 @@
 
 static struct node_operands operands;
 static unsigned int inode;
+static struct record rootrecords[3];
 
 static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
 {
@@ -22,60 +23,20 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
 static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
 {
 
-    unsigned int crecords = 0;
+    unsigned int total = 3;
+    unsigned int c = 0;
+    unsigned int i;
 
-    if (offset < 1)
+    for (i = offset; i < total; i++)
     {
 
-        struct record *record = &records[crecords];
+        buffer_copy(&records[c], &rootrecords[i], sizeof (struct record));
 
-        record->id = 2;
-        record->offset = 1;
-        record->type = RECORD_TYPE_DIRECTORY;
-        record->size = 0;
-        record->length = 5;
-
-        buffer_write(record->name, RECORD_NAMESIZE, "cores", record->length, 0);
-
-        crecords++;
+        c++;
 
     }
 
-    if (offset < 2)
-    {
-
-        struct record *record = &records[crecords];
-
-        record->id = 3;
-        record->offset = 2;
-        record->type = RECORD_TYPE_DIRECTORY;
-        record->size = 0;
-        record->length = 5;
-
-        buffer_write(record->name, RECORD_NAMESIZE, "tasks", record->length, 0);
-
-        crecords++;
-
-    }
-
-    if (offset < 3)
-    {
-
-        struct record *record = &records[crecords];
-
-        record->id = 4;
-        record->offset = 3;
-        record->type = RECORD_TYPE_DIRECTORY;
-        record->size = 0;
-        record->length = 5;
-
-        buffer_write(record->name, RECORD_NAMESIZE, "nodes", record->length, 0);
-
-        crecords++;
-
-    }
-
-    return crecords * sizeof (struct record);
+    return c * sizeof (struct record);
 
 }
 
@@ -173,6 +134,8 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void module_init(void)
 {
 
+    struct record *record;
+
     inode = pool_picknode();
 
     node_operands_init(&operands, 0, operands_place);
@@ -185,6 +148,36 @@ void module_init(void)
         node_reset(node, "sysinfo", 0, &operands);
 
     }
+
+    record = &rootrecords[0];
+
+    record->id = 1001;
+    record->offset = 1;
+    record->type = RECORD_TYPE_DIRECTORY;
+    record->size = 0;
+    record->length = 5;
+
+    buffer_write(record->name, RECORD_NAMESIZE, "cores", record->length, 0);
+
+    record = &rootrecords[1];
+
+    record->id = 1002;
+    record->offset = 2;
+    record->type = RECORD_TYPE_DIRECTORY;
+    record->size = 0;
+    record->length = 5;
+
+    buffer_write(record->name, RECORD_NAMESIZE, "tasks", record->length, 0);
+
+    record = &rootrecords[2];
+
+    record->id = 1003;
+    record->offset = 3;
+    record->type = RECORD_TYPE_DIRECTORY;
+    record->size = 0;
+    record->length = 5;
+
+    buffer_write(record->name, RECORD_NAMESIZE, "nodes", record->length, 0);
 
 }
 
