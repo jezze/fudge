@@ -358,21 +358,16 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
 static void getrecord(struct ext2_entry *entry, struct record *record, unsigned int offset)
 {
 
-    record->id = entry->node;
-    record->size = 0;
-    record->offset = offset + entry->size;
-    record->length = buffer_write(record->name, RECORD_NAMESIZE, entry + 1, entry->length, 0);
-
     switch (entry->type)
     {
 
     case 1:
-        record->type = RECORD_TYPE_NORMAL;
+        record_init(record, entry->node, RECORD_TYPE_NORMAL, 0, offset + entry->size, entry->length, (char *)(entry + 1));
 
         break;
 
     case 2:
-        record->type = RECORD_TYPE_DIRECTORY;
+        record_init(record, entry->node, RECORD_TYPE_DIRECTORY, 0, offset + entry->size, entry->length, (char *)(entry + 1));
 
         break;
 

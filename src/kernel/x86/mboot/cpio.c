@@ -121,21 +121,16 @@ static unsigned int getrecord(unsigned int id, struct record *record)
             if (pheader)
             {
 
-                record->id = id;
-                record->size = cpio_filesize(header);
-                record->offset = getnext(id) - address;
-                record->length = buffer_read(record->name, RECORD_NAMESIZE, header + 1, header->namesize - 1, pheader->namesize);
-
                 switch (header->mode & 0xF000)
                 {
 
                 case 0x4000:
-                    record->type = RECORD_TYPE_DIRECTORY;
+                    record_init(record, id, RECORD_TYPE_DIRECTORY, cpio_filesize(header), getnext(id) - address, header->namesize - pheader->namesize - 1, (char *)(header + 1) + pheader->namesize);
 
                     break;
 
                 case 0x8000:
-                    record->type = RECORD_TYPE_NORMAL;
+                    record_init(record, id, RECORD_TYPE_NORMAL, cpio_filesize(header), getnext(id) - address, header->namesize - pheader->namesize - 1, (char *)(header + 1) + pheader->namesize);
 
                     break;
 
