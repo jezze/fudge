@@ -7,24 +7,33 @@ static struct node_operands operands;
 static unsigned int inode;
 static struct record rootrecords[ROOTRECORDS];
 
-static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
+static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
-    struct resource *resource = 0;
-    unsigned int i;
+    struct record *records = data;
+    unsigned int nrecords = count / sizeof (struct record);
+    struct resource *resource = (struct resource *)offset;
+    unsigned int c;
 
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
+    for (c = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); c++)
     {
+
+        if (c >= nrecords)
+            break;
+
+        record_init(&records[c], (unsigned int)resource, RECORD_TYPE_NORMAL, 0, (unsigned int)resource_foreachtype(resource, RESOURCE_CORE), 5, "core0");
 
     }
 
-    return 0;
+    return c * sizeof (struct record);
 
 }
 
-static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
+static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
+    struct record *records = data;
+    unsigned int nrecords = count / sizeof (struct record);
     unsigned int total = (nrecords < ROOTRECORDS) ? nrecords : ROOTRECORDS;
     unsigned int c = 0;
     unsigned int i;
@@ -42,17 +51,17 @@ static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int 
 
 }
 
-static unsigned int read(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
+static unsigned int read(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
     switch (id)
     {
 
     case 0x0001:
-        return readroot(id, offset, count, nrecords, records);
+        return readroot(id, offset, count, data);
 
     case 0x1001:
-        return readcores(id, offset, count, nrecords, records);
+        return readcores(id, offset, count, data);
 
     }
 
@@ -60,7 +69,7 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
 
 }
 
-static unsigned int stat(unsigned int id, struct record *record)
+static unsigned int stat(unsigned int id, void *data)
 {
 
     unsigned int group = id >> 12;
@@ -81,7 +90,7 @@ static unsigned int stat(unsigned int id, struct record *record)
             if (current->id == id)
             {
 
-                buffer_copy(record, current, sizeof (struct record));
+                buffer_copy(data, current, sizeof (struct record));
 
                 return sizeof (struct record);
 
@@ -138,7 +147,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
 
-    response->count = read(request->id, request->offset, request->count, (MESSAGE_SIZE - sizeof (struct event_readresponse)) / sizeof (struct record), (struct record *)(response + 1));
+    response->count = read(request->id, request->offset, request->count, response + 1);
 
     return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
@@ -151,7 +160,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statrequest *request = data;
     struct event_statresponse *response = (struct event_statresponse *)buffer;
 
-    response->count = stat(request->id, (struct record *)(response + 1));
+    response->count = stat(request->id, response + 1);
 
     return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
 
