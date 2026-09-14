@@ -131,14 +131,28 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
+static void record_init(struct record *record, unsigned int id, unsigned int type, unsigned int size, unsigned int offset, unsigned int length, char *name)
+{
+
+    record->id = id;
+    record->type = type;
+    record->size = size;
+    record->offset = offset;
+    record->length = length;
+
+    buffer_write(record->name, RECORD_NAMESIZE, name, record->length, 0);
+
+}
+
 void module_init(void)
 {
 
-    struct record *record;
+    record_init(&rootrecords[0], 1001, RECORD_TYPE_DIRECTORY, 0, 1, 5, "cores");
+    record_init(&rootrecords[1], 1002, RECORD_TYPE_DIRECTORY, 0, 2, 5, "tasks");
+    record_init(&rootrecords[2], 1003, RECORD_TYPE_DIRECTORY, 0, 3, 5, "nodes");
+    node_operands_init(&operands, 0, operands_place);
 
     inode = pool_picknode();
-
-    node_operands_init(&operands, 0, operands_place);
 
     if (inode)
     {
@@ -148,36 +162,6 @@ void module_init(void)
         node_reset(node, "sysinfo", 0, &operands);
 
     }
-
-    record = &rootrecords[0];
-
-    record->id = 1001;
-    record->offset = 1;
-    record->type = RECORD_TYPE_DIRECTORY;
-    record->size = 0;
-    record->length = 5;
-
-    buffer_write(record->name, RECORD_NAMESIZE, "cores", record->length, 0);
-
-    record = &rootrecords[1];
-
-    record->id = 1002;
-    record->offset = 2;
-    record->type = RECORD_TYPE_DIRECTORY;
-    record->size = 0;
-    record->length = 5;
-
-    buffer_write(record->name, RECORD_NAMESIZE, "tasks", record->length, 0);
-
-    record = &rootrecords[2];
-
-    record->id = 1003;
-    record->offset = 3;
-    record->type = RECORD_TYPE_DIRECTORY;
-    record->size = 0;
-    record->length = 5;
-
-    buffer_write(record->name, RECORD_NAMESIZE, "nodes", record->length, 0);
 
 }
 
