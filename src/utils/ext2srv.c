@@ -164,10 +164,13 @@ static unsigned int allocblock(unsigned int blockgroup)
     for (i = 0; i < sb.blockCountGroup; i++)
     {
 
-        if (!(bitmap[i / 8] & (1 << (i % 8))))
+        unsigned int index = i / 8;
+        unsigned int bit = 1 << (i % 8);
+
+        if (!(bitmap[index] & bit))
         {
 
-            bitmap[i / 8] |= 1 << (i % 8);
+            bitmap[index] |= bit;
 
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
 
@@ -202,10 +205,13 @@ static unsigned int allocnode(unsigned int igroup)
     for (i = 0; i < sb.nodeCountGroup; i++)
     {
 
-        if (!(bitmap[i / 8] & (1 << (i % 8))))
+        unsigned int index = i / 8;
+        unsigned int bit = 1 << (i % 8);
+
+        if (!(bitmap[index] & bit))
         {
 
-            bitmap[i / 8] |= 1 << (i % 8);
+            bitmap[index] |= bit;
 
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
 
