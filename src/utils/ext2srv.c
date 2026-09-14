@@ -879,9 +879,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         if (ext2_validate(&sb))
         {
 
-            char *service = option_getstring("service");
-
-            call_announce(0, djb_hash(cstring_length(service), service));
+            call_announce(0, option_getstring("service"));
 
             while (channel_process(0));
 

@@ -178,10 +178,10 @@ static unsigned int place(unsigned int itask, void *stack)
 static unsigned int announce(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int namehash;} *args = stack;
+    struct {void *caller; unsigned int ichannel; char *name;} *args = stack;
     unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
 
-    return (inode) ? kernel_announce(inode, args->namehash) : 0;
+    return (inode) ? kernel_announce(inode, args->name) : 0;
 
 }
 

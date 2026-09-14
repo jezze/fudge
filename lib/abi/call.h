@@ -1,4 +1,4 @@
-unsigned int call_announce(unsigned int ichannel, unsigned int namehash);
+unsigned int call_announce(unsigned int ichannel, char *name);
 unsigned int call_debug(char *message);
 unsigned int call_despawn(void);
 unsigned int call_find(unsigned int namehash, unsigned int index);

@@ -1,10 +1,11 @@
 #include <fudge.h>
 #include <kernel.h>
 
-#define ROOTRECORDS                     3
+#define ROOTRECORDS                     4
 #define GCORES                          0x01000
 #define GTASKS                          0x04000
 #define GMAILBOXES                      0x06000
+#define GNODES                          0x08000
 
 static struct node_operands operands;
 static unsigned int inode;
@@ -130,6 +131,46 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
 
 }
 
+static unsigned int readnodes(unsigned int id, unsigned int offset, unsigned int count, void *data)
+{
+
+    struct record *records = data;
+    unsigned int nrecords = count / sizeof (struct record);
+    struct resource *resource = 0;
+    unsigned int c = 0;
+    unsigned int i;
+
+    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_NODE)); i++)
+    {
+
+        if (c >= nrecords)
+            break;
+
+        if (i >= offset)
+        {
+
+            struct node *node = resource->data;
+
+            if (node && node->namehash)
+            {
+
+                char name[RECORD_NAMESIZE];
+                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "node%u", &i);
+
+                record_init(&records[c], GNODES + i, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
+
+                c++;
+
+            }
+
+        }
+
+    }
+
+    return c * sizeof (struct record);
+
+}
+
 static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
@@ -169,6 +210,9 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
 
     case 0x1003:
         return readmailboxes(id, offset, count, data);
+
+    case 0x1004:
+        return readnodes(id, offset, count, data);
 
     }
 
@@ -315,6 +359,7 @@ void module_init(void)
     record_init(&rootrecords[0], 0x1001, RECORD_TYPE_DIRECTORY, 0, 1, 5, "cores");
     record_init(&rootrecords[1], 0x1002, RECORD_TYPE_DIRECTORY, 0, 2, 5, "tasks");
     record_init(&rootrecords[2], 0x1003, RECORD_TYPE_DIRECTORY, 0, 3, 9, "mailboxes");
+    record_init(&rootrecords[3], 0x1004, RECORD_TYPE_DIRECTORY, 0, 4, 5, "nodes");
     node_operands_init(&operands, 0, operands_place);
 
     inode = pool_picknode();

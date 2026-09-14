@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include "resource.h"
 #include "debug.h"
 #include "mmap.h"
@@ -218,7 +219,7 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
 
             struct node *node = pool_getnode(inode);
 
-            node_reset(node, 0, snode->resource, snode->operands);
+            node_reset(node, 0, snode->reference, snode->operands);
             pool_placenode(inode, &tnode->links);
 
             return MESSAGE_OK;
@@ -253,7 +254,7 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
 
             next = current->next;
 
-            if (node->resource == snode->resource)
+            if (node->reference == snode->reference)
             {
 
                 list_remove_unsafe(&tnode->links, current);
@@ -356,7 +357,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message)
 
     struct node *snode = pool_getnode(source);
 
-    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->resource, source, message) : MESSAGE_FAILED;
+    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->reference, source, message) : MESSAGE_FAILED;
 
 }
 
@@ -365,16 +366,24 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
     struct node *tnode = pool_getnode(target);
 
-    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(tnode->resource, source, target, event, count, data) : MESSAGE_FAILED;
+    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(tnode->reference, source, target, event, count, data) : MESSAGE_FAILED;
 
 }
 
-unsigned int kernel_announce(unsigned int inode, unsigned int namehash)
+unsigned int kernel_announce(unsigned int inode, char *name)
 {
 
     struct node *node = pool_getnode(inode);
 
-    return (node) ? node->namehash = namehash : 0;
+    if (node)
+    {
+
+        node->name = name;
+        node->namehash = djb_hash(cstring_length(name), name);
+
+    }
+
+    return 0;
 
 }
 
