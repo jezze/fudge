@@ -13,3 +13,5 @@ struct record
     char name[RECORD_NAMESIZE];
 
 };
+
+void record_init(struct record *record, unsigned int id, unsigned int type, unsigned int size, unsigned int offset, unsigned int length, char *name);

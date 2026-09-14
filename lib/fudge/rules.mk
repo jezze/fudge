@@ -4,6 +4,7 @@ L:=\
 O:=\
     $(DIR_LIB)/fudge/base64.o \
     $(DIR_LIB)/fudge/buffer.o \
+    $(DIR_LIB)/fudge/record.o \
     $(DIR_LIB)/fudge/cstring.o \
     $(DIR_LIB)/fudge/keys.o \
     $(DIR_LIB)/fudge/list.o \

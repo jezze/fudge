@@ -131,19 +131,6 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
-static void record_init(struct record *record, unsigned int id, unsigned int type, unsigned int size, unsigned int offset, unsigned int length, char *name)
-{
-
-    record->id = id;
-    record->type = type;
-    record->size = size;
-    record->offset = offset;
-    record->length = length;
-
-    buffer_write(record->name, RECORD_NAMESIZE, name, record->length, 0);
-
-}
-
 void module_init(void)
 {
 
