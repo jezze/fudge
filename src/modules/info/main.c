@@ -1,9 +1,11 @@
 #include <fudge.h>
 #include <kernel.h>
 
+#define ROOTRECORDS                     3
+
 static struct node_operands operands;
 static unsigned int inode;
-static struct record rootrecords[3];
+static struct record rootrecords[ROOTRECORDS];
 
 static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
 {
@@ -23,7 +25,7 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
 static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, unsigned int nrecords, struct record *records)
 {
 
-    unsigned int total = (nrecords < 3) ? nrecords : 3;
+    unsigned int total = (nrecords < ROOTRECORDS) ? nrecords : ROOTRECORDS;
     unsigned int c = 0;
     unsigned int i;
 
@@ -46,10 +48,10 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
     switch (id)
     {
 
-    case 1:
+    case 0x0001:
         return readroot(id, offset, count, nrecords, records);
 
-    case 2:
+    case 0x1001:
         return readcores(id, offset, count, nrecords, records);
 
     }
@@ -58,17 +60,74 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
 
 }
 
-static unsigned int stat(unsigned int id)
+static unsigned int stat(unsigned int id, struct record *record)
 {
+
+    unsigned int group = id >> 12;
+    unsigned int i;
+
+    switch (group)
+    {
+
+    case 0:
+        break;
+
+    case 1:
+        for (i = 0; i < ROOTRECORDS; i++)
+        {
+
+            struct record *current = &rootrecords[i];
+
+            if (current->id == id)
+            {
+
+                buffer_copy(record, current, sizeof (struct record));
+
+                return sizeof (struct record);
+
+            }
+
+        }
+
+        break;
+
+    }
 
     return 0;
 
 }
 
-static unsigned int walk(unsigned int parent)
+static unsigned int walkroot(unsigned int parent, unsigned int length, char *path)
 {
 
-    return 1;
+    unsigned int i;
+
+    for (i = 0; i < ROOTRECORDS; i++)
+    {
+
+        struct record *record = &rootrecords[i];
+
+        if (record->length == length && buffer_match(record->name, path, record->length))
+            return record->id;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int walk(unsigned int parent, unsigned int length, char *path)
+{
+
+    switch (parent)
+    {
+
+    case 1:
+        return walkroot(parent, length, path);
+
+    }
+
+    return 0;
 
 }
 
@@ -92,7 +151,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statrequest *request = data;
     struct event_statresponse *response = (struct event_statresponse *)buffer;
 
-    response->count = stat(request->id);
+    response->count = stat(request->id, (struct record *)(response + 1));
 
     return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
 
@@ -104,7 +163,10 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct event_walkrequest *request = data;
     struct event_walkresponse response;
 
-    response.id = walk(request->parent);;
+    if (request->parent)
+        response.id = walk(request->parent, request->length, (char *)(request + 1));
+    else
+        response.id = 1;
 
     return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
@@ -134,9 +196,9 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void module_init(void)
 {
 
-    record_init(&rootrecords[0], 1001, RECORD_TYPE_DIRECTORY, 0, 1, 5, "cores");
-    record_init(&rootrecords[1], 1002, RECORD_TYPE_DIRECTORY, 0, 2, 5, "tasks");
-    record_init(&rootrecords[2], 1003, RECORD_TYPE_DIRECTORY, 0, 3, 5, "nodes");
+    record_init(&rootrecords[0], 0x1001, RECORD_TYPE_DIRECTORY, 0, 1, 5, "cores");
+    record_init(&rootrecords[1], 0x1002, RECORD_TYPE_DIRECTORY, 0, 2, 5, "tasks");
+    record_init(&rootrecords[2], 0x1003, RECORD_TYPE_DIRECTORY, 0, 3, 5, "nodes");
     node_operands_init(&operands, 0, operands_place);
 
     inode = pool_picknode();
