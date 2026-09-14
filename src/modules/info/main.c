@@ -2,6 +2,9 @@
 #include <kernel.h>
 
 #define ROOTRECORDS                     3
+#define GCORES                          0x01000
+#define GTASKS                          0x04000
+#define GMAILBOXES                      0x06000
 
 static struct node_operands operands;
 static unsigned int inode;
@@ -19,18 +22,105 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
     {
 
+        if (c >= nrecords)
+            break;
+
         if (i >= offset)
         {
 
-            char name[RECORD_NAMESIZE];
-            unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "core%u", &i);
+            struct core *core = resource->data;
 
-            if (c >= nrecords)
-                break;
+            if (core)
+            {
 
-            record_init(&records[c], 0x4000 + i, RECORD_TYPE_NORMAL, 0, i + 1, cname, name);
+                char name[RECORD_NAMESIZE];
+                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "core%u", &i);
 
-            c++;
+                record_init(&records[c], GCORES + i + 1, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
+
+                c++;
+
+            }
+
+        }
+
+    }
+
+    return c * sizeof (struct record);
+
+}
+
+static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int count, void *data)
+{
+
+    struct record *records = data;
+    unsigned int nrecords = count / sizeof (struct record);
+    struct resource *resource = 0;
+    unsigned int c = 0;
+    unsigned int i;
+
+    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_TASK)); i++)
+    {
+
+        if (c >= nrecords)
+            break;
+
+        if (i >= offset)
+        {
+
+            struct task *task = resource->data;
+
+            if (task && task->state != TASK_STATE_DEAD)
+            {
+
+                char name[RECORD_NAMESIZE];
+                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "task%u", &i);
+
+                record_init(&records[c], GTASKS + i, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
+
+                c++;
+
+            }
+
+        }
+
+    }
+
+    return c * sizeof (struct record);
+
+}
+
+static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned int count, void *data)
+{
+
+    struct record *records = data;
+    unsigned int nrecords = count / sizeof (struct record);
+    struct resource *resource = 0;
+    unsigned int c = 0;
+    unsigned int i;
+
+    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_MAILBOX)); i++)
+    {
+
+        if (c >= nrecords)
+            break;
+
+        if (i >= offset)
+        {
+
+            struct mailbox *mailbox = resource->data;
+
+            if (mailbox && mailbox->itask)
+            {
+
+                char name[RECORD_NAMESIZE];
+                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "mailbox%u", &i);
+
+                record_init(&records[c], GMAILBOXES + i, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
+
+                c++;
+
+            }
 
         }
 
@@ -73,6 +163,12 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
 
     case 0x1001:
         return readcores(id, offset, count, data);
+
+    case 0x1002:
+        return readtasks(id, offset, count, data);
+
+    case 0x1003:
+        return readmailboxes(id, offset, count, data);
 
     }
 
@@ -218,7 +314,7 @@ void module_init(void)
 
     record_init(&rootrecords[0], 0x1001, RECORD_TYPE_DIRECTORY, 0, 1, 5, "cores");
     record_init(&rootrecords[1], 0x1002, RECORD_TYPE_DIRECTORY, 0, 2, 5, "tasks");
-    record_init(&rootrecords[2], 0x1003, RECORD_TYPE_DIRECTORY, 0, 3, 5, "nodes");
+    record_init(&rootrecords[2], 0x1003, RECORD_TYPE_DIRECTORY, 0, 3, 9, "mailboxes");
     node_operands_init(&operands, 0, operands_place);
 
     inode = pool_picknode();
