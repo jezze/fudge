@@ -4,7 +4,7 @@ set -e
 
 qemu_bin="qemu-system-x86_64"
 qemu_flags="-nodefaults -enable-kvm"
-qemu_flags_run="-smp 4 -m 128 -kernel fudge -initrd fudge.cpio,build/root/bin/init -vga std -serial stdio"
+qemu_flags_run="-smp 4 -m 128 -vga std -serial stdio"
 qemu_flags_runiso="-smp 4 -m 128 -cdrom fudge.iso -vga std -serial stdio"
 
 error() {
@@ -16,6 +16,8 @@ getdisk() {
     if test -f "disks/node-$1-sda.qcow2"
     then
         echo "-drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
+    else
+        echo "-kernel fudge -initrd fudge.cpio,build/root/bin/init"
     fi
 }
 
@@ -146,28 +148,38 @@ cmd_disk_setup() {
 
     cmd_disk_connect "${1}"
 
-    echo "label: dos" | sfdisk "${device}"
-    echo ",512M,0xEF,*" | sfdisk --append "${device}"
-    echo ",512M,0x83" | sfdisk --append "${device}"
-    echo ",1G,0x83" | sfdisk --append "${device}"
+    echo -n "Creating partitions... "
+    echo "label: dos" | sfdisk -q "${device}"
+    echo ",512M,0xEF,*" | sfdisk -q --append "${device}"
+    echo ",512M,0x83" | sfdisk -q --append "${device}"
+    echo ",1G,0x83" | sfdisk -q --append "${device}"
+    echo "done"
 
+    echo -n "Creating filesystems... "
     mkfs.fat -F 32 "${partuefi}"
-    mkfs.ext2 "${partboot}"
-    mkfs.ext2 "${partroot}"
+    mkfs.ext2 -q "${partboot}"
+    mkfs.ext2 -q "${partroot}"
+    echo "done"
 
-    mkdir -p "/disks/mnt"
+    mkdir -p "disks/mnt"
 
-    mount "${partuefi}" "/disks/mnt"
-    test -d "build/uefi" && cp -r "build/uefi/." "/disks/mnt"
-    umount "/disks/mnt"
+    echo -n "Mount filesystems... "
+    mount "${partroot}" "disks/mnt"
+    test -d "build/root" && cp -r "build/root/." "disks/mnt"
+    mount "${partboot}" "disks/mnt/boot"
+    test -d "build/boot" && cp -r "build/boot/." "disks/mnt/boot"
+    mount "${partuefi}" "disks/mnt/boot/efi"
+    test -d "build/uefi" && cp -r "build/uefi/." "disks/mnt/boot/efi"
+    echo "done"
 
-    mount "${partboot}" "/disks/mnt"
-    test -d "build/boot" && cp -r "build/boot/." "/disks/mnt"
-    umount "/disks/mnt"
+    echo -n "Install GRUB... "
+    grub-install --target=i386-pc --boot-directory=disks/mnt/boot "${device}"
+    grub-install --target=x86_64-efi --efi-directory=disks/mnt/boot/efi --bootloader-id=GRUB --boot-directory=disks/mnt/boot
+    echo "done"
 
-    mount "${partroot}" "/disks/mnt"
-    test -d "build/root" && cp -r "build/root/." "/disks/mnt"
-    umount "/disks/mnt"
+    echo -n "Unmount filesystems... "
+    umount -R "disks/mnt"
+    echo "done"
 
     cmd_disk_disconnect "${1}"
 }

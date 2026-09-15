@@ -129,10 +129,14 @@ $(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
 	@mkdir -p $@
 	@cp $(KERNEL) $@
 	@cp $(RAMDISK) $@
+	@mkdir -p $@/efi
+	@mkdir -p $@/grub
+	@cp grub.cfg $@/grub
 
 $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@echo BUILD ROOT $@
 	@mkdir -p $@
+	@mkdir -p $@/boot
 	@mkdir -p $@/lib
 	@cp $(LIB) $@/lib
 	@mkdir -p $@/bin
