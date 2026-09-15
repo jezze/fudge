@@ -158,17 +158,15 @@ cmd_disk_setup() {
     mkdir -p "/disks/mnt"
 
     mount "${partuefi}" "/disks/mnt"
-    mkdir -p "/disks/mnt/EFI/BOOT"
-    test -f "src/kernel/x86/uefi/uefi.efi" && cp "src/kernel/x86/uefi/uefi.efi" "/disks/mnt/EFI/BOOT/BOOTX64.EFI"
+    test -d "build/uefi" && cp -r "build/uefi/." "/disks/mnt"
     umount "/disks/mnt"
 
     mount "${partboot}" "/disks/mnt"
-    test -f "fudge" && cp "fudge" "/disks/mnt"
-    test -f "fudge.cpio" && cp "fudge.cpio" "/disks/mnt"
+    test -d "build/boot" && cp -r "build/boot/." "/disks/mnt"
     umount "/disks/mnt"
 
     mount "${partroot}" "/disks/mnt"
-    test -d "build" && cp -r "build/." "/disks/mnt"
+    test -d "build/root" && cp -r "build/root/." "/disks/mnt"
     umount "/disks/mnt"
 
     cmd_disk_disconnect "${1}"
