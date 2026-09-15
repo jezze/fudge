@@ -4,7 +4,7 @@ set -e
 
 qemu_bin="qemu-system-x86_64"
 qemu_flags="-nodefaults -enable-kvm"
-qemu_flags_run="-smp 4 -m 128 -kernel fudge -initrd fudge.img -vga std -serial stdio"
+qemu_flags_run="-smp 4 -m 128 -kernel fudge -initrd fudge.cpio,build/root/bin/init -vga std -serial stdio"
 qemu_flags_runiso="-smp 4 -m 128 -cdrom fudge.iso -vga std -serial stdio"
 
 error() {

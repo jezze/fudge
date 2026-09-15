@@ -2,8 +2,6 @@ CONFIG:=config
 KERNEL:=fudge
 RAMDISK_TYPE:=cpio
 RAMDISK:=$(KERNEL).$(RAMDISK_TYPE)
-IMAGE_TYPE:=img
-IMAGE=$(KERNEL).$(IMAGE_TYPE)
 ISO_TYPE:=iso
 ISO=$(KERNEL).$(ISO_TYPE)
 DIR_BUILD:=build
@@ -22,14 +20,10 @@ REPORT:=report.xml
 .PHONY: all clean check check-full install default help
 .SUFFIXES:
 
-all: image
-
-prep: $(DIR_BUILDBOOT) $(DIR_BUILDROOT) $(DIR_BUILDUEFI)
-
-image: $(IMAGE) | prep
+all: $(DIR_BUILDBOOT) $(DIR_BUILDROOT) $(DIR_BUILDUEFI)
 
 clean:
-	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(IMAGE) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD) $(REPORT)
+	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD) $(REPORT)
 
 check:
 	@cppcheck -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) --std=c89 --report-progress --xml --enable=all --check-level=exhaustive --suppress=unusedStructMember --suppress=constParameterPointer --suppress=constVariablePointer --suppress=constParameterCallback --suppress=unusedFunction --suppress=cert-API01-C --suppress=cert-EXP15-C --suppress=cert-STR05-C . 2> $(REPORT)
@@ -176,13 +170,6 @@ $(KERNEL).tar: $(DIR_BUILDROOT)
 $(KERNEL).cpio: $(DIR_BUILDROOT)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o > $@
-
-$(KERNEL).img: $(KERNEL) $(RAMDISK) $(DIR_SRC)/utils/init
-	@echo IMAGE $@
-	@dd if=/dev/zero of=$@ bs=512 count=16384
-	@dd if=$(KERNEL) of=$@ bs=512 seek=2048 conv=notrunc
-	@dd if=$(DIR_SRC)/utils/init of=$@ bs=512 seek=3584 conv=notrunc
-	@dd if=$(RAMDISK) of=$@ bs=512 seek=4096 conv=notrunc
 
 $(KERNEL).iso: $(DIR_ISO)
 	@grub-mkrescue -o $@ $^
