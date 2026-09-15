@@ -91,9 +91,11 @@ static unsigned short getdata(unsigned int id)
 
 }
 
-static void setpio28(unsigned int id, unsigned short data, unsigned short control, unsigned int sector, unsigned int count, unsigned char command)
+static void setpio28(unsigned int id, unsigned int sector, unsigned int count, unsigned char command)
 {
 
+    unsigned short data = getdata(id);
+    unsigned short control = getcontrol(id);
     unsigned int select = 0xE0 | ((sector >> 24) & 0x0F);
 
     switch (id)
@@ -118,9 +120,11 @@ static void setpio28(unsigned int id, unsigned short data, unsigned short contro
 
 }
 
-static void setpio48(unsigned int id, unsigned short data, unsigned short control, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, unsigned char command)
+static void setpio48(unsigned int id, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, unsigned char command)
 {
 
+    unsigned short data = getdata(id);
+    unsigned short control = getcontrol(id);
     unsigned int select = 0x40;
 
     switch (id)
@@ -226,40 +230,28 @@ unsigned int ide_wblock(unsigned int id, void *buffer)
 void ide_rpio28(unsigned int id, unsigned int count, unsigned int sector)
 {
 
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    setpio28(id, data, control, sector, count, REG_COMMAND_PIO28READ);
+    setpio28(id, sector, count, REG_COMMAND_PIO28READ);
 
 }
 
 void ide_wpio28(unsigned int id, unsigned int count, unsigned int sector)
 {
 
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    setpio28(id, data, control, sector, count, REG_COMMAND_PIO28WRITE);
+    setpio28(id, sector, count, REG_COMMAND_PIO28WRITE);
 
 }
 
 void ide_rpio48(unsigned int id, unsigned int count, unsigned int sector)
 {
 
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    setpio48(id, data, control, sector, 0, count, REG_COMMAND_PIO48READ);
+    setpio48(id, sector, 0, count, REG_COMMAND_PIO48READ);
 
 }
 
 void ide_wpio48(unsigned int id, unsigned int count, unsigned int sector)
 {
 
-    unsigned short data = getdata(id);
-    unsigned short control = getcontrol(id);
-
-    setpio48(id, data, control, sector, 0, count, REG_COMMAND_PIO48WRITE);
+    setpio48(id, sector, 0, count, REG_COMMAND_PIO48WRITE);
 
 }
 
