@@ -3,9 +3,7 @@
 set -e
 
 qemu_bin="qemu-system-x86_64"
-qemu_flags="-nodefaults -enable-kvm"
-qemu_flags_run="-smp 4 -m 128 -vga std -serial stdio"
-qemu_flags_runiso="-smp 4 -m 128 -cdrom fudge.iso -vga std -serial stdio"
+qemu_flags="-nodefaults -enable-kvm -smp 4 -m 128 -vga std -serial stdio"
 
 error() {
     echo "${1}" 2>&1
@@ -16,6 +14,9 @@ getdisk() {
     if test -f "disks/node-$1-sda.qcow2"
     then
         echo "-drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
+    elif test -f "fudge.iso"
+    then
+        echo "-cdrom fudge.iso"
     else
         echo "-kernel fudge -initrd fudge.cpio,build/root/bin/init"
     fi
@@ -37,19 +38,19 @@ run() {
 }
 
 cmd_run() {
-    run $1 "$qemu_flags_run $(getnetwork $1) $(getdisk $1)"
+    run $1 "$(getnetwork $1) $(getdisk $1)"
 }
 
 cmd_runsimple() {
-    run $1 "$qemu_flags_run $(getdisk $1)"
+    run $1 "$(getdisk $1)"
 }
 
 cmd_runiso() {
-    run $1 "$qemu_flags_runiso $(getnetwork $1) $(getdisk $1)"
+    run $1 "$(getnetwork $1) $(getdisk $1)"
 }
 
 cmd_runisosimple() {
-    run $1 "$qemu_flags_runiso $(getdisk $1)"
+    run $1 "$(getdisk $1)"
 }
 
 cmd_nat() {
