@@ -123,7 +123,7 @@ static void videointerface_onvideoconf(unsigned int width, unsigned int height, 
         videointerface.height = mode->height;
         videointerface.bpp = mode->bpp / 8;
 
-        arch_kmap(mode->framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+        arch_kmap(mode->framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
         vbe_setvideomode(modenum | 0x4000);
 
     }

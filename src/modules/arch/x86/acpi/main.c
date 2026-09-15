@@ -105,7 +105,7 @@ void module_init(void)
                 unsigned long address = (xsdp->xsdt[0] << 0) | (xsdp->xsdt[1] << 8) | (xsdp->xsdt[2] << 16) | (xsdp->xsdt[3] << 24);
                 struct acpi_xsdt *xsdt = (struct acpi_xsdt *)address;
 
-                arch_kmap(address, address, 0x00010000, MMAP_FLAG_WRITEABLE);
+                arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
                 if (validate(xsdt, xsdt->base.length))
                     sdt = address;

@@ -143,7 +143,7 @@ void module_init(void)
 
     blockbuffer = (void *)ARCH_MEM_BASE;
 
-    arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+    arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     base_initdriver(&driver, "ata", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }

@@ -54,7 +54,7 @@ static void videointerface_onvideoconf(unsigned int width, unsigned int height, 
     videointerface.height = height;
     videointerface.bpp = bpp;
 
-    arch_kmap(framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+    arch_kmap(framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
     setreg(REG_COMMAND_ENABLE, 0x00);
     setreg(REG_COMMAND_XRES, videointerface.width);
     setreg(REG_COMMAND_YRES, videointerface.height);
