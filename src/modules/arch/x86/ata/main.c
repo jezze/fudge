@@ -19,7 +19,7 @@ static void handleirq(unsigned int irq)
 {
 
     unsigned char status = ide_getstatus(blockinterface.id);
-    struct block_session *session = &blockinterface.sessions[0];
+    struct block_session *session = block_getsession(&blockinterface);
 
     if (status & 1)
         return;
@@ -30,14 +30,14 @@ static void handleirq(unsigned int irq)
         switch (session->type)
         {
 
-        case 1:
+        case BLOCK_TYPE_READ:
             ide_rblock(blockinterface.id, (char *)blockbuffer + session->offset);
 
             session->offset += 512;
 
             break;
 
-        case 2:
+        case BLOCK_TYPE_WRITE:
             if (session->offset < session->count)
             {
 
@@ -67,24 +67,30 @@ static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 
 }
 
-static void blockinterface_onblockreadrequest(struct block_session *session)
+static void blockinterface_startsession(struct block_session *session)
 {
 
-    ide_rpio48(blockinterface.id, session->count / 512, session->start / 512);
-
-}
-
-static void blockinterface_onblockwriterequest(struct block_session *session)
-{
-
-    ide_wpio48(blockinterface.id, session->count / 512, session->start / 512);
-
-    if (ide_wait(blockinterface.id))
+    switch (session->type)
     {
 
-        ide_wblock(blockinterface.id, blockbuffer);
+    case BLOCK_TYPE_READ:
+        ide_rpio48(blockinterface.id, session->count / 512, session->start / 512);
 
-        session->offset = 512;
+        break;
+
+    case BLOCK_TYPE_WRITE:
+        ide_wpio48(blockinterface.id, session->count / 512, session->start / 512);
+
+        if (ide_wait(blockinterface.id))
+        {
+
+            ide_wblock(blockinterface.id, blockbuffer);
+
+            session->offset = 512;
+
+        }
+
+        break;
 
     }
 
@@ -93,7 +99,7 @@ static void blockinterface_onblockwriterequest(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_onblockreadrequest, blockinterface_onblockwriterequest);
+    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_startsession);
 
 }
 

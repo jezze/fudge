@@ -25,7 +25,7 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
 static unsigned int onblockreadrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (interface->onblockreadrequest)
+    if (interface->startsession)
     {
 
         struct event_blockrequest *request = data;
@@ -34,13 +34,13 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
         if (!session->source)
         {
 
-            session->type = 1;
+            session->type = BLOCK_TYPE_READ;
             session->source = source;
             session->start = request->offset;
             session->count = request->count;
             session->offset = 0;
 
-            interface->onblockreadrequest(session);
+            interface->startsession(session);
 
             return MESSAGE_OK;
 
@@ -57,7 +57,7 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
 static unsigned int onblockwriterequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (interface->onblockwriterequest)
+    if (interface->startsession)
     {
 
         struct event_blockrequest *request = data;
@@ -66,13 +66,13 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
         if (!session->source)
         {
 
-            session->type = 2;
+            session->type = BLOCK_TYPE_WRITE;
             session->source = source;
             session->start = request->offset;
             session->count = request->count;
             session->offset = 0;
 
-            interface->onblockwriterequest(session);
+            interface->startsession(session);
 
             return MESSAGE_OK;
 
@@ -115,6 +115,13 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
+struct block_session *block_getsession(struct block_interface *interface)
+{
+
+    return &interface->sessions[0];
+
+}
+
 void block_session_done(struct block_interface *interface, struct block_session *session)
 {
 
@@ -125,12 +132,12 @@ void block_session_done(struct block_interface *interface, struct block_session 
     switch (session->type)
     {
 
-    case 1:
+    case BLOCK_TYPE_READ:
         kernel_place(interface->inode, session->source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
         break;
 
-    case 2:
+    case BLOCK_TYPE_WRITE:
         kernel_place(interface->inode, session->source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
 
         break;
@@ -155,7 +162,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, void (*oninfo)(struct event_blockinfo *blockinfo), void (*onblockreadrequest)(struct block_session *session), void (*onblockwriterequest)(struct block_session *session))
+void block_initinterface(struct block_interface *interface, unsigned int id, void (*oninfo)(struct event_blockinfo *blockinfo), void (*startsession)(struct block_session *session))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
@@ -163,8 +170,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, voi
     interface->id = id;
     interface->inode = pool_picknode();
     interface->oninfo = oninfo;
-    interface->onblockreadrequest = onblockreadrequest;
-    interface->onblockwriterequest = onblockwriterequest;
+    interface->startsession = startsession;
 
     if (interface->inode)
     {

@@ -81,7 +81,7 @@ static void setfeatures(void)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 0, 0, 0);
+    block_initinterface(&blockinterface, id, 0, 0);
 
 }
 
