@@ -8,7 +8,7 @@ struct console_interface
     unsigned int color;
     unsigned int cursor;
     unsigned int inode;
-    unsigned int (*ondata)(unsigned int source, void *buffer, unsigned int count);
+    unsigned int (*ondata)(void *buffer, unsigned int count);
 
 };
 
@@ -22,4 +22,4 @@ void console_cursorhome(struct console_interface *interface);
 void console_cursorend(struct console_interface *interface);
 void console_registerinterface(struct console_interface *interface);
 void console_unregisterinterface(struct console_interface *interface);
-void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(unsigned int source, void *buffer, unsigned int count));
+void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(void *buffer, unsigned int count));

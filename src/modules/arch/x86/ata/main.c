@@ -11,75 +11,39 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 
-struct session
-{
-
-    unsigned int type;
-    unsigned int source;
-    unsigned int count;
-    unsigned int offset;
-
-};
-
 static void *blockbuffer;
 static struct base_driver driver;
 static struct block_interface blockinterface;
-static struct session session;
 
 static void handleirq(unsigned int irq)
 {
 
     unsigned char status = ide_getstatus(blockinterface.id);
+    struct block_session *session = &blockinterface.sessions[0];
 
     if (status & 1)
         return;
 
-    if (session.source)
+    if (session->source)
     {
 
-        switch (session.type)
+        switch (session->type)
         {
 
         case 1:
-            ide_rblock(blockinterface.id, (char *)blockbuffer + session.offset);
+            ide_rblock(blockinterface.id, (char *)blockbuffer + session->offset);
 
-            session.offset += 512;
-
-            if (session.offset == session.count)
-            {
-
-                struct event_blockresponse response;
-
-                response.count = session.count;
-
-                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
-
-                session.source = 0;
-
-            }
+            session->offset += 512;
 
             break;
 
         case 2:
-            if (session.offset < session.count)
+            if (session->offset < session->count)
             {
 
-                ide_wblock(blockinterface.id, (char *)blockbuffer + session.offset);
+                ide_wblock(blockinterface.id, (char *)blockbuffer + session->offset);
 
-                session.offset += 512;
-
-            }
-
-            if (session.offset == session.count)
-            {
-
-                struct event_blockresponse response;
-
-                response.count = session.count;
-
-                kernel_place(blockinterface.inode, session.source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
-
-                session.source = 0;
+                session->offset += 512;
 
             }
 
@@ -89,71 +53,40 @@ static void handleirq(unsigned int irq)
 
     }
 
-}
-
-static unsigned int blockinterface_oninfo(unsigned int source)
-{
-
-    struct event_blockinfo info;
-
-    info.buffer = ARCH_MEM_BASE;
-    info.buffersize = 0x8000;
-    info.blocksize = 512;
-
-    kernel_place(blockinterface.inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &info);
-
-    return MESSAGE_OK;
+    if (session->offset == session->count)
+        block_session_done(&blockinterface, session);
 
 }
 
-static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsigned int count, unsigned int offset)
+static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 {
 
-    if (!session.source)
+    blockinfo->buffer = ARCH_MEM_BASE;
+    blockinfo->buffersize = 0x8000;
+    blockinfo->blocksize = 512;
+
+}
+
+static void blockinterface_onblockreadrequest(struct block_session *session)
+{
+
+    ide_rpio48(blockinterface.id, session->count / 512, session->start / 512);
+
+}
+
+static void blockinterface_onblockwriterequest(struct block_session *session)
+{
+
+    ide_wpio48(blockinterface.id, session->count / 512, session->start / 512);
+
+    if (ide_wait(blockinterface.id))
     {
 
-        session.type = 1;
-        session.source = source;
-        session.count = count;
-        session.offset = 0;
+        ide_wblock(blockinterface.id, blockbuffer);
 
-        ide_rpio48(blockinterface.id, count / 512, offset / 512);
-
-        return MESSAGE_OK;
+        session->offset = 512;
 
     }
-
-    return MESSAGE_RETRY;
-
-}
-
-static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsigned int count, unsigned int offset)
-{
-
-    if (!session.source)
-    {
-
-        session.type = 2;
-        session.source = source;
-        session.count = count;
-        session.offset = 0;
-
-        ide_wpio48(blockinterface.id, count / 512, offset / 512);
-
-        if (ide_wait(blockinterface.id))
-        {
-
-            ide_wblock(blockinterface.id, blockbuffer);
-
-            session.offset = 512;
-
-        }
-
-        return MESSAGE_OK;
-
-    }
-
-    return MESSAGE_RETRY;
 
 }
 

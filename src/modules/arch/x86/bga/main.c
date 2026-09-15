@@ -37,51 +37,36 @@ static void setreg(unsigned short index, unsigned short data)
 
 }
 
-static unsigned int videointerface_oninfo(unsigned int source)
+static void videointerface_oninfo(struct event_videoinfo *videoinfo)
 {
 
-    struct event_videoinfo videoinfo;
-
-    videoinfo.framebuffer = 0xA0000000;
-    videoinfo.width = videointerface.width;
-    videoinfo.height = videointerface.height;
-    videoinfo.bpp = videointerface.bpp;
-
-    kernel_place(videointerface.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
-
-    return MESSAGE_OK;
+    videoinfo->framebuffer = 0xA0000000;
+    videoinfo->width = videointerface.width;
+    videoinfo->height = videointerface.height;
+    videoinfo->bpp = videointerface.bpp;
 
 }
 
-static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
-{
-
-    return MESSAGE_FAILED;
-
-}
-
-static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+static void videointerface_onvideoconf(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     videointerface.width = width;
     videointerface.height = height;
     videointerface.bpp = bpp;
 
+    arch_kmap(framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
     setreg(REG_COMMAND_ENABLE, 0x00);
     setreg(REG_COMMAND_XRES, videointerface.width);
     setreg(REG_COMMAND_YRES, videointerface.height);
     setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
     setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
-    arch_kmap(framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
-
-    return MESSAGE_OK;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_onvideocmap, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_onvideoconf);
 
 }
 

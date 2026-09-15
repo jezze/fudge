@@ -129,6 +129,13 @@ struct event_timertick
 
 };
 
+struct event_ethernetinfo
+{
+
+    unsigned char address[6];
+
+};
+
 struct event_videoconf
 {
 

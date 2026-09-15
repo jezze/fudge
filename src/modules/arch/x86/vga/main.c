@@ -103,7 +103,7 @@ static void handle(char c)
 
 }
 
-static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, unsigned int count)
+static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -120,23 +120,17 @@ static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, u
     outcrt1(VGA_REG_CRTINDEX1_CRT0E, consoleinterface.cursor >> 8);
     outcrt1(VGA_REG_CRTINDEX1_CRT0F, consoleinterface.cursor);
 
-    return MESSAGE_OK;
+    return count;
 
 }
 
-static unsigned int videointerface_oninfo(unsigned int source)
+static void videointerface_oninfo(struct event_videoinfo *videoinfo)
 {
 
-    struct event_videoinfo videoinfo;
-
-    videoinfo.framebuffer = 0x000B8000;
-    videoinfo.width = videointerface.width;
-    videoinfo.height = videointerface.height;
-    videoinfo.bpp = videointerface.bpp;
-
-    kernel_place(videointerface.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
-
-    return MESSAGE_OK;
+    videoinfo->framebuffer = 0x000B8000;
+    videoinfo->width = videointerface.width;
+    videoinfo->height = videointerface.height;
+    videoinfo->bpp = videointerface.bpp;
 
 }
 
@@ -168,7 +162,7 @@ static unsigned int videointerface_getcmap(unsigned int source, unsigned int cou
 }
 */
 
-static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
+static unsigned int videointerface_onvideocmap(unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -187,11 +181,11 @@ static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int
 
     }
 
-    return MESSAGE_OK;
+    return count;
 
 }
 
-static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+static void videointerface_onvideoconf(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     if (width == 80)
@@ -221,8 +215,6 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
         vga_setgraphic();
 
     }
-
-    return MESSAGE_OK;
 
 }
 

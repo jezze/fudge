@@ -132,35 +132,22 @@ static void setfeatures(void)
 
 }
 
-static unsigned int ethernetinterface_oninfo(unsigned int source)
+static void ethernetinterface_oninfo(struct event_ethernetinfo *ethernetinfo)
 {
 
-    unsigned char address[ETHERNET_ADDRSIZE];
-
-    address[0] = io_inb(io + 0x14);
-    address[1] = io_inb(io + 0x15);
-    address[2] = io_inb(io + 0x16);
-    address[3] = io_inb(io + 0x17);
-    address[4] = io_inb(io + 0x18);
-    address[5] = io_inb(io + 0x19);
-
-    kernel_place(ethernetinterface.inode, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
-
-    return MESSAGE_OK;
-
-}
-
-static unsigned int ethernetinterface_ondata(unsigned int source, void *buffer, unsigned int count)
-{
-
-    return MESSAGE_FAILED;
+    ethernetinfo->address[0] = io_inb(io + 0x14);
+    ethernetinfo->address[1] = io_inb(io + 0x15);
+    ethernetinfo->address[2] = io_inb(io + 0x16);
+    ethernetinfo->address[3] = io_inb(io + 0x17);
+    ethernetinfo->address[4] = io_inb(io + 0x18);
+    ethernetinfo->address[5] = io_inb(io + 0x19);
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, ethernetinterface_ondata);
+    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, 0);
 
 }
 

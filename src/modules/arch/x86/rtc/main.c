@@ -42,22 +42,16 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int clockinterface_oninfo(unsigned int source)
+static void clockinterface_oninfo(struct event_clockinfo *clockinfo)
 {
 
-    struct event_clockinfo clockinfo;
-
-    clockinfo.seconds = read(REG_COMMAND_SECONDS);
-    clockinfo.minutes = read(REG_COMMAND_MINUTES);
-    clockinfo.hours = read(REG_COMMAND_HOURS);
-    clockinfo.weekday = read(REG_COMMAND_WEEKDAY);
-    clockinfo.day = read(REG_COMMAND_DAY);
-    clockinfo.month = read(REG_COMMAND_MONTH);
-    clockinfo.year = 2000 + read(REG_COMMAND_YEAR);
-
-    kernel_place(clockinterface.inode, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-
-    return MESSAGE_OK;
+    clockinfo->seconds = read(REG_COMMAND_SECONDS);
+    clockinfo->minutes = read(REG_COMMAND_MINUTES);
+    clockinfo->hours = read(REG_COMMAND_HOURS);
+    clockinfo->weekday = read(REG_COMMAND_WEEKDAY);
+    clockinfo->day = read(REG_COMMAND_DAY);
+    clockinfo->month = read(REG_COMMAND_MONTH);
+    clockinfo->year = 2000 + read(REG_COMMAND_YEAR);
 
 }
 

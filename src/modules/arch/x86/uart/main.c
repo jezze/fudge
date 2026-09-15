@@ -132,7 +132,7 @@ static void print(char c)
 
 }
 
-static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, unsigned int count)
+static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -141,7 +141,7 @@ static unsigned int consoleinterface_ondata(unsigned int source, void *buffer, u
     for (i = 0; i < count; i++)
         print(b[i]);
 
-    return MESSAGE_OK;
+    return count;
 
 }
 

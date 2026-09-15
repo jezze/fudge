@@ -14,31 +14,10 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int blockinterface_oninfo(unsigned int source)
-{
-
-    return MESSAGE_FAILED;
-
-}
-
-static unsigned int blockinterface_onblockreadrequest(unsigned int source, unsigned int count, unsigned int sector)
-{
-
-    return MESSAGE_FAILED;
-
-}
-
-static unsigned int blockinterface_onblockwriterequest(unsigned int source, unsigned int count, unsigned int sector)
-{
-
-    return MESSAGE_FAILED;
-
-}
-
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_onblockreadrequest, blockinterface_onblockwriterequest);
+    block_initinterface(&blockinterface, id, 0, 0, 0);
 
 }
 

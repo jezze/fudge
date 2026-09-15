@@ -776,8 +776,11 @@ void socket_resolveremote(unsigned int ichannel, unsigned int target, struct soc
 void socket_resolvelocal(unsigned int ichannel, unsigned int target, struct socket *socket)
 {
 
+    struct event_ethernetinfo ethernetinfo;
+
     channel_send(ichannel, target, EVENT_INFO, 0, 0);
-    channel_wait(ichannel, target, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, &socket->haddress);
+    channel_wait(ichannel, target, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
+    buffer_copy(socket->haddress, ethernetinfo.address, ETHERNET_ADDRSIZE);
 
     socket->resolved = 1;
 

@@ -97,30 +97,17 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static unsigned int videointerface_oninfo(unsigned int source)
+static void videointerface_oninfo(struct event_videoinfo *videoinfo)
 {
 
-    struct event_videoinfo videoinfo;
-
-    videoinfo.framebuffer = 0xA0000000;
-    videoinfo.width = videointerface.width;
-    videoinfo.height = videointerface.height;
-    videoinfo.bpp = videointerface.bpp;
-
-    kernel_place(videointerface.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
-
-    return MESSAGE_OK;
+    videoinfo->framebuffer = 0xA0000000;
+    videoinfo->width = videointerface.width;
+    videoinfo->height = videointerface.height;
+    videoinfo->bpp = videointerface.bpp;
 
 }
 
-static unsigned int videointerface_onvideocmap(unsigned int source, unsigned int count, void *buffer)
-{
-
-    return MESSAGE_FAILED;
-
-}
-
-static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp)
+static void videointerface_onvideoconf(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     unsigned short modenum;
@@ -136,21 +123,17 @@ static unsigned int videointerface_onvideoconf(unsigned int source, unsigned int
         videointerface.height = mode->height;
         videointerface.bpp = mode->bpp / 8;
 
-        vbe_setvideomode(modenum | 0x4000);
         arch_kmap(mode->framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
-
-        return MESSAGE_OK;
+        vbe_setvideomode(modenum | 0x4000);
 
     }
-
-    return MESSAGE_FAILED;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_onvideocmap, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_onvideoconf);
 
     videointerface.width = 80;
     videointerface.height = 25;

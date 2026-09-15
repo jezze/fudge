@@ -7,23 +7,52 @@ static struct node_operands operands;
 static unsigned int oninfo(struct video_interface *interface, unsigned int source)
 {
 
-    return interface->oninfo(source);
+    if (interface->oninfo)
+    {
+
+        struct event_videoinfo videoinfo;
+
+        interface->oninfo(&videoinfo);
+
+        return kernel_place(interface->inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onvideocmap(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    return interface->onvideocmap(source, count, data);
+    if (interface->onvideocmap)
+    {
+
+        interface->onvideocmap(count, data);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onvideoconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_videoconf *videoconf = data;
+    if (interface->onvideoconf)
+    {
 
-    return interface->onvideoconf(source, videoconf->width, videoconf->height, videoconf->bpp);
+        struct event_videoconf *videoconf = data;
+
+        interface->onvideoconf(videoconf->width, videoconf->height, videoconf->bpp);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -70,7 +99,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source), unsigned int (*onvideocmap)(unsigned int source, unsigned int count, void *data), unsigned int (*onvideoconf)(unsigned int source, unsigned int width, unsigned int height, unsigned int bpp))
+void video_initinterface(struct video_interface *interface, unsigned int id, void (*oninfo)(struct event_videoinfo *videoinfo), unsigned int (*onvideocmap)(unsigned int count, void *data), void (*onvideoconf)(unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);

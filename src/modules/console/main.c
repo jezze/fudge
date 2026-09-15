@@ -7,7 +7,16 @@ static struct node_operands operands;
 static unsigned int ondata(struct console_interface *interface, unsigned int source, void *data, unsigned int count)
 {
 
-    return interface->ondata(source, data, count);
+    if (interface->ondata)
+    {
+
+        interface->ondata(data, count);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -108,7 +117,7 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(unsigned int source, void *buffer, unsigned int count))
+void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*ondata)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);

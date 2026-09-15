@@ -236,25 +236,19 @@ static void handleirq(unsigned int irq)
 
 }
 
-static unsigned int ethernetinterface_oninfo(unsigned int source)
+static void ethernetinterface_oninfo(struct event_ethernetinfo *ethernetinfo)
 {
 
-    unsigned char address[ETHERNET_ADDRSIZE];
-
-    address[0] = io_inb(io + REG_IDR0);
-    address[1] = io_inb(io + REG_IDR1);
-    address[2] = io_inb(io + REG_IDR2);
-    address[3] = io_inb(io + REG_IDR3);
-    address[4] = io_inb(io + REG_IDR4);
-    address[5] = io_inb(io + REG_IDR5);
-
-    kernel_place(ethernetinterface.inode, source, EVENT_ETHERNETINFO, ETHERNET_ADDRSIZE, address);
-
-    return MESSAGE_OK;
+    ethernetinfo->address[0] = io_inb(io + REG_IDR0);
+    ethernetinfo->address[1] = io_inb(io + REG_IDR1);
+    ethernetinfo->address[2] = io_inb(io + REG_IDR2);
+    ethernetinfo->address[3] = io_inb(io + REG_IDR3);
+    ethernetinfo->address[4] = io_inb(io + REG_IDR4);
+    ethernetinfo->address[5] = io_inb(io + REG_IDR5);
 
 }
 
-static unsigned int ethernetinterface_ondata(unsigned int source, void *buffer, unsigned int count)
+static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -291,7 +285,7 @@ static unsigned int ethernetinterface_ondata(unsigned int source, void *buffer, 
     txp++;
     txp %= 4;
 
-    return MESSAGE_OK;
+    return count;
 
 }
 

@@ -8,14 +8,34 @@ static struct node_operands operands;
 static unsigned int ondata(struct ethernet_interface *interface, unsigned int source, void *data, unsigned int count)
 {
 
-    return interface->ondata(source, data, count);
+    if (interface->ondata)
+    {
+
+        interface->ondata(data, count);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int oninfo(struct ethernet_interface *interface, unsigned int source)
 {
 
-    return interface->oninfo(source);
+    if (interface->oninfo)
+    {
+
+        struct event_ethernetinfo ethernetinfo;
+
+        interface->oninfo(&ethernetinfo);
+
+        return kernel_place(interface->inode, source, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -66,7 +86,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, unsigned int (*oninfo)(unsigned int source), unsigned int (*ondata)(unsigned int source, void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, void (*oninfo)(struct event_ethernetinfo *ethernetinfo), unsigned int (*ondata)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
