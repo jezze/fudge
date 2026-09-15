@@ -7,6 +7,9 @@ IMAGE=$(KERNEL).$(IMAGE_TYPE)
 ISO_TYPE:=iso
 ISO=$(KERNEL).$(ISO_TYPE)
 DIR_BUILD:=build
+DIR_BUILDBOOT:=$(DIR_BUILD)/boot
+DIR_BUILDROOT:=$(DIR_BUILD)/root
+DIR_BUILDUEFI:=$(DIR_BUILD)/uefi
 DIR_INCLUDE:=include
 DIR_ISO:=iso
 DIR_MK:=mk
@@ -19,7 +22,11 @@ REPORT:=report.xml
 .PHONY: all clean check check-full install default help
 .SUFFIXES:
 
-all: $(KERNEL) $(IMAGE)
+all: image
+
+prep: $(DIR_BUILDBOOT) $(DIR_BUILDROOT) $(DIR_BUILDUEFI)
+
+image: $(IMAGE) | prep
 
 clean:
 	@rm -rf $(DIR_BUILD) $(DIR_ISO) $(KERNEL) $(RAMDISK) $(IMAGE) $(ISO) $(OBJ) $(DEP) $(LIB) $(BIN) $(KBIN) $(KMAP) $(KMOD) $(REPORT)
@@ -119,8 +126,18 @@ include $(DIR_SRC)/rules.mk
 
 deps: $(DEP)
 
-$(DIR_BUILD): $(LIB) $(BIN) $(KMAP) $(KMOD)
-	@echo BUILDROOT $@
+$(DIR_BUILD):
+	@echo BUILD $@
+	@mkdir -p $@
+
+$(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
+	@echo BUILD BOOT $@
+	@mkdir -p $@
+	@cp $(KERNEL) $@
+	@cp $(RAMDISK) $@
+
+$(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
+	@echo BUILD ROOT $@
 	@mkdir -p $@
 	@mkdir -p $@/lib
 	@cp $(LIB) $@/lib
@@ -133,6 +150,11 @@ $(DIR_BUILD): $(LIB) $(BIN) $(KMAP) $(KMOD)
 	@mkdir -p $@/kernel
 	@cp $(KMAP) $@/kernel
 	@cp $(KMOD) $@/kernel
+
+$(DIR_BUILDUEFI):
+	@echo BUILD UEFI $@
+	@mkdir -p $@
+	@mkdir -p $@/EFI/BOOT
 
 $(DIR_ISO): $(KERNEL) $(RAMDISK)
 	@echo ISO $@
@@ -147,11 +169,11 @@ $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)
 	@echo KERNEL $@
 	@cp $^ $@
 
-$(KERNEL).tar: $(DIR_BUILD)
+$(KERNEL).tar: $(DIR_BUILDROOT)
 	@echo RAMDISK $@
 	@tar -cf $@ $^
 
-$(KERNEL).cpio: $(DIR_BUILD)
+$(KERNEL).cpio: $(DIR_BUILDROOT)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o > $@
 

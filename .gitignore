@@ -1,3 +1,7 @@
+**.a
+**.o
+**.ko
+**.map
 build/
 disks/
 fudge
@@ -6,13 +10,8 @@ fudge.img
 fudge.iso
 fudge.tar
 report.xml
-lib/*.a
-lib/*.o
-src/*.o
-src/*.map
 src/demo/demo
 src/gameboy/gameboy
-src/modules/*.ko
 src/pcx/pcxcmap
 src/pcx/pcxdata
 src/pcx/pcxinfo
@@ -22,6 +21,7 @@ src/test/t_donut
 src/test/t_loop
 src/test/t_mandelbrot
 src/test/t_timer
+src/utils/automount
 src/utils/cd
 src/utils/crc
 src/utils/date
@@ -32,6 +32,7 @@ src/utils/echo
 src/utils/elfload
 src/utils/elfunload
 src/utils/ext2srv
+src/utils/fatsrv
 src/utils/grep
 src/utils/hello
 src/utils/help
@@ -52,6 +53,7 @@ src/utils/sha1
 src/utils/shell
 src/utils/slang
 src/utils/socket
+src/utils/stat
 src/utils/timestamp
 src/utils/touch
 src/utils/wc
