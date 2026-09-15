@@ -27,34 +27,32 @@ static void handleirq(unsigned int irq)
     if (session->source)
     {
 
-        switch (session->type)
+        if (session->offset < session->count)
         {
 
-        case BLOCK_TYPE_READ:
-            ide_rblock(blockinterface.id, (char *)blockbuffer + session->offset);
-
-            session->offset += 512;
-
-            break;
-
-        case BLOCK_TYPE_WRITE:
-            if (session->offset < session->count)
+            switch (session->type)
             {
 
+            case BLOCK_TYPE_READ:
+                ide_rblock(blockinterface.id, (char *)blockbuffer + session->offset);
+
+                break;
+
+            case BLOCK_TYPE_WRITE:
                 ide_wblock(blockinterface.id, (char *)blockbuffer + session->offset);
 
-                session->offset += 512;
+                break;
 
             }
 
-            break;
+            session->offset += 512;
 
         }
 
-    }
+        if (session->offset == session->count)
+            block_session_done(&blockinterface, session);
 
-    if (session->offset == session->count)
-        block_session_done(&blockinterface, session);
+    }
 
 }
 
