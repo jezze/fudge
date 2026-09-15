@@ -11,6 +11,9 @@
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 
+#define BUFFERSIZE                      0x8000
+#define BLOCKSIZE                       512
+
 static void *blockbuffer;
 static struct base_driver driver;
 static struct block_interface blockinterface;
@@ -45,7 +48,7 @@ static void handleirq(unsigned int irq)
 
             }
 
-            session->offset += 512;
+            session->offset += BLOCKSIZE;
 
         }
 
@@ -60,8 +63,8 @@ static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 {
 
     blockinfo->buffer = ARCH_MEM_BASE;
-    blockinfo->buffersize = 0x8000;
-    blockinfo->blocksize = 512;
+    blockinfo->buffersize = BUFFERSIZE;
+    blockinfo->blocksize = BLOCKSIZE;
 
 }
 
@@ -72,19 +75,19 @@ static void blockinterface_startsession(struct block_session *session)
     {
 
     case BLOCK_TYPE_READ:
-        ide_rpio48(blockinterface.id, session->count / 512, session->start / 512);
+        ide_rpio48(blockinterface.id, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        ide_wpio48(blockinterface.id, session->count / 512, session->start / 512);
+        ide_wpio48(blockinterface.id, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
 
         if (ide_wait(blockinterface.id))
         {
 
             ide_wblock(blockinterface.id, blockbuffer);
 
-            session->offset = 512;
+            session->offset = BLOCKSIZE;
 
         }
 
@@ -140,7 +143,7 @@ void module_init(void)
 
     blockbuffer = (void *)ARCH_MEM_BASE;
 
-    arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, 0x8000, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+    arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     base_initdriver(&driver, "ata", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
