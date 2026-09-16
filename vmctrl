@@ -14,6 +14,7 @@ cmd_run() {
     iso=n
     isoname=""
     network=n
+    uefi=n
 
     while test ${#} -gt 0
     do
@@ -32,6 +33,9 @@ cmd_run() {
                 ;;
             -n)
                 network=y
+                ;;
+            -u)
+                uefi=y
                 ;;
             -*)
                 error "Unknown flag: ${1}"
@@ -62,6 +66,11 @@ cmd_run() {
     if test "${network}" == "y"
     then
         cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
+    fi
+
+    if test "${uefi}" == "y"
+    then
+        cmd="${cmd} -bios src/kernel/x86/uefi/ovmf.fd"
     fi
 
     sttybak=$(stty -g)
