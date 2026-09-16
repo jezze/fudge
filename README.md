@@ -115,7 +115,7 @@ There is a script call vmctrl that you can use to run Fudge as a virtual
 machine in QEMU.
 
 ```sh
-$ ./vmctrl runsimple node1
+$ ./vmctrl run
 ```
 
 This will start an instance of Fudge called node1. This node will not have any
@@ -124,11 +124,11 @@ allowed to create TAP interfaces on your host machine. Typically using sudo
 will allow you to do this.
 
 ```sh
-$ sudo ./vmctrl run node1
+$ sudo ./vmctrl run -n <name>
 ```
 
-Once you started one or more instances of Fudge you can bridge their networks
-together with this command.
+Once you started one or more instances of Fudge, each with a different name you
+can bridge their networks together with this command.
 
 ```sh
 $ sudo ./vmctrl connect
@@ -146,6 +146,22 @@ $ sudo ./vmctrl nat eth0
 Replace eth0 with the name of the network interface that is connected to the
 internet. You only need to run this command once unless you reboot your host
 machine.
+
+You can create a fudge.qcow2 image and install fudge on it.
+
+First we create the image:
+
+```sh
+$ ./vmctrl disk_create
+```
+
+Then we need to set it up. This usually requires root privileges:
+
+```sh
+$ sudo ./vmctrl disk_setup fudge.qcow2
+```
+
+To boot from this image in qemu, provide the -d argument to the run command.
 
 ## Community
 

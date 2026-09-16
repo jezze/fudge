@@ -2,8 +2,8 @@
 **.o
 **.ko
 **.map
+**.qcow2
 build/
-disks/
 fudge
 fudge.cpio
 fudge.img

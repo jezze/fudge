@@ -2,81 +2,104 @@
 
 set -e
 
-qemu_bin="qemu-system-x86_64"
-qemu_flags="-nodefaults -enable-kvm -smp 4 -m 128 -vga std -serial stdio"
-
 error() {
-    echo "${1}" 2>&1
+    echo "Error: ${1}" 2>&1
     exit 1
 }
 
-getdisk() {
-    if test -f "disks/node-$1-sda.qcow2"
+cmd_run() {
+    name="default"
+    disk=n
+    diskname=""
+    iso=n
+    isoname=""
+    network=n
+
+    while test ${#} -gt 0
+    do
+        case "${1}" in
+            -d)
+                disk=y
+                diskname="${2}"
+                test -f "${diskname}" || error "Disk not found: ${diskname}"
+                shift
+                ;;
+            -i)
+                iso=y
+                isoname="${2}"
+                test -f "${isoname}" || error "ISO not found: ${isoname}"
+                shift
+                ;;
+            -n)
+                network=y
+                ;;
+            -*)
+                error "Unknown flag: ${1}"
+                ;;
+            *)
+                name="${1}"
+                ;;
+        esac
+        shift
+    done
+
+    cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 128 -vga std -serial stdio"
+
+    if test "${disk}" == "y"
     then
-        echo "-drive file=disks/node-$1-sda.qcow2,format=qcow2,if=ide,index=0"
-    elif test -f "fudge.iso"
-    then
-        echo "-cdrom fudge.iso"
+        cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
     else
-        echo "-kernel fudge -initrd fudge.cpio,build/root/bin/init"
+        cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
+        test -f fudge || error "Kernel not found. Forgot to build?"
+        test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
     fi
-}
 
-getnetwork() {
-    echo "-device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-$1-eth0,script=no,downscript=no"
-}
+    if test "${iso}" == "y"
+    then
+        cmd="${cmd} -cdrom fudge.iso"
+    fi
 
-run() {
+    if test "${network}" == "y"
+    then
+        cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
+    fi
+
     sttybak=$(stty -g)
 
-    echo "Running: $qemu_bin $qemu_flags $2"
-    echo "Use ctrl+] to kill node-$1"
+    echo "Running: ${cmd}"
+    echo "Use ctrl+] to kill node-${name}"
 
     stty intr ^]
-    $qemu_bin $qemu_flags $2
-    stty $sttybak
-}
-
-cmd_run() {
-    run $1 "$(getnetwork $1) $(getdisk $1)"
-}
-
-cmd_runsimple() {
-    run $1 "$(getdisk $1)"
-}
-
-cmd_runiso() {
-    run $1 "$(getnetwork $1) $(getdisk $1)"
-}
-
-cmd_runisosimple() {
-    run $1 "$(getdisk $1)"
+    ${cmd}
+    stty "${sttybak}"
 }
 
 cmd_nat() {
+    interface="${1}"
+
     sysctl -w net.ipv4.conf.all.forwarding=1
-    iptables -t nat -A POSTROUTING -o $1 -j MASQUERADE
+    iptables -t nat -A POSTROUTING -o "${interface}" -j MASQUERADE
 }
 
 cmd_connect() {
     networks="eth0"
 
-    for net in $networks
+    for net in ${networks}
     do
-        bridge="bridge-$net"
+        bridge="bridge-${net}"
         address="10.0.5.80/24"
 
-        if ! test -e /sys/class/net/$bridge
+        if ! test -e "/sys/class/net/${bridge}"
         then
-            ip link add $bridge type bridge
-            ip link set $bridge up
-            ip addr add $address dev $bridge
+            ip link add "${bridge}" type bridge
+            ip link set "${bridge}" up
+            ip addr add "${address}" dev "${bridge}"
         fi
 
         for interface in $(ls -1 /sys/class/net | grep node-.*-$net)
         do
-            ip link set $interface master $bridge
-            ip link set $interface up
+            ip link set "${interface}" master "${bridge}"
+            ip link set "${interface}" up
         done
     done
 }
@@ -84,40 +107,37 @@ cmd_connect() {
 cmd_disconnect() {
     networks="eth0"
 
-    for net in $networks
+    for net in ${networks}
     do
-        bridge="bridge-$net"
+        bridge="bridge-${net}"
         address="10.0.5.80/24"
 
         for interface in $(ls -1 /sys/class/net | grep node-.*-$net)
         do
-            ip link set $interface down
-            ip link set $interface nomaster
+            ip link set "${interface}" down
+            ip link set "${interface}" nomaster
         done
 
-        if test -e /sys/class/net/$bridge
+        if test -e "/sys/class/net/${bridge}"
         then
-            ip addr del $address dev $bridge
-            ip link set $bridge down
-            ip link del $bridge type bridge
+            ip addr del "${address}" dev "${bridge}"
+            ip link set "${bridge}" down
+            ip link del "${bridge}" type bridge
         fi
     done
 }
 
 cmd_disk_connect() {
-    test -n "${1}" || error "Missing argument: id"
-
-    disk="disks/node-$1-sda.qcow2"
     device="/dev/nbd0"
+    disk="${1}"
+
+    test -f "${disk}" || error "Disk not found: ${disk}"
 
     modprobe nbd
     qemu-nbd --connect "${device}" "${disk}"
 }
 
 cmd_disk_disconnect() {
-    test -n "${1}" || error "Missing argument: id"
-
-    disk="disks/node-$1-sda.qcow2"
     device="/dev/nbd0"
 
     modprobe nbd
@@ -125,27 +145,50 @@ cmd_disk_disconnect() {
 }
 
 cmd_disk_create() {
-    test -n "${1}" || error "Missing argument: id"
-
-    disk="disks/node-$1-sda.qcow2"
+    name="fudge"
+    format="qcow2"
+    disk="${name}.${format}"
     size="5G"
 
-    mkdir -p disks
-    echo -n "Creating sda disk... "
-    qemu-img create -q -f qcow2 "${disk}" "${size}"
+    while test ${#} -gt 0
+    do
+        case "${1}" in
+            -f)
+                format="${2}"
+                shift
+                ;;
+            -n)
+                name="${2}"
+                shift
+                ;;
+            -s)
+                size="${2}"
+                shift
+                ;;
+            -*)
+                error "Unknown flag: ${1}"
+                ;;
+            *)
+                name="${1}"
+                ;;
+        esac
+        shift
+    done
+
+    echo -n "Creating disk... "
+    qemu-img create -q -f "${format}" "${disk}" "${size}"
     echo "done"
 }
 
 cmd_disk_setup() {
-    test -n "${1}" || error "Missing argument: id"
-
-    disk="disks/node-$1-sda.qcow2"
     device="/dev/nbd0"
+    disk="${1}"
+
+    test -f "${disk}" || error "Disk not found: ${disk}"
+
     partuefi="${device}p1"
     partboot="${device}p2"
     partroot="${device}p3"
-
-    test -f "${disk}" || error "File not found: ${disk}"
 
     cmd_disk_connect "${1}"
 
@@ -162,46 +205,45 @@ cmd_disk_setup() {
     mkfs.ext2 -q "${partroot}"
     echo "done"
 
-    mkdir -p "disks/mnt"
+    rootdir=$(mktemp -d)
+    bootdir="${rootdir}/boot"
+    uefidir="${bootdir}/efi"
 
     echo -n "Mount filesystems... "
-    mount "${partroot}" "disks/mnt"
-    test -d "build/root" && cp -r "build/root/." "disks/mnt"
-    mount "${partboot}" "disks/mnt/boot"
-    test -d "build/boot" && cp -r "build/boot/." "disks/mnt/boot"
-    mount "${partuefi}" "disks/mnt/boot/efi"
-    test -d "build/uefi" && cp -r "build/uefi/." "disks/mnt/boot/efi"
+    mount "${partroot}" "${rootdir}"
+    test -d "build/root" && cp -r "build/root/." "${rootdir}"
+    mount "${partboot}" "${bootdir}"
+    test -d "build/boot" && cp -r "build/boot/." "${bootdir}"
+    mount "${partuefi}" "${uefidir}"
+    test -d "build/uefi" && cp -r "build/uefi/." "${uefidir}"
     echo "done"
 
     echo -n "Install GRUB... "
-    grub-install --target=i386-pc --boot-directory=disks/mnt/boot "${device}"
-    grub-install --target=x86_64-efi --efi-directory=disks/mnt/boot/efi --bootloader-id=GRUB --boot-directory=disks/mnt/boot
+    grub-install --target=i386-pc --boot-directory="${bootdir}" "${device}"
+    grub-install --target=x86_64-efi --efi-directory="${uefidir}" --bootloader-id=GRUB --boot-directory="${bootdir}"
     echo "done"
 
     echo -n "Unmount filesystems... "
-    umount -R "disks/mnt"
+    umount -R "${rootdir}"
     echo "done"
 
-    cmd_disk_disconnect "${1}"
+    cmd_disk_disconnect
 }
 
 cmd_help() {
     echo "Commands:"
-    echo "    run <id>"
-    echo "    runiso <id>"
-    echo "    runsimple <id>"
-    echo "    runisosimple <id>"
-    echo "    nat <iface>"
+    echo "    run [-d <disk>] [-i <iso>] [-n] [<name>]"
+    echo "    nat <interface>"
     echo "    connect"
     echo "    disconnect"
-    echo "    disk_connect <id>"
+    echo "    disk_connect <disk>"
     echo "    disk_disconnect"
-    echo "    disk_create <id>"
-    echo "    disk_setup <id>"
+    echo "    disk_create [-f <format>] [-n <name>] [-s <size>]"
+    echo "    disk_setup <disk>"
 }
 
 case "$1" in
-run|runiso|runsimple|runisosimple|nat|connect|disconnect|disk_create|disk_connect|disk_disconnect|disk_setup)
+run|nat|connect|disconnect|disk_create|disk_connect|disk_disconnect|disk_setup)
     "cmd_$@"
     ;;
 *)
