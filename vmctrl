@@ -83,11 +83,11 @@ cmd_nat() {
 
 cmd_connect() {
     networks="eth0"
+    address="10.0.5.80/24"
 
     for net in ${networks}
     do
         bridge="bridge-${net}"
-        address="10.0.5.80/24"
 
         if ! test -e "/sys/class/net/${bridge}"
         then
@@ -106,11 +106,11 @@ cmd_connect() {
 
 cmd_disconnect() {
     networks="eth0"
+    address="10.0.5.80/24"
 
     for net in ${networks}
     do
         bridge="bridge-${net}"
-        address="10.0.5.80/24"
 
         for interface in $(ls -1 /sys/class/net | grep node-.*-$net)
         do
