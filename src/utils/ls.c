@@ -49,20 +49,20 @@ static void list(unsigned int source, char *path)
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
     paths++;
 
-    list(source, mdata);
+    list(message->source, message->data);
 
 }
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
+static void onterm(struct message *message)
 {
 
     if (!paths)
-        list(source, option_getstring("pwd"));
+        list(message->source, option_getstring("pwd"));
 
 }
 

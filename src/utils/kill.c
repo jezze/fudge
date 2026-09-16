@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int task = option_getdecimal("task");

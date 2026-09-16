@@ -384,17 +384,17 @@ static unsigned int handle(unsigned int source, void *reply, struct p9p_header *
 
 }
 
-static void onp9p(unsigned int source, void *mdata, unsigned int msize)
+static void onp9p(struct message *message)
 {
 
-    struct p9p_header *p9p = mdata;
+    struct p9p_header *p9p = message->data;
     char buffer[MESSAGE_SIZE];
 
-    channel_send(0, source, EVENT_P9P, handle(source, buffer, p9p), buffer);
+    channel_send(0, message->source, EVENT_P9P, handle(message->source, buffer, p9p), buffer);
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
@@ -414,7 +414,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         char reply[MESSAGE_SIZE];
 
-        socket_send_tcp(0, ethernet, &local, &remote, &router, handle(source, reply, (struct p9p_header *)buffer), reply);
+        socket_send_tcp(0, ethernet, &local, &remote, &router, handle(message->source, reply, (struct p9p_header *)buffer), reply);
 
     }
 

@@ -2,11 +2,11 @@
 #include <abi.h>
 #include <image.h>
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
-    unsigned int id = fs_walk(1, target, 0, mdata);
+    unsigned int target = fs_auth(message->data);
+    unsigned int id = fs_walk(1, target, 0, message->data);
 
     if (id)
     {
@@ -25,7 +25,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned char colormap[768];
 
             fs_read_all(1, target, id, colormap, 768, record.size - 768);
-            channel_send(0, source, EVENT_DATA, 768, colormap);
+            channel_send(0, message->source, EVENT_DATA, 768, colormap);
 
         }
 
@@ -34,7 +34,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
+        channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
     }
 

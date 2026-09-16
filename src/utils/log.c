@@ -9,23 +9,23 @@ static char *levels[5] = {
     "INFO"
 };
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int log = channel_lookup(option_getstring("log-service"));
-    struct message message;
+    struct message m;
 
     channel_send(0, log, EVENT_LINK, 0, 0);
 
-    while (channel_poll(0, log, EVENT_LOGINFO, &message))
+    while (channel_poll(0, log, EVENT_LOGINFO, &m))
     {
 
-        struct event_loginfo *loginfo = message.data;
+        struct event_loginfo *loginfo = m.data;
         char *description = (char *)(loginfo + 1);
         unsigned int count = loginfo->count - sizeof (struct event_loginfo);
 
         if (option_getdecimal("level") >= loginfo->level)
-            channel_send_fmt3(0, source, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
+            channel_send_fmt3(0, message->source, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
 
     }
 

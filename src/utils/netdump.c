@@ -142,14 +142,14 @@ static void print_ethernet(unsigned int source, void *buffer)
 
 }
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
+static void ondata(struct message *message)
 {
 
-    print_ethernet(source, mdata);
+    print_ethernet(message->source, message->data);
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
@@ -157,7 +157,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
     if (ethernet)
     {
 
-        channel_route(EVENT_DATA, source);
+        channel_route(EVENT_DATA, message->source);
         channel_send(0, ethernet, EVENT_LINK, 0, 0);
 
         while (channel_process(0));

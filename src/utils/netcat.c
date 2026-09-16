@@ -7,7 +7,7 @@ static struct socket router;
 static struct socket local;
 static struct socket remotes[64];
 
-static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
+static void onconsoledata(struct message *message)
 {
 
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
@@ -15,7 +15,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
     if (ethernet)
     {
 
-        struct event_consoledata *consoledata = mdata;
+        struct event_consoledata *consoledata = message->data;
         unsigned int count = 0;
 
         if (!remotes[0].resolved)
@@ -59,7 +59,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -85,7 +85,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
         while ((count = socket_receive(0, ethernet, &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
-            channel_send(0, source, EVENT_DATA, count, buffer);
+            channel_send(0, message->source, EVENT_DATA, count, buffer);
 
         channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 

@@ -108,7 +108,7 @@ static void run(void)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
@@ -154,10 +154,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
+static void onvideoinfo(struct message *message)
 {
 
-    struct event_videoinfo *videoinfo = mdata;
+    struct event_videoinfo *videoinfo = message->data;
 
     framebuffer = (unsigned int *)videoinfo->framebuffer;
     wmax = videoinfo->width;

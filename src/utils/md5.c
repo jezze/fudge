@@ -4,22 +4,22 @@
 
 static struct md5 sum;
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
+static void ondata(struct message *message)
 {
 
-    md5_read(&sum, mdata, msize);
+    md5_read(&sum, message->data, message->length);
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
+    unsigned int target = fs_auth(message->data);
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, mdata);
+        unsigned int id = fs_walk(1, target, 0, message->data);
 
         if (id)
         {
@@ -36,7 +36,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 
@@ -44,7 +44,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
+static void onterm(struct message *message)
 {
 
     unsigned char digest[16];
@@ -57,7 +57,7 @@ static void onterm(unsigned int source, void *mdata, unsigned int msize)
     for (i = 0; i < 16; i++)
         cstring_write_value(output, 32, digest[i], 16, 2, i * 2);
 
-    channel_send_fmt2(0, source, EVENT_DATA, "%w\n", output, &l);
+    channel_send_fmt2(0, message->source, EVENT_DATA, "%w\n", output, &l);
 
 }
 

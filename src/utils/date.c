@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -13,7 +13,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         channel_send(0, clock, EVENT_INFO, 0, 0);
         channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-        channel_send_fmt6(0, source, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &clockinfo.year, &clockinfo.month, &clockinfo.day, &clockinfo.hours, &clockinfo.minutes, &clockinfo.seconds);
+        channel_send_fmt6(0, message->source, EVENT_DATA, "%4h-%2c-%2c %2c:%2c:%2c\n", &clockinfo.year, &clockinfo.month, &clockinfo.day, &clockinfo.hours, &clockinfo.minutes, &clockinfo.seconds);
 
     }
 

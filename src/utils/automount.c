@@ -100,7 +100,7 @@ static void mountpartition(unsigned int source, struct mbr_partition *partition,
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
@@ -138,7 +138,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                     struct mbr_partition *partition = &mbr.partition[i];
 
                     if (partition->systemid)
-                        mountpartition(source, partition, service[i]);
+                        mountpartition(message->source, partition, service[i]);
 
                 }
 

@@ -81,7 +81,7 @@ static void updatevalue(unsigned int wm, int value)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
@@ -99,138 +99,138 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
+static void onwmevent(struct message *message)
 {
 
-    struct event_wmevent *event = mdata;
+    struct event_wmevent *event = message->data;
 
     if (kv_match(event, "q=num"))
-        updatevalue(source, kv_getvalue(event, "value=", 10));
+        updatevalue(message->source, kv_getvalue(event, "value=", 10));
     else if (kv_match(event, "q=sum"))
-        updatestate(source, STATE_SUM);
+        updatestate(message->source, STATE_SUM);
     else if (kv_match(event, "q=add"))
-        updatestate(source, STATE_ADD);
+        updatestate(message->source, STATE_ADD);
     else if (kv_match(event, "q=sub"))
-        updatestate(source, STATE_SUB);
+        updatestate(message->source, STATE_SUB);
     else if (kv_match(event, "q=mul"))
-        updatestate(source, STATE_MUL);
+        updatestate(message->source, STATE_MUL);
     else if (kv_match(event, "q=div"))
-        updatestate(source, STATE_DIV);
+        updatestate(message->source, STATE_DIV);
 
 }
 
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(struct message *message)
 {
 
     char *alfi = "initrd:data/alfi/wcalc.alfi";
 
-    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 
-static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
+static void onwmkeypress(struct message *message)
 {
 
-    struct event_wmkeypress *wmkeypress = mdata;
+    struct event_wmkeypress *wmkeypress = message->data;
 
     switch (wmkeypress->id)
     {
 
     case KEYS_KEY_0:
     case KEYS_KEY_KEYPAD_0:
-        updatevalue(source, 0);
+        updatevalue(message->source, 0);
 
         break;
 
     case KEYS_KEY_1:
     case KEYS_KEY_KEYPAD_1:
-        updatevalue(source, 1);
+        updatevalue(message->source, 1);
 
         break;
 
     case KEYS_KEY_2:
     case KEYS_KEY_KEYPAD_2:
-        updatevalue(source, 2);
+        updatevalue(message->source, 2);
 
         break;
 
     case KEYS_KEY_3:
     case KEYS_KEY_KEYPAD_3:
-        updatevalue(source, 3);
+        updatevalue(message->source, 3);
 
         break;
 
     case KEYS_KEY_4:
     case KEYS_KEY_KEYPAD_4:
-        updatevalue(source, 4);
+        updatevalue(message->source, 4);
 
         break;
 
     case KEYS_KEY_5:
     case KEYS_KEY_KEYPAD_5:
-        updatevalue(source, 5);
+        updatevalue(message->source, 5);
 
         break;
 
     case KEYS_KEY_6:
     case KEYS_KEY_KEYPAD_6:
-        updatevalue(source, 6);
+        updatevalue(message->source, 6);
 
         break;
 
     case KEYS_KEY_7:
     case KEYS_KEY_KEYPAD_7:
-        updatevalue(source, 7);
+        updatevalue(message->source, 7);
 
         break;
 
     case KEYS_KEY_8:
         if (wmkeypress->keymod & KEYS_MOD_SHIFT)
-            updatestate(source, STATE_MUL);
+            updatestate(message->source, STATE_MUL);
         else
-            updatevalue(source, 8);
+            updatevalue(message->source, 8);
 
         break;
 
     case KEYS_KEY_KEYPAD_8:
-        updatevalue(source, 8);
+        updatevalue(message->source, 8);
 
         break;
 
     case KEYS_KEY_9:
     case KEYS_KEY_KEYPAD_9:
-        updatevalue(source, 9);
+        updatevalue(message->source, 9);
 
         break;
 
     case KEYS_KEY_MINUS:
     case KEYS_KEY_KEYPAD_MINUS:
-        updatestate(source, STATE_SUB);
+        updatestate(message->source, STATE_SUB);
 
         break;
 
     case KEYS_KEY_EQUAL:
         if (wmkeypress->keymod & KEYS_MOD_SHIFT)
-            updatestate(source, STATE_ADD);
+            updatestate(message->source, STATE_ADD);
         else
-            updatestate(source, STATE_SUM);
+            updatestate(message->source, STATE_SUM);
 
         break;
 
     case KEYS_KEY_KEYPAD_PLUS:
-        updatestate(source, STATE_ADD);
+        updatestate(message->source, STATE_ADD);
 
         break;
 
     case KEYS_KEY_ENTER:
     case KEYS_KEY_KEYPAD_ENTER:
-        updatestate(source, STATE_SUM);
+        updatestate(message->source, STATE_SUM);
 
         break;
 
     case KEYS_KEY_SLASH:
     case KEYS_KEY_KEYPAD_SLASH:
-        updatestate(source, STATE_DIV);
+        updatestate(message->source, STATE_DIV);
 
         break;
 

@@ -94,35 +94,35 @@ static unsigned int cleanpath(char *path, unsigned int count)
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    if (checkpath(mdata, msize))
+    if (checkpath(message->data, message->length))
     {
 
-        msize = cleanpath(mdata, msize);
+        message->length = cleanpath(message->data, message->length);
 
-        if (msize)
+        if (message->length)
         {
 
-            unsigned int target = fs_auth(mdata);
+            unsigned int target = fs_auth(message->data);
 
             if (target)
             {
 
-                unsigned int id = fs_walk(1, target, 0, mdata);
+                unsigned int id = fs_walk(1, target, 0, message->data);
 
                 if (id)
-                    channel_send_fmt1(0, source, EVENT_OPTION, "pwd=%s\n", mdata);
+                    channel_send_fmt1(0, message->source, EVENT_OPTION, "pwd=%s\n", message->data);
                 else
-                    channel_send_fmt1(0, source, EVENT_ERROR, "Directory not found: %s\n", mdata);
+                    channel_send_fmt1(0, message->source, EVENT_ERROR, "Directory not found: %s\n", message->data);
 
             }
 
             else
             {
 
-                channel_send_fmt1(0, source, EVENT_ERROR, "Service not found: %s\n", mdata);
+                channel_send_fmt1(0, message->source, EVENT_ERROR, "Service not found: %s\n", message->data);
 
             }
 
@@ -133,7 +133,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
     else
     {
 
-        channel_send_fmt1(0, source, EVENT_ERROR, "Directory not found: %s\n", mdata);
+        channel_send_fmt1(0, message->source, EVENT_ERROR, "Directory not found: %s\n", message->data);
 
     }
 

@@ -70,22 +70,22 @@ static void check(unsigned int source, void *buffer, unsigned int count)
 
 }
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
+static void ondata(struct message *message)
 {
 
-    check(source, mdata, msize);
+    check(message->source, message->data, message->length);
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
+    unsigned int target = fs_auth(message->data);
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, mdata);
+        unsigned int id = fs_walk(1, target, 0, message->data);
 
         if (id)
         {
@@ -95,7 +95,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int offset;
 
             for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
-                check(source, buffer, count);
+                check(message->source, buffer, count);
 
         }
 

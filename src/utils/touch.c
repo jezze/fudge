@@ -1,15 +1,15 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
+    unsigned int target = fs_auth(message->data);
 
     if (target)
     {
 
-        unsigned int parent = fs_walk(0, target, 0, mdata);
+        unsigned int parent = fs_walk(0, target, 0, message->data);
 
         if (parent)
         {
@@ -20,7 +20,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             if (!id)
             {
 
-                channel_send_fmt1(0, source, EVENT_ERROR, "File could not be created.\n", mdata);
+                channel_send_fmt1(0, message->source, EVENT_ERROR, "File could not be created.\n", message->data);
 
             }
 
@@ -29,7 +29,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 

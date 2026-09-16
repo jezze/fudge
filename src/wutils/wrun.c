@@ -110,7 +110,7 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
@@ -123,7 +123,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -165,7 +165,7 @@ static void onwminit(unsigned int source, void *mdata, unsigned int msize)
         {
 
             if (ring_write(&input, buffer, count))
-                handlehttppacket(source);
+                handlehttppacket(message->source);
 
         }
 

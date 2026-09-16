@@ -23,7 +23,7 @@ static void setmemto(char *buffer, int value, unsigned int length)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int timer = channel_lookup(option_getstring("timer-service"));
@@ -97,7 +97,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
             R(5, 7, cA, sA)
             R(5, 8, cB, sB)
 
-            channel_send(0, source, EVENT_DATA, 2, sequence);
+            channel_send(0, message->source, EVENT_DATA, 2, sequence);
 
             for (k = 0; k < 1760; k += 80)
             {
@@ -105,7 +105,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                 char *offset = b + k;
                 unsigned int count = 80;
 
-                channel_send_fmt2(0, source, EVENT_DATA, "%w\n", offset, &count);
+                channel_send_fmt2(0, message->source, EVENT_DATA, "%w\n", offset, &count);
 
             }
 

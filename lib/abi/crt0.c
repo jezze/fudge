@@ -36,37 +36,37 @@ static char *extract(char *data, unsigned int length, unsigned int offset)
 
 }
 
-static void oninterrupt(unsigned int source, void *mdata, unsigned int msize)
+static void oninterrupt(struct message *message)
 {
 
-    channel_route(EVENT_DONE, source);
+    channel_route(EVENT_DONE, message->source);
 
 }
 
-static void onoption(unsigned int source, void *mdata, unsigned int msize)
+static void onoption(struct message *message)
 {
 
     unsigned int offset;
     unsigned int klength;
     unsigned int vlength;
 
-    for (offset = 0; (klength = eachentry(mdata, msize, offset, 1, "=")) && (vlength = eachentry(mdata, msize, offset + klength, 3, "&\n\0")); offset += klength + vlength)
+    for (offset = 0; (klength = eachentry(message->data, message->length, offset, 1, "=")) && (vlength = eachentry(message->data, message->length, offset + klength, 3, "&\n\0")); offset += klength + vlength)
     {
 
-        char *key = extract(mdata, klength, offset);
-        char *value = extract(mdata, vlength, offset + klength);
+        char *key = extract(message->data, klength, offset);
+        char *value = extract(message->data, vlength, offset + klength);
 
         if (!option_setstring(key, value))
-            channel_send_fmt1(0, source, EVENT_ERROR, "Unrecognized option: %s\n", key);
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Unrecognized option: %s\n", key);
 
     }
 
 }
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
+static void onterm(struct message *message)
 {
 
-    channel_route(EVENT_DONE, source);
+    channel_route(EVENT_DONE, message->source);
 
 }
 

@@ -63,22 +63,22 @@ static void print(unsigned int source, unsigned int count, void *buffer)
 
 }
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
+static void ondata(struct message *message)
 {
 
-    print(source, msize, mdata);
+    print(message->source, message->length, message->data);
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
+    unsigned int target = fs_auth(message->data);
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, mdata);
+        unsigned int id = fs_walk(1, target, 0, message->data);
 
         page = 0;
 
@@ -90,14 +90,14 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
             unsigned int offset;
 
             for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
-                print(source, count, buffer);
+                print(message->source, count, buffer);
 
         }
 
         else
         {
 
-            channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 

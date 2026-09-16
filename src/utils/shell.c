@@ -434,10 +434,10 @@ static void complete(void)
 
 }
 
-static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
+static void onconsoledata(struct message *message)
 {
 
-    struct event_consoledata *consoledata = mdata;
+    struct event_consoledata *consoledata = message->data;
 
     if (job_count(&job))
     {
@@ -451,7 +451,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
             break;
 
         default:
-            job_sendfirst(&job, 0, EVENT_CONSOLEDATA, msize, mdata);
+            job_sendfirst(&job, 0, EVENT_CONSOLEDATA, message->length, message->data);
 
             break;
 
@@ -643,10 +643,10 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
+static void onkeypress(struct message *message)
 {
 
-    struct event_keypress *keypress = mdata;
+    struct event_keypress *keypress = message->data;
     unsigned int id = keys_getcode(&keys, keypress->scancode);
 
     if (id)
@@ -736,24 +736,24 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
+static void onkeyrelease(struct message *message)
 {
 
-    struct event_keyrelease *keyrelease = mdata;
+    struct event_keyrelease *keyrelease = message->data;
 
     keys_getcode(&keys, keyrelease->scancode);
 
 }
 
-static void onerror(unsigned int source, void *mdata, unsigned int msize)
+static void onerror(struct message *message)
 {
 
     print("[ERROR] ", 8);
-    print(mdata, msize);
+    print(message->data, message->length);
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int console = channel_lookup(option_getstring("console-service"));

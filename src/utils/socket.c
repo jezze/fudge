@@ -7,7 +7,7 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
-static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
+static void onqueryrequest(struct message *message)
 {
 
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
@@ -25,21 +25,21 @@ static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
         {
 
             socket_connect_tcp(0, ethernet, &local, &remote, &router);
-            socket_send_tcp(0, ethernet, &local, &remote, &router, msize, mdata);
+            socket_send_tcp(0, ethernet, &local, &remote, &router, message->length, message->data);
 
             while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
-                channel_send(0, source, EVENT_DATA, count, buffer);
+                channel_send(0, message->source, EVENT_DATA, count, buffer);
 
         }
 
         if (cstring_match(optmode, "udp"))
         {
 
-            socket_send_udp(0, ethernet, &local, &remote, &router, msize, mdata);
+            socket_send_udp(0, ethernet, &local, &remote, &router, message->length, message->data);
 
             count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, MESSAGE_SIZE);
 
-            channel_send(0, source, EVENT_DATA, count, buffer);
+            channel_send(0, message->source, EVENT_DATA, count, buffer);
 
         }
 
@@ -47,7 +47,7 @@ static void onqueryrequest(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -69,7 +69,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_bind_ipv4s(&router, option_getstring("router-address"));
         socket_resolvelocal(0, ethernet, &local);
         channel_send(0, ethernet, EVENT_LINK, 0, 0);
-        channel_send(0, source, EVENT_READY, 0, 0);
+        channel_send(0, message->source, EVENT_READY, 0, 0);
 
         while (channel_process(0));
 

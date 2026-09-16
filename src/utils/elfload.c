@@ -230,22 +230,22 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     kernelcount = loadmap("initrd:kernel/fudge.map", kerneldata, 8192);
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
+    unsigned int target = fs_auth(message->data);
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, mdata);
+        unsigned int id = fs_walk(1, target, 0, message->data);
 
         if (id)
         {
@@ -268,7 +268,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
                         char mapname[256];
 
-                        cstring_write_fmt1(mapname, 256, 0, "%s.map\\0", mdata);
+                        cstring_write_fmt1(mapname, 256, 0, "%s.map\\0", message->data);
 
                         mapcount = loadmap(mapname, mapdata, 4096);
 
@@ -277,7 +277,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
                             fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                             updateundefined();
-                            resolve(source, target, id, &header, sectionheaders, address);
+                            resolve(message->source, target, id, &header, sectionheaders, address);
                             relocate(&header, sectionheaders, address);
                             savemap(mapname, mapdata, mapcount);
                             call_load(address);

@@ -4,22 +4,22 @@
 
 static struct crc sum;
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
+static void ondata(struct message *message)
 {
 
-    crc_read(&sum, mdata, msize);
+    crc_read(&sum, message->data, message->length);
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
+    unsigned int target = fs_auth(message->data);
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, mdata);
+        unsigned int id = fs_walk(1, target, 0, message->data);
 
         if (id)
         {
@@ -36,7 +36,7 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
         else
         {
 
-            channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", mdata);
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 
@@ -44,12 +44,12 @@ static void onpath(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onterm(unsigned int source, void *mdata, unsigned int msize)
+static void onterm(struct message *message)
 {
 
     unsigned int crc = crc_finalize(&sum);
 
-    channel_send_fmt1(0, source, EVENT_DATA, "%u\n", &crc);
+    channel_send_fmt1(0, message->source, EVENT_DATA, "%u\n", &crc);
 
 }
 

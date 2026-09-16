@@ -258,7 +258,7 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
@@ -298,7 +298,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                 channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
                 channel_send(0, keyboard, EVENT_LINK, 0, 0);
                 channel_send(0, timer, EVENT_LINK, 0, 0);
-                run(source, target, id);
+                run(message->source, target, id);
                 channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
                 channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
@@ -318,10 +318,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
+static void onvideoinfo(struct message *message)
 {
 
-    struct event_videoinfo *videoinfo = mdata;
+    struct event_videoinfo *videoinfo = message->data;
 
     framebuffer = (unsigned int *)videoinfo->framebuffer;
     w = videoinfo->width;
@@ -335,10 +335,10 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onpath(unsigned int source, void *mdata, unsigned int msize)
+static void onpath(struct message *message)
 {
 
-    buffer_write(path, 128, mdata, msize, 0);
+    buffer_write(path, 128, message->data, message->length, 0);
 
 }
 

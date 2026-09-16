@@ -412,7 +412,7 @@ static void complete(void)
 
 }
 
-static void onerror(unsigned int source, void *mdata, unsigned int msize)
+static void onerror(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
@@ -421,14 +421,14 @@ static void onerror(unsigned int source, void *mdata, unsigned int msize)
     {
 
         print("[ERROR] ", 8);
-        print(mdata, msize);
+        print(message->data, message->length);
         update(wm);
 
     }
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
@@ -446,19 +446,19 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(struct message *message)
 {
 
     char *alfi = "initrd:data/alfi/wshell.alfi";
 
-    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 
-static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
+static void onwmkeypress(struct message *message)
 {
 
-    struct event_wmkeypress *wmkeypress = mdata;
+    struct event_wmkeypress *wmkeypress = message->data;
 
     if (job_count(&job))
     {
@@ -563,7 +563,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             case KEYS_KEY_ENTER:
                 insertright(wmkeypress->length, &wmkeypress->unicode);
-                interpret(source);
+                interpret(message->source);
 
                 break;
 
@@ -614,7 +614,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    update(source);
+    update(message->source);
 
 }
 

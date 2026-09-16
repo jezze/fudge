@@ -80,7 +80,7 @@ static void handlehttppacket(unsigned int ethernet, unsigned int source, struct 
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -91,7 +91,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         struct event_clockinfo clockinfo;
         struct mtwist_state state;
-        struct message message;
+        struct message m;
 
         channel_send(0, clock, EVENT_INFO, 0, 0);
         channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
@@ -104,33 +104,33 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_resolveremote(0, ethernet, &local, &router);
         socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
-        while (channel_poll(0, ethernet, EVENT_DATA, &message))
+        while (channel_poll(0, ethernet, EVENT_DATA, &m))
         {
 
             struct socket *remote;
 
-            remote = socket_accept_arp(&local, remotes, 64, message.length, message.data);
+            remote = socket_accept_arp(&local, remotes, 64, m.length, m.data);
 
             if (remote)
             {
 
-                socket_handle_arp(0, ethernet, &local, remote, message.length, message.data);
+                socket_handle_arp(0, ethernet, &local, remote, m.length, m.data);
 
             }
 
-            remote = socket_accept_tcp(&local, remotes, 64, message.length, message.data);
+            remote = socket_accept_tcp(&local, remotes, 64, m.length, m.data);
 
             if (remote)
             {
 
                 unsigned char buffer[4096];
-                unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, message.length, message.data, 4096, buffer);
+                unsigned int count = socket_handle_tcp(0, ethernet, &local, remote, &router, m.length, m.data, 4096, buffer);
 
                 if (count)
                 {
 
                     if (ring_write(&input, buffer, count))
-                        handlehttppacket(ethernet, source, remote);
+                        handlehttppacket(ethernet, message->source, remote);
 
                 }
 

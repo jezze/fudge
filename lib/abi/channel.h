@@ -13,6 +13,6 @@ unsigned int channel_process(unsigned int ichannel);
 unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message);
 unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int channel_lookup(char *name);
-void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize));
+void channel_bind(unsigned int event, void (*callback)(struct message *message));
 void channel_route(unsigned int event, unsigned int target);
 void channel_close(void);

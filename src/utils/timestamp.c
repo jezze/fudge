@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -17,7 +17,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         timestamp = time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);
 
-        channel_send_fmt1(0, source, EVENT_DATA, "%u\n", &timestamp);
+        channel_send_fmt1(0, message->source, EVENT_DATA, "%u\n", &timestamp);
 
     }
 

@@ -83,7 +83,7 @@ static void dnsresolve(struct socket *socket, char *domain)
 
 }
 
-static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
+static void onconsoledata(struct message *message)
 {
 
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
@@ -91,7 +91,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
     if (ethernet)
     {
 
-        struct event_consoledata *consoledata = mdata;
+        struct event_consoledata *consoledata = message->data;
         char buffer[4096];
         unsigned int count;
 
@@ -140,7 +140,7 @@ static void onconsoledata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -173,7 +173,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
         while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
-            channel_send(0, source, EVENT_DATA, count, buffer);
+            channel_send(0, message->source, EVENT_DATA, count, buffer);
 
         channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 

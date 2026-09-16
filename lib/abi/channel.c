@@ -8,7 +8,7 @@
 #define CHANNEL_STATE_PENDING           2
 #define CHANNEL_STATE_CLOSED            3
 
-static void (*listeners[CHANNEL_EVENTS])(unsigned int source, void *data, unsigned int size);
+static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int routes[CHANNEL_EVENTS];
 static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int pending;
@@ -84,7 +84,7 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
 
         pending++;
 
-        listeners[message->event](message->source, message->data, message->length);
+        listeners[message->event](message);
 
         pending--;
 
@@ -273,7 +273,7 @@ unsigned int channel_lookup(char *name)
 
 }
 
-void channel_bind(unsigned int event, void (*callback)(unsigned int source, void *mdata, unsigned int msize))
+void channel_bind(unsigned int event, void (*callback)(struct message *message))
 {
 
     listeners[event] = callback;

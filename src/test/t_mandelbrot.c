@@ -215,7 +215,7 @@ static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int 
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
@@ -289,7 +289,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
+static void onmousepress(struct message *message)
 {
 
     channel_close();

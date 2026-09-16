@@ -114,7 +114,7 @@ static char *modules[36] = {
     "initrd:kernel/smp.ko"
 };
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     loadmodules(1, 36, modules);

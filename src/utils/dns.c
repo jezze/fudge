@@ -59,7 +59,7 @@ static void reply(unsigned int source, unsigned short type, char *name, void *rd
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -120,7 +120,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
                 rddata = (buffer + responselength);
                 responselength += net_load16(answer->rdlength);
 
-                reply(source, net_load16(answer->type), name, rddata, buffer);
+                reply(message->source, net_load16(answer->type), name, rddata, buffer);
 
             }
 

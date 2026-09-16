@@ -66,81 +66,81 @@ static unsigned int stat(unsigned int id, struct record *record)
 
 }
 
-static void oncreaterequest(unsigned int source, void *mdata, unsigned int msize)
+static void oncreaterequest(struct message *message)
 {
 
-    /*struct event_createrequest *request = mdata;*/
+    /*struct event_createrequest *request = message->data;*/
     struct event_createresponse response;
 
     response.id = 0;
 
-    channel_send(0, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+    channel_send(0, message->source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
 
 }
 
-static void onreadrequest(unsigned int source, void *mdata, unsigned int msize)
+static void onreadrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    /*struct event_readrequest *request = mdata;*/
+    /*struct event_readrequest *request = message->data;*/
     struct event_readresponse *response = (struct event_readresponse *)data;
 
     response->count = 0;
 
-    channel_send(0, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
+    channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
 
 }
 
-static void onremoverequest(unsigned int source, void *mdata, unsigned int msize)
+static void onremoverequest(struct message *message)
 {
 
-    /*struct event_removerequest *request = mdata;*/
+    /*struct event_removerequest *request = message->data;*/
     struct event_removeresponse response;
 
     response.status = 0;
 
-    channel_send(0, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
+    channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
 }
 
-static void onstatrequest(unsigned int source, void *mdata, unsigned int msize)
+static void onstatrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct event_statrequest *request = mdata;
+    struct event_statrequest *request = message->data;
     struct event_statresponse *response = (struct event_statresponse *)data;
 
     response->count = stat(request->id, (struct record *)(response + 1));
 
-    channel_send(0, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, data);
+    channel_send(0, message->source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, data);
 
 }
 
-static void onwalkrequest(unsigned int source, void *mdata, unsigned int msize)
+static void onwalkrequest(struct message *message)
 {
 
-    /*struct event_walkrequest *request = mdata;*/
+    /*struct event_walkrequest *request = message->data;*/
     struct event_walkresponse response;
 
     response.id = 0;
 
-    channel_send(0, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    channel_send(0, message->source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
-static void onwriterequest(unsigned int source, void *mdata, unsigned int msize)
+static void onwriterequest(struct message *message)
 {
 
-    /*struct event_writerequest *request = mdata;*/
+    /*struct event_writerequest *request = message->data;*/
     struct event_writeresponse response;
 
     response.count = 0;
 
-    channel_send(0, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
+    channel_send(0, message->source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int block = channel_lookup(option_getstring("block-service"));

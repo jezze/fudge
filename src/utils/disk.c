@@ -27,7 +27,7 @@ static void printpartition(unsigned int source, struct mbr_partition *partition)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
@@ -57,17 +57,17 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
                 unsigned int i;
 
-                channel_send_fmt2(0, source, EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
+                channel_send_fmt2(0, message->source, EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
 
                 for (i = 0; i < 4; i++)
                 {
 
                     struct mbr_partition *partition = &mbr->partition[i];
 
-                    channel_send_fmt1(0, source, EVENT_DATA, "Partition %u:\n", &i);
+                    channel_send_fmt1(0, message->source, EVENT_DATA, "Partition %u:\n", &i);
 
                     if (partition->systemid)
-                        printpartition(source, partition);
+                        printpartition(message->source, partition);
 
                 }
 

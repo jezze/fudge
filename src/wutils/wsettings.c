@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
@@ -19,12 +19,12 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(struct message *message)
 {
 
     char *alfi = "initrd:data/alfi/wsettings.alfi";
 
-    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 

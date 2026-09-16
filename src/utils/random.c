@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int clock = channel_lookup(option_getstring("clock-service"));
@@ -19,7 +19,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
         value = mtwist_rand(&state);
 
-        channel_send_fmt1(0, source, EVENT_DATA, "%u\n", &value);
+        channel_send_fmt1(0, message->source, EVENT_DATA, "%u\n", &value);
 
     }
 

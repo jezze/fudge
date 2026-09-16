@@ -489,10 +489,10 @@ static void purge(unsigned int source)
 
 }
 
-static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
+static void onkeypress(struct message *message)
 {
 
-    struct event_keypress *keypress = mdata;
+    struct event_keypress *keypress = message->data;
     unsigned int id = keys_getcode(&state.keys, keypress->scancode);
 
     if (id)
@@ -579,16 +579,16 @@ static void onkeypress(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onkeyrelease(unsigned int source, void *mdata, unsigned int msize)
+static void onkeyrelease(struct message *message)
 {
 
-    struct event_keyrelease *keyrelease = mdata;
+    struct event_keyrelease *keyrelease = message->data;
 
     keys_getcode(&state.keys, keyrelease->scancode);
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
@@ -633,10 +633,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
+static void onmousemove(struct message *message)
 {
 
-    struct event_mousemove *mousemove = mdata;
+    struct event_mousemove *mousemove = message->data;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.region.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.region.size.h);
 
@@ -681,10 +681,10 @@ static void onmousemove(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
+static void onmousepress(struct message *message)
 {
 
-    struct event_mousepress *mousepress = mdata;
+    struct event_mousepress *mousepress = message->data;
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
@@ -719,7 +719,7 @@ static void onmousepress(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
+static void onmousescroll(struct message *message)
 {
 
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
@@ -727,7 +727,7 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
     if (scrollablewidget)
     {
 
-        struct event_mousescroll *mousescroll = mdata;
+        struct event_mousescroll *mousescroll = message->data;
 
         scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
 
@@ -737,10 +737,10 @@ static void onmousescroll(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
+static void onmouserelease(struct message *message)
 {
 
-    struct event_mouserelease *mouserelease = mdata;
+    struct event_mouserelease *mouserelease = message->data;
 
     state.mousereleased.x = state.mouseposition.x;
     state.mousereleased.y = state.mouseposition.y;
@@ -762,10 +762,10 @@ static void onmouserelease(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
+static void onvideoinfo(struct message *message)
 {
 
-    struct event_videoinfo *videoinfo = mdata;
+    struct event_videoinfo *videoinfo = message->data;
     unsigned int factor = videoinfo->height / 320;
     unsigned int lineheight = 12 + factor * 4;
     unsigned int padding = 4 + factor * 2;
@@ -789,7 +789,7 @@ static void onvideoinfo(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
+static void onwmgrab(struct message *message)
 {
 
     state.state = STATE_GRABBED;
@@ -801,47 +801,47 @@ static void onwmgrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSESCROLL, 0);
     channel_bind(EVENT_MOUSERELEASE, 0);
     channel_bind(EVENT_VIDEOINFO, 0);
-    channel_send(0, source, EVENT_WMACK, 0, 0);
+    channel_send(0, message->source, EVENT_WMACK, 0, 0);
 
 }
 
-static void onwmmap(unsigned int source, void *mdata, unsigned int msize)
+static void onwmmap(struct message *message)
 {
 
-    channel_send(0, source, EVENT_WMINIT, 0, 0);
+    channel_send(0, message->source, EVENT_WMINIT, 0, 0);
 
 }
 
-static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
+static void onwmrenderdata(struct message *message)
 {
 
-    parser_parse(source, "root", msize, mdata);
+    parser_parse(message->source, "root", message->length, message->data);
     pool_loadresources();
-    placewindows(source);
-    purge(source);
+    placewindows(message->source);
+    purge(message->source);
     bump(state.mousewidget);
 
 }
 
-static void onwmrenderfile(unsigned int source, void *mdata, unsigned int msize)
+static void onwmrenderfile(struct message *message)
 {
 
-    unsigned int target = fs_auth(mdata);
+    unsigned int target = fs_auth(message->data);
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, mdata);
+        unsigned int id = fs_walk(1, target, 0, message->data);
         
         if (id)
         {
 
             char data1[4096];
 
-            parser_parse(source, "root", fs_read(1, target, id, data1, 4096, 0), data1);
+            parser_parse(message->source, "root", fs_read(1, target, id, data1, 4096, 0), data1);
             pool_loadresources();
-            placewindows(source);
-            purge(source);
+            placewindows(message->source);
+            purge(message->source);
             bump(state.mousewidget);
 
         }
@@ -850,7 +850,7 @@ static void onwmrenderfile(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
+static void onwmungrab(struct message *message)
 {
 
     state.state = STATE_UNGRABBED;
@@ -862,16 +862,16 @@ static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
-    channel_send(0, source, EVENT_WMACK, 0, 0);
+    channel_send(0, message->source, EVENT_WMACK, 0, 0);
 
 }
 
-static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
+static void onwmunmap(struct message *message)
 {
 
     struct list_item *current = 0;
 
-    while ((current = pool_nextsource(current, source)))
+    while ((current = pool_nextsource(current, message->source)))
     {
 
         struct widget *widget = current->data;
@@ -880,7 +880,7 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 
     }
 
-    purge(source);
+    purge(message->source);
 
 }
 

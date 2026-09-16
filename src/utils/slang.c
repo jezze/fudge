@@ -309,10 +309,10 @@ static void parse(unsigned int source, struct tokenlist *postfix, struct tokenli
 
 }
 
-static void ondata(unsigned int source, void *mdata, unsigned int msize)
+static void ondata(struct message *message)
 {
 
-    if (msize)
+    if (message->length)
     {
 
         char buffer[1024];
@@ -329,9 +329,9 @@ static void ondata(unsigned int source, void *mdata, unsigned int msize)
         tokenlist_init(&infix, 1024, infixdata);
         tokenlist_init(&postfix, 1024, postfixdata);
         tokenlist_init(&stack, 8, stackdata);
-        tokenizebuffer(&infix, &stringtable, msize, mdata);
+        tokenizebuffer(&infix, &stringtable, message->length, message->data);
         translate(&postfix, &infix, &stack);
-        parse(source, &postfix, &stack, 1024, buffer);
+        parse(message->source, &postfix, &stack, 1024, buffer);
 
     }
 

@@ -70,7 +70,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     char *opturl = option_getstring("url");
@@ -88,8 +88,8 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         else
             url_parse(&url, urldata, 2048, opturl, URL_HOST);
 
-        dnsresolve(source, url.host, address);
-        opensocket(source, &url, address);
+        dnsresolve(message->source, url.host, address);
+        opensocket(message->source, &url, address);
 
     }
 

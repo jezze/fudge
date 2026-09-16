@@ -58,7 +58,7 @@ static void updatecontent(unsigned int wm)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
@@ -76,10 +76,10 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
-static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
+static void onwmevent(struct message *message)
 {
 
-    struct event_wmevent *event = mdata;
+    struct event_wmevent *event = message->data;
 
     if (kv_match(event, "q=copy"))
     {
@@ -123,8 +123,8 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 
         }
 
-        updatepath(source);
-        updatecontent(source);
+        updatepath(message->source);
+        updatecontent(message->source);
 
     }
 
@@ -132,8 +132,8 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     {
 
         cstring_write_fmt1(path, 256, 0, "%s\\0", kv_getstring(event, "path="));
-        updatepath(source);
-        updatecontent(source);
+        updatepath(message->source);
+        updatecontent(message->source);
 
     }
 
@@ -141,29 +141,29 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
     {
 
         cstring_write_fmt2(path, 256, 0, "%s%s\\0", path, kv_getstring(event, "path="));
-        updatepath(source);
-        updatecontent(source);
+        updatepath(message->source);
+        updatecontent(message->source);
 
     }
 
 }
 
-static void onwminit(unsigned int source, void *mdata, unsigned int msize)
+static void onwminit(struct message *message)
 {
 
     char *alfi = "initrd:data/alfi/wfile.alfi";
 
-    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
     cstring_write_fmt0(path, 256, 0, "initrd:\\0");
-    updatepath(source);
-    updatecontent(source);
+    updatepath(message->source);
+    updatecontent(message->source);
 
 }
 
-static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
+static void onwmkeypress(struct message *message)
 {
 
-    struct event_wmkeypress *wmkeypress = mdata;
+    struct event_wmkeypress *wmkeypress = message->data;
 
     switch (wmkeypress->id)
     {
@@ -174,7 +174,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor--;
 
-            channel_send_fmt1(0, source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(0, message->source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 
@@ -186,7 +186,7 @@ static void onwmkeypress(unsigned int source, void *mdata, unsigned int msize)
 
             cursor++;
 
-            channel_send_fmt1(0, source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
+            channel_send_fmt1(0, message->source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
 
         }
 

@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int timer = channel_lookup(option_getstring("timer-service"));
@@ -16,7 +16,7 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
         while (channel_wait(0, timer, EVENT_TIMERTICK, 0, 0))
         {
 
-            channel_send_fmt1(0, source, EVENT_DATA, "Tick: %u second(s)\n", &counter);
+            channel_send_fmt1(0, message->source, EVENT_DATA, "Tick: %u second(s)\n", &counter);
 
             counter++;
 

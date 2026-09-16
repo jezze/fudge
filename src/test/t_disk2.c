@@ -152,12 +152,12 @@ static void sendrequest(unsigned int target, unsigned int source)
 
 }
 
-static void onmain(unsigned int source, void *mdata, unsigned int msize)
+static void onmain(struct message *message)
 {
 
     unsigned int target = channel_lookup(option_getstring("9p-service"));
 
-    sendrequest(target, source);
+    sendrequest(target, message->source);
 
 }
 
