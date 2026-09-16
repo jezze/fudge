@@ -151,25 +151,9 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data =
-        "+ window id \"window\" label \"File Manager\"\n"
-        "  + panel id \"base\" in \"window\" flow \"vertical-stretch\" padding \"8\" span \"1\"\n"
-        "    + layout id \"top\" in \"base\" flow \"horizontal\" spacing \"8\"\n"
-        "      + select id \"volume\" in \"top\" label \"Volume\"\n"
-        "        + layout id \"volume-list\" in \"volume\" flow \"vertical-stretch\"\n"
-        "          + choice in \"volume-list\" label \"initrd:\" onclick \"q=abspath&path=initrd:\"\n"
-        "      + textbox id \"pathbox\" in \"top\" span \"1\" cursor \"0\"\n"
-        "        + text id \"path\" in \"pathbox\"\n"
-        "      + button in \"top\" label \"Up\" onclick \"q=up\"\n"
-        "    + layout id \"main\" in \"base\" flow \"horizontal-stretch\" spacing \"8\" span \"1\"\n"
-        "      + listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n"
-        "    + layout id \"bottom\" in \"base\" flow \"horizontal\" spacing \"8\"\n"
-        "      + button in \"bottom\" label \"Copy\" onclick \"q=copy\"\n"
-        "      + button in \"bottom\" label \"Cut\" onclick \"q=cut\"\n"
-        "      + button in \"bottom\" label \"Paste\" onclick \"q=paste\"\n"
-        "      + button in \"bottom\" label \"Delete\" onclick \"q=delete\"\n";
+    char *alfi = "initrd:data/alfi/wfile.alfi";
 
-    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
+    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
     cstring_write_fmt0(path, 256, 0, "initrd:\\0");
     updatepath(source);
     updatecontent(source);

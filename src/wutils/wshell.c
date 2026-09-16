@@ -449,14 +449,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data =
-        "+ window id \"window\" label \"Shell\"\n"
-        "  + textbox id \"output\" in \"window\" flow \"vertical\" overflow \"vscroll\" mode \"readonly\" span \"1\" cursor \"0\"\n"
-        "    + text id \"result\" in \"output\" display \"inline\" wrap \"char\"\n"
-        "    + text id \"prompt\" in \"output\" display \"inline\" wrap \"char\" weight \"bold\" label \"$ \"\n"
-        "    + text id \"input\" in \"output\" display \"inline\" wrap \"char\" label \"\"\n";
+    char *alfi = "initrd:data/alfi/wshell.alfi";
 
-    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
+    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 

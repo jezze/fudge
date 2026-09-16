@@ -22,12 +22,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data =
-        "+ window id \"window\" label \"Test\"\n"
-        "  + panel id \"base\" in \"window\" flow \"vertical\" padding \"8\" span \"1\"\n"
-        "    + image in \"base\" mimetype \"image/pcx\" source \"initrd:data/giant.pcx\"\n";
+    char *alfi = "initrd:data/alfi/wtest.alfi";
 
-    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
+    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 

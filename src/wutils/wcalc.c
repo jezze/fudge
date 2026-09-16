@@ -122,32 +122,9 @@ static void onwmevent(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data =
-        "+ window id \"window\" label \"Calculator\" flow \"vertical-stretch\"\n"
-        "  + textbox id \"output\" in \"window\" mode \"readonly\" flow \"vertical-stretch\"\n"
-        "    + text id \"result\" in \"output\" label \"0\" halign \"right\"\n"
-        "  + layout id \"row1\" in \"window\" flow \"horizontal-stretch\" span \"1\"\n"
-        "    + button in \"row1\" label \"7\" span \"1\" onclick \"q=num&value=7\"\n"
-        "    + button in \"row1\" label \"8\" span \"1\" onclick \"q=num&value=8\"\n"
-        "    + button in \"row1\" label \"9\" span \"1\" onclick \"q=num&value=9\"\n"
-        "    + button in \"row1\" label \"/\" span \"1\" onclick \"q=div\"\n"
-        "  + layout id \"row2\" in \"window\" flow \"horizontal-stretch\" span \"1\"\n"
-        "    + button in \"row2\" label \"4\" span \"1\" onclick \"q=num&value=4\"\n"
-        "    + button in \"row2\" label \"5\" span \"1\" onclick \"q=num&value=5\"\n"
-        "    + button in \"row2\" label \"6\" span \"1\" onclick \"q=num&value=6\"\n"
-        "    + button in \"row2\" label \"x\" span \"1\" onclick \"q=mul\"\n"
-        "  + layout id \"row3\" in \"window\" flow \"horizontal-stretch\" span \"1\"\n"
-        "    + button in \"row3\" label \"3\" span \"1\" onclick \"q=num&value=3\"\n"
-        "    + button in \"row3\" label \"2\" span \"1\" onclick \"q=num&value=2\"\n"
-        "    + button in \"row3\" label \"1\" span \"1\" onclick \"q=num&value=1\"\n"
-        "    + button in \"row3\" label \"-\" span \"1\" onclick \"q=sub\"\n"
-        "  + layout id \"row4\" in \"window\" flow \"horizontal-stretch\" span \"1\"\n"
-        "    + button in \"row4\" label \"0\" span \"1\" onclick \"q=num&value=0\"\n"
-        "    + button in \"row4\" label \".\" span \"1\" onclick \"q=dot\"\n"
-        "    + button in \"row4\" label \"+\" span \"1\" onclick \"q=add\"\n"
-        "    + button in \"row4\" label \"=\" span \"1\" onclick \"q=sum\"\n";
+    char *alfi = "initrd:data/alfi/wcalc.alfi";
 
-    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
+    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 

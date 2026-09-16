@@ -1,0 +1,10 @@
++ window id "window" label "About"
++ panel id "base" in "window" flow "vertical" padding "8" span "1"
++ text in "base" weight "bold" wrap "word" label "Fudge Operating System"
++ text in "base" wrap "word" label "(more info will come soon)"
++ text in "base" weight "bold" wrap "word" label "Contributors (in no particular order)"
++ text in "base" wrap "word" label "jfu (Jens Nyberg)"
++ text in "base" wrap "word" label "Max-Might"
++ text in "base" wrap "word" label "tomByrer (Tom Byrer)"
++ text in "base" wrap "word" label "LemonDMN2"
+

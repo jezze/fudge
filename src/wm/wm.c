@@ -823,6 +823,33 @@ static void onwmrenderdata(unsigned int source, void *mdata, unsigned int msize)
 
 }
 
+static void onwmrenderfile(unsigned int source, void *mdata, unsigned int msize)
+{
+
+    unsigned int target = fs_auth(mdata);
+
+    if (target)
+    {
+
+        unsigned int id = fs_walk(1, target, 0, mdata);
+        
+        if (id)
+        {
+
+            char data1[4096];
+
+            parser_parse(source, "root", fs_read(1, target, id, data1, 4096, 0), data1);
+            pool_loadresources();
+            placewindows(source);
+            purge(source);
+            bump(state.mousewidget);
+
+        }
+
+    }
+
+}
+
 static void onwmungrab(unsigned int source, void *mdata, unsigned int msize)
 {
 
@@ -860,27 +887,26 @@ static void onwmunmap(unsigned int source, void *mdata, unsigned int msize)
 static void setupwidgets(void)
 {
 
-    char *data0 =
-        "+ layout id \"root\" flow \"stretch\"\n";
-    char *data1 =
-        "+ fill color \"FF202020\"\n"
-        "+ image id \"mouse\" mimetype \"image/fudge-icon-mouse\" display \"fixed\"\n"
-        "+ layout id \"desktop\" flow \"vertical\"\n"
-        "  + layout id \"menu\" in \"desktop\" flow \"horizontal\"\n"
-        "    + select id \"fudge-select\" in \"menu\" label \"Fudge\"\n"
-        "      + layout id \"fudge-layout\" in \"fudge-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"fudge-layout\" label \"About\" onclick \"run=initrd:bin/wabout\"\n"
-        "        + choice in \"fudge-layout\" label \"Settings\" onclick \"run=initrd:bin/wsettings\"\n"
-        "        + choice in \"fudge-layout\" label \"Reboot\" onclick \"run=initrd:bin/reboot\"\n"
-        "    + select id \"apps-select\" in \"menu\" label \"Apps\"\n"
-        "      + layout id \"apps-layout\" in \"apps-select\" flow \"vertical-stretch\"\n"
-        "        + choice in \"apps-layout\" label \"Shell\" onclick \"run=initrd:bin/wshell\"\n"
-        "        + choice in \"apps-layout\" label \"File Manager\" onclick \"run=initrd:bin/wfile\"\n"
-        "        + choice in \"apps-layout\" label \"Calculator\" onclick \"run=initrd:bin/wcalc\"\n"
-        "        + choice in \"apps-layout\" label \"Test\" onclick \"run=initrd:bin/wtest\"\n";
+    char *data0 = "+ layout id \"root\" flow \"stretch\"\n";
+    unsigned int target = fs_auth("initrd:");
 
     parser_parse(0, "", cstring_length(data0), data0);
-    parser_parse(0, "root", cstring_length(data1), data1);
+
+    if (target)
+    {
+
+        unsigned int id = fs_walk(1, target, 0, "initrd:data/alfi/wm.alfi");
+        
+        if (id)
+        {
+
+            char data1[4096];
+
+            parser_parse(0, "root", fs_read(1, target, id, data1, 4096, 0), data1);
+
+        }
+
+    }
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
     state.mousewidget = pool_getwidgetbyid(0, "mouse");
@@ -914,6 +940,7 @@ void init(void)
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMMAP, onwmmap);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
+    channel_bind(EVENT_WMRENDERFILE, onwmrenderfile);
     channel_bind(EVENT_WMUNGRAB, onwmungrab);
     channel_bind(EVENT_WMUNMAP, onwmunmap);
 

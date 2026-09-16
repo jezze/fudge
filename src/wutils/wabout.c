@@ -22,18 +22,9 @@ static void onmain(unsigned int source, void *mdata, unsigned int msize)
 static void onwminit(unsigned int source, void *mdata, unsigned int msize)
 {
 
-    char *data =
-        "+ window id \"window\" label \"About\"\n"
-        "  + panel id \"base\" in \"window\" flow \"vertical\" padding \"8\" span \"1\"\n"
-        "    + text in \"base\" weight \"bold\" wrap \"word\" label \"Fudge Operating System\"\n"
-        "    + text in \"base\" wrap \"word\" label \"(more info will come soon)\"\n"
-        "    + text in \"base\" weight \"bold\" wrap \"word\" label \"Contributors (in no particular order)\"\n"
-        "    + text in \"base\" wrap \"word\" label \"jfu (Jens Nyberg)\"\n"
-        "    + text in \"base\" wrap \"word\" label \"Max-Might\"\n"
-        "    + text in \"base\" wrap \"word\" label \"tomByrer (Tom Byrer)\"\n"
-        "    + text in \"base\" wrap \"word\" label \"LemonDMN2\"\n";
+    char *alfi = "initrd:data/alfi/wabout.alfi";
 
-    channel_send_fmt0(0, source, EVENT_WMRENDERDATA, data);
+    channel_send(0, source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 
