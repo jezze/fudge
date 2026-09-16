@@ -55,17 +55,17 @@ config-loader-integratorcp:
 config-loader-medany:
 	@echo "LOADER:=medany" >> $(DIR_MK)/$(CONFIG).mk
 
-config-target-i386-unknown-elf:
-	@echo "TARGET:=i386-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
-
-config-target-i386-tcc:
-	@echo "TARGET:=i386-tcc" >> $(DIR_MK)/$(CONFIG).mk
-
 config-target-arm-none-eabi:
 	@echo "TARGET:=arm-none-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
 config-target-arm-unknown-eabi:
 	@echo "TARGET:=arm-unknown-eabi" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-i386-unknown-elf:
+	@echo "TARGET:=i386-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
+
+config-target-i386-tcc:
+	@echo "TARGET:=i386-tcc" >> $(DIR_MK)/$(CONFIG).mk
 
 config-target-riscv64-elf:
 	@echo "TARGET:=riscv64-elf" >> $(DIR_MK)/$(CONFIG).mk
@@ -79,8 +79,7 @@ config-target-riscv64-tcc:
 config-target-x86_64-linux-gnu:
 	@echo "TARGET:=x86_64-linux-gnu" >> $(DIR_MK)/$(CONFIG).mk
 
-x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-unknown-elf
-x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
+default: x86-mboot
 
 arm-integratorcp-none: config-init | config-arch-arm config-loader-integratorcp config-target-arm-none-eabi
 arm-integratorcp-unknown: config-init | config-arch-arm config-loader-integratorcp config-target-arm-unknown-eabi
@@ -89,7 +88,10 @@ riscv-medany-elf: config-init | config-arch-riscv config-loader-medany config-ta
 riscv-medany-linux: config-init | config-arch-riscv config-loader-medany config-target-riscv64-linux-gnu
 riscv-medany-tcc: config-init | config-arch-riscv config-loader-medany config-target-riscv64-tcc
 
-default: x86-mboot
+x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-unknown-elf
+x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
+
+x86_64-mboot: config-init | config-arch-x86 config-loader-mboot config-target-x86_64-linux-gnu
 
 help:
 	@echo "Building and cleaning:"
@@ -103,14 +105,15 @@ help:
 	@echo ""
 	@echo "Where <config> is one of the following:"
 	@echo ""
-	@echo "  x86-mboot (default)"
-	@echo "  x86-mboot-tcc"
 	@echo "  arm-integratorcp-none"
 	@echo "  arm-integratorcp-unknown"
 	@echo "  arm-integratorcp-tcc"
 	@echo "  riscv-medany-elf"
 	@echo "  riscv-medany-linux"
 	@echo "  riscv-medany-tcc"
+	@echo "  x86-mboot (default)"
+	@echo "  x86-mboot-tcc"
+	@echo "  x86_64-mboot"
 	@echo ""
 
 include $(DIR_MK)/$(CONFIG).mk

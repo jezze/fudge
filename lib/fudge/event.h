@@ -148,7 +148,7 @@ struct event_videoconf
 struct event_videoinfo
 {
 
-    unsigned int framebuffer;
+    unsigned long framebuffer;
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
@@ -158,7 +158,7 @@ struct event_videoinfo
 struct event_blockinfo
 {
 
-    unsigned int buffer;
+    unsigned long buffer;
     unsigned int buffersize;
     unsigned int blocksize;
 
