@@ -220,7 +220,7 @@ cmd_disk_setup() {
 
     echo -n "Install GRUB... "
     grub-install --target=i386-pc --boot-directory="${bootdir}" "${device}"
-    grub-install --target=x86_64-efi --efi-directory="${uefidir}" --bootloader-id=GRUB --boot-directory="${bootdir}"
+    grub-install --target=x86_64-efi --efi-directory="${uefidir}" --bootloader-id=GRUB --boot-directory="${bootdir}" --removable
     echo "done"
 
     echo -n "Unmount filesystems... "
