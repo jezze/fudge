@@ -70,7 +70,7 @@ cmd_run() {
 
     if test "${uefi}" == "y"
     then
-        cmd="${cmd} -bios src/kernel/x86/uefi/ovmf.fd"
+        cmd="${cmd} -bios data/ovmf.fd"
     fi
 
     sttybak=$(stty -g)
