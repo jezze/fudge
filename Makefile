@@ -49,6 +49,9 @@ config-arch-riscv:
 config-loader-mboot:
 	@echo "LOADER:=mboot" >> $(DIR_MK)/$(CONFIG).mk
 
+config-loader-mboot2:
+	@echo "LOADER:=mboot2" >> $(DIR_MK)/$(CONFIG).mk
+
 config-loader-integratorcp:
 	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
 
@@ -89,6 +92,7 @@ riscv-medany-linux: config-init | config-arch-riscv config-loader-medany config-
 riscv-medany-tcc: config-init | config-arch-riscv config-loader-medany config-target-riscv64-tcc
 
 x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-unknown-elf
+x86-mboot2: config-init | config-arch-x86 config-loader-mboot2 config-target-i386-unknown-elf
 x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
 
 x86_64-mboot: config-init | config-arch-x86 config-loader-mboot config-target-x86_64-linux-gnu
@@ -112,6 +116,7 @@ help:
 	@echo "  riscv-medany-linux"
 	@echo "  riscv-medany-tcc"
 	@echo "  x86-mboot (default)"
+	@echo "  x86-mboot2"
 	@echo "  x86-mboot-tcc"
 	@echo "  x86_64-mboot"
 	@echo ""
@@ -134,7 +139,7 @@ $(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
 	@cp $(RAMDISK) $@
 	@mkdir -p $@/efi
 	@mkdir -p $@/grub
-	@cp grub.cfg $@/grub
+	@cp -f grub-$(LOADER).cfg $@/grub/grub.cfg
 
 $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@echo BUILD ROOT $@
