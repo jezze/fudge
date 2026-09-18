@@ -46,11 +46,13 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     }
 
-    if (ramdisk)
-        cpio_setup(ramdisk->start, ramdisk->end);
+    if (ramdisk && init)
+    {
 
-    if (init)
+        cpio_setup(ramdisk->start, ramdisk->end);
         arch_setup2(init->start);
+
+    }
 
     for (;;);
 
