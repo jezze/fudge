@@ -6,8 +6,8 @@
 .set MBOOT_OPTIONAL,                    1
 .set MBOOT_TAG_END,                     0
 .set MBOOT_TAG_FRAMEBUFFER,             5
-.set MBOOT_FRAMEBUFFER_WIDTH,           1920
-.set MBOOT_FRAMEBUFFER_HEIGHT,          1080
+.set MBOOT_FRAMEBUFFER_WIDTH,           1024
+.set MBOOT_FRAMEBUFFER_HEIGHT,          768
 .set MBOOT_FRAMEBUFFER_DEPTH,           32
 
 .section .text.boot

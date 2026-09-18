@@ -42,6 +42,40 @@ void mboot_setup(unsigned long address, unsigned long magic)
         if (tag->type == MBOOT_TAG_FRAMEBUFFER)
         {
 
+            struct mboot_tag_framebuffer *framebuffer = (struct mboot_tag_framebuffer *)(tag + 1);
+            unsigned int *fb = (unsigned int *)framebuffer->address[0];
+            /*
+            unsigned int i;
+            */
+
+            if (fb)
+            {
+
+                switch (framebuffer->type)
+                {
+
+                case 0: /* indexed */
+                    break;
+
+                case 1: /* rgb */
+                    /*
+                    for (i = 0; i < 200; i++)
+                    {
+
+                        fb[i] = 0xFFFFFFFF;
+
+                    }
+                    */
+
+                    break;
+
+                case 2: /* ega text */
+                    break;
+
+                }
+
+            }
+
         }
 
     }
@@ -53,8 +87,6 @@ void mboot_setup(unsigned long address, unsigned long magic)
         arch_setup2(init->start);
 
     }
-
-    for (;;);
 
 }
 

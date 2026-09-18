@@ -37,7 +37,7 @@ struct mboot_tag_framebuffer
     unsigned int height;
     unsigned char bpp;
     unsigned char type;
-    short reserved;
+    unsigned short reserved;
 
 };
 

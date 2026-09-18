@@ -129,7 +129,5 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    for (;;);
-
 }
 
