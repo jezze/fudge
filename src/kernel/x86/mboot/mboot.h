@@ -95,10 +95,8 @@ struct mboot_mmap
 {
 
     unsigned int size;
-    unsigned int address0;
-    unsigned int address1;
-    unsigned int limit0;
-    unsigned int limit1;
+    unsigned int address[2];
+    unsigned int limit[2];
     unsigned int type;
 
 };

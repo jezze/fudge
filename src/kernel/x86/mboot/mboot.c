@@ -9,10 +9,11 @@
 #include "elf.h"
 #include "mboot.h"
 
-#define MBOOT_MAGIC                     0x2BADB002
-
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
+
+    struct mboot_module *ramdisk = 0;
+    struct mboot_module *init = 0;
 
     arch_setup1();
     elf_setup();
@@ -56,8 +57,11 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
         struct mboot_module *modules = (struct mboot_module *)(unsigned long)header->modules.address;
 
-        cpio_setup(modules[0].address, modules[0].limit);
-        arch_setup2(modules[1].address);
+        if (header->modules.count > 0)
+            ramdisk = &modules[0];
+
+        if (header->modules.count > 1)
+            init = &modules[1];
 
     }
 
@@ -105,6 +109,11 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     {
 
     }
+
+    cpio_setup(ramdisk->address, ramdisk->limit);
+    arch_setup2(init->address);
+
+    for (;;);
 
 }
 

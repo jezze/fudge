@@ -9,11 +9,12 @@
 #include "elf.h"
 #include "mboot.h"
 
-static unsigned int nmodules;
-
 void mboot_setup(unsigned long address, unsigned long magic)
 {
 
+    struct mboot_tag_module *ramdisk = 0;
+    struct mboot_tag_module *init = 0;
+    unsigned int nmodules = 0;
     struct mboot_tag *tag;
 
     arch_setup1();
@@ -31,12 +32,12 @@ void mboot_setup(unsigned long address, unsigned long magic)
             {
 
             case 0:
-                cpio_setup(module->start, module->end);
+                ramdisk = module;
 
                 break;
 
             case 1:
-                arch_setup2(module->start);
+                init = module;
 
                 break;
 
@@ -52,6 +53,14 @@ void mboot_setup(unsigned long address, unsigned long magic)
         }
 
     }
+
+    if (ramdisk)
+        cpio_setup(ramdisk->start, ramdisk->end);
+
+    if (init)
+        arch_setup2(init->start);
+
+    for (;;);
 
 }
 
