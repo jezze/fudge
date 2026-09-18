@@ -2,6 +2,7 @@ CONFIG:=config
 KERNEL:=fudge
 RAMDISK_TYPE:=cpio
 RAMDISK:=$(KERNEL).$(RAMDISK_TYPE)
+INIT=init
 ISO_TYPE:=iso
 ISO=$(KERNEL).$(ISO_TYPE)
 DIR_BUILD:=build
@@ -13,7 +14,6 @@ DIR_ISO:=iso
 DIR_MK:=mk
 DIR_LIB:=lib
 DIR_SRC:=src
-DIR_SNAPSHOT:=snapshot
 DIR_INSTALL:=/boot
 REPORT:=report.xml
 
@@ -31,7 +31,7 @@ check:
 check-full:
 	@cppcheck -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) --std=c89 --report-progress --xml --enable=all --check-level=exhaustive . 2> $(REPORT)
 
-install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK)
+install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK) $(DIR_INSTALL)/$(INIT)
 
 config-init:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
@@ -186,20 +186,14 @@ $(KERNEL).cpio: $(DIR_BUILDROOT)
 $(KERNEL).iso: $(DIR_ISO)
 	@grub-mkrescue -o $@ $^
 
-$(DIR_SNAPSHOT): $(KERNEL) $(RAMDISK)
-	@echo SNAPSHOT fudge-`git describe --always`.tar.gz
-	@mkdir -p $@
-	@md5sum $^ > $@/checksum.md5
-	@sha1sum $^ > $@/checksum.sha1
-	@cp $^ $@
-	@mv $@ fudge-`git describe --always`
-	@tar -czf fudge-`git describe --always`.tar.gz fudge-`git describe --always`
-	@rm -rf fudge-`git describe --always`
-
 $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
 	@echo INSTALL $@
 	@install -m 644 $^ $@
 
 $(DIR_INSTALL)/$(RAMDISK): $(RAMDISK)
+	@echo INSTALL $@
+	@install -m 644 $^ $@
+
+$(DIR_INSTALL)/$(INIT): $(DIR_SRC)/utils/$(INIT)
 	@echo INSTALL $@
 	@install -m 644 $^ $@
