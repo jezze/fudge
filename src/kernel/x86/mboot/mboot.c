@@ -5,6 +5,8 @@
 #include <kernel/x86/idt.h>
 #include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
+#include <binary.h>
+#include <disk.h>
 #include "cpio.h"
 #include "elf.h"
 #include "mboot.h"
@@ -56,12 +58,21 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     {
 
         struct mboot_module *modules = (struct mboot_module *)(unsigned long)header->modules.address;
+        unsigned int i;
 
-        if (header->modules.count > 0)
-            ramdisk = &modules[0];
+        for (i = 0; i < header->modules.count; i++)
+        {
 
-        if (header->modules.count > 1)
-            init = &modules[1];
+            struct elf_header *eheader = (struct elf_header *)modules[i].address;
+            struct cpio_header *cheader = (struct cpio_header *)modules[i].address;
+
+            if (elf_validate(eheader))
+                init = &modules[i];
+
+            else if (cpio_validate(cheader))
+                ramdisk = &modules[i];
+
+        }
 
     }
 
@@ -110,8 +121,11 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    cpio_setup(ramdisk->address, ramdisk->limit);
-    arch_setup2(init->address);
+    if (ramdisk)
+        cpio_setup(ramdisk->address, ramdisk->limit);
+
+    if (init)
+        arch_setup2(init->address);
 
     for (;;);
 

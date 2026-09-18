@@ -5,6 +5,8 @@
 #include <kernel/x86/idt.h>
 #include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
+#include <binary.h>
+#include <disk.h>
 #include "cpio.h"
 #include "elf.h"
 #include "mboot.h"
@@ -14,7 +16,6 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     struct mboot_tag_module *ramdisk = 0;
     struct mboot_tag_module *init = 0;
-    unsigned int nmodules = 0;
     struct mboot_tag *tag;
 
     arch_setup1();
@@ -27,23 +28,14 @@ void mboot_setup(unsigned long address, unsigned long magic)
         {
 
             struct mboot_tag_module *module = (struct mboot_tag_module *)(tag + 1);
+            struct elf_header *eheader = (struct elf_header *)module->start;
+            struct cpio_header *cheader = (struct cpio_header *)module->start;
 
-            switch (nmodules)
-            {
-
-            case 0:
-                ramdisk = module;
-
-                break;
-
-            case 1:
+            if (elf_validate(eheader))
                 init = module;
 
-                break;
-
-            }
-
-            nmodules++;
+            else if (cpio_validate(cheader))
+                ramdisk = module;
 
         }
 

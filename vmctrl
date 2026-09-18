@@ -79,7 +79,7 @@ cmd_run() {
     echo "Use ctrl+] to kill node-${name}"
 
     stty intr ^]
-    ${cmd}
+    eval "${cmd}"
     stty "${sttybak}"
 }
 
