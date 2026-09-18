@@ -11,15 +11,14 @@
 #include "elf.h"
 #include "mboot.h"
 
+unsigned long *GOP = (unsigned long *)0x10000;
+
 void mboot_setup(unsigned long address, unsigned long magic)
 {
 
     struct mboot_tag_module *ramdisk = 0;
     struct mboot_tag_module *init = 0;
     struct mboot_tag *tag;
-
-    arch_setup1();
-    elf_setup();
 
     for (tag = (struct mboot_tag *)(address + 8); tag->type != MBOOT_TAG_END; tag = (struct mboot_tag *)((unsigned char *)tag + ((tag->size + 7) & ~7)))
     {
@@ -43,42 +42,15 @@ void mboot_setup(unsigned long address, unsigned long magic)
         {
 
             struct mboot_tag_framebuffer *framebuffer = (struct mboot_tag_framebuffer *)(tag + 1);
-            unsigned int *fb = (unsigned int *)framebuffer->address[0];
-            /*
-            unsigned int i;
-            */
 
-            if (fb)
-            {
-
-                switch (framebuffer->type)
-                {
-
-                case 0: /* indexed */
-                    break;
-
-                case 1: /* rgb */
-                    /*
-                    for (i = 0; i < 200; i++)
-                    {
-
-                        fb[i] = 0xFFFFFFFF;
-
-                    }
-                    */
-
-                    break;
-
-                case 2: /* ega text */
-                    break;
-
-                }
-
-            }
+            *GOP = framebuffer->address[0];
 
         }
 
     }
+
+    arch_setup1();
+    elf_setup();
 
     if (ramdisk && init)
     {

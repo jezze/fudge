@@ -15,9 +15,7 @@ static struct video_interface videointerface;
 static void videointerface_oninfo(struct event_videoinfo *videoinfo)
 {
 
-    unsigned long framebuffer = *(unsigned long *)0x10000;
-
-    videoinfo->framebuffer = framebuffer;
+    videoinfo->framebuffer = 0xA0000000;
     videoinfo->width = videointerface.width;
     videoinfo->height = videointerface.height;
     videoinfo->bpp = videointerface.bpp;
@@ -47,7 +45,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x00;
+    return pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY;
 
 }
 
