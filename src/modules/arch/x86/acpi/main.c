@@ -39,6 +39,20 @@ static struct acpi_rsdp *findrsdp(void)
 
     }
 
+    {
+
+        struct acpi_rsdp *rsdp = (struct acpi_rsdp *)0x10008;
+
+        if (rsdp)
+        {
+
+            if (buffer_match(rsdp->signature, signature, 8))
+                return rsdp;
+
+        }
+
+    }
+
     return 0;
 
 }

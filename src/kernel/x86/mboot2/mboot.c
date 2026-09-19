@@ -11,7 +11,8 @@
 #include "elf.h"
 #include "mboot.h"
 
-unsigned long *GOP = (unsigned long *)0x10000;
+unsigned long *UEFI_GOP = (unsigned long *)0x10000;
+unsigned long *UEFI_ACPI = (unsigned long *)0x10008;
 
 void mboot_setup(unsigned long address, unsigned long magic)
 {
@@ -19,6 +20,9 @@ void mboot_setup(unsigned long address, unsigned long magic)
     struct mboot_tag_module *ramdisk = 0;
     struct mboot_tag_module *init = 0;
     struct mboot_tag *tag;
+
+    *UEFI_GOP = 0;
+    *UEFI_ACPI = 0;
 
     for (tag = (struct mboot_tag *)(address + 8); tag->type != MBOOT_TAG_END; tag = (struct mboot_tag *)((unsigned char *)tag + ((tag->size + 7) & ~7)))
     {
@@ -43,7 +47,21 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
             struct mboot_tag_framebuffer *framebuffer = (struct mboot_tag_framebuffer *)(tag + 1);
 
-            *GOP = framebuffer->address[0];
+            *UEFI_GOP = framebuffer->address[0];
+
+        }
+
+        if (tag->type == MBOOT_TAG_ACPI_OLD)
+        {
+
+            *UEFI_ACPI = *(unsigned long *)(tag + 1);
+
+        }
+
+        if (tag->type == MBOOT_TAG_ACPI_NEW)
+        {
+
+            *UEFI_ACPI = *(unsigned long *)(tag + 1);
 
         }
 
