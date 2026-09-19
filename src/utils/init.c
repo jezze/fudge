@@ -75,7 +75,7 @@ static unsigned int spawnwm(unsigned int ichannel)
 
 }
 
-static char *modules[37] = {
+static char *modules[36] = {
     "initrd:kernel/base.ko",
     "initrd:kernel/log.ko",
     "initrd:kernel/block.ko",
@@ -102,7 +102,6 @@ static char *modules[37] = {
     "initrd:kernel/ps2.ko",
     "initrd:kernel/ps2-keyboard.ko",
     "initrd:kernel/ps2-mouse.ko",
-    "initrd:kernel/gop.ko",
     "initrd:kernel/bga.ko",
     "initrd:kernel/uart.ko",
     "initrd:kernel/vga.ko",
@@ -118,7 +117,7 @@ static char *modules[37] = {
 static void onmain(struct message *message)
 {
 
-    loadmodules(1, 37, modules);
+    loadmodules(1, 36, modules);
     spawnshell(1);
     spawnautomount(1);
     spawnwm(1);
