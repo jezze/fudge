@@ -19,20 +19,28 @@ _start:
 
 .align 8
 mboot_start:
-.long MBOOT_MAGIC
-.long MBOOT_ARCH_I386
-.long mboot_end - mboot_start
-.long -(MBOOT_MAGIC + MBOOT_ARCH_I386 + (mboot_end - mboot_start))
+.int MBOOT_MAGIC
+.int MBOOT_ARCH_I386
+.int mboot_end - mboot_start
+.int 0x100000000 - (MBOOT_MAGIC + MBOOT_ARCH_I386 + (mboot_end - mboot_start))
+
+.align 8
 mboot_framebuffer_start:
 .short MBOOT_TAG_FRAMEBUFFER
 .short MBOOT_OPTIONAL
-.long mboot_framebuffer_end - mboot_framebuffer_start
-.long MBOOT_FRAMEBUFFER_WIDTH
-.long MBOOT_FRAMEBUFFER_HEIGHT
-.long MBOOT_FRAMEBUFFER_DEPTH
+.int mboot_framebuffer_end - mboot_framebuffer_start
+.int MBOOT_FRAMEBUFFER_WIDTH
+.int MBOOT_FRAMEBUFFER_HEIGHT
+.int MBOOT_FRAMEBUFFER_DEPTH
 mboot_framebuffer_end:
-.long MBOOT_TAG_END
+
+.align 8
+.short MBOOT_TAG_END
+.short 0
+.int 8
 mboot_end:
+
+.align 8
 mboot_entry:
     movl $(stack + STACK_SIZE), %esp
     pushl %eax
