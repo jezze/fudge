@@ -1019,7 +1019,6 @@ static void __gb_draw_line(struct gb_s *gb)
     if (gb->gb_reg.LCDC & LCDC_OBJ_ENABLE)
     {
 
-        unsigned char count = 0;
         unsigned char s;
 
         for (s = NUM_SPRITES - 1; s != 0xFF; s--)
@@ -1037,8 +1036,6 @@ static void __gb_draw_line(struct gb_s *gb)
 
             if (gb->gb_reg.LY + (gb->gb_reg.LCDC & LCDC_OBJ_SIZE ? 0 : 8) >= OY || gb->gb_reg.LY + 16 < OY)
                 continue;
-
-            count++;
 
             if (OX == 0 || OX >= 168)
                 continue;
