@@ -45,7 +45,9 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY;
+    unsigned long framebuffer = *(unsigned long *)0x10000;
+
+    return framebuffer && pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY;
 
 }
 
