@@ -27,10 +27,6 @@ static void videointerface_onvideoconf(unsigned int width, unsigned int height, 
 
     unsigned long framebuffer = *(unsigned long *)0x10000;
 
-    videointerface.width = width;
-    videointerface.height = height;
-    videointerface.bpp = bpp;
-
     arch_kmap(framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
 
 }
@@ -39,6 +35,10 @@ static void driver_init(unsigned int id)
 {
 
     video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_onvideoconf);
+
+    videointerface.width = 1024;
+    videointerface.height = 768;
+    videointerface.bpp = 4;
 
 }
 
