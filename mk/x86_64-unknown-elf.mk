@@ -1,10 +1,10 @@
-AR=$(TARGET)-gcc-ar
-AS=$(TARGET)-gcc
-CC=$(TARGET)-gcc
-DP=$(TARGET)-gcc
-LD=$(TARGET)-gcc
-NM=$(TARGET)-gcc-nm
-PP=$(TARGET)-gcc
+AR=$(TARGET)-ar
+AS=$(TARGET)-as
+CC=$(TARGET)-cc
+DP=$(TARGET)-cc
+LD=$(TARGET)-ld
+NM=$(TARGET)-nm
+PP=$(TARGET)-cc
 AR_FLAGS=rcs
 AS_FLAGS=-c
 CC_FLAGS=-Wall -Werror -Wno-overlength-strings -msoft-float -ffreestanding -fno-asynchronous-unwind-tables -fno-stack-protector -std=c89 -pedantic -O2 -S

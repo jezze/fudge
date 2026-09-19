@@ -79,8 +79,8 @@ config-target-riscv64-linux-gnu:
 config-target-riscv64-tcc:
 	@echo "TARGET:=riscv64-tcc" >> $(DIR_MK)/$(CONFIG).mk
 
-config-target-x86_64-linux-gnu:
-	@echo "TARGET:=x86_64-linux-gnu" >> $(DIR_MK)/$(CONFIG).mk
+config-target-x86_64-unknown-elf:
+	@echo "TARGET:=x86_64-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
 
 default: x86-mboot
 
@@ -95,7 +95,8 @@ x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-
 x86-mboot2: config-init | config-arch-x86 config-loader-mboot2 config-target-i386-unknown-elf
 x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
 
-x86_64-mboot: config-init | config-arch-x86 config-loader-mboot config-target-x86_64-linux-gnu
+x86_64-mboot: config-init | config-arch-x86 config-loader-mboot config-target-x86_64-unknown-elf
+x86_64-mboot2: config-init | config-arch-x86 config-loader-mboot2 config-target-x86_64-unknown-elf
 
 help:
 	@echo "Building and cleaning:"
@@ -119,6 +120,7 @@ help:
 	@echo "  x86-mboot2"
 	@echo "  x86-mboot-tcc"
 	@echo "  x86_64-mboot"
+	@echo "  x86_64-mboot2"
 	@echo ""
 
 include $(DIR_MK)/$(CONFIG).mk
