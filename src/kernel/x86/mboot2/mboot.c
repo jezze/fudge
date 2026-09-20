@@ -31,8 +31,8 @@ void mboot_setup(unsigned long address, unsigned long magic)
         {
 
             struct mboot_tag_module *module = (struct mboot_tag_module *)(tag + 1);
-            struct elf_header *eheader = (struct elf_header *)module->start;
-            struct cpio_header *cheader = (struct cpio_header *)module->start;
+            struct elf_header *eheader = (struct elf_header *)(unsigned long)module->start;
+            struct cpio_header *cheader = (struct cpio_header *)(unsigned long)module->start;
 
             if (elf_validate(eheader))
                 init = module;
