@@ -60,8 +60,8 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
         for (i = 0; i < header->modules.count; i++)
         {
 
-            struct elf_header *eheader = (struct elf_header *)modules[i].address;
-            struct cpio_header *cheader = (struct cpio_header *)modules[i].address;
+            struct elf_header *eheader = (struct elf_header *)(unsigned long)modules[i].address;
+            struct cpio_header *cheader = (struct cpio_header *)(unsigned long)modules[i].address;
 
             if (elf_validate(eheader))
                 init = &modules[i];
