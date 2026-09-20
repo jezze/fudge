@@ -54,14 +54,13 @@ void mboot_setup(unsigned long address, unsigned long magic)
         if (tag->type == MBOOT_TAG_ACPI_OLD)
         {
 
-            *UEFI_ACPI = *(unsigned long *)(tag + 1);
 
         }
 
         if (tag->type == MBOOT_TAG_ACPI_NEW)
         {
 
-            *UEFI_ACPI = *(unsigned long *)(tag + 1);
+            buffer_copy(UEFI_ACPI, tag + 1, 36);
 
         }
 
