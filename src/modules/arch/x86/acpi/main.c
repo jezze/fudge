@@ -85,7 +85,11 @@ struct acpi_sdth *acpi_findheader(char *name)
 void module_init(void)
 {
 
-    struct acpi_rsdp *rsdp = findrsdp();
+    struct acpi_rsdp *rsdp;
+
+    arch_kmap(0x00E0000, 0x00E0000, 0x0020000, MMAP_FLAG_GLOBAL);
+
+    rsdp = findrsdp();
 
     if (rsdp)
     {
@@ -99,7 +103,7 @@ void module_init(void)
                 unsigned long address = (rsdp->rsdt[0] << 0) | (rsdp->rsdt[1] << 8) | (rsdp->rsdt[2] << 16) | (rsdp->rsdt[3] << 24);
                 struct acpi_rsdt *rsdt = (struct acpi_rsdt *)address;
 
-                arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+                arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL);
 
                 if (validate(rsdt, rsdt->base.length))
                     sdt = address;
@@ -119,7 +123,7 @@ void module_init(void)
                 unsigned long address = (xsdp->xsdt[0] << 0) | (xsdp->xsdt[1] << 8) | (xsdp->xsdt[2] << 16) | (xsdp->xsdt[3] << 24);
                 struct acpi_xsdt *xsdt = (struct acpi_xsdt *)address;
 
-                arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+                arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL);
 
                 if (validate(xsdt, xsdt->base.length))
                     sdt = address;

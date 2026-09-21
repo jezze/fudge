@@ -36,6 +36,8 @@ void mboot_setup(unsigned long address, unsigned long magic)
             struct elf_header *eheader = (struct elf_header *)(unsigned long)module->start;
             struct cpio_header *cheader = (struct cpio_header *)(unsigned long)module->start;
 
+            arch_kmap(module->start, module->start, module->end - module->start, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
             if (elf_validate(eheader))
                 init = module;
 
@@ -51,6 +53,8 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
             *UEFI_GOP = framebuffer->address[0];
 
+            arch_kmap(0x10000, 0x10000, 8, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
         }
 
         if (tag->type == MBOOT_TAG_ACPI_OLD)
@@ -63,6 +67,8 @@ void mboot_setup(unsigned long address, unsigned long magic)
         {
 
             buffer_copy(UEFI_ACPI, tag + 1, 36);
+
+            arch_kmap(0x10008, 0x10008, 36, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
         }
 
