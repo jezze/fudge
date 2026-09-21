@@ -17,6 +17,8 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     struct mboot_module *ramdisk = 0;
     struct mboot_module *init = 0;
 
+    arch_setup1();
+
     if (header->flags & MBOOT_FLAG_MEMORY)
     {
 
@@ -118,8 +120,8 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
 
     }
 
-    arch_setup1();
     elf_setup();
+    arch_setup2();
 
     if (ramdisk && init)
     {

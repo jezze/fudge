@@ -552,19 +552,25 @@ void arch_setup1(void)
 
     resource_setup();
     udebug_setup();
-    pic_init();
     arch_configuregdt(gdt, (struct gdt_descriptor *)(gdt + 1), ARCH_GDT_DESCRIPTORS);
     arch_configureidt(idt, (struct idt_descriptor *)(idt + 1), ARCH_IDT_DESCRIPTORS, gdt_getselector(gdt, ARCH_KCODE));
     arch_configuretss(&tss0, tssdescriptors0, ARCH_TSS_DESCRIPTORS, 0, gdt_getselector(gdt, ARCH_KDATA), gdt_getselector(gdt, ARCH_TSS + 0));
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
-    cpu_setcr3(ARCH_MMU_KERNELBASE);
     setupmmap();
-    mmu_enable();
     mailbox_setup();
-    pool_setup(ARCH_MAILBOX_BASE);
     kernel_setup();
     abi_setup();
     abi_setcallback(0x03, spawn);
+
+}
+
+void arch_setup2(void)
+{
+
+    pic_init();
+    cpu_setcr3(ARCH_MMU_KERNELBASE);
+    mmu_enable();
+    pool_setup(ARCH_MAILBOX_BASE);
 
 }
 

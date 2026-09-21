@@ -35,4 +35,5 @@ void arch_configuregdt(struct gdt_pointer *gdt, struct gdt_descriptor *descripto
 void arch_configureidt(struct idt_pointer *idt, struct idt_descriptor *descriptors, unsigned int count, unsigned short selector);
 void arch_configuretss(struct tss_pointer *tss, struct tss_descriptor *descriptors, unsigned int count, unsigned int id, unsigned short selector1, unsigned short selector2);
 void arch_setup1(void);
+void arch_setup2(void);
 void arch_runinit(unsigned int address);

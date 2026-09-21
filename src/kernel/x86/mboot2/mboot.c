@@ -24,6 +24,8 @@ void mboot_setup(unsigned long address, unsigned long magic)
     *UEFI_GOP = 0;
     *UEFI_ACPI = 0;
 
+    arch_setup1();
+
     for (tag = (struct mboot_tag *)(address + 8); tag->type != MBOOT_TAG_END; tag = (struct mboot_tag *)((unsigned char *)tag + ((tag->size + 7) & ~7)))
     {
 
@@ -66,8 +68,8 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     }
 
-    arch_setup1();
     elf_setup();
+    arch_setup2();
 
     if (ramdisk && init)
     {
