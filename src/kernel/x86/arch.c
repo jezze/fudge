@@ -568,7 +568,7 @@ void arch_setup1(void)
 
 }
 
-void arch_setup2(unsigned int address)
+void arch_runinit(unsigned int address)
 {
 
     unsigned int target = createtask(address);

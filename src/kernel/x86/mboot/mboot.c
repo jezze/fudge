@@ -125,7 +125,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     {
 
         cpio_setup(ramdisk->address, ramdisk->limit);
-        arch_setup2(init->address);
+        arch_runinit(init->address);
 
     }
 

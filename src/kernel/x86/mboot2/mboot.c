@@ -73,7 +73,7 @@ void mboot_setup(unsigned long address, unsigned long magic)
     {
 
         cpio_setup(ramdisk->start, ramdisk->end);
-        arch_setup2(init->start);
+        arch_runinit(init->start);
 
     }
 
