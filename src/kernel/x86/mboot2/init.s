@@ -6,6 +6,7 @@
 .set MBOOT_REQUIRED,                    0
 .set MBOOT_OPTIONAL,                    1
 .set MBOOT_TAG_END,                     0
+.set MBOOT_TAG_CONSOLE,                 4
 .set MBOOT_TAG_FRAMEBUFFER,             5
 .set MBOOT_FRAMEBUFFER_WIDTH,           1024
 .set MBOOT_FRAMEBUFFER_HEIGHT,          768
@@ -24,13 +25,22 @@ mboot_start:
 .int MBOOT_ARCH_I386
 .int mboot_end - mboot_start
 .int 0x100000000 - (MBOOT_MAGIC + MBOOT_ARCH_I386 + (mboot_end - mboot_start))
+
+.align 8
+.short MBOOT_TAG_CONSOLE
+.short MBOOT_OPTIONAL
+.int 12
+.int 1
+
+.align 8
 .short MBOOT_TAG_FRAMEBUFFER
-.short MBOOT_REQUIRED
-.int 24
+.short MBOOT_OPTIONAL
+.int 20
 .int MBOOT_FRAMEBUFFER_WIDTH
 .int MBOOT_FRAMEBUFFER_HEIGHT
 .int MBOOT_FRAMEBUFFER_DEPTH
-.int 0
+
+.align 8
 .short MBOOT_TAG_END
 .short MBOOT_REQUIRED
 .int 8
