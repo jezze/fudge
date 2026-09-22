@@ -104,8 +104,8 @@ struct mboot_mmap
 struct mboot_module
 {
 
-    unsigned int address;
-    unsigned int limit;
+    unsigned int start;
+    unsigned int end;
     unsigned int name;
     unsigned int reserved;
 

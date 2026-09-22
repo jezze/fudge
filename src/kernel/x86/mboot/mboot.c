@@ -14,9 +14,11 @@
 void mboot_setup(struct mboot_header *header, unsigned int magic)
 {
 
-    struct mboot_module *ramdisk = 0;
-    struct mboot_module *init = 0;
+    struct mboot_module ramdisk;
+    struct mboot_module init;
 
+    buffer_clear(&ramdisk, sizeof (struct mboot_module));
+    buffer_clear(&init, sizeof (struct mboot_module));
     arch_setup1();
 
     if (header->flags & MBOOT_FLAG_MEMORY)
@@ -62,16 +64,16 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
         for (i = 0; i < header->modules.count; i++)
         {
 
-            struct elf_header *eheader = (struct elf_header *)(unsigned long)modules[i].address;
-            struct cpio_header *cheader = (struct cpio_header *)(unsigned long)modules[i].address;
+            struct elf_header *eheader = (struct elf_header *)(unsigned long)modules[i].start;
+            struct cpio_header *cheader = (struct cpio_header *)(unsigned long)modules[i].start;
 
-            arch_kmap(modules[i].address, modules[i].address, modules[i].limit - modules[i].address, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+            arch_kmap(modules[i].start, modules[i].start, ((modules[i].end - modules[i].start) + 0xFFF) & ~0xFFF, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
             if (elf_validate(eheader))
-                init = &modules[i];
+                buffer_copy(&init, &modules[i], sizeof (struct mboot_module));
 
             else if (cpio_validate(cheader))
-                ramdisk = &modules[i];
+                buffer_copy(&ramdisk, &modules[i], sizeof (struct mboot_module));
 
         }
 
@@ -125,11 +127,11 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     elf_setup();
     arch_setup2();
 
-    if (ramdisk && init)
+    if (ramdisk.start && init.start)
     {
 
-        cpio_setup(ramdisk->address);
-        arch_runinit(init->address);
+        cpio_setup(ramdisk.start);
+        arch_runinit(init.start);
 
     }
 

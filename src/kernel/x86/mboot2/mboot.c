@@ -11,19 +11,15 @@
 #include "elf.h"
 #include "mboot.h"
 
-unsigned long *UEFI_GOP = (unsigned long *)0x10000;
-unsigned long *UEFI_ACPI = (unsigned long *)0x10008;
-
 void mboot_setup(unsigned long address, unsigned long magic)
 {
 
-    struct mboot_tag_module *ramdisk = 0;
-    struct mboot_tag_module *init = 0;
+    struct mboot_tag_module ramdisk;
+    struct mboot_tag_module init;
     struct mboot_tag *tag;
 
-    *UEFI_GOP = 0;
-    *UEFI_ACPI = 0;
-
+    buffer_clear(&ramdisk, sizeof (struct mboot_tag_module));
+    buffer_clear(&init, sizeof (struct mboot_tag_module));
     arch_setup1();
 
     for (tag = (struct mboot_tag *)(address + 8); tag->type != MBOOT_TAG_END; tag = (struct mboot_tag *)((unsigned char *)tag + ((tag->size + 7) & ~7)))
@@ -36,22 +32,24 @@ void mboot_setup(unsigned long address, unsigned long magic)
             struct elf_header *eheader = (struct elf_header *)(unsigned long)module->start;
             struct cpio_header *cheader = (struct cpio_header *)(unsigned long)module->start;
 
-            arch_kmap(module->start, module->start, module->end - module->start, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+            arch_kmap(module->start, module->start, ((module->end - module->start) + 0xFFF) & ~0xFFF, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
             if (elf_validate(eheader))
-                init = module;
+                buffer_copy(&init, module, sizeof (struct mboot_tag_module));
 
             else if (cpio_validate(cheader))
-                ramdisk = module;
+                buffer_copy(&ramdisk, module, sizeof (struct mboot_tag_module));
 
         }
 
         if (tag->type == MBOOT_TAG_FRAMEBUFFER)
         {
 
+            /*
             struct mboot_tag_framebuffer *framebuffer = (struct mboot_tag_framebuffer *)(tag + 1);
 
-            *UEFI_GOP = framebuffer->address[0];
+            framebuffer->address[0];
+            */
 
         }
 
@@ -64,7 +62,9 @@ void mboot_setup(unsigned long address, unsigned long magic)
         if (tag->type == MBOOT_TAG_ACPI_NEW)
         {
 
+            /*
             buffer_copy(UEFI_ACPI, tag + 1, 36);
+            */
 
         }
 
@@ -73,11 +73,11 @@ void mboot_setup(unsigned long address, unsigned long magic)
     elf_setup();
     arch_setup2();
 
-    if (ramdisk && init)
+    if (ramdisk.start && init.start)
     {
 
-        cpio_setup(ramdisk->start);
-        arch_runinit(init->start);
+        cpio_setup(ramdisk.start);
+        arch_runinit(init.start);
 
     }
 
