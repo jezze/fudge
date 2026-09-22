@@ -42,16 +42,26 @@ static void coreassign(unsigned int itask)
     unsigned int icore = pool_pickcorefrom(&usedcores);
     struct core *core = pool_getcore(icore);
 
-    pool_placecore(icore, &usedcores);
-    pool_placetask(itask, &core->tasks);
+    if (core)
+    {
 
-    if (icore != apic_getid())
-        apic_sendint(icore, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
+        pool_placecore(icore, &usedcores);
+        pool_placetask(itask, &core->tasks);
+
+        if (icore != apic_getid())
+            apic_sendint(icore, APIC_REG_ICR_LEVEL_ASSERT | 0xFE);
+
+    }
 
 }
 
 void smp_setupap(unsigned int icore, unsigned int sp)
 {
+
+    struct core *core = pool_getcore(icore);
+
+    if (core)
+        core->state = CORE_STATE_ACTIVE;
 
     arch_configuretss(&tss[icore].pointer, tss[icore].descriptors, ARCH_TSS_DESCRIPTORS, icore, gdt_getselector(gdt, ARCH_KDATA), gdt_getselector(gdt, ARCH_TSS + icore));
     apic_setup_ap();

@@ -22,6 +22,7 @@ void core_init(struct core *core)
     resource_init(&core->resource, RESOURCE_CORE, core);
     list_init(&core->tasks);
 
+    core->state = CORE_STATE_DEAD;
     core->itask = 0;
 
 }

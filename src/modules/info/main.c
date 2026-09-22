@@ -31,7 +31,7 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
 
             struct core *core = resource->data;
 
-            if (core)
+            if (core && core->state != TASK_STATE_DEAD)
             {
 
                 char name[RECORD_NAMESIZE];

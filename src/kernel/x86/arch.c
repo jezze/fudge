@@ -577,7 +577,11 @@ void arch_setup2(void)
 void arch_runinit(unsigned int address)
 {
 
+    struct core *core = kernel_getcore();
     unsigned int target = createtask(address);
+
+    if (core)
+        core->state = CORE_STATE_ACTIVE;
 
     if (target)
     {
