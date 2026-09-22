@@ -1,7 +1,9 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <modules/base/bus.h>
+#include <modules/base/driver.h>
 
-#define ROOTRECORDS                     4
+#define ROOTRECORDS                     6
 #define GMAILBOXES                      0x06000
 #define GNODES                          0x08000
 
@@ -178,6 +180,68 @@ static unsigned int readnodes(unsigned int id, unsigned int offset, unsigned int
 
 }
 
+static unsigned int readbuses(unsigned int id, unsigned int offset, unsigned int count, void *data)
+{
+
+    struct resource *resource = 0;
+    unsigned int c = 0;
+    char buffer[4096];
+
+    c += cstring_write_fmt0(buffer, 4096, c, "buses: [\n");
+
+    while ((resource = resource_foreachtype(resource, RESOURCE_BUS)))
+    {
+
+        struct base_bus *bus = resource->data;
+
+        if (bus)
+        {
+
+            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", bus->name);
+            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+
+        }
+
+    }
+
+    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+
+    return buffer_read(data, count, buffer, c, offset);
+
+}
+
+static unsigned int readdrivers(unsigned int id, unsigned int offset, unsigned int count, void *data)
+{
+
+    struct resource *resource = 0;
+    unsigned int c = 0;
+    char buffer[4096];
+
+    c += cstring_write_fmt0(buffer, 4096, c, "drivers: [\n");
+
+    while ((resource = resource_foreachtype(resource, RESOURCE_DRIVER)))
+    {
+
+        struct base_driver *driver = resource->data;
+
+        if (driver)
+        {
+
+            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", driver->name);
+            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+
+        }
+
+    }
+
+    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+
+    return buffer_read(data, count, buffer, c, offset);
+
+}
+
 static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
@@ -220,6 +284,12 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
 
     case 0x1004:
         return readnodes(id, offset, count, data);
+
+    case 0x1005:
+        return readbuses(id, offset, count, data);
+
+    case 0x1006:
+        return readdrivers(id, offset, count, data);
 
     }
 
@@ -381,6 +451,8 @@ void module_init(void)
     record_init(&rootrecords[1], 0x1002, RECORD_TYPE_NORMAL, 0, 2, 5, "tasks");
     record_init(&rootrecords[2], 0x1003, RECORD_TYPE_DIRECTORY, 0, 3, 9, "mailboxes");
     record_init(&rootrecords[3], 0x1004, RECORD_TYPE_DIRECTORY, 0, 4, 5, "nodes");
+    record_init(&rootrecords[4], 0x1005, RECORD_TYPE_NORMAL, 0, 5, 5, "buses");
+    record_init(&rootrecords[5], 0x1006, RECORD_TYPE_NORMAL, 0, 6, 7, "drivers");
     node_operands_init(&operands, 0, operands_place);
 
     inode = pool_picknode();
