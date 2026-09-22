@@ -549,6 +549,7 @@ static void setupmmap(void)
     mmap_initheader(header);
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_GDT_BASE, ARCH_GDT_BASE, 0x00001000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_IDT_BASE, ARCH_IDT_BASE, 0x00001000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_TSS_BASE, ARCH_TSS_BASE, 0x00001000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, 0x000B8000, 0x000B8000, 0x00002000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODEBASE, ARCH_KERNEL_CODESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKBASE, ARCH_KERNEL_STACKSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
@@ -564,9 +565,6 @@ void arch_setup1(void)
 
     resource_setup();
     udebug_setup();
-    configuregdt();
-    configureidt();
-    configuretss();
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
     setupmmap();
     mailbox_setup();
@@ -579,9 +577,12 @@ void arch_setup1(void)
 void arch_setup2(void)
 {
 
-    pic_init();
     cpu_setcr3(ARCH_MMU_KERNELBASE);
     mmu_enable();
+    configuregdt();
+    configureidt();
+    configuretss();
+    pic_init();
     pool_setup(ARCH_MAILBOX_BASE);
 
 }
