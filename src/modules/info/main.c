@@ -4,8 +4,6 @@
 #include <modules/base/driver.h>
 
 #define ROOTRECORDS                     6
-#define GMAILBOXES                      0x06000
-#define GNODES                          0x08000
 
 static struct node_operands operands;
 static unsigned int inode;
@@ -103,80 +101,69 @@ static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int
 static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
-    struct record *records = data;
-    unsigned int nrecords = count / sizeof (struct record);
     struct resource *resource = 0;
     unsigned int c = 0;
-    unsigned int i;
+    char buffer[4096];
 
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_MAILBOX)); i++)
+    c += cstring_write_fmt0(buffer, 4096, c, "mailboxes: [\n");
+
+    while ((resource = resource_foreachtype(resource, RESOURCE_MAILBOX)))
     {
 
-        if (c >= nrecords)
-            break;
+        struct mailbox *mailbox = resource->data;
 
-        if (i >= offset)
+        if (mailbox && mailbox->itask)
         {
 
-            struct mailbox *mailbox = resource->data;
+            unsigned int nmessages = mailbox->head - mailbox->tail;
 
-            if (mailbox && mailbox->itask)
-            {
-
-                char name[RECORD_NAMESIZE];
-                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "mailbox%u", &i);
-
-                record_init(&records[c], GMAILBOXES + i, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
-
-                c++;
-
-            }
+            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "    itask: %u\n", &mailbox->itask);
+            c += cstring_write_fmt1(buffer, 4096, c, "    ichannel: %u\n", &mailbox->ichannel);
+            c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &mailbox->inode);
+            c += cstring_write_fmt1(buffer, 4096, c, "    nmessages: %u\n", &nmessages);
+            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
         }
 
     }
 
-    return c * sizeof (struct record);
+    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+
+    return buffer_read(data, count, buffer, c, offset);
 
 }
 
 static unsigned int readnodes(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
-    struct record *records = data;
-    unsigned int nrecords = count / sizeof (struct record);
     struct resource *resource = 0;
     unsigned int c = 0;
-    unsigned int i;
+    char buffer[4096];
 
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_NODE)); i++)
+    c += cstring_write_fmt0(buffer, 4096, c, "nodes: [\n");
+
+    while ((resource = resource_foreachtype(resource, RESOURCE_NODE)))
     {
 
-        if (c >= nrecords)
-            break;
+        struct node *node = resource->data;
 
-        if (i >= offset)
+        if (node && node->namehash)
         {
 
-            struct node *node = resource->data;
-
-            if (node && node->namehash)
-            {
-
-                char name[RECORD_NAMESIZE];
-                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "node%u", &i);
-
-                record_init(&records[c], GNODES + i, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
-
-                c++;
-
-            }
+            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", node->name);
+            c += cstring_write_fmt1(buffer, 4096, c, "    namehash: %u\n", &node->namehash);
+            c += cstring_write_fmt1(buffer, 4096, c, "    links: %u\n", &node->links.count);
+            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
         }
 
     }
 
-    return c * sizeof (struct record);
+    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+
+    return buffer_read(data, count, buffer, c, offset);
 
 }
 
@@ -449,8 +436,8 @@ void module_init(void)
 
     record_init(&rootrecords[0], 0x1001, RECORD_TYPE_NORMAL, 0, 1, 5, "cores");
     record_init(&rootrecords[1], 0x1002, RECORD_TYPE_NORMAL, 0, 2, 5, "tasks");
-    record_init(&rootrecords[2], 0x1003, RECORD_TYPE_DIRECTORY, 0, 3, 9, "mailboxes");
-    record_init(&rootrecords[3], 0x1004, RECORD_TYPE_DIRECTORY, 0, 4, 5, "nodes");
+    record_init(&rootrecords[2], 0x1003, RECORD_TYPE_NORMAL, 0, 3, 9, "mailboxes");
+    record_init(&rootrecords[3], 0x1004, RECORD_TYPE_NORMAL, 0, 4, 5, "nodes");
     record_init(&rootrecords[4], 0x1005, RECORD_TYPE_NORMAL, 0, 5, 5, "buses");
     record_init(&rootrecords[5], 0x1006, RECORD_TYPE_NORMAL, 0, 6, 7, "drivers");
     node_operands_init(&operands, 0, operands_place);

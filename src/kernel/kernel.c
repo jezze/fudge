@@ -378,7 +378,7 @@ unsigned int kernel_announce(unsigned int inode, char *name)
     if (node)
     {
 
-        node->name = name;
+        node->name = "service";
         node->namehash = djb_hash(cstring_length(name), name);
 
     }
