@@ -141,7 +141,7 @@ $(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
 	@cp $(RAMDISK) $@
 	@mkdir -p $@/efi
 	@mkdir -p $@/grub
-	@cp -f grub-$(LOADER).cfg $@/grub/grub.cfg
+	@cp -f grub/$(LOADER).cfg $@/grub/grub.cfg
 
 $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@echo BUILD ROOT $@
@@ -171,7 +171,7 @@ $(DIR_ISO): $(KERNEL) $(RAMDISK)
 	@cp $(KERNEL) $@/boot
 	@cp $(RAMDISK) $@/boot
 	@mkdir -p $@/boot/grub
-	@cp grub.cfg $@/boot/grub
+	@cp grub/$(LOADER).cfg $@/boot/grub
 
 $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)
 	@echo KERNEL $@
