@@ -80,7 +80,7 @@ void mboot_setup(unsigned long address, unsigned long magic)
     if (ramdisk && init)
     {
 
-        cpio_setup(ramdisk->start, ramdisk->end);
+        cpio_setup(ramdisk->start);
         arch_runinit(init->start);
 
     }

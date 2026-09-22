@@ -4,7 +4,6 @@
 
 static struct node_operands operands;
 static unsigned int address;
-static unsigned int limit;
 static unsigned int inode;
 
 static struct cpio_header *getheader(unsigned int id)
@@ -397,11 +396,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 
 }
 
-void cpio_setup(unsigned int addr, unsigned int lim)
+void cpio_setup(unsigned int addr)
 {
 
     address = addr;
-    limit = lim;
     inode = pool_picknode();
 
     node_operands_init(&operands, 0, operands_place);

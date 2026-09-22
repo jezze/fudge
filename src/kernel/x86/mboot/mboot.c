@@ -128,7 +128,7 @@ void mboot_setup(struct mboot_header *header, unsigned int magic)
     if (ramdisk && init)
     {
 
-        cpio_setup(ramdisk->address, ramdisk->limit);
+        cpio_setup(ramdisk->address);
         arch_runinit(init->address);
 
     }
