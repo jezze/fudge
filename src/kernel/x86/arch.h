@@ -1,5 +1,5 @@
 #define ARCH_GDT_BASE                   0x00001000
-#define ARCH_GDT_DESCRIPTORS            260
+#define ARCH_GDT_DESCRIPTORS            (5 + 256)
 #define ARCH_IDT_BASE                   0x00002000
 #define ARCH_IDT_DESCRIPTORS            256
 #define ARCH_TSS_BASE                   0x00003000
