@@ -53,8 +53,6 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
             *UEFI_GOP = framebuffer->address[0];
 
-            arch_kmap(0x10000, 0x10000, 8, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-
         }
 
         if (tag->type == MBOOT_TAG_ACPI_OLD)
@@ -67,8 +65,6 @@ void mboot_setup(unsigned long address, unsigned long magic)
         {
 
             buffer_copy(UEFI_ACPI, tag + 1, 36);
-
-            arch_kmap(0x10008, 0x10008, 36, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
         }
 

@@ -29,6 +29,8 @@ static struct acpi_rsdp *findrsdp(void)
     char *signature = "RSD PTR ";
     unsigned long address;
 
+    arch_kmap(0x000E0000, 0x000E0000, 0x00020000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
     for (address = 0x000E0000; address < 0x00100000; address += 0x10)
     {
 
@@ -36,20 +38,6 @@ static struct acpi_rsdp *findrsdp(void)
 
         if (buffer_match(rsdp->signature, signature, 8))
             return rsdp;
-
-    }
-
-    {
-
-        struct acpi_rsdp *rsdp = (struct acpi_rsdp *)0x10008;
-
-        if (rsdp)
-        {
-
-            if (buffer_match(rsdp->signature, signature, 8))
-                return rsdp;
-
-        }
 
     }
 
@@ -85,11 +73,7 @@ struct acpi_sdth *acpi_findheader(char *name)
 void module_init(void)
 {
 
-    struct acpi_rsdp *rsdp;
-
-    arch_kmap(0x00E0000, 0x00E0000, 0x0020000, MMAP_FLAG_GLOBAL);
-
-    rsdp = findrsdp();
+    struct acpi_rsdp *rsdp = findrsdp();
 
     if (rsdp)
     {
