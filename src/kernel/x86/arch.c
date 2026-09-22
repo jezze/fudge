@@ -522,7 +522,7 @@ void arch_configuretss(struct tss_pointer *tss, struct tss_descriptor *descripto
 
     tss_init(tss, count, descriptors);
     tss_setdescriptor(tss, 0, selector1, ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE + KERNEL_STACKSIZE * id);
-    gdt_setdescriptor(gdt, ARCH_TSS + id, (unsigned long)descriptors, (unsigned long)descriptors + tss->limit, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+    gdt_setdescriptor(gdt, ARCH_TSS + id, (unsigned long)descriptors, tss->limit - 1, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
     cpu_settss(selector2);
 
 }
