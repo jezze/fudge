@@ -1,8 +1,9 @@
 #define ARCH_GDT_BASE                   0x00001000
-#define ARCH_GDT_DESCRIPTORS            256
+#define ARCH_GDT_DESCRIPTORS            260
 #define ARCH_IDT_BASE                   0x00002000
 #define ARCH_IDT_DESCRIPTORS            256
-#define ARCH_TSS_DESCRIPTORS            1
+#define ARCH_TSS_BASE                   0x00003000
+#define ARCH_TSS_DESCRIPTORS            256
 #define ARCH_KERNEL_CODEBASE            0x00100000
 #define ARCH_KERNEL_CODESIZE            (KERNEL_CODESIZE)
 #define ARCH_KERNEL_STACKBASE           (ARCH_KERNEL_CODEBASE + ARCH_KERNEL_CODESIZE)
@@ -29,9 +30,6 @@
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);
 void arch_leave(void);
-void arch_configuregdt(struct gdt_pointer *gdt, struct gdt_descriptor *descriptors, unsigned int count);
-void arch_configureidt(struct idt_pointer *idt, struct idt_descriptor *descriptors, unsigned int count, unsigned short selector);
-void arch_configuretss(struct tss_pointer *tss, struct tss_descriptor *descriptors, unsigned int count, unsigned int id, unsigned short selector1, unsigned short selector2);
 void arch_setup1(void);
 void arch_setup2(void);
 void arch_runinit(unsigned int address);

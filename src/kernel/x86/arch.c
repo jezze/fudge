@@ -12,8 +12,10 @@
 
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
-static struct tss_pointer tss0;
-static struct tss_descriptor tssdescriptors0[ARCH_TSS_DESCRIPTORS];
+static struct tss_pointer *tss = (struct tss_pointer *)ARCH_TSS_BASE;
+static struct gdt_descriptor gdtdescriptors[ARCH_GDT_DESCRIPTORS];
+static struct idt_descriptor idtdescriptors[ARCH_IDT_DESCRIPTORS];
+static struct tss_descriptor tssdescriptors[ARCH_TSS_DESCRIPTORS];
 static struct cpu_general registers[POOL_TASKS];
 
 static void map(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int flags)
@@ -482,10 +484,10 @@ unsigned short arch_syscall(struct cpu_general general, struct cpu_interrupt int
 
 }
 
-void arch_configuregdt(struct gdt_pointer *gdt, struct gdt_descriptor *descriptors, unsigned int count)
+static void configuregdt(void)
 {
 
-    gdt_init(gdt, count, descriptors);
+    gdt_init(gdt, ARCH_GDT_DESCRIPTORS, gdtdescriptors);
     gdt_setdescriptor(gdt, ARCH_KCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(gdt, ARCH_KDATA, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
     gdt_setdescriptor(gdt, ARCH_UCODE, 0x00000000, 0xFFFFFFFF, GDT_ACCESS_PRESENT | GDT_ACCESS_RING3 | GDT_ACCESS_ALWAYS1 | GDT_ACCESS_RW | GDT_ACCESS_EXECUTE, GDT_FLAG_GRANULARITY | GDT_FLAG_32BIT);
@@ -494,10 +496,12 @@ void arch_configuregdt(struct gdt_pointer *gdt, struct gdt_descriptor *descripto
 
 }
 
-void arch_configureidt(struct idt_pointer *idt, struct idt_descriptor *descriptors, unsigned int count, unsigned short selector)
+static void configureidt(void)
 {
 
-    idt_init(idt, count, descriptors);
+    unsigned short selector = gdt_getselector(gdt, ARCH_KCODE);
+
+    idt_init(idt, ARCH_IDT_DESCRIPTORS, idtdescriptors);
     idt_setdescriptor(idt, 0x00, isr_zero, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(idt, 0x01, isr_debug, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
     idt_setdescriptor(idt, 0x02, isr_nmi, selector, IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
@@ -517,13 +521,23 @@ void arch_configureidt(struct idt_pointer *idt, struct idt_descriptor *descripto
 
 }
 
-void arch_configuretss(struct tss_pointer *tss, struct tss_descriptor *descriptors, unsigned int count, unsigned int id, unsigned short selector1, unsigned short selector2)
+static void configuretss(void)
 {
 
-    tss_init(tss, count, descriptors);
-    tss_setdescriptor(tss, 0, selector1, ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE + KERNEL_STACKSIZE * id);
-    gdt_setdescriptor(gdt, ARCH_TSS + id, (unsigned long)descriptors, tss->limit - 1, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
-    cpu_settss(selector2);
+    unsigned short selector = gdt_getselector(gdt, ARCH_KDATA);
+    unsigned int i;
+
+    tss_init(tss, ARCH_TSS_DESCRIPTORS, tssdescriptors);
+
+    for (i = 0; i < ARCH_TSS_DESCRIPTORS; i++)
+    {
+
+        tss_setdescriptor(tss, i, selector, ARCH_KERNEL_STACKBASE + KERNEL_STACKSIZE + KERNEL_STACKSIZE * i);
+        gdt_setdescriptor(gdt, ARCH_TSS + i, (unsigned long)&tssdescriptors[i], sizeof (struct tss_descriptor) - 1, GDT_ACCESS_PRESENT | GDT_ACCESS_EXECUTE | GDT_ACCESS_ACCESSED, GDT_FLAG_32BIT);
+
+    }
+
+    cpu_settss(gdt_getselector(gdt, ARCH_TSS));
 
 }
 
@@ -550,9 +564,9 @@ void arch_setup1(void)
 
     resource_setup();
     udebug_setup();
-    arch_configuregdt(gdt, (struct gdt_descriptor *)(gdt + 1), ARCH_GDT_DESCRIPTORS);
-    arch_configureidt(idt, (struct idt_descriptor *)(idt + 1), ARCH_IDT_DESCRIPTORS, gdt_getselector(gdt, ARCH_KCODE));
-    arch_configuretss(&tss0, tssdescriptors0, ARCH_TSS_DESCRIPTORS, 0, gdt_getselector(gdt, ARCH_KDATA), gdt_getselector(gdt, ARCH_TSS + 0));
+    configuregdt();
+    configureidt();
+    configuretss();
     buffer_clear((void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
     setupmmap();
     mailbox_setup();

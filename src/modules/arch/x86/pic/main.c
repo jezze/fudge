@@ -3,7 +3,6 @@
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/gdt.h>
 #include <kernel/x86/idt.h>
-#include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/io/io.h>
 #include "pic.h"

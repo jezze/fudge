@@ -2,8 +2,6 @@
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/gdt.h>
-#include <kernel/x86/idt.h>
-#include <kernel/x86/tss.h>
 #include <kernel/x86/mmu.h>
 #include <kernel/x86/arch.h>
 #include <modules/arch/x86/pic/pic.h>
@@ -18,14 +16,6 @@ extern void smp_begin16(void);
 extern void smp_end16(void);
 extern void smp_begin32(void);
 extern void smp_end32(void);
-
-static struct
-{
-
-    struct tss_pointer pointer;
-    struct tss_descriptor descriptors[ARCH_TSS_DESCRIPTORS];
-
-} tss[POOL_CORES];
 
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct list usedcores;
@@ -66,7 +56,7 @@ void smp_setupap(unsigned int icore, unsigned int sp)
     if (core)
         core->state = CORE_STATE_ACTIVE;
 
-    arch_configuretss(&tss[icore].pointer, tss[icore].descriptors, ARCH_TSS_DESCRIPTORS, icore, gdt_getselector(gdt, ARCH_KDATA), gdt_getselector(gdt, ARCH_TSS + icore));
+    cpu_settss(gdt_getselector(gdt, ARCH_TSS + icore));
     apic_setup_ap();
     cpu_setcr3(ARCH_MMU_KERNELBASE);
     mmu_enable();

@@ -1,9 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
-#include <kernel/x86/gdt.h>
-#include <kernel/x86/idt.h>
-#include <kernel/x86/tss.h>
 #include <kernel/x86/arch.h>
 #include <binary.h>
 #include <disk.h>
