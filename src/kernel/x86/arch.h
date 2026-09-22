@@ -2,8 +2,6 @@
 #define ARCH_GDT_DESCRIPTORS            256
 #define ARCH_IDT_BASE                   0x00002000
 #define ARCH_IDT_DESCRIPTORS            256
-#define ARCH_SMP_BASE16                 0x00008000
-#define ARCH_SMP_BASE32                 0x00008200
 #define ARCH_TSS_DESCRIPTORS            1
 #define ARCH_KERNEL_CODEBASE            0x00100000
 #define ARCH_KERNEL_CODESIZE            (KERNEL_CODESIZE)
