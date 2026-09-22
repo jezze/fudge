@@ -2,8 +2,6 @@
 #include <kernel.h>
 
 #define ROOTRECORDS                     4
-#define GCORES                          0x01000
-#define GTASKS                          0x04000
 #define GMAILBOXES                      0x06000
 #define GNODES                          0x08000
 
@@ -14,80 +12,89 @@ static struct record rootrecords[ROOTRECORDS];
 static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
-    struct record *records = data;
-    unsigned int nrecords = count / sizeof (struct record);
     struct resource *resource = 0;
     unsigned int c = 0;
     unsigned int i;
+    char buffer[4096];
+    char *states[3] = {
+        "UNKNOWN",
+        "DEAD",
+        "ACTIVE"
+    };
+
+    c += cstring_write_fmt0(buffer, 4096, c, "cores: [\n");
 
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
     {
 
-        if (c >= nrecords)
-            break;
+        struct core *core = resource->data;
 
-        if (i >= offset)
+        if (core && core->state != TASK_STATE_DEAD)
         {
 
-            struct core *core = resource->data;
-
-            if (core && core->state != TASK_STATE_DEAD)
-            {
-
-                char name[RECORD_NAMESIZE];
-                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "core%u", &i);
-
-                record_init(&records[c], GCORES + i + 1, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
-
-                c++;
-
-            }
+            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
+            c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[core->state]);
+            c += cstring_write_fmt1(buffer, 4096, c, "    tasks: %u\n", &core->tasks.count);
+            c += cstring_write_fmt1(buffer, 4096, c, "    running: %u\n", &core->itask);
+            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
         }
 
     }
 
-    return c * sizeof (struct record);
+    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+
+    return buffer_read(data, count, buffer, c, offset);
 
 }
 
 static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
-    struct record *records = data;
-    unsigned int nrecords = count / sizeof (struct record);
     struct resource *resource = 0;
     unsigned int c = 0;
     unsigned int i;
+    char buffer[4096];
+    char *states[7] = {
+        "UNKNOWN",
+        "DEAD",
+        "NEW",
+        "BLOCKED",
+        "UNBLOCKED",
+        "ASSIGNED",
+        "RUNNING"
+    };
+
+    c += cstring_write_fmt0(buffer, 4096, c, "tasks: [\n");
 
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_TASK)); i++)
     {
 
-        if (c >= nrecords)
-            break;
+        struct task *task = resource->data;
 
-        if (i >= offset)
+        if (task && task->state != TASK_STATE_DEAD)
         {
 
-            struct task *task = resource->data;
-
-            if (task && task->state != TASK_STATE_DEAD)
-            {
-
-                char name[RECORD_NAMESIZE];
-                unsigned int cname = cstring_write_fmt1(name, RECORD_NAMESIZE, 0, "task%u", &i);
-
-                record_init(&records[c], GTASKS + i, RECORD_TYPE_DIRECTORY, 0, i + 1, cname, name);
-
-                c++;
-
-            }
+            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
+            c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[task->state]);
+            c += cstring_write_fmt1(buffer, 4096, c, "    address: 0x%H8u\n", &task->address);
+            c += cstring_write_fmt0(buffer, 4096, c, "    signals:\n");
+            c += cstring_write_fmt0(buffer, 4096, c, "      {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "        kill: %u\n", &task->signals.kill);
+            c += cstring_write_fmt1(buffer, 4096, c, "        block: %u\n", &task->signals.block);
+            c += cstring_write_fmt1(buffer, 4096, c, "        unblock: %u\n", &task->signals.unblock);
+            c += cstring_write_fmt0(buffer, 4096, c, "      }\n");
+            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
         }
 
     }
 
-    return c * sizeof (struct record);
+    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+
+    return buffer_read(data, count, buffer, c, offset);
 
 }
 
@@ -267,8 +274,22 @@ static unsigned int walkroot(unsigned int parent, unsigned int length, char *pat
 
         struct record *record = &rootrecords[i];
 
-        if (record->length == length - 1 && buffer_match(record->name, path, record->length))
-            return record->id;
+        switch (record->type)
+        {
+
+        case RECORD_TYPE_NORMAL:
+            if (record->length == length && buffer_match(record->name, path, record->length))
+                return record->id;
+
+            break;
+
+        case RECORD_TYPE_DIRECTORY:
+            if (record->length == length - 1 && buffer_match(record->name, path, record->length))
+                return record->id;
+
+            break;
+
+        }
 
     }
 
@@ -356,8 +377,8 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void module_init(void)
 {
 
-    record_init(&rootrecords[0], 0x1001, RECORD_TYPE_DIRECTORY, 0, 1, 5, "cores");
-    record_init(&rootrecords[1], 0x1002, RECORD_TYPE_DIRECTORY, 0, 2, 5, "tasks");
+    record_init(&rootrecords[0], 0x1001, RECORD_TYPE_NORMAL, 0, 1, 5, "cores");
+    record_init(&rootrecords[1], 0x1002, RECORD_TYPE_NORMAL, 0, 2, 5, "tasks");
     record_init(&rootrecords[2], 0x1003, RECORD_TYPE_DIRECTORY, 0, 3, 9, "mailboxes");
     record_init(&rootrecords[3], 0x1004, RECORD_TYPE_DIRECTORY, 0, 4, 5, "nodes");
     node_operands_init(&operands, 0, operands_place);
