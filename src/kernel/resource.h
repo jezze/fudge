@@ -1,20 +1,20 @@
-#define RESOURCE_TASK                   1
-#define RESOURCE_CORE                   2
-#define RESOURCE_MAILBOX                3
-#define RESOURCE_NODE                   4
-#define RESOURCE_BINARYFORMAT           5
-#define RESOURCE_BUS                    6
-#define RESOURCE_DRIVER                 7
-#define RESOURCE_DEBUGLOG               8
-#define RESOURCE_ETHERNETINTERFACE      40
-#define RESOURCE_AUDIOINTERFACE         41
-#define RESOURCE_VIDEOINTERFACE         42
-#define RESOURCE_TIMERINTERFACE         43
-#define RESOURCE_CLOCKINTERFACE         44
-#define RESOURCE_KEYBOARDINTERFACE      45
-#define RESOURCE_MOUSEINTERFACE         46
-#define RESOURCE_BLOCKINTERFACE         47
-#define RESOURCE_CONSOLEINTERFACE       48
+#define RESOURCE_TASK                   0x01
+#define RESOURCE_CORE                   0x02
+#define RESOURCE_MAILBOX                0x03
+#define RESOURCE_NODE                   0x04
+#define RESOURCE_BINARYFORMAT           0x05
+#define RESOURCE_BUS                    0x06
+#define RESOURCE_DRIVER                 0x07
+#define RESOURCE_DEBUGLOG               0x08
+#define RESOURCE_ETHERNETINTERFACE      0x10
+#define RESOURCE_AUDIOINTERFACE         0x11
+#define RESOURCE_VIDEOINTERFACE         0x12
+#define RESOURCE_TIMERINTERFACE         0x13
+#define RESOURCE_CLOCKINTERFACE         0x14
+#define RESOURCE_KEYBOARDINTERFACE      0x15
+#define RESOURCE_MOUSEINTERFACE         0x16
+#define RESOURCE_BLOCKINTERFACE         0x17
+#define RESOURCE_CONSOLEINTERFACE       0x18
 
 struct resource
 {
