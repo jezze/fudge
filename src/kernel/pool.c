@@ -352,7 +352,6 @@ void pool_setup(unsigned long mbaddress)
         struct noderow *noderow = &noderows[i];
 
         node_init(&noderow->node);
-        node_register(&noderow->node);
         list_inititem(&noderow->item, noderow);
         list_add(&freenodes, &noderow->item);
 

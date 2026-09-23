@@ -1,12 +1,11 @@
 #define RESOURCE_TASK                   0x01
 #define RESOURCE_CORE                   0x02
 #define RESOURCE_MAILBOX                0x03
-#define RESOURCE_NODE                   0x04
-#define RESOURCE_BINARYFORMAT           0x05
-#define RESOURCE_BUS                    0x06
-#define RESOURCE_DRIVER                 0x07
-#define RESOURCE_SERVICE                0x08
-#define RESOURCE_DEBUGLOG               0x09
+#define RESOURCE_BINARYFORMAT           0x04
+#define RESOURCE_BUS                    0x05
+#define RESOURCE_DRIVER                 0x06
+#define RESOURCE_SERVICE                0x07
+#define RESOURCE_DEBUGLOG               0x08
 #define RESOURCE_ETHERNETINTERFACE      0x10
 #define RESOURCE_AUDIOINTERFACE         0x11
 #define RESOURCE_VIDEOINTERFACE         0x12

@@ -222,7 +222,7 @@ unsigned int kernel_linknode(struct service *service, unsigned int source)
 
             struct node *node = pool_getnode(inode);
 
-            node_reset(node, snode->reference, snode->operands);
+            node_reset(node, snode->resource, snode->operands);
             pool_placenode(inode, &service->links);
 
             return MESSAGE_OK;
@@ -256,7 +256,7 @@ unsigned int kernel_unlinknode(struct service *service, unsigned int source)
 
             next = current->next;
 
-            if (node->reference == snode->reference)
+            if (node->resource == snode->resource)
             {
 
                 list_remove_unsafe(&service->links, current);
@@ -359,7 +359,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message)
 
     struct node *snode = pool_getnode(source);
 
-    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->reference, source, message) : MESSAGE_FAILED;
+    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->resource, source, message) : MESSAGE_FAILED;
 
 }
 
@@ -368,32 +368,25 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
     struct node *tnode = pool_getnode(target);
 
-    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(tnode->reference, source, target, event, count, data) : MESSAGE_FAILED;
+    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(tnode->resource, source, event, count, data) : MESSAGE_FAILED;
 
 }
 
 unsigned int kernel_announce(unsigned int inode, char *name)
 {
 
-    struct node *node = pool_getnode(inode);
+    unsigned int iservice = pool_pickservice();
 
-    if (node)
+    if (iservice)
     {
 
-        unsigned int iservice = pool_pickservice();
+        struct service *service = pool_getservice(iservice);
 
-        if (iservice)
+        if (service)
         {
 
-            struct service *service = pool_getservice(iservice);
-
-            if (service)
-            {
-
-                service_setname(service, name);
-                service_register(service, inode);
-
-            }
+            service_setname(service, name);
+            service_register(service, inode);
 
         }
 

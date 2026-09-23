@@ -20,7 +20,7 @@ static unsigned int ondata(struct console_interface *interface, unsigned int sou
 
 }
 
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct console_interface *interface = resource->data;
