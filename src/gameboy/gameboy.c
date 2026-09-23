@@ -350,7 +350,7 @@ void init(void)
     option_add("height", "768");
     option_add("bpp", "4");
     option_add("keyboard-service", "keyboard");
-    option_add("timer-service", "timer0");
+    option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);

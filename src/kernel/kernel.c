@@ -7,6 +7,7 @@
 #include "mailbox.h"
 #include "task.h"
 #include "node.h"
+#include "service.h"
 #include "core.h"
 #include "pool.h"
 #include "kernel.h"
@@ -63,6 +64,9 @@ static void destroytask(unsigned int itask)
         }
 
         task_resetmailboxes(task);
+
+        /* DESTROY SERVICES HERE */
+
         pool_unpicktask(itask);
 
     }
@@ -203,13 +207,12 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
 }
 
-unsigned int kernel_linknode(unsigned int target, unsigned int source)
+unsigned int kernel_linknode(struct service *service, unsigned int source)
 {
 
     struct node *snode = pool_getnode(source);
-    struct node *tnode = pool_getnode(target);
 
-    if (snode && tnode)
+    if (snode)
     {
 
         unsigned int inode = pool_picknode();
@@ -219,8 +222,8 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
 
             struct node *node = pool_getnode(inode);
 
-            node_reset(node, 0, snode->reference, snode->operands);
-            pool_placenode(inode, &tnode->links);
+            node_reset(node, snode->reference, snode->operands);
+            pool_placenode(inode, &service->links);
 
             return MESSAGE_OK;
 
@@ -232,21 +235,20 @@ unsigned int kernel_linknode(unsigned int target, unsigned int source)
 
 }
 
-unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
+unsigned int kernel_unlinknode(struct service *service, unsigned int source)
 {
 
     struct node *snode = pool_getnode(source);
-    struct node *tnode = pool_getnode(target);
 
-    if (snode && tnode)
+    if (snode)
     {
 
         struct list_item *current;
         struct list_item *next;
 
-        spinlock_acquire(&tnode->links.spinlock);
+        spinlock_acquire(&service->links.spinlock);
 
-        for (current = tnode->links.head; current; current = next)
+        for (current = service->links.head; current; current = next)
         {
 
             unsigned int inode = pool_getinodefromitem(current);
@@ -257,14 +259,14 @@ unsigned int kernel_unlinknode(unsigned int target, unsigned int source)
             if (node->reference == snode->reference)
             {
 
-                list_remove_unsafe(&tnode->links, current);
+                list_remove_unsafe(&service->links, current);
                 pool_unpicknode(inode);
 
             }
 
         }
 
-        spinlock_release(&tnode->links.spinlock);
+        spinlock_release(&service->links.spinlock);
 
         return MESSAGE_OK;
 
@@ -378,8 +380,22 @@ unsigned int kernel_announce(unsigned int inode, char *name)
     if (node)
     {
 
-        node->name = "service";
-        node->namehash = djb_hash(cstring_length(name), name);
+        unsigned int iservice = pool_pickservice();
+
+        if (iservice)
+        {
+
+            struct service *service = pool_getservice(iservice);
+
+            if (service)
+            {
+
+                service_setname(service, name);
+                service_register(service, inode);
+
+            }
+
+        }
 
     }
 
@@ -387,7 +403,7 @@ unsigned int kernel_announce(unsigned int inode, char *name)
 
 }
 
-void kernel_notify(unsigned int source, unsigned int event, unsigned int count, void *data)
+void kernel_notify(struct service *service, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     struct node *snode = pool_getnode(source);
@@ -395,7 +411,7 @@ void kernel_notify(unsigned int source, unsigned int event, unsigned int count, 
     if (snode)
     {
 
-        struct list *links = &snode->links;
+        struct list *links = &service->links;
         struct list_item *current = 0;
 
         spinlock_acquire(&links->spinlock);

@@ -120,7 +120,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
-    option_add("timer-service", "timer0");
+    option_add("timer-service", "timer");
     channel_bind(EVENT_MAIN, onmain);
 
     while (channel_process(0));

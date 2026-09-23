@@ -11,13 +11,11 @@ void node_operands_init(struct node_operands *operands, unsigned int (*pick)(str
 
 }
 
-void node_reset(struct node *node, char *name, struct resource *reference, struct node_operands *operands)
+void node_reset(struct node *node, struct resource *reference, struct node_operands *operands)
 {
 
     node->reference = reference;
     node->operands = operands;
-    node->name = name;
-    node->namehash = (name) ? djb_hash(cstring_length(name), name) : 0;
 
 }
 
@@ -39,8 +37,7 @@ void node_init(struct node *node)
 {
 
     resource_init(&node->resource, RESOURCE_NODE, node);
-    list_init(&node->links);
-    node_reset(node, 0, 0, 0);
+    node_reset(node, 0, 0);
 
 }
 

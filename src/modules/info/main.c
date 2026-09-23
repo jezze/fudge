@@ -3,9 +3,10 @@
 #include <modules/base/bus.h>
 #include <modules/base/driver.h>
 
-#define ROOTRECORDS                     6
+#define ROOTRECORDS                     7
 
 static struct node_operands operands;
+static struct service service;
 static unsigned int inode;
 static struct record rootrecords[ROOTRECORDS];
 
@@ -137,33 +138,7 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
 static unsigned int readnodes(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
-    struct resource *resource = 0;
-    unsigned int c = 0;
-    char buffer[4096];
-
-    c += cstring_write_fmt0(buffer, 4096, c, "nodes: [\n");
-
-    while ((resource = resource_foreachtype(resource, RESOURCE_NODE)))
-    {
-
-        struct node *node = resource->data;
-
-        if (node && node->namehash)
-        {
-
-            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", node->name);
-            c += cstring_write_fmt1(buffer, 4096, c, "    namehash: %u\n", &node->namehash);
-            c += cstring_write_fmt1(buffer, 4096, c, "    links: %u\n", &node->links.count);
-            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
-
-        }
-
-    }
-
-    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
-
-    return buffer_read(data, count, buffer, c, offset);
+    return 0;
 
 }
 
@@ -229,6 +204,38 @@ static unsigned int readdrivers(unsigned int id, unsigned int offset, unsigned i
 
 }
 
+static unsigned int readservices(unsigned int id, unsigned int offset, unsigned int count, void *data)
+{
+
+    struct resource *resource = 0;
+    unsigned int c = 0;
+    char buffer[4096];
+
+    c += cstring_write_fmt0(buffer, 4096, c, "services: [\n");
+
+    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+    {
+
+        struct service *service = resource->data;
+
+        if (service)
+        {
+
+            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", service->name);
+            c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &service->inode);
+            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+
+        }
+
+    }
+
+    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+
+    return buffer_read(data, count, buffer, c, offset);
+
+}
+
 static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
 
@@ -277,6 +284,9 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
 
     case 0x1006:
         return readdrivers(id, offset, count, data);
+
+    case 0x1007:
+        return readservices(id, offset, count, data);
 
     }
 
@@ -440,6 +450,7 @@ void module_init(void)
     record_init(&rootrecords[3], 0x1004, RECORD_TYPE_NORMAL, 0, 4, 5, "nodes");
     record_init(&rootrecords[4], 0x1005, RECORD_TYPE_NORMAL, 0, 5, 5, "buses");
     record_init(&rootrecords[5], 0x1006, RECORD_TYPE_NORMAL, 0, 6, 7, "drivers");
+    record_init(&rootrecords[6], 0x1007, RECORD_TYPE_NORMAL, 0, 7, 8, "services");
     node_operands_init(&operands, 0, operands_place);
 
     inode = pool_picknode();
@@ -449,7 +460,9 @@ void module_init(void)
 
         struct node *node = pool_getnode(inode);
 
-        node_reset(node, "sysinfo", 0, &operands);
+        node_reset(node, 0, &operands);
+        service_init(&service, "sysinfo");
+        service_register(&service, inode);
 
     }
 

@@ -29,10 +29,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
     case EVENT_LINK:
-        return kernel_linknode(target, source);
+        return kernel_linknode(&interface->service, source);
 
     case EVENT_UNLINK:
-        return kernel_unlinknode(target, source);
+        return kernel_unlinknode(&interface->service, source);
 
     case EVENT_DATA:
         return ondata(interface, source, data, count);
@@ -50,7 +50,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(interface->inode, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(&interface->service, interface->inode, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
@@ -107,6 +107,7 @@ void console_registerinterface(struct console_interface *interface)
 {
 
     resource_register(&interface->resource);
+    service_register(&interface->service, interface->inode);
 
 }
 
@@ -114,6 +115,7 @@ void console_unregisterinterface(struct console_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+    service_unregister(&interface->service);
 
 }
 
@@ -121,6 +123,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
+    service_init(&interface->service, "console");
 
     interface->id = id;
     interface->width = 0;
@@ -135,7 +138,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 
         struct node *node = pool_getnode(interface->inode);
 
-        node_reset(node, "console", &interface->resource, &operands);
+        node_reset(node, &interface->resource, &operands);
 
     }
 

@@ -31,10 +31,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
     case EVENT_LINK:
-        return kernel_linknode(target, source);
+        return kernel_linknode(&interface->service, source);
 
     case EVENT_UNLINK:
-        return kernel_unlinknode(target, source);
+        return kernel_unlinknode(&interface->service, source);
 
     case EVENT_INFO:
         return oninfo(interface, source);
@@ -49,6 +49,7 @@ void clock_registerinterface(struct clock_interface *interface)
 {
 
     resource_register(&interface->resource);
+    service_register(&interface->service, interface->inode);
 
 }
 
@@ -56,6 +57,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 {
 
     resource_unregister(&interface->resource);
+    service_unregister(&interface->service);
 
 }
 
@@ -63,6 +65,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, voi
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
+    service_init(&interface->service, "clock");
 
     interface->id = id;
     interface->inode = pool_picknode();
@@ -73,7 +76,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, voi
 
         struct node *node = pool_getnode(interface->inode);
 
-        node_reset(node, "clock", &interface->resource, &operands);
+        node_reset(node, &interface->resource, &operands);
 
     }
 

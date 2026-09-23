@@ -15,6 +15,7 @@ O:=\
     $(DIR_SRC)/kernel/node.o \
     $(DIR_SRC)/kernel/pool.o \
     $(DIR_SRC)/kernel/resource.o \
+    $(DIR_SRC)/kernel/service.o \
     $(DIR_SRC)/kernel/task.o \
 
 L:=\

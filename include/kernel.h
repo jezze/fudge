@@ -7,5 +7,6 @@
 #include <kernel/core.h>
 #include <kernel/node.h>
 #include <kernel/pool.h>
+#include <kernel/service.h>
 #include <kernel/kernel.h>
 #include <kernel/abi.h>

@@ -3,6 +3,7 @@
 #include <disk.h>
 
 static struct node_operands operands;
+static struct service service;
 static unsigned int address;
 static unsigned int inode;
 
@@ -409,7 +410,9 @@ void cpio_setup(unsigned int addr)
 
         struct node *node = pool_getnode(inode);
 
-        node_reset(node, "initrd", 0, &operands);
+        node_reset(node, 0, &operands);
+        service_init(&service, "initrd");
+        service_register(&service, inode);
 
     }
 

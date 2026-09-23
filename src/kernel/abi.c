@@ -6,6 +6,7 @@
 #include "mailbox.h"
 #include "task.h"
 #include "node.h"
+#include "service.h"
 #include "pool.h"
 #include "kernel.h"
 
@@ -50,8 +51,27 @@ static unsigned int find(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int namehash; unsigned int index;} *args = stack;
+    struct resource *resource = 0;
+    unsigned int index = 0;
 
-    return pool_findinode(args->namehash, args->index);
+    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+    {
+
+        struct service *service = resource->data;
+
+        if (service->namehash == args->namehash)
+        {
+
+            if (index == args->index)
+                return service->inode;
+
+            index++;
+
+        }
+
+    }
+
+    return 0;
 
 }
 

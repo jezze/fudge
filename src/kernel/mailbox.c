@@ -180,7 +180,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
         struct node *node = pool_getnode(mailbox->inode);
 
-        node_reset(node, 0, &mailbox->resource, &operands);
+        node_reset(node, &mailbox->resource, &operands);
 
     }
 
