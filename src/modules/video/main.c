@@ -14,7 +14,7 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
 
         interface->oninfo(&videoinfo);
 
-        return kernel_place(interface->inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+        return kernel_place(interface->service.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
     }
 
@@ -88,8 +88,19 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void video_registerinterface(struct video_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -108,22 +119,12 @@ void video_initinterface(struct video_interface *interface, unsigned int id, voi
     service_init(&interface->service, "video");
 
     interface->id = id;
-    interface->inode = pool_picknode();
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
     interface->oninfo = oninfo;
     interface->onvideocmap = onvideocmap;
     interface->onvideoconf = onvideoconf;
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 

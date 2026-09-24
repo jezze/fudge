@@ -49,8 +49,19 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -69,16 +80,6 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
     service_init(&interface->service, "keyboard");
 
     interface->id = id;
-    interface->inode = pool_picknode();
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 

@@ -4,7 +4,6 @@ struct ethernet_interface
     struct resource resource;
     struct service service;
     unsigned int id;
-    unsigned int inode;
     void (*oninfo)(struct event_ethernetinfo *ethernetinfo);
     unsigned int (*ondata)(void *buffer, unsigned int count);
 

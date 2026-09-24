@@ -18,7 +18,6 @@ struct block_interface
     struct resource resource;
     struct service service;
     unsigned int id;
-    unsigned int inode;
     struct block_session sessions[8];
     void (*oninfo)(struct event_blockinfo *blockinfo);
     void (*startsession)(struct block_session *session);

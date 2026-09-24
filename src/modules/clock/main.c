@@ -14,7 +14,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
 
         interface->oninfo(&clockinfo);
 
-        return kernel_place(interface->inode, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        return kernel_place(interface->service.inode, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
     }
 
@@ -48,8 +48,19 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void clock_registerinterface(struct clock_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -68,17 +79,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, voi
     service_init(&interface->service, "clock");
 
     interface->id = id;
-    interface->inode = pool_picknode();
     interface->oninfo = oninfo;
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 

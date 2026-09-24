@@ -31,7 +31,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
         interface->oninfo(&ethernetinfo);
 
-        return kernel_place(interface->inode, source, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
+        return kernel_place(interface->service.inode, source, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
 
     }
 
@@ -75,8 +75,19 @@ void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, uns
 void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -95,18 +106,8 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
     service_init(&interface->service, "ethernet");
 
     interface->id = id;
-    interface->inode = pool_picknode();
     interface->oninfo = oninfo;
     interface->ondata = ondata;
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 

@@ -14,7 +14,7 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
 
         interface->oninfo(&blockinfo);
 
-        return kernel_place(interface->inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+        return kernel_place(interface->service.inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
 
     }
 
@@ -133,12 +133,12 @@ void block_session_done(struct block_interface *interface, struct block_session 
     {
 
     case BLOCK_TYPE_READ:
-        kernel_place(interface->inode, session->source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+        kernel_place(interface->service.inode, session->source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        kernel_place(interface->inode, session->source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
+        kernel_place(interface->service.inode, session->source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
 
         break;
 
@@ -151,8 +151,19 @@ void block_session_done(struct block_interface *interface, struct block_session 
 void block_registerinterface(struct block_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -171,18 +182,8 @@ void block_initinterface(struct block_interface *interface, unsigned int id, voi
     service_init(&interface->service, "block");
 
     interface->id = id;
-    interface->inode = pool_picknode();
     interface->oninfo = oninfo;
     interface->startsession = startsession;
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 

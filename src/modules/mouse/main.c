@@ -72,8 +72,19 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 void mouse_registerinterface(struct mouse_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -92,16 +103,6 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
     service_init(&interface->service, "mouse");
 
     interface->id = id;
-    interface->inode = pool_picknode();
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 

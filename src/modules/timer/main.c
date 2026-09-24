@@ -77,8 +77,19 @@ void timer_notifytick1000(struct timer_interface *interface, unsigned int counte
 void timer_registerinterface(struct timer_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -97,16 +108,6 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
     service_init(&interface->service, "timer");
 
     interface->id = id;
-    interface->inode = pool_picknode();
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 

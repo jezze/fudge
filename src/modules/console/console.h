@@ -8,7 +8,6 @@ struct console_interface
     unsigned int height;
     unsigned int color;
     unsigned int cursor;
-    unsigned int inode;
     unsigned int (*ondata)(void *buffer, unsigned int count);
 
 };

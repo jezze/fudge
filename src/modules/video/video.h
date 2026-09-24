@@ -4,7 +4,6 @@ struct video_interface
     struct resource resource;
     struct service service;
     unsigned int id;
-    unsigned int inode;
     unsigned int width;
     unsigned int height;
     unsigned int bpp;

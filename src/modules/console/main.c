@@ -106,8 +106,19 @@ void console_cursorend(struct console_interface *interface)
 void console_registerinterface(struct console_interface *interface)
 {
 
+    unsigned int inode = pool_picknode();
+
+    if (inode)
+    {
+
+        struct node *node = pool_getnode(inode);
+
+        node_reset(node, &interface->resource, &operands);
+
+    }
+
     resource_register(&interface->resource);
-    service_register(&interface->service, interface->inode);
+    service_register(&interface->service, inode);
 
 }
 
@@ -130,17 +141,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
     interface->height = 0;
     interface->color = 0;
     interface->cursor = 0;
-    interface->inode = pool_picknode();
     interface->ondata = ondata;
-
-    if (interface->inode)
-    {
-
-        struct node *node = pool_getnode(interface->inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
 
 }
 
