@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 #include <disk.h>
-#include <hash.h>
 
 static struct event_blockinfo blockinfo;
 

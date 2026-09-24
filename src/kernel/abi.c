@@ -1,4 +1,5 @@
 #include <fudge.h>
+#include <hash.h>
 #include "resource.h"
 #include "debug.h"
 #include "mmap.h"
@@ -50,7 +51,8 @@ static unsigned int kill(unsigned int itask, void *stack)
 static unsigned int find(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int namehash; unsigned int index;} *args = stack;
+    struct {void *caller; unsigned int length; char *name; unsigned int index;} *args = stack;
+    unsigned int namehash = djb_hash(args->length, args->name);
     struct resource *resource = 0;
     unsigned int index = 0;
 
@@ -59,7 +61,7 @@ static unsigned int find(unsigned int itask, void *stack)
 
         struct service *service = resource->data;
 
-        if (service->namehash == args->namehash)
+        if (service->namehash == namehash)
         {
 
             if (index == args->index)

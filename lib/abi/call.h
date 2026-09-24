@@ -1,7 +1,7 @@
 unsigned int call_announce(unsigned int ichannel, char *name);
 unsigned int call_debug(char *message);
 unsigned int call_despawn(void);
-unsigned int call_find(unsigned int namehash, unsigned int index);
+unsigned int call_find(unsigned int length, char *name, unsigned int index);
 unsigned int call_kill(unsigned int task);
 unsigned int call_load(unsigned int address);
 unsigned int call_pick(unsigned int ichannel, struct message *message);

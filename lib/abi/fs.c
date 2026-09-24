@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <hash.h>
 #include "call.h"
 #include "channel.h"
 #include "fs.h"
@@ -10,16 +9,10 @@ unsigned int fs_auth(char *path)
     unsigned int length = cstring_length(path);
     unsigned int offset = buffer_eachbyte(path, length, ':', 0);
 
-    if (offset)
-    {
+    if (offset > 0)
+        length = offset - 1;
 
-        unsigned int namehash = djb_hash(offset - 1, path);
-
-        return call_find(namehash, 0);
-
-    }
-
-    return 0;
+    return call_find(length, path, 0);
 
 }
 
