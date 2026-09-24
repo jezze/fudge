@@ -63,11 +63,10 @@ static void destroytask(unsigned int itask)
 
         }
 
-        task_resetmailboxes(task);
-        task_unregister(task);
-
         /* DESTROY SERVICES HERE */
 
+        task_reset(task, 0, 0);
+        task_unregister(task);
         pool_unpicktask(itask);
 
     }
