@@ -30,17 +30,12 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
 
         struct core *core = resource->data;
 
-        if (core && core->state != TASK_STATE_DEAD)
-        {
-
-            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
-            c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[core->state]);
-            c += cstring_write_fmt1(buffer, 4096, c, "    tasks: %u\n", &core->tasks.count);
-            c += cstring_write_fmt1(buffer, 4096, c, "    running: %u\n", &core->itask);
-            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
-
-        }
+        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
+        c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[core->state]);
+        c += cstring_write_fmt1(buffer, 4096, c, "    tasks: %u\n", &core->tasks.count);
+        c += cstring_write_fmt1(buffer, 4096, c, "    running: %u\n", &core->itask);
+        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
     }
 
@@ -74,22 +69,17 @@ static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int
 
         struct task *task = resource->data;
 
-        if (task && task->state != TASK_STATE_DEAD)
-        {
-
-            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
-            c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[task->state]);
-            c += cstring_write_fmt1(buffer, 4096, c, "    address: 0x%H8u\n", &task->address);
-            c += cstring_write_fmt0(buffer, 4096, c, "    signals:\n");
-            c += cstring_write_fmt0(buffer, 4096, c, "      {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "        kill: %u\n", &task->signals.kill);
-            c += cstring_write_fmt1(buffer, 4096, c, "        block: %u\n", &task->signals.block);
-            c += cstring_write_fmt1(buffer, 4096, c, "        unblock: %u\n", &task->signals.unblock);
-            c += cstring_write_fmt0(buffer, 4096, c, "      }\n");
-            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
-
-        }
+        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
+        c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[task->state]);
+        c += cstring_write_fmt1(buffer, 4096, c, "    address: 0x%H8u\n", &task->address);
+        c += cstring_write_fmt0(buffer, 4096, c, "    signals:\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "      {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "        kill: %u\n", &task->signals.kill);
+        c += cstring_write_fmt1(buffer, 4096, c, "        block: %u\n", &task->signals.block);
+        c += cstring_write_fmt1(buffer, 4096, c, "        unblock: %u\n", &task->signals.unblock);
+        c += cstring_write_fmt0(buffer, 4096, c, "      }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
     }
 
@@ -112,20 +102,14 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
     {
 
         struct mailbox *mailbox = resource->data;
+        unsigned int nmessages = mailbox->head - mailbox->tail;
 
-        if (mailbox && mailbox->itask)
-        {
-
-            unsigned int nmessages = mailbox->head - mailbox->tail;
-
-            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "    itask: %u\n", &mailbox->itask);
-            c += cstring_write_fmt1(buffer, 4096, c, "    ichannel: %u\n", &mailbox->ichannel);
-            c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &mailbox->inode);
-            c += cstring_write_fmt1(buffer, 4096, c, "    nmessages: %u\n", &nmessages);
-            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
-
-        }
+        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "    itask: %u\n", &mailbox->itask);
+        c += cstring_write_fmt1(buffer, 4096, c, "    ichannel: %u\n", &mailbox->ichannel);
+        c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &mailbox->inode);
+        c += cstring_write_fmt1(buffer, 4096, c, "    nmessages: %u\n", &nmessages);
+        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
     }
 
@@ -156,14 +140,9 @@ static unsigned int readbuses(unsigned int id, unsigned int offset, unsigned int
 
         struct base_bus *bus = resource->data;
 
-        if (bus)
-        {
-
-            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", bus->name);
-            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
-
-        }
+        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", bus->name);
+        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
     }
 
@@ -187,14 +166,9 @@ static unsigned int readdrivers(unsigned int id, unsigned int offset, unsigned i
 
         struct base_driver *driver = resource->data;
 
-        if (driver)
-        {
-
-            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", driver->name);
-            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
-
-        }
+        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", driver->name);
+        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
     }
 
@@ -218,15 +192,10 @@ static unsigned int readservices(unsigned int id, unsigned int offset, unsigned 
 
         struct service *service = resource->data;
 
-        if (service)
-        {
-
-            c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-            c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", service->name);
-            c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &service->inode);
-            c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
-
-        }
+        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", service->name);
+        c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &service->inode);
+        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
 
     }
 

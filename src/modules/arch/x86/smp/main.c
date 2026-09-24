@@ -54,7 +54,13 @@ void smp_setupap(unsigned int icore, unsigned int sp)
     struct core *core = pool_getcore(icore);
 
     if (core)
+    {
+
         core->state = CORE_STATE_ACTIVE;
+
+        core_register(core);
+
+    }
 
     cpu_settss(gdt_getselector(gdt, ARCH_TSS + icore));
     apic_setup_ap();

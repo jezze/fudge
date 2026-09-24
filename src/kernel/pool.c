@@ -341,7 +341,6 @@ void pool_setup(unsigned long mbaddress)
         struct corerow *corerow = &corerows[i];
 
         core_init(&corerow->core);
-        core_register(&corerow->core);
         list_inititem(&corerow->item, corerow);
 
     }
@@ -363,7 +362,6 @@ void pool_setup(unsigned long mbaddress)
         struct mailboxrow *mailboxrow = &mailboxrows[i];
 
         mailbox_init(&mailboxrow->mailbox, mbaddress + i * MESSAGE_CAPACITY);
-        mailbox_register(&mailboxrow->mailbox);
         list_inititem(&mailboxrow->item, mailboxrow);
         list_add(&freemailboxes, &mailboxrow->item);
 
@@ -386,7 +384,6 @@ void pool_setup(unsigned long mbaddress)
         struct taskrow *taskrow = &taskrows[i];
 
         task_init(&taskrow->task);
-        task_register(&taskrow->task);
         list_inititem(&taskrow->item, taskrow);
         list_add(&freetasks, &taskrow->item);
 
