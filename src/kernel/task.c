@@ -140,24 +140,7 @@ void task_unregister(struct task *task)
 
 }
 
-void task_resetsignals(struct task_signals *signals)
-{
-
-    signals->kill = 0;
-    signals->block = 0;
-    signals->unblock = 0;
-
-}
-
-void task_resetthread(struct task_thread *thread, unsigned long ip, unsigned long sp)
-{
-
-    thread->ip = ip;
-    thread->sp = sp;
-
-}
-
-void task_resetmailboxes(struct task *task)
+void task_reset(struct task *task, unsigned long address, unsigned long mmap, unsigned long ip, unsigned long sp)
 {
 
     unsigned int i;
@@ -165,15 +148,11 @@ void task_resetmailboxes(struct task *task)
     for (i = 0; i < TASK_MAILBOXES; i++)
         task->imailbox[i] = 0;
 
-}
-
-void task_reset(struct task *task, unsigned long address, unsigned long mmap)
-{
-
-    task_resetsignals(&task->signals);
-    task_resetthread(&task->thread, 0, 0);
-    task_resetmailboxes(task);
-
+    task->signals.kill = 0;
+    task->signals.block = 0;
+    task->signals.unblock = 0;
+    task->thread.ip = ip;
+    task->thread.sp = sp;
     task->state = TASK_STATE_DEAD;
     task->address = address;
     task->mmap = mmap;
@@ -185,7 +164,7 @@ void task_init(struct task *task)
 
     resource_init(&task->resource, RESOURCE_TASK, task);
     spinlock_init(&task->spinlock);
-    task_reset(task, 0, 0);
+    task_reset(task, 0, 0, 0, 0);
 
 }
 

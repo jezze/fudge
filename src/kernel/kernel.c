@@ -65,7 +65,7 @@ static void destroytask(unsigned int itask)
 
         /* DESTROY SERVICES HERE */
 
-        task_reset(task, 0, 0);
+        task_reset(task, 0, 0, 0, 0);
         task_unregister(task);
         pool_unpicktask(itask);
 
@@ -427,8 +427,8 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     if (task)
     {
 
-        task_reset(task, address, mmap);
-        task_resetthread(&task->thread, ip, sp);
+        task_reset(task, address, mmap, ip, sp);
+        task_register(task);
 
         if (task->address)
         {
@@ -461,7 +461,6 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 
                 transition(itask, TASK_STATE_NEW);
                 transition(itask, TASK_STATE_ASSIGNED);
-                task_register(task);
 
                 return inode;
 
