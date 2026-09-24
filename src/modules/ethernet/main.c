@@ -68,7 +68,7 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->service, interface->inode, EVENT_DATA, count, buffer);
+    kernel_notify(&interface->service, EVENT_DATA, count, buffer);
 
 }
 

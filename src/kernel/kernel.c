@@ -396,10 +396,10 @@ unsigned int kernel_announce(unsigned int inode, char *name)
 
 }
 
-void kernel_notify(struct service *service, unsigned int source, unsigned int event, unsigned int count, void *data)
+void kernel_notify(struct service *service, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *snode = pool_getnode(source);
+    struct node *snode = pool_getnode(service->inode);
 
     if (snode)
     {
@@ -415,7 +415,7 @@ void kernel_notify(struct service *service, unsigned int source, unsigned int ev
             unsigned int target = pool_getinodefromitem(current);
 
             if (target)
-                kernel_place(source, target, event, count, data);
+                kernel_place(service->inode, target, event, count, data);
 
         }
 

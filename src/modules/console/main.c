@@ -50,7 +50,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(&interface->service, interface->inode, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(&interface->service, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
