@@ -399,29 +399,22 @@ unsigned int kernel_announce(unsigned int inode, char *name)
 void kernel_notify(struct service *service, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *snode = pool_getnode(service->inode);
+    struct list *links = &service->links;
+    struct list_item *current = 0;
 
-    if (snode)
+    spinlock_acquire(&links->spinlock);
+
+    while ((current = list_next_unsafe(links, current)))
     {
 
-        struct list *links = &service->links;
-        struct list_item *current = 0;
+        unsigned int target = pool_getinodefromitem(current);
 
-        spinlock_acquire(&links->spinlock);
-
-        while ((current = list_next_unsafe(links, current)))
-        {
-
-            unsigned int target = pool_getinodefromitem(current);
-
-            if (target)
-                kernel_place(service->inode, target, event, count, data);
-
-        }
-
-        spinlock_release(&links->spinlock);
+        if (target)
+            kernel_place(service->inode, target, event, count, data);
 
     }
+
+    spinlock_release(&links->spinlock);
 
 }
 
