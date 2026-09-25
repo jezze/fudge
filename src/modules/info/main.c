@@ -3,7 +3,7 @@
 #include <modules/base/bus.h>
 #include <modules/base/driver.h>
 
-#define ROOTRECORDS                     7
+#define ROOTRECORDS                     6
 
 static struct node_operands operands;
 static struct service service;
@@ -116,13 +116,6 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
     c += cstring_write_fmt0(buffer, 4096, c, "]\n");
 
     return buffer_read(data, count, buffer, c, offset);
-
-}
-
-static unsigned int readnodes(unsigned int id, unsigned int offset, unsigned int count, void *data)
-{
-
-    return 0;
 
 }
 
@@ -246,16 +239,13 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
         return readmailboxes(id, offset, count, data);
 
     case 0x1004:
-        return readnodes(id, offset, count, data);
+        return readservices(id, offset, count, data);
 
     case 0x1005:
         return readbuses(id, offset, count, data);
 
     case 0x1006:
         return readdrivers(id, offset, count, data);
-
-    case 0x1007:
-        return readservices(id, offset, count, data);
 
     }
 
@@ -416,10 +406,9 @@ void module_init(void)
     record_init(&rootrecords[0], 0x1001, RECORD_TYPE_NORMAL, 0, 1, 5, "cores");
     record_init(&rootrecords[1], 0x1002, RECORD_TYPE_NORMAL, 0, 2, 5, "tasks");
     record_init(&rootrecords[2], 0x1003, RECORD_TYPE_NORMAL, 0, 3, 9, "mailboxes");
-    record_init(&rootrecords[3], 0x1004, RECORD_TYPE_NORMAL, 0, 4, 5, "nodes");
+    record_init(&rootrecords[3], 0x1004, RECORD_TYPE_NORMAL, 0, 4, 8, "services");
     record_init(&rootrecords[4], 0x1005, RECORD_TYPE_NORMAL, 0, 5, 5, "buses");
     record_init(&rootrecords[5], 0x1006, RECORD_TYPE_NORMAL, 0, 6, 7, "drivers");
-    record_init(&rootrecords[6], 0x1007, RECORD_TYPE_NORMAL, 0, 7, 8, "services");
     node_operands_init(&operands, 0, operands_place);
     service_init(&service);
 
