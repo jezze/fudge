@@ -422,14 +422,11 @@ void module_init(void)
     record_init(&rootrecords[6], 0x1007, RECORD_TYPE_NORMAL, 0, 7, 8, "services");
     node_operands_init(&operands, 0, operands_place);
 
-    inode = pool_picknode();
+    inode = pool_picknode(0, &operands);
 
     if (inode)
     {
 
-        struct node *node = pool_getnode(inode);
-
-        node_reset(node, 0, &operands);
         service_init(&service, "sysinfo");
         service_register(&service, inode);
 

@@ -10,7 +10,7 @@
 static struct corerow {struct list_item item; struct core core;} corerows[POOL_CORES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
-static struct noderow {struct list_item item; struct node node;} noderows[POOL_NODES];
+static struct noderow {struct list_item item; struct resource *resource; struct node_operands *operands;} noderows[POOL_NODES];
 static struct servicerow {struct list_item item; struct service service;} servicerows[POOL_SERVICES];
 static struct list freetasks;
 static struct list freemailboxes;
@@ -150,12 +150,21 @@ struct mailbox *pool_getmailbox(unsigned int imailbox)
 
 }
 
-struct node *pool_getnode(unsigned int inode)
+struct resource *pool_getnoderesource(unsigned int inode)
 {
 
     struct noderow *noderow = getnoderow(inode);
 
-    return noderow ? &noderow->node : 0;
+    return noderow ? noderow->resource : 0;
+
+}
+
+struct node_operands *pool_getnodeoperands(unsigned int inode)
+{
+
+    struct noderow *noderow = getnoderow(inode);
+
+    return noderow ? noderow->operands : 0;
 
 }
 
@@ -209,12 +218,24 @@ unsigned int pool_pickmailbox(void)
 
 }
 
-unsigned int pool_picknode(void)
+unsigned int pool_picknode(struct resource *resource, struct node_operands *operands)
 {
 
     struct list_item *item = list_pickhead(&freenodes);
 
-    return (item) ? encodenoderow(item->data) : 0;
+    if (item)
+    {
+
+        struct noderow *noderow = item->data;
+
+        noderow->resource = resource;
+        noderow->operands = operands;
+
+        return encodenoderow(item->data);
+
+    }
+
+    return 0;
 
 }
 
@@ -350,7 +371,6 @@ void pool_setup(unsigned long mbaddress)
 
         struct noderow *noderow = &noderows[i];
 
-        node_init(&noderow->node);
         list_inititem(&noderow->item, noderow);
         list_add(&freenodes, &noderow->item);
 

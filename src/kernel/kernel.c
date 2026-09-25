@@ -211,24 +211,14 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 unsigned int kernel_linknode(struct list *links, unsigned int source)
 {
 
-    struct node *snode = pool_getnode(source);
+    unsigned int inode = pool_picknode(pool_getnoderesource(source), pool_getnodeoperands(source));
 
-    if (snode)
+    if (inode)
     {
 
-        unsigned int inode = pool_picknode();
+        pool_placenode(inode, links);
 
-        if (inode)
-        {
-
-            struct node *node = pool_getnode(inode);
-
-            node_reset(node, snode->resource, snode->operands);
-            pool_placenode(inode, links);
-
-            return MESSAGE_OK;
-
-        }
+        return MESSAGE_OK;
 
     }
 
@@ -239,9 +229,9 @@ unsigned int kernel_linknode(struct list *links, unsigned int source)
 unsigned int kernel_unlinknode(struct list *links, unsigned int source)
 {
 
-    struct node *snode = pool_getnode(source);
+    struct resource *sresource = pool_getnoderesource(source);
 
-    if (snode)
+    if (sresource)
     {
 
         struct list_item *current;
@@ -253,11 +243,10 @@ unsigned int kernel_unlinknode(struct list *links, unsigned int source)
         {
 
             unsigned int inode = pool_getinodefromitem(current);
-            struct node *node = pool_getnode(inode);
 
             next = current->next;
 
-            if (node->resource == snode->resource)
+            if (pool_getnoderesource(inode) == sresource)
             {
 
                 list_remove_unsafe(links, current);
@@ -358,18 +347,18 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 unsigned int kernel_pick(unsigned int source, struct message *message)
 {
 
-    struct node *snode = pool_getnode(source);
+    struct node_operands *operands = pool_getnodeoperands(source);
 
-    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(source, message) : MESSAGE_FAILED;
+    return (operands && operands->pick) ? operands->pick(source, message) : MESSAGE_FAILED;
 
 }
 
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = pool_getnode(target);
+    struct node_operands *operands = pool_getnodeoperands(target);
 
-    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(target, source, event, count, data) : MESSAGE_FAILED;
+    return (operands && operands->place) ? operands->place(target, source, event, count, data) : MESSAGE_FAILED;
 
 }
 

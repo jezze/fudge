@@ -11,18 +11,3 @@ void node_operands_init(struct node_operands *operands, unsigned int (*pick)(uns
 
 }
 
-void node_reset(struct node *node, struct resource *resource, struct node_operands *operands)
-{
-
-    node->resource = resource;
-    node->operands = operands;
-
-}
-
-void node_init(struct node *node)
-{
-
-    node_reset(node, 0, 0);
-
-}
-

@@ -89,12 +89,12 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = pool_getnode(target);
+    struct resource *resource = pool_getnoderesource(target);
 
-    if (tnode)
+    if (resource)
     {
 
-        struct block_interface *interface = tnode->resource->data;
+        struct block_interface *interface = resource->data;
 
         switch (event)
         {
@@ -158,16 +158,7 @@ void block_session_done(struct block_interface *interface, struct block_session 
 void block_registerinterface(struct block_interface *interface)
 {
 
-    unsigned int inode = pool_picknode();
-
-    if (inode)
-    {
-
-        struct node *node = pool_getnode(inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
+    unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
     service_register(&interface->service, inode);

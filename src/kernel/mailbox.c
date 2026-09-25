@@ -87,12 +87,12 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 static unsigned int operands_pick(unsigned int source, struct message *message)
 {
 
-    struct node *snode = pool_getnode(source);
+    struct resource *resource = pool_getnoderesource(source);
 
-    if (snode)
+    if (resource)
     {
 
-        struct mailbox *mailbox = snode->resource->data;
+        struct mailbox *mailbox = resource->data;
 
         if (mailbox)
         {
@@ -122,12 +122,12 @@ static unsigned int operands_pick(unsigned int source, struct message *message)
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = pool_getnode(target);
+    struct resource *resource = pool_getnoderesource(target);
 
-    if (tnode)
+    if (resource)
     {
 
-        struct mailbox *mailbox = tnode->resource->data;
+        struct mailbox *mailbox = resource->data;
 
         if (mailbox)
         {
@@ -186,17 +186,8 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
     spinlock_init(&mailbox->spinlock);
     mailbox_reset(mailbox, 0, 0);
 
-    mailbox->inode = pool_picknode();
+    mailbox->inode = pool_picknode(&mailbox->resource, &operands);
     mailbox->data = data;
-
-    if (mailbox->inode)
-    {
-
-        struct node *node = pool_getnode(mailbox->inode);
-
-        node_reset(node, &mailbox->resource, &operands);
-
-    }
 
 }
 

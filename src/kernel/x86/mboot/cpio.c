@@ -401,16 +401,13 @@ void cpio_setup(unsigned int addr)
 {
 
     address = addr;
-    inode = pool_picknode();
+    inode = pool_picknode(0, &operands);
 
     node_operands_init(&operands, 0, operands_place);
 
     if (inode)
     {
 
-        struct node *node = pool_getnode(inode);
-
-        node_reset(node, 0, &operands);
         service_init(&service, "initrd");
         service_register(&service, inode);
 

@@ -7,12 +7,12 @@ static struct node_operands operands;
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = pool_getnode(target);
+    struct resource *resource = pool_getnoderesource(target);
 
-    if (tnode)
+    if (resource)
     {
 
-        struct keyboard_interface *interface = tnode->resource->data;
+        struct keyboard_interface *interface = resource->data;
 
         switch (event)
         {
@@ -56,16 +56,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
-    unsigned int inode = pool_picknode();
-
-    if (inode)
-    {
-
-        struct node *node = pool_getnode(inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
+    unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
     service_register(&interface->service, inode);

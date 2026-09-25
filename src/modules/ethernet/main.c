@@ -42,12 +42,12 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node *tnode = pool_getnode(target);
+    struct resource *resource = pool_getnoderesource(target);
 
-    if (tnode)
+    if (resource)
     {
 
-        struct ethernet_interface *interface = tnode->resource->data;
+        struct ethernet_interface *interface = resource->data;
 
         switch (event)
         {
@@ -82,16 +82,7 @@ void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, uns
 void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
-    unsigned int inode = pool_picknode();
-
-    if (inode)
-    {
-
-        struct node *node = pool_getnode(inode);
-
-        node_reset(node, &interface->resource, &operands);
-
-    }
+    unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
     service_register(&interface->service, inode);
