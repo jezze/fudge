@@ -208,7 +208,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
 }
 
-unsigned int kernel_linknode(struct service *service, unsigned int source)
+unsigned int kernel_linknode(struct list *links, unsigned int source)
 {
 
     struct node *snode = pool_getnode(source);
@@ -224,7 +224,7 @@ unsigned int kernel_linknode(struct service *service, unsigned int source)
             struct node *node = pool_getnode(inode);
 
             node_reset(node, snode->resource, snode->operands);
-            pool_placenode(inode, &service->links);
+            pool_placenode(inode, links);
 
             return MESSAGE_OK;
 
@@ -236,7 +236,7 @@ unsigned int kernel_linknode(struct service *service, unsigned int source)
 
 }
 
-unsigned int kernel_unlinknode(struct service *service, unsigned int source)
+unsigned int kernel_unlinknode(struct list *links, unsigned int source)
 {
 
     struct node *snode = pool_getnode(source);
@@ -247,9 +247,9 @@ unsigned int kernel_unlinknode(struct service *service, unsigned int source)
         struct list_item *current;
         struct list_item *next;
 
-        spinlock_acquire(&service->links.spinlock);
+        spinlock_acquire(&links->spinlock);
 
-        for (current = service->links.head; current; current = next)
+        for (current = links->head; current; current = next)
         {
 
             unsigned int inode = pool_getinodefromitem(current);
@@ -260,14 +260,14 @@ unsigned int kernel_unlinknode(struct service *service, unsigned int source)
             if (node->resource == snode->resource)
             {
 
-                list_remove_unsafe(&service->links, current);
+                list_remove_unsafe(links, current);
                 pool_unpicknode(inode);
 
             }
 
         }
 
-        spinlock_release(&service->links.spinlock);
+        spinlock_release(&links->spinlock);
 
         return MESSAGE_OK;
 
@@ -397,10 +397,9 @@ unsigned int kernel_announce(unsigned int inode, char *name)
 
 }
 
-void kernel_notify(struct service *service, unsigned int event, unsigned int count, void *data)
+void kernel_notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct list *links = &service->links;
     struct list_item *current = 0;
 
     spinlock_acquire(&links->spinlock);
@@ -411,7 +410,7 @@ void kernel_notify(struct service *service, unsigned int event, unsigned int cou
         unsigned int target = pool_getinodefromitem(current);
 
         if (target)
-            kernel_place(service->inode, target, event, count, data);
+            kernel_place(source, target, event, count, data);
 
     }
 

@@ -95,10 +95,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
     case EVENT_LINK:
-        return kernel_linknode(&interface->service, source);
+        return kernel_linknode(&interface->service.links, source);
 
     case EVENT_UNLINK:
-        return kernel_unlinknode(&interface->service, source);
+        return kernel_unlinknode(&interface->service.links, source);
 
     case EVENT_INFO:
         return oninfo(interface, source);

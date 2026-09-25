@@ -29,10 +29,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
     case EVENT_LINK:
-        return kernel_linknode(&interface->service, source);
+        return kernel_linknode(&interface->service.links, source);
 
     case EVENT_UNLINK:
-        return kernel_unlinknode(&interface->service, source);
+        return kernel_unlinknode(&interface->service.links, source);
 
     case EVENT_DATA:
         return ondata(interface, source, data, count);
@@ -50,7 +50,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(&interface->service, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(&interface->service.links, interface->service.inode, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 

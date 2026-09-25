@@ -13,10 +13,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
     case EVENT_LINK:
-        return kernel_linknode(&interface->service, source);
+        return kernel_linknode(&interface->service.links, source);
 
     case EVENT_UNLINK:
-        return kernel_unlinknode(&interface->service, source);
+        return kernel_unlinknode(&interface->service.links, source);
 
     }
 
@@ -31,7 +31,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 
     keypress.scancode = scancode;
 
-    kernel_notify(&interface->service, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    kernel_notify(&interface->service.links, interface->service.inode, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
@@ -42,7 +42,7 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
     keyrelease.scancode = scancode;
 
-    kernel_notify(&interface->service, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    kernel_notify(&interface->service.links, interface->service.inode, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 

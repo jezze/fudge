@@ -48,10 +48,10 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
     {
 
     case EVENT_LINK:
-        return kernel_linknode(&interface->service, source);
+        return kernel_linknode(&interface->service.links, source);
 
     case EVENT_UNLINK:
-        return kernel_unlinknode(&interface->service, source);
+        return kernel_unlinknode(&interface->service.links, source);
 
     case EVENT_DATA:
         return ondata(interface, source, data, count);
@@ -68,7 +68,7 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->service, EVENT_DATA, count, buffer);
+    kernel_notify(&interface->service.links, interface->service.inode, EVENT_DATA, count, buffer);
 
 }
 

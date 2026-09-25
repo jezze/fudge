@@ -6,14 +6,14 @@
 
 struct core *kernel_getcore(void);
 unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel);
-unsigned int kernel_linknode(struct service *service, unsigned int source);
-unsigned int kernel_unlinknode(struct service *service, unsigned int source);
+unsigned int kernel_linknode(struct list *links, unsigned int source);
+unsigned int kernel_unlinknode(struct list *links, unsigned int source);
 void kernel_schedule(struct core *core);
 void kernel_signal(unsigned int itask, unsigned int signal);
 unsigned int kernel_pick(unsigned int source, struct message *message);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_announce(unsigned int inode, char *name);
-void kernel_notify(struct service *service, unsigned int event, unsigned int count, void *data);
+void kernel_notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack);
 void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(unsigned int itask));
 void kernel_setup(void);
