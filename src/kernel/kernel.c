@@ -53,7 +53,7 @@ static void destroytask(unsigned int itask)
                 if (mailbox)
                 {
 
-                    mailbox_reset(mailbox, 0, 0);
+                    mailbox_reset(mailbox);
                     mailbox_unregister(mailbox);
                     pool_unpickmailbox(task->imailbox[i]);
 
@@ -65,7 +65,7 @@ static void destroytask(unsigned int itask)
 
         /* DESTROY SERVICES HERE */
 
-        task_reset(task, 0, 0, 0, 0);
+        task_reset(task);
         task_unregister(task);
         pool_unpicktask(itask);
 
@@ -192,8 +192,8 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
-                mailbox_reset(mailbox, itask, ichannel);
-                mailbox_register(mailbox);
+                mailbox_reset(mailbox);
+                mailbox_register(mailbox, itask, ichannel);
                 mmap_allocate((struct mmap_header *)task->mmap, MMAP_TYPE_NORMAL, mailbox->data, KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel, MESSAGE_CAPACITY, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
             }
@@ -410,8 +410,8 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     if (task)
     {
 
-        task_reset(task, address, mmap, ip, sp);
-        task_register(task);
+        task_reset(task);
+        task_register(task, address, mmap, ip, sp);
 
         if (task->address)
         {

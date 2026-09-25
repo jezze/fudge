@@ -154,21 +154,24 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-void mailbox_reset(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel)
+void mailbox_reset(struct mailbox *mailbox)
 {
 
-    mailbox->itask = itask;
-    mailbox->ichannel = ichannel;
+    mailbox->itask = 0;
+    mailbox->ichannel = 0;
     mailbox->head = 0;
     mailbox->tail = 0;
     mailbox->steps = 0;
 
 }
 
-void mailbox_register(struct mailbox *mailbox)
+void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel)
 {
 
     resource_register(&mailbox->resource);
+
+    mailbox->itask = itask;
+    mailbox->ichannel = ichannel;
 
 }
 
@@ -184,7 +187,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     spinlock_init(&mailbox->spinlock);
-    mailbox_reset(mailbox, 0, 0);
+    mailbox_reset(mailbox);
 
     mailbox->inode = pool_picknode(&mailbox->resource, &operands);
     mailbox->data = data;
