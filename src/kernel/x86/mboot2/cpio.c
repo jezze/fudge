@@ -370,7 +370,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
 }
 
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
@@ -400,21 +400,14 @@ static unsigned int operands_place(struct resource *resource, unsigned int sourc
 void cpio_setup(unsigned int addr)
 {
 
-    address = addr;
-    inode = pool_picknode();
-
     node_operands_init(&operands, 0, operands_place);
+    service_init(&service);
+
+    address = addr;
+    inode = pool_picknode(0, &operands);
 
     if (inode)
-    {
-
-        struct node *node = pool_getnode(inode);
-
-        node_reset(node, 0, &operands);
-        service_init(&service, "initrd");
-        service_register(&service, inode);
-
-    }
+        service_register(&service, inode, "initrd");
 
 }
 
