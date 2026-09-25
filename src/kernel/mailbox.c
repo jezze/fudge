@@ -84,27 +84,34 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
 }
 
-static unsigned int operands_pick(struct resource *resource, unsigned int source, struct message *message)
+static unsigned int operands_pick(unsigned int source, struct message *message)
 {
 
-    struct mailbox *mailbox = resource->data;
+    struct node *snode = pool_getnode(source);
 
-    if (mailbox)
+    if (snode)
     {
 
-        unsigned int status = pick(mailbox, message);
+        struct mailbox *mailbox = snode->resource->data;
 
-        switch (status)
+        if (mailbox)
         {
 
-        case MESSAGE_RETRY:
-            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+            unsigned int status = pick(mailbox, message);
 
-            break;
+            switch (status)
+            {
+
+            case MESSAGE_RETRY:
+                kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+
+                break;
+
+            }
+
+            return status;
 
         }
-
-        return status;
 
     }
 
@@ -112,27 +119,34 @@ static unsigned int operands_pick(struct resource *resource, unsigned int source
 
 }
 
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct mailbox *mailbox = resource->data;
+    struct node *tnode = pool_getnode(target);
 
-    if (mailbox)
+    if (tnode)
     {
 
-        unsigned int status = place(mailbox, event, source, count, data);
+        struct mailbox *mailbox = tnode->resource->data;
 
-        switch (status)
+        if (mailbox)
         {
 
-        case MESSAGE_OK:
-            kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+            unsigned int status = place(mailbox, event, source, count, data);
 
-            break;
+            switch (status)
+            {
+
+            case MESSAGE_OK:
+                kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
+
+                break;
+
+            }
+
+            return status;
 
         }
-
-        return status;
 
     }
 

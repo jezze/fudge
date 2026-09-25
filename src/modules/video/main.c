@@ -56,28 +56,35 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct video_interface *interface = resource->data;
+    struct node *tnode = pool_getnode(target);
 
-    switch (event)
+    if (tnode)
     {
 
-    case EVENT_LINK:
-        return kernel_linknode(&interface->service.links, source);
+        struct video_interface *interface = tnode->resource->data;
 
-    case EVENT_UNLINK:
-        return kernel_unlinknode(&interface->service.links, source);
+        switch (event)
+        {
 
-    case EVENT_INFO:
-        return oninfo(interface, source);
+        case EVENT_LINK:
+            return kernel_linknode(&interface->service.links, source);
 
-    case EVENT_VIDEOCMAP:
-        return onvideocmap(interface, source, count, data);
+        case EVENT_UNLINK:
+            return kernel_unlinknode(&interface->service.links, source);
 
-    case EVENT_VIDEOCONF:
-        return onvideoconf(interface, source, count, data);
+        case EVENT_INFO:
+            return oninfo(interface, source);
+
+        case EVENT_VIDEOCMAP:
+            return onvideocmap(interface, source, count, data);
+
+        case EVENT_VIDEOCONF:
+            return onvideoconf(interface, source, count, data);
+
+        }
 
     }
 

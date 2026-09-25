@@ -20,22 +20,29 @@ static unsigned int ondata(struct console_interface *interface, unsigned int sou
 
 }
 
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct console_interface *interface = resource->data;
+    struct node *tnode = pool_getnode(target);
 
-    switch (event)
+    if (tnode)
     {
 
-    case EVENT_LINK:
-        return kernel_linknode(&interface->service.links, source);
+        struct console_interface *interface = tnode->resource->data;
 
-    case EVENT_UNLINK:
-        return kernel_unlinknode(&interface->service.links, source);
+        switch (event)
+        {
 
-    case EVENT_DATA:
-        return ondata(interface, source, data, count);
+        case EVENT_LINK:
+            return kernel_linknode(&interface->service.links, source);
+
+        case EVENT_UNLINK:
+            return kernel_unlinknode(&interface->service.links, source);
+
+        case EVENT_DATA:
+            return ondata(interface, source, data, count);
+
+        }
 
     }
 

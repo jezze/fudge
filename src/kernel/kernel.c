@@ -360,7 +360,7 @@ unsigned int kernel_pick(unsigned int source, struct message *message)
 
     struct node *snode = pool_getnode(source);
 
-    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(snode->resource, source, message) : MESSAGE_FAILED;
+    return (snode && snode->operands && snode->operands->pick) ? snode->operands->pick(source, message) : MESSAGE_FAILED;
 
 }
 
@@ -369,7 +369,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
     struct node *tnode = pool_getnode(target);
 
-    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(tnode->resource, source, event, count, data) : MESSAGE_FAILED;
+    return (tnode && tnode->operands && tnode->operands->place) ? tnode->operands->place(target, source, event, count, data) : MESSAGE_FAILED;
 
 }
 

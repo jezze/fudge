@@ -4,19 +4,26 @@
 
 static struct node_operands operands;
 
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct keyboard_interface *interface = resource->data;
+    struct node *tnode = pool_getnode(target);
 
-    switch (event)
+    if (tnode)
     {
 
-    case EVENT_LINK:
-        return kernel_linknode(&interface->service.links, source);
+        struct keyboard_interface *interface = tnode->resource->data;
 
-    case EVENT_UNLINK:
-        return kernel_unlinknode(&interface->service.links, source);
+        switch (event)
+        {
+
+        case EVENT_LINK:
+            return kernel_linknode(&interface->service.links, source);
+
+        case EVENT_UNLINK:
+            return kernel_unlinknode(&interface->service.links, source);
+
+        }
 
     }
 

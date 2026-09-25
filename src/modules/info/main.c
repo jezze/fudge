@@ -389,7 +389,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
 }
 
-static unsigned int operands_place(struct resource *resource, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
