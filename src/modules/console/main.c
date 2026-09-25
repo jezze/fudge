@@ -116,7 +116,7 @@ void console_registerinterface(struct console_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode);
+    service_register(&interface->service, inode, "console");
 
 }
 
@@ -132,7 +132,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    service_init(&interface->service, "console");
+    service_init(&interface->service);
 
     interface->id = id;
     interface->width = 0;

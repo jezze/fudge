@@ -392,7 +392,7 @@ void pool_setup(unsigned long mbaddress)
 
         struct servicerow *servicerow = &servicerows[i];
 
-        service_init(&servicerow->service, 0);
+        service_init(&servicerow->service);
         list_inititem(&servicerow->item, servicerow);
         list_add(&freeservices, &servicerow->item);
 

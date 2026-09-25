@@ -87,7 +87,7 @@ void timer_registerinterface(struct timer_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode);
+    service_register(&interface->service, inode, "timer");
 
 }
 
@@ -103,7 +103,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    service_init(&interface->service, "timer");
+    service_init(&interface->service);
 
     interface->id = id;
 

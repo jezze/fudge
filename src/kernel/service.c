@@ -3,7 +3,7 @@
 #include "resource.h"
 #include "service.h"
 
-void service_setname(struct service *service, char *name)
+static void setname(struct service *service, char *name)
 {
 
     buffer_clear(service->name, 32);
@@ -26,9 +26,10 @@ void service_setname(struct service *service, char *name)
 
 }
 
-void service_register(struct service *service, unsigned int inode)
+void service_register(struct service *service, unsigned int inode, char *name)
 {
 
+    setname(service, name);
     resource_register(&service->resource);
 
     service->inode = inode;
@@ -44,12 +45,11 @@ void service_unregister(struct service *service)
 
 }
 
-void service_init(struct service *service, char *name)
+void service_init(struct service *service)
 {
 
     resource_init(&service->resource, RESOURCE_SERVICE, service);
     list_init(&service->links);
-    service_setname(service, name);
 
 }
 

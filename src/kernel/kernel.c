@@ -373,12 +373,7 @@ unsigned int kernel_announce(unsigned int inode, char *name)
         struct service *service = pool_getservice(iservice);
 
         if (service)
-        {
-
-            service_setname(service, name);
-            service_register(service, inode);
-
-        }
+            service_register(service, inode, name);
 
     }
 

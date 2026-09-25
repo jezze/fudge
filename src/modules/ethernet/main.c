@@ -85,7 +85,7 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode);
+    service_register(&interface->service, inode, "ethernet");
 
 }
 
@@ -101,7 +101,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    service_init(&interface->service, "ethernet");
+    service_init(&interface->service);
 
     interface->id = id;
     interface->oninfo = oninfo;

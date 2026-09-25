@@ -98,7 +98,7 @@ void video_registerinterface(struct video_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode);
+    service_register(&interface->service, inode, "video");
 
 }
 
@@ -114,7 +114,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, voi
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    service_init(&interface->service, "video");
+    service_init(&interface->service);
 
     interface->id = id;
     interface->width = 0;

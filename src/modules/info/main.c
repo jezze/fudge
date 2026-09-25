@@ -421,16 +421,12 @@ void module_init(void)
     record_init(&rootrecords[5], 0x1006, RECORD_TYPE_NORMAL, 0, 6, 7, "drivers");
     record_init(&rootrecords[6], 0x1007, RECORD_TYPE_NORMAL, 0, 7, 8, "services");
     node_operands_init(&operands, 0, operands_place);
+    service_init(&service);
 
     inode = pool_picknode(0, &operands);
 
     if (inode)
-    {
-
-        service_init(&service, "sysinfo");
-        service_register(&service, inode);
-
-    }
+        service_register(&service, inode, "sysinfo");
 
 }
 

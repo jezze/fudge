@@ -58,7 +58,7 @@ void clock_registerinterface(struct clock_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode);
+    service_register(&interface->service, inode, "clock");
 
 }
 
@@ -74,7 +74,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, voi
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    service_init(&interface->service, "clock");
+    service_init(&interface->service);
 
     interface->id = id;
     interface->oninfo = oninfo;

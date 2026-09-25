@@ -82,7 +82,7 @@ void mouse_registerinterface(struct mouse_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode);
+    service_register(&interface->service, inode, "mouse");
 
 }
 
@@ -98,7 +98,7 @@ void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
-    service_init(&interface->service, "mouse");
+    service_init(&interface->service);
 
     interface->id = id;
 

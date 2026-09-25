@@ -400,18 +400,14 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void cpio_setup(unsigned int addr)
 {
 
+    node_operands_init(&operands, 0, operands_place);
+    service_init(&service);
+
     address = addr;
     inode = pool_picknode(0, &operands);
 
-    node_operands_init(&operands, 0, operands_place);
-
     if (inode)
-    {
-
-        service_init(&service, "initrd");
-        service_register(&service, inode);
-
-    }
+        service_register(&service, inode, "initrd");
 
 }
 

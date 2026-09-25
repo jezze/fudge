@@ -59,7 +59,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode);
+    service_register(&interface->service, inode, "keyboard");
 
 }
 
@@ -75,7 +75,7 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
-    service_init(&interface->service, "keyboard");
+    service_init(&interface->service);
 
     interface->id = id;
 
