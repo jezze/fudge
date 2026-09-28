@@ -105,10 +105,10 @@ static void onmain(struct message *message)
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
     char *service[4] = {
-        "disk0",
-        "disk1",
-        "disk2",
-        "disk3"
+        "efi",
+        "boot",
+        "root",
+        "home"
     };
 
     if (block)
