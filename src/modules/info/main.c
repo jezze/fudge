@@ -23,23 +23,25 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
         "ACTIVE"
     };
 
-    c += cstring_write_fmt0(buffer, 4096, c, "cores: [\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  cores: [\n");
 
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
     {
 
         struct core *core = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
-        c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[core->state]);
-        c += cstring_write_fmt1(buffer, 4096, c, "    tasks: %u\n", &core->tasks.count);
-        c += cstring_write_fmt1(buffer, 4096, c, "    running: %u\n", &core->itask);
-        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "      id: %u\n", &i);
+        c += cstring_write_fmt1(buffer, 4096, c, "      state: %s\n", states[core->state]);
+        c += cstring_write_fmt1(buffer, 4096, c, "      tasks: %u\n", &core->tasks.count);
+        c += cstring_write_fmt1(buffer, 4096, c, "      running: %u\n", &core->itask);
+        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
 
     return buffer_read(data, count, buffer, c, offset);
 
@@ -62,28 +64,30 @@ static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int
         "RUNNING"
     };
 
-    c += cstring_write_fmt0(buffer, 4096, c, "tasks: [\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  tasks: [\n");
 
     for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_TASK)); i++)
     {
 
         struct task *task = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "    id: %u\n", &i);
-        c += cstring_write_fmt1(buffer, 4096, c, "    state: %s\n", states[task->state]);
-        c += cstring_write_fmt1(buffer, 4096, c, "    address: 0x%H8u\n", &task->address);
-        c += cstring_write_fmt0(buffer, 4096, c, "    signals:\n");
-        c += cstring_write_fmt0(buffer, 4096, c, "      {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "        kill: %u\n", &task->signals.kill);
-        c += cstring_write_fmt1(buffer, 4096, c, "        block: %u\n", &task->signals.block);
-        c += cstring_write_fmt1(buffer, 4096, c, "        unblock: %u\n", &task->signals.unblock);
-        c += cstring_write_fmt0(buffer, 4096, c, "      }\n");
-        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "      id: %u\n", &i);
+        c += cstring_write_fmt1(buffer, 4096, c, "      state: %s\n", states[task->state]);
+        c += cstring_write_fmt1(buffer, 4096, c, "      address: 0x%H8u\n", &task->address);
+        c += cstring_write_fmt0(buffer, 4096, c, "      signals:\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "        {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "          kill: %u\n", &task->signals.kill);
+        c += cstring_write_fmt1(buffer, 4096, c, "          block: %u\n", &task->signals.block);
+        c += cstring_write_fmt1(buffer, 4096, c, "          unblock: %u\n", &task->signals.unblock);
+        c += cstring_write_fmt0(buffer, 4096, c, "        }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
 
     return buffer_read(data, count, buffer, c, offset);
 
@@ -96,7 +100,8 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
     unsigned int c = 0;
     char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "mailboxes: [\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  mailboxes: [\n");
 
     while ((resource = resource_foreachtype(resource, RESOURCE_MAILBOX)))
     {
@@ -104,16 +109,17 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
         struct mailbox *mailbox = resource->data;
         unsigned int nmessages = mailbox->head - mailbox->tail;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "    itask: %u\n", &mailbox->itask);
-        c += cstring_write_fmt1(buffer, 4096, c, "    ichannel: %u\n", &mailbox->ichannel);
-        c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &mailbox->inode);
-        c += cstring_write_fmt1(buffer, 4096, c, "    nmessages: %u\n", &nmessages);
-        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "      itask: %u\n", &mailbox->itask);
+        c += cstring_write_fmt1(buffer, 4096, c, "      ichannel: %u\n", &mailbox->ichannel);
+        c += cstring_write_fmt1(buffer, 4096, c, "      inode: %u\n", &mailbox->inode);
+        c += cstring_write_fmt1(buffer, 4096, c, "      nmessages: %u\n", &nmessages);
+        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
 
     return buffer_read(data, count, buffer, c, offset);
 
@@ -126,20 +132,22 @@ static unsigned int readbuses(unsigned int id, unsigned int offset, unsigned int
     unsigned int c = 0;
     char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "buses: [\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  buses: [\n");
 
     while ((resource = resource_foreachtype(resource, RESOURCE_BUS)))
     {
 
         struct base_bus *bus = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", bus->name);
-        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "      name: %s\n", bus->name);
+        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
 
     return buffer_read(data, count, buffer, c, offset);
 
@@ -152,20 +160,22 @@ static unsigned int readdrivers(unsigned int id, unsigned int offset, unsigned i
     unsigned int c = 0;
     char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "drivers: [\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  drivers: [\n");
 
     while ((resource = resource_foreachtype(resource, RESOURCE_DRIVER)))
     {
 
         struct base_driver *driver = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", driver->name);
-        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "      name: %s\n", driver->name);
+        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
 
     return buffer_read(data, count, buffer, c, offset);
 
@@ -178,21 +188,23 @@ static unsigned int readservices(unsigned int id, unsigned int offset, unsigned 
     unsigned int c = 0;
     char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "services: [\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  services: [\n");
 
     while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
     {
 
         struct service *service = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "  {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "    name: %s\n", service->name);
-        c += cstring_write_fmt1(buffer, 4096, c, "    inode: %u\n", &service->inode);
-        c += cstring_write_fmt0(buffer, 4096, c, "  }\n");
+        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
+        c += cstring_write_fmt1(buffer, 4096, c, "      name: %s\n", service->name);
+        c += cstring_write_fmt1(buffer, 4096, c, "      inode: %u\n", &service->inode);
+        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
+    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
 
     return buffer_read(data, count, buffer, c, offset);
 
