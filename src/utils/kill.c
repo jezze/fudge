@@ -4,17 +4,17 @@
 static void onmain(struct message *message)
 {
 
-    unsigned int task = option_getdecimal("task");
+    unsigned int target = option_getdecimal("target");
 
-    if (task)
-        call_kill(task);
+    if (target)
+        call_kill(target);
 
 }
 
 void init(void)
 {
 
-    option_add("task", "");
+    option_add("target", "");
     channel_bind(EVENT_MAIN, onmain);
 
     while (channel_process(0));

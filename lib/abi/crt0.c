@@ -49,8 +49,10 @@ static void onoption(struct message *message)
         char *key = extract(message->data, klength, offset);
         char *value = extract(message->data, vlength, offset + klength);
 
-        if (!option_setstring(key, value))
+        if (!option_getstring(key))
             channel_send_fmt1(0, message->source, EVENT_ERROR, "Unrecognized option: %s\n", key);
+        else if (!option_setstring(key, value))
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Option too long: %s\n", key);
 
     }
 

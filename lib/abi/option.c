@@ -24,7 +24,7 @@ static struct option *find(char *key)
 
 }
 
-static struct option *findfree(char *key)
+static struct option *findfree(void)
 {
 
     unsigned int i;
@@ -40,6 +40,20 @@ static struct option *findfree(char *key)
     }
 
     return 0;
+
+}
+
+static unsigned int setvalue(struct option *option, char *value)
+{
+
+    unsigned int length = cstring_length(value);
+
+    if (length >= OPTION_VALUESIZE)
+        return 0;
+
+    buffer_copy(option->value, value, length + 1);
+
+    return 1;
 
 }
 
@@ -61,40 +75,28 @@ char *option_getstring(char *key)
 
 }
 
-unsigned int option_setdecimal(char *key, int value)
-{
-
-    struct option *option = find(key);
-
-    return (option) ? cstring_write_zero(option->value, 64, cstring_write_value(option->value, 64, value, 10, 0, 0)) : 0;
-
-}
-
 unsigned int option_setstring(char *key, char *value)
 {
 
     struct option *option = find(key);
 
-    return (option) ? cstring_write_zero(option->value, 64, cstring_write(option->value, 64, value, 0)) : 0;
+    return (option) ? setvalue(option, value) : 0;
 
 }
 
 void option_add(char *key, char *value)
 {
 
-    struct option *option = findfree(key);
+    struct option *option = findfree();
 
     if (option)
-        option_init(option, key, value);
+    {
 
-}
+        option->keyhash = djb_hash(cstring_length(key), key);
 
-void option_init(struct option *option, char *key, char *value)
-{
+        setvalue(option, value);
 
-    option->keyhash = djb_hash(cstring_length(key), key);
-
-    cstring_write_zero(option->value, 64, cstring_write(option->value, 64, value, 0));
+    }
 
 }
 

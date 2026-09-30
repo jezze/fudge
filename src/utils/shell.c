@@ -30,13 +30,12 @@ static struct completion completion;
 static unsigned int newline = 1;
 static unsigned int escaped;
 static struct keys keys;
+static unsigned int console;
 
 static void print(void *buffer, unsigned int count)
 {
 
-    unsigned int target = channel_lookup(option_getstring("console-service"));
-
-    channel_send(0, target, EVENT_DATA, count, buffer);
+    channel_send(0, console, EVENT_DATA, count, buffer);
 
 }
 
@@ -733,8 +732,9 @@ static void onerror(struct message *message)
 static void onmain(struct message *message)
 {
 
-    unsigned int console = channel_lookup(option_getstring("console-service"));
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
+
+    console = channel_lookup(option_getstring("console-service"));
 
     if (console)
         channel_send(0, console, EVENT_LINK, 0, 0);
