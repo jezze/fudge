@@ -9,7 +9,7 @@
 + choice in "fudge-layout" label "Reboot" onclick "run=initrd:bin/reboot"
 + select id "apps-select" in "menu" label "Apps"
 + layout id "apps-layout" in "apps-select" flow "vertical-stretch"
-+ choice in "apps-layout" label "Shell" onclick "run=initrd:bin/wshell2"
++ choice in "apps-layout" label "Shell" onclick "run=initrd:bin/wshell"
 + choice in "apps-layout" label "File Manager" onclick "run=initrd:bin/wfile"
 + choice in "apps-layout" label "Calculator" onclick "run=initrd:bin/wcalc"
 + choice in "apps-layout" label "Test" onclick "run=initrd:bin/wtest"

@@ -1,42 +1,40 @@
-struct job_arg
-{
+#define JOB_COMMANDS                    8
+#define JOB_PATHS                       16
+#define JOB_OPTIONS                     16
+#define JOB_STRINGSSIZE                 512
+#define JOB_ERRORSIZE                   128
 
-    char *key;
-    char *value;
-
-};
-
-struct job_worker
+struct job_command
 {
 
     char *program;
-    unsigned int target;
-    char *paths[32];
+    char *paths[JOB_PATHS];
     unsigned int npaths;
-    struct job_arg options[32];
+    char *keys[JOB_OPTIONS];
+    char *values[JOB_OPTIONS];
     unsigned int noptions;
+    unsigned int target;
 
 };
 
 struct job
 {
 
-    struct job_worker *workers;
-    unsigned int capacity;
-    unsigned int count;
+    struct job_command commands[JOB_COMMANDS];
+    unsigned int ncommands;
+    char strings[JOB_STRINGSSIZE];
+    unsigned int nstrings;
+    char error[JOB_ERRORSIZE];
 
 };
 
-void job_parse(struct job *job, void *buffer, unsigned int count);
+unsigned int job_parse(struct job *job, char *data, unsigned int count, unsigned int *offset);
 unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir);
-unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *message);
 void job_run(struct job *job, unsigned int ichannel, char *pwd);
-void job_close(struct job *job, unsigned int ichannel, unsigned int target);
+void job_abort(struct job *job, unsigned int ichannel);
 unsigned int job_exist(struct job *job, unsigned int target);
-unsigned int job_pick(struct job *job, unsigned int ichannel, struct message *message);
+unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *message);
+unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int target);
 void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer);
 void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer);
-void job_killall(struct job *job);
 unsigned int job_count(struct job *job);
-unsigned int job_exec(struct job *job, unsigned int ichannel, char *bindir, char *pwd);
-void job_init(struct job *job, struct job_worker *workers, unsigned int capacity);

@@ -51,7 +51,6 @@ src/utils/reboot
 src/utils/rm
 src/utils/sha1
 src/utils/shell
-src/utils/slang
 src/utils/socket
 src/utils/stat
 src/utils/timestamp
