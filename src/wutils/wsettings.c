@@ -5,13 +5,14 @@ static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
+    unsigned int event;
 
     if (wm)
     {
 
         channel_send(0, wm, EVENT_WMMAP, 0, 0);
 
-        while (channel_process(0) != EVENT_WMCLOSE);
+        while ((event = channel_process(0)) && event != EVENT_WMCLOSE);
 
         channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
