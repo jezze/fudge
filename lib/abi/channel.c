@@ -4,12 +4,11 @@
 
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_STATE_OPENED            1
-#define CHANNEL_STATE_PENDING           2
-#define CHANNEL_STATE_CLOSED            3
+#define CHANNEL_STATE_CLOSED            2
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
-static unsigned int pending;
+static unsigned int depth;
 static unsigned int closer;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
@@ -98,12 +97,17 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 static void close(unsigned int ichannel)
 {
 
-    state = CHANNEL_STATE_CLOSED;
+    if (state != CHANNEL_STATE_CLOSED)
+    {
 
-    place(ichannel, reroute(closer, EVENT_DONE), EVENT_DONE, 0, 0);
+        state = CHANNEL_STATE_CLOSED;
 
-    if (pipenext && pipenext != pipeowner)
-        place(ichannel, pipenext, EVENT_TERM, 0, 0);
+        place(ichannel, reroute(closer, EVENT_DONE), EVENT_DONE, 0, 0);
+
+        if (pipenext && pipenext != pipeowner)
+            place(ichannel, pipenext, EVENT_TERM, 0, 0);
+
+    }
 
 }
 
@@ -113,11 +117,11 @@ static void dispatch(unsigned int ichannel, struct message *message)
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
     {
 
-        pending++;
+        depth++;
 
         listeners[message->event](message);
 
-        pending--;
+        depth--;
 
     }
 
@@ -125,31 +129,21 @@ static void dispatch(unsigned int ichannel, struct message *message)
     {
 
     case EVENT_TERM:
-        if (state == CHANNEL_STATE_OPENED)
-        {
-
-            state = CHANNEL_STATE_PENDING;
+        if (!closer)
             closer = message->source;
-
-        }
 
         break;
 
     case EVENT_INTERRUPT:
-        if (state != CHANNEL_STATE_CLOSED)
-        {
+        closer = message->source;
 
-            closer = message->source;
-
-            close(ichannel);
-
-        }
+        close(ichannel);
 
         break;
 
     }
 
-    if (state == CHANNEL_STATE_PENDING && !pending)
+    if (closer && !depth)
         close(ichannel);
 
 }
