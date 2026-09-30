@@ -353,7 +353,5 @@ void init(void)
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
 
-    while (channel_process(0));
-
 }
 

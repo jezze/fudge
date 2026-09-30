@@ -437,7 +437,5 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_P9P, onp9p);
 
-    while (channel_process(0));
-
 }
 

@@ -158,7 +158,5 @@ void init(void)
     channel_bind(EVENT_TIMERTICK, ontimertick);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
 
-    while (channel_process(0));
-
 }
 

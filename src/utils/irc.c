@@ -199,7 +199,5 @@ void init(void)
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
 
-    while (channel_process(0));
-
 }
 

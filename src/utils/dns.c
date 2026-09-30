@@ -147,7 +147,5 @@ void init(void)
     option_add("domain", "");
     channel_bind(EVENT_MAIN, onmain);
 
-    while (channel_process(0));
-
 }
 

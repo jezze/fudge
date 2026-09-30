@@ -40,7 +40,5 @@ void init(void)
     option_add("level", "4");
     channel_bind(EVENT_MAIN, onmain);
 
-    while (channel_process(0));
-
 }
 

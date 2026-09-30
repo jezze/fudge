@@ -943,7 +943,5 @@ void init(void)
     channel_bind(EVENT_WMUNGRAB, onwmungrab);
     channel_bind(EVENT_WMUNMAP, onwmunmap);
 
-    while (channel_process(0));
-
 }
 

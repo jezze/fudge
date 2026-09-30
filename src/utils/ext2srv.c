@@ -902,7 +902,5 @@ void init(void)
     channel_bind(EVENT_WALKREQUEST, onwalkrequest);
     channel_bind(EVENT_WRITEREQUEST, onwriterequest);
 
-    while (channel_process(0));
-
 }
 
