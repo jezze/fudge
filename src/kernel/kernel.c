@@ -68,9 +68,6 @@ static void destroytask(unsigned int itask)
 
         task_reset(task);
         task_unregister(task);
-
-        task->parent = 0;
-
         pool_unpicktask(itask);
 
     }
@@ -424,16 +421,6 @@ void kernel_schedule(struct core *core)
 
 }
 
-void kernel_setparent(unsigned int itask, unsigned int parent)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-        task->parent = parent;
-
-}
-
 void kernel_signal(unsigned int itask, unsigned int signal)
 {
 
@@ -508,7 +495,7 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int parent, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
@@ -517,7 +504,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     {
 
         task_reset(task);
-        task_register(task, address, mmap, ip, sp);
+        task_register(task, parent, address, mmap, ip, sp);
 
         if (task->address)
         {

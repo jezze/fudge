@@ -38,14 +38,14 @@ struct task
     unsigned int state;
     unsigned long address;
     unsigned long mmap;
-    unsigned int imailbox[TASK_MAILBOXES];
     unsigned int parent;
+    unsigned int imailbox[TASK_MAILBOXES];
 
 };
 
 void task_signal(struct task *task, unsigned int signal);
 unsigned int task_transition(struct task *task, unsigned int state);
-void task_register(struct task *task, unsigned long address, unsigned long mmap, unsigned long ip, unsigned long sp);
+void task_register(struct task *task, unsigned int parent, unsigned long address, unsigned long mmap, unsigned long ip, unsigned long sp);
 void task_unregister(struct task *task);
 void task_reset(struct task *task);
 void task_init(struct task *task);
