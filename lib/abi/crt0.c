@@ -63,6 +63,15 @@ static void onoption(struct message *message)
 
 }
 
+static void onpipe(struct message *message)
+{
+
+    struct event_pipe *pipe = message->data;
+
+    channel_pipe(message->source, pipe->prev, (pipe->next) ? pipe->next : message->source);
+
+}
+
 static void onterm(struct message *message)
 {
 
@@ -84,6 +93,7 @@ void main(void)
     option_add("pwd", "");
     channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_OPTION, onoption);
+    channel_bind(EVENT_PIPE, onpipe);
     channel_bind(EVENT_TERM, onterm);
     init();
 

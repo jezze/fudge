@@ -35,7 +35,6 @@ unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir);
 void job_run(struct job *job, unsigned int ichannel, char *pwd);
 void job_abort(struct job *job, unsigned int ichannel);
 unsigned int job_exist(struct job *job, unsigned int target);
-unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *message);
 unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int target);
 unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int target);
 void job_kill(struct job *job);

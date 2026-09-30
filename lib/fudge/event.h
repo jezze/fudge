@@ -14,6 +14,7 @@
 #define EVENT_QUERYRESPONSE             0x0E
 #define EVENT_READY                     0x0F
 #define EVENT_EXIT                      0x10
+#define EVENT_PIPE                      0x11
 #define EVENT_KEYPRESS                  0x20
 #define EVENT_KEYRELEASE                0x21
 #define EVENT_MOUSEMOVE                 0x22
@@ -65,6 +66,14 @@
 #define EVENT_WMACK                     0x5F
 #define EVENT_P9P                       0x61
 #define EVENT_ALL                       0xFF
+
+struct event_pipe
+{
+
+    unsigned int prev;
+    unsigned int next;
+
+};
 
 struct event_loginfo
 {

@@ -702,7 +702,7 @@ static void onkeyrelease(struct message *message)
 static void ondata(struct message *message)
 {
 
-    if (job_exist(&job, message->source) && !job_pipe(&job, 0, message))
+    if (job_exist(&job, message->source))
         printoutput(message->data, message->length);
 
 }

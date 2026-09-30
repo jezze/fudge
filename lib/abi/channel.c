@@ -11,11 +11,34 @@ static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int routes[CHANNEL_EVENTS];
 static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int pending;
+static unsigned int pipeowner;
+static unsigned int pipeprev;
+static unsigned int pipenext;
 
 static unsigned int reroute(unsigned int target, unsigned int event)
 {
 
-    return (event < CHANNEL_EVENTS && routes[event]) ? routes[event] : target;
+    if (event < CHANNEL_EVENTS && routes[event])
+        target = routes[event];
+
+    if (pipenext && (target == pipeowner || (pipeprev && target == pipeprev)))
+    {
+
+        switch (event)
+        {
+
+        case EVENT_DATA:
+            return pipenext;
+
+        case EVENT_DONE:
+        case EVENT_ERROR:
+            return pipeowner;
+
+        }
+
+    }
+
+    return target;
 
 }
 
@@ -120,6 +143,9 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
 
     case CHANNEL_STATE_CLOSED:
         channel_place(ichannel, reroute(message->source, EVENT_DONE), EVENT_DONE, 0, 0);
+
+        if (pipenext && pipenext != pipeowner)
+            channel_place(ichannel, pipenext, EVENT_TERM, 0, 0);
 
         break;
 
@@ -274,6 +300,15 @@ void channel_route(unsigned int event, unsigned int target)
 {
 
     routes[event] = target;
+
+}
+
+void channel_pipe(unsigned int owner, unsigned int prev, unsigned int next)
+{
+
+    pipeowner = owner;
+    pipeprev = prev;
+    pipenext = next;
 
 }
 

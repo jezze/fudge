@@ -348,27 +348,27 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
 
     unsigned int i;
 
-    for (i = 0; i < job->ncommands; i++)
+    for (i = job->ncommands; i > 0; i--)
     {
 
-        struct job_command *command = &job->commands[i];
+        struct job_command *command = &job->commands[i - 1];
+        struct event_pipe pipe;
+        char options[MESSAGE_SIZE];
+        unsigned int count;
         unsigned int j;
 
-        channel_send_fmt1(ichannel, command->target, EVENT_OPTION, "pwd=%s\n", pwd);
+        pipe.prev = (i > 1) ? job->commands[i - 2].target : 0;
+        pipe.next = (i < job->ncommands) ? job->commands[i].target : 0;
+        count = cstring_write_fmt1(options, MESSAGE_SIZE, 0, "pwd=%s", pwd);
 
         for (j = 0; j < command->noptions; j++)
-            channel_send_fmt2(ichannel, command->target, EVENT_OPTION, "%s=%s\n", command->keys[j], command->values[j]);
+            count += cstring_write_fmt2(options, MESSAGE_SIZE, count, "&%s=%s", command->keys[j], command->values[j]);
 
-    }
+        count += cstring_write_fmt0(options, MESSAGE_SIZE, count, "\n");
 
-    for (i = 0; i < job->ncommands; i++)
-        channel_send(ichannel, job->commands[i].target, EVENT_MAIN, 0, 0);
-
-    for (i = 0; i < job->ncommands; i++)
-    {
-
-        struct job_command *command = &job->commands[i];
-        unsigned int j;
+        channel_send(ichannel, command->target, EVENT_PIPE, sizeof (struct event_pipe), &pipe);
+        channel_send(ichannel, command->target, EVENT_OPTION, count, options);
+        channel_send(ichannel, command->target, EVENT_MAIN, 0, 0);
 
         for (j = 0; j < command->npaths; j++)
         {
@@ -415,27 +415,6 @@ unsigned int job_exist(struct job *job, unsigned int target)
 
 }
 
-unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *message)
-{
-
-    unsigned int index = find(job, message->source);
-
-    if (index + 1 < job->ncommands)
-    {
-
-        struct job_command *next = &job->commands[index + 1];
-
-        if (next->target)
-            channel_send(ichannel, next->target, message->event, message->length, message->data);
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
 unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int target)
 {
 
@@ -444,7 +423,7 @@ unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int targ
     if (index < job->ncommands)
     {
 
-        finish(job, ichannel, index);
+        job->commands[index].finished = 1;
 
         return 1;
 

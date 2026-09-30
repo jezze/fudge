@@ -15,4 +15,5 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 unsigned int channel_lookup(char *name);
 void channel_bind(unsigned int event, void (*callback)(struct message *message));
 void channel_route(unsigned int event, unsigned int target);
+void channel_pipe(unsigned int owner, unsigned int prev, unsigned int next);
 void channel_close(void);
