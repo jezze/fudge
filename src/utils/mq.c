@@ -1,10 +1,10 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define INPUT_SIZE    (8 * 1024)
-#define PIECE_KEY    0
-#define PIECE_INDEX    1
-#define PIECE_SELF    2
+#define INPUT_SIZE                      8192
+#define PIECE_KEY                       1
+#define PIECE_INDEX                     2
+#define PIECE_SELF                      3
 
 struct piece
 {
@@ -13,12 +13,14 @@ struct piece
     unsigned int index;
     char *name;
     unsigned int len;
+
 };
 
 struct parser
 {
 
     char *pos;
+    unsigned int source;
 
 };
 
@@ -357,9 +359,9 @@ static void parse_piece(struct parser *ps, struct piece *piece)
 
 }
 
-static unsigned int walk(unsigned int source, struct parser *ps, struct parser *path);
+static unsigned int walk(struct parser *ps, struct parser *path);
 
-static unsigned int walk_key_in_array(unsigned int source, struct parser *ps, struct parser *path)
+static unsigned int walk_key_in_array(struct parser *ps, struct parser *path)
 {
 
     struct parser element;
@@ -372,7 +374,7 @@ static unsigned int walk_key_in_array(unsigned int source, struct parser *ps, st
     {
 
         element = *ps;
-        count += walk(source, &element, path);
+        count += walk(&element, path);
 
         skip_value(ps);
         skip_separators(ps);
@@ -383,7 +385,7 @@ static unsigned int walk_key_in_array(unsigned int source, struct parser *ps, st
 
 }
 
-static unsigned int walk_index(unsigned int source, struct parser *ps, struct piece *piece, struct parser *rest)
+static unsigned int walk_index(struct parser *ps, struct piece *piece, struct parser *rest)
 {
 
     if (!is_array_start(ps))
@@ -392,34 +394,34 @@ static unsigned int walk_index(unsigned int source, struct parser *ps, struct pi
     if (!find_element(ps, piece))
         return 0;
 
-    return walk(source, ps, rest);
+    return walk(ps, rest);
 
 }
 
-static unsigned int walk_key_in_object(unsigned int source, struct parser *ps, struct piece *piece, struct parser *rest)
+static unsigned int walk_key_in_object(struct parser *ps, struct piece *piece, struct parser *rest)
 {
 
     if (!find_key(ps, piece))
         return 0;
 
-    return walk(source, ps, rest);
+    return walk(ps, rest);
 
 }
 
-static unsigned int walk_key(unsigned int source, struct parser *ps, struct piece *piece, struct parser *path, struct parser *rest)
+static unsigned int walk_key(struct parser *ps, struct piece *piece, struct parser *path, struct parser *rest)
 {
 
     if (is_object_start(ps))
-        return walk_key_in_object(source, ps, piece, rest);
+        return walk_key_in_object(ps, piece, rest);
 
     if (is_array_start(ps))
-        return walk_key_in_array(source, ps, path);
+        return walk_key_in_array(ps, path);
 
     return 0;
 
 }
 
-static unsigned int walk(unsigned int source, struct parser *ps, struct parser *path)
+static unsigned int walk(struct parser *ps, struct parser *path)
 {
 
     struct parser rest = *path;
@@ -437,7 +439,7 @@ static unsigned int walk(unsigned int source, struct parser *ps, struct parser *
 
         length = ps->pos - start;
 
-        channel_send_fmt2(0, source, EVENT_DATA, "%w\n", start, &length);
+        channel_send_fmt2(0, ps->source, EVENT_DATA, "%w\n", start, &length);
 
         return 1;
 
@@ -449,13 +451,13 @@ static unsigned int walk(unsigned int source, struct parser *ps, struct parser *
     {
 
     case PIECE_INDEX:
-        return walk_index(source, ps, &piece, &rest);
+        return walk_index(ps, &piece, &rest);
 
     case PIECE_KEY:
-        return walk_key(source, ps, &piece, path, &rest);
+        return walk_key(ps, &piece, path, &rest);
 
     case PIECE_SELF:
-        return walk(source, ps, &rest);
+        return walk(ps, &rest);
 
     default:
         return 0;
@@ -471,12 +473,14 @@ void parse(unsigned int source, char *input, unsigned int count, char *query)
     struct parser doc;
 
     input[count] = '\0';
-
     doc.pos = input;
+    doc.source = source;
     path.pos = query;
+    path.source = source;
+
     skip_separators(&doc);
 
-    if (!walk(source, &doc, &path))
+    if (!walk(&doc, &path))
         channel_send_fmt1(0, source, EVENT_ERROR, "Key not found: %s\n", query);
 
 }
