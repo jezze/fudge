@@ -4,7 +4,7 @@
 static void dnsresolve(unsigned int source, char *domain, char address[32])
 {
 
-    unsigned int target = fs_spawn(1, "initrd:bin/dns");
+    unsigned int target = fs_spawn(1, 1, "initrd:bin/dns");
 
     if (target)
     {
@@ -46,7 +46,7 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
 static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
-    unsigned int target = fs_spawn(2, "initrd:bin/socket");
+    unsigned int target = fs_spawn(2, 2, "initrd:bin/socket");
 
     if (target)
     {
@@ -62,7 +62,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
             channel_send(2, source, EVENT_DATA, message.length, message.data);
 
         channel_send(2, target, EVENT_TERM, 0, 0);
-        channel_wait(2, target, EVENT_DONE, 0, 0);
+        channel_wait(2, target, EVENT_EXIT, 0, 0);
 
     }
 

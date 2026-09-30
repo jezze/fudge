@@ -81,7 +81,7 @@ static void mapentry(unsigned long directory, unsigned long mmap, struct mmap_en
 
 }
 
-static unsigned int createtask(unsigned int parent, unsigned long address)
+static unsigned int createtask(unsigned int parent, unsigned int pchannel, unsigned long address)
 {
 
     unsigned int ntask = pool_picktask();
@@ -90,7 +90,7 @@ static unsigned int createtask(unsigned int parent, unsigned long address)
     {
 
         struct mmap_header *header = (struct mmap_header *)(unsigned long)(ARCH_MMAP_BASE + MMAP_SIZE * ntask);
-        unsigned int inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, parent, address, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + TASK_CODESIZE * ntask, ARCH_TASK_STACKBASE + TASK_STACKSIZE * ntask);
+        unsigned int inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, parent, pchannel, address, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + TASK_CODESIZE * ntask, ARCH_TASK_STACKBASE + TASK_STACKSIZE * ntask);
 
         if (inode)
         {
@@ -111,10 +111,10 @@ static unsigned int createtask(unsigned int parent, unsigned long address)
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int address;} *args = stack;
+    struct {void *caller; unsigned int ichannel; unsigned int address;} *args = stack;
 
-    if (args->address)
-        return createtask(itask, args->address);
+    if (args->address && args->ichannel < TASK_MAILBOXES && kernel_getchannelinode(itask, args->ichannel))
+        return createtask(itask, args->ichannel, args->address);
 
     DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
 
@@ -271,7 +271,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
     {
 
         if (interrupt.cs.value == gdt_getselector(gdt, ARCH_UCODE))
-            kernel_signal(core->itask, TASK_SIGNAL_KILL);
+            kernel_kill(core->itask, EXIT_STATUS_CRASHED);
 
     }
 
@@ -591,7 +591,7 @@ void arch_runinit(unsigned int address)
 {
 
     struct core *core = kernel_getcore();
-    unsigned int target = createtask(0, address);
+    unsigned int target = createtask(0, 0, address);
 
     if (core)
     {

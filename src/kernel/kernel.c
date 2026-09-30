@@ -80,13 +80,21 @@ static unsigned int notifyparent(struct task *task)
     struct task *parent = pool_gettask(task->parent);
     struct mailbox *mailbox = pool_getmailbox(task->imailbox[0]);
 
-    if (parent && parent->imailbox[0] && mailbox)
+    if (parent && parent->imailbox[task->pchannel] && mailbox)
     {
 
-        struct mailbox *pmailbox = pool_getmailbox(parent->imailbox[0]);
+        struct mailbox *pmailbox = pool_getmailbox(parent->imailbox[task->pchannel]);
 
         if (pmailbox)
-            return kernel_place(mailbox->inode, pmailbox->inode, EVENT_EXIT, 0, 0) != MESSAGE_RETRY;
+        {
+
+            struct event_exit exit;
+
+            exit.status = task->status;
+
+            return kernel_place(mailbox->inode, pmailbox->inode, EVENT_EXIT, sizeof (struct event_exit), &exit) != MESSAGE_RETRY;
+
+        }
 
     }
 
@@ -421,6 +429,23 @@ void kernel_schedule(struct core *core)
 
 }
 
+void kernel_kill(unsigned int itask, unsigned int status)
+{
+
+    struct task *task = pool_gettask(itask);
+
+    if (task)
+    {
+
+        if (!task->status)
+            task->status = status;
+
+        kernel_signal(itask, TASK_SIGNAL_KILL);
+
+    }
+
+}
+
 void kernel_signal(unsigned int itask, unsigned int signal)
 {
 
@@ -495,7 +520,7 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int parent, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int parent, unsigned int pchannel, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
@@ -504,7 +529,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     {
 
         task_reset(task);
-        task_register(task, parent, address, mmap, ip, sp);
+        task_register(task, parent, pchannel, address, mmap, ip, sp);
 
         if (task->address)
         {

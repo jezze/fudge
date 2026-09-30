@@ -1,7 +1,6 @@
 #define EVENT_MAIN                      0x01
 #define EVENT_TERM                      0x02
 #define EVENT_INTERRUPT                 0x03
-#define EVENT_DONE                      0x04
 #define EVENT_OPTION                    0x05
 #define EVENT_PATH                      0x06
 #define EVENT_DATA                      0x07
@@ -65,6 +64,17 @@
 #define EVENT_WMEVENT                   0x5E
 #define EVENT_WMACK                     0x5F
 #define EVENT_P9P                       0x61
+
+#define EXIT_STATUS_NORMAL              1
+#define EXIT_STATUS_KILLED              2
+#define EXIT_STATUS_CRASHED             3
+
+struct event_exit
+{
+
+    unsigned int status;
+
+};
 
 struct event_pipe
 {

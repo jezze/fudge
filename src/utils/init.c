@@ -4,7 +4,7 @@
 static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
 {
 
-    unsigned int target = fs_spawn(ichannel, "initrd:bin/elfload");
+    unsigned int target = fs_spawn(ichannel, ichannel, "initrd:bin/elfload");
 
     if (target)
     {
@@ -17,7 +17,7 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
             channel_send_fmt1(ichannel, target, EVENT_PATH, "%s\\0", paths[i]);
 
         channel_send(ichannel, target, EVENT_TERM, 0, 0);
-        channel_wait(ichannel, target, EVENT_DONE, 0, 0);
+        channel_wait(ichannel, target, EVENT_EXIT, 0, 0);
 
     }
 
@@ -26,7 +26,7 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
 static unsigned int spawnshell(unsigned int ichannel)
 {
 
-    unsigned int target = fs_spawn(ichannel, "initrd:bin/shell");
+    unsigned int target = fs_spawn(ichannel, ichannel, "initrd:bin/shell");
 
     if (target)
     {
@@ -43,7 +43,7 @@ static unsigned int spawnshell(unsigned int ichannel)
 static unsigned int spawnautomount(unsigned int ichannel)
 {
 
-    unsigned int target = fs_spawn(ichannel, "initrd:bin/automount");
+    unsigned int target = fs_spawn(ichannel, ichannel, "initrd:bin/automount");
 
     if (target)
     {
@@ -61,7 +61,7 @@ static unsigned int spawnautomount(unsigned int ichannel)
 static unsigned int spawnwm(unsigned int ichannel)
 {
 
-    unsigned int target = fs_spawn(ichannel, "initrd:bin/wm");
+    unsigned int target = fs_spawn(ichannel, ichannel, "initrd:bin/wm");
 
     if (target)
     {

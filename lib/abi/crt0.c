@@ -71,6 +71,7 @@ void panic(unsigned int source, char *file, unsigned int line)
 {
 
     channel_send_fmt2(0, source, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
+    channel_close();
     call_despawn();
 
 }
@@ -82,6 +83,7 @@ void main(void)
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_PIPE, onpipe);
     init();
+    channel_close();
 
 }
 

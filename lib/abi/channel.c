@@ -9,7 +9,7 @@
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int depth;
-static unsigned int closer;
+static unsigned int closing;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
 static unsigned int pipenext;
@@ -26,7 +26,6 @@ static unsigned int reroute(unsigned int target, unsigned int event)
         case EVENT_DATA:
             return pipenext;
 
-        case EVENT_DONE:
         case EVENT_ERROR:
             return pipeowner;
 
@@ -94,24 +93,7 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
-static void close(unsigned int ichannel)
-{
-
-    if (state != CHANNEL_STATE_CLOSED)
-    {
-
-        state = CHANNEL_STATE_CLOSED;
-
-        place(ichannel, reroute(closer, EVENT_DONE), EVENT_DONE, 0, 0);
-
-        if (pipenext && pipenext != pipeowner)
-            place(ichannel, pipenext, EVENT_TERM, 0, 0);
-
-    }
-
-}
-
-static void dispatch(unsigned int ichannel, struct message *message)
+static void dispatch(struct message *message)
 {
 
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
@@ -129,22 +111,19 @@ static void dispatch(unsigned int ichannel, struct message *message)
     {
 
     case EVENT_TERM:
-        if (!closer)
-            closer = message->source;
+        closing = 1;
 
         break;
 
     case EVENT_INTERRUPT:
-        closer = message->source;
-
-        close(ichannel);
+        channel_close();
 
         break;
 
     }
 
-    if (closer && !depth)
-        close(ichannel);
+    if (closing && !depth)
+        channel_close();
 
 }
 
@@ -226,7 +205,7 @@ unsigned int channel_process(unsigned int ichannel)
     if (pick(ichannel, &message))
     {
 
-        dispatch(ichannel, &message);
+        dispatch(&message);
 
         return message.event;
 
@@ -242,7 +221,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
     while (pick(ichannel, message))
     {
 
-        dispatch(ichannel, message);
+        dispatch(message);
 
         if (message->source == source)
         {
@@ -250,7 +229,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
             if (message->event == event)
                 return event;
 
-            if (message->event == EVENT_DONE)
+            if (message->event == EVENT_EXIT)
                 return 0;
 
         }
@@ -308,7 +287,15 @@ void channel_pipe(unsigned int owner, unsigned int prev, unsigned int next)
 void channel_close(void)
 {
 
-    state = CHANNEL_STATE_CLOSED;
+    if (state != CHANNEL_STATE_CLOSED)
+    {
+
+        state = CHANNEL_STATE_CLOSED;
+
+        if (pipenext && pipenext != pipeowner)
+            place(0, pipenext, EVENT_TERM, 0, 0);
+
+    }
 
 }
 

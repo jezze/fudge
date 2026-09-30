@@ -42,7 +42,7 @@ static void interpret(unsigned int ethernet, void *buffer, unsigned int count)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int target = fs_spawn(1, "initrd:bin/dns");
+    unsigned int target = fs_spawn(1, 1, "initrd:bin/dns");
 
     if (target)
     {

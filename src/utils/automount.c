@@ -39,7 +39,7 @@ static void mountfat(unsigned int source, unsigned int offset, char *service)
     if (fat_validate(fat))
     {
 
-        unsigned int target = fs_spawn(1, "initrd:bin/fatsrv");
+        unsigned int target = fs_spawn(1, 1, "initrd:bin/fatsrv");
 
         if (target)
         {
@@ -63,7 +63,7 @@ static void mountext2(unsigned int source, unsigned int offset, char *service)
     if (ext2_validate(sb))
     {
 
-        unsigned int target = fs_spawn(1, "initrd:bin/ext2srv");
+        unsigned int target = fs_spawn(1, 1, "initrd:bin/ext2srv");
 
         if (target)
         {

@@ -126,12 +126,13 @@ unsigned int task_transition(struct task *task, unsigned int state)
 
 }
 
-void task_register(struct task *task, unsigned int parent, unsigned long address, unsigned long mmap, unsigned long ip, unsigned long sp)
+void task_register(struct task *task, unsigned int parent, unsigned int pchannel, unsigned long address, unsigned long mmap, unsigned long ip, unsigned long sp)
 {
 
     resource_register(&task->resource);
 
     task->parent = parent;
+    task->pchannel = pchannel;
     task->address = address;
     task->mmap = mmap;
     task->thread.ip = ip;
@@ -153,6 +154,8 @@ void task_reset(struct task *task)
 
     task->state = TASK_STATE_DEAD;
     task->parent = 0;
+    task->pchannel = 0;
+    task->status = 0;
     task->address = 0;
     task->mmap = 0;
     task->signals.kill = 0;

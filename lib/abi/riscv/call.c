@@ -49,7 +49,7 @@ unsigned int call_place(unsigned int ichannel, unsigned int target, unsigned int
 
 }
 
-unsigned int call_spawn(unsigned int address)
+unsigned int call_spawn(unsigned int ichannel, unsigned int address)
 {
 
     return 0;

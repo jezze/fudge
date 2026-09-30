@@ -273,7 +273,7 @@ unsigned int job_parse(struct job *job, char *data, unsigned int count, unsigned
 
 }
 
-unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir)
+unsigned int job_spawn(struct job *job, unsigned int ichannel, unsigned int notify, char *bindir)
 {
 
     unsigned int i;
@@ -283,10 +283,10 @@ unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir)
 
         struct job_command *command = &job->commands[i];
 
-        command->target = fs_spawn_relative(ichannel, command->program, bindir);
+        command->target = fs_spawn_relative(ichannel, notify, command->program, bindir);
 
         if (!command->target)
-            command->target = fs_spawn(ichannel, command->program);
+            command->target = fs_spawn(ichannel, notify, command->program);
 
         if (!command->target)
             return seterror(job, "Command not found: %s", command->program);
@@ -355,8 +355,6 @@ void job_abort(struct job *job, unsigned int ichannel)
         if (command->target)
             channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
 
-        command->finished = 1;
-
     }
 
 }
@@ -368,7 +366,7 @@ unsigned int job_exist(struct job *job, unsigned int target)
 
 }
 
-unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int target)
+unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int target, unsigned int status)
 {
 
     unsigned int index = find(job, target);
@@ -376,31 +374,10 @@ unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int targ
     if (index < job->ncommands)
     {
 
-        job->commands[index].finished = 1;
-
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
-unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int target)
-{
-
-    unsigned int index = find(job, target);
-
-    if (index < job->ncommands)
-    {
-
-        struct job_command *command = &job->commands[index];
-
-        if (!command->finished && index + 1 < job->ncommands && job->commands[index + 1].target)
+        if (status != EXIT_STATUS_NORMAL && index + 1 < job->ncommands && job->commands[index + 1].target)
             channel_send(ichannel, job->commands[index + 1].target, EVENT_TERM, 0, 0);
 
-        command->finished = 1;
-        command->target = 0;
+        job->commands[index].target = 0;
 
         return 1;
 
@@ -437,7 +414,7 @@ void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, u
 
         struct job_command *command = &job->commands[i];
 
-        if (command->target && !command->finished)
+        if (command->target)
         {
 
             channel_send(ichannel, command->target, event, count, buffer);

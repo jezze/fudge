@@ -269,7 +269,7 @@ static void runnext(void)
         else if (job.ncommands)
         {
 
-            if (job_spawn(&job, 1, BINPATH))
+            if (job_spawn(&job, 1, 0, BINPATH))
             {
 
                 interrupts = 0;
@@ -315,7 +315,7 @@ static void submit(void)
 static unsigned int runcomplete(char *output, unsigned int size)
 {
 
-    unsigned int target = fs_spawn(1, "initrd:bin/complete");
+    unsigned int target = fs_spawn(1, 1, "initrd:bin/complete");
     unsigned int count = 0;
 
     if (target)
@@ -373,17 +373,12 @@ static void ondata(struct message *message)
 
 }
 
-static void ondone(struct message *message)
-{
-
-    job_close(&job, 0, message->source);
-
-}
-
 static void onexit(struct message *message)
 {
 
-    if (job_exit(&job, 0, message->source) && !job_count(&job))
+    struct event_exit *exit = message->data;
+
+    if (job_exit(&job, 0, message->source, exit->status) && !job_count(&job))
         runnext();
 
 }
@@ -584,7 +579,6 @@ void init(void)
     ring_init(&result, RESULTSIZE, resultdata);
     option_add("wm-service", "wm");
     channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_DONE, ondone);
     channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);

@@ -9,5 +9,5 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int parent, char *path);
 unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fs_write_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
-unsigned int fs_spawn(unsigned int ichannel, char *path);
-unsigned int fs_spawn_relative(unsigned int ichannel, char *path, char *parent);
+unsigned int fs_spawn(unsigned int ichannel, unsigned int notify, char *path);
+unsigned int fs_spawn_relative(unsigned int ichannel, unsigned int notify, char *path, char *parent);
