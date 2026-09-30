@@ -45,6 +45,21 @@ static unsigned int isspecialchar(char c)
 
 }
 
+static unsigned int isreserved(char *s)
+{
+
+    for (; *s; s++)
+    {
+
+        if (*s == '&' || *s == '=')
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int seterror(struct job *job, char *fmt, char *arg)
 {
 
@@ -133,6 +148,15 @@ static unsigned int readtoken(struct job *job, struct parser *parser, char **wor
 
     }
 
+    if (job->nstrings >= JOB_STRINGSSIZE)
+    {
+
+        seterror(job, "Syntax error: Line too long", 0);
+
+        return TOKEN_ERROR;
+
+    }
+
     addchar(job, '\0');
 
     if (type == TOKEN_OPTION && !cstring_length(*word))
@@ -197,6 +221,9 @@ static unsigned int parse(struct job *job, struct parser *parser)
             {
 
             case TOKEN_WORD:
+                if (isreserved(word) || isreserved(value))
+                    return seterror(job, "Syntax error: Unexpected & or = in -%s", word);
+
                 command->keys[command->noptions] = word;
                 command->values[command->noptions] = value;
                 command->noptions++;
