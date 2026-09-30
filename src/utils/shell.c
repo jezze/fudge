@@ -5,18 +5,6 @@
 #define LINESIZE                        (INPUTSIZE * 2)
 #define BINPATH                         "initrd:bin"
 
-struct completion
-{
-
-    char common[RECORD_NAMESIZE];
-    unsigned int commoncount;
-    unsigned int isdirectory;
-    unsigned int nmatches;
-    char list[MESSAGE_SIZE];
-    unsigned int listcount;
-
-};
-
 static char inputdata1[INPUTSIZE];
 static struct ring input1;
 static char inputdata2[INPUTSIZE];
@@ -26,7 +14,6 @@ static unsigned int linecount;
 static unsigned int lineoffset;
 static struct job job;
 static unsigned int interrupts;
-static struct completion completion;
 static unsigned int newline = 1;
 static unsigned int escaped;
 static struct keys keys;
@@ -218,32 +205,6 @@ static void deleteend(void)
 
 }
 
-static unsigned int isblankchar(char c)
-{
-
-    return (c == ' ' || c == '\t');
-
-}
-
-static unsigned int isspecialchar(char c)
-{
-
-    switch (c)
-    {
-
-    case ' ':
-    case '\t':
-    case '|':
-    case ';':
-    case '\n':
-        return 1;
-
-    }
-
-    return 0;
-
-}
-
 static void interrupt(void)
 {
 
@@ -313,162 +274,52 @@ static void submit(void)
 
 }
 
-static unsigned int isdotentry(struct record *record)
+static unsigned int runcomplete(char *output, unsigned int size)
 {
 
-    if (record->length == 1 && record->name[0] == '.')
-        return 1;
-
-    if (record->length == 2 && record->name[0] == '.' && record->name[1] == '.')
-        return 1;
-
-    return 0;
-
-}
-
-static void addmatch(struct completion *c, struct record *record)
-{
-
-    unsigned int length = (record->length < RECORD_NAMESIZE) ? record->length : RECORD_NAMESIZE;
-
-    if (c->nmatches)
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < c->commoncount && i < length && c->common[i] == record->name[i]; i++);
-
-        c->commoncount = i;
-
-    }
-
-    else
-    {
-
-        buffer_copy(c->common, record->name, length);
-
-        c->commoncount = length;
-        c->isdirectory = (record->type == RECORD_TYPE_DIRECTORY);
-
-    }
-
-    if (record->type == RECORD_TYPE_DIRECTORY)
-        c->listcount += cstring_write_fmt2(c->list, MESSAGE_SIZE, c->listcount, "%w/\n", record->name, &length);
-    else
-        c->listcount += cstring_write_fmt2(c->list, MESSAGE_SIZE, c->listcount, "%w\n", record->name, &length);
-
-    c->nmatches++;
-
-}
-
-static void scandirectory(struct completion *c, char *directory, char *prefix, unsigned int prefixcount)
-{
-
-    unsigned int target = fs_auth(directory);
+    unsigned int target = fs_spawn(1, "initrd:bin/complete");
+    unsigned int count = 0;
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, directory);
+        char input[INPUTSIZE];
+        struct message message;
+        unsigned int event;
 
-        if (id)
+        channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
+        channel_send(1, target, EVENT_MAIN, 0, 0);
+        channel_send(1, target, EVENT_DATA, ring_readcopy(&input1, input, INPUTSIZE), input);
+        channel_send(1, target, EVENT_TERM, 0, 0);
+
+        while ((event = channel_poll(1, target, EVENT_ALL, &message)) && event != EVENT_DONE)
         {
 
-            unsigned char data[MESSAGE_SIZE];
-            unsigned int count;
-            unsigned int offset = 0;
-
-            while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
-            {
-
-                unsigned int i;
-
-                for (i = 0; i < count; i += sizeof (struct record))
-                {
-
-                    struct record *record = (struct record *)(data + i);
-
-                    if (record->length >= prefixcount && buffer_match(record->name, prefix, prefixcount) && !isdotentry(record))
-                        addmatch(c, record);
-
-                    offset = record->offset;
-
-                }
-
-            }
+            if (event == EVENT_DATA)
+                count += buffer_write(output, size, message.data, message.length, count);
 
         }
 
     }
+
+    return count;
 
 }
 
 static void complete(void)
 {
 
-    char buffer[INPUTSIZE];
-    char directory[LINESIZE];
-    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
-    unsigned int start;
-    unsigned int split;
-    unsigned int prefixcount;
-    unsigned int dircount;
-    unsigned int command;
-    unsigned int i;
+    char buffer[MESSAGE_SIZE];
+    unsigned int count = runcomplete(buffer, MESSAGE_SIZE);
+    unsigned int length = buffer_findbyte(buffer, count, '\n');
 
-    for (start = count; start > 0 && !isspecialchar(buffer[start - 1]); start--);
-    for (i = start; i > 0 && isblankchar(buffer[i - 1]); i--);
-    for (split = count; split > start && buffer[split - 1] != '/' && buffer[split - 1] != ':'; split--);
+    ring_write(&input1, buffer, length);
 
-    command = (i == 0 || buffer[i - 1] == '|' || buffer[i - 1] == ';');
-    prefixcount = count - split;
-    dircount = split - start;
-
-    if (dircount)
+    if (length + 1 < count)
     {
 
-        cstring_write_fmt2(directory, LINESIZE, 0, "%w\\0", buffer + start, &dircount);
-
-        if (!fs_auth(directory))
-            cstring_write_fmt3(directory, LINESIZE, 0, "%s%w\\0", option_getstring("pwd"), buffer + start, &dircount);
-
-    }
-
-    else
-    {
-
-        cstring_write_fmt1(directory, LINESIZE, 0, "%s\\0", (command) ? BINPATH : option_getstring("pwd"));
-
-    }
-
-    buffer_clear(&completion, sizeof (struct completion));
-    scandirectory(&completion, directory, buffer + split, prefixcount);
-
-    if (completion.nmatches == 1)
-    {
-
-        ring_write(&input1, completion.common + prefixcount, completion.commoncount - prefixcount);
-        ring_write(&input1, (completion.isdirectory) ? "/" : " ", 1);
-
-    }
-
-    else if (completion.nmatches > 1)
-    {
-
-        if (completion.commoncount > prefixcount)
-        {
-
-            ring_write(&input1, completion.common + prefixcount, completion.commoncount - prefixcount);
-
-        }
-
-        else
-        {
-
-            print("\n", 1);
-            print(completion.list, completion.listcount);
-
-        }
+        print("\n", 1);
+        print(buffer + length + 1, count - length - 1);
 
     }
 
