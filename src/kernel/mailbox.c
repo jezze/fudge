@@ -129,7 +129,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
         struct mailbox *mailbox = resource->data;
 
-        if (mailbox)
+        if (mailbox && mailbox->itask)
         {
 
             unsigned int status = place(mailbox, event, source, count, data);

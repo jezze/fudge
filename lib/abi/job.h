@@ -14,6 +14,8 @@ struct job_command
     char *values[JOB_OPTIONS];
     unsigned int noptions;
     unsigned int target;
+    unsigned int finished;
+    unsigned int terminated;
 
 };
 
@@ -35,6 +37,8 @@ void job_abort(struct job *job, unsigned int ichannel);
 unsigned int job_exist(struct job *job, unsigned int target);
 unsigned int job_pipe(struct job *job, unsigned int ichannel, struct message *message);
 unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int target);
+unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int target);
+void job_kill(struct job *job);
 void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer);
 void job_sendall(struct job *job, unsigned int ichannel, unsigned int event, unsigned int count, void *buffer);
 unsigned int job_count(struct job *job);

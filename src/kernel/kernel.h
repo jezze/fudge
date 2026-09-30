@@ -9,6 +9,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel);
 unsigned int kernel_linknode(struct list *links, unsigned int source);
 unsigned int kernel_unlinknode(struct list *links, unsigned int source);
 void kernel_schedule(struct core *core);
+void kernel_setparent(unsigned int itask, unsigned int parent);
 void kernel_signal(unsigned int itask, unsigned int signal);
 unsigned int kernel_pick(unsigned int source, struct message *message);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);

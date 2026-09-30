@@ -29,6 +29,7 @@ static char line[LINESIZE];
 static unsigned int linecount;
 static unsigned int lineoffset;
 static struct job job;
+static unsigned int interrupts;
 static struct completion completion;
 static unsigned int newline = 1;
 static unsigned int wm;
@@ -280,7 +281,10 @@ static unsigned int isspecialchar(char c)
 static void interrupt(void)
 {
 
-    job_sendall(&job, 0, EVENT_INTERRUPT, 0, 0);
+    if (interrupts++)
+        job_kill(&job);
+    else
+        job_sendall(&job, 0, EVENT_INTERRUPT, 0, 0);
 
     lineoffset = linecount;
 
@@ -307,6 +311,8 @@ static void runnext(void)
             if (job_spawn(&job, 1, BINPATH))
             {
 
+                interrupts = 0;
+
                 job_run(&job, 0, option_getstring("pwd"));
                 update();
 
@@ -316,6 +322,9 @@ static void runnext(void)
 
             printfmt1("%s\n", job.error);
             job_abort(&job, 0);
+
+            if (job_count(&job))
+                return;
 
         }
 
@@ -522,7 +531,14 @@ static void ondata(struct message *message)
 static void ondone(struct message *message)
 {
 
-    if (job_close(&job, 0, message->source) && !job_count(&job))
+    job_close(&job, 0, message->source);
+
+}
+
+static void onexit(struct message *message)
+{
+
+    if (job_exit(&job, 0, message->source) && !job_count(&job))
         runnext();
 
 }
@@ -724,6 +740,7 @@ void init(void)
     option_add("wm-service", "wm");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_DONE, ondone);
+    channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMINIT, onwminit);

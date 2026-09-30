@@ -263,14 +263,37 @@ static void activate(struct job *job, unsigned int ichannel, unsigned int start)
 
         struct job_command *command = &job->commands[i];
 
-        if (command->target)
+        if (command->target && !command->finished)
         {
 
-            channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
+            if (!command->terminated)
+            {
+
+                channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
+
+                command->terminated = 1;
+
+            }
 
             break;
 
         }
+
+    }
+
+}
+
+static void finish(struct job *job, unsigned int ichannel, unsigned int index)
+{
+
+    struct job_command *command = &job->commands[index];
+
+    if (!command->finished)
+    {
+
+        command->finished = 1;
+
+        activate(job, ichannel, index + 1);
 
     }
 
@@ -375,10 +398,11 @@ void job_abort(struct job *job, unsigned int ichannel)
 
         struct job_command *command = &job->commands[i];
 
-        if (command->target)
+        if (command->target && !command->terminated)
             channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
 
-        command->target = 0;
+        command->finished = 1;
+        command->terminated = 1;
 
     }
 
@@ -420,15 +444,50 @@ unsigned int job_close(struct job *job, unsigned int ichannel, unsigned int targ
     if (index < job->ncommands)
     {
 
-        job->commands[index].target = 0;
-
-        activate(job, ichannel, index + 1);
+        finish(job, ichannel, index);
 
         return 1;
 
     }
 
     return 0;
+
+}
+
+unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int target)
+{
+
+    unsigned int index = find(job, target);
+
+    if (index < job->ncommands)
+    {
+
+        finish(job, ichannel, index);
+
+        job->commands[index].target = 0;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+void job_kill(struct job *job)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < job->ncommands; i++)
+    {
+
+        struct job_command *command = &job->commands[i];
+
+        if (command->target)
+            call_kill(command->target);
+
+    }
 
 }
 
@@ -442,7 +501,7 @@ void job_sendfirst(struct job *job, unsigned int ichannel, unsigned int event, u
 
         struct job_command *command = &job->commands[i];
 
-        if (command->target)
+        if (command->target && !command->finished)
         {
 
             channel_send(ichannel, command->target, event, count, buffer);

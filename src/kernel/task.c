@@ -171,5 +171,7 @@ void task_init(struct task *task)
     spinlock_init(&task->spinlock);
     task_reset(task);
 
+    task->parent = 0;
+
 }
 

@@ -39,6 +39,7 @@ struct task
     unsigned long address;
     unsigned long mmap;
     unsigned int imailbox[TASK_MAILBOXES];
+    unsigned int parent;
 
 };
 

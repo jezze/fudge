@@ -12,6 +12,7 @@
 #include "kernel.h"
 
 static struct list blockedtasks;
+static struct list deadtasks;
 static struct core *(*getcorecallback)(void);
 static void (*assigncorecallback)(unsigned int itask);
 
@@ -67,7 +68,69 @@ static void destroytask(unsigned int itask)
 
         task_reset(task);
         task_unregister(task);
+
+        task->parent = 0;
+
         pool_unpicktask(itask);
+
+    }
+
+}
+
+static unsigned int notifyparent(struct task *task)
+{
+
+    struct task *parent = pool_gettask(task->parent);
+    struct mailbox *mailbox = pool_getmailbox(task->imailbox[0]);
+
+    if (parent && parent->imailbox[0] && mailbox)
+    {
+
+        struct mailbox *pmailbox = pool_getmailbox(parent->imailbox[0]);
+
+        if (pmailbox)
+            return kernel_place(mailbox->inode, pmailbox->inode, EVENT_EXIT, 0, 0) != MESSAGE_RETRY;
+
+    }
+
+    return 1;
+
+}
+
+static void retiretask(unsigned int itask)
+{
+
+    struct task *task = pool_gettask(itask);
+
+    if (task)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < TASK_MAILBOXES; i++)
+        {
+
+            struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
+
+            if (mailbox)
+                mailbox_reset(mailbox);
+
+        }
+
+        for (i = 1; i < POOL_TASKS; i++)
+        {
+
+            struct task *child = pool_gettask(i);
+
+            if (child && child->parent == itask)
+                child->parent = 0;
+
+        }
+
+        if (notifyparent(task))
+            destroytask(itask);
+        else
+            pool_placetask(itask, &deadtasks);
 
     }
 
@@ -90,7 +153,7 @@ static void transition(unsigned int itask, unsigned int state)
             {
 
             case TASK_STATE_DEAD:
-                destroytask(itask);
+                retiretask(itask);
 
                 break;
 
@@ -162,6 +225,38 @@ static void unblocktasks(void)
     }
 
     spinlock_release(&blockedtasks.spinlock);
+
+}
+
+static void retrydeadtasks(void)
+{
+
+    struct list_item *current;
+    struct list_item *next;
+
+    spinlock_acquire(&deadtasks.spinlock);
+
+    for (current = deadtasks.head; current; current = next)
+    {
+
+        unsigned int itask = pool_getitaskfromitem(current);
+        struct task *task = pool_gettask(itask);
+
+        next = current->next;
+
+        if (task && notifyparent(task))
+        {
+
+            list_remove_unsafe(&deadtasks, current);
+            spinlock_acquire(&task->spinlock);
+            destroytask(itask);
+            spinlock_release(&task->spinlock);
+
+        }
+
+    }
+
+    spinlock_release(&deadtasks.spinlock);
 
 }
 
@@ -309,6 +404,7 @@ void kernel_schedule(struct core *core)
     }
 
     unblocktasks();
+    retrydeadtasks();
 
     core->itask = pool_picktaskfrom(&core->tasks);
 
@@ -325,6 +421,16 @@ void kernel_schedule(struct core *core)
         }
 
     }
+
+}
+
+void kernel_setparent(unsigned int itask, unsigned int parent)
+{
+
+    struct task *task = pool_gettask(itask);
+
+    if (task)
+        task->parent = parent;
 
 }
 
@@ -469,6 +575,7 @@ void kernel_setup(void)
 {
 
     list_init(&blockedtasks);
+    list_init(&deadtasks);
     kernel_setcallback(getcore0, assign0);
 
 }

@@ -40,9 +40,18 @@ static unsigned int debug(unsigned int itask, void *stack)
 static unsigned int kill(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int itask;} *args = stack;
+    struct {void *caller; unsigned int target;} *args = stack;
+    struct resource *resource = pool_getnoderesource(args->target);
 
-    kernel_signal(args->itask, TASK_SIGNAL_KILL);
+    if (resource && resource->type == RESOURCE_MAILBOX)
+    {
+
+        struct mailbox *mailbox = resource->data;
+
+        if (mailbox->itask)
+            kernel_signal(mailbox->itask, TASK_SIGNAL_KILL);
+
+    }
 
     return 0;
 
