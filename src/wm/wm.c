@@ -523,7 +523,7 @@ static void onkeypress(struct message *message)
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                 {
 
-                    unsigned int target = fs_spawn(1, "initrd:bin/wshell");
+                    unsigned int target = fs_spawn(1, "initrd:bin/wshell2");
 
                     if (target)
                     {
