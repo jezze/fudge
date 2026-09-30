@@ -219,10 +219,24 @@ static unsigned int place(unsigned int itask, void *stack)
 static unsigned int announce(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; char *name;} *args = stack;
-    unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
+    struct {void *caller; unsigned int ichannel; unsigned int length; char *name;} *args = stack;
 
-    return (inode) ? kernel_announce(inode, args->name) : 0;
+    if (args->name && args->length < SERVICE_NAMESIZE && checkargs(args->name, args->length))
+    {
+
+        unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
+        char name[SERVICE_NAMESIZE];
+
+        buffer_clear(name, SERVICE_NAMESIZE);
+        buffer_copy(name, args->name, args->length);
+
+        return (inode) ? kernel_announce(inode, name) : 0;
+
+    }
+
+    DEBUG_FMT0(DEBUG_ERROR, "announce check failed");
+
+    return 0;
 
 }
 

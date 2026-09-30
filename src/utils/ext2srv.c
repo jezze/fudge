@@ -878,7 +878,7 @@ static void onmain(struct message *message)
         if (ext2_validate(&sb))
         {
 
-            call_announce(0, option_getstring("service"));
+            call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
 
             while (channel_process(0));
 

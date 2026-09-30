@@ -1,8 +1,10 @@
+#define SERVICE_NAMESIZE                32
+
 struct service
 {
 
     struct resource resource;
-    char name[32];
+    char name[SERVICE_NAMESIZE];
     unsigned int namehash;
     unsigned int inode;
     struct list links;

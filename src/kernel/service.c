@@ -6,7 +6,7 @@
 static void setname(struct service *service, char *name)
 {
 
-    buffer_clear(service->name, 32);
+    buffer_clear(service->name, SERVICE_NAMESIZE);
 
     if (name)
     {

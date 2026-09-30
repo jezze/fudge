@@ -594,7 +594,7 @@ static void onmain(struct message *message)
     unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
     unsigned int video = channel_lookup(option_getstring("video-service"));
 
-    call_announce(0, option_getstring("service"));
+    call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, mouse, EVENT_LINK, 0, 0);
     setupvideo(video);

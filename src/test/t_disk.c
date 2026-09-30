@@ -402,7 +402,7 @@ static void onmain(struct message *message)
     char buffer[4096];
     unsigned int count;
 
-    call_announce(0, option_getstring("service"));
+    call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
     socket_resolvelocal(0, ethernet, &local);
     channel_send(0, ethernet, EVENT_LINK, 0, 0);
     channel_send(0, block, EVENT_LINK, 0, 0);
