@@ -466,7 +466,7 @@ static unsigned int walk(struct parser *ps, struct parser *path)
 
 }
 
-static void parse(unsigned int source, char *input, unsigned int count, char *query)
+static void parse(unsigned int source, char *input, char *query)
 {
 
     struct parser path;
@@ -505,7 +505,7 @@ static void onpath(struct message *message)
 
                 buffer[count] = '\0';
 
-                parse(message->source, buffer, count, option_getstring("query"));
+                parse(message->source, buffer, option_getstring("query"));
 
             }
 
