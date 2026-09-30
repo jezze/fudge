@@ -39,19 +39,7 @@ static unsigned int reroute(unsigned int target, unsigned int event)
 
 }
 
-static void close(unsigned int ichannel)
-{
-
-    state = CHANNEL_STATE_CLOSED;
-
-    channel_place(ichannel, reroute(closer, EVENT_DONE), EVENT_DONE, 0, 0);
-
-    if (pipenext && pipenext != pipeowner)
-        channel_place(ichannel, pipenext, EVENT_TERM, 0, 0);
-
-}
-
-unsigned int channel_pick(unsigned int ichannel, struct message *message)
+static unsigned int pick(unsigned int ichannel, struct message *message)
 {
 
     while (state != CHANNEL_STATE_CLOSED)
@@ -62,11 +50,11 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message)
         switch (status)
         {
 
-        case MESSAGE_OK:
-            return message->event;
-
         case MESSAGE_RETRY:
             continue;
+
+        case MESSAGE_OK:
+            return message->event;
 
         case MESSAGE_FAILED:
             return 0;
@@ -79,7 +67,7 @@ unsigned int channel_pick(unsigned int ichannel, struct message *message)
 
 }
 
-unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
+static unsigned int place(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
     for (;;)
@@ -90,11 +78,11 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
         switch (status)
         {
 
-        case MESSAGE_OK:
-            return event;
-
         case MESSAGE_RETRY:
             continue;
+
+        case MESSAGE_OK:
+            return event;
 
         case MESSAGE_FAILED:
             return 0;
@@ -107,7 +95,19 @@ unsigned int channel_place(unsigned int ichannel, unsigned int target, unsigned 
 
 }
 
-void channel_dispatch(unsigned int ichannel, struct message *message)
+static void close(unsigned int ichannel)
+{
+
+    state = CHANNEL_STATE_CLOSED;
+
+    place(ichannel, reroute(closer, EVENT_DONE), EVENT_DONE, 0, 0);
+
+    if (pipenext && pipenext != pipeowner)
+        place(ichannel, pipenext, EVENT_TERM, 0, 0);
+
+}
+
+static void dispatch(unsigned int ichannel, struct message *message)
 {
 
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
@@ -157,7 +157,7 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    return channel_place(ichannel, reroute(target, event), event, count, data);
+    return place(ichannel, reroute(target, event), event, count, data);
 
 }
 
@@ -166,7 +166,7 @@ unsigned int channel_send_fmt0(unsigned int ichannel, unsigned int target, unsig
 
     char buffer[MESSAGE_SIZE];
 
-    return channel_place(ichannel, reroute(target, event), event, cstring_write_fmt0(buffer, MESSAGE_SIZE, 0, fmt), buffer);
+    return channel_send(ichannel, target, event, cstring_write_fmt0(buffer, MESSAGE_SIZE, 0, fmt), buffer);
 
 }
 
@@ -175,7 +175,7 @@ unsigned int channel_send_fmt1(unsigned int ichannel, unsigned int target, unsig
 
     char buffer[MESSAGE_SIZE];
 
-    return channel_place(ichannel, reroute(target, event), event, cstring_write_fmt1(buffer, MESSAGE_SIZE, 0, fmt, arg1), buffer);
+    return channel_send(ichannel, target, event, cstring_write_fmt1(buffer, MESSAGE_SIZE, 0, fmt, arg1), buffer);
 
 }
 
@@ -184,7 +184,7 @@ unsigned int channel_send_fmt2(unsigned int ichannel, unsigned int target, unsig
 
     char buffer[MESSAGE_SIZE];
 
-    return channel_place(ichannel, reroute(target, event), event, cstring_write_fmt2(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2), buffer);
+    return channel_send(ichannel, target, event, cstring_write_fmt2(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2), buffer);
 
 }
 
@@ -193,7 +193,7 @@ unsigned int channel_send_fmt3(unsigned int ichannel, unsigned int target, unsig
 
     char buffer[MESSAGE_SIZE];
 
-    return channel_place(ichannel, reroute(target, event), event, cstring_write_fmt3(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3), buffer);
+    return channel_send(ichannel, target, event, cstring_write_fmt3(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3), buffer);
 
 }
 
@@ -202,7 +202,7 @@ unsigned int channel_send_fmt4(unsigned int ichannel, unsigned int target, unsig
 
     char buffer[MESSAGE_SIZE];
 
-    return channel_place(ichannel, reroute(target, event), event, cstring_write_fmt4(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3, arg4), buffer);
+    return channel_send(ichannel, target, event, cstring_write_fmt4(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3, arg4), buffer);
 
 }
 
@@ -211,7 +211,7 @@ unsigned int channel_send_fmt6(unsigned int ichannel, unsigned int target, unsig
 
     char buffer[MESSAGE_SIZE];
 
-    return channel_place(ichannel, reroute(target, event), event, cstring_write_fmt6(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3, arg4, arg5, arg6), buffer);
+    return channel_send(ichannel, target, event, cstring_write_fmt6(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3, arg4, arg5, arg6), buffer);
 
 }
 
@@ -220,7 +220,7 @@ unsigned int channel_send_fmt8(unsigned int ichannel, unsigned int target, unsig
 
     char buffer[MESSAGE_SIZE];
 
-    return channel_place(ichannel, reroute(target, event), event, cstring_write_fmt8(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8), buffer);
+    return channel_send(ichannel, target, event, cstring_write_fmt8(buffer, MESSAGE_SIZE, 0, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8), buffer);
 
 }
 
@@ -229,10 +229,10 @@ unsigned int channel_process(unsigned int ichannel)
 
     struct message message;
 
-    if (channel_pick(ichannel, &message))
+    if (pick(ichannel, &message))
     {
 
-        channel_dispatch(ichannel, &message);
+        dispatch(ichannel, &message);
 
         return message.event;
 
@@ -245,13 +245,21 @@ unsigned int channel_process(unsigned int ichannel)
 unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned int event, struct message *message)
 {
 
-    while (channel_pick(ichannel, message))
+    while (pick(ichannel, message))
     {
 
-        channel_dispatch(ichannel, message);
+        dispatch(ichannel, message);
 
-        if (message->source == source && (message->event == event || event == EVENT_ALL))
-            return message->event;
+        if (message->source == source)
+        {
+
+            if (message->event == event)
+                return event;
+
+            if (message->event == EVENT_DONE)
+                return 0;
+
+        }
 
     }
 
@@ -264,9 +272,7 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
     struct message message;
 
-    channel_poll(ichannel, source, event, &message);
-
-    return buffer_read(data, count, message.data, message.length, 0);
+    return (channel_poll(ichannel, source, event, &message)) ? buffer_read(data, count, message.data, message.length, 0) : 0;
 
 }
 
@@ -282,7 +288,6 @@ unsigned int channel_lookup(char *name)
 
         length = offset - 1;
         index = name[offset] - '0';
-
 
     }
 

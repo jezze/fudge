@@ -60,6 +60,7 @@ static void dnsresolve(struct socket *socket, char *domain)
 
         channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
         channel_send(1, target, EVENT_MAIN, 0, 0);
+        channel_send(1, target, EVENT_TERM, 0, 0);
 
         while (channel_poll(1, target, EVENT_QUERYRESPONSE, &message))
         {
@@ -84,9 +85,6 @@ static void dnsresolve(struct socket *socket, char *domain)
             }
 
         }
-
-        channel_send(1, target, EVENT_TERM, 0, 0);
-        channel_wait(1, target, EVENT_DONE, 0, 0);
 
     }
 

@@ -65,7 +65,6 @@
 #define EVENT_WMEVENT                   0x5E
 #define EVENT_WMACK                     0x5F
 #define EVENT_P9P                       0x61
-#define EVENT_ALL                       0xFF
 
 struct event_pipe
 {

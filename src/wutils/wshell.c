@@ -323,20 +323,14 @@ static unsigned int runcomplete(char *output, unsigned int size)
 
         char input[INPUTSIZE];
         struct message message;
-        unsigned int event;
 
         channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
         channel_send(1, target, EVENT_MAIN, 0, 0);
         channel_send(1, target, EVENT_DATA, ring_readcopy(&input1, input, INPUTSIZE), input);
         channel_send(1, target, EVENT_TERM, 0, 0);
 
-        while ((event = channel_poll(1, target, EVENT_ALL, &message)) && event != EVENT_DONE)
-        {
-
-            if (event == EVENT_DATA)
-                count += buffer_write(output, size, message.data, message.length, count);
-
-        }
+        while (channel_poll(1, target, EVENT_DATA, &message))
+            count += buffer_write(output, size, message.data, message.length, count);
 
     }
 

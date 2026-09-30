@@ -10,6 +10,7 @@
 
 unsigned int *framebuffer;
 unsigned int wmax, hmax, wmid, hmid;
+static unsigned int framecount;
 
 unsigned int inperiod(unsigned int frame, unsigned int start, unsigned int end)
 {
@@ -73,38 +74,11 @@ static void render(unsigned int frame)
 
 }
 
-static void run(void)
+static void ontimertick(struct message *message)
 {
 
-    struct message message;
-    unsigned int frame = 0;
-
-    while (channel_pick(0, &message))
-    {
-
-        switch (message.event)
-        {
-
-        case EVENT_TIMERTICK:
-            if (framebuffer)
-                render(frame++);
-
-            break;
-
-        case EVENT_KEYPRESS:
-            break;
-
-        case EVENT_KEYRELEASE:
-            break;
-
-        default:
-            channel_dispatch(0, &message);
-
-            break;
-
-        }
-
-    }
+    if (framebuffer)
+        render(framecount++);
 
 }
 
@@ -138,7 +112,9 @@ static void onmain(struct message *message)
         channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
         channel_send(0, keyboard, EVENT_LINK, 0, 0);
         channel_send(0, timer, EVENT_LINK, 0, 0);
-        run();
+
+        while (channel_process(0));
+
         channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
         channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
@@ -179,6 +155,7 @@ void init(void)
     option_add("video-service", "video");
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_TIMERTICK, ontimertick);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
 
     while (channel_process(0));

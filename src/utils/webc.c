@@ -13,8 +13,9 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
 
         channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
         channel_send(1, target, EVENT_MAIN, 0, 0);
+        channel_send(1, target, EVENT_TERM, 0, 0);
 
-        if (channel_poll(1, target, EVENT_QUERYRESPONSE, &message))
+        while (channel_poll(1, target, EVENT_QUERYRESPONSE, &message))
         {
 
             unsigned int i;
@@ -37,9 +38,6 @@ static void dnsresolve(unsigned int source, char *domain, char address[32])
             }
 
         }
-
-        channel_send(1, target, EVENT_TERM, 0, 0);
-        channel_wait(1, target, EVENT_DONE, 0, 0);
 
     }
 

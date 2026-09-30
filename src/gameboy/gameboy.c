@@ -9,6 +9,7 @@ static unsigned int *framebuffer;
 static unsigned int w, h, scalew, scaleh, totw, toth, offx, offy;
 static struct keys keys;
 static char path[128];
+static struct gb_s gb;
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
 {
@@ -189,13 +190,35 @@ static void keyrelease(struct gb_s *gb, struct event_keyrelease *keyrelease)
 
 }
 
+static void ontimertick(struct message *message)
+{
+
+    gb_run_frame(&gb);
+
+    if (framebuffer)
+        video_render(framebuffer, w, scalew, scaleh, totw, toth, offx, offy);
+
+}
+
+static void onkeypress(struct message *message)
+{
+
+    keypress(&gb, message->data);
+
+}
+
+static void onkeyrelease(struct message *message)
+{
+
+    keyrelease(&gb, message->data);
+
+}
+
 static void run(unsigned int source, unsigned int target, unsigned int id)
 {
 
     char romname[16];
     enum gb_init_error_e gb_ret;
-    struct gb_s gb;
-    struct message message;
 
     fs_read_full(1, target, id, rom, 0x80000, 0);
 
@@ -223,38 +246,11 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
 
     channel_send_fmt1(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
-    while (channel_pick(0, &message))
-    {
+    channel_bind(EVENT_TIMERTICK, ontimertick);
+    channel_bind(EVENT_KEYPRESS, onkeypress);
+    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
 
-        switch (message.event)
-        {
-
-        case EVENT_TIMERTICK:
-            gb_run_frame(&gb);
-
-            if (framebuffer)
-                video_render(framebuffer, w, scalew, scaleh, totw, toth, offx, offy);
-
-            break;
-
-        case EVENT_KEYPRESS:
-            keypress(&gb, message.data);
-
-            break;
-
-        case EVENT_KEYRELEASE:
-            keyrelease(&gb, message.data);
-
-            break;
-
-        default:
-            channel_dispatch(0, &message);
-
-            break;
-
-        }
-
-    }
+    while (channel_process(0));
 
 }
 
