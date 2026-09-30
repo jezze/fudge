@@ -56,25 +56,23 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
     unsigned int status = MESSAGE_RETRY;
 
+    if (count > MESSAGE_SIZE)
+        return MESSAGE_FAILED;
+
     spinlock_acquire(&mailbox->spinlock);
 
     if (hasfreeslot(mailbox))
     {
 
-        if (count <= MESSAGE_SIZE)
-        {
+        unsigned int slot = mailbox->head % MESSAGE_SLOTS;
+        struct message *message = &mailbox->messages[slot];
 
-            unsigned int slot = mailbox->head % MESSAGE_SLOTS;
-            struct message *message = &mailbox->messages[slot];
+        message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * slot + MESSAGE_CAPACITY * mailbox->ichannel));
+        buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * slot), data, count);
 
-            message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * slot + MESSAGE_CAPACITY * mailbox->ichannel));
-            buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * slot), data, count);
+        mailbox->head++;
 
-            mailbox->head++;
-
-            status = MESSAGE_OK;
-
-        }
+        status = MESSAGE_OK;
 
     }
 
