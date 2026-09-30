@@ -466,13 +466,12 @@ static unsigned int walk(struct parser *ps, struct parser *path)
 
 }
 
-void parse(unsigned int source, char *input, unsigned int count, char *query)
+static void parse(unsigned int source, char *input, unsigned int count, char *query)
 {
 
     struct parser path;
     struct parser doc;
 
-    input[count] = '\0';
     doc.pos = input;
     doc.source = source;
     path.pos = query;
@@ -499,10 +498,16 @@ static void onpath(struct message *message)
         {
 
             char buffer[INPUT_SIZE];
-            unsigned int count = fs_read_full(1, target, id, buffer, INPUT_SIZE, 0);
+            unsigned int count = fs_read_full(1, target, id, buffer, INPUT_SIZE - 1, 0);
 
             if (count)
+            {
+
+                buffer[count] = '\0';
+
                 parse(message->source, buffer, count, option_getstring("query"));
+
+            }
 
         }
 
