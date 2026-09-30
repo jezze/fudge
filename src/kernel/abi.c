@@ -22,7 +22,7 @@ static unsigned int checkargs(void *address, unsigned int count)
     struct mmap_header *header = (struct mmap_header *)KERNEL_VMMAP;
     struct mmap_entry *entry = mmap_find(header, vaddress);
 
-    return ((entry->flags & MMAP_FLAG_USERMODE) && (vaddress >= entry->vaddress) && (count <= entry->size) && ((vaddress - entry->vaddress) <= (entry->size - count)));
+    return (entry && (entry->flags & MMAP_FLAG_USERMODE) && (vaddress >= entry->vaddress) && (count <= entry->size) && ((vaddress - entry->vaddress) <= (entry->size - count)));
 
 }
 
@@ -61,26 +61,36 @@ static unsigned int find(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int length; char *name; unsigned int index;} *args = stack;
-    unsigned int namehash = djb_hash(args->length, args->name);
-    struct resource *resource = 0;
-    unsigned int index = 0;
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+    if (args->name && checkargs(args->name, args->length))
     {
 
-        struct service *service = resource->data;
+        unsigned int namehash = djb_hash(args->length, args->name);
+        struct resource *resource = 0;
+        unsigned int index = 0;
 
-        if (service->namehash == namehash)
+        while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
         {
 
-            if (index == args->index)
-                return service->inode;
+            struct service *service = resource->data;
 
-            index++;
+            if (service->namehash == namehash)
+            {
+
+                if (index == args->index)
+                    return service->inode;
+
+                index++;
+
+            }
 
         }
 
+        return 0;
+
     }
+
+    DEBUG_FMT0(DEBUG_ERROR, "find check failed");
 
     return 0;
 
