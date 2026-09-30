@@ -26,7 +26,7 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
 static unsigned int spawnshell(unsigned int ichannel)
 {
 
-    unsigned int target = fs_spawn(ichannel, "initrd:bin/shell");
+    unsigned int target = fs_spawn(ichannel, "initrd:bin/shell2");
 
     if (target)
     {
