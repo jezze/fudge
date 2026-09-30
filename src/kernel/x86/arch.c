@@ -244,6 +244,26 @@ unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *in
 
 }
 
+static unsigned short fault(struct cpu_general *general, struct cpu_interrupt *interrupt)
+{
+
+    struct core *core = kernel_getcore();
+
+    if (core->itask && interrupt->cs.value == gdt_getselector(gdt, ARCH_UCODE))
+    {
+
+        kernel_kill(core->itask, EXIT_STATUS_CRASHED);
+
+        return arch_resume(general, interrupt);
+
+    }
+
+    DEBUG_FMT0(DEBUG_CRITICAL, "Kernel fault");
+
+    for (;;);
+
+}
+
 void arch_leave(void)
 {
 
@@ -263,19 +283,9 @@ void arch_leave(void)
 unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    struct core *core = kernel_getcore();
-
     DEBUG_FMT0(DEBUG_ERROR, "#DE");
 
-    if (core->itask)
-    {
-
-        if (interrupt.cs.value == gdt_getselector(gdt, ARCH_UCODE))
-            kernel_kill(core->itask, EXIT_STATUS_CRASHED);
-
-    }
-
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -311,7 +321,7 @@ unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt in
 
     DEBUG_FMT0(DEBUG_INFO, "#OF");
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -320,7 +330,7 @@ unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt inter
 
     DEBUG_FMT0(DEBUG_ERROR, "#BR");
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -329,7 +339,7 @@ unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt inte
 
     DEBUG_FMT0(DEBUG_ERROR, "#UD");
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -338,7 +348,7 @@ unsigned short arch_device(struct cpu_general general, struct cpu_interrupt inte
 
     DEBUG_FMT0(DEBUG_ERROR, "#NM");
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -347,7 +357,7 @@ unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, s
 
     DEBUG_FMT1(DEBUG_ERROR, "#DF %u", &zero);
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -357,7 +367,7 @@ unsigned short arch_tss(struct cpu_general general, unsigned int error, struct c
     DEBUG_FMT1(DEBUG_ERROR, "#TS %u", &error);
     debugselector(error);
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -367,7 +377,7 @@ unsigned short arch_segment(struct cpu_general general, unsigned int error, stru
     DEBUG_FMT1(DEBUG_ERROR, "#NP %u", &error);
     debugselector(error);
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -377,7 +387,7 @@ unsigned short arch_stack(struct cpu_general general, unsigned int error, struct
     DEBUG_FMT1(DEBUG_ERROR, "#SS %u", &error);
     debugselector(error);
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -387,7 +397,7 @@ unsigned short arch_generalfault(struct cpu_general general, unsigned int error,
     DEBUG_FMT1(DEBUG_ERROR, "#GP %u", &error);
     debugselector(error);
 
-    return arch_resume(&general, &interrupt);
+    return fault(&general, &interrupt);
 
 }
 
@@ -403,7 +413,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
         DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
         debugpagefault(error);
 
-        for (;;);
+        return fault(&general, &interrupt);
 
     }
 
@@ -450,7 +460,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
             DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
             debugpagefault(error);
 
-            for (;;);
+            return fault(&general, &interrupt);
 
         }
 
