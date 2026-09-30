@@ -176,13 +176,13 @@ static unsigned int pick(unsigned int itask, void *stack)
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
 
-        return (inode) ? kernel_pick(inode, args->message) : 0;
+        return (inode) ? kernel_pick(inode, args->message) : MESSAGE_FAILED;
 
     }
 
     DEBUG_FMT0(DEBUG_ERROR, "pick check failed");
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
@@ -196,13 +196,13 @@ static unsigned int place(unsigned int itask, void *stack)
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
 
-        return (inode) ? kernel_place(inode, args->target, args->event, args->count, args->data) : 0;
+        return (inode) ? kernel_place(inode, args->target, args->event, args->count, args->data) : MESSAGE_FAILED;
 
     }
 
     DEBUG_FMT0(DEBUG_ERROR, "place check failed");
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
