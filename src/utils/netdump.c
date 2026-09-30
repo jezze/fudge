@@ -2,6 +2,8 @@
 #include <net.h>
 #include <abi.h>
 
+static unsigned int output;
+
 static void print_icmp(unsigned int source, void *buffer)
 {
 
@@ -145,7 +147,7 @@ static void print_ethernet(unsigned int source, void *buffer)
 static void ondata(struct message *message)
 {
 
-    print_ethernet(message->source, message->data);
+    print_ethernet(output, message->data);
 
 }
 
@@ -157,7 +159,8 @@ static void onmain(struct message *message)
     if (ethernet)
     {
 
-        channel_route(EVENT_DATA, message->source);
+        output = message->source;
+
         channel_send(0, ethernet, EVENT_LINK, 0, 0);
 
         while (channel_process(0));

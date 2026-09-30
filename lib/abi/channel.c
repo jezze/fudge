@@ -8,18 +8,15 @@
 #define CHANNEL_STATE_CLOSED            3
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
-static unsigned int routes[CHANNEL_EVENTS];
 static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int pending;
+static unsigned int closer;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
 static unsigned int pipenext;
 
 static unsigned int reroute(unsigned int target, unsigned int event)
 {
-
-    if (event < CHANNEL_EVENTS && routes[event])
-        target = routes[event];
 
     if (pipenext && (target == pipeowner || (pipeprev && target == pipeprev)))
     {
@@ -39,6 +36,18 @@ static unsigned int reroute(unsigned int target, unsigned int event)
     }
 
     return target;
+
+}
+
+static void close(unsigned int ichannel)
+{
+
+    state = CHANNEL_STATE_CLOSED;
+
+    channel_place(ichannel, reroute(closer, EVENT_DONE), EVENT_DONE, 0, 0);
+
+    if (pipenext && pipenext != pipeowner)
+        channel_place(ichannel, pipenext, EVENT_TERM, 0, 0);
 
 }
 
@@ -116,40 +125,32 @@ void channel_dispatch(unsigned int ichannel, struct message *message)
     {
 
     case EVENT_TERM:
-        state = CHANNEL_STATE_PENDING;
+        if (state == CHANNEL_STATE_OPENED)
+        {
+
+            state = CHANNEL_STATE_PENDING;
+            closer = message->source;
+
+        }
 
         break;
 
     case EVENT_INTERRUPT:
-        state = CHANNEL_STATE_CLOSED;
+        if (state != CHANNEL_STATE_CLOSED)
+        {
+
+            closer = message->source;
+
+            close(ichannel);
+
+        }
 
         break;
 
     }
 
-    switch (state)
-    {
-
-    case CHANNEL_STATE_PENDING:
-        if (!pending)
-            state = CHANNEL_STATE_CLOSED;
-
-        break;
-
-    }
-
-    switch (state)
-    {
-
-    case CHANNEL_STATE_CLOSED:
-        channel_place(ichannel, reroute(message->source, EVENT_DONE), EVENT_DONE, 0, 0);
-
-        if (pipenext && pipenext != pipeowner)
-            channel_place(ichannel, pipenext, EVENT_TERM, 0, 0);
-
-        break;
-
-    }
+    if (state == CHANNEL_STATE_PENDING && !pending)
+        close(ichannel);
 
 }
 
@@ -293,13 +294,6 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 {
 
     listeners[event] = callback;
-
-}
-
-void channel_route(unsigned int event, unsigned int target)
-{
-
-    routes[event] = target;
 
 }
 

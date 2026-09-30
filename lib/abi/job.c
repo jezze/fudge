@@ -253,52 +253,6 @@ static unsigned int find(struct job *job, unsigned int target)
 
 }
 
-static void activate(struct job *job, unsigned int ichannel, unsigned int start)
-{
-
-    unsigned int i;
-
-    for (i = start; i < job->ncommands; i++)
-    {
-
-        struct job_command *command = &job->commands[i];
-
-        if (command->target && !command->finished)
-        {
-
-            if (!command->terminated)
-            {
-
-                channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
-
-                command->terminated = 1;
-
-            }
-
-            break;
-
-        }
-
-    }
-
-}
-
-static void finish(struct job *job, unsigned int ichannel, unsigned int index)
-{
-
-    struct job_command *command = &job->commands[index];
-
-    if (!command->finished)
-    {
-
-        command->finished = 1;
-
-        activate(job, ichannel, index + 1);
-
-    }
-
-}
-
 unsigned int job_parse(struct job *job, char *data, unsigned int count, unsigned int *offset)
 {
 
@@ -384,7 +338,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
 
     }
 
-    activate(job, ichannel, 0);
+    channel_send(ichannel, job->commands[0].target, EVENT_TERM, 0, 0);
 
 }
 
@@ -398,11 +352,10 @@ void job_abort(struct job *job, unsigned int ichannel)
 
         struct job_command *command = &job->commands[i];
 
-        if (command->target && !command->terminated)
+        if (command->target)
             channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
 
         command->finished = 1;
-        command->terminated = 1;
 
     }
 
@@ -441,9 +394,13 @@ unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int targe
     if (index < job->ncommands)
     {
 
-        finish(job, ichannel, index);
+        struct job_command *command = &job->commands[index];
 
-        job->commands[index].target = 0;
+        if (!command->finished && index + 1 < job->ncommands && job->commands[index + 1].target)
+            channel_send(ichannel, job->commands[index + 1].target, EVENT_TERM, 0, 0);
+
+        command->finished = 1;
+        command->target = 0;
 
         return 1;
 

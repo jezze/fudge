@@ -36,13 +36,6 @@ static char *extract(char *data, unsigned int length, unsigned int offset)
 
 }
 
-static void oninterrupt(struct message *message)
-{
-
-    channel_route(EVENT_DONE, message->source);
-
-}
-
 static void onoption(struct message *message)
 {
 
@@ -72,13 +65,6 @@ static void onpipe(struct message *message)
 
 }
 
-static void onterm(struct message *message)
-{
-
-    channel_route(EVENT_DONE, message->source);
-
-}
-
 void panic(unsigned int source, char *file, unsigned int line)
 {
 
@@ -91,10 +77,8 @@ void main(void)
 {
 
     option_add("pwd", "");
-    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_PIPE, onpipe);
-    channel_bind(EVENT_TERM, onterm);
     init();
 
 }

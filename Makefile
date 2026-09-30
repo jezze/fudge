@@ -151,8 +151,6 @@ $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@cp $(LIB) $@/lib
 	@mkdir -p $@/bin
 	@cp $(BIN) $@/bin
-	@mkdir -p $@/config
-	@cp config/* $@/config
 	@mkdir -p $@/data
 	@cp -r data/* $@/data
 	@mkdir -p $@/kernel

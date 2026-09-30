@@ -15,7 +15,6 @@ struct job_command
     unsigned int noptions;
     unsigned int target;
     unsigned int finished;
-    unsigned int terminated;
 
 };
 
