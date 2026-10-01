@@ -76,11 +76,11 @@ static void writesuperblock(void)
 
 }
 
-static void readblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsigned int index)
+static void readblockgroup(struct ext2_blockgroup *bg, unsigned int index)
 {
 
     unsigned int slots = blocksize / sizeof (struct ext2_blockgroup);
-    unsigned int sector = start + index / slots;
+    unsigned int sector = sb.superblockIndex + 1 + index / slots;
     unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
 
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
@@ -88,11 +88,11 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsig
 
 }
 
-static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int start, unsigned int index)
+static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int index)
 {
 
     unsigned int slots = blocksize / sizeof (struct ext2_blockgroup);
-    unsigned int sector = start + index / slots;
+    unsigned int sector = sb.superblockIndex + 1 + index / slots;
     unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
 
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
@@ -133,7 +133,7 @@ static void simpleread(struct ext2_node *node, unsigned int id)
     unsigned int inode = (id - 1) % sb.nodeCountGroup;
     struct ext2_blockgroup bg;
 
-    readblockgroup(&bg, 1, igroup);
+    readblockgroup(&bg, igroup);
     readnode(node, bg.blockTableAddress, inode);
 
 }
@@ -145,7 +145,7 @@ static void simplewrite(struct ext2_node *node, unsigned int id)
     unsigned int inode = (id - 1) % sb.nodeCountGroup;
     struct ext2_blockgroup bg;
 
-    readblockgroup(&bg, 1, igroup);
+    readblockgroup(&bg, igroup);
     writenode(node, bg.blockTableAddress, inode);
 
 }
@@ -157,7 +157,7 @@ static unsigned int allocblock(unsigned int blockgroup)
     unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
     unsigned int i;
 
-    readblockgroup(&bg, 1, blockgroup);
+    readblockgroup(&bg, blockgroup);
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
 
     for (i = 0; i < sb.blockCountGroup; i++)
@@ -175,7 +175,7 @@ static unsigned int allocblock(unsigned int blockgroup)
 
             bg.blockCountUnalloc--;
 
-            writeblockgroup(&bg, 1, blockgroup);
+            writeblockgroup(&bg, blockgroup);
 
             sb.blockCountUnalloc--;
 
@@ -198,7 +198,7 @@ static unsigned int allocnode(unsigned int igroup)
     unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
     unsigned int i;
 
-    readblockgroup(&bg, 1, igroup);
+    readblockgroup(&bg, igroup);
     sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
 
     for (i = 0; i < sb.nodeCountGroup; i++)
@@ -216,7 +216,7 @@ static unsigned int allocnode(unsigned int igroup)
 
             bg.nodeCountUnalloc--;
 
-            writeblockgroup(&bg, 1, igroup);
+            writeblockgroup(&bg, igroup);
 
             sb.nodeCountUnalloc--;
 
