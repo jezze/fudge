@@ -18,8 +18,8 @@ static unsigned int sendblockreadrequest(unsigned int count, unsigned int sector
         request.offset = option_getdecimal("partoffset") + sector * blocksize;
         request.count = count;
 
-        channel_send(0, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_wait(0, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+        channel_send(1, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_wait(1, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
         return response.count;
 
@@ -43,8 +43,8 @@ static unsigned int sendblockwriterequest(unsigned int count, unsigned int secto
         request.offset = option_getdecimal("partoffset") + sector * blocksize;
         request.count = count;
 
-        channel_send(0, target, EVENT_BLOCKWRITEREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_wait(0, target, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
+        channel_send(1, target, EVENT_BLOCKWRITEREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_wait(1, target, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
 
         return response.count;
 
@@ -871,16 +871,15 @@ static void onmain(struct message *message)
     if (block)
     {
 
-        channel_send(0, block, EVENT_INFO, 0, 0);
-        channel_wait(0, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+        channel_send(1, block, EVENT_INFO, 0, 0);
+        channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
         readsuperblock();
 
         if (ext2_validate(&sb))
         {
 
+            channel_hold();
             call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
-
-            while (channel_process(0));
 
         }
 
