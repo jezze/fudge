@@ -4,6 +4,9 @@
 void record_init(struct record *record, unsigned int id, unsigned int type, unsigned int size, unsigned int offset, unsigned int length, char *name)
 {
 
+    if (length > RECORD_NAMESIZE)
+        length = RECORD_NAMESIZE;
+
     record->id = id;
     record->type = type;
     record->size = size;

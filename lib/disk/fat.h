@@ -47,4 +47,46 @@ struct fat
 
 } __attribute__((packed));
 
+#define FAT_ATTRIBUTE_VOLUME            0x08
+#define FAT_ATTRIBUTE_DIRECTORY         0x10
+#define FAT_ATTRIBUTE_LONGNAME          0x0F
+#define FAT_LOWERCASE_NAME              0x08
+#define FAT_LOWERCASE_EXTENSION         0x10
+#define FAT_ENTRY_END                   0x00
+#define FAT_ENTRY_DELETED               0xE5
+#define FAT_CLUSTER_MASK                0x0FFFFFFF
+#define FAT_CLUSTER_END                 0x0FFFFFF8
+
+struct fat_entry
+{
+
+    unsigned char name[11];
+    unsigned char attributes;
+    unsigned char lowercase;
+    unsigned char createtimefine;
+    unsigned short createtime;
+    unsigned short createdate;
+    unsigned short accessdate;
+    unsigned short clusterhigh;
+    unsigned short modifytime;
+    unsigned short modifydate;
+    unsigned short clusterlow;
+    unsigned int size;
+
+} __attribute__((packed));
+
+struct fat_longname
+{
+
+    unsigned char order;
+    unsigned short name1[5];
+    unsigned char attributes;
+    unsigned char type;
+    unsigned char checksum;
+    unsigned short name2[6];
+    unsigned short cluster;
+    unsigned short name3[2];
+
+} __attribute__((packed));
+
 unsigned int fat_validate(struct fat *fat);
