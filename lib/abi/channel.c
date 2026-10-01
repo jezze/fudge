@@ -9,6 +9,7 @@
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int closing;
+static unsigned int holds;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
 static unsigned int pipenext;
@@ -203,10 +204,24 @@ unsigned int channel_process(unsigned int ichannel)
 
 }
 
+void channel_hold(void)
+{
+
+    holds++;
+
+}
+
+void channel_release(void)
+{
+
+    holds--;
+
+}
+
 void channel_loop(void)
 {
 
-    while (!closing && channel_process(0));
+    while ((!closing || holds) && channel_process(0));
 
 }
 
