@@ -764,24 +764,24 @@ static void onmouserelease(struct message *message)
 static void onvideoinfo(struct message *message)
 {
 
-    struct event_videoinfo *videoinfo = message->data;
-    unsigned int factor = videoinfo->height / 320;
+    struct event_videoinfo videoinfo = *(struct event_videoinfo *)message->data;
+    unsigned int factor = videoinfo.height / 320;
     unsigned int lineheight = 12 + factor * 4;
     unsigned int padding = 4 + factor * 2;
 
-    blit_initdisplay(&display, (void *)(unsigned long)videoinfo->framebuffer, videoinfo->width, videoinfo->height, videoinfo->bpp, linebuffer);
+    blit_initdisplay(&display, (void *)(unsigned long)videoinfo.framebuffer, videoinfo.width, videoinfo.height, videoinfo.bpp, linebuffer);
     pool_loadfont(0, fontn[factor]);
     pool_setfont(0, lineheight, padding);
     pool_loadfont(1, fontb[factor]);
     pool_setfont(1, lineheight, padding);
 
-    state.mouseposition.x = videoinfo->width / 4;
-    state.mouseposition.y = videoinfo->height / 4;
+    state.mouseposition.x = videoinfo.width / 4;
+    state.mouseposition.y = videoinfo.height / 4;
     state.mousewidget->position = util_position(state.mouseposition.x, state.mouseposition.y);
     state.mousewidget->size = util_size(12 + factor * 4, 16 + factor * 4);
     state.mousewidget->placement = util_region(state.mousewidget->position.x, state.mousewidget->position.y, state.mousewidget->size.w, state.mousewidget->size.h);
 
-    render_damage(0, 0, videoinfo->width, videoinfo->height);
+    render_damage(0, 0, videoinfo.width, videoinfo.height);
     render_place(state.rootwidget, &display.region);
     render_update(&display);
     render_undamage();
