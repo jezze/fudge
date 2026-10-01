@@ -215,6 +215,21 @@ static void draw(struct event_videoinfo *videoinfo, int x1, int y1, int x2, int 
 
 }
 
+static void ungrab(void)
+{
+
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
+
+    if (wm)
+    {
+
+        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -272,26 +287,24 @@ static void onmain(struct message *message)
 
         draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
         channel_send(0, mouse, EVENT_LINK, 0, 0);
-
-        while (channel_process(0));
-
-        channel_send(0, mouse, EVENT_UNLINK, 0, 0);
+        channel_hold();
 
     }
 
-    if (wm)
+    else
     {
 
-        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+        ungrab();
 
     }
 
 }
 
-static void onmousepress(struct message *message)
+static void onclose(struct message *message)
 {
 
+    channel_send(0, channel_lookup(option_getstring("mouse-service")), EVENT_UNLINK, 0, 0);
+    ungrab();
     channel_close();
 
 }
@@ -304,8 +317,9 @@ void init(void)
     option_add("bpp", "4");
     option_add("mouse-service", "mouse");
     option_add("wm-service", "wm");
+    channel_bind(EVENT_INTERRUPT, onclose);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_MOUSEPRESS, onmousepress);
+    channel_bind(EVENT_MOUSEPRESS, onclose);
 
 }
 

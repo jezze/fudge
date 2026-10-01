@@ -392,6 +392,15 @@ static void onerror(struct message *message)
 
 }
 
+static void onclose(struct message *message)
+{
+
+    interrupt();
+    channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+    channel_close();
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -400,14 +409,8 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        unsigned int event;
-
         channel_send(0, wm, EVENT_WMMAP, 0, 0);
-
-        while ((event = channel_process(0)) && event != EVENT_WMCLOSE);
-
-        interrupt();
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_hold();
 
     }
 
@@ -581,7 +584,9 @@ void init(void)
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_ERROR, onerror);
+    channel_bind(EVENT_INTERRUPT, onclose);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_WMCLOSE, onclose);
     channel_bind(EVENT_WMINIT, onwminit);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
 

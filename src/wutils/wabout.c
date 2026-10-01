@@ -1,20 +1,24 @@
 #include <fudge.h>
 #include <abi.h>
 
+static void onclose(struct message *message)
+{
+
+    channel_send(0, channel_lookup(option_getstring("wm-service")), EVENT_WMUNMAP, 0, 0);
+    channel_close();
+
+}
+
 static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
-    unsigned int event;
 
     if (wm)
     {
 
         channel_send(0, wm, EVENT_WMMAP, 0, 0);
-
-        while ((event = channel_process(0)) && event != EVENT_WMCLOSE);
-
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_hold();
 
     }
 
@@ -33,7 +37,9 @@ void init(void)
 {
 
     option_add("wm-service", "wm");
+    channel_bind(EVENT_INTERRUPT, onclose);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_WMCLOSE, onclose);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

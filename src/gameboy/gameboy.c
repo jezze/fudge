@@ -80,6 +80,31 @@ static void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const unsign
 
 }
 
+static void ungrab(void)
+{
+
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
+
+    if (wm)
+    {
+
+        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+}
+
+static void stop(void)
+{
+
+    channel_send(0, channel_lookup(option_getstring("keyboard-service")), EVENT_UNLINK, 0, 0);
+    channel_send(0, channel_lookup(option_getstring("timer-service")), EVENT_UNLINK, 0, 0);
+    ungrab();
+    channel_close();
+
+}
+
 static void keypress(struct gb_s *gb, struct event_keypress *keypress)
 {
 
@@ -129,8 +154,7 @@ static void keypress(struct gb_s *gb, struct event_keypress *keypress)
         break;
 
     case KEYS_KEY_ESCAPE:
-        channel_send(0, option_getdecimal("wm-service"), EVENT_WMUNMAP, 0, 0);
-        channel_close();
+        stop();
 
         break;
 
@@ -250,7 +274,12 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
 
-    while (channel_process(0));
+}
+
+static void oninterrupt(struct message *message)
+{
+
+    stop();
 
 }
 
@@ -295,8 +324,9 @@ static void onmain(struct message *message)
                 channel_send(0, keyboard, EVENT_LINK, 0, 0);
                 channel_send(0, timer, EVENT_LINK, 0, 0);
                 run(message->source, target, id);
-                channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
-                channel_send(0, timer, EVENT_UNLINK, 0, 0);
+                channel_hold();
+
+                return;
 
             }
 
@@ -304,13 +334,7 @@ static void onmain(struct message *message)
 
     }
 
-    if (wm)
-    {
-
-        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(0, wm, EVENT_WMACK, 0, 0);
-
-    }
+    ungrab();
 
 }
 
@@ -349,6 +373,7 @@ void init(void)
     option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
+    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);

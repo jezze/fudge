@@ -108,17 +108,26 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 
 }
 
+static void onclose(struct message *message)
+{
+
+    channel_send(0, channel_lookup(option_getstring("wm-service")), EVENT_WMUNMAP, 0, 0);
+    channel_close();
+
+}
+
 static void onmain(struct message *message)
 {
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
-    unsigned int event;
 
-    channel_send(0, wm, EVENT_WMMAP, 0, 0);
+    if (wm)
+    {
 
-    while ((event = channel_process(0)) && event != EVENT_WMCLOSE);
+        channel_send(0, wm, EVENT_WMMAP, 0, 0);
+        channel_hold();
 
-    channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+    }
 
 }
 
@@ -189,7 +198,9 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
+    channel_bind(EVENT_INTERRUPT, onclose);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_WMCLOSE, onclose);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

@@ -569,6 +569,19 @@ static void onerror(struct message *message)
 
 }
 
+static void oninterrupt(struct message *message)
+{
+
+    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
+
+    if (console)
+        channel_send(0, console, EVENT_UNLINK, 0, 0);
+
+    if (keyboard)
+        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -583,14 +596,7 @@ static void onmain(struct message *message)
         channel_send(0, keyboard, EVENT_LINK, 0, 0);
 
     clearline();
-
-    while (channel_process(0));
-
-    if (console)
-        channel_send(0, console, EVENT_UNLINK, 0, 0);
-
-    if (keyboard)
-        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+    channel_hold();
 
 }
 
@@ -608,6 +614,7 @@ void init(void)
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_ERROR, onerror);
+    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
 
 }
