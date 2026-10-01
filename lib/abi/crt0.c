@@ -83,9 +83,7 @@ void main(void)
     channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_PIPE, onpipe);
     init();
-
-    while (channel_process(0));
-
+    channel_loop();
     channel_close();
 
 }

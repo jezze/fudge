@@ -8,7 +8,6 @@
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
-static unsigned int depth;
 static unsigned int closing;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
@@ -97,15 +96,7 @@ static void dispatch(struct message *message)
 {
 
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
-    {
-
-        depth++;
-
         listeners[message->event](message);
-
-        depth--;
-
-    }
 
     switch (message->event)
     {
@@ -121,9 +112,6 @@ static void dispatch(struct message *message)
         break;
 
     }
-
-    if (closing && !depth)
-        channel_close();
 
 }
 
@@ -212,6 +200,13 @@ unsigned int channel_process(unsigned int ichannel)
     }
 
     return 0;
+
+}
+
+void channel_loop(void)
+{
+
+    while (!closing && channel_process(0));
 
 }
 
