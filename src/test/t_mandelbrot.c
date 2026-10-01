@@ -223,8 +223,8 @@ static void ungrab(void)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
 
     }
 
@@ -240,8 +240,8 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMGRAB, 0, 0);
-        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
 
     }
 
@@ -256,8 +256,8 @@ static void onmain(struct message *message)
         videoconf.bpp = option_getdecimal("bpp");
 
         channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-        channel_send(0, video, EVENT_INFO, 0, 0);
-        channel_wait(0, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+        channel_send(1, video, EVENT_INFO, 0, 0);
+        channel_wait(1, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
         if (videoinfo.bpp == 1)
         {

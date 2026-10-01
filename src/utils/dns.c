@@ -73,8 +73,8 @@ static void onmain(struct message *message)
         struct event_clockinfo clockinfo;
         struct mtwist_state state;
 
-        channel_send(0, clock, EVENT_INFO, 0, 0);
-        channel_wait(0, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        channel_send(1, clock, EVENT_INFO, 0, 0);
+        channel_wait(1, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
         mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
         socket_bind_ipv4s(&local, option_getstring("local-address"));
         socket_bind_udpv(&local, mtwist_rand(&state));
