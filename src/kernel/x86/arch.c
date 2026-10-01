@@ -441,12 +441,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
         if (!found)
         {
 
-            struct mmap_entry *entry = mmap_find((struct mmap_header *)ARCH_MMAP_BASE, vaddress);
+            unsigned long table = mmu_gettable(ARCH_MMU_KERNELBASE, vaddress);
 
-            if (entry)
+            if ((table & MMU_TFLAG_PRESENT) && !(mmu_gettable(directory, vaddress) & MMU_TFLAG_PRESENT))
             {
 
-                mapentry(directory, ARCH_MMAP_BASE, entry);
+                mmu_settable(directory, vaddress, table, table);
 
                 found = 1;
 
