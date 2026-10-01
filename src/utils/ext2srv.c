@@ -646,7 +646,13 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
 static unsigned int stat(unsigned int id, struct record *record)
 {
 
-    buffer_clear(&record, sizeof (struct record));
+    struct ext2_node node;
+
+    if (!id)
+        return 0;
+
+    simpleread(&node, id);
+    record_init(record, id, ((node.type & 0xF000) == 0x4000) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL, node.sizeLow, 0, 0, "");
 
     return sizeof (struct record);
 
