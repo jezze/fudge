@@ -7,6 +7,21 @@ static struct socket local;
 static struct socket remote;
 static struct socket router;
 
+static void stop(void)
+{
+
+    channel_send(0, channel_lookup(option_getstring("ethernet-service")), EVENT_UNLINK, 0, 0);
+    channel_close();
+
+}
+
+static void oninterrupt(struct message *message)
+{
+
+    stop();
+
+}
+
 static void onqueryrequest(struct message *message)
 {
 
@@ -45,6 +60,8 @@ static void onqueryrequest(struct message *message)
 
     }
 
+    stop();
+
 }
 
 static void onmain(struct message *message)
@@ -70,10 +87,14 @@ static void onmain(struct message *message)
         socket_resolvelocal(0, ethernet, &local);
         channel_send(0, ethernet, EVENT_LINK, 0, 0);
         channel_send(0, message->source, EVENT_READY, 0, 0);
+        channel_hold();
 
-        while (channel_process(0));
+    }
 
-        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
+    else
+    {
+
+        channel_close();
 
     }
 
@@ -92,6 +113,7 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("mode", "");
+    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_QUERYREQUEST, onqueryrequest);
     channel_bind(EVENT_MAIN, onmain);
 
