@@ -38,14 +38,14 @@ static void onmain(struct message *message)
         struct event_blockrequest request;
         struct event_blockresponse response;
 
-        channel_send(0, block, EVENT_INFO, 0, 0);
-        channel_wait(0, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+        channel_send(1, block, EVENT_INFO, 0, 0);
+        channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
 
         request.offset = 0;
         request.count = blockinfo.blocksize;
 
-        channel_send(0, block, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_wait(0, block, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+        channel_send(1, block, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_wait(1, block, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
         if (response.count == request.count)
         {

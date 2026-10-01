@@ -18,8 +18,8 @@ static unsigned int sendblockreadrequest(unsigned int offset, unsigned int count
         request.offset = offset;
         request.count = count;
 
-        channel_send(0, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_wait(0, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+        channel_send(1, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_wait(1, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
         return response.count;
 
@@ -115,8 +115,8 @@ static void onmain(struct message *message)
     {
 
         unsigned int count;
-        channel_send(0, block, EVENT_INFO, 0, 0);
-        channel_wait(0, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+        channel_send(1, block, EVENT_INFO, 0, 0);
+        channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
 
         count = sendblockreadrequest(0, blockinfo.blocksize);
 
