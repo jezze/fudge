@@ -98,6 +98,7 @@ static unsigned int createtask(unsigned int parent, unsigned int pchannel, unsig
 
             buffer_copy((void *)(unsigned long)(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask), (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
             mapentry(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask, ARCH_MMAP_BASE + MMAP_SIZE * ntask, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE + MMAP_SIZE * ntask, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
+            kernel_starttask(ntask);
 
             return inode;
 

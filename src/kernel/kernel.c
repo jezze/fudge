@@ -552,25 +552,19 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
         }
 
         if (task->thread.ip)
-        {
-
-            unsigned int inode = kernel_getchannelinode(itask, 0);
-
-            if (inode)
-            {
-
-                transition(itask, TASK_STATE_NEW);
-                transition(itask, TASK_STATE_ASSIGNED);
-
-                return inode;
-
-            }
-
-        }
+            return kernel_getchannelinode(itask, 0);
 
     }
 
     return 0;
+
+}
+
+void kernel_starttask(unsigned int itask)
+{
+
+    transition(itask, TASK_STATE_NEW);
+    transition(itask, TASK_STATE_ASSIGNED);
 
 }
 
