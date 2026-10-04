@@ -97,15 +97,6 @@ static void ungrab(void)
 
 }
 
-static void oninterrupt(struct message *message)
-{
-
-    channel_send(0, channel_lookup(option_getstring("keyboard-service")), EVENT_UNLINK, 0, 0);
-    channel_send(0, channel_lookup(option_getstring("timer-service")), EVENT_UNLINK, 0, 0);
-    ungrab();
-
-}
-
 static void onmain(struct message *message)
 {
 
@@ -137,15 +128,12 @@ static void onmain(struct message *message)
         channel_send(0, keyboard, EVENT_LINK, 0, 0);
         channel_send(0, timer, EVENT_LINK, 0, 0);
         channel_hold(0);
+        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+        channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
     }
 
-    else
-    {
-
-        ungrab();
-
-    }
+    ungrab();
 
 }
 
@@ -173,7 +161,6 @@ void init(void)
     option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
-    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TIMERTICK, ontimertick);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);

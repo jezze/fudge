@@ -88,20 +88,10 @@ static void ungrab(void)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
 
     }
-
-}
-
-static void stop(void)
-{
-
-    channel_send(0, channel_lookup(option_getstring("keyboard-service")), EVENT_UNLINK, 0, 0);
-    channel_send(0, channel_lookup(option_getstring("timer-service")), EVENT_UNLINK, 0, 0);
-    ungrab();
-    channel_close();
 
 }
 
@@ -154,7 +144,7 @@ static void keypress(struct gb_s *gb, struct event_keypress *keypress)
         break;
 
     case KEYS_KEY_ESCAPE:
-        stop();
+        channel_close();
 
         break;
 
@@ -276,13 +266,6 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
 
 }
 
-static void oninterrupt(struct message *message)
-{
-
-    stop();
-
-}
-
 static void onmain(struct message *message)
 {
 
@@ -325,8 +308,8 @@ static void onmain(struct message *message)
                 channel_send(0, timer, EVENT_LINK, 0, 0);
                 run(message->source, target, id);
                 channel_hold(0);
-
-                return;
+                channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+                channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
             }
 
@@ -373,7 +356,6 @@ void init(void)
     option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
-    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);

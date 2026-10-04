@@ -11,13 +11,6 @@ static char *levels[5] = {
 
 static unsigned int output;
 
-static void oninterrupt(struct message *message)
-{
-
-    channel_send(0, channel_lookup(option_getstring("log-service")), EVENT_UNLINK, 0, 0);
-
-}
-
 static void onloginfo(struct message *message)
 {
 
@@ -42,6 +35,7 @@ static void onmain(struct message *message)
 
         channel_send(0, log, EVENT_LINK, 0, 0);
         channel_hold(0);
+        channel_send(0, log, EVENT_UNLINK, 0, 0);
 
     }
 
@@ -52,7 +46,6 @@ void init(void)
 
     option_add("log-service", "log");
     option_add("level", "4");
-    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_LOGINFO, onloginfo);
     channel_bind(EVENT_MAIN, onmain);
 

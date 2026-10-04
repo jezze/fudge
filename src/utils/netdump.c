@@ -151,13 +151,6 @@ static void ondata(struct message *message)
 
 }
 
-static void oninterrupt(struct message *message)
-{
-
-    channel_send(0, channel_lookup(option_getstring("ethernet-service")), EVENT_UNLINK, 0, 0);
-
-}
-
 static void onmain(struct message *message)
 {
 
@@ -170,6 +163,7 @@ static void onmain(struct message *message)
 
         channel_send(0, ethernet, EVENT_LINK, 0, 0);
         channel_hold(0);
+        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
 
     }
 
@@ -179,7 +173,6 @@ void init(void)
 {
 
     option_add("ethernet-service", "ethernet");
-    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_DATA, ondata);
 
