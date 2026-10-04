@@ -92,6 +92,7 @@ void module_init(void)
     buffer_copy((void *)SMP_BASE32, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
     pic_disable();
     apic_setupisrs();
+    pool_placecore(icore, &usedcores);
 
     for (i = 0; i < POOL_CORES; i++)
     {
@@ -102,7 +103,7 @@ void module_init(void)
             if (i != icore)
             {
 
-                pool_placecore(icore, &usedcores);
+                pool_placecore(i, &usedcores);
                 apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT);
                 pit_wait(10);
                 apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (SMP_BASE16 >> 12));
