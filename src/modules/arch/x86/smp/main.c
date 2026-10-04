@@ -49,7 +49,9 @@ static void coreassign(unsigned int itask)
     else
     {
 
-        pool_placetask(itask, &coreget()->tasks);
+        struct core *self = coreget();
+
+        pool_placetask(itask, &self->tasks);
 
     }
 
