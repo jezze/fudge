@@ -4,12 +4,11 @@
 
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_STATE_OPENED            1
-#define CHANNEL_STATE_INTERRUPTED       2
+#define CHANNEL_STATE_CLOSING           2
 #define CHANNEL_STATE_CLOSED            3
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
-static unsigned int closing;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
 static unsigned int pipenext;
@@ -40,7 +39,7 @@ static unsigned int reroute(unsigned int target, unsigned int event)
 static unsigned int pick(unsigned int ichannel, struct message *message)
 {
 
-    while (state == CHANNEL_STATE_OPENED || (state == CHANNEL_STATE_INTERRUPTED && ichannel))
+    while (ichannel || state != CHANNEL_STATE_CLOSED)
     {
 
         unsigned int status = call_pick(ichannel, message);
@@ -103,13 +102,13 @@ static void dispatch(struct message *message)
     {
 
     case EVENT_TERM:
-        closing = 1;
+        if (state == CHANNEL_STATE_OPENED)
+            state = CHANNEL_STATE_CLOSING;
 
         break;
 
     case EVENT_INTERRUPT:
-        if (state == CHANNEL_STATE_OPENED)
-            state = CHANNEL_STATE_INTERRUPTED;
+        state = CHANNEL_STATE_CLOSED;
 
         break;
 
@@ -215,7 +214,7 @@ void channel_hold(unsigned int ichannel)
 void channel_loop(unsigned int ichannel)
 {
 
-    while (!closing && channel_process(ichannel));
+    while (state == CHANNEL_STATE_OPENED && channel_process(ichannel));
 
 }
 
@@ -288,18 +287,18 @@ void channel_pipe(unsigned int owner, unsigned int prev, unsigned int next)
 
 }
 
-void channel_close(unsigned int ichannel)
+void channel_close(void)
 {
 
-    if (state != CHANNEL_STATE_CLOSED)
-    {
+    state = CHANNEL_STATE_CLOSED;
 
-        state = CHANNEL_STATE_CLOSED;
+}
 
-        if (pipenext && pipenext != pipeowner)
-            place(ichannel, pipenext, EVENT_TERM, 0, 0);
+void channel_exit(unsigned int ichannel)
+{
 
-    }
+    if (pipenext && pipenext != pipeowner)
+        place(ichannel, pipenext, EVENT_TERM, 0, 0);
 
 }
 

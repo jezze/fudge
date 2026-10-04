@@ -11,7 +11,7 @@ static void stop(void)
 {
 
     channel_send(0, channel_lookup(option_getstring("ethernet-service")), EVENT_UNLINK, 0, 0);
-    channel_close(0);
+    channel_close();
 
 }
 
@@ -94,7 +94,7 @@ static void onmain(struct message *message)
     else
     {
 
-        channel_close(0);
+        channel_close();
 
     }
 

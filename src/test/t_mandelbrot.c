@@ -305,7 +305,7 @@ static void oninterrupt(struct message *message)
 
     channel_send(0, channel_lookup(option_getstring("mouse-service")), EVENT_UNLINK, 0, 0);
     ungrab();
-    channel_close(0);
+    channel_close();
 
 }
 
@@ -314,7 +314,7 @@ static void onmousepress(struct message *message)
 
     channel_send(0, channel_lookup(option_getstring("mouse-service")), EVENT_UNLINK, 0, 0);
     ungrab();
-    channel_close(0);
+    channel_close();
 
 }
 

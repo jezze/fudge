@@ -101,7 +101,7 @@ static void stop(void)
     channel_send(0, channel_lookup(option_getstring("keyboard-service")), EVENT_UNLINK, 0, 0);
     channel_send(0, channel_lookup(option_getstring("timer-service")), EVENT_UNLINK, 0, 0);
     ungrab();
-    channel_close(0);
+    channel_close();
 
 }
 
