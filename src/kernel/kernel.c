@@ -544,9 +544,8 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
                 mmap_initheader(header);
                 mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
-                format->map(task->address, code, header);
-
-                task->thread.ip = format->findentry(task->address);
+                if (format->map(task->address, code, TASK_CODESIZE, header))
+                    task->thread.ip = format->findentry(task->address);
 
             }
 

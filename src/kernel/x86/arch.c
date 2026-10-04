@@ -102,6 +102,8 @@ static unsigned int createtask(unsigned int parent, unsigned int pchannel, unsig
 
         }
 
+        pool_unpicktask(ntask);
+
     }
 
     return 0;

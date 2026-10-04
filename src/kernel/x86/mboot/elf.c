@@ -80,26 +80,39 @@ static unsigned long format_findentry(unsigned long base)
 
 }
 
-static unsigned int format_map(unsigned long base, unsigned long paddress, struct mmap_header *mheader)
+static unsigned int format_map(unsigned long base, unsigned long paddress, unsigned int size, struct mmap_header *mheader)
 {
 
     struct elf_header *header = (struct elf_header *)base;
     struct elf_programheader *programheaders = (struct elf_programheader *)(base + header->phoffset);
+    unsigned int used = 0;
     unsigned int i;
 
     for (i = 0; i < header->phcount; i++)
     {
 
         struct elf_programheader *programheader = &programheaders[i];
-        struct mmap_entry *entry = mmap_allocate(mheader, MMAP_TYPE_BINARY, paddress, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+        unsigned int span = ((programheader->vaddress & 0xFFF) + programheader->msize + 0xFFF) & ~0xFFF;
+        struct mmap_entry *entry;
+
+        if (programheader->type != ELF_PROGRAM_TYPE_LOAD)
+            continue;
+
+        if (span > size - used)
+            return 0;
+
+        entry = mmap_allocate(mheader, MMAP_TYPE_BINARY, paddress + used, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+
+        if (!entry)
+            return 0;
 
         mmap_setbinary(entry, base + programheader->offset, programheader->fsize, programheader->msize);
 
-        paddress += (entry->size + programheader->align) & ~(programheader->align - 1);
+        used += span;
 
     }
 
-    return 0;
+    return 1;
 
 }
 
