@@ -205,7 +205,7 @@ unsigned int pool_pickcorefrom(struct list *list)
 
     struct list_item *item = list_pickhead(list);
 
-    return (item) ? encodecorerow(item->data) : 0;
+    return (item) ? encodecorerow(item->data) : POOL_CORES;
 
 }
 

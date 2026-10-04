@@ -46,6 +46,13 @@ static void coreassign(unsigned int itask)
 
     }
 
+    else
+    {
+
+        pool_placetask(itask, &coreget()->tasks);
+
+    }
+
 }
 
 void smp_setupap(unsigned int icore, unsigned int sp)
