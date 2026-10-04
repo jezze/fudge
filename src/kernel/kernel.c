@@ -182,6 +182,25 @@ static void transition(unsigned int itask, unsigned int state)
 
 }
 
+static void requeue(struct core *core, unsigned int itask)
+{
+
+    struct task *task = pool_gettask(itask);
+
+    if (task)
+    {
+
+        spinlock_acquire(&task->spinlock);
+
+        if (task_transition(task, TASK_STATE_ASSIGNED))
+            pool_placetask(itask, &core->tasks);
+
+        spinlock_release(&task->spinlock);
+
+    }
+
+}
+
 static void unblocktasks(void)
 {
 
@@ -398,7 +417,7 @@ void kernel_schedule(struct core *core)
             if (core->itask)
             {
 
-                transition(core->itask, TASK_STATE_ASSIGNED);
+                requeue(core, core->itask);
 
                 core->itask = 0;
 
