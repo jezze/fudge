@@ -42,10 +42,11 @@ static void map(unsigned long directory, unsigned long mmap, unsigned long vaddr
 static void maprange(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int size, unsigned int flags)
 {
 
+    unsigned long offset = vaddress & (MMU_PAGESIZE - 1);
     unsigned int i;
 
-    for (i = 0; i < size; i += MMU_PAGESIZE)
-        map(directory, mmap, vaddress + i, paddress + i, flags);
+    for (i = 0; i < offset + size; i += MMU_PAGESIZE)
+        map(directory, mmap, vaddress - offset + i, paddress + i, flags);
 
 }
 
