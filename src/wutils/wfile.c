@@ -58,7 +58,7 @@ static void updatecontent(unsigned int wm)
 
 }
 
-static void onclose(struct message *message)
+static void oninterrupt(struct message *message)
 {
 
     channel_send(0, channel_lookup(option_getstring("wm-service")), EVENT_WMUNMAP, 0, 0);
@@ -205,9 +205,8 @@ void init(void)
 {
 
     option_add("wm-service", "wm");
-    channel_bind(EVENT_INTERRUPT, onclose);
+    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_WMCLOSE, onclose);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);

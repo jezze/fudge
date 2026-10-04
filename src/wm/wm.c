@@ -398,12 +398,7 @@ static void clickwidget(struct widget *widget)
         {
 
             if (util_intersects(state.mousewidget->placement.position.x, widget->placement.position.x + widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.x + widget->placement.size.w) && util_intersects(state.mousewidget->placement.position.y, widget->placement.position.y, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT))
-            {
-
-                channel_send(0, widget->source, EVENT_WMCLOSE, 0, 0);
-                channel_send(0, widget->source, EVENT_TERM, 0, 0);
-
-            }
+                channel_send(0, widget->source, EVENT_INTERRUPT, 0, 0);
 
         }
 
@@ -508,12 +503,7 @@ static void onkeypress(struct message *message)
                 {
 
                     if (state.focusedwindow)
-                    {
-
-                        channel_send(0, state.focusedwindow->source, EVENT_WMCLOSE, 0, 0);
-                        channel_send(0, state.focusedwindow->source, EVENT_TERM, 0, 0);
-
-                    }
+                        channel_send(0, state.focusedwindow->source, EVENT_INTERRUPT, 0, 0);
 
                 }
 

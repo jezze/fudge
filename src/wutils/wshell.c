@@ -392,7 +392,7 @@ static void onerror(struct message *message)
 
 }
 
-static void onclose(struct message *message)
+static void oninterrupt(struct message *message)
 {
 
     interrupt();
@@ -584,9 +584,8 @@ void init(void)
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_ERROR, onerror);
-    channel_bind(EVENT_INTERRUPT, onclose);
+    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_WMCLOSE, onclose);
     channel_bind(EVENT_WMINIT, onwminit);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
 

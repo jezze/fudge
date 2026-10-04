@@ -108,7 +108,7 @@ static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
 
 }
 
-static void onclose(struct message *message)
+static void oninterrupt(struct message *message)
 {
 
     channel_send(0, channel_lookup(option_getstring("wm-service")), EVENT_WMUNMAP, 0, 0);
@@ -198,9 +198,8 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "10.0.5.80");
     option_add("url", "");
-    channel_bind(EVENT_INTERRUPT, onclose);
+    channel_bind(EVENT_INTERRUPT, oninterrupt);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_WMCLOSE, onclose);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }
