@@ -608,13 +608,7 @@ void arch_runinit(unsigned int address)
     unsigned int target = createtask(0, 0, address);
 
     if (core)
-    {
-
-        core->state = CORE_STATE_ACTIVE;
-
         core_register(core);
-
-    }
 
     if (target)
     {
