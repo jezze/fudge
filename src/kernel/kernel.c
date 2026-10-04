@@ -77,28 +77,37 @@ static void destroytask(unsigned int itask)
 static unsigned int notifyparent(struct task *task)
 {
 
-    struct task *parent = pool_gettask(task->parent);
     struct mailbox *mailbox = pool_getmailbox(task->imailbox[0]);
 
-    if (parent && parent->imailbox[task->pchannel] && mailbox)
+    if (task->pinode && mailbox)
     {
 
-        struct mailbox *pmailbox = pool_getmailbox(parent->imailbox[task->pchannel]);
+        struct event_exit exit;
 
-        if (pmailbox)
-        {
+        exit.status = task->status;
 
-            struct event_exit exit;
-
-            exit.status = task->status;
-
-            return kernel_place(mailbox->inode, pmailbox->inode, EVENT_EXIT, sizeof (struct event_exit), &exit) != MESSAGE_RETRY;
-
-        }
+        return kernel_place(mailbox->inode, task->pinode, EVENT_EXIT, sizeof (struct event_exit), &exit) != MESSAGE_RETRY;
 
     }
 
     return 1;
+
+}
+
+static void orphan(unsigned int pinode)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < POOL_TASKS; i++)
+    {
+
+        struct task *child = pool_gettask(i);
+
+        if (child && child->pinode == pinode)
+            child->pinode = 0;
+
+    }
 
 }
 
@@ -118,17 +127,12 @@ static void retiretask(unsigned int itask)
             struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
 
             if (mailbox)
+            {
+
                 mailbox_reset(mailbox);
+                orphan(mailbox->inode);
 
-        }
-
-        for (i = 1; i < POOL_TASKS; i++)
-        {
-
-            struct task *child = pool_gettask(i);
-
-            if (child && child->parent == itask)
-                child->parent = 0;
+            }
 
         }
 
@@ -539,7 +543,7 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int parent, unsigned int pchannel, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int pinode, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
 {
 
     struct task *task = pool_gettask(itask);
@@ -548,7 +552,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     {
 
         task_reset(task);
-        task_register(task, parent, pchannel, address, mmap, ip, sp);
+        task_register(task, pinode, address, mmap, ip, sp);
 
         if (task->address)
         {

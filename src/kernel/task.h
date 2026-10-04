@@ -38,8 +38,7 @@ struct task
     unsigned int state;
     unsigned long address;
     unsigned long mmap;
-    unsigned int parent;
-    unsigned int pchannel;
+    unsigned int pinode;
     unsigned int status;
     unsigned int imailbox[TASK_MAILBOXES];
 
@@ -47,7 +46,7 @@ struct task
 
 void task_signal(struct task *task, unsigned int signal);
 unsigned int task_transition(struct task *task, unsigned int state);
-void task_register(struct task *task, unsigned int parent, unsigned int pchannel, unsigned long address, unsigned long mmap, unsigned long ip, unsigned long sp);
+void task_register(struct task *task, unsigned int pinode, unsigned long address, unsigned long mmap, unsigned long ip, unsigned long sp);
 void task_unregister(struct task *task);
 void task_reset(struct task *task);
 void task_init(struct task *task);
