@@ -287,7 +287,7 @@ static void onmain(struct message *message)
 
         draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
         channel_send(0, mouse, EVENT_LINK, 0, 0);
-        channel_hold();
+        channel_hold(0);
 
     }
 
@@ -305,7 +305,7 @@ static void oninterrupt(struct message *message)
 
     channel_send(0, channel_lookup(option_getstring("mouse-service")), EVENT_UNLINK, 0, 0);
     ungrab();
-    channel_close();
+    channel_close(0);
 
 }
 
@@ -314,7 +314,7 @@ static void onmousepress(struct message *message)
 
     channel_send(0, channel_lookup(option_getstring("mouse-service")), EVENT_UNLINK, 0, 0);
     ungrab();
-    channel_close();
+    channel_close(0);
 
 }
 

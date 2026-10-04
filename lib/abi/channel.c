@@ -4,12 +4,12 @@
 
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_STATE_OPENED            1
-#define CHANNEL_STATE_CLOSED            2
+#define CHANNEL_STATE_INTERRUPTED       2
+#define CHANNEL_STATE_CLOSED            3
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int closing;
-static unsigned int holds;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
 static unsigned int pipenext;
@@ -40,7 +40,7 @@ static unsigned int reroute(unsigned int target, unsigned int event)
 static unsigned int pick(unsigned int ichannel, struct message *message)
 {
 
-    while (state != CHANNEL_STATE_CLOSED)
+    while (state == CHANNEL_STATE_OPENED || (state == CHANNEL_STATE_INTERRUPTED && ichannel))
     {
 
         unsigned int status = call_pick(ichannel, message);
@@ -108,7 +108,8 @@ static void dispatch(struct message *message)
         break;
 
     case EVENT_INTERRUPT:
-        channel_close();
+        if (state == CHANNEL_STATE_OPENED)
+            state = CHANNEL_STATE_INTERRUPTED;
 
         break;
 
@@ -204,24 +205,17 @@ unsigned int channel_process(unsigned int ichannel)
 
 }
 
-void channel_hold(void)
+void channel_hold(unsigned int ichannel)
 {
 
-    holds++;
+    while (channel_process(ichannel));
 
 }
 
-void channel_release(void)
+void channel_loop(unsigned int ichannel)
 {
 
-    holds--;
-
-}
-
-void channel_loop(void)
-{
-
-    while ((!closing || holds) && channel_process(0));
+    while (!closing && channel_process(ichannel));
 
 }
 
@@ -294,7 +288,7 @@ void channel_pipe(unsigned int owner, unsigned int prev, unsigned int next)
 
 }
 
-void channel_close(void)
+void channel_close(unsigned int ichannel)
 {
 
     if (state != CHANNEL_STATE_CLOSED)
@@ -303,7 +297,7 @@ void channel_close(void)
         state = CHANNEL_STATE_CLOSED;
 
         if (pipenext && pipenext != pipeowner)
-            place(0, pipenext, EVENT_TERM, 0, 0);
+            place(ichannel, pipenext, EVENT_TERM, 0, 0);
 
     }
 

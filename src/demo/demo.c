@@ -136,7 +136,7 @@ static void onmain(struct message *message)
         channel_wait(1, video, EVENT_VIDEOINFO, 0, 0);
         channel_send(0, keyboard, EVENT_LINK, 0, 0);
         channel_send(0, timer, EVENT_LINK, 0, 0);
-        channel_hold();
+        channel_hold(0);
 
     }
 

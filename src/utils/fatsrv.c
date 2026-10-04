@@ -489,8 +489,8 @@ static void onmain(struct message *message)
             datastart = fatstart + fat.table_count * fat32->table_size_32;
             rootcluster = fat32->root_cluster;
 
-            channel_hold();
             call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
+            channel_hold(0);
 
         }
 

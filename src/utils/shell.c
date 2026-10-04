@@ -596,7 +596,7 @@ static void onmain(struct message *message)
         channel_send(0, keyboard, EVENT_LINK, 0, 0);
 
     clearline();
-    channel_hold();
+    channel_hold(0);
 
 }
 

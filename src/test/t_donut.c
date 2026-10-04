@@ -119,7 +119,7 @@ static void onmain(struct message *message)
         output = message->source;
 
         channel_send(0, timer, EVENT_LINK, 0, 0);
-        channel_hold();
+        channel_hold(0);
 
     }
 

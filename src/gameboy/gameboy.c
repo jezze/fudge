@@ -101,7 +101,7 @@ static void stop(void)
     channel_send(0, channel_lookup(option_getstring("keyboard-service")), EVENT_UNLINK, 0, 0);
     channel_send(0, channel_lookup(option_getstring("timer-service")), EVENT_UNLINK, 0, 0);
     ungrab();
-    channel_close();
+    channel_close(0);
 
 }
 
@@ -324,7 +324,7 @@ static void onmain(struct message *message)
                 channel_send(0, keyboard, EVENT_LINK, 0, 0);
                 channel_send(0, timer, EVENT_LINK, 0, 0);
                 run(message->source, target, id);
-                channel_hold();
+                channel_hold(0);
 
                 return;
 
