@@ -99,7 +99,7 @@ cpu_settss:
 .global cpu_halt
 cpu_halt:
     hlt
-    ret
+    jmp cpu_halt
 
 .global cpu_leave
 cpu_leave:
