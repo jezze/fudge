@@ -33,6 +33,7 @@ unsigned int job_parse(struct job *job, char *data, unsigned int count, unsigned
 unsigned int job_spawn(struct job *job, unsigned int ichannel, unsigned int notify, char *bindir);
 void job_run(struct job *job, unsigned int ichannel, char *pwd);
 void job_abort(struct job *job, unsigned int ichannel);
+void job_detach(struct job *job);
 unsigned int job_exist(struct job *job, unsigned int target);
 unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int target, unsigned int status);
 void job_kill(struct job *job);

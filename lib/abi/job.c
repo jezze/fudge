@@ -383,12 +383,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
     channel_send(ichannel, job->commands[0].target, EVENT_TERM, 0, 0);
 
     if (job->background)
-    {
-
-        for (i = 0; i < job->ncommands; i++)
-            job->commands[i].target = 0;
-
-    }
+        job_detach(job);
 
 }
 
@@ -406,6 +401,16 @@ void job_abort(struct job *job, unsigned int ichannel)
             channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
 
     }
+
+}
+
+void job_detach(struct job *job)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < job->ncommands; i++)
+        job->commands[i].target = 0;
 
 }
 

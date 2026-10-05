@@ -298,6 +298,14 @@ static void runnext(void)
 
 }
 
+static void detach(void)
+{
+
+    job_detach(&job);
+    runnext();
+
+}
+
 static void submit(void)
 {
 
@@ -437,8 +445,20 @@ static void onwmkeypress(struct message *message)
         if (wmkeypress->keymod & KEYS_MOD_CTRL)
         {
 
-            if (wmkeypress->id == KEYS_KEY_C)
+            switch (wmkeypress->id)
+            {
+
+            case KEYS_KEY_C:
                 interrupt();
+
+                break;
+
+            case KEYS_KEY_Z:
+                detach();
+
+                break;
+
+            }
 
         }
 

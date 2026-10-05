@@ -263,6 +263,14 @@ static void runnext(void)
 
 }
 
+static void detach(void)
+{
+
+    job_detach(&job);
+    runnext();
+
+}
+
 static void submit(void)
 {
 
@@ -330,10 +338,25 @@ static void onconsoledata(struct message *message)
     if (job_count(&job))
     {
 
-        if (consoledata->data == 0x03)
+        switch (consoledata->data)
+        {
+
+        case 0x03:
             interrupt();
-        else
+
+            break;
+
+        case 0x1A:
+            detach();
+
+            break;
+
+        default:
             job_sendfirst(&job, 0, EVENT_CONSOLEDATA, message->length, message->data);
+
+            break;
+
+        }
 
         return;
 
@@ -473,8 +496,20 @@ static void onkeypress(struct message *message)
         if (keys.mod & KEYS_MOD_CTRL)
         {
 
-            if (id == KEYS_KEY_C)
+            switch (id)
+            {
+
+            case KEYS_KEY_C:
                 interrupt();
+
+                break;
+
+            case KEYS_KEY_Z:
+                detach();
+
+                break;
+
+            }
 
         }
 
