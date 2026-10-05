@@ -4,32 +4,59 @@
 static char source[1024];
 static unsigned int paths;
 
-static char *basename(char *path)
+static unsigned int dirlength(char *path)
 {
 
-    char *name = path;
+    unsigned int length = 0;
     unsigned int i;
 
     for (i = 0; path[i]; i++)
     {
 
         if (path[i] == '/' || path[i] == ':')
-            name = path + i + 1;
+            length = i + 1;
 
     }
 
-    return name;
+    return length;
 
 }
 
-static void copy(unsigned int source, char *from, char *to)
+static unsigned int walkdirectory(unsigned int target, char *path)
+{
+
+    char directory[1024];
+    unsigned int length = dirlength(path);
+
+    if (length >= 1024)
+        return 0;
+
+    buffer_write(directory, 1024, path, length, 0);
+
+    directory[length] = '\0';
+
+    return fs_walk(1, target, 0, directory);
+
+}
+
+static unsigned int isdirectory(unsigned int target, unsigned int id)
+{
+
+    struct record record;
+
+    return fs_stat(1, target, id, &record) && record.type == RECORD_TYPE_DIRECTORY;
+
+}
+
+static unsigned int copy(unsigned int source, char *from, char *to)
 {
 
     unsigned int starget = fs_auth(from);
     unsigned int dtarget = fs_auth(to);
     unsigned int sid = (starget) ? fs_walk(1, starget, 0, from) : 0;
     unsigned int did = (dtarget) ? fs_walk(1, dtarget, 0, to) : 0;
-    char *name = (cstring_length(option_getstring("name"))) ? option_getstring("name") : basename(from);
+    unsigned int parent;
+    char *name;
     char buffer[0x800];
     unsigned int offset = 0;
     unsigned int count;
@@ -40,27 +67,66 @@ static void copy(unsigned int source, char *from, char *to)
 
         channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", from);
 
-        return;
+        return 0;
 
     }
 
-    if (!did)
+    if (did && isdirectory(dtarget, did))
+    {
+
+        parent = did;
+        name = from + dirlength(from);
+
+    }
+
+    else
+    {
+
+        parent = (dtarget) ? walkdirectory(dtarget, to) : 0;
+        name = to + dirlength(to);
+
+    }
+
+    if (!parent)
     {
 
         channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", to);
 
-        return;
+        return 0;
 
     }
 
-    id = fs_create(1, dtarget, did, name, cstring_length(name));
+    if (did && !isdirectory(dtarget, did))
+    {
+
+        if (dtarget == starget && did == sid)
+        {
+
+            channel_send_fmt1(0, source, EVENT_ERROR, "Same file: %s\n", from);
+
+            return 0;
+
+        }
+
+        if (!fs_remove(1, dtarget, parent, did))
+        {
+
+            channel_send_fmt1(0, source, EVENT_ERROR, "File could not be replaced: %s\n", to);
+
+            return 0;
+
+        }
+
+    }
+
+    id = fs_create(1, dtarget, parent, name, cstring_length(name));
 
     if (!id)
     {
 
         channel_send_fmt1(0, source, EVENT_ERROR, "File could not be created: %s\n", name);
 
-        return;
+        return 0;
 
     }
 
@@ -79,7 +145,7 @@ static void copy(unsigned int source, char *from, char *to)
 
                 channel_send_fmt1(0, source, EVENT_ERROR, "File could not be written: %s\n", name);
 
-                return;
+                return 0;
 
             }
 
@@ -90,6 +156,8 @@ static void copy(unsigned int source, char *from, char *to)
         offset += count;
 
     }
+
+    return 1;
 
 }
 
@@ -109,16 +177,14 @@ static void onterm(struct message *message)
 {
 
     if (paths != 2)
-        channel_send_fmt0(0, message->source, EVENT_ERROR, "Usage: cp <source> <directory>\n");
+        channel_send_fmt0(0, message->source, EVENT_ERROR, "Usage: cp <source> <destination>\n");
 
 }
 
 void init(void)
 {
 
-    option_add("name", "");
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_TERM, onterm);
 
 }
-
