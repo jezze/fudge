@@ -14,6 +14,7 @@ static unsigned int rootcluster;
 static unsigned int fatcount;
 static unsigned int fatsize;
 static unsigned int clustercount;
+static unsigned int fsinfo;
 static unsigned int cachefirst;
 static unsigned int cacheindex;
 static unsigned int cachecluster;
@@ -129,6 +130,29 @@ static void setcluster(unsigned int cluster, unsigned int value)
 
 }
 
+static void addfree(unsigned int count, unsigned int used)
+{
+
+    unsigned char *data;
+    unsigned int free;
+
+    if (!fsinfo)
+        return;
+
+    data = readsector(fsinfo);
+
+    buffer_copy(&free, data + 488, 4);
+
+    if (free == 0xFFFFFFFF)
+        return;
+
+    free = free + count - used;
+
+    buffer_copy(data + 488, &free, 4);
+    writesector(fsinfo);
+
+}
+
 static unsigned int allocate(void)
 {
 
@@ -148,6 +172,7 @@ static unsigned int allocate(void)
             unsigned int i;
 
             setcluster(cluster, FAT_CLUSTER_MASK);
+            addfree(0, 1);
 
             for (i = 0; i < clustersize / sectorsize; i++)
             {
@@ -730,6 +755,7 @@ static unsigned int removefile(unsigned int id)
 
     unsigned int perSector = sectorsize / sizeof (struct fat_entry);
     struct fat_entry entry;
+    unsigned int freed = 0;
     unsigned int cluster;
     unsigned int i;
 
@@ -751,8 +777,11 @@ static unsigned int removefile(unsigned int id)
         setcluster(cluster, 0);
 
         cluster = next;
+        freed++;
 
     }
+
+    addfree(freed, 0);
 
     entry.name[0] = FAT_ENTRY_DELETED;
 
@@ -887,6 +916,7 @@ static void onmain(struct message *message)
             rootcluster = fat32->root_cluster;
             fatcount = fat.table_count;
             fatsize = fat32->table_size_32;
+            fsinfo = fat32->fat_info;
             clustercount = (((fat.total_sectors_16) ? fat.total_sectors_16 : fat.total_sectors_32) - datastart) / fat.sectors_per_cluster + 2;
 
             call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));

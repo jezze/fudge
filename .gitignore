@@ -23,8 +23,9 @@ src/test/t_mandelbrot
 src/test/t_timer
 src/utils/automount
 src/utils/cd
-src/utils/crc
 src/utils/complete
+src/utils/cp
+src/utils/crc
 src/utils/date
 src/utils/disk
 src/utils/dns
@@ -45,6 +46,7 @@ src/utils/ls
 src/utils/md5
 src/utils/motd
 src/utils/mq
+src/utils/mv
 src/utils/netcat
 src/utils/netdump
 src/utils/pwd
