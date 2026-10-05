@@ -48,6 +48,7 @@ struct fat
 } __attribute__((packed));
 
 #define FAT_ATTRIBUTE_VOLUME            0x08
+#define FAT_ATTRIBUTE_ARCHIVE           0x20
 #define FAT_ATTRIBUTE_DIRECTORY         0x10
 #define FAT_ATTRIBUTE_LONGNAME          0x0F
 #define FAT_LOWERCASE_NAME              0x08

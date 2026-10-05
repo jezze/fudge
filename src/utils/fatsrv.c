@@ -11,6 +11,9 @@ static unsigned int clustersize;
 static unsigned int fatstart;
 static unsigned int datastart;
 static unsigned int rootcluster;
+static unsigned int fatcount;
+static unsigned int fatsize;
+static unsigned int clustercount;
 static unsigned int cachefirst;
 static unsigned int cacheindex;
 static unsigned int cachecluster;
@@ -35,6 +38,27 @@ static void *readsector(unsigned int sector)
     }
 
     return (void *)blockinfo.buffer;
+
+}
+
+static void writesector(unsigned int sector)
+{
+
+    unsigned int target = channel_lookup(option_getstring("block-service"));
+
+    if (target)
+    {
+
+        struct event_blockrequest request;
+        struct event_blockresponse response;
+
+        request.offset = option_getdecimal("partoffset") + sector * sectorsize;
+        request.count = sectorsize;
+
+        channel_send(1, target, EVENT_BLOCKWRITEREQUEST, sizeof (struct event_blockrequest), &request);
+        channel_wait(1, target, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
+
+    }
 
 }
 
@@ -80,6 +104,100 @@ static unsigned int findsector(unsigned int first, unsigned int offset)
 
 }
 
+static void setcluster(unsigned int cluster, unsigned int value)
+{
+
+    unsigned int offset = cluster * 4;
+    unsigned int i;
+
+    for (i = 0; i < fatcount; i++)
+    {
+
+        unsigned int sector = fatstart + i * fatsize + offset / sectorsize;
+        unsigned char *data = readsector(sector);
+        unsigned int old;
+        unsigned int new;
+
+        buffer_copy(&old, data + offset % sectorsize, 4);
+
+        new = (old & ~FAT_CLUSTER_MASK) | (value & FAT_CLUSTER_MASK);
+
+        buffer_copy(data + offset % sectorsize, &new, 4);
+        writesector(sector);
+
+    }
+
+}
+
+static unsigned int allocate(void)
+{
+
+    unsigned int perSector = sectorsize / 4;
+    unsigned int *table = 0;
+    unsigned int cluster;
+
+    for (cluster = 2; cluster < clustercount; cluster++)
+    {
+
+        if (!table || cluster % perSector == 0)
+            table = readsector(fatstart + cluster / perSector);
+
+        if (!(table[cluster % perSector] & FAT_CLUSTER_MASK))
+        {
+
+            unsigned int i;
+
+            setcluster(cluster, FAT_CLUSTER_MASK);
+
+            for (i = 0; i < clustersize / sectorsize; i++)
+            {
+
+                buffer_clear((void *)blockinfo.buffer, sectorsize);
+                writesector(datastart + (cluster - 2) * (clustersize / sectorsize) + i);
+
+            }
+
+            return cluster;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int extend(unsigned int first, unsigned int index)
+{
+
+    unsigned int cluster = first;
+    unsigned int i;
+
+    for (i = 0; i < index; i++)
+    {
+
+        unsigned int next = nextcluster(cluster);
+
+        if (next < 2 || next >= FAT_CLUSTER_END)
+        {
+
+            next = allocate();
+
+            if (!next)
+                return 0;
+
+            setcluster(cluster, next);
+
+        }
+
+        cluster = next;
+
+    }
+
+    return cluster;
+
+}
+
 static unsigned int getcluster(struct fat_entry *entry)
 {
 
@@ -118,6 +236,108 @@ static void getnode(unsigned int id, struct fat_entry *entry)
         buffer_copy(entry, sector + (id % (sectorsize / sizeof (struct fat_entry))) * sizeof (struct fat_entry), sizeof (struct fat_entry));
 
     }
+
+}
+
+static void putnode(unsigned int id, struct fat_entry *entry)
+{
+
+    unsigned int perSector = sectorsize / sizeof (struct fat_entry);
+    unsigned char *sector = readsector(id / perSector);
+
+    buffer_copy(sector + (id % perSector) * sizeof (struct fat_entry), entry, sizeof (struct fat_entry));
+    writesector(id / perSector);
+
+}
+
+static unsigned int isshortchar(unsigned char c)
+{
+
+    if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+        return 1;
+
+    switch (c)
+    {
+
+    case '_':
+    case '-':
+    case '~':
+    case '!':
+    case '#':
+    case '$':
+    case '%':
+    case '&':
+    case '(':
+    case ')':
+    case '@':
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int makeshortname(struct fat_entry *entry, char *name, unsigned int length)
+{
+
+    unsigned int cases[2];
+    unsigned int dot = length;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (name[i] == '.')
+            dot = i;
+
+    }
+
+    if (!dot || dot > 8 || dot == length - 1 || length - dot > 4)
+        return 0;
+
+    cases[0] = 0;
+    cases[1] = 0;
+
+    buffer_write(entry->name, 11, "           ", 11, 0);
+
+    for (i = 0; i < length; i++)
+    {
+
+        unsigned int part = (i > dot);
+        unsigned char c = name[i];
+
+        if (i == dot)
+            continue;
+
+        if (c >= 'a' && c <= 'z')
+        {
+
+            cases[part] |= 1;
+            c -= 32;
+
+        }
+
+        else if (c >= 'A' && c <= 'Z')
+        {
+
+            cases[part] |= 2;
+
+        }
+
+        if (!isshortchar(c))
+            return 0;
+
+        entry->name[(part) ? 8 + i - dot - 1 : i] = c;
+
+    }
+
+    if (cases[0] == 3 || cases[1] == 3)
+        return 0;
+
+    entry->lowercase = ((cases[0] == 1) ? FAT_LOWERCASE_NAME : 0) | ((cases[1] == 1) ? FAT_LOWERCASE_EXTENSION : 0);
+
+    return 1;
 
 }
 
@@ -384,12 +604,134 @@ static unsigned int stat(unsigned int id, struct record *record)
 
 }
 
+static unsigned int createfile(unsigned int parent, char *name, unsigned int length)
+{
+
+    unsigned int id = findentry(parent, name, length);
+    struct fat_entry directory;
+    struct fat_entry entry;
+    unsigned int first;
+    unsigned int offset;
+
+    if (id)
+        return id;
+
+    getnode(parent, &directory);
+
+    if (gettype(&directory) != RECORD_TYPE_DIRECTORY)
+        return 0;
+
+    buffer_clear(&entry, sizeof (struct fat_entry));
+
+    if (!makeshortname(&entry, name, length))
+        return 0;
+
+    entry.attributes = FAT_ATTRIBUTE_ARCHIVE;
+    first = getcluster(&directory);
+
+    for (offset = 0; ; offset += sizeof (struct fat_entry))
+    {
+
+        unsigned int sector = findsector(first, offset);
+        unsigned int slot = (offset % sectorsize) / sizeof (struct fat_entry);
+        unsigned char *data;
+
+        if (!sector)
+        {
+
+            if (!extend(first, offset / clustersize))
+                return 0;
+
+            sector = findsector(first, offset);
+
+            if (!sector)
+                return 0;
+
+        }
+
+        data = readsector(sector);
+
+        if (data[slot * sizeof (struct fat_entry)] == FAT_ENTRY_END || data[slot * sizeof (struct fat_entry)] == FAT_ENTRY_DELETED)
+        {
+
+            id = sector * (sectorsize / sizeof (struct fat_entry)) + slot;
+
+            putnode(id, &entry);
+
+            return id;
+
+        }
+
+    }
+
+}
+
+static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
+{
+
+    struct fat_entry entry;
+    unsigned int first;
+    unsigned int cluster;
+    unsigned int sector;
+
+    if (id == ROOT)
+        return 0;
+
+    getnode(id, &entry);
+
+    if (gettype(&entry) != RECORD_TYPE_NORMAL)
+        return 0;
+
+    if (count > sectorsize - offset % sectorsize)
+        count = sectorsize - offset % sectorsize;
+
+    first = (entry.clusterhigh << 16) | entry.clusterlow;
+
+    if (!first)
+    {
+
+        first = allocate();
+
+        if (!first)
+            return 0;
+
+        entry.clusterhigh = first >> 16;
+        entry.clusterlow = first & 0xFFFF;
+
+        putnode(id, &entry);
+
+    }
+
+    cluster = extend(first, offset / clustersize);
+
+    if (!cluster)
+        return 0;
+
+    sector = datastart + (cluster - 2) * (clustersize / sectorsize) + (offset % clustersize) / sectorsize;
+
+    buffer_write(readsector(sector), sectorsize, buffer, count, offset % sectorsize);
+    writesector(sector);
+
+    if (offset + count > entry.size)
+    {
+
+        entry.size = offset + count;
+
+        putnode(id, &entry);
+
+    }
+
+    return count;
+
+}
+
 static void oncreaterequest(struct message *message)
 {
 
+    struct event_createrequest *request = message->data;
     struct event_createresponse response;
 
-    response.id = 0;
+    response.id = createfile((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->count);
 
     channel_send(0, message->source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
 
@@ -453,9 +795,10 @@ static void onwalkrequest(struct message *message)
 static void onwriterequest(struct message *message)
 {
 
+    struct event_writerequest *request = message->data;
     struct event_writeresponse response;
 
-    response.count = 0;
+    response.count = writefile(request->id, request->offset, request->count, request + 1);
 
     channel_send(0, message->source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
@@ -488,6 +831,9 @@ static void onmain(struct message *message)
             fatstart = fat.reserved_sector_count;
             datastart = fatstart + fat.table_count * fat32->table_size_32;
             rootcluster = fat32->root_cluster;
+            fatcount = fat.table_count;
+            fatsize = fat32->table_size_32;
+            clustercount = (((fat.total_sectors_16) ? fat.total_sectors_16 : fat.total_sectors_32) - datastart) / fat.sectors_per_cluster + 2;
 
             call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
             channel_hold(0);
