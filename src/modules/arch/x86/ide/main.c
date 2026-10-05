@@ -120,7 +120,7 @@ static void setpio28(unsigned int id, unsigned int sector, unsigned int count, u
 
 }
 
-static void setpio48(unsigned int id, unsigned int sectorlow, unsigned int sectorhigh, unsigned int count, unsigned char command)
+static void setpio48(unsigned int id, unsigned int sector, unsigned int count, unsigned char command)
 {
 
     unsigned short data = getdata(id);
@@ -142,13 +142,13 @@ static void setpio48(unsigned int id, unsigned int sectorlow, unsigned int secto
     io_inb(control);
     io_inb(control);
     io_outb(data + REG_COUNT, count >> 8);
-    io_outb(data + REG_LBA0, sectorhigh);
-    io_outb(data + REG_LBA1, sectorhigh >> 8);
-    io_outb(data + REG_LBA2, sectorhigh >> 16);
+    io_outb(data + REG_LBA0, sector >> 24);
+    io_outb(data + REG_LBA1, 0);
+    io_outb(data + REG_LBA2, 0);
     io_outb(data + REG_COUNT, count);
-    io_outb(data + REG_LBA0, sectorlow);
-    io_outb(data + REG_LBA1, sectorlow >> 8);
-    io_outb(data + REG_LBA2, sectorlow >> 16);
+    io_outb(data + REG_LBA0, sector);
+    io_outb(data + REG_LBA1, sector >> 8);
+    io_outb(data + REG_LBA2, sector >> 16);
     io_outb(data + REG_COMMAND, command);
 
 }
@@ -244,14 +244,14 @@ void ide_wpio28(unsigned int id, unsigned int count, unsigned int sector)
 void ide_rpio48(unsigned int id, unsigned int count, unsigned int sector)
 {
 
-    setpio48(id, sector, 0, count, REG_COMMAND_PIO48READ);
+    setpio48(id, sector, count, REG_COMMAND_PIO48READ);
 
 }
 
 void ide_wpio48(unsigned int id, unsigned int count, unsigned int sector)
 {
 
-    setpio48(id, sector, 0, count, REG_COMMAND_PIO48WRITE);
+    setpio48(id, sector, count, REG_COMMAND_PIO48WRITE);
 
 }
 
