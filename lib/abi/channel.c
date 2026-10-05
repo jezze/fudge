@@ -207,7 +207,7 @@ unsigned int channel_process(unsigned int ichannel)
 void channel_hold(unsigned int ichannel)
 {
 
-    while (channel_process(ichannel));
+    while (state != CHANNEL_STATE_CLOSED && channel_process(ichannel));
 
 }
 
