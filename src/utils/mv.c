@@ -22,6 +22,29 @@ static char *basename(char *path)
 
 }
 
+static unsigned int walkparent(unsigned int ichannel, unsigned int target, char *path)
+{
+
+    char parent[1024];
+    unsigned int length = 0;
+    unsigned int i;
+
+    for (i = 0; path[i] && i < 1023; i++)
+    {
+
+        if (path[i] == '/' || path[i] == ':')
+            length = i + 1;
+
+    }
+
+    buffer_write(parent, 1024, path, length, 0);
+
+    parent[length] = '\0';
+
+    return fs_walk(ichannel, target, 0, parent);
+
+}
+
 static void move(unsigned int source, char *from, char *to)
 {
 
@@ -91,7 +114,7 @@ static void move(unsigned int source, char *from, char *to)
 
     }
 
-    if (!fs_remove(1, starget, sid))
+    if (!fs_remove(1, starget, walkparent(1, starget, from), sid))
         channel_send_fmt1(0, source, EVENT_ERROR, "File could not be removed: %s\n", from);
 
 }

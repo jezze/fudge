@@ -306,6 +306,7 @@ struct event_readresponse
 struct event_removerequest
 {
 
+    unsigned int parent;
     unsigned int id;
 
 };

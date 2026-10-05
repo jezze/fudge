@@ -232,6 +232,56 @@ static unsigned int allocnode(unsigned int igroup)
 
 }
 
+static void freeblock(unsigned int block)
+{
+
+    unsigned int igroup = (block - sb.superblockIndex) / sb.blockCountGroup;
+    unsigned int i = (block - sb.superblockIndex) % sb.blockCountGroup;
+    unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
+    struct ext2_blockgroup bg;
+
+    readblockgroup(&bg, igroup);
+    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+
+    bitmap[i / 8] &= ~(1 << (i % 8));
+
+    sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+
+    bg.blockCountUnalloc++;
+
+    writeblockgroup(&bg, igroup);
+
+    sb.blockCountUnalloc++;
+
+    writesuperblock();
+
+}
+
+static void freenode(unsigned int id)
+{
+
+    unsigned int igroup = (id - 1) / sb.nodeCountGroup;
+    unsigned int i = (id - 1) % sb.nodeCountGroup;
+    unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
+    struct ext2_blockgroup bg;
+
+    readblockgroup(&bg, igroup);
+    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+
+    bitmap[i / 8] &= ~(1 << (i % 8));
+
+    sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+
+    bg.nodeCountUnalloc++;
+
+    writeblockgroup(&bg, igroup);
+
+    sb.nodeCountUnalloc++;
+
+    writesuperblock();
+
+}
+
 static unsigned int getindirect(unsigned int sector, unsigned int index)
 {
 
@@ -512,6 +562,57 @@ static unsigned int addentry(struct ext2_node *node, unsigned int igroup, unsign
 
 }
 
+static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
+{
+
+    unsigned int offset;
+
+    for (offset = 0; offset < parent->sizeLow; offset += blocksize)
+    {
+
+        unsigned int sector = getsector(parent, offset);
+        char *block = (char *)blockinfo.buffer;
+        unsigned int position = 0;
+        unsigned int previous = blocksize;
+
+        if (!sector)
+            return 0;
+
+        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+        while (position < blocksize)
+        {
+
+            struct ext2_entry *entry = (struct ext2_entry *)(block + position);
+
+            if (!entry->size)
+                break;
+
+            if (entry->node == id)
+            {
+
+                if (previous == blocksize)
+                    entry->node = 0;
+                else
+                    ((struct ext2_entry *)(block + previous))->size += entry->size;
+
+                sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+
+                return 1;
+
+            }
+
+            previous = position;
+            position += entry->size;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
 {
 
@@ -788,27 +889,91 @@ static void onreadrequest(struct message *message)
 
 }
 
+static void freeindirect(unsigned int block, unsigned int depth)
+{
+
+    unsigned int table[EXT2_MAXBLOCKSIZE / 4];
+    unsigned int i;
+
+    sendblockreadrequest(blocksize, block, blocksize);
+    buffer_copy(table, (void *)blockinfo.buffer, blocksize);
+
+    for (i = 0; i < blocksize / 4; i++)
+    {
+
+        if (!table[i])
+            continue;
+
+        if (depth > 1)
+            freeindirect(table[i], depth - 1);
+        else
+            freeblock(table[i]);
+
+    }
+
+    freeblock(block);
+
+}
+
+static unsigned int removefile(unsigned int parentid, unsigned int id)
+{
+
+    struct ext2_node parent;
+    struct ext2_node node;
+    unsigned int i;
+
+    simpleread(&parent, parentid);
+    simpleread(&node, id);
+
+    if ((parent.type & 0xF000) != 0x4000 || (node.type & 0xF000) != 0x8000)
+        return 0;
+
+    if (!removeentry(&parent, id))
+        return 0;
+
+    if (node.hardCount > 1)
+    {
+
+        node.hardCount--;
+
+        simplewrite(&node, id);
+
+        return 1;
+
+    }
+
+    for (i = 0; i < 12; i++)
+    {
+
+        if (node.pointer[i])
+            freeblock(node.pointer[i]);
+
+    }
+
+    if (node.singlyIndirectPointer)
+        freeindirect(node.singlyIndirectPointer, 1);
+
+    if (node.doublyIndirectPointer)
+        freeindirect(node.doublyIndirectPointer, 2);
+
+    if (node.tripplyIndirectPointer)
+        freeindirect(node.tripplyIndirectPointer, 3);
+
+    buffer_clear(&node, sizeof (struct ext2_node));
+    simplewrite(&node, id);
+    freenode(id);
+
+    return 1;
+
+}
+
 static void onremoverequest(struct message *message)
 {
 
     struct event_removerequest *request = message->data;
     struct event_removeresponse response;
-    struct ext2_node node;
 
-    simpleread(&node, request->id);
-
-    response.status = 0;
-
-    switch (node.type & 0xF000)
-    {
-
-    case 0x4000:
-        break;
-
-    case 0x8000:
-        break;
-
-    }
+    response.status = removefile(request->parent, request->id);
 
     channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 

@@ -94,12 +94,13 @@ unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned in
 
 }
 
-unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int id)
+unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int parent, unsigned int id)
 {
 
     struct event_removerequest request;
     struct event_removeresponse response;
 
+    request.parent = parent;
     request.id = id;
 
     channel_send(ichannel, target, EVENT_REMOVEREQUEST, sizeof (struct event_removerequest), &request);
