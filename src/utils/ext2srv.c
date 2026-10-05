@@ -351,7 +351,12 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
         unsigned int sector = allocblock(igroup);
 
         if (sector)
+        {
+
             node->pointer[index] = sector;
+            node->sectorCount += blocksize / 512;
+
+        }
 
         return sector;
 
@@ -376,6 +381,7 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, tableblock, blocksize);
 
             node->singlyIndirectPointer = tableblock;
+            node->sectorCount += blocksize / 512;
 
         }
 
@@ -391,6 +397,8 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
             table[index] = sector;
 
             sendblockwriterequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+
+            node->sectorCount += blocksize / 512;
 
             return sector;
 
