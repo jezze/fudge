@@ -18,7 +18,7 @@ static struct idt_descriptor idtdescriptors[ARCH_IDT_DESCRIPTORS];
 static struct tss_descriptor tssdescriptors[ARCH_TSS_DESCRIPTORS];
 static struct cpu_general registers[POOL_TASKS];
 
-static void map(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int flags)
+static unsigned int map(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int flags)
 {
 
     struct mmap_header *header = (struct mmap_header *)mmap;
@@ -26,7 +26,11 @@ static void map(unsigned long directory, unsigned long mmap, unsigned long vaddr
     if (!mmu_gettable(directory, vaddress))
     {
 
+        unsigned int size = (directory == ARCH_MMU_KERNELBASE) ? ARCH_MMU_KERNELSIZE : ARCH_MMU_TASKSIZE;
         unsigned long taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
+
+        if (taddress + MMU_PTSIZE > directory + size)
+            return 0;
 
         buffer_clear((void *)taddress, MMU_PTSIZE);
         mmu_settable(directory, vaddress, taddress, mmu_tflags(flags));
@@ -37,48 +41,58 @@ static void map(unsigned long directory, unsigned long mmap, unsigned long vaddr
 
     mmu_setpage(directory, vaddress, paddress, mmu_pflags(flags));
 
+    return 1;
+
 }
 
-static void maprange(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int size, unsigned int flags)
+static unsigned int maprange(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int size, unsigned int flags)
 {
 
     unsigned long offset = vaddress & (MMU_PAGESIZE - 1);
     unsigned int i;
 
     for (i = 0; i < offset + size; i += MMU_PAGESIZE)
-        map(directory, mmap, vaddress - offset + i, paddress + i, flags);
+    {
+
+        if (!map(directory, mmap, vaddress - offset + i, paddress + i, flags))
+            return 0;
+
+    }
+
+    return 1;
 
 }
 
-static void mapentry(unsigned long directory, unsigned long mmap, struct mmap_entry *entry)
+static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct mmap_entry *entry)
 {
 
-    switch (entry->type)
+    if (maprange(directory, mmap, entry->vaddress, entry->paddress, entry->size, entry->flags))
     {
 
-    case MMAP_TYPE_NORMAL:
-        maprange(directory, mmap, entry->vaddress, entry->paddress, entry->size, entry->flags);
+        switch (entry->type)
+        {
 
-        break;
+        case MMAP_TYPE_ZERO:
+            buffer_clear((void *)entry->vaddress, entry->size);
 
-    case MMAP_TYPE_ZERO:
-        maprange(directory, mmap, entry->vaddress, entry->paddress, entry->size, entry->flags);
-        buffer_clear((void *)entry->vaddress, entry->size);
+            break;
 
-        break;
+        case MMAP_TYPE_BINARY:
+            if (entry->fsize)
+                buffer_copy((void *)entry->vaddress, (void *)entry->fbase, entry->fsize);
 
-    case MMAP_TYPE_BINARY:
-        maprange(directory, mmap, entry->vaddress, entry->paddress, entry->size, entry->flags);
+            if (entry->msize > entry->fsize)
+                buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
 
-        if (entry->fsize)
-            buffer_copy((void *)entry->vaddress, (void *)entry->fbase, entry->fsize);
+            break;
 
-        if (entry->msize > entry->fsize)
-            buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
+        }
 
-        break;
+        return 1;
 
     }
+
+    return 0;
 
 }
 
@@ -433,13 +447,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
             struct mmap_entry *entry = mmap_find((struct mmap_header *)KERNEL_VMMAP, vaddress);
 
             if (entry)
-            {
-
-                mapentry(directory, KERNEL_VMMAP, entry);
-
-                found = 1;
-
-            }
+                found = mapentry(directory, KERNEL_VMMAP, entry);
 
         }
 
