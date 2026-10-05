@@ -266,7 +266,7 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
 
 }
 
-static void onmain(struct message *message)
+static void onpath(struct message *message)
 {
 
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
@@ -274,11 +274,16 @@ static void onmain(struct message *message)
     unsigned int video = channel_lookup(option_getstring("video-service"));
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
+    if (path[0])
+        return;
+
+    buffer_write(path, 128, message->data, message->length, 0);
+
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMGRAB, 0, 0);
-        channel_wait(0, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
 
     }
 
@@ -302,8 +307,8 @@ static void onmain(struct message *message)
                 videoconf.bpp = option_getdecimal("bpp");
 
                 channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-                channel_send(0, video, EVENT_INFO, 0, 0);
-                channel_wait(0, video, EVENT_VIDEOINFO, 0, 0);
+                channel_send(1, video, EVENT_INFO, 0, 0);
+                channel_wait(1, video, EVENT_VIDEOINFO, 0, 0);
                 channel_send(0, keyboard, EVENT_LINK, 0, 0);
                 channel_send(0, timer, EVENT_LINK, 0, 0);
                 run(message->source, target, id);
@@ -338,13 +343,6 @@ static void onvideoinfo(struct message *message)
 
 }
 
-static void onpath(struct message *message)
-{
-
-    buffer_write(path, 128, message->data, message->length, 0);
-
-}
-
 void init(void)
 {
 
@@ -356,7 +354,6 @@ void init(void)
     option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
-    channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
 
