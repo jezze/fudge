@@ -67,6 +67,7 @@
 #define EXIT_STATUS_NORMAL              1
 #define EXIT_STATUS_KILLED              2
 #define EXIT_STATUS_CRASHED             3
+#define EXIT_STATUS_FAILED              4
 
 struct event_exit
 {

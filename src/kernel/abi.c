@@ -170,7 +170,9 @@ static unsigned int spawn(unsigned int itask, void *stack)
 static unsigned int despawn(unsigned int itask, void *stack)
 {
 
-    kernel_kill(itask, EXIT_STATUS_NORMAL);
+    struct {void *caller; unsigned int status;} *args = stack;
+
+    kernel_kill(itask, args->status);
 
     return 0;
 

@@ -1,6 +1,6 @@
 unsigned int call_announce(unsigned int ichannel, unsigned int length, char *name);
 unsigned int call_debug(char *message);
-unsigned int call_despawn(void);
+unsigned int call_despawn(unsigned int status);
 unsigned int call_find(unsigned int length, char *name, unsigned int index);
 unsigned int call_kill(unsigned int task);
 unsigned int call_load(unsigned int address);
