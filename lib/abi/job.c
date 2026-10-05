@@ -366,17 +366,29 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         channel_send(ichannel, command->target, EVENT_OPTION, count, options);
         channel_send(ichannel, command->target, EVENT_MAIN, 0, 0);
 
+        count = 0;
+
         for (j = 0; j < command->npaths; j++)
         {
 
             char *path = command->paths[j];
+            char *prefix = (fs_auth(path)) ? "" : pwd;
 
-            if (fs_auth(path))
-                channel_send_fmt1(ichannel, command->target, EVENT_PATH, "%s\\0", path);
-            else
-                channel_send_fmt2(ichannel, command->target, EVENT_PATH, "%s%s\\0", pwd, path);
+            if (count + cstring_length(prefix) + cstring_length(path) + 1 > MESSAGE_SIZE)
+            {
+
+                channel_send(ichannel, command->target, EVENT_PATH, count, options);
+
+                count = 0;
+
+            }
+
+            count += cstring_write_fmt2(options, MESSAGE_SIZE, count, "%s%s\\0", prefix, path);
 
         }
+
+        if (count)
+            channel_send(ichannel, command->target, EVENT_PATH, count, options);
 
     }
 
