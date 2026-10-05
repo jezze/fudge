@@ -19,7 +19,6 @@ static unsigned int lineoffset;
 static struct job job;
 static unsigned int interrupts;
 static unsigned int newline = 1;
-static unsigned int wm;
 
 static void print(void *buffer, unsigned int count)
 {
@@ -129,25 +128,29 @@ static unsigned int writelabel(char *buffer, unsigned int size, unsigned int off
 static void update(void)
 {
 
-    char buffer[MESSAGE_SIZE];
-    char content[CONTENTSIZE];
-    unsigned int offset = 0;
-    unsigned int count;
-    unsigned int cursor;
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
-    if (!wm)
-        return;
+    if (wm)
+    {
 
-    count = ring_readcopy(&input1, content, CONTENTSIZE);
-    cursor = count;
-    count += ring_readcopy(&input2, content + count, CONTENTSIZE - count);
-    offset += cstring_write_fmt1(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
-    offset = writelabel(buffer, MESSAGE_SIZE, offset, "input", content, count);
-    offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (job_count(&job)) ? 0 : 2);
-    count = ring_readcopy(&result, content, CONTENTSIZE);
-    offset = writelabel(buffer, MESSAGE_SIZE, offset, "result", content, count);
+        char buffer[MESSAGE_SIZE];
+        char content[CONTENTSIZE];
+        unsigned int offset = 0;
+        unsigned int count;
+        unsigned int cursor;
 
-    channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
+        count = ring_readcopy(&input1, content, CONTENTSIZE);
+        cursor = count;
+        count += ring_readcopy(&input2, content + count, CONTENTSIZE - count);
+        offset += cstring_write_fmt1(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
+        offset = writelabel(buffer, MESSAGE_SIZE, offset, "input", content, count);
+        offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (job_count(&job)) ? 0 : 2);
+        count = ring_readcopy(&result, content, CONTENTSIZE);
+        offset = writelabel(buffer, MESSAGE_SIZE, offset, "result", content, count);
+
+        channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
+
+    }
 
 }
 
@@ -406,7 +409,7 @@ static void onerror(struct message *message)
 static void onmain(struct message *message)
 {
 
-    wm = channel_lookup(option_getstring("wm-service"));
+    unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
     if (wm)
     {
@@ -425,8 +428,6 @@ static void onwminit(struct message *message)
 
     char *alfi = "initrd:data/alfi/wshell.alfi";
 
-    wm = message->source;
-
     channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
     update();
 
@@ -436,8 +437,6 @@ static void onwmkeypress(struct message *message)
 {
 
     struct event_wmkeypress *wmkeypress = message->data;
-
-    wm = message->source;
 
     if (job_count(&job))
     {

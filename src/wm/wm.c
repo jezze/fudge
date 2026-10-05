@@ -13,7 +13,6 @@
 
 #define STATE_NORMAL        0
 #define STATE_GRABBED       1
-#define STATE_UNGRABBED     2
 
 struct state
 {
@@ -483,6 +482,20 @@ static void purge(unsigned int source)
 
 }
 
+static void redraw(void)
+{
+
+    if (state.state == STATE_NORMAL && display.framebuffer)
+    {
+
+        render_place(state.rootwidget, &display.region);
+        render_update(&display);
+        render_undamage();
+
+    }
+
+}
+
 static void onkeypress(struct message *message)
 {
 
@@ -566,6 +579,8 @@ static void onkeypress(struct message *message)
 
     }
 
+    redraw();
+
 }
 
 static void onkeyrelease(struct message *message)
@@ -588,35 +603,7 @@ static void onmain(struct message *message)
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, mouse, EVENT_LINK, 0, 0);
     setupvideo(video);
-
-    while (channel_process(0))
-    {
-
-        if (state.state == STATE_UNGRABBED)
-        {
-
-            setupvideo(video);
-
-            state.state = STATE_NORMAL;
-
-        }
-
-        if (state.state == STATE_NORMAL)
-        {
-
-            if (display.framebuffer)
-            {
-
-                render_place(state.rootwidget, &display.region);
-                render_update(&display);
-                render_undamage();
-
-            }
-
-        }
-
-    }
-
+    channel_hold(0);
     channel_send(0, mouse, EVENT_UNLINK, 0, 0);
     channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
 
@@ -668,6 +655,8 @@ static void onmousemove(struct message *message)
 
     render_setmouse(state.mousewidget->placement.position.x, state.mousewidget->placement.position.y);
 
+    redraw();
+
 }
 
 static void onmousepress(struct message *message)
@@ -706,6 +695,8 @@ static void onmousepress(struct message *message)
 
     }
 
+    redraw();
+
 }
 
 static void onmousescroll(struct message *message)
@@ -723,6 +714,8 @@ static void onmousescroll(struct message *message)
     }
 
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
+
+    redraw();
 
 }
 
@@ -748,6 +741,8 @@ static void onmouserelease(struct message *message)
         break;
 
     }
+
+    redraw();
 
 }
 
@@ -809,6 +804,7 @@ static void onwmrenderdata(struct message *message)
     placewindows(message->source);
     purge(message->source);
     bump(state.mousewidget);
+    redraw();
 
 }
 
@@ -837,12 +833,14 @@ static void onwmrenderfile(struct message *message)
 
     }
 
+    redraw();
+
 }
 
 static void onwmungrab(struct message *message)
 {
 
-    state.state = STATE_UNGRABBED;
+    state.state = STATE_NORMAL;
 
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
@@ -852,6 +850,7 @@ static void onwmungrab(struct message *message)
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_send(0, message->source, EVENT_WMACK, 0, 0);
+    setupvideo(channel_lookup(option_getstring("video-service")));
 
 }
 
@@ -870,6 +869,7 @@ static void onwmunmap(struct message *message)
     }
 
     purge(message->source);
+    redraw();
 
 }
 
