@@ -12,9 +12,22 @@ static void onpath(struct message *message)
         unsigned int id = fs_walk(1, target, 0, message->data);
 
         if (id)
-            channel_send_fmt1(0, message->source, EVENT_OPTION, "pwd=%s\n", message->data);
+        {
+
+            char *path = message->data;
+            unsigned int length = cstring_length(path);
+            char *slash = (length && path[length - 1] != '/' && path[length - 1] != ':') ? "/" : "";
+
+            channel_send_fmt2(0, message->source, EVENT_OPTION, "pwd=%s%s\n", path, slash);
+
+        }
+
         else
+        {
+
             channel_send_fmt1(0, message->source, EVENT_ERROR, "Directory not found: %s\n", message->data);
+
+        }
 
     }
 

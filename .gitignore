@@ -53,6 +53,7 @@ src/utils/pwd
 src/utils/random
 src/utils/reboot
 src/utils/rm
+src/utils/sh
 src/utils/sha1
 src/utils/shell
 src/utils/socket

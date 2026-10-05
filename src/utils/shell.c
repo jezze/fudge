@@ -11,8 +11,7 @@ static char inputdata2[INPUTSIZE];
 static struct ring input2;
 static char line[LINESIZE];
 static unsigned int linecount;
-static unsigned int lineoffset;
-static struct job job;
+static unsigned int sh;
 static unsigned int interrupts;
 static unsigned int newline = 1;
 static unsigned int escaped;
@@ -209,65 +208,61 @@ static void interrupt(void)
 {
 
     if (interrupts++)
-        job_kill(&job);
+        call_kill(sh);
     else
-        job_sendall(&job, 0, EVENT_INTERRUPT, 0, 0);
-
-    lineoffset = linecount;
+        channel_send(0, sh, EVENT_INTERRUPT, 0, 0);
 
 }
 
-static void runnext(void)
+static void run(void)
 {
 
-    while (lineoffset < linecount)
+    unsigned int i;
+
+    for (i = 0; i < linecount; i++)
     {
 
-        if (!job_parse(&job, line, linecount, &lineoffset))
-        {
-
-            printfmt1("%s\n", job.error);
-
-            lineoffset = linecount;
-
-        }
-
-        else if (job.ncommands)
-        {
-
-            if (job_spawn(&job, 1, 0, BINPATH))
-            {
-
-                interrupts = 0;
-
-                job_run(&job, 0, option_getstring("pwd"));
-
-            }
-
-            else
-            {
-
-                printfmt1("%s\n", job.error);
-                job_abort(&job, 0);
-
-            }
-
-            if (job_count(&job))
-                return;
-
-        }
+        if (line[i] != ' ' && line[i] != '\n')
+            break;
 
     }
 
-    showprompt();
+    if (i == linecount)
+    {
+
+        showprompt();
+
+        return;
+
+    }
+
+    sh = fs_spawn(1, 0, BINPATH "/sh");
+
+    if (!sh)
+    {
+
+        printfmt1("%s\n", "Could not start sh");
+        showprompt();
+
+        return;
+
+    }
+
+    interrupts = 0;
+
+    channel_send_fmt1(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
+    channel_send(0, sh, EVENT_MAIN, 0, 0);
+    channel_send(0, sh, EVENT_DATA, linecount, line);
+    channel_send(0, sh, EVENT_TERM, 0, 0);
 
 }
 
 static void detach(void)
 {
 
-    job_detach(&job);
-    runnext();
+    sh = 0;
+
+    showprompt();
 
 }
 
@@ -279,9 +274,7 @@ static void submit(void)
     linecount = ring_read(&input1, line, LINESIZE - 1);
     linecount += ring_read(&input2, line + linecount, LINESIZE - 1 - linecount);
     line[linecount++] = '\n';
-    lineoffset = 0;
-
-    runnext();
+    run();
 
 }
 
@@ -335,7 +328,7 @@ static void onconsoledata(struct message *message)
 
     struct event_consoledata *consoledata = message->data;
 
-    if (job_count(&job))
+    if (sh)
     {
 
         switch (consoledata->data)
@@ -352,7 +345,7 @@ static void onconsoledata(struct message *message)
             break;
 
         default:
-            job_sendfirst(&job, 0, EVENT_CONSOLEDATA, message->length, message->data);
+            channel_send(0, sh, EVENT_CONSOLEDATA, message->length, message->data);
 
             break;
 
@@ -490,7 +483,7 @@ static void onkeypress(struct message *message)
     if (!id)
         return;
 
-    if (job_count(&job))
+    if (sh)
     {
 
         if (keys.mod & KEYS_MOD_CTRL)
@@ -516,7 +509,7 @@ static void onkeypress(struct message *message)
         else
         {
 
-            job_sendfirst(&job, 0, EVENT_CONSOLEDATA, keys.code.length, keys.code.value);
+            channel_send(0, sh, EVENT_CONSOLEDATA, keys.code.length, keys.code.value);
 
         }
 
@@ -584,7 +577,7 @@ static void onkeyrelease(struct message *message)
 static void ondata(struct message *message)
 {
 
-    if (job_exist(&job, message->source))
+    if (message->source == sh)
         printoutput(message->data, message->length);
 
 }
@@ -592,10 +585,14 @@ static void ondata(struct message *message)
 static void onexit(struct message *message)
 {
 
-    struct event_exit *exit = message->data;
+    if (message->source == sh)
+    {
 
-    if (job_exit(&job, 0, message->source, exit->status) && !job_count(&job))
-        runnext();
+        sh = 0;
+
+        showprompt();
+
+    }
 
 }
 

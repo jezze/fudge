@@ -15,8 +15,7 @@ static char resultdata[RESULTSIZE];
 static struct ring result;
 static char line[LINESIZE];
 static unsigned int linecount;
-static unsigned int lineoffset;
-static struct job job;
+static unsigned int sh;
 static unsigned int interrupts;
 static unsigned int newline = 1;
 
@@ -144,7 +143,7 @@ static void update(void)
         count += ring_readcopy(&input2, content + count, CONTENTSIZE - count);
         offset += cstring_write_fmt1(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
         offset = writelabel(buffer, MESSAGE_SIZE, offset, "input", content, count);
-        offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (job_count(&job)) ? 0 : 2);
+        offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (sh) ? 0 : 2);
         count = ring_readcopy(&result, content, CONTENTSIZE);
         offset = writelabel(buffer, MESSAGE_SIZE, offset, "result", content, count);
 
@@ -246,66 +245,62 @@ static void interrupt(void)
 {
 
     if (interrupts++)
-        job_kill(&job);
+        call_kill(sh);
     else
-        job_sendall(&job, 0, EVENT_INTERRUPT, 0, 0);
-
-    lineoffset = linecount;
+        channel_send(0, sh, EVENT_INTERRUPT, 0, 0);
 
 }
 
-static void runnext(void)
+static void run(void)
 {
 
-    while (lineoffset < linecount)
+    unsigned int i;
+
+    for (i = 0; i < linecount; i++)
     {
 
-        if (!job_parse(&job, line, linecount, &lineoffset))
-        {
-
-            printfmt1("%s\n", job.error);
-
-            lineoffset = linecount;
-
-        }
-
-        else if (job.ncommands)
-        {
-
-            if (job_spawn(&job, 1, 0, BINPATH))
-            {
-
-                interrupts = 0;
-
-                job_run(&job, 0, option_getstring("pwd"));
-                update();
-
-            }
-
-            else
-            {
-
-                printfmt1("%s\n", job.error);
-                job_abort(&job, 0);
-
-            }
-
-            if (job_count(&job))
-                return;
-
-        }
+        if (line[i] != ' ' && line[i] != '\n')
+            break;
 
     }
 
-    showprompt();
+    if (i == linecount)
+    {
+
+        showprompt();
+
+        return;
+
+    }
+
+    sh = fs_spawn(1, 0, BINPATH "/sh");
+
+    if (!sh)
+    {
+
+        printfmt1("%s\n", "Could not start sh");
+        showprompt();
+
+        return;
+
+    }
+
+    interrupts = 0;
+
+    channel_send_fmt1(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
+    channel_send(0, sh, EVENT_MAIN, 0, 0);
+    channel_send(0, sh, EVENT_DATA, linecount, line);
+    channel_send(0, sh, EVENT_TERM, 0, 0);
+    update();
 
 }
 
 static void detach(void)
 {
 
-    job_detach(&job);
-    runnext();
+    sh = 0;
+
+    showprompt();
 
 }
 
@@ -315,14 +310,13 @@ static void submit(void)
     linecount = ring_read(&input1, line, LINESIZE - 1);
     linecount += ring_read(&input2, line + linecount, LINESIZE - 1 - linecount);
     line[linecount++] = '\n';
-    lineoffset = 0;
 
     print("$ ", 2);
     print(line, linecount);
 
     newline = 1;
 
-    runnext();
+    run();
 
 }
 
@@ -377,7 +371,7 @@ static void complete(void)
 static void ondata(struct message *message)
 {
 
-    if (job_exist(&job, message->source))
+    if (message->source == sh)
     {
 
         printoutput(message->data, message->length);
@@ -390,10 +384,14 @@ static void ondata(struct message *message)
 static void onexit(struct message *message)
 {
 
-    struct event_exit *exit = message->data;
+    if (message->source == sh)
+    {
 
-    if (job_exit(&job, 0, message->source, exit->status) && !job_count(&job))
-        runnext();
+        sh = 0;
+
+        showprompt();
+
+    }
 
 }
 
@@ -438,7 +436,7 @@ static void onwmkeypress(struct message *message)
 
     struct event_wmkeypress *wmkeypress = message->data;
 
-    if (job_count(&job))
+    if (sh)
     {
 
         if (wmkeypress->keymod & KEYS_MOD_CTRL)
@@ -464,7 +462,7 @@ static void onwmkeypress(struct message *message)
         else
         {
 
-            job_sendfirst(&job, 0, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+            channel_send(0, sh, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         }
 
