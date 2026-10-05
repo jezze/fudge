@@ -26,7 +26,9 @@ unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int 
     request->parent = parent;
     request->count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct event_createrequest));
 
-    channel_send(ichannel, target, EVENT_CREATEREQUEST, sizeof (struct event_createrequest) + request->count, data);
+    if (!channel_send(ichannel, target, EVENT_CREATEREQUEST, sizeof (struct event_createrequest) + request->count, data))
+        return 0;
+
     channel_wait(ichannel, target, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
 
     return response.id;
@@ -41,7 +43,9 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 
     request.id = id;
 
-    channel_send(ichannel, target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request);
+    if (!channel_send(ichannel, target, EVENT_MAPREQUEST, sizeof (struct event_maprequest), &request))
+        return 0;
+
     channel_wait(ichannel, target, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response);
 
     return response.address;
@@ -59,7 +63,9 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
     request.offset = offset;
     request.count = count;
 
-    channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request);
+    if (!channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
+        return 0;
+
     channel_wait(ichannel, target, EVENT_READRESPONSE, MESSAGE_SIZE, response);
     buffer_copy(buffer, response + 1, response->count);
 
@@ -103,7 +109,9 @@ unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int 
     request.parent = parent;
     request.id = id;
 
-    channel_send(ichannel, target, EVENT_REMOVEREQUEST, sizeof (struct event_removerequest), &request);
+    if (!channel_send(ichannel, target, EVENT_REMOVEREQUEST, sizeof (struct event_removerequest), &request))
+        return 0;
+
     channel_wait(ichannel, target, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
     return response.status;
@@ -119,7 +127,9 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 
     request.id = id;
 
-    channel_send(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request);
+    if (!channel_send(ichannel, target, EVENT_STATREQUEST, sizeof (struct event_statrequest), &request))
+        return 0;
+
     channel_wait(ichannel, target, EVENT_STATRESPONSE, MESSAGE_SIZE, response);
     buffer_copy(record, response + 1, response->count);
 
@@ -140,7 +150,9 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
     request->parent = parent;
     request->length = buffer_write(data, MESSAGE_SIZE, path, cstring_length(path), sizeof (struct event_walkrequest));
 
-    channel_send(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + request->length, data);
+    if (!channel_send(ichannel, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + request->length, data))
+        return 0;
+
     channel_wait(ichannel, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
     return response.id;
@@ -158,7 +170,9 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
     request->offset = offset;
     request->count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct event_writerequest));
 
-    channel_send(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest) + request->count, data);
+    if (!channel_send(ichannel, target, EVENT_WRITEREQUEST, sizeof (struct event_writerequest) + request->count, data))
+        return 0;
+
     channel_wait(ichannel, target, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
     return response.count;
