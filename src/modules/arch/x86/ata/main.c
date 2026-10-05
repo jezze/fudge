@@ -21,36 +21,51 @@ static void handleirq(unsigned int irq)
     unsigned char status = ide_getstatus(blockinterface.id);
     struct block_session *session = block_getsession(&blockinterface);
 
-    if (status & 1)
+    if (!session->source)
         return;
 
-    if (session->source)
+    if (status & 1)
     {
 
+        session->count = session->offset;
+
+        block_session_done(&blockinterface, session);
+
+        return;
+
+    }
+
+    switch (session->type)
+    {
+
+    case BLOCK_TYPE_READ:
+        ide_rblock(blockinterface.id, (char *)blockbuffer + session->offset);
+
+        session->offset += BLOCKSIZE;
+
+        if (session->offset >= session->count)
+            block_session_done(&blockinterface, session);
+
+        break;
+
+    case BLOCK_TYPE_WRITE:
         if (session->offset < session->count)
         {
 
-            switch (session->type)
-            {
-
-            case BLOCK_TYPE_READ:
-                ide_rblock(blockinterface.id, (char *)blockbuffer + session->offset);
-
-                break;
-
-            case BLOCK_TYPE_WRITE:
-                ide_wblock(blockinterface.id, (char *)blockbuffer + session->offset);
-
-                break;
-
-            }
+            ide_wblock(blockinterface.id, (char *)blockbuffer + session->offset);
 
             session->offset += BLOCKSIZE;
 
         }
 
-        if (session->offset == session->count)
+        else
+        {
+
             block_session_done(&blockinterface, session);
+
+        }
+
+        break;
 
     }
 
@@ -85,6 +100,15 @@ static void blockinterface_startsession(struct block_session *session)
             ide_wblock(blockinterface.id, blockbuffer);
 
             session->offset = BLOCKSIZE;
+
+        }
+
+        else
+        {
+
+            session->count = 0;
+
+            block_session_done(&blockinterface, session);
 
         }
 
