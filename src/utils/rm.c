@@ -14,7 +14,8 @@ static void onpath(struct message *message)
         if (id)
         {
 
-            fs_remove(0, target, id);
+            if (!fs_remove(0, target, id))
+                channel_send_fmt1(0, message->source, EVENT_ERROR, "File could not be removed: %s\n", message->data);
 
         }
 

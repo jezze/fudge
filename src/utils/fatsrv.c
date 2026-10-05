@@ -725,6 +725,59 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 
 }
 
+static unsigned int removefile(unsigned int id)
+{
+
+    unsigned int perSector = sectorsize / sizeof (struct fat_entry);
+    struct fat_entry entry;
+    unsigned int cluster;
+    unsigned int i;
+
+    if (id == ROOT)
+        return 0;
+
+    getnode(id, &entry);
+
+    if (gettype(&entry) != RECORD_TYPE_NORMAL)
+        return 0;
+
+    cluster = (entry.clusterhigh << 16) | entry.clusterlow;
+
+    while (cluster >= 2 && cluster < FAT_CLUSTER_END)
+    {
+
+        unsigned int next = nextcluster(cluster);
+
+        setcluster(cluster, 0);
+
+        cluster = next;
+
+    }
+
+    entry.name[0] = FAT_ENTRY_DELETED;
+
+    putnode(id, &entry);
+
+    for (i = id % perSector; i > 0; i--)
+    {
+
+        getnode(id - (id % perSector - i) - 1, &entry);
+
+        if (entry.attributes != FAT_ATTRIBUTE_LONGNAME || entry.name[0] == FAT_ENTRY_DELETED)
+            break;
+
+        entry.name[0] = FAT_ENTRY_DELETED;
+
+        putnode(id - (id % perSector - i) - 1, &entry);
+
+    }
+
+    cachefirst = 0;
+
+    return 1;
+
+}
+
 static void oncreaterequest(struct message *message)
 {
 
@@ -759,9 +812,10 @@ static void onreadrequest(struct message *message)
 static void onremoverequest(struct message *message)
 {
 
+    struct event_removerequest *request = message->data;
     struct event_removeresponse response;
 
-    response.status = 0;
+    response.status = removefile(request->id);
 
     channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
