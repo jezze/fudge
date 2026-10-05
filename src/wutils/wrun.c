@@ -17,7 +17,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer, struct url *u
 
 }
 
-static void handlehttppacket(unsigned int source)
+static void handlehttppacket(unsigned int wm)
 {
 
     unsigned int newline;
@@ -29,20 +29,9 @@ static void handlehttppacket(unsigned int source)
         unsigned int count = ring_read(&input, buffer, newline);
 
         if (isbody)
-        {
-
-            channel_send(0, source, EVENT_DATA, count, buffer);
-            channel_send(0, option_getdecimal("wm-service"), EVENT_WMRENDERDATA, count, buffer);
-
-        }
-
-        else
-        {
-
-            if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
-                isbody = 1;
-
-        }
+            channel_send(0, wm, EVENT_WMRENDERDATA, count, buffer);
+        else if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
+            isbody = 1;
 
     }
 
