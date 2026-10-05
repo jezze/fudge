@@ -9,6 +9,7 @@
 #define TOKEN_OPTION                    3
 #define TOKEN_PIPE                      4
 #define TOKEN_ERROR                     5
+#define TOKEN_BACKGROUND                6
 
 struct parser
 {
@@ -36,6 +37,7 @@ static unsigned int isspecialchar(char c)
     case '\t':
     case '|':
     case ';':
+    case '&':
     case '\n':
         return 1;
 
@@ -103,6 +105,11 @@ static unsigned int readtoken(struct job *job, struct parser *parser, char **wor
         parser->offset++;
 
         return TOKEN_END;
+
+    case '&':
+        parser->offset++;
+
+        return TOKEN_BACKGROUND;
 
     case '-':
         parser->offset++;
@@ -254,6 +261,14 @@ static unsigned int parse(struct job *job, struct parser *parser)
 
             return 1;
 
+        case TOKEN_BACKGROUND:
+            if (!command)
+                return seterror(job, "Syntax error: Expected command before &", 0);
+
+            job->background = 1;
+
+            return 1;
+
         case TOKEN_ERROR:
             return 0;
 
@@ -366,6 +381,14 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
     }
 
     channel_send(ichannel, job->commands[0].target, EVENT_TERM, 0, 0);
+
+    if (job->background)
+    {
+
+        for (i = 0; i < job->ncommands; i++)
+            job->commands[i].target = 0;
+
+    }
 
 }
 

@@ -22,6 +22,7 @@ struct job
 
     struct job_command commands[JOB_COMMANDS];
     unsigned int ncommands;
+    unsigned int background;
     char strings[JOB_STRINGSSIZE];
     unsigned int nstrings;
     char error[JOB_ERRORSIZE];

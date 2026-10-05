@@ -242,12 +242,15 @@ static void runnext(void)
 
                 job_run(&job, 0, option_getstring("pwd"));
 
-                return;
-
             }
 
-            printfmt1("%s\n", job.error);
-            job_abort(&job, 0);
+            else
+            {
+
+                printfmt1("%s\n", job.error);
+                job_abort(&job, 0);
+
+            }
 
             if (job_count(&job))
                 return;
