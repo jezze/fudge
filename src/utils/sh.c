@@ -466,7 +466,6 @@ static void onterm(struct message *message)
 void init(void)
 {
 
-    option_add("pwd", "initrd:");
     option_add("export", "0");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_DATA, ondata);
