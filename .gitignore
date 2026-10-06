@@ -49,6 +49,7 @@ src/utils/mq
 src/utils/mv
 src/utils/netcat
 src/utils/netdump
+src/utils/play
 src/utils/pwd
 src/utils/random
 src/utils/reboot

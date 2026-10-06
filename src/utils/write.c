@@ -5,24 +5,86 @@ static unsigned int target;
 static unsigned int id;
 static unsigned int offset;
 
-static void ondata(struct message *message)
+static unsigned int event;
+
+static void store(unsigned int source, void *data, unsigned int count)
 {
 
     if (id)
     {
 
-        unsigned int count = fs_write_all(1, target, id, message->data, message->length, offset);
+        unsigned int written = fs_write_all(1, target, id, data, count, offset);
 
-        offset += count;
+        offset += written;
 
-        if (count < message->length)
+        if (written < count)
         {
 
             id = 0;
 
-            channel_send_fmt0(0, message->source, EVENT_ERROR, "File could not be written\n");
+            channel_send_fmt0(0, source, EVENT_ERROR, "File could not be written\n");
 
         }
+
+    }
+
+}
+
+static void ondata(struct message *message)
+{
+
+    store(message->source, message->data, message->length);
+
+}
+
+static void onrecord(struct message *message)
+{
+
+    if (message->event == EVENT_ERROR)
+    {
+
+        store(message->source, message->data, message->length);
+
+    }
+
+    else
+    {
+
+        char data[MESSAGE_SIZE + 8];
+        unsigned int *header = (unsigned int *)data;
+
+        header[0] = message->event;
+        header[1] = message->length;
+
+        store(message->source, data, 8 + buffer_write(data, MESSAGE_SIZE + 8, message->data, message->length, 8));
+
+    }
+
+}
+
+static void onmain(struct message *message)
+{
+
+    event = option_getdecimal("event");
+
+    if (!event || event == EVENT_DATA)
+        return;
+
+    switch (event)
+    {
+
+    case EVENT_MAIN:
+    case EVENT_OPTION:
+    case EVENT_PATH:
+    case EVENT_PIPE:
+        channel_send_fmt0(0, message->source, EVENT_ERROR, "Event can not be recorded\n");
+
+        break;
+
+    default:
+        channel_bind(event, onrecord);
+
+        break;
 
     }
 
@@ -99,7 +161,9 @@ void init(void)
 
     option_add("create", "0");
     option_add("append", "0");
+    option_add("event", "0");
     channel_bind(EVENT_DATA, ondata);
+    channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
 
 }
