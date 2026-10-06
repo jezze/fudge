@@ -138,9 +138,10 @@ static void updateundefined(void)
 
 }
 
-static void resolve(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, struct elf_sectionheader *sectionheaders, unsigned int base)
+static unsigned int resolve(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, struct elf_sectionheader *sectionheaders, unsigned int base)
 {
 
+    unsigned int unresolved = 0;
     unsigned int i;
 
     for (i = 0; i < header->shcount; i++)
@@ -186,7 +187,20 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
                     unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
 
                     if (address)
+                    {
+
                         value += address;
+
+                    }
+
+                    else
+                    {
+
+                        channel_send_fmt1(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+
+                        unresolved++;
+
+                    }
 
                 }
 
@@ -212,6 +226,8 @@ static void resolve(unsigned int source, unsigned int target, unsigned int id, s
         }
 
     }
+
+    return unresolved;
 
 }
 
@@ -262,10 +278,15 @@ static void load(unsigned int source, char *path)
 
                             fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                             updateundefined();
-                            resolve(source, target, id, &header, sectionheaders, address);
-                            relocate(&header, sectionheaders, address);
-                            savemap(mapname, mapdata, mapcount);
-                            call_load(address);
+
+                            if (!resolve(source, target, id, &header, sectionheaders, address))
+                            {
+
+                                relocate(&header, sectionheaders, address);
+                                savemap(mapname, mapdata, mapcount);
+                                call_load(address);
+
+                            }
 
                         }
 
