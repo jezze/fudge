@@ -18,6 +18,9 @@ static unsigned int inputopen;
 #define TOKEN_PIPE                      4
 #define TOKEN_ERROR                     5
 #define TOKEN_BACKGROUND                6
+#define TOKEN_INPUT                     7
+#define TOKEN_OUTPUT                    8
+#define TOKEN_APPEND                    9
 
 struct parser
 {
@@ -46,6 +49,8 @@ static unsigned int isspecialchar(char c)
     case '|':
     case ';':
     case '&':
+    case '<':
+    case '>':
     case '\n':
         return 1;
 
@@ -118,6 +123,25 @@ static unsigned int readtoken(struct job *job, struct parser *parser, char **wor
         parser->offset++;
 
         return TOKEN_BACKGROUND;
+
+    case '<':
+        parser->offset++;
+
+        return TOKEN_INPUT;
+
+    case '>':
+        parser->offset++;
+
+        if (parser->offset < parser->count && parser->data[parser->offset] == '>')
+        {
+
+            parser->offset++;
+
+            return TOKEN_APPEND;
+
+        }
+
+        return TOKEN_OUTPUT;
 
     case '#':
         while (parser->offset < parser->count && parser->data[parser->offset] != '\n')
@@ -195,18 +219,72 @@ static unsigned int readtoken(struct job *job, struct parser *parser, char **wor
 
 }
 
+static unsigned int readpath(struct job *job, struct parser *parser, char **word, char *redirect)
+{
+
+    switch (readtoken(job, parser, word))
+    {
+
+    case TOKEN_WORD:
+        return 1;
+
+    case TOKEN_ERROR:
+        return 0;
+
+    }
+
+    return seterror(job, "Syntax error: Expected path after %s", redirect);
+
+}
+
+static struct job_command *addinput(struct job *job, struct job_command *command, char *path)
+{
+
+    unsigned int i;
+
+    for (i = job->ncommands; i > 0; i--)
+        job->commands[i] = job->commands[i - 1];
+
+    job->ncommands++;
+
+    buffer_clear(&job->commands[0], sizeof (struct job_command));
+
+    job->commands[0].program = "echo";
+    job->commands[0].paths[0] = path;
+    job->commands[0].npaths = 1;
+
+    return command + 1;
+
+}
+
+static void addoutput(struct job *job, char *path, char *mode)
+{
+
+    struct job_command *command = &job->commands[job->ncommands++];
+
+    command->program = "write";
+    command->paths[0] = path;
+    command->npaths = 1;
+    command->keys[0] = mode;
+    command->values[0] = "1";
+    command->noptions = 1;
+
+}
+
 static unsigned int parse(struct job *job, struct parser *parser)
 {
 
     struct job_command *command = 0;
+    unsigned int redirected = 0;
 
     for (;;)
     {
 
         char *word = 0;
         char *value = 0;
+        unsigned int token = readtoken(job, parser, &word);
 
-        switch (readtoken(job, parser, &word))
+        switch (token)
         {
 
         case TOKEN_WORD:
@@ -267,6 +345,9 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!command)
                 return seterror(job, "Syntax error: Expected command before |", 0);
 
+            if (redirected)
+                return seterror(job, "Syntax error: Unexpected | after > or >>", 0);
+
             command = 0;
 
             break;
@@ -284,6 +365,43 @@ static unsigned int parse(struct job *job, struct parser *parser)
             job->background = 1;
 
             return 1;
+
+        case TOKEN_INPUT:
+            if (!command)
+                return seterror(job, "Syntax error: Expected command before <", 0);
+
+            if (command != &job->commands[0])
+                return seterror(job, "Syntax error: < only works on the first command", 0);
+
+            if (job->ncommands >= JOB_COMMANDS)
+                return seterror(job, "Syntax error: Too many commands in pipeline", 0);
+
+            if (!readpath(job, parser, &word, "<"))
+                return 0;
+
+            command = addinput(job, command, word);
+
+            break;
+
+        case TOKEN_OUTPUT:
+        case TOKEN_APPEND:
+            if (!command)
+                return seterror(job, "Syntax error: Expected command before > or >>", 0);
+
+            if (redirected)
+                return seterror(job, "Syntax error: Only one > or >> per command line", 0);
+
+            if (job->ncommands >= JOB_COMMANDS)
+                return seterror(job, "Syntax error: Too many commands in pipeline", 0);
+
+            if (!readpath(job, parser, &word, (token == TOKEN_APPEND) ? ">>" : ">"))
+                return 0;
+
+            addoutput(job, word, (token == TOKEN_APPEND) ? "append" : "create");
+
+            redirected = 1;
+
+            break;
 
         case TOKEN_ERROR:
             return 0;
