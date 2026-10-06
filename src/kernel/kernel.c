@@ -56,6 +56,9 @@ static void destroytask(unsigned int itask)
 
                     mailbox_reset(mailbox);
                     mailbox_unregister(mailbox);
+
+                    mailbox->inode = pool_renewnode(mailbox->inode);
+
                     pool_unpickmailbox(task->imailbox[i]);
 
                 }

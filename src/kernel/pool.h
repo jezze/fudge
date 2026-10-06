@@ -20,6 +20,7 @@ unsigned int pool_picktask(void);
 unsigned int pool_picktaskfrom(struct list *list);
 void pool_unpickmailbox(unsigned int imailbox);
 void pool_unpicknode(unsigned int inode);
+unsigned int pool_renewnode(unsigned int inode);
 void pool_unpickservice(unsigned int iservice);
 void pool_unpicktask(unsigned int itask);
 void pool_placecore(unsigned int icore, struct list *list);

@@ -10,7 +10,7 @@
 static struct corerow {struct list_item item; struct core core;} corerows[POOL_CORES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
-static struct noderow {struct list_item item; struct resource *resource; struct node_operands *operands;} noderows[POOL_NODES];
+static struct noderow {struct list_item item; struct resource *resource; struct node_operands *operands; unsigned int generation;} noderows[POOL_NODES];
 static struct servicerow {struct list_item item; struct service service;} servicerows[POOL_SERVICES];
 static struct list freetasks;
 static struct list freemailboxes;
@@ -52,14 +52,16 @@ static struct list_item *getmailboxitem(unsigned int imailbox)
 static struct noderow *getnoderow(unsigned int inode)
 {
 
-    return (inode && inode < POOL_NODES) ? &noderows[inode] : 0;
+    unsigned int index = inode % POOL_NODES;
+
+    return (index && noderows[index].generation == inode / POOL_NODES) ? &noderows[index] : 0;
 
 }
 
 static struct servicerow *getservicerow(unsigned int iservice)
 {
 
-    return (iservice && iservice < POOL_NODES) ? &servicerows[iservice] : 0;
+    return (iservice && iservice < POOL_SERVICES) ? &servicerows[iservice] : 0;
 
 }
 
@@ -114,7 +116,7 @@ static unsigned int encodemailboxrow(struct mailboxrow *mailboxrow)
 static unsigned int encodenoderow(struct noderow *noderow)
 {
 
-    return ((unsigned long)noderow - (unsigned long)noderows) / sizeof (struct noderow);
+    return ((unsigned long)noderow - (unsigned long)noderows) / sizeof (struct noderow) + POOL_NODES * noderow->generation;
 
 }
 
@@ -279,10 +281,34 @@ void pool_unpickmailbox(unsigned int imailbox)
 void pool_unpicknode(unsigned int inode)
 {
 
-    struct list_item *item = getnodeitem(inode);
+    struct noderow *noderow = getnoderow(inode);
 
-    if (item)
-        list_add(&freenodes, item);
+    if (noderow)
+    {
+
+        noderow->generation++;
+
+        list_add(&freenodes, &noderow->item);
+
+    }
+
+}
+
+unsigned int pool_renewnode(unsigned int inode)
+{
+
+    struct noderow *noderow = getnoderow(inode);
+
+    if (noderow)
+    {
+
+        noderow->generation++;
+
+        return encodenoderow(noderow);
+
+    }
+
+    return 0;
 
 }
 
