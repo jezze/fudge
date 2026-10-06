@@ -5,7 +5,6 @@
 #define RESULTSIZE                      2048
 #define CONTENTSIZE                     1200
 #define LINESIZE                        (INPUTSIZE * 2)
-#define BINPATH                         "initrd:bin"
 
 static char inputdata1[INPUTSIZE];
 static struct ring input1;
@@ -269,7 +268,7 @@ static void run(void)
 
     }
 
-    sh = fs_spawn(1, 0, BINPATH "/sh");
+    sh = fs_spawn(1, 0, "initrd:bin/sh");
 
     if (!sh)
     {

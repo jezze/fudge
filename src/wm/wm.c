@@ -345,6 +345,16 @@ static void placewindows(unsigned int source)
 
 }
 
+static void launch(char *command)
+{
+
+    char line[256];
+
+    cstring_write_fmt1(line, 256, 0, "%s &\\0", command);
+    system_run(0, line);
+
+}
+
 static void sendevent(unsigned int source, unsigned int type, unsigned int action)
 {
 
@@ -367,20 +377,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         char *cmd = strpool_getstring(action);
 
         if (buffer_match(cmd, "run=", 4))
-        {
-
-            unsigned int target = fs_spawn(1, 0, cmd + 4);
-
-            if (target)
-            {
-
-                channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
-                channel_send(1, target, EVENT_MAIN, 0, 0);
-                channel_send(1, target, EVENT_TERM, 0, 0);
-
-            }
-
-        }
+            launch(cmd + 4);
 
     }
 
@@ -524,20 +521,7 @@ static void onkeypress(struct message *message)
 
             case KEYS_KEY_P:
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
-                {
-
-                    unsigned int target = fs_spawn(1, 0, "initrd:bin/wshell");
-
-                    if (target)
-                    {
-
-                        channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
-                        channel_send(1, target, EVENT_MAIN, 0, 0);
-                        channel_send(1, target, EVENT_TERM, 0, 0);
-
-                    }
-
-                }
+                    launch("initrd:bin/wshell");
 
                 break;
 
