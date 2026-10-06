@@ -1,5 +1,6 @@
 unsigned int fs_auth(char *path);
 unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int parent, void *buffer, unsigned int count);
+unsigned int fs_canonical(char *out, unsigned int size, char *path);
 unsigned int fs_dirlength(char *path);
 unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id);
 unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);

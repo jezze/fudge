@@ -128,9 +128,15 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         {
 
             char *path = command->paths[j];
-            char *prefix = (fs_auth(path)) ? "" : pwd;
+            char full[1024];
+            char canonical[1024];
+            unsigned int length;
 
-            if (count + cstring_length(prefix) + cstring_length(path) + 1 > MESSAGE_SIZE)
+            cstring_write_fmt2(full, 1024, 0, "%s%s\\0", (buffer_eachbyte(path, cstring_length(path), ':', 0)) ? "" : pwd, path);
+
+            length = fs_canonical(canonical, 1024, full);
+
+            if (count + length + 1 > MESSAGE_SIZE)
             {
 
                 channel_send(ichannel, command->target, EVENT_PATH, count, options);
@@ -139,7 +145,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
 
             }
 
-            count += cstring_write_fmt2(options, MESSAGE_SIZE, count, "%s%s\\0", prefix, path);
+            count += buffer_write(options, MESSAGE_SIZE, canonical, length + 1, count);
 
         }
 

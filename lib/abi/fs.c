@@ -35,6 +35,55 @@ unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int 
 
 }
 
+unsigned int fs_canonical(char *out, unsigned int size, char *path)
+{
+
+    unsigned int length = cstring_length(path);
+    unsigned int offset = buffer_eachbyte(path, length, ':', 0);
+    unsigned int count = buffer_write(out, size - 1, path, offset, 0);
+    unsigned int root = count;
+    unsigned int directory = 0;
+
+    while (offset < length)
+    {
+
+        char *cp = path + offset;
+        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+        directory = (cl < length - offset) || (cl == 1 && cp[0] == '.') || (cl == 2 && cp[0] == '.' && cp[1] == '.');
+
+        if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+        {
+
+            if (count > root)
+                count--;
+
+            while (count > root && out[count - 1] != '/')
+                count--;
+
+        }
+
+        else if (cl && (cl != 1 || cp[0] != '.'))
+        {
+
+            count += buffer_write(out, size - 1, cp, cl, count);
+            count += buffer_write(out, size - 1, "/", 1, count);
+
+        }
+
+        offset += cl + 1;
+
+    }
+
+    if (!directory && count > root && out[count - 1] == '/')
+        count--;
+
+    out[count] = '\0';
+
+    return count;
+
+}
+
 unsigned int fs_dirlength(char *path)
 {
 
