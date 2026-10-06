@@ -1,7 +1,41 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
+static unsigned int readmodules(unsigned int ichannel, char *paths, unsigned int size)
+{
+
+    unsigned int target = fs_spawn(ichannel, ichannel, "initrd:bin/mq");
+    unsigned int count = 0;
+
+    if (target)
+    {
+
+        struct message message;
+        unsigned int i;
+
+        channel_send_fmt0(ichannel, target, EVENT_OPTION, "query=.modules.path\n");
+        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
+        channel_send_fmt0(ichannel, target, EVENT_PATH, "initrd:data/config/modules.mq\\0");
+        channel_send(ichannel, target, EVENT_TERM, 0, 0);
+
+        while (channel_poll(ichannel, target, EVENT_DATA, &message))
+            count += buffer_write(paths, size, message.data, message.length, count);
+
+        for (i = 0; i < count; i++)
+        {
+
+            if (paths[i] == '\n')
+                paths[i] = '\0';
+
+        }
+
+    }
+
+    return count;
+
+}
+
+static void loadmodules(unsigned int ichannel, unsigned int count, char *paths)
 {
 
     unsigned int target = fs_spawn(ichannel, ichannel, "initrd:bin/elfload");
@@ -9,13 +43,8 @@ static void loadmodules(unsigned int ichannel, unsigned int count, char **paths)
     if (target)
     {
 
-        unsigned int i;
-
         channel_send(ichannel, target, EVENT_MAIN, 0, 0);
-
-        for (i = 0; i < count; i++)
-            channel_send_fmt1(ichannel, target, EVENT_PATH, "%s\\0", paths[i]);
-
+        channel_send(ichannel, target, EVENT_PATH, count, paths);
         channel_send(ichannel, target, EVENT_TERM, 0, 0);
         channel_wait(ichannel, target, EVENT_EXIT, 0, 0);
 
@@ -75,49 +104,12 @@ static unsigned int spawnwm(unsigned int ichannel)
 
 }
 
-static char *modules[36] = {
-    "initrd:kernel/base.ko",
-    "initrd:kernel/log.ko",
-    "initrd:kernel/block.ko",
-    "initrd:kernel/clock.ko",
-    "initrd:kernel/console.ko",
-    "initrd:kernel/keyboard.ko",
-    "initrd:kernel/mouse.ko",
-    "initrd:kernel/timer.ko",
-    "initrd:kernel/audio.ko",
-    "initrd:kernel/video.ko",
-    "initrd:kernel/ethernet.ko",
-    "initrd:kernel/info.ko",
-    "initrd:kernel/io.ko",
-    "initrd:kernel/cpuid.ko",
-    "initrd:kernel/msr.ko",
-    "initrd:kernel/pat.ko",
-    "initrd:kernel/acpi.ko",
-    "initrd:kernel/pic.ko",
-    "initrd:kernel/apic.ko",
-    "initrd:kernel/platform.ko",
-    "initrd:kernel/pci.ko",
-    "initrd:kernel/pit.ko",
-    "initrd:kernel/rtc.ko",
-    "initrd:kernel/ps2.ko",
-    "initrd:kernel/ps2-keyboard.ko",
-    "initrd:kernel/ps2-mouse.ko",
-    "initrd:kernel/bga.ko",
-    "initrd:kernel/uart.ko",
-    "initrd:kernel/vga.ko",
-    "initrd:kernel/rtl8139.ko",
-    "initrd:kernel/ide.ko",
-    "initrd:kernel/ahci.ko",
-    "initrd:kernel/nvme.ko",
-    "initrd:kernel/ata.ko",
-    "initrd:kernel/virtio-network.ko",
-    "initrd:kernel/smp.ko"
-};
-
 static void onmain(struct message *message)
 {
 
-    loadmodules(1, 36, modules);
+    char paths[MESSAGE_SIZE];
+
+    loadmodules(1, readmodules(1, paths, MESSAGE_SIZE), paths);
     spawnshell(1);
     spawnautomount(1);
     spawnwm(1);
