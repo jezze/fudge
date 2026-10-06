@@ -7,39 +7,36 @@ static void list(unsigned int source, char *path)
 {
 
     unsigned int target = fs_auth(path);
+    unsigned int id = (target) ? fs_walk(1, target, 0, path) : 0;
+    unsigned char data[MESSAGE_SIZE];
+    unsigned int count;
+    unsigned int offset = 0;
 
-    if (target)
+    if (!id)
     {
 
-        unsigned int id = fs_walk(1, target, 0, path);
+        channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", path);
 
-        if (id)
+        return;
+
+    }
+
+    while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < count; i += sizeof (struct record))
         {
 
-            unsigned char data[MESSAGE_SIZE];
-            unsigned int count;
-            unsigned int offset = 0;
+            struct record *record = (struct record *)(data + i);
 
-            while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
-            {
+            if (record->type == RECORD_TYPE_DIRECTORY)
+                channel_send_fmt2(0, source, EVENT_DATA, "%w/\n", record->name, &record->length);
+            else
+                channel_send_fmt2(0, source, EVENT_DATA, "%w\n", record->name, &record->length);
 
-                unsigned int i;
-
-                for (i = 0; i < count; i += sizeof (struct record))
-                {
-
-                    struct record *record = (struct record *)(data + i);
-
-                    if (record->type == RECORD_TYPE_DIRECTORY)
-                        channel_send_fmt2(0, source, EVENT_DATA, "%w/\n", record->name, &record->length);
-                    else
-                        channel_send_fmt2(0, source, EVENT_DATA, "%w\n", record->name, &record->length);
-
-                    offset = record->offset;
-
-                }
-
-            }
+            offset = record->offset;
 
         }
 
