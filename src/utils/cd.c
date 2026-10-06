@@ -10,8 +10,16 @@ static void onpath(struct message *message)
     {
 
         unsigned int id = fs_walk(1, target, 0, message->data);
+        struct record record;
 
-        if (id)
+        if (id && fs_stat(1, target, id, &record) && record.type != RECORD_TYPE_DIRECTORY)
+        {
+
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Not a directory: %s\n", message->data);
+
+        }
+
+        else if (id)
         {
 
             char *path = message->data;

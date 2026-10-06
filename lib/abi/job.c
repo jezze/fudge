@@ -127,14 +127,8 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         for (j = 0; j < command->npaths; j++)
         {
 
-            char *path = command->paths[j];
-            char full[1024];
-            char canonical[1024];
-            unsigned int length;
-
-            cstring_write_fmt2(full, 1024, 0, "%s%s\\0", (buffer_eachbyte(path, cstring_length(path), ':', 0)) ? "" : pwd, path);
-
-            length = fs_canonical(canonical, 1024, full);
+            char absolute[1024];
+            unsigned int length = fs_absolute(absolute, 1024, pwd, command->paths[j]);
 
             if (count + length + 1 > MESSAGE_SIZE)
             {
@@ -145,7 +139,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
 
             }
 
-            count += buffer_write(options, MESSAGE_SIZE, canonical, length + 1, count);
+            count += buffer_write(options, MESSAGE_SIZE, absolute, length + 1, count);
 
         }
 

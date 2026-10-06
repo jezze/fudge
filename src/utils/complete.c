@@ -39,19 +39,6 @@ static unsigned int isspecialchar(char c)
 
 }
 
-static unsigned int isdotentry(struct record *record)
-{
-
-    if (record->length == 1 && record->name[0] == '.')
-        return 1;
-
-    if (record->length == 2 && record->name[0] == '.' && record->name[1] == '.')
-        return 1;
-
-    return 0;
-
-}
-
 static void addmatch(struct record *record)
 {
 
@@ -114,7 +101,7 @@ static void scandirectory(char *directory, char *prefix, unsigned int prefixcoun
 
                     struct record *record = (struct record *)(data + i);
 
-                    if (record->length >= prefixcount && buffer_match(record->name, prefix, prefixcount) && !isdotentry(record))
+                    if (record->length >= prefixcount && buffer_match(record->name, prefix, prefixcount))
                         addmatch(record);
 
                     offset = record->offset;
@@ -160,10 +147,10 @@ static void onterm(struct message *message)
     if (dircount)
     {
 
-        cstring_write_fmt2(directory, INPUTSIZE * 2, 0, "%w\\0", input + start, &dircount);
+        char path[INPUTSIZE];
 
-        if (!fs_auth(directory))
-            cstring_write_fmt3(directory, INPUTSIZE * 2, 0, "%s%w\\0", option_getstring("pwd"), input + start, &dircount);
+        cstring_write_fmt2(path, INPUTSIZE, 0, "%w\\0", input + start, &dircount);
+        fs_absolute(directory, INPUTSIZE * 2, option_getstring("pwd"), path);
 
     }
 
