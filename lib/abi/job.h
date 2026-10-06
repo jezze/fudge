@@ -29,7 +29,6 @@ struct job
 
 };
 
-unsigned int job_parse(struct job *job, char *data, unsigned int count, unsigned int *offset);
 unsigned int job_spawn(struct job *job, unsigned int ichannel, unsigned int notify, char *bindir);
 void job_run(struct job *job, unsigned int ichannel, char *pwd);
 void job_abort(struct job *job, unsigned int ichannel);
