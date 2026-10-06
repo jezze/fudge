@@ -4,10 +4,7 @@
 static void onmain(struct message *message)
 {
 
-    system_run(0, "mq -query .modules.path initrd:data/config/modules.mq | elfload");
-    system_run(0, "shell -pwd initrd: -keyboard-service keyboard:1 &");
-    system_run(0, "automount -pwd initrd: &");
-    system_run(0, "wm -pwd initrd: &");
+    system_run(0, "sh -pwd initrd: initrd:data/sh/init.sh");
 
 }
 
