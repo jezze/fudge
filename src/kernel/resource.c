@@ -25,10 +25,8 @@ struct resource *resource_foreach(struct resource *resource)
 
 }
 
-struct resource *resource_foreachtype(struct resource *resource, unsigned int type)
+struct resource *resource_foreachtype_unsafe(struct resource *resource, unsigned int type)
 {
-
-    spinlock_acquire(&resources.spinlock);
 
     while ((resource = nextresource(resource)))
     {
@@ -38,9 +36,34 @@ struct resource *resource_foreachtype(struct resource *resource, unsigned int ty
 
     }
 
+    return resource;
+
+}
+
+struct resource *resource_foreachtype(struct resource *resource, unsigned int type)
+{
+
+    spinlock_acquire(&resources.spinlock);
+
+    resource = resource_foreachtype_unsafe(resource, type);
+
     spinlock_release(&resources.spinlock);
 
     return resource;
+
+}
+
+void resource_lock(void)
+{
+
+    spinlock_acquire(&resources.spinlock);
+
+}
+
+void resource_unlock(void)
+{
+
+    spinlock_release(&resources.spinlock);
 
 }
 

@@ -3,12 +3,17 @@
 #include <modules/base/bus.h>
 #include <modules/base/driver.h>
 
-#define ROOTRECORDS                     6
+#define ROOT                            0x0001
+#define ROOTRECORDS                     8
+#define OUTPUTSIZE                      0x4000
 
 static struct node_operands operands;
 static struct service service;
 static unsigned int inode;
 static struct record rootrecords[ROOTRECORDS];
+static struct spinlock spinlock;
+static char output[OUTPUTSIZE];
+static unsigned char response[MESSAGE_SIZE];
 
 static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int count, void *data)
 {
@@ -16,34 +21,37 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
     struct resource *resource = 0;
     unsigned int c = 0;
     unsigned int i;
-    char buffer[4096];
     char *states[3] = {
         "UNKNOWN",
         "DEAD",
         "ACTIVE"
     };
 
-    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "  cores: [\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  cores: [\n");
 
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_CORE)); i++)
+    resource_lock();
+
+    for (i = 0; (resource = resource_foreachtype_unsafe(resource, RESOURCE_CORE)); i++)
     {
 
         struct core *core = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "      id: %u\n", &i);
-        c += cstring_write_fmt1(buffer, 4096, c, "      state: %s\n", states[core->state]);
-        c += cstring_write_fmt1(buffer, 4096, c, "      tasks: %u\n", &core->tasks.count);
-        c += cstring_write_fmt1(buffer, 4096, c, "      running: %u\n", &core->itask);
-        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      id: %u\n", &i);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      state: %s\n", states[core->state]);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      tasks: %u\n", &core->tasks.count);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      running: %u\n", &core->itask);
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
+    resource_unlock();
 
-    return buffer_read(data, count, buffer, c, offset);
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+
+    return buffer_read(data, count, output, c, offset);
 
 }
 
@@ -53,7 +61,6 @@ static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int
     struct resource *resource = 0;
     unsigned int c = 0;
     unsigned int i;
-    char buffer[4096];
     char *states[7] = {
         "UNKNOWN",
         "DEAD",
@@ -64,32 +71,36 @@ static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int
         "RUNNING"
     };
 
-    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "  tasks: [\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  tasks: [\n");
 
-    for (i = 0; (resource = resource_foreachtype(resource, RESOURCE_TASK)); i++)
+    resource_lock();
+
+    for (i = 0; (resource = resource_foreachtype_unsafe(resource, RESOURCE_TASK)); i++)
     {
 
         struct task *task = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "      id: %u\n", &i);
-        c += cstring_write_fmt1(buffer, 4096, c, "      state: %s\n", states[task->state]);
-        c += cstring_write_fmt1(buffer, 4096, c, "      address: 0x%H8u\n", &task->address);
-        c += cstring_write_fmt0(buffer, 4096, c, "      signals:\n");
-        c += cstring_write_fmt0(buffer, 4096, c, "        {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "          kill: %u\n", &task->signals.kill);
-        c += cstring_write_fmt1(buffer, 4096, c, "          block: %u\n", &task->signals.block);
-        c += cstring_write_fmt1(buffer, 4096, c, "          unblock: %u\n", &task->signals.unblock);
-        c += cstring_write_fmt0(buffer, 4096, c, "        }\n");
-        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      id: %u\n", &i);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      state: %s\n", states[task->state]);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      address: 0x%H8u\n", &task->address);
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "      signals:\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "        {\n");
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "          kill: %u\n", &task->signals.kill);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "          block: %u\n", &task->signals.block);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "          unblock: %u\n", &task->signals.unblock);
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "        }\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
+    resource_unlock();
 
-    return buffer_read(data, count, buffer, c, offset);
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+
+    return buffer_read(data, count, output, c, offset);
 
 }
 
@@ -98,30 +109,33 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
 
     struct resource *resource = 0;
     unsigned int c = 0;
-    char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "  mailboxes: [\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  mailboxes: [\n");
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_MAILBOX)))
+    resource_lock();
+
+    while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_MAILBOX)))
     {
 
         struct mailbox *mailbox = resource->data;
         unsigned int nmessages = mailbox->head - mailbox->tail;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "      itask: %u\n", &mailbox->itask);
-        c += cstring_write_fmt1(buffer, 4096, c, "      ichannel: %u\n", &mailbox->ichannel);
-        c += cstring_write_fmt1(buffer, 4096, c, "      inode: %u\n", &mailbox->inode);
-        c += cstring_write_fmt1(buffer, 4096, c, "      nmessages: %u\n", &nmessages);
-        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      itask: %u\n", &mailbox->itask);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      ichannel: %u\n", &mailbox->ichannel);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      inode: %u\n", &mailbox->inode);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      nmessages: %u\n", &nmessages);
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
+    resource_unlock();
 
-    return buffer_read(data, count, buffer, c, offset);
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+
+    return buffer_read(data, count, output, c, offset);
 
 }
 
@@ -130,26 +144,29 @@ static unsigned int readbuses(unsigned int id, unsigned int offset, unsigned int
 
     struct resource *resource = 0;
     unsigned int c = 0;
-    char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "  buses: [\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  buses: [\n");
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_BUS)))
+    resource_lock();
+
+    while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_BUS)))
     {
 
         struct base_bus *bus = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "      name: %s\n", bus->name);
-        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      name: %s\n", bus->name);
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
+    resource_unlock();
 
-    return buffer_read(data, count, buffer, c, offset);
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+
+    return buffer_read(data, count, output, c, offset);
 
 }
 
@@ -158,26 +175,29 @@ static unsigned int readdrivers(unsigned int id, unsigned int offset, unsigned i
 
     struct resource *resource = 0;
     unsigned int c = 0;
-    char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "  drivers: [\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  drivers: [\n");
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_DRIVER)))
+    resource_lock();
+
+    while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_DRIVER)))
     {
 
         struct base_driver *driver = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "      name: %s\n", driver->name);
-        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      name: %s\n", driver->name);
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
+    resource_unlock();
 
-    return buffer_read(data, count, buffer, c, offset);
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+
+    return buffer_read(data, count, output, c, offset);
 
 }
 
@@ -186,27 +206,30 @@ static unsigned int readservices(unsigned int id, unsigned int offset, unsigned 
 
     struct resource *resource = 0;
     unsigned int c = 0;
-    char buffer[4096];
 
-    c += cstring_write_fmt0(buffer, 4096, c, "{\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "  services: [\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  services: [\n");
 
-    while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+    resource_lock();
+
+    while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)))
     {
 
         struct service *service = resource->data;
 
-        c += cstring_write_fmt0(buffer, 4096, c, "    {\n");
-        c += cstring_write_fmt1(buffer, 4096, c, "      name: %s\n", service->name);
-        c += cstring_write_fmt1(buffer, 4096, c, "      inode: %u\n", &service->inode);
-        c += cstring_write_fmt0(buffer, 4096, c, "    }\n");
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      name: %s\n", service->name);
+        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      inode: %u\n", &service->inode);
+        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
-    c += cstring_write_fmt0(buffer, 4096, c, "  ]\n");
-    c += cstring_write_fmt0(buffer, 4096, c, "}\n");
+    resource_unlock();
 
-    return buffer_read(data, count, buffer, c, offset);
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+
+    return buffer_read(data, count, output, c, offset);
 
 }
 
@@ -215,11 +238,10 @@ static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int 
 
     struct record *records = data;
     unsigned int nrecords = count / sizeof (struct record);
-    unsigned int total = (nrecords < ROOTRECORDS) ? nrecords : ROOTRECORDS;
     unsigned int c = 0;
     unsigned int i;
 
-    for (i = offset; i < total; i++)
+    for (i = offset; i < ROOTRECORDS && c < nrecords; i++)
     {
 
         buffer_copy(&records[c], &rootrecords[i], sizeof (struct record));
@@ -238,7 +260,7 @@ static unsigned int read(unsigned int id, unsigned int offset, unsigned int coun
     switch (id)
     {
 
-    case 0x0001:
+    case ROOT:
         return readroot(id, offset, count, data);
 
     case 0x1001:
@@ -275,6 +297,15 @@ static unsigned int stat(unsigned int id, void *data)
     {
 
     case 0:
+        if (id == ROOT)
+        {
+
+            buffer_copy(data, &rootrecords[0], sizeof (struct record));
+
+            return sizeof (struct record);
+
+        }
+
         break;
 
     case 1:
@@ -302,32 +333,18 @@ static unsigned int stat(unsigned int id, void *data)
 
 }
 
-static unsigned int walkroot(unsigned int parent, unsigned int length, char *path)
+static unsigned int walkroot(char *name, unsigned int length)
 {
 
     unsigned int i;
 
-    for (i = 0; i < ROOTRECORDS; i++)
+    for (i = 2; i < ROOTRECORDS; i++)
     {
 
         struct record *record = &rootrecords[i];
 
-        switch (record->type)
-        {
-
-        case RECORD_TYPE_NORMAL:
-            if (record->length == length && buffer_match(record->name, path, record->length))
-                return record->id;
-
-            break;
-
-        case RECORD_TYPE_DIRECTORY:
-            if (record->length == length - 1 && buffer_match(record->name, path, record->length))
-                return record->id;
-
-            break;
-
-        }
+        if (record->length == length && buffer_match(record->name, name, length))
+            return record->id;
 
     }
 
@@ -335,47 +352,66 @@ static unsigned int walkroot(unsigned int parent, unsigned int length, char *pat
 
 }
 
-static unsigned int walk(unsigned int parent, unsigned int length, char *path)
+static unsigned int walk(unsigned int id, unsigned int length, char *path)
 {
 
-    if (!length)
-        return parent;
+    unsigned int offset = 0;
 
-    switch (parent)
+    while (offset < length)
     {
 
-    case 1:
-        return walkroot(parent, length, path);
+        char *cp = path + offset;
+        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+        if (cl == 2 && cp[0] == '.' && cp[1] == '.')
+            id = ROOT;
+        else if (cl && (cl != 1 || cp[0] != '.'))
+            id = (id == ROOT) ? walkroot(cp, cl) : 0;
+
+        if (!id)
+            return 0;
+
+        offset += cl + 1;
 
     }
 
-    return 0;
+    return id;
 
 }
 
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    unsigned char buffer[MESSAGE_SIZE];
     struct event_readrequest *request = data;
-    struct event_readresponse *response = (struct event_readresponse *)buffer;
+    struct event_readresponse *readresponse = (struct event_readresponse *)response;
+    unsigned int status;
 
-    response->count = read(request->id, request->offset, request->count, response + 1);
+    spinlock_acquire(&spinlock);
 
-    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+    readresponse->count = read(request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
+    status = kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
+
+    spinlock_release(&spinlock);
+
+    return status;
 
 }
 
 static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    unsigned char buffer[MESSAGE_SIZE];
     struct event_statrequest *request = data;
-    struct event_statresponse *response = (struct event_statresponse *)buffer;
+    struct event_statresponse *statresponse = (struct event_statresponse *)response;
+    unsigned int status;
 
-    response->count = stat(request->id, response + 1);
+    spinlock_acquire(&spinlock);
 
-    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
+    statresponse->count = stat(request->id, statresponse + 1);
+    status = kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + statresponse->count, response);
+
+    spinlock_release(&spinlock);
+
+    return status;
 
 }
 
@@ -385,7 +421,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct event_walkrequest *request = data;
     struct event_walkresponse response;
 
-    response.id = walk(request->parent ? request->parent : 1, request->length, (char *)(request + 1));
+    response.id = walk(request->parent ? request->parent : ROOT, request->length, (char *)(request + 1));
 
     return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
@@ -415,12 +451,15 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void module_init(void)
 {
 
-    record_init(&rootrecords[0], 0x1001, RECORD_TYPE_NORMAL, 0, 1, 5, "cores");
-    record_init(&rootrecords[1], 0x1002, RECORD_TYPE_NORMAL, 0, 2, 5, "tasks");
-    record_init(&rootrecords[2], 0x1003, RECORD_TYPE_NORMAL, 0, 3, 9, "mailboxes");
-    record_init(&rootrecords[3], 0x1004, RECORD_TYPE_NORMAL, 0, 4, 8, "services");
-    record_init(&rootrecords[4], 0x1005, RECORD_TYPE_NORMAL, 0, 5, 5, "buses");
-    record_init(&rootrecords[5], 0x1006, RECORD_TYPE_NORMAL, 0, 6, 7, "drivers");
+    record_init(&rootrecords[0], ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+    record_init(&rootrecords[1], ROOT, RECORD_TYPE_DIRECTORY, 0, 2, 2, "..");
+    record_init(&rootrecords[2], 0x1001, RECORD_TYPE_NORMAL, 0, 3, 5, "cores");
+    record_init(&rootrecords[3], 0x1002, RECORD_TYPE_NORMAL, 0, 4, 5, "tasks");
+    record_init(&rootrecords[4], 0x1003, RECORD_TYPE_NORMAL, 0, 5, 9, "mailboxes");
+    record_init(&rootrecords[5], 0x1004, RECORD_TYPE_NORMAL, 0, 6, 8, "services");
+    record_init(&rootrecords[6], 0x1005, RECORD_TYPE_NORMAL, 0, 7, 5, "buses");
+    record_init(&rootrecords[7], 0x1006, RECORD_TYPE_NORMAL, 0, 8, 7, "drivers");
+    spinlock_init(&spinlock);
     node_operands_init(&operands, 0, operands_place);
     service_init(&service);
 
