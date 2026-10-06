@@ -1,33 +1,17 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int readmodules(unsigned int ichannel, char *paths, unsigned int size)
+static unsigned int readmodules(char *paths, unsigned int size)
 {
 
-    unsigned int target = fs_spawn(ichannel, ichannel, "initrd:bin/mq");
-    unsigned int count = 0;
+    unsigned int count = system_read("mq -query .modules.path initrd:data/config/modules.mq", paths, size);
+    unsigned int i;
 
-    if (target)
+    for (i = 0; i < count; i++)
     {
 
-        struct message message;
-        unsigned int i;
-
-        channel_send_fmt0(ichannel, target, EVENT_OPTION, "query=.modules.path\n");
-        channel_send(ichannel, target, EVENT_MAIN, 0, 0);
-        channel_send_fmt0(ichannel, target, EVENT_PATH, "initrd:data/config/modules.mq\\0");
-        channel_send(ichannel, target, EVENT_TERM, 0, 0);
-
-        while (channel_poll(ichannel, target, EVENT_DATA, &message))
-            count += buffer_write(paths, size, message.data, message.length, count);
-
-        for (i = 0; i < count; i++)
-        {
-
-            if (paths[i] == '\n')
-                paths[i] = '\0';
-
-        }
+        if (paths[i] == '\n')
+            paths[i] = '\0';
 
     }
 
@@ -109,7 +93,7 @@ static void onmain(struct message *message)
 
     char paths[MESSAGE_SIZE];
 
-    loadmodules(1, readmodules(1, paths, MESSAGE_SIZE), paths);
+    loadmodules(1, readmodules(paths, MESSAGE_SIZE), paths);
     spawnshell(1);
     spawnautomount(1);
     spawnwm(1);

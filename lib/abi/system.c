@@ -5,7 +5,7 @@
 #include "option.h"
 #include "system.h"
 
-unsigned int system_run(unsigned int target, char *command)
+static unsigned int start(char *command)
 {
 
     unsigned int sh = fs_spawn(1, 1, "initrd:bin/sh");
@@ -14,7 +14,6 @@ unsigned int system_run(unsigned int target, char *command)
     {
 
         unsigned int length = cstring_length(command);
-        struct message message;
         unsigned int offset;
 
         channel_send_fmt1(1, sh, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
@@ -25,6 +24,20 @@ unsigned int system_run(unsigned int target, char *command)
 
         channel_send(1, sh, EVENT_DATA, 1, "\n");
         channel_send(1, sh, EVENT_TERM, 0, 0);
+
+    }
+
+    return sh;
+
+}
+
+unsigned int system_run(unsigned int target, char *command)
+{
+
+    if (start(command))
+    {
+
+        struct message message;
 
         while (channel_pick(1, &message))
         {
@@ -51,3 +64,36 @@ unsigned int system_run(unsigned int target, char *command)
 
 }
 
+unsigned int system_read(char *command, void *buffer, unsigned int count)
+{
+
+    unsigned int total = 0;
+
+    if (start(command))
+    {
+
+        struct message message;
+
+        while (channel_pick(1, &message))
+        {
+
+            switch (message.event)
+            {
+
+            case EVENT_DATA:
+                total += buffer_write(buffer, count, message.data, message.length, total);
+
+                break;
+
+            case EVENT_EXIT:
+                return total;
+
+            }
+
+        }
+
+    }
+
+    return total;
+
+}
