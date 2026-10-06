@@ -33,6 +33,28 @@ static void assign0(unsigned int itask)
 
 }
 
+static void unannounce(unsigned int inode)
+{
+
+    unsigned int iservice;
+
+    for (iservice = 1; iservice < POOL_SERVICES; iservice++)
+    {
+
+        struct service *service = pool_getservice(iservice);
+
+        if (service && service->inode == inode)
+        {
+
+            service_unregister(service);
+            pool_unpickservice(iservice);
+
+        }
+
+    }
+
+}
+
 static void destroytask(unsigned int itask)
 {
 
@@ -54,6 +76,7 @@ static void destroytask(unsigned int itask)
                 if (mailbox)
                 {
 
+                    unannounce(mailbox->inode);
                     mailbox_reset(mailbox);
                     mailbox_unregister(mailbox);
 
@@ -66,8 +89,6 @@ static void destroytask(unsigned int itask)
             }
 
         }
-
-        /* DESTROY SERVICES HERE */
 
         task_reset(task);
         task_unregister(task);
