@@ -12,14 +12,54 @@ static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
 static unsigned int pipenext;
+static struct event_route routes[PIPE_ROUTES];
+static unsigned int nroutes;
 
-static unsigned int reroute(unsigned int target, unsigned int event)
+static struct event_route *findroute(unsigned int event)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < nroutes; i++)
+    {
+
+        if (routes[i].event == event)
+            return &routes[i];
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int routetarget(struct event_route *route)
+{
+
+    if (route->target)
+        return route->target;
+
+    return (route->to == EVENT_ERROR) ? pipeowner : pipenext;
+
+}
+
+static unsigned int reroute(unsigned int target, unsigned int *event)
 {
 
     if (pipenext && (target == pipeowner || (pipeprev && target == pipeprev)))
     {
 
-        switch (event)
+        struct event_route *route = findroute(*event);
+
+        if (route)
+        {
+
+            *event = route->to;
+
+            return routetarget(route);
+
+        }
+
+        switch (*event)
         {
 
         case EVENT_DATA:
@@ -144,7 +184,10 @@ static void dispatch(struct message *message)
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    return place(ichannel, (ichannel) ? target : reroute(target, event), event, count, data);
+    if (!ichannel)
+        target = reroute(target, &event);
+
+    return place(ichannel, target, event, count, data);
 
 }
 
@@ -310,12 +353,18 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 
 }
 
-void channel_pipe(unsigned int owner, unsigned int prev, unsigned int next)
+void channel_pipe(unsigned int owner, struct event_pipe *pipe)
 {
 
+    unsigned int i;
+
     pipeowner = owner;
-    pipeprev = prev;
-    pipenext = next;
+    pipeprev = pipe->prev;
+    pipenext = (pipe->next) ? pipe->next : owner;
+    nroutes = (pipe->nroutes < PIPE_ROUTES) ? pipe->nroutes : PIPE_ROUTES;
+
+    for (i = 0; i < nroutes; i++)
+        routes[i] = pipe->routes[i];
 
 }
 
@@ -329,8 +378,34 @@ void channel_close(void)
 void channel_exit(unsigned int ichannel)
 {
 
-    if (pipenext && pipenext != pipeowner)
-        place(ichannel, pipenext, EVENT_TERM, 0, 0);
+    struct event_route *route = findroute(EVENT_TERM);
+    unsigned int term = (route) ? routetarget(route) : pipenext;
+    unsigned int i;
+
+    if (term && term != pipeowner)
+        place(ichannel, term, (route) ? route->to : EVENT_TERM, 0, 0);
+
+    for (i = 0; i < nroutes; i++)
+    {
+
+        unsigned int target = routes[i].target;
+        unsigned int j;
+
+        if (!target || target == term || target == pipeowner)
+            continue;
+
+        for (j = 0; j < i; j++)
+        {
+
+            if (routes[j].target == target)
+                break;
+
+        }
+
+        if (j == i)
+            place(ichannel, target, EVENT_TERM, 0, 0);
+
+    }
 
 }
 

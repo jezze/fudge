@@ -21,6 +21,38 @@ static unsigned int find(struct job *job, unsigned int target)
 
 }
 
+static unsigned int linearprev(struct job *job, unsigned int index)
+{
+
+    while (index > 0)
+    {
+
+        index--;
+
+        if (!job->commands[index].side)
+            return job->commands[index].target;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int linearnext(struct job *job, unsigned int index)
+{
+
+    for (index++; index < job->ncommands; index++)
+    {
+
+        if (!job->commands[index].side)
+            return job->commands[index].target;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int job_spawn(struct job *job, unsigned int ichannel, unsigned int notify, char *bindir)
 {
 
@@ -65,8 +97,20 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         unsigned int count;
         unsigned int j;
 
-        pipe.prev = (i > 1) ? job->commands[i - 2].target : 0;
-        pipe.next = (i < job->ncommands) ? job->commands[i].target : 0;
+        pipe.prev = (command->side) ? 0 : linearprev(job, i - 1);
+        pipe.next = (command->side) ? 0 : linearnext(job, i - 1);
+        pipe.nroutes = command->nroutes;
+
+        for (j = 0; j < command->nroutes; j++)
+        {
+
+            struct job_route *route = &command->routes[j];
+
+            pipe.routes[j].event = route->event;
+            pipe.routes[j].to = route->to;
+            pipe.routes[j].target = (route->stage) ? job->commands[route->stage - 1].target : 0;
+
+        }
         count = cstring_write_fmt1(options, MESSAGE_SIZE, 0, "pwd=%s", pwd);
 
         for (j = 0; j < command->noptions; j++)
@@ -148,8 +192,24 @@ unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int targe
     if (index < job->ncommands)
     {
 
-        if (status != EXIT_STATUS_NORMAL && index + 1 < job->ncommands && job->commands[index + 1].target)
-            channel_send(ichannel, job->commands[index + 1].target, EVENT_TERM, 0, 0);
+        if (status != EXIT_STATUS_NORMAL)
+        {
+
+            unsigned int next = linearnext(job, index);
+            unsigned int i;
+
+            if (next)
+                channel_send(ichannel, next, EVENT_TERM, 0, 0);
+
+            for (i = 0; i < job->ncommands; i++)
+            {
+
+                if (job->commands[i].side == index + 1 && job->commands[i].target)
+                    channel_send(ichannel, job->commands[i].target, EVENT_TERM, 0, 0);
+
+            }
+
+        }
 
         job->commands[index].target = 0;
 

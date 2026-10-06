@@ -3,6 +3,16 @@
 #define JOB_OPTIONS                     16
 #define JOB_STRINGSSIZE                 512
 #define JOB_ERRORSIZE                   128
+#define JOB_ROUTES                      PIPE_ROUTES
+
+struct job_route
+{
+
+    unsigned int event;
+    unsigned int to;
+    unsigned int stage;
+
+};
 
 struct job_command
 {
@@ -13,6 +23,9 @@ struct job_command
     char *keys[JOB_OPTIONS];
     char *values[JOB_OPTIONS];
     unsigned int noptions;
+    struct job_route routes[JOB_ROUTES];
+    unsigned int nroutes;
+    unsigned int side;
     unsigned int target;
 
 };

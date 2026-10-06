@@ -76,11 +76,24 @@ struct event_exit
 
 };
 
+#define PIPE_ROUTES                     8
+
+struct event_route
+{
+
+    unsigned int event;
+    unsigned int to;
+    unsigned int target;
+
+};
+
 struct event_pipe
 {
 
     unsigned int prev;
     unsigned int next;
+    unsigned int nroutes;
+    struct event_route routes[PIPE_ROUTES];
 
 };
 

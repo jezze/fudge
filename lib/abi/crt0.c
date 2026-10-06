@@ -61,9 +61,7 @@ static void onoption(struct message *message)
 static void onpipe(struct message *message)
 {
 
-    struct event_pipe *pipe = message->data;
-
-    channel_pipe(message->source, pipe->prev, (pipe->next) ? pipe->next : message->source);
+    channel_pipe(message->source, message->data);
 
 }
 
