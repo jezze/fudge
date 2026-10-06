@@ -35,6 +35,24 @@ unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int 
 
 }
 
+unsigned int fs_dirlength(char *path)
+{
+
+    unsigned int length = 0;
+    unsigned int i;
+
+    for (i = 0; path[i]; i++)
+    {
+
+        if (path[i] == '/' || path[i] == ':')
+            length = i + 1;
+
+    }
+
+    return length;
+
+}
+
 unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 {
 
@@ -156,6 +174,23 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
     channel_wait(ichannel, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
     return response.id;
+
+}
+
+unsigned int fs_walkparent(unsigned int ichannel, unsigned int target, char *path)
+{
+
+    char directory[1024];
+    unsigned int length = fs_dirlength(path);
+
+    if (length >= 1024)
+        return 0;
+
+    buffer_write(directory, 1024, path, length, 0);
+
+    directory[length] = '\0';
+
+    return fs_walk(ichannel, target, 0, directory);
 
 }
 

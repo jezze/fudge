@@ -4,41 +4,6 @@
 static char source[1024];
 static unsigned int paths;
 
-static unsigned int dirlength(char *path)
-{
-
-    unsigned int length = 0;
-    unsigned int i;
-
-    for (i = 0; path[i]; i++)
-    {
-
-        if (path[i] == '/' || path[i] == ':')
-            length = i + 1;
-
-    }
-
-    return length;
-
-}
-
-static unsigned int walkdirectory(unsigned int target, char *path)
-{
-
-    char directory[1024];
-    unsigned int length = dirlength(path);
-
-    if (length >= 1024)
-        return 0;
-
-    buffer_write(directory, 1024, path, length, 0);
-
-    directory[length] = '\0';
-
-    return fs_walk(1, target, 0, directory);
-
-}
-
 static unsigned int isdirectory(unsigned int target, unsigned int id)
 {
 
@@ -75,15 +40,15 @@ static unsigned int move(unsigned int source, char *from, char *to)
     {
 
         parent = did;
-        name = from + dirlength(from);
+        name = from + fs_dirlength(from);
 
     }
 
     else
     {
 
-        parent = (dtarget) ? walkdirectory(dtarget, to) : 0;
-        name = to + dirlength(to);
+        parent = (dtarget) ? fs_walkparent(1, dtarget, to) : 0;
+        name = to + fs_dirlength(to);
 
     }
 
@@ -157,7 +122,7 @@ static unsigned int move(unsigned int source, char *from, char *to)
 
     }
 
-    if (!fs_remove(1, starget, walkdirectory(starget, from), sid))
+    if (!fs_remove(1, starget, fs_walkparent(1, starget, from), sid))
     {
 
         channel_send_fmt1(0, source, EVENT_ERROR, "File could not be removed: %s\n", from);

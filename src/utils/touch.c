@@ -3,46 +3,11 @@
 
 static unsigned int paths;
 
-static unsigned int dirlength(char *path)
-{
-
-    unsigned int length = 0;
-    unsigned int i;
-
-    for (i = 0; path[i]; i++)
-    {
-
-        if (path[i] == '/' || path[i] == ':')
-            length = i + 1;
-
-    }
-
-    return length;
-
-}
-
-static unsigned int walkdirectory(unsigned int target, char *path)
-{
-
-    char directory[1024];
-    unsigned int length = dirlength(path);
-
-    if (length >= 1024)
-        return 0;
-
-    buffer_write(directory, 1024, path, length, 0);
-
-    directory[length] = '\0';
-
-    return fs_walk(1, target, 0, directory);
-
-}
-
 static void touch(unsigned int source, char *path)
 {
 
     unsigned int target = fs_auth(path);
-    char *name = path + dirlength(path);
+    char *name = path + fs_dirlength(path);
     unsigned int parent;
 
     if (!target)
@@ -57,7 +22,7 @@ static void touch(unsigned int source, char *path)
     if (fs_walk(1, target, 0, path))
         return;
 
-    parent = walkdirectory(target, path);
+    parent = fs_walkparent(1, target, path);
 
     if (!parent)
     {

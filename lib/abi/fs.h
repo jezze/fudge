@@ -1,5 +1,6 @@
 unsigned int fs_auth(char *path);
 unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int parent, void *buffer, unsigned int count);
+unsigned int fs_dirlength(char *path);
 unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id);
 unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
@@ -7,6 +8,7 @@ unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned in
 unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int parent, unsigned int id);
 unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id, struct record *record);
 unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int parent, char *path);
+unsigned int fs_walkparent(unsigned int ichannel, unsigned int target, char *path);
 unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fs_write_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fs_spawn(unsigned int ichannel, unsigned int notify, char *path);
