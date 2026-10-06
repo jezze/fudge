@@ -21,6 +21,7 @@ static unsigned int inputopen;
 #define TOKEN_INPUT                     7
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
+#define TOKEN_DUP                       10
 
 struct parser
 {
@@ -141,6 +142,15 @@ static unsigned int readtoken(struct job *job, struct parser *parser, char **wor
 
         }
 
+        if (parser->offset < parser->count && parser->data[parser->offset] == '&')
+        {
+
+            parser->offset++;
+
+            return TOKEN_DUP;
+
+        }
+
         return TOKEN_OUTPUT;
 
     case '#':
@@ -237,27 +247,188 @@ static unsigned int readpath(struct job *job, struct parser *parser, char **word
 
 }
 
-static struct job_command *addinput(struct job *job, struct job_command *command, char *path)
+static struct {char *name; unsigned int event;} events[] = {
+    {"main", EVENT_MAIN},
+    {"term", EVENT_TERM},
+    {"interrupt", EVENT_INTERRUPT},
+    {"option", EVENT_OPTION},
+    {"path", EVENT_PATH},
+    {"data", EVENT_DATA},
+    {"error", EVENT_ERROR},
+    {"status", EVENT_STATUS},
+    {"link", EVENT_LINK},
+    {"unlink", EVENT_UNLINK},
+    {"info", EVENT_INFO},
+    {"queryrequest", EVENT_QUERYREQUEST},
+    {"queryresponse", EVENT_QUERYRESPONSE},
+    {"ready", EVENT_READY},
+    {"exit", EVENT_EXIT},
+    {"pipe", EVENT_PIPE},
+    {"keypress", EVENT_KEYPRESS},
+    {"keyrelease", EVENT_KEYRELEASE},
+    {"mousemove", EVENT_MOUSEMOVE},
+    {"mousescroll", EVENT_MOUSESCROLL},
+    {"mousepress", EVENT_MOUSEPRESS},
+    {"mouserelease", EVENT_MOUSERELEASE},
+    {"consoledata", EVENT_CONSOLEDATA},
+    {"timertick", EVENT_TIMERTICK},
+    {"videocmap", EVENT_VIDEOCMAP},
+    {"videoconf", EVENT_VIDEOCONF},
+    {"videoinfo", EVENT_VIDEOINFO},
+    {"blockinfo", EVENT_BLOCKINFO},
+    {"blockreadrequest", EVENT_BLOCKREADREQUEST},
+    {"blockreadresponse", EVENT_BLOCKREADRESPONSE},
+    {"blockwriterequest", EVENT_BLOCKWRITEREQUEST},
+    {"blockwriteresponse", EVENT_BLOCKWRITERESPONSE},
+    {"clockinfo", EVENT_CLOCKINFO},
+    {"ethernetinfo", EVENT_ETHERNETINFO},
+    {"loginfo", EVENT_LOGINFO},
+    {"walkrequest", EVENT_WALKREQUEST},
+    {"walkresponse", EVENT_WALKRESPONSE},
+    {"readrequest", EVENT_READREQUEST},
+    {"readresponse", EVENT_READRESPONSE},
+    {"writerequest", EVENT_WRITEREQUEST},
+    {"writeresponse", EVENT_WRITERESPONSE},
+    {"statrequest", EVENT_STATREQUEST},
+    {"statresponse", EVENT_STATRESPONSE},
+    {"maprequest", EVENT_MAPREQUEST},
+    {"mapresponse", EVENT_MAPRESPONSE},
+    {"createrequest", EVENT_CREATEREQUEST},
+    {"createresponse", EVENT_CREATERESPONSE},
+    {"removerequest", EVENT_REMOVEREQUEST},
+    {"removeresponse", EVENT_REMOVERESPONSE},
+    {"wmmap", EVENT_WMMAP},
+    {"wmunmap", EVENT_WMUNMAP},
+    {"wmgrab", EVENT_WMGRAB},
+    {"wmungrab", EVENT_WMUNGRAB},
+    {"wmkeypress", EVENT_WMKEYPRESS},
+    {"wmkeyrelease", EVENT_WMKEYRELEASE},
+    {"wmmousemove", EVENT_WMMOUSEMOVE},
+    {"wmmousescroll", EVENT_WMMOUSESCROLL},
+    {"wmmousepress", EVENT_WMMOUSEPRESS},
+    {"wmmouserelease", EVENT_WMMOUSERELEASE},
+    {"wmrenderdata", EVENT_WMRENDERDATA},
+    {"wmrenderfile", EVENT_WMRENDERFILE},
+    {"wminit", EVENT_WMINIT},
+    {"wmevent", EVENT_WMEVENT},
+    {"wmack", EVENT_WMACK},
+    {"p9p", EVENT_P9P}
+};
+
+static unsigned int findevent(char *word)
+{
+
+    unsigned int event = 0;
+    unsigned int i;
+
+    for (i = 0; i < sizeof (events) / sizeof (events[0]); i++)
+    {
+
+        if (cstring_match(word, events[i].name))
+            return events[i].event;
+
+    }
+
+    for (i = 0; word[i]; i++)
+    {
+
+        if (word[i] < '0' || word[i] > '9')
+            return 0;
+
+        event = event * 10 + word[i] - '0';
+
+    }
+
+    return (i && event < 256) ? event : 0;
+
+}
+
+static char *addnumber(struct job *job, unsigned int value)
+{
+
+    char *number = job->strings + job->nstrings;
+
+    job->nstrings += cstring_write_fmt1(number, JOB_STRINGSSIZE - job->nstrings, 0, "%u\\0", &value);
+
+    return number;
+
+}
+
+static unsigned int addroute(struct job *job, struct job_command *command, unsigned int event, unsigned int to, unsigned int stage)
+{
+
+    struct job_route *route;
+
+    if (command->nroutes >= JOB_ROUTES)
+        return seterror(job, "Syntax error: Too many redirects", 0);
+
+    route = &command->routes[command->nroutes++];
+    route->event = event;
+    route->to = to;
+    route->stage = stage;
+
+    return 1;
+
+}
+
+static struct job_command *addinput(struct job *job, struct job_command *command, char *path, unsigned int event)
 {
 
     unsigned int i;
+    unsigned int j;
 
     for (i = job->ncommands; i > 0; i--)
         job->commands[i] = job->commands[i - 1];
 
     job->ncommands++;
 
+    for (i = 1; i < job->ncommands; i++)
+    {
+
+        struct job_command *shifted = &job->commands[i];
+
+        if (shifted->side)
+            shifted->side++;
+
+        for (j = 0; j < shifted->nroutes; j++)
+        {
+
+            if (shifted->routes[j].stage)
+                shifted->routes[j].stage++;
+
+        }
+
+    }
+
     buffer_clear(&job->commands[0], sizeof (struct job_command));
 
-    job->commands[0].program = "echo";
     job->commands[0].paths[0] = path;
     job->commands[0].npaths = 1;
+
+    if (event == EVENT_DATA)
+    {
+
+        job->commands[0].program = "echo";
+
+    }
+
+    else
+    {
+
+        job->commands[0].program = "play";
+        job->commands[0].keys[0] = "event";
+        job->commands[0].values[0] = addnumber(job, event);
+        job->commands[0].noptions = 1;
+
+        addroute(job, &job->commands[0], event, event, 2);
+
+    }
 
     return command + 1;
 
 }
 
-static void addoutput(struct job *job, char *path, char *mode)
+static struct job_command *addwrite(struct job *job, char *path, char *mode)
 {
 
     struct job_command *command = &job->commands[job->ncommands++];
@@ -269,6 +440,22 @@ static void addoutput(struct job *job, char *path, char *mode)
     command->values[0] = "1";
     command->noptions = 1;
 
+    return command;
+
+}
+
+static unsigned int addrecord(struct job *job, struct job_command *command, char *path, char *mode, unsigned int event)
+{
+
+    struct job_command *record = addwrite(job, path, mode);
+
+    record->keys[1] = "event";
+    record->values[1] = addnumber(job, event);
+    record->noptions = 2;
+    record->side = (command - job->commands) + 1;
+
+    return addroute(job, command, event, event, job->ncommands);
+
 }
 
 static unsigned int parse(struct job *job, struct parser *parser)
@@ -276,6 +463,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
 
     struct job_command *command = 0;
     unsigned int redirected = 0;
+    unsigned int event = EVENT_DATA;
 
     for (;;)
     {
@@ -288,6 +476,15 @@ static unsigned int parse(struct job *job, struct parser *parser)
         {
 
         case TOKEN_WORD:
+            if (command && parser->offset < parser->count && (parser->data[parser->offset] == '<' || parser->data[parser->offset] == '>') && findevent(word))
+            {
+
+                event = findevent(word);
+
+                break;
+
+            }
+
             if (command)
             {
 
@@ -379,7 +576,8 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!readpath(job, parser, &word, "<"))
                 return 0;
 
-            command = addinput(job, command, word);
+            command = addinput(job, command, word, event);
+            event = EVENT_DATA;
 
             break;
 
@@ -388,18 +586,50 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!command)
                 return seterror(job, "Syntax error: Expected command before > or >>", 0);
 
-            if (redirected)
-                return seterror(job, "Syntax error: Only one > or >> per command line", 0);
-
             if (job->ncommands >= JOB_COMMANDS)
                 return seterror(job, "Syntax error: Too many commands in pipeline", 0);
 
             if (!readpath(job, parser, &word, (token == TOKEN_APPEND) ? ">>" : ">"))
                 return 0;
 
-            addoutput(job, word, (token == TOKEN_APPEND) ? "append" : "create");
+            if (event == EVENT_DATA)
+            {
 
-            redirected = 1;
+                if (redirected)
+                    return seterror(job, "Syntax error: Only one > or >> per command line", 0);
+
+                addwrite(job, word, (token == TOKEN_APPEND) ? "append" : "create");
+
+                redirected = 1;
+
+            }
+
+            else
+            {
+
+                if (!addrecord(job, command, word, (token == TOKEN_APPEND) ? "append" : "create", event))
+                    return 0;
+
+            }
+
+            event = EVENT_DATA;
+
+            break;
+
+        case TOKEN_DUP:
+            if (!command)
+                return seterror(job, "Syntax error: Expected command before >&", 0);
+
+            if (!readpath(job, parser, &word, ">&"))
+                return 0;
+
+            if (!findevent(word))
+                return seterror(job, "Syntax error: Unknown event %s", word);
+
+            if (!addroute(job, command, event, findevent(word), 0))
+                return 0;
+
+            event = EVENT_DATA;
 
             break;
 
