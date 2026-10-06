@@ -515,6 +515,9 @@ static unsigned int findentry(unsigned int id, char *path, unsigned int length)
     unsigned int offset = 0;
     unsigned int first;
 
+    if (id == ROOT && length <= 2 && buffer_match("..", path, length))
+        return ROOT;
+
     getnode(id, &entry);
 
     if (gettype(&entry) != RECORD_TYPE_DIRECTORY)
@@ -526,7 +529,7 @@ static unsigned int findentry(unsigned int id, char *path, unsigned int length)
     {
 
         if (matchname(name, path, length))
-            return id;
+            return (gettype(&entry) == RECORD_TYPE_DIRECTORY && !entry.clusterhigh && !entry.clusterlow) ? ROOT : id;
 
     }
 
@@ -563,7 +566,7 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
 }
 
-static unsigned int readdirectory(unsigned int first, unsigned int offset, unsigned int capacity, void *data)
+static unsigned int readdirectory(unsigned int root, unsigned int first, unsigned int offset, unsigned int capacity, void *data)
 {
 
     struct record *records = data;
@@ -571,6 +574,23 @@ static unsigned int readdirectory(unsigned int first, unsigned int offset, unsig
     char name[NAMESIZE];
     unsigned int i = 0;
     unsigned int id;
+
+    if (root && offset < 2)
+    {
+
+        if (!offset)
+        {
+
+            record_init(&records[0], ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+            record_init(&records[1], ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 2, "..");
+
+            i = 2;
+
+        }
+
+        offset = 0;
+
+    }
 
     while ((i + 1) * sizeof (struct record) <= capacity && (id = nextentry(first, &offset, &entry, name)))
     {
@@ -830,7 +850,7 @@ static void onreadrequest(struct message *message)
     getnode(request->id, &entry);
 
     if (gettype(&entry) == RECORD_TYPE_DIRECTORY)
-        response->count = readdirectory(getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
+        response->count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
     else
         response->count = readfile(getcluster(&entry), entry.size, request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
 

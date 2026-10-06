@@ -169,9 +169,25 @@ static unsigned int read(unsigned int id, void *buffer, unsigned int count, unsi
 static unsigned int readrecords(unsigned int id, struct record *records, unsigned int count, unsigned int offset)
 {
 
-    unsigned int current = address + offset;
+    unsigned int current = (offset == 1) ? address : address + offset;
     unsigned int i = 0;
     unsigned int n = 0;
+
+    if (!offset)
+    {
+
+        unsigned int parent = (id == getroot()) ? id : getparent(id);
+
+        if (2 * sizeof (struct record) >= count)
+            return 0;
+
+        record_init(&records[0], id, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+        record_init(&records[1], parent, RECORD_TYPE_DIRECTORY, 0, 1, 2, "..");
+
+        i = 2;
+        n = 2 * sizeof (struct record);
+
+    }
 
     do
     {
@@ -235,7 +251,7 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
         }
 
-        else
+        else if (cl != 1 || cp[0] != '.')
         {
 
             id = getchild(id, cp, cl);

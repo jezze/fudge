@@ -20,8 +20,6 @@ static void list(unsigned int source, char *path)
             unsigned int count;
             unsigned int offset = 0;
 
-            channel_send_fmt0(0, source, EVENT_DATA, "../\n");
-
             while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
             {
 
