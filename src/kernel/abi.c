@@ -68,25 +68,29 @@ static unsigned int find(unsigned int itask, void *stack)
         unsigned int namehash = djb_hash(args->length, args->name);
         struct resource *resource = 0;
         unsigned int index = 0;
+        unsigned int inode = 0;
 
-        while ((resource = resource_foreachtype(resource, RESOURCE_SERVICE)))
+        resource_lock();
+
+        while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)))
         {
 
             struct service *service = resource->data;
 
-            if (service->namehash == namehash)
+            if (service->namehash == namehash && index++ == args->index)
             {
 
-                if (index == args->index)
-                    return service->inode;
+                inode = service->inode;
 
-                index++;
+                break;
 
             }
 
         }
 
-        return 0;
+        resource_unlock();
+
+        return inode;
 
     }
 
