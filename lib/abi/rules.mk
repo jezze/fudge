@@ -7,6 +7,7 @@ O:=\
     $(DIR_LIB)/abi/fs.o \
     $(DIR_LIB)/abi/job.o \
     $(DIR_LIB)/abi/option.o \
+    $(DIR_LIB)/abi/system.o \
 
 include $(DIR_LIB)/abi/$(ARCH)/rules.mk
 include $(DIR_MK)/lib.mk
@@ -21,6 +22,7 @@ O:=\
     $(DIR_LIB)/abi/fs.o \
     $(DIR_LIB)/abi/job.o \
     $(DIR_LIB)/abi/option.o \
+    $(DIR_LIB)/abi/system.o \
 
 include $(DIR_LIB)/abi/$(ARCH)/qrules.mk
 include $(DIR_MK)/lib.mk

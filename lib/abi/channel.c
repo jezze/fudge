@@ -211,6 +211,13 @@ unsigned int channel_send_fmt8(unsigned int ichannel, unsigned int target, unsig
 
 }
 
+unsigned int channel_pick(unsigned int ichannel, struct message *message)
+{
+
+    return pick(ichannel, message);
+
+}
+
 unsigned int channel_process(unsigned int ichannel)
 {
 
