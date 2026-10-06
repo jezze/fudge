@@ -104,11 +104,6 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
 
     }
 
-    channel_send(ichannel, job->commands[0].target, EVENT_TERM, 0, 0);
-
-    if (job->background)
-        job_detach(job);
-
 }
 
 void job_abort(struct job *job, unsigned int ichannel)

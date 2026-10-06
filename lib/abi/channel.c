@@ -144,7 +144,7 @@ static void dispatch(struct message *message)
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    return place(ichannel, reroute(target, event), event, count, data);
+    return place(ichannel, (ichannel) ? target : reroute(target, event), event, count, data);
 
 }
 

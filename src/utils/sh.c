@@ -10,6 +10,7 @@ static unsigned int scriptcount;
 static unsigned int output;
 static unsigned int running;
 static unsigned int interrupts;
+static unsigned int inputopen;
 
 #define TOKEN_END                       1
 #define TOKEN_WORD                      2
@@ -338,6 +339,12 @@ static void run(char *pwd)
 
         job_run(&job, 0, pwd);
 
+        if (!inputopen || job.background)
+            job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
+
+        if (job.background)
+            job_detach(&job);
+
         while (job_count(&job))
         {
 
@@ -454,7 +461,19 @@ static void onpath(struct message *message)
 static void onterm(struct message *message)
 {
 
+    if (running)
+    {
+
+        inputopen = 0;
+
+        job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
+
+        return;
+
+    }
+
     running = 1;
+    inputopen = option_getdecimal("input");
 
     run(option_getstring("pwd"));
 
@@ -467,6 +486,7 @@ void init(void)
 {
 
     option_add("export", "0");
+    option_add("input", "0");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_ERROR, onerror);

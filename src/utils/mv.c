@@ -197,3 +197,4 @@ void init(void)
     channel_bind(EVENT_TERM, onterm);
 
 }
+

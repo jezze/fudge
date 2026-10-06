@@ -861,25 +861,10 @@ static void setupwidgets(void)
 {
 
     char *data0 = "+ layout id \"root\" flow \"stretch\"\n";
-    unsigned int target = fs_auth("initrd:");
+    char data1[4096];
 
     parser_parse(0, "", cstring_length(data0), data0);
-
-    if (target)
-    {
-
-        unsigned int id = fs_walk(1, target, 0, "initrd:data/alfi/wm.alfi");
-        
-        if (id)
-        {
-
-            char data1[4096];
-
-            parser_parse(0, "root", fs_read(1, target, id, data1, 4096, 0), data1);
-
-        }
-
-    }
+    parser_parse(0, "root", system_feed("echo initrd:data/alfi/wm.alfi", 0, 0, data1, 4096), data1);
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
     state.mousewidget = pool_getwidgetbyid(0, "mouse");

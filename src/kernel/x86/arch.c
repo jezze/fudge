@@ -295,7 +295,7 @@ void arch_leave(void)
     interrupt.eflags.value = cpu_geteflags() | CPU_FLAGS_IF;
 
     schedule(&general, &interrupt);
-    cpu_leave(interrupt);
+    cpu_leave(general, interrupt);
 
 }
 

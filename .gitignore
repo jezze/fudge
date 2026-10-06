@@ -64,6 +64,7 @@ src/utils/tr
 src/utils/wc
 src/utils/webc
 src/utils/webs
+src/utils/write
 src/wm/wm
 src/wutils/wabout
 src/wutils/wcalc

@@ -6,6 +6,8 @@ static char kerneldata[8192];
 static unsigned int kernelcount;
 static char mapdata[4096];
 static unsigned int mapcount;
+static char lines[4096];
+static unsigned int linescount;
 
 static unsigned int gettextsectionoffset(struct elf_header *header, struct elf_sectionheader *sectionheaders)
 {
@@ -70,38 +72,21 @@ static unsigned int findsymbol(char *data, unsigned int count, unsigned int leng
 static unsigned int loadmap(char *map, char *buffer, unsigned int count)
 {
 
-    unsigned int target = fs_auth(map);
+    char command[300];
 
-    if (target)
-    {
+    cstring_write_fmt1(command, 300, 0, "echo %s\\0", map);
 
-        unsigned int id = fs_walk(1, target, 0, map);
-
-        if (id)
-            return fs_read_full(1, target, id, buffer, count, 0);
-
-    }
-
-    return 0;
+    return system_feed(command, 0, 0, buffer, count);
 
 }
 
-static unsigned int savemap(char *map, char *buffer, unsigned int count)
+static void savemap(char *map, char *buffer, unsigned int count)
 {
 
-    unsigned int target = fs_auth(map);
+    char command[300];
 
-    if (target)
-    {
-
-        unsigned int id = fs_walk(1, target, 0, map);
-
-        if (id)
-            return fs_write_all(1, target, id, buffer, count, 0);
-
-    }
-
-    return 0;
+    cstring_write_fmt1(command, 300, 0, "write %s\\0", map);
+    system_feed(command, buffer, count, 0, 0);
 
 }
 
@@ -237,15 +222,15 @@ static void onmain(struct message *message)
 
 }
 
-static void onpath(struct message *message)
+static void load(unsigned int source, char *path)
 {
 
-    unsigned int target = fs_auth(message->data);
+    unsigned int target = fs_auth(path);
 
     if (target)
     {
 
-        unsigned int id = fs_walk(1, target, 0, message->data);
+        unsigned int id = fs_walk(1, target, 0, path);
 
         if (id)
         {
@@ -268,7 +253,7 @@ static void onpath(struct message *message)
 
                         char mapname[256];
 
-                        cstring_write_fmt1(mapname, 256, 0, "%s.map\\0", message->data);
+                        cstring_write_fmt1(mapname, 256, 0, "%s.map\\0", path);
 
                         mapcount = loadmap(mapname, mapdata, 4096);
 
@@ -277,7 +262,7 @@ static void onpath(struct message *message)
 
                             fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
                             updateundefined();
-                            resolve(message->source, target, id, &header, sectionheaders, address);
+                            resolve(source, target, id, &header, sectionheaders, address);
                             relocate(&header, sectionheaders, address);
                             savemap(mapname, mapdata, mapcount);
                             call_load(address);
@@ -296,11 +281,52 @@ static void onpath(struct message *message)
 
 }
 
+static void ondata(struct message *message)
+{
+
+    linescount += buffer_write(lines, 4096, message->data, message->length, linescount);
+
+}
+
+static void onterm(struct message *message)
+{
+
+    unsigned int start = 0;
+    unsigned int end;
+
+    for (end = 0; end < linescount; end++)
+    {
+
+        if (lines[end] == '\n')
+        {
+
+            lines[end] = '\0';
+
+            if (end > start)
+                load(message->source, lines + start);
+
+            start = end + 1;
+
+        }
+
+    }
+
+}
+
+static void onpath(struct message *message)
+{
+
+    load(message->source, message->data);
+
+}
+
 void init(void)
 {
 
+    channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
+    channel_bind(EVENT_TERM, onterm);
 
 }
 

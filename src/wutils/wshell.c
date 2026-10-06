@@ -316,26 +316,9 @@ static void submit(void)
 static unsigned int runcomplete(char *output, unsigned int size)
 {
 
-    unsigned int target = fs_spawn(1, 1, "initrd:bin/complete");
-    unsigned int count = 0;
+    char input[INPUTSIZE];
 
-    if (target)
-    {
-
-        char input[INPUTSIZE];
-        struct message message;
-
-        channel_send_fmt1(1, target, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
-        channel_send(1, target, EVENT_MAIN, 0, 0);
-        channel_send(1, target, EVENT_DATA, ring_readcopy(&input1, input, INPUTSIZE), input);
-        channel_send(1, target, EVENT_TERM, 0, 0);
-
-        while (channel_poll(1, target, EVENT_DATA, &message))
-            count += buffer_write(output, size, message.data, message.length, count);
-
-    }
-
-    return count;
+    return system_feed("complete", input, ring_readcopy(&input1, input, INPUTSIZE), output, size);
 
 }
 

@@ -104,10 +104,11 @@ cpu_halt:
 .global cpu_leave
 cpu_leave:
     addl $4, %esp
-    movw 16(%esp), %ax
+    movw 48(%esp), %ax
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
+    popa
     iret
 
