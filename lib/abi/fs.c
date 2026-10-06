@@ -218,9 +218,19 @@ unsigned int fs_write_all(unsigned int ichannel, unsigned int target, unsigned i
 {
 
     unsigned char *b = buffer;
-    unsigned int c;
+    unsigned int c = 0;
 
-    for (c = 0; c < count; c += fs_write(ichannel, target, id, b + c, count - c, offset + c));
+    while (c < count)
+    {
+
+        unsigned int written = fs_write(ichannel, target, id, b + c, count - c, offset + c);
+
+        if (!written)
+            break;
+
+        c += written;
+
+    }
 
     return c;
 
