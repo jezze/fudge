@@ -101,7 +101,7 @@ static void setpio28(unsigned int id, unsigned int sector, unsigned int count, u
     switch (id)
     {
 
-    case IDE_SM:
+    case IDE_PS:
     case IDE_SS:
         select |= 0x10;
 
@@ -130,7 +130,7 @@ static void setpio48(unsigned int id, unsigned int sector, unsigned int count, u
     switch (id)
     {
 
-    case IDE_SM:
+    case IDE_PS:
     case IDE_SS:
         select |= 0x10;
 

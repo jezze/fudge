@@ -14,8 +14,9 @@
 static void *blockbuffer;
 static struct base_driver driver;
 static struct block_interface blockinterface;
+static struct spinlock spinlock;
 
-static void handleirq(unsigned int irq)
+static void progress(void)
 {
 
     unsigned char status = ide_getstatus(blockinterface.id);
@@ -71,6 +72,15 @@ static void handleirq(unsigned int irq)
 
 }
 
+static void handleirq(unsigned int irq)
+{
+
+    spinlock_acquire(&spinlock);
+    progress();
+    spinlock_release(&spinlock);
+
+}
+
 static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 {
 
@@ -82,6 +92,8 @@ static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 
 static void blockinterface_startsession(struct block_session *session)
 {
+
+    spinlock_acquire(&spinlock);
 
     switch (session->type)
     {
@@ -115,6 +127,8 @@ static void blockinterface_startsession(struct block_session *session)
         break;
 
     }
+
+    spinlock_release(&spinlock);
 
 }
 

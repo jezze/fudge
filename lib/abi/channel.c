@@ -12,7 +12,7 @@ static unsigned int state = CHANNEL_STATE_OPENED;
 static unsigned int pipeowner;
 static unsigned int pipeprev;
 static unsigned int pipenext;
-static struct event_route routes[PIPE_ROUTES];
+static struct event_route routes[PIPE_ROUTES + 2];
 static unsigned int nroutes;
 
 static struct event_route *findroute(unsigned int event)
@@ -56,17 +56,6 @@ static unsigned int reroute(unsigned int target, unsigned int *event)
             *event = route->to;
 
             return routetarget(route);
-
-        }
-
-        switch (*event)
-        {
-
-        case EVENT_DATA:
-            return pipenext;
-
-        case EVENT_ERROR:
-            return pipeowner;
 
         }
 
@@ -365,6 +354,15 @@ void channel_pipe(unsigned int owner, struct event_pipe *pipe)
 
     for (i = 0; i < nroutes; i++)
         routes[i] = pipe->routes[i];
+
+    routes[nroutes].event = EVENT_DATA;
+    routes[nroutes].to = EVENT_DATA;
+    routes[nroutes].target = 0;
+    nroutes++;
+    routes[nroutes].event = EVENT_ERROR;
+    routes[nroutes].to = EVENT_ERROR;
+    routes[nroutes].target = 0;
+    nroutes++;
 
 }
 

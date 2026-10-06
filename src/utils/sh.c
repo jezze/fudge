@@ -357,9 +357,18 @@ static unsigned int addroute(struct job *job, struct job_command *command, unsig
 {
 
     struct job_route *route;
+    unsigned int i;
 
     if (command->nroutes >= JOB_ROUTES)
         return seterror(job, "Syntax error: Too many redirects", 0);
+
+    for (i = 0; i < command->nroutes; i++)
+    {
+
+        if (command->routes[i].event == event)
+            return seterror(job, "Syntax error: Event redirected twice", 0);
+
+    }
 
     route = &command->routes[command->nroutes++];
     route->event = event;
@@ -404,50 +413,27 @@ static struct job_command *addinput(struct job *job, struct job_command *command
     job->commands[0].paths[0] = path;
     job->commands[0].npaths = 1;
 
-    if (event == EVENT_DATA)
-    {
+    job->commands[0].program = "play";
+    job->commands[0].keys[0] = "event";
+    job->commands[0].values[0] = addnumber(job, event);
+    job->commands[0].noptions = 1;
 
-        job->commands[0].program = "echo";
-
-    }
-
-    else
-    {
-
-        job->commands[0].program = "play";
-        job->commands[0].keys[0] = "event";
-        job->commands[0].values[0] = addnumber(job, event);
-        job->commands[0].noptions = 1;
-
-        addroute(job, &job->commands[0], event, event, 2);
-
-    }
+    addroute(job, &job->commands[0], event, event, 2);
 
     return command + 1;
-
-}
-
-static struct job_command *addwrite(struct job *job, char *path, char *mode)
-{
-
-    struct job_command *command = &job->commands[job->ncommands++];
-
-    command->program = "write";
-    command->paths[0] = path;
-    command->npaths = 1;
-    command->keys[0] = mode;
-    command->values[0] = "1";
-    command->noptions = 1;
-
-    return command;
 
 }
 
 static unsigned int addrecord(struct job *job, struct job_command *command, char *path, char *mode, unsigned int event)
 {
 
-    struct job_command *record = addwrite(job, path, mode);
+    struct job_command *record = &job->commands[job->ncommands++];
 
+    record->program = "write";
+    record->paths[0] = path;
+    record->npaths = 1;
+    record->keys[0] = mode;
+    record->values[0] = "1";
     record->keys[1] = "event";
     record->values[1] = addnumber(job, event);
     record->noptions = 2;
@@ -461,7 +447,6 @@ static unsigned int parse(struct job *job, struct parser *parser)
 {
 
     struct job_command *command = 0;
-    unsigned int redirected = 0;
     unsigned int event = EVENT_DATA;
 
     for (;;)
@@ -541,9 +526,6 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!command)
                 return seterror(job, "Syntax error: Expected command before |", 0);
 
-            if (redirected)
-                return seterror(job, "Syntax error: Unexpected | after > or >>", 0);
-
             command = 0;
 
             break;
@@ -591,25 +573,8 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!readpath(job, parser, &word, (token == TOKEN_APPEND) ? ">>" : ">"))
                 return 0;
 
-            if (event == EVENT_DATA)
-            {
-
-                if (redirected)
-                    return seterror(job, "Syntax error: Only one > or >> per command line", 0);
-
-                addwrite(job, word, (token == TOKEN_APPEND) ? "append" : "create");
-
-                redirected = 1;
-
-            }
-
-            else
-            {
-
-                if (!addrecord(job, command, word, (token == TOKEN_APPEND) ? "append" : "create", event))
-                    return 0;
-
-            }
+            if (!addrecord(job, command, word, (token == TOKEN_APPEND) ? "append" : "create", event))
+                return 0;
 
             event = EVENT_DATA;
 
