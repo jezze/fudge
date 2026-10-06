@@ -14,8 +14,11 @@ static struct record rootrecords[ROOTRECORDS];
 static struct spinlock spinlock;
 static char output[OUTPUTSIZE];
 static unsigned char response[MESSAGE_SIZE];
+static unsigned int outputcount;
+static unsigned int outputid;
+static unsigned int outputsource;
 
-static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int count, void *data)
+static unsigned int writecores(void)
 {
 
     struct resource *resource = 0;
@@ -51,11 +54,11 @@ static unsigned int readcores(unsigned int id, unsigned int offset, unsigned int
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
 
-    return buffer_read(data, count, output, c, offset);
+    return c;
 
 }
 
-static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int count, void *data)
+static unsigned int writetasks(void)
 {
 
     struct resource *resource = 0;
@@ -100,11 +103,11 @@ static unsigned int readtasks(unsigned int id, unsigned int offset, unsigned int
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
 
-    return buffer_read(data, count, output, c, offset);
+    return c;
 
 }
 
-static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned int count, void *data)
+static unsigned int writemailboxes(void)
 {
 
     struct resource *resource = 0;
@@ -135,11 +138,11 @@ static unsigned int readmailboxes(unsigned int id, unsigned int offset, unsigned
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
 
-    return buffer_read(data, count, output, c, offset);
+    return c;
 
 }
 
-static unsigned int readbuses(unsigned int id, unsigned int offset, unsigned int count, void *data)
+static unsigned int writebuses(void)
 {
 
     struct resource *resource = 0;
@@ -166,11 +169,11 @@ static unsigned int readbuses(unsigned int id, unsigned int offset, unsigned int
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
 
-    return buffer_read(data, count, output, c, offset);
+    return c;
 
 }
 
-static unsigned int readdrivers(unsigned int id, unsigned int offset, unsigned int count, void *data)
+static unsigned int writedrivers(void)
 {
 
     struct resource *resource = 0;
@@ -197,11 +200,11 @@ static unsigned int readdrivers(unsigned int id, unsigned int offset, unsigned i
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
 
-    return buffer_read(data, count, output, c, offset);
+    return c;
 
 }
 
-static unsigned int readservices(unsigned int id, unsigned int offset, unsigned int count, void *data)
+static unsigned int writeservices(void)
 {
 
     struct resource *resource = 0;
@@ -229,7 +232,7 @@ static unsigned int readservices(unsigned int id, unsigned int offset, unsigned 
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
 
-    return buffer_read(data, count, output, c, offset);
+    return c;
 
 }
 
@@ -254,36 +257,53 @@ static unsigned int readroot(unsigned int id, unsigned int offset, unsigned int 
 
 }
 
-static unsigned int read(unsigned int id, unsigned int offset, unsigned int count, void *data)
+static unsigned int write(unsigned int id)
 {
 
     switch (id)
     {
 
-    case ROOT:
-        return readroot(id, offset, count, data);
-
     case 0x1001:
-        return readcores(id, offset, count, data);
+        return writecores();
 
     case 0x1002:
-        return readtasks(id, offset, count, data);
+        return writetasks();
 
     case 0x1003:
-        return readmailboxes(id, offset, count, data);
+        return writemailboxes();
 
     case 0x1004:
-        return readservices(id, offset, count, data);
+        return writeservices();
 
     case 0x1005:
-        return readbuses(id, offset, count, data);
+        return writebuses();
 
     case 0x1006:
-        return readdrivers(id, offset, count, data);
+        return writedrivers();
 
     }
 
     return 0;
+
+}
+
+static unsigned int read(unsigned int source, unsigned int id, unsigned int offset, unsigned int count, void *data)
+{
+
+    if (id == ROOT)
+        return readroot(id, offset, count, data);
+
+    /* a snapshot per reader, so a file read in several requests doesn't change between them */
+    if (!offset || id != outputid || source != outputsource)
+    {
+
+        outputcount = write(id);
+        outputid = id;
+        outputsource = source;
+
+    }
+
+    return buffer_read(data, count, output, outputcount, offset);
 
 }
 
@@ -388,7 +408,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
     spinlock_acquire(&spinlock);
 
-    readresponse->count = read(request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
+    readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
     status = kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
 
     spinlock_release(&spinlock);
