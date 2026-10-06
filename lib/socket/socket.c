@@ -867,4 +867,3 @@ void socket_init(struct socket *socket)
     socket->resolved = 0;
 
 }
-

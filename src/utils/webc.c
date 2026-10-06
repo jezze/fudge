@@ -1,48 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static void dnsresolve(unsigned int source, char *domain, char address[32])
-{
-
-    unsigned int target = fs_spawn(1, 1, "initrd:bin/dns");
-
-    if (target)
-    {
-
-        struct message message;
-
-        channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
-        channel_send(1, target, EVENT_MAIN, 0, 0);
-        channel_send(1, target, EVENT_TERM, 0, 0);
-
-        while (channel_poll(1, target, EVENT_QUERYRESPONSE, &message))
-        {
-
-            unsigned int i;
-            char *key;
-
-            for (i = 0; (key = buffer_tindex(message.data, message.length, '\0', i)); i += 2)
-            {
-
-                if (cstring_match(key, "data"))
-                {
-
-                    char *value = key + cstring_length_zero(key);
-
-                    buffer_write(address, 32, value, cstring_length_zero(value), 0);
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-    }
-
-}
-
 static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
@@ -88,8 +46,10 @@ static void onmain(struct message *message)
         else
             url_parse(&url, urldata, 2048, opturl, URL_HOST);
 
-        dnsresolve(message->source, url.host, address);
-        opensocket(message->source, &url, address);
+        if (system_resolve(url.host, address, 32))
+            opensocket(message->source, &url, address);
+        else
+            channel_send_fmt1(0, message->source, EVENT_ERROR, "Could not resolve: %s\n", url.host);
 
     }
 

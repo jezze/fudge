@@ -105,3 +105,35 @@ unsigned int system_feed(char *command, void *input, unsigned int inputcount, vo
     return total;
 
 }
+
+unsigned int system_resolve(char *domain, char *address, unsigned int size)
+{
+
+    char command[256];
+    char answers[MESSAGE_SIZE];
+    unsigned int count;
+    unsigned int length = 0;
+    unsigned int i;
+    char *key;
+
+    cstring_write_fmt1(command, 256, 0, "dns -domain %s queryresponse>&data\\0", domain);
+
+    count = system_feed(command, 0, 0, answers, MESSAGE_SIZE);
+
+    for (i = 0; (key = buffer_tindex(answers, count, '\0', i)); i += 2)
+    {
+
+        if (cstring_match(key, "data"))
+        {
+
+            char *value = key + cstring_length_zero(key);
+
+            length = buffer_write(address, size, value, cstring_length_zero(value), 0);
+
+        }
+
+    }
+
+    return length;
+
+}

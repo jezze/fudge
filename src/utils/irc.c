@@ -42,42 +42,10 @@ static void interpret(unsigned int ethernet, void *buffer, unsigned int count)
 static void dnsresolve(struct socket *socket, char *domain)
 {
 
-    unsigned int target = fs_spawn(1, 1, "initrd:bin/dns");
+    char address[32];
 
-    if (target)
-    {
-
-        struct message message;
-
-        channel_send_fmt1(1, target, EVENT_OPTION, "domain=%s\n", domain);
-        channel_send(1, target, EVENT_MAIN, 0, 0);
-        channel_send(1, target, EVENT_TERM, 0, 0);
-
-        while (channel_poll(1, target, EVENT_QUERYRESPONSE, &message))
-        {
-
-            unsigned int i;
-            char *key;
-
-            for (i = 0; (key = buffer_tindex(message.data, message.length, '\0', i)); i += 2)
-            {
-
-                if (cstring_match(key, "data"))
-                {
-
-                    char *value = key + cstring_length_zero(key);
-
-                    socket_bind_ipv4s(socket, value);
-
-                    break;
-
-                }
-
-            }
-
-        }
-
-    }
+    if (system_resolve(domain, address, 32))
+        socket_bind_ipv4s(socket, address);
 
 }
 
