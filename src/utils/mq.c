@@ -431,6 +431,7 @@ static unsigned int walk(struct parser *ps, struct parser *path)
     if (is_path_end(path))
     {
 
+        unsigned int quoted = is_quote(ps);
         unsigned int length;
 
         start = ps->pos;
@@ -438,6 +439,14 @@ static unsigned int walk(struct parser *ps, struct parser *path)
         skip_value(ps);
 
         length = ps->pos - start;
+
+        if (quoted)
+        {
+
+            start++;
+            length -= 2;
+
+        }
 
         channel_send_fmt2(0, ps->source, EVENT_DATA, "%w\n", start, &length);
 

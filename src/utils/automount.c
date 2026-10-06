@@ -4,142 +4,163 @@
 
 static struct event_blockinfo blockinfo;
 
-static unsigned int sendblockreadrequest(unsigned int offset, unsigned int count)
+static unsigned int sendblockreadrequest(unsigned int target, unsigned int offset, unsigned int count)
 {
 
-    unsigned int target = channel_lookup(option_getstring("block-service"));
+    struct event_blockrequest request;
+    struct event_blockresponse response;
 
-    if (target)
-    {
+    request.offset = offset;
+    request.count = count;
 
-        struct event_blockrequest request;
-        struct event_blockresponse response;
+    channel_send(1, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
+    channel_wait(1, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
-        request.offset = offset;
-        request.count = count;
-
-        channel_send(1, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_wait(1, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
-
-        return response.count;
-
-    }
-
-    return 0;
+    return response.count;
 
 }
 
-static void startservice(unsigned int source, char *program, char *service, unsigned int offset)
+static void startservice(unsigned int source, char *program, char *name, char *service, unsigned int index, unsigned int offset)
 {
 
     char line[128];
+    unsigned int count = cstring_write_fmt3(line, 128, 0, "%s -service %s -block-service %s", program, name, service);
 
-    cstring_write_fmt3(line, 128, 0, "%s -service %s -partoffset %u &\\0", program, service, &offset);
+    cstring_write_fmt2(line, 128, count, ":%u -partoffset %u &\\0", &index, &offset);
     system_run(source, line);
 
 }
 
-static void mountfat(unsigned int source, unsigned int offset, char *service)
+static void mountfat(unsigned int source, unsigned int target, unsigned int offset, char *name, char *service, unsigned int index)
 {
 
-    struct fat *fat = (struct fat *)blockinfo.buffer;
+    sendblockreadrequest(target, offset, 512);
 
-    sendblockreadrequest(offset, 512);
-
-    if (fat_validate(fat))
-        startservice(source, "initrd:bin/fatsrv", service, offset);
+    if (fat_validate((struct fat *)blockinfo.buffer))
+        startservice(source, "initrd:bin/fatsrv", name, service, index, offset);
 
 }
 
-static void mountext2(unsigned int source, unsigned int offset, char *service)
+static void mountext2(unsigned int source, unsigned int target, unsigned int offset, char *name, char *service, unsigned int index)
 {
 
-    struct ext2_superblock *sb = (struct ext2_superblock *)blockinfo.buffer;
+    sendblockreadrequest(target, offset + 1024, 1024);
 
-    sendblockreadrequest(offset + 1024, 1024);
-
-    if (ext2_validate(sb))
-        startservice(source, "initrd:bin/ext2srv", service, offset);
+    if (ext2_validate((struct ext2_superblock *)blockinfo.buffer))
+        startservice(source, "initrd:bin/ext2srv", name, service, index, offset);
 
 }
 
-static void mountpartition(unsigned int source, struct mbr_partition *partition, char *service)
+static void mountpartition(unsigned int source, unsigned int target, struct mbr_partition *partition, char *name, char *service, unsigned int index)
 {
 
-    unsigned int start = (partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0]);
+    unsigned int offset = ((partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0])) * blockinfo.blocksize;
 
     switch (partition->systemid)
     {
 
     case 0x83:
-        mountfat(source, start * blockinfo.blocksize, service);
-        mountext2(source, start * blockinfo.blocksize, service);
+        mountfat(source, target, offset, name, service, index);
+        mountext2(source, target, offset, name, service, index);
 
         break;
 
     case 0xEF:
-        mountfat(source, start * blockinfo.blocksize, service);
+        mountfat(source, target, offset, name, service, index);
 
         break;
 
     }
+
+}
+
+static void mount(unsigned int source, char *service, unsigned int index, unsigned int ipartition, char *name)
+{
+
+    unsigned int target = call_find(cstring_length(service), service, index);
+    struct mbr mbr;
+
+    if (!target)
+    {
+
+        channel_send_fmt2(0, source, EVENT_ERROR, "Service not found: %s:%u\n", service, &index);
+
+        return;
+
+    }
+
+    channel_send(1, target, EVENT_INFO, 0, 0);
+    channel_wait(1, target, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+
+    if (sendblockreadrequest(target, 0, blockinfo.blocksize) != 512)
+        return;
+
+    buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
+
+    if (mbr_validate(&mbr) && ipartition < 4 && mbr.partition[ipartition].systemid)
+        mountpartition(source, target, &mbr.partition[ipartition], name, service, index);
+
+}
+
+static unsigned int query(char *field, char *data, unsigned int size)
+{
+
+    char command[256];
+
+    cstring_write_fmt2(command, 256, 0, "mq -query .mounts.%s %s\\0", field, option_getstring("config"));
+
+    return system_feed(command, 0, 0, data, size);
+
+}
+
+static unsigned int getline(char *data, unsigned int count, unsigned int index, char *out, unsigned int size)
+{
+
+    char *line = buffer_tindex(data, count, '\n', index);
+    unsigned int length;
+
+    if (!line || line >= data + count)
+        return 0;
+
+    length = buffer_findbyte(line, data + count - line, '\n');
+
+    if (length >= size)
+        length = size - 1;
+
+    buffer_write(out, size, line, length, 0);
+
+    out[length] = '\0';
+
+    return 1;
 
 }
 
 static void onmain(struct message *message)
 {
 
-    unsigned int block = channel_lookup(option_getstring("block-service"));
-    char *service[4] = {
-        "efi",
-        "boot",
-        "root",
-        "home"
-    };
+    char services[1024];
+    char indexes[256];
+    char partitions[256];
+    char names[1024];
+    unsigned int nservices = query("service", services, 1024);
+    unsigned int nindexes = query("index", indexes, 256);
+    unsigned int npartitions = query("partition", partitions, 256);
+    unsigned int nnames = query("name", names, 1024);
+    char service[64];
+    char index[16];
+    char partition[16];
+    char name[64];
+    unsigned int i;
 
-    if (block)
-    {
-
-        unsigned int count;
-        channel_send(1, block, EVENT_INFO, 0, 0);
-        channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
-
-        count = sendblockreadrequest(0, blockinfo.blocksize);
-
-        if (count == 512)
-        {
-
-            struct mbr mbr;
-
-            buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
-
-            if (mbr_validate(&mbr))
-            {
-
-                unsigned int i;
-
-                for (i = 0; i < 4; i++)
-                {
-
-                    struct mbr_partition *partition = &mbr.partition[i];
-
-                    if (partition->systemid)
-                        mountpartition(message->source, partition, service[i]);
-
-                }
-
-            }
-
-        }
-
-    }
+    for (i = 0; getline(services, nservices, i, service, 64) && getline(indexes, nindexes, i, index, 16) && getline(partitions, npartitions, i, partition, 16) && getline(names, nnames, i, name, 64); i++)
+        mount(message->source, service, cstring_read_value(index, cstring_length(index), 10), cstring_read_value(partition, cstring_length(partition), 10), name);
 
 }
 
 void init(void)
 {
 
-    option_add("block-service", "block");
+    option_add("config", "initrd:data/config/mount.mq");
     channel_bind(EVENT_MAIN, onmain);
 
 }

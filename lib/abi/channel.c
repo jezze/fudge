@@ -326,8 +326,8 @@ unsigned int channel_lookup(char *name)
     if (offset > 0)
     {
 
+        index = cstring_read_value(name + offset, length - offset, 10);
         length = offset - 1;
-        index = name[offset] - '0';
 
     }
 
