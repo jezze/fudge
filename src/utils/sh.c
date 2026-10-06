@@ -119,6 +119,14 @@ static unsigned int readtoken(struct job *job, struct parser *parser, char **wor
 
         return TOKEN_BACKGROUND;
 
+    case '#':
+        while (parser->offset < parser->count && parser->data[parser->offset] != '\n')
+            parser->offset++;
+
+        parser->offset++;
+
+        return TOKEN_END;
+
     case '-':
         parser->offset++;
 
