@@ -3,15 +3,6 @@
 
 #define BINPATH                         "initrd:bin"
 #define SCRIPTSIZE                      0x4000
-
-static struct job job;
-static char script[SCRIPTSIZE];
-static unsigned int scriptcount;
-static unsigned int output;
-static unsigned int running;
-static unsigned int interrupts;
-static unsigned int inputopen;
-
 #define TOKEN_END                       1
 #define TOKEN_WORD                      2
 #define TOKEN_OPTION                    3
@@ -22,6 +13,14 @@ static unsigned int inputopen;
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
+
+static struct job job;
+static char script[SCRIPTSIZE];
+static unsigned int scriptcount;
+static unsigned int output;
+static unsigned int running;
+static unsigned int interrupts;
+static unsigned int inputopen;
 
 struct parser
 {
