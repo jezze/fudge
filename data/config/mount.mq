@@ -1,0 +1,28 @@
+{
+  mounts: [
+    {
+        service: block
+        index: 0
+        partition: 0
+        name: "efi"
+    }
+    {
+        service: block
+        index: 0
+        partition: 1
+        name: "boot"
+    }
+    {
+        service: block
+        index: 0
+        partition: 2
+        name: "root"
+    }
+    {
+        service: block
+        index: 0
+        partition: 3
+        name: "home"
+    }
+  ]
+}
