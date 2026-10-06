@@ -1,24 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
 
-static unsigned int readmodules(char *paths, unsigned int size)
-{
-
-    unsigned int count = system_read("mq -query .modules.path initrd:data/config/modules.mq", paths, size);
-    unsigned int i;
-
-    for (i = 0; i < count; i++)
-    {
-
-        if (paths[i] == '\n')
-            paths[i] = '\0';
-
-    }
-
-    return count;
-
-}
-
 static void loadmodules(unsigned int ichannel, unsigned int count, char *paths)
 {
 
@@ -92,8 +74,9 @@ static void onmain(struct message *message)
 {
 
     char paths[MESSAGE_SIZE];
+    unsigned int count = system_read("mq -query .modules.path initrd:data/config/modules.mq | tr -f '\\n' -t '\\0'", paths, MESSAGE_SIZE);
 
-    loadmodules(1, readmodules(paths, MESSAGE_SIZE), paths);
+    loadmodules(1, count, paths);
     spawnshell(1);
     spawnautomount(1);
     spawnwm(1);
