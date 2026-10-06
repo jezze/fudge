@@ -9,6 +9,7 @@ static char script[SCRIPTSIZE];
 static unsigned int scriptcount;
 static unsigned int output;
 static unsigned int running;
+static unsigned int interrupts;
 
 #define TOKEN_END                       1
 #define TOKEN_WORD                      2
@@ -310,7 +311,7 @@ static void run(char *pwd)
 
     unsigned int offset = 0;
 
-    while (offset < scriptcount)
+    while (offset < scriptcount && !interrupts)
     {
 
         if (!parseline(&job, script, scriptcount, &offset))
@@ -364,6 +365,20 @@ static void append(void *data, unsigned int count)
 
 static void onconsoledata(struct message *message)
 {
+
+    char *data = message->data;
+
+    if (message->length == 1 && data[0] == 0x03)
+    {
+
+        if (interrupts++)
+            job_kill(&job);
+        else
+            job_sendall(&job, 0, EVENT_INTERRUPT, 0, 0);
+
+        return;
+
+    }
 
     job_sendfirst(&job, 0, EVENT_CONSOLEDATA, message->length, message->data);
 

@@ -16,7 +16,6 @@ static struct ring result;
 static char line[LINESIZE];
 static unsigned int linecount;
 static unsigned int sh;
-static unsigned int interrupts;
 static unsigned int newline = 1;
 
 static void print(void *buffer, unsigned int count)
@@ -244,10 +243,7 @@ static void deleteend(void)
 static void interrupt(void)
 {
 
-    if (interrupts++)
-        call_kill(sh);
-    else
-        channel_send(0, sh, EVENT_INTERRUPT, 0, 0);
+    channel_send(0, sh, EVENT_CONSOLEDATA, 1, "\003");
 
 }
 
@@ -284,8 +280,6 @@ static void run(void)
         return;
 
     }
-
-    interrupts = 0;
 
     channel_send_fmt1(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
     channel_send(0, sh, EVENT_MAIN, 0, 0);
