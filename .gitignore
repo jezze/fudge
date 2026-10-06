@@ -60,6 +60,7 @@ src/utils/socket
 src/utils/stat
 src/utils/timestamp
 src/utils/touch
+src/utils/tr
 src/utils/wc
 src/utils/webc
 src/utils/webs
