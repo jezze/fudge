@@ -29,6 +29,16 @@ static unsigned int sendblockreadrequest(unsigned int offset, unsigned int count
 
 }
 
+static void startservice(unsigned int source, char *program, char *service, unsigned int offset)
+{
+
+    char line[128];
+
+    cstring_write_fmt3(line, 128, 0, "%s -service %s -partoffset %u &\\0", program, service, &offset);
+    system_run(source, line);
+
+}
+
 static void mountfat(unsigned int source, unsigned int offset, char *service)
 {
 
@@ -37,19 +47,7 @@ static void mountfat(unsigned int source, unsigned int offset, char *service)
     sendblockreadrequest(offset, 512);
 
     if (fat_validate(fat))
-    {
-
-        unsigned int target = fs_spawn(1, 1, "initrd:bin/fatsrv");
-
-        if (target)
-        {
-
-            channel_send_fmt3(1, target, EVENT_OPTION, "pwd=%s:&service=%s&partoffset=%u\n", service, service, &offset);
-            channel_send(1, target, EVENT_MAIN, 0, 0);
-
-        }
-
-    }
+        startservice(source, "initrd:bin/fatsrv", service, offset);
 
 }
 
@@ -61,19 +59,7 @@ static void mountext2(unsigned int source, unsigned int offset, char *service)
     sendblockreadrequest(offset + 1024, 1024);
 
     if (ext2_validate(sb))
-    {
-
-        unsigned int target = fs_spawn(1, 1, "initrd:bin/ext2srv");
-
-        if (target)
-        {
-
-            channel_send_fmt3(1, target, EVENT_OPTION, "pwd=%s:&service=%s&partoffset=%u\n", service, service, &offset);
-            channel_send(1, target, EVENT_MAIN, 0, 0);
-
-        }
-
-    }
+        startservice(source, "initrd:bin/ext2srv", service, offset);
 
 }
 
