@@ -97,9 +97,9 @@ static void blockinterface_startsession(struct block_session *session)
         if (ide_wait(blockinterface.id))
         {
 
-            ide_wblock(blockinterface.id, blockbuffer);
-
             session->offset = BLOCKSIZE;
+
+            ide_wblock(blockinterface.id, blockbuffer);
 
         }
 
