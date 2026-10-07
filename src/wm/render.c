@@ -13,6 +13,7 @@
 #include "render.h"
 
 #define INFINITY                    0xFFFF
+#define RENDER_MAXWIDGETS           1024
 #define DIRECTION_NONE              0
 #define DIRECTION_HORIZONTAL        1
 #define DIRECTION_VERTICAL          2
@@ -1018,7 +1019,10 @@ void render_undamage(void)
 void render_update(struct blit_display *display)
 {
 
+    static struct widget *damaged[RENDER_MAXWIDGETS];
     unsigned int *cmapmouse = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_IMAGE, 0, 0);
+    struct list_item *current = 0;
+    unsigned int ndamaged = 0;
     int line;
 
     if (!hasdamage)
@@ -1029,15 +1033,27 @@ void render_update(struct blit_display *display)
     area.position2.x = util_clamp(area.position2.x, 0, display->region.size.w);
     area.position2.y = util_clamp(area.position2.y, 0, display->region.size.h);
 
+    /* only the widgets that are visible inside the damaged area are drawn, in the same order */
+    while ((current = pool_next(current)) && ndamaged < RENDER_MAXWIDGETS)
+    {
+
+        struct widget *widget = current->data;
+        struct util_region visible = util_region_intersection(&widget->placement, &widget->clip);
+
+        if (visible.position.x < area.position2.x && visible.position.x + (int)visible.size.w > area.position0.x && visible.position.y < area.position2.y && visible.position.y + (int)visible.size.h > area.position0.y)
+            damaged[ndamaged++] = widget;
+
+    }
+
     for (line = area.position0.y; line < area.position2.y; line++)
     {
 
-        struct list_item *current = 0;
+        unsigned int i;
 
-        while ((current = pool_next(current)))
+        for (i = 0; i < ndamaged; i++)
         {
 
-            struct widget *widget = current->data;
+            struct widget *widget = damaged[i];
 
             if (widget_intersectsy(widget, line))
             {
