@@ -8,7 +8,7 @@
 #define WIDGET_TYPE_SELECT              8
 #define WIDGET_TYPE_TEXT                9
 #define WIDGET_TYPE_TEXTBOX             10
-#define WIDGET_TYPE_TEXTBUTTON          11
+#define WIDGET_TYPE_ITEM                11
 #define WIDGET_TYPE_WINDOW              12
 #define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_STATE_NORMAL             0

@@ -262,8 +262,8 @@ unsigned int widget_isinteractive(struct widget *widget)
     case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_LISTBOX:
     case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_ITEM:
     case WIDGET_TYPE_TEXTBOX:
-    case WIDGET_TYPE_TEXTBUTTON:
     case WIDGET_TYPE_WINDOW:
         return 1;
 
@@ -334,9 +334,8 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
 
         break;
 
-    case WIDGET_TYPE_TEXTBUTTON:
+    case WIDGET_TYPE_ITEM:
         attributes->flow = ATTR_FLOW_HORIZONTALSTRETCH;
-        attributes->valign = ATTR_VALIGN_MIDDLE;
 
         break;
 

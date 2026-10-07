@@ -33,13 +33,13 @@ static struct util_token widgets[NUM_WIDGETS] =
     {WIDGET_TYPE_CHOICE, "choice"},
     {WIDGET_TYPE_FILL, "fill"},
     {WIDGET_TYPE_IMAGE, "image"},
+    {WIDGET_TYPE_ITEM, "item"},
     {WIDGET_TYPE_LAYOUT, "layout"},
     {WIDGET_TYPE_LISTBOX, "listbox"},
     {WIDGET_TYPE_PANEL, "panel"},
     {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_TEXT, "text"},
     {WIDGET_TYPE_TEXTBOX, "textbox"},
-    {WIDGET_TYPE_TEXTBUTTON, "textbutton"},
     {WIDGET_TYPE_WINDOW, "window"}
 };
 

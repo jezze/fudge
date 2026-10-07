@@ -54,7 +54,8 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
             }
 
-            c += cstring_write_fmt4(d, MESSAGE_SIZE, c, "+ textbutton id \"row%u\" in \"content\" spacing \"8\" label \"%s\" onclick \"q=relpath&path=%s\"\n+ checkbox in \"row%u\"\n", &row, name, name, &row);
+            c += cstring_write_fmt4(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\" onclick \"q=relpath&path=%s\"\n+ checkbox in \"row%u\"\n+ text in \"row%u\" valign \"middle\"", &row, name, &row, &row);
+            c += cstring_write_fmt1(d, MESSAGE_SIZE, c, " label \"%s\"\n", name);
             offset = record->offset;
             row++;
 

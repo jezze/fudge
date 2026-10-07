@@ -86,7 +86,7 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
 }
 
-/* a widget inside a textbutton (a checkbox) hovers the whole button, so the row lights up around it */
+/* a widget inside an item (a checkbox) hovers the whole item, so the row lights up around it */
 static struct widget *gethoverwidgetat(int x, int y)
 {
 
@@ -97,7 +97,7 @@ static struct widget *gethoverwidgetat(int x, int y)
 
         struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in));
 
-        if (parent && parent->type == WIDGET_TYPE_TEXTBUTTON)
+        if (parent && parent->type == WIDGET_TYPE_ITEM)
             return parent;
 
     }

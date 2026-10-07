@@ -568,14 +568,10 @@ static struct util_size getsizetextbox(struct widget *widget, struct util_size *
 
 }
 
-static struct util_size getsizetextbutton(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizeitem(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size children = childrengetsize(widget, limit);
-    struct util_size label = textsize(widget, limit, rowstart);
-    unsigned int gap = (children.w) ? widget->attributes.spacing : 0;
-
-    return util_size(children.w + gap + label.w + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, util_max(children.h, label.h + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2));
+    return childrengetsize(widget, limit);
 
 }
 
@@ -664,11 +660,11 @@ static void placetextbox(struct widget *widget)
 
 }
 
-/* children (a checkbox, an icon) go to the left of the label, inside the button */
-static void placetextbutton(struct widget *widget)
+/* a clickable region: its children (a checkbox, a text) are laid out inside it, padding comes from the attribute */
+static void placeitem(struct widget *widget)
 {
 
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBUTTON_PADDING_WIDTH, widget->placement.position.y, widget->placement.size.w - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, widget->placement.size.h);
+    widget->cplacement = widget->placement;
 
 }
 
@@ -848,7 +844,24 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
     struct text_font *font = pool_getfont(widget->attributes.weight);
     unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
-    unsigned int rownum = (line - widget->placement.position.y) / font->lineheight;
+    int top = 0;
+    unsigned int rownum;
+
+    /* rows are counted from where valign puts the first one, not from the top of the placement */
+    if (widget->attributes.valign != ATTR_VALIGN_TOP)
+    {
+
+        struct text_rowinfo rowinfo;
+
+        if (text_getrowinfo(&rowinfo, font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w - widget->rowstart.x, 0))
+            top = text_getrowy(&rowinfo, widget->attributes.valign, widget->placement.size.h);
+
+    }
+
+    if (line < widget->placement.position.y + top)
+        return;
+
+    rownum = (line - widget->placement.position.y - top) / font->lineheight;
 
     textrender(display, widget, &widget->placement, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, &zerosize, rownum, line);
 
@@ -869,26 +882,12 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 
 }
 
-static void rendertextbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+static void renderitem(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
-    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
-    struct list_item *current = 0;
-    int offx = 0;
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        offx = util_max(offx, child->placement.position.x + child->placement.size.w - widget->cplacement.position.x + widget->attributes.spacing);
-
-    }
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, offx, 0, &padding, 0, line);
 
 }
 
@@ -1093,13 +1092,13 @@ void render_init(void)
     setupcall(WIDGET_TYPE_CHOICE, getsizechoice, placechoice, renderchoice);
     setupcall(WIDGET_TYPE_FILL, getsizefill, placefill, renderfill);
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
+    setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
     setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
     setupcall(WIDGET_TYPE_LISTBOX, getsizelistbox, placelistbox, renderlistbox);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
     setupcall(WIDGET_TYPE_TEXT, getsizetext, placetext, rendertext);
     setupcall(WIDGET_TYPE_TEXTBOX, getsizetextbox, placetextbox, rendertextbox);
-    setupcall(WIDGET_TYPE_TEXTBUTTON, getsizetextbutton, placetextbutton, rendertextbutton);
     setupcall(WIDGET_TYPE_WINDOW, getsizewindow, placewindow, renderwindow);
 
 }
