@@ -3,12 +3,13 @@
 #include "kv.h"
 
 static char path[256];
-static unsigned int cursor = 0;
 
 static void updatepath(unsigned int wm)
 {
 
-    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= path label \"%s\"\n", path);
+    unsigned int length = cstring_length(path);
+
+    channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "= path label \"%s\"\n= pathbox cursor \"%u\"\n", path, &length);
 
 }
 
@@ -110,6 +111,12 @@ static void updatecontent(unsigned int wm)
     else
     {
 
+        unsigned int length = cstring_length(path);
+
+        /* entries are joined onto the path, so a directory always ends with / (or : for a root) */
+        if (length && path[length - 1] != '/' && path[length - 1] != ':')
+            cstring_write_fmt0(path, 256, length, "/\\0");
+
         listdirectory(wm, target, id);
 
     }
@@ -124,8 +131,8 @@ static void changepath(unsigned int wm, char *relative)
 
     fs_absolute(full, 256, path, relative);
     cstring_write_fmt1(path, 256, 0, "%s\\0", full);
-    updatepath(wm);
     updatecontent(wm);
+    updatepath(wm);
 
 }
 
@@ -199,42 +206,6 @@ static void onwminit(struct message *message)
 
 }
 
-static void onwmkeypress(struct message *message)
-{
-
-    struct event_wmkeypress *wmkeypress = message->data;
-
-    switch (wmkeypress->id)
-    {
-
-    case KEYS_KEY_CURSORLEFT:
-        if (cursor > 0)
-        {
-
-            cursor--;
-
-            channel_send_fmt1(0, message->source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
-
-        }
-
-        break;
-
-    case KEYS_KEY_CURSORRIGHT:
-        if (cursor < cstring_length(path))
-        {
-
-            cursor++;
-
-            channel_send_fmt1(0, message->source, EVENT_WMRENDERDATA, "= pathbox cursor \"%u\"\n", &cursor);
-
-        }
-
-        break;
-
-    }
-
-}
-
 void init(void)
 {
 
@@ -242,7 +213,6 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
-    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
 
 }
 

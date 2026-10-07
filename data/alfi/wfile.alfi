@@ -4,7 +4,7 @@
 + select id "volume" in "top" label "Volume"
 + layout id "volume-list" in "volume" flow "vertical-stretch"
 + choice in "volume-list" label "initrd:" onclick "q=abspath&path=initrd:"
-+ textbox id "pathbox" in "top" span "1" cursor "0"
++ textbox id "pathbox" in "top" span "1" onenter "q=abspath&path="
 + text id "path" in "pathbox"
 + button in "top" label "Up" onclick "q=up"
 + layout id "main" in "base" flow "horizontal-stretch" spacing "8" span "1"
