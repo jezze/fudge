@@ -90,6 +90,8 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 {
 
     unsigned int direction = getdirection(widget->attributes.flow);
+    unsigned int padding = widget->attributes.padding;
+    struct util_size inner = util_size_sub(limit, padding * 2, padding * 2);
     struct util_position rowstart = zeroposition;
     struct util_position offset = zeroposition;
     struct util_size total = zerosize;
@@ -99,7 +101,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
     {
 
         struct widget *child = current->data;
-        struct util_size climit = util_size_sub(limit, total.w, total.h);
+        struct util_size climit = util_size_sub(&inner, total.w, total.h);
         struct util_size csize = calls[child->type].getsize(child, &climit, &rowstart);
 
         if (child->attributes.span)
@@ -122,8 +124,8 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         }
 
-        total.w = util_clamp(util_max(total.w, csize.w + offset.x), 0, limit->w);
-        total.h = util_clamp(util_max(total.h, csize.h + offset.y), 0, limit->h);
+        total.w = util_clamp(util_max(total.w, csize.w + offset.x), 0, inner.w);
+        total.h = util_clamp(util_max(total.h, csize.h + offset.y), 0, inner.h);
 
         switch (direction)
         {
@@ -149,7 +151,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
     }
 
-    return total;
+    return util_size(total.w + padding * 2, total.h + padding * 2);
 
 }
 
@@ -305,6 +307,16 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     widget->clip = *clip;
 
     calls[widget->type].place(widget);
+
+    if (widget->attributes.padding)
+    {
+
+        unsigned int padding = widget->attributes.padding;
+
+        widget->cplacement.position = util_position_add(&widget->cplacement.position, padding, padding);
+        widget->cplacement.size = util_size_sub(&widget->cplacement.size, padding * 2, padding * 2);
+
+    }
 
     info = placechildren(widget, &zerosize);
 
