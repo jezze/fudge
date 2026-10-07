@@ -32,7 +32,7 @@ static void onpath(struct message *message)
 
             fs_read_full(1, target, id, raw, 4096, 128 + offset);
 
-            offset = pcx_readline(raw, width, buffer);
+            offset += pcx_readline(raw, header.bpl, buffer);
 
             channel_send(0, message->source, EVENT_DATA, width, buffer);
 

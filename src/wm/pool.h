@@ -7,8 +7,9 @@ struct pool_pcxresource
     unsigned char colormap[768];
     unsigned int width;
     unsigned int height;
-    unsigned int lastoffset;
-    unsigned int lastline;
+    unsigned int bpl;
+    unsigned int row;
+    unsigned int offset;
 
 };
 

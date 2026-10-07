@@ -1,4 +1,4 @@
-#define PCX_IDENTIFIER                  0x10
+#define PCX_IDENTIFIER                  0x0A
 #define PCX_VERSION                     0x05
 #define PCX_ENCODING                    0x01
 #define PCX_COLORMAP_MAGIC              0x0C
@@ -28,4 +28,4 @@ struct pcx_header
 
 };
 
-unsigned int pcx_readline(unsigned char *raw, unsigned int width, unsigned char *buffer);
+unsigned int pcx_readline(unsigned char *raw, unsigned int count, unsigned char *buffer);

@@ -228,7 +228,7 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
             fs_stat(1, resource->target, resource->id, &record);
             fs_read_all(1, resource->target, resource->id, &header, sizeof (struct pcx_header), 0);
 
-            if (header.version == 5)
+            if (header.identifier == PCX_IDENTIFIER && header.version == PCX_VERSION && header.encoding == PCX_ENCODING && header.bpp == 8 && header.nplanes == 1 && (unsigned short)header.bpl <= 2048 && (unsigned short)header.xend - (unsigned short)header.xstart < (unsigned short)header.bpl)
             {
 
                 buffer_copy(resource->colormap, header.palette, 48);
@@ -245,11 +245,12 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
 
                 }
 
-            }
+                resource->bpl = (unsigned short)header.bpl;
+                resource->width = (unsigned short)header.xend - (unsigned short)header.xstart + 1;
+                resource->height = (unsigned short)header.yend - (unsigned short)header.ystart + 1;
+                widget->size = util_size(resource->width, resource->height);
 
-            resource->width = header.xend - header.xstart + 1;
-            resource->height = header.yend - header.ystart + 1;
-            widget->size = util_size(resource->width, resource->height);
+            }
 
         }
 
@@ -263,36 +264,25 @@ void pool_pcxreadline(struct pool_pcxresource *resource, int line, int y, unsign
 {
 
     unsigned char data[4096];
+    unsigned int row = line - y;
 
-    if (resource->lastline == line - 1)
+    if (row < resource->row)
     {
 
-        fs_read_full(1, resource->target, resource->id, data, 4096, 128 + resource->lastoffset);
-
-        resource->lastoffset += pcx_readline(data, resource->width, buffer);
+        resource->row = 0;
+        resource->offset = 0;
 
     }
 
-    else
+    while (resource->row <= row)
     {
 
-        int h;
+        fs_read_full(1, resource->target, resource->id, data, resource->bpl * 2, 128 + resource->offset);
 
-        resource->lastoffset = 0;
-
-        for (h = 0; h < line - y + 1; h++)
-        {
-
-            fs_read_full(1, resource->target, resource->id, data, 4096, 128 + resource->lastoffset);
-
-            resource->lastoffset += pcx_readline(data, resource->width, buffer);
-
-        }
-
+        resource->offset += pcx_readline(data, resource->bpl, buffer);
+        resource->row++;
 
     }
-
-    resource->lastline = line;
 
 }
 
