@@ -406,189 +406,68 @@ void blit_iconx(struct blit_display *display, struct util_region *region, int li
 
 }
 
-void blit_mouse(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
+void blit_mouse(struct blit_display *display, int mx, int my, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static struct linesegment line0[1] = {
-        {REL0, REL0, 0, 3, CMAP_SHADOW}
+    static char *rows[BLIT_MOUSEHEIGHT] = {
+        "SSS",
+        "SLSS",
+        "SLLSS",
+        "SLNLSS",
+        "SLNNLSS",
+        "SLNNNLSS",
+        "SLNNNNLSS",
+        "SLNNNNNLSS",
+        "SLNNNNNNLSS",
+        "SLNNNNNNNLSS",
+        "SLNNNNNNNNLSS",
+        "SLNNNNNNNNNLSS",
+        "SLNNNNNNNNNNLSS",
+        "SLNNNNNNNNNNNLSS",
+        "SLNNNNNNNNNNNNLSS",
+        "SLNNNNNNNNNNNNNLSS",
+        "SLNNNNNLLLLLLLLLLS",
+        "SLNNNNLSSSSSSSSSSS",
+        "SLNNNLSS",
+        "SLNNLSS",
+        "SLNLSS",
+        "SLLSS",
+        "SLSS",
+        "SSS"
     };
-    static struct linesegment line1[3] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 4, CMAP_SHADOW}
-    };
-    static struct linesegment line2[3] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 3, CMAP_LIGHT},
-        {REL0, REL0, 3, 5, CMAP_SHADOW}
-    };
-    static struct linesegment line3[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 3, CMAP_NORMAL},
-        {REL0, REL0, 3, 4, CMAP_LIGHT},
-        {REL0, REL0, 4, 6, CMAP_SHADOW}
-    };
-    static struct linesegment line4[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 4, CMAP_NORMAL},
-        {REL0, REL0, 4, 5, CMAP_LIGHT},
-        {REL0, REL0, 5, 7, CMAP_SHADOW}
-    };
-    static struct linesegment line5[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 5, CMAP_NORMAL},
-        {REL0, REL0, 5, 6, CMAP_LIGHT},
-        {REL0, REL0, 6, 8, CMAP_SHADOW}
-    };
-    static struct linesegment line6[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 6, CMAP_NORMAL},
-        {REL0, REL0, 6, 7, CMAP_LIGHT},
-        {REL0, REL0, 7, 9, CMAP_SHADOW}
-    };
-    static struct linesegment line7[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 7, CMAP_NORMAL},
-        {REL0, REL0, 7, 8, CMAP_LIGHT},
-        {REL0, REL0, 8, 10, CMAP_SHADOW}
-    };
-    static struct linesegment line8[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 8, CMAP_NORMAL},
-        {REL0, REL0, 8, 9, CMAP_LIGHT},
-        {REL0, REL0, 9, 11, CMAP_SHADOW}
-    };
-    static struct linesegment line9[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 9, CMAP_NORMAL},
-        {REL0, REL0, 9, 10, CMAP_LIGHT},
-        {REL0, REL0, 10, 12, CMAP_SHADOW}
-    };
-    static struct linesegment line10[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 10, CMAP_NORMAL},
-        {REL0, REL0, 10, 11, CMAP_LIGHT},
-        {REL0, REL0, 11, 13, CMAP_SHADOW}
-    };
-    static struct linesegment line11[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 11, CMAP_NORMAL},
-        {REL0, REL0, 11, 12, CMAP_LIGHT},
-        {REL0, REL0, 12, 14, CMAP_SHADOW}
-    };
-    static struct linesegment line12[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 12, CMAP_NORMAL},
-        {REL0, REL0, 12, 13, CMAP_LIGHT},
-        {REL0, REL0, 13, 15, CMAP_SHADOW}
-    };
-    static struct linesegment line13[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 13, CMAP_NORMAL},
-        {REL0, REL0, 13, 14, CMAP_LIGHT},
-        {REL0, REL0, 14, 16, CMAP_SHADOW}
-    };
-    static struct linesegment line14[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 14, CMAP_NORMAL},
-        {REL0, REL0, 14, 15, CMAP_LIGHT},
-        {REL0, REL0, 15, 17, CMAP_SHADOW}
-    };
-    static struct linesegment line15[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 15, CMAP_NORMAL},
-        {REL0, REL0, 15, 16, CMAP_LIGHT},
-        {REL0, REL0, 16, 18, CMAP_SHADOW}
-    };
-    static struct linesegment line16[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 7, CMAP_NORMAL},
-        {REL0, REL0, 7, 17, CMAP_LIGHT},
-        {REL0, REL0, 17, 18, CMAP_SHADOW}
-    };
-    static struct linesegment line17[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 6, CMAP_NORMAL},
-        {REL0, REL0, 6, 7, CMAP_LIGHT},
-        {REL0, REL0, 7, 18, CMAP_SHADOW}
-    };
-    static struct linesegment line18[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 5, CMAP_NORMAL},
-        {REL0, REL0, 5, 6, CMAP_LIGHT},
-        {REL0, REL0, 6, 8, CMAP_SHADOW}
-    };
-    static struct linesegment line19[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 4, CMAP_NORMAL},
-        {REL0, REL0, 4, 5, CMAP_LIGHT},
-        {REL0, REL0, 5, 7, CMAP_SHADOW}
-    };
-    static struct linesegment line20[5] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 3, CMAP_NORMAL},
-        {REL0, REL0, 3, 4, CMAP_LIGHT},
-        {REL0, REL0, 4, 6, CMAP_SHADOW}
-    };
-    static struct linesegment line21[3] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 3, CMAP_LIGHT},
-        {REL0, REL0, 3, 5, CMAP_SHADOW}
-    };
-    static struct linesegment line22[3] = {
-        {REL0, REL0, 0, 1, CMAP_SHADOW},
-        {REL0, REL0, 1, 2, CMAP_LIGHT},
-        {REL0, REL0, 2, 4, CMAP_SHADOW}
-    };
-    static struct linesegment line23[1] = {
-        {REL0, REL0, 0, 3, CMAP_SHADOW}
-    };
-    static struct rowsegment rows[24] = {
-        {REL0, REL0, 0, 1, line0, 1},
-        {REL0, REL0, 1, 2, line1, 3},
-        {REL0, REL0, 2, 3, line2, 3},
-        {REL0, REL0, 3, 4, line3, 5},
-        {REL0, REL0, 4, 5, line4, 5},
-        {REL0, REL0, 5, 6, line5, 5},
-        {REL0, REL0, 6, 7, line6, 5},
-        {REL0, REL0, 7, 8, line7, 5},
-        {REL0, REL0, 8, 9, line8, 5},
-        {REL0, REL0, 9, 10, line9, 5},
-        {REL0, REL0, 10, 11, line10, 5},
-        {REL0, REL0, 11, 12, line11, 5},
-        {REL0, REL0, 12, 13, line12, 5},
-        {REL0, REL0, 13, 14, line13, 5},
-        {REL0, REL0, 14, 15, line14, 5},
-        {REL0, REL0, 15, 16, line15, 5},
-        {REL0, REL0, 16, 17, line16, 5},
-        {REL0, REL0, 17, 18, line17, 5},
-        {REL0, REL0, 18, 19, line18, 5},
-        {REL0, REL0, 19, 20, line19, 5},
-        {REL0, REL0, 20, 21, line20, 5},
-        {REL0, REL0, 21, 22, line21, 3},
-        {REL0, REL0, 22, 23, line22, 3},
-        {REL0, REL0, 23, 24, line23, 1}
-    };
+    char *row;
+    int x;
 
-    blitsegment(display, rows, 24, line, region, x0, x2, cmap);
+    if (line < my || line >= my + BLIT_MOUSEHEIGHT)
+        return;
+
+    for (row = rows[line - my], x = mx; *row && x < x2; row++, x++)
+    {
+
+        if (x < x0)
+            continue;
+
+        switch (*row)
+        {
+
+        case 'S':
+            blit_alphaline(display, cmap[CMAP_SHADOW], x, x + 1);
+
+            break;
+
+        case 'N':
+            blit_alphaline(display, cmap[CMAP_NORMAL], x, x + 1);
+
+            break;
+
+        case 'L':
+            blit_alphaline(display, cmap[CMAP_LIGHT], x, x + 1);
+
+            break;
+
+        }
+
+    }
 
 }
 

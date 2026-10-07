@@ -30,7 +30,6 @@
 #define ATTR_HALIGN_CENTER              1
 #define ATTR_HALIGN_RIGHT               2
 #define ATTR_MIMETYPE_NONE              0
-#define ATTR_MIMETYPE_FUDGEMOUSE        1
 #define ATTR_MIMETYPE_PCX               2
 #define ATTR_MODE_NORMAL                0
 #define ATTR_MODE_READONLY              1

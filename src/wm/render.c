@@ -625,11 +625,6 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
     switch (widget->attributes.mimetype)
     {
 
-    case ATTR_MIMETYPE_FUDGEMOUSE:
-        blit_mouse(display, &widget->placement, line, x0, x2, cmap_get(widget->state, widget->type, 0, 0));
-
-        break;
-
     case ATTR_MIMETYPE_PCX:
         if (widget->resource)
             blit_pcx(display, widget->resource, line, strpool_getstring(widget->attributes.source), widget->placement.position.x, widget->placement.position.y, x0, x2);
@@ -715,13 +710,34 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
 
 }
 
+struct util_region render_getwindowbutton(struct widget *widget, unsigned int button)
+{
+
+    switch (button)
+    {
+
+    case RENDER_WINDOWBUTTON_MENU:
+        return util_region(widget->placement.position.x, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+
+    case RENDER_WINDOWBUTTON_MINIMIZE:
+        return util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+
+    case RENDER_WINDOWBUTTON_CLOSE:
+        return util_region(widget->placement.position.x + widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+
+    }
+
+    return util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->placement.position.y, widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
+
+}
+
 static void renderwindow(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct util_region rhamburger = util_region(widget->placement.position.x, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rminimize = util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rtitle = util_region(widget->placement.position.x + CONFIG_WINDOW_BUTTON_WIDTH * 2, widget->placement.position.y, widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH * 3, CONFIG_WINDOW_BUTTON_HEIGHT);
-    struct util_region rclose = util_region(widget->placement.position.x + widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.y, CONFIG_WINDOW_BUTTON_WIDTH, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_region rhamburger = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_MENU);
+    struct util_region rminimize = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_MINIMIZE);
+    struct util_region rtitle = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_TITLE);
+    struct util_region rclose = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_CLOSE);
     unsigned int onhamburger = util_region_intersects(&rhamburger, mouse.x, mouse.y);
     unsigned int onminimize = util_region_intersects(&rminimize, mouse.x, mouse.y);
     unsigned int onclose = util_region_intersects(&rclose, mouse.x, mouse.y);
@@ -744,8 +760,36 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 void render_setmouse(int x, int y)
 {
 
+    struct list_item *current = 0;
+
+    /* window buttons light up under the mouse, so redraw the ones it enters or leaves */
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+        unsigned int button;
+
+        if (widget->type != WIDGET_TYPE_WINDOW)
+            continue;
+
+        for (button = RENDER_WINDOWBUTTON_MENU; button <= RENDER_WINDOWBUTTON_CLOSE; button++)
+        {
+
+            struct util_region region = render_getwindowbutton(widget, button);
+
+            if (util_region_intersects(&region, mouse.x, mouse.y) != util_region_intersects(&region, x, y))
+                render_damage(region.position.x, region.position.y, region.position.x + region.size.w, region.position.y + region.size.h);
+
+        }
+
+    }
+
+    render_damage(mouse.x, mouse.y, mouse.x + BLIT_MOUSEWIDTH, mouse.y + BLIT_MOUSEHEIGHT);
+
     mouse.x = x;
     mouse.y = y;
+
+    render_damage(mouse.x, mouse.y, mouse.x + BLIT_MOUSEWIDTH, mouse.y + BLIT_MOUSEHEIGHT);
 
 }
 
@@ -793,10 +837,16 @@ void render_undamage(void)
 void render_update(struct blit_display *display)
 {
 
+    unsigned int *cmapmouse = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_IMAGE, 0, 0);
     int line;
 
     if (!hasdamage)
         return;
+
+    area.position0.x = util_clamp(area.position0.x, 0, display->region.size.w);
+    area.position0.y = util_clamp(area.position0.y, 0, display->region.size.h);
+    area.position2.x = util_clamp(area.position2.x, 0, display->region.size.w);
+    area.position2.y = util_clamp(area.position2.y, 0, display->region.size.h);
 
     for (line = area.position0.y; line < area.position2.y; line++)
     {
@@ -820,6 +870,7 @@ void render_update(struct blit_display *display)
 
         }
 
+        blit_mouse(display, mouse.x, mouse.y, line, area.position0.x, area.position2.x, cmapmouse);
         blit(display, line, area.position0.x, area.position2.x);
 
     }

@@ -1,3 +1,9 @@
+#define RENDER_WINDOWBUTTON_TITLE       0
+#define RENDER_WINDOWBUTTON_MENU        1
+#define RENDER_WINDOWBUTTON_MINIMIZE    2
+#define RENDER_WINDOWBUTTON_CLOSE       3
+
+struct util_region render_getwindowbutton(struct widget *widget, unsigned int button);
 void render_setmouse(int x, int y);
 void render_place(struct widget *widget, struct util_region *placement);
 void render_damage(int x0, int y0, int x2, int y2);

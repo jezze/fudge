@@ -25,7 +25,6 @@ struct state
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
     struct widget *rootwidget;
-    struct widget *mousewidget;
     struct widget *hoverwidget;
     struct widget *focusedwindow;
     struct widget *focusedwidget;
@@ -155,18 +154,6 @@ static void damageall(struct widget *widget)
 
 }
 
-static void movewidget(struct widget *widget, int x, int y)
-{
-
-    damageall(widget);
-
-    widget->position.x = x;
-    widget->position.y = y;
-
-    damageall(widget);
-
-}
-
 static void translatewidget(struct widget *widget, int x, int y)
 {
 
@@ -247,7 +234,6 @@ static void setfocus(struct widget *widget)
         {
 
             bumpchildren(state.focusedwidget);
-            bump(state.mousewidget);
 
         }
 
@@ -275,7 +261,6 @@ static void setfocuswindow(struct widget *widget)
         state.focusedwindow = widget;
 
         bump(state.focusedwindow);
-        bump(state.mousewidget);
 
     }
 
@@ -393,7 +378,9 @@ static void clickwidget(struct widget *widget)
         if (state.mousebuttonleft)
         {
 
-            if (util_intersects(state.mousewidget->placement.position.x, widget->placement.position.x + widget->placement.size.w - CONFIG_WINDOW_BUTTON_WIDTH, widget->placement.position.x + widget->placement.size.w) && util_intersects(state.mousewidget->placement.position.y, widget->placement.position.y, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT))
+            struct util_region rclose = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_CLOSE);
+
+            if (util_region_intersects(&rclose, state.mouseposition.x, state.mouseposition.y))
                 channel_send(0, widget->source, EVENT_INTERRUPT, 0, 0);
 
         }
@@ -479,13 +466,15 @@ static void purge(unsigned int source)
 
 }
 
-static void redraw(void)
+static void redraw(unsigned int relayout)
 {
 
     if (state.state == STATE_NORMAL && display.framebuffer)
     {
 
-        render_place(state.rootwidget, &display.region);
+        if (relayout)
+            render_place(state.rootwidget, &display.region);
+
         render_update(&display);
         render_undamage();
 
@@ -563,7 +552,7 @@ static void onkeypress(struct message *message)
 
     }
 
-    redraw();
+    redraw(1);
 
 }
 
@@ -606,7 +595,7 @@ static void onmousemove(struct message *message)
     state.mouseposition.y = y;
 
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
-    movewidget(state.mousewidget, state.mouseposition.x, state.mouseposition.y);
+    render_setmouse(state.mouseposition.x, state.mouseposition.y);
 
     if (state.mousebuttonleft)
     {
@@ -637,9 +626,8 @@ static void onmousemove(struct message *message)
 
     }
 
-    render_setmouse(state.mousewidget->placement.position.x, state.mousewidget->placement.position.y);
-
-    redraw();
+    /* without a button held the mouse only moves and changes hover colours, so the layout stays */
+    redraw(state.mousebuttonleft || state.mousebuttonright);
 
 }
 
@@ -679,7 +667,7 @@ static void onmousepress(struct message *message)
 
     }
 
-    redraw();
+    redraw(1);
 
 }
 
@@ -699,7 +687,7 @@ static void onmousescroll(struct message *message)
 
     sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
 
-    redraw();
+    redraw(1);
 
 }
 
@@ -726,7 +714,7 @@ static void onmouserelease(struct message *message)
 
     }
 
-    redraw();
+    redraw(1);
 
 }
 
@@ -746,9 +734,8 @@ static void onvideoinfo(struct message *message)
 
     state.mouseposition.x = videoinfo.width / 4;
     state.mouseposition.y = videoinfo.height / 4;
-    state.mousewidget->position = util_position(state.mouseposition.x, state.mouseposition.y);
-    state.mousewidget->size = util_size(12 + factor * 4, 16 + factor * 4);
-    state.mousewidget->placement = util_region(state.mousewidget->position.x, state.mousewidget->position.y, state.mousewidget->size.w, state.mousewidget->size.h);
+
+    render_setmouse(state.mouseposition.x, state.mouseposition.y);
 
     render_damage(0, 0, videoinfo.width, videoinfo.height);
     render_place(state.rootwidget, &display.region);
@@ -787,8 +774,7 @@ static void onwmrenderdata(struct message *message)
     pool_loadresources();
     placewindows(message->source);
     purge(message->source);
-    bump(state.mousewidget);
-    redraw();
+    redraw(1);
 
 }
 
@@ -811,13 +797,12 @@ static void onwmrenderfile(struct message *message)
             pool_loadresources();
             placewindows(message->source);
             purge(message->source);
-            bump(state.mousewidget);
 
         }
 
     }
 
-    redraw();
+    redraw(1);
 
 }
 
@@ -853,7 +838,7 @@ static void onwmunmap(struct message *message)
     }
 
     purge(message->source);
-    redraw();
+    redraw(1);
 
 }
 
@@ -867,9 +852,6 @@ static void setupwidgets(void)
     parser_parse(0, "root", system_feed("echo initrd:data/alfi/wm.alfi", 0, 0, data1, 4096), data1);
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
-    state.mousewidget = pool_getwidgetbyid(0, "mouse");
-
-    bump(state.mousewidget);
 
 }
 
