@@ -328,6 +328,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
         break;
 
     case WIDGET_TYPE_TEXTBUTTON:
+        attributes->flow = ATTR_FLOW_HORIZONTALSTRETCH;
         attributes->valign = ATTR_VALIGN_MIDDLE;
 
         break;

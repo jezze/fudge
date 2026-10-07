@@ -443,10 +443,11 @@ static struct util_size getsizetextbox(struct widget *widget, struct util_size *
 static struct util_size getsizetextbutton(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2);
+    struct util_size children = childrengetsize(widget, limit);
     struct util_size label = textsize(widget, limit, rowstart);
+    unsigned int gap = (children.w) ? widget->attributes.spacing : 0;
 
-    return util_size_union(&label, &padding);
+    return util_size(children.w + gap + label.w + CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, util_max(children.h, label.h + CONFIG_TEXTBUTTON_PADDING_HEIGHT * 2));
 
 }
 
@@ -528,8 +529,11 @@ static void placetextbox(struct widget *widget)
 
 }
 
+/* children (a checkbox, an icon) go to the left of the label, inside the button */
 static void placetextbutton(struct widget *widget)
 {
+
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBUTTON_PADDING_WIDTH, widget->placement.position.y, widget->placement.size.w - CONFIG_TEXTBUTTON_PADDING_WIDTH * 2, widget->placement.size.h);
 
 }
 
@@ -731,9 +735,20 @@ static void rendertextbutton(struct blit_display *display, struct widget *widget
     struct util_size padding = util_size(CONFIG_TEXTBUTTON_PADDING_WIDTH, CONFIG_TEXTBUTTON_PADDING_HEIGHT);
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
     unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
+    struct list_item *current = 0;
+    int offx = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        offx = util_max(offx, child->placement.position.x + child->placement.size.w - widget->cplacement.position.x + widget->attributes.spacing);
+
+    }
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, offx, 0, &padding, 0, line);
 
 }
 

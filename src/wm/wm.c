@@ -85,6 +85,26 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
 }
 
+/* a widget inside a textbutton (a checkbox) hovers the whole button, so the row lights up around it */
+static struct widget *gethoverwidgetat(int x, int y)
+{
+
+    struct widget *widget = getinteractivewidgetat(x, y);
+
+    if (widget)
+    {
+
+        struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in));
+
+        if (parent && parent->type == WIDGET_TYPE_TEXTBUTTON)
+            return parent;
+
+    }
+
+    return widget;
+
+}
+
 static struct widget *getscrollablewidgetat(int x, int y)
 {
 
@@ -606,7 +626,7 @@ static void onmousemove(struct message *message)
     state.mouseposition.x = x;
     state.mouseposition.y = y;
 
-    sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
+    sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
     render_setmouse(state.mouseposition.x, state.mouseposition.y);
 
     if (state.mousebuttonleft)
@@ -697,7 +717,7 @@ static void onmousescroll(struct message *message)
 
     }
 
-    sethover(getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y));
+    sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
 
     redraw(1);
 
