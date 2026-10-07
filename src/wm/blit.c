@@ -399,7 +399,7 @@ struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
     {
 
     case BLIT_MOUSE_TEXT:
-        return util_region(mx - 3, my - 10, 7, 20);
+        return util_region(mx - 3, my - 10, 7, 24);
 
     case BLIT_MOUSE_HAND:
         return util_region(mx - 8, my, 20, 20);
@@ -439,9 +439,12 @@ void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my,
         "SLSS",
         "SSS"
     };
-    static char *text[20] = {
+    static char *text[24] = {
         "SSS    SSS",
         "SLLSSSSLLS",
+        "SLLLLLLLLS",
+        "SLNNNNNNLS",
+        "SLLLNNLLLS",
         "SSSLNNLSSS",
         "  SLNNLS",
         "  SLNNLS",
@@ -455,33 +458,34 @@ void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my,
         "  SLNNLS",
         "  SLNNLS",
         "  SLNNLS",
-        "  SLNNLS",
-        "  SLNNLS",
         "SSSLNNLSSS",
+        "SLLLNNLLLS",
+        "SLNNNNNNLS",
+        "SLLLLLLLLS",
         "SLLSSSSLLS",
         "SSS    SSS"
     };
     static char *hand[20] = {
-        "       SSSS",
-        "      SSLLSS",
-        "      SLNNLS",
-        "      SLNNLS",
-        "      SLNNLS",
-        "      SLNNLS",
-        "      SLNNLSSSSSSSS",
-        "      SLNNLLSLSLSLSS",
-        "  SS  SLNNLNLNLNLNLS",
-        " SLLS SLNNLNLNLNLNLS",
-        " SLNLSLNNNLNLNLNLNLS",
-        " SLNNLNNNNNNNNNNNNLS",
-        " SLNNNNNNNNNNNNNNNLS",
-        " SLNNNNNNNNNNNNNNNLS",
-        "  SLNNNNNNNNNNNNNNLS",
-        "   SLNNNNNNNNNNNNNLS",
-        "    SLNNNNNNNNNNNNLS",
-        "     SLNNNNNNNNNNLS",
-        "      SLLLLLLLLLLS",
-        "      SSSSSSSSSSSS"
+        "      SSSS",
+        "     SSLLSS",
+        "     SLNNLS",
+        "     SLNNLS",
+        "     SLNNLS",
+        "     SLNNLS",
+        "     SLNNLSSSSSSSS",
+        "     SLNNLLSLSLSLSS",
+        " SS  SLNNLNLNLNLNLS",
+        "SLLS SLNNLNLNLNLNLS",
+        "SLNLSLNNNLNLNLNLNLS",
+        "SLNNLNNNNNNNNNNNNLS",
+        "SLNNNNNNNNNNNNNNNLS",
+        "SLNNNNNNNNNNNNNNNLS",
+        " SLNNNNNNNNNNNNNNLS",
+        "  SLNNNNNNNNNNNNNLS",
+        "   SLNNNNNNNNNNNNLS",
+        "    SLNNNNNNNNNNLS",
+        "     SLLLLLLLLLLS",
+        "     SSSSSSSSSSSS"
     };
     struct util_region region = blit_getmouseregion(type, mx, my);
 
@@ -489,7 +493,7 @@ void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my,
     {
 
     case BLIT_MOUSE_TEXT:
-        blitbitmap(display, text, 20, region.position.x, region.position.y, line, x0, x2, cmap);
+        blitbitmap(display, text, 24, region.position.x, region.position.y, line, x0, x2, cmap);
 
         break;
 
