@@ -225,7 +225,7 @@ static unsigned int getcommand(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(commands, 5, strbuffer) : 0;
+    return (count) ? util_getkey(commands, sizeof (commands) / sizeof (commands[0]), strbuffer) : 0;
 
 }
 
@@ -234,7 +234,7 @@ static unsigned int getattribute(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(attributes, 19, strbuffer) : 0;
+    return (count) ? util_getkey(attributes, sizeof (attributes) / sizeof (attributes[0]), strbuffer) : 0;
 
 }
 
@@ -243,7 +243,7 @@ static unsigned int getwidget(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(widgets, 12, strbuffer) : 0;
+    return (count) ? util_getkey(widgets, sizeof (widgets) / sizeof (widgets[0]), strbuffer) : 0;
 
 }
 
