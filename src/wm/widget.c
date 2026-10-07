@@ -364,6 +364,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->placement = util_region(0, 0, 0, 0);
     widget->cplacement = util_region(0, 0, 0, 0);
     widget->clip = util_region(0, 0, 0, 0);
+    widget->cclip = util_region(0, 0, 0, 0);
     widget->rowstart = util_position(0, 0);
     widget->rowstop = util_position(0, 0);
 

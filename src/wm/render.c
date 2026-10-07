@@ -244,7 +244,7 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
         struct widget *child = current->data;
         struct util_region cplacement = getplacement(widget, child, &offset, &rowstart, span);
 
-        place(child, &cplacement, &widget->clip);
+        place(child, &cplacement, &widget->cclip);
 
         info.spans += child->attributes.span;
         info.total.w = util_clamp(util_max(info.total.w, child->placement.size.w + offset.x), 0, widget->cplacement.size.w);
@@ -305,6 +305,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     }
 
     widget->clip = *clip;
+    widget->cclip = *clip;
 
     calls[widget->type].place(widget);
 
@@ -493,6 +494,9 @@ static void placelayout(struct widget *widget)
 static void placelistbox(struct widget *widget)
 {
 
+    struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
+
+    widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
     widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
 
@@ -513,6 +517,8 @@ static void placeselect(struct widget *widget)
     if (widget->state != WIDGET_STATE_FOCUS)
         widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
+    widget->cclip = widget->clip;
+
 }
 
 static void placetext(struct widget *widget)
@@ -523,8 +529,10 @@ static void placetext(struct widget *widget)
 static void placetextbox(struct widget *widget)
 {
 
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
+    struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
 
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
+    widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
 }
@@ -539,6 +547,9 @@ static void placetextbutton(struct widget *widget)
 
 static void placewindow(struct widget *widget)
 {
+
+    widget->clip = util_region_intersection(&widget->placement, &widget->clip);
+    widget->cclip = widget->clip;
 
     widget->cplacement = util_region(widget->placement.position.x, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->placement.size.w, widget->placement.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
 
@@ -903,8 +914,8 @@ void render_update(struct blit_display *display)
             if (widget_intersectsy(widget, line))
             {
 
-                int x0 = util_max(widget->placement.position.x, area.position0.x);
-                int x2 = util_min(widget->placement.position.x + widget->placement.size.w, area.position2.x);
+                int x0 = util_max(util_max(widget->placement.position.x, widget->clip.position.x), area.position0.x);
+                int x2 = util_min(util_min(widget->placement.position.x + widget->placement.size.w, widget->clip.position.x + widget->clip.size.w), area.position2.x);
 
                 calls[widget->type].render(display, widget, line, x0, x2);
 

@@ -146,8 +146,8 @@ struct util_region util_region_intersection(struct util_region *a, struct util_r
 
     result.position.x = util_max(a->position.x, b->position.x);
     result.position.y = util_max(a->position.y, b->position.y);
-    result.size.w = util_min(a->position.x + a->size.w, b->position.x + b->size.w) - result.position.x;
-    result.size.h = util_min(a->position.y + a->size.h, b->position.y + b->size.h) - result.position.y;
+    result.size.w = util_max(util_min(a->position.x + a->size.w, b->position.x + b->size.w) - result.position.x, 0);
+    result.size.h = util_max(util_min(a->position.y + a->size.h, b->position.y + b->size.h) - result.position.y, 0);
 
     return result;
 
