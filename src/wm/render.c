@@ -619,7 +619,8 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
         break;
 
     case ATTR_MIMETYPE_PCX:
-        blit_pcx(display, widget->resource, line, strpool_getstring(widget->attributes.source), widget->placement.position.x, widget->placement.position.y, x0, x2);
+        if (widget->resource)
+            blit_pcx(display, widget->resource, line, strpool_getstring(widget->attributes.source), widget->placement.position.x, widget->placement.position.y, x0, x2);
 
         break;
 

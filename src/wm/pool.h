@@ -1,6 +1,7 @@
 struct pool_pcxresource
 {
 
+    unsigned int used;
     unsigned int target;
     unsigned int id;
     unsigned char colormap[768];

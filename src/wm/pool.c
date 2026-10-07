@@ -19,7 +19,6 @@ static struct widget entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
 static struct pool_pcxresource pcxresources[64];
-static unsigned int npcxresources;
 
 struct list_item *pool_prev(struct list_item *current)
 {
@@ -183,6 +182,9 @@ void pool_destroy(struct widget *widget)
     if (item)
     {
 
+        if (widget->type == WIDGET_TYPE_IMAGE && widget->attributes.mimetype == ATTR_MIMETYPE_PCX && widget->resource)
+            ((struct pool_pcxresource *)widget->resource)->used = 0;
+
         widget_unsetattributes(widget);
         list_move(&freelist, &widgetlist, item);
 
@@ -193,8 +195,23 @@ void pool_destroy(struct widget *widget)
 struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
 {
 
-    struct pool_pcxresource *resource = &pcxresources[npcxresources++];
+    struct pool_pcxresource *resource = 0;
+    unsigned int i;
 
+    for (i = 0; i < 64 && !resource; i++)
+    {
+
+        if (!pcxresources[i].used)
+            resource = &pcxresources[i];
+
+    }
+
+    if (!resource)
+        return 0;
+
+    buffer_clear(resource, sizeof (struct pool_pcxresource));
+
+    resource->used = 1;
     resource->target = fs_auth(source);
 
     if (resource->target)
