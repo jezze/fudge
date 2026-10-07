@@ -10,7 +10,7 @@
 #include "pool.h"
 
 #define MAX_WIDGETS                     1024
-#define MAX_FONTS                       16
+#define MAX_FONTS                       2
 
 static struct list widgetlist;
 static struct list bumplist;
