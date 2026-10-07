@@ -391,10 +391,26 @@ void blit_iconx(struct blit_display *display, struct util_region *region, int li
 
 }
 
-void blit_mouse(struct blit_display *display, int mx, int my, int line, int x0, int x2, unsigned int *cmap)
+/* the arrow points with its top left corner, the text bar with its middle */
+struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
 {
 
-    static char *rows[BLIT_MOUSEHEIGHT] = {
+    switch (type)
+    {
+
+    case BLIT_MOUSE_TEXT:
+        return util_region(mx - 3, my - 10, 7, 20);
+
+    }
+
+    return util_region(mx, my, 18, 24);
+
+}
+
+void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    static char *arrow[24] = {
         "SSS",
         "SLSS",
         "SLLSS",
@@ -420,8 +436,44 @@ void blit_mouse(struct blit_display *display, int mx, int my, int line, int x0, 
         "SLSS",
         "SSS"
     };
+    static char *text[20] = {
+        "SSS SSS",
+        "SLLSLLS",
+        "SSSLSSS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "  SLS",
+        "SSSLSSS",
+        "SLLSLLS",
+        "SSS SSS"
+    };
+    struct util_region region = blit_getmouseregion(type, mx, my);
 
-    blitbitmap(display, rows, BLIT_MOUSEHEIGHT, mx, my, line, x0, x2, cmap);
+    switch (type)
+    {
+
+    case BLIT_MOUSE_TEXT:
+        blitbitmap(display, text, 20, region.position.x, region.position.y, line, x0, x2, cmap);
+
+        break;
+
+    default:
+        blitbitmap(display, arrow, 24, region.position.x, region.position.y, line, x0, x2, cmap);
+
+        break;
+
+    }
 
 }
 

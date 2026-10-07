@@ -1,5 +1,5 @@
-#define BLIT_MOUSEWIDTH                 18
-#define BLIT_MOUSEHEIGHT                24
+#define BLIT_MOUSE_ARROW                0
+#define BLIT_MOUSE_TEXT                 1
 
 struct blit_display
 {
@@ -21,7 +21,8 @@ void blit_icondropdown(struct blit_display *display, struct util_region *region,
 void blit_iconhamburger(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconminimize(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconx(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
-void blit_mouse(struct blit_display *display, int mx, int my, int line, int x0, int x2, unsigned int *cmap);
+struct util_region blit_getmouseregion(unsigned int type, int mx, int my);
+void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my, int line, int x0, int x2, unsigned int *cmap);
 void blit_frame(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, int line, char *source, int x, int y, int x0, int x2);
 void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned int w, unsigned int h, unsigned int bpp, unsigned int *linebuffer);

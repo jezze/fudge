@@ -106,6 +106,19 @@ static struct widget *gethoverwidgetat(int x, int y)
 
 }
 
+/* over text that can be edited the mouse becomes a text bar */
+static unsigned int getmousetype(int x, int y)
+{
+
+    struct widget *widget = getinteractivewidgetat(x, y);
+
+    if (widget && widget->type == WIDGET_TYPE_TEXTBOX && widget->attributes.mode != ATTR_MODE_READONLY)
+        return BLIT_MOUSE_TEXT;
+
+    return BLIT_MOUSE_ARROW;
+
+}
+
 static struct widget *getscrollablewidgetat(int x, int y)
 {
 
@@ -786,7 +799,7 @@ static void onmousemove(struct message *message)
     state.mouseposition.y = y;
 
     sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
-    render_setmouse(state.mouseposition.x, state.mouseposition.y);
+    render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
 
     if (state.mousebuttonleft)
     {
@@ -926,7 +939,7 @@ static void onvideoinfo(struct message *message)
     state.mouseposition.x = videoinfo.width / 4;
     state.mouseposition.y = videoinfo.height / 4;
 
-    render_setmouse(state.mouseposition.x, state.mouseposition.y);
+    render_setmouse(state.mouseposition.x, state.mouseposition.y, BLIT_MOUSE_ARROW);
 
     render_damage(0, 0, videoinfo.width, videoinfo.height);
     render_place(state.rootwidget, &display.region);

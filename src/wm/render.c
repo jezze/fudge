@@ -44,6 +44,7 @@ struct calls
 static struct util_position zeroposition;
 static struct util_size zerosize;
 static struct util_position mouse;
+static unsigned int mousetype;
 static struct calls calls[32];
 
 static unsigned int getdirection(unsigned int flow)
@@ -928,7 +929,16 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
 
 }
 
-void render_setmouse(int x, int y)
+static void damagemouse(void)
+{
+
+    struct util_region region = blit_getmouseregion(mousetype, mouse.x, mouse.y);
+
+    render_damage(region.position.x, region.position.y, region.position.x + region.size.w, region.position.y + region.size.h);
+
+}
+
+void render_setmouse(int x, int y, unsigned int type)
 {
 
     struct list_item *current = 0;
@@ -955,12 +965,13 @@ void render_setmouse(int x, int y)
 
     }
 
-    render_damage(mouse.x, mouse.y, mouse.x + BLIT_MOUSEWIDTH, mouse.y + BLIT_MOUSEHEIGHT);
+    damagemouse();
 
     mouse.x = x;
     mouse.y = y;
+    mousetype = type;
 
-    render_damage(mouse.x, mouse.y, mouse.x + BLIT_MOUSEWIDTH, mouse.y + BLIT_MOUSEHEIGHT);
+    damagemouse();
 
 }
 
@@ -1056,7 +1067,7 @@ void render_update(struct blit_display *display)
 
         }
 
-        blit_mouse(display, mouse.x, mouse.y, line, area.position0.x, area.position2.x, cmapmouse);
+        blit_mouse(display, mousetype, mouse.x, mouse.y, line, area.position0.x, area.position2.x, cmapmouse);
         blit(display, line, area.position0.x, area.position2.x);
 
     }
