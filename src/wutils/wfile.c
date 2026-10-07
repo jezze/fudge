@@ -23,31 +23,47 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 {
 
     unsigned char data[MESSAGE_SIZE];
+    unsigned char d[MESSAGE_SIZE];
     unsigned int count;
     unsigned int offset = 0;
+    unsigned int row = 0;
+    unsigned int c = 0;
 
     sendcontent(wm);
 
     while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
     {
 
-        unsigned char d[MESSAGE_SIZE];
-        unsigned int c = 0;
         unsigned int i;
 
         for (i = 0; i < count; i += sizeof (struct record))
         {
 
             struct record *record = (struct record *)(data + i);
+            char name[RECORD_NAMESIZE + 2];
 
-            c += cstring_write_fmt6(d, MESSAGE_SIZE, c, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            cstring_write_fmt3(name, RECORD_NAMESIZE + 2, 0, "%w%s\\0", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+
+            if (c + 512 > MESSAGE_SIZE)
+            {
+
+                channel_send(0, wm, EVENT_WMRENDERDATA, c, d);
+
+                c = 0;
+
+            }
+
+            c += cstring_write_fmt2(d, MESSAGE_SIZE, c, "+ layout id \"row%u\" in \"content\" flow \"horizontal-stretch\" spacing \"8\"\n+ checkbox in \"row%u\"\n", &row, &row);
+            c += cstring_write_fmt3(d, MESSAGE_SIZE, c, "+ textbutton in \"row%u\" span \"1\" label \"%s\" onclick \"q=relpath&path=%s\"\n", &row, name, name);
             offset = record->offset;
+            row++;
 
         }
 
-        channel_send(0, wm, EVENT_WMRENDERDATA, c, d);
-
     }
+
+    if (c)
+        channel_send(0, wm, EVENT_WMRENDERDATA, c, d);
 
 }
 
