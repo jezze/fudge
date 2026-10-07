@@ -352,6 +352,13 @@ static struct util_size getsizebutton(struct widget *widget, struct util_size *l
 
 }
 
+static struct util_size getsizecheckbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    return util_size(CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
+
+}
+
 static struct util_size getsizechoice(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -451,6 +458,11 @@ static struct util_size getsizewindow(struct widget *widget, struct util_size *l
 }
 
 static void placebutton(struct widget *widget)
+{
+
+}
+
+static void placecheckbox(struct widget *widget)
 {
 
 }
@@ -568,6 +580,21 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
     textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+
+}
+
+/* a square box centered in the placement, so a stretched row keeps it square */
+static void rendercheckbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct util_region box = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_CHECKBOX_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
+    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmapicon = cmap_get(widget->state, widget->type, 12, 0);
+
+    blit_frame(display, &box, line, x0, x2, cmapbody);
+
+    if (widget->attributes.checked)
+        blit_iconx(display, &box, line, x0, x2, cmapicon);
 
 }
 
@@ -892,6 +919,7 @@ void render_init(void)
 {
 
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, placebutton, renderbutton);
+    setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, placecheckbox, rendercheckbox);
     setupcall(WIDGET_TYPE_CHOICE, getsizechoice, placechoice, renderchoice);
     setupcall(WIDGET_TYPE_FILL, getsizefill, placefill, renderfill);
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);

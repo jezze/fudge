@@ -11,6 +11,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
     switch (attribute)
     {
 
+    case ATTR_CHECKED:
+        widget->attributes.checked = attr_update(ATTR_CHECKED, value, widget->attributes.checked);
+
+        break;
+
     case ATTR_COLOR:
         widget->attributes.color = attr_update(ATTR_COLOR, value, widget->attributes.color);
 
@@ -113,6 +118,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 void widget_unsetattributes(struct widget *widget)
 {
 
+    widget_setattribute(widget, ATTR_CHECKED, 0);
     widget_setattribute(widget, ATTR_COLOR, 0);
     widget_setattribute(widget, ATTR_CURSOR, 0);
     widget_setattribute(widget, ATTR_DISPLAY, 0);
@@ -246,6 +252,7 @@ unsigned int widget_isinteractive(struct widget *widget)
     {
 
     case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_LISTBOX:
     case WIDGET_TYPE_SELECT:
@@ -279,6 +286,7 @@ unsigned int widget_isscrollable(struct widget *widget)
 void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
 {
 
+    attributes->checked = 0;
     attributes->color = 0;
     attributes->cursor = 0;
     attributes->display = ATTR_DISPLAY_BLOCK;

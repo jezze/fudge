@@ -73,6 +73,7 @@ unsigned int attr_isvalue(unsigned int attribute)
     switch (attribute)
     {
 
+    case ATTR_CHECKED:
     case ATTR_COLOR:
     case ATTR_CURSOR:
     case ATTR_PADDING:
@@ -140,6 +141,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     switch (attribute)
     {
+
+    case ATTR_CHECKED:
+        return getnum(value, 10);
 
     case ATTR_COLOR:
         return getnum(value, 16);

@@ -22,9 +22,10 @@ static struct util_token commands[5] =
     {UPDATE, "="}
 };
 
-static struct util_token widgets[12] =
+static struct util_token widgets[13] =
 {
     {WIDGET_TYPE_BUTTON, "button"},
+    {WIDGET_TYPE_CHECKBOX, "checkbox"},
     {WIDGET_TYPE_CHOICE, "choice"},
     {WIDGET_TYPE_FILL, "fill"},
     {WIDGET_TYPE_IMAGE, "image"},
@@ -38,8 +39,9 @@ static struct util_token widgets[12] =
     {WIDGET_TYPE_WINDOW, "window"}
 };
 
-static struct util_token attributes[19] =
+static struct util_token attributes[20] =
 {
+    {ATTR_CHECKED, "checked"},
     {ATTR_COLOR, "color"},
     {ATTR_CURSOR, "cursor"},
     {ATTR_DISPLAY, "display"},
@@ -225,7 +227,7 @@ static unsigned int getcommand(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(commands, sizeof (commands) / sizeof (commands[0]), strbuffer) : 0;
+    return (count) ? util_getkey(commands, 5, strbuffer) : 0;
 
 }
 

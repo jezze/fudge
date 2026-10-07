@@ -374,6 +374,18 @@ static void clickwidget(struct widget *widget)
     switch (widget->type)
     {
 
+    case WIDGET_TYPE_CHECKBOX:
+        if (state.mousebuttonleft)
+        {
+
+            widget->attributes.checked = !widget->attributes.checked;
+
+            damage(widget);
+
+        }
+
+        break;
+
     case WIDGET_TYPE_WINDOW:
         if (state.mousebuttonleft)
         {

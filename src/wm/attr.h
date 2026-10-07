@@ -17,6 +17,7 @@
 #define ATTR_VALIGN                     17
 #define ATTR_WEIGHT                     18
 #define ATTR_WRAP                       19
+#define ATTR_CHECKED                    20
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_DISPLAY_FIXED              2
