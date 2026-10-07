@@ -322,7 +322,25 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     info = placechildren(widget, &zerosize);
 
     if (info.spans)
-        placechildren(widget, &info.span);
+        info = placechildren(widget, &info.span);
+
+    /* keep the content of a scrolled widget in view: no further down than its last child */
+    if (widget_isscrollable(widget))
+    {
+
+        int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
+        int y = util_clamp(widget->scroll.y, 0, util_max(0, top * 2 + info.total.h - (int)widget->placement.size.h));
+
+        if (y != widget->scroll.y)
+        {
+
+            widget->scroll.y = y;
+
+            place(widget, placement, clip);
+
+        }
+
+    }
 
 }
 
@@ -498,7 +516,7 @@ static void placelistbox(struct widget *widget)
 
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
 
 }
 
@@ -531,7 +549,7 @@ static void placetextbox(struct widget *widget)
 
     struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
 
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
