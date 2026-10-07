@@ -166,7 +166,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         startchild(child, &offset, &pending);
 
-        climit = util_size_sub(&inner, total.w, total.h);
+        climit = util_size_sub(&inner, offset.x, offset.y);
         csize = calls[child->type].getsize(child, &climit, &rowstart);
 
         if (child->attributes.span)

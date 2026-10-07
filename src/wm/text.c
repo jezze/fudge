@@ -76,7 +76,8 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
 
         }
 
-        if (rowinfo->width + atlas->width > maxw)
+        /* a row takes at least one character, even when it does not fit, or the text would never end */
+        if (rowinfo->width + atlas->width > maxw && i > offset)
         {
 
             switch (wrap)
