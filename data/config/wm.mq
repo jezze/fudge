@@ -1,8 +1,24 @@
 {
-  resolution:
+  localization:
   {
-    width: 1920
-    height: 1080
-    bpp: 4
+    language: en_US
+  }
+  video:
+  {
+    resolution:
+    {
+      width: 1920
+      height: 1080
+      bpp: 4
+    }
+  }
+  keyboard:
+  {
+    layout: qwerty_US
+  }
+  mouse:
+  {
+    speed: 4
+    acceleration: false
   }
 }
