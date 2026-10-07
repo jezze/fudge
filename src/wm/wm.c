@@ -498,6 +498,41 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
 }
 
+/* put the cursor of an editable textbox at the character boundary nearest to the mouse */
+static void movecursor(struct widget *widget)
+{
+
+    struct widget *text = gettextchild(widget);
+
+    if (text)
+    {
+
+        struct text_font *font = pool_getfont(text->attributes.weight);
+        char *label = strpool_getstring(text->attributes.label);
+        unsigned int length = strpool_getcstringlength(text->attributes.label);
+        int x = util_max(state.mouseposition.x - text->placement.position.x, 0);
+        int y = util_clamp(state.mouseposition.y - text->placement.position.y, 0, util_max((int)text->placement.size.h - 1, 0));
+        unsigned int cursor = text_getoffsetat(font, label, length, text->attributes.wrap, text->placement.size.w, text->rowstart.x, x, y);
+
+        if (cursor < length)
+        {
+
+            struct text_info info = text_info(font, label, cursor, text->attributes.wrap, text->placement.size.w, text->rowstart.x);
+            unsigned int index = label[cursor];
+
+            if (x - info.lastrow.x > (int)font->atlas[index].width / 2)
+                cursor++;
+
+        }
+
+        widget->attributes.cursor = cursor;
+
+        damageall(widget);
+
+    }
+
+}
+
 static void clickwidget(struct widget *widget)
 {
 
@@ -513,6 +548,12 @@ static void clickwidget(struct widget *widget)
             damage(widget);
 
         }
+
+        break;
+
+    case WIDGET_TYPE_TEXTBOX:
+        if (state.mousebuttonleft && widget->attributes.mode != ATTR_MODE_READONLY)
+            movecursor(widget);
 
         break;
 
