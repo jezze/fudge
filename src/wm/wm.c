@@ -13,6 +13,7 @@
 
 #define STATE_NORMAL        0
 #define STATE_GRABBED       1
+#define TEXTBOX_SIZE        256
 
 struct state
 {
@@ -360,17 +361,17 @@ static void launch(char *command)
 
 }
 
-static void sendevent(unsigned int source, unsigned int type, unsigned int action)
+/* text, if any, is appended to the action (onenter "q=open&path=" gets the textbox content after path=) */
+static void sendevent(unsigned int source, unsigned int type, unsigned int action, char *text)
 {
 
     if (source)
     {
 
-        struct {struct event_wmevent wmevent; char data[128];} message;
-        unsigned int length = strpool_getcstringlength(action) + 1;
+        struct {struct event_wmevent wmevent; char data[512];} message;
 
         message.wmevent.type = type;
-        message.wmevent.length = cstring_write_fmt2(message.data, 128, 0, "%w\\0", strpool_getstring(action), &length);
+        message.wmevent.length = cstring_write_fmt2(message.data, 512, 0, "%s%s\\0", strpool_getstring(action), text);
 
         channel_send(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
 
@@ -385,6 +386,115 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
             launch(cmd + 4);
 
     }
+
+}
+
+static struct widget *gettextchild(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+    struct widget *text = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+            text = child;
+
+    }
+
+    return text;
+
+}
+
+/* an editable textbox edits its (last) text child itself and only tells the program on enter */
+static void edittextbox(struct widget *widget, unsigned int id)
+{
+
+    struct widget *text = gettextchild(widget);
+    char buffer[TEXTBOX_SIZE];
+    unsigned int length;
+    unsigned int cursor;
+
+    if (!text)
+        return;
+
+    length = cstring_write_fmt1(buffer, TEXTBOX_SIZE, 0, "%s\\0", strpool_getstring(text->attributes.label)) - 1;
+    cursor = util_min(widget->attributes.cursor, length);
+
+    switch (id)
+    {
+
+    case KEYS_KEY_ENTER:
+        if (widget->attributes.onenter)
+            sendevent(widget->source, 1, widget->attributes.onenter, buffer);
+
+        return;
+
+    case KEYS_KEY_BACKSPACE:
+        if (cursor > 0)
+        {
+
+            buffer_copy(buffer + cursor - 1, buffer + cursor, length - cursor + 1);
+
+            cursor--;
+
+        }
+
+        break;
+
+    case KEYS_KEY_DELETE:
+        if (cursor < length)
+            buffer_copy(buffer + cursor, buffer + cursor + 1, length - cursor);
+
+        break;
+
+    case KEYS_KEY_CURSORLEFT:
+        if (cursor > 0)
+            cursor--;
+
+        break;
+
+    case KEYS_KEY_CURSORRIGHT:
+        if (cursor < length)
+            cursor++;
+
+        break;
+
+    case KEYS_KEY_HOME:
+        cursor = 0;
+
+        break;
+
+    case KEYS_KEY_END:
+        cursor = length;
+
+        break;
+
+    default:
+        if (state.keys.code.length == 1 && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] < 0x7F && length + 1 < TEXTBOX_SIZE)
+        {
+
+            unsigned int i;
+
+            for (i = length + 1; i > cursor; i--)
+                buffer[i] = buffer[i - 1];
+
+            buffer[cursor] = state.keys.code.value[0];
+            cursor++;
+
+        }
+
+        break;
+
+    }
+
+    text->attributes.label = strpool_updatestring(text->attributes.label, buffer);
+    widget->attributes.cursor = cursor;
+
+    damageall(widget);
 
 }
 
@@ -425,7 +535,7 @@ static void clickwidget(struct widget *widget)
     {
 
         if (widget->attributes.onclick)
-            sendevent(widget->source, 1, widget->attributes.onclick);
+            sendevent(widget->source, 1, widget->attributes.onclick, "");
 
     }
 
@@ -559,6 +669,13 @@ static void onkeypress(struct message *message)
                 break;
 
             }
+
+        }
+
+        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX && state.focusedwidget->attributes.mode != ATTR_MODE_READONLY)
+        {
+
+            edittextbox(state.focusedwidget, id);
 
         }
 

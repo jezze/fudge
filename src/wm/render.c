@@ -283,6 +283,40 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 
 }
 
+/* the cursor sits after the first cursor characters of the textbox's last text child */
+static void placecursor(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+    struct widget *text = 0;
+
+    widget->cursorsize = zerosize;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+            text = child;
+
+    }
+
+    if (text)
+    {
+
+        struct text_font *font = pool_getfont(text->attributes.weight);
+        unsigned int length = util_min(widget->attributes.cursor, strpool_getcstringlength(text->attributes.label));
+        unsigned int maxw = widget->cplacement.size.w - (text->placement.position.x - widget->cplacement.position.x);
+        struct text_info info = text_info(font, strpool_getstring(text->attributes.label), length, text->attributes.wrap, maxw, text->rowstart.x);
+
+        widget->cursorposition = util_position(text->placement.position.x + info.lastrow.x, text->placement.position.y + info.lastrow.y);
+        widget->cursorsize = util_size(2, font->lineheight);
+
+    }
+
+}
+
 static void place(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
@@ -323,6 +357,9 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     if (info.spans)
         info = placechildren(widget, &info.span);
+
+    if (widget->type == WIDGET_TYPE_TEXTBOX)
+        placecursor(widget);
 
     /* keep the content of a scrolled widget in view: no further down than its last child */
     if (widget_isscrollable(widget))
@@ -754,7 +791,8 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
     unsigned int *cmapicon = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, (widget->attributes.mode == ATTR_MODE_READONLY) ? cmapbodyro : cmapbody);
-    blit_iconcursor(display, &rcursor, line, x0, x2, cmapicon);
+    if (widget->state == WIDGET_STATE_FOCUS)
+        blit_iconcursor(display, &rcursor, line, x0, x2, cmapicon);
 
 }
 
