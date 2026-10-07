@@ -12,49 +12,105 @@ static void updatepath(unsigned int wm)
 
 }
 
+static void sendcontent(unsigned int wm)
+{
+
+    channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
+
+}
+
+static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
+{
+
+    unsigned char data[MESSAGE_SIZE];
+    unsigned int count;
+    unsigned int offset = 0;
+
+    sendcontent(wm);
+
+    while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
+    {
+
+        unsigned char d[MESSAGE_SIZE];
+        unsigned int c = 0;
+        unsigned int i;
+
+        for (i = 0; i < count; i += sizeof (struct record))
+        {
+
+            struct record *record = (struct record *)(data + i);
+
+            c += cstring_write_fmt6(d, MESSAGE_SIZE, c, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
+            offset = record->offset;
+
+        }
+
+        channel_send(0, wm, EVENT_WMRENDERDATA, c, d);
+
+    }
+
+}
+
+static void showfile(unsigned int wm, struct record *record)
+{
+
+    unsigned int length = cstring_length(path);
+    unsigned int start = buffer_lastbyte(path, length, '/');
+
+    if (!start)
+        start = buffer_firstbyte(path, length, ':');
+
+    sendcontent(wm);
+    channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"8\" spacing \"4\"\n");
+    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" weight \"bold\" label \"%s\"\n", path + start);
+    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Path: %s\"\n", path);
+    channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Type: File\"\n");
+    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Size: %u bytes\"\n", &record->size);
+    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Id: %u\"\n", &record->id);
+
+}
+
 static void updatecontent(unsigned int wm)
 {
 
     unsigned int target = fs_auth(path);
+    unsigned int id = (target) ? fs_walk(1, target, 0, path) : 0;
+    struct record record;
 
-    if (target)
+    if (!id)
     {
 
-        unsigned int id = fs_walk(1, target, 0, path);
-
-        if (id)
-        {
-
-            unsigned char data[MESSAGE_SIZE];
-            unsigned int count;
-            unsigned int offset = 0;
-
-            channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
-
-            while ((count = fs_read(1, target, id, data, MESSAGE_SIZE, offset)))
-            {
-
-                unsigned char d[MESSAGE_SIZE];
-                unsigned int c = 0;
-                unsigned int i;
-
-                for (i = 0; i < count; i += sizeof (struct record))
-                {
-
-                    struct record *record = (struct record *)(data + i);
-
-                    c += cstring_write_fmt6(d, MESSAGE_SIZE, c, "+ textbutton in \"content\" label \"%w%s\" onclick \"q=relpath&path=%w%s\"\n", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "", record->name, &record->length, record->type == RECORD_TYPE_DIRECTORY ? "/" : "");
-                    offset = record->offset;
-
-                }
-
-                channel_send(0, wm, EVENT_WMRENDERDATA, c, d);
-
-            }
-
-        }
+        sendcontent(wm);
+        channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Path not found\"\n");
 
     }
+
+    else if (fs_stat(1, target, id, &record) && record.type != RECORD_TYPE_DIRECTORY)
+    {
+
+        showfile(wm, &record);
+
+    }
+
+    else
+    {
+
+        listdirectory(wm, target, id);
+
+    }
+
+}
+
+/* paths are always kept canonical: relative ones are resolved against the current path */
+static void changepath(unsigned int wm, char *relative)
+{
+
+    char full[256];
+
+    fs_absolute(full, 256, path, relative);
+    cstring_write_fmt1(path, 256, 0, "%s\\0", full);
+    updatepath(wm);
+    updatecontent(wm);
 
 }
 
@@ -102,45 +158,17 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=up"))
     {
 
-        if (cstring_length(path))
-        {
+        char parent[256];
 
-            unsigned int l = cstring_length(path);
-            unsigned int p;
-
-            if (path[l - 1] == '/')
-                l--;
-
-            p = buffer_lastbyte(path, l, '/');
-
-            if (!p)
-                p = buffer_firstbyte(path, l, ':');
-
-            if (p)
-                path[p] = 0;
-
-        }
-
-        updatepath(message->source);
-        updatecontent(message->source);
+        cstring_write_fmt1(parent, 256, 0, "%s/../\\0", path);
+        changepath(message->source, parent);
 
     }
 
-    else if (kv_match(event, "q=abspath"))
+    else if (kv_match(event, "q=abspath") || kv_match(event, "q=relpath"))
     {
 
-        cstring_write_fmt1(path, 256, 0, "%s\\0", kv_getstring(event, "path="));
-        updatepath(message->source);
-        updatecontent(message->source);
-
-    }
-
-    else if (kv_match(event, "q=relpath"))
-    {
-
-        cstring_write_fmt2(path, 256, 0, "%s%s\\0", path, kv_getstring(event, "path="));
-        updatepath(message->source);
-        updatecontent(message->source);
+        changepath(message->source, kv_getstring(event, "path="));
 
     }
 
@@ -152,9 +180,7 @@ static void onwminit(struct message *message)
     char *alfi = "initrd:data/alfi/wfile.alfi";
 
     channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    cstring_write_fmt0(path, 256, 0, "initrd:\\0");
-    updatepath(message->source);
-    updatecontent(message->source);
+    changepath(message->source, "initrd:");
 
 }
 
