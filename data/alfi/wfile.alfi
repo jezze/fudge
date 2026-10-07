@@ -3,7 +3,7 @@
 + layout id "top" in "base" flow "horizontal" spacing "8"
 + select id "volume" in "top" label "Volume"
 + panel id "volume-list" in "volume" flow "vertical-stretch" padding "4"
-+ item id "volume-initrd" in "volume-list" padding "8" onclick "q=abspath&path=initrd:"
++ item id "volume-initrd" in "volume-list" padding "16" onclick "q=abspath&path=initrd:"
 + text in "volume-initrd" label "initrd:"
 + textbox id "pathbox" in "top" span "1" onenter "q=abspath&path="
 + text id "path" in "pathbox"
