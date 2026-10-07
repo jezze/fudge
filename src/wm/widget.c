@@ -259,7 +259,6 @@ unsigned int widget_isinteractive(struct widget *widget)
 
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHECKBOX:
-    case WIDGET_TYPE_CHOICE:
     case WIDGET_TYPE_LISTBOX:
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_ITEM:
@@ -321,11 +320,6 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
         attributes->halign = ATTR_HALIGN_CENTER;
         attributes->valign = ATTR_VALIGN_MIDDLE;
         attributes->weight = ATTR_WEIGHT_BOLD;
-
-        break;
-
-    case WIDGET_TYPE_CHOICE:
-        attributes->valign = ATTR_VALIGN_MIDDLE;
 
         break;
 

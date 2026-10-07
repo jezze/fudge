@@ -1,5 +1,4 @@
 #define WIDGET_TYPE_BUTTON              1
-#define WIDGET_TYPE_CHOICE              2
 #define WIDGET_TYPE_FILL                3
 #define WIDGET_TYPE_IMAGE               4
 #define WIDGET_TYPE_LAYOUT              5

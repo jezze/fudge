@@ -19,13 +19,6 @@ static unsigned int cmapcheckbox[13] = {
     0xE8FFFFFF,
 };
 
-static unsigned int cmapchoice[13] = {
-    0xE8101010, 0xE8484848, 0xE8484848, 0xE8888888,
-    0xE8101010, 0xE8505050, 0xE8505050, 0xE8888888,
-    0xE8101010, 0xE8585858, 0xE8585858, 0xE8888888,
-    0xE8FFFFFF,
-};
-
 static unsigned int cmaplistbox[12] = {
     0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8686868,
     0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8787878,
@@ -81,9 +74,6 @@ static unsigned int *getcmap(unsigned int type)
 
     case WIDGET_TYPE_CHECKBOX:
         return cmapcheckbox;
-
-    case WIDGET_TYPE_CHOICE:
-        return cmapchoice;
 
     case WIDGET_TYPE_LISTBOX:
         return cmaplistbox;

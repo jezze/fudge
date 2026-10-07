@@ -487,16 +487,6 @@ static struct util_size getsizecheckbox(struct widget *widget, struct util_size 
 
 }
 
-static struct util_size getsizechoice(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH * 2, CONFIG_CHOICE_PADDING_HEIGHT * 2);
-    struct util_size label = textsize(widget, limit, rowstart);
-
-    return util_size_union(&label, &padding);
-
-}
-
 static struct util_size getsizefill(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -588,11 +578,6 @@ static void placebutton(struct widget *widget)
 }
 
 static void placecheckbox(struct widget *widget)
-{
-
-}
-
-static void placechoice(struct widget *widget)
 {
 
 }
@@ -733,18 +718,6 @@ static void rendercheckbox(struct blit_display *display, struct widget *widget, 
 
     if (widget->attributes.checked)
         blit_iconx(display, &box, line, x0, x2, cmapicon);
-
-}
-
-static void renderchoice(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    struct util_size padding = util_size(CONFIG_CHOICE_PADDING_WIDTH, CONFIG_CHOICE_PADDING_HEIGHT);
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
-    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
-
-    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -1089,7 +1062,6 @@ void render_init(void)
 
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, placebutton, renderbutton);
     setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, placecheckbox, rendercheckbox);
-    setupcall(WIDGET_TYPE_CHOICE, getsizechoice, placechoice, renderchoice);
     setupcall(WIDGET_TYPE_FILL, getsizefill, placefill, renderfill);
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
     setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
