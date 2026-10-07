@@ -1,5 +1,5 @@
 + window id "window" label "Settings"
-+ panel id "base" in "window" flow "vertical-stretch" padding "8" span "1"
++ panel id "base" in "window" flow "vertical-stretch" padding "8" spacing "8" span "1"
 + layout id "languages-list" in "base" flow "horizontal" spacing "8"
 + text in "languages-list" wrap "word" span "1" label "Language"
 + select id "languages" in "languages-list" label "English (en_US)"

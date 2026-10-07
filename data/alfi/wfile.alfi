@@ -1,5 +1,5 @@
 + window id "window" label "File Manager"
-+ panel id "base" in "window" flow "vertical-stretch" padding "8" span "1"
++ panel id "base" in "window" flow "vertical-stretch" padding "8" spacing "8" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "8"
 + select id "volume" in "top" label "Volume"
 + layout id "volume-list" in "volume" flow "vertical-stretch"
