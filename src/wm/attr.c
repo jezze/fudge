@@ -131,7 +131,7 @@ unsigned int attr_isenum(unsigned int attribute)
 static unsigned int getnum(char *value, unsigned int base)
 {
 
-    return (value) ? cstring_read_value(value, cstring_length(value), 16) : 0;
+    return (value) ? cstring_read_value(value, cstring_length(value), base) : 0;
 
 }
 
