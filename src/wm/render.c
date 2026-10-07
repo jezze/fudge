@@ -131,12 +131,12 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         {
 
         case DIRECTION_HORIZONTAL:
-            offset.x += csize.w;
+            offset.x += csize.w + widget->attributes.spacing;
 
             break;
 
         case DIRECTION_VERTICAL:
-            offset.y += csize.h;
+            offset.y += csize.h + widget->attributes.spacing;
 
             break;
 
@@ -254,12 +254,12 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
         {
 
         case DIRECTION_HORIZONTAL:
-            offset.x += child->placement.size.w;
+            offset.x += child->placement.size.w + widget->attributes.spacing;
 
             break;
 
         case DIRECTION_VERTICAL:
-            offset.y += child->placement.size.h;
+            offset.y += child->placement.size.h + widget->attributes.spacing;
 
             break;
 
