@@ -2,6 +2,22 @@
 #include <abi.h>
 #include "kv.h"
 
+#define NUM_ACTIONS                     1
+
+/* what can be done with a file, chosen by its suffix: a button with the label runs the command with the file as its path */
+struct action
+{
+
+    char *suffix;
+    char *label;
+    char *command;
+
+};
+
+static struct action actions[NUM_ACTIONS] = {
+    {".gb", "Play", "gameboy"}
+};
+
 static char path[256];
 
 static void updatepath(unsigned int wm)
@@ -68,11 +84,22 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
 }
 
+static unsigned int hassuffix(char *name, char *suffix)
+{
+
+    unsigned int length = cstring_length(name);
+    unsigned int slength = cstring_length(suffix);
+
+    return length > slength && buffer_match(name + length - slength, suffix, slength);
+
+}
+
 static void showfile(unsigned int wm, struct record *record)
 {
 
     unsigned int length = cstring_length(path);
     unsigned int start = buffer_lastbyte(path, length, '/');
+    unsigned int i;
 
     if (!start)
         start = buffer_firstbyte(path, length, ':');
@@ -84,6 +111,14 @@ static void showfile(unsigned int wm, struct record *record)
     channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Type: File\"\n");
     channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Size: %u bytes\"\n", &record->size);
     channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Id: %u\"\n", &record->id);
+
+    for (i = 0; i < NUM_ACTIONS; i++)
+    {
+
+        if (hassuffix(path, actions[i].suffix))
+            channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "+ button in \"info\" label \"%s\" onclick \"q=action&index=%u\"\n", actions[i].label, &i);
+
+    }
 
 }
 
@@ -185,6 +220,23 @@ static void onwmevent(struct message *message)
 
         cstring_write_fmt1(parent, 256, 0, "%s/../\\0", path);
         changepath(message->source, parent);
+
+    }
+
+    else if (kv_match(event, "q=action"))
+    {
+
+        unsigned int index = kv_getvalue(event, "index=", 10);
+
+        if (index < NUM_ACTIONS)
+        {
+
+            char command[512];
+
+            cstring_write_fmt2(command, 512, 0, "%s \"%s\" &\\0", actions[index].command, path);
+            system_run(0, command);
+
+        }
 
     }
 
