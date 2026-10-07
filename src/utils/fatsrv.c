@@ -6,6 +6,8 @@
 #define NAMESIZE                        264
 
 static struct event_blockinfo blockinfo;
+static unsigned int block;
+static unsigned int partoffset;
 static unsigned int sectorsize;
 static unsigned int clustersize;
 static unsigned int fatstart;
@@ -19,24 +21,24 @@ static unsigned int cachefirst;
 static unsigned int cacheindex;
 static unsigned int cachecluster;
 
+static void sendblockrequest(unsigned int event, unsigned int reply, unsigned int sector)
+{
+
+    struct event_blockrequest request;
+    struct event_blockresponse response;
+
+    request.offset = partoffset + sector * sectorsize;
+    request.count = sectorsize;
+
+    channel_send(1, block, event, sizeof (struct event_blockrequest), &request);
+    channel_wait(1, block, reply, sizeof (struct event_blockresponse), &response);
+
+}
+
 static void *readsector(unsigned int sector)
 {
 
-    unsigned int target = channel_lookup(option_getstring("block-service"));
-
-    if (target)
-    {
-
-        struct event_blockrequest request;
-        struct event_blockresponse response;
-
-        request.offset = option_getdecimal("partoffset") + sector * sectorsize;
-        request.count = sectorsize;
-
-        channel_send(1, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_wait(1, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
-
-    }
+    sendblockrequest(EVENT_BLOCKREADREQUEST, EVENT_BLOCKREADRESPONSE, sector);
 
     return (void *)blockinfo.buffer;
 
@@ -45,21 +47,7 @@ static void *readsector(unsigned int sector)
 static void writesector(unsigned int sector)
 {
 
-    unsigned int target = channel_lookup(option_getstring("block-service"));
-
-    if (target)
-    {
-
-        struct event_blockrequest request;
-        struct event_blockresponse response;
-
-        request.offset = option_getdecimal("partoffset") + sector * sectorsize;
-        request.count = sectorsize;
-
-        channel_send(1, target, EVENT_BLOCKWRITEREQUEST, sizeof (struct event_blockrequest), &request);
-        channel_wait(1, target, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
-
-    }
+    sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, sector);
 
 }
 
@@ -910,7 +898,8 @@ static void onwriterequest(struct message *message)
 static void onmain(struct message *message)
 {
 
-    unsigned int block = channel_lookup(option_getstring("block-service"));
+    block = channel_lookup(option_getstring("block-service"));
+    partoffset = option_getdecimal("partoffset");
 
     if (block)
     {
@@ -918,7 +907,9 @@ static void onmain(struct message *message)
         struct fat fat;
 
         channel_send(1, block, EVENT_INFO, 0, 0);
-        channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+
+        if (!channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo))
+            return;
 
         sectorsize = 512;
 
