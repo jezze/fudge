@@ -2,6 +2,8 @@
   localization:
   {
     language: en_US
+    time: en_US
+    timezone: UTC
   }
   screen:
   {
