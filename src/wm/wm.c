@@ -106,14 +106,45 @@ static struct widget *gethoverwidgetat(int x, int y)
 
 }
 
-/* over text that can be edited the mouse becomes a text bar */
+/* over text that can be edited the mouse becomes a text bar, over anything clickable a hand */
 static unsigned int getmousetype(int x, int y)
 {
 
     struct widget *widget = getinteractivewidgetat(x, y);
+    unsigned int button;
 
-    if (widget && widget->type == WIDGET_TYPE_TEXTBOX && widget->attributes.mode != ATTR_MODE_READONLY)
-        return BLIT_MOUSE_TEXT;
+    if (!widget)
+        return BLIT_MOUSE_ARROW;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHECKBOX:
+    case WIDGET_TYPE_ITEM:
+    case WIDGET_TYPE_SELECT:
+        return BLIT_MOUSE_HAND;
+
+    case WIDGET_TYPE_TEXTBOX:
+        if (widget->attributes.mode != ATTR_MODE_READONLY)
+            return BLIT_MOUSE_TEXT;
+
+        break;
+
+    case WIDGET_TYPE_WINDOW:
+        for (button = RENDER_WINDOWBUTTON_MENU; button <= RENDER_WINDOWBUTTON_CLOSE; button++)
+        {
+
+            struct util_region region = render_getwindowbutton(widget, button);
+
+            if (util_region_intersects(&region, x, y))
+                return BLIT_MOUSE_HAND;
+
+        }
+
+        break;
+
+    }
 
     return BLIT_MOUSE_ARROW;
 

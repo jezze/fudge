@@ -1,5 +1,6 @@
 #define BLIT_MOUSE_ARROW                0
 #define BLIT_MOUSE_TEXT                 1
+#define BLIT_MOUSE_HAND                 2
 
 struct blit_display
 {
