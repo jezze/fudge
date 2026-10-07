@@ -402,7 +402,7 @@ struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
         return util_region(mx - 3, my - 10, 7, 24);
 
     case BLIT_MOUSE_HAND:
-        return util_region(mx - 8, my, 20, 20);
+        return util_region(mx - 8, my, 23, 24);
 
     }
 
@@ -465,27 +465,31 @@ void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my,
         "SLLSSSSLLS",
         "SSS    SSS"
     };
-    static char *hand[20] = {
+    static char *hand[24] = {
         "      SSSS",
         "     SSLLSS",
         "     SLNNLS",
         "     SLNNLS",
         "     SLNNLS",
         "     SLNNLS",
-        "     SLNNLSSSSSSSS",
-        "     SLNNLLSLSLSLSS",
-        " SS  SLNNLNLNLNLNLS",
-        "SLLS SLNNLNLNLNLNLS",
-        "SLNLSLNNNLNLNLNLNLS",
-        "SLNNLNNNNNNNNNNNNLS",
-        "SLNNNNNNNNNNNNNNNLS",
-        "SLNNNNNNNNNNNNNNNLS",
-        " SLNNNNNNNNNNNNNNLS",
-        "  SLNNNNNNNNNNNNNLS",
-        "   SLNNNNNNNNNNNNLS",
-        "    SLNNNNNNNNNNLS",
-        "     SLLLLLLLLLLS",
-        "     SSSSSSSSSSSS"
+        "     SLNNLS",
+        "     SLNNLS",
+        "     SLNNLSSSSSSSSSSSSS",
+        "     SLNNLLLSLLSLLSLLSS",
+        " SS  SLNNLNNLNNLNNLNNLS",
+        "SLLS SLNNLNNLNNLNNLNNLS",
+        "SLNLSLNNNLNNLNNLNNLNNLS",
+        "SLNNLNNNNNNNNNNNNNNNNLS",
+        "SLNNNNNNNNNNNNNNNNNNNLS",
+        "SLNNNNNNNNNNNNNNNNNNNLS",
+        " SLNNNNNNNNNNNNNNNNNNLS",
+        "  SLNNNNNNNNNNNNNNNNNLS",
+        "   SLNNNNNNNNNNNNNNNNLS",
+        "    SLNNNNNNNNNNNNNNNLS",
+        "     SLNNNNNNNNNNNNNNLS",
+        "      SLNNNNNNNNNNNNLS",
+        "       SLLLLLLLLLLLLLS",
+        "       SSSSSSSSSSSSSSS"
     };
     struct util_region region = blit_getmouseregion(type, mx, my);
 
@@ -498,7 +502,7 @@ void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my,
         break;
 
     case BLIT_MOUSE_HAND:
-        blitbitmap(display, hand, 20, region.position.x, region.position.y, line, x0, x2, cmap);
+        blitbitmap(display, hand, 24, region.position.x, region.position.y, line, x0, x2, cmap);
 
         break;
 
