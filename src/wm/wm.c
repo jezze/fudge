@@ -493,6 +493,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
     text->attributes.label = strpool_updatestring(text->attributes.label, buffer);
     widget->attributes.cursor = cursor;
+    widget->followcursor = 1;
 
     damageall(widget);
 

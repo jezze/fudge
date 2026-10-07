@@ -23,6 +23,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_CURSOR:
         widget->attributes.cursor = attr_update(ATTR_CURSOR, value, widget->attributes.cursor);
+        widget->followcursor = 1;
 
         break;
 
@@ -353,7 +354,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->state = WIDGET_STATE_NORMAL;
     widget->markstart = 0;
     widget->markend = 0;
-    widget->enablecursor = 0;
+    widget->followcursor = 0;
     widget->resource = 0;
     widget->loaded = 0;
     widget->position = util_position(0, 0);
@@ -369,16 +370,6 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->rowstop = util_position(0, 0);
 
     widget_init_attributes(&widget->attributes, widget->type);
-
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_TEXTBOX:
-        widget->enablecursor = 1;
-
-        break;
-
-    }
 
 }
 

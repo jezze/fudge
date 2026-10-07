@@ -433,12 +433,29 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (widget->type == WIDGET_TYPE_TEXTBOX)
         placecursor(widget);
 
-    /* keep the content of a scrolled widget in view: no further down than its last child */
+    /* keep the content of a scrolled widget in view: no further down than its last child, and after the cursor moved, show it */
     if (widget_isscrollable(widget))
     {
 
         int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
-        int y = util_clamp(widget->scroll.y, 0, util_max(0, top * 2 + info.total.h - (int)widget->placement.size.h));
+        int y = widget->scroll.y;
+
+        if (widget->followcursor && widget->cursorsize.h)
+        {
+
+            int visibletop = widget->placement.position.y + top;
+            int visiblebottom = widget->placement.position.y + (int)widget->placement.size.h - top;
+
+            if (widget->cursorposition.y < visibletop)
+                y -= visibletop - widget->cursorposition.y;
+
+            if (widget->cursorposition.y + (int)widget->cursorsize.h > visiblebottom)
+                y += widget->cursorposition.y + widget->cursorsize.h - visiblebottom;
+
+        }
+
+        widget->followcursor = 0;
+        y = util_clamp(y, 0, util_max(0, top * 2 + info.total.h - (int)widget->placement.size.h));
 
         if (y != widget->scroll.y)
         {

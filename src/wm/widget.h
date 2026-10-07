@@ -52,7 +52,7 @@ struct widget
     unsigned int state;
     unsigned int markstart;
     unsigned int markend;
-    unsigned int enablecursor;
+    unsigned int followcursor;
     void *resource;
     unsigned int loaded;
     struct util_position position;
