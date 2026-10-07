@@ -105,6 +105,56 @@ static void blitsegment(struct blit_display *display, struct rowsegment *rows, u
 
 }
 
+/* rows of characters: '#' is the icon colour, S N D L are shadow, normal, dark and light, anything else is transparent */
+static void blitbitmap(struct blit_display *display, char **rows, unsigned int count, int bx, int by, int line, int x0, int x2, unsigned int *cmap)
+{
+
+    char *row;
+    int x;
+
+    if (line < by || line >= by + (int)count)
+        return;
+
+    for (row = rows[line - by], x = bx; *row && x < x2; row++, x++)
+    {
+
+        if (x < x0)
+            continue;
+
+        switch (*row)
+        {
+
+        case '#':
+            blit_alphaline(display, cmap[CMAP_ICON_COLOR], x, x + 1);
+
+            break;
+
+        case 'S':
+            blit_alphaline(display, cmap[CMAP_SHADOW], x, x + 1);
+
+            break;
+
+        case 'N':
+            blit_alphaline(display, cmap[CMAP_NORMAL], x, x + 1);
+
+            break;
+
+        case 'D':
+            blit_alphaline(display, cmap[CMAP_DARK], x, x + 1);
+
+            break;
+
+        case 'L':
+            blit_alphaline(display, cmap[CMAP_LIGHT], x, x + 1);
+
+            break;
+
+        }
+
+    }
+
+}
+
 void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
 {
 
@@ -208,68 +258,32 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
 void blit_iconarrowdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static struct linesegment line0[1] = {
-        {REL1, REL1, -6, 6, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line1[1] = {
-        {REL1, REL1, -5, 5, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line2[1] = {
-        {REL1, REL1, -4, 4, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line3[1] = {
-        {REL1, REL1, -3, 3, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line4[1] = {
-        {REL1, REL1, -2, 2, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line5[1] = {
-        {REL1, REL1, -1, 1, CMAP_ICON_COLOR}
-    };
-    static struct rowsegment rows[6] = {
-        {REL1, REL1, -3, -2, line0, 1},
-        {REL1, REL1, -2, -1, line1, 1},
-        {REL1, REL1, -1, 0, line2, 1},
-        {REL1, REL1, 0, 1, line3, 1},
-        {REL1, REL1, 1, 2, line4, 1},
-        {REL1, REL1, 2, 3, line5, 1}
+    static char *rows[6] = {
+        "############",
+        " ##########",
+        "  ########",
+        "   ######",
+        "    ####",
+        "     ##"
     };
 
-    blitsegment(display, rows, 6, line, region, x0, x2, cmap);
+    blitbitmap(display, rows, 6, region->position.x + (int)(region->size.w / 2) - 6, region->position.y + (int)(region->size.h / 2) - 3, line, x0, x2, cmap);
 
 }
 
 void blit_iconarrowup(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static struct linesegment line0[1] = {
-        {REL1, REL1, -1, 1, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line1[1] = {
-        {REL1, REL1, -2, 2, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line2[1] = {
-        {REL1, REL1, -3, 3, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line3[1] = {
-        {REL1, REL1, -4, 4, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line4[1] = {
-        {REL1, REL1, -5, 5, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line5[1] = {
-        {REL1, REL1, -6, 6, CMAP_ICON_COLOR}
-    };
-    static struct rowsegment rows[6] = {
-        {REL1, REL1, -3, -2, line0, 1},
-        {REL1, REL1, -2, -1, line1, 1},
-        {REL1, REL1, -1, 0, line2, 1},
-        {REL1, REL1, 0, 1, line3, 1},
-        {REL1, REL1, 1, 2, line4, 1},
-        {REL1, REL1, 2, 3, line5, 1}
+    static char *rows[6] = {
+        "     ##",
+        "    ####",
+        "   ######",
+        "  ########",
+        " ##########",
+        "############"
     };
 
-    blitsegment(display, rows, 6, line, region, x0, x2, cmap);
+    blitbitmap(display, rows, 6, region->position.x + (int)(region->size.w / 2) - 6, region->position.y + (int)(region->size.h / 2) - 3, line, x0, x2, cmap);
 
 }
 
@@ -290,119 +304,90 @@ void blit_iconcursor(struct blit_display *display, struct util_region *region, i
 void blit_icondropdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static struct linesegment line0[1] = {
-        {REL1, REL1, -1, 1, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line1[1] = {
-        {REL1, REL1, -2, 2, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line2[1] = {
-        {REL1, REL1, -3, 3, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line3[1] = {
-        {REL1, REL1, -4, 4, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line4[1] = {
-        {REL1, REL1, -5, 5, CMAP_ICON_COLOR}
-    };
-    static struct rowsegment rows[10] = {
-        {REL1, REL1, -7, -6, line0, 1},
-        {REL1, REL1, -6, -5, line1, 1},
-        {REL1, REL1, -5, -4, line2, 1},
-        {REL1, REL1, -4, -3, line3, 1},
-        {REL1, REL1, -3, -2, line4, 1},
-        {REL1, REL1, 2, 3, line4, 1},
-        {REL1, REL1, 3, 4, line3, 1},
-        {REL1, REL1, 4, 5, line2, 1},
-        {REL1, REL1, 5, 6, line1, 1},
-        {REL1, REL1, 6, 7, line0, 1}
+    static char *rows[14] = {
+        "    ##",
+        "   ####",
+        "  ######",
+        " ########",
+        "##########",
+        "",
+        "",
+        "",
+        "",
+        "##########",
+        " ########",
+        "  ######",
+        "   ####",
+        "    ##"
     };
 
-    blitsegment(display, rows, 10, line, region, x0, x2, cmap);
+    blitbitmap(display, rows, 14, region->position.x + (int)(region->size.w / 2) - 5, region->position.y + (int)(region->size.h / 2) - 7, line, x0, x2, cmap);
 
 }
 
 void blit_iconhamburger(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static struct linesegment line0[1] = {
-        {REL1, REL1, -8, 8, CMAP_ICON_COLOR}
-    };
-    static struct rowsegment rows[3] = {
-        {REL1, REL1, -8, -4, line0, 1},
-        {REL1, REL1, -2, 2, line0, 1},
-        {REL1, REL1, 4, 8, line0, 1}
+    static char *rows[16] = {
+        "################",
+        "################",
+        "################",
+        "################",
+        "",
+        "",
+        "################",
+        "################",
+        "################",
+        "################",
+        "",
+        "",
+        "################",
+        "################",
+        "################",
+        "################"
     };
 
-    blitsegment(display, rows, 3, line, region, x0, x2, cmap);
+    blitbitmap(display, rows, 16, region->position.x + (int)(region->size.w / 2) - 8, region->position.y + (int)(region->size.h / 2) - 8, line, x0, x2, cmap);
 
 }
 
 void blit_iconminimize(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static struct linesegment line0[1] = {
-        {REL1, REL1, -8, 8, CMAP_ICON_COLOR}
-    };
-    static struct rowsegment rows[1] = {
-        {REL1, REL1, 4, 8, line0, 1}
+    static char *rows[4] = {
+        "################",
+        "################",
+        "################",
+        "################"
     };
 
-    blitsegment(display, rows, 1, line, region, x0, x2, cmap);
+    blitbitmap(display, rows, 4, region->position.x + (int)(region->size.w / 2) - 8, region->position.y + (int)(region->size.h / 2) + 4, line, x0, x2, cmap);
 
 }
 
 void blit_iconx(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    static struct linesegment line0[1] = {
-        {REL1, REL1, -3, 3, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line1[1] = {
-        {REL1, REL1, -4, 4, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line2[1] = {
-        {REL1, REL1, -5, 5, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line3[2] = {
-        {REL1, REL1, -6, -1, CMAP_ICON_COLOR},
-        {REL1, REL1, 1, 6, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line4[2] = {
-        {REL1, REL1, -7, -2, CMAP_ICON_COLOR},
-        {REL1, REL1, 2, 7, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line5[2] = {
-        {REL1, REL1, -8, -3, CMAP_ICON_COLOR},
-        {REL1, REL1, 3, 8, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line6[2] = {
-        {REL1, REL1, -7, -4, CMAP_ICON_COLOR},
-        {REL1, REL1, 4, 7, CMAP_ICON_COLOR}
-    };
-    static struct linesegment line7[2] = {
-        {REL1, REL1, -6, -5, CMAP_ICON_COLOR},
-        {REL1, REL1, 5, 6, CMAP_ICON_COLOR}
-    };
-    static struct rowsegment rows[15] = {
-        {REL1, REL1, -8, -7, line7, 2},
-        {REL1, REL1, -7, -6, line6, 2},
-        {REL1, REL1, -6, -5, line5, 2},
-        {REL1, REL1, -5, -4, line4, 2},
-        {REL1, REL1, -4, -3, line3, 2},
-        {REL1, REL1, -3, -2, line2, 1},
-        {REL1, REL1, -2, -1, line1, 1},
-        {REL1, REL1, -1, 1, line0, 1},
-        {REL1, REL1, 1, 2, line1, 1},
-        {REL1, REL1, 2, 3, line2, 1},
-        {REL1, REL1, 3, 4, line3, 2},
-        {REL1, REL1, 4, 5, line4, 2},
-        {REL1, REL1, 5, 6, line5, 2},
-        {REL1, REL1, 6, 7, line6, 2},
-        {REL1, REL1, 7, 8, line7, 2}
+    static char *rows[16] = {
+        "  #          #",
+        " ###        ###",
+        "#####      #####",
+        " #####    #####",
+        "  #####  #####",
+        "   ##########",
+        "    ########",
+        "     ######",
+        "     ######",
+        "    ########",
+        "   ##########",
+        "  #####  #####",
+        " #####    #####",
+        "#####      #####",
+        " ###        ###",
+        "  #          #"
     };
 
-    blitsegment(display, rows, 15, line, region, x0, x2, cmap);
+    blitbitmap(display, rows, 16, region->position.x + (int)(region->size.w / 2) - 8, region->position.y + (int)(region->size.h / 2) - 8, line, x0, x2, cmap);
 
 }
 
@@ -435,39 +420,8 @@ void blit_mouse(struct blit_display *display, int mx, int my, int line, int x0, 
         "SLSS",
         "SSS"
     };
-    char *row;
-    int x;
 
-    if (line < my || line >= my + BLIT_MOUSEHEIGHT)
-        return;
-
-    for (row = rows[line - my], x = mx; *row && x < x2; row++, x++)
-    {
-
-        if (x < x0)
-            continue;
-
-        switch (*row)
-        {
-
-        case 'S':
-            blit_alphaline(display, cmap[CMAP_SHADOW], x, x + 1);
-
-            break;
-
-        case 'N':
-            blit_alphaline(display, cmap[CMAP_NORMAL], x, x + 1);
-
-            break;
-
-        case 'L':
-            blit_alphaline(display, cmap[CMAP_LIGHT], x, x + 1);
-
-            break;
-
-        }
-
-    }
+    blitbitmap(display, rows, BLIT_MOUSEHEIGHT, mx, my, line, x0, x2, cmap);
 
 }
 
