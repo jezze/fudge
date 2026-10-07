@@ -17,5 +17,3 @@
 + text in "apps-filemanager" label "File Manager"
 + item id "apps-calculator" in "apps-layout" padding "16" onclick "run=initrd:bin/wcalc"
 + text in "apps-calculator" label "Calculator"
-+ item id "apps-test" in "apps-layout" padding "16" onclick "run=initrd:bin/wtest"
-+ text in "apps-test" label "Test"

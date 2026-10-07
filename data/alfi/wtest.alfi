@@ -1,3 +1,0 @@
-+ window id "window" label "Test"
-+ panel id "base" in "window" flow "vertical" padding "12" span "1"
-+ image in "base" mimetype "image/pcx" source "initrd:data/giant.pcx"

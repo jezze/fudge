@@ -1,0 +1,2 @@
++ window id "window" label "Image"
++ panel id "base" in "window" flow "vertical" padding "12" span "1"

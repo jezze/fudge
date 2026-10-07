@@ -81,10 +81,10 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/wutils/wtest \
+    $(DIR_SRC)/wutils/wimage \
 
 O:=\
-    $(DIR_SRC)/wutils/wtest.o \
+    $(DIR_SRC)/wutils/wimage.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
