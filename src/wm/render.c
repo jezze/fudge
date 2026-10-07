@@ -86,6 +86,63 @@ static unsigned int getstretch(unsigned int flow)
 
 }
 
+static unsigned int isinlinetext(struct widget *widget)
+{
+
+    return widget->type == WIDGET_TYPE_TEXT && widget->attributes.display == ATTR_DISPLAY_INLINE;
+
+}
+
+/* in a vertical flow an inline text continues on the last row of the inline text before it, like a terminal */
+static void advance(struct widget *widget, struct widget *child, unsigned int direction, struct util_size *size, struct util_position *offset, struct util_position *rowstart, int *pending)
+{
+
+    switch (direction)
+    {
+
+    case DIRECTION_HORIZONTAL:
+        offset->x += size->w + widget->attributes.spacing;
+
+        break;
+
+    case DIRECTION_VERTICAL:
+        if (isinlinetext(child))
+        {
+
+            offset->y += child->rowstop.y;
+            *pending = size->h - child->rowstop.y;
+
+        }
+
+        else
+        {
+
+            offset->y += size->h + widget->attributes.spacing;
+
+        }
+
+        break;
+
+    }
+
+    *rowstart = (child->attributes.display == ATTR_DISPLAY_INLINE) ? child->rowstop : zeroposition;
+
+}
+
+/* anything but an inline text starts below the last row of the inline texts before it */
+static void startchild(struct widget *child, struct util_position *offset, int *pending)
+{
+
+    if (!isinlinetext(child))
+    {
+
+        offset->y += *pending;
+        *pending = 0;
+
+    }
+
+}
+
 static struct util_size childrengetsize(struct widget *widget, struct util_size *limit)
 {
 
@@ -96,13 +153,19 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
     struct util_position offset = zeroposition;
     struct util_size total = zerosize;
     struct list_item *current = 0;
+    int pending = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
-        struct util_size climit = util_size_sub(&inner, total.w, total.h);
-        struct util_size csize = calls[child->type].getsize(child, &climit, &rowstart);
+        struct util_size climit;
+        struct util_size csize;
+
+        startchild(child, &offset, &pending);
+
+        climit = util_size_sub(&inner, total.w, total.h);
+        csize = calls[child->type].getsize(child, &climit, &rowstart);
 
         if (child->attributes.span)
         {
@@ -127,27 +190,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         total.w = util_clamp(util_max(total.w, csize.w + offset.x), 0, inner.w);
         total.h = util_clamp(util_max(total.h, csize.h + offset.y), 0, inner.h);
 
-        switch (direction)
-        {
-
-        case DIRECTION_HORIZONTAL:
-            offset.x += csize.w + widget->attributes.spacing;
-
-            break;
-
-        case DIRECTION_VERTICAL:
-            offset.y += csize.h + widget->attributes.spacing;
-
-            break;
-
-        }
-
-        if (child->attributes.display == ATTR_DISPLAY_INLINE)
-        {
-
-            rowstart = child->rowstop;
-
-        }
+        advance(widget, child, direction, &csize, &offset, &rowstart, &pending);
 
     }
 
@@ -232,6 +275,7 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
     struct util_position offset = zeroposition;
     struct list_item *current = 0;
     struct placeinfo info;
+    int pending = 0;
 
     info.spans = 0;
     info.total = zerosize;
@@ -242,7 +286,11 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
     {
 
         struct widget *child = current->data;
-        struct util_region cplacement = getplacement(widget, child, &offset, &rowstart, span);
+        struct util_region cplacement;
+
+        startchild(child, &offset, &pending);
+
+        cplacement = getplacement(widget, child, &offset, &rowstart, span);
 
         place(child, &cplacement, &widget->cclip);
 
@@ -250,27 +298,7 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
         info.total.w = util_clamp(util_max(info.total.w, child->placement.size.w + offset.x), 0, widget->cplacement.size.w);
         info.total.h = util_clamp(util_max(info.total.h, child->placement.size.h + offset.y), 0, widget->cplacement.size.h);
 
-        switch (direction)
-        {
-
-        case DIRECTION_HORIZONTAL:
-            offset.x += child->placement.size.w + widget->attributes.spacing;
-
-            break;
-
-        case DIRECTION_VERTICAL:
-            offset.y += child->placement.size.h + widget->attributes.spacing;
-
-            break;
-
-        }
-
-        if (child->attributes.display == ATTR_DISPLAY_INLINE)
-        {
-
-            rowstart = child->rowstop;
-
-        }
+        advance(widget, child, direction, &child->placement.size, &offset, &rowstart, &pending);
 
     }
 
