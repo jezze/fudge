@@ -53,8 +53,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
             }
 
-            c += cstring_write_fmt2(d, MESSAGE_SIZE, c, "+ layout id \"row%u\" in \"content\" flow \"horizontal-stretch\" spacing \"8\"\n+ checkbox in \"row%u\"\n", &row, &row);
-            c += cstring_write_fmt3(d, MESSAGE_SIZE, c, "+ textbutton in \"row%u\" span \"1\" label \"%s\" onclick \"q=relpath&path=%s\"\n", &row, name, name);
+            c += cstring_write_fmt4(d, MESSAGE_SIZE, c, "+ textbutton id \"row%u\" in \"content\" spacing \"8\" label \"%s\" onclick \"q=relpath&path=%s\"\n+ checkbox in \"row%u\"\n", &row, name, name, &row);
             offset = record->offset;
             row++;
 
