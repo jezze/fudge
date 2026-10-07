@@ -693,9 +693,10 @@ static void textrender(struct blit_display *display, struct widget *widget, stru
         struct text_rowinfo rowinfo;
         struct util_position offset;
 
-        text_getrowinfo(&rowinfo, font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, placement->size.w, icurrent);
+        /* offx is where the first row of an inline text starts: that row has less room and is drawn further right, as in text_info */
+        text_getrowinfo(&rowinfo, font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, util_max((int)placement->size.w - ((num) ? 0 : offx), 0), icurrent);
 
-        offset.x = text_getrowx(&rowinfo, widget->attributes.halign, placement->size.w - padding->w * 2 - offx) + padding->w + offx;
+        offset.x = text_getrowx(&rowinfo, widget->attributes.halign, placement->size.w - padding->w * 2 - ((num) ? 0 : offx)) + padding->w + ((num) ? 0 : offx);
         offset.y = text_getrowy(&rowinfo, widget->attributes.valign, placement->size.h - padding->h * 2 - offy) + padding->h + offy + font->lineheight * num;
 
         if (util_intersects(line, placement->position.y + offset.y, placement->position.y + offset.y + font->lineheight))
@@ -854,7 +855,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
     rownum = (line - widget->placement.position.y - top) / font->lineheight;
 
-    textrender(display, widget, &widget->placement, cmaptext, x0, x2, (rownum) ? 0 : widget->rowstart.x, 0, &zerosize, rownum, line);
+    textrender(display, widget, &widget->placement, cmaptext, x0, x2, widget->rowstart.x, 0, &zerosize, rownum, line);
 
 }
 
