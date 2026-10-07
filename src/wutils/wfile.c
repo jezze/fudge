@@ -2,28 +2,14 @@
 #include <abi.h>
 #include "kv.h"
 
-#define NUM_ACTIONS                     9
-
-struct action
-{
-
-    char *suffix;
-    char *label;
-    char *command;
-
-};
-
-static struct action actions[NUM_ACTIONS] = {
-    {".alfi", "View", "wedit"},
-    {".gb", "Play", "gameboy"},
-    {".html", "View", "wedit"},
-    {".pcx", "View", "wimage"},
-    {".ko", "Load", "elfload"},
-    {".ko", "Unload", "elfunload"},
-    {".mq", "View", "wedit"},
-    {".sh", "View", "wedit"},
-    {".txt", "View", "wedit"}
-};
+/* what can be done with a file comes from the filetypes config: a suffix, a button label and the command run with the file */
+static char suffixes[1024];
+static char labels[1024];
+static char commands[1024];
+static unsigned int nsuffixes;
+static unsigned int nlabels;
+static unsigned int ncommands;
+static unsigned int loaded;
 
 static char path[256];
 
@@ -91,6 +77,53 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
 }
 
+static unsigned int query(char *field, char *data, unsigned int size)
+{
+
+    char command[256];
+
+    cstring_write_fmt2(command, 256, 0, "mq -query .filetypes.%s %s\\0", field, option_getstring("config"));
+
+    return system_feed(command, 0, 0, data, size);
+
+}
+
+static void loadfiletypes(void)
+{
+
+    if (loaded)
+        return;
+
+    nsuffixes = query("suffix", suffixes, 1024);
+    nlabels = query("label", labels, 1024);
+    ncommands = query("command", commands, 1024);
+    loaded = 1;
+
+}
+
+/* the index-th line of a query result, or 0 when there is none */
+static unsigned int getline(char *data, unsigned int count, unsigned int index, char *out, unsigned int size)
+{
+
+    char *line = buffer_tindex(data, count, '\n', index);
+    unsigned int length;
+
+    if (!line || line >= data + count)
+        return 0;
+
+    length = buffer_findbyte(line, data + count - line, '\n');
+
+    if (length >= size)
+        length = size - 1;
+
+    buffer_write(out, size, line, length, 0);
+
+    out[length] = '\0';
+
+    return 1;
+
+}
+
 static unsigned int hassuffix(char *name, char *suffix)
 {
 
@@ -106,6 +139,8 @@ static void showfile(unsigned int wm, struct record *record)
 
     unsigned int length = cstring_length(path);
     unsigned int start = buffer_lastbyte(path, length, '/');
+    char suffix[64];
+    char label[64];
     unsigned int i;
 
     if (!start)
@@ -121,11 +156,13 @@ static void showfile(unsigned int wm, struct record *record)
 
     channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ layout id \"actions\" in \"info\" flow \"horizontal\" spacing \"8\"\n");
 
-    for (i = 0; i < NUM_ACTIONS; i++)
+    loadfiletypes();
+
+    for (i = 0; getline(suffixes, nsuffixes, i, suffix, 64) && getline(labels, nlabels, i, label, 64); i++)
     {
 
-        if (hassuffix(path, actions[i].suffix))
-            channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "+ button in \"actions\" label \"%s\" onclick \"q=action&index=%u\"\n", actions[i].label, &i);
+        if (hassuffix(path, suffix))
+            channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "+ button in \"actions\" label \"%s\" onclick \"q=action&index=%u\"\n", label, &i);
 
     }
 
@@ -236,13 +273,14 @@ static void onwmevent(struct message *message)
     {
 
         unsigned int index = kv_getvalue(event, "index=", 10);
+        char name[64];
 
-        if (index < NUM_ACTIONS)
+        if (getline(commands, ncommands, index, name, 64))
         {
 
             char command[512];
 
-            cstring_write_fmt2(command, 512, 0, "%s \"%s\" &\\0", actions[index].command, path);
+            cstring_write_fmt2(command, 512, 0, "%s \"%s\" &\\0", name, path);
             system_run(0, command);
 
         }
@@ -271,6 +309,7 @@ static void onwminit(struct message *message)
 void init(void)
 {
 
+    option_add("config", "initrd:data/config/filetypes.mq");
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);

@@ -1,0 +1,49 @@
+{
+  filetypes: [
+    {
+      suffix: ".alfi"
+      label: "View"
+      command: "wedit"
+    }
+    {
+      suffix: ".gb"
+      label: "Play"
+      command: "gameboy"
+    }
+    {
+      suffix: ".html"
+      label: "View"
+      command: "wedit"
+    }
+    {
+      suffix: ".pcx"
+      label: "View"
+      command: "wimage"
+    }
+    {
+      suffix: ".ko"
+      label: "Load"
+      command: "elfload"
+    }
+    {
+      suffix: ".ko"
+      label: "Unload"
+      command: "elfunload"
+    }
+    {
+      suffix: ".mq"
+      label: "View"
+      command: "wedit"
+    }
+    {
+      suffix: ".sh"
+      label: "View"
+      command: "wedit"
+    }
+    {
+      suffix: ".txt"
+      label: "View"
+      command: "wedit"
+    }
+  ]
+}
