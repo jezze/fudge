@@ -267,7 +267,8 @@ struct placeinfo
 
 };
 
-static struct placeinfo placechildren(struct widget *widget, struct util_size *span)
+/* with measure set, children are only sized, not placed: enough to find the free space spans share */
+static struct placeinfo placechildren(struct widget *widget, struct util_size *span, unsigned int measure)
 {
 
     unsigned int direction = getdirection(widget->attributes.flow);
@@ -292,13 +293,28 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 
         cplacement = getplacement(widget, child, &offset, &rowstart, span);
 
-        place(child, &cplacement, &widget->cclip);
+        if (measure)
+        {
+
+            if (child->attributes.display == ATTR_DISPLAY_FIXED)
+                cplacement.size = child->size;
+
+        }
+
+        else
+        {
+
+            place(child, &cplacement, &widget->cclip);
+
+            cplacement.size = child->placement.size;
+
+        }
 
         info.spans += child->attributes.span;
-        info.total.w = util_clamp(util_max(info.total.w, child->placement.size.w + offset.x), 0, widget->cplacement.size.w);
-        info.total.h = util_clamp(util_max(info.total.h, child->placement.size.h + offset.y), 0, widget->cplacement.size.h);
+        info.total.w = util_clamp(util_max(info.total.w, cplacement.size.w + offset.x), 0, widget->cplacement.size.w);
+        info.total.h = util_clamp(util_max(info.total.h, cplacement.size.h + offset.y), 0, widget->cplacement.size.h);
 
-        advance(widget, child, direction, &child->placement.size, &offset, &rowstart, &pending);
+        advance(widget, child, direction, &cplacement.size, &offset, &rowstart, &pending);
 
     }
 
@@ -345,10 +361,30 @@ static void placecursor(struct widget *widget)
 
 }
 
+static unsigned int hasspans(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->attributes.span)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
 static void place(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
     struct placeinfo info;
+    struct util_size span;
 
     if (widget->attributes.display == ATTR_DISPLAY_FIXED)
     {
@@ -381,10 +417,17 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     }
 
-    info = placechildren(widget, &zerosize);
+    span = zerosize;
 
-    if (info.spans)
-        info = placechildren(widget, &info.span);
+    if (hasspans(widget))
+    {
+
+        info = placechildren(widget, &zerosize, 1);
+        span = info.span;
+
+    }
+
+    info = placechildren(widget, &span, 0);
 
     if (widget->type == WIDGET_TYPE_TEXTBOX)
         placecursor(widget);
