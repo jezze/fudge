@@ -13,7 +13,11 @@
 #define INSERT  4
 #define UPDATE  5
 
-static struct util_token commands[5] =
+#define NUM_COMMANDS                    5
+#define NUM_WIDGETS                     13
+#define NUM_ATTRIBUTES                  20
+
+static struct util_token commands[NUM_COMMANDS] =
 {
     {NONE, ""},
     {COMMENT, "#"},
@@ -22,7 +26,7 @@ static struct util_token commands[5] =
     {UPDATE, "="}
 };
 
-static struct util_token widgets[13] =
+static struct util_token widgets[NUM_WIDGETS] =
 {
     {WIDGET_TYPE_BUTTON, "button"},
     {WIDGET_TYPE_CHECKBOX, "checkbox"},
@@ -39,7 +43,7 @@ static struct util_token widgets[13] =
     {WIDGET_TYPE_WINDOW, "window"}
 };
 
-static struct util_token attributes[20] =
+static struct util_token attributes[NUM_ATTRIBUTES] =
 {
     {ATTR_CHECKED, "checked"},
     {ATTR_COLOR, "color"},
@@ -227,7 +231,7 @@ static unsigned int getcommand(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(commands, 5, strbuffer) : 0;
+    return (count) ? util_getkey(commands, NUM_COMMANDS, strbuffer) : 0;
 
 }
 
@@ -236,7 +240,7 @@ static unsigned int getattribute(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(attributes, sizeof (attributes) / sizeof (attributes[0]), strbuffer) : 0;
+    return (count) ? util_getkey(attributes, NUM_ATTRIBUTES, strbuffer) : 0;
 
 }
 
@@ -245,7 +249,7 @@ static unsigned int getwidget(struct state *state)
 
     unsigned int count = readword(state, strbuffer, 4096);
 
-    return (count) ? util_getkey(widgets, sizeof (widgets) / sizeof (widgets[0]), strbuffer) : 0;
+    return (count) ? util_getkey(widgets, NUM_WIDGETS, strbuffer) : 0;
 
 }
 
