@@ -382,6 +382,42 @@ static unsigned int hasspans(struct widget *widget)
 
 }
 
+/* children are clipped to the content area, inside the frame and the padding; layouts draw nothing and don't clip, so a dropdown (the children of a select, below it) can hang out of the layouts around it */
+static void clipcontent(struct widget *widget)
+{
+
+    struct util_region content;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_LAYOUT:
+    case WIDGET_TYPE_SELECT:
+        return;
+
+    case WIDGET_TYPE_WINDOW:
+        content = widget->cplacement;
+
+        break;
+
+    default:
+        {
+
+            int left = widget->cplacement.position.x - widget->placement.position.x;
+            int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
+
+            content = util_region(widget->placement.position.x + left, widget->placement.position.y + top, util_max((int)widget->placement.size.w - left * 2, 0), util_max((int)widget->placement.size.h - top * 2, 0));
+
+        }
+
+        break;
+
+    }
+
+    widget->cclip = util_region_intersection(&content, &widget->cclip);
+
+}
+
 static void place(struct widget *widget, struct util_region *placement, struct util_region *clip)
 {
 
@@ -418,6 +454,8 @@ static void place(struct widget *widget, struct util_region *placement, struct u
         widget->cplacement.size = util_size_sub(&widget->cplacement.size, padding * 2, padding * 2);
 
     }
+
+    clipcontent(widget);
 
     span = zerosize;
 
