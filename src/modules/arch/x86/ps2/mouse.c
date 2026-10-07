@@ -74,7 +74,7 @@ static void handleirq(unsigned int irq)
             break;
 
         case 2:
-            relz = (data & 0x0F);
+            relz = (data & 0x08) ? (char)(data | 0xF0) : (char)(data & 0x0F);
 
             break;
 
