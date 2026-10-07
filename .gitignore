@@ -69,6 +69,7 @@ src/utils/write
 src/wm/wm
 src/wutils/wabout
 src/wutils/wcalc
+src/wutils/wedit
 src/wutils/wfile
 src/wutils/wrun
 src/wutils/wsettings

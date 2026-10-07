@@ -1,0 +1,2 @@
++ window id "window" label "Editor"
++ listbox id "content" in "window" mode "readonly" flow "vertical" overflow "vscroll" padding "8" span "1"
