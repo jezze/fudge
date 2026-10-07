@@ -70,6 +70,9 @@ static void showfile(void)
         if (offset >= MAXSIZE)
             channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n");
 
+        /* the textbox draws its cursor in its last text: an empty one puts it at the end of the file */
+        channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" display \"inline\" wrap \"char\"\n");
+
     }
 
     else

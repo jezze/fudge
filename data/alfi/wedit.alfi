@@ -1,2 +1,5 @@
 + window id "window" label "Editor"
-+ listbox id "content" in "window" mode "readonly" flow "vertical" overflow "vscroll" padding "8" span "1"
++ panel id "base" in "window" flow "vertical-stretch" padding "12" spacing "8" span "1"
++ textbox id "content" in "base" mode "readonly" flow "vertical" overflow "vscroll" span "1"
++ layout id "bottom" in "base" flow "horizontal" spacing "8"
++ button in "bottom" label "Save" onclick "q=save"
