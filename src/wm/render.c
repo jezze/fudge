@@ -819,6 +819,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
     unsigned int *cmapicon = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0);
 
     blit_frame(display, &widget->placement, line, x0, x2, (widget->attributes.mode == ATTR_MODE_READONLY) ? cmapbodyro : cmapbody);
+
     if (widget->state == WIDGET_STATE_FOCUS)
         blit_iconcursor(display, &rcursor, line, x0, x2, cmapicon);
 
