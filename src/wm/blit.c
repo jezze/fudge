@@ -402,7 +402,7 @@ struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
         return util_region(mx - 3, my - 10, 7, 20);
 
     case BLIT_MOUSE_HAND:
-        return util_region(mx - 5, my, 16, 19);
+        return util_region(mx - 8, my, 19, 23);
 
     }
 
@@ -461,26 +461,30 @@ void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my,
         "SLLSLLS",
         "SSS SSS"
     };
-    static char *hand[19] = {
-        "     SS",
-        "    SLLS",
-        "    SLLS",
-        "    SLLS",
-        "    SLLS",
-        "    SLLSSS",
-        "    SLLSLLSSS",
-        "    SLLSLLSLLSS",
-        " SS SLLSLLSLLSLS",
-        "SLLSSLLLLLLLLSLS",
-        "SLLLSLLLLLLLLLLS",
-        " SLLLLLLLLLLLLLS",
-        "  SLLLLLLLLLLLLS",
-        "  SLLLLLLLLLLLS",
-        "   SLLLLLLLLLLS",
-        "   SLLLLLLLLLS",
-        "    SLLLLLLLLS",
-        "    SLLLLLLLLS",
-        "    SSSSSSSSSS"
+    static char *hand[23] = {
+        "       SSS",
+        "      SLLLS",
+        "      SLNLS",
+        "      SLNLS",
+        "      SLNLS",
+        "      SLNLS",
+        "      SLNNLSSS",
+        "      SLNLSLLLS",
+        "      SLNLSLNNLSSS",
+        "      SLNLSLNLSLLLS",
+        " SSS  SLNLSLNLSLNLS",
+        "SLLLS SLNLSLNLSLNLS",
+        "SLNNLSLNNLSLNLSLNLS",
+        "SLNNNLNNNNLNNNLNNLS",
+        " SLNNNNNNNNNNNNNNLS",
+        "  SLNNNNNNNNNNNNNLS",
+        "   SLNNNNNNNNNNNNLS",
+        "    SLNNNNNNNNNNNLS",
+        "    SLNNNNNNNNNNNLS",
+        "    SLNNNNNNNNNNNLS",
+        "     SLNNNNNNNNNLS",
+        "      SLLLLLLLLLS",
+        "      SSSSSSSSSSS"
     };
     struct util_region region = blit_getmouseregion(type, mx, my);
 
@@ -493,7 +497,7 @@ void blit_mouse(struct blit_display *display, unsigned int type, int mx, int my,
         break;
 
     case BLIT_MOUSE_HAND:
-        blitbitmap(display, hand, 19, region.position.x, region.position.y, line, x0, x2, cmap);
+        blitbitmap(display, hand, 23, region.position.x, region.position.y, line, x0, x2, cmap);
 
         break;
 
