@@ -34,10 +34,14 @@ struct list_item *pool_next(struct list_item *current)
 
 }
 
+/* called for every step of layout and drawing, so the lengths (kept by the string pool) are compared before the text */
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    if (!strpool_getcstringlength(parent->attributes.id))
+    unsigned int length = strpool_getcstringlength(parent->attributes.id);
+    char *id = strpool_getstring(parent->attributes.id);
+
+    if (!length)
         return 0;
 
     while ((current = pool_next(current)))
@@ -45,13 +49,11 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 
         struct widget *widget = current->data;
 
-        if (!parent->source || widget->source == parent->source)
-        {
+        if (parent->source && widget->source != parent->source)
+            continue;
 
-            if (cstring_match(strpool_getstring(widget->attributes.in), strpool_getstring(parent->attributes.id)))
-                return current;
-
-        }
+        if (strpool_getcstringlength(widget->attributes.in) == length && buffer_match(strpool_getstring(widget->attributes.in), id, length))
+            return current;
 
     }
 
