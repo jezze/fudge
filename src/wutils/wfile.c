@@ -2,9 +2,8 @@
 #include <abi.h>
 #include "kv.h"
 
-#define NUM_ACTIONS                     5
+#define NUM_ACTIONS                     9
 
-/* what can be done with a file, chosen by its suffix: a button with the label runs the command with the file as its path */
 struct action
 {
 
@@ -15,11 +14,15 @@ struct action
 };
 
 static struct action actions[NUM_ACTIONS] = {
+    {".alfi", "View", "wedit"},
     {".gb", "Play", "gameboy"},
-    {".pcx", "Show", "wimage"},
+    {".html", "View", "wedit"},
+    {".pcx", "View", "wimage"},
     {".ko", "Load", "elfload"},
     {".ko", "Unload", "elfunload"},
-    {".txt", "Open", "wedit"}
+    {".mq", "View", "wedit"},
+    {".sh", "View", "wedit"},
+    {".txt", "View", "wedit"}
 };
 
 static char path[256];
