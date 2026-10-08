@@ -108,6 +108,24 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
 
 }
 
+unsigned int system_unixtime(char *service)
+{
+
+    unsigned int clock = channel_lookup(service);
+    struct event_clockinfo clockinfo;
+
+    if (!clock)
+        return 0;
+
+    channel_send(1, clock, EVENT_INFO, 0, 0);
+
+    if (!channel_wait(1, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo))
+        return 0;
+
+    return time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);
+
+}
+
 unsigned int system_resolve(char *domain, char *address, unsigned int size)
 {
 

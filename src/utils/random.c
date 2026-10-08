@@ -4,24 +4,14 @@
 static void onmain(struct message *message)
 {
 
-    unsigned int clock = channel_lookup(option_getstring("clock-service"));
+    struct mtwist_state state;
+    unsigned int value;
 
-    if (clock)
-    {
+    mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
 
-        struct event_clockinfo clockinfo;
-        struct mtwist_state state;
-        unsigned int value;
+    value = mtwist_rand(&state);
 
-        channel_send(1, clock, EVENT_INFO, 0, 0);
-        channel_wait(1, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-        mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
-
-        value = mtwist_rand(&state);
-
-        channel_send_fmt(0, message->source, EVENT_DATA, "%u\n", &value);
-
-    }
+    channel_send_fmt(0, message->source, EVENT_DATA, "%u\n", &value);
 
 }
 

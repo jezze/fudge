@@ -4,22 +4,10 @@
 static void onmain(struct message *message)
 {
 
-    unsigned int clock = channel_lookup(option_getstring("clock-service"));
+    unsigned int timestamp = system_unixtime(option_getstring("clock-service"));
 
-    if (clock)
-    {
-
-        struct event_clockinfo clockinfo;
-        unsigned int timestamp;
-
-        channel_send(1, clock, EVENT_INFO, 0, 0);
-        channel_wait(1, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-
-        timestamp = time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);
-
+    if (timestamp)
         channel_send_fmt(0, message->source, EVENT_DATA, "%u\n", &timestamp);
-
-    }
 
 }
 

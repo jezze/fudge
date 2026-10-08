@@ -87,19 +87,15 @@ static void handlehttppacket(unsigned int ethernet, unsigned int source, struct 
 static void onmain(struct message *message)
 {
 
-    unsigned int clock = channel_lookup(option_getstring("clock-service"));
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
-    if (clock && ethernet)
+    if (ethernet)
     {
 
-        struct event_clockinfo clockinfo;
         struct mtwist_state state;
         struct message m;
 
-        channel_send(1, clock, EVENT_INFO, 0, 0);
-        channel_wait(1, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
-        mtwist_seed1(&state, time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds));
+        mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
         socket_bind_ipv4s(&router, option_getstring("router-address"));
         socket_bind_ipv4s(&local, option_getstring("local-address"));
         socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
