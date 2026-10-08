@@ -62,16 +62,20 @@ static void seturl(char *s)
 
 }
 
+static void showerror(unsigned int wm, char *text)
+{
+
+    /* separate messages, since wm stops parsing a message at the first error and there may be no status yet */
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- status\n");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"status\" in \"base\" label \"%s\"\n", text);
+
+}
+
 static void open(unsigned int wm)
 {
 
-    unsigned int count = 0;
+    unsigned int count = (isvalid(url, cstring_length(url))) ? system_feed(0, 0, response, RESPONSESIZE, "webc -url \"%s\"", url) : 0;
     unsigned int i;
-
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"base\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
-
-    if (isvalid(url, cstring_length(url)))
-        count = system_feed(0, 0, response, RESPONSESIZE, "webc -url \"%s\"", url);
 
     for (i = 0; i + 4 <= count; i++)
     {
@@ -79,12 +83,24 @@ static void open(unsigned int wm)
         if (buffer_match(response + i, "\r\n\r\n", 4))
         {
 
+            char status[128];
             unsigned int length = buffer_findbyte(response, count, '\r');
 
             if (count > 12 && buffer_match(response + 8, " 200", 4))
+            {
+
+                channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- window\n");
                 render(wm, response + i + 4, count - i - 4);
-            else if (isvalid(response, length))
-                channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"%w\"\n", response, &length);
+
+            }
+
+            else if (length < 128 && isvalid(response, length))
+            {
+
+                cstring_write_fmt(status, 128, 0, "%w\\0", response, &length);
+                showerror(wm, status);
+
+            }
 
             return;
 
@@ -92,7 +108,7 @@ static void open(unsigned int wm)
 
     }
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Could not load the address\"\n");
+    showerror(wm, "Could not load the address");
 
 }
 
