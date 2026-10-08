@@ -17,10 +17,10 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
         if (channel_poll(2, target, EVENT_READY, &message))
         {
 
-            channel_send_fmt(2, target, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
+            channel_send_fmt(2, target, EVENT_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
 
             while (channel_poll(2, target, EVENT_DATA, &message))
-                channel_send(2, source, EVENT_DATA, message.length, message.data);
+                channel_send(0, source, EVENT_DATA, message.length, message.data);
 
         }
 

@@ -27,7 +27,7 @@ static void onqueryrequest(struct message *message)
             socket_connect_tcp(0, ethernet, &local, &remote, &router);
             socket_send_tcp(0, ethernet, &local, &remote, &router, message->length, message->data);
 
-            while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
+            while (remote.info.tcp.state != TCP_STATE_CLOSED && (count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
                 channel_send(0, message->source, EVENT_DATA, count, buffer);
 
         }
