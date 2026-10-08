@@ -33,6 +33,7 @@ struct widget_attributes
     unsigned int mode;
     unsigned int onclick;
     unsigned int onenter;
+    unsigned int onselect;
     unsigned int overflow;
     unsigned int padding;
     unsigned int source;

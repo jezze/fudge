@@ -230,7 +230,7 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
             fs_stat(1, resource->target, resource->id, &record);
             fs_read_all(1, resource->target, resource->id, &header, sizeof (struct pcx_header), 0);
 
-            if (header.identifier == PCX_IDENTIFIER && header.version == PCX_VERSION && header.encoding == PCX_ENCODING && header.bpp == 8 && header.nplanes == 1 && (unsigned short)header.bpl <= 2048 && (unsigned short)header.xend - (unsigned short)header.xstart < (unsigned short)header.bpl)
+            if (header.identifier == PCX_IDENTIFIER && header.version == PCX_VERSION && header.encoding == PCX_ENCODING && header.bpp == 8 && header.nplanes == 1 && (unsigned short)header.bpl <= POOL_PCXROWSIZE && (unsigned short)header.xend - (unsigned short)header.xstart < (unsigned short)header.bpl)
             {
 
                 buffer_copy(resource->colormap, header.palette, 48);
@@ -262,13 +262,13 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
 
 }
 
-void pool_pcxreadline(struct pool_pcxresource *resource, int line, int y, unsigned char *buffer)
+/* rows are decoded in order; the last one is kept, so a stretched image can draw it again */
+unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int row)
 {
 
-    unsigned char data[4096];
-    unsigned int row = line - y;
+    unsigned char data[POOL_PCXROWSIZE * 2];
 
-    if (row < resource->row)
+    if (row + 1 < resource->row)
     {
 
         resource->row = 0;
@@ -281,10 +281,12 @@ void pool_pcxreadline(struct pool_pcxresource *resource, int line, int y, unsign
 
         fs_read_full(1, resource->target, resource->id, data, resource->bpl * 2, 128 + resource->offset);
 
-        resource->offset += pcx_readline(data, resource->bpl, buffer);
+        resource->offset += pcx_readline(data, resource->bpl, resource->rowdata);
         resource->row++;
 
     }
+
+    return resource->rowdata;
 
 }
 

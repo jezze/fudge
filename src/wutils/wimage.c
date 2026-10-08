@@ -1,8 +1,10 @@
 #include <fudge.h>
 #include <abi.h>
+#include "kv.h"
 
 static char path[256];
 static unsigned int wm;
+static unsigned int stretched;
 
 /* the image is added once both the path and the window are there, whichever comes last */
 static void showimage(void)
@@ -17,7 +19,7 @@ static void showimage(void)
     if (!start)
         start = buffer_firstbyte(path, length, ':');
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n+ image in \"base\" mimetype \"image/pcx\" source \"%s\"\n", path + start, path);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n+ image id \"image\" in \"frame\" mimetype \"image/pcx\" source \"%s\" mode \"%s\" span \"1\"\n", path + start, path, (stretched) ? "stretch" : "normal");
 
 }
 
@@ -48,6 +50,24 @@ static void onpath(struct message *message)
 
 }
 
+static void onwmevent(struct message *message)
+{
+
+    struct event_wmevent *event = message->data;
+
+    if (kv_match(event, "q=mode"))
+    {
+
+        char *mode = kv_getstring(event, "mode=");
+
+        stretched = mode && cstring_match(mode, "Stretched");
+
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mode label \"%s\"\n= image mode \"%s\"\n", (stretched) ? "Stretched" : "Normal", (stretched) ? "stretch" : "normal");
+
+    }
+
+}
+
 static void onwminit(struct message *message)
 {
 
@@ -66,6 +86,7 @@ void init(void)
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
+    channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }

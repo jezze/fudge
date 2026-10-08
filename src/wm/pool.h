@@ -1,3 +1,5 @@
+#define POOL_PCXROWSIZE                 2048
+
 struct pool_pcxresource
 {
 
@@ -10,6 +12,7 @@ struct pool_pcxresource
     unsigned int bpl;
     unsigned int row;
     unsigned int offset;
+    unsigned char rowdata[POOL_PCXROWSIZE];
 
 };
 
@@ -22,7 +25,7 @@ void pool_bump(struct widget *widget);
 struct widget *pool_create(unsigned int source, unsigned int type, char *id, char *in);
 void pool_destroy(struct widget *widget);
 struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source);
-void pool_pcxreadline(struct pool_pcxresource *pcxresource, int line, int y, unsigned char *buffer);
+unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int row);
 struct text_font *pool_getfont(unsigned int index);
 void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding);
 void pool_loadfont(unsigned int index, char *path);

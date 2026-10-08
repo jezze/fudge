@@ -97,6 +97,7 @@ B:=\
     $(DIR_SRC)/wutils/wimage \
 
 O:=\
+    $(DIR_SRC)/wutils/kv.o \
     $(DIR_SRC)/wutils/wimage.o \
 
 L:=\

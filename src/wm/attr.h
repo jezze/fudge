@@ -19,6 +19,7 @@
 #define ATTR_WRAP                       19
 #define ATTR_CHECKED                    20
 #define ATTR_ONENTER                    21
+#define ATTR_ONSELECT                   22
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_DISPLAY_FIXED              2
@@ -35,6 +36,7 @@
 #define ATTR_MIMETYPE_PCX               2
 #define ATTR_MODE_NORMAL                0
 #define ATTR_MODE_READONLY              1
+#define ATTR_MODE_STRETCH               2
 #define ATTR_OVERFLOW_NONE              0
 #define ATTR_OVERFLOW_SCROLL            1
 #define ATTR_OVERFLOW_HSCROLL           2

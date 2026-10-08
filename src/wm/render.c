@@ -550,10 +550,11 @@ static struct util_size getsizefill(struct widget *widget, struct util_size *lim
 
 }
 
+/* a stretched image takes no room of its own: it fills what its span gives it */
 static struct util_size getsizeimage(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return widget->size;
+    return (widget->attributes.mode == ATTR_MODE_STRETCH) ? zerosize : widget->size;
 
 }
 
@@ -665,7 +666,7 @@ static void placelistbox(struct widget *widget)
 
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, INFINITY);
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, (widget->attributes.overflow == ATTR_OVERFLOW_NONE) ? inner.size.h : INFINITY);
 
 }
 
@@ -825,7 +826,37 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
     case ATTR_MIMETYPE_PCX:
         if (widget->resource)
-            blit_pcx(display, widget->resource, line, strpool_getstring(widget->attributes.source), widget->placement.position.x, widget->placement.position.y, x0, x2);
+        {
+
+            struct pool_pcxresource *resource = widget->resource;
+            unsigned int w = resource->width;
+            unsigned int h = resource->height;
+
+            /* as large as fits in the placement, keeping the aspect ratio */
+            if (widget->attributes.mode == ATTR_MODE_STRETCH && w && h)
+            {
+
+                if (w * widget->placement.size.h < h * widget->placement.size.w)
+                {
+
+                    w = w * widget->placement.size.h / h;
+                    h = widget->placement.size.h;
+
+                }
+
+                else
+                {
+
+                    h = h * widget->placement.size.w / w;
+                    w = widget->placement.size.w;
+
+                }
+
+            }
+
+            blit_pcx(display, resource, line, widget->placement.position.x, widget->placement.position.y, w, h, x0, x2);
+
+        }
 
         break;
 

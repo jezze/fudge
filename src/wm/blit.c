@@ -556,35 +556,27 @@ void blit_frame(struct blit_display *display, struct util_region *region, int li
 
 }
 
-void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, int line, char *source, int x, int y, int x0, int x2)
+/* draws the image scaled to w by h (nearest pixel); what is around it is left as it is */
+void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2)
 {
 
-    unsigned char buffer[4096];
+    unsigned char *row;
     int i;
 
-    pool_pcxreadline(resource, line, y, buffer);
+    if (!w || !h || !util_intersects(line, y, y + h))
+        return;
 
-    for (i = x0; i < x2; i++)
+    row = pool_pcxreadline(resource, (line - y) * resource->height / h);
+
+    for (i = util_max(x0, x); i < util_min(x2, x + w); i++)
     {
 
-        if (util_intersects(i, x, x + resource->width))
-        {
+        unsigned int off = row[(i - x) * resource->width / w] * 3;
+        unsigned char r = resource->colormap[off + 0];
+        unsigned char g = resource->colormap[off + 1];
+        unsigned char b = resource->colormap[off + 2];
 
-            unsigned int off = buffer[i - x] * 3;
-            unsigned char r = resource->colormap[off + 0];
-            unsigned char g = resource->colormap[off + 1];
-            unsigned char b = resource->colormap[off + 2];
-
-            display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
-
-        }
-
-        else
-        {
-
-            display->linebuffer[i] = 0xFF000000;
-
-        }
+        display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
 
     }
 

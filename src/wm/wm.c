@@ -575,6 +575,23 @@ static void movecursor(struct widget *widget)
 
 }
 
+static struct widget *getselect(struct widget *widget)
+{
+
+    while (widget && widget->type != WIDGET_TYPE_WINDOW)
+    {
+
+        if (widget->type == WIDGET_TYPE_SELECT)
+            return widget;
+
+        widget = (widget->attributes.in) ? pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in)) : 0;
+
+    }
+
+    return 0;
+
+}
+
 static void clickwidget(struct widget *widget)
 {
 
@@ -588,6 +605,20 @@ static void clickwidget(struct widget *widget)
             widget->attributes.checked = !widget->attributes.checked;
 
             damage(widget);
+
+        }
+
+        break;
+
+    case WIDGET_TYPE_ITEM:
+        if (state.mousebuttonleft)
+        {
+
+            struct widget *select = getselect(widget);
+            struct widget *text = gettextchild(widget);
+
+            if (select && select->attributes.onselect)
+                sendevent(select->source, 1, select->attributes.onselect, (text) ? strpool_getstring(text->attributes.label) : "");
 
         }
 

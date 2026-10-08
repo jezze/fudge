@@ -77,6 +77,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_ONSELECT:
+        widget->attributes.onselect = attr_update(ATTR_ONSELECT, value, widget->attributes.onselect);
+
+        break;
+
     case ATTR_OVERFLOW:
         widget->attributes.overflow = attr_update(ATTR_OVERFLOW, value, widget->attributes.overflow);
 
@@ -137,6 +142,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_MODE, 0);
     widget_setattribute(widget, ATTR_ONCLICK, 0);
     widget_setattribute(widget, ATTR_ONENTER, 0);
+    widget_setattribute(widget, ATTR_ONSELECT, 0);
     widget_setattribute(widget, ATTR_OVERFLOW, 0);
     widget_setattribute(widget, ATTR_PADDING, 0);
     widget_setattribute(widget, ATTR_SOURCE, 0);
@@ -305,6 +311,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->mode = ATTR_MODE_NORMAL;
     attributes->onclick = 0;
     attributes->onenter = 0;
+    attributes->onselect = 0;
     attributes->overflow = ATTR_OVERFLOW_NONE;
     attributes->padding = 0;
     attributes->source = 0;

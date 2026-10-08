@@ -4,6 +4,8 @@
 #include "strpool.h"
 #include "attr.h"
 
+#define NUM_MODES                       3
+
 static struct util_token displays[3] =
 {
     {ATTR_DISPLAY_BLOCK, "block"},
@@ -33,10 +35,11 @@ static struct util_token mimetypes[1] =
     {ATTR_MIMETYPE_PCX, "image/pcx"}
 };
 
-static struct util_token modes[2] =
+static struct util_token modes[NUM_MODES] =
 {
     {ATTR_MODE_NORMAL, "normal"},
-    {ATTR_MODE_READONLY, "readonly"}
+    {ATTR_MODE_READONLY, "readonly"},
+    {ATTR_MODE_STRETCH, "stretch"}
 };
 
 static struct util_token overflows[4] =
@@ -98,6 +101,7 @@ unsigned int attr_isstring(unsigned int attribute)
     case ATTR_LABEL:
     case ATTR_ONCLICK:
     case ATTR_ONENTER:
+    case ATTR_ONSELECT:
     case ATTR_SOURCE:
         return 1;
 
@@ -174,12 +178,15 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return util_getkey(mimetypes, 1, value);
 
     case ATTR_MODE:
-        return util_getkey(modes, 2, value);
+        return util_getkey(modes, NUM_MODES, value);
 
     case ATTR_ONCLICK:
         return strpool_updatestring(current, value);
 
     case ATTR_ONENTER:
+        return strpool_updatestring(current, value);
+
+    case ATTR_ONSELECT:
         return strpool_updatestring(current, value);
 
     case ATTR_OVERFLOW:
