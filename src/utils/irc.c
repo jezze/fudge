@@ -68,14 +68,8 @@ static void onconsoledata(struct message *message)
         {
 
         case '\0':
-            break;
-
         case '\f':
-            break;
-
         case '\t':
-            break;
-
         case '\b':
         case 0x7F:
             break;
@@ -83,20 +77,12 @@ static void onconsoledata(struct message *message)
         case '\r':
             consoledata->data = '\n';
 
-        case '\n':
-            ring_write(&input, &consoledata->data, 1);
-            channel_send(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
-
-            count = ring_read(&input, buffer, 4096);
-
-            if (count)
-                interpret(ethernet, buffer, count);
-
-            break;
-
         default:
             ring_write(&input, &consoledata->data, 1);
             channel_send(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
+
+            if (consoledata->data == '\n' && (count = ring_read(&input, buffer, 4096)))
+                interpret(ethernet, buffer, count);
 
             break;
 

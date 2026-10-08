@@ -30,6 +30,9 @@ static unsigned int isspecialchar(char c)
     case '\t':
     case '|':
     case ';':
+    case '&':
+    case '<':
+    case '>':
     case '\n':
         return 1;
 

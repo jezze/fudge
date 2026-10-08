@@ -25,25 +25,14 @@ static void onconsoledata(struct message *message)
         {
 
         case '\0':
-            break;
-
         case '\f':
-            break;
-
         case '\t':
-            break;
-
         case '\b':
         case 0x7F:
             break;
 
         case '\r':
             consoledata->data = '\n';
-
-        case '\n':
-            count = socket_send_tcp(0, ethernet, &local, &remotes[0], &router, 1, &consoledata->data);
-
-            break;
 
         default:
             count = socket_send_tcp(0, ethernet, &local, &remotes[0], &router, 1, &consoledata->data);
