@@ -1,4 +1,5 @@
 + fill color "FF202020"
++ image mimetype "image/pcx" source "initrd:data/giant.pcx" mode "stretch"
 + layout id "desktop" flow "vertical"
 + layout id "menu" in "desktop" flow "horizontal"
 + select id "fudge-select" in "menu" label "Fudge"
