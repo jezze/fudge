@@ -20,24 +20,13 @@ static unsigned int sendblockreadrequest(unsigned int target, unsigned int offse
 
 }
 
-static void startservice(unsigned int source, char *program, char *name, char *service, unsigned int index, unsigned int offset)
-{
-
-    char line[128];
-    unsigned int count = cstring_write_fmt(line, 128, 0, "%s -service %s -block-service %s", program, name, service);
-
-    cstring_write_fmt(line, 128, count, ":%u -partoffset %u &\\0", &index, &offset);
-    system_run(source, line);
-
-}
-
 static void mountfat(unsigned int source, unsigned int target, unsigned int offset, char *name, char *service, unsigned int index)
 {
 
     sendblockreadrequest(target, offset, 512);
 
     if (fat_validate((struct fat *)blockinfo.buffer))
-        startservice(source, "initrd:bin/fatsrv", name, service, index, offset);
+        system_run(source, "initrd:bin/fatsrv -service %s -block-service %s:%u -partoffset %u &", name, service, &index, &offset);
 
 }
 
@@ -47,7 +36,7 @@ static void mountext2(unsigned int source, unsigned int target, unsigned int off
     sendblockreadrequest(target, offset + 1024, 1024);
 
     if (ext2_validate((struct ext2_superblock *)blockinfo.buffer))
-        startservice(source, "initrd:bin/ext2srv", name, service, index, offset);
+        system_run(source, "initrd:bin/ext2srv -service %s -block-service %s:%u -partoffset %u &", name, service, &index, &offset);
 
 }
 

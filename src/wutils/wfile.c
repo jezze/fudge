@@ -276,14 +276,7 @@ static void onwmevent(struct message *message)
         char name[64];
 
         if (getline(commands, ncommands, index, name, 64))
-        {
-
-            char command[512];
-
-            cstring_write_fmt(command, 512, 0, "%s \"%s\" &\\0", name, path);
-            system_run(0, command);
-
-        }
+            system_run(0, "%s \"%s\" &", name, path);
 
     }
 

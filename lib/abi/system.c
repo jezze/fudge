@@ -5,7 +5,7 @@
 #include "option.h"
 #include "system.h"
 
-static unsigned int start(char *command, unsigned int input)
+static unsigned int start(char *command, unsigned int length, unsigned int input)
 {
 
     unsigned int sh = fs_spawn(1, 1, "initrd:bin/sh");
@@ -13,7 +13,6 @@ static unsigned int start(char *command, unsigned int input)
     if (sh)
     {
 
-        unsigned int length = cstring_length(command);
         unsigned int offset;
 
         channel_send_fmt(1, sh, EVENT_OPTION, "pwd=%s&input=%u\n", option_getstring("pwd"), &input);
@@ -31,10 +30,12 @@ static unsigned int start(char *command, unsigned int input)
 
 }
 
-unsigned int system_run(unsigned int target, char *command)
+unsigned int system_runv(unsigned int target, char *fmt, void **args)
 {
 
-    if (start(command, 0))
+    char command[MESSAGE_SIZE];
+
+    if (start(command, cstring_write_fmtv(command, MESSAGE_SIZE, 0, fmt, args), 0))
     {
 
         struct message message;
@@ -67,7 +68,7 @@ unsigned int system_run(unsigned int target, char *command)
 unsigned int system_feed(char *command, void *input, unsigned int inputcount, void *output, unsigned int outputcount)
 {
 
-    unsigned int sh = start(command, 1);
+    unsigned int sh = start(command, cstring_length(command), 1);
     unsigned int total = 0;
 
     if (sh)

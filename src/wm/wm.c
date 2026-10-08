@@ -398,10 +398,7 @@ static void placewindows(unsigned int source)
 static void launch(char *command)
 {
 
-    char line[256];
-
-    cstring_write_fmt(line, 256, 0, "%s &\\0", command);
-    system_run(0, line);
+    system_run(0, "%s &", command);
 
 }
 
