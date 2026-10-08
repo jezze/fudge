@@ -169,7 +169,6 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         climit = util_size_sub(&inner, offset.x, offset.y);
         csize = calls[child->type].getsize(child, &climit, &rowstart);
 
-        /* at its smallest a scrolling widget only needs room for one line, the rest can be scrolled to */
         if (measureminimum && widget_isscrollable(child) && child->attributes.overflow != ATTR_OVERFLOW_NONE)
         {
 
