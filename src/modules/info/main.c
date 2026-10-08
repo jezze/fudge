@@ -293,7 +293,6 @@ static unsigned int read(unsigned int source, unsigned int id, unsigned int offs
     if (id == ROOT)
         return readroot(id, offset, count, data);
 
-    /* a snapshot per reader, so a file read in several requests doesn't change between them */
     if (!offset || id != outputid || source != outputsource)
     {
 

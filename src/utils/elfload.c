@@ -26,14 +26,12 @@ static unsigned int gettextsectionoffset(struct elf_header *header, struct elf_s
 
 }
 
-/* this function should update the mapdata by parsing the module instead of the map */
 static void relocate(struct elf_header *header, struct elf_sectionheader *sectionheaders, unsigned int address)
 {
 
     unsigned int offset = 0;
     unsigned int i;
 
-    /* all symbols are relative to certain section. now we just assume .text but this should be fixed */
     address += gettextsectionoffset(header, sectionheaders);
 
     for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)

@@ -86,7 +86,6 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
 }
 
-/* a widget inside an item (a checkbox) hovers the whole item, so the row lights up around it */
 static struct widget *gethoverwidgetat(int x, int y)
 {
 
@@ -106,7 +105,6 @@ static struct widget *gethoverwidgetat(int x, int y)
 
 }
 
-/* over text that can be edited the mouse becomes a text bar, over anything clickable a hand */
 static unsigned int getmousetype(int x, int y)
 {
 
@@ -402,7 +400,6 @@ static void launch(char *command)
 
 }
 
-/* text, if any, is appended to the action (onenter "q=open&path=" gets the textbox content after path=) */
 static void sendevent(unsigned int source, unsigned int type, unsigned int action, char *text)
 {
 
@@ -450,7 +447,6 @@ static struct widget *gettextchild(struct widget *widget)
 
 }
 
-/* an editable textbox edits its (last) text child itself and only tells the program on enter */
 static void edittextbox(struct widget *widget, unsigned int id)
 {
 
@@ -540,7 +536,6 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
 }
 
-/* put the cursor of an editable textbox at the character boundary nearest to the mouse */
 static void movecursor(struct widget *widget)
 {
 
@@ -889,7 +884,6 @@ static void onmousemove(struct message *message)
 
     }
 
-    /* without a button held the mouse only moves and changes hover colours, so the layout stays */
     redraw(state.mousebuttonleft || state.mousebuttonright);
 
 }

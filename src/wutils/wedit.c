@@ -7,7 +7,6 @@
 static char path[256];
 static unsigned int wm;
 
-/* a piece of the file as an inline text, so the pieces run on as one text; a quote is written as "\"" */
 static void sendchunk(char *data, unsigned int count)
 {
 
@@ -31,7 +30,6 @@ static void sendchunk(char *data, unsigned int count)
 
 }
 
-/* the file is shown once both the path and the window are there, whichever comes last */
 static void showfile(void)
 {
 
@@ -70,7 +68,6 @@ static void showfile(void)
         if (offset >= MAXSIZE)
             channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n");
 
-        /* the textbox draws its cursor in its last text: an empty one puts it at the end of the file */
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" display \"inline\" wrap \"char\"\n");
 
     }
@@ -132,3 +129,4 @@ void init(void)
     channel_bind(EVENT_WMINIT, onwminit);
 
 }
+

@@ -2,7 +2,6 @@
 #include <abi.h>
 #include "kv.h"
 
-/* what can be done with a file comes from the filetypes config: a suffix, a button label and the command run with the file */
 static char suffixes[1024];
 static char labels[1024];
 static char commands[1024];
@@ -97,7 +96,6 @@ static void loadfiletypes(void)
 
 }
 
-/* the index-th line of a query result, or 0 when there is none */
 static unsigned int getline(char *data, unsigned int count, unsigned int index, char *out, unsigned int size)
 {
 

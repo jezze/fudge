@@ -6,7 +6,6 @@ static char path[256];
 static unsigned int wm;
 static unsigned int stretched;
 
-/* the image is added once both the path and the window are there, whichever comes last */
 static void showimage(void)
 {
 
@@ -90,3 +89,4 @@ void init(void)
     channel_bind(EVENT_WMINIT, onwminit);
 
 }
+

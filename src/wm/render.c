@@ -95,7 +95,6 @@ static unsigned int isinlinetext(struct widget *widget)
 
 }
 
-/* in a vertical flow an inline text continues on the last row of the inline text before it, like a terminal */
 static void advance(struct widget *widget, struct widget *child, unsigned int direction, struct util_size *size, struct util_position *offset, struct util_position *rowstart, int *pending)
 {
 
@@ -131,7 +130,6 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
 
 }
 
-/* anything but an inline text starts below the last row of the inline texts before it */
 static void startchild(struct widget *child, struct util_position *offset, int *pending)
 {
 
@@ -269,7 +267,6 @@ struct placeinfo
 
 };
 
-/* with measure set, children are only sized, not placed: enough to find the free space spans share */
 static struct placeinfo placechildren(struct widget *widget, struct util_size *span, unsigned int measure)
 {
 
@@ -329,7 +326,6 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 
 }
 
-/* the cursor sits after the first cursor characters of the textbox's last text child */
 static void placecursor(struct widget *widget)
 {
 
@@ -382,7 +378,6 @@ static unsigned int hasspans(struct widget *widget)
 
 }
 
-/* children are clipped to the content area, inside the frame and the padding; layouts draw nothing and don't clip, so a dropdown (the children of a select, below it) can hang out of the layouts around it */
 static void clipcontent(struct widget *widget)
 {
 
@@ -472,7 +467,6 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (widget->type == WIDGET_TYPE_TEXTBOX)
         placecursor(widget);
 
-    /* keep the content of a scrolled widget in view: no further down than its last child, and after the cursor moved, show it */
     if (widget_isscrollable(widget))
     {
 
@@ -550,7 +544,6 @@ static struct util_size getsizefill(struct widget *widget, struct util_size *lim
 
 }
 
-/* a stretched image takes no room of its own: it fills what its span gives it */
 static struct util_size getsizeimage(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -705,7 +698,6 @@ static void placetextbox(struct widget *widget)
 
 }
 
-/* a clickable region: its children (a checkbox, a text) are laid out inside it, padding comes from the attribute */
 static void placeitem(struct widget *widget)
 {
 
@@ -735,7 +727,6 @@ static void textrender(struct blit_display *display, struct widget *widget, stru
         struct text_rowinfo rowinfo;
         struct util_position offset;
 
-        /* offx is where the first row of an inline text starts: that row has less room and is drawn further right, as in text_info */
         text_getrowinfo(&rowinfo, font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, util_max((int)placement->size.w - ((num) ? 0 : offx), 0), icurrent);
 
         offset.x = text_getrowx(&rowinfo, widget->attributes.halign, placement->size.w - padding->w * 2 - ((num) ? 0 : offx)) + padding->w + ((num) ? 0 : offx);
@@ -767,7 +758,6 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 
 }
 
-/* a square box centered in the placement, so a stretched row keeps it square */
 static void rendercheckbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -832,7 +822,6 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
             unsigned int w = resource->width;
             unsigned int h = resource->height;
 
-            /* as large as fits in the placement, keeping the aspect ratio */
             if (widget->attributes.mode == ATTR_MODE_STRETCH && w && h)
             {
 
@@ -911,7 +900,6 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     int top = 0;
     unsigned int rownum;
 
-    /* rows are counted from where valign puts the first one, not from the top of the placement */
     if (widget->attributes.valign != ATTR_VALIGN_TOP)
     {
 
@@ -1016,7 +1004,6 @@ void render_setmouse(int x, int y, unsigned int type)
 
     struct list_item *current = 0;
 
-    /* window buttons light up under the mouse, so redraw the ones it enters or leaves */
     while ((current = pool_next(current)))
     {
 
@@ -1106,7 +1093,6 @@ void render_update(struct blit_display *display)
     area.position2.x = util_clamp(area.position2.x, 0, display->region.size.w);
     area.position2.y = util_clamp(area.position2.y, 0, display->region.size.h);
 
-    /* only the widgets that are visible inside the damaged area are drawn, in the same order */
     while ((current = pool_next(current)) && ndamaged < RENDER_MAXWIDGETS)
     {
 
