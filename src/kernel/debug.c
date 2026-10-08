@@ -18,6 +18,15 @@ static void debug(unsigned int level, unsigned int count, char *string, char *fi
 
 }
 
+void debug_fmtv(unsigned int level, char *file, unsigned int line, char *fmt, void **args)
+{
+
+    char buffer[DEBUG_MESSAGESIZE];
+
+    debug(level, cstring_write_fmtv(buffer, DEBUG_MESSAGESIZE, 0, fmt, args), buffer, file, line);
+
+}
+
 void debug_fmt0(unsigned int level, char *fmt, char *file, unsigned int line)
 {
 

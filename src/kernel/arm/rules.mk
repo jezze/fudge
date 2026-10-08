@@ -1,5 +1,6 @@
 O:=\
     $(O) \
+    $(DIR_SRC)/kernel/arm/fmt.o \
     $(DIR_SRC)/kernel/arm/arch.o \
     $(DIR_SRC)/kernel/arm/cpu.o \
     $(DIR_SRC)/kernel/arm/kmi.o \

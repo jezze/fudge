@@ -10,7 +10,8 @@ unsigned int cstring_read_value(char *in, unsigned int count, unsigned int base)
 unsigned int cstring_write(char *out, unsigned int count, char *in, unsigned int offset);
 unsigned int cstring_write_zero(char *out, unsigned int count, unsigned int offset);
 unsigned int cstring_write_value(char *out, unsigned int count, int value, unsigned int base, unsigned int padding, unsigned int offset);
-unsigned int cstring_write_fmt(void *out, unsigned int count, unsigned int offset, char *fmt, unsigned int nargs, void **args);
+unsigned int cstring_write_fmt(void *out, unsigned int count, unsigned int offset, char *fmt, ...);
+unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offset, char *fmt, void **args);
 unsigned int cstring_write_fmt0(void *out, unsigned int count, unsigned int offset, char *fmt);
 unsigned int cstring_write_fmt1(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1);
 unsigned int cstring_write_fmt2(void *out, unsigned int count, unsigned int offset, char *fmt, void *arg1, void *arg2);

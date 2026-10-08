@@ -180,6 +180,15 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
+unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt, void **args)
+{
+
+    char buffer[MESSAGE_SIZE];
+
+    return channel_send(ichannel, target, event, cstring_write_fmtv(buffer, MESSAGE_SIZE, 0, fmt, args), buffer);
+
+}
+
 unsigned int channel_send_fmt0(unsigned int ichannel, unsigned int target, unsigned int event, char *fmt)
 {
 

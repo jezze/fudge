@@ -19,6 +19,8 @@ struct debug_interface
 
 };
 
+void debug_fmt(unsigned int level, char *file, unsigned int line, char *fmt, ...);
+void debug_fmtv(unsigned int level, char *file, unsigned int line, char *fmt, void **args);
 void debug_fmt0(unsigned int level, char *fmt, char *file, unsigned int line);
 void debug_fmt1(unsigned int level, char *fmt, void *arg1, char *file, unsigned int line);
 void debug_fmt2(unsigned int level, char *fmt, void *arg1, void *arg2, char *file, unsigned int line);

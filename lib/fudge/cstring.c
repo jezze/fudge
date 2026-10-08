@@ -186,7 +186,7 @@ unsigned int cstring_write_value(char *out, unsigned int count, int value, unsig
 
 }
 
-unsigned int cstring_write_fmt(void *out, unsigned int count, unsigned int offset, char *fmt, unsigned int nargs, void **args)
+unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offset, char *fmt, void **args)
 {
 
     unsigned int length = cstring_length(fmt);
@@ -430,7 +430,7 @@ unsigned int cstring_write_fmt(void *out, unsigned int count, unsigned int offse
 unsigned int cstring_write_fmt0(void *out, unsigned int count, unsigned int offset, char *fmt)
 {
 
-    return cstring_write_fmt(out, count, offset, fmt, 0, 0);
+    return cstring_write_fmtv(out, count, offset, fmt, 0);
 
 }
 
@@ -441,7 +441,7 @@ unsigned int cstring_write_fmt1(void *out, unsigned int count, unsigned int offs
 
     args[0] = arg1;
 
-    return cstring_write_fmt(out, count, offset, fmt, 1, args);
+    return cstring_write_fmtv(out, count, offset, fmt, args);
 
 }
 
@@ -453,7 +453,7 @@ unsigned int cstring_write_fmt2(void *out, unsigned int count, unsigned int offs
     args[0] = arg1;
     args[1] = arg2;
 
-    return cstring_write_fmt(out, count, offset, fmt, 2, args);
+    return cstring_write_fmtv(out, count, offset, fmt, args);
 
 }
 
@@ -466,7 +466,7 @@ unsigned int cstring_write_fmt3(void *out, unsigned int count, unsigned int offs
     args[1] = arg2;
     args[2] = arg3;
 
-    return cstring_write_fmt(out, count, offset, fmt, 3, args);
+    return cstring_write_fmtv(out, count, offset, fmt, args);
 
 }
 
@@ -480,7 +480,7 @@ unsigned int cstring_write_fmt4(void *out, unsigned int count, unsigned int offs
     args[2] = arg3;
     args[3] = arg4;
 
-    return cstring_write_fmt(out, count, offset, fmt, 4, args);
+    return cstring_write_fmtv(out, count, offset, fmt, args);
 
 }
 
@@ -496,7 +496,7 @@ unsigned int cstring_write_fmt6(void *out, unsigned int count, unsigned int offs
     args[4] = arg5;
     args[5] = arg6;
 
-    return cstring_write_fmt(out, count, offset, fmt, 6, args);
+    return cstring_write_fmtv(out, count, offset, fmt, args);
 
 }
 
@@ -514,7 +514,7 @@ unsigned int cstring_write_fmt8(void *out, unsigned int count, unsigned int offs
     args[6] = arg7;
     args[7] = arg8;
 
-    return cstring_write_fmt(out, count, offset, fmt, 8, args);
+    return cstring_write_fmtv(out, count, offset, fmt, args);
 
 }
 
