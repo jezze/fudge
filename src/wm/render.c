@@ -607,8 +607,11 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
 static struct util_size getsizetextbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
+    struct text_font *font = pool_getfont(widget->attributes.weight);
     struct util_size padding = util_size(CONFIG_TEXTBOX_PADDING_WIDTH * 2, CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
     struct util_size csize = childrengetsize(widget, limit);
+
+    csize.h = util_max(csize.h, font->lineheight);
 
     return util_size_union(&csize, &padding);
 
