@@ -111,12 +111,10 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
             pipe.routes[j].target = (route->stage) ? job->commands[route->stage - 1].target : 0;
 
         }
-        count = cstring_write_fmt(options, MESSAGE_SIZE, 0, "pwd=%s", pwd);
+        count = cstring_write_fmt(options, MESSAGE_SIZE, 0, "pwd\\0%s\\0", pwd);
 
         for (j = 0; j < command->noptions; j++)
-            count += cstring_write_fmt(options, MESSAGE_SIZE, count, "&%s=%s", command->keys[j], command->values[j]);
-
-        count += cstring_write_fmt(options, MESSAGE_SIZE, count, "\n");
+            count += cstring_write_fmt(options, MESSAGE_SIZE, count, "%s\\0%s\\0", command->keys[j], command->values[j]);
 
         channel_send(ichannel, command->target, EVENT_PIPE, sizeof (struct event_pipe), &pipe);
         channel_send(ichannel, command->target, EVENT_OPTION, count, options);

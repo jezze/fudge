@@ -60,21 +60,6 @@ static unsigned int isspecialchar(char c)
 
 }
 
-static unsigned int isreserved(char *s)
-{
-
-    for (; *s; s++)
-    {
-
-        if (*s == '&' || *s == '=')
-            return 1;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int seterror(struct job *job, char *fmt, char *arg)
 {
 
@@ -503,9 +488,6 @@ static unsigned int parse(struct job *job, struct parser *parser)
             {
 
             case TOKEN_WORD:
-                if (isreserved(word) || isreserved(value))
-                    return seterror(job, "Syntax error: Unexpected & or = in -%s", word);
-
                 command->keys[command->noptions] = word;
                 command->values[command->noptions] = value;
                 command->noptions++;
@@ -798,7 +780,7 @@ static void onterm(struct message *message)
     run(option_getstring("pwd"));
 
     if (option_getdecimal("export"))
-        channel_send_fmt(0, output, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
+        channel_send_fmt(0, output, EVENT_OPTION, "pwd\\0%s\\0", option_getstring("pwd"));
 
 }
 

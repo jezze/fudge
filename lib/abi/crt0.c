@@ -3,51 +3,27 @@
 
 extern void init(void);
 
-static unsigned int eachentry(char *data, unsigned int length, unsigned int offset, unsigned int xcount, char *x)
-{
-
-    unsigned int i;
-
-    for (i = offset; i < length; i++)
-    {
-
-        unsigned int j;
-
-        for (j = 0; j < xcount; j++)
-        {
-
-            if (data[i] == x[j])
-                return i + 1 - offset;
-
-        }
-
-    }
-
-    return 0;
-
-}
-
-static char *extract(char *data, unsigned int length, unsigned int offset)
-{
-
-    data[offset + length - 1] = '\0';
-
-    return data + offset;
-
-}
-
 static void onoption(struct message *message)
 {
 
-    unsigned int offset;
-    unsigned int klength;
-    unsigned int vlength;
+    char *data = message->data;
+    unsigned int offset = 0;
 
-    for (offset = 0; (klength = eachentry(message->data, message->length, offset, 1, "=")) && (vlength = eachentry(message->data, message->length, offset + klength, 3, "&\n\0")); offset += klength + vlength)
+    if (!message->length || data[message->length - 1] != '\0')
+        return;
+
+    while (offset < message->length)
     {
 
-        char *key = extract(message->data, klength, offset);
-        char *value = extract(message->data, vlength, offset + klength);
+        char *key = data + offset;
+        char *value = key + cstring_length_zero(key);
+
+        offset += cstring_length_zero(key);
+
+        if (offset >= message->length)
+            break;
+
+        offset += cstring_length_zero(value);
 
         if (!option_getstring(key))
             channel_send_fmt(0, message->source, EVENT_ERROR, "Unrecognized option: %s\n", key);

@@ -15,7 +15,7 @@ static unsigned int start(char *command, unsigned int length, unsigned int input
 
         unsigned int offset;
 
-        channel_send_fmt(1, sh, EVENT_OPTION, "pwd=%s&input=%u\n", option_getstring("pwd"), &input);
+        channel_send_fmt(1, sh, EVENT_OPTION, "pwd\\0%s\\0input\\0%u\\0", option_getstring("pwd"), &input);
         channel_send(1, sh, EVENT_MAIN, 0, 0);
 
         for (offset = 0; offset < length; offset += MESSAGE_SIZE)

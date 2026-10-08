@@ -243,7 +243,7 @@ static void run(void)
 
     }
 
-    channel_send_fmt(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
+    channel_send_fmt(0, sh, EVENT_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
     channel_send(0, sh, EVENT_MAIN, 0, 0);
     channel_send(0, sh, EVENT_DATA, linecount, line);
     channel_send(0, sh, EVENT_TERM, 0, 0);

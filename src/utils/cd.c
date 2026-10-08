@@ -26,7 +26,7 @@ static void onpath(struct message *message)
             unsigned int length = cstring_length(path);
             char *slash = (length && path[length - 1] != '/' && path[length - 1] != ':') ? "/" : "";
 
-            channel_send_fmt(0, message->source, EVENT_OPTION, "pwd=%s%s\n", path, slash);
+            channel_send_fmt(0, message->source, EVENT_OPTION, "pwd\\0%s%s\\0", path, slash);
 
         }
 
