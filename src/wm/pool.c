@@ -228,9 +228,8 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
             struct record record;
 
             fs_stat(1, resource->target, resource->id, &record);
-            fs_read_all(1, resource->target, resource->id, &header, sizeof (struct pcx_header), 0);
 
-            if (header.identifier == PCX_IDENTIFIER && header.version == PCX_VERSION && header.encoding == PCX_ENCODING && header.bpp == 8 && header.nplanes == 1 && (unsigned short)header.bpl <= POOL_PCXROWSIZE && (unsigned short)header.xend - (unsigned short)header.xstart < (unsigned short)header.bpl)
+            if (fs_read_all(1, resource->target, resource->id, &header, sizeof (struct pcx_header), 0) == sizeof (struct pcx_header) && header.identifier == PCX_IDENTIFIER && header.version == PCX_VERSION && header.encoding == PCX_ENCODING && header.bpp == 8 && header.nplanes == 1 && (unsigned short)header.bpl <= POOL_PCXROWSIZE && (unsigned short)header.xend - (unsigned short)header.xstart < (unsigned short)header.bpl)
             {
 
                 buffer_copy(resource->colormap, header.palette, 48);

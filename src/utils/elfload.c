@@ -230,9 +230,7 @@ static void load(unsigned int source, char *path)
 
             struct elf_header header;
 
-            fs_read_all(1, target, id, &header, ELF_HEADER_SIZE, 0);
-
-            if (elf_validate(&header))
+            if (fs_read_all(1, target, id, &header, ELF_HEADER_SIZE, 0) == ELF_HEADER_SIZE && elf_validate(&header))
             {
 
                 if (header.shcount < 64)

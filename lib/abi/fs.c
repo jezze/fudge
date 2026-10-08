@@ -165,7 +165,7 @@ unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned i
     unsigned int roffset;
     unsigned int rcount;
 
-    for (roffset = offset; (rcount = fs_read(ichannel, target, id, rbuffer + rtotal, count - rtotal, roffset)); roffset += rcount)
+    for (roffset = offset; rtotal < count && (rcount = fs_read(ichannel, target, id, rbuffer + rtotal, count - rtotal, roffset)); roffset += rcount)
         rtotal += rcount;
 
     return rtotal;
@@ -175,12 +175,7 @@ unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned i
 unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned char *b = buffer;
-    unsigned int c;
-
-    for (c = 0; c < count; c += fs_read(ichannel, target, id, b + c, count - c, offset + c));
-
-    return c;
+    return fs_read_full(ichannel, target, id, buffer, count, offset);
 
 }
 
