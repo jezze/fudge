@@ -12,6 +12,7 @@ fudge.tar
 report.xml
 src/demo/demo
 src/gameboy/gameboy
+src/kernel/fudge
 src/pcx/pcxcmap
 src/pcx/pcxdata
 src/pcx/pcxinfo
