@@ -23,7 +23,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
     unsigned int parent;
     char *name;
     char buffer[0x800];
-    unsigned int offset = 0;
+    unsigned int offset;
     unsigned int count;
     unsigned int id;
 
@@ -95,30 +95,17 @@ static unsigned int copy(unsigned int source, char *from, char *to)
 
     }
 
-    while ((count = fs_read(1, starget, sid, buffer, 0x800, offset)))
+    for (offset = 0; (count = fs_read(1, starget, sid, buffer, 0x800, offset)); offset += count)
     {
 
-        unsigned int written = 0;
-
-        while (written < count)
+        if (fs_write_all(1, dtarget, id, buffer, count, offset) != count)
         {
 
-            unsigned int n = fs_write(1, dtarget, id, buffer + written, count - written, offset + written);
+            channel_send_fmt(0, source, EVENT_ERROR, "File could not be written: %s\n", name);
 
-            if (!n)
-            {
-
-                channel_send_fmt(0, source, EVENT_ERROR, "File could not be written: %s\n", name);
-
-                return 0;
-
-            }
-
-            written += n;
+            return 0;
 
         }
-
-        offset += count;
 
     }
 
