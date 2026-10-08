@@ -29,9 +29,10 @@ static char parsechar(char *s)
 
 }
 
-static void replace(unsigned int source, char *buffer, unsigned int count)
+static void replace(unsigned int source, void *data, unsigned int count)
 {
 
+    char *buffer = data;
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -58,33 +59,7 @@ static void ondata(struct message *message)
 static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(message->data);
-
-    if (target)
-    {
-
-        unsigned int id = fs_walk(1, target, 0, message->data);
-
-        if (id)
-        {
-
-            char buffer[MESSAGE_SIZE];
-            unsigned int count;
-            unsigned int offset;
-
-            for (offset = 0; (count = fs_read(1, target, id, buffer, MESSAGE_SIZE, offset)); offset += count)
-                replace(message->source, buffer, count);
-
-        }
-
-        else
-        {
-
-            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
-
-        }
-
-    }
+    fs_read_each(1, message->source, message->data, replace);
 
 }
 

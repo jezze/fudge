@@ -729,34 +729,18 @@ static void onmain(struct message *message)
 
 }
 
+static void appenddata(unsigned int source, void *buffer, unsigned int count)
+{
+
+    append(buffer, count);
+
+}
+
 static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(message->data);
-    unsigned int id = (target) ? fs_walk(1, target, 0, message->data) : 0;
-    char buffer[0x800];
-    unsigned int offset = 0;
-    unsigned int count;
-
-    if (!id)
-    {
-
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
-
-        return;
-
-    }
-
-    while ((count = fs_read(1, target, id, buffer, 0x800, offset)))
-    {
-
-        append(buffer, count);
-
-        offset += count;
-
-    }
-
-    append("\n", 1);
+    if (fs_read_each(1, message->source, message->data, appenddata))
+        append("\n", 1);
 
 }
 

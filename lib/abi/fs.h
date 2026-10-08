@@ -6,6 +6,7 @@ unsigned int fs_dirlength(char *path);
 unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id);
 unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
+unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path, void (*each)(unsigned int source, void *buffer, unsigned int count));
 unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int parent, unsigned int id);
 unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id, struct record *record);

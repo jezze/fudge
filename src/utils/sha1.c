@@ -4,43 +4,24 @@
 
 static struct sha1 sum;
 
+static void sumdata(unsigned int source, void *buffer, unsigned int count)
+{
+
+    sha1_read(&sum, buffer, count);
+
+}
+
 static void ondata(struct message *message)
 {
 
-    sha1_read(&sum, message->data, message->length);
+    sumdata(message->source, message->data, message->length);
 
 }
 
 static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(message->data);
-
-    if (target)
-    {
-
-        unsigned int id = fs_walk(1, target, 0, message->data);
-
-        if (id)
-        {
-
-            char buffer[4096];
-            unsigned int count;
-            unsigned int offset;
-
-            for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
-                sha1_read(&sum, buffer, count);
-
-        }
-
-        else
-        {
-
-            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
-
-        }
-
-    }
+    fs_read_each(1, message->source, message->data, sumdata);
 
 }
 

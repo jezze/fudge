@@ -3,7 +3,7 @@
 
 static unsigned int page;
 
-static void print(unsigned int source, unsigned int count, void *buffer)
+static void print(unsigned int source, void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -66,42 +66,16 @@ static void print(unsigned int source, unsigned int count, void *buffer)
 static void ondata(struct message *message)
 {
 
-    print(message->source, message->length, message->data);
+    print(message->source, message->data, message->length);
 
 }
 
 static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(message->data);
+    page = 0;
 
-    if (target)
-    {
-
-        unsigned int id = fs_walk(1, target, 0, message->data);
-
-        page = 0;
-
-        if (id)
-        {
-
-            char buffer[4096];
-            unsigned int count;
-            unsigned int offset;
-
-            for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
-                print(message->source, count, buffer);
-
-        }
-
-        else
-        {
-
-            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
-
-        }
-
-    }
+    fs_read_each(1, message->source, message->data, print);
 
 }
 

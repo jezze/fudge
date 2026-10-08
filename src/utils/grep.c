@@ -66,28 +66,8 @@ static void ondata(struct message *message)
 static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(message->data);
-
-    if (target)
-    {
-
-        unsigned int id = fs_walk(1, target, 0, message->data);
-
-        if (id)
-        {
-
-            char buffer[4096];
-            unsigned int count;
-            unsigned int offset;
-
-            for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
-                check(message->source, buffer, count);
-
-            flush(message->source);
-
-        }
-
-    }
+    if (fs_read_each(1, message->source, message->data, check))
+        flush(message->source);
 
 }
 

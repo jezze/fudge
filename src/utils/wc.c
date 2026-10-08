@@ -6,7 +6,7 @@ static unsigned int words;
 static unsigned int lines;
 static unsigned int whitespace = 1;
 
-static void sum(unsigned int count, void *buffer)
+static void sum(unsigned int source, void *buffer, unsigned int count)
 {
 
     char *data = buffer;
@@ -48,40 +48,14 @@ static void sum(unsigned int count, void *buffer)
 static void ondata(struct message *message)
 {
 
-    sum(message->length, message->data);
+    sum(message->source, message->data, message->length);
 
 }
 
 static void onpath(struct message *message)
 {
 
-    unsigned int target = fs_auth(message->data);
-
-    if (target)
-    {
-
-        unsigned int id = fs_walk(1, target, 0, message->data);
-
-        if (id)
-        {
-
-            char buffer[4096];
-            unsigned int count;
-            unsigned int offset;
-
-            for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
-                sum(count, buffer);
-
-        }
-
-        else
-        {
-
-            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
-
-        }
-
-    }
+    fs_read_each(1, message->source, message->data, sum);
 
 }
 

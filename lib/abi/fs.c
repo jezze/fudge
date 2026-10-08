@@ -172,6 +172,40 @@ unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
+unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path, void (*each)(unsigned int source, void *buffer, unsigned int count))
+{
+
+    unsigned int target = fs_auth(path);
+    unsigned int id = (target) ? fs_walk(ichannel, target, 0, path) : 0;
+    char buffer[MESSAGE_SIZE];
+    unsigned int offset;
+    unsigned int count;
+
+    if (!target)
+    {
+
+        channel_send_fmt(0, source, EVENT_ERROR, "Service not found: %s\n", path);
+
+        return 0;
+
+    }
+
+    if (!id)
+    {
+
+        channel_send_fmt(0, source, EVENT_ERROR, "Path not found: %s\n", path);
+
+        return 0;
+
+    }
+
+    for (offset = 0; (count = fs_read(ichannel, target, id, buffer, MESSAGE_SIZE, offset)); offset += count)
+        each(source, buffer, count);
+
+    return 1;
+
+}
+
 unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
