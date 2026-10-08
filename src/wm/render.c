@@ -44,6 +44,7 @@ struct calls
 static struct util_position zeroposition;
 static struct util_size zerosize;
 static unsigned int measurespans;
+static unsigned int measureminimum;
 static struct util_position mouse;
 static unsigned int mousetype;
 static struct calls calls[32];
@@ -167,6 +168,17 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         climit = util_size_sub(&inner, offset.x, offset.y);
         csize = calls[child->type].getsize(child, &climit, &rowstart);
+
+        /* at its smallest a scrolling widget only needs room for one line, the rest can be scrolled to */
+        if (measureminimum && widget_isscrollable(child) && child->attributes.overflow != ATTR_OVERFLOW_NONE)
+        {
+
+            unsigned int line = pool_getfont(child->attributes.weight)->lineheight;
+
+            csize.w = util_min(csize.w, CONFIG_TEXTBOX_PADDING_WIDTH * 2 + line);
+            csize.h = util_min(csize.h, CONFIG_TEXTBOX_PADDING_HEIGHT * 2 + line);
+
+        }
 
         if (child->attributes.span && !measurespans)
         {
@@ -952,7 +964,7 @@ static void renderitem(struct blit_display *display, struct widget *widget, int 
 
 }
 
-struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit)
+static struct util_size measurewindow(struct widget *widget, struct util_size *limit, unsigned int minimum)
 {
 
     struct util_size inner = util_size_sub(limit, 0, CONFIG_WINDOW_BUTTON_HEIGHT);
@@ -960,10 +972,32 @@ struct util_size render_getwindowsize(struct widget *widget, struct util_size *l
 
     /* a spanning widget only takes leftover space when placed, but it must fit when the window is measured */
     measurespans = 1;
+    measureminimum = minimum;
     csize = childrengetsize(widget, &inner);
     measurespans = 0;
+    measureminimum = 0;
 
-    return util_size(util_clamp(util_max(csize.w, CONFIG_WINDOW_MIN_WIDTH), 0, limit->w), util_clamp(util_max(csize.h + CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_MIN_HEIGHT), 0, limit->h));
+    return util_size(csize.w, csize.h + CONFIG_WINDOW_BUTTON_HEIGHT);
+
+}
+
+struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit)
+{
+
+    struct util_size size = measurewindow(widget, limit, 0);
+
+    return util_size(util_clamp(util_max(size.w, CONFIG_WINDOW_MIN_WIDTH), 0, limit->w), util_clamp(util_max(size.h, CONFIG_WINDOW_MIN_HEIGHT), 0, limit->h));
+
+}
+
+struct util_size render_getwindowminsize(struct widget *widget, struct util_size *limit)
+{
+
+    struct util_size size = measurewindow(widget, limit, 1);
+    struct text_info title = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), ATTR_WRAP_NONE, limit->w, 0);
+    unsigned int titlew = title.width + CONFIG_WINDOW_BUTTON_WIDTH * 4;
+
+    return util_size(util_clamp(util_max(size.w, titlew), 0, limit->w), util_clamp(size.h, 0, limit->h));
 
 }
 

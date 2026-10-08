@@ -900,9 +900,11 @@ static void onmousemove(struct message *message)
             if (widget_isresizable(state.focusedwindow))
             {
 
+                struct util_size minimum = render_getwindowminsize(state.focusedwindow, &display.region.size);
+
                 state.focusedwindow->autosize = 0;
 
-                scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
+                scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, minimum.w), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, minimum.h));
 
             }
 

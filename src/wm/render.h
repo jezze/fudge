@@ -3,6 +3,7 @@
 #define RENDER_WINDOWBUTTON_MINIMIZE    2
 #define RENDER_WINDOWBUTTON_CLOSE       3
 
+struct util_size render_getwindowminsize(struct widget *widget, struct util_size *limit);
 struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit);
 struct util_region render_getwindowbutton(struct widget *widget, unsigned int button);
 void render_setmouse(int x, int y, unsigned int type);
