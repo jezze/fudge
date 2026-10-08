@@ -371,6 +371,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->followcursor = 0;
     widget->resource = 0;
     widget->loaded = 0;
+    widget->autosize = 0;
     widget->position = util_position(0, 0);
     widget->size = util_size(0, 0);
     widget->scroll = util_position(0, 0);

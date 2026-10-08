@@ -43,6 +43,7 @@ struct calls
 
 static struct util_position zeroposition;
 static struct util_size zerosize;
+static unsigned int measurespans;
 static struct util_position mouse;
 static unsigned int mousetype;
 static struct calls calls[32];
@@ -167,7 +168,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         climit = util_size_sub(&inner, offset.x, offset.y);
         csize = calls[child->type].getsize(child, &climit, &rowstart);
 
-        if (child->attributes.span)
+        if (child->attributes.span && !measurespans)
         {
 
             switch (direction)
@@ -948,6 +949,21 @@ static void renderitem(struct blit_display *display, struct widget *widget, int 
     unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+
+}
+
+struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit)
+{
+
+    struct util_size inner = util_size_sub(limit, 0, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct util_size csize;
+
+    /* a spanning widget only takes leftover space when placed, but it must fit when the window is measured */
+    measurespans = 1;
+    csize = childrengetsize(widget, &inner);
+    measurespans = 0;
+
+    return util_size(util_clamp(util_max(csize.w, CONFIG_WINDOW_MIN_WIDTH), 0, limit->w), util_clamp(util_max(csize.h + CONFIG_WINDOW_BUTTON_HEIGHT, CONFIG_WINDOW_MIN_HEIGHT), 0, limit->h));
 
 }
 

@@ -372,16 +372,24 @@ static void placewindows(unsigned int source)
             if (widget->size.w == 0 && widget->size.h == 0)
             {
 
-                unsigned int w8 = display.region.size.w / 8;
-                unsigned int h8 = display.region.size.h / 8;
-
-                widget->position.x = w8;
-                widget->position.y = h8;
-                widget->size.w = w8 * 3;
-                widget->size.h = h8 * 6;
+                widget->position.x = display.region.size.w / 8;
+                widget->position.y = display.region.size.h / 8;
+                widget->autosize = 1;
 
                 setfocuswindow(widget);
                 setfocus(0);
+
+            }
+
+            /* the window grows with what its program adds until the user resizes it */
+            if (widget->autosize)
+            {
+
+                struct util_size limit = util_size(util_max((int)display.region.size.w - widget->position.x * 2, 0), util_max((int)display.region.size.h - widget->position.y * 2, 0));
+                struct util_size size = render_getwindowsize(widget, &limit);
+
+                widget->size.w = util_max(widget->size.w, size.w);
+                widget->size.h = util_max(widget->size.h, size.h);
 
             }
 
@@ -890,7 +898,13 @@ static void onmousemove(struct message *message)
         {
 
             if (widget_isresizable(state.focusedwindow))
+            {
+
+                state.focusedwindow->autosize = 0;
+
                 scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, CONFIG_WINDOW_MIN_WIDTH), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, CONFIG_WINDOW_MIN_HEIGHT));
+
+            }
 
         }
 

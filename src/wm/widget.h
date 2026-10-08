@@ -57,6 +57,7 @@ struct widget
     unsigned int followcursor;
     void *resource;
     unsigned int loaded;
+    unsigned int autosize;
     struct util_position position;
     struct util_size size;
     struct util_position scroll;
