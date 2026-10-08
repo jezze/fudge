@@ -111,6 +111,26 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
 
 }
 
+char *system_address(char *option, char *key, char *out, unsigned int size)
+{
+
+    char *value = option_getstring(option);
+    unsigned int count;
+
+    if (value && cstring_length(value))
+        return value;
+
+    count = system_feed(0, 0, out, size - 1, "mq -query .networks[0].%s initrd:data/config/network.mq", key);
+
+    while (count && out[count - 1] == '\n')
+        count--;
+
+    out[count] = '\0';
+
+    return out;
+
+}
+
 unsigned int system_unixtime(char *service)
 {
 

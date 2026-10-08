@@ -100,16 +100,17 @@ static void onmain(struct message *message)
     if (ethernet)
     {
 
+        char address[32];
         char buffer[4096];
         unsigned int count;
         struct mtwist_state state;
 
         mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
-        socket_bind_ipv4s(&local, option_getstring("local-address"));
+        socket_bind_ipv4s(&local, system_address("local-address", "address", address, 32));
         socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
         socket_bind_ipv4s(&remote, option_getstring("remote-address"));
         socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
-        socket_bind_ipv4s(&router, option_getstring("router-address"));
+        socket_bind_ipv4s(&router, system_address("router-address", "route", address, 32));
         socket_resolvelocal(0, ethernet, &local);
 
         if (cstring_length(option_getstring("domain")))
@@ -138,10 +139,10 @@ void init(void)
     socket_init(&router);
     option_add("clock-service", "clock");
     option_add("ethernet-service", "ethernet");
-    option_add("local-address", "10.0.5.1");
+    option_add("local-address", "");
     option_add("remote-address", "");
     option_add("remote-port", "6667");
-    option_add("router-address", "10.0.5.80");
+    option_add("router-address", "");
     option_add("domain", "irc.libera.chat");
     option_add("channel", "#fudge");
     option_add("nick", "");

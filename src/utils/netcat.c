@@ -56,13 +56,14 @@ static void onmain(struct message *message)
     if (ethernet)
     {
 
+        char address[32];
         char buffer[MESSAGE_SIZE];
         unsigned int count;
         struct mtwist_state state;
 
         mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
-        socket_bind_ipv4s(&router, option_getstring("router-address"));
-        socket_bind_ipv4s(&local, option_getstring("local-address"));
+        socket_bind_ipv4s(&router, system_address("router-address", "route", address, 32));
+        socket_bind_ipv4s(&local, system_address("local-address", "address", address, 32));
         socket_bind_tcps(&local, option_getstring("local-port"), mtwist_rand(&state), mtwist_rand(&state));
         socket_resolvelocal(0, ethernet, &local);
         channel_send(0, ethernet, EVENT_LINK, 0, 0);
@@ -91,9 +92,9 @@ void init(void)
 
     option_add("clock-service", "clock");
     option_add("ethernet-service", "ethernet");
-    option_add("local-address", "10.0.5.1");
+    option_add("local-address", "");
     option_add("local-port", "");
-    option_add("router-address", "10.0.5.80");
+    option_add("router-address", "");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_MAIN, onmain);
 
