@@ -1,6 +1,25 @@
 #include <fudge.h>
 #include <abi.h>
 
+static unsigned int isaddress(char *host)
+{
+
+    unsigned int dots = 0;
+
+    for (; *host; host++)
+    {
+
+        if (*host == '.')
+            dots++;
+        else if (*host < '0' || *host > '9')
+            return 0;
+
+    }
+
+    return dots == 3;
+
+}
+
 static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
@@ -46,7 +65,9 @@ static void onmain(struct message *message)
         else
             url_parse(&url, urldata, 2048, opturl, URL_HOST);
 
-        if (system_resolve(url.host, address, 32))
+        if (isaddress(url.host))
+            opensocket(message->source, &url, url.host);
+        else if (system_resolve(url.host, address, 32))
             opensocket(message->source, &url, address);
         else
             channel_send_fmt(0, message->source, EVENT_ERROR, "Could not resolve: %s\n", url.host);
