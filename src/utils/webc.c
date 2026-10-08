@@ -30,7 +30,7 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
 
         struct message message;
 
-        channel_send_fmt(2, target, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0", address);
+        channel_send_fmt(2, target, EVENT_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0remote-port\\0%s\\0", address, (url->port) ? url->port : "80");
         channel_send(2, target, EVENT_MAIN, 0, 0);
 
         if (channel_poll(2, target, EVENT_READY, &message))
