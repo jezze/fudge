@@ -245,11 +245,13 @@ static unsigned int handletcp(unsigned int ichannel, unsigned int target, struct
         else if (header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_ACK) || header->flags[1] == (TCP_FLAGS1_FIN | TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
         {
 
-            remote->info.tcp.state = TCP_STATE_CLOSED;
+            remote->info.tcp.state = TCP_STATE_LASTACK;
             remote->info.tcp.seq = net_load32(header->ack);
             remote->info.tcp.ack = net_load32(header->seq) + psize + 1;
 
-            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_FIN | TCP_FLAGS1_ACK, 4096, 0, 0));
+
+            remote->info.tcp.seq += 1;
 
         }
 
@@ -697,7 +699,7 @@ unsigned int socket_receive(unsigned int ichannel, unsigned int target, struct s
                 remote->info.tcp.state = local->info.tcp.state;
 */
 
-            if (remote->info.tcp.state == TCP_STATE_CLOSED)
+            if (remote->info.tcp.state == TCP_STATE_LASTACK || remote->info.tcp.state == TCP_STATE_CLOSED)
                 return 0;
 
         }
