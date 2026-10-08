@@ -2,14 +2,6 @@
 #include <abi.h>
 #include "kv.h"
 
-static char suffixes[1024];
-static char labels[1024];
-static char commands[1024];
-static unsigned int nsuffixes;
-static unsigned int nlabels;
-static unsigned int ncommands;
-static unsigned int loaded;
-
 static char path[256];
 
 static void updatepath(unsigned int wm)
@@ -76,26 +68,6 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
 }
 
-static unsigned int query(char *field, char *data, unsigned int size)
-{
-
-    return system_feed(0, 0, data, size, "mq -query .filetypes.%s %s", field, option_getstring("config"));
-
-}
-
-static void loadfiletypes(void)
-{
-
-    if (loaded)
-        return;
-
-    nsuffixes = query("suffix", suffixes, 1024);
-    nlabels = query("label", labels, 1024);
-    ncommands = query("command", commands, 1024);
-    loaded = 1;
-
-}
-
 static unsigned int getline(char *data, unsigned int count, unsigned int index, char *out, unsigned int size)
 {
 
@@ -118,13 +90,14 @@ static unsigned int getline(char *data, unsigned int count, unsigned int index, 
 
 }
 
-static unsigned int hassuffix(char *name, char *suffix)
+static char *getsuffix(void)
 {
 
-    unsigned int length = cstring_length(name);
-    unsigned int slength = cstring_length(suffix);
+    unsigned int length = cstring_length(path);
+    unsigned int start = buffer_lastbyte(path, length, '/');
+    unsigned int dot = buffer_lastbyte(path + start, length - start, '.');
 
-    return length > slength && buffer_match(name + length - slength, suffix, slength);
+    return (dot) ? path + start + dot - 1 : 0;
 
 }
 
@@ -133,7 +106,9 @@ static void showfile(unsigned int wm, struct record *record)
 
     unsigned int length = cstring_length(path);
     unsigned int start = buffer_lastbyte(path, length, '/');
-    char suffix[64];
+    char *suffix = getsuffix();
+    char labels[1024];
+    unsigned int nlabels = (suffix) ? system_feed(0, 0, labels, 1024, "mq -query \".filetypes[suffix:%s].label\" %s", suffix, option_getstring("config")) : 0;
     char label[64];
     unsigned int i;
 
@@ -148,15 +123,9 @@ static void showfile(unsigned int wm, struct record *record)
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Size: %u bytes\"\n", &record->size);
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Id: %u\"\n", &record->id);
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"actions\" in \"info\" flow \"horizontal\" spacing \"8\"\n");
-    loadfiletypes();
 
-    for (i = 0; getline(suffixes, nsuffixes, i, suffix, 64) && getline(labels, nlabels, i, label, 64); i++)
-    {
-
-        if (hassuffix(path, suffix))
-            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ button in \"actions\" label \"%s\" onclick \"q=action&index=%u\"\n", label, &i);
-
-    }
+    for (i = 0; getline(labels, nlabels, i, label, 64); i++)
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ button in \"actions\" label \"%s\" onclick \"q=action&index=%u\"\n", label, &i);
 
 }
 
@@ -264,9 +233,12 @@ static void onwmevent(struct message *message)
     {
 
         unsigned int index = kv_getvalue(event, "index=", 10);
+        char *suffix = getsuffix();
+        char commands[64];
         char name[64];
+        unsigned int ncommands = (suffix) ? system_feed(0, 0, commands, 64, "mq -query \".filetypes[suffix:%s][%u].command\" %s", suffix, &index, option_getstring("config")) : 0;
 
-        if (getline(commands, ncommands, index, name, 64))
+        if (getline(commands, ncommands, 0, name, 64))
             system_run(0, "%s \"%s\" &", name, path);
 
     }

@@ -5,6 +5,7 @@
 #define PIECE_KEY                       1
 #define PIECE_INDEX                     2
 #define PIECE_SELF                      3
+#define PIECE_FILTER                    4
 
 struct piece
 {
@@ -13,6 +14,8 @@ struct piece
     unsigned int index;
     char *name;
     unsigned int len;
+    char *value;
+    unsigned int vlen;
 
 };
 
@@ -304,24 +307,46 @@ static int find_element(struct parser *ps, struct piece *piece)
 
 }
 
-static void parse_index(struct parser *ps, struct piece *piece)
+static void parse_bracket(struct parser *ps, struct piece *piece)
 {
 
-    piece->type = PIECE_INDEX;
-    piece->index = 0;
+    char *start;
 
     next(ps);
 
-    while (!is_path_key_end(ps))
+    start = ps->pos;
+
+    while (!is_path_end(ps) && *ps->pos != ']' && *ps->pos != ':')
+        next(ps);
+
+    if (*ps->pos == ':')
     {
 
-        piece->index = piece->index * 10 + (unsigned int)(*ps->pos - '0');
+        piece->type = PIECE_FILTER;
+        piece->name = start;
+        piece->len = ps->pos - start;
 
         next(ps);
 
+        piece->value = ps->pos;
+
+        while (!is_path_end(ps) && *ps->pos != ']')
+            next(ps);
+
+        piece->vlen = ps->pos - piece->value;
+
     }
 
-    next(ps);
+    else
+    {
+
+        piece->type = PIECE_INDEX;
+        piece->index = cstring_read_value(start, ps->pos - start, 10);
+
+    }
+
+    if (!is_path_end(ps))
+        next(ps);
 
 }
 
@@ -353,9 +378,134 @@ static void parse_piece(struct parser *ps, struct piece *piece)
 {
 
     if (is_path_index_start(ps))
-        parse_index(ps, piece);
+        parse_bracket(ps, piece);
     else
         parse_key(ps, piece);
+
+}
+
+static unsigned int getvalue(struct parser *ps, char **start)
+{
+
+    unsigned int quoted = is_quote(ps);
+    unsigned int length;
+
+    *start = ps->pos;
+
+    skip_value(ps);
+
+    length = ps->pos - *start;
+
+    if (quoted)
+    {
+
+        *start = *start + 1;
+        length -= 2;
+
+    }
+
+    return length;
+
+}
+
+static unsigned int matchfilter(struct parser *ps, struct piece *piece)
+{
+
+    struct parser element = *ps;
+    char *start;
+    unsigned int length;
+
+    if (!is_object_start(&element) || !find_key(&element, piece))
+        return 0;
+
+    length = getvalue(&element, &start);
+
+    return length == piece->vlen && buffer_match(start, piece->value, length);
+
+}
+
+static void output(struct parser *ps, char *format)
+{
+
+    char line[MESSAGE_SIZE];
+    unsigned int c = 0;
+    char *start;
+    unsigned int length;
+
+    if (!*format)
+    {
+
+        length = getvalue(ps, &start);
+
+        channel_send_fmt(0, ps->source, EVENT_DATA, "%w\n", start, &length);
+
+        return;
+
+    }
+
+    if (is_array_start(ps))
+    {
+
+        next(ps);
+        skip_separators(ps);
+
+        while (!is_array_end(ps))
+        {
+
+            struct parser element = *ps;
+
+            output(&element, format);
+            skip_value(ps);
+            skip_separators(ps);
+
+        }
+
+        return;
+
+    }
+
+    while (*format)
+    {
+
+        char *end = format + 1;
+
+        while (*format == '{' && *end && *end != '}')
+            end++;
+
+        if (*format == '{' && *end == '}')
+        {
+
+            struct parser field = *ps;
+            struct piece piece;
+
+            piece.name = format + 1;
+            piece.len = end - format - 1;
+
+            if (is_object_start(&field) && find_key(&field, &piece))
+            {
+
+                length = getvalue(&field, &start);
+                c += buffer_write(line, MESSAGE_SIZE - 1, start, length, c);
+
+            }
+
+            format = end + 1;
+
+        }
+
+        else
+        {
+
+            c += buffer_write(line, MESSAGE_SIZE - 1, format, 1, c);
+            format++;
+
+        }
+
+    }
+
+    line[c] = '\n';
+
+    channel_send(0, ps->source, EVENT_DATA, c + 1, line);
 
 }
 
@@ -398,6 +548,82 @@ static unsigned int walk_index(struct parser *ps, struct piece *piece, struct pa
 
 }
 
+static unsigned int matchfilters(struct parser *ps, struct parser *path)
+{
+
+    struct parser filters = *path;
+    struct piece piece;
+
+    while (is_path_index_start(&filters))
+    {
+
+        parse_piece(&filters, &piece);
+
+        if (piece.type != PIECE_FILTER)
+            return 1;
+
+        if (!matchfilter(ps, &piece))
+            return 0;
+
+    }
+
+    return 1;
+
+}
+
+static unsigned int walk_filter(struct parser *ps, struct parser *path)
+{
+
+    struct parser rest = *path;
+    struct parser after = *path;
+    struct piece piece;
+    unsigned int matches = 0;
+    unsigned int count = 0;
+
+    if (!is_array_start(ps))
+        return 0;
+
+    piece.type = PIECE_FILTER;
+
+    while (is_path_index_start(&after) && piece.type == PIECE_FILTER)
+    {
+
+        rest = after;
+
+        parse_piece(&after, &piece);
+
+    }
+
+    if (piece.type == PIECE_FILTER)
+        rest = after;
+
+    next(ps);
+    skip_separators(ps);
+
+    while (!is_array_end(ps))
+    {
+
+        if (matchfilters(ps, path))
+        {
+
+            struct parser element = *ps;
+
+            if (piece.type != PIECE_INDEX)
+                count += walk(&element, &rest);
+            else if (matches++ == piece.index)
+                return walk(&element, &after);
+
+        }
+
+        skip_value(ps);
+        skip_separators(ps);
+
+    }
+
+    return count;
+
+}
+
 static unsigned int walk_key_in_object(struct parser *ps, struct piece *piece, struct parser *rest)
 {
 
@@ -426,29 +652,11 @@ static unsigned int walk(struct parser *ps, struct parser *path)
 
     struct parser rest = *path;
     struct piece piece;
-    char *start;
 
     if (is_path_end(path))
     {
 
-        unsigned int quoted = is_quote(ps);
-        unsigned int length;
-
-        start = ps->pos;
-
-        skip_value(ps);
-
-        length = ps->pos - start;
-
-        if (quoted)
-        {
-
-            start++;
-            length -= 2;
-
-        }
-
-        channel_send_fmt(0, ps->source, EVENT_DATA, "%w\n", start, &length);
+        output(ps, option_getstring("format"));
 
         return 1;
 
@@ -467,6 +675,9 @@ static unsigned int walk(struct parser *ps, struct parser *path)
 
     case PIECE_SELF:
         return walk(ps, &rest);
+
+    case PIECE_FILTER:
+        return walk_filter(ps, path);
 
     default:
         return 0;
@@ -542,6 +753,7 @@ void init(void)
 {
 
     option_add("query", ".");
+    option_add("format", "");
     channel_bind(EVENT_PATH, onpath);
 
 }
