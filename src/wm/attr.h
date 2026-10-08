@@ -37,6 +37,7 @@
 #define ATTR_MODE_NORMAL                0
 #define ATTR_MODE_READONLY              1
 #define ATTR_MODE_STRETCH               2
+#define ATTR_MODE_FILL                  3
 #define ATTR_OVERFLOW_NONE              0
 #define ATTR_OVERFLOW_SCROLL            1
 #define ATTR_OVERFLOW_HSCROLL           2

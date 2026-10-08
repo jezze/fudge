@@ -547,7 +547,7 @@ static struct util_size getsizefill(struct widget *widget, struct util_size *lim
 static struct util_size getsizeimage(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return (widget->attributes.mode == ATTR_MODE_STRETCH) ? zerosize : widget->size;
+    return (widget->attributes.mode == ATTR_MODE_STRETCH || widget->attributes.mode == ATTR_MODE_FILL) ? zerosize : widget->size;
 
 }
 
@@ -822,7 +822,15 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
             unsigned int w = resource->width;
             unsigned int h = resource->height;
 
-            if (widget->attributes.mode == ATTR_MODE_STRETCH && w && h)
+            if (widget->attributes.mode == ATTR_MODE_FILL)
+            {
+
+                w = widget->placement.size.w;
+                h = widget->placement.size.h;
+
+            }
+
+            else if (widget->attributes.mode == ATTR_MODE_STRETCH && w && h)
             {
 
                 if (w * widget->placement.size.h < h * widget->placement.size.w)
