@@ -170,6 +170,16 @@ static unsigned int handletcp(unsigned int ichannel, unsigned int target, struct
 
     char data[SOCKET_MTUSIZE];
 
+    if (header->flags[1] & TCP_FLAGS1_RST)
+    {
+
+        if (remote->info.tcp.state == TCP_STATE_SYNSENT || net_load32(header->seq) == remote->info.tcp.ack)
+            remote->info.tcp.state = TCP_STATE_CLOSED;
+
+        return 0;
+
+    }
+
     switch (remote->info.tcp.state)
     {
 
@@ -759,7 +769,7 @@ void socket_connect_tcp(unsigned int ichannel, unsigned int target, struct socke
         socket_handle_arp(ichannel, target, local, remote, message.length, message.data);
         socket_handle_tcp(ichannel, target, local, remote, router, message.length, message.data, SOCKET_MTUSIZE, buffer);
 
-        if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
+        if (remote->info.tcp.state == TCP_STATE_ESTABLISHED || remote->info.tcp.state == TCP_STATE_CLOSED)
             break;
 
     }
