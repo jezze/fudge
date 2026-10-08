@@ -11,3 +11,16 @@ system_run:
     call system_runv
     addl $12, %esp
     ret
+
+.global system_feed
+system_feed:
+    leal 24(%esp), %eax
+    pushl %eax
+    pushl 24(%esp)
+    pushl 24(%esp)
+    pushl 24(%esp)
+    pushl 24(%esp)
+    pushl 24(%esp)
+    call system_feedv
+    addl $24, %esp
+    ret

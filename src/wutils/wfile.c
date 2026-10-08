@@ -80,11 +80,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 static unsigned int query(char *field, char *data, unsigned int size)
 {
 
-    char command[256];
-
-    cstring_write_fmt(command, 256, 0, "mq -query .filetypes.%s %s\\0", field, option_getstring("config"));
-
-    return system_feed(command, 0, 0, data, size);
+    return system_feed(0, 0, data, size, "mq -query .filetypes.%s %s", field, option_getstring("config"));
 
 }
 

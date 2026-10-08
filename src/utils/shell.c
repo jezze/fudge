@@ -276,7 +276,7 @@ static unsigned int runcomplete(char *output, unsigned int size)
 
     char input[INPUTSIZE];
 
-    return system_feed("complete", input, ring_readcopy(&input1, input, INPUTSIZE), output, size);
+    return system_feed(input, ring_readcopy(&input1, input, INPUTSIZE), output, size, "complete");
 
 }
 

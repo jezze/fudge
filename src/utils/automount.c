@@ -94,11 +94,7 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 static unsigned int query(char *field, char *data, unsigned int size)
 {
 
-    char command[256];
-
-    cstring_write_fmt(command, 256, 0, "mq -query .mounts.%s %s\\0", field, option_getstring("config"));
-
-    return system_feed(command, 0, 0, data, size);
+    return system_feed(0, 0, data, size, "mq -query .mounts.%s %s", field, option_getstring("config"));
 
 }
 

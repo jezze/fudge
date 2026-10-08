@@ -1081,7 +1081,7 @@ static void setupwidgets(void)
     char data1[4096];
 
     parser_parse(0, "", cstring_length(data0), data0);
-    parser_parse(0, "root", system_feed("echo initrd:data/alfi/wm.alfi", 0, 0, data1, 4096), data1);
+    parser_parse(0, "root", system_feed(0, 0, data1, 4096, "echo initrd:data/alfi/wm.alfi"), data1);
 
     state.rootwidget = pool_getwidgetbyid(0, "root");
 

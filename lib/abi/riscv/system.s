@@ -15,3 +15,16 @@ system_run:
     ld ra, 8(sp)
     addi sp, sp, 64
     ret
+
+.globl system_feed
+system_feed:
+    addi sp, sp, -48
+    sd ra, 16(sp)
+    sd a5, 24(sp)
+    sd a6, 32(sp)
+    sd a7, 40(sp)
+    addi a5, sp, 24
+    call system_feedv
+    ld ra, 16(sp)
+    addi sp, sp, 48
+    ret

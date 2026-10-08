@@ -69,27 +69,6 @@ static unsigned int findsymbol(char *data, unsigned int count, unsigned int leng
 
 }
 
-static unsigned int loadmap(char *map, char *buffer, unsigned int count)
-{
-
-    char command[300];
-
-    cstring_write_fmt(command, 300, 0, "echo %s\\0", map);
-
-    return system_feed(command, 0, 0, buffer, count);
-
-}
-
-static void savemap(char *map, char *buffer, unsigned int count)
-{
-
-    char command[300];
-
-    cstring_write_fmt(command, 300, 0, "write %s\\0", map);
-    system_feed(command, buffer, count, 0, 0);
-
-}
-
 static void updateundefined(void)
 {
 
@@ -116,7 +95,7 @@ static void updateundefined(void)
 
                 cstring_write_fmt(module, 32, 0, "initrd:kernel/%w.ko.map\\0", symbol, &underscore);
 
-                count = loadmap(module, data, 4096);
+                count = system_feed(0, 0, data, 4096, "echo %s", module);
 
                 if (count)
                     address = findsymbol(data, count, length, symbol);
@@ -234,7 +213,7 @@ static unsigned int resolve(unsigned int source, unsigned int target, unsigned i
 static void onmain(struct message *message)
 {
 
-    kernelcount = loadmap("initrd:kernel/fudge.map", kerneldata, 8192);
+    kernelcount = system_feed(0, 0, kerneldata, 8192, "echo initrd:kernel/fudge.map");
 
 }
 
@@ -271,7 +250,7 @@ static void load(unsigned int source, char *path)
 
                         cstring_write_fmt(mapname, 256, 0, "%s.map\\0", path);
 
-                        mapcount = loadmap(mapname, mapdata, 4096);
+                        mapcount = system_feed(0, 0, mapdata, 4096, "echo %s", mapname);
 
                         if (mapcount)
                         {
@@ -283,7 +262,7 @@ static void load(unsigned int source, char *path)
                             {
 
                                 relocate(&header, sectionheaders, address);
-                                savemap(mapname, mapdata, mapcount);
+                                system_feed(mapdata, mapcount, 0, 0, "write %s", mapname);
                                 call_load(address);
 
                             }

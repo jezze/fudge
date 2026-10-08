@@ -65,10 +65,11 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
 
 }
 
-unsigned int system_feed(char *command, void *input, unsigned int inputcount, void *output, unsigned int outputcount)
+unsigned int system_feedv(void *input, unsigned int inputcount, void *output, unsigned int outputcount, char *fmt, void **args)
 {
 
-    unsigned int sh = start(command, cstring_length(command), 1);
+    char command[MESSAGE_SIZE];
+    unsigned int sh = start(command, cstring_write_fmtv(command, MESSAGE_SIZE, 0, fmt, args), 1);
     unsigned int total = 0;
 
     if (sh)
@@ -110,16 +111,13 @@ unsigned int system_feed(char *command, void *input, unsigned int inputcount, vo
 unsigned int system_resolve(char *domain, char *address, unsigned int size)
 {
 
-    char command[256];
     char answers[MESSAGE_SIZE];
     unsigned int count;
     unsigned int length = 0;
     unsigned int i;
     char *key;
 
-    cstring_write_fmt(command, 256, 0, "dns -domain %s queryresponse>&data\\0", domain);
-
-    count = system_feed(command, 0, 0, answers, MESSAGE_SIZE);
+    count = system_feed(0, 0, answers, MESSAGE_SIZE, "dns -domain %s queryresponse>&data", domain);
 
     for (i = 0; (key = buffer_tindex(answers, count, '\0', i)); i += 2)
     {
