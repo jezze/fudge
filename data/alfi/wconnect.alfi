@@ -1,4 +1,4 @@
-+ window id "window" label "Browser"
++ window id "window" label "Connect"
 + panel id "base" in "window" flow "vertical-stretch" padding "12" spacing "8" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "8"
 + textbox id "addressbox" in "top" span "1" cursor "7" onchange "q=address&url=" onenter "q=open&url="

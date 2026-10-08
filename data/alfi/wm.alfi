@@ -17,3 +17,5 @@
 + text in "apps-filemanager" label "File Manager"
 + item id "apps-calculator" in "apps-layout" padding "16" onclick "run=initrd:bin/wcalc"
 + text in "apps-calculator" label "Calculator"
++ item id "apps-connect" in "apps-layout" padding "16" onclick "run=initrd:bin/wconnect"
++ text in "apps-connect" label "Connect"

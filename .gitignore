@@ -72,7 +72,7 @@ src/wutils/wabout
 src/wutils/wcalc
 src/wutils/wedit
 src/wutils/wfile
-src/wutils/wrun
+src/wutils/wconnect
 src/wutils/wsettings
 src/wutils/wshell
 src/wutils/wimage

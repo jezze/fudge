@@ -174,7 +174,7 @@ static void onwmevent(struct message *message)
 static void onwminit(struct message *message)
 {
 
-    char *alfi = "initrd:data/alfi/wrun.alfi";
+    char *alfi = "initrd:data/alfi/wconnect.alfi";
 
     channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 

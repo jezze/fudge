@@ -53,11 +53,11 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
-    $(DIR_SRC)/wutils/wrun \
+    $(DIR_SRC)/wutils/wconnect \
 
 O:=\
     $(DIR_SRC)/wutils/kv.o \
-    $(DIR_SRC)/wutils/wrun.o \
+    $(DIR_SRC)/wutils/wconnect.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
