@@ -176,6 +176,8 @@ void apic_setupisrs(void)
                     idt_setdescriptor(idt, 0x63, (void (*)(void))((unsigned long)apic_isr + 8 * 0x03), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     idt_setdescriptor(idt, 0x64, (void (*)(void))((unsigned long)apic_isr + 8 * 0x04), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     idt_setdescriptor(idt, 0x68, (void (*)(void))((unsigned long)apic_isr + 8 * 0x08), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x6A, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0A), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+                    idt_setdescriptor(idt, 0x6B, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0B), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     idt_setdescriptor(idt, 0x6C, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0C), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     idt_setdescriptor(idt, 0x6E, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0E), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     writeio(ioapic->address, 0x10 + 0x01 * 2, 0x61);
@@ -183,6 +185,8 @@ void apic_setupisrs(void)
                     writeio(ioapic->address, 0x10 + 0x03 * 2, 0x63);
                     writeio(ioapic->address, 0x10 + 0x04 * 2, 0x64);
                     writeio(ioapic->address, 0x10 + 0x08 * 2, 0x68);
+                    writeio(ioapic->address, 0x10 + 0x0A * 2, 0x6A | (1 << 15));
+                    writeio(ioapic->address, 0x10 + 0x0B * 2, 0x6B | (1 << 15));
                     writeio(ioapic->address, 0x10 + 0x0C * 2, 0x6C);
                     writeio(ioapic->address, 0x10 + 0x0E * 2, 0x6E);
 
