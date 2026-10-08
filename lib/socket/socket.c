@@ -222,6 +222,15 @@ static unsigned int handletcp(unsigned int ichannel, unsigned int target, struct
         break;
 
     case TCP_STATE_ESTABLISHED:
+        if ((psize || (header->flags[1] & TCP_FLAGS1_FIN)) && net_load32(header->seq) != remote->info.tcp.ack)
+        {
+
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_ACK, 4096, 0, 0));
+
+            return 0;
+
+        }
+
         if (header->flags[1] == (TCP_FLAGS1_ACK) || header->flags[1] == (TCP_FLAGS1_PSH | TCP_FLAGS1_ACK))
         {
 
