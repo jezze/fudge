@@ -7,4 +7,6 @@
 + text in "mode-normal" label "Normal"
 + item id "mode-stretched" in "mode-list" padding "16"
 + text in "mode-stretched" label "Stretched"
++ item id "mode-filled" in "mode-list" padding "16"
++ text in "mode-filled" label "Filled"
 + listbox id "frame" in "base" mode "readonly" flow "vertical-stretch" span "1"

@@ -2,9 +2,13 @@
 #include <abi.h>
 #include "kv.h"
 
+#define NUM_MODES                       3
+
 static char path[256];
 static unsigned int wm;
-static unsigned int stretched;
+static char *labels[NUM_MODES] = {"Normal", "Stretched", "Filled"};
+static char *modes[NUM_MODES] = {"normal", "stretch", "fill"};
+static unsigned int mode;
 
 static void showimage(void)
 {
@@ -18,7 +22,7 @@ static void showimage(void)
     if (!start)
         start = buffer_firstbyte(path, length, ':');
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n+ image id \"image\" in \"frame\" mimetype \"image/pcx\" source \"%s\" mode \"%s\" span \"1\"\n", path + start, path, (stretched) ? "stretch" : "normal");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n+ image id \"image\" in \"frame\" mimetype \"image/pcx\" source \"%s\" mode \"%s\" span \"1\"\n", path + start, path, modes[mode]);
 
 }
 
@@ -57,11 +61,18 @@ static void onwmevent(struct message *message)
     if (kv_match(event, "q=mode"))
     {
 
-        char *mode = kv_getstring(event, "mode=");
+        char *label = kv_getstring(event, "mode=");
+        unsigned int i;
 
-        stretched = mode && cstring_match(mode, "Stretched");
+        for (i = 0; i < NUM_MODES; i++)
+        {
 
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mode label \"%s\"\n= image mode \"%s\"\n", (stretched) ? "Stretched" : "Normal", (stretched) ? "stretch" : "normal");
+            if (label && cstring_match(label, labels[i]))
+                mode = i;
+
+        }
+
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mode label \"%s\"\n= image mode \"%s\"\n", labels[mode], modes[mode]);
 
     }
 
