@@ -62,20 +62,44 @@ static void seturl(char *s)
 
 }
 
-static void showerror(unsigned int wm, char *text)
+static void showstatus(unsigned int wm, char *text)
 {
 
-    /* separate messages, since wm stops parsing a message at the first error and there may be no status yet */
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- status\n");
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"status\" in \"base\" label \"%s\"\n", text);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"%s\"\n", text);
 
 }
 
 static void open(unsigned int wm)
 {
 
-    unsigned int count = (isvalid(url, cstring_length(url))) ? system_feed(0, 0, response, RESPONSESIZE, "webc -url \"%s\"", url) : 0;
+    char urldata[URLSIZE * 2];
+    struct url parsed;
+    unsigned int count;
     unsigned int i;
+
+    if (!isvalid(url, cstring_length(url)))
+    {
+
+        showstatus(wm, "The address can not contain quotes");
+
+        return;
+
+    }
+
+    url_parse(&parsed, urldata, URLSIZE * 2, url, (buffer_match(url, "http", 4)) ? URL_SCHEME : URL_HOST);
+
+    if (!parsed.host || !cstring_length(parsed.host))
+    {
+
+        showstatus(wm, "Enter an address to open");
+
+        return;
+
+    }
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"Connecting to %s...\"\n", parsed.host);
+
+    count = system_feed(0, 0, response, RESPONSESIZE, "webc -url \"%s\"", url);
 
     for (i = 0; i + 4 <= count; i++)
     {
@@ -83,7 +107,6 @@ static void open(unsigned int wm)
         if (buffer_match(response + i, "\r\n\r\n", 4))
         {
 
-            char status[128];
             unsigned int length = buffer_findbyte(response, count, '\r');
 
             if (count > 12 && buffer_match(response + 8, " 200", 4))
@@ -94,11 +117,17 @@ static void open(unsigned int wm)
 
             }
 
-            else if (length < 128 && isvalid(response, length))
+            else if (isvalid(response, length))
             {
 
-                cstring_write_fmt(status, 128, 0, "%w\\0", response, &length);
-                showerror(wm, status);
+                channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"%w\"\n", response, &length);
+
+            }
+
+            else
+            {
+
+                showstatus(wm, "The server answered with an error");
 
             }
 
@@ -108,7 +137,7 @@ static void open(unsigned int wm)
 
     }
 
-    showerror(wm, "Could not load the address");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"Could not load from %s\"\n", parsed.host);
 
 }
 
