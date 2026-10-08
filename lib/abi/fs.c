@@ -206,6 +206,16 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
 
 }
 
+unsigned int fs_read_path(unsigned int ichannel, char *path, void *buffer, unsigned int count)
+{
+
+    unsigned int target = fs_auth(path);
+    unsigned int id = (target) ? fs_walk(ichannel, target, 0, path) : 0;
+
+    return (id) ? fs_read_full(ichannel, target, id, buffer, count, 0) : 0;
+
+}
+
 unsigned int fs_read_all(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 

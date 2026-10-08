@@ -1038,24 +1038,16 @@ static void onwmrenderdata(struct message *message)
 static void onwmrenderfile(struct message *message)
 {
 
-    unsigned int target = fs_auth(message->data);
+    char data[4096];
+    unsigned int count = fs_read_path(1, message->data, data, 4096);
 
-    if (target)
+    if (count)
     {
 
-        unsigned int id = fs_walk(1, target, 0, message->data);
-        
-        if (id)
-        {
-
-            char data1[4096];
-
-            parser_parse(message->source, "root", fs_read(1, target, id, data1, 4096, 0), data1);
-            pool_loadresources();
-            placewindows(message->source);
-            purge(message->source);
-
-        }
+        parser_parse(message->source, "root", count, data);
+        pool_loadresources();
+        placewindows(message->source);
+        purge(message->source);
 
     }
 
@@ -1106,7 +1098,7 @@ static void setupwidgets(void)
     char data1[4096];
 
     parser_parse(0, "", cstring_length(data0), data0);
-    parser_parse(0, "root", system_feed(0, 0, data1, 4096, "echo initrd:data/alfi/wm.alfi"), data1);
+    parser_parse(0, "root", fs_read_path(1, "initrd:data/alfi/wm.alfi", data1, 4096), data1);
     pool_loadresources();
 
     state.rootwidget = pool_getwidgetbyid(0, "root");

@@ -93,7 +93,7 @@ static void updateundefined(void)
 
                 cstring_write_fmt(module, 32, 0, "initrd:kernel/%w.ko.map\\0", symbol, &underscore);
 
-                count = system_feed(0, 0, data, 4096, "echo %s", module);
+                count = fs_read_path(1, module, data, 4096);
 
                 if (count)
                     address = findsymbol(data, count, length, symbol);
@@ -211,7 +211,7 @@ static unsigned int resolve(unsigned int source, unsigned int target, unsigned i
 static void onmain(struct message *message)
 {
 
-    kernelcount = system_feed(0, 0, kerneldata, 8192, "echo initrd:kernel/fudge.map");
+    kernelcount = fs_read_path(1, "initrd:kernel/fudge.map", kerneldata, 8192);
 
 }
 
@@ -246,7 +246,7 @@ static void load(unsigned int source, char *path)
 
                         cstring_write_fmt(mapname, 256, 0, "%s.map\\0", path);
 
-                        mapcount = system_feed(0, 0, mapdata, 4096, "echo %s", mapname);
+                        mapcount = fs_read_path(1, mapname, mapdata, 4096);
 
                         if (mapcount)
                         {
@@ -258,7 +258,7 @@ static void load(unsigned int source, char *path)
                             {
 
                                 relocate(&header, sectionheaders, address);
-                                system_feed(mapdata, mapcount, 0, 0, "write %s", mapname);
+                                fs_write_all(1, target, fs_walk(1, target, 0, mapname), mapdata, mapcount, 0);
                                 call_load(address);
 
                             }
