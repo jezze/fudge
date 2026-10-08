@@ -136,7 +136,25 @@ static void insertleft(unsigned int count, void *data)
 {
 
     if (ring_write(&input1, data, count))
-        print(data, count);
+    {
+
+        char buffer[INPUTSIZE * 2 + 16];
+        unsigned int length = buffer_write(buffer, INPUTSIZE, data, count, 0);
+        unsigned int rest = ring_readcopy(&input2, buffer + length, INPUTSIZE);
+
+        /* a terminal prints over what is under the cursor, so redraw the text after it and step back */
+        if (rest)
+        {
+
+            length += rest;
+            buffer[length++] = 0x1B;
+            length += cstring_write_fmt(buffer, INPUTSIZE * 2 + 16, length, "[%uD", &rest);
+
+        }
+
+        print(buffer, length);
+
+    }
 
 }
 
