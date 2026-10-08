@@ -149,9 +149,7 @@ static void showfile(unsigned int wm, struct record *record)
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Type: File\"\n");
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Size: %u bytes\"\n", &record->size);
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Id: %u\"\n", &record->id);
-
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"actions\" in \"info\" flow \"horizontal\" spacing \"8\"\n");
-
     loadfiletypes();
 
     for (i = 0; getline(suffixes, nsuffixes, i, suffix, 64) && getline(labels, nlabels, i, label, 64); i++)
@@ -175,7 +173,8 @@ static void updatecontent(unsigned int wm)
     {
 
         sendcontent(wm);
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Path not found\"\n");
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"8\" spacing \"4\"\n");
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Path not found\"\n");
 
     }
 
@@ -191,7 +190,6 @@ static void updatecontent(unsigned int wm)
 
         unsigned int length = cstring_length(path);
 
-        /* entries are joined onto the path, so a directory always ends with / (or : for a root) */
         if (length && path[length - 1] != '/' && path[length - 1] != ':')
             cstring_write_fmt(path, 256, length, "/\\0");
 
@@ -201,7 +199,6 @@ static void updatecontent(unsigned int wm)
 
 }
 
-/* paths are always kept canonical: relative ones are resolved against the current path */
 static void changepath(unsigned int wm, char *relative)
 {
 
