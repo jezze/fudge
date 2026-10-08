@@ -7,9 +7,7 @@ static char path[256];
 static void updatepath(unsigned int wm)
 {
 
-    unsigned int length = cstring_length(path);
-
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= path label \"%s\"\n= pathbox cursor \"%u\"\n", path, &length);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= path label \"%s\"\n", path);
 
 }
 

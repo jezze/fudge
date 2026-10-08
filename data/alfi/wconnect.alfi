@@ -1,7 +1,7 @@
 + window id "window" label "Connect"
 + panel id "base" in "window" flow "vertical-stretch" padding "12" spacing "8" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "8"
-+ textbox id "addressbox" in "top" span "1" cursor "7" onchange "q=address&url=" onenter "q=open&url="
++ textbox id "addressbox" in "top" span "1" onchange "q=address&url=" onenter "q=open&url="
 + text id "address" in "addressbox" label "http://"
 + button in "top" label "Open" onclick "q=open"
 + listbox id "statusbox" in "base" mode "readonly" flow "vertical-stretch" span "1"

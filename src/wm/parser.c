@@ -4,6 +4,7 @@
 #include "text.h"
 #include "attr.h"
 #include "widget.h"
+#include "strpool.h"
 #include "pool.h"
 #include "parser.h"
 
@@ -255,8 +256,25 @@ static unsigned int getwidget(struct state *state)
 
 }
 
+static void movecursortoend(struct widget *widget)
+{
+
+    struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in));
+
+    if (parent && parent->type == WIDGET_TYPE_TEXTBOX && parent->attributes.mode != ATTR_MODE_READONLY)
+    {
+
+        parent->attributes.cursor = strpool_getcstringlength(widget->attributes.label);
+        parent->followcursor = 1;
+
+    }
+
+}
+
 static void parseattributes(struct state *state, struct widget *widget)
 {
+
+    unsigned int labelset = 0;
 
     while (!state->errors && !state->linebreak)
     {
@@ -273,6 +291,9 @@ static void parseattributes(struct state *state, struct widget *widget)
             else
                 widget_setattribute(widget, attribute, 0);
 
+            if (attribute == ATTR_LABEL)
+                labelset = 1;
+
         }
 
         else
@@ -283,6 +304,10 @@ static void parseattributes(struct state *state, struct widget *widget)
         }
 
     }
+
+    /* the user owns the cursor of an editable textbox, so new text from the program leaves it at the end */
+    if (labelset && widget->type == WIDGET_TYPE_TEXT)
+        movecursortoend(widget);
 
 }
 

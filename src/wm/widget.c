@@ -23,6 +23,7 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_CURSOR:
         widget->attributes.cursor = attr_update(ATTR_CURSOR, value, widget->attributes.cursor);
+        widget->appcursor = (value != 0);
         widget->followcursor = 1;
 
         break;
@@ -372,6 +373,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->resource = 0;
     widget->loaded = 0;
     widget->autosize = 0;
+    widget->appcursor = 0;
     widget->position = util_position(0, 0);
     widget->size = util_size(0, 0);
     widget->scroll = util_position(0, 0);

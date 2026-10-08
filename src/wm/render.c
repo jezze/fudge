@@ -360,11 +360,25 @@ static void placecursor(struct widget *widget)
     {
 
         struct text_font *font = pool_getfont(text->attributes.weight);
-        unsigned int length = util_min(widget->attributes.cursor, strpool_getcstringlength(text->attributes.label));
+        char *label = strpool_getstring(text->attributes.label);
+        unsigned int total = strpool_getcstringlength(text->attributes.label);
+        unsigned int length = util_min(widget->attributes.cursor, total);
         unsigned int maxw = widget->cplacement.size.w - (text->placement.position.x - widget->cplacement.position.x);
-        struct text_info info = text_info(font, strpool_getstring(text->attributes.label), length, text->attributes.wrap, maxw, text->rowstart.x);
+        struct text_info info = text_info(font, label, length, text->attributes.wrap, maxw, text->rowstart.x);
+        unsigned int num = info.lastrow.y / font->lineheight;
+        int offx = (num) ? 0 : text->rowstart.x;
+        struct text_rowinfo rowinfo;
+        int x;
 
-        widget->cursorposition = util_position(text->placement.position.x + info.lastrow.x, text->placement.position.y + info.lastrow.y);
+        /* place the cursor on its row the same way the row is aligned when the text is drawn */
+        rowinfo.width = 0;
+        rowinfo.lineheight = font->lineheight;
+
+        text_getrowinfo(&rowinfo, font, label, total, text->attributes.wrap, util_max((int)text->placement.size.w - offx, 0), text_getrowstart(font, label, total, num, text->attributes.wrap, text->placement.size.w, text->rowstart.x));
+
+        x = text_getrowx(&rowinfo, text->attributes.halign, text->placement.size.w - offx) + offx + (info.lastrow.x - offx);
+
+        widget->cursorposition = util_position(text->placement.position.x + x, text->placement.position.y + info.lastrow.y);
         widget->cursorsize = util_size(2, font->lineheight);
 
     }
@@ -953,7 +967,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 
     blit_frame(display, &widget->placement, line, x0, x2, (widget->attributes.mode == ATTR_MODE_READONLY) ? cmapbodyro : cmapbody);
 
-    if (widget->state == WIDGET_STATE_FOCUS)
+    if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode != ATTR_MODE_READONLY || widget->appcursor))
         blit_iconcursor(display, &rcursor, line, x0, x2, cmapicon);
 
 }
