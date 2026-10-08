@@ -15,7 +15,7 @@
 
 #define NUM_COMMANDS                    5
 #define NUM_WIDGETS                     12
-#define NUM_ATTRIBUTES                  22
+#define NUM_ATTRIBUTES                  23
 
 static struct util_token commands[NUM_COMMANDS] =
 {
@@ -55,6 +55,7 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
     {ATTR_LABEL, "label"},
     {ATTR_MIMETYPE, "mimetype"},
     {ATTR_MODE, "mode"},
+    {ATTR_ONCHANGE, "onchange"},
     {ATTR_ONCLICK, "onclick"},
     {ATTR_ONENTER, "onenter"},
     {ATTR_ONSELECT, "onselect"},

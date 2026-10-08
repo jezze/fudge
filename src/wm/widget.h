@@ -31,6 +31,7 @@ struct widget_attributes
     unsigned int label;
     unsigned int mimetype;
     unsigned int mode;
+    unsigned int onchange;
     unsigned int onclick;
     unsigned int onenter;
     unsigned int onselect;

@@ -454,6 +454,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
     char buffer[TEXTBOX_SIZE];
     unsigned int length;
     unsigned int cursor;
+    unsigned int changed = 0;
 
     if (!text)
         return;
@@ -477,6 +478,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
             buffer_copy(buffer + cursor - 1, buffer + cursor, length - cursor + 1);
 
             cursor--;
+            changed = 1;
 
         }
 
@@ -484,7 +486,13 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
     case KEYS_KEY_DELETE:
         if (cursor < length)
+        {
+
             buffer_copy(buffer + cursor, buffer + cursor + 1, length - cursor);
+
+            changed = 1;
+
+        }
 
         break;
 
@@ -521,6 +529,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
             buffer[cursor] = state.keys.code.value[0];
             cursor++;
+            changed = 1;
 
         }
 
@@ -531,6 +540,9 @@ static void edittextbox(struct widget *widget, unsigned int id)
     text->attributes.label = strpool_updatestring(text->attributes.label, buffer);
     widget->attributes.cursor = cursor;
     widget->followcursor = 1;
+
+    if (changed && widget->attributes.onchange)
+        sendevent(widget->source, 1, widget->attributes.onchange, buffer);
 
     damageall(widget);
 

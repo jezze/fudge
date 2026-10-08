@@ -67,6 +67,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_ONCHANGE:
+        widget->attributes.onchange = attr_update(ATTR_ONCHANGE, value, widget->attributes.onchange);
+
+        break;
+
     case ATTR_ONCLICK:
         widget->attributes.onclick = attr_update(ATTR_ONCLICK, value, widget->attributes.onclick);
 
@@ -140,6 +145,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_LABEL, 0);
     widget_setattribute(widget, ATTR_MIMETYPE, 0);
     widget_setattribute(widget, ATTR_MODE, 0);
+    widget_setattribute(widget, ATTR_ONCHANGE, 0);
     widget_setattribute(widget, ATTR_ONCLICK, 0);
     widget_setattribute(widget, ATTR_ONENTER, 0);
     widget_setattribute(widget, ATTR_ONSELECT, 0);
@@ -309,6 +315,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->label = 0;
     attributes->mimetype = ATTR_MIMETYPE_NONE;
     attributes->mode = ATTR_MODE_NORMAL;
+    attributes->onchange = 0;
     attributes->onclick = 0;
     attributes->onenter = 0;
     attributes->onselect = 0;
