@@ -34,6 +34,7 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
 {
 
     char command[MESSAGE_SIZE];
+    unsigned int errors = 0;
 
     if (start(command, cstring_write_fmtv(command, MESSAGE_SIZE, 0, fmt, args), 0))
     {
@@ -46,14 +47,16 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
             switch (message.event)
             {
 
-            case EVENT_DATA:
             case EVENT_ERROR:
+                errors++;
+
+            case EVENT_DATA:
                 channel_send(0, target, message.event, message.length, message.data);
 
                 break;
 
             case EVENT_EXIT:
-                return ((struct event_exit *)message.data)->status;
+                return (errors) ? EXIT_STATUS_FAILED : ((struct event_exit *)message.data)->status;
 
             }
 
