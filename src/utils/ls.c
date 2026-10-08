@@ -15,7 +15,7 @@ static void list(unsigned int source, char *path)
     if (!id)
     {
 
-        channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, source, EVENT_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -32,9 +32,9 @@ static void list(unsigned int source, char *path)
             struct record *record = (struct record *)(data + i);
 
             if (record->type == RECORD_TYPE_DIRECTORY)
-                channel_send_fmt2(0, source, EVENT_DATA, "%w/\n", record->name, &record->length);
+                channel_send_fmt(0, source, EVENT_DATA, "%w/\n", record->name, &record->length);
             else
-                channel_send_fmt2(0, source, EVENT_DATA, "%w\n", record->name, &record->length);
+                channel_send_fmt(0, source, EVENT_DATA, "%w\n", record->name, &record->length);
 
             offset = record->offset;
 

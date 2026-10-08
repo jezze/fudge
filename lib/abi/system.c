@@ -16,7 +16,7 @@ static unsigned int start(char *command, unsigned int input)
         unsigned int length = cstring_length(command);
         unsigned int offset;
 
-        channel_send_fmt2(1, sh, EVENT_OPTION, "pwd=%s&input=%u\n", option_getstring("pwd"), &input);
+        channel_send_fmt(1, sh, EVENT_OPTION, "pwd=%s&input=%u\n", option_getstring("pwd"), &input);
         channel_send(1, sh, EVENT_MAIN, 0, 0);
 
         for (offset = 0; offset < length; offset += MESSAGE_SIZE)
@@ -116,7 +116,7 @@ unsigned int system_resolve(char *domain, char *address, unsigned int size)
     unsigned int i;
     char *key;
 
-    cstring_write_fmt1(command, 256, 0, "dns -domain %s queryresponse>&data\\0", domain);
+    cstring_write_fmt(command, 256, 0, "dns -domain %s queryresponse>&data\\0", domain);
 
     count = system_feed(command, 0, 0, answers, MESSAGE_SIZE);
 

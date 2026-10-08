@@ -74,7 +74,7 @@ static unsigned int loadmap(char *map, char *buffer, unsigned int count)
 
     char command[300];
 
-    cstring_write_fmt1(command, 300, 0, "echo %s\\0", map);
+    cstring_write_fmt(command, 300, 0, "echo %s\\0", map);
 
     return system_feed(command, 0, 0, buffer, count);
 
@@ -85,7 +85,7 @@ static void savemap(char *map, char *buffer, unsigned int count)
 
     char command[300];
 
-    cstring_write_fmt1(command, 300, 0, "write %s\\0", map);
+    cstring_write_fmt(command, 300, 0, "write %s\\0", map);
     system_feed(command, buffer, count, 0, 0);
 
 }
@@ -114,7 +114,7 @@ static void updateundefined(void)
                 char data[4096];
                 unsigned int count;
 
-                cstring_write_fmt2(module, 32, 0, "initrd:kernel/%w.ko.map\\0", symbol, &underscore);
+                cstring_write_fmt(module, 32, 0, "initrd:kernel/%w.ko.map\\0", symbol, &underscore);
 
                 count = loadmap(module, data, 4096);
 
@@ -196,7 +196,7 @@ static unsigned int resolve(unsigned int source, unsigned int target, unsigned i
                     else
                     {
 
-                        channel_send_fmt1(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+                        channel_send_fmt(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
 
                         unresolved++;
 
@@ -269,7 +269,7 @@ static void load(unsigned int source, char *path)
 
                         char mapname[256];
 
-                        cstring_write_fmt1(mapname, 256, 0, "%s.map\\0", path);
+                        cstring_write_fmt(mapname, 256, 0, "%s.map\\0", path);
 
                         mapcount = loadmap(mapname, mapdata, 4096);
 

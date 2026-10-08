@@ -28,7 +28,7 @@ static void printfmt1(char *fmt, void *arg1)
 
     char buffer[MESSAGE_SIZE];
 
-    print(buffer, cstring_write_fmt1(buffer, MESSAGE_SIZE, 0, fmt, arg1));
+    print(buffer, cstring_write_fmt(buffer, MESSAGE_SIZE, 0, fmt, arg1));
 
 }
 
@@ -80,7 +80,7 @@ static void cursorleft(unsigned int steps)
 
         unsigned char num[32];
 
-        printescape(num, cstring_write_fmt1(num, 32, 0, "[%uD", &steps));
+        printescape(num, cstring_write_fmt(num, 32, 0, "[%uD", &steps));
 
     }
 
@@ -94,7 +94,7 @@ static void cursorright(unsigned int steps)
 
         unsigned char num[32];
 
-        printescape(num, cstring_write_fmt1(num, 32, 0, "[%uC", &steps));
+        printescape(num, cstring_write_fmt(num, 32, 0, "[%uC", &steps));
 
     }
 
@@ -243,7 +243,7 @@ static void run(void)
 
     }
 
-    channel_send_fmt1(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
+    channel_send_fmt(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
     channel_send(0, sh, EVENT_MAIN, 0, 0);
     channel_send(0, sh, EVENT_DATA, linecount, line);
     channel_send(0, sh, EVENT_TERM, 0, 0);

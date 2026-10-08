@@ -24,9 +24,9 @@ static void startservice(unsigned int source, char *program, char *name, char *s
 {
 
     char line[128];
-    unsigned int count = cstring_write_fmt3(line, 128, 0, "%s -service %s -block-service %s", program, name, service);
+    unsigned int count = cstring_write_fmt(line, 128, 0, "%s -service %s -block-service %s", program, name, service);
 
-    cstring_write_fmt2(line, 128, count, ":%u -partoffset %u &\\0", &index, &offset);
+    cstring_write_fmt(line, 128, count, ":%u -partoffset %u &\\0", &index, &offset);
     system_run(source, line);
 
 }
@@ -83,7 +83,7 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
     if (!target)
     {
 
-        channel_send_fmt2(0, source, EVENT_ERROR, "Service not found: %s:%u\n", service, &index);
+        channel_send_fmt(0, source, EVENT_ERROR, "Service not found: %s:%u\n", service, &index);
 
         return;
 
@@ -107,7 +107,7 @@ static unsigned int query(char *field, char *data, unsigned int size)
 
     char command[256];
 
-    cstring_write_fmt2(command, 256, 0, "mq -query .mounts.%s %s\\0", field, option_getstring("config"));
+    cstring_write_fmt(command, 256, 0, "mq -query .mounts.%s %s\\0", field, option_getstring("config"));
 
     return system_feed(command, 0, 0, data, size);
 

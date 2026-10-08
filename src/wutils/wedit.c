@@ -12,7 +12,7 @@ static void sendchunk(char *data, unsigned int count)
 {
 
     char buffer[MESSAGE_SIZE];
-    unsigned int offset = cstring_write_fmt0(buffer, MESSAGE_SIZE, 0, "+ text in \"content\" display \"inline\" wrap \"char\" label \"");
+    unsigned int offset = cstring_write_fmt(buffer, MESSAGE_SIZE, 0, "+ text in \"content\" display \"inline\" wrap \"char\" label \"");
     unsigned int i;
 
     for (i = 0; i < count; i++)
@@ -46,7 +46,7 @@ static void showfile(void)
     if (!start)
         start = buffer_firstbyte(path, length, ':');
 
-    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n", path + start);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n", path + start);
 
     target = fs_auth(path);
     id = (target) ? fs_walk(1, target, 0, path) : 0;
@@ -68,17 +68,17 @@ static void showfile(void)
         }
 
         if (offset >= MAXSIZE)
-            channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n");
+            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n");
 
         /* the textbox draws its cursor in its last text: an empty one puts it at the end of the file */
-        channel_send_fmt0(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" display \"inline\" wrap \"char\"\n");
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" display \"inline\" wrap \"char\"\n");
 
     }
 
     else
     {
 
-        channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Could not open %s\"\n", path);
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Could not open %s\"\n", path);
 
     }
 
@@ -106,7 +106,7 @@ static void onpath(struct message *message)
     if (path[0])
         return;
 
-    cstring_write_fmt1(path, 256, 0, "%s\\0", message->data);
+    cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
     showfile();
 
 }

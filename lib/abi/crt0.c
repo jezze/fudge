@@ -50,9 +50,9 @@ static void onoption(struct message *message)
         char *value = extract(message->data, vlength, offset + klength);
 
         if (!option_getstring(key))
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Unrecognized option: %s\n", key);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Unrecognized option: %s\n", key);
         else if (!option_setstring(key, value))
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Option too long: %s\n", key);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Option too long: %s\n", key);
 
     }
 
@@ -68,7 +68,7 @@ static void onpipe(struct message *message)
 void panic(unsigned int source, char *file, unsigned int line)
 {
 
-    channel_send_fmt2(0, source, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
+    channel_send_fmt(0, source, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
     channel_exit(0);
     call_despawn(EXIT_STATUS_FAILED);
 

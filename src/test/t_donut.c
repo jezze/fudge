@@ -95,7 +95,7 @@ static void ontimertick(struct message *message)
         char *offset = b + k;
         unsigned int count = 80;
 
-        channel_send_fmt2(0, output, EVENT_DATA, "%w\n", offset, &count);
+        channel_send_fmt(0, output, EVENT_DATA, "%w\n", offset, &count);
 
     }
 

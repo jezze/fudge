@@ -258,7 +258,7 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
     if (getsavesize(&gb))
         fs_read_full(1, target, id, cart_ram, getsavesize(&gb), 0x80000);
 
-    channel_send_fmt1(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
+    channel_send_fmt(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
 
     channel_bind(EVENT_TIMERTICK, ontimertick);
     channel_bind(EVENT_KEYPRESS, onkeypress);

@@ -135,7 +135,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
     if (args->address && pinode)
         return createtask(pinode, args->address);
 
-    DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "spawn failed");
 
     return 0;
 
@@ -194,34 +194,34 @@ static void debugpagefault(unsigned int error)
 {
 
     if (error & MMU_EFLAG_PRESENT)
-        DEBUG_FMT0(DEBUG_NONE, "Page protection");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Page protection");
     else
-        DEBUG_FMT0(DEBUG_NONE, "Non-present page");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Non-present page");
 
     if (error & MMU_EFLAG_RW)
-        DEBUG_FMT0(DEBUG_NONE, "Write access violation");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Write access violation");
     else
-        DEBUG_FMT0(DEBUG_NONE, "Read access violation");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Read access violation");
 
     if (error & MMU_EFLAG_USER)
-        DEBUG_FMT0(DEBUG_NONE, "Ring 3");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Ring 3");
     else
-        DEBUG_FMT0(DEBUG_NONE, "Ring 0");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Ring 0");
 
     if (error & MMU_EFLAG_RESERVED)
-        DEBUG_FMT0(DEBUG_NONE, "Reserved");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Reserved");
 
     if (error & MMU_EFLAG_INSTRUCTION)
-        DEBUG_FMT0(DEBUG_NONE, "No-Execute");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "No-Execute");
 
     if (error & MMU_EFLAG_PROTECTIONKEY)
-        DEBUG_FMT0(DEBUG_NONE, "Protection key");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Protection key");
 
     if (error & MMU_EFLAG_SHADOWSTACK)
-        DEBUG_FMT0(DEBUG_NONE, "Shadow stack");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Shadow stack");
 
     if (error & MMU_EFLAG_SGX)
-        DEBUG_FMT0(DEBUG_NONE, "SGX violation");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "SGX violation");
 
 }
 
@@ -234,16 +234,16 @@ static void debugselector(unsigned int error)
     unsigned int index = ((error >> 3) & 0x1FFF);
 
     if (external)
-        DEBUG_FMT0(DEBUG_NONE, "External");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "External");
     else
-        DEBUG_FMT0(DEBUG_NONE, "Internal");
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "Internal");
 
     if (ti)
-        DEBUG_FMT1(DEBUG_NONE, "LDT: %u", &index);
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "LDT: %u", &index);
     else if (idt)
-        DEBUG_FMT1(DEBUG_NONE, "IDT: %u", &index);
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "IDT: %u", &index);
     else
-        DEBUG_FMT1(DEBUG_NONE, "GDT: %u", &index);
+        debug_fmt(DEBUG_NONE, __FILE__, __LINE__, "GDT: %u", &index);
 
 }
 
@@ -277,7 +277,7 @@ static unsigned short fault(struct cpu_general *general, struct cpu_interrupt *i
 
     }
 
-    DEBUG_FMT0(DEBUG_CRITICAL, "Kernel fault");
+    debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "Kernel fault");
 
     for (;;);
 
@@ -302,7 +302,7 @@ void arch_leave(void)
 unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_ERROR, "#DE");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#DE");
 
     return fault(&general, &interrupt);
 
@@ -311,7 +311,7 @@ unsigned short arch_zero(struct cpu_general general, struct cpu_interrupt interr
 unsigned short arch_debug(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "#DB");
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "#DB");
 
     return arch_resume(&general, &interrupt);
 
@@ -320,7 +320,7 @@ unsigned short arch_debug(struct cpu_general general, struct cpu_interrupt inter
 unsigned short arch_nmi(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "Non-maskable interrupt");
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "Non-maskable interrupt");
 
     return arch_resume(&general, &interrupt);
 
@@ -329,7 +329,7 @@ unsigned short arch_nmi(struct cpu_general general, struct cpu_interrupt interru
 unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "#BP");
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "#BP");
 
     return arch_resume(&general, &interrupt);
 
@@ -338,7 +338,7 @@ unsigned short arch_breakpoint(struct cpu_general general, struct cpu_interrupt 
 unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "#OF");
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "#OF");
 
     return fault(&general, &interrupt);
 
@@ -347,7 +347,7 @@ unsigned short arch_overflow(struct cpu_general general, struct cpu_interrupt in
 unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_ERROR, "#BR");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#BR");
 
     return fault(&general, &interrupt);
 
@@ -356,7 +356,7 @@ unsigned short arch_bound(struct cpu_general general, struct cpu_interrupt inter
 unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_ERROR, "#UD");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#UD");
 
     return fault(&general, &interrupt);
 
@@ -365,7 +365,7 @@ unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt inte
 unsigned short arch_device(struct cpu_general general, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT0(DEBUG_ERROR, "#NM");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#NM");
 
     return fault(&general, &interrupt);
 
@@ -374,7 +374,7 @@ unsigned short arch_device(struct cpu_general general, struct cpu_interrupt inte
 unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#DF %u", &zero);
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#DF %u", &zero);
 
     return fault(&general, &interrupt);
 
@@ -383,7 +383,7 @@ unsigned short arch_doublefault(struct cpu_general general, unsigned int zero, s
 unsigned short arch_tss(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#TS %u", &error);
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#TS %u", &error);
     debugselector(error);
 
     return fault(&general, &interrupt);
@@ -393,7 +393,7 @@ unsigned short arch_tss(struct cpu_general general, unsigned int error, struct c
 unsigned short arch_segment(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#NP %u", &error);
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#NP %u", &error);
     debugselector(error);
 
     return fault(&general, &interrupt);
@@ -403,7 +403,7 @@ unsigned short arch_segment(struct cpu_general general, unsigned int error, stru
 unsigned short arch_stack(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#SS %u", &error);
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#SS %u", &error);
     debugselector(error);
 
     return fault(&general, &interrupt);
@@ -413,7 +413,7 @@ unsigned short arch_stack(struct cpu_general general, unsigned int error, struct
 unsigned short arch_generalfault(struct cpu_general general, unsigned int error, struct cpu_interrupt interrupt)
 {
 
-    DEBUG_FMT1(DEBUG_ERROR, "#GP %u", &error);
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#GP %u", &error);
     debugselector(error);
 
     return fault(&general, &interrupt);
@@ -429,7 +429,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
     if (error & MMU_EFLAG_PRESENT)
     {
 
-        DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+        debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "#PF %u 0x%H8u", &error, &vaddress);
         debugpagefault(error);
 
         return fault(&general, &interrupt);
@@ -470,7 +470,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
         if (!found)
         {
 
-            DEBUG_FMT2(DEBUG_CRITICAL, "#PF %u 0x%H8u", &error, &vaddress);
+            debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "#PF %u 0x%H8u", &error, &vaddress);
             debugpagefault(error);
 
             return fault(&general, &interrupt);
@@ -630,7 +630,7 @@ void arch_runinit(unsigned int address)
     else
     {
 
-        DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
+        debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "spawn failed");
 
     }
 

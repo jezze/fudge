@@ -448,7 +448,7 @@ static unsigned int walk(struct parser *ps, struct parser *path)
 
         }
 
-        channel_send_fmt2(0, ps->source, EVENT_DATA, "%w\n", start, &length);
+        channel_send_fmt(0, ps->source, EVENT_DATA, "%w\n", start, &length);
 
         return 1;
 
@@ -489,7 +489,7 @@ static void parse(unsigned int source, char *input, char *query)
     skip_separators(&doc);
 
     if (!walk(&doc, &path))
-        channel_send_fmt1(0, source, EVENT_ERROR, "Key not found: %s\n", query);
+        channel_send_fmt(0, source, EVENT_ERROR, "Key not found: %s\n", query);
 
 }
 
@@ -523,7 +523,7 @@ static void onpath(struct message *message)
         else
         {
 
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 
@@ -532,7 +532,7 @@ static void onpath(struct message *message)
     else
     {
 
-        channel_send_fmt1(0, message->source, EVENT_ERROR, "Service not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Service not found: %s\n", message->data);
 
     }
 

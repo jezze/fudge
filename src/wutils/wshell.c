@@ -43,7 +43,7 @@ static void printfmt1(char *fmt, void *arg1)
 
     char buffer[MESSAGE_SIZE];
 
-    print(buffer, cstring_write_fmt1(buffer, MESSAGE_SIZE, 0, fmt, arg1));
+    print(buffer, cstring_write_fmt(buffer, MESSAGE_SIZE, 0, fmt, arg1));
 
 }
 
@@ -103,7 +103,7 @@ static unsigned int writelabel(char *buffer, unsigned int size, unsigned int off
     unsigned int start;
     unsigned int i;
 
-    offset += cstring_write_fmt1(buffer, size, offset, "= %s label \"", id);
+    offset += cstring_write_fmt(buffer, size, offset, "= %s label \"", id);
     start = (size > offset + 2) ? fitlabel(data, count, size - offset - 2) : count;
 
     for (i = start; i < count; i++)
@@ -139,7 +139,7 @@ static void update(void)
         count = ring_readcopy(&input1, content, CONTENTSIZE);
         cursor = count;
         count += ring_readcopy(&input2, content + count, CONTENTSIZE - count);
-        offset += cstring_write_fmt1(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
+        offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
         offset = writelabel(buffer, MESSAGE_SIZE, offset, "input", content, count);
         offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (sh) ? 0 : 2);
         count = ring_readcopy(&result, content, CONTENTSIZE);
@@ -280,7 +280,7 @@ static void run(void)
 
     }
 
-    channel_send_fmt1(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
+    channel_send_fmt(0, sh, EVENT_OPTION, "pwd=%s&export=1\n", option_getstring("pwd"));
     channel_send(0, sh, EVENT_MAIN, 0, 0);
     channel_send(0, sh, EVENT_DATA, linecount, line);
     channel_send(0, sh, EVENT_TERM, 0, 0);

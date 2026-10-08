@@ -15,7 +15,7 @@ static void onpath(struct message *message)
         if (id && fs_stat(1, target, id, &record) && record.type != RECORD_TYPE_DIRECTORY)
         {
 
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Not a directory: %s\n", message->data);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Not a directory: %s\n", message->data);
 
         }
 
@@ -26,14 +26,14 @@ static void onpath(struct message *message)
             unsigned int length = cstring_length(path);
             char *slash = (length && path[length - 1] != '/' && path[length - 1] != ':') ? "/" : "";
 
-            channel_send_fmt2(0, message->source, EVENT_OPTION, "pwd=%s%s\n", path, slash);
+            channel_send_fmt(0, message->source, EVENT_OPTION, "pwd=%s%s\n", path, slash);
 
         }
 
         else
         {
 
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Directory not found: %s\n", message->data);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Directory not found: %s\n", message->data);
 
         }
 
@@ -42,7 +42,7 @@ static void onpath(struct message *message)
     else
     {
 
-        channel_send_fmt1(0, message->source, EVENT_ERROR, "Service not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Service not found: %s\n", message->data);
 
     }
 

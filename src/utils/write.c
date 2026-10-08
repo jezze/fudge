@@ -22,7 +22,7 @@ static void store(unsigned int source, void *data, unsigned int count)
 
             id = 0;
 
-            channel_send_fmt0(0, source, EVENT_ERROR, "File could not be written\n");
+            channel_send_fmt(0, source, EVENT_ERROR, "File could not be written\n");
 
         }
 
@@ -77,7 +77,7 @@ static void onmain(struct message *message)
     case EVENT_OPTION:
     case EVENT_PATH:
     case EVENT_PIPE:
-        channel_send_fmt0(0, message->source, EVENT_ERROR, "Event can not be recorded\n");
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Event can not be recorded\n");
 
         break;
 
@@ -107,7 +107,7 @@ static void onpath(struct message *message)
     {
 
         if (!id)
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", path);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -120,7 +120,7 @@ static void onpath(struct message *message)
 
         id = 0;
 
-        channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -143,7 +143,7 @@ static void onpath(struct message *message)
 
         id = 0;
 
-        channel_send_fmt1(0, message->source, EVENT_ERROR, "File could not be replaced: %s\n", path);
+        channel_send_fmt(0, message->source, EVENT_ERROR, "File could not be replaced: %s\n", path);
 
         return;
 
@@ -152,7 +152,7 @@ static void onpath(struct message *message)
     id = (cstring_length(name)) ? fs_create(1, target, parent, name, cstring_length(name)) : 0;
 
     if (!id)
-        channel_send_fmt1(0, message->source, EVENT_ERROR, "File could not be created: %s\n", path);
+        channel_send_fmt(0, message->source, EVENT_ERROR, "File could not be created: %s\n", path);
 
 }
 

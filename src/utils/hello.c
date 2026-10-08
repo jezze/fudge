@@ -4,7 +4,7 @@
 static void onmain(struct message *message)
 {
 
-    channel_send_fmt0(0, message->source, EVENT_DATA, "Hello World!\n");
+    channel_send_fmt(0, message->source, EVENT_DATA, "Hello World!\n");
 
 }
 

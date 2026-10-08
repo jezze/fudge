@@ -19,7 +19,7 @@ static void onmain(struct message *message)
 
         value = mtwist_rand(&state);
 
-        channel_send_fmt1(0, message->source, EVENT_DATA, "%u\n", &value);
+        channel_send_fmt(0, message->source, EVENT_DATA, "%u\n", &value);
 
     }
 

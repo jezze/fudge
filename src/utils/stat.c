@@ -19,10 +19,10 @@ static void onpath(struct message *message)
             if (fs_stat(1, target, id, &record))
             {
 
-                channel_send_fmt1(0, message->source, EVENT_DATA, "Id: %u\n", &record.id);
-                channel_send_fmt2(0, message->source, EVENT_DATA, "Name: %w\n", record.name, &record.length);
-                channel_send_fmt1(0, message->source, EVENT_DATA, "Type: %u\n", &record.type);
-                channel_send_fmt1(0, message->source, EVENT_DATA, "Size: %u\n", &record.size);
+                channel_send_fmt(0, message->source, EVENT_DATA, "Id: %u\n", &record.id);
+                channel_send_fmt(0, message->source, EVENT_DATA, "Name: %w\n", record.name, &record.length);
+                channel_send_fmt(0, message->source, EVENT_DATA, "Type: %u\n", &record.type);
+                channel_send_fmt(0, message->source, EVENT_DATA, "Size: %u\n", &record.size);
 
             }
 
@@ -31,7 +31,7 @@ static void onpath(struct message *message)
         else
         {
 
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 

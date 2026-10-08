@@ -15,7 +15,7 @@ static int accumulator;
 static void refresh(unsigned int wm, int value)
 {
 
-    channel_send_fmt1(0, wm, EVENT_WMRENDERDATA, "= result label \"%i\"\n", &value);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= result label \"%i\"\n", &value);
 
 }
 

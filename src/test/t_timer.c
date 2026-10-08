@@ -7,7 +7,7 @@ static unsigned int counter = 1;
 static void ontimertick(struct message *message)
 {
 
-    channel_send_fmt1(0, output, EVENT_DATA, "Tick: %u second(s)\n", &counter);
+    channel_send_fmt(0, output, EVENT_DATA, "Tick: %u second(s)\n", &counter);
 
     counter++;
 

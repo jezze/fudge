@@ -12,7 +12,7 @@ static unsigned int mmio;
 static void bus_setup(void)
 {
 
-    DEBUG_FMT0(DEBUG_INFO, "NVME INIT\n");
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "NVME INIT\n");
 
 }
 

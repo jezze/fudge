@@ -400,7 +400,7 @@ static void launch(char *command)
 
     char line[256];
 
-    cstring_write_fmt1(line, 256, 0, "%s &\\0", command);
+    cstring_write_fmt(line, 256, 0, "%s &\\0", command);
     system_run(0, line);
 
 }
@@ -415,7 +415,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         struct {struct event_wmevent wmevent; char data[512];} message;
 
         message.wmevent.type = type;
-        message.wmevent.length = cstring_write_fmt2(message.data, 512, 0, "%s%s\\0", strpool_getstring(action), text);
+        message.wmevent.length = cstring_write_fmt(message.data, 512, 0, "%s%s\\0", strpool_getstring(action), text);
 
         channel_send(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
 
@@ -465,7 +465,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
     if (!text)
         return;
 
-    length = cstring_write_fmt1(buffer, TEXTBOX_SIZE, 0, "%s\\0", strpool_getstring(text->attributes.label)) - 1;
+    length = cstring_write_fmt(buffer, TEXTBOX_SIZE, 0, "%s\\0", strpool_getstring(text->attributes.label)) - 1;
     cursor = util_min(widget->attributes.cursor, length);
 
     switch (id)

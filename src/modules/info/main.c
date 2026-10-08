@@ -30,8 +30,8 @@ static unsigned int writecores(void)
         "ACTIVE"
     };
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  cores: [\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  cores: [\n");
 
     resource_lock();
 
@@ -40,19 +40,19 @@ static unsigned int writecores(void)
 
         struct core *core = resource->data;
 
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      id: %u\n", &i);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      state: %s\n", states[core->state]);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      tasks: %u\n", &core->tasks.count);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      running: %u\n", &core->itask);
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      id: %u\n", &i);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      state: %s\n", states[core->state]);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      tasks: %u\n", &core->tasks.count);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      running: %u\n", &core->itask);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
     resource_unlock();
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
     return c;
 
@@ -74,8 +74,8 @@ static unsigned int writetasks(void)
         "RUNNING"
     };
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  tasks: [\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  tasks: [\n");
 
     resource_lock();
 
@@ -84,24 +84,24 @@ static unsigned int writetasks(void)
 
         struct task *task = resource->data;
 
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      id: %u\n", &i);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      state: %s\n", states[task->state]);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      address: 0x%H8u\n", &task->address);
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "      signals:\n");
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "        {\n");
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "          kill: %u\n", &task->signals.kill);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "          block: %u\n", &task->signals.block);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "          unblock: %u\n", &task->signals.unblock);
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "        }\n");
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      id: %u\n", &i);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      state: %s\n", states[task->state]);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      address: 0x%H8u\n", &task->address);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      signals:\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "        {\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "          kill: %u\n", &task->signals.kill);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "          block: %u\n", &task->signals.block);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "          unblock: %u\n", &task->signals.unblock);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "        }\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
     resource_unlock();
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
     return c;
 
@@ -113,8 +113,8 @@ static unsigned int writemailboxes(void)
     struct resource *resource = 0;
     unsigned int c = 0;
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  mailboxes: [\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  mailboxes: [\n");
 
     resource_lock();
 
@@ -124,19 +124,19 @@ static unsigned int writemailboxes(void)
         struct mailbox *mailbox = resource->data;
         unsigned int nmessages = mailbox->head - mailbox->tail;
 
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      itask: %u\n", &mailbox->itask);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      ichannel: %u\n", &mailbox->ichannel);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      inode: %u\n", &mailbox->inode);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      nmessages: %u\n", &nmessages);
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      itask: %u\n", &mailbox->itask);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      ichannel: %u\n", &mailbox->ichannel);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      inode: %u\n", &mailbox->inode);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      nmessages: %u\n", &nmessages);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
     resource_unlock();
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
     return c;
 
@@ -148,8 +148,8 @@ static unsigned int writebuses(void)
     struct resource *resource = 0;
     unsigned int c = 0;
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  buses: [\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  buses: [\n");
 
     resource_lock();
 
@@ -158,16 +158,16 @@ static unsigned int writebuses(void)
 
         struct base_bus *bus = resource->data;
 
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      name: %s\n", bus->name);
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      name: %s\n", bus->name);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
     resource_unlock();
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
     return c;
 
@@ -179,8 +179,8 @@ static unsigned int writedrivers(void)
     struct resource *resource = 0;
     unsigned int c = 0;
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  drivers: [\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  drivers: [\n");
 
     resource_lock();
 
@@ -189,16 +189,16 @@ static unsigned int writedrivers(void)
 
         struct base_driver *driver = resource->data;
 
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      name: %s\n", driver->name);
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      name: %s\n", driver->name);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
     resource_unlock();
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
     return c;
 
@@ -210,8 +210,8 @@ static unsigned int writeservices(void)
     struct resource *resource = 0;
     unsigned int c = 0;
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "{\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  services: [\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  services: [\n");
 
     resource_lock();
 
@@ -220,17 +220,17 @@ static unsigned int writeservices(void)
 
         struct service *service = resource->data;
 
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    {\n");
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      name: %s\n", service->name);
-        c += cstring_write_fmt1(output, OUTPUTSIZE, c, "      inode: %u\n", &service->inode);
-        c += cstring_write_fmt0(output, OUTPUTSIZE, c, "    }\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      name: %s\n", service->name);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      inode: %u\n", &service->inode);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
 
     resource_unlock();
 
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "  ]\n");
-    c += cstring_write_fmt0(output, OUTPUTSIZE, c, "}\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
+    c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
     return c;
 

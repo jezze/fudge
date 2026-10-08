@@ -78,7 +78,7 @@ static unsigned int isreserved(char *s)
 static unsigned int seterror(struct job *job, char *fmt, char *arg)
 {
 
-    unsigned int count = cstring_write_fmt1(job->error, JOB_ERRORSIZE - 1, 0, fmt, arg);
+    unsigned int count = cstring_write_fmt(job->error, JOB_ERRORSIZE - 1, 0, fmt, arg);
 
     job->error[count] = '\0';
 
@@ -347,7 +347,7 @@ static char *addnumber(struct job *job, unsigned int value)
 
     char *number = job->strings + job->nstrings;
 
-    job->nstrings += cstring_write_fmt1(number, JOB_STRINGSSIZE - job->nstrings, 0, "%u\\0", &value);
+    job->nstrings += cstring_write_fmt(number, JOB_STRINGSSIZE - job->nstrings, 0, "%u\\0", &value);
 
     return number;
 
@@ -638,7 +638,7 @@ static void run(char *pwd)
         if (!parseline(&job, script, scriptcount, &offset))
         {
 
-            channel_send_fmt1(0, output, EVENT_ERROR, "%s\n", job.error);
+            channel_send_fmt(0, output, EVENT_ERROR, "%s\n", job.error);
 
             return;
 
@@ -650,7 +650,7 @@ static void run(char *pwd)
         if (!job_spawn(&job, 1, 0, BINPATH))
         {
 
-            channel_send_fmt1(0, output, EVENT_ERROR, "%s\n", job.error);
+            channel_send_fmt(0, output, EVENT_ERROR, "%s\n", job.error);
             job_abort(&job, 0);
 
             continue;
@@ -759,7 +759,7 @@ static void onpath(struct message *message)
     if (!id)
     {
 
-        channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         return;
 
@@ -798,7 +798,7 @@ static void onterm(struct message *message)
     run(option_getstring("pwd"));
 
     if (option_getdecimal("export"))
-        channel_send_fmt1(0, output, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
+        channel_send_fmt(0, output, EVENT_OPTION, "pwd=%s\n", option_getstring("pwd"));
 
 }
 

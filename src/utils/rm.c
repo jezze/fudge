@@ -38,14 +38,14 @@ static void onpath(struct message *message)
         {
 
             if (!fs_remove(0, target, walkparent(0, target, message->data), id))
-                channel_send_fmt1(0, message->source, EVENT_ERROR, "File could not be removed: %s\n", message->data);
+                channel_send_fmt(0, message->source, EVENT_ERROR, "File could not be removed: %s\n", message->data);
 
         }
 
         else
         {
 
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 

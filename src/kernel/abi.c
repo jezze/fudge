@@ -31,7 +31,7 @@ static unsigned int debug(unsigned int itask, void *stack)
 
     struct {void *caller; char *message;} *args = stack;
 
-    DEBUG_FMT0(DEBUG_INFO, args->message);
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, args->message);
 
     return 0;
 
@@ -94,7 +94,7 @@ static unsigned int find(unsigned int itask, void *stack)
 
     }
 
-    DEBUG_FMT0(DEBUG_ERROR, "find check failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "find check failed");
 
     return 0;
 
@@ -128,7 +128,7 @@ static unsigned int load(unsigned int itask, void *stack)
 
     }
 
-    DEBUG_FMT0(DEBUG_ERROR, "load failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "load failed");
 
     return 0;
 
@@ -158,7 +158,7 @@ static unsigned int unload(unsigned int itask, void *stack)
 
     }
 
-    DEBUG_FMT0(DEBUG_ERROR, "unload failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "unload failed");
 
     return 0;
 
@@ -196,7 +196,7 @@ static unsigned int pick(unsigned int itask, void *stack)
 
     }
 
-    DEBUG_FMT0(DEBUG_ERROR, "pick check failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "pick check failed");
 
     return MESSAGE_FAILED;
 
@@ -216,7 +216,7 @@ static unsigned int place(unsigned int itask, void *stack)
 
     }
 
-    DEBUG_FMT0(DEBUG_ERROR, "place check failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "place check failed");
 
     return MESSAGE_FAILED;
 
@@ -240,7 +240,7 @@ static unsigned int announce(unsigned int itask, void *stack)
 
     }
 
-    DEBUG_FMT0(DEBUG_ERROR, "announce check failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "announce check failed");
 
     return 0;
 

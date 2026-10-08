@@ -91,11 +91,11 @@ unsigned int fs_absolute(char *out, unsigned int size, char *pwd, char *path)
     unsigned int service = buffer_eachbyte(pwd, cstring_length(pwd), ':', 0);
 
     if (buffer_eachbyte(path, cstring_length(path), ':', 0))
-        cstring_write_fmt1(full, 1024, 0, "%s\\0", path);
+        cstring_write_fmt(full, 1024, 0, "%s\\0", path);
     else if (path[0] == '/')
-        cstring_write_fmt3(full, 1024, 0, "%w%s\\0", pwd, &service, path);
+        cstring_write_fmt(full, 1024, 0, "%w%s\\0", pwd, &service, path);
     else
-        cstring_write_fmt2(full, 1024, 0, "%s%s\\0", pwd, path);
+        cstring_write_fmt(full, 1024, 0, "%s%s\\0", pwd, path);
 
     return fs_canonical(out, size, full);
 

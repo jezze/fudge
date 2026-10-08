@@ -19,7 +19,7 @@ static void onloginfo(struct message *message)
     unsigned int count = loginfo->count - sizeof (struct event_loginfo);
 
     if (option_getdecimal("level") >= loginfo->level)
-        channel_send_fmt3(0, output, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
+        channel_send_fmt(0, output, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
 
 }
 

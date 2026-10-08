@@ -17,7 +17,7 @@ static void showimage(void)
     if (!start)
         start = buffer_firstbyte(path, length, ':');
 
-    channel_send_fmt2(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n+ image in \"base\" mimetype \"image/pcx\" source \"%s\"\n", path + start, path);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n+ image in \"base\" mimetype \"image/pcx\" source \"%s\"\n", path + start, path);
 
 }
 
@@ -43,7 +43,7 @@ static void onpath(struct message *message)
     if (path[0])
         return;
 
-    cstring_write_fmt1(path, 256, 0, "%s\\0", message->data);
+    cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
     showimage();
 
 }

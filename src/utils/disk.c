@@ -17,13 +17,13 @@ static void printpartition(unsigned int source, struct mbr_partition *partition)
     unsigned int sstart = partition->sectorbase & 0x2F;
     unsigned int send = partition->sectorlimit & 0x2F;
 
-    channel_send_fmt1(0, source, EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
-    channel_send_fmt1(0, source, EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
-    channel_send_fmt1(0, source, EVENT_DATA, "    Start: %u\n", &start);
-    channel_send_fmt1(0, source, EVENT_DATA, "    End: %u\n", &end);
-    channel_send_fmt1(0, source, EVENT_DATA, "    Sectors: %u\n", &sectors);
-    channel_send_fmt3(0, source, EVENT_DATA, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
-    channel_send_fmt3(0, source, EVENT_DATA, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
+    channel_send_fmt(0, source, EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
+    channel_send_fmt(0, source, EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
+    channel_send_fmt(0, source, EVENT_DATA, "    Start: %u\n", &start);
+    channel_send_fmt(0, source, EVENT_DATA, "    End: %u\n", &end);
+    channel_send_fmt(0, source, EVENT_DATA, "    Sectors: %u\n", &sectors);
+    channel_send_fmt(0, source, EVENT_DATA, "    Start-C/H/S: %u/%u/%u\n", &cstart, &hstart, &sstart);
+    channel_send_fmt(0, source, EVENT_DATA, "    End-C/H/S: %u/%u/%u\n", &cend, &hend, &send);
 
 }
 
@@ -57,14 +57,14 @@ static void onmain(struct message *message)
 
                 unsigned int i;
 
-                channel_send_fmt2(0, message->source, EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
+                channel_send_fmt(0, message->source, EVENT_DATA, "Signature: 0x%H2c%H2c\n", &mbr->signature[0], &mbr->signature[1]);
 
                 for (i = 0; i < 4; i++)
                 {
 
                     struct mbr_partition *partition = &mbr->partition[i];
 
-                    channel_send_fmt1(0, message->source, EVENT_DATA, "Partition %u:\n", &i);
+                    channel_send_fmt(0, message->source, EVENT_DATA, "Partition %u:\n", &i);
 
                     if (partition->systemid)
                         printpartition(message->source, partition);

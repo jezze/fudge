@@ -5,7 +5,7 @@
 static void error(unsigned int source, void *data, unsigned int count)
 {
 
-    channel_send_fmt2(0, source, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
+    channel_send_fmt(0, source, EVENT_ERROR, "Error occured:\n%w\n", data, &count);
 
 }
 
@@ -140,13 +140,13 @@ static void sendrequest(unsigned int target, unsigned int source)
 {
 
     if (!version(target, source, 40, 1200, "9P2000.F"))
-        channel_send_fmt0(0, source, EVENT_ERROR, "Unrcognized version\n");
+        channel_send_fmt(0, source, EVENT_ERROR, "Unrcognized version\n");
 
     if (!attach(target, source, 41, 0, 0))
-        channel_send_fmt0(0, source, EVENT_ERROR, "Attach failed\n");
+        channel_send_fmt(0, source, EVENT_ERROR, "Attach failed\n");
 
     if (!walk(target, source, 42, 0, 1, option_getstring("path")))
-        channel_send_fmt1(0, source, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
+        channel_send_fmt(0, source, EVENT_ERROR, "File not found: %s\n", option_getstring("path"));
 
     read(target, source, 43, 1);
 

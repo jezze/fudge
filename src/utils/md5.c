@@ -36,7 +36,7 @@ static void onpath(struct message *message)
         else
         {
 
-            channel_send_fmt1(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 
         }
 
@@ -57,7 +57,7 @@ static void onterm(struct message *message)
     for (i = 0; i < 16; i++)
         cstring_write_value(output, 32, digest[i], 16, 2, i * 2);
 
-    channel_send_fmt2(0, message->source, EVENT_DATA, "%w\n", output, &l);
+    channel_send_fmt(0, message->source, EVENT_DATA, "%w\n", output, &l);
 
 }
 

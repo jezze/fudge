@@ -65,7 +65,7 @@ void apic_debug_ioapic(void)
                 unsigned int max = ((ioapicversion >> 16) & 0xFF) + 1;
                 unsigned int j;
 
-                DEBUG_FMT3(DEBUG_INFO, "ioapic id %u version %u max %u", &id, &version, &max);
+                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic id %u version %u max %u", &id, &version, &max);
 
                 for (j = 0; j < max; j++)
                 {
@@ -73,7 +73,7 @@ void apic_debug_ioapic(void)
                     unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
                     unsigned int value1 = readio(ioapic->address, 0x10 + j * 2 + 1);
 
-                    DEBUG_FMT3(DEBUG_INFO, "ioapic redtbl %u %H8u:%H8u", &j, &value1, &value0);
+                    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic redtbl %u %H8u:%H8u", &j, &value1, &value0);
 
                 }
 
@@ -108,7 +108,7 @@ void apic_debug(void)
 
                 struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
 
-                DEBUG_FMT3(DEBUG_INFO, "lapic processor %c id %c flags 0x%8Hu", &lapic->processor, &lapic->id, &lapic->flags);
+                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "lapic processor %c id %c flags 0x%8Hu", &lapic->processor, &lapic->id, &lapic->flags);
 
             }
 
@@ -117,7 +117,7 @@ void apic_debug(void)
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
 
-                DEBUG_FMT3(DEBUG_INFO, "ioapic id %c address 0x%8Hu gsibase %u", &ioapic->id, &ioapic->address, &ioapic->gsibase);
+                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic id %c address 0x%8Hu gsibase %u", &ioapic->id, &ioapic->address, &ioapic->gsibase);
 
             }
 
@@ -126,7 +126,7 @@ void apic_debug(void)
 
                 struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
 
-                DEBUG_FMT4(DEBUG_INFO, "ioapic override bus %c irq %c gsi %u flags %4Hh", &override->bus, &override->irq, &override->gsi, &override->flags);
+                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic override bus %c irq %c gsi %u flags %4Hh", &override->bus, &override->irq, &override->gsi, &override->flags);
 
             }
 
@@ -135,7 +135,7 @@ void apic_debug(void)
 
                 struct acpi_madt_lapic_nmi *nmi = (struct acpi_madt_lapic_nmi *)entry;
 
-                DEBUG_FMT1(DEBUG_INFO, "lapic nmi processor %c", &nmi->processor);
+                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "lapic nmi processor %c", &nmi->processor);
 
             }
 

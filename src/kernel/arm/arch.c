@@ -31,7 +31,7 @@ static void shownum(unsigned int n)
 
     char num[32];
 
-    cstring_write_fmt1(num, 32, 0, "%u\n\\0", &n);
+    cstring_write_fmt(num, 32, 0, "%u\n\\0", &n);
     uart_puts(num);
 
 }
@@ -78,7 +78,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
 
     }
 
-    DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
+    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "spawn failed");
 
     return 0;
 
@@ -209,7 +209,7 @@ void arch_setup2(void)
     else
     {
 
-        DEBUG_FMT0(DEBUG_ERROR, "spawn failed");
+        debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "spawn failed");
 
     }
 

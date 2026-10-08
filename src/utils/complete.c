@@ -66,9 +66,9 @@ static void addmatch(struct record *record)
     }
 
     if (record->type == RECORD_TYPE_DIRECTORY)
-        listcount += cstring_write_fmt2(list, MESSAGE_SIZE, listcount, "%w/\n", record->name, &length);
+        listcount += cstring_write_fmt(list, MESSAGE_SIZE, listcount, "%w/\n", record->name, &length);
     else
-        listcount += cstring_write_fmt2(list, MESSAGE_SIZE, listcount, "%w\n", record->name, &length);
+        listcount += cstring_write_fmt(list, MESSAGE_SIZE, listcount, "%w\n", record->name, &length);
 
     nmatches++;
 
@@ -149,7 +149,7 @@ static void onterm(struct message *message)
 
         char path[INPUTSIZE];
 
-        cstring_write_fmt2(path, INPUTSIZE, 0, "%w\\0", input + start, &dircount);
+        cstring_write_fmt(path, INPUTSIZE, 0, "%w\\0", input + start, &dircount);
         fs_absolute(directory, INPUTSIZE * 2, option_getstring("pwd"), path);
 
     }
@@ -157,7 +157,7 @@ static void onterm(struct message *message)
     else
     {
 
-        cstring_write_fmt1(directory, INPUTSIZE * 2, 0, "%s\\0", (command) ? BINPATH : option_getstring("pwd"));
+        cstring_write_fmt(directory, INPUTSIZE * 2, 0, "%s\\0", (command) ? BINPATH : option_getstring("pwd"));
 
     }
 

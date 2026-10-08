@@ -13,7 +13,7 @@ static void touch(unsigned int source, char *path)
     if (!target)
     {
 
-        channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, source, EVENT_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -27,14 +27,14 @@ static void touch(unsigned int source, char *path)
     if (!parent)
     {
 
-        channel_send_fmt1(0, source, EVENT_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, source, EVENT_ERROR, "Path not found: %s\n", path);
 
         return;
 
     }
 
     if (!cstring_length(name) || !fs_create(1, target, parent, name, cstring_length(name)))
-        channel_send_fmt1(0, source, EVENT_ERROR, "File could not be created: %s\n", path);
+        channel_send_fmt(0, source, EVENT_ERROR, "File could not be created: %s\n", path);
 
 }
 
@@ -51,7 +51,7 @@ static void onterm(struct message *message)
 {
 
     if (!paths)
-        channel_send_fmt0(0, message->source, EVENT_ERROR, "Usage: touch <path>\n");
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Usage: touch <path>\n");
 
 }
 
