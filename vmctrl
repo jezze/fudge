@@ -14,6 +14,7 @@ cmd_run() {
     iso=n
     isoname=""
     network=n
+    slirp=n
     uefi=n
 
     while test ${#} -gt 0
@@ -33,6 +34,9 @@ cmd_run() {
                 ;;
             -n)
                 network=y
+                ;;
+            -s)
+                slirp=y
                 ;;
             -u)
                 uefi=y
@@ -66,6 +70,11 @@ cmd_run() {
     if test "${network}" == "y"
     then
         cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
+    fi
+
+    if test "${slirp}" == "y"
+    then
+        cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1"
     fi
 
     if test "${uefi}" == "y"
@@ -241,7 +250,7 @@ cmd_disk_setup() {
 
 cmd_help() {
     echo "Commands:"
-    echo "    run [-d <disk>] [-i <iso>] [-n] [<name>]"
+    echo "    run [-d <disk>] [-i <iso>] [-n | -s] [<name>]"
     echo "    nat <interface>"
     echo "    connect"
     echo "    disconnect"
