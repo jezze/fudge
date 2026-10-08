@@ -619,6 +619,10 @@ static struct util_size getsizetextbox(struct widget *widget, struct util_size *
 
     csize.h = util_max(csize.h, font->lineheight);
 
+    /* an input field needs room to type in, however short its text is */
+    if (widget->attributes.mode != ATTR_MODE_READONLY)
+        csize.w = util_max(csize.w, CONFIG_TEXTBOX_MIN_WIDTH);
+
     return util_size_union(&csize, &padding);
 
 }
@@ -980,12 +984,21 @@ static struct util_size measurewindow(struct widget *widget, struct util_size *l
 
 }
 
+static unsigned int titlewidth(struct widget *widget, struct util_size *limit)
+{
+
+    struct text_info title = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), ATTR_WRAP_NONE, limit->w, 0);
+
+    return title.width + CONFIG_WINDOW_BUTTON_WIDTH * 4;
+
+}
+
 struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit)
 {
 
     struct util_size size = measurewindow(widget, limit, 0);
 
-    return util_size(util_clamp(util_max(size.w, CONFIG_WINDOW_MIN_WIDTH), 0, limit->w), util_clamp(util_max(size.h, CONFIG_WINDOW_MIN_HEIGHT), 0, limit->h));
+    return util_size(util_clamp(util_max(size.w, titlewidth(widget, limit)), 0, limit->w), util_clamp(size.h, 0, limit->h));
 
 }
 
@@ -993,10 +1006,8 @@ struct util_size render_getwindowminsize(struct widget *widget, struct util_size
 {
 
     struct util_size size = measurewindow(widget, limit, 1);
-    struct text_info title = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), ATTR_WRAP_NONE, limit->w, 0);
-    unsigned int titlew = title.width + CONFIG_WINDOW_BUTTON_WIDTH * 4;
 
-    return util_size(util_clamp(util_max(size.w, titlew), 0, limit->w), util_clamp(size.h, 0, limit->h));
+    return util_size(util_clamp(util_max(size.w, titlewidth(widget, limit)), 0, limit->w), util_clamp(size.h, 0, limit->h));
 
 }
 
