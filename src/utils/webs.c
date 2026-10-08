@@ -16,6 +16,7 @@ static void sendresponse(unsigned int ethernet, unsigned int source, struct sock
     unsigned int target = fs_auth("initrd:");
     unsigned int root = fs_walk(1, target, 0, "data/html");
     unsigned int id;
+    struct record record;
     char buffer[4096];
     unsigned int count = 0;
 
@@ -24,17 +25,20 @@ static void sendresponse(unsigned int ethernet, unsigned int source, struct sock
 
     id = fs_walk(1, target, root, request + 1);
 
-    if (id)
+    if (id && fs_stat(1, target, id, &record))
     {
 
-        char file[4096];
-        unsigned int filesize = fs_read_full(1, target, id, file, 4096, 0);
+        unsigned int offset;
 
         count += cstring_write(buffer, 4096, "HTTP/1.1 200 OK\r\n", count);
         count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
         count += cstring_write(buffer, 4096, "Content-Type: text/html\r\n", count);
-        count += cstring_write_fmt(buffer, 4096, count, "Content-Length: %u\r\n\r\n", &filesize);
-        count += buffer_write(buffer, 4096, file, filesize, count);
+        count += cstring_write_fmt(buffer, 4096, count, "Content-Length: %u\r\n\r\n", &record.size);
+
+        socket_send_tcp(0, ethernet, &local, remote, &router, count, buffer);
+
+        for (offset = 0; (count = fs_read(1, target, id, buffer, 4096, offset)); offset += count)
+            socket_send_tcp(0, ethernet, &local, remote, &router, count, buffer);
 
     }
 
@@ -45,9 +49,9 @@ static void sendresponse(unsigned int ethernet, unsigned int source, struct sock
         count += cstring_write(buffer, 4096, "Server: Webs/1.0.0 (Fudge)\r\n", count);
         count += cstring_write(buffer, 4096, "Content-Length: 0\r\n\r\n", count);
 
-    }
+        socket_send_tcp(0, ethernet, &local, remote, &router, count, buffer);
 
-    socket_send_tcp(0, ethernet, &local, remote, &router, count, buffer);
+    }
 
 }
 

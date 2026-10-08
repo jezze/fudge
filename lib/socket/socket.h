@@ -1,4 +1,5 @@
 #define SOCKET_MTUSIZE                  1518
+#define SOCKET_TCPSEGMENTSIZE           1400
 
 struct socket_tcp
 {

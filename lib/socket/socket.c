@@ -466,18 +466,24 @@ unsigned int socket_send_tcp(unsigned int ichannel, unsigned int target, struct 
 {
 
     char data[SOCKET_MTUSIZE];
+    char *payload = pdata;
+    unsigned int offset;
 
-    switch (remote->info.tcp.state)
+    if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
+        return 0;
+
+    for (offset = 0; offset < psize; offset += SOCKET_TCPSEGMENTSIZE)
     {
 
-    case TCP_STATE_ESTABLISHED:
-        send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, 4096, psize, pdata));
+        unsigned int count = (psize - offset < SOCKET_TCPSEGMENTSIZE) ? psize - offset : SOCKET_TCPSEGMENTSIZE;
 
-        return psize;
+        send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, 4096, count, payload + offset));
+
+        remote->info.tcp.seq += count;
 
     }
 
-    return 0;
+    return psize;
 
 }
 
