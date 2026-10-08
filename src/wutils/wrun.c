@@ -1,67 +1,98 @@
 #include <fudge.h>
-#include <net.h>
 #include <abi.h>
-#include <socket.h>
+#include "kv.h"
 
-static struct socket local;
-static struct socket remote;
-static struct socket router;
-static char inputdata[4096];
-static struct ring input;
-static unsigned int isbody;
+#define URLSIZE                         256
+#define RESPONSESIZE                    0x8000
 
-static unsigned int buildrequest(unsigned int count, void *buffer, struct url *url)
+static char url[URLSIZE] = "http://";
+static char response[RESPONSESIZE];
+
+static void render(unsigned int wm, char *data, unsigned int count)
 {
 
-    return cstring_write_fmt(buffer, count, 0, "GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n", (url->path) ? url->path : "", url->host);
+    unsigned int offset = 0;
 
-}
-
-static void handlehttppacket(unsigned int wm)
-{
-
-    unsigned int newline;
-
-    while ((newline = ring_each(&input, '\n')))
+    while (offset < count)
     {
 
-        char buffer[4096];
-        unsigned int count = ring_read(&input, buffer, newline);
+        unsigned int length = count - offset;
 
-        if (isbody)
-            channel_send(0, wm, EVENT_WMRENDERDATA, count, buffer);
-        else if (count == 2 && buffer[0] == '\r' && buffer[1] == '\n')
-            isbody = 1;
+        if (length > MESSAGE_SIZE)
+        {
+
+            length = buffer_lastbyte(data + offset, MESSAGE_SIZE, '\n');
+
+            if (!length)
+                length = MESSAGE_SIZE;
+
+        }
+
+        channel_send(0, wm, EVENT_WMRENDERDATA, length, data + offset);
+
+        offset += length;
 
     }
 
 }
 
-static void dnsresolve(struct socket *socket, char *domain)
+static unsigned int isvalid(char *s, unsigned int count)
 {
 
-    char address[32];
+    unsigned int i;
 
-    if (system_resolve(domain, address, 32))
-        socket_bind_ipv4s(socket, address);
+    for (i = 0; i < count; i++)
+    {
+
+        if (s[i] == '"')
+            return 0;
+
+    }
+
+    return 1;
 
 }
 
-static void parseurl(struct url *url, char *urldata, unsigned int urlsize)
+static void seturl(char *s)
 {
 
-    char *opturl = option_getstring("url");
-    unsigned int count = cstring_length(opturl);
+    cstring_write_fmt(url, URLSIZE, 0, "%s\\0", s);
 
-    if (count)
+    url[URLSIZE - 1] = '\0';
+
+}
+
+static void open(unsigned int wm)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"base\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
+
+    if (isvalid(url, cstring_length(url)))
+        count = system_feed(0, 0, response, RESPONSESIZE, "webc -url \"%s\"", url);
+
+    for (i = 0; i + 4 <= count; i++)
     {
 
-        if (cstring_length(opturl) >= 4 && buffer_match(opturl, "http", 4))
-            url_parse(url, urldata, urlsize, opturl, URL_SCHEME);
-        else
-            url_parse(url, urldata, urlsize, opturl, URL_HOST);
+        if (buffer_match(response + i, "\r\n\r\n", 4))
+        {
+
+            unsigned int length = buffer_findbyte(response, count, '\r');
+
+            if (count > 12 && buffer_match(response + 8, " 200", 4))
+                render(wm, response + i + 4, count - i - 4);
+            else if (isvalid(response, length))
+                channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"%w\"\n", response, &length);
+
+            return;
+
+        }
 
     }
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Could not load the address\"\n");
 
 }
 
@@ -81,50 +112,33 @@ static void onmain(struct message *message)
 
 }
 
+static void onwmevent(struct message *message)
+{
+
+    struct event_wmevent *event = message->data;
+    char *data = (char *)(event + 1);
+
+    /* the address is taken as is instead of through kv, since a URL can contain & */
+    if (event->length > 14 && buffer_match(data, "q=address&url=", 14))
+        seturl(data + 14);
+    else if (kv_match(event, "q=open"))
+        open(message->source);
+
+}
+
 static void onwminit(struct message *message)
 {
 
-    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
+    char *alfi = "initrd:data/alfi/wrun.alfi";
 
-    if (ethernet)
+    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+
+    if (cstring_length(option_getstring("url")))
     {
 
-        char address[32];
-        char urldata[4096];
-        struct url url;
-        unsigned char buffer[4096];
-        unsigned int count;
-        struct mtwist_state state;
-
-        mtwist_seed1(&state, system_unixtime(option_getstring("clock-service")));
-        socket_bind_ipv4s(&local, system_address("local-address", "address", address, 32));
-        socket_bind_tcpv(&local, mtwist_rand(&state), mtwist_rand(&state), mtwist_rand(&state));
-        socket_bind_ipv4s(&remote, option_getstring("remote-address"));
-        socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
-        socket_bind_ipv4s(&router, system_address("router-address", "route", address, 32));
-        socket_resolvelocal(0, ethernet, &local);
-        parseurl(&url, urldata, 4096);
-
-        if (url.host)
-            dnsresolve(&remote, url.host);
-
-        if (url.port)
-            socket_bind_tcps(&remote, url.port, mtwist_rand(&state), mtwist_rand(&state));
-
-        channel_send(0, ethernet, EVENT_LINK, 0, 0);
-        socket_resolveremote(0, ethernet, &local, &router);
-        socket_connect_tcp(0, ethernet, &local, &remote, &router);
-        socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer, &url), buffer);
-
-        while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
-        {
-
-            if (ring_write(&input, buffer, count))
-                handlehttppacket(message->source);
-
-        }
-
-        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
+        seturl(option_getstring("url"));
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= address label \"%s\"\n", url);
+        open(message->source);
 
     }
 
@@ -133,19 +147,10 @@ static void onwminit(struct message *message)
 void init(void)
 {
 
-    ring_init(&input, 4096, inputdata);
-    socket_init(&local);
-    socket_init(&remote);
-    socket_init(&router);
     option_add("wm-service", "wm");
-    option_add("clock-service", "clock");
-    option_add("ethernet-service", "ethernet");
-    option_add("local-address", "");
-    option_add("remote-address", "");
-    option_add("remote-port", "80");
-    option_add("router-address", "");
     option_add("url", "");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }
