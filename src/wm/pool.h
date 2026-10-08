@@ -1,4 +1,6 @@
+#define POOL_PCXRESOURCES               32
 #define POOL_PCXROWSIZE                 2048
+#define POOL_PCXOFFSETS                 1024
 
 struct pool_pcxresource
 {
@@ -12,6 +14,9 @@ struct pool_pcxresource
     unsigned int bpl;
     unsigned int row;
     unsigned int offset;
+    unsigned int rowstep;
+    unsigned int noffsets;
+    unsigned int rowoffsets[POOL_PCXOFFSETS];
     unsigned char rowdata[POOL_PCXROWSIZE];
 
 };

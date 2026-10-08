@@ -18,7 +18,7 @@ static struct list freelist;
 static struct widget entries[MAX_WIDGETS];
 static struct list_item items[MAX_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
-static struct pool_pcxresource pcxresources[64];
+static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
 
 struct list_item *pool_prev(struct list_item *current)
 {
@@ -200,7 +200,7 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
     struct pool_pcxresource *resource = 0;
     unsigned int i;
 
-    for (i = 0; i < 64 && !resource; i++)
+    for (i = 0; i < POOL_PCXRESOURCES && !resource; i++)
     {
 
         if (!pcxresources[i].used)
@@ -250,6 +250,7 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
                 resource->bpl = (unsigned short)header.bpl;
                 resource->width = (unsigned short)header.xend - (unsigned short)header.xstart + 1;
                 resource->height = (unsigned short)header.yend - (unsigned short)header.ystart + 1;
+                resource->rowstep = resource->height / POOL_PCXOFFSETS + 1;
                 widget->size = util_size(resource->width, resource->height);
 
             }
@@ -262,7 +263,7 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
 
 }
 
-/* rows are decoded in order; the last one is kept, so a stretched image can draw it again */
+/* rows are decoded in order and the last one is kept, so a stretched image can draw it again; where every rowstep-th row starts is remembered, so a redraw higher up starts from the nearest one above instead of the top */
 unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int row)
 {
 
@@ -271,13 +272,18 @@ unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int 
     if (row + 1 < resource->row)
     {
 
-        resource->row = 0;
-        resource->offset = 0;
+        unsigned int index = row / resource->rowstep;
+
+        resource->row = index * resource->rowstep;
+        resource->offset = resource->rowoffsets[index];
 
     }
 
     while (resource->row <= row)
     {
+
+        if (resource->row % resource->rowstep == 0 && resource->row / resource->rowstep == resource->noffsets)
+            resource->rowoffsets[resource->noffsets++] = resource->offset;
 
         fs_read_full(1, resource->target, resource->id, data, resource->bpl * 2, 128 + resource->offset);
 
