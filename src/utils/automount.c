@@ -91,61 +91,20 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 
 }
 
-static unsigned int query(char *field, char *data, unsigned int size)
-{
-
-    return system_feed(0, 0, data, size, "mq -query .mounts.%s %s", field, option_getstring("config"));
-
-}
-
-static unsigned int getline(char *data, unsigned int count, unsigned int index, char *out, unsigned int size)
-{
-
-    char *line = buffer_tindex(data, count, '\n', index);
-    unsigned int length;
-
-    if (!line || line >= data + count)
-        return 0;
-
-    length = buffer_findbyte(line, data + count - line, '\n');
-
-    if (length >= size)
-        length = size - 1;
-
-    buffer_write(out, size, line, length, 0);
-
-    out[length] = '\0';
-
-    return 1;
-
-}
-
 static void onmain(struct message *message)
 {
 
-    char services[1024];
-    char indexes[256];
-    char partitions[256];
-    char names[1024];
-    unsigned int nservices = query("service", services, 1024);
-    unsigned int nindexes = query("index", indexes, 256);
-    unsigned int npartitions = query("partition", partitions, 256);
-    unsigned int nnames = query("name", names, 1024);
-    char service[64];
-    char index[16];
-    char partition[16];
-    char name[64];
-    unsigned int i;
-
-    for (i = 0; getline(services, nservices, i, service, 64) && getline(indexes, nindexes, i, index, 16) && getline(partitions, npartitions, i, partition, 16) && getline(names, nnames, i, name, 64); i++)
-        mount(message->source, service, cstring_read_value(index, cstring_length(index), 10), cstring_read_value(partition, cstring_length(partition), 10), name);
+    mount(message->source, option_getstring("service"), option_getdecimal("index"), option_getdecimal("partition"), option_getstring("name"));
 
 }
 
 void init(void)
 {
 
-    option_add("config", "initrd:data/config/mount.mq");
+    option_add("service", "block");
+    option_add("index", "0");
+    option_add("partition", "0");
+    option_add("name", "");
     channel_bind(EVENT_MAIN, onmain);
 
 }
