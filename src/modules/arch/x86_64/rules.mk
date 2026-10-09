@@ -18,6 +18,7 @@ include $(DIR_SRC)/modules/arch/x86/platform/rules.mk
 include $(DIR_SRC)/modules/arch/x86/ps2/rules.mk
 include $(DIR_SRC)/modules/arch/x86/rtc/rules.mk
 include $(DIR_SRC)/modules/arch/x86/rtl8139/rules.mk
+include $(DIR_SRC)/modules/arch/x86_64/smp/rules.mk
 include $(DIR_SRC)/modules/arch/x86/uart/rules.mk
 include $(DIR_SRC)/modules/arch/x86/usb/rules.mk
 include $(DIR_SRC)/modules/arch/x86/vga/rules.mk
