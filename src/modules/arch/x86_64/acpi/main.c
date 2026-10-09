@@ -47,21 +47,36 @@ static struct acpi_rsdp *findrsdp(void)
 
 }
 
+static unsigned int getcount(void)
+{
+
+    struct acpi_sdth *sdth = (struct acpi_sdth *)sdt;
+
+    return (sdth->length - sizeof (struct acpi_sdth)) / sdtentrysize;
+
+}
+
+static unsigned long getentry(unsigned int index)
+{
+
+    unsigned char *entries = (unsigned char *)((struct acpi_sdth *)sdt + 1);
+
+    return *(unsigned int *)(entries + index * sdtentrysize);
+
+}
+
 struct acpi_sdth *acpi_findheader(char *name)
 {
 
     if (sdt)
     {
 
-        struct acpi_sdth *sdth = (struct acpi_sdth *)sdt;
-        unsigned char *entries = (unsigned char *)(sdth + 1);
-        unsigned int total = (sdth->length - sizeof (struct acpi_sdth)) / sdtentrysize;
         unsigned int i;
 
-        for (i = 0; i < total; i++)
+        for (i = 0; i < getcount(); i++)
         {
 
-            struct acpi_sdth *entry = (struct acpi_sdth *)(unsigned long)*(unsigned int *)(entries + i * sdtentrysize);
+            struct acpi_sdth *entry = (struct acpi_sdth *)getentry(i);
 
             if (buffer_match(entry->signature, name, 4))
                 return entry;
@@ -129,6 +144,16 @@ void module_init(void)
             }
 
         }
+
+    }
+
+    if (sdt)
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < getcount(); i++)
+            arch_kmap(getentry(i), getentry(i), 0x00010000, MMAP_FLAG_GLOBAL);
 
     }
 
