@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <kernel/x86_64/cpu.h>
 #include <kernel/x86_64/arch.h>
+#include <kernel/x86/udebug.h>
 #include <binary.h>
 #include <disk.h>
 #include "cpio.h"
@@ -13,6 +14,7 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     struct mboot_tag_module ramdisk;
     struct mboot_tag_module init;
+    struct arch_framebuffer *firmware = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
     struct mboot_tag_framebuffer *framebuffer = 0;
     unsigned int efi = 0;
     struct mboot_tag *tag;
@@ -72,13 +74,13 @@ void mboot_setup(unsigned long address, unsigned long magic)
         if (rgb->redposition == 16 && rgb->greenposition == 8 && rgb->blueposition == 0)
         {
 
-            struct arch_framebuffer *firmware = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
-
             firmware->address = framebuffer->address[0];
             firmware->width = framebuffer->width;
             firmware->height = framebuffer->height;
             firmware->pitch = framebuffer->pitch;
             firmware->bpp = framebuffer->bpp;
+
+            arch_kmap(firmware->address, 0xA0000000, firmware->pitch * firmware->height, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
 
         }
 
@@ -86,6 +88,9 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     elf_setup();
     arch_setup2();
+
+    if (firmware->bpp == 24 || firmware->bpp == 32)
+        udebug_setframebuffer((void *)0xA0000000, firmware->pitch, firmware->bpp / 8);
 
     if (ramdisk.start && init.start)
     {
