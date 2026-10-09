@@ -371,7 +371,7 @@ static struct job_command *addinput(struct job *job, struct job_command *command
     unsigned int j;
 
     for (i = job->ncommands; i > 0; i--)
-        job->commands[i] = job->commands[i - 1];
+        buffer_copy(&job->commands[i], &job->commands[i - 1], sizeof (struct job_command));
 
     job->ncommands++;
 
