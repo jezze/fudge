@@ -8,37 +8,19 @@ static char mapdata[4096];
 static unsigned int mapcount;
 static char lines[4096];
 static unsigned int linescount;
+static unsigned int width;
 
-static unsigned int gettextsectionoffset(struct elf_header *header, struct elf_sectionheader *sectionheaders)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < header->shcount; i++)
-    {
-
-        if (sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
-            return sectionheaders[i].offset;
-
-    }
-
-    return 0;
-
-}
-
-static void relocate(struct elf_header *header, struct elf_sectionheader *sectionheaders, unsigned int address)
+static void relocate(unsigned int address)
 {
 
     unsigned int offset = 0;
     unsigned int i;
 
-    address += gettextsectionoffset(header, sectionheaders);
-
     for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
     {
 
-        if (mapdata[i + 9] == 'T')
-            cstring_write_value(&mapdata[i], 8, cstring_read_value(&mapdata[i], 8, 16) + address, 16, 8, 0);
+        if (mapdata[i + width + 1] == 'T')
+            cstring_write_value(&mapdata[i], width, cstring_read_value(&mapdata[i], width, 16) + address, 16, width, 0);
 
     }
 
@@ -53,11 +35,11 @@ static unsigned int findsymbol(char *data, unsigned int count, unsigned int leng
     for (i = 0; (offset = buffer_eachbyte(data, count, '\n', offset)); i = offset)
     {
 
-        if ((data[i + 9] == 'T') || (data[i + 9] == 'A'))
+        if ((data[i + width + 1] == 'T') || (data[i + width + 1] == 'A'))
         {
 
-            if (buffer_match(&data[i + 11], symbol, length))
-                return cstring_read_value(&data[i], 8, 16);
+            if (buffer_match(&data[i + width + 3], symbol, length))
+                return cstring_read_value(&data[i], width, 16);
 
         }
 
@@ -76,11 +58,11 @@ static void updateundefined(void)
     for (i = 0; (offset = buffer_eachbyte(mapdata, mapcount, '\n', offset)); i = offset)
     {
 
-        if (mapdata[i + 9] == 'U')
+        if (mapdata[i + width + 1] == 'U')
         {
 
-            char *symbol = &mapdata[i + 11];
-            unsigned int length = (offset - i) - 11;
+            char *symbol = &mapdata[i + width + 3];
+            unsigned int length = (offset - i) - (width + 3);
             unsigned int address = findsymbol(kerneldata, kernelcount, length, symbol);
 
             if (!address)
@@ -103,9 +85,9 @@ static void updateundefined(void)
             if (address)
             {
 
-                mapdata[i + 9] = 'A';
+                mapdata[i + width + 1] = 'A';
 
-                cstring_write_value(&mapdata[i], 8, address, 16, 8, 0);
+                cstring_write_value(&mapdata[i], width, address, 16, width, 0);
 
             }
 
@@ -115,11 +97,26 @@ static void updateundefined(void)
 
 }
 
-static unsigned int resolve(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, struct elf_sectionheader *sectionheaders, unsigned int base)
+static unsigned int link32(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, unsigned int base)
 {
 
+    struct elf_sectionheader sectionheaders[64];
+    unsigned int textoffset = 0;
     unsigned int unresolved = 0;
     unsigned int i;
+
+    if (header->shcount >= 64)
+        return 0;
+
+    fs_read_all(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        if (!textoffset && sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
+            textoffset = sectionheaders[i].offset;
+
+    }
 
     for (i = 0; i < header->shcount; i++)
     {
@@ -204,7 +201,125 @@ static unsigned int resolve(unsigned int source, unsigned int target, unsigned i
 
     }
 
-    return unresolved;
+    return (unresolved) ? 0 : textoffset;
+
+}
+
+static unsigned int link64(unsigned int source, unsigned int target, unsigned int id, struct elf64_header *header, unsigned int base)
+{
+
+    struct elf64_sectionheader sectionheaders[64];
+    unsigned int textoffset = 0;
+    unsigned int unresolved = 0;
+    unsigned int i;
+
+    if (header->shcount >= 64)
+        return 0;
+
+    fs_read_all(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        if (!textoffset && sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
+            textoffset = sectionheaders[i].offset;
+
+    }
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
+        {
+
+            struct elf64_sectionheader *relocationheader = &sectionheaders[i];
+            struct elf64_sectionheader *dataheader = &sectionheaders[relocationheader->info];
+            struct elf64_sectionheader *symbolheader = &sectionheaders[relocationheader->link];
+            struct elf64_sectionheader *stringheader = &sectionheaders[symbolheader->link];
+            char strings[4096];
+            unsigned int j;
+
+            if (stringheader->size > 4096)
+                PANIC(source);
+
+            fs_read_all(1, target, id, strings, stringheader->size, stringheader->offset);
+
+            for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
+            {
+
+                struct elf64_relocation relocation;
+                struct elf64_symbol symbol;
+                unsigned long value;
+                unsigned int value32;
+
+                fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + relocation.symbol * symbolheader->esize);
+
+                if (symbol.shindex)
+                {
+
+                    value = base + sectionheaders[symbol.shindex].offset + symbol.value;
+
+                }
+
+                else
+                {
+
+                    value = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+
+                    if (!value)
+                    {
+
+                        channel_send_fmt(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+
+                        unresolved++;
+
+                    }
+
+                }
+
+                value += relocation.addend;
+
+                switch (relocation.type)
+                {
+
+                case ELF_RELOC64_TYPE_64:
+                    fs_write_all(1, target, id, &value, 8, dataheader->offset + relocation.offset);
+
+                    break;
+
+                case ELF_RELOC64_TYPE_32:
+                case ELF_RELOC64_TYPE_32S:
+                    value32 = value;
+
+                    fs_write_all(1, target, id, &value32, 4, dataheader->offset + relocation.offset);
+
+                    break;
+
+                case ELF_RELOC64_TYPE_PC32:
+                case ELF_RELOC64_TYPE_PLT32:
+                    value32 = value - (base + dataheader->offset + relocation.offset);
+
+                    fs_write_all(1, target, id, &value32, 4, dataheader->offset + relocation.offset);
+
+                    break;
+
+                default:
+                    channel_send_fmt(0, source, EVENT_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+
+                    unresolved++;
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+    }
+
+    return (unresolved) ? 0 : textoffset;
 
 }
 
@@ -228,22 +343,23 @@ static void load(unsigned int source, char *path)
         if (id)
         {
 
-            struct elf_header header;
+            struct elf64_header header;
 
-            if (fs_read_all(1, target, id, &header, ELF_HEADER_SIZE, 0) == ELF_HEADER_SIZE && elf_validate(&header))
+            if (fs_read_all(1, target, id, &header, ELF64_HEADER_SIZE, 0) >= ELF_HEADER_SIZE && elf_validate((struct elf_header *)&header))
             {
 
-                if (header.identify[ELF_IDENTITY_CLASS] != ELF_IDENTITY_CLASS_32)
+                unsigned int class = (sizeof (void *) == 8) ? ELF_IDENTITY_CLASS_64 : ELF_IDENTITY_CLASS_32;
+
+                if (header.identify[ELF_IDENTITY_CLASS] != class)
                 {
 
                     channel_send_fmt(0, source, EVENT_ERROR, "Unsupported module format: %s\n", path);
 
                 }
 
-                else if (header.shcount < 64)
+                else
                 {
 
-                    struct elf_sectionheader sectionheaders[64];
                     unsigned int address = fs_map(1, target, id);
 
                     if (address)
@@ -258,13 +374,16 @@ static void load(unsigned int source, char *path)
                         if (mapcount)
                         {
 
-                            fs_read_all(1, target, id, sectionheaders, header.shsize * header.shcount, header.shoffset);
+                            unsigned int textoffset;
+
                             updateundefined();
 
-                            if (!resolve(source, target, id, &header, sectionheaders, address))
+                            textoffset = (class == ELF_IDENTITY_CLASS_64) ? link64(source, target, id, &header, address) : link32(source, target, id, (struct elf_header *)&header, address);
+
+                            if (textoffset)
                             {
 
-                                relocate(&header, sectionheaders, address);
+                                relocate(address + textoffset);
                                 fs_write_all(1, target, fs_walk(1, target, 0, mapname), mapdata, mapcount, 0);
                                 call_load(address);
 
@@ -325,6 +444,8 @@ static void onpath(struct message *message)
 
 void init(void)
 {
+
+    width = sizeof (void *) * 2;
 
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_MAIN, onmain);

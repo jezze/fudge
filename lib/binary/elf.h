@@ -74,6 +74,11 @@
 #define ELF_RELOC_TYPE_RELATIVE         0x00000008
 #define ELF_RELOC_TYPE_GOTOFF           0x00000009
 #define ELF_RELOC_TYPE_GOTPC            0x0000000A
+#define ELF_RELOC64_TYPE_64             0x00000001
+#define ELF_RELOC64_TYPE_PC32           0x00000002
+#define ELF_RELOC64_TYPE_PLT32          0x00000004
+#define ELF_RELOC64_TYPE_32             0x0000000A
+#define ELF_RELOC64_TYPE_32S            0x0000000B
 
 struct elf_header
 {
@@ -204,6 +209,16 @@ struct elf64_symbol
     unsigned short shindex;
     unsigned long value;
     unsigned long size;
+
+};
+
+struct elf64_relocation
+{
+
+    unsigned long offset;
+    unsigned int type;
+    unsigned int symbol;
+    long addend;
 
 };
 
