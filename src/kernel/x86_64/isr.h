@@ -1,0 +1,15 @@
+void isr_zero(void);
+void isr_debug(void);
+void isr_nmi(void);
+void isr_breakpoint(void);
+void isr_overflow(void);
+void isr_bound(void);
+void isr_opcode(void);
+void isr_device(void);
+void isr_doublefault(void);
+void isr_tss(void);
+void isr_segment(void);
+void isr_stack(void);
+void isr_generalfault(void);
+void isr_pagefault(void);
+void isr_syscall(void);

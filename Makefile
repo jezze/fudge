@@ -40,6 +40,9 @@ config-init:
 config-arch-x86:
 	@echo "ARCH:=x86" >> $(DIR_MK)/$(CONFIG).mk
 
+config-arch-x86_64:
+	@echo "ARCH:=x86_64" >> $(DIR_MK)/$(CONFIG).mk
+
 config-arch-arm:
 	@echo "ARCH:=arm" >> $(DIR_MK)/$(CONFIG).mk
 
@@ -95,8 +98,7 @@ x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-
 x86-mboot2: config-init | config-arch-x86 config-loader-mboot2 config-target-i386-unknown-elf
 x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
 
-x86_64-mboot: config-init | config-arch-x86 config-loader-mboot config-target-x86_64-unknown-elf
-x86_64-mboot2: config-init | config-arch-x86 config-loader-mboot2 config-target-x86_64-unknown-elf
+x86_64-mboot2: config-init | config-arch-x86_64 config-loader-mboot2 config-target-x86_64-unknown-elf
 
 help:
 	@echo "Building and cleaning:"
@@ -119,7 +121,6 @@ help:
 	@echo "  x86-mboot (default)"
 	@echo "  x86-mboot2"
 	@echo "  x86-mboot-tcc"
-	@echo "  x86_64-mboot"
 	@echo "  x86_64-mboot2"
 	@echo ""
 
