@@ -24,8 +24,12 @@ static unsigned int validate(void *address, unsigned int length)
 static struct acpi_rsdp *findrsdp(void)
 {
 
+    struct acpi_rsdp *firmware = (struct acpi_rsdp *)ARCH_FIRMWARE_BASE;
     char *signature = "RSD PTR ";
     unsigned long address;
+
+    if (buffer_match(firmware->signature, signature, 8))
+        return firmware;
 
     arch_kmap(0x000E0000, 0x000E0000, 0x00020000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 

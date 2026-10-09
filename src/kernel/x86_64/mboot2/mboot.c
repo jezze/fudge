@@ -53,15 +53,15 @@ void mboot_setup(unsigned long address, unsigned long magic)
         if (tag->type == MBOOT_TAG_ACPI_OLD)
         {
 
+            if (!*(unsigned char *)ARCH_FIRMWARE_BASE)
+                buffer_copy((void *)ARCH_FIRMWARE_BASE, tag + 1, tag->size - sizeof (struct mboot_tag));
 
         }
 
         if (tag->type == MBOOT_TAG_ACPI_NEW)
         {
 
-            /*
-            buffer_copy(UEFI_ACPI, tag + 1, 36);
-            */
+            buffer_copy((void *)ARCH_FIRMWARE_BASE, tag + 1, tag->size - sizeof (struct mboot_tag));
 
         }
 
