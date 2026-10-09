@@ -92,6 +92,25 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
+struct video_interface *video_findinterface(unsigned int id)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_foreachtype(current, RESOURCE_VIDEOINTERFACE)))
+    {
+
+        struct video_interface *interface = current->data;
+
+        if (interface->id == id)
+            return interface;
+
+    }
+
+    return 0;
+
+}
+
 void video_registerinterface(struct video_interface *interface)
 {
 

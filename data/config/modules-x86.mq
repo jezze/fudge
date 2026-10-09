@@ -14,6 +14,7 @@
     { path: initrd:kernel/ps2.ko }
     { path: initrd:kernel/ps2-keyboard.ko }
     { path: initrd:kernel/ps2-mouse.ko }
+    { path: initrd:kernel/gop.ko }
     { path: initrd:kernel/bga.ko }
     { path: initrd:kernel/uart.ko }
     { path: initrd:kernel/vga.ko }
