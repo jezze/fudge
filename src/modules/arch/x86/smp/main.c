@@ -4,6 +4,7 @@
 #include <kernel/x86/gdt.h>
 #include <kernel/x86/mmu.h>
 #include <kernel/x86/arch.h>
+#include <modules/arch/x86/acpi/acpi.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/pat/pat.h>
@@ -77,8 +78,13 @@ void smp_setupap(unsigned int icore, unsigned int sp)
 void module_init(void)
 {
 
-    unsigned int icore = apic_getid();
+    unsigned int icore;
     unsigned int i;
+
+    if (!acpi_findheader("APIC"))
+        return;
+
+    icore = apic_getid();
 
     list_init(&usedcores);
     apic_setup_bp();
