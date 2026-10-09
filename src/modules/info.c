@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/base/bus.h>
-#include <modules/base/driver.h>
+#include <modules/bus.h>
+#include <modules/driver.h>
 
 #define ROOT                            0x0001
 #define ROOTRECORDS                     8

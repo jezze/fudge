@@ -1,6 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/base/driver.h>
+#include <modules/driver.h>
 #include <modules/arch/x86/pci/pci.h>
 
 #define REG_COMMAND                     0x00

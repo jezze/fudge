@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/base/driver.h>
-#include <modules/block/block.h>
+#include <modules/driver.h>
+#include <modules/block.h>
 #include <modules/arch/x86/ide/ide.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>

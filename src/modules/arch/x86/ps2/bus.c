@@ -1,6 +1,6 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/base/bus.h>
+#include <modules/bus.h>
 #include <modules/arch/x86/io/io.h>
 #include "ps2.h"
 

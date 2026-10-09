@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/base/driver.h>
-#include <modules/timer/timer.h>
+#include <modules/driver.h>
+#include <modules/timer.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/io/io.h>

@@ -1,8 +1,8 @@
 #include <fudge.h>
 #include <net.h>
 #include <kernel.h>
-#include <modules/base/driver.h>
-#include <modules/ethernet/ethernet.h>
+#include <modules/driver.h>
+#include <modules/ethernet.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 #include <modules/arch/x86/io/io.h>

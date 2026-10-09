@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <modules/base/driver.h>
-#include <modules/keyboard/keyboard.h>
+#include <modules/driver.h>
+#include <modules/keyboard.h>
 #include <modules/arch/x86/pic/pic.h>
 #include <modules/arch/x86/apic/apic.h>
 #include "ps2.h"
