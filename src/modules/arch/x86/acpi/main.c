@@ -5,6 +5,7 @@
 #include "acpi.h"
 
 static unsigned long sdt;
+static unsigned int sdtentrysize;
 
 static unsigned int validate(void *address, unsigned int length)
 {
@@ -49,15 +50,17 @@ struct acpi_sdth *acpi_findheader(char *name)
     {
 
         struct acpi_sdth *sdth = (struct acpi_sdth *)sdt;
-        struct acpi_sdth **entries = (struct acpi_sdth **)(sdth + 1);
-        unsigned int total = (sdth->length - sizeof (struct acpi_sdth)) / 4;
+        unsigned char *entries = (unsigned char *)(sdth + 1);
+        unsigned int total = (sdth->length - sizeof (struct acpi_sdth)) / sdtentrysize;
         unsigned int i;
 
         for (i = 0; i < total; i++)
         {
 
-            if (buffer_match(entries[i]->signature, name, 4))
-                return entries[i];
+            struct acpi_sdth *entry = (struct acpi_sdth *)(unsigned long)*(unsigned int *)(entries + i * sdtentrysize);
+
+            if (buffer_match(entry->signature, name, 4))
+                return entry;
 
         }
 
@@ -87,7 +90,12 @@ void module_init(void)
                 arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL);
 
                 if (validate(rsdt, rsdt->base.length))
+                {
+
                     sdt = address;
+                    sdtentrysize = 4;
+
+                }
 
             }
 
@@ -107,7 +115,12 @@ void module_init(void)
                 arch_kmap(address, address, 0x00010000, MMAP_FLAG_GLOBAL);
 
                 if (validate(xsdt, xsdt->base.length))
+                {
+
                     sdt = address;
+                    sdtentrysize = 8;
+
+                }
 
             }
 
