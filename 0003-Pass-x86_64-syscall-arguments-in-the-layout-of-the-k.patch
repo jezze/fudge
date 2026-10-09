@@ -1,0 +1,124 @@
+From fb1f95dea060b6066be973d67877c8fec56f2b3b Mon Sep 17 00:00:00 2001
+From: claude <claude@localhost>
+Date: Fri, 9 Oct 2026 05:17:41 +0000
+Subject: [PATCH] Pass x86_64 syscall arguments in the layout of the kernel's
+ argument structs
+
+---
+ lib/abi/x86_64/call.s   | 93 +++++++++++++++++++++++++++++++++++++++++
+ lib/abi/x86_64/rules.mk |  1 +
+ 2 files changed, 94 insertions(+)
+ create mode 100644 lib/abi/x86_64/call.s
+
+diff --git a/lib/abi/x86_64/call.s b/lib/abi/x86_64/call.s
+new file mode 100644
+index 0000000..200e167
+--- /dev/null
++++ b/lib/abi/x86_64/call.s
+@@ -0,0 +1,93 @@
++.code64
++
++.set CALL_INTERRUPT,                    0x80
++.set CALL_INDEX_DEBUG,                  0x00
++.set CALL_INDEX_PICK,                   0x01
++.set CALL_INDEX_PLACE,                  0x02
++.set CALL_INDEX_SPAWN,                  0x03
++.set CALL_INDEX_DESPAWN,                0x04
++.set CALL_INDEX_KILL,                   0x05
++.set CALL_INDEX_FIND,                   0x06
++.set CALL_INDEX_LOAD,                   0x07
++.set CALL_INDEX_UNLOAD,                 0x08
++.set CALL_INDEX_ANNOUNCE,               0x09
++.set CALL_FRAME,                        32
++
++.macro callindex index
++    movq $\index, %rax
++    int $CALL_INTERRUPT
++    addq $CALL_FRAME, %rsp
++    ret
++.endm
++
++.section .text
++
++.global call_debug
++call_debug:
++    subq $CALL_FRAME, %rsp
++    movq %rdi, 8(%rsp)
++    callindex CALL_INDEX_DEBUG
++
++.global call_despawn
++call_despawn:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    callindex CALL_INDEX_DESPAWN
++
++.global call_find
++call_find:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    movq %rsi, 16(%rsp)
++    movl %edx, 24(%rsp)
++    callindex CALL_INDEX_FIND
++
++.global call_kill
++call_kill:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    callindex CALL_INDEX_KILL
++
++.global call_load
++call_load:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    callindex CALL_INDEX_LOAD
++
++.global call_pick
++call_pick:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    movq %rsi, 16(%rsp)
++    callindex CALL_INDEX_PICK
++
++.global call_place
++call_place:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    movl %esi, 12(%rsp)
++    movl %edx, 16(%rsp)
++    movl %ecx, 20(%rsp)
++    movq %r8, 24(%rsp)
++    callindex CALL_INDEX_PLACE
++
++.global call_spawn
++call_spawn:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    movl %esi, 12(%rsp)
++    callindex CALL_INDEX_SPAWN
++
++.global call_unload
++call_unload:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    callindex CALL_INDEX_UNLOAD
++
++.global call_announce
++call_announce:
++    subq $CALL_FRAME, %rsp
++    movl %edi, 8(%rsp)
++    movl %esi, 12(%rsp)
++    movq %rdx, 16(%rsp)
++    callindex CALL_INDEX_ANNOUNCE
+diff --git a/lib/abi/x86_64/rules.mk b/lib/abi/x86_64/rules.mk
+index ab4a20c..2de22de 100644
+--- a/lib/abi/x86_64/rules.mk
++++ b/lib/abi/x86_64/rules.mk
+@@ -2,4 +2,5 @@ O:=\
+     $(O) \
+     $(DIR_LIB)/abi/x86_64/channel.o \
+     $(DIR_LIB)/abi/x86_64/system.o \
++    $(DIR_LIB)/abi/x86_64/call.o \
+     $(DIR_LIB)/abi/x86_64/crt0.o \
+-- 
+2.43.0
+
