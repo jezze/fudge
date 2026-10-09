@@ -12,6 +12,8 @@
 #define ARCH_MMAP_SIZE                  (MMAP_SIZE * POOL_TASKS)
 #define ARCH_FIRMWARE_BASE              (ARCH_MMAP_BASE + ARCH_MMAP_SIZE)
 #define ARCH_FIRMWARE_SIZE              0x1000
+#define ARCH_FIRMWARE_ACPI              (ARCH_FIRMWARE_BASE + 0x0000)
+#define ARCH_FIRMWARE_FRAMEBUFFER       (ARCH_FIRMWARE_BASE + 0x0100)
 #define ARCH_MMU_KERNELBASE             0x00A00000
 #define ARCH_MMU_KERNELSIZE             0x200000
 #define ARCH_MMU_TASKBASE               0x00C00000
@@ -27,6 +29,18 @@
 #define ARCH_UCODE                      0x03
 #define ARCH_UDATA                      0x04
 #define ARCH_TSS                        0x05
+
+
+struct arch_framebuffer
+{
+
+    unsigned int address;
+    unsigned int width;
+    unsigned int height;
+    unsigned int pitch;
+    unsigned int bpp;
+
+};
 
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags);
 unsigned short arch_resume(struct cpu_general *general, struct cpu_interrupt *interrupt);

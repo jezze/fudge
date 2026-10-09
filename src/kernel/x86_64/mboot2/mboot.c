@@ -13,6 +13,8 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     struct mboot_tag_module ramdisk;
     struct mboot_tag_module init;
+    struct mboot_tag_framebuffer *framebuffer = 0;
+    unsigned int efi = 0;
     struct mboot_tag *tag;
 
     buffer_clear(&ramdisk, sizeof (struct mboot_tag_module));
@@ -40,28 +42,43 @@ void mboot_setup(unsigned long address, unsigned long magic)
         }
 
         if (tag->type == MBOOT_TAG_FRAMEBUFFER)
-        {
+            framebuffer = (struct mboot_tag_framebuffer *)(tag + 1);
 
-            /*
-            struct mboot_tag_framebuffer *framebuffer = (struct mboot_tag_framebuffer *)(tag + 1);
-
-            framebuffer->address[0];
-            */
-
-        }
+        if (tag->type == MBOOT_TAG_EFI32 || tag->type == MBOOT_TAG_EFI64)
+            efi = 1;
 
         if (tag->type == MBOOT_TAG_ACPI_OLD)
         {
 
-            if (!*(unsigned char *)ARCH_FIRMWARE_BASE)
-                buffer_copy((void *)ARCH_FIRMWARE_BASE, tag + 1, tag->size - sizeof (struct mboot_tag));
+            if (!*(unsigned char *)ARCH_FIRMWARE_ACPI)
+                buffer_copy((void *)ARCH_FIRMWARE_ACPI, tag + 1, tag->size - sizeof (struct mboot_tag));
 
         }
 
         if (tag->type == MBOOT_TAG_ACPI_NEW)
         {
 
-            buffer_copy((void *)ARCH_FIRMWARE_BASE, tag + 1, tag->size - sizeof (struct mboot_tag));
+            buffer_copy((void *)ARCH_FIRMWARE_ACPI, tag + 1, tag->size - sizeof (struct mboot_tag));
+
+        }
+
+    }
+
+    if (efi && framebuffer && framebuffer->type == MBOOT_FRAMEBUFFER_TYPE_RGB && !framebuffer->address[1])
+    {
+
+        struct mboot_tag_framebuffer_rgb *rgb = (struct mboot_tag_framebuffer_rgb *)(framebuffer + 1);
+
+        if (rgb->redposition == 16 && rgb->greenposition == 8 && rgb->blueposition == 0)
+        {
+
+            struct arch_framebuffer *firmware = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
+
+            firmware->address = framebuffer->address[0];
+            firmware->width = framebuffer->width;
+            firmware->height = framebuffer->height;
+            firmware->pitch = framebuffer->pitch;
+            firmware->bpp = framebuffer->bpp;
 
         }
 

@@ -24,7 +24,7 @@ static unsigned int validate(void *address, unsigned int length)
 static struct acpi_rsdp *findrsdp(void)
 {
 
-    struct acpi_rsdp *firmware = (struct acpi_rsdp *)ARCH_FIRMWARE_BASE;
+    struct acpi_rsdp *firmware = (struct acpi_rsdp *)ARCH_FIRMWARE_ACPI;
     char *signature = "RSD PTR ";
     unsigned long address;
 

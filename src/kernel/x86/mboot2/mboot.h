@@ -19,6 +19,7 @@
 #define MBOOT_TAG_EFI_BS                18
 #define MBOOT_TAG_EFI32_IH              19
 #define MBOOT_TAG_EFI64_IH              20
+#define MBOOT_FRAMEBUFFER_TYPE_RGB      1
 
 struct mboot_tag
 {
@@ -38,6 +39,18 @@ struct mboot_tag_framebuffer
     unsigned char bpp;
     unsigned char type;
     unsigned short reserved;
+
+};
+
+struct mboot_tag_framebuffer_rgb
+{
+
+    unsigned char redposition;
+    unsigned char redsize;
+    unsigned char greenposition;
+    unsigned char greensize;
+    unsigned char blueposition;
+    unsigned char bluesize;
 
 };
 
