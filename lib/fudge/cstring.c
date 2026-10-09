@@ -1,27 +1,26 @@
 #include "buffer.h"
 #include "cstring.h"
 
-static unsigned int writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding)
+static unsigned int writedigits(char *out, unsigned int count, unsigned int value, unsigned int base, unsigned int padding, unsigned int negative)
 {
 
     char *current = out;
-    int b = base;
-    int num = value;
+    unsigned int num = value;
     unsigned int i;
 
     for (i = 1; i < count; i++)
     {
 
-        *current++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"[35 + num % b];
+        *current++ = "0123456789abcdefghijklmnopqrstuvwxyz"[num % base];
 
-        num /= b;
+        num /= base;
 
         if (!num && i >= padding)
             break;
 
     }
 
-    if (value < 0)
+    if (negative)
     {
 
         *current++ = '-';
@@ -43,6 +42,13 @@ static unsigned int writevalue(char *out, unsigned int count, int value, unsigne
     }
 
     return i;
+
+}
+
+static unsigned int writevalue(char *out, unsigned int count, int value, unsigned int base, unsigned int padding)
+{
+
+    return (value < 0) ? writedigits(out, count, 0 - (unsigned int)value, base, padding, 1) : writedigits(out, count, value, base, padding, 0);
 
 }
 
@@ -350,7 +356,7 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
 
             case 'u':
                 uvalue = *((unsigned int *)args[cargs++]);
-                offset += buffer_write(out, count, num, writevalue(num, 64, uvalue, base, padding), offset);
+                offset += buffer_write(out, count, num, writedigits(num, 64, uvalue, base, padding, 0), offset);
                 interpreted = 0;
                 padding = 0;
                 base = 10;
