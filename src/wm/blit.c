@@ -595,7 +595,32 @@ void blit_initdisplay(struct blit_display *display, void *framebuffer, unsigned 
 void blit(struct blit_display *display, int line, int x0, int x2)
 {
 
-    buffer_copy((unsigned int *)display->framebuffer + (line * display->region.size.w) + x0, display->linebuffer + x0, (x2 - x0) * display->bpp);
+    if (display->bpp == 4)
+    {
+
+        buffer_copy((unsigned int *)display->framebuffer + (line * display->region.size.w) + x0, display->linebuffer + x0, (x2 - x0) * display->bpp);
+
+    }
+
+    else
+    {
+
+        unsigned char *pixel = (unsigned char *)display->framebuffer + (line * display->region.size.w + x0) * display->bpp;
+        int x;
+
+        for (x = x0; x < x2; x++)
+        {
+
+            unsigned int color = display->linebuffer[x];
+
+            pixel[0] = color;
+            pixel[1] = color >> 8;
+            pixel[2] = color >> 16;
+            pixel += display->bpp;
+
+        }
+
+    }
 
 }
 
