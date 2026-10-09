@@ -1,4 +1,6 @@
 #define ELF_HEADER_SIZE                 52
+#define ELF64_HEADER_SIZE               64
+#define ELF_IDENTITY_CLASS              4
 
 #define ELF_IDENTITY_MAGIC0             0x7F
 #define ELF_IDENTITY_MAGIC1             'E'
@@ -27,6 +29,7 @@
 #define ELF_MACHINE_88K                 0x0005
 #define ELF_MACHINE_860                 0x0007
 #define ELF_MACHINE_MIPS                0x0008
+#define ELF_MACHINE_X86_64              0x003E
 
 #define ELF_SECTION_INDEX_UNDEFINED     0x0000
 #define ELF_SECTION_INDEX_LORESERVE     0xFF00
@@ -139,6 +142,68 @@ struct elf_relocation
 
     unsigned int offset;
     unsigned int info;
+
+};
+
+struct elf64_header
+{
+
+    unsigned char identify[16];
+    unsigned short type;
+    unsigned short machine;
+    unsigned int version;
+    unsigned long entry;
+    unsigned long phoffset;
+    unsigned long shoffset;
+    unsigned int flags;
+    unsigned short size;
+    unsigned short phsize;
+    unsigned short phcount;
+    unsigned short shsize;
+    unsigned short shcount;
+    unsigned short shstringindex;
+
+};
+
+struct elf64_programheader
+{
+
+    unsigned int type;
+    unsigned int flags;
+    unsigned long offset;
+    unsigned long vaddress;
+    unsigned long paddress;
+    unsigned long fsize;
+    unsigned long msize;
+    unsigned long align;
+
+};
+
+struct elf64_sectionheader
+{
+
+    unsigned int name;
+    unsigned int type;
+    unsigned long flags;
+    unsigned long address;
+    unsigned long offset;
+    unsigned long size;
+    unsigned int link;
+    unsigned int info;
+    unsigned long align;
+    unsigned long esize;
+
+};
+
+struct elf64_symbol
+{
+
+    unsigned int name;
+    unsigned char info;
+    unsigned char other;
+    unsigned short shindex;
+    unsigned long value;
+    unsigned long size;
 
 };
 

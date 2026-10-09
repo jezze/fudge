@@ -233,7 +233,14 @@ static void load(unsigned int source, char *path)
             if (fs_read_all(1, target, id, &header, ELF_HEADER_SIZE, 0) == ELF_HEADER_SIZE && elf_validate(&header))
             {
 
-                if (header.shcount < 64)
+                if (header.identify[ELF_IDENTITY_CLASS] != ELF_IDENTITY_CLASS_32)
+                {
+
+                    channel_send_fmt(0, source, EVENT_ERROR, "Unsupported module format: %s\n", path);
+
+                }
+
+                else if (header.shcount < 64)
                 {
 
                     struct elf_sectionheader sectionheaders[64];

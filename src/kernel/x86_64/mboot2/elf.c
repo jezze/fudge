@@ -5,12 +5,12 @@
 
 static struct binary_format format;
 
-static unsigned long findsymbol(unsigned long base, struct elf_sectionheader *symbolheader, unsigned int count, char *symbolname)
+static unsigned long findsymbol(unsigned long base, struct elf64_sectionheader *symbolheader, unsigned int count, char *symbolname)
 {
 
-    struct elf_header *header = (struct elf_header *)base;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(base + header->shoffset);
-    struct elf_symbol *symbols = (struct elf_symbol *)(base + symbolheader->offset);
+    struct elf64_header *header = (struct elf64_header *)base;
+    struct elf64_sectionheader *sectionheaders = (struct elf64_sectionheader *)(base + header->shoffset);
+    struct elf64_symbol *symbols = (struct elf64_symbol *)(base + symbolheader->offset);
     char *strings = (char *)(base + sectionheaders[symbolheader->link].offset);
 
     if (symbolheader->size && symbolheader->esize)
@@ -39,17 +39,17 @@ static unsigned long findsymbol(unsigned long base, struct elf_sectionheader *sy
 static unsigned int format_match(unsigned long base)
 {
 
-    struct elf_header *header = (struct elf_header *)base;
+    struct elf64_header *header = (struct elf64_header *)base;
 
-    return elf_validate(header);
+    return elf_validate((struct elf_header *)header) && header->identify[ELF_IDENTITY_CLASS] == ELF_IDENTITY_CLASS_64 && header->machine == ELF_MACHINE_X86_64;
 
 }
 
 static unsigned long format_findsymbol(unsigned long base, unsigned int count, char *symbolname)
 {
 
-    struct elf_header *header = (struct elf_header *)base;
-    struct elf_sectionheader *sectionheaders = (struct elf_sectionheader *)(base + header->shoffset);
+    struct elf64_header *header = (struct elf64_header *)base;
+    struct elf64_sectionheader *sectionheaders = (struct elf64_sectionheader *)(base + header->shoffset);
     unsigned int i;
 
     for (i = 0; i < header->shcount; i++)
@@ -74,7 +74,7 @@ static unsigned long format_findsymbol(unsigned long base, unsigned int count, c
 static unsigned long format_findentry(unsigned long base)
 {
 
-    struct elf_header *header = (struct elf_header *)base;
+    struct elf64_header *header = (struct elf64_header *)base;
 
     return header->entry;
 
@@ -83,15 +83,15 @@ static unsigned long format_findentry(unsigned long base)
 static unsigned int format_map(unsigned long base, unsigned long paddress, unsigned int size, struct mmap_header *mheader)
 {
 
-    struct elf_header *header = (struct elf_header *)base;
-    struct elf_programheader *programheaders = (struct elf_programheader *)(base + header->phoffset);
+    struct elf64_header *header = (struct elf64_header *)base;
+    struct elf64_programheader *programheaders = (struct elf64_programheader *)(base + header->phoffset);
     unsigned int used = 0;
     unsigned int i;
 
     for (i = 0; i < header->phcount; i++)
     {
 
-        struct elf_programheader *programheader = &programheaders[i];
+        struct elf64_programheader *programheader = &programheaders[i];
         unsigned int span = ((programheader->vaddress & 0xFFF) + programheader->msize + 0xFFF) & ~0xFFF;
         struct mmap_entry *entry;
 
