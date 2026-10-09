@@ -7,7 +7,6 @@
 .set MBOOT_OPTIONAL,                    1
 .set MBOOT_TAG_END,                     0
 .set MBOOT_TAG_CONSOLE,                 4
-.set MBOOT_CONSOLE_REQUIRED,            1
 .set MBOOT_CONSOLE_EGATEXT,             2
 .set BOOT_TABLES,                       4
 .set BOOT_FLAGS,                        0x03
@@ -31,7 +30,7 @@ mboot_start:
 .short MBOOT_TAG_CONSOLE
 .short MBOOT_OPTIONAL
 .int 12
-.int MBOOT_CONSOLE_REQUIRED | MBOOT_CONSOLE_EGATEXT
+.int MBOOT_CONSOLE_EGATEXT
 
 .align 8
 .short MBOOT_TAG_END
