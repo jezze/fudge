@@ -53,6 +53,8 @@
 #define REG_STATUS_AUX                  (1 << 5)
 #define REG_STATUS_TIMEOUT              (1 << 6)
 #define REG_STATUS_PARITY               (1 << 7)
+#define LIMIT_FLUSH                     16
+#define LIMIT_POLL                      1000000
 #define IRQ_KEYBOARD                    0x01
 #define IRQ_MOUSE                       0x0C
 
@@ -78,18 +80,38 @@ static struct device devices[] = {
     {0, IRQ_MOUSE, REG_COMMAND_DEV2DISABLE, REG_COMMAND_DEV2ENABLE, REG_COMMAND_CONFIGR_DEV2INT, 0, REG_COMMAND_DEV2TEST, REG_COMMAND_DEV2TEST_OK}
 };
 
-static void flushdata(void)
+static unsigned int flushdata(void)
 {
 
-    while ((io_inb(REG_STATUS) & REG_STATUS_OFULL))
+    unsigned int i;
+
+    for (i = 0; i < LIMIT_FLUSH; i++)
+    {
+
+        if (!(io_inb(REG_STATUS) & REG_STATUS_OFULL))
+            return 1;
+
         io_inb(REG_DATA);
+
+    }
+
+    return 0;
+
+}
+
+static void waitstatus(unsigned char mask, unsigned char value)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < LIMIT_POLL && (io_inb(REG_STATUS) & mask) != value; i++);
 
 }
 
 static unsigned char polldata(void)
 {
 
-    while (!(io_inb(REG_STATUS) & REG_STATUS_OFULL));
+    waitstatus(REG_STATUS_OFULL, REG_STATUS_OFULL);
 
     return io_inb(REG_DATA);
 
@@ -98,7 +120,7 @@ static unsigned char polldata(void)
 static void setcommand(unsigned char value)
 {
 
-    while ((io_inb(REG_STATUS) & REG_STATUS_IFULL));
+    waitstatus(REG_STATUS_IFULL, 0);
 
     io_outb(REG_COMMAND, value);
 
@@ -107,7 +129,7 @@ static void setcommand(unsigned char value)
 static void setdata(unsigned char value)
 {
 
-    while ((io_inb(REG_STATUS) & REG_STATUS_IFULL));
+    waitstatus(REG_STATUS_IFULL, 0);
 
     io_outb(REG_DATA, value);
 
@@ -310,9 +332,7 @@ void ps2_rate(unsigned int id, unsigned char rate)
 static void bus_setup(void)
 {
 
-    flushdata();
-
-    if (testbus())
+    if (flushdata() && testbus())
     {
 
         unsigned char config = rconfig();
