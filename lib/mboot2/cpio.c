@@ -228,7 +228,7 @@ static unsigned int stat(unsigned int id, struct record *record)
 static unsigned int walk(unsigned int id, char *path, unsigned int length)
 {
 
-    unsigned int offset = buffer_firstbyte(path, length, ':');
+    unsigned int offset = 0;
 
     while (offset < length)
     {
