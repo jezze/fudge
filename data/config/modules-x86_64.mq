@@ -17,7 +17,6 @@
     { path: initrd:kernel/gop.ko }
     { path: initrd:kernel/bga.ko }
     { path: initrd:kernel/uart.ko }
-    { path: initrd:kernel/vga.ko }
     { path: initrd:kernel/rtl8139.ko }
     { path: initrd:kernel/ide.ko }
     { path: initrd:kernel/ahci.ko }
