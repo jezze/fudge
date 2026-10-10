@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <binary.h>
-#include "elf.h"
+#include <mboot2/elf.h>
 
 static struct binary_format format;
 

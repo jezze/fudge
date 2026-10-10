@@ -5,9 +5,9 @@
 #include <kernel/x86/udebug.h>
 #include <binary.h>
 #include <disk.h>
-#include "cpio.h"
-#include "elf.h"
-#include "mboot.h"
+#include <mboot2/cpio.h>
+#include <mboot2/elf.h>
+#include <mboot2/mboot.h>
 
 void mboot_setup(unsigned long address, unsigned long magic)
 {
