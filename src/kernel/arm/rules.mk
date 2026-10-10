@@ -9,5 +9,3 @@ O:=\
     $(DIR_SRC)/kernel/arm/reg.o \
     $(DIR_SRC)/kernel/arm/timer.o \
     $(DIR_SRC)/kernel/arm/uart.o
-
-include $(DIR_SRC)/kernel/arm/$(LOADER)/rules.mk

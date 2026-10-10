@@ -11,5 +11,3 @@ O:=\
     $(DIR_SRC)/kernel/x86/pic.o \
     $(DIR_SRC)/kernel/x86/tss.o \
     $(DIR_SRC)/kernel/x86/udebug.o \
-
-include $(DIR_SRC)/kernel/x86/$(LOADER)/rules.mk

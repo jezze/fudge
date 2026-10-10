@@ -25,4 +25,5 @@ L:=\
     $(DIR_LIB)/hash/hash.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
+include $(DIR_LIB)/$(LOADER)/rules.mk
 include $(DIR_MK)/kbin.mk
