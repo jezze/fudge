@@ -60,6 +60,27 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
+    if (pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY)
+    {
+
+        unsigned short vendor = pci_inw(id, PCI_CONFIG_VENDOR);
+        unsigned short device = pci_inw(id, PCI_CONFIG_DEVICE);
+        unsigned int i;
+
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "gop: fb 0x%H8u %ux%u pitch %u bpp %u", &framebuffer->address, &framebuffer->width, &framebuffer->height, &framebuffer->pitch, &framebuffer->bpp);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "gop: display %H4h:%H4h at 0x%H8u", &vendor, &device, &id);
+
+        for (i = 0; i < 6; i++)
+        {
+
+            unsigned int bar = pci_ind(id, PCI_CONFIG_BAR0 + i * 4);
+
+            debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "gop: bar%u 0x%H8u", &i, &bar);
+
+        }
+
+    }
+
     if (!framebuffer->address || (framebuffer->bpp != 24 && framebuffer->bpp != 32) || framebuffer->pitch != framebuffer->width * (framebuffer->bpp / 8))
         return 0;
 
