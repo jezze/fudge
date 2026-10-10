@@ -14,9 +14,6 @@ static unsigned char cells[TOTAL];
 static unsigned char *pixels;
 static unsigned int pitch;
 static unsigned int bpp;
-static unsigned int redshift;
-static unsigned int greenshift;
-static unsigned int blueshift;
 static unsigned int palette[16] = {
     0x000000, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
     0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF
@@ -139,14 +136,10 @@ static void drawcell(unsigned int offset)
         {
 
             unsigned int color = (glyph[y] & (0x80 >> x)) ? foreground : background;
-            unsigned int value = (((color >> 16) & 0xFF) << redshift) | (((color >> 8) & 0xFF) << greenshift) | ((color & 0xFF) << blueshift);
 
-            pixel[0] = value;
-            pixel[1] = value >> 8;
-            pixel[2] = value >> 16;
-
-            if (bpp == 4)
-                pixel[3] = value >> 24;
+            pixel[0] = color;
+            pixel[1] = color >> 8;
+            pixel[2] = color >> 16;
             pixel += bpp;
 
         }
@@ -283,7 +276,7 @@ static void debug_write(unsigned int level, unsigned int count, char *buffer, ch
 
 }
 
-void udebug_setframebuffer(void *address, unsigned int framebufferpitch, unsigned int framebufferbpp, unsigned int redposition, unsigned int greenposition, unsigned int blueposition)
+void udebug_setframebuffer(void *address, unsigned int framebufferpitch, unsigned int framebufferbpp)
 {
 
     unsigned int offset;
@@ -291,9 +284,6 @@ void udebug_setframebuffer(void *address, unsigned int framebufferpitch, unsigne
     pixels = address;
     pitch = framebufferpitch;
     bpp = framebufferbpp;
-    redshift = redposition;
-    greenshift = greenposition;
-    blueshift = blueposition;
 
     for (offset = 0; offset < TOTAL; offset += 2)
         output(offset);
