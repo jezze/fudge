@@ -1,0 +1,29 @@
+{
+  modules: [
+    { path: initrd:kernel/io.ko }
+    { path: initrd:kernel/cpuid.ko }
+    { path: initrd:kernel/msr.ko }
+    { path: initrd:kernel/pat.ko }
+    { path: initrd:kernel/acpi.ko }
+    { path: initrd:kernel/pic.ko }
+    { path: initrd:kernel/apic.ko }
+    { path: initrd:kernel/platform.ko }
+    { path: initrd:kernel/pci.ko }
+    { path: initrd:kernel/pit.ko }
+    { path: initrd:kernel/rtc.ko }
+    { path: initrd:kernel/ps2.ko }
+    { path: initrd:kernel/ps2-keyboard.ko }
+    { path: initrd:kernel/ps2-mouse.ko }
+    { path: initrd:kernel/gop.ko }
+    { path: initrd:kernel/bga.ko }
+    { path: initrd:kernel/uart.ko }
+    { path: initrd:kernel/vga.ko }
+    { path: initrd:kernel/rtl8139.ko }
+    { path: initrd:kernel/ide.ko }
+    { path: initrd:kernel/ahci.ko }
+    { path: initrd:kernel/nvme.ko }
+    { path: initrd:kernel/ata.ko }
+    { path: initrd:kernel/virtio-network.ko }
+    { path: initrd:kernel/smp.ko }
+  ]
+}

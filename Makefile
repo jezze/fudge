@@ -154,6 +154,7 @@ $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@cp $(BIN) $@/bin
 	@mkdir -p $@/data
 	@cp -r data/* $@/data
+	@cp data/config/modules-$(ARCH).mq $@/data/config/modules-arch.mq
 	@mkdir -p $@/kernel
 	@cp $(KMAP) $@/kernel
 	@cp $(KMOD) $@/kernel
