@@ -35,7 +35,7 @@
 struct arch_framebuffer
 {
 
-    unsigned int address;
+    unsigned long address;
     unsigned int width;
     unsigned int height;
     unsigned int pitch;

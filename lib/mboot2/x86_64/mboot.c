@@ -94,10 +94,10 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
         arch_kmap(((unsigned long)fbhigh << 32) | fblow, 0xA0000000, fbpitch * fbheight, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
 
-        if (efi && !fbhigh && fbred == 16 && fbgreen == 8 && fbblue == 0)
+        if (efi && fbred == 16 && fbgreen == 8 && fbblue == 0)
         {
 
-            firmware->address = fblow;
+            firmware->address = ((unsigned long)fbhigh << 32) | fblow;
             firmware->width = fbwidth;
             firmware->height = fbheight;
             firmware->pitch = fbpitch;

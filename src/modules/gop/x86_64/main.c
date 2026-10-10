@@ -36,8 +36,20 @@ static unsigned int ownsframebuffer(unsigned int id)
     {
 
         unsigned int bar = pci_ind(id, PCI_CONFIG_BAR0 + i * 4);
+        unsigned long address = bar & 0xFFFFFFF0;
 
-        if (!(bar & 1) && (bar & 0xFFFFFFF0) == framebuffer->address)
+        if (bar & 1)
+            continue;
+
+        if ((bar & 0x06) == 0x04 && i < 5)
+        {
+
+            i++;
+            address |= (unsigned long)pci_ind(id, PCI_CONFIG_BAR0 + i * 4) << 32;
+
+        }
+
+        if (address == framebuffer->address)
             return 1;
 
     }
