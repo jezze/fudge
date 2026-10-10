@@ -1,0 +1,120 @@
+#include <fudge.h>
+#include <kernel.h>
+#include <kernel/x86/cpu.h>
+#include <kernel/x86/arch.h>
+#include <modules/driver.h>
+#include <modules/video.h>
+#include <modules/io/io.h>
+#include <modules/pci/pci.h>
+
+#define VENDOR                          0x1234
+#define DEVICE                          0x1111
+#define REG_COMMAND                     0x01CE
+#define REG_COMMAND_ID                  0x0000
+#define REG_COMMAND_XRES                0x0001
+#define REG_COMMAND_YRES                0x0002
+#define REG_COMMAND_BPP                 0x0003
+#define REG_COMMAND_ENABLE              0x0004
+#define REG_COMMAND_BANK                0x0005
+#define REG_COMMAND_VIRTWIDTH           0x0006
+#define REG_COMMAND_VIRTHEIGHT          0x0007
+#define REG_COMMAND_XOFF                0x0008
+#define REG_COMMAND_YOFF                0x0009
+#define REG_DATA                        0x01CF
+
+static struct base_driver driver;
+static struct video_interface videointerface;
+static unsigned int framebuffer;
+
+static void setreg(unsigned short index, unsigned short data)
+{
+
+    io_outw(REG_COMMAND, index);
+    io_outw(REG_DATA, data);
+
+}
+
+static void videointerface_oninfo(struct event_videoinfo *videoinfo)
+{
+
+    videoinfo->framebuffer = 0xA0000000;
+    videoinfo->width = videointerface.width;
+    videoinfo->height = videointerface.height;
+    videoinfo->bpp = videointerface.bpp;
+
+}
+
+static void videointerface_onvideoconf(unsigned int width, unsigned int height, unsigned int bpp)
+{
+
+    videointerface.width = width;
+    videointerface.height = height;
+    videointerface.bpp = bpp;
+
+    arch_kmap(framebuffer, 0xA0000000, videointerface.width * videointerface.height * videointerface.bpp, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+    setreg(REG_COMMAND_ENABLE, 0x00);
+    setreg(REG_COMMAND_XRES, videointerface.width);
+    setreg(REG_COMMAND_YRES, videointerface.height);
+    setreg(REG_COMMAND_BPP, videointerface.bpp * 8);
+    setreg(REG_COMMAND_ENABLE, 0x40 | 0x01);
+
+}
+
+static void driver_init(unsigned int id)
+{
+
+    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_onvideoconf);
+
+}
+
+static unsigned int driver_match(unsigned int id)
+{
+
+    struct video_interface *interface = video_findinterface(id);
+
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE && (!interface || interface == &videointerface);
+
+}
+
+static void driver_reset(unsigned int id)
+{
+
+    framebuffer = pci_ind(id, PCI_CONFIG_BAR0) & 0xFFFFFFF0;
+
+}
+
+static void driver_attach(unsigned int id)
+{
+
+    video_registerinterface(&videointerface);
+
+}
+
+static void driver_detach(unsigned int id)
+{
+
+    video_unregisterinterface(&videointerface);
+
+}
+
+void module_init(void)
+{
+
+    base_initdriver(&driver, "bga", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
+
+}
+
+void module_register(void)
+{
+
+    base_registerdriver(&driver, PCI_BUS);
+
+}
+
+void module_unregister(void)
+{
+
+    base_unregisterdriver(&driver, PCI_BUS);
+
+}
+
