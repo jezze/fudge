@@ -19,11 +19,11 @@ O:=\
     $(DIR_SRC)/kernel/task.o \
 
 L:=\
+    $(DIR_LIB)/$(LOADER)/$(LOADER).a \
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/binary/binary.a \
     $(DIR_LIB)/disk/disk.a \
     $(DIR_LIB)/hash/hash.a \
 
 include $(DIR_SRC)/kernel/$(ARCH)/rules.mk
-include $(DIR_LIB)/$(LOADER)/rules.mk
 include $(DIR_MK)/kbin.mk
