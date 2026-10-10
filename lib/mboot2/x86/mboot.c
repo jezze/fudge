@@ -90,7 +90,7 @@ void mboot_setup(unsigned long address, unsigned long magic)
     arch_setup2();
 
     if (firmware->bpp == 24 || firmware->bpp == 32)
-        udebug_setframebuffer((void *)0xA0000000, firmware->pitch, firmware->bpp / 8);
+        udebug_setframebuffer((void *)0xA0000000, firmware->pitch, firmware->bpp / 8, 16, 8, 0);
 
     if (ramdisk.start && init.start)
     {

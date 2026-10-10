@@ -17,6 +17,16 @@ void mboot_setup(unsigned long address, unsigned long magic)
     struct arch_framebuffer *firmware = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
     struct mboot_tag_framebuffer *framebuffer = 0;
     unsigned int efi = 0;
+    unsigned int fbusable = 0;
+    unsigned int fbhigh = 0;
+    unsigned int fblow = 0;
+    unsigned int fbwidth = 0;
+    unsigned int fbheight = 0;
+    unsigned int fbpitch = 0;
+    unsigned int fbbpp = 0;
+    unsigned char fbred = 0;
+    unsigned char fbgreen = 0;
+    unsigned char fbblue = 0;
     struct mboot_tag *tag;
 
     buffer_clear(&ramdisk, sizeof (struct mboot_tag_module));
@@ -66,21 +76,32 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     }
 
-    if (efi && framebuffer && framebuffer->type == MBOOT_FRAMEBUFFER_TYPE_RGB && !framebuffer->address[1])
+    if (framebuffer && framebuffer->type == MBOOT_FRAMEBUFFER_TYPE_RGB && (framebuffer->bpp == 24 || framebuffer->bpp == 32))
     {
 
         struct mboot_tag_framebuffer_rgb *rgb = (struct mboot_tag_framebuffer_rgb *)(framebuffer + 1);
 
-        if (rgb->redposition == 16 && rgb->greenposition == 8 && rgb->blueposition == 0)
+        fbusable = 1;
+        fbhigh = framebuffer->address[1];
+        fblow = framebuffer->address[0];
+        fbwidth = framebuffer->width;
+        fbheight = framebuffer->height;
+        fbpitch = framebuffer->pitch;
+        fbbpp = framebuffer->bpp;
+        fbred = rgb->redposition;
+        fbgreen = rgb->greenposition;
+        fbblue = rgb->blueposition;
+
+        arch_kmap(((unsigned long)fbhigh << 32) | fblow, 0xA0000000, fbpitch * fbheight, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+
+        if (efi && !fbhigh && fbred == 16 && fbgreen == 8 && fbblue == 0)
         {
 
-            firmware->address = framebuffer->address[0];
-            firmware->width = framebuffer->width;
-            firmware->height = framebuffer->height;
-            firmware->pitch = framebuffer->pitch;
-            firmware->bpp = framebuffer->bpp;
-
-            arch_kmap(firmware->address, 0xA0000000, firmware->pitch * firmware->height, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
+            firmware->address = fblow;
+            firmware->width = fbwidth;
+            firmware->height = fbheight;
+            firmware->pitch = fbpitch;
+            firmware->bpp = fbbpp;
 
         }
 
@@ -89,8 +110,13 @@ void mboot_setup(unsigned long address, unsigned long magic)
     elf_setup();
     arch_setup2();
 
-    if (firmware->bpp == 24 || firmware->bpp == 32)
-        udebug_setframebuffer((void *)0xA0000000, firmware->pitch, firmware->bpp / 8);
+    if (fbusable)
+    {
+
+        udebug_setframebuffer((void *)0xA0000000, fbpitch, fbbpp / 8, fbred, fbgreen, fbblue);
+        debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "fb 0x%H8u%H8u %ux%u pitch %u bpp %u rgb %c/%c/%c efi %u", &fbhigh, &fblow, &fbwidth, &fbheight, &fbpitch, &fbbpp, &fbred, &fbgreen, &fbblue, &efi);
+
+    }
 
     if (ramdisk.start && init.start)
     {
