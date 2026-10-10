@@ -744,7 +744,12 @@ static void redraw(unsigned int relayout)
     {
 
         if (relayout)
+        {
+
             render_place(state.rootwidget, &display.region);
+            render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
+
+        }
 
         render_update(&display);
         render_undamage();

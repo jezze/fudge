@@ -1086,6 +1086,9 @@ void render_setmouse(int x, int y, unsigned int type)
 
     struct list_item *current = 0;
 
+    if (x == mouse.x && y == mouse.y && type == mousetype)
+        return;
+
     while ((current = pool_next(current)))
     {
 
