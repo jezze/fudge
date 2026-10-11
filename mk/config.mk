@@ -1,3 +1,3 @@
 ARCH:=x86
-LOADER:=mboot2
+LOADER:=mboot
 TARGET:=i386-unknown-elf
