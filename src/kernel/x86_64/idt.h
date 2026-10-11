@@ -1,5 +1,6 @@
 #define IDT_FLAG_TYPE64INT              0x0E
 #define IDT_FLAG_TYPE64TRAP             0x0F
+#define IDT_FLAG_TYPEINT                0x0E
 #define IDT_FLAG_RING1                  0x20
 #define IDT_FLAG_RING2                  0x40
 #define IDT_FLAG_RING3                  0x60

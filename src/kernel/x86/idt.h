@@ -3,6 +3,7 @@
 #define IDT_FLAG_TYPE16TRAP             0x07
 #define IDT_FLAG_TYPE32INT              0x0E
 #define IDT_FLAG_TYPE32TRAP             0x0F
+#define IDT_FLAG_TYPEINT                0x0E
 #define IDT_FLAG_STORAGE                0x10
 #define IDT_FLAG_RING1                  0x20
 #define IDT_FLAG_RING2                  0x40

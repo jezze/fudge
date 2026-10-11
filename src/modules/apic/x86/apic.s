@@ -111,7 +111,12 @@ apic_test:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
+    leal 32(%esp), %eax
+    pushl %eax
+    leal 4(%esp), %eax
+    pushl %eax
     call apic_interruptnone
+    addl $8, %esp
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
@@ -132,7 +137,13 @@ apic_common:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
+    leal 36(%esp), %eax
+    pushl %eax
+    pushl 36(%esp)
+    leal 8(%esp), %eax
+    pushl %eax
     call apic_interrupt
+    addl $12, %esp
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs

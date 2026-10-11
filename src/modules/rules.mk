@@ -171,7 +171,7 @@ ifeq ($(ARCH),x86)
 include $(DIR_SRC)/modules/64bit/rules.mk
 include $(DIR_SRC)/modules/acpi/rules.mk
 include $(DIR_SRC)/modules/ahci/rules.mk
-include $(DIR_SRC)/modules/apic/x86/rules.mk
+include $(DIR_SRC)/modules/apic/rules.mk
 include $(DIR_SRC)/modules/ata/rules.mk
 include $(DIR_SRC)/modules/atapi/rules.mk
 include $(DIR_SRC)/modules/bga/rules.mk
@@ -204,7 +204,7 @@ endif
 ifeq ($(ARCH),x86_64)
 include $(DIR_SRC)/modules/acpi/rules.mk
 include $(DIR_SRC)/modules/ahci/rules.mk
-include $(DIR_SRC)/modules/apic/x86_64/rules.mk
+include $(DIR_SRC)/modules/apic/rules.mk
 include $(DIR_SRC)/modules/ata/rules.mk
 include $(DIR_SRC)/modules/atapi/rules.mk
 include $(DIR_SRC)/modules/bga/rules.mk
