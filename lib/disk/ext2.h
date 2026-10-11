@@ -1,4 +1,6 @@
 #define EXT2_MAXBLOCKSIZE               4096
+#define EXT2_FEATURE_JOURNAL            0x0004
+#define EXT2_FEATURE_FILETYPE           0x0002
 
 struct ext2_superblock
 {
