@@ -214,7 +214,23 @@ cmd_disk_create() {
     echo "done"
 }
 
-cmd_disk_setup() {
+disk_partition_mbr() {
+    echo "label: dos" | sfdisk -q "${1}"
+    echo ",512M,0xEF,*" | sfdisk -q --append "${1}"
+    echo ",512M,0x83" | sfdisk -q --append "${1}"
+    echo ",1G,0x83" | sfdisk -q --append "${1}"
+}
+
+disk_partition_gpt() {
+    sgdisk -o \
+        -n 4:2048:+1M -t 4:ef02 -c 4:bios \
+        -n 1:0:+512M -t 1:ef00 -c 1:efi \
+        -n 2:0:+512M -t 2:8300 -c 2:boot \
+        -n 3:0:+1G -t 3:8300 -c 3:root \
+        "${1}" > /dev/null
+}
+
+disk_setup() {
     device="/dev/nbd0"
     disk="${1}"
 
@@ -227,10 +243,7 @@ cmd_disk_setup() {
     cmd_disk_connect "${1}"
 
     echo -n "Creating partitions... "
-    echo "label: dos" | sfdisk -q "${device}"
-    echo ",512M,0xEF,*" | sfdisk -q --append "${device}"
-    echo ",512M,0x83" | sfdisk -q --append "${device}"
-    echo ",1G,0x83" | sfdisk -q --append "${device}"
+    "disk_partition_${2}" "${device}"
     echo "done"
 
     echo -n "Creating filesystems... "
@@ -264,6 +277,14 @@ cmd_disk_setup() {
     cmd_disk_disconnect
 }
 
+cmd_disk_setup() {
+    disk_setup "${1}" mbr
+}
+
+cmd_disk_setup_gpt() {
+    disk_setup "${1}" gpt
+}
+
 cmd_help() {
     echo "Commands:"
     echo "    run [-d <disk>] [-i <iso>] [-n | -s] [<name>]"
@@ -274,10 +295,11 @@ cmd_help() {
     echo "    disk_disconnect"
     echo "    disk_create [-f <format>] [-n <name>] [-s <size>]"
     echo "    disk_setup <disk>"
+    echo "    disk_setup_gpt <disk>"
 }
 
 case "$1" in
-run|nat|connect|disconnect|disk_create|disk_connect|disk_disconnect|disk_setup)
+run|nat|connect|disconnect|disk_create|disk_connect|disk_disconnect|disk_setup|disk_setup_gpt)
     "cmd_$@"
     ;;
 *)
