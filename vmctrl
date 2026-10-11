@@ -17,6 +17,7 @@ cmd_run() {
     slirp=n
     uefi=n
     ahci=n
+    nvme=n
 
     while test ${#} -gt 0
     do
@@ -29,6 +30,9 @@ cmd_run() {
                 diskname="${2}"
                 test -f "${diskname}" || error "Disk not found: ${diskname}"
                 shift
+                ;;
+            -e)
+                nvme=y
                 ;;
             -i)
                 iso=y
@@ -62,6 +66,9 @@ cmd_run() {
         if test "${ahci}" == "y"
         then
             cmd="${cmd} -device ahci,id=ahci0 -drive file=${diskname},format=qcow2,if=none,id=disk0 -device ide-hd,drive=disk0,bus=ahci0.0"
+        elif test "${nvme}" == "y"
+        then
+            cmd="${cmd} -drive file=${diskname},format=qcow2,if=none,id=disk0 -device nvme,drive=disk0,serial=fudge"
         else
             cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
         fi
