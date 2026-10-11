@@ -563,9 +563,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     {
 
         task_reset(task);
-        task_register(task, pinode, address, mmap, ip, sp);
-
-        task->buffer = buffer;
+        task_register(task, pinode, address, mmap, buffer, ip, sp);
 
         if (task->address)
         {
