@@ -1,9 +1,9 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <kernel/x86/cpu.h>
-#include <kernel/x86/gdt.h>
-#include <kernel/x86/idt.h>
-#include <kernel/x86/arch.h>
+#include <cpu.h>
+#include <gdt.h>
+#include <idt.h>
+#include <arch.h>
 #include <modules/io/io.h>
 #include <modules/pic/pic.h>
 
@@ -88,7 +88,7 @@ unsigned short pic_getisr(void)
 
 }
 
-unsigned short pic_interrupt1(struct cpu_general general, unsigned int index, struct cpu_interrupt interrupt)
+unsigned short pic_interrupt1(struct cpu_general *general, unsigned long index, struct cpu_interrupt *interrupt)
 {
 
     if (index == 15)
@@ -125,11 +125,11 @@ unsigned short pic_interrupt1(struct cpu_general general, unsigned int index, st
 
     }
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(general, interrupt);
 
 }
 
-unsigned short pic_interrupt0(struct cpu_general general, unsigned int index, struct cpu_interrupt interrupt)
+unsigned short pic_interrupt0(struct cpu_general *general, unsigned long index, struct cpu_interrupt *interrupt)
 {
 
     if (index == 7)
@@ -157,7 +157,7 @@ unsigned short pic_interrupt0(struct cpu_general general, unsigned int index, st
 
     }
 
-    return arch_resume(&general, &interrupt);
+    return arch_resume(general, interrupt);
 
 }
 
@@ -227,8 +227,8 @@ void module_init(void)
     for (i = 0; i < 8; i++)
     {
 
-        idt_setdescriptor(idt, REG_DATA_VECTOR0 + i, (void (*)(void))((unsigned long)pic_isr0 + 8 * i), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-        idt_setdescriptor(idt, REG_DATA_VECTOR1 + i, (void (*)(void))((unsigned long)pic_isr1 + 8 * i), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+        idt_setdescriptor(idt, REG_DATA_VECTOR0 + i, (void (*)(void))((unsigned long)pic_isr0 + 8 * i), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
+        idt_setdescriptor(idt, REG_DATA_VECTOR1 + i, (void (*)(void))((unsigned long)pic_isr1 + 8 * i), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
 
     }
 

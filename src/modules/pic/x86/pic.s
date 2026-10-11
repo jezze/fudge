@@ -38,7 +38,13 @@ pic_common0:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
+    leal 36(%esp), %eax
+    pushl %eax
+    pushl 36(%esp)
+    leal 8(%esp), %eax
+    pushl %eax
     call pic_interrupt0
+    addl $12, %esp
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
@@ -83,7 +89,13 @@ pic_common1:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
+    leal 36(%esp), %eax
+    pushl %eax
+    pushl 36(%esp)
+    leal 8(%esp), %eax
+    pushl %eax
     call pic_interrupt1
+    addl $12, %esp
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs

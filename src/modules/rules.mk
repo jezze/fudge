@@ -185,7 +185,7 @@ include $(DIR_SRC)/modules/msr/x86/rules.mk
 include $(DIR_SRC)/modules/nvme/rules.mk
 include $(DIR_SRC)/modules/pat/rules.mk
 include $(DIR_SRC)/modules/pci/rules.mk
-include $(DIR_SRC)/modules/pic/x86/rules.mk
+include $(DIR_SRC)/modules/pic/rules.mk
 include $(DIR_SRC)/modules/pit/rules.mk
 include $(DIR_SRC)/modules/platform/rules.mk
 include $(DIR_SRC)/modules/ps2/rules.mk
@@ -217,7 +217,7 @@ include $(DIR_SRC)/modules/msr/x86_64/rules.mk
 include $(DIR_SRC)/modules/nvme/rules.mk
 include $(DIR_SRC)/modules/pat/rules.mk
 include $(DIR_SRC)/modules/pci/rules.mk
-include $(DIR_SRC)/modules/pic/x86_64/rules.mk
+include $(DIR_SRC)/modules/pic/rules.mk
 include $(DIR_SRC)/modules/pit/rules.mk
 include $(DIR_SRC)/modules/platform/rules.mk
 include $(DIR_SRC)/modules/ps2/rules.mk
