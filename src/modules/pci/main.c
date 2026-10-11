@@ -160,7 +160,7 @@ unsigned long pci_getbar(unsigned int id, unsigned int index)
     unsigned long address = bar & 0xFFFFFFF0;
 
     if (bar & 1)
-        return 0;
+        return bar & 0xFFFFFFFC;
 
     if ((bar & 0x06) == 0x04 && index < 5)
     {
