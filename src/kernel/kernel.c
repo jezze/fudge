@@ -210,25 +210,6 @@ static void transition(unsigned int itask, unsigned int state)
 
 }
 
-static void requeue(struct core *core, unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        spinlock_acquire(&task->spinlock);
-
-        if (task_transition(task, TASK_STATE_ASSIGNED))
-            pool_placetask(itask, &core->tasks);
-
-        spinlock_release(&task->spinlock);
-
-    }
-
-}
-
 static void unblocktasks(void)
 {
 
@@ -390,10 +371,11 @@ unsigned int kernel_unlinknode(struct list *links, unsigned int source)
         {
 
             unsigned int inode = pool_getinodefromitem(current);
+            struct resource *resource = pool_getnoderesource(inode);
 
             next = current->next;
 
-            if (pool_getnoderesource(inode) == sresource)
+            if (resource == sresource)
             {
 
                 list_remove_unsafe(links, current);
@@ -445,7 +427,12 @@ void kernel_schedule(struct core *core)
             if (core->itask)
             {
 
-                requeue(core, core->itask);
+                spinlock_acquire(&task->spinlock);
+
+                if (task_transition(task, TASK_STATE_ASSIGNED))
+                    pool_placetask(core->itask, &core->tasks);
+
+                spinlock_release(&task->spinlock);
 
                 core->itask = 0;
 
