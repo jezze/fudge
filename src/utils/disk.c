@@ -14,8 +14,8 @@ static void printpartition(unsigned int source, struct mbr_partition *partition)
     unsigned int cend = partition->cylinderlimit | ((partition->sectorlimit & 0xC0) << 8);
     unsigned int hstart = partition->headbase;
     unsigned int hend = partition->headlimit;
-    unsigned int sstart = partition->sectorbase & 0x2F;
-    unsigned int send = partition->sectorlimit & 0x2F;
+    unsigned int sstart = partition->sectorbase & 0x3F;
+    unsigned int send = partition->sectorlimit & 0x3F;
 
     channel_send_fmt(0, source, EVENT_DATA, "    Boot: 0x%H2c\n", &partition->boot);
     channel_send_fmt(0, source, EVENT_DATA, "    Id: 0x%H2c\n", &partition->systemid);
