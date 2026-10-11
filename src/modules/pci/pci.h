@@ -151,6 +151,13 @@
 #define PCI_CONFIG_PIN                  0x3D
 #define PCI_CONFIG_GRANT                0x3E
 #define PCI_CONFIG_LATENCY              0x3F
+#define PCI_COMMAND_MASTER              0x0004
+#define PCI_COMMAND_INTXDISABLE         0x0400
+#define PCI_STATUS_CAPABILITIES         0x0010
+#define PCI_CAPABILITY_MSI              0x05
+#define PCI_MSI_ENABLE                  0x0001
+#define PCI_MSI_MULTIPLE                0x0070
+#define PCI_MSI_64BIT                   0x0080
 
 unsigned int pci_ind(unsigned int id, unsigned short offset);
 unsigned short pci_inw(unsigned int id, unsigned short offset);
@@ -160,3 +167,6 @@ void pci_outw(unsigned int id, unsigned short offset, unsigned short value);
 void pci_outb(unsigned int id, unsigned short offset, unsigned char value);
 void pci_setmaster(unsigned int id);
 unsigned short pci_getirq(unsigned int id);
+unsigned char pci_findcapability(unsigned int id, unsigned char capability);
+unsigned int pci_setmsi(unsigned int id, unsigned int address, unsigned int data);
+void pci_unsetmsi(unsigned int id);

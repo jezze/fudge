@@ -67,7 +67,7 @@ void pci_setmaster(unsigned int id)
 
     unsigned short command = pci_inw(id, PCI_CONFIG_COMMAND);
 
-    pci_outw(id, PCI_CONFIG_COMMAND, command | (1 << 2));
+    pci_outw(id, PCI_CONFIG_COMMAND, command | PCI_COMMAND_MASTER);
 
 }
 
@@ -75,6 +75,79 @@ unsigned short pci_getirq(unsigned int id)
 {
 
     return pci_inb(id, PCI_CONFIG_LINE);
+
+}
+
+unsigned char pci_findcapability(unsigned int id, unsigned char capability)
+{
+
+    unsigned char offset;
+    unsigned int i;
+
+    if (!(pci_inw(id, PCI_CONFIG_STATUS) & PCI_STATUS_CAPABILITIES))
+        return 0;
+
+    offset = pci_inb(id, PCI_CONFIG_CAPABILITIES) & 0xFC;
+
+    for (i = 0; offset && i < 48; i++)
+    {
+
+        if (pci_inb(id, offset) == capability)
+            return offset;
+
+        offset = pci_inb(id, offset + 1) & 0xFC;
+
+    }
+
+    return 0;
+
+}
+
+unsigned int pci_setmsi(unsigned int id, unsigned int address, unsigned int data)
+{
+
+    unsigned char offset = pci_findcapability(id, PCI_CAPABILITY_MSI);
+    unsigned short control;
+
+    if (!offset)
+        return 0;
+
+    control = pci_inw(id, offset + 2);
+
+    pci_outd(id, offset + 4, address);
+
+    if (control & PCI_MSI_64BIT)
+    {
+
+        pci_outd(id, offset + 8, 0);
+        pci_outw(id, offset + 12, data);
+
+    }
+
+    else
+    {
+
+        pci_outw(id, offset + 8, data);
+
+    }
+
+    pci_outw(id, offset + 2, (control & ~PCI_MSI_MULTIPLE) | PCI_MSI_ENABLE);
+    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) | PCI_COMMAND_INTXDISABLE);
+
+    return 1;
+
+}
+
+void pci_unsetmsi(unsigned int id)
+{
+
+    unsigned char offset = pci_findcapability(id, PCI_CAPABILITY_MSI);
+
+    if (!offset)
+        return;
+
+    pci_outw(id, offset + 2, pci_inw(id, offset + 2) & ~PCI_MSI_ENABLE);
+    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) & ~PCI_COMMAND_INTXDISABLE);
 
 }
 
