@@ -16,10 +16,14 @@ cmd_run() {
     network=n
     slirp=n
     uefi=n
+    ahci=n
 
     while test ${#} -gt 0
     do
         case "${1}" in
+            -a)
+                ahci=y
+                ;;
             -d)
                 disk=y
                 diskname="${2}"
@@ -55,7 +59,12 @@ cmd_run() {
 
     if test "${disk}" == "y"
     then
-        cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
+        if test "${ahci}" == "y"
+        then
+            cmd="${cmd} -device ahci,id=ahci0 -drive file=${diskname},format=qcow2,if=none,id=disk0 -device ide-hd,drive=disk0,bus=ahci0.0"
+        else
+            cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
+        fi
     else
         cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
         test -f fudge || error "Kernel not found. Forgot to build?"
