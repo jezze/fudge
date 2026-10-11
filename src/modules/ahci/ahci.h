@@ -1,5 +1,7 @@
 #define AHCI_GHC                        0x04
 #define AHCI_GHC_AE                     0x80000000
+#define AHCI_GHC_IE                     0x00000002
+#define AHCI_IS                         0x08
 #define AHCI_PI                         0x0C
 #define AHCI_PORT                       0x100
 #define AHCI_PORTSIZE                   0x80
@@ -9,7 +11,9 @@
 #define AHCI_PFB                        0x08
 #define AHCI_PFBU                       0x0C
 #define AHCI_PIS                        0x10
+#define AHCI_PIS_DHRS                   0x00000001
 #define AHCI_PIS_TFES                   0x40000000
+#define AHCI_PIE                        0x14
 #define AHCI_PCMD                       0x18
 #define AHCI_PCMD_ST                    0x0001
 #define AHCI_PCMD_SUD                   0x0002

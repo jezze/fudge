@@ -5,6 +5,7 @@
 #include <modules/driver.h>
 #include <modules/block.h>
 #include <modules/pci/pci.h>
+#include <modules/apic/apic.h>
 #include "ahci.h"
 
 #define BUFFERBASE                      (ARCH_MEM_BASE + 0x10000)
@@ -21,6 +22,7 @@ static volatile struct ahci_header *header;
 static volatile struct ahci_table *table;
 static unsigned long mmio;
 static unsigned int port;
+static unsigned int msi;
 
 static unsigned int readreg(unsigned int offset)
 {
@@ -115,12 +117,11 @@ static void setupport(void)
 
 }
 
-static unsigned int transfer(unsigned int write, unsigned int sector, unsigned int count)
+static unsigned int issue(unsigned int write, unsigned int sector, unsigned int count)
 {
 
     volatile struct ahci_h2d *fis = (struct ahci_h2d *)table->cfis;
     unsigned int blocks = count / BLOCKSIZE;
-    unsigned int i;
 
     if (!blocks)
         return 0;
@@ -146,23 +147,72 @@ static unsigned int transfer(unsigned int write, unsigned int sector, unsigned i
         return 0;
 
     writereg(port + AHCI_PIS, 0xFFFFFFFF);
+    writereg(AHCI_IS, 0xFFFFFFFF);
     writereg(port + AHCI_PCI, 1);
+
+    return blocks * BLOCKSIZE;
+
+}
+
+static unsigned int busy(void)
+{
+
+    return readreg(port + AHCI_PCI) & 1;
+
+}
+
+static unsigned int failed(void)
+{
+
+    return (readreg(port + AHCI_PIS) & AHCI_PIS_TFES) || (readreg(port + AHCI_PTFD) & AHCI_PTFD_ERR);
+
+}
+
+static void poll(void)
+{
+
+    unsigned int i;
 
     for (i = 0; i < TIMEOUT; i++)
     {
 
-        if (readreg(port + AHCI_PIS) & AHCI_PIS_TFES)
-            break;
-
-        if (!(readreg(port + AHCI_PCI) & 1))
-            return (readreg(port + AHCI_PTFD) & AHCI_PTFD_ERR) ? 0 : blocks * BLOCKSIZE;
+        if (!busy() || failed())
+            return;
 
     }
 
-    stopport();
-    startport();
+}
 
-    return 0;
+static void finish(struct block_session *session)
+{
+
+    if (busy() || failed())
+    {
+
+        session->count = 0;
+
+        stopport();
+        startport();
+
+    }
+
+    block_session_done(&blockinterface, session);
+
+}
+
+static void handleirq(unsigned int irq)
+{
+
+    struct block_session *session = block_getsession(&blockinterface);
+
+    spinlock_acquire(&spinlock);
+
+    if (session->source && (!busy() || failed()))
+        finish(session);
+
+    writereg(port + AHCI_PIS, 0xFFFFFFFF);
+    writereg(AHCI_IS, 0xFFFFFFFF);
+    spinlock_release(&spinlock);
 
 }
 
@@ -182,9 +232,23 @@ static void blockinterface_startsession(struct block_session *session)
 
     spinlock_acquire(&spinlock);
 
-    session->count = transfer(session->type == BLOCK_TYPE_WRITE, session->start / BLOCKSIZE, count);
+    session->count = issue(session->type == BLOCK_TYPE_WRITE, session->start / BLOCKSIZE, count);
 
-    block_session_done(&blockinterface, session);
+    if (!session->count)
+    {
+
+        block_session_done(&blockinterface, session);
+
+    }
+
+    else if (!msi)
+    {
+
+        poll();
+        finish(session);
+
+    }
+
     spinlock_release(&spinlock);
 
 }
@@ -222,16 +286,50 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    if (port)
-        block_registerinterface(&blockinterface);
+    if (!port)
+        return;
+
+    msi = apic_setmsiroutine(handleirq);
+
+    if (msi && !pci_setmsi(id, apic_getmsiaddress(), apic_getmsidata(msi)))
+    {
+
+        apic_unsetroutine(msi);
+
+        msi = 0;
+
+    }
+
+    if (msi)
+    {
+
+        writereg(port + AHCI_PIE, AHCI_PIS_DHRS | AHCI_PIS_TFES);
+        writereg(AHCI_GHC, readreg(AHCI_GHC) | AHCI_GHC_IE);
+
+    }
+
+    block_registerinterface(&blockinterface);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    if (port)
-        block_unregisterinterface(&blockinterface);
+    if (!port)
+        return;
+
+    if (msi)
+    {
+
+        writereg(AHCI_GHC, readreg(AHCI_GHC) & ~AHCI_GHC_IE);
+        pci_unsetmsi(id);
+        apic_unsetroutine(msi);
+
+        msi = 0;
+
+    }
+
+    block_unregisterinterface(&blockinterface);
 
 }
 
