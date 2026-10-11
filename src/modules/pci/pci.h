@@ -158,6 +158,10 @@
 #define PCI_MSI_ENABLE                  0x0001
 #define PCI_MSI_MULTIPLE                0x0070
 #define PCI_MSI_64BIT                   0x0080
+#define PCI_CAPABILITY_MSIX             0x11
+#define PCI_MSIX_SIZE                   0x07FF
+#define PCI_MSIX_MASK                   0x4000
+#define PCI_MSIX_ENABLE                 0x8000
 
 unsigned int pci_ind(unsigned int id, unsigned short offset);
 unsigned short pci_inw(unsigned int id, unsigned short offset);
@@ -170,3 +174,6 @@ unsigned short pci_getirq(unsigned int id);
 unsigned char pci_findcapability(unsigned int id, unsigned char capability);
 unsigned int pci_setmsi(unsigned int id, unsigned int address, unsigned int data);
 void pci_unsetmsi(unsigned int id);
+unsigned long pci_getbar(unsigned int id, unsigned int index);
+unsigned int pci_setmsix(unsigned int id, unsigned int entry, unsigned int address, unsigned int data);
+void pci_unsetmsix(unsigned int id);

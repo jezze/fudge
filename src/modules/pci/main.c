@@ -1,5 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
+#include <cpu.h>
+#include <arch.h>
 #include <modules/bus.h>
 #include <modules/driver.h>
 #include <modules/io/io.h>
@@ -147,6 +149,84 @@ void pci_unsetmsi(unsigned int id)
         return;
 
     pci_outw(id, offset + 2, pci_inw(id, offset + 2) & ~PCI_MSI_ENABLE);
+    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) & ~PCI_COMMAND_INTXDISABLE);
+
+}
+
+unsigned long pci_getbar(unsigned int id, unsigned int index)
+{
+
+    unsigned int bar = pci_ind(id, PCI_CONFIG_BAR0 + index * 4);
+    unsigned long address = bar & 0xFFFFFFF0;
+
+    if (bar & 1)
+        return 0;
+
+    if ((bar & 0x06) == 0x04 && index < 5)
+    {
+
+        unsigned int high = pci_ind(id, PCI_CONFIG_BAR0 + (index + 1) * 4);
+
+        if (high && sizeof (unsigned long) == 4)
+            return 0;
+
+        address |= ((unsigned long)high << 16) << 16;
+
+    }
+
+    return address;
+
+}
+
+unsigned int pci_setmsix(unsigned int id, unsigned int entry, unsigned int address, unsigned int data)
+{
+
+    unsigned char offset = pci_findcapability(id, PCI_CAPABILITY_MSIX);
+    unsigned short control;
+    unsigned int table;
+    unsigned long base;
+    volatile unsigned int *vector;
+
+    if (!offset)
+        return 0;
+
+    control = pci_inw(id, offset + 2);
+
+    if (entry > (control & PCI_MSIX_SIZE))
+        return 0;
+
+    table = pci_ind(id, offset + 4);
+    base = pci_getbar(id, table & 7);
+
+    if (!base)
+        return 0;
+
+    base += (table & ~7) + entry * 16;
+    vector = (volatile unsigned int *)base;
+
+    arch_kmap(base & ~0xFFFUL, base & ~0xFFFUL, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+    vector[0] = address;
+    vector[1] = 0;
+    vector[2] = data;
+    vector[3] = 0;
+
+    pci_outw(id, offset + 2, (control & ~PCI_MSIX_MASK) | PCI_MSIX_ENABLE);
+    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) | PCI_COMMAND_INTXDISABLE);
+
+    return 1;
+
+}
+
+void pci_unsetmsix(unsigned int id)
+{
+
+    unsigned char offset = pci_findcapability(id, PCI_CAPABILITY_MSIX);
+
+    if (!offset)
+        return;
+
+    pci_outw(id, offset + 2, pci_inw(id, offset + 2) & ~PCI_MSIX_ENABLE);
     pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) & ~PCI_COMMAND_INTXDISABLE);
 
 }
