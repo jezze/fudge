@@ -168,7 +168,12 @@ cmd_disk_connect() {
     test -f "${disk}" || error "Disk not found: ${disk}"
 
     modprobe nbd
-    qemu-nbd --connect "${device}" "${disk}"
+    qemu-nbd --connect "${device}" "${disk}" || error "Could not connect: ${disk}"
+
+    while test "$(cat "/sys/block/${device#/dev/}/size")" = "0"
+    do
+        sleep 0.1
+    done
 }
 
 cmd_disk_disconnect() {
@@ -244,6 +249,7 @@ disk_setup() {
 
     echo -n "Creating partitions... "
     "disk_partition_${2}" "${device}"
+    udevadm settle
     echo "done"
 
     echo -n "Creating filesystems... "
