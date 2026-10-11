@@ -53,6 +53,54 @@ apic_isr:
     .align 8
     pushq $0x0F
     jmp apic_common
+    .align 8
+    pushq $0x10
+    jmp apic_common
+    .align 8
+    pushq $0x11
+    jmp apic_common
+    .align 8
+    pushq $0x12
+    jmp apic_common
+    .align 8
+    pushq $0x13
+    jmp apic_common
+    .align 8
+    pushq $0x14
+    jmp apic_common
+    .align 8
+    pushq $0x15
+    jmp apic_common
+    .align 8
+    pushq $0x16
+    jmp apic_common
+    .align 8
+    pushq $0x17
+    jmp apic_common
+    .align 8
+    pushq $0x18
+    jmp apic_common
+    .align 8
+    pushq $0x19
+    jmp apic_common
+    .align 8
+    pushq $0x1A
+    jmp apic_common
+    .align 8
+    pushq $0x1B
+    jmp apic_common
+    .align 8
+    pushq $0x1C
+    jmp apic_common
+    .align 8
+    pushq $0x1D
+    jmp apic_common
+    .align 8
+    pushq $0x1E
+    jmp apic_common
+    .align 8
+    pushq $0x1F
+    jmp apic_common
 
 .align 16
 .global apic_test

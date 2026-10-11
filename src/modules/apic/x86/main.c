@@ -13,6 +13,8 @@
 #define OVERRIDES                       16
 #define MSR_APIC                        0x1B
 #define IOAPIC_MASK                     (1 << 16)
+#define MSIBASE                         0x10
+#define MSIS                            16
 
 static struct {unsigned int detected;} lapics[256];
 static struct {unsigned int detected; unsigned int address; unsigned int gsibase;} ioapics[256];
@@ -394,6 +396,48 @@ unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq)
     updateirq(irq);
 
     return 1;
+
+}
+
+unsigned int apic_setmsiroutine(void (*routine)(unsigned int irq))
+{
+
+    unsigned int irq;
+
+    if (!mmio)
+        return 0;
+
+    for (irq = MSIBASE; irq < MSIBASE + MSIS; irq++)
+    {
+
+        if (!routines[irq])
+        {
+
+            idt_setdescriptor(idt, 0x60 + irq, (void (*)(void))((unsigned long)apic_isr + 8 * irq), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
+
+            routines[irq] = routine;
+
+            return irq;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+unsigned int apic_getmsiaddress(void)
+{
+
+    return 0xFEE00000 | (apic_getid() << 12);
+
+}
+
+unsigned int apic_getmsidata(unsigned int irq)
+{
+
+    return 0x60 + irq;
 
 }
 
