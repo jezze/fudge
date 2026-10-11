@@ -83,7 +83,7 @@ cmd_run() {
 
     if test "${slirp}" == "y"
     then
-        cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1"
+        cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1,hostfwd=tcp::8080-:80"
     fi
 
     if test "${uefi}" == "y"
