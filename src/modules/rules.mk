@@ -169,12 +169,12 @@ L:=\
 include $(DIR_MK)/kmod.mk
 ifeq ($(ARCH),x86)
 include $(DIR_SRC)/modules/64bit/rules.mk
-include $(DIR_SRC)/modules/acpi/x86/rules.mk
+include $(DIR_SRC)/modules/acpi/rules.mk
 include $(DIR_SRC)/modules/ahci/rules.mk
 include $(DIR_SRC)/modules/apic/x86/rules.mk
-include $(DIR_SRC)/modules/ata/x86/rules.mk
+include $(DIR_SRC)/modules/ata/rules.mk
 include $(DIR_SRC)/modules/atapi/rules.mk
-include $(DIR_SRC)/modules/bga/x86/rules.mk
+include $(DIR_SRC)/modules/bga/rules.mk
 include $(DIR_SRC)/modules/cpuid/x86/rules.mk
 include $(DIR_SRC)/modules/fpu/rules.mk
 include $(DIR_SRC)/modules/gop/x86/rules.mk
@@ -202,12 +202,12 @@ include $(DIR_SRC)/modules/vga/rules.mk
 include $(DIR_SRC)/modules/virtio/rules.mk
 endif
 ifeq ($(ARCH),x86_64)
-include $(DIR_SRC)/modules/acpi/x86_64/rules.mk
+include $(DIR_SRC)/modules/acpi/rules.mk
 include $(DIR_SRC)/modules/ahci/rules.mk
 include $(DIR_SRC)/modules/apic/x86_64/rules.mk
-include $(DIR_SRC)/modules/ata/x86_64/rules.mk
+include $(DIR_SRC)/modules/ata/rules.mk
 include $(DIR_SRC)/modules/atapi/rules.mk
-include $(DIR_SRC)/modules/bga/x86_64/rules.mk
+include $(DIR_SRC)/modules/bga/rules.mk
 include $(DIR_SRC)/modules/cpuid/x86_64/rules.mk
 include $(DIR_SRC)/modules/gop/x86_64/rules.mk
 include $(DIR_SRC)/modules/i915/rules.mk

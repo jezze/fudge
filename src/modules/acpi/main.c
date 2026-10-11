@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <kernel/x86_64/cpu.h>
-#include <kernel/x86_64/arch.h>
+#include <cpu.h>
+#include <arch.h>
 #include <modules/acpi/acpi.h>
 
 static unsigned long sdt;

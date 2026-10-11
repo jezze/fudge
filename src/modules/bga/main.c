@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <kernel/x86_64/cpu.h>
-#include <kernel/x86_64/arch.h>
+#include <cpu.h>
+#include <arch.h>
 #include <modules/driver.h>
 #include <modules/video.h>
 #include <modules/io/io.h>
