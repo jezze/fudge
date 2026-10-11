@@ -3,6 +3,9 @@
 #include <disk.h>
 
 static struct event_blockinfo blockinfo;
+static unsigned char gptefi[16] = {0x28, 0x73, 0x2A, 0xC1, 0x1F, 0xF8, 0xD2, 0x11, 0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B};
+static unsigned char gptbasic[16] = {0xA2, 0xA0, 0xD0, 0xEB, 0xE5, 0xB9, 0x33, 0x44, 0x87, 0xC0, 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7};
+static unsigned char gptlinux[16] = {0xAF, 0x3D, 0xC6, 0x0F, 0x83, 0x84, 0x72, 0x47, 0x8E, 0x79, 0x3D, 0x69, 0xD8, 0x47, 0x7D, 0xE4};
 
 static unsigned int sendblockreadrequest(unsigned int target, unsigned int offset, unsigned int count)
 {
@@ -40,7 +43,7 @@ static void mountext2(unsigned int source, unsigned int target, unsigned int off
 
 }
 
-static void mountpartition(unsigned int source, unsigned int target, struct mbr_partition *partition, char *name, char *service, unsigned int index)
+static void mountmbr(unsigned int source, unsigned int target, struct mbr_partition *partition, char *name, char *service, unsigned int index)
 {
 
     unsigned int offset = ((partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0])) * blockinfo.blocksize;
@@ -62,6 +65,39 @@ static void mountpartition(unsigned int source, unsigned int target, struct mbr_
         break;
 
     }
+
+}
+
+static void mountgpt(unsigned int source, unsigned int target, unsigned int ipartition, char *name, char *service, unsigned int index)
+{
+
+    struct gpt_header header;
+    struct gpt_entry entry;
+    unsigned int entryoffset;
+    unsigned int offset;
+
+    if (sendblockreadrequest(target, blockinfo.blocksize, blockinfo.blocksize) != blockinfo.blocksize)
+        return;
+
+    buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
+
+    if (!gpt_validate(&header) || ipartition >= gpt_read32(header.entrycount))
+        return;
+
+    entryoffset = gpt_read32(header.entrylba) * blockinfo.blocksize + ipartition * gpt_read32(header.entrysize);
+
+    if (sendblockreadrequest(target, entryoffset - entryoffset % blockinfo.blocksize, blockinfo.blocksize) != blockinfo.blocksize)
+        return;
+
+    buffer_copy(&entry, (void *)(blockinfo.buffer + entryoffset % blockinfo.blocksize), sizeof (struct gpt_entry));
+
+    offset = gpt_read32(entry.firstlba) * blockinfo.blocksize;
+
+    if (buffer_match(entry.type, gptlinux, 16) || buffer_match(entry.type, gptefi, 16) || buffer_match(entry.type, gptbasic, 16))
+        mountfat(source, target, offset, name, service, index);
+
+    if (buffer_match(entry.type, gptlinux, 16))
+        mountext2(source, target, offset, name, service, index);
 
 }
 
@@ -88,8 +124,13 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 
     buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
 
-    if (mbr_validate(&mbr) && ipartition < 4 && mbr.partition[ipartition].systemid)
-        mountpartition(source, target, &mbr.partition[ipartition], name, service, index);
+    if (!mbr_validate(&mbr))
+        return;
+
+    if (mbr.partition[0].systemid == 0xEE)
+        mountgpt(source, target, ipartition, name, service, index);
+    else if (ipartition < 4 && mbr.partition[ipartition].systemid)
+        mountmbr(source, target, &mbr.partition[ipartition], name, service, index);
 
 }
 
