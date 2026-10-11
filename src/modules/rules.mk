@@ -85,20 +85,6 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
-    $(DIR_SRC)/modules/info.ko \
-
-N:=\
-    $(DIR_SRC)/modules/info.ko.map \
-
-O:=\
-    $(DIR_SRC)/modules/info.o \
-
-L:=\
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/kmod.mk
-
-M:=\
     $(DIR_SRC)/modules/keyboard.ko \
 
 N:=\
@@ -113,20 +99,6 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
-    $(DIR_SRC)/modules/log.ko \
-
-N:=\
-    $(DIR_SRC)/modules/log.ko.map \
-
-O:=\
-    $(DIR_SRC)/modules/log.o \
-
-L:=\
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/kmod.mk
-
-M:=\
     $(DIR_SRC)/modules/mouse.ko \
 
 N:=\
@@ -134,6 +106,34 @@ N:=\
 
 O:=\
     $(DIR_SRC)/modules/mouse.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
+
+M:=\
+    $(DIR_SRC)/modules/sysinfo.ko \
+
+N:=\
+    $(DIR_SRC)/modules/sysinfo.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/sysinfo.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
+
+M:=\
+    $(DIR_SRC)/modules/syslog.ko \
+
+N:=\
+    $(DIR_SRC)/modules/syslog.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/syslog.o \
 
 L:=\
     $(DIR_LIB)/fudge/fudge.a \

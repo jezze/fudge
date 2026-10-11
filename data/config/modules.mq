@@ -1,7 +1,7 @@
 {
   modules: [
     { path: initrd:kernel/base.ko }
-    { path: initrd:kernel/log.ko }
+    { path: initrd:kernel/syslog.ko }
     { path: initrd:kernel/block.ko }
     { path: initrd:kernel/clock.ko }
     { path: initrd:kernel/console.ko }
@@ -11,6 +11,6 @@
     { path: initrd:kernel/audio.ko }
     { path: initrd:kernel/video.ko }
     { path: initrd:kernel/ethernet.ko }
-    { path: initrd:kernel/info.ko }
+    { path: initrd:kernel/sysinfo.ko }
   ]
 }
