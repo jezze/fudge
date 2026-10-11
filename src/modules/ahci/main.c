@@ -269,7 +269,7 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    mmio = pci_ind(id, PCI_CONFIG_BAR5) & 0xFFFFFFF0;
+    mmio = pci_getbar(id, 5);
 
     arch_kmap(mmio, mmio, 0x2000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     pci_setmaster(id);

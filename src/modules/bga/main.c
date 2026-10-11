@@ -79,7 +79,7 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    framebuffer = pci_ind(id, PCI_CONFIG_BAR0) & 0xFFFFFFF0;
+    framebuffer = pci_getbar(id, 0);
 
 }
 

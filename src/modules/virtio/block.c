@@ -110,7 +110,7 @@ static void driver_reset(unsigned int id)
 
     unsigned char status;
 
-    io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
+    io = pci_getbar(id, 0);
 
     virtio_reset(io);
     io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE);
