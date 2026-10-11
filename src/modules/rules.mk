@@ -177,7 +177,7 @@ include $(DIR_SRC)/modules/atapi/rules.mk
 include $(DIR_SRC)/modules/bga/rules.mk
 include $(DIR_SRC)/modules/cpuid/x86/rules.mk
 include $(DIR_SRC)/modules/fpu/rules.mk
-include $(DIR_SRC)/modules/gop/x86/rules.mk
+include $(DIR_SRC)/modules/gop/rules.mk
 include $(DIR_SRC)/modules/i915/rules.mk
 include $(DIR_SRC)/modules/ide/rules.mk
 include $(DIR_SRC)/modules/io/x86/rules.mk
@@ -209,7 +209,7 @@ include $(DIR_SRC)/modules/ata/rules.mk
 include $(DIR_SRC)/modules/atapi/rules.mk
 include $(DIR_SRC)/modules/bga/rules.mk
 include $(DIR_SRC)/modules/cpuid/x86_64/rules.mk
-include $(DIR_SRC)/modules/gop/x86_64/rules.mk
+include $(DIR_SRC)/modules/gop/rules.mk
 include $(DIR_SRC)/modules/i915/rules.mk
 include $(DIR_SRC)/modules/ide/rules.mk
 include $(DIR_SRC)/modules/io/x86_64/rules.mk

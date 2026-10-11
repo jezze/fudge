@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <kernel/x86_64/cpu.h>
-#include <kernel/x86_64/arch.h>
+#include <cpu.h>
+#include <arch.h>
 #include <modules/driver.h>
 #include <modules/video.h>
 #include <modules/pci/pci.h>
@@ -44,8 +44,15 @@ static unsigned int ownsframebuffer(unsigned int id)
         if ((bar & 0x06) == 0x04 && i < 5)
         {
 
+            unsigned int high;
+
             i++;
-            address |= (unsigned long)pci_ind(id, PCI_CONFIG_BAR0 + i * 4) << 32;
+            high = pci_ind(id, PCI_CONFIG_BAR0 + i * 4);
+
+            if (high && sizeof (unsigned long) == 4)
+                continue;
+
+            address |= ((unsigned long)high << 16) << 16;
 
         }
 
