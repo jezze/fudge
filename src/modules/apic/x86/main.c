@@ -12,6 +12,7 @@
 #define ROUTINES                        256
 #define OVERRIDES                       16
 #define MSR_APIC                        0x1B
+#define IOAPIC_MASK                     (1 << 16)
 
 static struct {unsigned int detected;} lapics[256];
 static struct {unsigned int detected; unsigned int address; unsigned int gsibase;} ioapics[256];
@@ -20,6 +21,9 @@ static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
 static void (*routines[ROUTINES])(unsigned int gsi);
 static unsigned int overrides[OVERRIDES];
 static unsigned int mmio;
+static unsigned long ioapicbase;
+static unsigned int redirections[OVERRIDES];
+static struct spinlock spinlock;
 
 static volatile unsigned long readio(unsigned long base, unsigned int offset)
 {
@@ -35,6 +39,35 @@ static void writeio(unsigned long base, unsigned int offset, unsigned int value)
 
     *(volatile unsigned int *)(base) = offset;
     *(volatile unsigned int *)(base + 0x10) = value;
+
+}
+
+static void updatepin(unsigned int pin)
+{
+
+    unsigned int value = redirections[pin];
+
+    if (!routines[overrides[pin]])
+        value |= IOAPIC_MASK;
+
+    spinlock_acquire(&spinlock);
+    writeio(ioapicbase, 0x10 + pin * 2, value);
+    spinlock_release(&spinlock);
+
+}
+
+static void updateirq(unsigned int irq)
+{
+
+    unsigned int pin;
+
+    for (pin = 0; pin < OVERRIDES; pin++)
+    {
+
+        if (redirections[pin] && overrides[pin] == irq)
+            updatepin(pin);
+
+    }
 
 }
 
@@ -167,6 +200,7 @@ void apic_setupisrs(void)
             {
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
+                unsigned int pin;
 
                 if (ioapic->gsibase == 0)
                 {
@@ -180,15 +214,24 @@ void apic_setupisrs(void)
                     idt_setdescriptor(idt, 0x6B, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0B), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     idt_setdescriptor(idt, 0x6C, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0C), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
                     idt_setdescriptor(idt, 0x6E, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0E), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPE32INT);
-                    writeio(ioapic->address, 0x10 + 0x01 * 2, 0x61);
-                    writeio(ioapic->address, 0x10 + 0x02 * 2, 0x62);
-                    writeio(ioapic->address, 0x10 + 0x03 * 2, 0x63);
-                    writeio(ioapic->address, 0x10 + 0x04 * 2, 0x64);
-                    writeio(ioapic->address, 0x10 + 0x08 * 2, 0x68);
-                    writeio(ioapic->address, 0x10 + 0x0A * 2, 0x6A | (1 << 15));
-                    writeio(ioapic->address, 0x10 + 0x0B * 2, 0x6B | (1 << 15));
-                    writeio(ioapic->address, 0x10 + 0x0C * 2, 0x6C);
-                    writeio(ioapic->address, 0x10 + 0x0E * 2, 0x6E);
+                    ioapicbase = ioapic->address;
+                    redirections[0x01] = 0x61;
+                    redirections[0x02] = 0x62;
+                    redirections[0x03] = 0x63;
+                    redirections[0x04] = 0x64;
+                    redirections[0x08] = 0x68;
+                    redirections[0x0A] = 0x6A | (1 << 15);
+                    redirections[0x0B] = 0x6B | (1 << 15);
+                    redirections[0x0C] = 0x6C;
+                    redirections[0x0E] = 0x6E;
+
+                    for (pin = 0; pin < OVERRIDES; pin++)
+                    {
+
+                        if (redirections[pin])
+                            updatepin(pin);
+
+                    }
 
                 }
 
@@ -348,6 +391,8 @@ unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq)
 
     routines[irq] = routine;
 
+    updateirq(irq);
+
     return 1;
 
 }
@@ -359,6 +404,8 @@ unsigned int apic_unsetroutine(unsigned int irq)
         return 0;
 
     routines[irq] = 0;
+
+    updateirq(irq);
 
     return 1;
 
