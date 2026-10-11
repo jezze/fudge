@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <kernel/x86_64/cpu.h>
-#include <kernel/x86_64/arch.h>
+#include <cpu.h>
+#include <arch.h>
 #include <kernel/x86/udebug.h>
 #include <binary.h>
 #include <disk.h>
@@ -66,7 +66,7 @@ void mboot_setup(unsigned long address, unsigned long magic)
 
     }
 
-    if (efi && framebuffer && framebuffer->type == MBOOT_FRAMEBUFFER_TYPE_RGB)
+    if (efi && framebuffer && framebuffer->type == MBOOT_FRAMEBUFFER_TYPE_RGB && (sizeof (unsigned long) > 4 || !framebuffer->address[1]))
     {
 
         struct mboot_tag_framebuffer_rgb *rgb = (struct mboot_tag_framebuffer_rgb *)(framebuffer + 1);
@@ -74,7 +74,7 @@ void mboot_setup(unsigned long address, unsigned long magic)
         if (rgb->redposition == 16 && rgb->greenposition == 8 && rgb->blueposition == 0)
         {
 
-            firmware->address = ((unsigned long)framebuffer->address[1] << 32) | framebuffer->address[0];
+            firmware->address = (((unsigned long)framebuffer->address[1] << 16) << 16) | framebuffer->address[0];
             firmware->width = framebuffer->width;
             firmware->height = framebuffer->height;
             firmware->pitch = framebuffer->pitch;

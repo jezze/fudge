@@ -3,6 +3,7 @@ L:=\
 
 O:=\
     $(DIR_LIB)/mboot2/cpio.o \
+    $(DIR_LIB)/mboot2/mboot.o \
 
 LD_SCRIPT_KBIN:=$(DIR_LIB)/mboot2/linker.ld
 
