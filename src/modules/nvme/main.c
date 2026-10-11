@@ -8,11 +8,9 @@
 #include <modules/apic/apic.h>
 #include "nvme.h"
 
-#define BUFFERBASE                      (ARCH_MEM_BASE + 0x18000)
-#define BUFFERSIZE                      0x8000
 #define PAGESIZE                        0x1000
 #define QUEUESIZE                       8
-#define MEMORYSIZE                      0x6000
+#define MEMORYSIZE                      0x7000
 #define TIMEOUT                         0x1000000
 #define FAILED                          0xFFFF
 
@@ -179,7 +177,7 @@ static unsigned int setup(void)
 {
 
     unsigned long base = ((unsigned long)memory + PAGESIZE - 1) & ~(PAGESIZE - 1UL);
-    volatile unsigned char *identify = (volatile unsigned char *)BUFFERBASE;
+    volatile unsigned char *identify = (volatile unsigned char *)(base + 5 * PAGESIZE);
 
     stride = 4 << (readreg(NVME_CAP + 4) & 0x0F);
     prplist = (volatile unsigned int *)(base + 4 * PAGESIZE);
@@ -200,7 +198,7 @@ static unsigned int setup(void)
     if (!waitstatus(NVME_CSTS_RDY, NVME_CSTS_RDY))
         return 0;
 
-    if (!command(NVME_ADMIN_IDENTIFY, 1, BUFFERBASE, 0, 0))
+    if (!command(NVME_ADMIN_IDENTIFY, 1, (unsigned long)identify, 0, 0))
         return 0;
 
     blocksize = 1 << identify[128 + (identify[26] & 0x0F) * 4 + 2];
@@ -218,7 +216,7 @@ static unsigned int setup(void)
 
 }
 
-static unsigned int issue(unsigned int write, unsigned int sector, unsigned int count)
+static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
 {
 
     unsigned int blocks = count / blocksize;
@@ -226,11 +224,11 @@ static unsigned int issue(unsigned int write, unsigned int sector, unsigned int 
     unsigned long prp2 = 0;
     unsigned int i;
 
-    if (!blocks)
+    if (!blocks || !buffer)
         return 0;
 
     if (pages == 2)
-        prp2 = BUFFERBASE + PAGESIZE;
+        prp2 = buffer + PAGESIZE;
 
     if (pages > 2)
     {
@@ -238,7 +236,7 @@ static unsigned int issue(unsigned int write, unsigned int sector, unsigned int 
         for (i = 1; i < pages; i++)
         {
 
-            prplist[(i - 1) * 2] = BUFFERBASE + i * PAGESIZE;
+            prplist[(i - 1) * 2] = buffer + i * PAGESIZE;
             prplist[(i - 1) * 2 + 1] = 0;
 
         }
@@ -247,7 +245,7 @@ static unsigned int issue(unsigned int write, unsigned int sector, unsigned int 
 
     }
 
-    submit(&io, (write) ? NVME_IO_WRITE : NVME_IO_READ, 1, BUFFERBASE, prp2, sector, 0, blocks - 1);
+    submit(&io, (write) ? NVME_IO_WRITE : NVME_IO_READ, 1, buffer, prp2, sector, 0, blocks - 1);
 
     return blocks * blocksize;
 
@@ -280,8 +278,8 @@ static void handleirq(unsigned int irq)
 static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 {
 
-    blockinfo->buffer = BUFFERBASE;
-    blockinfo->buffersize = BUFFERSIZE;
+    blockinfo->buffer = KERNEL_VBUFFER;
+    blockinfo->buffersize = TASK_BUFFERSIZE;
     blockinfo->blocksize = blocksize;
 
 }
@@ -289,11 +287,12 @@ static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 static void blockinterface_startsession(struct block_session *session)
 {
 
-    unsigned int count = (session->count > BUFFERSIZE) ? BUFFERSIZE : session->count;
+    unsigned long buffer = kernel_getbuffer(session->source);
+    unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
 
     spinlock_acquire(&spinlock);
 
-    session->count = issue(session->type == BLOCK_TYPE_WRITE, session->start / blocksize, count);
+    session->count = issue(buffer, session->type == BLOCK_TYPE_WRITE, session->start / blocksize, count);
 
     if (!session->count)
         block_session_done(&blockinterface, session);
@@ -373,7 +372,6 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    arch_kmap(BUFFERBASE, BUFFERBASE, BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     base_initdriver(&driver, "nvme", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }

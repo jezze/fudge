@@ -8,8 +8,6 @@
 #include <modules/apic/apic.h>
 #include "ahci.h"
 
-#define BUFFERBASE                      (ARCH_MEM_BASE + 0x10000)
-#define BUFFERSIZE                      0x8000
 #define BLOCKSIZE                       512
 #define MEMORYSIZE                      0x1000
 #define TIMEOUT                         0x1000000
@@ -117,19 +115,19 @@ static void setupport(void)
 
 }
 
-static unsigned int issue(unsigned int write, unsigned int sector, unsigned int count)
+static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
 {
 
     volatile struct ahci_h2d *fis = (struct ahci_h2d *)table->cfis;
     unsigned int blocks = count / BLOCKSIZE;
 
-    if (!blocks)
+    if (!blocks || !buffer)
         return 0;
 
     header->flags = (sizeof (struct ahci_h2d) / 4) | (write ? AHCI_HEADER_WRITE : 0);
     header->prdtl = 1;
     header->prdbc = 0;
-    table->prd.dba = BUFFERBASE;
+    table->prd.dba = buffer;
     table->prd.dbau = 0;
     table->prd.dbc = blocks * BLOCKSIZE - 1;
     fis->type = AHCI_TYPE_H2D;
@@ -219,8 +217,8 @@ static void handleirq(unsigned int irq)
 static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 {
 
-    blockinfo->buffer = BUFFERBASE;
-    blockinfo->buffersize = BUFFERSIZE;
+    blockinfo->buffer = KERNEL_VBUFFER;
+    blockinfo->buffersize = TASK_BUFFERSIZE;
     blockinfo->blocksize = BLOCKSIZE;
 
 }
@@ -228,11 +226,12 @@ static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 static void blockinterface_startsession(struct block_session *session)
 {
 
-    unsigned int count = (session->count > BUFFERSIZE) ? BUFFERSIZE : session->count;
+    unsigned long buffer = kernel_getbuffer(session->source);
+    unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
 
     spinlock_acquire(&spinlock);
 
-    session->count = issue(session->type == BLOCK_TYPE_WRITE, session->start / BLOCKSIZE, count);
+    session->count = issue(buffer, session->type == BLOCK_TYPE_WRITE, session->start / BLOCKSIZE, count);
 
     if (!session->count)
     {
@@ -336,7 +335,6 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    arch_kmap(BUFFERBASE, BUFFERBASE, BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     base_initdriver(&driver, "ahci", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }

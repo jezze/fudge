@@ -554,7 +554,7 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int pinode, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int pinode, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
 {
 
     struct task *task = pool_gettask(itask);
@@ -564,6 +564,8 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 
         task_reset(task);
         task_register(task, pinode, address, mmap, ip, sp);
+
+        task->buffer = buffer;
 
         if (task->address)
         {
@@ -577,6 +579,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 
                 mmap_initheader(header);
                 mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+                mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
                 if (format->map(task->address, code, TASK_CODESIZE, header))
                     task->thread.ip = format->findentry(task->address);
@@ -587,6 +590,26 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 
         if (task->thread.ip)
             return kernel_getchannelinode(itask, 0);
+
+    }
+
+    return 0;
+
+}
+
+unsigned long kernel_getbuffer(unsigned int inode)
+{
+
+    struct resource *resource = pool_getnoderesource(inode);
+
+    if (resource && resource->type == RESOURCE_MAILBOX)
+    {
+
+        struct mailbox *mailbox = resource->data;
+        struct task *task = pool_gettask(mailbox->itask);
+
+        if (task)
+            return task->buffer;
 
     }
 

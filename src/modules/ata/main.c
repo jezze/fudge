@@ -1,14 +1,11 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <cpu.h>
-#include <arch.h>
 #include <modules/driver.h>
 #include <modules/block.h>
 #include <modules/ide/ide.h>
 #include <modules/pic/pic.h>
 #include <modules/apic/apic.h>
 
-#define BUFFERSIZE                      0x8000
 #define BLOCKSIZE                       512
 
 static void *blockbuffer;
@@ -84,8 +81,8 @@ static void handleirq(unsigned int irq)
 static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 {
 
-    blockinfo->buffer = ARCH_MEM_BASE;
-    blockinfo->buffersize = BUFFERSIZE;
+    blockinfo->buffer = KERNEL_VBUFFER;
+    blockinfo->buffersize = TASK_BUFFERSIZE;
     blockinfo->blocksize = BLOCKSIZE;
 
 }
@@ -93,7 +90,25 @@ static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 static void blockinterface_startsession(struct block_session *session)
 {
 
+    void *buffer = (void *)kernel_getbuffer(session->source);
+
+    if (!buffer)
+    {
+
+        session->count = 0;
+
+        block_session_done(&blockinterface, session);
+
+        return;
+
+    }
+
     spinlock_acquire(&spinlock);
+
+    blockbuffer = buffer;
+
+    if (session->count > TASK_BUFFERSIZE)
+        session->count = TASK_BUFFERSIZE;
 
     switch (session->type)
     {
@@ -176,9 +191,6 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    blockbuffer = (void *)ARCH_MEM_BASE;
-
-    arch_kmap(ARCH_MEM_BASE, ARCH_MEM_BASE, BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
     base_initdriver(&driver, "ata", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }

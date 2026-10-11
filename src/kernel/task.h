@@ -1,5 +1,6 @@
 #define TASK_CODESIZE                   0x00100000
 #define TASK_STACKSIZE                  0x00008000
+#define TASK_BUFFERSIZE                 0x00008000
 #define TASK_MAILBOXES                  8
 #define TASK_STATE_DEAD                 1
 #define TASK_STATE_NEW                  2
@@ -38,6 +39,7 @@ struct task
     unsigned int state;
     unsigned long address;
     unsigned long mmap;
+    unsigned long buffer;
     unsigned int pinode;
     unsigned int status;
     unsigned int imailbox[TASK_MAILBOXES];
