@@ -99,7 +99,6 @@ struct header
 static struct base_driver driver;
 static struct ethernet_interface ethernetinterface;
 static unsigned short io;
-static unsigned int mmio;
 static unsigned char rx[0x2600];
 static unsigned char tx0[0x800];
 static unsigned char tx1[0x800];
@@ -307,7 +306,6 @@ static void driver_reset(unsigned int id)
 {
 
     io = pci_inw(id, PCI_CONFIG_BAR0) & ~1;
-    mmio = pci_ind(id, PCI_CONFIG_BAR1);
 
     poweron();
     reset();

@@ -49,7 +49,6 @@ static unsigned short pcontrol;
 static unsigned short scontrol;
 static unsigned short pdata;
 static unsigned short sdata;
-static unsigned int busmaster;
 
 static unsigned short getcontrol(unsigned int id)
 {
@@ -300,13 +299,11 @@ static void driver_reset(unsigned int id)
     unsigned int bar1 = pci_ind(id, PCI_CONFIG_BAR1);
     unsigned int bar2 = pci_ind(id, PCI_CONFIG_BAR2);
     unsigned int bar3 = pci_ind(id, PCI_CONFIG_BAR3);
-    unsigned int bar4 = pci_ind(id, PCI_CONFIG_BAR4);
 
     pdata = (bar0 & 0xFFFFFFFC) + 0x1F0 * (!bar0);
     pcontrol = (bar1 & 0xFFFFFFFC) + 0x3F6 * (!bar1);
     sdata = (bar2 & 0xFFFFFFFC) + 0x170 * (!bar2);
     scontrol = (bar3 & 0xFFFFFFFC) + 0x376 * (!bar3);
-    busmaster = (bar4 & 0xFFFFFFFC) + 8;
 
 }
 
