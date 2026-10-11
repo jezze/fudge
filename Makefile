@@ -16,6 +16,9 @@ DIR_LIB:=lib
 DIR_SRC:=src
 DIR_INSTALL:=/boot
 REPORT:=report.xml
+ARCH:=x86
+LOADER:=mboot
+TARGET:=i386-unknown-elf
 
 .PHONY: all clean check check-full install default help
 .SUFFIXES:
@@ -33,72 +36,61 @@ check-full:
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK) $(DIR_INSTALL)/$(INIT)
 
-config-init:
+arm-integratorcp-none:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
-	@echo -n "" > $(DIR_MK)/$(CONFIG).mk
-
-config-arch-x86:
-	@echo "ARCH:=x86" >> $(DIR_MK)/$(CONFIG).mk
-
-config-arch-x86_64:
-	@echo "ARCH:=x86_64" >> $(DIR_MK)/$(CONFIG).mk
-
-config-arch-arm:
-	@echo "ARCH:=arm" >> $(DIR_MK)/$(CONFIG).mk
-
-config-arch-riscv:
-	@echo "ARCH:=riscv" >> $(DIR_MK)/$(CONFIG).mk
-
-config-loader-mboot:
-	@echo "LOADER:=mboot" >> $(DIR_MK)/$(CONFIG).mk
-
-config-loader-mboot2:
-	@echo "LOADER:=mboot2" >> $(DIR_MK)/$(CONFIG).mk
-
-config-loader-integratorcp:
+	@echo "ARCH:=arm" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
-
-config-loader-medany:
-	@echo "LOADER:=medany" >> $(DIR_MK)/$(CONFIG).mk
-
-config-target-arm-none-eabi:
 	@echo "TARGET:=arm-none-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
-config-target-arm-unknown-eabi:
+arm-integratorcp-unknown:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=arm" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=arm-unknown-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
-config-target-i386-unknown-elf:
-	@echo "TARGET:=i386-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
-
-config-target-i386-tcc:
-	@echo "TARGET:=i386-tcc" >> $(DIR_MK)/$(CONFIG).mk
-
-config-target-riscv64-elf:
+riscv-medany-elf:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=riscv" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=medany" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=riscv64-elf" >> $(DIR_MK)/$(CONFIG).mk
 
-config-target-riscv64-linux-gnu:
+riscv-medany-linux:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=riscv" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=medany" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=riscv64-linux-gnu" >> $(DIR_MK)/$(CONFIG).mk
 
-config-target-riscv64-tcc:
+riscv-medany-tcc:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=riscv" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=medany" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=riscv64-tcc" >> $(DIR_MK)/$(CONFIG).mk
 
-config-target-x86_64-unknown-elf:
+x86-mboot $(DIR_MK)/$(CONFIG).mk:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=x86" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=mboot" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=i386-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
+
+x86-mboot2:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=x86" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=mboot2" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=i386-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
+
+x86-mboot-tcc:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=x86" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=mboot" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=i386-tcc" >> $(DIR_MK)/$(CONFIG).mk
+
+x86_64-mboot2:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=x86_64" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=mboot2" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=x86_64-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
 
 default: x86-mboot
-
-arm-integratorcp-none: config-init | config-arch-arm config-loader-integratorcp config-target-arm-none-eabi
-arm-integratorcp-unknown: config-init | config-arch-arm config-loader-integratorcp config-target-arm-unknown-eabi
-
-riscv-medany-elf: config-init | config-arch-riscv config-loader-medany config-target-riscv64-elf
-riscv-medany-linux: config-init | config-arch-riscv config-loader-medany config-target-riscv64-linux-gnu
-riscv-medany-tcc: config-init | config-arch-riscv config-loader-medany config-target-riscv64-tcc
-
-x86-mboot: config-init | config-arch-x86 config-loader-mboot config-target-i386-unknown-elf
-x86-mboot2: config-init | config-arch-x86 config-loader-mboot2 config-target-i386-unknown-elf
-x86-mboot-tcc: config-init | config-arch-x86 config-loader-mboot config-target-i386-tcc
-
-x86_64-mboot2: config-init | config-arch-x86_64 config-loader-mboot2 config-target-x86_64-unknown-elf
 
 help:
 	@echo "Building and cleaning:"

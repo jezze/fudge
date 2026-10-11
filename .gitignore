@@ -76,3 +76,4 @@ src/wutils/wconnect
 src/wutils/wsettings
 src/wutils/wshell
 src/wutils/wimage
+/mk/config.mk
