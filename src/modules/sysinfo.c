@@ -472,12 +472,12 @@ void module_init(void)
 
     record_init(&rootrecords[0], ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
     record_init(&rootrecords[1], ROOT, RECORD_TYPE_DIRECTORY, 0, 2, 2, "..");
-    record_init(&rootrecords[2], 0x1001, RECORD_TYPE_NORMAL, 0, 3, 5, "cores");
-    record_init(&rootrecords[3], 0x1002, RECORD_TYPE_NORMAL, 0, 4, 5, "tasks");
-    record_init(&rootrecords[4], 0x1003, RECORD_TYPE_NORMAL, 0, 5, 9, "mailboxes");
-    record_init(&rootrecords[5], 0x1004, RECORD_TYPE_NORMAL, 0, 6, 8, "services");
-    record_init(&rootrecords[6], 0x1005, RECORD_TYPE_NORMAL, 0, 7, 5, "buses");
-    record_init(&rootrecords[7], 0x1006, RECORD_TYPE_NORMAL, 0, 8, 7, "drivers");
+    record_init(&rootrecords[2], 0x1001, RECORD_TYPE_NORMAL, 0, 3, 8, "cores.mq");
+    record_init(&rootrecords[3], 0x1002, RECORD_TYPE_NORMAL, 0, 4, 8, "tasks.mq");
+    record_init(&rootrecords[4], 0x1003, RECORD_TYPE_NORMAL, 0, 5, 12, "mailboxes.mq");
+    record_init(&rootrecords[5], 0x1004, RECORD_TYPE_NORMAL, 0, 6, 11, "services.mq");
+    record_init(&rootrecords[6], 0x1005, RECORD_TYPE_NORMAL, 0, 7, 8, "buses.mq");
+    record_init(&rootrecords[7], 0x1006, RECORD_TYPE_NORMAL, 0, 8, 10, "drivers.mq");
     spinlock_init(&spinlock);
     node_operands_init(&operands, 0, operands_place);
     service_init(&service);
