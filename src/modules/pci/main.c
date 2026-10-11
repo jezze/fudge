@@ -50,7 +50,7 @@ void pci_outw(unsigned int id, unsigned short offset, unsigned short value)
 {
 
     io_outd(REG_CONTROL, id | (offset & 0xFC));
-    io_outw(REG_DATA, value);
+    io_outw(REG_DATA + (offset & 2), value);
 
 }
 
@@ -58,7 +58,7 @@ void pci_outb(unsigned int id, unsigned short offset, unsigned char value)
 {
 
     io_outd(REG_CONTROL, id | (offset & 0xFC));
-    io_outb(REG_DATA, value);
+    io_outb(REG_DATA + (offset & 3), value);
 
 }
 
