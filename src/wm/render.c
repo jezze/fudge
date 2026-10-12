@@ -66,7 +66,6 @@ static struct
     unsigned int *select[3];
     unsigned int *selecticon;
     unsigned int *selectlabel;
-    unsigned int *swatchborder;
     unsigned int *text;
     unsigned int *textbox[3];
     unsigned int *textboxreadonly;
@@ -1051,29 +1050,15 @@ static void renderframe(struct blit_display *display, struct widget *widget, int
 static void renderswatch(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    int left = widget->placement.position.x;
-    int right = left + widget->placement.size.w;
-    int top = widget->placement.position.y;
-    int bottom = top + widget->placement.size.h;
+    int left = widget->placement.position.x + CONFIG_FRAME_WIDTH;
+    int right = widget->placement.position.x + widget->placement.size.w - CONFIG_FRAME_WIDTH;
+    int top = widget->placement.position.y + CONFIG_FRAME_HEIGHT;
+    int bottom = widget->placement.position.y + widget->placement.size.h - CONFIG_FRAME_HEIGHT;
 
-    x0 = util_max(x0, left);
-    x2 = util_min(x2, right);
+    blit_frame(display, &widget->placement, line, x0, x2, colors.textbox[0]);
 
-    if (line < top + CONFIG_SWATCH_BORDER || line >= bottom - CONFIG_SWATCH_BORDER)
-    {
-
-        blit_alphaline(display, *colors.swatchborder, x0, x2);
-
-    }
-
-    else
-    {
-
-        blit_alphaline(display, *colors.swatchborder, x0, util_min(x2, left + CONFIG_SWATCH_BORDER));
-        blit_alphaline(display, widget->attributes.color, util_max(x0, left + CONFIG_SWATCH_BORDER), util_min(x2, right - CONFIG_SWATCH_BORDER));
-        blit_alphaline(display, *colors.swatchborder, util_max(x0, right - CONFIG_SWATCH_BORDER), x2);
-
-    }
+    if (line >= top && line < bottom)
+        blit_alphaline(display, widget->attributes.color, util_max(x0, left), util_min(x2, right));
 
 }
 
@@ -1417,7 +1402,6 @@ void render_init(void)
     colors.selectlabel = cmap_get("select-label");
     colors.frame = cmap_get("frame-shadow");
     colors.frametitle = cmap_get("frame-title");
-    colors.swatchborder = cmap_get("swatch-border");
     colors.text = cmap_get("text");
     colors.textboxreadonly = cmap_get("textbox-readonly-shadow");
     colors.window = cmap_get("window-shadow");
