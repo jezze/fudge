@@ -1264,6 +1264,13 @@ static void onkeypress(struct message *message)
 
         }
 
+        else if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
+        {
+
+            sendevent(selecteditem->source, 1, selecteditem->attributes.onenter, "");
+
+        }
+
         else if (selecteditem && id == KEYS_KEY_CURSORUP)
         {
 
