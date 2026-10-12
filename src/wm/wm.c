@@ -474,12 +474,49 @@ static void showwidget(struct widget *widget)
 
 }
 
+static void marktext(struct widget *text, unsigned int clear)
+{
+
+    struct text_font *font = pool_getfont(text->attributes.weight);
+    char *label = strpool_getstring(text->attributes.label);
+    unsigned int length = strpool_getcstringlength(text->attributes.label);
+    int x0 = state.mousepressed.x - text->placement.position.x;
+    int y0 = state.mousepressed.y - text->placement.position.y;
+    int x1 = state.mouseposition.x - text->placement.position.x;
+    int y1 = state.mouseposition.y - text->placement.position.y;
+
+    text->markstart = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->placement.size.w, text->rowstart.x, x0, y0);
+    text->markend = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->placement.size.w, text->rowstart.x, x1, y1);
+
+}
+
+static void markwidget(struct widget *widget, unsigned int clear)
+{
+
+    struct list_item *current = 0;
+
+    if (widget->type != WIDGET_TYPE_TEXTBOX)
+        return;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+            marktext(child, clear);
+
+    }
+
+}
+
 static void setfocus(struct widget *widget)
 {
 
     if (state.focusedwidget)
     {
 
+        markwidget(state.focusedwidget, 1);
         widget_setstate(state.focusedwidget, WIDGET_STATE_FOCUSOFF);
         widget_setstate(state.focusedwidget, WIDGET_STATE_NORMAL);
         damageall(state.focusedwidget);
@@ -863,40 +900,6 @@ static void clickwidget(struct widget *widget)
 
 }
 
-static void markwidget(struct widget *widget)
-{
-
-    if (widget->type == WIDGET_TYPE_TEXT)
-    {
-
-        int x0 = state.mousepressed.x - widget->placement.position.x;
-        int y0 = state.mousepressed.y - widget->placement.position.y;
-        int x1 = state.mouseposition.x - widget->placement.position.x;
-        int y1 = state.mouseposition.y - widget->placement.position.y;
-
-        widget->markstart = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x0, y0);
-        widget->markend = text_getoffsetat(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, widget->placement.size.w, widget->rowstart.x, x1, y1);
-
-    }
-
-    else
-    {
-
-        struct list_item *current = 0;
-
-        while ((current = pool_nextin(current, widget)))
-        {
-
-            struct widget *child = current->data;
-
-            markwidget(child);
-
-        }
-
-    }
-
-}
-
 static void purge(unsigned int source)
 {
 
@@ -1152,7 +1155,7 @@ static void onmousemove(struct message *message)
     {
 
         if (state.focusedwidget)
-            markwidget(state.focusedwidget);
+            markwidget(state.focusedwidget, 0);
 
         if (!state.focusedwidget && state.focusedwindow)
         {
@@ -1223,7 +1226,7 @@ static void onmousepress(struct message *message)
 
             if (!item || !(state.keys.mod & (KEYS_MOD_SHIFT | KEYS_MOD_CTRL)))
                 clickwidget(interactivewidget);
-            markwidget(interactivewidget);
+            markwidget(interactivewidget, 0);
 
         }
 

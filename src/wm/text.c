@@ -190,21 +190,45 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
 
     struct text_rowinfo rowinfo;
     unsigned int offset = 0;
+    unsigned int next;
     int cy = 0;
 
-    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
+    if (y < 0)
+        return 0;
+
+    while ((next = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
     {
 
-        if (y >= cy && y < cy + rowinfo.lineheight)
-            return text_getrowinfo(&rowinfo, font, text, length, ATTR_WRAP_CHAR, x - firstrowx, rowinfo.istart);
+        if (y < cy + (int)rowinfo.lineheight)
+        {
+
+            int cx = firstrowx;
+            unsigned int i;
+
+            for (i = rowinfo.istart; i < rowinfo.iend; i++)
+            {
+
+                unsigned int index = text[i];
+                int w = font->atlas[index].width;
+
+                if (x < cx + w / 2)
+                    return i;
+
+                cx += w;
+
+            }
+
+            return rowinfo.iend;
+
+        }
 
         cy += rowinfo.lineheight;
-
         firstrowx = 0;
+        offset = next;
 
     }
 
-    return 0;
+    return length;
 
 }
 
