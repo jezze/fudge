@@ -1128,8 +1128,10 @@ static void onmousepress(struct message *message)
         if (interactivewidget)
         {
 
-            if (getitem(interactivewidget))
-                selectitem(getitem(interactivewidget));
+            struct widget *item = getitem(interactivewidget);
+
+            if (item && !getselect(item))
+                selectitem(item);
 
             clickwidget(interactivewidget);
             markwidget(interactivewidget);
