@@ -382,6 +382,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->anchor = 0;
     widget->textrow = 0;
     widget->textoffset = 0;
+    widget->serial = 0;
     widget->position = util_position(0, 0);
     widget->size = util_size(0, 0);
     widget->scroll = util_position(0, 0);

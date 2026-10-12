@@ -14,6 +14,8 @@
 #define STATE_NORMAL        0
 #define STATE_GRABBED       1
 #define TEXTBOX_SIZE        256
+#define LAYOUT_DEFAULT      0
+#define LAYOUT_TILING       1
 
 struct state
 {
@@ -30,6 +32,8 @@ struct state
     struct widget *focusedwindow;
     struct widget *focusedwidget;
     struct keys keys;
+    unsigned int layout;
+    unsigned int windows;
 
 };
 
@@ -620,6 +624,8 @@ static void placewindows(unsigned int source)
                 widget->size.w = util_min(util_max(widget->size.w, display.region.size.w / 2), limit.w);
                 widget->size.h = util_min(util_max(widget->size.h, display.region.size.h / 2), limit.h);
 
+                widget->serial = ++state.windows;
+
                 setfocuswindow(widget);
                 setfocus(0);
 
@@ -630,6 +636,71 @@ static void placewindows(unsigned int source)
         }
 
     }
+
+}
+
+static struct widget *getnextwindow(unsigned int serial)
+{
+
+    struct list_item *current = 0;
+    struct widget *next = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_WINDOW && widget->state != WIDGET_STATE_DESTROYED && widget->serial > serial && (!next || widget->serial < next->serial))
+            next = widget;
+
+    }
+
+    return next;
+
+}
+
+static void placewindow(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
+{
+
+    if (widget->position.x != x || widget->position.y != y || widget->size.w != w || widget->size.h != h)
+    {
+
+        damageall(widget);
+
+        widget->position.x = x;
+        widget->position.y = y;
+        widget->size.w = w;
+        widget->size.h = h;
+
+        damageall(widget);
+
+    }
+
+}
+
+/* the oldest window takes the left half below the menu, the others share the right half from top to bottom */
+static void tilewindows(void)
+{
+
+    struct widget *menu = pool_getwidgetbyid(0, "menu");
+    int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : 0;
+    unsigned int w = display.region.size.w / 2;
+    unsigned int h = util_max((int)display.region.size.h - top, 0);
+    struct widget *first = getnextwindow(0);
+    struct widget *widget;
+    unsigned int count = 0;
+    unsigned int i = 0;
+
+    if (!first)
+        return;
+
+    placewindow(first, 0, top, w, h);
+
+    for (widget = getnextwindow(first->serial); widget; widget = getnextwindow(widget->serial))
+        count++;
+
+    for (widget = getnextwindow(first->serial); widget; widget = getnextwindow(widget->serial), i++)
+        placewindow(widget, w, top + h * i / count, display.region.size.w - w, h * (i + 1) / count - h * i / count);
 
 }
 
@@ -944,6 +1015,9 @@ static void redraw(unsigned int relayout)
         if (relayout)
         {
 
+            if (state.layout == LAYOUT_TILING)
+                tilewindows();
+
             render_place(state.rootwidget, &display.region);
             render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
 
@@ -1128,6 +1202,8 @@ static void onmain(struct message *message)
     unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
     unsigned int video = channel_lookup(option_getstring("video-service"));
 
+    state.layout = (cstring_match(option_getstring("layout"), "tiling")) ? LAYOUT_TILING : LAYOUT_DEFAULT;
+
     call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, mouse, EVENT_LINK, 0, 0);
@@ -1162,7 +1238,7 @@ static void onmousemove(struct message *message)
         if (!state.focusedwidget && state.focusedwindow)
         {
 
-            if (widget_isdragable(state.focusedwindow))
+            if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
                 translatewidget(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
 
         }
@@ -1175,7 +1251,7 @@ static void onmousemove(struct message *message)
         if (state.focusedwindow)
         {
 
-            if (widget_isresizable(state.focusedwindow))
+            if (state.layout == LAYOUT_DEFAULT && widget_isresizable(state.focusedwindow))
             {
 
                 struct util_size minimum = render_getwindowminsize(state.focusedwindow, &display.region.size);
@@ -1430,6 +1506,7 @@ void init(void)
     setupwidgets();
     render_init();
     option_add("service", "wm");
+    option_add("layout", "default");
     option_add("width", "1920");
     option_add("height", "1080");
     option_add("bpp", "4");
