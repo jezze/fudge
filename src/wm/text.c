@@ -14,6 +14,14 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     unsigned int sh = 0;
     unsigned int i;
 
+    if (wrap == ATTR_WRAP_WORD && offset && text[offset - 1] != '\n')
+    {
+
+        while (offset < length && text[offset] == ' ')
+            offset++;
+
+    }
+
     if (offset >= length)
         return 0;
 
@@ -63,20 +71,12 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
             else
             {
 
-                if (!foundchar)
-                {
-
-                    foundchar = 1;
-                    rowinfo->istart = i;
-                    rowinfo->iend = i;
-
-                }
+                foundchar = 1;
 
             }
 
         }
 
-        /* a row takes at least one character, even when it does not fit, or the text would never end */
         if (rowinfo->width + atlas->width > maxw && i > offset)
         {
 
