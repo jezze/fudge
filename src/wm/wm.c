@@ -67,6 +67,26 @@ static void setupvideo(unsigned int video)
 
 }
 
+static unsigned int intersectsrows(struct widget *widget, int x, int y)
+{
+
+    struct text_font *font = pool_getfont(widget->attributes.weight);
+    int rx = x - widget->placement.position.x;
+    int ry = y - widget->placement.position.y;
+
+    if (widget->attributes.display != ATTR_DISPLAY_INLINE)
+        return 1;
+
+    if (ry < (int)font->lineheight && rx < widget->rowstart.x)
+        return 0;
+
+    if (ry >= widget->rowstop.y && rx >= widget->rowstop.x)
+        return 0;
+
+    return 1;
+
+}
+
 static struct widget *getinteractivewidgetat(int x, int y)
 {
 
@@ -77,7 +97,7 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
         struct widget *child = current->data;
 
-        if (widget_isinteractive(child) && widget_intersects(child, x, y))
+        if (widget_isinteractive(child) && widget_intersects(child, x, y) && (child->type != WIDGET_TYPE_LINK || intersectsrows(child, x, y)))
             return child;
 
     }
@@ -120,6 +140,7 @@ static unsigned int getmousetype(int x, int y)
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_ITEM:
+    case WIDGET_TYPE_LINK:
     case WIDGET_TYPE_SELECT:
         return BLIT_MOUSE_HAND;
 

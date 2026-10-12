@@ -93,7 +93,7 @@ static unsigned int getstretch(unsigned int flow)
 static unsigned int isinlinetext(struct widget *widget)
 {
 
-    return widget->type == WIDGET_TYPE_TEXT && widget->attributes.display == ATTR_DISPLAY_INLINE;
+    return (widget->type == WIDGET_TYPE_TEXT || widget->type == WIDGET_TYPE_LINK) && widget->attributes.display == ATTR_DISPLAY_INLINE;
 
 }
 
@@ -1237,6 +1237,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_FILL, getsizefill, placefill, renderfill);
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
     setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
+    setupcall(WIDGET_TYPE_LINK, getsizetext, placetext, rendertext);
     setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
     setupcall(WIDGET_TYPE_LISTBOX, getsizelistbox, placelistbox, renderlistbox);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
