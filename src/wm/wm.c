@@ -1085,6 +1085,9 @@ static void purge(unsigned int source)
 
     }
 
+    if (!state.focusedwindow && state.layout == LAYOUT_TILING)
+        setfocuswindow(getolderwindow(state.windows + 1));
+
 }
 
 static void redraw(unsigned int relayout)
