@@ -2,9 +2,52 @@
 #include <abi.h>
 #include "kv.h"
 
-static char *layouts[2] = {"default", "tiling"};
-static char *keyboards[2] = {"qwerty_US", "qwerty_SE"};
-static char *resolutions[9] = {"640x480x32", "800x600x32", "1024x768x32", "1280x720x32", "1280x1024x32", "1366x768x32", "1600x900x32", "1920x1080x32", "2560x1440x32"};
+struct entry
+{
+
+    char *value;
+    char *label;
+
+};
+
+static struct entry layouts[2] = {
+    {"default", "Default"},
+    {"tiling", "Tiling"}
+};
+
+static struct entry languages[3] = {
+    {"en_US", "English (US)"},
+    {"en_GB", "English (UK)"},
+    {"sv_SE", "Swedish"}
+};
+
+static struct entry timezones[8] = {
+    {"UTC", "Coordinated Universal Time (UTC)"},
+    {"WET", "Western European Time (WET)"},
+    {"CET", "Central European Time (CET)"},
+    {"EET", "Eastern European Time (EET)"},
+    {"EST", "Eastern Time (EST)"},
+    {"CST", "Central Time (CST)"},
+    {"MST", "Mountain Time (MST)"},
+    {"PST", "Pacific Time (PST)"}
+};
+
+static struct entry keyboards[2] = {
+    {"qwerty_US", "English (US)"},
+    {"qwerty_SE", "Swedish"}
+};
+
+static struct entry resolutions[9] = {
+    {"640x480x32", "640x480x32"},
+    {"800x600x32", "800x600x32"},
+    {"1024x768x32", "1024x768x32"},
+    {"1280x720x32", "1280x720x32"},
+    {"1280x1024x32", "1280x1024x32"},
+    {"1366x768x32", "1366x768x32"},
+    {"1600x900x32", "1600x900x32"},
+    {"1920x1080x32", "1920x1080x32"},
+    {"2560x1440x32", "2560x1440x32"}
+};
 static char out[MESSAGE_SIZE];
 static unsigned int outcount;
 static unsigned int wm;
@@ -111,7 +154,24 @@ static void field(char *id, char *label, char *value)
 
 }
 
-static void choice(char *id, char *label, char *value, char **options, unsigned int count)
+static char *getlabel(struct entry *options, unsigned int count, char *value)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        if (cstring_match(options[i].value, value))
+            return options[i].label;
+
+    }
+
+    return value;
+
+}
+
+static void choice(char *id, char *label, char *value, struct entry *options, unsigned int count)
 {
 
     unsigned int i;
@@ -119,10 +179,10 @@ static void choice(char *id, char *label, char *value, char **options, unsigned 
     beginrow(id);
     addlabel(id, label);
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ select id \"%s\" in \"%s-row\" label \"%s\"\n+ panel id \"%s-list\" in \"%s\" flow \"vertical-stretch\" padding \"4\"\n", id, id, value, id, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ select id \"%s\" in \"%s-row\" label \"%s\"\n+ panel id \"%s-list\" in \"%s\" flow \"vertical-stretch\" padding \"4\"\n", id, id, getlabel(options, count, value), id, id);
 
     for (i = 0; i < count; i++)
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-%u\" in \"%s-list\" padding \"16\" onclick \"q=choose&id=%s&value=%s\"\n+ text in \"%s-%u\" label \"%s\"\n", id, &i, id, id, options[i], id, &i, options[i]);
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-%u\" in \"%s-list\" padding \"16\" onclick \"q=choose&id=%s&value=%s&label=%s\"\n+ text in \"%s-%u\" label \"%s\"\n", id, &i, id, id, options[i].value, options[i].label, id, &i, options[i].label);
 
 }
 
@@ -144,9 +204,9 @@ static void renderlocalization(void)
     unsigned int count = query(data, 256, ".localization", "{language} {time} {timezone}");
 
     beginarea("Localization");
-    field("localization-language", "Language", getword(data, count, 0, word, 64));
-    field("localization-time", "Time format", getword(data, count, 1, word, 64));
-    field("localization-timezone", "Timezone", getword(data, count, 2, word, 64));
+    choice("localization-language", "Language", getword(data, count, 0, word, 64), languages, 3);
+    choice("localization-time", "Time format", getword(data, count, 1, word, 64), languages, 3);
+    choice("localization-timezone", "Timezone", getword(data, count, 2, word, 64), timezones, 8);
 
 }
 
@@ -349,7 +409,7 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=choose"))
     {
 
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s label \"%s\"\n", kv_getstring(event, "id="), kv_getstring(event, "value="));
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s label \"%s\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
 
     }
 
