@@ -34,6 +34,7 @@ struct state
     struct keys keys;
     unsigned int layout;
     unsigned int windows;
+    struct event_videoconf videoconf;
 
 };
 
@@ -56,18 +57,73 @@ static char *fontb[] = {
 static void setupvideo(unsigned int video)
 {
 
-    struct event_videoconf videoconf;
     unsigned char black[768];
-
-    videoconf.width = option_getdecimal("width");
-    videoconf.height = option_getdecimal("height");
-    videoconf.bpp = option_getdecimal("bpp");
 
     buffer_clear(black, 768);
     channel_send(0, video, EVENT_VIDEOCMAP, 768, &black);
-    channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &state.videoconf);
     channel_send(1, video, EVENT_INFO, 0, 0);
     channel_wait(1, video, EVENT_VIDEOINFO, 0, 0);
+
+}
+
+static unsigned int getword(char *data, unsigned int count, unsigned int index, char **word)
+{
+
+    unsigned int start = 0;
+    unsigned int i;
+
+    for (i = 0; i <= count; i++)
+    {
+
+        if (i == count || data[i] == ' ' || data[i] == '\n')
+        {
+
+            if (i > start && !index--)
+            {
+
+                *word = data + start;
+
+                return i - start;
+
+            }
+
+            start = i + 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int getnumber(char *data, unsigned int count, unsigned int index, unsigned int base, unsigned int fallback)
+{
+
+    char *word;
+    unsigned int length = getword(data, count, index, &word);
+
+    return (length) ? cstring_read_value(word, length, base) : fallback;
+
+}
+
+static void loadconfig(char *config)
+{
+
+    char data[4096];
+    unsigned int count;
+
+    count = system_feed(0, 0, data, 4096, "mq -query .screen.resolution -format \"{width} {height} {bpp}\" %s", config);
+    state.videoconf.width = getnumber(data, count, 0, 10, state.videoconf.width);
+    state.videoconf.height = getnumber(data, count, 1, 10, state.videoconf.height);
+    state.videoconf.bpp = getnumber(data, count, 2, 10, state.videoconf.bpp);
+
+    count = system_feed(0, 0, data, 4096, "mq -query .layout %s", config);
+    state.layout = (count >= 6 && buffer_match(data, "tiling", 6)) ? LAYOUT_TILING : LAYOUT_DEFAULT;
+
+    count = system_feed(0, 0, data, 4096, "mq -query .keyboard.layout %s", config);
+    keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (count >= 9 && buffer_match(data, "qwerty_SE", 9)) ? KEYS_MAP_SE : KEYS_MAP_US);
 
 }
 
@@ -1202,7 +1258,7 @@ static void onmain(struct message *message)
     unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
     unsigned int video = channel_lookup(option_getstring("video-service"));
 
-    state.layout = (cstring_match(option_getstring("layout"), "tiling")) ? LAYOUT_TILING : LAYOUT_DEFAULT;
+    loadconfig(option_getstring("config"));
 
     call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
@@ -1502,14 +1558,14 @@ void init(void)
 {
 
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
+    state.videoconf.width = 1920;
+    state.videoconf.height = 1080;
+    state.videoconf.bpp = 4;
     pool_setup();
     setupwidgets();
     render_init();
     option_add("service", "wm");
-    option_add("layout", "default");
-    option_add("width", "1920");
-    option_add("height", "1080");
-    option_add("bpp", "4");
+    option_add("config", "initrd:data/config/wm.mq");
     option_add("keyboard-service", "keyboard");
     option_add("mouse-service", "mouse");
     option_add("video-service", "video");
