@@ -24,6 +24,16 @@
     speed: 4
     acceleration: false
   }
+  bindings:
+  [
+    { key: q mod: alt+shift action: close }
+    { key: p mod: alt+shift action: run command: "initrd:bin/wshell" }
+    { key: k mod: alt action: next }
+    { key: j mod: alt action: previous }
+    { key: enter mod: alt action: swap }
+    { key: pageup mod: none action: scrollup }
+    { key: pagedown mod: none action: scrolldown }
+  ]
   colors:
   [
     { name: button-shadow           value: E8101010 }

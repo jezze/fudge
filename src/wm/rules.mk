@@ -3,6 +3,7 @@ B:=\
 
 O:=\
     $(DIR_SRC)/wm/attr.o \
+    $(DIR_SRC)/wm/bind.o \
     $(DIR_SRC)/wm/blit.o \
     $(DIR_SRC)/wm/cmap.o \
     $(DIR_SRC)/wm/parser.o \

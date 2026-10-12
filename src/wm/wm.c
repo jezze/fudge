@@ -11,6 +11,7 @@
 #include "render.h"
 #include "parser.h"
 #include "cmap.h"
+#include "bind.h"
 
 #define STATE_NORMAL        0
 #define STATE_GRABBED       1
@@ -147,6 +148,17 @@ static void loadconfig(char *config)
             cmap_set(name, cstring_read_value(line + space + 1, length - space - 1, 16));
 
         }
+
+    }
+
+    count = system_feed(0, 0, data, 4096, "mq -query .bindings -format \"{key} {mod} {action} {command}\" %s", config);
+
+    for (line = data; line < data + count; line += length + 1)
+    {
+
+        length = buffer_findbyte(line, data + count - line, '\n');
+
+        bind_add(line, length);
 
     }
 
@@ -1234,56 +1246,68 @@ static void moveselection(struct widget *item, unsigned int forward)
 
 }
 
+static void dobinding(struct bind_binding *binding)
+{
+
+    switch (binding->action)
+    {
+
+    case BIND_ACTION_CLOSE:
+        if (state.focusedwindow)
+            channel_send(0, state.focusedwindow->source, EVENT_INTERRUPT, 0, 0);
+
+        break;
+
+    case BIND_ACTION_NEXT:
+        cyclewindow(1);
+
+        break;
+
+    case BIND_ACTION_PREVIOUS:
+        cyclewindow(0);
+
+        break;
+
+    case BIND_ACTION_RUN:
+        launch(binding->command);
+
+        break;
+
+    case BIND_ACTION_SCROLLDOWN:
+        scrollpage(1);
+
+        break;
+
+    case BIND_ACTION_SCROLLUP:
+        scrollpage(-1);
+
+        break;
+
+    case BIND_ACTION_SWAP:
+        if (state.layout == LAYOUT_TILING)
+            swapwindow();
+
+        break;
+
+    }
+
+}
+
 static void onkeypress(struct message *message)
 {
 
     struct event_keypress *keypress = message->data;
     unsigned int id = keys_getcode(&state.keys, keypress->scancode);
     struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
+    struct bind_binding *binding = bind_find(id, state.keys.mod);
 
     if (id)
     {
 
-        if ((state.keys.mod & KEYS_MOD_ALT))
+        if (binding)
         {
 
-            switch (id)
-            {
-
-            case KEYS_KEY_Q:
-                if ((state.keys.mod & KEYS_MOD_SHIFT))
-                {
-
-                    if (state.focusedwindow)
-                        channel_send(0, state.focusedwindow->source, EVENT_INTERRUPT, 0, 0);
-
-                }
-
-                break;
-
-            case KEYS_KEY_P:
-                if ((state.keys.mod & KEYS_MOD_SHIFT))
-                    launch("initrd:bin/wshell");
-
-                break;
-
-            case KEYS_KEY_K:
-                cyclewindow(1);
-
-                break;
-
-            case KEYS_KEY_J:
-                cyclewindow(0);
-
-                break;
-
-            case KEYS_KEY_ENTER:
-                if (state.layout == LAYOUT_TILING)
-                    swapwindow();
-
-                break;
-
-            }
+            dobinding(binding);
 
         }
 
@@ -1305,20 +1329,6 @@ static void onkeypress(struct message *message)
         {
 
             moveselection(selecteditem, 1);
-
-        }
-
-        else if (id == KEYS_KEY_PAGEUP)
-        {
-
-            scrollpage(-1);
-
-        }
-
-        else if (id == KEYS_KEY_PAGEDOWN)
-        {
-
-            scrollpage(1);
 
         }
 
