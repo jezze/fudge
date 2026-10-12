@@ -10,6 +10,7 @@
 #include "blit.h"
 #include "render.h"
 #include "parser.h"
+#include "cmap.h"
 
 #define STATE_NORMAL        0
 #define STATE_GRABBED       1
@@ -113,6 +114,8 @@ static void loadconfig(char *config)
 
     char data[4096];
     unsigned int count;
+    unsigned int length;
+    char *line;
 
     count = system_feed(0, 0, data, 4096, "mq -query .screen.resolution -format \"{width} {height} {bpp}\" %s", config);
     state.videoconf.width = getnumber(data, count, 0, 10, state.videoconf.width);
@@ -124,6 +127,28 @@ static void loadconfig(char *config)
 
     count = system_feed(0, 0, data, 4096, "mq -query .keyboard.layout %s", config);
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (count >= 9 && buffer_match(data, "qwerty_SE", 9)) ? KEYS_MAP_SE : KEYS_MAP_US);
+
+    count = system_feed(0, 0, data, 4096, "mq -query .colors -format \"{name} {value}\" %s", config);
+
+    for (line = data; line < data + count; line += length + 1)
+    {
+
+        unsigned int space;
+        char name[64];
+
+        length = buffer_findbyte(line, data + count - line, '\n');
+        space = buffer_findbyte(line, length, ' ');
+
+        if (space < length && space < 64)
+        {
+
+            buffer_write(name, 64, line, space, 0);
+            name[space] = '\0';
+            cmap_set(name, cstring_read_value(line + space + 1, length - space - 1, 16));
+
+        }
+
+    }
 
 }
 

@@ -1285,7 +1285,6 @@ static void setupcall(unsigned int type, struct util_size (*getsize)(struct widg
 void render_init(void)
 {
 
-    cmap_init();
     getgroup(colors.button, "button-shadow", "button-hover-shadow", "button-focus-shadow");
     getgroup(colors.checkbox, "checkbox-shadow", "checkbox-hover-shadow", "checkbox-focus-shadow");
     getgroup(colors.item, "item-shadow", "item-hover-shadow", "item-focus-shadow");
