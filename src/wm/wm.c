@@ -639,23 +639,23 @@ static void placewindows(unsigned int source)
 
 }
 
-static struct widget *getnextwindow(unsigned int serial)
+static struct widget *getolderwindow(unsigned int serial)
 {
 
     struct list_item *current = 0;
-    struct widget *next = 0;
+    struct widget *older = 0;
 
     while ((current = pool_next(current)))
     {
 
         struct widget *widget = current->data;
 
-        if (widget->type == WIDGET_TYPE_WINDOW && widget->state != WIDGET_STATE_DESTROYED && widget->serial > serial && (!next || widget->serial < next->serial))
-            next = widget;
+        if (widget->type == WIDGET_TYPE_WINDOW && widget->state != WIDGET_STATE_DESTROYED && widget->serial < serial && (!older || widget->serial > older->serial))
+            older = widget;
 
     }
 
-    return next;
+    return older;
 
 }
 
@@ -678,7 +678,7 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
-/* the oldest window takes the left half below the menu, the others share the right half from top to bottom */
+/* the newest window takes the left half below the menu, the others share the right half from top to bottom, newest first */
 static void tilewindows(void)
 {
 
@@ -686,7 +686,7 @@ static void tilewindows(void)
     int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : 0;
     unsigned int w = display.region.size.w / 2;
     unsigned int h = util_max((int)display.region.size.h - top, 0);
-    struct widget *first = getnextwindow(0);
+    struct widget *first = getolderwindow(state.windows + 1);
     struct widget *widget;
     unsigned int count = 0;
     unsigned int i = 0;
@@ -696,10 +696,10 @@ static void tilewindows(void)
 
     placewindow(first, 0, top, w, h);
 
-    for (widget = getnextwindow(first->serial); widget; widget = getnextwindow(widget->serial))
+    for (widget = getolderwindow(first->serial); widget; widget = getolderwindow(widget->serial))
         count++;
 
-    for (widget = getnextwindow(first->serial); widget; widget = getnextwindow(widget->serial), i++)
+    for (widget = getolderwindow(first->serial); widget; widget = getolderwindow(widget->serial), i++)
         placewindow(widget, w, top + h * i / count, display.region.size.w - w, h * (i + 1) / count - h * i / count);
 
 }
