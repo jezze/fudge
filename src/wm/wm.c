@@ -781,6 +781,23 @@ static void cyclewindow(unsigned int older)
 
 }
 
+static void swapwindow(void)
+{
+
+    struct widget *first = getolderwindow(state.windows + 1);
+
+    if (state.focusedwindow && first && first != state.focusedwindow)
+    {
+
+        unsigned int serial = first->serial;
+
+        first->serial = state.focusedwindow->serial;
+        state.focusedwindow->serial = serial;
+
+    }
+
+}
+
 static void placewindow(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
@@ -1257,6 +1274,12 @@ static void onkeypress(struct message *message)
 
             case KEYS_KEY_J:
                 cyclewindow(0);
+
+                break;
+
+            case KEYS_KEY_ENTER:
+                if (state.layout == LAYOUT_TILING)
+                    swapwindow();
 
                 break;
 
