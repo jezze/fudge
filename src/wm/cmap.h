@@ -1,1 +1,2 @@
-unsigned int *cmap_get(unsigned int state, unsigned int type, unsigned int offset, unsigned int step);
+unsigned int *cmap_get(char *name);
+void cmap_init(void);

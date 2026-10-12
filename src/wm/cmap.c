@@ -1,133 +1,145 @@
 #include <fudge.h>
 #include <abi.h>
-#include "config.h"
-#include "util.h"
-#include "text.h"
-#include "widget.h"
+#include "cmap.h"
 
-static unsigned int cmapbutton[13] = {
-    0xE8101010, 0xE8484848, 0xE8404040, 0xE8888888,
-    0xE8101010, 0xE8505050, 0xE8484848, 0xE8888888,
-    0xE8101010, 0xE8585858, 0xE8505050, 0xE8888888,
-    0xE8FFFFFF,
-};
+#define NUM_COLORS                      97
 
-static unsigned int cmapcheckbox[13] = {
-    0xE8101010, 0xE8484848, 0xE8404040, 0xE8888888,
-    0xE8101010, 0xE8505050, 0xE8484848, 0xE8888888,
-    0xE8101010, 0xE8585858, 0xE8505050, 0xE8888888,
-    0xE8FFFFFF,
-};
-
-static unsigned int cmaplink[1] = {
-    0xE8C07878,
-};
-
-static unsigned int cmaplistbox[12] = {
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8686868,
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8787878,
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8888888,
-};
-
-static unsigned int cmapmouse[4] = {
-    0xE8101010, 0xE8202020, 0x00000000, 0xE8F0F0F0,
-};
-
-static unsigned int cmapselect[14] = {
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8686868,
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8787878,
-    0xE8101010, 0xE8805050, 0xE8805050, 0xE8E0B0B0,
-    0xE8FFFFFF,
-    0xE8FFFFFF,
-};
-
-static unsigned int cmaptext[1] = {
-    0xE8E0E0E0,
-};
-
-static unsigned int cmaptextbox[16] = {
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8686868,
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8787878,
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8888888,
-    0xE8101010, 0xE82A2A2A, 0xE8101010, 0xE8686868,
-};
-
-static unsigned int cmapitem[12] = {
-    0x00242424, 0x00242424, 0x00242424, 0x00242424,
-    0xE8242424, 0xE8242424, 0xE8242424, 0xE8242424,
-    0xE81A1A1A, 0xE81A1A1A, 0xE81A1A1A, 0xE81A1A1A,
-};
-
-static unsigned int cmapwindow[12] = {
-    0xE8101010, 0xE8805050, 0xE8805050, 0xE8E0B0B0,
-    0xE8101010, 0xE8303030, 0xE8303030, 0xE8585858,
-    0xA8FFFFFF,
-    0xE8FFFFFF,
-    0xE8FFFFFF,
-    0xE8FFFFFF,
-};
-
-static unsigned int *getcmap(unsigned int type)
+struct color
 {
 
-    switch (type)
+    char *name;
+    unsigned int value;
+
+};
+
+/* frames read four colors in a row: shadow, body, dark and light */
+static struct color colors[NUM_COLORS] = {
+    {"button-shadow",           0xE8101010},
+    {"button-body",             0xE8484848},
+    {"button-dark",             0xE8404040},
+    {"button-light",            0xE8888888},
+    {"button-hover-shadow",     0xE8101010},
+    {"button-hover-body",       0xE8505050},
+    {"button-hover-dark",       0xE8484848},
+    {"button-hover-light",      0xE8888888},
+    {"button-focus-shadow",     0xE8101010},
+    {"button-focus-body",       0xE8585858},
+    {"button-focus-dark",       0xE8505050},
+    {"button-focus-light",      0xE8888888},
+    {"button-label",            0xE8FFFFFF},
+    {"checkbox-shadow",         0xE8101010},
+    {"checkbox-body",           0xE8484848},
+    {"checkbox-dark",           0xE8404040},
+    {"checkbox-light",          0xE8888888},
+    {"checkbox-hover-shadow",   0xE8101010},
+    {"checkbox-hover-body",     0xE8505050},
+    {"checkbox-hover-dark",     0xE8484848},
+    {"checkbox-hover-light",    0xE8888888},
+    {"checkbox-focus-shadow",   0xE8101010},
+    {"checkbox-focus-body",     0xE8585858},
+    {"checkbox-focus-dark",     0xE8505050},
+    {"checkbox-focus-light",    0xE8888888},
+    {"checkbox-icon",           0xE8FFFFFF},
+    {"item-shadow",             0x00242424},
+    {"item-body",               0x00242424},
+    {"item-dark",               0x00242424},
+    {"item-light",              0x00242424},
+    {"item-hover-shadow",       0xE8242424},
+    {"item-hover-body",         0xE8242424},
+    {"item-hover-dark",         0xE8242424},
+    {"item-hover-light",        0xE8242424},
+    {"item-focus-shadow",       0xE81A1A1A},
+    {"item-focus-body",         0xE81A1A1A},
+    {"item-focus-dark",         0xE81A1A1A},
+    {"item-focus-light",        0xE81A1A1A},
+    {"link",                    0xE8C07878},
+    {"listbox-shadow",          0xE8101010},
+    {"listbox-body",            0xE82A2A2A},
+    {"listbox-dark",            0xE8101010},
+    {"listbox-light",           0xE8686868},
+    {"listbox-hover-shadow",    0xE8101010},
+    {"listbox-hover-body",      0xE82A2A2A},
+    {"listbox-hover-dark",      0xE8101010},
+    {"listbox-hover-light",     0xE8787878},
+    {"listbox-focus-shadow",    0xE8101010},
+    {"listbox-focus-body",      0xE82A2A2A},
+    {"listbox-focus-dark",      0xE8101010},
+    {"listbox-focus-light",     0xE8888888},
+    {"mouse-shadow",            0xE8101010},
+    {"mouse-body",              0xE8202020},
+    {"mouse-dark",              0x00000000},
+    {"mouse-light",             0xE8F0F0F0},
+    {"panel-shadow",            0xE8101010},
+    {"panel-body",              0xE8303030},
+    {"panel-dark",              0xE8303030},
+    {"panel-light",             0xE8585858},
+    {"select-shadow",           0xE8101010},
+    {"select-body",             0xE82A2A2A},
+    {"select-dark",             0xE8101010},
+    {"select-light",            0xE8686868},
+    {"select-hover-shadow",     0xE8101010},
+    {"select-hover-body",       0xE82A2A2A},
+    {"select-hover-dark",       0xE8101010},
+    {"select-hover-light",      0xE8787878},
+    {"select-focus-shadow",     0xE8101010},
+    {"select-focus-body",       0xE8805050},
+    {"select-focus-dark",       0xE8805050},
+    {"select-focus-light",      0xE8E0B0B0},
+    {"select-icon",             0xE8FFFFFF},
+    {"select-label",            0xE8FFFFFF},
+    {"text",                    0xE8E0E0E0},
+    {"textbox-shadow",          0xE8101010},
+    {"textbox-body",            0xE82A2A2A},
+    {"textbox-dark",            0xE8101010},
+    {"textbox-light",           0xE8686868},
+    {"textbox-hover-shadow",    0xE8101010},
+    {"textbox-hover-body",      0xE82A2A2A},
+    {"textbox-hover-dark",      0xE8101010},
+    {"textbox-hover-light",     0xE8787878},
+    {"textbox-focus-shadow",    0xE8101010},
+    {"textbox-focus-body",      0xE82A2A2A},
+    {"textbox-focus-dark",      0xE8101010},
+    {"textbox-focus-light",     0xE8888888},
+    {"textbox-readonly-shadow", 0xE8101010},
+    {"textbox-readonly-body",   0xE82A2A2A},
+    {"textbox-readonly-dark",   0xE8101010},
+    {"textbox-readonly-light",  0xE8686868},
+    {"window-shadow",           0xE8101010},
+    {"window-body",             0xE8805050},
+    {"window-dark",             0xE8805050},
+    {"window-light",            0xE8E0B0B0},
+    {"window-icon",             0xA8FFFFFF},
+    {"window-icon-hover",       0xE8FFFFFF},
+    {"window-title",            0xE8FFFFFF}
+};
+
+static unsigned int values[NUM_COLORS];
+static unsigned int missing[4];
+
+unsigned int *cmap_get(char *name)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < NUM_COLORS; i++)
     {
 
-    case WIDGET_TYPE_BUTTON:
-        return cmapbutton;
-
-    case WIDGET_TYPE_CHECKBOX:
-        return cmapcheckbox;
-
-    case WIDGET_TYPE_LINK:
-        return cmaplink;
-
-    case WIDGET_TYPE_LISTBOX:
-        return cmaplistbox;
-
-    case WIDGET_TYPE_IMAGE:
-        return cmapmouse;
-
-    case WIDGET_TYPE_SELECT:
-        return cmapselect;
-
-    case WIDGET_TYPE_TEXT:
-        return cmaptext;
-
-    case WIDGET_TYPE_TEXTBOX:
-        return cmaptextbox;
-
-    case WIDGET_TYPE_ITEM:
-        return cmapitem;
-
-    case WIDGET_TYPE_WINDOW:
-        return cmapwindow;
+        if (cstring_match(colors[i].name, name))
+            return &values[i];
 
     }
 
-    return 0;
+    return missing;
 
 }
 
-unsigned int *cmap_get(unsigned int state, unsigned int type, unsigned int offset, unsigned int step)
+void cmap_init(void)
 {
 
-    unsigned int *cmap = getcmap(type);
+    unsigned int i;
 
-    switch (state)
-    {
-
-    case WIDGET_STATE_FOCUS:
-        return cmap + offset + step * 2;
-
-    case WIDGET_STATE_HOVER:
-        return cmap + offset + step * 1;
-
-    case WIDGET_STATE_NORMAL:
-    default:
-        return cmap + offset;
-
-    }
+    for (i = 0; i < NUM_COLORS; i++)
+        values[i] = colors[i].value;
 
 }
 

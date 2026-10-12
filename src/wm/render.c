@@ -49,6 +49,58 @@ static struct util_position mouse;
 static unsigned int mousetype;
 static struct calls calls[32];
 
+static struct
+{
+
+    unsigned int *button[3];
+    unsigned int *buttonlabel;
+    unsigned int *checkbox[3];
+    unsigned int *checkboxicon;
+    unsigned int *item[3];
+    unsigned int *link;
+    unsigned int *listbox[3];
+    unsigned int *mouse;
+    unsigned int *panel;
+    unsigned int *select[3];
+    unsigned int *selecticon;
+    unsigned int *selectlabel;
+    unsigned int *text;
+    unsigned int *textbox[3];
+    unsigned int *textboxreadonly;
+    unsigned int *window;
+    unsigned int *windowicon;
+    unsigned int *windowiconhover;
+    unsigned int *windowtitle;
+
+} colors;
+
+static unsigned int *bystate(unsigned int **group, unsigned int state)
+{
+
+    switch (state)
+    {
+
+    case WIDGET_STATE_FOCUS:
+        return group[2];
+
+    case WIDGET_STATE_HOVER:
+        return group[1];
+
+    }
+
+    return group[0];
+
+}
+
+static void getgroup(unsigned int **group, char *normal, char *hover, char *focus)
+{
+
+    group[0] = cmap_get(normal);
+    group[1] = cmap_get(hover);
+    group[2] = cmap_get(focus);
+
+}
+
 static unsigned int getdirection(unsigned int flow)
 {
 
@@ -780,11 +832,10 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 {
 
     struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
-    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 12, 0);
+    unsigned int *cmapbody = bystate(colors.button, widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+    textrender(display, widget, &widget->placement, colors.buttonlabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -792,13 +843,12 @@ static void rendercheckbox(struct blit_display *display, struct widget *widget, 
 {
 
     struct util_region box = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_CHECKBOX_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
-    unsigned int *cmapicon = cmap_get(widget->state, widget->type, 12, 0);
+    unsigned int *cmapbody = bystate(colors.checkbox, widget->state);
 
     blit_frame(display, &box, line, x0, x2, cmapbody);
 
     if (widget->attributes.checked)
-        blit_iconx(display, &box, line, x0, x2, cmapicon);
+        blit_iconx(display, &box, line, x0, x2, colors.checkboxicon);
 
 }
 
@@ -899,19 +949,16 @@ static void renderlayout(struct blit_display *display, struct widget *widget, in
 static void renderlistbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
-    unsigned int *cmapbodyro = cmap_get(widget->state, widget->type, 0, 0);
+    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.listbox[0] : bystate(colors.listbox, widget->state);
 
-    blit_frame(display, &widget->placement, line, x0, x2, (widget->attributes.mode == ATTR_MODE_READONLY) ? cmapbodyro : cmapbody);
+    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
 }
 
 static void renderpanel(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = cmap_get(widget->state, WIDGET_TYPE_WINDOW, 4, 0);
-
-    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+    blit_frame(display, &widget->placement, line, x0, x2, colors.panel);
 
 }
 
@@ -920,13 +967,11 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     struct util_region rarrow = util_region(widget->placement.position.x + widget->placement.size.w - padding.w - widget->placement.size.h / 2, widget->placement.position.y, widget->placement.size.h, widget->placement.size.h);
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
-    unsigned int *cmapicon = cmap_get(widget->state, widget->type, 12, 0);
-    unsigned int *cmaplabel = cmap_get(widget->state, widget->type, 13, 0);
+    unsigned int *cmapbody = bystate(colors.select, widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    blit_iconarrowdown(display, &rarrow, line, x0, x2, cmapicon);
-    textrender(display, widget, &widget->placement, cmaplabel, x0, x2, 0, 0, &padding, 0, line);
+    blit_iconarrowdown(display, &rarrow, line, x0, x2, colors.selecticon);
+    textrender(display, widget, &widget->placement, colors.selectlabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -934,7 +979,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct text_font *font = pool_getfont(widget->attributes.weight);
-    unsigned int *cmaptext = cmap_get(widget->state, widget->type, 0, 0);
+    unsigned int *cmaptext = (widget->type == WIDGET_TYPE_LINK) ? colors.link : colors.text;
     int top = 0;
     unsigned int rownum;
 
@@ -961,21 +1006,19 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 {
 
     struct util_region rcursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
-    unsigned int *cmapbodyro = cmap_get(widget->state, widget->type, 12, 0);
-    unsigned int *cmapicon = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_TEXT, 0, 0);
+    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.textboxreadonly : bystate(colors.textbox, widget->state);
 
-    blit_frame(display, &widget->placement, line, x0, x2, (widget->attributes.mode == ATTR_MODE_READONLY) ? cmapbodyro : cmapbody);
+    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
     if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode != ATTR_MODE_READONLY || widget->appcursor))
-        blit_iconcursor(display, &rcursor, line, x0, x2, cmapicon);
+        blit_iconcursor(display, &rcursor, line, x0, x2, colors.text);
 
 }
 
 static void renderitem(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = cmap_get((widget->selected) ? WIDGET_STATE_FOCUS : widget->state, widget->type, 0, 4);
+    unsigned int *cmapbody = bystate(colors.item, (widget->selected) ? WIDGET_STATE_FOCUS : widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
@@ -1056,19 +1099,15 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     unsigned int onhamburger = util_region_intersects(&rhamburger, mouse.x, mouse.y);
     unsigned int onminimize = util_region_intersects(&rminimize, mouse.x, mouse.y);
     unsigned int onclose = util_region_intersects(&rclose, mouse.x, mouse.y);
-    unsigned int *cmaptop = cmap_get(widget->state, widget->type, 0, 0);
-    unsigned int *cmaptitle = cmap_get(widget->state, widget->type, 11, 0);
-    unsigned int *cmapiconoff = cmap_get(widget->state, widget->type, 8, 0);
-    unsigned int *cmapiconon = cmap_get(widget->state, widget->type, 8, 1);
 
-    blit_frame(display, &rhamburger, line, x0, x2, cmaptop);
-    blit_frame(display, &rminimize, line, x0, x2, cmaptop);
-    blit_frame(display, &rtitle, line, x0, x2, cmaptop);
-    blit_frame(display, &rclose, line, x0, x2, cmaptop);
-    textrender(display, widget, &rtitle, cmaptitle, x0, x2, 0, 0, &zerosize, 0, line);
-    blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? cmapiconon : cmapiconoff);
-    blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? cmapiconon : cmapiconoff);
-    blit_iconx(display, &rclose, line, x0, x2, (onclose) ? cmapiconon : cmapiconoff);
+    blit_frame(display, &rhamburger, line, x0, x2, colors.window);
+    blit_frame(display, &rminimize, line, x0, x2, colors.window);
+    blit_frame(display, &rtitle, line, x0, x2, colors.window);
+    blit_frame(display, &rclose, line, x0, x2, colors.window);
+    textrender(display, widget, &rtitle, colors.windowtitle, x0, x2, 0, 0, &zerosize, 0, line);
+    blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? colors.windowiconhover : colors.windowicon);
+    blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? colors.windowiconhover : colors.windowicon);
+    blit_iconx(display, &rclose, line, x0, x2, (onclose) ? colors.windowiconhover : colors.windowicon);
 
 }
 
@@ -1165,7 +1204,6 @@ void render_update(struct blit_display *display)
 {
 
     static struct widget *damaged[RENDER_MAXWIDGETS];
-    unsigned int *cmapmouse = cmap_get(WIDGET_STATE_NORMAL, WIDGET_TYPE_IMAGE, 0, 0);
     struct list_item *current = 0;
     unsigned int ndamaged = 0;
     int line;
@@ -1211,7 +1249,7 @@ void render_update(struct blit_display *display)
 
         }
 
-        blit_mouse(display, mousetype, mouse.x, mouse.y, line, area.position0.x, area.position2.x, cmapmouse);
+        blit_mouse(display, mousetype, mouse.x, mouse.y, line, area.position0.x, area.position2.x, colors.mouse);
         blit(display, line, area.position0.x, area.position2.x);
 
     }
@@ -1231,6 +1269,28 @@ static void setupcall(unsigned int type, struct util_size (*getsize)(struct widg
 
 void render_init(void)
 {
+
+    cmap_init();
+    getgroup(colors.button, "button-shadow", "button-hover-shadow", "button-focus-shadow");
+    getgroup(colors.checkbox, "checkbox-shadow", "checkbox-hover-shadow", "checkbox-focus-shadow");
+    getgroup(colors.item, "item-shadow", "item-hover-shadow", "item-focus-shadow");
+    getgroup(colors.listbox, "listbox-shadow", "listbox-hover-shadow", "listbox-focus-shadow");
+    getgroup(colors.select, "select-shadow", "select-hover-shadow", "select-focus-shadow");
+    getgroup(colors.textbox, "textbox-shadow", "textbox-hover-shadow", "textbox-focus-shadow");
+
+    colors.buttonlabel = cmap_get("button-label");
+    colors.checkboxicon = cmap_get("checkbox-icon");
+    colors.link = cmap_get("link");
+    colors.mouse = cmap_get("mouse-shadow");
+    colors.panel = cmap_get("panel-shadow");
+    colors.selecticon = cmap_get("select-icon");
+    colors.selectlabel = cmap_get("select-label");
+    colors.text = cmap_get("text");
+    colors.textboxreadonly = cmap_get("textbox-readonly-shadow");
+    colors.window = cmap_get("window-shadow");
+    colors.windowicon = cmap_get("window-icon");
+    colors.windowiconhover = cmap_get("window-icon-hover");
+    colors.windowtitle = cmap_get("window-title");
 
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, placebutton, renderbutton);
     setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, placecheckbox, rendercheckbox);
