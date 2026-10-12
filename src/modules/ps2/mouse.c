@@ -151,7 +151,7 @@ static void driver_reset(unsigned int id)
         type = 1;
 
         ps2_rate(id, 200);
-        ps2_rate(id, 100);
+        ps2_rate(id, 200);
         ps2_rate(id, 80);
 
     }
