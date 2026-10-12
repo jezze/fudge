@@ -301,6 +301,9 @@ unsigned int widget_isscrollable(struct widget *widget)
     case WIDGET_TYPE_TEXTBOX:
         return 1;
 
+    case WIDGET_TYPE_LAYOUT:
+        return widget->attributes.overflow != ATTR_OVERFLOW_NONE;
+
     }
 
     return 0;

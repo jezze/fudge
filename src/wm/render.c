@@ -732,7 +732,21 @@ static void placeimage(struct widget *widget)
 static void placelayout(struct widget *widget)
 {
 
-    widget->cplacement = widget->placement;
+    if (widget->attributes.overflow == ATTR_OVERFLOW_NONE)
+    {
+
+        widget->cplacement = widget->placement;
+
+    }
+
+    else
+    {
+
+        widget->cplacement = util_region(widget->placement.position.x, widget->placement.position.y - widget->scroll.y, widget->placement.size.w, INFINITY);
+        widget->cclip = util_region_intersection(&widget->placement, &widget->clip);
+        widget->clip = widget->cclip;
+
+    }
 
 }
 
