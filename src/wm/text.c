@@ -166,27 +166,22 @@ struct text_info text_info(struct text_font *font, char *text, unsigned int leng
 
 }
 
-unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx)
+unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int row, unsigned int offset, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx)
 {
 
     struct text_rowinfo rowinfo;
-    unsigned int offset = 0;
-    unsigned int row = 0;
 
-    if (!rownum)
-        return 0;
-
-    while ((offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
+    for (; row < rownum; row++)
     {
 
-        if (++row == rownum)
-            return offset;
+        offset = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - ((row) ? 0 : firstrowx), offset);
 
-        firstrowx = 0;
+        if (!offset)
+            return length;
 
     }
 
-    return length;
+    return offset;
 
 }
 

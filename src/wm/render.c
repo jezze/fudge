@@ -426,7 +426,7 @@ static void placecursor(struct widget *widget)
         rowinfo.width = 0;
         rowinfo.lineheight = font->lineheight;
 
-        text_getrowinfo(&rowinfo, font, label, total, text->attributes.wrap, util_max((int)text->placement.size.w - offx, 0), text_getrowstart(font, label, total, num, text->attributes.wrap, text->placement.size.w, text->rowstart.x));
+        text_getrowinfo(&rowinfo, font, label, total, text->attributes.wrap, util_max((int)text->placement.size.w - offx, 0), text_getrowstart(font, label, total, 0, 0, num, text->attributes.wrap, text->placement.size.w, text->rowstart.x));
 
         x = text_getrowx(&rowinfo, text->attributes.halign, text->placement.size.w - offx) + offx + (info.lastrow.x - offx);
 
@@ -515,6 +515,8 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     widget->clip = *clip;
     widget->cclip = *clip;
+    widget->textrow = 0;
+    widget->textoffset = 0;
 
     calls[widget->type].place(widget);
 
@@ -801,7 +803,20 @@ static void textrender(struct blit_display *display, struct widget *widget, stru
 {
 
     struct text_font *font = pool_getfont(widget->attributes.weight);
-    unsigned int icurrent = text_getrowstart(font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), num, widget->attributes.wrap, placement->size.w, offx);
+    unsigned int icurrent;
+
+    /* rows are drawn top to bottom, so each row is found from the one drawn before it */
+    if ((unsigned int)num < widget->textrow)
+    {
+
+        widget->textrow = 0;
+        widget->textoffset = 0;
+
+    }
+
+    icurrent = text_getrowstart(font, strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->textrow, widget->textoffset, num, widget->attributes.wrap, placement->size.w, offx);
+    widget->textrow = num;
+    widget->textoffset = icurrent;
 
     if (icurrent < strpool_getcstringlength(widget->attributes.label))
     {
