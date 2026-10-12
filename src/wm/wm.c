@@ -740,6 +740,47 @@ static struct widget *getolderwindow(unsigned int serial)
 
 }
 
+static struct widget *getnewerwindow(unsigned int serial)
+{
+
+    struct list_item *current = 0;
+    struct widget *newer = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_WINDOW && widget->state != WIDGET_STATE_DESTROYED && widget->serial > serial && (!newer || widget->serial < newer->serial))
+            newer = widget;
+
+    }
+
+    return newer;
+
+}
+
+static void cyclewindow(unsigned int older)
+{
+
+    struct widget *window = 0;
+
+    if (state.focusedwindow)
+        window = (older) ? getolderwindow(state.focusedwindow->serial) : getnewerwindow(state.focusedwindow->serial);
+
+    if (!window)
+        window = (older) ? getolderwindow(state.windows + 1) : getnewerwindow(0);
+
+    if (window)
+    {
+
+        setfocuswindow(window);
+        setfocus(0);
+
+    }
+
+}
+
 static void placewindow(struct widget *widget, int x, int y, unsigned int w, unsigned int h)
 {
 
@@ -1202,6 +1243,16 @@ static void onkeypress(struct message *message)
             case KEYS_KEY_P:
                 if ((state.keys.mod & KEYS_MOD_SHIFT))
                     launch("initrd:bin/wshell");
+
+                break;
+
+            case KEYS_KEY_K:
+                cyclewindow(1);
+
+                break;
+
+            case KEYS_KEY_J:
+                cyclewindow(0);
 
                 break;
 
