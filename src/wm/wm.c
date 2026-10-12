@@ -124,7 +124,7 @@ static void loadconfig(char *config)
     state.videoconf.height = getnumber(data, count, 1, 10, state.videoconf.height);
     state.videoconf.bpp = getnumber(data, count, 2, 10, state.videoconf.bpp);
 
-    count = system_feed(0, 0, data, 4096, "mq -query .layout %s", config);
+    count = system_feed(0, 0, data, 4096, "mq -query .general.layout %s", config);
     state.layout = (count >= 6 && buffer_match(data, "tiling", 6)) ? LAYOUT_TILING : LAYOUT_DEFAULT;
 
     count = system_feed(0, 0, data, 4096, "mq -query .keyboard.layout %s", config);
