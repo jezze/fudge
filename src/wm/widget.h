@@ -11,6 +11,8 @@
 #define WIDGET_TYPE_WINDOW              12
 #define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_TYPE_LINK                14
+#define WIDGET_TYPE_FRAME               15
+#define WIDGET_TYPE_SWATCH              16
 #define WIDGET_STATE_NORMAL             0
 #define WIDGET_STATE_HOVER              1
 #define WIDGET_STATE_HOVEROFF           2

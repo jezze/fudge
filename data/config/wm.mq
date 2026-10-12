@@ -67,6 +67,11 @@
     { name: checkbox-focus-dark     value: E8505050 }
     { name: checkbox-focus-light    value: E8888888 }
     { name: checkbox-icon           value: E8FFFFFF }
+    { name: frame-shadow            value: E8101010 }
+    { name: frame-body              value: E82A2A2A }
+    { name: frame-dark              value: E8101010 }
+    { name: frame-light             value: E8686868 }
+    { name: frame-title             value: E8E0E0E0 }
     { name: item-shadow             value: 00242424 }
     { name: item-body               value: 00242424 }
     { name: item-dark               value: 00242424 }
@@ -114,6 +119,7 @@
     { name: select-focus-light      value: E8E0B0B0 }
     { name: select-icon             value: E8FFFFFF }
     { name: select-label            value: E8FFFFFF }
+    { name: swatch-border           value: E8101010 }
     { name: text                    value: E8E0E0E0 }
     { name: textbox-shadow          value: E8101010 }
     { name: textbox-body            value: E82A2A2A }

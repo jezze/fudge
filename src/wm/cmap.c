@@ -2,7 +2,7 @@
 #include <abi.h>
 #include "cmap.h"
 
-#define NUM_COLORS                      97
+#define NUM_COLORS                      103
 
 /* frames read four colors in a row: shadow, body, dark and light */
 static char *names[NUM_COLORS] = {
@@ -32,6 +32,11 @@ static char *names[NUM_COLORS] = {
     "checkbox-focus-dark",
     "checkbox-focus-light",
     "checkbox-icon",
+    "frame-shadow",
+    "frame-body",
+    "frame-dark",
+    "frame-light",
+    "frame-title",
     "item-shadow",
     "item-body",
     "item-dark",
@@ -79,6 +84,7 @@ static char *names[NUM_COLORS] = {
     "select-focus-light",
     "select-icon",
     "select-label",
+    "swatch-border",
     "text",
     "textbox-shadow",
     "textbox-body",

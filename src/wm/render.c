@@ -56,6 +56,8 @@ static struct
     unsigned int *buttonlabel;
     unsigned int *checkbox[3];
     unsigned int *checkboxicon;
+    unsigned int *frame;
+    unsigned int *frametitle;
     unsigned int *item[3];
     unsigned int *link;
     unsigned int *listbox[3];
@@ -64,6 +66,7 @@ static struct
     unsigned int *select[3];
     unsigned int *selecticon;
     unsigned int *selectlabel;
+    unsigned int *swatchborder;
     unsigned int *text;
     unsigned int *textbox[3];
     unsigned int *textboxreadonly;
@@ -640,6 +643,42 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 
 }
 
+static unsigned int gettitleheight(struct widget *widget)
+{
+
+    return (strpool_getcstringlength(widget->attributes.label)) ? pool_getfont(widget->attributes.weight)->lineheight + CONFIG_FRAME_TITLE_PADDING * 2 : 0;
+
+}
+
+static struct util_size getsizeframe(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    struct util_size padding = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2 + gettitleheight(widget));
+    struct util_size csize = childrengetsize(widget, limit);
+    struct util_size size = util_size_union(&csize, &padding);
+
+    if (gettitleheight(widget))
+    {
+
+        struct util_size title = textsize(widget, limit, rowstart);
+
+        size.w = util_max(size.w, title.w + (CONFIG_FRAME_WIDTH + CONFIG_FRAME_TITLE_PADDING) * 2);
+
+    }
+
+    return size;
+
+}
+
+static struct util_size getsizeswatch(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    unsigned int side = pool_getfont(widget->attributes.weight)->lineheight + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
+
+    return util_size(side, side);
+
+}
+
 static struct util_size getsizelistbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -747,6 +786,23 @@ static void placelayout(struct widget *widget)
         widget->clip = widget->cclip;
 
     }
+
+}
+
+static void placeframe(struct widget *widget)
+{
+
+    unsigned int title = gettitleheight(widget);
+    struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT + title, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2 - title);
+
+    widget->cclip = util_region_intersection(&inner, &widget->clip);
+    widget->clip = util_region_intersection(&widget->placement, &widget->clip);
+    widget->cplacement = util_region(inner.position.x, inner.position.y - widget->scroll.y, inner.size.w, (widget->attributes.overflow == ATTR_OVERFLOW_NONE) ? inner.size.h : INFINITY);
+
+}
+
+static void placeswatch(struct widget *widget)
+{
 
 }
 
@@ -972,6 +1028,52 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
 static void renderlayout(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
+
+}
+
+static void renderframe(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    blit_frame(display, &widget->placement, line, x0, x2, colors.frame);
+
+    if (gettitleheight(widget))
+    {
+
+        struct util_region title = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, gettitleheight(widget));
+        struct util_size padding = util_size(CONFIG_FRAME_TITLE_PADDING, CONFIG_FRAME_TITLE_PADDING);
+
+        textrender(display, widget, &title, colors.frametitle, x0, x2, 0, 0, &padding, 0, line);
+
+    }
+
+}
+
+static void renderswatch(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    int left = widget->placement.position.x;
+    int right = left + widget->placement.size.w;
+    int top = widget->placement.position.y;
+    int bottom = top + widget->placement.size.h;
+
+    x0 = util_max(x0, left);
+    x2 = util_min(x2, right);
+
+    if (line < top + CONFIG_SWATCH_BORDER || line >= bottom - CONFIG_SWATCH_BORDER)
+    {
+
+        blit_alphaline(display, *colors.swatchborder, x0, x2);
+
+    }
+
+    else
+    {
+
+        blit_alphaline(display, *colors.swatchborder, x0, util_min(x2, left + CONFIG_SWATCH_BORDER));
+        blit_alphaline(display, widget->attributes.color, util_max(x0, left + CONFIG_SWATCH_BORDER), util_min(x2, right - CONFIG_SWATCH_BORDER));
+        blit_alphaline(display, *colors.swatchborder, util_max(x0, right - CONFIG_SWATCH_BORDER), x2);
+
+    }
 
 }
 
@@ -1313,6 +1415,9 @@ void render_init(void)
     colors.panel = cmap_get("panel-shadow");
     colors.selecticon = cmap_get("select-icon");
     colors.selectlabel = cmap_get("select-label");
+    colors.frame = cmap_get("frame-shadow");
+    colors.frametitle = cmap_get("frame-title");
+    colors.swatchborder = cmap_get("swatch-border");
     colors.text = cmap_get("text");
     colors.textboxreadonly = cmap_get("textbox-readonly-shadow");
     colors.window = cmap_get("window-shadow");
@@ -1323,8 +1428,10 @@ void render_init(void)
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, placebutton, renderbutton);
     setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, placecheckbox, rendercheckbox);
     setupcall(WIDGET_TYPE_FILL, getsizefill, placefill, renderfill);
+    setupcall(WIDGET_TYPE_FRAME, getsizeframe, placeframe, renderframe);
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
     setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
+    setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, placeswatch, renderswatch);
     setupcall(WIDGET_TYPE_LINK, getsizetext, placetext, rendertext);
     setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
     setupcall(WIDGET_TYPE_LISTBOX, getsizelistbox, placelistbox, renderlistbox);
