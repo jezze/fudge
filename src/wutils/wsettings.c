@@ -4,6 +4,7 @@
 
 static char *layouts[2] = {"default", "tiling"};
 static char *keyboards[2] = {"qwerty_US", "qwerty_SE"};
+static char *resolutions[9] = {"640x480x32", "800x600x32", "1024x768x32", "1280x720x32", "1280x1024x32", "1366x768x32", "1600x900x32", "1920x1080x32", "2560x1440x32"};
 static char out[MESSAGE_SIZE];
 static unsigned int outcount;
 static unsigned int wm;
@@ -74,7 +75,7 @@ static void beginarea(char *label)
 
     reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ listbox id \"content\" in \"base\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n", label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ layout id \"content\" in \"base\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n", label);
 
 }
 
@@ -149,29 +150,39 @@ static void renderlocalization(void)
 
 }
 
+static void rendergeneral(void)
+{
+
+    char data[256];
+    char word[64];
+    unsigned int count = query(data, 256, ".general.layout", 0);
+
+    beginarea("General");
+    choice("general-layout", "Window layout", getword(data, count, 0, word, 64), layouts, 2);
+
+}
+
 static void renderscreen(void)
 {
 
     char data[256];
     char word[64];
+    char resolution[64];
     unsigned int count = query(data, 256, ".screen.resolution", "{width} {height} {bpp}");
+    unsigned int width;
+    unsigned int height;
+    unsigned int bits;
 
+    getword(data, count, 0, word, 64);
+    width = cstring_read_value(word, cstring_length(word), 10);
+    getword(data, count, 1, word, 64);
+    height = cstring_read_value(word, cstring_length(word), 10);
+    getword(data, count, 2, word, 64);
+    bits = cstring_read_value(word, cstring_length(word), 10) * 8;
+
+    cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &width, &height, &bits);
     beginarea("Screen");
-    field("screen-width", "Width", getword(data, count, 0, word, 64));
-    field("screen-height", "Height", getword(data, count, 1, word, 64));
-    field("screen-bpp", "Bytes per pixel", getword(data, count, 2, word, 64));
-
-}
-
-static void renderlayout(void)
-{
-
-    char data[256];
-    char word[64];
-    unsigned int count = query(data, 256, ".layout", 0);
-
-    beginarea("Layout");
-    choice("layout", "Window layout", getword(data, count, 0, word, 64), layouts, 2);
+    choice("screen-resolution", "Resolution", resolution, resolutions, 9);
 
 }
 
@@ -290,8 +301,8 @@ static void renderarea(char *name)
 
     if (cstring_match(name, "localization"))
         renderlocalization();
-    else if (cstring_match(name, "layout"))
-        renderlayout();
+    else if (cstring_match(name, "screen"))
+        renderscreen();
     else if (cstring_match(name, "keyboard"))
         renderkeyboard();
     else if (cstring_match(name, "mouse"))
@@ -301,7 +312,7 @@ static void renderarea(char *name)
     else if (cstring_match(name, "colors"))
         rendercolors();
     else
-        renderscreen();
+        rendergeneral();
 
     flush();
 
@@ -352,7 +363,7 @@ static void onwminit(struct message *message)
     wm = message->source;
 
     channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    renderarea("screen");
+    renderarea("general");
 
 }
 
