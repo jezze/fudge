@@ -1205,7 +1205,11 @@ static void moveselection(struct widget *item, unsigned int forward)
     if (target)
     {
 
-        selectitem(target);
+        if ((state.keys.mod & KEYS_MOD_SHIFT))
+            selectrange(target);
+        else
+            selectitem(target);
+
         setfocus(target);
         showwidget(target);
 
