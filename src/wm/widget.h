@@ -60,6 +60,7 @@ struct widget
     unsigned int loaded;
     unsigned int autosize;
     unsigned int appcursor;
+    unsigned int selected;
     struct util_position position;
     struct util_size size;
     struct util_position scroll;

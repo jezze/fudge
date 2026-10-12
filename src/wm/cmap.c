@@ -55,7 +55,7 @@ static unsigned int cmaptextbox[16] = {
 static unsigned int cmapitem[12] = {
     0x00242424, 0x00242424, 0x00242424, 0x00242424,
     0xE8242424, 0xE8242424, 0xE8242424, 0xE8242424,
-    0xE8242424, 0xE8242424, 0xE8242424, 0xE8242424,
+    0xE8383838, 0xE8383838, 0xE8383838, 0xE8383838,
 };
 
 static unsigned int cmapwindow[12] = {

@@ -975,7 +975,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 static void renderitem(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = cmap_get(widget->state, widget->type, 0, 4);
+    unsigned int *cmapbody = cmap_get((widget->selected) ? WIDGET_STATE_FOCUS : widget->state, widget->type, 0, 4);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 

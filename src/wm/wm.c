@@ -106,22 +106,57 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
 }
 
+static struct widget *getparent(struct widget *widget)
+{
+
+    return (widget->attributes.in) ? pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in)) : 0;
+
+}
+
+static struct widget *getitem(struct widget *widget)
+{
+
+    struct widget *parent;
+
+    if (widget->type == WIDGET_TYPE_ITEM)
+        return widget;
+
+    parent = getparent(widget);
+
+    return (parent && parent->type == WIDGET_TYPE_ITEM) ? parent : 0;
+
+}
+
+static struct widget *getselecteditem(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+    struct widget *item = getitem(widget);
+
+    if (item)
+        return item;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_ITEM && child->selected)
+            return child;
+
+    }
+
+    return 0;
+
+}
+
 static struct widget *gethoverwidgetat(int x, int y)
 {
 
     struct widget *widget = getinteractivewidgetat(x, y);
+    struct widget *item = (widget) ? getitem(widget) : 0;
 
-    if (widget)
-    {
-
-        struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in));
-
-        if (parent && parent->type == WIDGET_TYPE_ITEM)
-            return parent;
-
-    }
-
-    return widget;
+    return (item) ? item : widget;
 
 }
 
@@ -290,6 +325,60 @@ static void bumpchildren(struct widget *widget)
 
     while ((current = pool_nextin(current, widget)))
         bump(current->data);
+
+}
+
+static void selectitem(struct widget *item)
+{
+
+    struct widget *parent = getparent(item);
+    struct list_item *current = 0;
+
+    while (parent && (current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_ITEM && child->selected)
+        {
+
+            child->selected = 0;
+
+            damage(child);
+
+        }
+
+    }
+
+    item->selected = 1;
+
+    damage(item);
+
+}
+
+static void showwidget(struct widget *widget)
+{
+
+    struct widget *parent = getparent(widget);
+
+    while (parent && !widget_isscrollable(parent))
+        parent = getparent(parent);
+
+    if (parent)
+    {
+
+        int top = parent->cplacement.position.y + parent->scroll.y - parent->placement.position.y;
+        int visibletop = parent->placement.position.y + top;
+        int visiblebottom = parent->placement.position.y + (int)parent->placement.size.h - top;
+        int widgettop = widget->placement.position.y;
+        int widgetbottom = widget->placement.position.y + (int)widget->placement.size.h;
+
+        if (widgettop < visibletop)
+            scrollwidget(parent, 0, widgettop - visibletop);
+        else if (widgetbottom > visiblebottom)
+            scrollwidget(parent, 0, widgetbottom - visiblebottom);
+
+    }
 
 }
 
@@ -797,11 +886,52 @@ static void scrollpage(int direction)
 
 }
 
+static void moveselection(struct widget *item, unsigned int forward)
+{
+
+    struct widget *parent = getparent(item);
+    struct widget *previous = 0;
+    struct widget *next = 0;
+    struct widget *target;
+    struct list_item *current = 0;
+    unsigned int found = 0;
+
+    while (parent && (current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type != WIDGET_TYPE_ITEM)
+            continue;
+
+        if (child == item)
+            found = 1;
+        else if (!found)
+            previous = child;
+        else if (!next)
+            next = child;
+
+    }
+
+    target = (forward) ? next : previous;
+
+    if (target)
+    {
+
+        selectitem(target);
+        setfocus(target);
+        showwidget(target);
+
+    }
+
+}
+
 static void onkeypress(struct message *message)
 {
 
     struct event_keypress *keypress = message->data;
     unsigned int id = keys_getcode(&state.keys, keypress->scancode);
+    struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
 
     if (id)
     {
@@ -830,6 +960,20 @@ static void onkeypress(struct message *message)
                 break;
 
             }
+
+        }
+
+        else if (selecteditem && id == KEYS_KEY_CURSORUP)
+        {
+
+            moveselection(selecteditem, 0);
+
+        }
+
+        else if (selecteditem && id == KEYS_KEY_CURSORDOWN)
+        {
+
+            moveselection(selecteditem, 1);
 
         }
 
@@ -983,6 +1127,9 @@ static void onmousepress(struct message *message)
 
         if (interactivewidget)
         {
+
+            if (getitem(interactivewidget))
+                selectitem(getitem(interactivewidget));
 
             clickwidget(interactivewidget);
             markwidget(interactivewidget);
