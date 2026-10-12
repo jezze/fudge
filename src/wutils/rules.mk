@@ -83,6 +83,7 @@ B:=\
     $(DIR_SRC)/wutils/wsettings \
 
 O:=\
+    $(DIR_SRC)/wutils/kv.o \
     $(DIR_SRC)/wutils/wsettings.o \
 
 L:=\
