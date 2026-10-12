@@ -20,7 +20,7 @@ static unsigned int cmapcheckbox[13] = {
 };
 
 static unsigned int cmaplink[1] = {
-    0xE8805050,
+    0xE8C07878,
 };
 
 static unsigned int cmaplistbox[12] = {
@@ -55,7 +55,7 @@ static unsigned int cmaptextbox[16] = {
 static unsigned int cmapitem[12] = {
     0x00242424, 0x00242424, 0x00242424, 0x00242424,
     0xE8242424, 0xE8242424, 0xE8242424, 0xE8242424,
-    0xE8383838, 0xE8383838, 0xE8383838, 0xE8383838,
+    0xE81A1A1A, 0xE81A1A1A, 0xE81A1A1A, 0xE81A1A1A,
 };
 
 static unsigned int cmapwindow[12] = {
