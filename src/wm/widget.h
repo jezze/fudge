@@ -64,6 +64,8 @@ struct widget
     unsigned int anchor;
     unsigned int textrow;
     unsigned int textoffset;
+    unsigned int idhash;
+    unsigned int inhash;
     struct util_position position;
     struct util_size size;
     struct util_position scroll;

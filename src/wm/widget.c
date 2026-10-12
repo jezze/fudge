@@ -1,9 +1,11 @@
 #include <fudge.h>
+#include <hash.h>
 #include "config.h"
 #include "util.h"
 #include "text.h"
 #include "attr.h"
 #include "widget.h"
+#include "strpool.h"
 
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value)
 {
@@ -45,11 +47,13 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_ID:
         widget->attributes.id = attr_update(ATTR_ID, value, widget->attributes.id);
+        widget->idhash = djb_hash(strpool_getcstringlength(widget->attributes.id), strpool_getstring(widget->attributes.id));
 
         break;
 
     case ATTR_IN:
         widget->attributes.in = attr_update(ATTR_IN, value, widget->attributes.in);
+        widget->inhash = djb_hash(strpool_getcstringlength(widget->attributes.in), strpool_getstring(widget->attributes.in));
 
         break;
 

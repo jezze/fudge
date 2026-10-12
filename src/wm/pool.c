@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 #include <font.h>
+#include <hash.h>
 #include <image.h>
 #include "util.h"
 #include "text.h"
@@ -49,6 +50,9 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 
         struct widget *widget = current->data;
 
+        if (widget->inhash != parent->idhash)
+            continue;
+
         if (parent->source && widget->source != parent->source)
             continue;
 
@@ -82,13 +86,14 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
 {
 
     struct list_item *current = 0;
+    unsigned int hash = djb_hash(cstring_length(id), id);
 
     while ((current = pool_next(current)))
     {
 
         struct widget *widget = current->data;
 
-        if (widget->source != source)
+        if (widget->idhash != hash || widget->source != source)
             continue;
 
         if (cstring_match(strpool_getstring(widget->attributes.id), id))
