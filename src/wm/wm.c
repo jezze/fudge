@@ -141,7 +141,7 @@ static struct widget *getselecteditem(struct widget *widget)
 
         struct widget *child = current->data;
 
-        if (child->type == WIDGET_TYPE_ITEM && child->selected)
+        if (child->type == WIDGET_TYPE_ITEM && child->anchor)
             return child;
 
     }
@@ -328,6 +328,39 @@ static void bumpchildren(struct widget *widget)
 
 }
 
+static void setselected(struct widget *item, unsigned int selected)
+{
+
+    if (item->selected != selected)
+    {
+
+        item->selected = selected;
+
+        damage(item);
+
+    }
+
+}
+
+static void setanchor(struct widget *item)
+{
+
+    struct widget *parent = getparent(item);
+    struct list_item *current = 0;
+
+    while (parent && (current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+
+        child->anchor = 0;
+
+    }
+
+    item->anchor = 1;
+
+}
+
 static void selectitem(struct widget *item)
 {
 
@@ -339,20 +372,79 @@ static void selectitem(struct widget *item)
 
         struct widget *child = current->data;
 
-        if (child->type == WIDGET_TYPE_ITEM && child->selected)
+        if (child->type == WIDGET_TYPE_ITEM)
+            setselected(child, child == item);
+
+    }
+
+    setanchor(item);
+
+}
+
+static void toggleitem(struct widget *item)
+{
+
+    setselected(item, !item->selected);
+    setanchor(item);
+
+}
+
+static void selectrange(struct widget *item)
+{
+
+    struct widget *parent = getparent(item);
+    struct list_item *current = 0;
+    unsigned int inside = 0;
+
+    while (parent && (current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->anchor)
+            break;
+
+    }
+
+    if (!current)
+    {
+
+        selectitem(item);
+
+        return;
+
+    }
+
+    current = 0;
+
+    while ((current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+        unsigned int edge;
+
+        if (child->type != WIDGET_TYPE_ITEM)
+            continue;
+
+        edge = (child == item) + child->anchor;
+
+        if (edge)
         {
 
-            child->selected = 0;
+            setselected(child, 1);
 
-            damage(child);
+            inside = !inside && edge == 1;
+
+        }
+
+        else
+        {
+
+            setselected(child, inside);
 
         }
 
     }
-
-    item->selected = 1;
-
-    damage(item);
 
 }
 
@@ -1130,10 +1222,18 @@ static void onmousepress(struct message *message)
 
             struct widget *item = getitem(interactivewidget);
 
-            if (item && !getselect(item))
+            if (item && getselect(item))
+                item = 0;
+
+            if (item && (state.keys.mod & KEYS_MOD_SHIFT))
+                selectrange(item);
+            else if (item && (state.keys.mod & KEYS_MOD_CTRL))
+                toggleitem(item);
+            else if (item)
                 selectitem(item);
 
-            clickwidget(interactivewidget);
+            if (!item || !(state.keys.mod & (KEYS_MOD_SHIFT | KEYS_MOD_CTRL)))
+                clickwidget(interactivewidget);
             markwidget(interactivewidget);
 
         }
