@@ -33,6 +33,8 @@
     { key: enter mod: alt action: swap }
     { key: pageup mod: none action: scrollup }
     { key: pagedown mod: none action: scrolldown }
+    { key: tab mod: none action: focusnext }
+    { key: tab mod: shift action: focusprevious }
   ]
   colors:
   [

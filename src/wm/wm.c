@@ -18,6 +18,7 @@
 #define TEXTBOX_SIZE        256
 #define LAYOUT_DEFAULT      0
 #define LAYOUT_TILING       1
+#define NUM_FOCUSABLE       256
 
 struct state
 {
@@ -1246,7 +1247,121 @@ static void moveselection(struct widget *item, unsigned int forward)
 
 }
 
-static void dobinding(struct bind_binding *binding)
+static struct widget *getgroupitem(struct widget *parent)
+{
+
+    struct list_item *current = 0;
+    struct widget *first = 0;
+
+    while ((current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_ITEM && child->anchor)
+            return child;
+
+        if (child->type == WIDGET_TYPE_ITEM && !first)
+            first = child;
+
+    }
+
+    return first;
+
+}
+
+static unsigned int isfocusable(struct widget *widget)
+{
+
+    struct widget *parent = getparent(widget);
+
+    if (getselect(widget) && widget->type != WIDGET_TYPE_SELECT)
+        return 0;
+
+    if (parent && parent->type == WIDGET_TYPE_ITEM)
+        return 0;
+
+    switch (widget->type)
+    {
+
+    case WIDGET_TYPE_BUTTON:
+    case WIDGET_TYPE_CHECKBOX:
+    case WIDGET_TYPE_LINK:
+    case WIDGET_TYPE_SELECT:
+        return 1;
+
+    case WIDGET_TYPE_ITEM:
+        return parent && widget == getgroupitem(parent);
+
+    case WIDGET_TYPE_TEXTBOX:
+        return widget->attributes.mode != ATTR_MODE_READONLY;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int collectfocusable(struct widget *widget, struct widget **list, unsigned int count)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (count < NUM_FOCUSABLE && isfocusable(child))
+            list[count++] = child;
+
+        count = collectfocusable(child, list, count);
+
+    }
+
+    return count;
+
+}
+
+/* moves the focus to the next or previous widget in the focused window that takes keys, and says whether there was one */
+static unsigned int cyclefocus(unsigned int forward)
+{
+
+    static struct widget *list[NUM_FOCUSABLE];
+    struct widget *item = (state.focusedwidget) ? getitem(state.focusedwidget) : 0;
+    unsigned int count;
+    unsigned int current;
+    unsigned int i;
+
+    if (!state.focusedwindow)
+        return 0;
+
+    count = collectfocusable(state.focusedwindow, list, 0);
+
+    if (!count)
+        return 0;
+
+    for (current = 0; current < count; current++)
+    {
+
+        if (list[current] == state.focusedwidget || (item && list[current]->type == WIDGET_TYPE_ITEM && getparent(list[current]) == getparent(item)))
+            break;
+
+    }
+
+    if (current == count)
+        i = (forward) ? 0 : count - 1;
+    else
+        i = (current + ((forward) ? 1 : count - 1)) % count;
+
+    setfocus(list[i]);
+    showwidget(list[i]);
+
+    return 1;
+
+}
+
+static unsigned int dobinding(struct bind_binding *binding)
 {
 
     switch (binding->action)
@@ -1289,7 +1404,15 @@ static void dobinding(struct bind_binding *binding)
 
         break;
 
+    case BIND_ACTION_FOCUSNEXT:
+        return cyclefocus(1);
+
+    case BIND_ACTION_FOCUSPREVIOUS:
+        return cyclefocus(0);
+
     }
+
+    return 1;
 
 }
 
@@ -1301,17 +1424,10 @@ static void onkeypress(struct message *message)
     struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
     struct bind_binding *binding = bind_find(id, state.keys.mod);
 
-    if (id)
+    if (id && (!binding || !dobinding(binding)))
     {
 
-        if (binding)
-        {
-
-            dobinding(binding);
-
-        }
-
-        else if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
+        if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
         {
 
             sendevent(selecteditem->source, 1, selecteditem->attributes.onenter, "");

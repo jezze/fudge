@@ -5,6 +5,8 @@
 #define BIND_ACTION_SCROLLDOWN          5
 #define BIND_ACTION_SCROLLUP            6
 #define BIND_ACTION_SWAP                7
+#define BIND_ACTION_FOCUSNEXT           8
+#define BIND_ACTION_FOCUSPREVIOUS       9
 #define BIND_COMMANDSIZE                128
 
 struct bind_binding
