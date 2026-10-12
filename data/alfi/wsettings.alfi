@@ -17,4 +17,5 @@
 + text in "area-bindings" label "Bindings"
 + item id "area-colors" in "area-list" padding "16" onclick "q=area&name=colors"
 + text in "area-colors" label "Colors"
-+ frame id "content" in "base" flow "vertical-stretch" padding "8" overflow "vscroll" span "1"
++ frame id "content" in "base" flow "vertical-stretch" padding "8" span "1"
++ scroll in "content"

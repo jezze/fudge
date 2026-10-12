@@ -14,7 +14,7 @@ static void updatepath(unsigned int wm)
 static void sendcontent(unsigned int wm)
 {
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" span \"1\"\n+ scroll in \"content\"\n");
 
 }
 

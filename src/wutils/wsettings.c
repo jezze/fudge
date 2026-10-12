@@ -118,7 +118,7 @@ static void beginarea(char *label)
 
     reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ frame id \"content\" in \"base\" flow \"vertical-stretch\" padding \"8\" overflow \"vscroll\" span \"1\"\n", label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ frame id \"content\" in \"base\" flow \"vertical-stretch\" padding \"8\" span \"1\"\n+ scroll in \"content\"\n", label);
 
 }
 
