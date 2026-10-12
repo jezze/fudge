@@ -52,7 +52,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
             }
 
-            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\"\n+ checkbox in \"row%u\"\n+ link in \"row%u\" valign \"middle\" onclick \"q=relpath&path=%s\"", &row, &row, &row, name);
+            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\" onenter \"q=relpath&path=%s\"\n+ checkbox in \"row%u\"\n+ link in \"row%u\" valign \"middle\" onclick \"q=relpath&path=%s\"", &row, name, &row, &row, name);
             c += cstring_write_fmt(d, MESSAGE_SIZE, c, " label \"%s\"\n", name);
             offset = record->offset;
             row++;
