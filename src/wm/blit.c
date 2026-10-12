@@ -561,22 +561,37 @@ void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, i
 {
 
     unsigned char *row;
+    int start = util_max(x0, x);
+    int end = util_min(x2, x + w);
+    unsigned int source;
+    unsigned int remainder;
     int i;
 
-    if (!w || !h || !util_intersects(line, y, y + h))
+    if (!w || !h || !util_intersects(line, y, y + h) || start >= end)
         return;
 
     row = pool_pcxreadline(resource, (line - y) * resource->height / h);
+    source = (start - x) * resource->width / w;
+    remainder = (start - x) * resource->width % w;
 
-    for (i = util_max(x0, x); i < util_min(x2, x + w); i++)
+    for (i = start; i < end; i++)
     {
 
-        unsigned int off = row[(i - x) * resource->width / w] * 3;
+        unsigned int off = row[source] * 3;
         unsigned char r = resource->colormap[off + 0];
         unsigned char g = resource->colormap[off + 1];
         unsigned char b = resource->colormap[off + 2];
 
         display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
+        remainder += resource->width;
+
+        while (remainder >= w)
+        {
+
+            remainder -= w;
+            source++;
+
+        }
 
     }
 
