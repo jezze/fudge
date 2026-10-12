@@ -617,6 +617,8 @@ static void placewindows(unsigned int source)
                 widget->position.y = display.region.size.h / 8;
                 limit = util_size(util_max((int)display.region.size.w - widget->position.x * 2, 0), util_max((int)display.region.size.h - widget->position.y * 2, 0));
                 widget->size = render_getwindowsize(widget, &limit);
+                widget->size.w = util_min(util_max(widget->size.w, display.region.size.w / 2), limit.w);
+                widget->size.h = util_min(util_max(widget->size.h, display.region.size.h / 2), limit.h);
 
                 setfocuswindow(widget);
                 setfocus(0);
