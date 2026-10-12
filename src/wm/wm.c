@@ -758,6 +758,24 @@ static void redraw(unsigned int relayout)
 
 }
 
+static void scrollpage(int direction)
+{
+
+    struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
+
+    if (scrollablewidget)
+    {
+
+        int top = scrollablewidget->cplacement.position.y + scrollablewidget->scroll.y - scrollablewidget->placement.position.y;
+
+        scrollwidget(scrollablewidget, 0, direction * util_max((int)scrollablewidget->placement.size.h - top * 2, 16));
+
+    }
+
+    sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
+
+}
+
 static void onkeypress(struct message *message)
 {
 
@@ -790,19 +808,21 @@ static void onkeypress(struct message *message)
 
                 break;
 
-            case KEYS_KEY_PAGEUP:
-                if (widget_isscrollable(state.focusedwidget))
-                    scrollwidget(state.focusedwidget, 0, -16);
-
-                break;
-
-            case KEYS_KEY_PAGEDOWN:
-                if (widget_isscrollable(state.focusedwidget))
-                    scrollwidget(state.focusedwidget, 0, 16);
-
-                break;
-
             }
+
+        }
+
+        else if (id == KEYS_KEY_PAGEUP)
+        {
+
+            scrollpage(-1);
+
+        }
+
+        else if (id == KEYS_KEY_PAGEDOWN)
+        {
+
+            scrollpage(1);
 
         }
 
