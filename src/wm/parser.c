@@ -15,8 +15,8 @@
 #define UPDATE  5
 
 #define NUM_COMMANDS                    5
-#define NUM_WIDGETS                     15
-#define NUM_ATTRIBUTES                  23
+#define NUM_WIDGETS                     16
+#define NUM_ATTRIBUTES                  22
 
 static struct util_token commands[NUM_COMMANDS] =
 {
@@ -39,6 +39,7 @@ static struct util_token widgets[NUM_WIDGETS] =
     {WIDGET_TYPE_LINK, "link"},
     {WIDGET_TYPE_LISTBOX, "listbox"},
     {WIDGET_TYPE_PANEL, "panel"},
+    {WIDGET_TYPE_SCROLL, "scroll"},
     {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_SWATCH, "swatch"},
     {WIDGET_TYPE_TEXT, "text"},
@@ -63,7 +64,6 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
     {ATTR_ONCLICK, "onclick"},
     {ATTR_ONENTER, "onenter"},
     {ATTR_ONSELECT, "onselect"},
-    {ATTR_OVERFLOW, "overflow"},
     {ATTR_PADDING, "padding"},
     {ATTR_SOURCE, "source"},
     {ATTR_SPACING, "spacing"},

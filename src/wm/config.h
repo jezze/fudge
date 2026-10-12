@@ -1,6 +1,9 @@
 #define CONFIG_FRAME_WIDTH                  4
 #define CONFIG_FRAME_HEIGHT                 4
 #define CONFIG_FRAME_TITLE_PADDING          6
+#define CONFIG_SCROLL_WIDTH                 12
+#define CONFIG_SCROLL_SPACING               4
+#define CONFIG_SCROLL_MINIMUM               24
 #define CONFIG_BUTTON_PADDING_WIDTH         (CONFIG_FRAME_WIDTH + 20)
 #define CONFIG_BUTTON_PADDING_HEIGHT        (CONFIG_FRAME_HEIGHT + 12)
 #define CONFIG_CHECKBOX_WIDTH               32

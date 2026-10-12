@@ -43,14 +43,6 @@ static struct util_token modes[NUM_MODES] =
     {ATTR_MODE_FILL, "fill"}
 };
 
-static struct util_token overflows[4] =
-{
-    {ATTR_OVERFLOW_NONE, "none"},
-    {ATTR_OVERFLOW_SCROLL, "scroll"},
-    {ATTR_OVERFLOW_HSCROLL, "hscroll"},
-    {ATTR_OVERFLOW_VSCROLL, "vscroll"}
-};
-
 static struct util_token valigns[3] =
 {
     {ATTR_VALIGN_TOP, "top"},
@@ -124,7 +116,6 @@ unsigned int attr_isenum(unsigned int attribute)
     case ATTR_HALIGN:
     case ATTR_MIMETYPE:
     case ATTR_MODE:
-    case ATTR_OVERFLOW:
     case ATTR_VALIGN:
     case ATTR_WEIGHT:
     case ATTR_WRAP:
@@ -193,9 +184,6 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_ONSELECT:
         return strpool_updatestring(current, value);
-
-    case ATTR_OVERFLOW:
-        return util_getkey(overflows, 4, value);
 
     case ATTR_PADDING:
         return getnum(value, 10);

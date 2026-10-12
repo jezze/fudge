@@ -38,6 +38,7 @@ struct state
     unsigned int layout;
     unsigned int windows;
     struct event_videoconf videoconf;
+    int scrollgrab;
 
 };
 
@@ -395,13 +396,10 @@ static void scalewidget(struct widget *widget, unsigned int w, unsigned int h)
 
 }
 
-static void scrollwidget(struct widget *widget, int x, int y)
+static void scrollwidget(struct widget *widget, int y)
 {
 
-    if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_HSCROLL)
-        widget->scroll.x += x;
-
-    if (widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || widget->attributes.overflow == ATTR_OVERFLOW_VSCROLL)
+    if (widget_isscrollable(widget))
         widget->scroll.y += y;
 
     damage(widget);
@@ -564,9 +562,9 @@ static void showwidget(struct widget *widget)
         int widgetbottom = widget->placement.position.y + (int)widget->placement.size.h;
 
         if (widgettop < visibletop)
-            scrollwidget(parent, 0, widgettop - visibletop);
+            scrollwidget(parent, widgettop - visibletop);
         else if (widgetbottom > visiblebottom)
-            scrollwidget(parent, 0, widgetbottom - visiblebottom);
+            scrollwidget(parent, widgetbottom - visiblebottom);
 
     }
 
@@ -1195,7 +1193,7 @@ static void scrollpage(int direction)
 
         int top = scrollablewidget->cplacement.position.y + scrollablewidget->scroll.y - scrollablewidget->placement.position.y;
 
-        scrollwidget(scrollablewidget, 0, direction * util_max((int)scrollablewidget->placement.size.h - top * 2, 16));
+        scrollwidget(scrollablewidget, direction * util_max((int)scrollablewidget->placement.size.h - top * 2, 16));
 
     }
 
@@ -1509,6 +1507,33 @@ static void onmain(struct message *message)
 
 }
 
+/* moves what the thumb scrolls so that the thumb stays where it was grabbed */
+static void dragscroll(struct widget *scroll)
+{
+
+    struct widget *parent = getparent(scroll);
+
+    if (parent && parent->scrollmax > 0)
+    {
+
+        int top = parent->cplacement.position.y + parent->scroll.y - parent->placement.position.y;
+        int track = (int)parent->placement.size.h - top * 2 - (int)scroll->placement.size.h;
+
+        if (track > 0)
+        {
+
+            int thumb = state.mouseposition.y - state.scrollgrab - (parent->placement.position.y + top);
+
+            parent->scroll.y = util_clamp(thumb, 0, track) * parent->scrollmax / track;
+
+            damage(parent);
+
+        }
+
+    }
+
+}
+
 static void onmousemove(struct message *message)
 {
 
@@ -1527,7 +1552,9 @@ static void onmousemove(struct message *message)
     if (state.mousebuttonleft)
     {
 
-        if (state.focusedwidget)
+        if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SCROLL)
+            dragscroll(state.focusedwidget);
+        else if (state.focusedwidget)
             markwidget(state.focusedwidget, 0);
 
         if (!state.focusedwidget && state.focusedwindow)
@@ -1587,6 +1614,8 @@ static void onmousepress(struct message *message)
 
             struct widget *item = getitem(interactivewidget);
 
+            state.scrollgrab = state.mouseposition.y - interactivewidget->placement.position.y;
+
             if (item && getselect(item))
                 item = 0;
 
@@ -1626,7 +1655,7 @@ static void onmousescroll(struct message *message)
 
         struct event_mousescroll *mousescroll = message->data;
 
-        scrollwidget(scrollablewidget, 0, mousescroll->relz * 16);
+        scrollwidget(scrollablewidget, mousescroll->relz * 16);
 
     }
 

@@ -92,11 +92,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
-    case ATTR_OVERFLOW:
-        widget->attributes.overflow = attr_update(ATTR_OVERFLOW, value, widget->attributes.overflow);
-
-        break;
-
     case ATTR_PADDING:
         widget->attributes.padding = attr_update(ATTR_PADDING, value, widget->attributes.padding);
 
@@ -154,7 +149,6 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_ONCLICK, 0);
     widget_setattribute(widget, ATTR_ONENTER, 0);
     widget_setattribute(widget, ATTR_ONSELECT, 0);
-    widget_setattribute(widget, ATTR_OVERFLOW, 0);
     widget_setattribute(widget, ATTR_PADDING, 0);
     widget_setattribute(widget, ATTR_SOURCE, 0);
     widget_setattribute(widget, ATTR_SPACING, 0);
@@ -281,6 +275,7 @@ unsigned int widget_isinteractive(struct widget *widget)
     case WIDGET_TYPE_SELECT:
     case WIDGET_TYPE_ITEM:
     case WIDGET_TYPE_LINK:
+    case WIDGET_TYPE_SCROLL:
     case WIDGET_TYPE_TEXTBOX:
     case WIDGET_TYPE_WINDOW:
         return 1;
@@ -294,20 +289,7 @@ unsigned int widget_isinteractive(struct widget *widget)
 unsigned int widget_isscrollable(struct widget *widget)
 {
 
-    switch (widget->type)
-    {
-
-    case WIDGET_TYPE_LISTBOX:
-    case WIDGET_TYPE_TEXTBOX:
-        return 1;
-
-    case WIDGET_TYPE_FRAME:
-    case WIDGET_TYPE_LAYOUT:
-        return widget->attributes.overflow != ATTR_OVERFLOW_NONE;
-
-    }
-
-    return 0;
+    return widget->scrollable;
 
 }
 
@@ -329,7 +311,6 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->onclick = 0;
     attributes->onenter = 0;
     attributes->onselect = 0;
-    attributes->overflow = ATTR_OVERFLOW_NONE;
     attributes->padding = 0;
     attributes->source = 0;
     attributes->spacing = 0;
@@ -387,6 +368,8 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->textrow = 0;
     widget->textoffset = 0;
     widget->serial = 0;
+    widget->scrollable = 0;
+    widget->scrollmax = 0;
     widget->position = util_position(0, 0);
     widget->size = util_size(0, 0);
     widget->scroll = util_position(0, 0);

@@ -9,7 +9,6 @@
 #define ATTR_MIMETYPE                   9
 #define ATTR_MODE                       10
 #define ATTR_ONCLICK                    11
-#define ATTR_OVERFLOW                   12
 #define ATTR_PADDING                    13
 #define ATTR_SOURCE                     14
 #define ATTR_SPACING                    15
@@ -39,10 +38,6 @@
 #define ATTR_MODE_READONLY              1
 #define ATTR_MODE_STRETCH               2
 #define ATTR_MODE_FILL                  3
-#define ATTR_OVERFLOW_NONE              0
-#define ATTR_OVERFLOW_SCROLL            1
-#define ATTR_OVERFLOW_HSCROLL           2
-#define ATTR_OVERFLOW_VSCROLL           3
 #define ATTR_VALIGN_TOP                 0
 #define ATTR_VALIGN_MIDDLE              1
 #define ATTR_VALIGN_BOTTOM              2
