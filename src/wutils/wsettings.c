@@ -118,7 +118,7 @@ static void beginarea(char *label)
 
     reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ layout id \"content\" in \"base\" flow \"vertical-stretch\" overflow \"vscroll\" span \"1\"\n", label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ frame id \"content\" in \"base\" flow \"vertical-stretch\" padding \"8\" overflow \"vscroll\" span \"1\"\n", label);
 
 }
 
@@ -151,6 +151,16 @@ static void field(char *id, char *label, char *value)
     beginrow(id);
     addlabel(id, label);
     addtextbox(id, id, value, 0);
+
+}
+
+static void colorfield(char *id, char *label, char *value)
+{
+
+    beginrow(id);
+    addlabel(id, label);
+
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"%s-swatch\" in \"%s-row\" color \"%s\"\n+ textbox id \"%s\" in \"%s-row\" onchange \"q=color&id=%s&value=\"\n+ text in \"%s\" label \"%s\"\n", id, id, value, id, id, id, id, value);
 
 }
 
@@ -350,7 +360,7 @@ static void rendercolors(void)
         getword(line, length, 0, name, 64);
         getword(line, length, 1, value, 16);
         cstring_write_fmt(id, 96, 0, "color-%s\\0", name);
-        field(id, name, value);
+        colorfield(id, name, value);
 
     }
 
@@ -410,6 +420,13 @@ static void onwmevent(struct message *message)
     {
 
         channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s label \"%s\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
+
+    }
+
+    else if (kv_match(event, "q=color"))
+    {
+
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s-swatch color \"%s\"\n", kv_getstring(event, "id="), kv_getstring(event, "value="));
 
     }
 
