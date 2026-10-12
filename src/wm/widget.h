@@ -58,7 +58,6 @@ struct widget
     unsigned int followcursor;
     void *resource;
     unsigned int loaded;
-    unsigned int autosize;
     unsigned int appcursor;
     unsigned int selected;
     unsigned int anchor;
