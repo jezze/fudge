@@ -12,7 +12,6 @@ struct color
 
 };
 
-/* frames read four colors in a row: shadow, body, dark and light */
 static struct color colors[NUM_COLORS] = {
     {"button-shadow",           0xE8101010},
     {"button-body",             0xE8484848},
