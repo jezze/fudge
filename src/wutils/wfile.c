@@ -11,10 +11,20 @@ static void updatepath(unsigned int wm)
 
 }
 
+static void setbuttons(unsigned int wm, unsigned int enabled)
+{
+
+    char *mode = (enabled) ? "normal" : "disabled";
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, mode, mode);
+
+}
+
 static void sendcontent(unsigned int wm)
 {
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"scroll\" span \"1\"\n");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"scroll\" span \"1\" onselect \"q=select&count=\"\n");
+    setbuttons(wm, 0);
 
 }
 
@@ -52,7 +62,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
             }
 
-            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\" onenter \"q=relpath&path=%s\"\n+ checkbox in \"row%u\"\n+ text in \"row%u\" valign \"middle\" mode \"link\" onclick \"q=relpath&path=%s\"", &row, name, &row, &row, name);
+            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\" onenter \"q=relpath&path=%s\"\n+ text in \"row%u\" valign \"middle\" mode \"link\" onclick \"q=relpath&path=%s\"", &row, name, &row, name);
             c += cstring_write_fmt(d, MESSAGE_SIZE, c, " label \"%s\"\n", name);
             offset = record->offset;
             row++;
@@ -214,6 +224,13 @@ static void onwmevent(struct message *message)
 
     else if (kv_match(event, "q=delete"))
     {
+
+    }
+
+    else if (kv_match(event, "q=select"))
+    {
+
+        setbuttons(message->source, kv_getvalue(event, "count=", 10) > 0);
 
     }
 
