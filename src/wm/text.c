@@ -185,7 +185,7 @@ unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int l
 
 }
 
-unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx, int x, int y)
+unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int halign, unsigned int maxw, int firstrowx, int x, int y)
 {
 
     struct text_rowinfo rowinfo;
@@ -202,7 +202,7 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
         if (y < cy + (int)rowinfo.lineheight)
         {
 
-            int cx = firstrowx;
+            int cx = firstrowx + text_getrowx(&rowinfo, halign, maxw - firstrowx);
             unsigned int i;
 
             for (i = rowinfo.istart; i < rowinfo.iend; i++)

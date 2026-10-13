@@ -587,8 +587,8 @@ static void marktext(struct widget *text, unsigned int clear)
     int x1 = state.mouseposition.x - text->placement.position.x;
     int y1 = state.mouseposition.y - text->placement.position.y;
 
-    text->markstart = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->placement.size.w, text->rowstart.x, x0, y0);
-    text->markend = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->placement.size.w, text->rowstart.x, x1, y1);
+    text->markstart = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x0, y0);
+    text->markend = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x1, y1);
 
 }
 
@@ -1028,20 +1028,8 @@ static void movecursor(struct widget *widget)
         unsigned int length = strpool_getcstringlength(text->attributes.label);
         int x = util_max(state.mouseposition.x - text->placement.position.x, 0);
         int y = util_clamp(state.mouseposition.y - text->placement.position.y, 0, util_max((int)text->placement.size.h - 1, 0));
-        unsigned int cursor = text_getoffsetat(font, label, length, text->attributes.wrap, text->placement.size.w, text->rowstart.x, x, y);
 
-        if (cursor < length)
-        {
-
-            struct text_info info = text_info(font, label, cursor, text->attributes.wrap, text->placement.size.w, text->rowstart.x);
-            unsigned int index = label[cursor];
-
-            if (x - info.lastrow.x > (int)font->atlas[index].width / 2)
-                cursor++;
-
-        }
-
-        widget->attributes.cursor = cursor;
+        widget->attributes.cursor = text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x, y);
 
         damageall(widget);
 

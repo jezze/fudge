@@ -138,19 +138,19 @@ static void addlabel(char *id, char *label)
 
 }
 
-static void addtextbox(char *row, char *id, char *value, unsigned int span)
+static void addtextbox(char *row, char *id, char *value, unsigned int span, char *halign)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ textbox id \"%s\" in \"%s-row\" span \"%u\"\n+ text in \"%s\" label \"%s\"\n", id, row, &span, id, value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ textbox id \"%s\" in \"%s-row\" flow \"stretch\" span \"%u\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, halign, value);
 
 }
 
-static void field(char *id, char *label, char *value)
+static void field(char *id, char *label, char *value, char *halign)
 {
 
     beginrow(id);
     addlabel(id, label);
-    addtextbox(id, id, value, 0);
+    addtextbox(id, id, value, 0, halign);
 
 }
 
@@ -276,7 +276,7 @@ static void rendermouse(void)
     unsigned int count = query(data, 256, ".mouse", "{speed} {acceleration}");
 
     beginarea("Mouse");
-    field("mouse-speed", "Speed", getword(data, count, 0, word, 64));
+    field("mouse-speed", "Speed", getword(data, count, 0, word, 64), "right");
     toggle("mouse-acceleration", "Acceleration", cstring_match(getword(data, count, 1, word, 64), "true"));
 
 }
@@ -310,11 +310,11 @@ static void renderbindings(void)
         cstring_write_fmt(row, 32, 0, "binding%u\\0", &i);
         beginrow(row);
         cstring_write_fmt(id, 64, 0, "binding%u-key\\0", &i);
-        addtextbox(row, id, getword(line, length, 0, word, 128), 1);
+        addtextbox(row, id, getword(line, length, 0, word, 128), 1, "left");
         cstring_write_fmt(id, 64, 0, "binding%u-mod\\0", &i);
-        addtextbox(row, id, getword(line, length, 1, word, 128), 1);
+        addtextbox(row, id, getword(line, length, 1, word, 128), 1, "left");
         cstring_write_fmt(id, 64, 0, "binding%u-action\\0", &i);
-        addtextbox(row, id, getword(line, length, 2, word, 128), 1);
+        addtextbox(row, id, getword(line, length, 2, word, 128), 1, "left");
 
         /* the command is the rest of the line after the third space and can hold spaces */
         for (start = 0, spaces = 0; start < length && spaces < 3; start++)
@@ -332,7 +332,7 @@ static void renderbindings(void)
             cstring_write_fmt(word, 128, 0, "%w\\0", line + start, &command);
 
         cstring_write_fmt(id, 64, 0, "binding%u-command\\0", &i);
-        addtextbox(row, id, word, 1);
+        addtextbox(row, id, word, 1, "left");
 
     }
 

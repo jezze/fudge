@@ -42,6 +42,6 @@ struct text_info
 unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int offset);
 struct text_info text_info(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx);
 unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int row, unsigned int offset, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx);
-unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx, int x, int y);
+unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int halign, unsigned int maxw, int firstrowx, int x, int y);
 int text_getrowx(struct text_rowinfo *rowinfo, unsigned int halign, unsigned int w);
 int text_getrowy(struct text_rowinfo *rowinfo, unsigned int valign, unsigned int h);
