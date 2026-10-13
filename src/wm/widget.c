@@ -282,10 +282,12 @@ unsigned int widget_isinteractive(struct widget *widget)
     switch (widget->type)
     {
 
+    case WIDGET_TYPE_BUTTON:
+        return widget->attributes.mode != ATTR_MODE_DISABLED;
+
     case WIDGET_TYPE_TEXT:
         return widget_islink(widget);
 
-    case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_LISTBOX:
     case WIDGET_TYPE_SELECT:

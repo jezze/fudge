@@ -40,6 +40,7 @@
 #define ATTR_MODE_STRETCH               2
 #define ATTR_MODE_FILL                  3
 #define ATTR_MODE_LINK                  4
+#define ATTR_MODE_DISABLED              5
 #define ATTR_OVERFLOW_NONE              0
 #define ATTR_OVERFLOW_SCROLL            1
 #define ATTR_VALIGN_TOP                 0

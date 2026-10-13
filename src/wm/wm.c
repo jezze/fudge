@@ -1512,6 +1512,8 @@ static unsigned int isfocusable(struct widget *widget)
     {
 
     case WIDGET_TYPE_BUTTON:
+        return widget->attributes.mode != ATTR_MODE_DISABLED;
+
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_SELECT:
         return 1;

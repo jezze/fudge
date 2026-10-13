@@ -54,6 +54,7 @@
     { name: button-focus-dark       value: E8505050 }
     { name: button-focus-light      value: E8888888 }
     { name: button-label            value: E8FFFFFF }
+    { name: button-label-disabled   value: E8A0A0A0 }
     { name: checkbox-shadow         value: E8101010 }
     { name: checkbox-body           value: E8484848 }
     { name: checkbox-dark           value: E8404040 }

@@ -54,6 +54,7 @@ static struct
 
     unsigned int *button[3];
     unsigned int *buttonlabel;
+    unsigned int *buttonlabeldisabled;
     unsigned int *checkbox[3];
     unsigned int *checkboxicon;
     unsigned int *field[3];
@@ -910,10 +911,11 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 {
 
     struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
-    unsigned int *cmapbody = bystate(colors.button, widget->state);
+    unsigned int disabled = widget->attributes.mode == ATTR_MODE_DISABLED;
+    unsigned int *cmapbody = (disabled) ? colors.button[0] : bystate(colors.button, widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    textrender(display, widget, &widget->placement, colors.buttonlabel, x0, x2, 0, 0, &padding, 0, line);
+    textrender(display, widget, &widget->placement, (disabled) ? colors.buttonlabeldisabled : colors.buttonlabel, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -1387,6 +1389,7 @@ void render_init(void)
     getgroup(colors.select, "field-shadow", "field-hover-shadow", "select-focus-shadow");
 
     colors.buttonlabel = cmap_get("button-label");
+    colors.buttonlabeldisabled = cmap_get("button-label-disabled");
     colors.checkboxicon = cmap_get("checkbox-icon");
     colors.link = cmap_get("link");
     colors.mouse = cmap_get("mouse-shadow");
