@@ -4,6 +4,6 @@ L:=\
 O:=\
     $(DIR_LIB)/math/math.o \
 
-$(DIR_LIB)/math/math.o: CC_FLAGS:=$(filter-out -msoft-float, $(CC_FLAGS))
+$(DIR_LIB)/math/math.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
 
 include $(DIR_MK)/lib.mk

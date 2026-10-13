@@ -12,7 +12,7 @@ L:=\
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/hash/hash.a \
 
-$(DIR_SRC)/gameboy/audio.o: CC_FLAGS:=$(filter-out -msoft-float, $(CC_FLAGS))
+$(DIR_SRC)/gameboy/audio.o: CC_FLAGS:=$(filter-out $(CC_FLAGS_FLOAT), $(CC_FLAGS))
 $(DIR_SRC)/gameboy/cpu.o: CC_FLAGS:=$(filter-out -pedantic, $(CC_FLAGS))
 $(DIR_SRC)/gameboy/gameboy.o: CC_FLAGS:=$(filter-out -pedantic, $(CC_FLAGS))
 

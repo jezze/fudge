@@ -5,7 +5,7 @@ include $(DIR_LIB)/font/rules.mk
 include $(DIR_LIB)/fudge/rules.mk
 include $(DIR_LIB)/hash/rules.mk
 include $(DIR_LIB)/image/rules.mk
-ifeq ($(ARCH),x86)
+ifneq ($(filter x86 x86_64,$(ARCH)),)
 include $(DIR_LIB)/math/rules.mk
 endif
 include $(DIR_LIB)/$(LOADER)/rules.mk
