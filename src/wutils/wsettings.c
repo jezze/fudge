@@ -676,7 +676,7 @@ static void onwmevent(struct message *message)
     {
 
         setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s label \"%s\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
 
     }
 
@@ -684,6 +684,7 @@ static void onwmevent(struct message *message)
     {
 
         setfield(kv_getstring(event, "id="), kv_getstring(event, "value="));
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"normal\"\n");
 
     }
 
@@ -691,7 +692,7 @@ static void onwmevent(struct message *message)
     {
 
         setfield(kv_getstring(event, "id="), kv_getstring(event, "value="));
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s-swatch color \"%s\"\n", kv_getstring(event, "id="), kv_getstring(event, "value="));
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s-swatch color \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "value="));
 
     }
 
@@ -700,6 +701,8 @@ static void onwmevent(struct message *message)
 
         config.acceleration = !config.acceleration;
 
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"normal\"\n");
+
     }
 
     else if (kv_match(event, "q=save"))
@@ -707,7 +710,8 @@ static void onwmevent(struct message *message)
 
         static char data[0x2000];
 
-        savefile(option_getstring("config"), data, writeconfig(data, 0x2000));
+        if (savefile(option_getstring("config"), data, writeconfig(data, 0x2000)))
+            channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"disabled\"\n");
 
     }
 
