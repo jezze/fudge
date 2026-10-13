@@ -239,7 +239,7 @@ static void freeblock(unsigned int block)
 
 }
 
-static void freenode(unsigned int id)
+static void freenode(unsigned int id, unsigned int directory)
 {
 
     unsigned int igroup = (id - 1) / sb.nodeCountGroup;
@@ -255,6 +255,9 @@ static void freenode(unsigned int id)
     sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
 
     bg.nodeCountUnalloc++;
+
+    if (directory)
+        bg.directoryCount--;
 
     writeblockgroup(&bg, igroup);
 
@@ -603,6 +606,33 @@ static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
 
 }
 
+static unsigned int isempty(struct ext2_node *node)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < node->sizeLow)
+    {
+
+        struct ext2_entry *entry = getentry(node, offset);
+        char *name;
+
+        if (!entry)
+            return 0;
+
+        name = (char *)(entry + 1);
+
+        if (entry->node && !(entry->length == 1 && name[0] == '.') && !(entry->length == 2 && name[0] == '.' && name[1] == '.'))
+            return 0;
+
+        offset += entry->size;
+
+    }
+
+    return 1;
+
+}
+
 static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
 {
 
@@ -905,23 +935,57 @@ static void freeindirect(unsigned int block, unsigned int depth)
 
 }
 
-static unsigned int removefile(unsigned int parentid, unsigned int id)
+static unsigned int removenode(unsigned int parentid, unsigned int id)
 {
 
     struct ext2_node parent;
     struct ext2_node node;
+    unsigned int directory;
     unsigned int i;
+
+    if (id == 2 || id == parentid)
+        return 0;
 
     simpleread(&parent, parentid);
     simpleread(&node, id);
 
-    if ((parent.type & 0xF000) != 0x4000 || (node.type & 0xF000) != 0x8000)
+    if ((parent.type & 0xF000) != 0x4000)
         return 0;
+
+    switch (node.type & 0xF000)
+    {
+
+    case 0x4000:
+        if (!isempty(&node))
+            return 0;
+
+        directory = 1;
+
+        break;
+
+    case 0x8000:
+        directory = 0;
+
+        break;
+
+    default:
+        return 0;
+
+    }
 
     if (!removeentry(&parent, id))
         return 0;
 
-    if (node.hardCount > 1)
+    if (directory)
+    {
+
+        parent.hardCount--;
+
+        simplewrite(&parent, parentid);
+
+    }
+
+    else if (node.hardCount > 1)
     {
 
         node.hardCount--;
@@ -951,7 +1015,7 @@ static unsigned int removefile(unsigned int parentid, unsigned int id)
 
     buffer_clear(&node, sizeof (struct ext2_node));
     simplewrite(&node, id);
-    freenode(id);
+    freenode(id, directory);
 
     return 1;
 
@@ -963,7 +1027,7 @@ static void onremoverequest(struct message *message)
     struct event_removerequest *request = message->data;
     struct event_removeresponse response;
 
-    response.status = removefile(request->parent, request->id);
+    response.status = removenode(request->parent, request->id);
 
     channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
