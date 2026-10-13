@@ -56,19 +56,17 @@ static struct
     unsigned int *buttonlabel;
     unsigned int *checkbox[3];
     unsigned int *checkboxicon;
+    unsigned int *field[3];
     unsigned int *frame;
     unsigned int *frametitle;
     unsigned int *item[3];
     unsigned int *link;
-    unsigned int *listbox[3];
     unsigned int *mouse;
     unsigned int *panel;
     unsigned int *select[3];
     unsigned int *selecticon;
     unsigned int *selectlabel;
     unsigned int *text;
-    unsigned int *textbox[3];
-    unsigned int *textboxreadonly;
     unsigned int *window;
     unsigned int *windowicon;
     unsigned int *windowiconhover;
@@ -1126,7 +1124,7 @@ static void renderswatch(struct blit_display *display, struct widget *widget, in
     int top = widget->placement.position.y + CONFIG_FRAME_HEIGHT;
     int bottom = widget->placement.position.y + widget->placement.size.h - CONFIG_FRAME_HEIGHT;
 
-    blit_frame(display, &widget->placement, line, x0, x2, colors.textbox[0]);
+    blit_frame(display, &widget->placement, line, x0, x2, colors.field[0]);
 
     if (line >= top && line < bottom)
         blit_alphaline(display, widget->attributes.color, util_max(x0, left), util_min(x2, right));
@@ -1136,7 +1134,7 @@ static void renderswatch(struct blit_display *display, struct widget *widget, in
 static void renderlistbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.listbox[0] : bystate(colors.listbox, widget->state);
+    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.field[0] : bystate(colors.field, widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
@@ -1193,7 +1191,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 {
 
     struct util_region rcursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
-    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.textboxreadonly : bystate(colors.textbox, widget->state);
+    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.field[0] : bystate(colors.field, widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
@@ -1460,9 +1458,8 @@ void render_init(void)
     getgroup(colors.button, "button-shadow", "button-hover-shadow", "button-focus-shadow");
     getgroup(colors.checkbox, "checkbox-shadow", "checkbox-hover-shadow", "checkbox-focus-shadow");
     getgroup(colors.item, "item-shadow", "item-hover-shadow", "item-focus-shadow");
-    getgroup(colors.listbox, "listbox-shadow", "listbox-hover-shadow", "listbox-focus-shadow");
-    getgroup(colors.select, "select-shadow", "select-hover-shadow", "select-focus-shadow");
-    getgroup(colors.textbox, "textbox-shadow", "textbox-hover-shadow", "textbox-focus-shadow");
+    getgroup(colors.field, "field-shadow", "field-hover-shadow", "field-focus-shadow");
+    getgroup(colors.select, "field-shadow", "field-hover-shadow", "select-focus-shadow");
 
     colors.buttonlabel = cmap_get("button-label");
     colors.checkboxicon = cmap_get("checkbox-icon");
@@ -1474,7 +1471,6 @@ void render_init(void)
     colors.frame = cmap_get("frame-shadow");
     colors.frametitle = cmap_get("frame-title");
     colors.text = cmap_get("text");
-    colors.textboxreadonly = cmap_get("textbox-readonly-shadow");
     colors.window = cmap_get("window-shadow");
     colors.windowicon = cmap_get("window-icon");
     colors.windowiconhover = cmap_get("window-icon-hover");

@@ -67,6 +67,18 @@
     { name: checkbox-focus-dark     value: E8505050 }
     { name: checkbox-focus-light    value: E8888888 }
     { name: checkbox-icon           value: E8FFFFFF }
+    { name: field-shadow            value: E8101010 }
+    { name: field-body              value: E82A2A2A }
+    { name: field-dark              value: E8101010 }
+    { name: field-light             value: E8686868 }
+    { name: field-hover-shadow      value: E8101010 }
+    { name: field-hover-body        value: E82A2A2A }
+    { name: field-hover-dark        value: E8101010 }
+    { name: field-hover-light       value: E8787878 }
+    { name: field-focus-shadow      value: E8101010 }
+    { name: field-focus-body        value: E82A2A2A }
+    { name: field-focus-dark        value: E8101010 }
+    { name: field-focus-light       value: E8888888 }
     { name: frame-shadow            value: E8101010 }
     { name: frame-body              value: 00000000 }
     { name: frame-dark              value: E8101010 }
@@ -85,18 +97,6 @@
     { name: item-focus-dark         value: E81A1A1A }
     { name: item-focus-light        value: E81A1A1A }
     { name: link                    value: E8C07878 }
-    { name: listbox-shadow          value: E8101010 }
-    { name: listbox-body            value: E82A2A2A }
-    { name: listbox-dark            value: E8101010 }
-    { name: listbox-light           value: E8686868 }
-    { name: listbox-hover-shadow    value: E8101010 }
-    { name: listbox-hover-body      value: E82A2A2A }
-    { name: listbox-hover-dark      value: E8101010 }
-    { name: listbox-hover-light     value: E8787878 }
-    { name: listbox-focus-shadow    value: E8101010 }
-    { name: listbox-focus-body      value: E82A2A2A }
-    { name: listbox-focus-dark      value: E8101010 }
-    { name: listbox-focus-light     value: E8888888 }
     { name: mouse-shadow            value: E8101010 }
     { name: mouse-body              value: E8202020 }
     { name: mouse-dark              value: 00000000 }
@@ -105,14 +105,6 @@
     { name: panel-body              value: E8303030 }
     { name: panel-dark              value: E8303030 }
     { name: panel-light             value: E8585858 }
-    { name: select-shadow           value: E8101010 }
-    { name: select-body             value: E82A2A2A }
-    { name: select-dark             value: E8101010 }
-    { name: select-light            value: E8686868 }
-    { name: select-hover-shadow     value: E8101010 }
-    { name: select-hover-body       value: E82A2A2A }
-    { name: select-hover-dark       value: E8101010 }
-    { name: select-hover-light      value: E8787878 }
     { name: select-focus-shadow     value: E8101010 }
     { name: select-focus-body       value: E8805050 }
     { name: select-focus-dark       value: E8805050 }
@@ -120,22 +112,6 @@
     { name: select-icon             value: E8FFFFFF }
     { name: select-label            value: E8FFFFFF }
     { name: text                    value: E8E0E0E0 }
-    { name: textbox-shadow          value: E8101010 }
-    { name: textbox-body            value: E82A2A2A }
-    { name: textbox-dark            value: E8101010 }
-    { name: textbox-light           value: E8686868 }
-    { name: textbox-hover-shadow    value: E8101010 }
-    { name: textbox-hover-body      value: E82A2A2A }
-    { name: textbox-hover-dark      value: E8101010 }
-    { name: textbox-hover-light     value: E8787878 }
-    { name: textbox-focus-shadow    value: E8101010 }
-    { name: textbox-focus-body      value: E82A2A2A }
-    { name: textbox-focus-dark      value: E8101010 }
-    { name: textbox-focus-light     value: E8888888 }
-    { name: textbox-readonly-shadow value: E8101010 }
-    { name: textbox-readonly-body   value: E82A2A2A }
-    { name: textbox-readonly-dark   value: E8101010 }
-    { name: textbox-readonly-light  value: E8686868 }
     { name: window-shadow           value: E8101010 }
     { name: window-body             value: E8805050 }
     { name: window-dark             value: E8805050 }
