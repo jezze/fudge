@@ -530,6 +530,9 @@ static void setselected(struct widget *item, unsigned int selected)
 
         damage(item);
 
+        if (item->attributes.onselect)
+            sendevent(item->source, 1, item->attributes.onselect, (selected) ? "1" : "0");
+
     }
 
 }
