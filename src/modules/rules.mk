@@ -168,7 +168,6 @@ L:=\
 
 include $(DIR_MK)/kmod.mk
 ifeq ($(ARCH),x86)
-include $(DIR_SRC)/modules/64bit/rules.mk
 include $(DIR_SRC)/modules/acpi/rules.mk
 include $(DIR_SRC)/modules/ahci/rules.mk
 include $(DIR_SRC)/modules/apic/rules.mk
