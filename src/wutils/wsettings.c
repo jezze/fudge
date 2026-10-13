@@ -172,7 +172,7 @@ static void beginarea(char *label)
 
     reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ listbox id \"content\" in \"base\" mode \"readonly\" flow \"vertical-stretch\" padding \"8\" overflow \"scroll\" span \"1\"\n", label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ box id \"content\" in \"base\" flow \"vertical-stretch\" padding \"8\" overflow \"scroll\" span \"1\"\n", label);
 
 }
 
@@ -195,7 +195,7 @@ static void addlabel(char *id, char *label)
 static void addtextbox(char *row, char *id, char *value, unsigned int span, char *halign)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ textbox id \"%s\" in \"%s-row\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, id, halign, value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-row\" mode \"edit\" padding \"12\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, id, halign, value);
 
 }
 
@@ -215,7 +215,7 @@ static void colorfield(unsigned int index, char *label, char *value)
     reserve();
 
     outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ layout id \"c%u\" in \"content\" flow \"horizontal-stretch\" spacing \"8\" padding \"4\"\n+ text in \"c%u\" valign \"middle\" span \"1\" label \"%s\"\n", &index, &index, label);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"s%u\" in \"c%u\" color \"%s\"\n+ textbox id \"t%u\" in \"c%u\" onchange \"q=color&index=%u&value=\"\n+ text in \"t%u\" label \"%s\"\n", &index, &index, value, &index, &index, &index, &index, value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"s%u\" in \"c%u\" color \"%s\"\n+ box id \"t%u\" in \"c%u\" mode \"edit\" padding \"12\" onchange \"q=color&index=%u&value=\"\n+ text in \"t%u\" label \"%s\"\n", &index, &index, value, &index, &index, &index, &index, value);
 
 }
 

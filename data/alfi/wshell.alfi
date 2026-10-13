@@ -1,5 +1,5 @@
 + window id "window" label "Shell"
-+ textbox id "output" in "window" flow "vertical" mode "readonly" overflow "scroll" span "1" cursor "0"
++ box id "output" in "window" flow "vertical" padding "12" overflow "scroll" span "1" cursor "0"
 + text id "result" in "output" display "inline" wrap "char"
 + text id "prompt" in "output" display "inline" wrap "char" weight "bold" label "$ "
 + text id "input" in "output" display "inline" wrap "char"

@@ -23,7 +23,7 @@ static void setbuttons(unsigned int wm, unsigned int enabled)
 static void sendcontent(unsigned int wm)
 {
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ listbox id \"content\" in \"main\" mode \"readonly\" flow \"vertical-stretch\" overflow \"scroll\" span \"1\" onselect \"q=select&count=\"\n");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ box id \"content\" in \"main\" flow \"vertical-stretch\" overflow \"scroll\" span \"1\" onselect \"q=select&count=\"\n");
     setbuttons(wm, 0);
 
 }

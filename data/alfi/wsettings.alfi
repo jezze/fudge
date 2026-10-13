@@ -17,6 +17,6 @@
 + text in "area-bindings" label "Bindings"
 + item id "area-colors" in "area-list" padding "16" onclick "q=area&name=colors"
 + text in "area-colors" label "Colors"
-+ listbox id "content" in "base" mode "readonly" flow "vertical-stretch" padding "8" overflow "scroll" span "1"
++ box id "content" in "base" flow "vertical-stretch" padding "8" overflow "scroll" span "1"
 + button id "save" in "top" mode "disabled" label "Save" onclick "q=save"
 + button in "top" label "Apply" onclick "q=apply"
