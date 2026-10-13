@@ -670,7 +670,7 @@ static struct util_size getsizefill(struct widget *widget, struct util_size *lim
 static struct util_size getsizeimage(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return (widget->attributes.mode == ATTR_MODE_STRETCH || widget->attributes.mode == ATTR_MODE_FILL) ? zerosize : widget->size;
+    return widget->size;
 
 }
 
@@ -992,39 +992,9 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
         {
 
             struct pool_pcxresource *resource = widget->resource;
-            unsigned int w = resource->width;
-            unsigned int h = resource->height;
 
-            if (widget->attributes.mode == ATTR_MODE_FILL)
-            {
-
-                w = widget->placement.size.w;
-                h = widget->placement.size.h;
-
-            }
-
-            else if (widget->attributes.mode == ATTR_MODE_STRETCH && w && h)
-            {
-
-                if (w * widget->placement.size.h < h * widget->placement.size.w)
-                {
-
-                    w = w * widget->placement.size.h / h;
-                    h = widget->placement.size.h;
-
-                }
-
-                else
-                {
-
-                    h = h * widget->placement.size.w / w;
-                    w = widget->placement.size.w;
-
-                }
-
-            }
-
-            blit_pcx(display, resource, line, widget->placement.position.x, widget->placement.position.y, w, h, x0, x2);
+            /* the image covers its placement, which its parent's flow stretches or leaves at the image's own size */
+            blit_pcx(display, resource, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
 
         }
 

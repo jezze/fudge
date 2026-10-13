@@ -1,4 +1,4 @@
-+ image mimetype "image/pcx" source "initrd:data/fudge.pcx" mode "fill"
++ image mimetype "image/pcx" source "initrd:data/fudge.pcx"
 + layout id "desktop" flow "vertical"
 + layout id "menu" in "desktop" flow "horizontal"
 + select id "fudge-select" in "menu" label "Fudge"
