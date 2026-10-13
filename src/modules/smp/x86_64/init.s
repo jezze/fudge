@@ -33,6 +33,7 @@ smp_begin16:
     movw %ax, %ss
     lgdtl SMP_BASE16 + (smp_gdtpointer - smp_begin16)
     movl %cr0, %eax
+    andl $0x9FFFFFFF, %eax
     orl $1, %eax
     movl %eax, %cr0
     ljmpl $SMP_CODE32, $SMP_BASE32

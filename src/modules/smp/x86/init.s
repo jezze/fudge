@@ -38,6 +38,7 @@ smp_begin16:
     movl $SMP_IDT, %eax
     lidt (%eax)
     movl %cr0, %eax
+    andl $0x9FFFFFFF, %eax
     orl $1, %eax
     movl %eax, %cr0
     ljmp $SMP_KCODE, $SMP_BASE32
