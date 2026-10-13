@@ -1531,6 +1531,9 @@ static unsigned int isfocusable(struct widget *widget)
 
     struct widget *parent = getparent(widget);
 
+    if (widget->attributes.mode == ATTR_MODE_DISABLED)
+        return 0;
+
     if (getselect(widget) && widget->type != WIDGET_TYPE_SELECT)
         return 0;
 
@@ -1541,8 +1544,6 @@ static unsigned int isfocusable(struct widget *widget)
     {
 
     case WIDGET_TYPE_BUTTON:
-        return widget->attributes.mode != ATTR_MODE_DISABLED;
-
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_SELECT:
         return 1;
@@ -1708,7 +1709,7 @@ static void onkeypress(struct message *message)
 
         }
 
-        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX && state.focusedwidget->attributes.mode != ATTR_MODE_READONLY)
+        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX && state.focusedwidget->attributes.mode == ATTR_MODE_NORMAL)
         {
 
             edittextbox(state.focusedwidget, id);
