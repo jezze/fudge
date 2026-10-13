@@ -7,6 +7,7 @@
 #include <modules/pic/pic.h>
 #include <modules/apic/apic.h>
 #include <modules/pat/pat.h>
+#include <modules/sse/sse.h>
 #include <modules/pit/pit.h>
 
 #define SMP_BASE16                      0x00008000
@@ -72,6 +73,7 @@ void smp_setupap(unsigned int icore)
     cpu_settss(gdt_getselector(gdt, ARCH_TSS + icore * 2));
     apic_setup_ap();
     pat_setup();
+    sse_setup();
     arch_leave();
 
 }

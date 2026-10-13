@@ -4,6 +4,7 @@
     { path: initrd:kernel/cpuid.ko }
     { path: initrd:kernel/msr.ko }
     { path: initrd:kernel/pat.ko }
+    { path: initrd:kernel/sse.ko }
     { path: initrd:kernel/acpi.ko }
     { path: initrd:kernel/pic.ko }
     { path: initrd:kernel/apic.ko }

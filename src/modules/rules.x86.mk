@@ -13,6 +13,7 @@ include $(DIR_SRC)/modules/io/$(ARCH)/rules.mk
 include $(DIR_SRC)/modules/msr/$(ARCH)/rules.mk
 include $(DIR_SRC)/modules/nvme/rules.mk
 include $(DIR_SRC)/modules/pat/rules.mk
+include $(DIR_SRC)/modules/sse/rules.mk
 include $(DIR_SRC)/modules/pci/rules.mk
 include $(DIR_SRC)/modules/pic/rules.mk
 include $(DIR_SRC)/modules/pit/rules.mk
