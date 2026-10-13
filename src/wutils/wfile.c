@@ -2,7 +2,17 @@
 #include <abi.h>
 #include "kv.h"
 
+#define ROWS                            512
+#define CLIPBOARD_SIZE                  0x4000
+
 static char path[256];
+static char names[ROWS][RECORD_NAMESIZE + 2];
+static unsigned char selected[ROWS];
+static unsigned int rows;
+static unsigned int listing;
+static char clipboard[CLIPBOARD_SIZE];
+static unsigned int clipcount;
+static unsigned int clipcut;
 
 static void updatepath(unsigned int wm)
 {
@@ -11,20 +21,37 @@ static void updatepath(unsigned int wm)
 
 }
 
-static void setbuttons(unsigned int wm, unsigned int enabled)
+static unsigned int countselected(void)
 {
 
-    char *mode = (enabled) ? "normal" : "disabled";
+    unsigned int count = 0;
+    unsigned int i;
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, mode, mode);
+    for (i = 0; i < rows; i++)
+        count += selected[i];
+
+    return count;
+
+}
+
+static void setbuttons(unsigned int wm)
+{
+
+    char *mode = (countselected()) ? "normal" : "disabled";
+    char *pastemode = (listing && clipcount) ? "normal" : "disabled";
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
 
 }
 
 static void sendcontent(unsigned int wm)
 {
 
+    rows = 0;
+    listing = 0;
+
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- content\n+ box id \"content\" in \"main\" flow \"vertical-stretch\" overflow \"scroll\" span \"1\" onselect \"q=select&count=\"\n");
-    setbuttons(wm, 0);
+    setbuttons(wm);
 
 }
 
@@ -62,7 +89,16 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
             }
 
-            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\" onenter \"q=relpath&path=%s\"\n+ text in \"row%u\" valign \"middle\" mode \"link\" onclick \"q=relpath&path=%s\"", &row, name, &row, name);
+            if (row < ROWS)
+            {
+
+                cstring_write_fmt(names[row], RECORD_NAMESIZE + 2, 0, "%s\\0", name);
+
+                selected[row] = 0;
+
+            }
+
+            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\" onenter \"q=relpath&path=%s\" onselect \"q=mark&row=%u&selected=\"\n+ text in \"row%u\" valign \"middle\" mode \"link\" onclick \"q=relpath&path=%s\"", &row, name, &row, &row, name);
             c += cstring_write_fmt(d, MESSAGE_SIZE, c, " label \"%s\"\n", name);
             offset = record->offset;
             row++;
@@ -73,6 +109,11 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
     if (c)
         channel_send(0, wm, EVENT_WMRENDERDATA, c, d);
+
+    rows = (row < ROWS) ? row : ROWS;
+    listing = 1;
+
+    setbuttons(wm);
 
 }
 
@@ -186,6 +227,68 @@ static void changepath(unsigned int wm, char *relative)
 
 }
 
+static void clip(unsigned int cut)
+{
+
+    unsigned int offset = 0;
+    unsigned int i;
+
+    clipcount = 0;
+    clipcut = cut;
+
+    for (i = 0; i < rows; i++)
+    {
+
+        if (!selected[i])
+            continue;
+
+        if (offset + cstring_length(path) + cstring_length(names[i]) + 1 > CLIPBOARD_SIZE)
+            break;
+
+        offset += cstring_write_fmt(clipboard, CLIPBOARD_SIZE, offset, "%s%s\\0", path, names[i]);
+        clipcount++;
+
+    }
+
+}
+
+static void paste(void)
+{
+
+    unsigned int offset = 0;
+    unsigned int i;
+
+    for (i = 0; i < clipcount; i++)
+    {
+
+        char *source = clipboard + offset;
+
+        system_run(0, "%s \"%s\" \"%s\"", (clipcut) ? "mv" : "cp", source, path);
+
+        offset += cstring_length_zero(source);
+
+    }
+
+    if (clipcut)
+        clipcount = 0;
+
+}
+
+static void delete(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < rows; i++)
+    {
+
+        if (selected[i])
+            system_run(0, "rm \"%s%s\"", path, names[i]);
+
+    }
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -210,27 +313,49 @@ static void onwmevent(struct message *message)
     if (kv_match(event, "q=copy"))
     {
 
+        clip(0);
+        setbuttons(message->source);
+
     }
 
     else if (kv_match(event, "q=cut"))
     {
+
+        clip(1);
+        setbuttons(message->source);
 
     }
 
     else if (kv_match(event, "q=paste"))
     {
 
+        paste();
+        updatecontent(message->source);
+
     }
 
     else if (kv_match(event, "q=delete"))
     {
+
+        delete();
+        updatecontent(message->source);
+
+    }
+
+    else if (kv_match(event, "q=mark"))
+    {
+
+        unsigned int row = kv_getvalue(event, "row=", 10);
+
+        if (row < rows)
+            selected[row] = kv_getvalue(event, "selected=", 10);
 
     }
 
     else if (kv_match(event, "q=select"))
     {
 
-        setbuttons(message->source, kv_getvalue(event, "count=", 10) > 0);
+        setbuttons(message->source);
 
     }
 
