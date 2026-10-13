@@ -49,7 +49,7 @@ static struct entry resolutions[9] = {
     {"2560x1440x32", "2560x1440x32"}
 };
 #define NUM_BINDINGS                    32
-#define NUM_COLORS                      128
+#define NUM_COLORS                      512
 
 struct binding
 {
@@ -318,8 +318,8 @@ static void loadcolor(char *line, unsigned int length)
 static void loadlines(char *path, char *format, void (*load)(char *line, unsigned int length))
 {
 
-    char data[MESSAGE_SIZE];
-    unsigned int count = query(data, MESSAGE_SIZE, path, format);
+    static char data[0x4000];
+    unsigned int count = query(data, 0x4000, path, format);
     unsigned int length;
     char *line;
 
@@ -405,7 +405,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     {
 
         struct color *color = &config.colors[i];
-        unsigned int pad = (cstring_length(color->name) < 23) ? 23 - cstring_length(color->name) : 0;
+        unsigned int pad = (cstring_length(color->name) < 25) ? 25 - cstring_length(color->name) : 0;
 
         count += cstring_write_fmt(data, size, count, "    { name: %s ", color->name);
 
@@ -708,9 +708,9 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=save"))
     {
 
-        static char data[0x2000];
+        static char data[0x8000];
 
-        if (savefile(option_getstring("config"), data, writeconfig(data, 0x2000)))
+        if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)))
             channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"disabled\"\n");
 
     }

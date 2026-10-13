@@ -49,55 +49,63 @@ static struct util_position mouse;
 static unsigned int mousetype;
 static struct calls calls[32];
 
-static struct
+#define PALETTE_BUTTON                  0
+#define PALETTE_CHECKBOX                1
+#define PALETTE_FIELD                   2
+#define PALETTE_FRAME                   3
+#define PALETTE_ITEM                    4
+#define PALETTE_LINK                    5
+#define PALETTE_MOUSE                   6
+#define PALETTE_PANEL                   7
+#define PALETTE_SELECT                  8
+#define PALETTE_SWATCH                  9
+#define PALETTE_TEXT                    10
+#define PALETTE_WINDOW                  11
+#define NUM_PALETTES                    12
+#define SHADE_NORMAL                    0
+#define SHADE_HOVER                     1
+#define SHADE_FOCUS                     2
+#define SHADE_DISABLED                  3
+#define NUM_SHADES                      4
+
+struct palette
 {
 
-    unsigned int *button[3];
-    unsigned int *buttonlabel;
-    unsigned int *buttonlabeldisabled;
-    unsigned int *checkbox[3];
-    unsigned int *checkboxicon;
-    unsigned int *field[3];
     unsigned int *frame;
-    unsigned int *item[3];
-    unsigned int *link;
-    unsigned int *mouse;
-    unsigned int *panel;
-    unsigned int *select[3];
-    unsigned int *selecticon;
-    unsigned int *selectlabel;
     unsigned int *text;
-    unsigned int *window;
-    unsigned int *windowicon;
-    unsigned int *windowiconhover;
-    unsigned int *windowtitle;
+    unsigned int *icon;
 
-} colors;
+};
 
-static unsigned int *bystate(unsigned int **group, unsigned int state)
+static char *palettenames[NUM_PALETTES] = {"button", "checkbox", "field", "frame", "item", "link", "mouse", "panel", "select", "swatch", "text", "window"};
+static char *shadenames[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
+static struct palette palettes[NUM_PALETTES][NUM_SHADES];
+
+static unsigned int getshade(struct widget *widget)
 {
 
-    switch (state)
+    if (widget->attributes.mode == ATTR_MODE_DISABLED)
+        return SHADE_DISABLED;
+
+    switch (widget->state)
     {
 
     case WIDGET_STATE_FOCUS:
-        return group[2];
+        return SHADE_FOCUS;
 
     case WIDGET_STATE_HOVER:
-        return group[1];
+        return SHADE_HOVER;
 
     }
 
-    return group[0];
+    return SHADE_NORMAL;
 
 }
 
-static void getgroup(unsigned int **group, char *normal, char *hover, char *focus)
+static struct palette *getpalette(unsigned int palette, unsigned int shade)
 {
 
-    group[0] = cmap_get(normal);
-    group[1] = cmap_get(hover);
-    group[2] = cmap_get(focus);
+    return &palettes[palette][shade];
 
 }
 
@@ -911,11 +919,10 @@ static void renderbutton(struct blit_display *display, struct widget *widget, in
 {
 
     struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
-    unsigned int disabled = widget->attributes.mode == ATTR_MODE_DISABLED;
-    unsigned int *cmapbody = (disabled) ? colors.button[0] : bystate(colors.button, widget->state);
+    struct palette *palette = getpalette(PALETTE_BUTTON, getshade(widget));
 
-    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    textrender(display, widget, &widget->placement, (disabled) ? colors.buttonlabeldisabled : colors.buttonlabel, x0, x2, 0, 0, &padding, 0, line);
+    blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
+    textrender(display, widget, &widget->placement, palette->text, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -923,12 +930,12 @@ static void rendercheckbox(struct blit_display *display, struct widget *widget, 
 {
 
     struct util_region box = util_region(widget->placement.position.x + ((int)widget->placement.size.w - CONFIG_CHECKBOX_WIDTH) / 2, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_CHECKBOX_HEIGHT) / 2, CONFIG_CHECKBOX_WIDTH, CONFIG_CHECKBOX_HEIGHT);
-    unsigned int *cmapbody = bystate(colors.checkbox, widget->state);
+    struct palette *palette = getpalette(PALETTE_CHECKBOX, getshade(widget));
 
-    blit_frame(display, &box, line, x0, x2, cmapbody);
+    blit_frame(display, &box, line, x0, x2, palette->frame);
 
     if (widget->attributes.checked)
-        blit_iconx(display, &box, line, x0, x2, colors.checkboxicon);
+        blit_iconx(display, &box, line, x0, x2, palette->icon);
 
 }
 
@@ -1029,7 +1036,7 @@ static void renderlayout(struct blit_display *display, struct widget *widget, in
 static void renderframe(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    blit_frame(display, &widget->placement, line, x0, x2, colors.frame);
+    blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_FRAME, SHADE_NORMAL)->frame);
 
 }
 
@@ -1041,7 +1048,7 @@ static void renderswatch(struct blit_display *display, struct widget *widget, in
     int top = widget->placement.position.y + CONFIG_FRAME_HEIGHT;
     int bottom = widget->placement.position.y + widget->placement.size.h - CONFIG_FRAME_HEIGHT;
 
-    blit_frame(display, &widget->placement, line, x0, x2, colors.field[0]);
+    blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_SWATCH, SHADE_NORMAL)->frame);
 
     if (line >= top && line < bottom)
         blit_alphaline(display, widget->attributes.color, util_max(x0, left), util_min(x2, right));
@@ -1052,14 +1059,14 @@ static void renderthumb(struct blit_display *display, struct widget *widget, int
 {
 
     if (widget_isscrollable(widget))
-        blit_frame(display, &widget->thumb, line, x0, x2, colors.button[0]);
+        blit_frame(display, &widget->thumb, line, x0, x2, getpalette(PALETTE_BUTTON, SHADE_NORMAL)->frame);
 
 }
 
 static void renderlistbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.field[0] : bystate(colors.field, widget->state);
+    unsigned int *cmapbody = getpalette(PALETTE_FIELD, (widget->attributes.mode == ATTR_MODE_READONLY) ? SHADE_NORMAL : getshade(widget))->frame;
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
     renderthumb(display, widget, line, x0, x2);
@@ -1069,7 +1076,7 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
 static void renderpanel(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    blit_frame(display, &widget->placement, line, x0, x2, colors.panel);
+    blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_PANEL, SHADE_NORMAL)->frame);
 
 }
 
@@ -1078,11 +1085,11 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     struct util_region rarrow = util_region(widget->placement.position.x + widget->placement.size.w - padding.w - widget->placement.size.h / 2, widget->placement.position.y, widget->placement.size.h, widget->placement.size.h);
-    unsigned int *cmapbody = bystate(colors.select, widget->state);
+    struct palette *palette = getpalette(PALETTE_SELECT, getshade(widget));
 
-    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    blit_iconarrowdown(display, &rarrow, line, x0, x2, colors.selecticon);
-    textrender(display, widget, &widget->placement, colors.selectlabel, x0, x2, 0, 0, &padding, 0, line);
+    blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
+    blit_iconarrowdown(display, &rarrow, line, x0, x2, palette->icon);
+    textrender(display, widget, &widget->placement, palette->text, x0, x2, 0, 0, &padding, 0, line);
 
 }
 
@@ -1090,7 +1097,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct text_font *font = pool_getfont(widget->attributes.weight);
-    unsigned int *cmaptext = (widget_islink(widget)) ? colors.link : colors.text;
+    unsigned int *cmaptext = getpalette((widget_islink(widget)) ? PALETTE_LINK : PALETTE_TEXT, SHADE_NORMAL)->text;
     int top = 0;
     unsigned int rownum;
 
@@ -1117,20 +1124,20 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
 {
 
     struct util_region rcursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
-    unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.field[0] : bystate(colors.field, widget->state);
+    unsigned int *cmapbody = getpalette(PALETTE_FIELD, (widget->attributes.mode == ATTR_MODE_READONLY) ? SHADE_NORMAL : getshade(widget))->frame;
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
     renderthumb(display, widget, line, x0, x2);
 
     if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode != ATTR_MODE_READONLY || widget->appcursor))
-        blit_iconcursor(display, &rcursor, line, x0, x2, colors.text);
+        blit_iconcursor(display, &rcursor, line, x0, x2, getpalette(PALETTE_TEXT, SHADE_NORMAL)->text);
 
 }
 
 static void renderitem(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = bystate(colors.item, (widget->selected) ? WIDGET_STATE_FOCUS : widget->state);
+    unsigned int *cmapbody = getpalette(PALETTE_ITEM, (widget->selected) ? SHADE_FOCUS : getshade(widget))->frame;
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
 
@@ -1212,14 +1219,17 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     unsigned int onminimize = util_region_intersects(&rminimize, mouse.x, mouse.y);
     unsigned int onclose = util_region_intersects(&rclose, mouse.x, mouse.y);
 
-    blit_frame(display, &rhamburger, line, x0, x2, colors.window);
-    blit_frame(display, &rminimize, line, x0, x2, colors.window);
-    blit_frame(display, &rtitle, line, x0, x2, colors.window);
-    blit_frame(display, &rclose, line, x0, x2, colors.window);
-    textrender(display, widget, &rtitle, colors.windowtitle, x0, x2, 0, 0, &zerosize, 0, line);
-    blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? colors.windowiconhover : colors.windowicon);
-    blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? colors.windowiconhover : colors.windowicon);
-    blit_iconx(display, &rclose, line, x0, x2, (onclose) ? colors.windowiconhover : colors.windowicon);
+    struct palette *normal = getpalette(PALETTE_WINDOW, SHADE_NORMAL);
+    struct palette *hover = getpalette(PALETTE_WINDOW, SHADE_HOVER);
+
+    blit_frame(display, &rhamburger, line, x0, x2, normal->frame);
+    blit_frame(display, &rminimize, line, x0, x2, normal->frame);
+    blit_frame(display, &rtitle, line, x0, x2, normal->frame);
+    blit_frame(display, &rclose, line, x0, x2, normal->frame);
+    textrender(display, widget, &rtitle, normal->text, x0, x2, 0, 0, &zerosize, 0, line);
+    blit_iconhamburger(display, &rhamburger, line, x0, x2, (onhamburger) ? hover->icon : normal->icon);
+    blit_iconminimize(display, &rminimize, line, x0, x2, (onminimize) ? hover->icon : normal->icon);
+    blit_iconx(display, &rclose, line, x0, x2, (onclose) ? hover->icon : normal->icon);
 
 }
 
@@ -1361,7 +1371,7 @@ void render_update(struct blit_display *display)
 
         }
 
-        blit_mouse(display, mousetype, mouse.x, mouse.y, line, area.position0.x, area.position2.x, colors.mouse);
+        blit_mouse(display, mousetype, mouse.x, mouse.y, line, area.position0.x, area.position2.x, getpalette(PALETTE_MOUSE, SHADE_NORMAL)->frame);
         blit(display, line, area.position0.x, area.position2.x);
 
     }
@@ -1382,26 +1392,27 @@ static void setupcall(unsigned int type, struct util_size (*getsize)(struct widg
 void render_init(void)
 {
 
-    getgroup(colors.button, "button-shadow", "button-hover-shadow", "button-focus-shadow");
-    getgroup(colors.checkbox, "checkbox-shadow", "checkbox-hover-shadow", "checkbox-focus-shadow");
-    getgroup(colors.item, "item-shadow", "item-hover-shadow", "item-focus-shadow");
-    getgroup(colors.field, "field-shadow", "field-hover-shadow", "field-focus-shadow");
-    getgroup(colors.select, "field-shadow", "field-hover-shadow", "select-focus-shadow");
+    unsigned int palette;
+    unsigned int shade;
 
-    colors.buttonlabel = cmap_get("button-label");
-    colors.buttonlabeldisabled = cmap_get("button-label-disabled");
-    colors.checkboxicon = cmap_get("checkbox-icon");
-    colors.link = cmap_get("link");
-    colors.mouse = cmap_get("mouse-shadow");
-    colors.panel = cmap_get("panel-shadow");
-    colors.selecticon = cmap_get("select-icon");
-    colors.selectlabel = cmap_get("select-label");
-    colors.frame = cmap_get("frame-shadow");
-    colors.text = cmap_get("text");
-    colors.window = cmap_get("window-shadow");
-    colors.windowicon = cmap_get("window-icon");
-    colors.windowiconhover = cmap_get("window-icon-hover");
-    colors.windowtitle = cmap_get("window-title");
+    for (palette = 0; palette < NUM_PALETTES; palette++)
+    {
+
+        for (shade = 0; shade < NUM_SHADES; shade++)
+        {
+
+            char name[64];
+
+            cstring_write_fmt(name, 64, 0, "%s-%s-shadow\\0", palettenames[palette], shadenames[shade]);
+            palettes[palette][shade].frame = cmap_get(name);
+            cstring_write_fmt(name, 64, 0, "%s-%s-text\\0", palettenames[palette], shadenames[shade]);
+            palettes[palette][shade].text = cmap_get(name);
+            cstring_write_fmt(name, 64, 0, "%s-%s-icon\\0", palettenames[palette], shadenames[shade]);
+            palettes[palette][shade].icon = cmap_get(name);
+
+        }
+
+    }
 
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, placebutton, renderbutton);
     setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, placecheckbox, rendercheckbox);

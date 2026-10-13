@@ -118,23 +118,23 @@ static unsigned int getnumber(char *data, unsigned int count, unsigned int index
 static void loadconfig(char *config)
 {
 
-    char data[4096];
+    static char data[0x4000];
     unsigned int count;
     unsigned int length;
     char *line;
 
-    count = system_feed(0, 0, data, 4096, "mq -query .screen.resolution -format \"{width} {height} {bpp}\" %s", config);
+    count = system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"{width} {height} {bpp}\" %s", config);
     state.videoconf.width = getnumber(data, count, 0, 10, state.videoconf.width);
     state.videoconf.height = getnumber(data, count, 1, 10, state.videoconf.height);
     state.videoconf.bpp = getnumber(data, count, 2, 10, state.videoconf.bpp);
 
-    count = system_feed(0, 0, data, 4096, "mq -query .general.layout %s", config);
+    count = system_feed(0, 0, data, 0x4000, "mq -query .general.layout %s", config);
     state.layout = (count >= 6 && buffer_match(data, "tiling", 6)) ? LAYOUT_TILING : LAYOUT_DEFAULT;
 
-    count = system_feed(0, 0, data, 4096, "mq -query .keyboard.layout %s", config);
+    count = system_feed(0, 0, data, 0x4000, "mq -query .keyboard.layout %s", config);
     keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (count >= 9 && buffer_match(data, "qwerty_SE", 9)) ? KEYS_MAP_SE : KEYS_MAP_US);
 
-    count = system_feed(0, 0, data, 4096, "mq -query .colors -format \"{name} {value}\" %s", config);
+    count = system_feed(0, 0, data, 0x4000, "mq -query .colors -format \"{name} {value}\" %s", config);
 
     for (line = data; line < data + count; line += length + 1)
     {
@@ -156,7 +156,7 @@ static void loadconfig(char *config)
 
     }
 
-    count = system_feed(0, 0, data, 4096, "mq -query .bindings -format \"{key} {mod} {action} {command}\" %s", config);
+    count = system_feed(0, 0, data, 0x4000, "mq -query .bindings -format \"{key} {mod} {action} {command}\" %s", config);
 
     for (line = data; line < data + count; line += length + 1)
     {
