@@ -209,23 +209,12 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
     struct list_item *current = 0;
     int pending = 0;
 
-    widget->scrollable = 0;
-
     while ((current = pool_nextin(current, widget)))
     {
 
         struct widget *child = current->data;
         struct util_size climit;
         struct util_size csize;
-
-        if (child->type == WIDGET_TYPE_SCROLL)
-        {
-
-            widget->scrollable = 1;
-
-            continue;
-
-        }
 
         startchild(child, &offset, &pending);
 
@@ -362,9 +351,6 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 
         struct widget *child = current->data;
         struct util_region cplacement;
-
-        if (child->type == WIDGET_TYPE_SCROLL)
-            continue;
 
         startchild(child, &offset, &pending);
 
@@ -505,30 +491,21 @@ static void clipcontent(struct widget *widget)
 
 }
 
-/* the scroll widget is the thumb in the strip at the right of what it scrolls, sized by how much of the content is visible */
-static void placescrollbar(struct widget *widget, int top)
+/* the thumb runs in a track along the right edge and is as tall, compared to the track, as the visible part is compared to all of the content */
+static void placethumb(struct widget *widget, int top)
 {
 
-    struct list_item *current = 0;
     int view = (int)widget->placement.size.h - top * 2;
-    int x = widget->cplacement.position.x + widget->cplacement.size.w + CONFIG_SCROLL_SPACING;
-    struct util_region thumb = util_region(x, widget->placement.position.y + top, CONFIG_SCROLL_WIDTH, 0);
+    int track = util_max((int)widget->placement.size.h - (CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING) * 2, 0);
+    int x = widget->placement.position.x + (int)widget->placement.size.w - CONFIG_FRAME_WIDTH - CONFIG_SCROLL_SPACING - CONFIG_SCROLL_WIDTH;
+
+    widget->thumb = util_region(x, widget->placement.position.y + CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING, CONFIG_SCROLL_WIDTH, track);
 
     if (widget->scrollmax > 0 && view > 0)
     {
 
-        thumb.size.h = util_clamp(view * view / (view + widget->scrollmax), util_min(CONFIG_SCROLL_MINIMUM, view), view);
-        thumb.position.y += (view - (int)thumb.size.h) * widget->scroll.y / widget->scrollmax;
-
-    }
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        if (child->type == WIDGET_TYPE_SCROLL)
-            place(child, &thumb, &widget->cclip);
+        widget->thumb.size.h = util_clamp(track * view / (view + widget->scrollmax), util_min(CONFIG_SCROLL_MINIMUM, track), track);
+        widget->thumb.position.y += (track - (int)widget->thumb.size.h) * widget->scroll.y / widget->scrollmax;
 
     }
 
@@ -573,7 +550,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     }
 
-    if (widget->scrollable)
+    if (widget_isscrollable(widget))
         widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - (CONFIG_SCROLL_WIDTH + CONFIG_SCROLL_SPACING), 0);
 
     clipcontent(widget);
@@ -628,7 +605,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
         }
 
-        placescrollbar(widget, top);
+        placethumb(widget, top);
 
     }
 
@@ -715,13 +692,6 @@ static struct util_size getsizeframe(struct widget *widget, struct util_size *li
     }
 
     return size;
-
-}
-
-static struct util_size getsizescroll(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    return zerosize;
 
 }
 
@@ -826,21 +796,7 @@ static void placeimage(struct widget *widget)
 static void placelayout(struct widget *widget)
 {
 
-    if (!widget->scrollable)
-    {
-
-        widget->cplacement = widget->placement;
-
-    }
-
-    else
-    {
-
-        widget->cplacement = util_region(widget->placement.position.x, widget->placement.position.y - widget->scroll.y, widget->placement.size.w, INFINITY);
-        widget->cclip = util_region_intersection(&widget->placement, &widget->clip);
-        widget->clip = widget->cclip;
-
-    }
+    widget->cplacement = widget->placement;
 
 }
 
@@ -852,12 +808,7 @@ static void placeframe(struct widget *widget)
 
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
-    widget->cplacement = util_region(inner.position.x, inner.position.y - widget->scroll.y, inner.size.w, (widget->scrollable) ? INFINITY : inner.size.h);
-
-}
-
-static void placescroll(struct widget *widget)
-{
+    widget->cplacement = inner;
 
 }
 
@@ -873,7 +824,7 @@ static void placelistbox(struct widget *widget)
 
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, (widget->scrollable) ? INFINITY : inner.size.h);
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, (widget_isscrollable(widget)) ? INFINITY : inner.size.h);
 
 }
 
@@ -1108,14 +1059,6 @@ static void renderframe(struct blit_display *display, struct widget *widget, int
 
 }
 
-static void renderscroll(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    if (widget->placement.size.h)
-        blit_frame(display, &widget->placement, line, x0, x2, bystate(colors.button, widget->state));
-
-}
-
 static void renderswatch(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -1131,12 +1074,21 @@ static void renderswatch(struct blit_display *display, struct widget *widget, in
 
 }
 
+static void renderthumb(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    if (widget_isscrollable(widget))
+        blit_frame(display, &widget->thumb, line, x0, x2, colors.button[0]);
+
+}
+
 static void renderlistbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.field[0] : bystate(colors.field, widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+    renderthumb(display, widget, line, x0, x2);
 
 }
 
@@ -1194,6 +1146,7 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
     unsigned int *cmapbody = (widget->attributes.mode == ATTR_MODE_READONLY) ? colors.field[0] : bystate(colors.field, widget->state);
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+    renderthumb(display, widget, line, x0, x2);
 
     if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode != ATTR_MODE_READONLY || widget->appcursor))
         blit_iconcursor(display, &rcursor, line, x0, x2, colors.text);
@@ -1482,7 +1435,6 @@ void render_init(void)
     setupcall(WIDGET_TYPE_FRAME, getsizeframe, placeframe, renderframe);
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
     setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
-    setupcall(WIDGET_TYPE_SCROLL, getsizescroll, placescroll, renderscroll);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, placeswatch, renderswatch);
     setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
     setupcall(WIDGET_TYPE_LISTBOX, getsizelistbox, placelistbox, renderlistbox);

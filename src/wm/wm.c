@@ -38,6 +38,7 @@ struct state
     unsigned int layout;
     unsigned int windows;
     struct event_videoconf videoconf;
+    struct widget *draggedthumb;
     int scrollgrab;
 
 };
@@ -1150,6 +1151,9 @@ static void purge(unsigned int source)
             if (state.focusedwindow == widget)
                 setfocuswindow(0);
 
+            if (state.draggedthumb == widget)
+                state.draggedthumb = 0;
+
             damageall(widget);
             pool_destroy(widget);
 
@@ -1514,28 +1518,21 @@ static void onmain(struct message *message)
 
 }
 
-/* moves what the thumb scrolls so that the thumb stays where it was grabbed */
-static void dragscroll(struct widget *scroll)
+/* moves the content so that the thumb stays under the point where it was grabbed */
+static void dragthumb(struct widget *widget)
 {
 
-    struct widget *parent = getparent(scroll);
+    int track = util_max((int)widget->placement.size.h - (CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING) * 2, 0);
+    int free = track - (int)widget->thumb.size.h;
 
-    if (parent && parent->scrollmax > 0)
+    if (widget->scrollmax > 0 && free > 0)
     {
 
-        int top = parent->cplacement.position.y + parent->scroll.y - parent->placement.position.y;
-        int track = (int)parent->placement.size.h - top * 2 - (int)scroll->placement.size.h;
+        int thumb = state.mouseposition.y - state.scrollgrab - (widget->placement.position.y + CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING);
 
-        if (track > 0)
-        {
+        widget->scroll.y = util_clamp(thumb, 0, free) * widget->scrollmax / free;
 
-            int thumb = state.mouseposition.y - state.scrollgrab - (parent->placement.position.y + top);
-
-            parent->scroll.y = util_clamp(thumb, 0, track) * parent->scrollmax / track;
-
-            damage(parent);
-
-        }
+        damage(widget);
 
     }
 
@@ -1559,8 +1556,8 @@ static void onmousemove(struct message *message)
     if (state.mousebuttonleft)
     {
 
-        if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SCROLL)
-            dragscroll(state.focusedwidget);
+        if (state.draggedthumb)
+            dragthumb(state.draggedthumb);
         else if (state.focusedwidget)
             markwidget(state.focusedwidget, 0);
 
@@ -1597,6 +1594,18 @@ static void onmousemove(struct message *message)
 
 }
 
+static void grabthumb(void)
+{
+
+    struct widget *widget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
+
+    state.draggedthumb = (widget && util_region_intersects(&widget->thumb, state.mouseposition.x, state.mouseposition.y)) ? widget : 0;
+
+    if (state.draggedthumb)
+        state.scrollgrab = state.mouseposition.y - widget->thumb.position.y;
+
+}
+
 static void onmousepress(struct message *message)
 {
 
@@ -1615,13 +1624,12 @@ static void onmousepress(struct message *message)
 
         setfocuswindow(window);
         setfocus(interactivewidget);
+        grabthumb();
 
         if (interactivewidget)
         {
 
             struct widget *item = getitem(interactivewidget);
-
-            state.scrollgrab = state.mouseposition.y - interactivewidget->placement.position.y;
 
             if (item && getselect(item))
                 item = 0;
@@ -1685,6 +1693,7 @@ static void onmouserelease(struct message *message)
 
     case 1:
         state.mousebuttonleft = 0;
+        state.draggedthumb = 0;
 
         break;
 

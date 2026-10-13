@@ -12,7 +12,6 @@
 #define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_TYPE_FRAME               15
 #define WIDGET_TYPE_SWATCH              16
-#define WIDGET_TYPE_SCROLL              17
 #define WIDGET_STATE_NORMAL             0
 #define WIDGET_STATE_HOVER              1
 #define WIDGET_STATE_HOVEROFF           2
@@ -38,6 +37,7 @@ struct widget_attributes
     unsigned int onclick;
     unsigned int onenter;
     unsigned int onselect;
+    unsigned int overflow;
     unsigned int padding;
     unsigned int source;
     unsigned int spacing;
@@ -67,8 +67,8 @@ struct widget
     unsigned int idhash;
     unsigned int inhash;
     unsigned int serial;
-    unsigned int scrollable;
     int scrollmax;
+    struct util_region thumb;
     struct util_position position;
     struct util_size size;
     struct util_position scroll;
