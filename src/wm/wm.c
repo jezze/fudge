@@ -1522,13 +1522,13 @@ static void onmain(struct message *message)
 static void dragthumb(struct widget *widget)
 {
 
-    int track = util_max((int)widget->placement.size.h - (CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING) * 2, 0);
+    int track = util_max((int)widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2, 0);
     int free = track - (int)widget->thumb.size.h;
 
     if (widget->scrollmax > 0 && free > 0)
     {
 
-        int thumb = state.mouseposition.y - state.scrollgrab - (widget->placement.position.y + CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING);
+        int thumb = state.mouseposition.y - state.scrollgrab - (widget->placement.position.y + CONFIG_FRAME_HEIGHT);
 
         widget->scroll.y = util_clamp(thumb, 0, free) * widget->scrollmax / free;
 

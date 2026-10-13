@@ -496,10 +496,10 @@ static void placethumb(struct widget *widget, int top)
 {
 
     int view = (int)widget->placement.size.h - top * 2;
-    int track = util_max((int)widget->placement.size.h - (CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING) * 2, 0);
-    int x = widget->placement.position.x + (int)widget->placement.size.w - CONFIG_FRAME_WIDTH - CONFIG_SCROLL_SPACING - CONFIG_SCROLL_WIDTH;
+    int track = util_max((int)widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2, 0);
+    int x = widget->placement.position.x + (int)widget->placement.size.w - CONFIG_FRAME_WIDTH - CONFIG_SCROLL_WIDTH;
 
-    widget->thumb = util_region(x, widget->placement.position.y + CONFIG_FRAME_HEIGHT + CONFIG_SCROLL_SPACING, CONFIG_SCROLL_WIDTH, track);
+    widget->thumb = util_region(x, widget->placement.position.y + CONFIG_FRAME_HEIGHT, CONFIG_SCROLL_WIDTH, track);
 
     if (widget->scrollmax > 0 && view > 0)
     {
@@ -540,6 +540,10 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     calls[widget->type].place(widget);
 
+    /* the thumb sits against the border, so the padding goes between it and the content */
+    if (widget_isscrollable(widget))
+        widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - CONFIG_SCROLL_WIDTH, 0);
+
     if (widget->attributes.padding)
     {
 
@@ -549,9 +553,6 @@ static void place(struct widget *widget, struct util_region *placement, struct u
         widget->cplacement.size = util_size_sub(&widget->cplacement.size, padding * 2, padding * 2);
 
     }
-
-    if (widget_isscrollable(widget))
-        widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - (CONFIG_SCROLL_WIDTH + CONFIG_SCROLL_SPACING), 0);
 
     clipcontent(widget);
 
