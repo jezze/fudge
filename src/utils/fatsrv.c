@@ -758,7 +758,26 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 
 }
 
-static unsigned int removefile(unsigned int id)
+static unsigned int isempty(unsigned int first)
+{
+
+    unsigned int offset = 0;
+    struct fat_entry entry;
+    char name[NAMESIZE];
+
+    while (nextentry(first, &offset, &entry, name))
+    {
+
+        if (!buffer_match(entry.name, ".          ", 11) && !buffer_match(entry.name, "..         ", 11))
+            return 0;
+
+    }
+
+    return 1;
+
+}
+
+static unsigned int removenode(unsigned int id)
 {
 
     unsigned int perSector = sectorsize / sizeof (struct fat_entry);
@@ -772,7 +791,7 @@ static unsigned int removefile(unsigned int id)
 
     getnode(id, &entry);
 
-    if (gettype(&entry) != RECORD_TYPE_NORMAL)
+    if (gettype(&entry) == RECORD_TYPE_DIRECTORY && !isempty(getcluster(&entry)))
         return 0;
 
     cluster = (entry.clusterhigh << 16) | entry.clusterlow;
@@ -852,7 +871,7 @@ static void onremoverequest(struct message *message)
     struct event_removerequest *request = message->data;
     struct event_removeresponse response;
 
-    response.status = removefile(request->id);
+    response.status = removenode(request->id);
 
     channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
