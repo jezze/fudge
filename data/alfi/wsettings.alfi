@@ -18,3 +18,6 @@
 + item id "area-colors" in "area-list" padding "16" onclick "q=area&name=colors"
 + text in "area-colors" label "Colors"
 + listbox id "content" in "base" mode "readonly" flow "vertical-stretch" padding "8" overflow "scroll" span "1"
++ button in "top" label "Save" onclick "q=save"
++ button in "top" label "Apply" onclick "q=apply"
++ text id "status" in "top" valign "middle"
