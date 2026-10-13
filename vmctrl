@@ -18,6 +18,7 @@ cmd_run() {
     uefi=n
     ahci=n
     nvme=n
+    virtio=n
 
     while test ${#} -gt 0
     do
@@ -49,6 +50,9 @@ cmd_run() {
             -u)
                 uefi=y
                 ;;
+            -v)
+                virtio=y
+                ;;
             -*)
                 error "Unknown flag: ${1}"
                 ;;
@@ -69,6 +73,9 @@ cmd_run() {
         elif test "${nvme}" == "y"
         then
             cmd="${cmd} -drive file=${diskname},format=qcow2,if=none,id=disk0 -device nvme,drive=disk0,serial=fudge"
+        elif test "${virtio}" == "y"
+        then
+            cmd="${cmd} -drive file=${diskname},format=qcow2,if=none,id=disk0 -device virtio-blk-pci,drive=disk0"
         else
             cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
         fi
@@ -83,14 +90,21 @@ cmd_run() {
         cmd="${cmd} -cdrom fudge.iso"
     fi
 
+    netdevice="rtl8139"
+
+    if test "${virtio}" == "y"
+    then
+        netdevice="virtio-net-pci"
+    fi
+
     if test "${network}" == "y"
     then
-        cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
+        cmd="${cmd} -device ${netdevice},netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
     fi
 
     if test "${slirp}" == "y"
     then
-        cmd="${cmd} -device rtl8139,netdev=eth0,bus=pci.0,addr=0x4 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1,hostfwd=tcp::8080-:80"
+        cmd="${cmd} -device ${netdevice},netdev=eth0,bus=pci.0,addr=0x4 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1,hostfwd=tcp::8080-:80"
     fi
 
     if test "${uefi}" == "y"
