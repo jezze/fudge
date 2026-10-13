@@ -375,6 +375,10 @@ static void damageall(struct widget *widget)
 
     damage(widget);
 
+    /* everything in a window is drawn inside it, so there is nothing more to damage */
+    if (widget->type == WIDGET_TYPE_WINDOW)
+        return;
+
     while ((current = pool_nextin(current, widget)))
         damageall(current->data);
 
