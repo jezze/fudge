@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define INPUT_SIZE                      8192
+#define INPUT_SIZE                      0x10000
 #define PIECE_KEY                       1
 #define PIECE_INDEX                     2
 #define PIECE_SELF                      3
@@ -717,7 +717,7 @@ static void onpath(struct message *message)
         if (id)
         {
 
-            char buffer[INPUT_SIZE];
+            static char buffer[INPUT_SIZE];
             unsigned int count = fs_read_full(1, target, id, buffer, INPUT_SIZE - 1, 0);
 
             if (count)
