@@ -1,220 +1,184 @@
 #include <fudge.h>
-#include <net.h>
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/ethernet.h>
-#include <modules/pic/pic.h>
-#include <modules/apic/apic.h>
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include "virtio.h"
 
-struct header
-{
-
-    unsigned short flags;
-    unsigned short hlength;
-    unsigned short slength;
-    unsigned short checksumstart;
-    unsigned short checksumoffset;
-
-};
+#define DEVICE                          0x1000
+#define FEATURE_MAC                     (1 << 5)
+#define HEADERSIZE                      10
+#define BUFFERSIZE                      2048
+#define RXBUFFERS                       16
+#define TXBUFFERS                       16
+#define QUEUE_RX                        0
+#define QUEUE_TX                        1
 
 static struct base_driver driver;
 static struct ethernet_interface ethernetinterface;
+static struct spinlock spinlock;
+static struct virtio_queue rxqueue;
+static struct virtio_queue txqueue;
+static unsigned char rxmemory[VIRTIO_QUEUEMEMORY];
+static unsigned char txmemory[VIRTIO_QUEUEMEMORY];
+static unsigned char rxbuffers[RXBUFFERS][BUFFERSIZE];
+static unsigned char txbuffers[TXBUFFERS][BUFFERSIZE];
+static unsigned char mac[6];
 static unsigned short io;
-static struct virtio_queue vqs[16];
-static unsigned char virtqbuffer[3][0x4000];
-static unsigned char rxbuffer[0x4000];
-#if 0
-static unsigned char txbuffer[0x4000];
-#endif
-
-static void handlequeue(struct virtio_queue *vq)
-{
-
-    struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
-    struct virtio_buffer *buffer = &vq->buffers[usedring->index];
-    struct header *header = (struct header *)(unsigned long)buffer->address;
-
-    if (buffer->flags == 2)
-    {
-
-        ethernet_notifydata(&ethernetinterface, header + 1, usedring->length);
-        vq->availablehead->index = 0;
-
-    }
-
-    vq->lastindex = vq->usedhead->index;
-
-}
+static unsigned int ready;
+static unsigned int msi;
+static unsigned int txnext;
+static unsigned int txpending;
 
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char status = io_inb(io + VIRTIO_REG_ISR);
+    if (!msi)
+        io_inb(io + VIRTIO_REG_ISR);
 
-    if (status & 1)
+    while (virtio_pending(&rxqueue))
     {
 
-        unsigned int i;
+        unsigned int length;
+        unsigned int id = virtio_pop(&rxqueue, &length);
 
-        for (i = 0; i < 3; i++)
-        {
+        if (id >= RXBUFFERS)
+            continue;
 
-            struct virtio_queue *vq = &vqs[i];
+        if (length > HEADERSIZE)
+            ethernet_notifydata(&ethernetinterface, rxbuffers[id] + HEADERSIZE, length - HEADERSIZE);
 
-            if (vq->lastindex != vq->usedhead->index)
-                handlequeue(vq);
-
-        }
+        virtio_push(&rxqueue, id);
 
     }
 
-}
-
-#if 0
-static unsigned int ethernetinterface_ondata(unsigned int source, void *buffer, unsigned int count)
-{
-
-    struct virtio_queue *vq = &vqs[1];
-    unsigned int bi = vq->numbuffers;
-    struct header nheader;
-
-    nheader.flags = 1;
-    nheader.checksumstart = 0;
-    nheader.checksumoffset = count;
-
-    buffer_copy(txbuffer, &nheader, sizeof (struct header));
-    buffer_copy(txbuffer + sizeof (struct header), buffer, count);
-
-    vq->buffers[bi].address = (unsigned int)&txbuffer;
-    vq->buffers[bi].length = sizeof (struct header) + count;
-    vq->buffers[bi].flags = 0;
-    vq->availablering[vq->availablehead->index % vq->size].index = bi;
-    vq->availablehead->index++;
-    vq->numbuffers++;
-
-/*
-    vq->buffers[1].address = (unsigned int)&buffer;
-    vq->buffers[1].length = count;
-    vq->buffers[1].flags = 0;
-    vq->buffers[1].next = 0;
-    vq->availablering[vq->availablehead->index % vq->size].index = 1;
-    vq->availablehead->index++;
-*/
-
-    io_outw(io + VIRTIO_REG_QNOTIFY, 1);
-
-    return count;
-
-}
-#endif
-
-static void setqueues(void)
-{
-
-    unsigned short i;
-
-    for (i = 0; i < 16; i++)
-        virtio_setqueue(io, i, &vqs[i], (unsigned long)virtqbuffer[i]);
-
-}
-
-static void setfeatures(void)
-{
-
-    unsigned int features = io_ind(io + VIRTIO_REG_DEVFEATURES);
-
-    /* MODIFY FEATURES */
-
-    io_outd(io + VIRTIO_REG_GUESTFEATURES, features);
+    virtio_notify(&rxqueue);
 
 }
 
 static void ethernetinterface_oninfo(struct event_ethernetinfo *ethernetinfo)
 {
 
-    ethernetinfo->address[0] = io_inb(io + 0x14);
-    ethernetinfo->address[1] = io_inb(io + 0x15);
-    ethernetinfo->address[2] = io_inb(io + 0x16);
-    ethernetinfo->address[3] = io_inb(io + 0x17);
-    ethernetinfo->address[4] = io_inb(io + 0x18);
-    ethernetinfo->address[5] = io_inb(io + 0x19);
+    buffer_copy(ethernetinfo->address, mac, 6);
+
+}
+
+static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
+{
+
+    unsigned int length;
+
+    if (!ready || count > BUFFERSIZE - HEADERSIZE)
+        return 0;
+
+    spinlock_acquire(&spinlock);
+
+    while (virtio_pending(&txqueue))
+    {
+
+        virtio_pop(&txqueue, &length);
+
+        txpending--;
+
+    }
+
+    if (txpending == TXBUFFERS)
+    {
+
+        spinlock_release(&spinlock);
+
+        return 0;
+
+    }
+
+    buffer_clear(txbuffers[txnext], HEADERSIZE);
+    buffer_copy(txbuffers[txnext] + HEADERSIZE, buffer, count);
+    virtio_setdesc(&txqueue, txnext, txbuffers[txnext], HEADERSIZE + count, 0, 0);
+    virtio_push(&txqueue, txnext);
+    virtio_notify(&txqueue);
+
+    txnext = (txnext + 1) % TXBUFFERS;
+    txpending++;
+
+    spinlock_release(&spinlock);
+
+    return count;
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, 0);
+    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, ethernetinterface_ondata);
 
 }
 
 static unsigned int driver_match(unsigned int id)
 {
 
-    char revision = pci_inb(id, PCI_CONFIG_REVISION);
-
-    switch (revision)
-    {
-
-    case 0:
-        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1000;
-
-    case 1:
-        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1041;
-
-    }
-
-    return 0;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE;
 
 }
 
 static void driver_reset(unsigned int id)
 {
 
-    unsigned char status;
+    unsigned int i;
 
     io = pci_getbar(id, 0);
 
-    virtio_reset(io);
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE);
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER);
-    setfeatures();
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER | VIRTIO_REG_STATUS_FEATURES);
-
-    status = io_inb(io + VIRTIO_REG_STATUS);
-
-    if (!(status & VIRTIO_REG_STATUS_FEATURES))
+    if (!(virtio_negotiate(io, FEATURE_MAC) & FEATURE_MAC))
         return;
 
-    setqueues();
-    virtio_setrx(io, &vqs[0], rxbuffer);
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER | VIRTIO_REG_STATUS_FEATURES | VIRTIO_REG_STATUS_READY);
+    for (i = 0; i < 6; i++)
+        mac[i] = io_inb(io + VIRTIO_REG_CONFIG + i);
+
+    if (!virtio_setqueue(&rxqueue, io, QUEUE_RX, rxmemory) || rxqueue.size < RXBUFFERS)
+        return;
+
+    if (!virtio_setqueue(&txqueue, io, QUEUE_TX, txmemory) || txqueue.size < TXBUFFERS)
+        return;
+
+    for (i = 0; i < RXBUFFERS; i++)
+    {
+
+        virtio_setdesc(&rxqueue, i, rxbuffers[i], BUFFERSIZE, VIRTIO_DESC_WRITE, 0);
+        virtio_push(&rxqueue, i);
+
+    }
+
     pci_setmaster(id);
+
+    ready = 1;
 
 }
 
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
+    if (!ready)
+        return;
 
+    msi = virtio_setinterrupt(id, io, 2, handleirq);
+
+    virtio_setstatus(io, VIRTIO_STATUS_DRIVEROK);
+    virtio_notify(&rxqueue);
     ethernet_registerinterface(&ethernetinterface);
-    pic_setroutine(irq, handleirq);
-    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
+    if (!ready)
+        return;
 
     ethernet_unregisterinterface(&ethernetinterface);
-    pic_unsetroutine(irq);
-    apic_unsetroutine(irq);
+    virtio_reset(io);
+    virtio_unsetinterrupt(id, msi);
+
+    ready = 0;
 
 }
 
@@ -238,4 +202,3 @@ void module_unregister(void)
     base_unregisterdriver(&driver, PCI_BUS);
 
 }
-

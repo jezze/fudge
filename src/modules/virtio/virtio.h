@@ -1,40 +1,37 @@
-#define VIRTIO_PCIVENDOR                0x1AF4
-#define VIRTIO_TYPE_NETWORK             1
-#define VIRTIO_TYPE_BLOCK               2
-#define VIRTIO_TYPE_CONSOLE             3
-#define VIRTIO_TYPE_SCSI                8
-#define VIRTIO_TYPE_9P                  9
-#define VIRTIO_TYPE_WLAN                10
-#define VIRTIO_TYPE_GPU                 16
-#define VIRTIO_TYPE_CLOCK               17
-#define VIRTIO_TYPE_INPUT               18
-#define VIRTIO_TYPE_SOCKET              19
-#define VIRTIO_TYPE_CRYPTO              20
-#define VIRTIO_REG_DEVFEATURES          0x00
+#define VIRTIO_VENDOR                   0x1AF4
+#define VIRTIO_REG_HOSTFEATURES         0x00
 #define VIRTIO_REG_GUESTFEATURES        0x04
-#define VIRTIO_REG_QADDRESS             0x08
-#define VIRTIO_REG_QSIZE                0x0C
-#define VIRTIO_REG_QSELECT              0x0E
-#define VIRTIO_REG_QNOTIFY              0x10
+#define VIRTIO_REG_QUEUEADDRESS         0x08
+#define VIRTIO_REG_QUEUESIZE            0x0C
+#define VIRTIO_REG_QUEUESELECT          0x0E
+#define VIRTIO_REG_QUEUENOTIFY          0x10
 #define VIRTIO_REG_STATUS               0x12
-#define VIRTIO_REG_STATUS_ACKNOWLEDGE   0x01
-#define VIRTIO_REG_STATUS_DRIVER        0x02
-#define VIRTIO_REG_STATUS_READY         0x04
-#define VIRTIO_REG_STATUS_FEATURES      0x08
 #define VIRTIO_REG_ISR                  0x13
+#define VIRTIO_REG_CONFIGVECTOR         0x14
+#define VIRTIO_REG_QUEUEVECTOR          0x16
+#define VIRTIO_REG_CONFIG               0x14
+#define VIRTIO_STATUS_ACKNOWLEDGE       0x01
+#define VIRTIO_STATUS_DRIVER            0x02
+#define VIRTIO_STATUS_DRIVEROK          0x04
+#define VIRTIO_STATUS_FAILED            0x80
+#define VIRTIO_DESC_NEXT                0x01
+#define VIRTIO_DESC_WRITE               0x02
+#define VIRTIO_NOVECTOR                 0xFFFF
+#define VIRTIO_QUEUESIZE                256
+#define VIRTIO_QUEUEMEMORY              0x4000
 
-struct virtio_buffer
+struct virtio_desc
 {
 
     unsigned int address;
-    unsigned int haddress;
+    unsigned int addresshigh;
     unsigned int length;
     unsigned short flags;
     unsigned short next;
 
 };
 
-struct virtio_availablehead
+struct virtio_ringhead
 {
 
     unsigned short flags;
@@ -42,25 +39,10 @@ struct virtio_availablehead
 
 };
 
-struct virtio_availablering
+struct virtio_usedelement
 {
 
-    unsigned short index;
-
-};
-
-struct virtio_usedhead
-{
-
-    unsigned short flags;
-    unsigned short index;
-
-};
-
-struct virtio_usedring
-{
-
-    unsigned int index;
+    unsigned int id;
     unsigned int length;
 
 };
@@ -68,21 +50,26 @@ struct virtio_usedring
 struct virtio_queue
 {
 
+    unsigned short io;
+    unsigned short index;
     unsigned short size;
-    unsigned int address;
-    struct virtio_buffer *buffers;
-    unsigned int bufferssize;
-    struct virtio_availablehead *availablehead;
-    struct virtio_availablering *availablering;
-    unsigned int availablesize;
-    struct virtio_usedhead *usedhead;
-    struct virtio_usedring *usedring;
-    unsigned int usedsize;
-    unsigned int lastindex;
-    unsigned int numbuffers;
+    unsigned short lastused;
+    volatile struct virtio_desc *descs;
+    volatile struct virtio_ringhead *avail;
+    volatile unsigned short *availring;
+    volatile struct virtio_ringhead *used;
+    volatile struct virtio_usedelement *usedring;
 
 };
 
 void virtio_reset(unsigned short io);
-void virtio_setqueue(unsigned short io, unsigned short index, struct virtio_queue *vq, unsigned int address);
-void virtio_setrx(unsigned short io, struct virtio_queue *vq, void *buffer);
+unsigned int virtio_negotiate(unsigned short io, unsigned int features);
+void virtio_setstatus(unsigned short io, unsigned char status);
+unsigned int virtio_setqueue(struct virtio_queue *queue, unsigned short io, unsigned short index, void *memory);
+void virtio_setdesc(struct virtio_queue *queue, unsigned int index, void *buffer, unsigned int length, unsigned short flags, unsigned short next);
+void virtio_push(struct virtio_queue *queue, unsigned short head);
+void virtio_notify(struct virtio_queue *queue);
+unsigned int virtio_pending(struct virtio_queue *queue);
+unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length);
+unsigned int virtio_setinterrupt(unsigned int id, unsigned short io, unsigned int queues, void (*routine)(unsigned int irq));
+void virtio_unsetinterrupt(unsigned int id, unsigned int msi);

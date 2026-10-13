@@ -2,153 +2,168 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/block.h>
-#include <modules/pic/pic.h>
-#include <modules/apic/apic.h>
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include "virtio.h"
 
-static struct base_driver driver;
-static struct block_interface blockinterface;
-static unsigned short io;
-static struct virtio_queue vqs[16];
-static unsigned char virtqbuffer[3][0x4000];
-static unsigned char rxbuffer[0x4000];
+#define DEVICE                          0x1001
+#define BLOCKSIZE                       512
+#define REQUEST_READ                    0
+#define REQUEST_WRITE                   1
 
-static void handlequeue(struct virtio_queue *vq)
+struct request
 {
 
-    struct virtio_usedring *usedring = &vq->usedring[(vq->usedhead->index - 1) % vq->size];
-    struct virtio_buffer *buffer = &vq->buffers[usedring->index];
+    unsigned int type;
+    unsigned int reserved;
+    unsigned int sectorlow;
+    unsigned int sectorhigh;
 
-    if (buffer->flags == 2)
-    {
+};
 
-        /* NOTIFY */
-        vq->availablehead->index = 0;
-
-    }
-
-    vq->lastindex = vq->usedhead->index;
-
-}
+static struct base_driver driver;
+static struct block_interface blockinterface;
+static struct spinlock spinlock;
+static struct virtio_queue queue;
+static unsigned char memory[VIRTIO_QUEUEMEMORY];
+static struct request request;
+static volatile unsigned char status;
+static unsigned short io;
+static unsigned int ready;
+static unsigned int msi;
 
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char status = io_inb(io + VIRTIO_REG_ISR);
+    struct block_session *session = block_getsession(&blockinterface);
 
-    if (status & 1)
+    if (!msi)
+        io_inb(io + VIRTIO_REG_ISR);
+
+    spinlock_acquire(&spinlock);
+
+    while (virtio_pending(&queue))
     {
 
-        unsigned int i;
+        unsigned int length;
 
-        for (i = 0; i < 3; i++)
+        virtio_pop(&queue, &length);
+
+        if (session->source)
         {
 
-            struct virtio_queue *vq = &vqs[i];
+            if (status)
+                session->count = 0;
 
-            if (vq->lastindex != vq->usedhead->index)
-                handlequeue(vq);
+            block_session_done(&blockinterface, session);
 
         }
 
     }
 
-}
-
-static void setqueues(void)
-{
-
-    unsigned short i;
-
-    for (i = 0; i < 16; i++)
-        virtio_setqueue(io, i, &vqs[i], (unsigned long)virtqbuffer[i]);
+    spinlock_release(&spinlock);
 
 }
 
-static void setfeatures(void)
+static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
 {
 
-    unsigned int features = io_ind(io + VIRTIO_REG_DEVFEATURES);
+    blockinfo->buffer = KERNEL_VBUFFER;
+    blockinfo->buffersize = TASK_BUFFERSIZE;
+    blockinfo->blocksize = BLOCKSIZE;
 
-    /* MODIFY FEATURES */
+}
 
-    io_outd(io + VIRTIO_REG_GUESTFEATURES, features);
+static void blockinterface_startsession(struct block_session *session)
+{
+
+    void *buffer = (void *)kernel_getbuffer(session->source);
+    unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
+
+    count -= count % BLOCKSIZE;
+
+    if (!buffer || !count)
+    {
+
+        session->count = 0;
+
+        block_session_done(&blockinterface, session);
+
+        return;
+
+    }
+
+    spinlock_acquire(&spinlock);
+
+    session->count = count;
+    request.type = (session->type == BLOCK_TYPE_WRITE) ? REQUEST_WRITE : REQUEST_READ;
+    request.sectorlow = session->start / BLOCKSIZE;
+    request.sectorhigh = 0;
+    status = 0xFF;
+
+    virtio_setdesc(&queue, 0, &request, sizeof (struct request), VIRTIO_DESC_NEXT, 1);
+    virtio_setdesc(&queue, 1, buffer, count, VIRTIO_DESC_NEXT | ((session->type == BLOCK_TYPE_WRITE) ? 0 : VIRTIO_DESC_WRITE), 2);
+    virtio_setdesc(&queue, 2, (void *)&status, 1, VIRTIO_DESC_WRITE, 0);
+    virtio_push(&queue, 0);
+    virtio_notify(&queue);
+    spinlock_release(&spinlock);
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 0, 0);
+    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_startsession);
 
 }
 
 static unsigned int driver_match(unsigned int id)
 {
 
-    char revision = pci_inb(id, PCI_CONFIG_REVISION);
-
-    switch (revision)
-    {
-
-    case 0:
-        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1001;
-
-    case 1:
-        return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_PCIVENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == 0x1042;
-
-    }
-
-    return 0;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE;
 
 }
 
 static void driver_reset(unsigned int id)
 {
 
-    unsigned char status;
-
     io = pci_getbar(id, 0);
 
-    virtio_reset(io);
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE);
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER);
-    setfeatures();
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER | VIRTIO_REG_STATUS_FEATURES);
+    virtio_negotiate(io, 0);
 
-    status = io_inb(io + VIRTIO_REG_STATUS);
-
-    if (!(status & VIRTIO_REG_STATUS_FEATURES))
+    if (!virtio_setqueue(&queue, io, 0, memory) || queue.size < 3)
         return;
 
-    setqueues();
-    virtio_setrx(io, &vqs[0], rxbuffer);
-    io_outb(io + VIRTIO_REG_STATUS, VIRTIO_REG_STATUS_ACKNOWLEDGE | VIRTIO_REG_STATUS_DRIVER | VIRTIO_REG_STATUS_FEATURES | VIRTIO_REG_STATUS_READY);
     pci_setmaster(id);
+
+    ready = 1;
 
 }
 
 static void driver_attach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
+    if (!ready)
+        return;
 
+    msi = virtio_setinterrupt(id, io, 1, handleirq);
+
+    virtio_setstatus(io, VIRTIO_STATUS_DRIVEROK);
     block_registerinterface(&blockinterface);
-    pic_setroutine(irq, handleirq);
-    apic_setroutine(irq, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned short irq = pci_getirq(id);
+    if (!ready)
+        return;
 
     block_unregisterinterface(&blockinterface);
-    pic_unsetroutine(irq);
-    apic_unsetroutine(irq);
+    virtio_reset(io);
+    virtio_unsetinterrupt(id, msi);
+
+    ready = 0;
 
 }
 
@@ -172,4 +187,3 @@ void module_unregister(void)
     base_unregisterdriver(&driver, PCI_BUS);
 
 }
-
