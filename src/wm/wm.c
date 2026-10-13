@@ -384,15 +384,65 @@ static void damageall(struct widget *widget)
 
 }
 
-static void translatewidget(struct widget *widget, int x, int y)
+static void shiftregion(struct util_region *region, int x, int y)
 {
 
-    damageall(widget);
+    region->position.x += x;
+    region->position.y += y;
 
-    widget->position.x += x;
-    widget->position.y += y;
+}
 
-    damageall(widget);
+/* moves a window and everything placed in it without a new layout, which is only possible when it is the only window of its program; says whether it did */
+static unsigned int shiftwindow(struct widget *window, int x, int y)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextsource(current, window->source)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (widget->type == WIDGET_TYPE_WINDOW && widget != window)
+            return 0;
+
+    }
+
+    while ((current = pool_nextsource(current, window->source)))
+    {
+
+        struct widget *widget = current->data;
+
+        shiftregion(&widget->placement, x, y);
+        shiftregion(&widget->cplacement, x, y);
+        shiftregion(&widget->clip, x, y);
+        shiftregion(&widget->cclip, x, y);
+        shiftregion(&widget->thumb, x, y);
+
+        widget->cursorposition.x += x;
+        widget->cursorposition.y += y;
+
+    }
+
+    return 1;
+
+}
+
+/* a window covers everything in it, so damaging its own area is enough */
+static unsigned int translatewindow(struct widget *window, int x, int y)
+{
+
+    unsigned int shifted;
+
+    damage(window);
+
+    window->position.x += x;
+    window->position.y += y;
+    shifted = window->source && shiftwindow(window, x, y);
+
+    damage(window);
+
+    return shifted;
 
 }
 
@@ -1879,6 +1929,7 @@ static void onmousemove(struct message *message)
     struct event_mousemove *mousemove = message->data;
     int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.region.size.w);
     int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.region.size.h);
+    unsigned int relayout = state.mousebuttonleft || state.mousebuttonright;
 
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
@@ -1901,8 +1952,8 @@ static void onmousemove(struct message *message)
         if (!state.focusedwidget && state.focusedwindow)
         {
 
-            if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
-                translatewidget(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
+            if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow) && translatewindow(state.focusedwindow, state.mousemovement.x, state.mousemovement.y))
+                relayout = 0;
 
         }
 
@@ -1927,7 +1978,7 @@ static void onmousemove(struct message *message)
 
     }
 
-    redraw(state.mousebuttonleft || state.mousebuttonright);
+    redraw(relayout);
 
 }
 
