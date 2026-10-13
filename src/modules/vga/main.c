@@ -103,7 +103,7 @@ static void handle(char c)
 
 }
 
-static unsigned int consoleinterface_ondata(void *buffer, unsigned int count)
+static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 {
 
     unsigned char *b = buffer;
@@ -221,7 +221,7 @@ static void videointerface_onvideoconf(unsigned int width, unsigned int height, 
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id, consoleinterface_ondata);
+    console_initinterface(&consoleinterface, id, consoleinterface_send);
     video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_onvideocmap, videointerface_onvideoconf);
 
     consoleinterface.width = 80;

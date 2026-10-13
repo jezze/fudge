@@ -8,10 +8,10 @@ static struct node_operands operands;
 static unsigned int ondata(struct ethernet_interface *interface, unsigned int source, void *data, unsigned int count)
 {
 
-    if (interface->ondata)
+    if (interface->send)
     {
 
-        interface->ondata(data, count);
+        interface->send(data, count);
 
         return MESSAGE_OK;
 
@@ -97,7 +97,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, void (*oninfo)(struct event_ethernetinfo *ethernetinfo), unsigned int (*ondata)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, void (*oninfo)(struct event_ethernetinfo *ethernetinfo), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
@@ -105,7 +105,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 
     interface->id = id;
     interface->oninfo = oninfo;
-    interface->ondata = ondata;
+    interface->send = send;
 
 }
 

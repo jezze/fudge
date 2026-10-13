@@ -247,7 +247,7 @@ static void ethernetinterface_oninfo(struct event_ethernetinfo *ethernetinfo)
 
 }
 
-static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
+static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
     unsigned int status = (0x3F << 16) | (count & 0x1FFF);
@@ -291,7 +291,7 @@ static unsigned int ethernetinterface_ondata(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, ethernetinterface_ondata);
+    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, ethernetinterface_send);
 
 }
 
