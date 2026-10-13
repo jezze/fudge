@@ -2,12 +2,12 @@
 #include <abi.h>
 #include "kv.h"
 
-#define NUM_MODES                       3
+#define NUM_MODES                       2
 
 static char path[256];
 static unsigned int wm;
-static char *labels[NUM_MODES] = {"Normal", "Stretched", "Filled"};
-static char *modes[NUM_MODES] = {"normal", "stretch", "fill"};
+static char *labels[NUM_MODES] = {"Normal", "Stretched"};
+static char *flows[NUM_MODES] = {"vertical", "stretch"};
 static unsigned int mode;
 
 static void showimage(void)
@@ -22,7 +22,7 @@ static void showimage(void)
     if (!start)
         start = buffer_firstbyte(path, length, ':');
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n+ image id \"image\" in \"frame\" mimetype \"image/pcx\" source \"%s\" mode \"%s\" span \"1\"\n", path + start, path, modes[mode]);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n= frame flow \"%s\"\n+ image id \"image\" in \"frame\" mimetype \"image/pcx\" source \"%s\"\n", path + start, flows[mode], path);
 
 }
 
@@ -72,7 +72,7 @@ static void onwmevent(struct message *message)
 
         }
 
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mode label \"%s\"\n= image mode \"%s\"\n", labels[mode], modes[mode]);
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
 
     }
 
