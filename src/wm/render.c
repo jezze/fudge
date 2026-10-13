@@ -228,13 +228,14 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         climit = util_size_sub(&inner, offset.x, offset.y);
         csize = calls[child->type].getsize(child, &climit, &rowstart);
 
-        if (measureminimum && widget_isscrollable(child))
+        /* scrolling is only vertical, so the content still needs its full width and room for the thumb */
+        if (widget_isscrollable(child))
         {
 
-            unsigned int line = pool_getfont(child->attributes.weight)->lineheight;
+            csize.w = util_min(csize.w + CONFIG_SCROLL_WIDTH, climit.w);
 
-            csize.w = util_min(csize.w, CONFIG_TEXTBOX_PADDING_WIDTH * 2 + line);
-            csize.h = util_min(csize.h, CONFIG_TEXTBOX_PADDING_HEIGHT * 2 + line);
+            if (measureminimum)
+                csize.h = util_min(csize.h, CONFIG_TEXTBOX_PADDING_HEIGHT * 2 + pool_getfont(child->attributes.weight)->lineheight);
 
         }
 
