@@ -953,6 +953,17 @@ static void placewindows(unsigned int source)
 
             }
 
+            /* new content can need more room than the window was given, so it grows to fit it */
+            else if (state.layout == LAYOUT_DEFAULT)
+            {
+
+                struct util_size minimum = render_getwindowminsize(widget, &display.region.size);
+
+                if (widget->size.w < minimum.w || widget->size.h < minimum.h)
+                    scalewidget(widget, util_max(widget->size.w, minimum.w), util_max(widget->size.h, minimum.h));
+
+            }
+
             damageall(widget);
 
         }
