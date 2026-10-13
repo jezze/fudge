@@ -196,7 +196,7 @@ static struct widget *getinteractivewidgetat(int x, int y)
 
         struct widget *child = current->data;
 
-        if (widget_isinteractive(child) && widget_intersects(child, x, y) && (child->type != WIDGET_TYPE_LINK || intersectsrows(child, x, y)))
+        if (widget_isinteractive(child) && widget_intersects(child, x, y) && (!widget_islink(child) || intersectsrows(child, x, y)))
             return child;
 
     }
@@ -274,9 +274,14 @@ static unsigned int getmousetype(int x, int y)
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_ITEM:
-    case WIDGET_TYPE_LINK:
     case WIDGET_TYPE_SELECT:
         return BLIT_MOUSE_HAND;
+
+    case WIDGET_TYPE_TEXT:
+        if (widget_islink(widget))
+            return BLIT_MOUSE_HAND;
+
+        break;
 
     case WIDGET_TYPE_TEXTBOX:
         if (widget->attributes.mode != ATTR_MODE_READONLY)
@@ -1284,9 +1289,11 @@ static unsigned int isfocusable(struct widget *widget)
 
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHECKBOX:
-    case WIDGET_TYPE_LINK:
     case WIDGET_TYPE_SELECT:
         return 1;
+
+    case WIDGET_TYPE_TEXT:
+        return widget_islink(widget);
 
     case WIDGET_TYPE_ITEM:
         return parent && widget == getgroupitem(parent);

@@ -145,7 +145,7 @@ static unsigned int getstretch(unsigned int flow)
 static unsigned int isinlinetext(struct widget *widget)
 {
 
-    return (widget->type == WIDGET_TYPE_TEXT || widget->type == WIDGET_TYPE_LINK) && widget->attributes.display == ATTR_DISPLAY_INLINE;
+    return widget->type == WIDGET_TYPE_TEXT && widget->attributes.display == ATTR_DISPLAY_INLINE;
 
 }
 
@@ -1164,7 +1164,7 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 {
 
     struct text_font *font = pool_getfont(widget->attributes.weight);
-    unsigned int *cmaptext = (widget->type == WIDGET_TYPE_LINK) ? colors.link : colors.text;
+    unsigned int *cmaptext = (widget_islink(widget)) ? colors.link : colors.text;
     int top = 0;
     unsigned int rownum;
 
@@ -1484,7 +1484,6 @@ void render_init(void)
     setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
     setupcall(WIDGET_TYPE_SCROLL, getsizescroll, placescroll, renderscroll);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, placeswatch, renderswatch);
-    setupcall(WIDGET_TYPE_LINK, getsizetext, placetext, rendertext);
     setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
     setupcall(WIDGET_TYPE_LISTBOX, getsizelistbox, placelistbox, renderlistbox);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);

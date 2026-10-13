@@ -10,7 +10,6 @@
 #define WIDGET_TYPE_ITEM                11
 #define WIDGET_TYPE_WINDOW              12
 #define WIDGET_TYPE_CHECKBOX            13
-#define WIDGET_TYPE_LINK                14
 #define WIDGET_TYPE_FRAME               15
 #define WIDGET_TYPE_SWATCH              16
 #define WIDGET_TYPE_SCROLL              17
@@ -93,6 +92,7 @@ unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);
 unsigned int widget_isdragable(struct widget *widget);
 unsigned int widget_isresizable(struct widget *widget);
+unsigned int widget_islink(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
 unsigned int widget_isscrollable(struct widget *widget);
 void widget_init_attributes(struct widget_attributes *attributes, unsigned type);

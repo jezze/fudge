@@ -4,7 +4,7 @@
 #include "strpool.h"
 #include "attr.h"
 
-#define NUM_MODES                       4
+#define NUM_MODES                       5
 
 static struct util_token displays[3] =
 {
@@ -40,7 +40,8 @@ static struct util_token modes[NUM_MODES] =
     {ATTR_MODE_NORMAL, "normal"},
     {ATTR_MODE_READONLY, "readonly"},
     {ATTR_MODE_STRETCH, "stretch"},
-    {ATTR_MODE_FILL, "fill"}
+    {ATTR_MODE_FILL, "fill"},
+    {ATTR_MODE_LINK, "link"}
 };
 
 static struct util_token valigns[3] =
