@@ -23,6 +23,7 @@
     { path: initrd:kernel/nvme.ko }
     { path: initrd:kernel/ata.ko }
     { path: initrd:kernel/virtio-network.ko }
+    { path: initrd:kernel/virtio-block.ko }
     { path: initrd:kernel/smp.ko }
   ]
 }
