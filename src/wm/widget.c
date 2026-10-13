@@ -305,7 +305,7 @@ unsigned int widget_isinteractive(struct widget *widget)
 unsigned int widget_isscrollable(struct widget *widget)
 {
 
-    return (widget->type == WIDGET_TYPE_LISTBOX || widget->type == WIDGET_TYPE_TEXTBOX) && widget->attributes.overflow == ATTR_OVERFLOW_SCROLL;
+    return widget->attributes.overflow == ATTR_OVERFLOW_SCROLL;
 
 }
 

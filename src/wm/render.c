@@ -547,9 +547,16 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     calls[widget->type].place(widget);
 
-    /* the thumb sits against the border, so the padding goes between it and the content */
+    /* the content of a scrolling widget is as tall as it needs, moved by the scroll and cut to the widget; the thumb sits against the border, so the padding goes between it and the content */
     if (widget_isscrollable(widget))
+    {
+
+        widget->cplacement.position.y -= widget->scroll.y;
+        widget->cplacement.size.h = INFINITY;
         widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - CONFIG_SCROLL_WIDTH, 0);
+        widget->cclip = util_region_intersection(&widget->cclip, &widget->placement);
+
+    }
 
     if (widget->attributes.padding)
     {
@@ -814,7 +821,7 @@ static void placelistbox(struct widget *widget)
 
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, (widget_isscrollable(widget)) ? INFINITY : inner.size.h);
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, inner.size.h);
 
 }
 
@@ -847,7 +854,7 @@ static void placetextbox(struct widget *widget)
 
     struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
 
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT - widget->scroll.y, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
+    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
@@ -1057,8 +1064,7 @@ static void renderswatch(struct blit_display *display, struct widget *widget, in
 static void renderthumb(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    if (widget_isscrollable(widget))
-        blit_frame(display, &widget->thumb, line, x0, x2, getpalette(PALETTE_BUTTON, SHADE_NORMAL)->frame);
+    blit_frame(display, &widget->thumb, line, x0, x2, getpalette(PALETTE_BUTTON, SHADE_NORMAL)->frame);
 
 }
 
@@ -1068,7 +1074,6 @@ static void renderlistbox(struct blit_display *display, struct widget *widget, i
     unsigned int *cmapbody = getpalette(PALETTE_FIELD, (widget->attributes.mode == ATTR_MODE_READONLY) ? SHADE_NORMAL : getshade(widget))->frame;
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    renderthumb(display, widget, line, x0, x2);
 
 }
 
@@ -1126,7 +1131,6 @@ static void rendertextbox(struct blit_display *display, struct widget *widget, i
     unsigned int *cmapbody = getpalette(PALETTE_FIELD, (widget->attributes.mode == ATTR_MODE_READONLY) ? SHADE_NORMAL : getshade(widget))->frame;
 
     blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-    renderthumb(display, widget, line, x0, x2);
 
     if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode != ATTR_MODE_READONLY || widget->appcursor))
         blit_iconcursor(display, &rcursor, line, x0, x2, getpalette(PALETTE_TEXT, SHADE_NORMAL)->text);
@@ -1365,6 +1369,9 @@ void render_update(struct blit_display *display)
                 int x2 = util_min(util_min(widget->placement.position.x + widget->placement.size.w, widget->clip.position.x + widget->clip.size.w), area.position2.x);
 
                 calls[widget->type].render(display, widget, line, x0, x2);
+
+                if (widget_isscrollable(widget))
+                    renderthumb(display, widget, line, x0, x2);
 
             }
 
