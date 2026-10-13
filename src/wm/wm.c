@@ -937,6 +937,8 @@ static void edittextbox(struct widget *widget, unsigned int id)
     unsigned int previous;
     unsigned int changed = 0;
     unsigned int moved = 0;
+    unsigned int removed = 0;
+    unsigned int printable = state.keys.code.length == 1 && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] < 0x7F;
 
     if (!text)
         return;
@@ -944,6 +946,22 @@ static void edittextbox(struct widget *widget, unsigned int id)
     length = cstring_write_fmt(buffer, TEXTBOX_SIZE, 0, "%s\\0", strpool_getstring(text->attributes.label)) - 1;
     cursor = util_min(widget->attributes.cursor, length);
     previous = cursor;
+
+    /* typing or erasing while text is marked first removes the marked text */
+    if (text->markstart != text->markend && (printable || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
+    {
+
+        unsigned int start = util_min(util_min(text->markstart, text->markend), length);
+        unsigned int end = util_min(util_max(text->markstart, text->markend), length);
+
+        buffer_copy(buffer + start, buffer + end, length - end + 1);
+
+        length -= end - start;
+        cursor = start;
+        changed = 1;
+        removed = 1;
+
+    }
 
     switch (id)
     {
@@ -955,7 +973,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
         return;
 
     case KEYS_KEY_BACKSPACE:
-        if (cursor > 0)
+        if (!removed && cursor > 0)
         {
 
             buffer_copy(buffer + cursor - 1, buffer + cursor, length - cursor + 1);
@@ -968,7 +986,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     case KEYS_KEY_DELETE:
-        if (cursor < length)
+        if (!removed && cursor < length)
         {
 
             buffer_copy(buffer + cursor, buffer + cursor + 1, length - cursor);
@@ -1020,7 +1038,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     default:
-        if (state.keys.code.length == 1 && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] < 0x7F && length + 1 < TEXTBOX_SIZE)
+        if (printable && length + 1 < TEXTBOX_SIZE)
         {
 
             unsigned int i;
