@@ -629,13 +629,26 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 static struct util_size textsize(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct text_info info = text_info(pool_getfont(widget->attributes.weight), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), widget->attributes.wrap, limit->w, rowstart->x);
+    struct text_font *font = pool_getfont(widget->attributes.weight);
+    char *label = strpool_getstring(widget->attributes.label);
+    unsigned int length = strpool_getcstringlength(widget->attributes.label);
+    struct text_info info = text_info(font, label, length, widget->attributes.wrap, limit->w, rowstart->x);
 
     if (widget->attributes.display == ATTR_DISPLAY_INLINE)
     {
 
         widget->rowstart = *rowstart;
         widget->rowstop = info.lastrow;
+
+    }
+
+    /* text that wraps can be made as narrow as one character */
+    if (measureminimum && widget->attributes.wrap != ATTR_WRAP_NONE)
+    {
+
+        struct text_info narrow = text_info(font, label, length, widget->attributes.wrap, 1, 0);
+
+        return util_size(narrow.width, info.height);
 
     }
 
