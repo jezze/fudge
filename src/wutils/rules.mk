@@ -15,6 +15,7 @@ B:=\
     $(DIR_SRC)/wutils/wedit \
 
 O:=\
+    $(DIR_SRC)/wutils/kv.o \
     $(DIR_SRC)/wutils/wedit.o \
 
 L:=\
