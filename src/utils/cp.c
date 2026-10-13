@@ -36,11 +36,21 @@ static unsigned int copy(unsigned int source, char *from, char *to)
 
     }
 
+    if (isdirectory(starget, sid))
+    {
+
+        channel_send_fmt(0, source, EVENT_ERROR, "Directory can not be copied: %s\n", from);
+
+        return 0;
+
+    }
+
     if (did && isdirectory(dtarget, did))
     {
 
         parent = did;
         name = from + fs_dirlength(from);
+        did = fs_walk(1, dtarget, parent, name);
 
     }
 
@@ -61,8 +71,17 @@ static unsigned int copy(unsigned int source, char *from, char *to)
 
     }
 
-    if (did && !isdirectory(dtarget, did))
+    if (did)
     {
+
+        if (isdirectory(dtarget, did))
+        {
+
+            channel_send_fmt(0, source, EVENT_ERROR, "File could not be replaced: %s\n", to);
+
+            return 0;
+
+        }
 
         if (dtarget == starget && did == sid)
         {
