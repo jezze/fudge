@@ -104,7 +104,7 @@ static void videointerface_oninfo(struct event_videoinfo *videoinfo)
 
 }
 
-static void videointerface_onvideoconf(unsigned int width, unsigned int height, unsigned int bpp)
+static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     unsigned short modenum;
@@ -130,7 +130,7 @@ static void videointerface_onvideoconf(unsigned int width, unsigned int height, 
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_setmode);
 
     videointerface.width = 80;
     videointerface.height = 25;

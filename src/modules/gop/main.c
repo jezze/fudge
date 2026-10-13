@@ -20,7 +20,7 @@ static void videointerface_oninfo(struct event_videoinfo *videoinfo)
 
 }
 
-static void videointerface_onvideoconf(unsigned int width, unsigned int height, unsigned int bpp)
+static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     arch_kmap(framebuffer->address, 0xA0000000, framebuffer->pitch * framebuffer->height, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE | MMAP_FLAG_WRITETHROUGH);
@@ -47,7 +47,7 @@ static unsigned int ownsframebuffer(unsigned int id)
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_setmode);
 
     videointerface.width = framebuffer->width;
     videointerface.height = framebuffer->height;

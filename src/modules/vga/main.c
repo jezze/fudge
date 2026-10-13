@@ -162,7 +162,7 @@ static unsigned int videointerface_getcmap(unsigned int source, unsigned int cou
 }
 */
 
-static unsigned int videointerface_onvideocmap(unsigned int count, void *buffer)
+static unsigned int videointerface_setcmap(unsigned int count, void *buffer)
 {
 
     unsigned char *b = buffer;
@@ -185,7 +185,7 @@ static unsigned int videointerface_onvideocmap(unsigned int count, void *buffer)
 
 }
 
-static void videointerface_onvideoconf(unsigned int width, unsigned int height, unsigned int bpp)
+static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
     if (width == 80)
@@ -222,7 +222,7 @@ static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id, consoleinterface_send);
-    video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_onvideocmap, videointerface_onvideoconf);
+    video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_setcmap, videointerface_setmode);
 
     consoleinterface.width = 80;
     consoleinterface.height = 25;
