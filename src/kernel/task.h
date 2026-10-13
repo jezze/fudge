@@ -1,4 +1,4 @@
-#define TASK_CODESIZE                   0x00100000
+#define TASK_CODESIZE                   0x00200000
 #define TASK_STACKSIZE                  0x00008000
 #define TASK_BUFFERSIZE                 0x00008000
 #define TASK_MAILBOXES                  8

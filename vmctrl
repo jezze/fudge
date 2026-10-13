@@ -59,7 +59,7 @@ cmd_run() {
         shift
     done
 
-    cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 128 -vga std -serial stdio"
+    cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
 
     if test "${disk}" == "y"
     then
