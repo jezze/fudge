@@ -706,10 +706,8 @@ static void onwmevent(struct message *message)
     {
 
         static char data[0x2000];
-        unsigned int count = writeconfig(data, 0x2000);
-        char *status = (savefile(option_getstring("config"), data, count)) ? "" : "Could not save";
 
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= status label \"%s\"\n", status);
+        savefile(option_getstring("config"), data, writeconfig(data, 0x2000));
 
     }
 
