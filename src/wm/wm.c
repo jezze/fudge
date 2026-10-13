@@ -39,6 +39,7 @@ struct state
     unsigned int windows;
     struct event_videoconf videoconf;
     struct widget *draggedthumb;
+    struct util_position markpoint;
     int scrollgrab;
 
 };
@@ -584,8 +585,8 @@ static void marktext(struct widget *text, unsigned int clear)
     unsigned int length = strpool_getcstringlength(text->attributes.label);
     int x0 = state.mousepressed.x - text->placement.position.x;
     int y0 = state.mousepressed.y - text->placement.position.y;
-    int x1 = state.mouseposition.x - text->placement.position.x;
-    int y1 = state.mouseposition.y - text->placement.position.y;
+    int x1 = state.markpoint.x - text->placement.position.x;
+    int y1 = state.markpoint.y - text->placement.position.y;
 
     text->markstart = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x0, y0);
     text->markend = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x1, y1);
@@ -609,6 +610,165 @@ static void markwidget(struct widget *widget, unsigned int clear)
             marktext(child, clear);
 
     }
+
+}
+
+static unsigned int gettextlength(struct widget *text)
+{
+
+    return strpool_getcstringlength(text->attributes.label);
+
+}
+
+static unsigned int gettextoffsetat(struct widget *text, int x, int y)
+{
+
+    struct text_font *font = pool_getfont(text->attributes.weight);
+
+    return text_getoffsetat(font, strpool_getstring(text->attributes.label), gettextlength(text), text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x - text->placement.position.x, y - text->placement.position.y);
+
+}
+
+static unsigned int gettotallength(struct widget *textbox)
+{
+
+    struct list_item *current = 0;
+    unsigned int total = 0;
+
+    while ((current = pool_nextin(current, textbox)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+            total += gettextlength(child);
+
+    }
+
+    return total;
+
+}
+
+/* the texts of a textbox count as one run of characters, so a position is an index into all of them */
+static unsigned int getmarkindex(struct widget *textbox, int x, int y)
+{
+
+    struct list_item *current = 0;
+    unsigned int base = 0;
+
+    while ((current = pool_nextin(current, textbox)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            unsigned int offset = gettextoffsetat(child, x, y);
+
+            if (offset < gettextlength(child))
+                return base + offset;
+
+            base += gettextlength(child);
+
+        }
+
+    }
+
+    return base;
+
+}
+
+static void setmarkpoint(struct widget *textbox, unsigned int index)
+{
+
+    struct list_item *current = 0;
+    struct widget *last = 0;
+    unsigned int base = 0;
+
+    while ((current = pool_nextin(current, textbox)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            last = child;
+
+            if (index < base + gettextlength(child))
+                break;
+
+            base += gettextlength(child);
+
+        }
+
+    }
+
+    if (last)
+    {
+
+        struct text_font *font = pool_getfont(last->attributes.weight);
+        unsigned int offset = util_min(index - util_min(index, base), gettextlength(last));
+        struct text_info info = text_info(font, strpool_getstring(last->attributes.label), offset, last->attributes.wrap, last->placement.size.w, last->rowstart.x);
+
+        state.markpoint.x = last->placement.position.x + info.lastrow.x;
+        state.markpoint.y = last->placement.position.y + info.lastrow.y + font->lineheight / 2;
+
+    }
+
+}
+
+static unsigned int ismarkkey(unsigned int id)
+{
+
+    return id == KEYS_KEY_CURSORLEFT || id == KEYS_KEY_CURSORRIGHT || id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN || id == KEYS_KEY_HOME || id == KEYS_KEY_END;
+
+}
+
+static void extendmark(struct widget *textbox, unsigned int id)
+{
+
+    struct text_font *font = pool_getfont(textbox->attributes.weight);
+    unsigned int index = getmarkindex(textbox, state.markpoint.x, state.markpoint.y);
+
+    switch (id)
+    {
+
+    case KEYS_KEY_CURSORLEFT:
+        setmarkpoint(textbox, (index) ? index - 1 : 0);
+
+        break;
+
+    case KEYS_KEY_CURSORRIGHT:
+        setmarkpoint(textbox, index + 1);
+
+        break;
+
+    case KEYS_KEY_CURSORUP:
+        state.markpoint.y -= font->lineheight;
+
+        break;
+
+    case KEYS_KEY_CURSORDOWN:
+        state.markpoint.y += font->lineheight;
+
+        break;
+
+    case KEYS_KEY_HOME:
+        setmarkpoint(textbox, 0);
+
+        break;
+
+    case KEYS_KEY_END:
+        setmarkpoint(textbox, gettotallength(textbox));
+
+        break;
+
+    }
+
+    markwidget(textbox, 0);
+    damageall(textbox);
 
 }
 
@@ -1523,6 +1683,13 @@ static void onkeypress(struct message *message)
 
         }
 
+        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX && (state.keys.mod & KEYS_MOD_SHIFT) && ismarkkey(id))
+        {
+
+            extendmark(state.focusedwidget, id);
+
+        }
+
         else
         {
 
@@ -1615,6 +1782,8 @@ static void onmousemove(struct message *message)
     if (state.mousebuttonleft)
     {
 
+        state.markpoint = state.mouseposition;
+
         if (state.draggedthumb)
             dragthumb(state.draggedthumb);
         else if (state.focusedwidget)
@@ -1674,6 +1843,7 @@ static void onmousepress(struct message *message)
 
     state.mousepressed.x = state.mouseposition.x;
     state.mousepressed.y = state.mouseposition.y;
+    state.markpoint = state.mouseposition;
 
     switch (mousepress->button)
     {
