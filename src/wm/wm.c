@@ -39,6 +39,7 @@ struct state
     unsigned int windows;
     struct event_videoconf videoconf;
     struct widget *draggedthumb;
+    unsigned int video;
     struct util_position markpoint;
     int scrollgrab;
 
@@ -1725,12 +1726,73 @@ static void onkeyrelease(struct message *message)
 
 }
 
+static void reloadconfig(void)
+{
+
+    struct event_videoconf videoconf = state.videoconf;
+
+    bind_reset();
+    loadconfig(option_getstring("config"));
+
+    if (videoconf.width != state.videoconf.width || videoconf.height != state.videoconf.height || videoconf.bpp != state.videoconf.bpp)
+    {
+
+        setupvideo(state.video);
+
+    }
+
+    else
+    {
+
+        render_damage(0, 0, display.region.size.w, display.region.size.h);
+        redraw(1);
+
+    }
+
+}
+
+/* sets the options like every program does, and reloads the configuration when it is pointed out once the wm runs */
+static void onoption(struct message *message)
+{
+
+    char *data = message->data;
+    unsigned int offset = 0;
+
+    if (!message->length || data[message->length - 1] != '\0')
+        return;
+
+    while (offset < message->length)
+    {
+
+        char *key = data + offset;
+        char *value = key + cstring_length_zero(key);
+
+        offset += cstring_length_zero(key);
+
+        if (offset >= message->length)
+            break;
+
+        offset += cstring_length_zero(value);
+
+        if (!option_getstring(key))
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Unrecognized option: %s\n", key);
+        else if (!option_setstring(key, value))
+            channel_send_fmt(0, message->source, EVENT_ERROR, "Option too long: %s\n", key);
+        else if (state.video && cstring_match(key, "config"))
+            reloadconfig();
+
+    }
+
+}
+
 static void onmain(struct message *message)
 {
 
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
     unsigned int mouse = channel_lookup(option_getstring("mouse-service"));
     unsigned int video = channel_lookup(option_getstring("video-service"));
+
+    state.video = video;
 
     loadconfig(option_getstring("config"));
 
@@ -2085,6 +2147,7 @@ void init(void)
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_MOUSEMOVE, onmousemove);
     channel_bind(EVENT_MOUSEPRESS, onmousepress);
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);

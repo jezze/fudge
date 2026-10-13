@@ -20,4 +20,5 @@ struct bind_binding
 };
 
 void bind_add(char *line, unsigned int length);
+void bind_reset(void);
 struct bind_binding *bind_find(unsigned int key, unsigned int mod);

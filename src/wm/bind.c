@@ -237,6 +237,13 @@ void bind_add(char *line, unsigned int length)
 
 }
 
+void bind_reset(void)
+{
+
+    nbindings = 0;
+
+}
+
 struct bind_binding *bind_find(unsigned int key, unsigned int mod)
 {
 
