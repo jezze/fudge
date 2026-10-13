@@ -24,12 +24,12 @@ static unsigned int ondata(struct ethernet_interface *interface, unsigned int so
 static unsigned int oninfo(struct ethernet_interface *interface, unsigned int source)
 {
 
-    if (interface->oninfo)
+    if (interface->getmac)
     {
 
         struct event_ethernetinfo ethernetinfo;
 
-        interface->oninfo(&ethernetinfo);
+        interface->getmac(ethernetinfo.address);
 
         return kernel_place(interface->service.inode, source, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
 
@@ -97,14 +97,14 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 
 }
 
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, void (*oninfo)(struct event_ethernetinfo *ethernetinfo), unsigned int (*send)(void *buffer, unsigned int count))
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, void (*getmac)(unsigned char address[6]), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
     service_init(&interface->service);
 
     interface->id = id;
-    interface->oninfo = oninfo;
+    interface->getmac = getmac;
     interface->send = send;
 
 }

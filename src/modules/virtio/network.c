@@ -57,10 +57,10 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void ethernetinterface_oninfo(struct event_ethernetinfo *ethernetinfo)
+static void ethernetinterface_getmac(unsigned char address[6])
 {
 
-    buffer_copy(ethernetinfo->address, mac, 6);
+    buffer_copy(address, mac, 6);
 
 }
 
@@ -110,7 +110,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_getmac, ethernetinterface_send);
 
 }
 

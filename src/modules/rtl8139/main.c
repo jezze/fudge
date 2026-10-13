@@ -235,15 +235,15 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void ethernetinterface_oninfo(struct event_ethernetinfo *ethernetinfo)
+static void ethernetinterface_getmac(unsigned char address[6])
 {
 
-    ethernetinfo->address[0] = io_inb(io + REG_IDR0);
-    ethernetinfo->address[1] = io_inb(io + REG_IDR1);
-    ethernetinfo->address[2] = io_inb(io + REG_IDR2);
-    ethernetinfo->address[3] = io_inb(io + REG_IDR3);
-    ethernetinfo->address[4] = io_inb(io + REG_IDR4);
-    ethernetinfo->address[5] = io_inb(io + REG_IDR5);
+    address[0] = io_inb(io + REG_IDR0);
+    address[1] = io_inb(io + REG_IDR1);
+    address[2] = io_inb(io + REG_IDR2);
+    address[3] = io_inb(io + REG_IDR3);
+    address[4] = io_inb(io + REG_IDR4);
+    address[5] = io_inb(io + REG_IDR5);
 
 }
 
@@ -291,7 +291,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_oninfo, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_getmac, ethernetinterface_send);
 
 }
 

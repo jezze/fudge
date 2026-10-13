@@ -4,7 +4,7 @@ struct ethernet_interface
     struct resource resource;
     struct service service;
     unsigned int id;
-    void (*oninfo)(struct event_ethernetinfo *ethernetinfo);
+    void (*getmac)(unsigned char address[6]);
     unsigned int (*send)(void *buffer, unsigned int count);
 
 };
@@ -12,4 +12,4 @@ struct ethernet_interface
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count);
 void ethernet_registerinterface(struct ethernet_interface *interface);
 void ethernet_unregisterinterface(struct ethernet_interface *interface);
-void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, void (*oninfo)(struct event_ethernetinfo *info), unsigned int (*send)(void *buffer, unsigned int count));
+void ethernet_initinterface(struct ethernet_interface *interface, unsigned int id, void (*getmac)(unsigned char address[6]), unsigned int (*send)(void *buffer, unsigned int count));
