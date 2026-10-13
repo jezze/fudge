@@ -2,7 +2,7 @@
 #include <abi.h>
 #include "cmap.h"
 
-#define NUM_COLORS                      78
+#define NUM_COLORS                      77
 
 /* frames read four colors in a row: shadow, body, dark and light */
 static char *names[NUM_COLORS] = {
@@ -48,7 +48,6 @@ static char *names[NUM_COLORS] = {
     "frame-body",
     "frame-dark",
     "frame-light",
-    "frame-title",
     "item-shadow",
     "item-body",
     "item-dark",

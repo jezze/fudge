@@ -58,7 +58,6 @@ static struct
     unsigned int *checkboxicon;
     unsigned int *field[3];
     unsigned int *frame;
-    unsigned int *frametitle;
     unsigned int *item[3];
     unsigned int *link;
     unsigned int *mouse;
@@ -669,30 +668,13 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 
 }
 
-static unsigned int gettitleheight(struct widget *widget)
-{
-
-    return (strpool_getcstringlength(widget->attributes.label)) ? pool_getfont(widget->attributes.weight)->lineheight + CONFIG_FRAME_TITLE_PADDING * 2 : 0;
-
-}
-
 static struct util_size getsizeframe(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size padding = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2 + gettitleheight(widget));
+    struct util_size padding = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2);
     struct util_size csize = childrengetsize(widget, limit);
-    struct util_size size = util_size_union(&csize, &padding);
 
-    if (gettitleheight(widget))
-    {
-
-        struct util_size title = textsize(widget, limit, rowstart);
-
-        size.w = util_max(size.w, title.w + (CONFIG_FRAME_WIDTH + CONFIG_FRAME_TITLE_PADDING) * 2);
-
-    }
-
-    return size;
+    return util_size_union(&csize, &padding);
 
 }
 
@@ -804,8 +786,7 @@ static void placelayout(struct widget *widget)
 static void placeframe(struct widget *widget)
 {
 
-    unsigned int title = gettitleheight(widget);
-    struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT + title, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2 - title);
+    struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
 
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
@@ -1047,16 +1028,6 @@ static void renderframe(struct blit_display *display, struct widget *widget, int
 {
 
     blit_frame(display, &widget->placement, line, x0, x2, colors.frame);
-
-    if (gettitleheight(widget))
-    {
-
-        struct util_region title = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, gettitleheight(widget));
-        struct util_size padding = util_size(CONFIG_FRAME_TITLE_PADDING, CONFIG_FRAME_TITLE_PADDING);
-
-        textrender(display, widget, &title, colors.frametitle, x0, x2, 0, 0, &padding, 0, line);
-
-    }
 
 }
 
@@ -1423,7 +1394,6 @@ void render_init(void)
     colors.selecticon = cmap_get("select-icon");
     colors.selectlabel = cmap_get("select-label");
     colors.frame = cmap_get("frame-shadow");
-    colors.frametitle = cmap_get("frame-title");
     colors.text = cmap_get("text");
     colors.window = cmap_get("window-shadow");
     colors.windowicon = cmap_get("window-icon");

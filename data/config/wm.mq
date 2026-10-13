@@ -83,7 +83,6 @@
     { name: frame-body              value: 00000000 }
     { name: frame-dark              value: E8101010 }
     { name: frame-light             value: E8686868 }
-    { name: frame-title             value: E8E0E0E0 }
     { name: item-shadow             value: 00242424 }
     { name: item-body               value: 00242424 }
     { name: item-dark               value: 00242424 }
