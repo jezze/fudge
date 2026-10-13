@@ -2,8 +2,8 @@
 #include <abi.h>
 #include "strpool.h"
 
-#define MAX_STRINGS                     2048
-#define STRINGDATA_SIZE                 0x8000
+#define MAX_STRINGS                     4096
+#define STRINGDATA_SIZE                 0x10000
 
 struct strindex
 {

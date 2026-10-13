@@ -1,6 +1,7 @@
 #define POOL_PCXRESOURCES               32
 #define POOL_PCXROWSIZE                 2048
 #define POOL_PCXOFFSETS                 1024
+#define POOL_WIDGETS                    1536
 
 struct pool_pcxresource
 {

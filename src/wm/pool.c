@@ -10,14 +10,13 @@
 #include "strpool.h"
 #include "pool.h"
 
-#define MAX_WIDGETS                     1024
 #define MAX_FONTS                       2
 
 static struct list widgetlist;
 static struct list bumplist;
 static struct list freelist;
-static struct widget entries[MAX_WIDGETS];
-static struct list_item items[MAX_WIDGETS];
+static struct widget entries[POOL_WIDGETS];
+static struct list_item items[POOL_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
 static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
 
@@ -475,7 +474,7 @@ void pool_setup(void)
     list_init(&bumplist);
     list_init(&freelist);
 
-    for (i = 0; i < MAX_WIDGETS; i++)
+    for (i = 0; i < POOL_WIDGETS; i++)
     {
 
         struct list_item *item = &items[i];

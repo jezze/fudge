@@ -13,7 +13,6 @@
 #include "render.h"
 
 #define INFINITY                    0xFFFF
-#define RENDER_MAXWIDGETS           1024
 #define DIRECTION_NONE              0
 #define DIRECTION_HORIZONTAL        1
 #define DIRECTION_VERTICAL          2
@@ -1325,7 +1324,7 @@ void render_undamage(void)
 void render_update(struct blit_display *display)
 {
 
-    static struct widget *damaged[RENDER_MAXWIDGETS];
+    static struct widget *damaged[POOL_WIDGETS];
     struct list_item *current = 0;
     unsigned int ndamaged = 0;
     int line;
@@ -1338,7 +1337,7 @@ void render_update(struct blit_display *display)
     area.position2.x = util_clamp(area.position2.x, 0, display->region.size.w);
     area.position2.y = util_clamp(area.position2.y, 0, display->region.size.h);
 
-    while ((current = pool_next(current)) && ndamaged < RENDER_MAXWIDGETS)
+    while ((current = pool_next(current)) && ndamaged < POOL_WIDGETS)
     {
 
         struct widget *widget = current->data;
