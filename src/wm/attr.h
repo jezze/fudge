@@ -36,7 +36,7 @@
 #define ATTR_MIMETYPE_NONE              0
 #define ATTR_MIMETYPE_PCX               2
 #define ATTR_MODE_NORMAL                0
-#define ATTR_MODE_READONLY              1
+#define ATTR_MODE_EDIT                  1
 #define ATTR_MODE_LINK                  2
 #define ATTR_MODE_DISABLED              3
 #define ATTR_OVERFLOW_NONE              0

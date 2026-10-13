@@ -2,15 +2,13 @@
 #define WIDGET_TYPE_FILL                3
 #define WIDGET_TYPE_IMAGE               4
 #define WIDGET_TYPE_LAYOUT              5
-#define WIDGET_TYPE_LISTBOX             6
+#define WIDGET_TYPE_BOX                 6
 #define WIDGET_TYPE_PANEL               7
 #define WIDGET_TYPE_SELECT              8
 #define WIDGET_TYPE_TEXT                9
-#define WIDGET_TYPE_TEXTBOX             10
 #define WIDGET_TYPE_ITEM                11
 #define WIDGET_TYPE_WINDOW              12
 #define WIDGET_TYPE_CHECKBOX            13
-#define WIDGET_TYPE_FRAME               15
 #define WIDGET_TYPE_SWATCH              16
 #define WIDGET_STATE_NORMAL             0
 #define WIDGET_STATE_HOVER              1

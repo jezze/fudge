@@ -15,7 +15,7 @@
 #define UPDATE  5
 
 #define NUM_COMMANDS                    5
-#define NUM_WIDGETS                     14
+#define NUM_WIDGETS                     12
 #define NUM_ATTRIBUTES                  23
 
 static struct util_token commands[NUM_COMMANDS] =
@@ -29,19 +29,17 @@ static struct util_token commands[NUM_COMMANDS] =
 
 static struct util_token widgets[NUM_WIDGETS] =
 {
+    {WIDGET_TYPE_BOX, "box"},
     {WIDGET_TYPE_BUTTON, "button"},
     {WIDGET_TYPE_CHECKBOX, "checkbox"},
     {WIDGET_TYPE_FILL, "fill"},
-    {WIDGET_TYPE_FRAME, "frame"},
     {WIDGET_TYPE_IMAGE, "image"},
     {WIDGET_TYPE_ITEM, "item"},
     {WIDGET_TYPE_LAYOUT, "layout"},
-    {WIDGET_TYPE_LISTBOX, "listbox"},
     {WIDGET_TYPE_PANEL, "panel"},
     {WIDGET_TYPE_SELECT, "select"},
     {WIDGET_TYPE_SWATCH, "swatch"},
     {WIDGET_TYPE_TEXT, "text"},
-    {WIDGET_TYPE_TEXTBOX, "textbox"},
     {WIDGET_TYPE_WINDOW, "window"}
 };
 
@@ -263,7 +261,7 @@ static void movecursortoend(struct widget *widget)
 
     struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in));
 
-    if (parent && parent->type == WIDGET_TYPE_TEXTBOX && parent->attributes.mode != ATTR_MODE_READONLY)
+    if (parent && parent->type == WIDGET_TYPE_BOX && parent->attributes.mode == ATTR_MODE_EDIT)
     {
 
         parent->attributes.cursor = strpool_getcstringlength(widget->attributes.label);

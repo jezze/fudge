@@ -38,7 +38,7 @@ static struct util_token mimetypes[1] =
 static struct util_token modes[NUM_MODES] =
 {
     {ATTR_MODE_NORMAL, "normal"},
-    {ATTR_MODE_READONLY, "readonly"},
+    {ATTR_MODE_EDIT, "edit"},
     {ATTR_MODE_LINK, "link"},
     {ATTR_MODE_DISABLED, "disabled"}
 };

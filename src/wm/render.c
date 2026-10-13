@@ -50,17 +50,16 @@ static struct calls calls[32];
 
 #define PALETTE_BUTTON                  0
 #define PALETTE_CHECKBOX                1
-#define PALETTE_FIELD                   2
-#define PALETTE_FRAME                   3
-#define PALETTE_ITEM                    4
-#define PALETTE_LINK                    5
-#define PALETTE_MOUSE                   6
-#define PALETTE_PANEL                   7
-#define PALETTE_SELECT                  8
-#define PALETTE_SWATCH                  9
-#define PALETTE_TEXT                    10
-#define PALETTE_WINDOW                  11
-#define NUM_PALETTES                    12
+#define PALETTE_BOX                     2
+#define PALETTE_ITEM                    3
+#define PALETTE_LINK                    4
+#define PALETTE_MOUSE                   5
+#define PALETTE_PANEL                   6
+#define PALETTE_SELECT                  7
+#define PALETTE_SWATCH                  8
+#define PALETTE_TEXT                    9
+#define PALETTE_WINDOW                  10
+#define NUM_PALETTES                    11
 #define SHADE_NORMAL                    0
 #define SHADE_HOVER                     1
 #define SHADE_FOCUS                     2
@@ -76,7 +75,7 @@ struct palette
 
 };
 
-static char *palettenames[NUM_PALETTES] = {"button", "checkbox", "field", "frame", "item", "link", "mouse", "panel", "select", "swatch", "text", "window"};
+static char *palettenames[NUM_PALETTES] = {"button", "checkbox", "box", "item", "link", "mouse", "panel", "select", "swatch", "text", "window"};
 static char *shadenames[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
 static struct palette palettes[NUM_PALETTES][NUM_SHADES];
 
@@ -235,7 +234,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
             csize.w = util_min(csize.w + CONFIG_SCROLL_WIDTH, climit.w);
 
             if (measureminimum)
-                csize.h = util_min(csize.h, CONFIG_TEXTBOX_PADDING_HEIGHT * 2 + pool_getfont(child->attributes.weight)->lineheight);
+                csize.h = util_min(csize.h, (CONFIG_FRAME_HEIGHT + child->attributes.padding) * 2 + pool_getfont(child->attributes.weight)->lineheight);
 
         }
 
@@ -583,7 +582,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     info = placechildren(widget, &span, 0);
 
-    if (widget->type == WIDGET_TYPE_TEXTBOX)
+    if (widget->type == WIDGET_TYPE_BOX)
         placecursor(widget);
 
     if (widget_isscrollable(widget))
@@ -684,32 +683,31 @@ static struct util_size getsizelayout(struct widget *widget, struct util_size *l
 
 }
 
-static struct util_size getsizeframe(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    struct util_size padding = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2);
-    struct util_size csize = childrengetsize(widget, limit);
-
-    return util_size_union(&csize, &padding);
-
-}
-
 static struct util_size getsizeswatch(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    unsigned int side = pool_getfont(widget->attributes.weight)->lineheight + CONFIG_TEXTBOX_PADDING_HEIGHT * 2;
+    unsigned int side = pool_getfont(widget->attributes.weight)->lineheight + CONFIG_SWATCH_PADDING * 2;
 
     return util_size(side, side);
 
 }
 
-static struct util_size getsizelistbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizebox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size padding = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2);
+    struct util_size border = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2);
     struct util_size csize = childrengetsize(widget, limit);
 
-    return util_size_union(&csize, &padding);
+    /* a box to type in needs room for a line of text, however short its text is */
+    if (widget->attributes.mode == ATTR_MODE_EDIT)
+    {
+
+        csize.w = util_max(csize.w, CONFIG_BOX_EDITWIDTH + widget->attributes.padding * 2);
+        csize.h = util_max(csize.h, pool_getfont(widget->attributes.weight)->lineheight + widget->attributes.padding * 2);
+
+    }
+
+    return util_size_union(&csize, &border);
 
 }
 
@@ -738,23 +736,6 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
     struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size(label.w, label.h);
-
-}
-
-static struct util_size getsizetextbox(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    struct text_font *font = pool_getfont(widget->attributes.weight);
-    struct util_size padding = util_size(CONFIG_TEXTBOX_PADDING_WIDTH * 2, CONFIG_TEXTBOX_PADDING_HEIGHT * 2);
-    struct util_size csize = childrengetsize(widget, limit);
-
-    csize.h = util_max(csize.h, font->lineheight);
-
-    /* an input field needs room to type in, however short its text is */
-    if (widget->attributes.mode != ATTR_MODE_READONLY)
-        csize.w = util_max(csize.w, CONFIG_TEXTBOX_MIN_WIDTH);
-
-    return util_size_union(&csize, &padding);
 
 }
 
@@ -799,7 +780,12 @@ static void placelayout(struct widget *widget)
 
 }
 
-static void placeframe(struct widget *widget)
+static void placeswatch(struct widget *widget)
+{
+
+}
+
+static void placebox(struct widget *widget)
 {
 
     struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
@@ -807,22 +793,6 @@ static void placeframe(struct widget *widget)
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
     widget->cplacement = inner;
-
-}
-
-static void placeswatch(struct widget *widget)
-{
-
-}
-
-static void placelistbox(struct widget *widget)
-{
-
-    struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
-
-    widget->cclip = util_region_intersection(&inner, &widget->clip);
-    widget->clip = util_region_intersection(&widget->placement, &widget->clip);
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, inner.size.h);
 
 }
 
@@ -847,17 +817,6 @@ static void placeselect(struct widget *widget)
 
 static void placetext(struct widget *widget)
 {
-
-}
-
-static void placetextbox(struct widget *widget)
-{
-
-    struct util_region inner = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->placement.position.y + CONFIG_FRAME_HEIGHT, widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2);
-
-    widget->cplacement = util_region(widget->placement.position.x + CONFIG_TEXTBOX_PADDING_WIDTH, widget->placement.position.y + CONFIG_TEXTBOX_PADDING_HEIGHT, widget->placement.size.w - CONFIG_TEXTBOX_PADDING_WIDTH * 2, INFINITY);
-    widget->cclip = util_region_intersection(&inner, &widget->clip);
-    widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
 }
 
@@ -1010,13 +969,6 @@ static void renderlayout(struct blit_display *display, struct widget *widget, in
 
 }
 
-static void renderframe(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_FRAME, SHADE_NORMAL)->frame);
-
-}
-
 static void renderswatch(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -1039,12 +991,20 @@ static void renderthumb(struct blit_display *display, struct widget *widget, int
 
 }
 
-static void renderlistbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+static void renderbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    unsigned int *cmapbody = getpalette(PALETTE_FIELD, (widget->attributes.mode == ATTR_MODE_READONLY) ? SHADE_NORMAL : getshade(widget))->frame;
+    struct util_region rcursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
+    unsigned int shade = getshade(widget);
 
-    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
+    /* only a box to type in shows hover and focus */
+    if (widget->attributes.mode != ATTR_MODE_EDIT && shade != SHADE_DISABLED)
+        shade = SHADE_NORMAL;
+
+    blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_BOX, shade)->frame);
+
+    if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode == ATTR_MODE_EDIT || widget->appcursor))
+        blit_iconcursor(display, &rcursor, line, x0, x2, getpalette(PALETTE_TEXT, SHADE_NORMAL)->text);
 
 }
 
@@ -1092,19 +1052,6 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     rownum = (line - widget->placement.position.y - top) / font->lineheight;
 
     textrender(display, widget, &widget->placement, cmaptext, x0, x2, widget->rowstart.x, 0, &zerosize, rownum, line);
-
-}
-
-static void rendertextbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    struct util_region rcursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
-    unsigned int *cmapbody = getpalette(PALETTE_FIELD, (widget->attributes.mode == ATTR_MODE_READONLY) ? SHADE_NORMAL : getshade(widget))->frame;
-
-    blit_frame(display, &widget->placement, line, x0, x2, cmapbody);
-
-    if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode != ATTR_MODE_READONLY || widget->appcursor))
-        blit_iconcursor(display, &rcursor, line, x0, x2, getpalette(PALETTE_TEXT, SHADE_NORMAL)->text);
 
 }
 
@@ -1391,19 +1338,17 @@ void render_init(void)
 
     }
 
+    setupcall(WIDGET_TYPE_BOX, getsizebox, placebox, renderbox);
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, placebutton, renderbutton);
     setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, placecheckbox, rendercheckbox);
     setupcall(WIDGET_TYPE_FILL, getsizefill, placefill, renderfill);
-    setupcall(WIDGET_TYPE_FRAME, getsizeframe, placeframe, renderframe);
     setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
     setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, placeswatch, renderswatch);
     setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
-    setupcall(WIDGET_TYPE_LISTBOX, getsizelistbox, placelistbox, renderlistbox);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
     setupcall(WIDGET_TYPE_TEXT, getsizetext, placetext, rendertext);
-    setupcall(WIDGET_TYPE_TEXTBOX, getsizetextbox, placetextbox, rendertextbox);
     setupcall(WIDGET_TYPE_WINDOW, getsizewindow, placewindow, renderwindow);
 
 }

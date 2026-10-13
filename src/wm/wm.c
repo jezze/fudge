@@ -286,8 +286,8 @@ static unsigned int getmousetype(int x, int y)
 
         break;
 
-    case WIDGET_TYPE_TEXTBOX:
-        if (widget->attributes.mode != ATTR_MODE_READONLY)
+    case WIDGET_TYPE_BOX:
+        if (widget->attributes.mode == ATTR_MODE_EDIT)
             return BLIT_MOUSE_TEXT;
 
         break;
@@ -716,7 +716,7 @@ static void markwidget(struct widget *widget, unsigned int clear)
 
     struct list_item *current = 0;
 
-    if (widget->type != WIDGET_TYPE_TEXTBOX)
+    if (widget->type != WIDGET_TYPE_BOX)
         return;
 
     while ((current = pool_nextin(current, widget)))
@@ -1412,8 +1412,8 @@ static void clickwidget(struct widget *widget)
 
         break;
 
-    case WIDGET_TYPE_TEXTBOX:
-        if (state.mousebuttonleft && widget->attributes.mode != ATTR_MODE_READONLY)
+    case WIDGET_TYPE_BOX:
+        if (state.mousebuttonleft && widget->attributes.mode == ATTR_MODE_EDIT)
             movecursor(widget);
 
         break;
@@ -1619,8 +1619,8 @@ static unsigned int isfocusable(struct widget *widget)
     case WIDGET_TYPE_ITEM:
         return parent && widget == getgroupitem(parent);
 
-    case WIDGET_TYPE_TEXTBOX:
-        return widget->attributes.mode != ATTR_MODE_READONLY;
+    case WIDGET_TYPE_BOX:
+        return widget->attributes.mode == ATTR_MODE_EDIT;
 
     }
 
@@ -1774,14 +1774,14 @@ static void onkeypress(struct message *message)
 
         }
 
-        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX && state.focusedwidget->attributes.mode == ATTR_MODE_NORMAL)
+        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && state.focusedwidget->attributes.mode == ATTR_MODE_EDIT)
         {
 
             edittextbox(state.focusedwidget, id);
 
         }
 
-        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_TEXTBOX && (state.keys.mod & KEYS_MOD_SHIFT) && ismarkkey(id))
+        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && (state.keys.mod & KEYS_MOD_SHIFT) && ismarkkey(id))
         {
 
             extendmark(state.focusedwidget, id);
