@@ -96,7 +96,7 @@
     { name: item-focus-body         value: E81A1A1A }
     { name: item-focus-dark         value: E81A1A1A }
     { name: item-focus-light        value: E81A1A1A }
-    { name: link                    value: E8C07878 }
+    { name: link                    value: E8E0B0B0 }
     { name: mouse-shadow            value: E8101010 }
     { name: mouse-body              value: E8202020 }
     { name: mouse-dark              value: 00000000 }
