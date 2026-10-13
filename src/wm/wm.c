@@ -432,6 +432,40 @@ static void bumpchildren(struct widget *widget)
 
 }
 
+static void launch(char *command)
+{
+
+    system_run(0, "%s &", command);
+
+}
+
+static void sendevent(unsigned int source, unsigned int type, unsigned int action, char *text)
+{
+
+    if (source)
+    {
+
+        struct {struct event_wmevent wmevent; char data[512];} message;
+
+        message.wmevent.type = type;
+        message.wmevent.length = cstring_write_fmt(message.data, 512, 0, "%s%s\\0", strpool_getstring(action), text);
+
+        channel_send(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+
+    }
+
+    else
+    {
+
+        char *cmd = strpool_getstring(action);
+
+        if (buffer_match(cmd, "run=", 4))
+            launch(cmd + 4);
+
+    }
+
+}
+
 static void setselected(struct widget *item, unsigned int selected)
 {
 
@@ -443,6 +477,31 @@ static void setselected(struct widget *item, unsigned int selected)
         damage(item);
 
     }
+
+}
+
+static void notifyselection(struct widget *parent)
+{
+
+    struct list_item *current = 0;
+    unsigned int count = 0;
+    char text[16];
+
+    if (!parent || !parent->attributes.onselect)
+        return;
+
+    while ((current = pool_nextin(current, parent)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_ITEM && child->selected)
+            count++;
+
+    }
+
+    cstring_write_fmt(text, 16, 0, "%u\\0", &count);
+    sendevent(parent->source, 1, parent->attributes.onselect, text);
 
 }
 
@@ -482,6 +541,7 @@ static void selectitem(struct widget *item)
     }
 
     setanchor(item);
+    notifyselection(parent);
 
 }
 
@@ -490,6 +550,7 @@ static void toggleitem(struct widget *item)
 
     setselected(item, !item->selected);
     setanchor(item);
+    notifyselection(getparent(item));
 
 }
 
@@ -549,6 +610,8 @@ static void selectrange(struct widget *item)
         }
 
     }
+
+    notifyselection(parent);
 
 }
 
@@ -1018,40 +1081,6 @@ static void tilewindows(void)
 
     for (widget = getolderwindow(first->serial); widget; widget = getolderwindow(widget->serial), i++)
         placewindow(widget, w, top + h * i / count, display.region.size.w - w, h * (i + 1) / count - h * i / count);
-
-}
-
-static void launch(char *command)
-{
-
-    system_run(0, "%s &", command);
-
-}
-
-static void sendevent(unsigned int source, unsigned int type, unsigned int action, char *text)
-{
-
-    if (source)
-    {
-
-        struct {struct event_wmevent wmevent; char data[512];} message;
-
-        message.wmevent.type = type;
-        message.wmevent.length = cstring_write_fmt(message.data, 512, 0, "%s%s\\0", strpool_getstring(action), text);
-
-        channel_send(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
-
-    }
-
-    else
-    {
-
-        char *cmd = strpool_getstring(action);
-
-        if (buffer_match(cmd, "run=", 4))
-            launch(cmd + 4);
-
-    }
 
 }
 
