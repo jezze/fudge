@@ -914,6 +914,19 @@ static struct widget *gettextchild(struct widget *widget)
 
 }
 
+static unsigned int getcursorat(struct widget *widget, struct widget *text, int rows)
+{
+
+    struct text_font *font = pool_getfont(text->attributes.weight);
+    char *label = strpool_getstring(text->attributes.label);
+    unsigned int length = strpool_getcstringlength(text->attributes.label);
+    int x = widget->cursorposition.x - text->placement.position.x;
+    int y = widget->cursorposition.y - text->placement.position.y + (int)font->lineheight / 2 + rows * (int)font->lineheight;
+
+    return text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x, y);
+
+}
+
 static void edittextbox(struct widget *widget, unsigned int id)
 {
 
@@ -921,13 +934,16 @@ static void edittextbox(struct widget *widget, unsigned int id)
     char buffer[TEXTBOX_SIZE];
     unsigned int length;
     unsigned int cursor;
+    unsigned int previous;
     unsigned int changed = 0;
+    unsigned int moved = 0;
 
     if (!text)
         return;
 
     length = cstring_write_fmt(buffer, TEXTBOX_SIZE, 0, "%s\\0", strpool_getstring(text->attributes.label)) - 1;
     cursor = util_min(widget->attributes.cursor, length);
+    previous = cursor;
 
     switch (id)
     {
@@ -967,21 +983,39 @@ static void edittextbox(struct widget *widget, unsigned int id)
         if (cursor > 0)
             cursor--;
 
+        moved = 1;
+
         break;
 
     case KEYS_KEY_CURSORRIGHT:
         if (cursor < length)
             cursor++;
 
+        moved = 1;
+
+        break;
+
+    case KEYS_KEY_CURSORUP:
+        cursor = getcursorat(widget, text, -1);
+        moved = 1;
+
+        break;
+
+    case KEYS_KEY_CURSORDOWN:
+        cursor = getcursorat(widget, text, 1);
+        moved = 1;
+
         break;
 
     case KEYS_KEY_HOME:
         cursor = 0;
+        moved = 1;
 
         break;
 
     case KEYS_KEY_END:
         cursor = length;
+        moved = 1;
 
         break;
 
@@ -1001,6 +1035,25 @@ static void edittextbox(struct widget *widget, unsigned int id)
         }
 
         break;
+
+    }
+
+    /* with shift held a move marks from where the marking started to the cursor */
+    if (moved && (state.keys.mod & KEYS_MOD_SHIFT))
+    {
+
+        if (text->markstart == text->markend)
+            text->markstart = previous;
+
+        text->markend = cursor;
+
+    }
+
+    else if (moved || changed)
+    {
+
+        text->markstart = 0;
+        text->markend = 0;
 
     }
 
