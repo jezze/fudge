@@ -9,12 +9,12 @@ static void onpath(struct message *message)
     if (target)
     {
 
-        unsigned int id = fs_walk(0, target, 0, message->data);
+        unsigned int id = fs_walk(1, target, 0, message->data);
 
         if (id)
         {
 
-            if (!fs_remove(0, target, fs_walkparent(0, target, message->data), id))
+            if (!fs_remove(1, target, fs_walkparent(1, target, message->data), id))
                 channel_send_fmt(0, message->source, EVENT_ERROR, "File could not be removed: %s\n", message->data);
 
         }
