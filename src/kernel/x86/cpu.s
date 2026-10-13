@@ -112,3 +112,15 @@ cpu_leave:
     popa
     iret
 
+
+.global cpu_fxsave
+cpu_fxsave:
+    movl 4(%esp), %eax
+    fxsave (%eax)
+    ret
+
+.global cpu_fxrstor
+cpu_fxrstor:
+    movl 4(%esp), %eax
+    fxrstor (%eax)
+    ret

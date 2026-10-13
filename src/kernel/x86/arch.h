@@ -1,3 +1,4 @@
+#define ARCH_FPUSTATESIZE               512
 #define ARCH_GDT_BASE                   0x00001000
 #define ARCH_GDT_DESCRIPTORS            (5 + 256)
 #define ARCH_IDT_BASE                   0x00002000

@@ -95,3 +95,13 @@ cpu_leave:
     movq 104(%rax), %rcx
     movq 112(%rax), %rax
     iretq
+
+.global cpu_fxsave
+cpu_fxsave:
+    fxsave64 (%rdi)
+    ret
+
+.global cpu_fxrstor
+cpu_fxrstor:
+    fxrstor64 (%rdi)
+    ret

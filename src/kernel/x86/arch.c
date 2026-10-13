@@ -17,6 +17,7 @@ static struct gdt_descriptor gdtdescriptors[ARCH_GDT_DESCRIPTORS];
 static struct idt_descriptor idtdescriptors[ARCH_IDT_DESCRIPTORS];
 static struct tss_descriptor tssdescriptors[ARCH_TSS_DESCRIPTORS];
 static struct cpu_general registers[POOL_TASKS];
+static unsigned char fpustates[POOL_TASKS * ARCH_FPUSTATESIZE + 16];
 
 static unsigned int map(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int flags)
 {
@@ -96,6 +97,25 @@ static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct
 
 }
 
+static void *getfpustate(unsigned int itask)
+{
+
+    return (void *)((((unsigned long)fpustates + 15) & ~15UL) + itask * ARCH_FPUSTATESIZE);
+
+}
+
+static void resetfpustate(unsigned int itask)
+{
+
+    unsigned char *state = getfpustate(itask);
+
+    buffer_clear(state, ARCH_FPUSTATESIZE);
+
+    *(unsigned short *)(state + 0) = 0x037F;
+    *(unsigned int *)(state + 24) = 0x1F80;
+
+}
+
 static unsigned int createtask(unsigned int pinode, unsigned long address)
 {
 
@@ -112,6 +132,7 @@ static unsigned int createtask(unsigned int pinode, unsigned long address)
 
             buffer_copy((void *)(unsigned long)(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask), (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
             mapentry(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask, ARCH_MMAP_BASE + MMAP_SIZE * ntask, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE + MMAP_SIZE * ntask, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
+            resetfpustate(ntask);
             kernel_starttask(ntask);
 
             return inode;
@@ -153,6 +174,9 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         buffer_copy(&registers[core->itask], general, sizeof (struct cpu_general));
 
+        if (!(cpu_getcr0() & CPU_CR0_TS))
+            cpu_fxsave(getfpustate(core->itask));
+
         task->thread.ip = interrupt->eip.value;
         task->thread.sp = interrupt->esp.value;
 
@@ -166,6 +190,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         struct task *task = pool_gettask(core->itask);
 
         buffer_copy(general, &registers[core->itask], sizeof (struct cpu_general));
+        cpu_setcr0(cpu_getcr0() | CPU_CR0_TS);
 
         interrupt->cs.value = gdt_getselector(gdt, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(gdt, ARCH_UDATA);
@@ -364,6 +389,18 @@ unsigned short arch_opcode(struct cpu_general general, struct cpu_interrupt inte
 
 unsigned short arch_device(struct cpu_general general, struct cpu_interrupt interrupt)
 {
+
+    struct core *core = kernel_getcore();
+
+    if (core->itask && interrupt.cs.value == gdt_getselector(gdt, ARCH_UCODE))
+    {
+
+        cpu_setcr0(cpu_getcr0() & ~CPU_CR0_TS);
+        cpu_fxrstor(getfpustate(core->itask));
+
+        return interrupt.ss.value;
+
+    }
 
     debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "#NM");
 

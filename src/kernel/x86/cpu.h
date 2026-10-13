@@ -105,3 +105,5 @@ void cpu_setidt(void *pointer);
 void cpu_settss(unsigned int value);
 void cpu_halt(void);
 void cpu_leave(struct cpu_general general, struct cpu_interrupt interrupt);
+void cpu_fxsave(void *state);
+void cpu_fxrstor(void *state);
