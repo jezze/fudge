@@ -208,13 +208,14 @@ static void field(char *id, char *label, char *value, char *halign)
 
 }
 
-static void colorfield(char *id, char *label, char *value)
+/* there are hundreds of colors, so their rows use short ids to save strings in the wm */
+static void colorfield(unsigned int index, char *label, char *value)
 {
 
-    beginrow(id);
-    addlabel(id, label);
+    reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"%s-swatch\" in \"%s-row\" color \"%s\"\n+ textbox id \"%s\" in \"%s-row\" onchange \"q=color&id=%s&value=\"\n+ text in \"%s\" label \"%s\"\n", id, id, value, id, id, id, id, value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ layout id \"c%u\" in \"content\" flow \"horizontal-stretch\" spacing \"8\" padding \"4\"\n+ text in \"c%u\" valign \"middle\" span \"1\" label \"%s\"\n", &index, &index, label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"s%u\" in \"c%u\" color \"%s\"\n+ textbox id \"t%u\" in \"c%u\" onchange \"q=color&index=%u&value=\"\n+ text in \"t%u\" label \"%s\"\n", &index, &index, value, &index, &index, &index, &index, value);
 
 }
 
@@ -482,21 +483,6 @@ static void setfield(char *id, char *value)
 
     }
 
-    else if (buffer_match(id, "color-", 6))
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < config.ncolors; i++)
-        {
-
-            if (cstring_match(config.colors[i].name, id + 6))
-                copystring(config.colors[i].value, 16, value, length);
-
-        }
-
-    }
-
     else if (buffer_match(id, "binding", 7))
     {
 
@@ -611,14 +597,7 @@ static void rendercolors(void)
     beginarea("Colors");
 
     for (i = 0; i < config.ncolors; i++)
-    {
-
-        char id[64];
-
-        cstring_write_fmt(id, 64, 0, "color-%s\\0", config.colors[i].name);
-        colorfield(id, config.colors[i].name, config.colors[i].value);
-
-    }
+        colorfield(i, config.colors[i].name, config.colors[i].value);
 
 }
 
@@ -691,8 +670,13 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=color"))
     {
 
-        setfield(kv_getstring(event, "id="), kv_getstring(event, "value="));
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= %s-swatch color \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "value="));
+        unsigned int index = kv_getvalue(event, "index=", 10);
+        char *value = kv_getstring(event, "value=");
+
+        if (index < config.ncolors)
+            copystring(config.colors[index].value, 16, value, cstring_length(value));
+
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
 
     }
 
