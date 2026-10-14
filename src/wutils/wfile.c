@@ -11,6 +11,7 @@ static unsigned char selected[ROWS];
 static unsigned int rows;
 static unsigned int listing;
 static char clipboard[CLIPBOARD_SIZE];
+static char pasted[CLIPBOARD_SIZE];
 static unsigned int clipcount;
 static unsigned int clipcut;
 
@@ -38,7 +39,7 @@ static void setbuttons(unsigned int wm)
 {
 
     char *mode = (countselected()) ? "normal" : "disabled";
-    char *pastemode = (listing && clipcount) ? "normal" : "disabled";
+    char *pastemode = (listing) ? "normal" : "disabled";
 
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
 
@@ -227,10 +228,23 @@ static void changepath(unsigned int wm, char *relative)
 
 }
 
+static void writeclipboard(unsigned int service, char *data, unsigned int count)
+{
+
+    unsigned int offset;
+
+    channel_send(1, service, EVENT_CLIPBOARDWRITE, 0, 0);
+
+    for (offset = 0; offset < count; offset += MESSAGE_SIZE)
+        channel_send(1, service, EVENT_CLIPBOARDWRITE, (count - offset < MESSAGE_SIZE) ? count - offset : MESSAGE_SIZE, data + offset);
+
+}
+
+/* puts the selected paths in the clipboard, one per line, and remembers them to recognize a cut when pasting */
 static void clip(unsigned int cut)
 {
 
-    unsigned int offset = 0;
+    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
     unsigned int i;
 
     clipcount = 0;
@@ -242,35 +256,65 @@ static void clip(unsigned int cut)
         if (!selected[i])
             continue;
 
-        if (offset + cstring_length(path) + cstring_length(names[i]) + 1 > CLIPBOARD_SIZE)
+        if (clipcount + cstring_length(path) + cstring_length(names[i]) + 1 > CLIPBOARD_SIZE)
             break;
 
-        offset += cstring_write_fmt(clipboard, CLIPBOARD_SIZE, offset, "%s%s\\0", path, names[i]);
-        clipcount++;
+        clipcount += cstring_write_fmt(clipboard, CLIPBOARD_SIZE, clipcount, "%s%s\n", path, names[i]);
 
     }
+
+    if (service)
+        writeclipboard(service, clipboard, clipcount);
 
 }
 
+/* copies every path in the clipboard here, or moves them when they are what this window cut */
 static void paste(void)
 {
 
-    unsigned int offset = 0;
+    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
+    unsigned int count = 0;
+    unsigned int cut;
+    unsigned int start;
     unsigned int i;
+    struct message message;
 
-    for (i = 0; i < clipcount; i++)
+    if (!service)
+        return;
+
+    channel_send(1, service, EVENT_CLIPBOARDREAD, 0, 0);
+
+    while (channel_poll(1, service, EVENT_CLIPBOARDDATA, &message) && message.length)
+        count += buffer_write(pasted, CLIPBOARD_SIZE - 1, message.data, message.length, count);
+
+    cut = clipcut && count == clipcount && buffer_match(pasted, clipboard, count);
+    pasted[count] = '\0';
+
+    for (start = 0, i = 0; i <= count; i++)
     {
 
-        char *source = clipboard + offset;
+        if (i < count && pasted[i] != '\n')
+            continue;
 
-        system_run(0, "%s \"%s\" \"%s\"", (clipcut) ? "mv" : "cp", source, path);
+        pasted[i] = '\0';
 
-        offset += cstring_length_zero(source);
+        /* a line with a quote can't be quoted on the command line */
+        if (i > start && buffer_findbyte(pasted + start, i - start, '"') == i - start)
+            system_run(0, "%s \"%s\" \"%s\"", (cut) ? "mv" : "cp", pasted + start, path);
+
+        start = i + 1;
 
     }
 
-    if (clipcut)
+    if (cut)
+    {
+
+        clipcut = 0;
         clipcount = 0;
+
+        writeclipboard(service, 0, 0);
+
+    }
 
 }
 
@@ -392,6 +436,44 @@ static void onwmevent(struct message *message)
 
 }
 
+static void onwmkeypress(struct message *message)
+{
+
+    struct event_wmkeypress *wmkeypress = message->data;
+
+    if (!(wmkeypress->keymod & KEYS_MOD_CTRL))
+        return;
+
+    switch (wmkeypress->id)
+    {
+
+    case KEYS_KEY_C:
+    case KEYS_KEY_X:
+        if (countselected())
+        {
+
+            clip(wmkeypress->id == KEYS_KEY_X);
+            setbuttons(message->source);
+
+        }
+
+        break;
+
+    case KEYS_KEY_V:
+        if (listing)
+        {
+
+            paste();
+            updatecontent(message->source);
+
+        }
+
+        break;
+
+    }
+
+}
+
 static void onwminit(struct message *message)
 {
 
@@ -407,8 +489,10 @@ void init(void)
 
     option_add("config", "initrd:data/config/filetypes.mq");
     option_add("wm-service", "wm");
+    option_add("clipboard-service", "clipboard");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
+    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
     channel_bind(EVENT_WMINIT, onwminit);
 
 }
