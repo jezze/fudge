@@ -497,11 +497,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 {
 
     unsigned int vaddress = cpu_getcr2();
-    unsigned int directory = cpu_getcr3();
     unsigned int found = 0;
 
     if (!(error & MMU_EFLAG_PRESENT))
     {
+
+        unsigned int directory = cpu_getcr3();
 
         if (directory != ARCH_MMU_KERNELBASE)
         {
@@ -528,15 +529,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
     }
 
-    if (!(error & MMU_EFLAG_USER))
-    {
-
-        interrupt.cs.value = gdt_getselector(gdt, ARCH_KCODE);
-        interrupt.ss.value = gdt_getselector(gdt, ARCH_KDATA);
-
-    }
-
-    return interrupt.ss.value;
+    return (error & MMU_EFLAG_USER) ? interrupt.ss.value : gdt_getselector(gdt, ARCH_KDATA);
 
 }
 

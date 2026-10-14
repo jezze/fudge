@@ -513,11 +513,12 @@ unsigned short arch_pagefault(struct cpu_general *general, unsigned long error, 
 {
 
     unsigned long vaddress = cpu_getcr2();
-    unsigned long directory = cpu_getcr3();
     unsigned int found = 0;
 
     if (!(error & MMU_EFLAG_PRESENT))
     {
+
+        unsigned long directory = cpu_getcr3();
 
         if (directory != ARCH_MMU_KERNELBASE)
         {
