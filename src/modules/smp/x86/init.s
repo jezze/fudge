@@ -17,8 +17,6 @@ setup:
     shll $13, %ebx
     movl $SMP_STACKBASE, %esp
     addl %ebx, %esp
-    movl %esp, %esi
-    pushl %esi
     pushl %edi
     call smp_setupap
 

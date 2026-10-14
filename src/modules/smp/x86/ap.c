@@ -10,7 +10,7 @@
 
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 
-void smp_setupap(unsigned int icore, unsigned int sp)
+void smp_setupap(unsigned int icore)
 {
 
     struct core *core = pool_getcore(icore);
