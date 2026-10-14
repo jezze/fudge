@@ -694,19 +694,27 @@ static void showwidget(struct widget *widget)
 
 }
 
-static void marktext(struct widget *text, struct util_position *scrolled, unsigned int clear)
+static unsigned int gettextlength(struct widget *text)
+{
+
+    return strpool_getcstringlength(text->attributes.label);
+
+}
+
+static unsigned int gettextoffsetat(struct widget *text, int x, int y)
 {
 
     struct text_font *font = pool_getfont(text->attributes.weight);
-    char *label = strpool_getstring(text->attributes.label);
-    unsigned int length = strpool_getcstringlength(text->attributes.label);
-    int x0 = state.mousepressed.x - scrolled->x - text->placement.position.x;
-    int y0 = state.mousepressed.y - scrolled->y - text->placement.position.y;
-    int x1 = state.markpoint.x - text->placement.position.x;
-    int y1 = state.markpoint.y - text->placement.position.y;
 
-    text->markstart = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x0, y0);
-    text->markend = (clear) ? 0 : text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x1, y1);
+    return text_getoffsetat(font, strpool_getstring(text->attributes.label), gettextlength(text), text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x - text->placement.position.x, y - text->placement.position.y);
+
+}
+
+static void marktext(struct widget *text, struct util_position *scrolled, unsigned int clear)
+{
+
+    text->markstart = (clear) ? 0 : gettextoffsetat(text, state.mousepressed.x - scrolled->x, state.mousepressed.y - scrolled->y);
+    text->markend = (clear) ? 0 : gettextoffsetat(text, state.markpoint.x, state.markpoint.y);
 
 }
 
@@ -728,22 +736,6 @@ static void markwidget(struct widget *widget, unsigned int clear)
             marktext(child, &scrolled, clear);
 
     }
-
-}
-
-static unsigned int gettextlength(struct widget *text)
-{
-
-    return strpool_getcstringlength(text->attributes.label);
-
-}
-
-static unsigned int gettextoffsetat(struct widget *text, int x, int y)
-{
-
-    struct text_font *font = pool_getfont(text->attributes.weight);
-
-    return text_getoffsetat(font, strpool_getstring(text->attributes.label), gettextlength(text), text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x - text->placement.position.x, y - text->placement.position.y);
 
 }
 
@@ -1349,13 +1341,10 @@ static void movecursor(struct widget *widget)
     if (text)
     {
 
-        struct text_font *font = pool_getfont(text->attributes.weight);
-        char *label = strpool_getstring(text->attributes.label);
-        unsigned int length = strpool_getcstringlength(text->attributes.label);
-        int x = util_max(state.mouseposition.x - text->placement.position.x, 0);
-        int y = util_clamp(state.mouseposition.y - text->placement.position.y, 0, util_max((int)text->placement.size.h - 1, 0));
+        int x = util_max(state.mouseposition.x, text->placement.position.x);
+        int y = util_clamp(state.mouseposition.y, text->placement.position.y, text->placement.position.y + util_max((int)text->placement.size.h - 1, 0));
 
-        widget->attributes.cursor = text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x, y);
+        widget->attributes.cursor = gettextoffsetat(text, x, y);
         widget->followcursor = 1;
 
         damageall(widget);
