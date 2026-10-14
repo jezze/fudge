@@ -62,6 +62,7 @@ src/utils/sh
 src/utils/sha1
 src/utils/shell
 src/utils/socket
+src/utils/sound
 src/utils/stat
 src/utils/tail
 src/utils/timestamp
