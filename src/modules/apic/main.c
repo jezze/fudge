@@ -12,6 +12,10 @@
 #define ROUTINES                        256
 #define OVERRIDES                       16
 #define MSR_APIC                        0x1B
+#define MSR_APIC_X2APIC                 (1 << 10)
+#define MSR_APIC_ENABLE                 (1 << 11)
+#define MSR_X2APIC                      0x800
+#define MSR_X2APIC_ICR                  0x830
 #define IOAPIC_MASK                     (1 << 16)
 #define MSIBASE                         0x10
 #define MSIS                            16
@@ -23,6 +27,7 @@ static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
 static void (*routines[ROUTINES])(unsigned int gsi);
 static unsigned int overrides[OVERRIDES];
 static unsigned int mmio;
+static unsigned int x2apic;
 static unsigned long ioapicbase;
 static unsigned int redirections[OVERRIDES];
 static struct spinlock spinlock;
@@ -326,18 +331,109 @@ static void detect(void)
 static unsigned int apic_ind(unsigned long reg)
 {
 
-    volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
+    if (x2apic)
+    {
 
-    return *address;
+        struct msr_data data;
+
+        msr_get(MSR_X2APIC + (reg >> 4), &data);
+
+        return data.eax;
+
+    }
+
+    else
+    {
+
+        volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
+
+        return *address;
+
+    }
 
 }
 
 static void apic_outd(unsigned long reg, unsigned int value)
 {
 
-    volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
+    if (x2apic)
+    {
 
-    *address = value;
+        struct msr_data data;
+
+        data.eax = value;
+        data.edx = 0;
+
+        msr_set(MSR_X2APIC + (reg >> 4), &data);
+
+    }
+
+    else
+    {
+
+        volatile unsigned int *address = (volatile unsigned int *)(mmio + reg);
+
+        *address = value;
+
+    }
+
+}
+
+static void enablex2apic(void)
+{
+
+    struct msr_data data;
+
+    msr_get(MSR_APIC, &data);
+
+    if (data.eax & MSR_APIC_X2APIC)
+        return;
+
+    /* going straight from disabled to x2apic is not allowed, so enable first */
+    data.eax |= MSR_APIC_ENABLE;
+
+    msr_set(MSR_APIC, &data);
+
+    data.eax |= MSR_APIC_X2APIC;
+
+    msr_set(MSR_APIC, &data);
+
+}
+
+static void setuplocal(unsigned int lint0, unsigned int lint1)
+{
+
+    unsigned int maxlvt;
+
+    if (x2apic)
+        enablex2apic();
+
+    maxlvt = (apic_ind(APIC_REG_VERSION) >> 16) & 0xFF;
+
+    apic_outd(APIC_REG_TPR, 0x00000000);
+
+    /* x2apic has no DFR and a read-only LDR */
+    if (!x2apic)
+    {
+
+        apic_outd(APIC_REG_LDR, 0x00000000);
+        apic_outd(APIC_REG_DFR, 0xFFFFFFFF);
+
+    }
+
+    apic_outd(APIC_REG_SV, (1 << 8) | 0xFF);
+
+    if (maxlvt >= 6)
+        apic_outd(APIC_REG_LVTCMCI, 0x00010000);
+
+    apic_outd(APIC_REG_LVTTIMER, 0x00010000);
+
+    if (maxlvt >= 4)
+        apic_outd(APIC_REG_LVTPERF, 0x00010000);
+
+    apic_outd(APIC_REG_LVTLINT0, lint0);
+    apic_outd(APIC_REG_LVTLINT1, lint1);
+    apic_outd(APIC_REG_LVTERROR, 0x00010000);
 
 }
 
@@ -358,7 +454,7 @@ unsigned int apic_checkioapic(unsigned int id)
 unsigned int apic_getid(void)
 {
 
-    return (apic_ind(APIC_REG_ID) >> 24);
+    return (x2apic) ? apic_ind(APIC_REG_ID) : apic_ind(APIC_REG_ID) >> 24;
 
 }
 
@@ -458,42 +554,41 @@ unsigned int apic_unsetroutine(unsigned int irq)
 void apic_setup_ap(void)
 {
 
-    apic_outd(APIC_REG_TPR, 0x00000000);
-    apic_outd(APIC_REG_LDR, 0x00000000);
-    apic_outd(APIC_REG_DFR, 0xFFFFFFFF);
-    apic_outd(APIC_REG_SV, (1 << 8) | 0xFF);
-    apic_outd(APIC_REG_LVTCMCI, 0x00010000);
-    apic_outd(APIC_REG_LVTTIMER, 0x00010000);
-    apic_outd(APIC_REG_LVTPERF, 0x00010000);
-    apic_outd(APIC_REG_LVTLINT0, 0x00010000);
-    apic_outd(APIC_REG_LVTLINT1, 0x00010000);
-    apic_outd(APIC_REG_LVTERROR, 0x00010000);
+    setuplocal(0x00010000, 0x00010000);
 
 }
 
 void apic_setup_bp(void)
 {
 
-    apic_outd(APIC_REG_TPR, 0x00000000);
-    apic_outd(APIC_REG_LDR, 0x00000000);
-    apic_outd(APIC_REG_DFR, 0xFFFFFFFF);
-    apic_outd(APIC_REG_SV, (1 << 8) | 0xFF);
-    apic_outd(APIC_REG_LVTCMCI, 0x00010000);
-    apic_outd(APIC_REG_LVTTIMER, 0x00010000);
-    apic_outd(APIC_REG_LVTPERF, 0x00010000);
-    apic_outd(APIC_REG_LVTLINT0, 0x00000700);
-    apic_outd(APIC_REG_LVTLINT1, 0x00000400);
-    apic_outd(APIC_REG_LVTERROR, 0x00010000);
+    setuplocal(0x00000700, 0x00000400);
 
 }
 
 void apic_sendint(unsigned int id, unsigned int value)
 {
 
-    apic_outd(APIC_REG_ICR1, id << 24);
-    apic_outd(APIC_REG_ICR0, value);
+    if (x2apic)
+    {
 
-    while (apic_ind(APIC_REG_ICR0) & APIC_REG_ICR_STATUS_PENDING);
+        struct msr_data data;
+
+        data.eax = value;
+        data.edx = id;
+
+        msr_set(MSR_X2APIC_ICR, &data);
+
+    }
+
+    else
+    {
+
+        apic_outd(APIC_REG_ICR1, id << 24);
+        apic_outd(APIC_REG_ICR0, value);
+
+        while (apic_ind(APIC_REG_ICR0) & APIC_REG_ICR_STATUS_PENDING);
+
+    }
 
 }
 
@@ -515,20 +610,16 @@ void module_init(void)
     for (i = 0; i < OVERRIDES; i++)
         overrides[i] = i;
 
-/*
-    if ((data.ecx & CPUID_FEATURES00_2XAPIC))
-    {
-
-
-    }
-*/
-
     if ((data.edx & CPUID_FEATURES01_APIC))
     {
 
         msr_get(MSR_APIC, &msrdata);
 
         mmio = (msrdata.eax & 0xFFFFF000);
+        x2apic = (data.ecx & CPUID_FEATURES00_2XAPIC) || (msrdata.eax & MSR_APIC_X2APIC);
+
+        if (x2apic)
+            enablex2apic();
 
         arch_kmap(0xFEC00000, 0xFEC00000, 0x400000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
         detect();
