@@ -19,7 +19,7 @@ struct block_interface
     struct service service;
     unsigned int id;
     struct block_session sessions[8];
-    void (*oninfo)(struct event_blockinfo *blockinfo);
+    unsigned int blocksize;
     void (*startsession)(struct block_session *session);
 
 };
@@ -28,4 +28,4 @@ struct block_session *block_getsession(struct block_interface *interface);
 void block_session_done(struct block_interface *interface, struct block_session *session);
 void block_registerinterface(struct block_interface *interface);
 void block_unregisterinterface(struct block_interface *interface);
-void block_initinterface(struct block_interface *interface, unsigned int id, void (*oninfo)(struct event_blockinfo *blockinfo), void (*startsession)(struct block_session *session));
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int blocksize, void (*startsession)(struct block_session *session));

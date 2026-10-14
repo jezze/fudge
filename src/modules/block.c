@@ -7,12 +7,14 @@ static struct node_operands operands;
 static unsigned int oninfo(struct block_interface *interface, unsigned int source)
 {
 
-    if (interface->oninfo)
+    if (interface->blocksize)
     {
 
         struct event_blockinfo blockinfo;
 
-        interface->oninfo(&blockinfo);
+        blockinfo.buffer = KERNEL_VBUFFER;
+        blockinfo.buffersize = TASK_BUFFERSIZE;
+        blockinfo.blocksize = interface->blocksize;
 
         return kernel_place(interface->service.inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
 
@@ -173,14 +175,14 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, void (*oninfo)(struct event_blockinfo *blockinfo), void (*startsession)(struct block_session *session))
+void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int blocksize, void (*startsession)(struct block_session *session))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
     service_init(&interface->service);
 
     interface->id = id;
-    interface->oninfo = oninfo;
+    interface->blocksize = blocksize;
     interface->startsession = startsession;
 
 }

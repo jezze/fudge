@@ -7,12 +7,15 @@ static struct node_operands operands;
 static unsigned int oninfo(struct video_interface *interface, unsigned int source)
 {
 
-    if (interface->oninfo)
+    if (interface->framebuffer)
     {
 
         struct event_videoinfo videoinfo;
 
-        interface->oninfo(&videoinfo);
+        videoinfo.framebuffer = interface->framebuffer;
+        videoinfo.width = interface->width;
+        videoinfo.height = interface->height;
+        videoinfo.bpp = interface->bpp;
 
         return kernel_place(interface->service.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
@@ -129,7 +132,7 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, void (*oninfo)(struct event_videoinfo *videoinfo), unsigned int (*setcmap)(unsigned int count, void *data), void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp))
+void video_initinterface(struct video_interface *interface, unsigned int id, unsigned long framebuffer, unsigned int (*setcmap)(unsigned int count, void *data), void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
@@ -139,7 +142,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, voi
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;
-    interface->oninfo = oninfo;
+    interface->framebuffer = framebuffer;
     interface->setcmap = setcmap;
     interface->setmode = setmode;
 

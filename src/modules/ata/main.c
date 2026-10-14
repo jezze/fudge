@@ -79,15 +79,6 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
-{
-
-    blockinfo->buffer = KERNEL_VBUFFER;
-    blockinfo->buffersize = TASK_BUFFERSIZE;
-    blockinfo->blocksize = BLOCKSIZE;
-
-}
-
 static void blockinterface_startsession(struct block_session *session)
 {
 
@@ -151,7 +142,7 @@ static void blockinterface_startsession(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_startsession);
+    block_initinterface(&blockinterface, id, BLOCKSIZE, blockinterface_startsession);
 
 }
 

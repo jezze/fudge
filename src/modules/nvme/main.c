@@ -35,7 +35,6 @@ static struct queue admin;
 static struct queue io;
 static unsigned long mmio;
 static unsigned int stride;
-static unsigned int blocksize;
 static unsigned int ready;
 static unsigned int msi;
 
@@ -201,9 +200,9 @@ static unsigned int setup(void)
     if (!command(NVME_ADMIN_IDENTIFY, 1, (unsigned long)identify, 0, 0))
         return 0;
 
-    blocksize = 1 << identify[128 + (identify[26] & 0x0F) * 4 + 2];
+    blockinterface.blocksize = 1 << identify[128 + (identify[26] & 0x0F) * 4 + 2];
 
-    if (blocksize < 512 || blocksize > PAGESIZE)
+    if (blockinterface.blocksize < 512 || blockinterface.blocksize > PAGESIZE)
         return 0;
 
     if (!command(NVME_ADMIN_CREATECQ, 0, (unsigned long)io.cq, io.id | ((QUEUESIZE - 1) << 16), NVME_QUEUE_CONTIGUOUS | NVME_QUEUE_INTERRUPTS))
@@ -219,8 +218,8 @@ static unsigned int setup(void)
 static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
 {
 
-    unsigned int blocks = count / blocksize;
-    unsigned int pages = (blocks * blocksize + PAGESIZE - 1) / PAGESIZE;
+    unsigned int blocks = count / blockinterface.blocksize;
+    unsigned int pages = (blocks * blockinterface.blocksize + PAGESIZE - 1) / PAGESIZE;
     unsigned long prp2 = 0;
     unsigned int i;
 
@@ -247,7 +246,7 @@ static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int
 
     submit(&io, (write) ? NVME_IO_WRITE : NVME_IO_READ, 1, buffer, prp2, sector, 0, blocks - 1);
 
-    return blocks * blocksize;
+    return blocks * blockinterface.blocksize;
 
 }
 
@@ -275,15 +274,6 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void blockinterface_oninfo(struct event_blockinfo *blockinfo)
-{
-
-    blockinfo->buffer = KERNEL_VBUFFER;
-    blockinfo->buffersize = TASK_BUFFERSIZE;
-    blockinfo->blocksize = blocksize;
-
-}
-
 static void blockinterface_startsession(struct block_session *session)
 {
 
@@ -292,7 +282,7 @@ static void blockinterface_startsession(struct block_session *session)
 
     spinlock_acquire(&spinlock);
 
-    session->count = issue(buffer, session->type == BLOCK_TYPE_WRITE, session->start / blocksize, count);
+    session->count = issue(buffer, session->type == BLOCK_TYPE_WRITE, session->start / blockinterface.blocksize, count);
 
     if (!session->count)
         block_session_done(&blockinterface, session);
@@ -306,7 +296,7 @@ static void blockinterface_startsession(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, blockinterface_oninfo, blockinterface_startsession);
+    block_initinterface(&blockinterface, id, 0, blockinterface_startsession);
 
 }
 

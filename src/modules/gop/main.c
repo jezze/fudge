@@ -10,16 +10,6 @@ static struct base_driver driver;
 static struct video_interface videointerface;
 static struct arch_framebuffer *framebuffer = (struct arch_framebuffer *)ARCH_FIRMWARE_FRAMEBUFFER;
 
-static void videointerface_oninfo(struct event_videoinfo *videoinfo)
-{
-
-    videoinfo->framebuffer = 0xA0000000;
-    videoinfo->width = videointerface.width;
-    videoinfo->height = videointerface.height;
-    videoinfo->bpp = videointerface.bpp;
-
-}
-
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -47,7 +37,7 @@ static unsigned int ownsframebuffer(unsigned int id)
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_setmode);
+    video_initinterface(&videointerface, id, 0xA0000000, 0, videointerface_setmode);
 
     videointerface.width = framebuffer->width;
     videointerface.height = framebuffer->height;

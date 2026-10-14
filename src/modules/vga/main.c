@@ -124,16 +124,6 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 
 }
 
-static void videointerface_oninfo(struct event_videoinfo *videoinfo)
-{
-
-    videoinfo->framebuffer = 0x000B8000;
-    videoinfo->width = videointerface.width;
-    videoinfo->height = videointerface.height;
-    videoinfo->bpp = videointerface.bpp;
-
-}
-
 /*
 static unsigned int videointerface_getcmap(unsigned int source, unsigned int count, void *buffer)
 {
@@ -222,7 +212,7 @@ static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, id, consoleinterface_send);
-    video_initinterface(&videointerface, id, videointerface_oninfo, videointerface_setcmap, videointerface_setmode);
+    video_initinterface(&videointerface, id, 0x000B8000, videointerface_setcmap, videointerface_setmode);
 
     consoleinterface.width = 80;
     consoleinterface.height = 25;

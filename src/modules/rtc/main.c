@@ -42,23 +42,59 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void clockinterface_oninfo(struct event_clockinfo *clockinfo)
+static unsigned int clockinterface_getseconds(void)
 {
 
-    clockinfo->seconds = read(REG_COMMAND_SECONDS);
-    clockinfo->minutes = read(REG_COMMAND_MINUTES);
-    clockinfo->hours = read(REG_COMMAND_HOURS);
-    clockinfo->weekday = read(REG_COMMAND_WEEKDAY);
-    clockinfo->day = read(REG_COMMAND_DAY);
-    clockinfo->month = read(REG_COMMAND_MONTH);
-    clockinfo->year = 2000 + read(REG_COMMAND_YEAR);
+    return read(REG_COMMAND_SECONDS);
+
+}
+
+static unsigned int clockinterface_getminutes(void)
+{
+
+    return read(REG_COMMAND_MINUTES);
+
+}
+
+static unsigned int clockinterface_gethours(void)
+{
+
+    return read(REG_COMMAND_HOURS);
+
+}
+
+static unsigned int clockinterface_getweekday(void)
+{
+
+    return read(REG_COMMAND_WEEKDAY);
+
+}
+
+static unsigned int clockinterface_getday(void)
+{
+
+    return read(REG_COMMAND_DAY);
+
+}
+
+static unsigned int clockinterface_getmonth(void)
+{
+
+    return read(REG_COMMAND_MONTH);
+
+}
+
+static unsigned int clockinterface_getyear(void)
+{
+
+    return 2000 + read(REG_COMMAND_YEAR);
 
 }
 
 static void driver_init(unsigned int id)
 {
 
-    clock_initinterface(&clockinterface, id, clockinterface_oninfo);
+    clock_initinterface(&clockinterface, id, clockinterface_getseconds, clockinterface_getminutes, clockinterface_gethours, clockinterface_getweekday, clockinterface_getday, clockinterface_getmonth, clockinterface_getyear);
 
 }
 

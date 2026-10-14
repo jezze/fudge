@@ -94,16 +94,6 @@ static unsigned short find(unsigned int w, unsigned int h, unsigned int bpp)
 
 }
 
-static void videointerface_oninfo(struct event_videoinfo *videoinfo)
-{
-
-    videoinfo->framebuffer = 0xA0000000;
-    videoinfo->width = videointerface.width;
-    videoinfo->height = videointerface.height;
-    videoinfo->bpp = videointerface.bpp;
-
-}
-
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -130,7 +120,7 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, videointerface_oninfo, 0, videointerface_setmode);
+    video_initinterface(&videointerface, id, 0xA0000000, 0, videointerface_setmode);
 
     videointerface.width = 80;
     videointerface.height = 25;

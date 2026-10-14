@@ -7,12 +7,18 @@ static struct node_operands operands;
 static unsigned int oninfo(struct clock_interface *interface, unsigned int source)
 {
 
-    if (interface->oninfo)
+    if (interface->getseconds && interface->getminutes && interface->gethours && interface->getweekday && interface->getday && interface->getmonth && interface->getyear)
     {
 
         struct event_clockinfo clockinfo;
 
-        interface->oninfo(&clockinfo);
+        clockinfo.seconds = interface->getseconds();
+        clockinfo.minutes = interface->getminutes();
+        clockinfo.hours = interface->gethours();
+        clockinfo.weekday = interface->getweekday();
+        clockinfo.day = interface->getday();
+        clockinfo.month = interface->getmonth();
+        clockinfo.year = interface->getyear();
 
         return kernel_place(interface->service.inode, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
@@ -70,14 +76,20 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, unsigned int id, void (*oninfo)(struct event_clockinfo *clockinfo))
+void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int (*getseconds)(void), unsigned int (*getminutes)(void), unsigned int (*gethours)(void), unsigned int (*getweekday)(void), unsigned int (*getday)(void), unsigned int (*getmonth)(void), unsigned int (*getyear)(void))
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
     service_init(&interface->service);
 
     interface->id = id;
-    interface->oninfo = oninfo;
+    interface->getseconds = getseconds;
+    interface->getminutes = getminutes;
+    interface->gethours = gethours;
+    interface->getweekday = getweekday;
+    interface->getday = getday;
+    interface->getmonth = getmonth;
+    interface->getyear = getyear;
 
 }
 
