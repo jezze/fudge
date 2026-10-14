@@ -75,23 +75,6 @@ static unsigned int map(unsigned long directory, unsigned long mmap, unsigned lo
 
 }
 
-static unsigned int copytable(unsigned long directory, unsigned long mmap, unsigned long vaddress)
-{
-
-    unsigned long table = mmu_gettable(ARCH_MMU_KERNELBASE, vaddress, 1);
-
-    if (!(table & MMU_TFLAG_PRESENT) || (mmu_gettable(directory, vaddress, 1) & MMU_TFLAG_PRESENT))
-        return 0;
-
-    if (!maptables(directory, mmap, vaddress, 2, 0))
-        return 0;
-
-    mmu_settable(directory, vaddress, 1, table, table);
-
-    return 1;
-
-}
-
 static unsigned int maprange(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int size, unsigned int flags)
 {
 
@@ -140,6 +123,23 @@ static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct
     }
 
     return 0;
+
+}
+
+static unsigned int copytable(unsigned long directory, unsigned long mmap, unsigned long vaddress)
+{
+
+    unsigned long table = mmu_gettable(ARCH_MMU_KERNELBASE, vaddress, 1);
+
+    if (!(table & MMU_TFLAG_PRESENT) || (mmu_gettable(directory, vaddress, 1) & MMU_TFLAG_PRESENT))
+        return 0;
+
+    if (!maptables(directory, mmap, vaddress, 2, 0))
+        return 0;
+
+    mmu_settable(directory, vaddress, 1, table, table);
+
+    return 1;
 
 }
 

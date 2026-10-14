@@ -481,7 +481,6 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
     if (!(error & MMU_EFLAG_PRESENT))
     {
 
-        /* the kernel also touches a task's memory first, when a syscall copies from a buffer the task never used */
         if (directory != ARCH_MMU_KERNELBASE)
         {
 
