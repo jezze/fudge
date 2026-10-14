@@ -4,6 +4,7 @@
 **.map
 **.qcow2
 build/
+iso/
 /fudge
 fudge.cpio
 fudge.img
