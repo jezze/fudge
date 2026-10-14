@@ -777,14 +777,71 @@ static unsigned int isempty(unsigned int first)
 
 }
 
-static unsigned int removenode(unsigned int id)
+static unsigned int getentryid(unsigned int first, unsigned int offset)
 {
 
-    unsigned int perSector = sectorsize / sizeof (struct fat_entry);
+    unsigned int sector = findsector(first, offset);
+
+    return (sector) ? sector * (sectorsize / sizeof (struct fat_entry)) + (offset % sectorsize) / sizeof (struct fat_entry) : 0;
+
+}
+
+static void removelongname(unsigned int parent, unsigned int id)
+{
+
+    struct fat_entry entry;
+    unsigned int offset = 0;
+    unsigned int start = 0;
+    unsigned int current;
+    unsigned int first;
+
+    getnode(parent, &entry);
+
+    first = getcluster(&entry);
+
+    while ((current = getentryid(first, offset)))
+    {
+
+        getnode(current, &entry);
+
+        if (entry.name[0] == FAT_ENTRY_END)
+            return;
+
+        if (current == id)
+        {
+
+            for (; start < offset; start += sizeof (struct fat_entry))
+            {
+
+                current = getentryid(first, start);
+
+                getnode(current, &entry);
+
+                entry.name[0] = FAT_ENTRY_DELETED;
+
+                putnode(current, &entry);
+
+            }
+
+            return;
+
+        }
+
+        offset += sizeof (struct fat_entry);
+
+        if (entry.attributes != FAT_ATTRIBUTE_LONGNAME || entry.name[0] == FAT_ENTRY_DELETED)
+            start = offset;
+
+    }
+
+}
+
+static unsigned int removenode(unsigned int parent, unsigned int id)
+{
+
     struct fat_entry entry;
     unsigned int freed = 0;
     unsigned int cluster;
-    unsigned int i;
 
     if (id == ROOT)
         return 0;
@@ -809,24 +866,11 @@ static unsigned int removenode(unsigned int id)
     }
 
     addfree(freed, 0);
+    removelongname(parent, id);
 
     entry.name[0] = FAT_ENTRY_DELETED;
 
     putnode(id, &entry);
-
-    for (i = id % perSector; i > 0; i--)
-    {
-
-        getnode(id - (id % perSector - i) - 1, &entry);
-
-        if (entry.attributes != FAT_ATTRIBUTE_LONGNAME || entry.name[0] == FAT_ENTRY_DELETED)
-            break;
-
-        entry.name[0] = FAT_ENTRY_DELETED;
-
-        putnode(id - (id % perSector - i) - 1, &entry);
-
-    }
 
     cachefirst = 0;
 
@@ -871,7 +915,7 @@ static void onremoverequest(struct message *message)
     struct event_removerequest *request = message->data;
     struct event_removeresponse response;
 
-    response.status = removenode(request->id);
+    response.status = removenode(request->parent, request->id);
 
     channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
