@@ -329,7 +329,7 @@ static unsigned int bus_next(unsigned int id)
     if (id == IDE_PS)
         return IDE_SM;
 
-    if (id == IDE_SS)
+    if (id == IDE_SM)
         return IDE_SS;
 
     return 0;
