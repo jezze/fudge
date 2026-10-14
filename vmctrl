@@ -19,6 +19,7 @@ cmd_run() {
     ahci=n
     nvme=n
     virtio=n
+    audio=""
 
     while test ${#} -gt 0
     do
@@ -43,6 +44,11 @@ cmd_run() {
                 ;;
             -n)
                 network=y
+                ;;
+            -o)
+                audio="${2}"
+                test -n "${audio}" || error "Audio driver missing (for example pa, pipewire, alsa or wav)"
+                shift
                 ;;
             -s)
                 slirp=y
@@ -79,6 +85,18 @@ cmd_run() {
         else
             cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
         fi
+    fi
+
+    if test -n "${audio}"
+    then
+        if test "${audio}" == "wav"
+        then
+            cmd="${cmd} -audiodev wav,id=audio0,path=fudge.wav"
+        else
+            cmd="${cmd} -audiodev ${audio},id=audio0"
+        fi
+
+        cmd="${cmd} -device AC97,audiodev=audio0"
     fi
 
     if test "${iso}" == "y"
@@ -308,7 +326,7 @@ cmd_disk_setup_gpt() {
 
 cmd_help() {
     echo "Commands:"
-    echo "    run [-d <disk>] [-i <iso>] [-n | -s] [<name>]"
+    echo "    run [-d <disk>] [-i <iso>] [-n | -s] [-o <audio driver>] [<name>]"
     echo "    nat <interface>"
     echo "    connect"
     echo "    disconnect"
