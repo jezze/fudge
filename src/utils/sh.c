@@ -267,6 +267,8 @@ static struct {char *name; unsigned int event;} events[] = {
     {"clockinfo", EVENT_CLOCKINFO},
     {"ethernetinfo", EVENT_ETHERNETINFO},
     {"loginfo", EVENT_LOGINFO},
+    {"audioconf", EVENT_AUDIOCONF},
+    {"audioinfo", EVENT_AUDIOINFO},
     {"walkrequest", EVENT_WALKREQUEST},
     {"walkresponse", EVENT_WALKRESPONSE},
     {"readrequest", EVENT_READREQUEST},

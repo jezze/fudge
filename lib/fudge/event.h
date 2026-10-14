@@ -33,6 +33,8 @@
 #define EVENT_CLOCKINFO                 0x30
 #define EVENT_ETHERNETINFO              0x31
 #define EVENT_LOGINFO                   0x32
+#define EVENT_AUDIOCONF                 0x33
+#define EVENT_AUDIOINFO                 0x34
 #define EVENT_WALKREQUEST               0x40
 #define EVENT_WALKRESPONSE              0x41
 #define EVENT_READREQUEST               0x42
@@ -190,6 +192,24 @@ struct event_videoinfo
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
+
+};
+
+struct event_audioconf
+{
+
+    unsigned int rate;
+    unsigned int channels;
+    unsigned int bits;
+
+};
+
+struct event_audioinfo
+{
+
+    unsigned int rate;
+    unsigned int channels;
+    unsigned int bits;
 
 };
 
