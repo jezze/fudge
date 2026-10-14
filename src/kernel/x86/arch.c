@@ -97,6 +97,20 @@ static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct
 
 }
 
+static unsigned int copytable(unsigned long directory, unsigned long vaddress)
+{
+
+    unsigned long table = mmu_gettable(ARCH_MMU_KERNELBASE, vaddress);
+
+    if (!(table & MMU_TFLAG_PRESENT) || (mmu_gettable(directory, vaddress) & MMU_TFLAG_PRESENT))
+        return 0;
+
+    mmu_settable(directory, vaddress, table, table);
+
+    return 1;
+
+}
+
 static void *getfpustate(unsigned int itask)
 {
 
@@ -462,22 +476,12 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
     unsigned int vaddress = cpu_getcr2();
     unsigned int directory = cpu_getcr3();
+    unsigned int found = 0;
 
-    if (error & MMU_EFLAG_PRESENT)
+    if (!(error & MMU_EFLAG_PRESENT))
     {
 
-        debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "#PF %u 0x%H8u", &error, &vaddress);
-        debugpagefault(error);
-
-        return fault(&general, &interrupt);
-
-    }
-
-    else
-    {
-
-        unsigned int found = 0;
-
+        /* the kernel also touches a task's memory first, when a syscall copies from a buffer the task never used */
         if (directory != ARCH_MMU_KERNELBASE)
         {
 
@@ -489,43 +493,25 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
         }
 
         if (!found)
-        {
+            found = copytable(directory, vaddress);
 
-            unsigned long table = mmu_gettable(ARCH_MMU_KERNELBASE, vaddress);
+    }
 
-            if ((table & MMU_TFLAG_PRESENT) && !(mmu_gettable(directory, vaddress) & MMU_TFLAG_PRESENT))
-            {
+    if (!found)
+    {
 
-                mmu_settable(directory, vaddress, table, table);
+        debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "#PF %u 0x%H8u", &error, &vaddress);
+        debugpagefault(error);
 
-                found = 1;
+        return fault(&general, &interrupt);
 
-            }
+    }
 
-        }
+    if (!(error & MMU_EFLAG_USER))
+    {
 
-        if (!found)
-        {
-
-            debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "#PF %u 0x%H8u", &error, &vaddress);
-            debugpagefault(error);
-
-            return fault(&general, &interrupt);
-
-        }
-
-        if (error & MMU_EFLAG_USER)
-        {
-
-        }
-
-        else
-        {
-
-            interrupt.cs.value = gdt_getselector(gdt, ARCH_KCODE);
-            interrupt.ss.value = gdt_getselector(gdt, ARCH_KDATA);
-
-        }
+        interrupt.cs.value = gdt_getselector(gdt, ARCH_KCODE);
+        interrupt.ss.value = gdt_getselector(gdt, ARCH_KDATA);
 
     }
 
