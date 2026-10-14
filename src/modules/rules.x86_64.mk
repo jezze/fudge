@@ -1,3 +1,4 @@
+include $(DIR_SRC)/modules/ac97/rules.mk
 include $(DIR_SRC)/modules/acpi/rules.mk
 include $(DIR_SRC)/modules/ahci/rules.mk
 include $(DIR_SRC)/modules/apic/rules.mk
