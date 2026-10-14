@@ -261,7 +261,7 @@ static void movecursortoend(struct widget *widget)
 
     struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in));
 
-    if (parent && parent->type == WIDGET_TYPE_BOX && parent->attributes.mode == ATTR_MODE_EDIT)
+    if (parent && widget_iseditable(parent))
     {
 
         parent->attributes.cursor = strpool_getcstringlength(widget->attributes.label);

@@ -1769,7 +1769,7 @@ static void onkeypress(struct message *message)
 
         }
 
-        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && state.focusedwidget->attributes.mode == ATTR_MODE_EDIT)
+        else if (state.focusedwidget && widget_iseditable(state.focusedwidget))
         {
 
             edittextbox(state.focusedwidget, id);
@@ -1947,7 +1947,7 @@ static void onmousemove(struct message *message)
             markwidget(state.focusedwidget, 0);
 
             /* the cursor follows the end of the marking, so the box scrolls along */
-            if (state.focusedwidget->type == WIDGET_TYPE_BOX && state.focusedwidget->attributes.mode == ATTR_MODE_EDIT)
+            if (widget_iseditable(state.focusedwidget))
                 movecursor(state.focusedwidget);
             else if (widget_isscrollable(state.focusedwidget))
             {

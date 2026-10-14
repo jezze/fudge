@@ -302,6 +302,13 @@ unsigned int widget_isinteractive(struct widget *widget)
 
 }
 
+unsigned int widget_iseditable(struct widget *widget)
+{
+
+    return widget->type == WIDGET_TYPE_BOX && widget->attributes.mode == ATTR_MODE_EDIT;
+
+}
+
 unsigned int widget_isscrollable(struct widget *widget)
 {
 

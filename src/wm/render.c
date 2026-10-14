@@ -273,7 +273,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 static unsigned int isscrollablex(struct widget *widget)
 {
 
-    return widget_isscrollable(widget) || (widget->type == WIDGET_TYPE_BOX && widget->attributes.mode == ATTR_MODE_EDIT);
+    return widget_isscrollable(widget) || widget_iseditable(widget);
 
 }
 
