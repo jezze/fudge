@@ -1027,7 +1027,8 @@ static void renderbox(struct blit_display *display, struct widget *widget, int l
 {
 
     struct util_region cursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
-    struct util_region rcursor = util_region_intersection(&cursor, &widget->cclip);
+    struct util_region inside = util_region(widget->placement.position.x + CONFIG_FRAME_WIDTH, widget->cclip.position.y, util_max((int)widget->placement.size.w - CONFIG_FRAME_WIDTH * 2, 0), widget->cclip.size.h);
+    struct util_region rcursor = util_region_intersection(&cursor, &inside);
     unsigned int shade = getshade(widget);
 
     /* only a box to type in shows hover and focus */
