@@ -673,6 +673,31 @@ static void selectrange(struct widget *item)
 
 }
 
+/* scrolls a widget so a point outside what it shows comes into view, as far as the point is outside */
+static void scrolltopoint(struct widget *widget, int x, int y)
+{
+
+    int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
+    int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
+    int visibleleft = widget->placement.position.x + left;
+    int visibleright = visibleleft + (int)widget->cplacement.size.w;
+    int visibletop = widget->placement.position.y + top;
+    int visiblebottom = widget->placement.position.y + (int)widget->placement.size.h - top;
+
+    if (x < visibleleft)
+        widget->scroll.x -= visibleleft - x;
+    else if (x > visibleright)
+        widget->scroll.x += x - visibleright;
+
+    if (y < visibletop)
+        widget->scroll.y -= visibletop - y;
+    else if (y > visiblebottom)
+        widget->scroll.y += y - visiblebottom;
+
+    damage(widget);
+
+}
+
 static void showwidget(struct widget *widget)
 {
 
@@ -1960,6 +1985,8 @@ static void onmousemove(struct message *message)
             /* the cursor follows the end of the marking, so the box scrolls along */
             if (state.focusedwidget->type == WIDGET_TYPE_BOX && state.focusedwidget->attributes.mode == ATTR_MODE_EDIT)
                 movecursor(state.focusedwidget);
+            else if (widget_isscrollable(state.focusedwidget))
+                scrolltopoint(state.focusedwidget, state.mouseposition.x, state.mouseposition.y);
 
         }
 
