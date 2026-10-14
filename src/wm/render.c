@@ -888,7 +888,8 @@ static void placeitem(struct widget *widget)
 static void placewindow(struct widget *widget)
 {
 
-    widget->clip = util_region_intersection(&widget->placement, &widget->clip);
+    /* not cut to the screen, so moving the window without a new layout doesn't move the cut along */
+    widget->clip = widget->placement;
     widget->cclip = widget->clip;
 
     widget->cplacement = util_region(widget->placement.position.x, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->placement.size.w, widget->placement.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
