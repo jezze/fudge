@@ -5,6 +5,7 @@
 .set SMP_BASE32,                        0x8200
 .set SMP_KCODE,                         0x08
 .set SMP_KDATA,                         0x10
+.set SMP_DIRECTORY,                     0x00A00000
 .set SMP_STACKBASE,                     0x00602000
 
 .section .text
@@ -53,6 +54,11 @@ smp_begin32:
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
+    movl $SMP_DIRECTORY, %eax
+    movl %eax, %cr3
+    movl %cr0, %eax
+    orl $0x80000000, %eax
+    movl %eax, %cr0
     ljmp $SMP_KCODE, $setup
 .global smp_end32
 smp_end32:

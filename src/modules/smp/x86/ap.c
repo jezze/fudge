@@ -2,7 +2,6 @@
 #include <kernel.h>
 #include <kernel/x86/cpu.h>
 #include <kernel/x86/gdt.h>
-#include <kernel/x86/mmu.h>
 #include <kernel/x86/arch.h>
 #include <modules/apic/apic.h>
 #include <modules/pat/pat.h>
@@ -20,8 +19,6 @@ void smp_setupap(unsigned int icore)
 
     cpu_settss(gdt_getselector(gdt, ARCH_TSS + icore));
     apic_setup_ap();
-    cpu_setcr3(ARCH_MMU_KERNELBASE);
-    mmu_enable();
     pat_setup();
     sse_setup();
     arch_leave();
