@@ -39,6 +39,7 @@ src/utils/elfunload
 src/utils/ext2srv
 src/utils/fatsrv
 src/utils/grep
+src/utils/head
 src/utils/hello
 src/utils/help
 src/utils/init
@@ -62,6 +63,7 @@ src/utils/sha1
 src/utils/shell
 src/utils/socket
 src/utils/stat
+src/utils/tail
 src/utils/timestamp
 src/utils/touch
 src/utils/tr
