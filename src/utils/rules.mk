@@ -215,6 +215,19 @@ L:=\
 include $(DIR_MK)/bin.mk
 
 B:=\
+    $(DIR_SRC)/utils/head \
+
+O:=\
+    $(DIR_SRC)/utils/head.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/hello \
 
 O:=\
@@ -512,6 +525,19 @@ B:=\
 
 O:=\
     $(DIR_SRC)/utils/stat.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
+    $(DIR_SRC)/utils/tail \
+
+O:=\
+    $(DIR_SRC)/utils/tail.o \
 
 L:=\
     $(DIR_LIB)/abi/abi.a \
