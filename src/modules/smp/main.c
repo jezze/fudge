@@ -1,14 +1,10 @@
 #include <fudge.h>
 #include <kernel.h>
-#include <kernel/x86/cpu.h>
-#include <kernel/x86/gdt.h>
-#include <kernel/x86/mmu.h>
-#include <kernel/x86/arch.h>
+#include <cpu.h>
+#include <arch.h>
 #include <modules/acpi/acpi.h>
 #include <modules/pic/pic.h>
 #include <modules/apic/apic.h>
-#include <modules/pat/pat.h>
-#include <modules/sse/sse.h>
 #include <modules/pit/pit.h>
 
 #define SMP_BASE16                      0x00008000
@@ -19,7 +15,6 @@ extern void smp_end16(void);
 extern void smp_begin32(void);
 extern void smp_end32(void);
 
-static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct list usedcores;
 
 static struct core *coreget(void)
@@ -56,24 +51,6 @@ static void coreassign(unsigned int itask)
         pool_placetask(itask, &self->tasks);
 
     }
-
-}
-
-void smp_setupap(unsigned int icore, unsigned int sp)
-{
-
-    struct core *core = pool_getcore(icore);
-
-    if (core)
-        core_register(core);
-
-    cpu_settss(gdt_getselector(gdt, ARCH_TSS + icore));
-    apic_setup_ap();
-    cpu_setcr3(ARCH_MMU_KERNELBASE);
-    mmu_enable();
-    pat_setup();
-    sse_setup();
-    arch_leave();
 
 }
 

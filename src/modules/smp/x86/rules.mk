@@ -1,14 +1,4 @@
-M:=\
-    $(DIR_SRC)/modules/smp/x86/smp.ko \
-
-N:=\
-    $(DIR_SRC)/modules/smp/x86/smp.ko.map \
-
 O:=\
-    $(DIR_SRC)/modules/smp/x86/main.o \
+    $(O) \
+    $(DIR_SRC)/modules/smp/x86/ap.o \
     $(DIR_SRC)/modules/smp/x86/init.o \
-
-L:=\
-    $(DIR_LIB)/fudge/fudge.a \
-
-include $(DIR_MK)/kmod.mk
