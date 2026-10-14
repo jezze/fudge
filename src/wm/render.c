@@ -44,6 +44,7 @@ static struct util_position zeroposition;
 static struct util_size zerosize;
 static unsigned int measurespans;
 static unsigned int measureminimum;
+static unsigned int measureclipped;
 static struct util_position mouse;
 static unsigned int mousetype;
 static struct calls calls[32];
@@ -332,6 +333,7 @@ struct placeinfo
 {
 
     unsigned int spans;
+    unsigned int width;
     struct util_size total;
     struct util_size freesize;
     struct util_size span;
@@ -349,6 +351,7 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
     int pending = 0;
 
     info.spans = 0;
+    info.width = 0;
     info.total = zerosize;
     info.freesize = zerosize;
     info.span = zerosize;
@@ -381,6 +384,7 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
         }
 
         info.spans += child->attributes.span;
+        info.width = util_max(info.width, cplacement.size.w + offset.x);
         info.total.w = util_clamp(util_max(info.total.w, cplacement.size.w + offset.x), 0, widget->cplacement.size.w);
         info.total.h = util_clamp(util_max(info.total.h, cplacement.size.h + offset.y), 0, widget->cplacement.size.h);
 
@@ -483,7 +487,7 @@ static void clipcontent(struct widget *widget)
     default:
         {
 
-            int left = widget->cplacement.position.x - widget->placement.position.x;
+            int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
             int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
 
             content = util_region(widget->placement.position.x + left, widget->placement.position.y + top, util_max((int)widget->placement.size.w - left * 2, 0), util_max((int)widget->placement.size.h - top * 2, 0));
@@ -551,6 +555,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (widget_isscrollable(widget))
     {
 
+        widget->cplacement.position.x -= widget->scroll.x;
         widget->cplacement.position.y -= widget->scroll.y;
         widget->cplacement.size.h = INFINITY;
         widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - CONFIG_SCROLL_WIDTH, 0);
@@ -588,12 +593,18 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (widget_isscrollable(widget))
     {
 
+        int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
         int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
+        int view = widget->cplacement.size.w;
+        int scrollmaxx = ((int)info.width > view) ? (int)info.width + (int)widget->cursorsize.w - view : 0;
+        int x = widget->scroll.x;
         int y = widget->scroll.y;
 
         if (widget->followcursor && widget->cursorsize.h)
         {
 
+            int visibleleft = widget->placement.position.x + left;
+            int visibleright = visibleleft + view;
             int visibletop = widget->placement.position.y + top;
             int visiblebottom = widget->placement.position.y + (int)widget->placement.size.h - top;
 
@@ -603,15 +614,23 @@ static void place(struct widget *widget, struct util_region *placement, struct u
             if (widget->cursorposition.y + (int)widget->cursorsize.h > visiblebottom)
                 y += widget->cursorposition.y + widget->cursorsize.h - visiblebottom;
 
+            if (widget->cursorposition.x < visibleleft)
+                x -= visibleleft - widget->cursorposition.x;
+
+            if (widget->cursorposition.x + (int)widget->cursorsize.w > visibleright)
+                x += widget->cursorposition.x + widget->cursorsize.w - visibleright;
+
         }
 
         widget->followcursor = 0;
         widget->scrollmax = util_max(0, top * 2 + info.total.h - (int)widget->placement.size.h);
+        x = util_clamp(x, 0, scrollmaxx);
         y = util_clamp(y, 0, widget->scrollmax);
 
-        if (y != widget->scroll.y)
+        if (x != widget->scroll.x || y != widget->scroll.y)
         {
 
+            widget->scroll.x = x;
             widget->scroll.y = y;
 
             place(widget, placement, clip);
@@ -642,11 +661,11 @@ static struct util_size textsize(struct widget *widget, struct util_size *limit,
 
     }
 
-    /* text that wraps can be made as narrow as one character */
-    if (measureminimum && widget->attributes.wrap != ATTR_WRAP_NONE)
+    /* text that wraps can be made as narrow as one character, and so can text that doesn't wrap in a scrolling box, which cuts it */
+    if ((measureminimum && widget->attributes.wrap != ATTR_WRAP_NONE) || (measureclipped && widget->attributes.wrap == ATTR_WRAP_NONE))
     {
 
-        struct text_info narrow = text_info(font, label, length, widget->attributes.wrap, 1, 0);
+        struct text_info narrow = text_info(font, label, length, (widget->attributes.wrap == ATTR_WRAP_NONE) ? ATTR_WRAP_CHAR : widget->attributes.wrap, 1, 0);
 
         return util_size(narrow.width, info.height);
 
@@ -709,7 +728,12 @@ static struct util_size getsizebox(struct widget *widget, struct util_size *limi
 {
 
     struct util_size border = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2);
-    struct util_size csize = childrengetsize(widget, limit);
+    unsigned int clipped = measureclipped;
+    struct util_size csize;
+
+    measureclipped = clipped || widget_isscrollable(widget);
+    csize = childrengetsize(widget, limit);
+    measureclipped = clipped;
 
     /* a box to type in needs room for a line of text, however short its text is */
     if (widget->attributes.mode == ATTR_MODE_EDIT)
@@ -1007,7 +1031,8 @@ static void renderthumb(struct blit_display *display, struct widget *widget, int
 static void renderbox(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct util_region rcursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
+    struct util_region cursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
+    struct util_region rcursor = util_region_intersection(&cursor, &widget->cclip);
     unsigned int shade = getshade(widget);
 
     /* only a box to type in shows hover and focus */
