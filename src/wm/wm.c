@@ -19,6 +19,7 @@
 #define LAYOUT_DEFAULT      0
 #define LAYOUT_TILING       1
 #define NUM_FOCUSABLE       256
+#define ROW_FAR             0x40000000
 
 struct state
 {
@@ -825,12 +826,12 @@ static void extendmark(struct widget *textbox, unsigned int id)
         break;
 
     case KEYS_KEY_HOME:
-        setmarkpoint(textbox, 0);
+        setmarkpoint(textbox, getmarkindex(textbox, -ROW_FAR, state.markpoint.y));
 
         break;
 
     case KEYS_KEY_END:
-        setmarkpoint(textbox, pool_gettextlength(textbox));
+        setmarkpoint(textbox, getmarkindex(textbox, ROW_FAR, state.markpoint.y));
 
         break;
 
@@ -1414,14 +1415,15 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     case KEYS_KEY_HOME:
-        cursor = 0;
-        moved = 1;
-
-        break;
-
     case KEYS_KEY_END:
-        cursor = pool_gettextlength(widget);
-        moved = 1;
+        {
+
+            int lineheight = pool_getfont(text->attributes.weight)->lineheight;
+
+            cursor = getmarkindex(widget, (id == KEYS_KEY_HOME) ? -ROW_FAR : ROW_FAR, widget->cursorposition.y + lineheight / 2);
+            moved = 1;
+
+        }
 
         break;
 
