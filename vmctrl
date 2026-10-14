@@ -79,15 +79,16 @@ cmd_run() {
         else
             cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
         fi
-    else
-        cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
-        test -f fudge || error "Kernel not found. Forgot to build?"
-        test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
     fi
 
     if test "${iso}" == "y"
     then
-        cmd="${cmd} -cdrom fudge.iso"
+        cmd="${cmd} -cdrom ${isoname} -boot d"
+    elif test "${disk}" != "y"
+    then
+        cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
+        test -f fudge || error "Kernel not found. Forgot to build?"
+        test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
     fi
 
     netdevice="rtl8139"
