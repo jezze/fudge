@@ -324,11 +324,75 @@ static unsigned int getsector(struct ext2_node *node, unsigned int offset)
 
 }
 
+static unsigned int alloctable(struct ext2_node *node, unsigned int igroup)
+{
+
+    unsigned int block = allocblock(igroup);
+
+    if (block)
+    {
+
+        buffer_clear((void *)blockinfo.buffer, blocksize);
+        sendblockwriterequest(blocksize, block, blocksize);
+
+        node->sectorCount += blocksize / 512;
+
+    }
+
+    return block;
+
+}
+
+static unsigned int allocentry(struct ext2_node *node, unsigned int table, unsigned int index, unsigned int istable, unsigned int igroup)
+{
+
+    unsigned int *entries = (unsigned int *)blockinfo.buffer;
+    unsigned int block;
+
+    sendblockreadrequest(blocksize, table, blocksize);
+
+    if (entries[index])
+        return entries[index];
+
+    if (istable)
+    {
+
+        block = alloctable(node, igroup);
+
+    }
+
+    else
+    {
+
+        block = allocblock(igroup);
+
+        if (block)
+            node->sectorCount += blocksize / 512;
+
+    }
+
+    if (block)
+    {
+
+        sendblockreadrequest(blocksize, table, blocksize);
+
+        entries[index] = block;
+
+        sendblockwriterequest(blocksize, table, blocksize);
+
+    }
+
+    return block;
+
+}
+
 static unsigned int allocsector(struct ext2_node *node, unsigned int offset, unsigned int igroup)
 {
 
     unsigned int index = offset / blocksize;
     unsigned int slots = blocksize / 4;
+    unsigned int depth;
+    unsigned int table;
 
     if (index < 12)
     {
@@ -352,48 +416,52 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
     if (index < slots)
     {
 
-        unsigned int sector;
-
         if (!node->singlyIndirectPointer)
-        {
+            node->singlyIndirectPointer = alloctable(node, igroup);
 
-            unsigned int tableblock = allocblock(igroup);
-
-            if (!tableblock)
-                return 0;
-
-            buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
-            sendblockwriterequest(blocksize, tableblock, blocksize);
-
-            node->singlyIndirectPointer = tableblock;
-            node->sectorCount += blocksize / 512;
-
-        }
-
-        sector = allocblock(igroup);
-
-        if (sector)
-        {
-
-            unsigned int *table = (unsigned int *)blockinfo.buffer;
-
-            sendblockreadrequest(blocksize, node->singlyIndirectPointer, blocksize);
-
-            table[index] = sector;
-
-            sendblockwriterequest(blocksize, node->singlyIndirectPointer, blocksize);
-
-            node->sectorCount += blocksize / 512;
-
-            return sector;
-
-        }
-
-        return 0;
+        table = node->singlyIndirectPointer;
+        depth = 1;
 
     }
 
-    return 0;
+    else if (index - slots < slots * slots)
+    {
+
+        if (!node->doublyIndirectPointer)
+            node->doublyIndirectPointer = alloctable(node, igroup);
+
+        index -= slots;
+        table = node->doublyIndirectPointer;
+        depth = 2;
+
+    }
+
+    else
+    {
+
+        if (!node->tripplyIndirectPointer)
+            node->tripplyIndirectPointer = alloctable(node, igroup);
+
+        index -= slots + slots * slots;
+        table = node->tripplyIndirectPointer;
+        depth = 3;
+
+    }
+
+    for (; table && depth; depth--)
+    {
+
+        unsigned int divisor = 1;
+        unsigned int i;
+
+        for (i = 1; i < depth; i++)
+            divisor *= slots;
+
+        table = allocentry(node, table, (index / divisor) % slots, depth > 1, igroup);
+
+    }
+
+    return table;
 
 }
 
