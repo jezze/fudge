@@ -7,6 +7,7 @@
 #define BIND_ACTION_SWAP                7
 #define BIND_ACTION_FOCUSNEXT           8
 #define BIND_ACTION_FOCUSPREVIOUS       9
+#define BIND_ACTION_MARKALL             10
 #define BIND_COMMANDSIZE                128
 
 struct bind_binding

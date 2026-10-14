@@ -4,7 +4,7 @@
 
 #define NUM_KEYS                        123
 #define NUM_MODS                        4
-#define NUM_ACTIONS                     9
+#define NUM_ACTIONS                     10
 #define NUM_BINDINGS                    32
 
 struct name
@@ -152,6 +152,7 @@ static struct name actions[NUM_ACTIONS] = {
     {BIND_ACTION_CLOSE, "close"},
     {BIND_ACTION_FOCUSNEXT, "focusnext"},
     {BIND_ACTION_FOCUSPREVIOUS, "focusprevious"},
+    {BIND_ACTION_MARKALL, "markall"},
     {BIND_ACTION_NEXT, "next"},
     {BIND_ACTION_PREVIOUS, "previous"},
     {BIND_ACTION_RUN, "run"},

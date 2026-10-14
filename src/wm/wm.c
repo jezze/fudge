@@ -1796,6 +1796,33 @@ static unsigned int cyclefocus(unsigned int forward)
 
 }
 
+/* marks every text in a box; an edit box's cursor goes to the end; anything else gets the key */
+static unsigned int markall(struct widget *widget)
+{
+
+    unsigned int total;
+
+    if (!widget || widget->type != WIDGET_TYPE_BOX)
+        return 0;
+
+    total = pool_gettextlength(widget);
+
+    setmarked(widget, 0, total);
+
+    if (widget_iseditable(widget))
+    {
+
+        widget->attributes.cursor = total;
+        widget->followcursor = 1;
+
+    }
+
+    damageall(widget);
+
+    return 1;
+
+}
+
 static unsigned int dobinding(struct bind_binding *binding)
 {
 
@@ -1844,6 +1871,9 @@ static unsigned int dobinding(struct bind_binding *binding)
 
     case BIND_ACTION_FOCUSPREVIOUS:
         return cyclefocus(0);
+
+    case BIND_ACTION_MARKALL:
+        return markall(state.focusedwidget);
 
     }
 
