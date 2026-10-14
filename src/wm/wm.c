@@ -1260,7 +1260,8 @@ static unsigned int removemarked(struct widget *widget, unsigned int cursor)
 
 }
 
-static void inserttext(struct widget *widget, unsigned int index, char c)
+/* inserts as much as fits into the text the index falls in and says how much that was */
+static unsigned int inserttext(struct widget *widget, unsigned int index, char *data, unsigned int count)
 {
 
     unsigned int offset;
@@ -1268,11 +1269,16 @@ static void inserttext(struct widget *widget, unsigned int index, char c)
     unsigned int length = copytext(text);
     unsigned int i;
 
-    for (i = length + 1; i > offset; i--)
-        textbuffer[i] = textbuffer[i - 1];
+    count = util_min(count, TEXTBOX_SIZE - 1 - length);
 
-    textbuffer[offset] = c;
+    for (i = length + 1; i > offset; i--)
+        textbuffer[i - 1 + count] = textbuffer[i - 1];
+
+    buffer_copy(textbuffer + offset, data, count);
+
     text->attributes.label = strpool_updatestring(text->attributes.label, textbuffer);
+
+    return count;
 
 }
 
@@ -1289,13 +1295,16 @@ static void removetext(struct widget *widget, unsigned int index)
 
 }
 
-static unsigned int canedit(struct widget *widget, unsigned int index)
+static void notifychange(struct widget *widget)
 {
 
-    unsigned int offset;
-    struct widget *text = pool_gettextat(widget, index, &offset);
+    if (widget->attributes.onchange)
+    {
 
-    return gettextlength(text) + 1 < TEXTBOX_SIZE;
+        copytexts(widget);
+        sendevent(widget->source, 1, widget->attributes.onchange, textbuffer);
+
+    }
 
 }
 
@@ -1408,10 +1417,8 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     default:
-        if (printable && canedit(widget, cursor))
+        if (printable && inserttext(widget, cursor, (char *)state.keys.code.value, 1))
         {
-
-            inserttext(widget, cursor, state.keys.code.value[0]);
 
             cursor++;
             changed = 1;
@@ -1445,14 +1452,73 @@ static void edittextbox(struct widget *widget, unsigned int id)
     widget->attributes.cursor = cursor;
     widget->followcursor = 1;
 
-    if (changed && widget->attributes.onchange)
+    if (changed)
+        notifychange(widget);
+
+    damageall(widget);
+
+}
+
+/* sends the marked part of every text to the clipboard service, replacing what it held */
+static unsigned int copymarked(struct widget *widget)
+{
+
+    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
+    struct list_item *current = 0;
+    unsigned int start;
+    unsigned int end;
+
+    if (!service || !getmarked(widget, &start, &end))
+        return 0;
+
+    channel_send(1, service, EVENT_CLIPBOARDWRITE, 0, 0);
+
+    while ((current = pool_nextin(current, widget)))
     {
 
-        copytexts(widget);
-        sendevent(widget->source, 1, widget->attributes.onchange, textbuffer);
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT && child->markstart != child->markend)
+        {
+
+            char *label = strpool_getstring(child->attributes.label);
+            unsigned int offset = util_min(util_min(child->markstart, child->markend), gettextlength(child));
+            unsigned int stop = util_min(util_max(child->markstart, child->markend), gettextlength(child));
+
+            for (; offset < stop; offset += MESSAGE_SIZE)
+                channel_send(1, service, EVENT_CLIPBOARDWRITE, util_min(stop - offset, MESSAGE_SIZE), label + offset);
+
+        }
 
     }
 
+    return 1;
+
+}
+
+/* replaces the marked text, or inserts at the cursor, with what the clipboard service holds */
+static void pastetext(struct widget *widget)
+{
+
+    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
+    unsigned int cursor = util_min(widget->attributes.cursor, pool_gettextlength(widget));
+    struct message message;
+    unsigned int offset;
+
+    if (!service || !pool_gettextat(widget, cursor, &offset))
+        return;
+
+    cursor = removemarked(widget, cursor);
+
+    channel_send(1, service, EVENT_CLIPBOARDREAD, 0, 0);
+
+    while (channel_poll(1, service, EVENT_CLIPBOARDDATA, &message) && message.length)
+        cursor += inserttext(widget, cursor, message.data, message.length);
+
+    widget->attributes.cursor = cursor;
+    widget->followcursor = 1;
+
+    notifychange(widget);
     damageall(widget);
 
 }
@@ -1874,6 +1940,25 @@ static unsigned int dobinding(struct bind_binding *binding)
 
     case BIND_ACTION_MARKALL:
         return markall(state.focusedwidget);
+
+    case BIND_ACTION_COPY:
+        return state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && copymarked(state.focusedwidget);
+
+    case BIND_ACTION_CUT:
+        if (!state.focusedwidget || !widget_iseditable(state.focusedwidget) || !copymarked(state.focusedwidget))
+            return 0;
+
+        edittextbox(state.focusedwidget, KEYS_KEY_DELETE);
+
+        break;
+
+    case BIND_ACTION_PASTE:
+        if (!state.focusedwidget || !widget_iseditable(state.focusedwidget))
+            return 0;
+
+        pastetext(state.focusedwidget);
+
+        break;
 
     }
 
@@ -2440,6 +2525,7 @@ void init(void)
     option_add("keyboard-service", "keyboard");
     option_add("mouse-service", "mouse");
     option_add("video-service", "video");
+    option_add("clipboard-service", "clipboard");
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_MAIN, onmain);

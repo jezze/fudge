@@ -8,6 +8,9 @@
 #define BIND_ACTION_FOCUSNEXT           8
 #define BIND_ACTION_FOCUSPREVIOUS       9
 #define BIND_ACTION_MARKALL             10
+#define BIND_ACTION_COPY                11
+#define BIND_ACTION_CUT                 12
+#define BIND_ACTION_PASTE               13
 #define BIND_COMMANDSIZE                128
 
 struct bind_binding
