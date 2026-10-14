@@ -132,7 +132,7 @@ static void simplewrite(struct ext2_node *node, unsigned int id)
 
 }
 
-static unsigned int allocblock(unsigned int blockgroup)
+static unsigned int allocblockgroup(unsigned int blockgroup)
 {
 
     struct ext2_blockgroup bg;
@@ -140,6 +140,10 @@ static unsigned int allocblock(unsigned int blockgroup)
     unsigned int i;
 
     readblockgroup(&bg, blockgroup);
+
+    if (!bg.blockCountUnalloc)
+        return 0;
+
     sendblockreadrequest(blocksize, bg.blockUsageAddress, blocksize);
 
     for (i = 0; i < sb.blockCountGroup; i++)
@@ -173,7 +177,7 @@ static unsigned int allocblock(unsigned int blockgroup)
 
 }
 
-static unsigned int allocnode(unsigned int igroup)
+static unsigned int allocnodegroup(unsigned int igroup)
 {
 
     struct ext2_blockgroup bg;
@@ -181,6 +185,10 @@ static unsigned int allocnode(unsigned int igroup)
     unsigned int i;
 
     readblockgroup(&bg, igroup);
+
+    if (!bg.nodeCountUnalloc)
+        return 0;
+
     sendblockreadrequest(blocksize, bg.nodeUsageAddress, blocksize);
 
     for (i = 0; i < sb.nodeCountGroup; i++)
@@ -207,6 +215,53 @@ static unsigned int allocnode(unsigned int igroup)
             return igroup * sb.nodeCountGroup + i + 1;
 
         }
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int getgroupcount(void)
+{
+
+    return (sb.blockCount - sb.superblockIndex + sb.blockCountGroup - 1) / sb.blockCountGroup;
+
+}
+
+static unsigned int allocblock(unsigned int blockgroup)
+{
+
+    unsigned int count = getgroupcount();
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int block = allocblockgroup((blockgroup + i) % count);
+
+        if (block)
+            return block;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int allocnode(unsigned int igroup)
+{
+
+    unsigned int count = getgroupcount();
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int id = allocnodegroup((igroup + i) % count);
+
+        if (id)
+            return id;
 
     }
 
