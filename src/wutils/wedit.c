@@ -10,7 +10,7 @@ static char path[256];
 static unsigned int wm;
 static char *labels[NUM_WRAPS] = {"None", "Word", "Character"};
 static char *wraps[NUM_WRAPS] = {"none", "word", "char"};
-static unsigned int wrap = 2;
+static unsigned int wrap = 0;
 static unsigned int chunks;
 
 static void sendchunk(char *data, unsigned int count)
@@ -90,7 +90,7 @@ static void showfile(void)
         if (offset >= MAXSIZE)
             channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n");
 
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n", &chunks, wraps[wrap]);
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
 
         chunks++;
 
