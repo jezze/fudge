@@ -478,7 +478,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
 
         unsigned int found = 0;
 
-        if (error & MMU_EFLAG_USER)
+        if (directory != ARCH_MMU_KERNELBASE)
         {
 
             struct mmap_entry *entry = mmap_find((struct mmap_header *)KERNEL_VMMAP, vaddress);
