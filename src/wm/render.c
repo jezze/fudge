@@ -735,14 +735,9 @@ static struct util_size getsizebox(struct widget *widget, struct util_size *limi
     csize = childrengetsize(widget, limit);
     measureclipped = clipped;
 
-    /* a box to type in needs room for a line of text, however short its text is */
+    /* a box to type in is a line of text high, however short its text is */
     if (widget->attributes.mode == ATTR_MODE_EDIT)
-    {
-
-        csize.w = util_max(csize.w, CONFIG_BOX_EDITWIDTH + widget->attributes.padding * 2);
         csize.h = util_max(csize.h, pool_getfont(widget->attributes.weight)->lineheight + widget->attributes.padding * 2);
-
-    }
 
     return util_size_union(&csize, &border);
 
