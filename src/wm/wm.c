@@ -41,6 +41,7 @@ struct state
     struct widget *draggedthumb;
     unsigned int video;
     struct util_position markpoint;
+    struct util_position markscroll;
     int scrollgrab;
 
 };
@@ -698,14 +699,14 @@ static void showwidget(struct widget *widget)
 
 }
 
-static void marktext(struct widget *text, unsigned int clear)
+static void marktext(struct widget *text, struct util_position *scrolled, unsigned int clear)
 {
 
     struct text_font *font = pool_getfont(text->attributes.weight);
     char *label = strpool_getstring(text->attributes.label);
     unsigned int length = strpool_getcstringlength(text->attributes.label);
-    int x0 = state.mousepressed.x - text->placement.position.x;
-    int y0 = state.mousepressed.y - text->placement.position.y;
+    int x0 = state.mousepressed.x - scrolled->x - text->placement.position.x;
+    int y0 = state.mousepressed.y - scrolled->y - text->placement.position.y;
     int x1 = state.markpoint.x - text->placement.position.x;
     int y1 = state.markpoint.y - text->placement.position.y;
 
@@ -717,6 +718,7 @@ static void marktext(struct widget *text, unsigned int clear)
 static void markwidget(struct widget *widget, unsigned int clear)
 {
 
+    struct util_position scrolled = util_position(widget->scroll.x - state.markscroll.x, widget->scroll.y - state.markscroll.y);
     struct list_item *current = 0;
 
     if (widget->type != WIDGET_TYPE_BOX)
@@ -728,7 +730,7 @@ static void markwidget(struct widget *widget, unsigned int clear)
         struct widget *child = current->data;
 
         if (child->type == WIDGET_TYPE_TEXT)
-            marktext(child, clear);
+            marktext(child, &scrolled, clear);
 
     }
 
@@ -1359,6 +1361,7 @@ static void movecursor(struct widget *widget)
         int y = util_clamp(state.mouseposition.y - text->placement.position.y, 0, util_max((int)text->placement.size.h - 1, 0));
 
         widget->attributes.cursor = text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x, y);
+        widget->followcursor = 1;
 
         damageall(widget);
 
@@ -1950,7 +1953,15 @@ static void onmousemove(struct message *message)
         if (state.draggedthumb)
             dragthumb(state.draggedthumb);
         else if (state.focusedwidget)
+        {
+
             markwidget(state.focusedwidget, 0);
+
+            /* the cursor follows the end of the marking, so the box scrolls along */
+            if (state.focusedwidget->type == WIDGET_TYPE_BOX && state.focusedwidget->attributes.mode == ATTR_MODE_EDIT)
+                movecursor(state.focusedwidget);
+
+        }
 
         if (!state.focusedwidget && state.focusedwindow)
         {
@@ -2007,6 +2018,7 @@ static void onmousepress(struct message *message)
     state.mousepressed.x = state.mouseposition.x;
     state.mousepressed.y = state.mouseposition.y;
     state.markpoint = state.mouseposition;
+    state.markscroll = (interactivewidget) ? interactivewidget->scroll : util_position(0, 0);
 
     switch (mousepress->button)
     {
