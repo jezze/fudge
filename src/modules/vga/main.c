@@ -249,7 +249,9 @@ static void driver_attach(unsigned int id)
 {
 
     console_registerinterface(&consoleinterface);
-    video_registerinterface(&videointerface);
+
+    if (!video_findinterface(id))
+        video_registerinterface(&videointerface);
 
 }
 
@@ -257,7 +259,9 @@ static void driver_detach(unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);
-    video_unregisterinterface(&videointerface);
+
+    if (video_findinterface(id) == &videointerface)
+        video_unregisterinterface(&videointerface);
 
 }
 
