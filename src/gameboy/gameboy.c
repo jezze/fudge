@@ -1,6 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 #include "cpu.h"
+#include "audio.h"
 #include "video.h"
 
 static unsigned char rom[0x80000];
@@ -10,6 +11,8 @@ static unsigned int w, h, scalew, scaleh, totw, toth, offx, offy;
 static struct keys keys;
 static char path[128];
 static struct gb_s gb;
+static unsigned int audio;
+static short sound[AUDIO_SAMPLES * 2];
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
 {
@@ -212,6 +215,14 @@ static void ontimertick(struct message *message)
     if (framebuffer)
         video_render(framebuffer, w, scalew, scaleh, totw, toth, offx, offy);
 
+    if (audio)
+    {
+
+        audio_render(sound);
+        channel_send(1, audio, EVENT_DATA, sizeof (sound), sound);
+
+    }
+
 }
 
 static void onkeypress(struct message *message)
@@ -255,6 +266,8 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
 
     }
 
+    audio_init();
+
     if (getsavesize(&gb))
         fs_read_full(1, target, id, cart_ram, getsavesize(&gb), 0x80000);
 
@@ -263,6 +276,38 @@ static void run(unsigned int source, unsigned int target, unsigned int id)
     channel_bind(EVENT_TIMERTICK, ontimertick);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
+
+}
+
+static void setupaudio(void)
+{
+
+    struct event_audioconf audioconf;
+    unsigned int i;
+
+    audio = channel_lookup(option_getstring("audio-service"));
+
+    if (!audio)
+        return;
+
+    audioconf.rate = AUDIO_RATE;
+    audioconf.channels = 2;
+    audioconf.bits = 16;
+
+    if (!channel_send(1, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf))
+    {
+
+        audio = 0;
+
+        return;
+
+    }
+
+    /* a few ticks of silence first, so the device has something to play while the next frame is made */
+    buffer_clear(sound, sizeof (sound));
+
+    for (i = 0; i < 3; i++)
+        channel_send(1, audio, EVENT_DATA, sizeof (sound), sound);
 
 }
 
@@ -311,6 +356,7 @@ static void onpath(struct message *message)
                 channel_wait(1, video, EVENT_VIDEOINFO, 0, 0);
                 channel_send(0, keyboard, EVENT_LINK, 0, 0);
                 channel_send(0, timer, EVENT_LINK, 0, 0);
+                setupaudio();
                 run(message->source, target, id);
                 channel_hold(0);
                 channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
@@ -354,6 +400,7 @@ void init(void)
     option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
+    option_add("audio-service", "audio");
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
 

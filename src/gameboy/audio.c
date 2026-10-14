@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include "audio.h"
 
-#define AUDIO_NSAMPLES ((unsigned)(AUDIO_SAMPLE_RATE / VERTICAL_SYNC) * 2)
+#define AUDIO_NSAMPLES (AUDIO_SAMPLES * 2)
 #define AUDIO_MEM_SIZE (0xFF3F - 0xFF10 + 1)
 #define AUDIO_ADDR_COMPENSATION 0xFF10
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -441,6 +441,31 @@ void audio_callback(void *userdata, unsigned char *stream, int len)
     update_square(samples, 1);
     update_wave(samples);
     update_noise(samples);
+
+}
+
+void audio_render(short *out)
+{
+
+    static float samples[AUDIO_NSAMPLES];
+    unsigned int i;
+
+    audio_callback(0, (unsigned char *)samples, sizeof (samples));
+
+    for (i = 0; i < AUDIO_NSAMPLES; i++)
+    {
+
+        float sample = samples[i];
+
+        if (sample > 1.0f)
+            sample = 1.0f;
+
+        if (sample < -1.0f)
+            sample = -1.0f;
+
+        out[i] = (short)(sample * 32767.0f);
+
+    }
 
 }
 

@@ -1,4 +1,4 @@
-#define ENABLE_AUDIO 0
+#define ENABLE_AUDIO 1
 #define ENABLE_VIDEO 1
 
 #define WRAM_SIZE                       0x2000
