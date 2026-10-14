@@ -399,7 +399,7 @@ struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
     {
 
     case BLIT_MOUSE_TEXT:
-        return util_region(mx - 3, my - 10, 7, 24);
+        return util_region(mx - 3, my - 10, 10, 24);
 
     case BLIT_MOUSE_HAND:
         return util_region(mx - 8, my, 23, 24);
