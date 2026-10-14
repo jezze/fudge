@@ -19,26 +19,48 @@ static struct tss_descriptor tssdescriptors[ARCH_TSS_DESCRIPTORS];
 static struct cpu_general registers[POOL_TASKS];
 static unsigned char fpustates[POOL_TASKS * ARCH_FPUSTATESIZE + 16];
 
-static unsigned int map(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int flags)
+static unsigned long createtable(unsigned long directory, unsigned long mmap)
 {
 
     struct mmap_header *header = (struct mmap_header *)mmap;
+    unsigned int size = (directory == ARCH_MMU_KERNELBASE) ? ARCH_MMU_KERNELSIZE : ARCH_MMU_TASKSIZE;
+    unsigned long taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
+
+    if (taddress + MMU_PTSIZE > directory + size)
+        return 0;
+
+    buffer_clear((void *)taddress, MMU_PTSIZE);
+
+    header->ntables++;
+
+    return taddress;
+
+}
+
+static unsigned int maptables(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned int flags)
+{
 
     if (!mmu_gettable(directory, vaddress))
     {
 
-        unsigned int size = (directory == ARCH_MMU_KERNELBASE) ? ARCH_MMU_KERNELSIZE : ARCH_MMU_TASKSIZE;
-        unsigned long taddress = directory + MMU_PDSIZE + header->ntables * MMU_PTSIZE;
+        unsigned long taddress = createtable(directory, mmap);
 
-        if (taddress + MMU_PTSIZE > directory + size)
+        if (!taddress)
             return 0;
 
-        buffer_clear((void *)taddress, MMU_PTSIZE);
         mmu_settable(directory, vaddress, taddress, mmu_tflags(flags));
 
-        header->ntables++;
-
     }
+
+    return 1;
+
+}
+
+static unsigned int map(unsigned long directory, unsigned long mmap, unsigned long vaddress, unsigned long paddress, unsigned int flags)
+{
+
+    if (!maptables(directory, mmap, vaddress, flags))
+        return 0;
 
     mmu_setpage(directory, vaddress, paddress, mmu_pflags(flags));
 
