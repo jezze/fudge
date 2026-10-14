@@ -15,7 +15,7 @@
 
 #define STATE_NORMAL        0
 #define STATE_GRABBED       1
-#define TEXTBOX_SIZE        256
+#define TEXTBOX_SIZE        4096
 #define LAYOUT_DEFAULT      0
 #define LAYOUT_TILING       1
 #define NUM_FOCUSABLE       256
@@ -1120,50 +1120,218 @@ static struct widget *gettextchild(struct widget *widget)
 
 }
 
-static unsigned int getcursorat(struct widget *widget, struct widget *text, int rows)
+static char textbuffer[TEXTBOX_SIZE];
+
+static unsigned int copytext(struct widget *text)
 {
 
-    struct text_font *font = pool_getfont(text->attributes.weight);
-    char *label = strpool_getstring(text->attributes.label);
-    unsigned int length = strpool_getcstringlength(text->attributes.label);
-    int x = widget->cursorposition.x - text->placement.position.x;
-    int y = widget->cursorposition.y - text->placement.position.y + (int)font->lineheight / 2 + rows * (int)font->lineheight;
-
-    return text_getoffsetat(font, label, length, text->attributes.wrap, text->attributes.halign, text->placement.size.w, text->rowstart.x, x, y);
+    return cstring_write_fmt(textbuffer, TEXTBOX_SIZE, 0, "%s\\0", strpool_getstring(text->attributes.label)) - 1;
 
 }
 
+/* all texts of a box one after another, as far as they fit */
+static void copytexts(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+    unsigned int offset = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+            offset += cstring_write_fmt(textbuffer, TEXTBOX_SIZE - 1, offset, "%s", strpool_getstring(child->attributes.label));
+
+    }
+
+    textbuffer[offset] = '\0';
+
+}
+
+/* the marked part of all texts, as indices into all of them; says whether anything is marked */
+static unsigned int getmarked(struct widget *widget, unsigned int *start, unsigned int *end)
+{
+
+    struct list_item *current = 0;
+    unsigned int base = 0;
+    unsigned int marked = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            if (child->markstart != child->markend)
+            {
+
+                if (!marked)
+                    *start = base + util_min(child->markstart, child->markend);
+
+                *end = base + util_max(child->markstart, child->markend);
+                marked = 1;
+
+            }
+
+            base += gettextlength(child);
+
+        }
+
+    }
+
+    return marked;
+
+}
+
+/* marks from one index to another across all texts */
+static void setmarked(struct widget *widget, unsigned int start, unsigned int end)
+{
+
+    struct list_item *current = 0;
+    unsigned int base = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            unsigned int length = gettextlength(child);
+
+            child->markstart = util_clamp((int)start - (int)base, 0, length);
+            child->markend = util_clamp((int)end - (int)base, 0, length);
+            base += length;
+
+        }
+
+    }
+
+}
+
+/* removes the marked part of every text and gives the index where it started */
+static unsigned int removemarked(struct widget *widget, unsigned int cursor)
+{
+
+    struct list_item *current = 0;
+    unsigned int base = 0;
+    unsigned int first = 1;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            if (child->markstart != child->markend)
+            {
+
+                unsigned int length = copytext(child);
+                unsigned int start = util_min(util_min(child->markstart, child->markend), length);
+                unsigned int end = util_min(util_max(child->markstart, child->markend), length);
+
+                buffer_copy(textbuffer + start, textbuffer + end, length - end + 1);
+
+                child->attributes.label = strpool_updatestring(child->attributes.label, textbuffer);
+                child->markstart = 0;
+                child->markend = 0;
+
+                if (first)
+                    cursor = base + start;
+
+                first = 0;
+
+            }
+
+            base += gettextlength(child);
+
+        }
+
+    }
+
+    return cursor;
+
+}
+
+static void inserttext(struct widget *widget, unsigned int index, char c)
+{
+
+    unsigned int offset;
+    struct widget *text = pool_gettextat(widget, index, &offset);
+    unsigned int length = copytext(text);
+    unsigned int i;
+
+    for (i = length + 1; i > offset; i--)
+        textbuffer[i] = textbuffer[i - 1];
+
+    textbuffer[offset] = c;
+    text->attributes.label = strpool_updatestring(text->attributes.label, textbuffer);
+
+}
+
+static void removetext(struct widget *widget, unsigned int index)
+{
+
+    unsigned int offset;
+    struct widget *text = pool_gettextat(widget, index, &offset);
+    unsigned int length = copytext(text);
+
+    buffer_copy(textbuffer + offset, textbuffer + offset + 1, length - offset);
+
+    text->attributes.label = strpool_updatestring(text->attributes.label, textbuffer);
+
+}
+
+static unsigned int canedit(struct widget *widget, unsigned int index)
+{
+
+    unsigned int offset;
+    struct widget *text = pool_gettextat(widget, index, &offset);
+
+    return gettextlength(text) + 1 < TEXTBOX_SIZE;
+
+}
+
+/* the cursor counts through all texts of the box, and each edit changes the text the cursor is in */
 static void edittextbox(struct widget *widget, unsigned int id)
 {
 
-    struct widget *text = gettextchild(widget);
-    char buffer[TEXTBOX_SIZE];
-    unsigned int length;
-    unsigned int cursor;
-    unsigned int previous;
+    unsigned int offset;
+    struct widget *text = pool_gettextat(widget, widget->attributes.cursor, &offset);
+    unsigned int printable = state.keys.code.length == 1 && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] < 0x7F;
+    unsigned int previous = util_min(widget->attributes.cursor, pool_gettextlength(widget));
+    unsigned int cursor = previous;
     unsigned int changed = 0;
     unsigned int moved = 0;
     unsigned int removed = 0;
-    unsigned int printable = state.keys.code.length == 1 && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] < 0x7F;
+    unsigned int start;
+    unsigned int end;
 
     if (!text)
         return;
 
-    length = cstring_write_fmt(buffer, TEXTBOX_SIZE, 0, "%s\\0", strpool_getstring(text->attributes.label)) - 1;
-    cursor = util_min(widget->attributes.cursor, length);
-    previous = cursor;
-
-    /* typing or erasing while text is marked first removes the marked text */
-    if (text->markstart != text->markend && (printable || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
+    if (id == KEYS_KEY_ENTER && widget->attributes.onenter)
     {
 
-        unsigned int start = util_min(util_min(text->markstart, text->markend), length);
-        unsigned int end = util_min(util_max(text->markstart, text->markend), length);
+        copytexts(widget);
+        sendevent(widget->source, 1, widget->attributes.onenter, textbuffer);
 
-        buffer_copy(buffer + start, buffer + end, length - end + 1);
+        return;
 
-        length -= end - start;
-        cursor = start;
+    }
+
+    /* typing or erasing while text is marked first removes the marked text */
+    if (getmarked(widget, &start, &end) && (printable || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
+    {
+
+        cursor = removemarked(widget, cursor);
         changed = 1;
         removed = 1;
 
@@ -1172,19 +1340,14 @@ static void edittextbox(struct widget *widget, unsigned int id)
     switch (id)
     {
 
-    case KEYS_KEY_ENTER:
-        if (widget->attributes.onenter)
-            sendevent(widget->source, 1, widget->attributes.onenter, buffer);
-
-        return;
-
     case KEYS_KEY_BACKSPACE:
         if (!removed && cursor > 0)
         {
 
-            buffer_copy(buffer + cursor - 1, buffer + cursor, length - cursor + 1);
-
             cursor--;
+
+            removetext(widget, cursor);
+
             changed = 1;
 
         }
@@ -1192,10 +1355,10 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     case KEYS_KEY_DELETE:
-        if (!removed && cursor < length)
+        if (!removed && cursor < pool_gettextlength(widget))
         {
 
-            buffer_copy(buffer + cursor, buffer + cursor + 1, length - cursor);
+            removetext(widget, cursor);
 
             changed = 1;
 
@@ -1212,7 +1375,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     case KEYS_KEY_CURSORRIGHT:
-        if (cursor < length)
+        if (cursor < pool_gettextlength(widget))
             cursor++;
 
         moved = 1;
@@ -1220,14 +1383,15 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     case KEYS_KEY_CURSORUP:
-        cursor = getcursorat(widget, text, -1);
-        moved = 1;
-
-        break;
-
     case KEYS_KEY_CURSORDOWN:
-        cursor = getcursorat(widget, text, 1);
-        moved = 1;
+        {
+
+            int lineheight = pool_getfont(text->attributes.weight)->lineheight;
+
+            cursor = getmarkindex(widget, widget->cursorposition.x, widget->cursorposition.y + lineheight / 2 + ((id == KEYS_KEY_CURSORUP) ? -lineheight : lineheight));
+            moved = 1;
+
+        }
 
         break;
 
@@ -1238,21 +1402,17 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     case KEYS_KEY_END:
-        cursor = length;
+        cursor = pool_gettextlength(widget);
         moved = 1;
 
         break;
 
     default:
-        if (printable && length + 1 < TEXTBOX_SIZE)
+        if (printable && canedit(widget, cursor))
         {
 
-            unsigned int i;
+            inserttext(widget, cursor, state.keys.code.value[0]);
 
-            for (i = length + 1; i > cursor; i--)
-                buffer[i] = buffer[i - 1];
-
-            buffer[cursor] = state.keys.code.value[0];
             cursor++;
             changed = 1;
 
@@ -1266,27 +1426,32 @@ static void edittextbox(struct widget *widget, unsigned int id)
     if (moved && (state.keys.mod & KEYS_MOD_SHIFT))
     {
 
-        if (text->markstart == text->markend)
-            text->markstart = previous;
+        unsigned int anchor = previous;
 
-        text->markend = cursor;
+        if (getmarked(widget, &start, &end))
+            anchor = (previous == start) ? end : start;
+
+        setmarked(widget, util_min(anchor, cursor), util_max(anchor, cursor));
 
     }
 
     else if (moved || changed)
     {
 
-        text->markstart = 0;
-        text->markend = 0;
+        markwidget(widget, 1);
 
     }
 
-    text->attributes.label = strpool_updatestring(text->attributes.label, buffer);
     widget->attributes.cursor = cursor;
     widget->followcursor = 1;
 
     if (changed && widget->attributes.onchange)
-        sendevent(widget->source, 1, widget->attributes.onchange, buffer);
+    {
+
+        copytexts(widget);
+        sendevent(widget->source, 1, widget->attributes.onchange, textbuffer);
+
+    }
 
     damageall(widget);
 
@@ -1295,15 +1460,16 @@ static void edittextbox(struct widget *widget, unsigned int id)
 static void movecursor(struct widget *widget)
 {
 
-    struct widget *text = gettextchild(widget);
+    unsigned int offset;
+    struct widget *first = pool_gettextat(widget, 0, &offset);
+    struct widget *last = pool_gettextat(widget, pool_gettextlength(widget), &offset);
 
-    if (text)
+    if (first && last)
     {
 
-        int x = util_max(state.mouseposition.x, text->placement.position.x);
-        int y = util_clamp(state.mouseposition.y, text->placement.position.y, text->placement.position.y + util_max((int)text->placement.size.h - 1, 0));
+        int y = util_clamp(state.mouseposition.y, first->placement.position.y, last->placement.position.y + util_max((int)last->placement.size.h - 1, 0));
 
-        widget->attributes.cursor = gettextoffsetat(text, x, y);
+        widget->attributes.cursor = getmarkindex(widget, state.mouseposition.x, y);
         widget->followcursor = 1;
 
         damageall(widget);

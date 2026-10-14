@@ -416,20 +416,10 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 static void placecursor(struct widget *widget)
 {
 
-    struct list_item *current = 0;
-    struct widget *text = 0;
+    unsigned int length;
+    struct widget *text = pool_gettextat(widget, widget->attributes.cursor, &length);
 
     widget->cursorsize = zerosize;
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        if (child->type == WIDGET_TYPE_TEXT)
-            text = child;
-
-    }
 
     if (text)
     {
@@ -437,7 +427,6 @@ static void placecursor(struct widget *widget)
         struct text_font *font = pool_getfont(text->attributes.weight);
         char *label = strpool_getstring(text->attributes.label);
         unsigned int total = strpool_getcstringlength(text->attributes.label);
-        unsigned int length = util_min(widget->attributes.cursor, total);
         unsigned int maxw = widget->cplacement.size.w - (text->placement.position.x - widget->cplacement.position.x);
         struct text_info info = text_info(font, label, length, text->attributes.wrap, maxw, text->rowstart.x);
         unsigned int num = info.lastrow.y / font->lineheight;

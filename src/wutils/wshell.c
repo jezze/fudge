@@ -97,7 +97,8 @@ static unsigned int fitlabel(char *data, unsigned int count, unsigned int size)
 
 }
 
-static unsigned int writelabel(char *buffer, unsigned int size, unsigned int offset, char *id, char *data, unsigned int count)
+/* the label keeps the end of the data that fits; length is how much of it */
+static unsigned int writelabel(char *buffer, unsigned int size, unsigned int offset, char *id, char *data, unsigned int count, unsigned int *length)
 {
 
     unsigned int start;
@@ -105,6 +106,7 @@ static unsigned int writelabel(char *buffer, unsigned int size, unsigned int off
 
     offset += cstring_write_fmt(buffer, size, offset, "= %s label \"", id);
     start = (size > offset + 2) ? fitlabel(data, count, size - offset - 2) : count;
+    *length = count - start;
 
     for (i = start; i < count; i++)
     {
@@ -134,16 +136,21 @@ static void update(void)
         char content[CONTENTSIZE];
         unsigned int offset = 0;
         unsigned int count;
+        unsigned int length;
+        unsigned int before;
         unsigned int cursor;
 
-        count = ring_readcopy(&input1, content, CONTENTSIZE);
-        cursor = count;
-        count += ring_readcopy(&input2, content + count, CONTENTSIZE - count);
-        offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
-        offset = writelabel(buffer, MESSAGE_SIZE, offset, "input", content, count);
-        offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (sh) ? 0 : 2);
+        /* the cursor counts through result, prompt and input, so it is sent last, once their lengths are known */
+        before = ring_readcopy(&input1, content, CONTENTSIZE);
+        count = before + ring_readcopy(&input2, content + before, CONTENTSIZE - before);
+        offset = writelabel(buffer, MESSAGE_SIZE, offset, "input", content, count, &length);
+        cursor = (before > count - length) ? before - (count - length) : 0;
+        offset = writelabel(buffer, MESSAGE_SIZE, offset, "prompt", "$ ", (sh) ? 0 : 2, &length);
+        cursor += length;
         count = ring_readcopy(&result, content, CONTENTSIZE);
-        offset = writelabel(buffer, MESSAGE_SIZE, offset, "result", content, count);
+        offset = writelabel(buffer, MESSAGE_SIZE - 32, offset, "result", content, count, &length);
+        cursor += length;
+        offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
 
         channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
 
