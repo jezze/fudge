@@ -270,15 +270,23 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
 }
 
+static unsigned int isscrollablex(struct widget *widget)
+{
+
+    return widget_isscrollable(widget) || (widget->type == WIDGET_TYPE_BOX && widget->attributes.mode == ATTR_MODE_EDIT);
+
+}
+
 static struct util_region getplacement(struct widget *widget, struct widget *child, struct util_position *offset, struct util_position *rowstart, struct util_size *span)
 {
 
     unsigned int stretch = getstretch(widget->attributes.flow);
     struct util_size climit = util_size_sub(&widget->cplacement.size, offset->x, offset->y);
     struct util_region placement;
+    struct util_size size;
 
     placement.position = util_position_add(&widget->cplacement.position, offset->x, offset->y);
-    placement.size = calls[child->type].getsize(child, &climit, rowstart);
+    placement.size = size = calls[child->type].getsize(child, &climit, rowstart);
 
     if (child->attributes.span)
     {
@@ -322,6 +330,10 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
         break;
 
     }
+
+    /* stretching doesn't cut what can be scrolled to */
+    if (isscrollablex(widget))
+        placement.size.w = util_max(placement.size.w, size.w);
 
     return placement;
 
@@ -552,10 +564,12 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     calls[widget->type].place(widget);
 
     /* the content of a scrolling widget is as tall as it needs, moved by the scroll and cut to the widget; the thumb sits against the border, so the padding goes between it and the content */
+    if (isscrollablex(widget))
+        widget->cplacement.position.x -= widget->scroll.x;
+
     if (widget_isscrollable(widget))
     {
 
-        widget->cplacement.position.x -= widget->scroll.x;
         widget->cplacement.position.y -= widget->scroll.y;
         widget->cplacement.size.h = INFINITY;
         widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - CONFIG_SCROLL_WIDTH, 0);
@@ -590,7 +604,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (widget->type == WIDGET_TYPE_BOX)
         placecursor(widget);
 
-    if (widget_isscrollable(widget))
+    if (isscrollablex(widget))
     {
 
         int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
@@ -608,11 +622,16 @@ static void place(struct widget *widget, struct util_region *placement, struct u
             int visibletop = widget->placement.position.y + top;
             int visiblebottom = widget->placement.position.y + (int)widget->placement.size.h - top;
 
-            if (widget->cursorposition.y < visibletop)
-                y -= visibletop - widget->cursorposition.y;
+            if (widget_isscrollable(widget))
+            {
 
-            if (widget->cursorposition.y + (int)widget->cursorsize.h > visiblebottom)
-                y += widget->cursorposition.y + widget->cursorsize.h - visiblebottom;
+                if (widget->cursorposition.y < visibletop)
+                    y -= visibletop - widget->cursorposition.y;
+
+                if (widget->cursorposition.y + (int)widget->cursorsize.h > visiblebottom)
+                    y += widget->cursorposition.y + widget->cursorsize.h - visiblebottom;
+
+            }
 
             if (widget->cursorposition.x < visibleleft)
                 x -= visibleleft - widget->cursorposition.x;
@@ -623,9 +642,15 @@ static void place(struct widget *widget, struct util_region *placement, struct u
         }
 
         widget->followcursor = 0;
-        widget->scrollmax = util_max(0, top * 2 + info.total.h - (int)widget->placement.size.h);
         x = util_clamp(x, 0, scrollmaxx);
-        y = util_clamp(y, 0, widget->scrollmax);
+
+        if (widget_isscrollable(widget))
+        {
+
+            widget->scrollmax = util_max(0, top * 2 + info.total.h - (int)widget->placement.size.h);
+            y = util_clamp(y, 0, widget->scrollmax);
+
+        }
 
         if (x != widget->scroll.x || y != widget->scroll.y)
         {
@@ -639,7 +664,8 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
         }
 
-        placethumb(widget, top);
+        if (widget_isscrollable(widget))
+            placethumb(widget, top);
 
     }
 
