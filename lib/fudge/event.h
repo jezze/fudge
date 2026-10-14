@@ -65,6 +65,9 @@
 #define EVENT_WMREAD                    0x60
 #define EVENT_WMTEXT                    0x61
 #define EVENT_P9P                       0x70
+#define EVENT_CLIPBOARDWRITE            0x80
+#define EVENT_CLIPBOARDREAD             0x81
+#define EVENT_CLIPBOARDDATA             0x82
 
 #define EXIT_STATUS_NORMAL              1
 #define EXIT_STATUS_KILLED              2

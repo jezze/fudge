@@ -24,6 +24,7 @@ src/test/t_mandelbrot
 src/test/t_timer
 src/utils/automount
 src/utils/cd
+src/utils/clipboard
 src/utils/complete
 src/utils/cp
 src/utils/crc
