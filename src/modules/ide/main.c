@@ -42,6 +42,7 @@
 #define ID_LBA28MAX                     0x3C
 #define ID_SUPPORT                      0x53
 #define ID_LBA48MAX                     0x64
+#define LIMIT_POLL                      100000
 
 static struct base_driver driver;
 static struct base_bus bus;
@@ -158,6 +159,63 @@ unsigned char ide_getstatus(unsigned int id)
     unsigned short data = getdata(id);
 
     return io_inb(data + REG_COMMAND);
+
+}
+
+unsigned int ide_identify(unsigned int id, void *buffer)
+{
+
+    unsigned short data = getdata(id);
+    unsigned short control = getcontrol(id);
+    unsigned int select = 0xA0;
+    unsigned char status;
+    unsigned int i = 0;
+
+    switch (id)
+    {
+
+    case IDE_PS:
+    case IDE_SS:
+        select |= 0x10;
+
+    }
+
+    io_outb(data + REG_SELECT, select);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+
+    if (io_inb(data + REG_COMMAND) == 0xFF)
+        return 0;
+
+    io_outb(data + REG_COUNT, 0);
+    io_outb(data + REG_LBA0, 0);
+    io_outb(data + REG_LBA1, 0);
+    io_outb(data + REG_LBA2, 0);
+    io_outb(data + REG_COMMAND, REG_COMMAND_IDATA);
+
+    do
+    {
+
+        status = io_inb(data + REG_COMMAND);
+
+    }
+    while ((status & REG_STATUS_BUSY) && ++i < LIMIT_POLL);
+
+    if (!status || (status & REG_STATUS_BUSY))
+        return 0;
+
+    if (io_inb(data + REG_LBA1) || io_inb(data + REG_LBA2))
+        return 0;
+
+    while (!(status & (REG_STATUS_DRQ | REG_STATUS_ERROR)) && ++i < LIMIT_POLL)
+        status = io_inb(data + REG_COMMAND);
+
+    if (!(status & REG_STATUS_DRQ) || (status & REG_STATUS_ERROR))
+        return 0;
+
+    return ide_rblock(id, buffer);
 
 }
 

@@ -9,6 +9,7 @@
 #define BLOCKSIZE                       512
 
 static void *blockbuffer;
+static unsigned short identity[256];
 static struct base_driver driver;
 static struct block_interface blockinterface;
 static struct spinlock spinlock;
@@ -157,7 +158,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == IDE_PM;
+    return id == IDE_PM && ide_identify(id, identity);
 
 }
 

@@ -5,6 +5,7 @@
 #define IDE_SS                          0x04
 
 unsigned char ide_getstatus(unsigned int id);
+unsigned int ide_identify(unsigned int id, void *buffer);
 unsigned short ide_getirq(unsigned int id);
 unsigned int ide_wait(unsigned int id);
 unsigned int ide_rblock(unsigned int id, void *buffer);
