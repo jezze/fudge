@@ -673,27 +673,10 @@ static void selectrange(struct widget *item)
 
 }
 
-/* scrolls a widget so a point outside what it shows comes into view, as far as the point is outside */
-static void scrolltopoint(struct widget *widget, int x, int y)
+static void scrollto(struct widget *widget, struct util_region *region)
 {
 
-    int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
-    int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
-    int visibleleft = widget->placement.position.x + left;
-    int visibleright = visibleleft + (int)widget->cplacement.size.w;
-    int visibletop = widget->placement.position.y + top;
-    int visiblebottom = widget->placement.position.y + (int)widget->placement.size.h - top;
-
-    if (x < visibleleft)
-        widget->scroll.x -= visibleleft - x;
-    else if (x > visibleright)
-        widget->scroll.x += x - visibleright;
-
-    if (y < visibletop)
-        widget->scroll.y -= visibletop - y;
-    else if (y > visiblebottom)
-        widget->scroll.y += y - visiblebottom;
-
+    widget_scrollto(widget, region);
     damage(widget);
 
 }
@@ -707,20 +690,7 @@ static void showwidget(struct widget *widget)
         parent = getparent(parent);
 
     if (parent)
-    {
-
-        int top = parent->cplacement.position.y + parent->scroll.y - parent->placement.position.y;
-        int visibletop = parent->placement.position.y + top;
-        int visiblebottom = parent->placement.position.y + (int)parent->placement.size.h - top;
-        int widgettop = widget->placement.position.y;
-        int widgetbottom = widget->placement.position.y + (int)widget->placement.size.h;
-
-        if (widgettop < visibletop)
-            scrollwidget(parent, widgettop - visibletop);
-        else if (widgetbottom > visiblebottom)
-            scrollwidget(parent, widgetbottom - visiblebottom);
-
-    }
+        scrollto(parent, &widget->placement);
 
 }
 
@@ -1543,13 +1513,7 @@ static void scrollpage(int direction)
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
     if (scrollablewidget)
-    {
-
-        int top = scrollablewidget->cplacement.position.y + scrollablewidget->scroll.y - scrollablewidget->placement.position.y;
-
-        scrollwidget(scrollablewidget, direction * util_max((int)scrollablewidget->placement.size.h - top * 2, 16));
-
-    }
+        scrollwidget(scrollablewidget, direction * util_max((int)widget_getview(scrollablewidget).size.h, 16));
 
     sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
 
@@ -1986,7 +1950,13 @@ static void onmousemove(struct message *message)
             if (state.focusedwidget->type == WIDGET_TYPE_BOX && state.focusedwidget->attributes.mode == ATTR_MODE_EDIT)
                 movecursor(state.focusedwidget);
             else if (widget_isscrollable(state.focusedwidget))
-                scrolltopoint(state.focusedwidget, state.mouseposition.x, state.mouseposition.y);
+            {
+
+                struct util_region point = util_region(state.mouseposition.x, state.mouseposition.y, 0, 0);
+
+                scrollto(state.focusedwidget, &point);
+
+            }
 
         }
 

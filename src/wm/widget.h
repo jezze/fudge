@@ -93,5 +93,7 @@ unsigned int widget_isresizable(struct widget *widget);
 unsigned int widget_islink(struct widget *widget);
 unsigned int widget_isinteractive(struct widget *widget);
 unsigned int widget_isscrollable(struct widget *widget);
+struct util_region widget_getview(struct widget *widget);
+void widget_scrollto(struct widget *widget, struct util_region *region);
 void widget_init_attributes(struct widget_attributes *attributes, unsigned type);
 void widget_init(struct widget *widget, unsigned int source, unsigned int type);

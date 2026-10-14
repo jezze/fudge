@@ -515,10 +515,9 @@ static void clipcontent(struct widget *widget)
 }
 
 /* the thumb runs in a track along the right edge and is as tall, compared to the track, as the visible part is compared to all of the content */
-static void placethumb(struct widget *widget, int top)
+static void placethumb(struct widget *widget, int view)
 {
 
-    int view = (int)widget->placement.size.h - top * 2;
     int track = util_max((int)widget->placement.size.h - CONFIG_FRAME_HEIGHT * 2, 0);
     int x = widget->placement.position.x + (int)widget->placement.size.w - CONFIG_FRAME_WIDTH - CONFIG_SCROLL_WIDTH;
 
@@ -607,56 +606,26 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (isscrollablex(widget))
     {
 
-        int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
-        int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
-        int view = widget->cplacement.size.w;
-        int scrollmaxx = ((int)info.width > view) ? (int)info.width + (int)widget->cursorsize.w - view : 0;
-        int x = widget->scroll.x;
-        int y = widget->scroll.y;
+        struct util_region view = widget_getview(widget);
+        struct util_position scroll = widget->scroll;
+        int scrollmaxx = (info.width > view.size.w) ? (int)(info.width + widget->cursorsize.w - view.size.w) : 0;
 
         if (widget->followcursor && widget->cursorsize.h)
         {
 
-            int visibleleft = widget->placement.position.x + left;
-            int visibleright = visibleleft + view;
-            int visibletop = widget->placement.position.y + top;
-            int visiblebottom = widget->placement.position.y + (int)widget->placement.size.h - top;
+            struct util_region cursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
 
-            if (widget_isscrollable(widget))
-            {
-
-                if (widget->cursorposition.y < visibletop)
-                    y -= visibletop - widget->cursorposition.y;
-
-                if (widget->cursorposition.y + (int)widget->cursorsize.h > visiblebottom)
-                    y += widget->cursorposition.y + widget->cursorsize.h - visiblebottom;
-
-            }
-
-            if (widget->cursorposition.x < visibleleft)
-                x -= visibleleft - widget->cursorposition.x;
-
-            if (widget->cursorposition.x + (int)widget->cursorsize.w > visibleright)
-                x += widget->cursorposition.x + widget->cursorsize.w - visibleright;
+            widget_scrollto(widget, &cursor);
 
         }
 
         widget->followcursor = 0;
-        x = util_clamp(x, 0, scrollmaxx);
+        widget->scrollmax = (widget_isscrollable(widget)) ? util_max(0, (int)info.total.h - (int)view.size.h) : 0;
+        widget->scroll.x = util_clamp(widget->scroll.x, 0, scrollmaxx);
+        widget->scroll.y = util_clamp(widget->scroll.y, 0, widget->scrollmax);
 
-        if (widget_isscrollable(widget))
+        if (widget->scroll.x != scroll.x || widget->scroll.y != scroll.y)
         {
-
-            widget->scrollmax = util_max(0, top * 2 + info.total.h - (int)widget->placement.size.h);
-            y = util_clamp(y, 0, widget->scrollmax);
-
-        }
-
-        if (x != widget->scroll.x || y != widget->scroll.y)
-        {
-
-            widget->scroll.x = x;
-            widget->scroll.y = y;
 
             place(widget, placement, clip);
 
@@ -665,7 +634,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
         }
 
         if (widget_isscrollable(widget))
-            placethumb(widget, top);
+            placethumb(widget, view.size.h);
 
     }
 
