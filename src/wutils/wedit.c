@@ -110,7 +110,7 @@ static void showfile(void)
 }
 
 /* asks the wm for the box's text and writes it over the file */
-static unsigned int savefile(void)
+static void writefile(void)
 {
 
     char *name = path + fs_dirlength(path);
@@ -132,18 +132,21 @@ static unsigned int savefile(void)
     }
 
     if (total != count)
-        return 0;
+        return;
 
     target = fs_auth(path);
     parent = (target) ? fs_walkparent(1, target, path) : 0;
     id = (parent) ? fs_walk(1, target, 0, path) : 0;
 
-    if (!id || !fs_remove(1, target, parent, id))
-        return 0;
+    if (id && fs_remove(1, target, parent, id))
+    {
 
-    id = fs_create(1, target, parent, name, cstring_length(name));
+        id = fs_create(1, target, parent, name, cstring_length(name));
 
-    return id && fs_write_all(1, target, id, savedata, count, 0) == count;
+        if (id)
+            fs_write_all(1, target, id, savedata, count, 0);
+
+    }
 
 }
 
@@ -151,16 +154,13 @@ static void save(void)
 {
 
     static unsigned int saving;
-    unsigned int saved;
 
     if (!loaded || saving)
         return;
 
     saving = 1;
-    saved = savefile();
+    writefile();
     saving = 0;
-
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"%s\"\n", (saved) ? "Saved" : "Could not save");
 
 }
 
