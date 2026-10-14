@@ -65,7 +65,7 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int index)
     unsigned int sector = sb.superblockIndex + 1 + index / slots;
     unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
 
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy(bg, (char *)blockinfo.buffer + offset, sizeof (struct ext2_blockgroup));
 
 }
@@ -77,9 +77,9 @@ static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int index)
     unsigned int sector = sb.superblockIndex + 1 + index / slots;
     unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
 
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy((char *)blockinfo.buffer + offset, bg, sizeof (struct ext2_blockgroup));
-    sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    sendblockwriterequest(blocksize, sector, blocksize);
 
 }
 
@@ -90,7 +90,7 @@ static void readnode(struct ext2_node *node, unsigned int start, unsigned int in
     unsigned int sector = start + index / slots;
     unsigned int offset = (index % slots) * sb.nodeSize;
 
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy(node, (char *)blockinfo.buffer + offset, sizeof (struct ext2_node));
 
 }
@@ -102,9 +102,9 @@ static void writenode(struct ext2_node *node, unsigned int start, unsigned int i
     unsigned int sector = start + index / slots;
     unsigned int offset = (index % slots) * sb.nodeSize;
 
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy((char *)blockinfo.buffer + offset, node, sizeof (struct ext2_node));
-    sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+    sendblockwriterequest(blocksize, sector, blocksize);
 
 }
 
@@ -140,7 +140,7 @@ static unsigned int allocblock(unsigned int blockgroup)
     unsigned int i;
 
     readblockgroup(&bg, blockgroup);
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+    sendblockreadrequest(blocksize, bg.blockUsageAddress, blocksize);
 
     for (i = 0; i < sb.blockCountGroup; i++)
     {
@@ -153,7 +153,7 @@ static unsigned int allocblock(unsigned int blockgroup)
 
             bitmap[index] |= bit;
 
-            sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+            sendblockwriterequest(blocksize, bg.blockUsageAddress, blocksize);
 
             bg.blockCountUnalloc--;
 
@@ -181,7 +181,7 @@ static unsigned int allocnode(unsigned int igroup)
     unsigned int i;
 
     readblockgroup(&bg, igroup);
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+    sendblockreadrequest(blocksize, bg.nodeUsageAddress, blocksize);
 
     for (i = 0; i < sb.nodeCountGroup; i++)
     {
@@ -194,7 +194,7 @@ static unsigned int allocnode(unsigned int igroup)
 
             bitmap[index] |= bit;
 
-            sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+            sendblockwriterequest(blocksize, bg.nodeUsageAddress, blocksize);
 
             bg.nodeCountUnalloc--;
 
@@ -223,11 +223,11 @@ static void freeblock(unsigned int block)
     struct ext2_blockgroup bg;
 
     readblockgroup(&bg, igroup);
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+    sendblockreadrequest(blocksize, bg.blockUsageAddress, blocksize);
 
     bitmap[i / 8] &= ~(1 << (i % 8));
 
-    sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.blockUsageAddress, blocksize);
+    sendblockwriterequest(blocksize, bg.blockUsageAddress, blocksize);
 
     bg.blockCountUnalloc++;
 
@@ -248,11 +248,11 @@ static void freenode(unsigned int id, unsigned int directory)
     struct ext2_blockgroup bg;
 
     readblockgroup(&bg, igroup);
-    sendblockreadrequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+    sendblockreadrequest(blocksize, bg.nodeUsageAddress, blocksize);
 
     bitmap[i / 8] &= ~(1 << (i % 8));
 
-    sendblockwriterequest(EXT2_MAXBLOCKSIZE, bg.nodeUsageAddress, blocksize);
+    sendblockwriterequest(blocksize, bg.nodeUsageAddress, blocksize);
 
     bg.nodeCountUnalloc++;
 
@@ -363,7 +363,7 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
                 return 0;
 
             buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
-            sendblockwriterequest(EXT2_MAXBLOCKSIZE, tableblock, blocksize);
+            sendblockwriterequest(blocksize, tableblock, blocksize);
 
             node->singlyIndirectPointer = tableblock;
             node->sectorCount += blocksize / 512;
@@ -377,11 +377,11 @@ static unsigned int allocsector(struct ext2_node *node, unsigned int offset, uns
 
             unsigned int *table = (unsigned int *)blockinfo.buffer;
 
-            sendblockreadrequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+            sendblockreadrequest(blocksize, node->singlyIndirectPointer, blocksize);
 
             table[index] = sector;
 
-            sendblockwriterequest(EXT2_MAXBLOCKSIZE, node->singlyIndirectPointer, blocksize);
+            sendblockwriterequest(blocksize, node->singlyIndirectPointer, blocksize);
 
             node->sectorCount += blocksize / 512;
 
@@ -427,7 +427,7 @@ static struct ext2_entry *getentry(struct ext2_node *node, unsigned int offset)
 
         struct ext2_entry *entry = (struct ext2_entry *)((char *)blockinfo.buffer + (offset % blocksize));
 
-        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+        sendblockreadrequest(blocksize, sector, blocksize);
 
         if (entry->size)
             return entry;
@@ -509,7 +509,7 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
                 entry->size = used;
 
             writeentry((struct ext2_entry *)((char *)entry + used), id, size, length, type, name);
-            sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+            sendblockwriterequest(blocksize, sector, blocksize);
 
             return 1;
 
@@ -533,7 +533,7 @@ static unsigned int growentry(struct ext2_node *node, unsigned int igroup, unsig
 
         buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
         writeentry((struct ext2_entry *)blockinfo.buffer, id, blocksize, length, type, name);
-        sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+        sendblockwriterequest(blocksize, sector, blocksize);
 
         node->sizeLow += blocksize;
 
@@ -571,7 +571,7 @@ static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
         if (!sector)
             return 0;
 
-        sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+        sendblockreadrequest(blocksize, sector, blocksize);
 
         while (position < blocksize)
         {
@@ -589,7 +589,7 @@ static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
                 else
                     ((struct ext2_entry *)(block + previous))->size += entry->size;
 
-                sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+                sendblockwriterequest(blocksize, sector, blocksize);
 
                 return 1;
 
@@ -696,7 +696,7 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
         if (sector)
         {
 
-            sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+            sendblockreadrequest(blocksize, sector, blocksize);
 
             return buffer_write(data, capacity, (char *)blockinfo.buffer + blockoffset, count, 0);
 
@@ -740,10 +740,10 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
             if (allocated)
                 buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
             else
-                sendblockreadrequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+                sendblockreadrequest(blocksize, sector, blocksize);
 
             buffer_copy((char *)blockinfo.buffer + blockoffset, data, count);
-            sendblockwriterequest(EXT2_MAXBLOCKSIZE, sector, blocksize);
+            sendblockwriterequest(blocksize, sector, blocksize);
 
             if (roffset + count > node->sizeLow)
             {
