@@ -98,9 +98,8 @@ static void onmain(struct message *message)
 
         channel_send(1, service, EVENT_CLIPBOARDREAD, 0, 0);
 
-        /* copied first: sending straight from the channel 1 slot hangs the kernel's place */
         while (channel_poll(1, service, EVENT_CLIPBOARDDATA, &reply) && reply.length)
-            channel_send(0, message->source, EVENT_DATA, buffer_write(data, CLIPBOARD_SIZE, reply.data, reply.length, 0), data);
+            channel_send(0, message->source, EVENT_DATA, reply.length, reply.data);
 
     }
 
