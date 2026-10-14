@@ -144,6 +144,65 @@ static void bump(struct list_item *item)
 
 }
 
+/* the texts in a widget count as one run of characters */
+unsigned int pool_gettextlength(struct widget *widget)
+{
+
+    struct list_item *current = 0;
+    unsigned int total = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+            total += strpool_getcstringlength(child->attributes.label);
+
+    }
+
+    return total;
+
+}
+
+/* finds the text an index into that run falls in, and the index inside it; past the end it is the end of the last text */
+struct widget *pool_gettextat(struct widget *widget, unsigned int index, unsigned int *offset)
+{
+
+    struct list_item *current = 0;
+    struct widget *text = 0;
+    unsigned int base = 0;
+    unsigned int start = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            unsigned int length = strpool_getcstringlength(child->attributes.label);
+
+            text = child;
+            start = base;
+
+            if (index < base + length)
+                break;
+
+            base += length;
+
+        }
+
+    }
+
+    if (text)
+        *offset = util_min(index - util_min(index, start), strpool_getcstringlength(text->attributes.label));
+
+    return text;
+
+}
+
 void pool_bump(struct widget *widget)
 {
 

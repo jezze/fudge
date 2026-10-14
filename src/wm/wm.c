@@ -739,26 +739,6 @@ static void markwidget(struct widget *widget, unsigned int clear)
 
 }
 
-static unsigned int gettotallength(struct widget *textbox)
-{
-
-    struct list_item *current = 0;
-    unsigned int total = 0;
-
-    while ((current = pool_nextin(current, textbox)))
-    {
-
-        struct widget *child = current->data;
-
-        if (child->type == WIDGET_TYPE_TEXT)
-            total += gettextlength(child);
-
-    }
-
-    return total;
-
-}
-
 /* the texts of a textbox count as one run of characters, so a position is an index into all of them */
 static unsigned int getmarkindex(struct widget *textbox, int x, int y)
 {
@@ -792,38 +772,17 @@ static unsigned int getmarkindex(struct widget *textbox, int x, int y)
 static void setmarkpoint(struct widget *textbox, unsigned int index)
 {
 
-    struct list_item *current = 0;
-    struct widget *last = 0;
-    unsigned int base = 0;
+    unsigned int offset;
+    struct widget *text = pool_gettextat(textbox, index, &offset);
 
-    while ((current = pool_nextin(current, textbox)))
+    if (text)
     {
 
-        struct widget *child = current->data;
+        struct text_font *font = pool_getfont(text->attributes.weight);
+        struct text_info info = text_info(font, strpool_getstring(text->attributes.label), offset, text->attributes.wrap, text->placement.size.w, text->rowstart.x);
 
-        if (child->type == WIDGET_TYPE_TEXT)
-        {
-
-            last = child;
-
-            if (index < base + gettextlength(child))
-                break;
-
-            base += gettextlength(child);
-
-        }
-
-    }
-
-    if (last)
-    {
-
-        struct text_font *font = pool_getfont(last->attributes.weight);
-        unsigned int offset = util_min(index - util_min(index, base), gettextlength(last));
-        struct text_info info = text_info(font, strpool_getstring(last->attributes.label), offset, last->attributes.wrap, last->placement.size.w, last->rowstart.x);
-
-        state.markpoint.x = last->placement.position.x + info.lastrow.x;
-        state.markpoint.y = last->placement.position.y + info.lastrow.y + font->lineheight / 2;
+        state.markpoint.x = text->placement.position.x + info.lastrow.x;
+        state.markpoint.y = text->placement.position.y + info.lastrow.y + font->lineheight / 2;
 
     }
 
@@ -871,7 +830,7 @@ static void extendmark(struct widget *textbox, unsigned int id)
         break;
 
     case KEYS_KEY_END:
-        setmarkpoint(textbox, gettotallength(textbox));
+        setmarkpoint(textbox, pool_gettextlength(textbox));
 
         break;
 
