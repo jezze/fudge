@@ -2283,6 +2283,48 @@ static void onwmrenderdata(struct message *message)
 
 }
 
+/* sends the texts in a program's widget as pieces, and an empty piece at the end */
+static void onwmread(struct message *message)
+{
+
+    unsigned int source = message->source;
+    char id[64];
+    struct widget *widget;
+
+    cstring_write_fmt(id, 64, 0, "%s\\0", message->data);
+
+    widget = pool_getwidgetbyid(source, id);
+
+    if (widget)
+    {
+
+        struct list_item *current = 0;
+
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+
+            if (child->type == WIDGET_TYPE_TEXT)
+            {
+
+                char *label = strpool_getstring(child->attributes.label);
+                unsigned int length = strpool_getcstringlength(child->attributes.label);
+                unsigned int offset;
+
+                for (offset = 0; offset < length; offset += MESSAGE_SIZE)
+                    channel_send(0, source, EVENT_WMTEXT, util_min(length - offset, MESSAGE_SIZE), label + offset);
+
+            }
+
+        }
+
+    }
+
+    channel_send(0, source, EVENT_WMTEXT, 0, 0);
+
+}
+
 static void onwmrenderfile(struct message *message)
 {
 
@@ -2379,6 +2421,7 @@ void init(void)
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMMAP, onwmmap);
+    channel_bind(EVENT_WMREAD, onwmread);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
     channel_bind(EVENT_WMRENDERFILE, onwmrenderfile);
     channel_bind(EVENT_WMUNGRAB, onwmungrab);

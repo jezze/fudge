@@ -4,6 +4,7 @@
 
 #define CHUNKSIZE                       768
 #define MAXSIZE                         0x4000
+#define SAVESIZE                        0x8000
 #define NUM_WRAPS                       3
 
 static char path[256];
@@ -12,6 +13,8 @@ static char *labels[NUM_WRAPS] = {"None", "Word", "Character"};
 static char *wraps[NUM_WRAPS] = {"none", "word", "char"};
 static unsigned int wrap = 0;
 static unsigned int chunks;
+static unsigned int loaded;
+static char savedata[SAVESIZE];
 
 static void sendchunk(char *data, unsigned int count)
 {
@@ -93,6 +96,7 @@ static void showfile(void)
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
 
         chunks++;
+        loaded = offset < MAXSIZE;
 
     }
 
@@ -102,6 +106,61 @@ static void showfile(void)
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Could not open %s\"\n", path);
 
     }
+
+}
+
+/* asks the wm for the box's text and writes it over the file */
+static unsigned int savefile(void)
+{
+
+    char *name = path + fs_dirlength(path);
+    unsigned int count = 0;
+    unsigned int total = 0;
+    struct message message;
+    unsigned int target;
+    unsigned int parent;
+    unsigned int id;
+
+    channel_send(0, wm, EVENT_WMREAD, 8, "content");
+
+    while (channel_poll(0, wm, EVENT_WMTEXT, &message) && message.length)
+    {
+
+        count += buffer_write(savedata, SAVESIZE, message.data, message.length, count);
+        total += message.length;
+
+    }
+
+    if (total != count)
+        return 0;
+
+    target = fs_auth(path);
+    parent = (target) ? fs_walkparent(1, target, path) : 0;
+    id = (parent) ? fs_walk(1, target, 0, path) : 0;
+
+    if (!id || !fs_remove(1, target, parent, id))
+        return 0;
+
+    id = fs_create(1, target, parent, name, cstring_length(name));
+
+    return id && fs_write_all(1, target, id, savedata, count, 0) == count;
+
+}
+
+static void save(void)
+{
+
+    static unsigned int saving;
+    unsigned int saved;
+
+    if (!loaded || saving)
+        return;
+
+    saving = 1;
+    saved = savefile();
+    saving = 0;
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"%s\"\n", (saved) ? "Saved" : "Could not save");
 
 }
 
@@ -154,6 +213,9 @@ static void onwmevent(struct message *message)
         setwrap();
 
     }
+
+    if (kv_match(event, "q=save"))
+        save();
 
 }
 

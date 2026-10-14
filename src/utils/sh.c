@@ -296,6 +296,8 @@ static struct {char *name; unsigned int event;} events[] = {
     {"wminit", EVENT_WMINIT},
     {"wmevent", EVENT_WMEVENT},
     {"wmack", EVENT_WMACK},
+    {"wmread", EVENT_WMREAD},
+    {"wmtext", EVENT_WMTEXT},
     {"p9p", EVENT_P9P}
 };
 

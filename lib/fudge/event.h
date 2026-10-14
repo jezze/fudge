@@ -62,7 +62,9 @@
 #define EVENT_WMINIT                    0x5D
 #define EVENT_WMEVENT                   0x5E
 #define EVENT_WMACK                     0x5F
-#define EVENT_P9P                       0x61
+#define EVENT_WMREAD                    0x60
+#define EVENT_WMTEXT                    0x61
+#define EVENT_P9P                       0x70
 
 #define EXIT_STATUS_NORMAL              1
 #define EXIT_STATUS_KILLED              2
