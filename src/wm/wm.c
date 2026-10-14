@@ -1315,6 +1315,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
     unsigned int offset;
     struct widget *text = pool_gettextat(widget, widget->attributes.cursor, &offset);
     unsigned int printable = state.keys.code.length == 1 && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] < 0x7F;
+    char c = (printable) ? state.keys.code.value[0] : 0;
     unsigned int previous = util_min(widget->attributes.cursor, pool_gettextlength(widget));
     unsigned int cursor = previous;
     unsigned int changed = 0;
@@ -1326,18 +1327,26 @@ static void edittextbox(struct widget *widget, unsigned int id)
     if (!text)
         return;
 
-    if (id == KEYS_KEY_ENTER && widget->attributes.onenter)
+    /* enter is sent to the program when it asks for it, otherwise it starts a new line */
+    if (id == KEYS_KEY_ENTER)
     {
 
-        copytexts(widget);
-        sendevent(widget->source, 1, widget->attributes.onenter, textbuffer);
+        if (widget->attributes.onenter)
+        {
 
-        return;
+            copytexts(widget);
+            sendevent(widget->source, 1, widget->attributes.onenter, textbuffer);
+
+            return;
+
+        }
+
+        c = '\n';
 
     }
 
     /* typing or erasing while text is marked first removes the marked text */
-    if (getmarked(widget, &start, &end) && (printable || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
+    if (getmarked(widget, &start, &end) && (c || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
     {
 
         cursor = removemarked(widget, cursor);
@@ -1417,7 +1426,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     default:
-        if (printable && inserttext(widget, cursor, (char *)state.keys.code.value, 1))
+        if (c && inserttext(widget, cursor, &c, 1))
         {
 
             cursor++;
