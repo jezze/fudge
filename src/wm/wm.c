@@ -1584,9 +1584,12 @@ static void clickwidget(struct widget *widget)
 
             damage(widget);
 
+            if (widget->attributes.onclick)
+                sendevent(widget->source, 1, widget->attributes.onclick, (widget->attributes.checked) ? "1" : "0");
+
         }
 
-        break;
+        return;
 
     case WIDGET_TYPE_ITEM:
         if (state.mousebuttonleft)

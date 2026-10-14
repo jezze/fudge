@@ -257,7 +257,7 @@ static void toggle(char *id, char *label, unsigned int checked)
     beginrow(id);
     addlabel(id, label);
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ checkbox id \"%s\" in \"%s-row\" checked \"%u\" onclick \"q=toggle&id=%s\"\n", id, id, &checked, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ checkbox id \"%s\" in \"%s-row\" checked \"%u\" onclick \"q=toggle&id=%s&checked=\"\n", id, id, &checked, id);
 
 }
 
@@ -683,7 +683,7 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=toggle"))
     {
 
-        config.acceleration = !config.acceleration;
+        config.acceleration = kv_getvalue(event, "checked=", 10);
 
         channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"normal\"\n");
 
