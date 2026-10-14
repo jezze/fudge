@@ -854,6 +854,8 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
 
             if (sector)
                 allocated = 1;
+            else
+                simplewrite(node, rid);
 
         }
 
