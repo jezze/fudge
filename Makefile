@@ -158,14 +158,15 @@ $(DIR_BUILDUEFI):
 	@mkdir -p $@
 	@mkdir -p $@/EFI/BOOT
 
-$(DIR_ISO): $(KERNEL) $(RAMDISK)
+$(DIR_ISO): $(KERNEL) $(RAMDISK) $(DIR_SRC)/utils/$(INIT)
 	@echo ISO $@
-	@mkdir -p $@
-	@mkdir -p $@/boot
-	@cp $(KERNEL) $@/boot
-	@cp $(RAMDISK) $@/boot
+	@rm -rf $@
+	@mkdir -p $@/bin
 	@mkdir -p $@/boot/grub
-	@cp grub/$(LOADER).cfg $@/boot/grub
+	@cp $(KERNEL) $@
+	@cp $(RAMDISK) $@
+	@cp $(DIR_SRC)/utils/$(INIT) $@/bin
+	@sed 's|(hd0,3)/bin/|/bin/|' grub/$(LOADER).cfg > $@/boot/grub/grub.cfg
 
 $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)
 	@echo KERNEL $@
@@ -180,6 +181,7 @@ $(KERNEL).cpio: $(DIR_BUILDROOT)
 	@find $^ -depth | cpio -o > $@
 
 $(KERNEL).iso: $(DIR_ISO)
+	@echo ISO $@
 	@grub-mkrescue -o $@ $^
 
 $(DIR_INSTALL)/$(KERNEL): $(KERNEL)
