@@ -16,11 +16,8 @@ DIR_LIB:=lib
 DIR_SRC:=src
 DIR_INSTALL:=/boot
 REPORT:=report.xml
-ARCH:=x86
-LOADER:=mboot
-TARGET:=i386-unknown-elf
 
-.PHONY: all clean check check-full install default help
+.PHONY: all clean check check-full install help
 .SUFFIXES:
 
 all: $(DIR_BUILDBOOT) $(DIR_BUILDROOT) $(DIR_BUILDUEFI)
@@ -66,7 +63,7 @@ riscv-medany-tcc:
 	@echo "LOADER:=medany" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=riscv64-tcc" >> $(DIR_MK)/$(CONFIG).mk
 
-x86-mboot $(DIR_MK)/$(CONFIG).mk:
+x86-mboot:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=x86" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=mboot" >> $(DIR_MK)/$(CONFIG).mk
@@ -90,15 +87,8 @@ x86_64-mboot2:
 	@echo "LOADER:=mboot2" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=x86_64-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
 
-default: x86-mboot
-
 help:
-	@echo "Building and cleaning:"
-	@echo ""
-	@echo "  $$ make"
-	@echo "  $$ make clean"
-	@echo ""
-	@echo "Set configuration (mostly for cross-compiling):"
+	@echo "Set the configuration first:"
 	@echo ""
 	@echo "  $$ make <config>"
 	@echo ""
@@ -110,16 +100,28 @@ help:
 	@echo "  riscv-medany-elf"
 	@echo "  riscv-medany-linux"
 	@echo "  riscv-medany-tcc"
-	@echo "  x86-mboot (default)"
+	@echo "  x86-mboot"
 	@echo "  x86-mboot2"
 	@echo "  x86-mboot-tcc"
 	@echo "  x86_64-mboot2"
 	@echo ""
+	@echo "Then build and clean:"
+	@echo ""
+	@echo "  $$ make"
+	@echo "  $$ make clean"
+	@echo ""
 
-include $(DIR_MK)/$(CONFIG).mk
+-include $(DIR_MK)/$(CONFIG).mk
+
+ifeq ($(TARGET),)
+ifneq ($(filter-out arm-% riscv-% x86-% x86_64-% help,$(or $(MAKECMDGOALS),all)),)
+$(error No configuration in $(DIR_MK)/$(CONFIG).mk, set one with make <config> (make help lists them))
+endif
+else
 include $(DIR_MK)/$(TARGET).mk
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
+endif
 
 deps: $(DEP)
 

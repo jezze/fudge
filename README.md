@@ -100,9 +100,11 @@ $ export PATH=/home/$(whoami)/x-tools/i386-unknown-elf/bin:$PATH
 The changes to $PATH will disappear as soon as you leave the current session or
 start another one so you will need to set it again from time to time.
 
-Finally we can build Fudge.
+Finally we can build Fudge. First set the configuration (make help lists
+them all), then build.
 
 ```sh
+$ make x86-mboot
 $ make
 ```
 
