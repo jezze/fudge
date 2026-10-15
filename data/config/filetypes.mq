@@ -45,5 +45,10 @@
       label: "View"
       command: "wedit"
     }
+    {
+      suffix: ".wav"
+      label: "Play"
+      command: "sound"
+    }
   ]
 }
