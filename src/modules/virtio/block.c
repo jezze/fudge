@@ -10,6 +10,7 @@
 #define BLOCKSIZE                       512
 #define REQUEST_READ                    0
 #define REQUEST_WRITE                   1
+#define FEATURE_RO                      (1 << 5)
 
 struct request
 {
@@ -31,6 +32,7 @@ static volatile unsigned char status;
 static unsigned short io;
 static unsigned int ready;
 static unsigned int msi;
+static unsigned int readonly;
 
 static void handleirq(unsigned int irq)
 {
@@ -73,7 +75,7 @@ static void blockinterface_startsession(struct block_session *session)
 
     count -= count % BLOCKSIZE;
 
-    if (!buffer || !count)
+    if (!buffer || !count || (readonly && session->type == BLOCK_TYPE_WRITE))
     {
 
         session->count = 0;
@@ -120,7 +122,7 @@ static void driver_reset(unsigned int id)
 
     io = pci_getbar(id, 0);
 
-    virtio_negotiate(io, 0);
+    readonly = virtio_negotiate(io, FEATURE_RO) & FEATURE_RO;
 
     if (!virtio_setqueue(&queue, io, 0, memory) || queue.size < 3)
         return;
