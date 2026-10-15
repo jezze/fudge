@@ -2,13 +2,12 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/ethernet.h>
-#include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include "virtio.h"
 
 #define DEVICE                          0x1000
+#define DEVICEMODERN                    0x1041
 #define FEATURE_MAC                     (1 << 5)
-#define HEADERSIZE                      10
 #define BUFFERSIZE                      2048
 #define RXBUFFERS                       16
 #define TXBUFFERS                       16
@@ -25,7 +24,8 @@ static unsigned char txmemory[VIRTIO_QUEUEMEMORY];
 static unsigned char rxbuffers[RXBUFFERS][BUFFERSIZE];
 static unsigned char txbuffers[TXBUFFERS][BUFFERSIZE];
 static unsigned char mac[6];
-static unsigned short io;
+static struct virtio_device device;
+static unsigned int headersize;
 static unsigned int ready;
 static unsigned int msi;
 static unsigned int txnext;
@@ -35,7 +35,7 @@ static void handleirq(unsigned int irq)
 {
 
     if (!msi)
-        io_inb(io + VIRTIO_REG_ISR);
+        virtio_getisr(&device);
 
     while (virtio_pending(&rxqueue))
     {
@@ -46,8 +46,8 @@ static void handleirq(unsigned int irq)
         if (id >= RXBUFFERS)
             continue;
 
-        if (length > HEADERSIZE)
-            ethernet_notifydata(&ethernetinterface, rxbuffers[id] + HEADERSIZE, length - HEADERSIZE);
+        if (length > headersize)
+            ethernet_notifydata(&ethernetinterface, rxbuffers[id] + headersize, length - headersize);
 
         virtio_push(&rxqueue, id);
 
@@ -69,7 +69,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
     unsigned int length;
 
-    if (!ready || count > BUFFERSIZE - HEADERSIZE)
+    if (!ready || count > BUFFERSIZE - headersize)
         return 0;
 
     spinlock_acquire(&spinlock);
@@ -92,9 +92,9 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
     }
 
-    buffer_clear(txbuffers[txnext], HEADERSIZE);
-    buffer_copy(txbuffers[txnext] + HEADERSIZE, buffer, count);
-    virtio_setdesc(&txqueue, txnext, txbuffers[txnext], HEADERSIZE + count, 0, 0);
+    buffer_clear(txbuffers[txnext], headersize);
+    buffer_copy(txbuffers[txnext] + headersize, buffer, count);
+    virtio_setdesc(&txqueue, txnext, txbuffers[txnext], headersize + count, 0, 0);
     virtio_push(&txqueue, txnext);
     virtio_notify(&txqueue);
 
@@ -117,7 +117,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && (pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE || pci_inw(id, PCI_CONFIG_DEVICE) == DEVICEMODERN);
 
 }
 
@@ -126,18 +126,21 @@ static void driver_reset(unsigned int id)
 
     unsigned int i;
 
-    io = pci_getbar(id, 0);
+    if (!virtio_setup(&device, id))
+        return;
 
-    if (!(virtio_negotiate(io, FEATURE_MAC) & FEATURE_MAC))
+    headersize = (device.modern) ? 12 : 10;
+
+    if (!(virtio_negotiate(&device, FEATURE_MAC) & FEATURE_MAC))
         return;
 
     for (i = 0; i < 6; i++)
-        mac[i] = io_inb(io + VIRTIO_REG_CONFIG + i);
+        mac[i] = virtio_getconfig(&device, i);
 
-    if (!virtio_setqueue(&rxqueue, io, QUEUE_RX, rxmemory) || rxqueue.size < RXBUFFERS)
+    if (!virtio_setqueue(&rxqueue, &device, QUEUE_RX, rxmemory) || rxqueue.size < RXBUFFERS)
         return;
 
-    if (!virtio_setqueue(&txqueue, io, QUEUE_TX, txmemory) || txqueue.size < TXBUFFERS)
+    if (!virtio_setqueue(&txqueue, &device, QUEUE_TX, txmemory) || txqueue.size < TXBUFFERS)
         return;
 
     for (i = 0; i < RXBUFFERS; i++)
@@ -160,9 +163,9 @@ static void driver_attach(unsigned int id)
     if (!ready)
         return;
 
-    msi = virtio_setinterrupt(id, io, 2, handleirq);
+    msi = virtio_setinterrupt(&device, 2, handleirq);
 
-    virtio_setstatus(io, VIRTIO_STATUS_DRIVEROK);
+    virtio_setstatus(&device, VIRTIO_STATUS_DRIVEROK);
     virtio_notify(&rxqueue);
     ethernet_registerinterface(&ethernetinterface);
 
@@ -175,8 +178,8 @@ static void driver_detach(unsigned int id)
         return;
 
     ethernet_unregisterinterface(&ethernetinterface);
-    virtio_reset(io);
-    virtio_unsetinterrupt(id, msi, handleirq);
+    virtio_reset(&device);
+    virtio_unsetinterrupt(&device, msi, handleirq);
 
     ready = 0;
 

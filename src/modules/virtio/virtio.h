@@ -13,6 +13,7 @@
 #define VIRTIO_STATUS_ACKNOWLEDGE       0x01
 #define VIRTIO_STATUS_DRIVER            0x02
 #define VIRTIO_STATUS_DRIVEROK          0x04
+#define VIRTIO_STATUS_FEATURESOK        0x08
 #define VIRTIO_STATUS_FAILED            0x80
 #define VIRTIO_DESC_NEXT                0x01
 #define VIRTIO_DESC_WRITE               0x02
@@ -47,10 +48,26 @@ struct virtio_usedelement
 
 };
 
+struct virtio_device
+{
+
+    unsigned int id;
+    unsigned int modern;
+    unsigned int failed;
+    unsigned short io;
+    unsigned long common;
+    unsigned long notify;
+    unsigned int multiplier;
+    unsigned long isr;
+    unsigned long config;
+
+};
+
 struct virtio_queue
 {
 
-    unsigned short io;
+    struct virtio_device *device;
+    unsigned long notifyaddress;
     unsigned short index;
     unsigned short size;
     unsigned short lastused;
@@ -62,14 +79,17 @@ struct virtio_queue
 
 };
 
-void virtio_reset(unsigned short io);
-unsigned int virtio_negotiate(unsigned short io, unsigned int features);
-void virtio_setstatus(unsigned short io, unsigned char status);
-unsigned int virtio_setqueue(struct virtio_queue *queue, unsigned short io, unsigned short index, void *memory);
+unsigned int virtio_setup(struct virtio_device *device, unsigned int id);
+void virtio_reset(struct virtio_device *device);
+unsigned int virtio_negotiate(struct virtio_device *device, unsigned int features);
+void virtio_setstatus(struct virtio_device *device, unsigned char status);
+unsigned char virtio_getisr(struct virtio_device *device);
+unsigned char virtio_getconfig(struct virtio_device *device, unsigned int offset);
+unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory);
 void virtio_setdesc(struct virtio_queue *queue, unsigned int index, void *buffer, unsigned int length, unsigned short flags, unsigned short next);
 void virtio_push(struct virtio_queue *queue, unsigned short head);
 void virtio_notify(struct virtio_queue *queue);
 unsigned int virtio_pending(struct virtio_queue *queue);
 unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length);
-unsigned int virtio_setinterrupt(unsigned int id, unsigned short io, unsigned int queues, void (*routine)(unsigned int irq));
-void virtio_unsetinterrupt(unsigned int id, unsigned int msi, void (*routine)(unsigned int irq));
+unsigned int virtio_setinterrupt(struct virtio_device *device, unsigned int queues, void (*routine)(unsigned int irq));
+void virtio_unsetinterrupt(struct virtio_device *device, unsigned int msi, void (*routine)(unsigned int irq));

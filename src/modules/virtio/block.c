@@ -2,11 +2,11 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/block.h>
-#include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include "virtio.h"
 
 #define DEVICE                          0x1001
+#define DEVICEMODERN                    0x1042
 #define BLOCKSIZE                       512
 #define REQUEST_READ                    0
 #define REQUEST_WRITE                   1
@@ -29,7 +29,7 @@ static struct virtio_queue queue;
 static unsigned char memory[VIRTIO_QUEUEMEMORY];
 static struct request request;
 static volatile unsigned char status;
-static unsigned short io;
+static struct virtio_device device;
 static unsigned int ready;
 static unsigned int msi;
 static unsigned int readonly;
@@ -40,7 +40,7 @@ static void handleirq(unsigned int irq)
     struct block_session *session = block_getsession(&blockinterface);
 
     if (!msi)
-        io_inb(io + VIRTIO_REG_ISR);
+        virtio_getisr(&device);
 
     spinlock_acquire(&spinlock);
 
@@ -113,18 +113,19 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE;
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && (pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE || pci_inw(id, PCI_CONFIG_DEVICE) == DEVICEMODERN);
 
 }
 
 static void driver_reset(unsigned int id)
 {
 
-    io = pci_getbar(id, 0);
+    if (!virtio_setup(&device, id))
+        return;
 
-    readonly = virtio_negotiate(io, FEATURE_RO) & FEATURE_RO;
+    readonly = virtio_negotiate(&device, FEATURE_RO) & FEATURE_RO;
 
-    if (!virtio_setqueue(&queue, io, 0, memory) || queue.size < 3)
+    if (!virtio_setqueue(&queue, &device, 0, memory) || queue.size < 3)
         return;
 
     pci_setmaster(id);
@@ -139,9 +140,9 @@ static void driver_attach(unsigned int id)
     if (!ready)
         return;
 
-    msi = virtio_setinterrupt(id, io, 1, handleirq);
+    msi = virtio_setinterrupt(&device, 1, handleirq);
 
-    virtio_setstatus(io, VIRTIO_STATUS_DRIVEROK);
+    virtio_setstatus(&device, VIRTIO_STATUS_DRIVEROK);
     block_registerinterface(&blockinterface);
 
 }
@@ -153,8 +154,8 @@ static void driver_detach(unsigned int id)
         return;
 
     block_unregisterinterface(&blockinterface);
-    virtio_reset(io);
-    virtio_unsetinterrupt(id, msi, handleirq);
+    virtio_reset(&device);
+    virtio_unsetinterrupt(&device, msi, handleirq);
 
     ready = 0;
 
