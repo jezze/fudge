@@ -192,8 +192,8 @@ static void driver_detach(unsigned int id)
     unsigned short irq = platform_getirq(id);
 
     console_unregisterinterface(&consoleinterface);
-    pic_unsetroutine(irq);
-    apic_unsetroutine(irq);
+    pic_unsetroutine(irq, handleirq);
+    apic_unsetroutine(irq, handleirq);
 
 }
 

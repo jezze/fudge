@@ -897,7 +897,7 @@ static void enableinterrupts(void)
     if (msi && !pci_setmsix(pciid, 0, apic_getmsiaddress(), apic_getmsidata(msi)) && !pci_setmsi(pciid, apic_getmsiaddress(), apic_getmsidata(msi)))
     {
 
-        apic_unsetroutine(msi);
+        apic_unsetroutine(msi, handleirq);
 
         msi = 0;
 

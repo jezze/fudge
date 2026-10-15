@@ -323,7 +323,7 @@ static void driver_reset(unsigned int id)
     if (msi && !pci_setmsix(id, 0, apic_getmsiaddress(), apic_getmsidata(msi)))
     {
 
-        apic_unsetroutine(msi);
+        apic_unsetroutine(msi, handleirq);
 
         msi = 0;
 
@@ -351,7 +351,7 @@ static void driver_detach(unsigned int id)
     {
 
         pci_unsetmsix(id);
-        apic_unsetroutine(msi);
+        apic_unsetroutine(msi, handleirq);
 
         msi = 0;
 

@@ -10,6 +10,7 @@
 #include <modules/apic/apic.h>
 
 #define ROUTINES                        256
+#define SHARED                          4
 #define OVERRIDES                       16
 #define MSR_APIC                        0x1B
 #define MSR_APIC_X2APIC                 (1 << 10)
@@ -24,13 +25,91 @@ static struct {unsigned int detected;} lapics[256];
 static struct {unsigned int detected; unsigned int address; unsigned int gsibase;} ioapics[256];
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
-static void (*routines[ROUTINES])(unsigned int gsi);
+static void (*routines[ROUTINES][SHARED])(unsigned int gsi);
 static unsigned int overrides[OVERRIDES];
 static unsigned int mmio;
 static unsigned int x2apic;
 static unsigned long ioapicbase;
 static unsigned int redirections[OVERRIDES];
 static struct spinlock spinlock;
+
+static unsigned int hasroutines(unsigned int irq)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i])
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void callroutines(unsigned int irq)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i])
+            routines[irq][i](irq);
+
+    }
+
+}
+
+static unsigned int addroutine(unsigned int irq, void (*routine)(unsigned int irq))
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i] == routine)
+            return 1;
+
+    }
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (!routines[irq][i])
+        {
+
+            routines[irq][i] = routine;
+
+            return 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static void removeroutine(unsigned int irq, void (*routine)(unsigned int irq))
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i] == routine)
+            routines[irq][i] = 0;
+
+    }
+
+}
 
 static void writeio(unsigned long base, unsigned int offset, unsigned int value)
 {
@@ -45,7 +124,7 @@ static void updatepin(unsigned int pin)
 
     unsigned int value = redirections[pin];
 
-    if (!routines[overrides[pin]])
+    if (!hasroutines(overrides[pin]))
         value |= IOAPIC_MASK;
 
     spinlock_acquire(&spinlock);
@@ -345,8 +424,8 @@ unsigned short apic_interrupt(struct cpu_general *general, unsigned long index, 
 
     unsigned int gsi = (index < OVERRIDES) ? overrides[index] : index;
 
-    if (gsi < ROUTINES && routines[gsi])
-        routines[gsi](gsi);
+    if (gsi < ROUTINES)
+        callroutines(gsi);
 
     apic_outd(APIC_REG_EOI, 0);
 
@@ -366,10 +445,8 @@ unsigned short apic_interruptnone(struct cpu_general *general, struct cpu_interr
 unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
-    if (irq >= ROUTINES)
+    if (irq >= ROUTINES || !addroutine(irq, routine))
         return 0;
-
-    routines[irq] = routine;
 
     updateirq(irq);
 
@@ -388,12 +465,12 @@ unsigned int apic_setmsiroutine(void (*routine)(unsigned int irq))
     for (irq = MSIBASE; irq < MSIBASE + MSIS; irq++)
     {
 
-        if (!routines[irq])
+        if (!hasroutines(irq))
         {
 
             idt_setdescriptor(idt, 0x60 + irq, (void (*)(void))((unsigned long)apic_isr + 8 * irq), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
 
-            routines[irq] = routine;
+            addroutine(irq, routine);
 
             return irq;
 
@@ -419,14 +496,13 @@ unsigned int apic_getmsidata(unsigned int irq)
 
 }
 
-unsigned int apic_unsetroutine(unsigned int irq)
+unsigned int apic_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES)
         return 0;
 
-    routines[irq] = 0;
-
+    removeroutine(irq, routine);
     updateirq(irq);
 
     return 1;

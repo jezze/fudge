@@ -186,8 +186,8 @@ static void driver_detach(unsigned int id)
     unsigned short irq = ps2_getirq(id);
 
     mouse_unregisterinterface(&mouseinterface);
-    pic_unsetroutine(irq);
-    apic_unsetroutine(irq);
+    pic_unsetroutine(irq, handleirq);
+    apic_unsetroutine(irq, handleirq);
 
 }
 

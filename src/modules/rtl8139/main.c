@@ -334,8 +334,8 @@ static void driver_detach(unsigned int id)
     unsigned short irq = pci_getirq(id);
 
     ethernet_unregisterinterface(&ethernetinterface);
-    pic_unsetroutine(irq);
-    apic_unsetroutine(irq);
+    pic_unsetroutine(irq, handleirq);
+    apic_unsetroutine(irq, handleirq);
 
 }
 

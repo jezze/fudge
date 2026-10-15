@@ -72,4 +72,4 @@ void virtio_notify(struct virtio_queue *queue);
 unsigned int virtio_pending(struct virtio_queue *queue);
 unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length);
 unsigned int virtio_setinterrupt(unsigned int id, unsigned short io, unsigned int queues, void (*routine)(unsigned int irq));
-void virtio_unsetinterrupt(unsigned int id, unsigned int msi);
+void virtio_unsetinterrupt(unsigned int id, unsigned int msi, void (*routine)(unsigned int irq));

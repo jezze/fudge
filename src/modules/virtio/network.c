@@ -176,7 +176,7 @@ static void driver_detach(unsigned int id)
 
     ethernet_unregisterinterface(&ethernetinterface);
     virtio_reset(io);
-    virtio_unsetinterrupt(id, msi);
+    virtio_unsetinterrupt(id, msi, handleirq);
 
     ready = 0;
 

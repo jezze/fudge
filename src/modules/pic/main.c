@@ -8,6 +8,7 @@
 #include <modules/pic/pic.h>
 
 #define ROUTINES                        16
+#define SHARED                          4
 #define REG_COMMAND0                    0x0020
 #define REG_COMMAND1                    0x00A0
 #define REG_COMMAND_IRR                 0x0A
@@ -22,7 +23,7 @@
 
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
-static void (*routines[ROUTINES])(unsigned int irq);
+static void (*routines[ROUTINES][SHARED])(unsigned int irq);
 
 static void setchip(unsigned char command, unsigned char data, unsigned char vector, unsigned char wire)
 {
@@ -88,6 +89,84 @@ unsigned short pic_getisr(void)
 
 }
 
+static unsigned int hasroutines(unsigned int irq)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i])
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static void callroutines(unsigned int irq)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i])
+            routines[irq][i](irq);
+
+    }
+
+}
+
+static unsigned int addroutine(unsigned int irq, void (*routine)(unsigned int irq))
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i] == routine)
+            return 1;
+
+    }
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (!routines[irq][i])
+        {
+
+            routines[irq][i] = routine;
+
+            return 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static void removeroutine(unsigned int irq, void (*routine)(unsigned int irq))
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SHARED; i++)
+    {
+
+        if (routines[irq][i] == routine)
+            routines[irq][i] = 0;
+
+    }
+
+}
+
 unsigned short pic_interrupt1(struct cpu_general *general, unsigned long index, struct cpu_interrupt *interrupt)
 {
 
@@ -97,8 +176,7 @@ unsigned short pic_interrupt1(struct cpu_general *general, unsigned long index, 
         if (getstatus(REG_COMMAND1, REG_COMMAND_ISR))
         {
 
-            if (routines[index])
-                routines[index](index);
+            callroutines(index);
 
             io_outb(REG_COMMAND1, REG_COMMAND_EOI);
             io_outb(REG_COMMAND0, REG_COMMAND_EOI);
@@ -117,8 +195,7 @@ unsigned short pic_interrupt1(struct cpu_general *general, unsigned long index, 
     else
     {
 
-        if (routines[index])
-            routines[index](index);
+        callroutines(index);
 
         io_outb(REG_COMMAND1, REG_COMMAND_EOI);
         io_outb(REG_COMMAND0, REG_COMMAND_EOI);
@@ -138,8 +215,7 @@ unsigned short pic_interrupt0(struct cpu_general *general, unsigned long index, 
         if (getstatus(REG_COMMAND0, REG_COMMAND_ISR))
         {
 
-            if (routines[index])
-                routines[index](index);
+            callroutines(index);
 
             io_outb(REG_COMMAND0, REG_COMMAND_EOI);
 
@@ -150,8 +226,7 @@ unsigned short pic_interrupt0(struct cpu_general *general, unsigned long index, 
     else
     {
 
-        if (routines[index])
-            routines[index](index);
+        callroutines(index);
 
         io_outb(REG_COMMAND0, REG_COMMAND_EOI);
 
@@ -164,10 +239,8 @@ unsigned short pic_interrupt0(struct cpu_general *general, unsigned long index, 
 unsigned int pic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
-    if (irq >= ROUTINES)
+    if (irq >= ROUTINES || !addroutine(irq, routine))
         return 0;
-
-    routines[irq] = routine;
 
     if (irq >= 8)
         enableline(REG_DATA1, irq);
@@ -178,13 +251,16 @@ unsigned int pic_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 
 }
 
-unsigned int pic_unsetroutine(unsigned int irq)
+unsigned int pic_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES)
         return 0;
 
-    routines[irq] = 0;
+    removeroutine(irq, routine);
+
+    if (hasroutines(irq))
+        return 1;
 
     if (irq >= 8)
         disableline(REG_DATA1, irq);

@@ -75,7 +75,7 @@ unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq)
 unsigned int apic_setmsiroutine(void (*routine)(unsigned int irq));
 unsigned int apic_getmsiaddress(void);
 unsigned int apic_getmsidata(unsigned int irq);
-unsigned int apic_unsetroutine(unsigned int irq);
+unsigned int apic_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq));
 void apic_setup_ap(void);
 void apic_setup_bp(void);
 void apic_sendint(unsigned int id, unsigned int value);

@@ -163,7 +163,7 @@ unsigned int virtio_setinterrupt(unsigned int id, unsigned short io, unsigned in
             return msi;
 
         pci_unsetmsix(id);
-        apic_unsetroutine(msi);
+        apic_unsetroutine(msi, routine);
 
     }
 
@@ -174,22 +174,22 @@ unsigned int virtio_setinterrupt(unsigned int id, unsigned short io, unsigned in
 
 }
 
-void virtio_unsetinterrupt(unsigned int id, unsigned int msi)
+void virtio_unsetinterrupt(unsigned int id, unsigned int msi, void (*routine)(unsigned int irq))
 {
 
     if (msi)
     {
 
         pci_unsetmsix(id);
-        apic_unsetroutine(msi);
+        apic_unsetroutine(msi, routine);
 
     }
 
     else
     {
 
-        pic_unsetroutine(pci_getirq(id));
-        apic_unsetroutine(pci_getirq(id));
+        pic_unsetroutine(pci_getirq(id), routine);
+        apic_unsetroutine(pci_getirq(id), routine);
 
     }
 

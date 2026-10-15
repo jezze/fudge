@@ -284,7 +284,7 @@ static void driver_attach(unsigned int id)
     if (msi && !pci_setmsi(id, apic_getmsiaddress(), apic_getmsidata(msi)))
     {
 
-        apic_unsetroutine(msi);
+        apic_unsetroutine(msi, handleirq);
 
         msi = 0;
 
@@ -313,7 +313,7 @@ static void driver_detach(unsigned int id)
 
         writereg(AHCI_GHC, readreg(AHCI_GHC) & ~AHCI_GHC_IE);
         pci_unsetmsi(id);
-        apic_unsetroutine(msi);
+        apic_unsetroutine(msi, handleirq);
 
         msi = 0;
 
