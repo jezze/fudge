@@ -20,6 +20,9 @@
 #define LAYOUT_TILING       1
 #define NUM_FOCUSABLE       256
 #define ROW_FAR             0x40000000
+#define MOUSE_NORMAL        4
+#define MOUSE_FASTEST       16
+#define MOUSE_RAMP          8
 
 struct state
 {
@@ -27,6 +30,8 @@ struct state
     unsigned int state;
     struct util_position mouseposition;
     struct util_position mousemovement;
+    struct util_position mouseremainder;
+    unsigned int mousespeed;
     struct util_position mousepressed;
     struct util_position mousereleased;
     unsigned int mousebuttonleft;
@@ -150,6 +155,13 @@ static void configline(char *line, unsigned int length)
 
     }
 
+    else if (count == 5 && buffer_match(word, "mouse", 5))
+    {
+
+        state.mousespeed = util_clamp(getnumber(rest, length, 0, 10, MOUSE_NORMAL), 1, MOUSE_FASTEST);
+
+    }
+
     else if (count == 5 && buffer_match(word, "color", 5))
     {
 
@@ -209,6 +221,7 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {layout}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .colors -format \"color {name} {value}\" %s", config));
     configlines("bindings", 8);
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .bindings -format \"binding {key} {mod} {action} {command}\" %s", config));
@@ -2226,12 +2239,39 @@ static void dragthumb(struct widget *widget)
 
 }
 
+/* speed is in quarters of a pixel per count, and the part of a pixel left over is kept for the next move */
+static int scalemove(int count, int quarters, int *remainder)
+{
+
+    int total = *remainder + count * quarters;
+    int pixels = (total < 0) ? -(-total / MOUSE_NORMAL) : total / MOUSE_NORMAL;
+
+    *remainder = total - pixels * MOUSE_NORMAL;
+
+    return pixels;
+
+}
+
+/* above normal speed the gain grows with the size of the move, so a slow move still goes one pixel at a time */
+static int getquarters(int relx, int rely)
+{
+
+    int size = util_max((relx < 0) ? -relx : relx, (rely < 0) ? -rely : rely);
+
+    if (state.mousespeed <= MOUSE_NORMAL)
+        return state.mousespeed;
+
+    return MOUSE_NORMAL + (int)(state.mousespeed - MOUSE_NORMAL) * util_min(size - 1, MOUSE_RAMP) / MOUSE_RAMP;
+
+}
+
 static void onmousemove(struct message *message)
 {
 
     struct event_mousemove *mousemove = message->data;
-    int x = util_clamp(state.mouseposition.x + mousemove->relx, 0, display.region.size.w);
-    int y = util_clamp(state.mouseposition.y + mousemove->rely, 0, display.region.size.h);
+    int quarters = getquarters(mousemove->relx, mousemove->rely);
+    int x = util_clamp(state.mouseposition.x + scalemove(mousemove->relx, quarters, &state.mouseremainder.x), 0, display.region.size.w);
+    int y = util_clamp(state.mouseposition.y + scalemove(mousemove->rely, quarters, &state.mouseremainder.y), 0, display.region.size.h);
     unsigned int relayout = state.mousebuttonleft || state.mousebuttonright;
 
     state.mousemovement.x = x - state.mouseposition.x;
@@ -2609,6 +2649,7 @@ void init(void)
     state.videoconf.width = 1920;
     state.videoconf.height = 1080;
     state.videoconf.bpp = 4;
+    state.mousespeed = MOUSE_NORMAL;
     pool_setup();
     setupwidgets();
     render_init();
