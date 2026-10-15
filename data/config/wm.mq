@@ -24,7 +24,6 @@
   mouse:
   {
     speed: 4
-    acceleration: false
   }
   bindings:
   [

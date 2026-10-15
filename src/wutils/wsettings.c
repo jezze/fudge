@@ -144,7 +144,6 @@ static struct
     unsigned int bpp;
     char keyboard[32];
     char speed[16];
-    unsigned int acceleration;
     struct binding bindings[NUM_BINDINGS];
     unsigned int nbindings;
     struct color colors[NUM_COLORS];
@@ -313,16 +312,6 @@ static void choice(char *id, char *label, char *value, struct entry *options, un
 
 }
 
-static void toggle(char *id, char *label, unsigned int checked)
-{
-
-    beginrow(id);
-    addlabel(id, label);
-
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ checkbox id \"%s\" in \"%s-row\" checked \"%u\" onclick \"q=toggle&id=%s&checked=\"\n", id, id, &checked, id);
-
-}
-
 static unsigned int getnumber(char *data, unsigned int count, unsigned int index)
 {
 
@@ -402,7 +391,6 @@ static void loadconfig(void)
 {
 
     char data[256];
-    char word[16];
     unsigned int count;
 
     count = query(data, 256, ".general.layout", 0);
@@ -420,9 +408,8 @@ static void loadconfig(void)
     count = query(data, 256, ".keyboard.layout", 0);
     getword(data, count, 0, config.keyboard, 32);
 
-    count = query(data, 256, ".mouse", "{speed} {acceleration}");
+    count = query(data, 256, ".mouse.speed", 0);
     getword(data, count, 0, config.speed, 16);
-    config.acceleration = cstring_match(getword(data, count, 1, word, 16), "true");
 
     config.nbindings = 0;
     config.ncolors = 0;
@@ -436,14 +423,13 @@ static unsigned int writeconfig(char *data, unsigned int size)
 {
 
     unsigned int count = 0;
-    char *acceleration = (config.acceleration) ? "true" : "false";
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n  }\n", config.layout);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n  }\n", &config.width, &config.height, &config.bpp);
     count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    layout: %s\n  }\n", config.keyboard);
-    count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n    acceleration: %s\n  }\n", config.speed, acceleration);
+    count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n  }\n", config.speed);
     count += cstring_write_fmt(data, size, count, "  bindings:\n  [\n");
 
     for (i = 0; i < config.nbindings; i++)
@@ -670,7 +656,6 @@ static void rendermouse(void)
 
     beginarea("Mouse");
     field("mouse-speed", "Speed", config.speed, "right");
-    toggle("mouse-acceleration", "Acceleration", config.acceleration);
 
 }
 
@@ -845,15 +830,6 @@ static void onwmevent(struct message *message)
             copystring(config.colors[index].value, 16, value, cstring_length(value));
 
         channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
-
-    }
-
-    else if (kv_match(event, "q=toggle"))
-    {
-
-        config.acceleration = kv_getvalue(event, "checked=", 10);
-
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"normal\"\n");
 
     }
 
