@@ -9,17 +9,26 @@
 #include "ahci.h"
 
 #define BLOCKSIZE                       512
-#define MEMORYSIZE                      0x1000
+#define DISKS                           4
+#define DISKMEMORY                      0x800
 #define TIMEOUT                         0x1000000
 
+struct disk
+{
+
+    struct block_interface blockinterface;
+    volatile struct ahci_header *header;
+    volatile struct ahci_table *table;
+    unsigned int port;
+
+};
+
 static struct base_driver driver;
-static struct block_interface blockinterface;
 static struct spinlock spinlock;
-static unsigned char memory[MEMORYSIZE];
-static volatile struct ahci_header *header;
-static volatile struct ahci_table *table;
+static unsigned char memory[DISKS * DISKMEMORY + 0x400];
+static struct disk disks[DISKS];
+static unsigned int ndisks;
 static unsigned long mmio;
-static unsigned int port;
 static unsigned int msi;
 
 static unsigned int readreg(unsigned int offset)
@@ -53,8 +62,10 @@ static unsigned int waitclear(unsigned int offset, unsigned int mask)
 
 }
 
-static void stopport(void)
+static void stopport(struct disk *disk)
 {
+
+    unsigned int port = disk->port;
 
     writereg(port + AHCI_PCMD, readreg(port + AHCI_PCMD) & ~AHCI_PCMD_ST);
     waitclear(port + AHCI_PCMD, AHCI_PCMD_CR);
@@ -63,8 +74,10 @@ static void stopport(void)
 
 }
 
-static void startport(void)
+static void startport(struct disk *disk)
 {
+
+    unsigned int port = disk->port;
 
     writereg(port + AHCI_PSERR, 0xFFFFFFFF);
     writereg(port + AHCI_PIS, 0xFFFFFFFF);
@@ -74,51 +87,53 @@ static void startport(void)
 
 }
 
-static unsigned int findport(void)
+static void finddisks(void)
 {
 
     unsigned int pi = readreg(AHCI_PI);
     unsigned int i;
 
-    for (i = 0; i < AHCI_PORTS; i++)
+    for (i = 0; i < AHCI_PORTS && ndisks < DISKS; i++)
     {
 
         unsigned int offset = AHCI_PORT + i * AHCI_PORTSIZE;
 
         if ((pi & (1 << i)) && (readreg(offset + AHCI_PSSTS) & 0x0F) == 3 && readreg(offset + AHCI_PSIG) == AHCI_SIG_ATA)
-            return offset;
+            disks[ndisks++].port = offset;
 
     }
 
-    return 0;
-
 }
 
-static void setupport(void)
+static void setupport(struct disk *disk, unsigned int index)
 {
 
-    unsigned long base = ((unsigned long)memory + 0x3FF) & ~0x3FFUL;
+    unsigned long base = (((unsigned long)memory + 0x3FF) & ~0x3FFUL) + index * DISKMEMORY;
+    unsigned int port = disk->port;
 
-    header = (struct ahci_header *)base;
-    table = (struct ahci_table *)(base + 0x500);
+    disk->header = (struct ahci_header *)base;
+    disk->table = (struct ahci_table *)(base + 0x500);
 
-    stopport();
+    stopport(disk);
     buffer_clear((void *)base, 0x600);
 
-    header->ctba = (unsigned long)table;
+    disk->header->ctba = (unsigned long)disk->table;
 
     writereg(port + AHCI_PCLB, base);
     writereg(port + AHCI_PCLBU, 0);
     writereg(port + AHCI_PFB, base + 0x400);
     writereg(port + AHCI_PFBU, 0);
-    startport();
+    startport(disk);
 
 }
 
-static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
+static unsigned int issue(struct disk *disk, unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
 {
 
+    volatile struct ahci_header *header = disk->header;
+    volatile struct ahci_table *table = disk->table;
     volatile struct ahci_h2d *fis = (struct ahci_h2d *)table->cfis;
+    unsigned int port = disk->port;
     unsigned int blocks = count / BLOCKSIZE;
 
     if (!blocks || !buffer)
@@ -145,28 +160,28 @@ static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int
         return 0;
 
     writereg(port + AHCI_PIS, 0xFFFFFFFF);
-    writereg(AHCI_IS, 0xFFFFFFFF);
+    writereg(AHCI_IS, 1 << ((port - AHCI_PORT) / AHCI_PORTSIZE));
     writereg(port + AHCI_PCI, 1);
 
     return blocks * BLOCKSIZE;
 
 }
 
-static unsigned int busy(void)
+static unsigned int busy(struct disk *disk)
 {
 
-    return readreg(port + AHCI_PCI) & 1;
+    return readreg(disk->port + AHCI_PCI) & 1;
 
 }
 
-static unsigned int failed(void)
+static unsigned int failed(struct disk *disk)
 {
 
-    return (readreg(port + AHCI_PIS) & AHCI_PIS_TFES) || (readreg(port + AHCI_PTFD) & AHCI_PTFD_ERR);
+    return (readreg(disk->port + AHCI_PIS) & AHCI_PIS_TFES) || (readreg(disk->port + AHCI_PTFD) & AHCI_PTFD_ERR);
 
 }
 
-static void poll(void)
+static void poll(struct disk *disk)
 {
 
     unsigned int i;
@@ -174,68 +189,99 @@ static void poll(void)
     for (i = 0; i < TIMEOUT; i++)
     {
 
-        if (!busy() || failed())
+        if (!busy(disk) || failed(disk))
             return;
 
     }
 
 }
 
-static void finish(struct block_session *session)
+static void finish(struct disk *disk, struct block_session *session)
 {
 
-    if (busy() || failed())
+    if (busy(disk) || failed(disk))
     {
 
         session->count = 0;
 
-        stopport();
-        startport();
+        stopport(disk);
+        startport(disk);
 
     }
 
-    block_session_done(&blockinterface, session);
+    block_session_done(&disk->blockinterface, session);
 
 }
 
 static void handleirq(unsigned int irq)
 {
 
-    struct block_session *session = block_getsession(&blockinterface);
+    unsigned int i;
 
     spinlock_acquire(&spinlock);
 
-    if (session->source && (!busy() || failed()))
-        finish(session);
+    for (i = 0; i < ndisks; i++)
+    {
 
-    writereg(port + AHCI_PIS, 0xFFFFFFFF);
-    writereg(AHCI_IS, 0xFFFFFFFF);
+        struct disk *disk = &disks[i];
+        struct block_session *session = block_getsession(&disk->blockinterface);
+        unsigned int bit = 1 << ((disk->port - AHCI_PORT) / AHCI_PORTSIZE);
+
+        if (!(readreg(AHCI_IS) & bit))
+            continue;
+
+        if (session->source && (!busy(disk) || failed(disk)))
+            finish(disk, session);
+
+        writereg(disk->port + AHCI_PIS, 0xFFFFFFFF);
+        writereg(AHCI_IS, bit);
+
+    }
+
     spinlock_release(&spinlock);
+
+}
+
+static struct disk *getdisk(struct block_session *session)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ndisks; i++)
+    {
+
+        if (session == block_getsession(&disks[i].blockinterface))
+            return &disks[i];
+
+    }
+
+    return 0;
 
 }
 
 static void blockinterface_startsession(struct block_session *session)
 {
 
+    struct disk *disk = getdisk(session);
     unsigned long buffer = kernel_getbuffer(session->source);
     unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
 
     spinlock_acquire(&spinlock);
 
-    session->count = issue(buffer, session->type == BLOCK_TYPE_WRITE, session->start / BLOCKSIZE, count);
+    session->count = issue(disk, buffer, session->type == BLOCK_TYPE_WRITE, session->start / BLOCKSIZE, count);
 
     if (!session->count)
     {
 
-        block_session_done(&blockinterface, session);
+        block_session_done(&disk->blockinterface, session);
 
     }
 
     else if (!msi)
     {
 
-        poll();
-        finish(session);
+        poll(disk);
+        finish(disk, session);
 
     }
 
@@ -246,7 +292,10 @@ static void blockinterface_startsession(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, BLOCKSIZE, blockinterface_startsession);
+    unsigned int i;
+
+    for (i = 0; i < DISKS; i++)
+        block_initinterface(&disks[i].blockinterface, id, BLOCKSIZE, blockinterface_startsession);
 
 }
 
@@ -260,23 +309,27 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
+    unsigned int i;
+
     mmio = pci_getbar(id, 5);
 
     arch_kmap(mmio, mmio, 0x2000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
     pci_setmaster(id);
     writereg(AHCI_GHC, readreg(AHCI_GHC) | AHCI_GHC_AE);
 
-    port = findport();
+    finddisks();
 
-    if (port)
-        setupport();
+    for (i = 0; i < ndisks; i++)
+        setupport(&disks[i], i);
 
 }
 
 static void driver_attach(unsigned int id)
 {
 
-    if (!port)
+    unsigned int i;
+
+    if (!ndisks)
         return;
 
     msi = apic_setmsiroutine(handleirq);
@@ -290,22 +343,27 @@ static void driver_attach(unsigned int id)
 
     }
 
-    if (msi)
+    for (i = 0; i < ndisks; i++)
     {
 
-        writereg(port + AHCI_PIE, AHCI_PIS_DHRS | AHCI_PIS_TFES);
-        writereg(AHCI_GHC, readreg(AHCI_GHC) | AHCI_GHC_IE);
+        if (msi)
+            writereg(disks[i].port + AHCI_PIE, AHCI_PIS_DHRS | AHCI_PIS_TFES);
+
+        block_registerinterface(&disks[i].blockinterface);
 
     }
 
-    block_registerinterface(&blockinterface);
+    if (msi)
+        writereg(AHCI_GHC, readreg(AHCI_GHC) | AHCI_GHC_IE);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    if (!port)
+    unsigned int i;
+
+    if (!ndisks)
         return;
 
     if (msi)
@@ -319,7 +377,8 @@ static void driver_detach(unsigned int id)
 
     }
 
-    block_unregisterinterface(&blockinterface);
+    for (i = 0; i < ndisks; i++)
+        block_unregisterinterface(&disks[i].blockinterface);
 
 }
 
