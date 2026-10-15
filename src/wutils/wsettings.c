@@ -484,6 +484,65 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
 }
 
+static unsigned int writelines(char *data, unsigned int size)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    count += cstring_write_fmt(data, size, count, "layout %s\nkeyboard %s\nresolution %u %u %u\n", config.layout, config.keyboard, &config.width, &config.height, &config.bpp);
+
+    for (i = 0; i < config.ncolors; i++)
+        count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);
+
+    count += cstring_write_fmt(data, size, count, "bindings\n");
+
+    for (i = 0; i < config.nbindings; i++)
+    {
+
+        struct binding *binding = &config.bindings[i];
+
+        if (cstring_length(binding->key) && cstring_length(binding->action))
+            count += cstring_write_fmt(data, size, count, "binding %s %s %s %s\n", binding->key, (cstring_length(binding->mod)) ? binding->mod : "none", binding->action, binding->command);
+
+    }
+
+    return count;
+
+}
+
+/* sends whole lines in each message, so the wm can apply every message by itself */
+static void sendlines(unsigned int target, unsigned int event, char *data, unsigned int count)
+{
+
+    unsigned int offset = 0;
+
+    while (offset < count)
+    {
+
+        unsigned int length = count - offset;
+
+        if (length > MESSAGE_SIZE)
+        {
+
+            length = MESSAGE_SIZE;
+
+            while (length && data[offset + length - 1] != '\n')
+                length--;
+
+            if (!length)
+                break;
+
+        }
+
+        channel_send(0, target, event, length, data + offset);
+
+        offset += length;
+
+    }
+
+}
+
 static unsigned int savefile(char *path, char *data, unsigned int count)
 {
 
@@ -811,7 +870,9 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=apply"))
     {
 
-        channel_send_fmt(0, message->source, EVENT_OPTION, "config\\0%s\\0", option_getstring("config"));
+        static char data[0x8000];
+
+        sendlines(message->source, EVENT_WMCONFIG, data, writelines(data, 0x8000));
 
     }
 
