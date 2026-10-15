@@ -7,7 +7,15 @@
 #define CLASS_HID                       0x03
 #define SUBCLASS_BOOT                   0x01
 #define PROTOCOL_KEYBOARD               0x01
+#define REQUEST_SETREPORT               0x09
 #define REQUEST_SETIDLE                 0x0A
+#define REPORT_OUTPUT                   0x02
+#define USAGE_NUMLOCK                   0x53
+#define USAGE_CAPSLOCK                  0x39
+#define USAGE_SCROLLLOCK                0x47
+#define LED_NUMLOCK                     (1 << 0)
+#define LED_CAPSLOCK                    (1 << 1)
+#define LED_SCROLLLOCK                  (1 << 2)
 #define REQUEST_SETPROTOCOL             0x0B
 #define REPORTSIZE                      8
 #define IDLE                            25
@@ -20,6 +28,7 @@ static struct keyboard_interface keyboardinterface;
 static unsigned char previous[REPORTSIZE];
 static unsigned char repeatkey;
 static unsigned int repeatcount;
+static unsigned char leds;
 
 static unsigned short scancodes[] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x001E, 0x0030, 0x002E, 0x0020,
@@ -93,6 +102,36 @@ static unsigned int haskey(unsigned char *report, unsigned char usage)
 
 }
 
+static void toggleled(unsigned int id, unsigned char usage)
+{
+
+    switch (usage)
+    {
+
+    case USAGE_NUMLOCK:
+        leds ^= LED_NUMLOCK;
+
+        break;
+
+    case USAGE_CAPSLOCK:
+        leds ^= LED_CAPSLOCK;
+
+        break;
+
+    case USAGE_SCROLLLOCK:
+        leds ^= LED_SCROLLLOCK;
+
+        break;
+
+    default:
+        return;
+
+    }
+
+    usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETREPORT, REPORT_OUTPUT << 8, usb_getinterface(id), 1, &leds);
+
+}
+
 static void onreport(unsigned int id, void *data, unsigned int count)
 {
 
@@ -147,6 +186,7 @@ static void onreport(unsigned int id, void *data, unsigned int count)
         {
 
             notify(getscancode(report[i]), 1);
+            toggleled(id, report[i]);
 
             repeatkey = report[i];
             repeatcount = 0;
@@ -188,6 +228,7 @@ static void driver_attach(unsigned int id)
 
     current = id;
     repeatkey = 0;
+    leds = 0;
 
     buffer_clear(previous, REPORTSIZE);
     keyboard_registerinterface(&keyboardinterface);
