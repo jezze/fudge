@@ -12,14 +12,31 @@
 #include "cmap.h"
 #include "render.h"
 
-#define INFINITY                    0xFFFF
-#define DIRECTION_NONE              0
-#define DIRECTION_HORIZONTAL        1
-#define DIRECTION_VERTICAL          2
-#define STRETCH_NONE                0
-#define STRETCH_HORIZONTAL          1
-#define STRETCH_VERTICAL            2
-#define STRETCH_BOTH                3
+#define INFINITY                        0xFFFF
+#define DIRECTION_NONE                  0
+#define DIRECTION_HORIZONTAL            1
+#define DIRECTION_VERTICAL              2
+#define STRETCH_NONE                    0
+#define STRETCH_HORIZONTAL              1
+#define STRETCH_VERTICAL                2
+#define STRETCH_BOTH                    3
+#define PALETTE_BUTTON                  0
+#define PALETTE_CHECKBOX                1
+#define PALETTE_BOX                     2
+#define PALETTE_ITEM                    3
+#define PALETTE_LINK                    4
+#define PALETTE_MOUSE                   5
+#define PALETTE_PANEL                   6
+#define PALETTE_SELECT                  7
+#define PALETTE_SWATCH                  8
+#define PALETTE_TEXT                    9
+#define PALETTE_WINDOW                  10
+#define NUM_PALETTES                    11
+#define SHADE_NORMAL                    0
+#define SHADE_HOVER                     1
+#define SHADE_FOCUS                     2
+#define SHADE_DISABLED                  3
+#define NUM_SHADES                      4
 
 static unsigned int hasdamage;
 
@@ -40,33 +57,6 @@ struct calls
 
 };
 
-static struct util_position zeroposition;
-static struct util_size zerosize;
-static unsigned int measurespans;
-static unsigned int measureminimum;
-static unsigned int measureclipped;
-static struct util_position mouse;
-static unsigned int mousetype;
-static struct calls calls[32];
-
-#define PALETTE_BUTTON                  0
-#define PALETTE_CHECKBOX                1
-#define PALETTE_BOX                     2
-#define PALETTE_ITEM                    3
-#define PALETTE_LINK                    4
-#define PALETTE_MOUSE                   5
-#define PALETTE_PANEL                   6
-#define PALETTE_SELECT                  7
-#define PALETTE_SWATCH                  8
-#define PALETTE_TEXT                    9
-#define PALETTE_WINDOW                  10
-#define NUM_PALETTES                    11
-#define SHADE_NORMAL                    0
-#define SHADE_HOVER                     1
-#define SHADE_FOCUS                     2
-#define SHADE_DISABLED                  3
-#define NUM_SHADES                      4
-
 struct palette
 {
 
@@ -76,6 +66,14 @@ struct palette
 
 };
 
+static struct util_position zeroposition;
+static struct util_size zerosize;
+static unsigned int measurespans;
+static unsigned int measureminimum;
+static unsigned int measureclipped;
+static struct util_position mouse;
+static unsigned int mousetype;
+static struct calls calls[32];
 static char *palettenames[NUM_PALETTES] = {"button", "checkbox", "box", "item", "link", "mouse", "panel", "select", "swatch", "text", "window"};
 static char *shadenames[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
 static struct palette palettes[NUM_PALETTES][NUM_SHADES];
@@ -228,7 +226,6 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         climit = util_size_sub(&inner, offset.x, offset.y);
         csize = calls[child->type].getsize(child, &climit, &rowstart);
 
-        /* scrolling is only vertical, so the content still needs its full width and room for the thumb */
         if (widget_isscrollable(child))
         {
 
@@ -331,7 +328,6 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
 
     }
 
-    /* stretching doesn't cut what can be scrolled to */
     if (isscrollablex(widget))
         placement.size.w = util_max(placement.size.w, size.w);
 
@@ -434,7 +430,6 @@ static void placecursor(struct widget *widget)
         struct text_rowinfo rowinfo;
         int x;
 
-        /* place the cursor on its row the same way the row is aligned when the text is drawn */
         rowinfo.width = 0;
         rowinfo.lineheight = font->lineheight;
 
@@ -503,7 +498,6 @@ static void clipcontent(struct widget *widget)
 
 }
 
-/* the thumb runs in a track along the right edge and is as tall, compared to the track, as the visible part is compared to all of the content */
 static void placethumb(struct widget *widget, int view)
 {
 
@@ -551,7 +545,6 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     calls[widget->type].place(widget);
 
-    /* the content of a scrolling widget is as tall as it needs, moved by the scroll and cut to the widget; the thumb sits against the border, so the padding goes between it and the content */
     if (isscrollablex(widget))
         widget->cplacement.position.x -= widget->scroll.x;
 
@@ -645,7 +638,6 @@ static struct util_size textsize(struct widget *widget, struct util_size *limit,
 
     }
 
-    /* text that wraps can be made as narrow as one character, and so can text that doesn't wrap in a scrolling box, which cuts it */
     if ((measureminimum && widget->attributes.wrap != ATTR_WRAP_NONE) || (measureclipped && widget->attributes.wrap == ATTR_WRAP_NONE))
     {
 
@@ -719,7 +711,6 @@ static struct util_size getsizebox(struct widget *widget, struct util_size *limi
     csize = childrengetsize(widget, limit);
     measureclipped = clipped;
 
-    /* a box to type in is a line of text high, however short its text is */
     if (widget->attributes.mode == ATTR_MODE_EDIT)
         csize.h = util_max(csize.h, pool_getfont(widget->attributes.weight)->lineheight + widget->attributes.padding * 2);
 
@@ -846,10 +837,8 @@ static void placeitem(struct widget *widget)
 static void placewindow(struct widget *widget)
 {
 
-    /* not cut to the screen, so moving the window without a new layout doesn't move the cut along */
     widget->clip = widget->placement;
     widget->cclip = widget->clip;
-
     widget->cplacement = util_region(widget->placement.position.x, widget->placement.position.y + CONFIG_WINDOW_BUTTON_HEIGHT, widget->placement.size.w, widget->placement.size.h - CONFIG_WINDOW_BUTTON_HEIGHT);
 
 }
@@ -860,7 +849,6 @@ static void textrender(struct blit_display *display, struct widget *widget, stru
     struct text_font *font = pool_getfont(widget->attributes.weight);
     unsigned int icurrent;
 
-    /* rows are drawn top to bottom, so each row is found from the one drawn before it */
     if ((unsigned int)num < widget->textrow)
     {
 
@@ -929,35 +917,6 @@ static void renderfill(struct blit_display *display, struct widget *widget, int 
 
 }
 
-/*
-static void rendergradient(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
-{
-
-    struct widget_gradient *gradient = widget->data;
-    unsigned int color0 = fill->color0;
-    unsigned int color1 = fill->color1;
-    unsigned int color;
-
-    char a0 = color0 >> 24;
-    char r0 = color0 >> 16;
-    char g0 = color0 >> 8;
-    char b0 = color0 >> 0;
-    char a1 = color1 >> 24;
-    char r1 = color1 >> 16;
-    char g1 = color1 >> 8;
-    char b1 = color1 >> 0;
-
-    r0 = util_max(0, r0 - line / 64);
-    g0 = util_max(0, g0 - line / 64);
-    b0 = util_max(0, b0 - line / 64);
-
-    color = (a0 << 24) | (r0 << 16) | (g0 << 8) | (b0 << 0);
-
-    blit_line(display, color, x0, x2);
-
-}
-*/
-
 static void renderimage(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
@@ -970,7 +929,6 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
             struct pool_pcxresource *resource = widget->resource;
 
-            /* the image covers its placement, which its parent's flow stretches or leaves at the image's own size */
             blit_pcx(display, resource, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
 
         }
@@ -1016,7 +974,6 @@ static void renderbox(struct blit_display *display, struct widget *widget, int l
     struct util_region rcursor = util_region_intersection(&cursor, &inside);
     unsigned int shade = getshade(widget);
 
-    /* only a box to type in shows hover and focus */
     if (widget->attributes.mode != ATTR_MODE_EDIT && shade != SHADE_DISABLED)
         shade = SHADE_NORMAL;
 
@@ -1045,7 +1002,6 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
     blit_iconarrowdown(display, &rarrow, line, x0, x2, palette->icon);
 
-    /* a label too long for the select is cut before the arrow */
     if (textx2 > x0)
         textrender(display, widget, &widget->placement, palette->text, x0, textx2, 0, 0, &padding, 0, line);
 
@@ -1093,7 +1049,6 @@ static struct util_size measurewindow(struct widget *widget, struct util_size *l
     struct util_size inner = util_size_sub(limit, 0, CONFIG_WINDOW_BUTTON_HEIGHT);
     struct util_size csize;
 
-    /* a spanning widget only takes leftover space when placed, but it must fit when the window is measured */
     measurespans = 1;
     measureminimum = minimum;
     csize = childrengetsize(widget, &inner);
@@ -1162,7 +1117,6 @@ static void renderwindow(struct blit_display *display, struct widget *widget, in
     unsigned int onhamburger = util_region_intersects(&rhamburger, mouse.x, mouse.y);
     unsigned int onminimize = util_region_intersects(&rminimize, mouse.x, mouse.y);
     unsigned int onclose = util_region_intersects(&rclose, mouse.x, mouse.y);
-
     struct palette *normal = getpalette(PALETTE_WINDOW, SHADE_NORMAL);
     struct palette *hover = getpalette(PALETTE_WINDOW, SHADE_HOVER);
 

@@ -434,7 +434,6 @@ static void damageall(struct widget *widget)
 
     damage(widget);
 
-    /* everything in a window is drawn inside it, so there is nothing more to damage */
     if (widget->type == WIDGET_TYPE_WINDOW)
         return;
 
@@ -451,7 +450,6 @@ static void shiftregion(struct util_region *region, int x, int y)
 
 }
 
-/* moves a window and everything placed in it without a new layout, which is only possible when it is the only window of its program; says whether it did */
 static unsigned int shiftwindow(struct widget *window, int x, int y)
 {
 
@@ -487,7 +485,6 @@ static unsigned int shiftwindow(struct widget *window, int x, int y)
 
 }
 
-/* a window covers everything in it, so damaging its own area is enough */
 static unsigned int translatewindow(struct widget *window, int x, int y)
 {
 
@@ -797,7 +794,6 @@ static void markwidget(struct widget *widget, unsigned int clear)
 
 }
 
-/* the texts of a textbox count as one run of characters, so a position is an index into all of them */
 static unsigned int getmarkindex(struct widget *textbox, int x, int y)
 {
 
@@ -1132,7 +1128,6 @@ static void placewindow(struct widget *widget, int x, int y, unsigned int w, uns
 
 }
 
-/* the newest window takes the left half below the menu, the others share the right half from top to bottom, newest first */
 static void tilewindows(void)
 {
 
@@ -1187,7 +1182,6 @@ static unsigned int copytext(struct widget *text)
 
 }
 
-/* all texts of a box one after another, as far as they fit */
 static void copytexts(struct widget *widget)
 {
 
@@ -1208,7 +1202,6 @@ static void copytexts(struct widget *widget)
 
 }
 
-/* the marked part of all texts, as indices into all of them; says whether anything is marked */
 static unsigned int getmarked(struct widget *widget, unsigned int *start, unsigned int *end)
 {
 
@@ -1245,7 +1238,6 @@ static unsigned int getmarked(struct widget *widget, unsigned int *start, unsign
 
 }
 
-/* marks from one index to another across all texts */
 static void setmarked(struct widget *widget, unsigned int start, unsigned int end)
 {
 
@@ -1272,7 +1264,6 @@ static void setmarked(struct widget *widget, unsigned int start, unsigned int en
 
 }
 
-/* removes the marked part of every text and gives the index where it started */
 static unsigned int removemarked(struct widget *widget, unsigned int cursor)
 {
 
@@ -1318,7 +1309,6 @@ static unsigned int removemarked(struct widget *widget, unsigned int cursor)
 
 }
 
-/* inserts as much as fits into the text the index falls in and says how much that was */
 static unsigned int inserttext(struct widget *widget, unsigned int index, char *data, unsigned int count)
 {
 
@@ -1366,7 +1356,6 @@ static void notifychange(struct widget *widget)
 
 }
 
-/* the cursor counts through all texts of the box, and each edit changes the text the cursor is in */
 static void edittextbox(struct widget *widget, unsigned int id)
 {
 
@@ -1385,7 +1374,6 @@ static void edittextbox(struct widget *widget, unsigned int id)
     if (!text)
         return;
 
-    /* enter is sent to the program when it asks for it, otherwise it starts a new line in a box that scrolls */
     if (id == KEYS_KEY_ENTER)
     {
 
@@ -1406,7 +1394,6 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
     }
 
-    /* typing or erasing while text is marked first removes the marked text */
     if (getmarked(widget, &start, &end) && (c || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
     {
 
@@ -1500,7 +1487,6 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
     }
 
-    /* with shift held a move marks from where the marking started to the cursor */
     if (moved && (state.keys.mod & KEYS_MOD_SHIFT))
     {
 
@@ -1530,7 +1516,6 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
 }
 
-/* sends the marked part of every text to the clipboard service, replacing what it held */
 static unsigned int copymarked(struct widget *widget)
 {
 
@@ -1567,7 +1552,6 @@ static unsigned int copymarked(struct widget *widget)
 
 }
 
-/* replaces the marked text, or inserts at the cursor, with what the clipboard service holds */
 static void pastetext(struct widget *widget)
 {
 
@@ -1585,7 +1569,6 @@ static void pastetext(struct widget *widget)
 
     channel_send(1, service, EVENT_CLIPBOARDREAD, 0, 0);
 
-    /* a box that doesn't scroll holds one line, so the rest of the clipboard is read and dropped */
     while (channel_poll(1, service, EVENT_CLIPBOARDDATA, &message) && message.length)
     {
 
@@ -1911,7 +1894,6 @@ static unsigned int collectfocusable(struct widget *widget, struct widget **list
 
 }
 
-/* moves the focus to the next or previous widget in the focused window that takes keys, and says whether there was one */
 static unsigned int cyclefocus(unsigned int forward)
 {
 
@@ -1949,7 +1931,6 @@ static unsigned int cyclefocus(unsigned int forward)
 
 }
 
-/* marks every text in a box; an edit box's cursor goes to the end; anything else gets the key */
 static unsigned int markall(struct widget *widget)
 {
 
@@ -2164,7 +2145,6 @@ static void reloadconfig(void)
 
 }
 
-/* sets the options like every program does, and reloads the configuration when it is pointed out once the wm runs */
 static void onoption(struct message *message)
 {
 
@@ -2219,7 +2199,6 @@ static void onmain(struct message *message)
 
 }
 
-/* moves the content so that the thumb stays under the point where it was grabbed */
 static void dragthumb(struct widget *widget)
 {
 
@@ -2239,7 +2218,6 @@ static void dragthumb(struct widget *widget)
 
 }
 
-/* speed is in quarters of a pixel per count, and the part of a pixel left over is kept for the next move */
 static int scalemove(int count, int quarters, int *remainder)
 {
 
@@ -2252,7 +2230,6 @@ static int scalemove(int count, int quarters, int *remainder)
 
 }
 
-/* above normal speed the gain grows with the size of the move, so a slow move still goes one pixel at a time */
 static int getquarters(int relx, int rely)
 {
 
@@ -2294,7 +2271,6 @@ static void onmousemove(struct message *message)
 
             markwidget(state.focusedwidget, 0);
 
-            /* the cursor follows the end of the marking, so the box scrolls along */
             if (widget_iseditable(state.focusedwidget))
                 movecursor(state.focusedwidget);
             else if (widget_isscrollable(state.focusedwidget))
@@ -2517,7 +2493,6 @@ static void onwmrenderdata(struct message *message)
 
 }
 
-/* applies configuration lines, the same ones loadconfig gets from mq, without a file */
 static void onwmconfig(struct message *message)
 {
 
@@ -2530,7 +2505,6 @@ static void onwmconfig(struct message *message)
 
 }
 
-/* sends the texts in a program's widget as pieces, and an empty piece at the end */
 static void onwmread(struct message *message)
 {
 
