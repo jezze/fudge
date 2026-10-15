@@ -50,7 +50,7 @@ static void updatestate(unsigned int wm, int state)
         break;
 
     case STATE_DIV:
-        accumulator /= number;
+        accumulator = (number) ? accumulator / number : 0;
         number = 0;
 
         break;
