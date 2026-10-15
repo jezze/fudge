@@ -1040,10 +1040,14 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
     struct util_region rarrow = util_region(widget->placement.position.x + widget->placement.size.w - padding.w - widget->placement.size.h / 2, widget->placement.position.y, widget->placement.size.h, widget->placement.size.h);
     struct palette *palette = getpalette(PALETTE_SELECT, getshade(widget));
+    int textx2 = util_min(x2, widget->placement.position.x + (int)widget->placement.size.w - (int)padding.w * 2);
 
     blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
     blit_iconarrowdown(display, &rarrow, line, x0, x2, palette->icon);
-    textrender(display, widget, &widget->placement, palette->text, x0, x2, 0, 0, &padding, 0, line);
+
+    /* a label too long for the select is cut before the arrow */
+    if (textx2 > x0)
+        textrender(display, widget, &widget->placement, palette->text, x0, textx2, 0, 0, &padding, 0, line);
 
 }
 
