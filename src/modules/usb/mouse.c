@@ -11,6 +11,7 @@
 #define REQUEST_SETPROTOCOL             0x0B
 
 static struct base_driver driver;
+static unsigned int current;
 static struct mouse_interface mouseinterface;
 static unsigned char oldbuttons;
 
@@ -65,7 +66,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return usb_getclass(id) == CLASS_HID && usb_getsubclass(id) == SUBCLASS_BOOT && usb_getprotocol(id) == PROTOCOL_MOUSE;
+    return (!current || current == id) && usb_getclass(id) == CLASS_HID && usb_getsubclass(id) == SUBCLASS_BOOT && usb_getprotocol(id) == PROTOCOL_MOUSE;
 
 }
 
@@ -82,6 +83,9 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
+    current = id;
+    oldbuttons = 0;
+
     mouse_registerinterface(&mouseinterface);
     usb_listen(id, onreport);
 
@@ -92,6 +96,8 @@ static void driver_detach(unsigned int id)
 
     usb_unlisten(id);
     mouse_unregisterinterface(&mouseinterface);
+
+    current = 0;
 
 }
 

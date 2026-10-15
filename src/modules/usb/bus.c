@@ -3,6 +3,7 @@
 #include <cpu.h>
 #include <arch.h>
 #include <modules/bus.h>
+#include <modules/driver.h>
 #include <modules/pci/pci.h>
 #include <modules/pic/pic.h>
 #include <modules/apic/apic.h>
@@ -67,11 +68,13 @@
 #define TRB_STATUS                      4
 #define TRB_LINK                        6
 #define TRB_ENABLESLOT                  9
+#define TRB_DISABLESLOT                 10
 #define TRB_ADDRESSDEVICE               11
 #define TRB_CONFIGUREENDPOINT           12
 #define TRB_EVALUATECONTEXT             13
 #define TRB_TRANSFEREVENT               32
 #define TRB_COMMANDEVENT                33
+#define TRB_PORTEVENT                   34
 #define COMPLETION_SUCCESS              1
 #define COMPLETION_SHORTPACKET          13
 #define EP_CONTROL                      4
@@ -164,7 +167,8 @@ static struct trbring event;
 static struct result commandresult;
 static struct result transferresult;
 static struct device devices[DEVICES];
-static unsigned int ndevices;
+static unsigned char portchanges[256];
+static unsigned int hotplugging;
 static unsigned int pciid;
 static unsigned int irq;
 static unsigned int msi;
@@ -261,10 +265,10 @@ static struct device *finddevice(unsigned int slot)
 
     unsigned int i;
 
-    for (i = 0; i < ndevices; i++)
+    for (i = 0; i < DEVICES; i++)
     {
 
-        if (devices[i].slot == slot)
+        if (devices[i].slot && devices[i].slot == slot)
             return &devices[i];
 
     }
@@ -344,6 +348,11 @@ static void process(void)
 
             break;
 
+        case TRB_PORTEVENT:
+            portchanges[trb->parameter0 >> 24] = 1;
+
+            break;
+
         }
 
         event.index++;
@@ -365,13 +374,31 @@ static void process(void)
 
 }
 
+static void hotplug(void);
+
 static void handleirq(unsigned int irq)
 {
+
+    unsigned int run;
 
     spinlock_acquire(&spinlock);
     write32(op + OP_USBSTS, OP_USBSTS_EINT);
     write32(rt + IR_IMAN, read32(rt + IR_IMAN) | IR_IMAN_IP);
     process();
+
+    run = !hotplugging;
+    hotplugging = 1;
+
+    spinlock_release(&spinlock);
+
+    if (!run)
+        return;
+
+    hotplug();
+    spinlock_acquire(&spinlock);
+
+    hotplugging = 0;
+
     spinlock_release(&spinlock);
 
 }
@@ -732,28 +759,57 @@ static unsigned int resetport(unsigned int port)
 
 }
 
-static void enumerate(void)
+static void disableslot(unsigned int slot)
 {
 
-    unsigned int port;
+    runcommand(0, TRB_TYPE(TRB_DISABLESLOT) | (slot << 24));
 
-    for (port = 1; port <= ports && ndevices < DEVICES; port++)
+    dcbaa[slot * 2] = 0;
+    dcbaa[slot * 2 + 1] = 0;
+
+}
+
+static struct device *findport(unsigned int port)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < DEVICES; i++)
     {
 
-        struct device *device = &devices[ndevices];
-        unsigned int speed = resetport(port);
-        unsigned int page = 4 + SCRATCHPADS + ndevices * DEVICEPAGES;
-        unsigned int i;
+        if (devices[i].slot && devices[i].port == port)
+            return &devices[i];
 
-        if (!speed)
+    }
+
+    return 0;
+
+}
+
+static struct device *enumerateport(unsigned int port)
+{
+
+    unsigned int speed = resetport(port);
+    unsigned int index;
+    unsigned int i;
+
+    if (!speed)
+        return 0;
+
+    for (index = 0; index < DEVICES; index++)
+    {
+
+        struct device *device = &devices[index];
+        unsigned int page = 4 + SCRATCHPADS + index * DEVICEPAGES;
+
+        if (device->slot)
             continue;
 
         if (!runcommand(0, TRB_TYPE(TRB_ENABLESLOT)))
-            continue;
+            return 0;
 
         buffer_clear(device, sizeof (struct device));
 
-        device->slot = commandresult.slot;
         device->port = port;
         device->speed = speed;
         device->maxpacket = getdefaultpacket(speed);
@@ -770,10 +826,115 @@ static void enumerate(void)
         initring(&device->bulkinring, getpage(page + 4));
         initring(&device->bulkoutring, getpage(page + 5));
 
-        ndevices++;
+        device->slot = commandresult.slot;
 
-        if (!setupdevice(device))
-            ndevices--;
+        if (setupdevice(device))
+            return device;
+
+        disableslot(device->slot);
+
+        device->slot = 0;
+
+        return 0;
+
+    }
+
+    return 0;
+
+}
+
+static void enumerate(void)
+{
+
+    unsigned int port;
+
+    for (port = 1; port <= ports; port++)
+        enumerateport(port);
+
+}
+
+static void hotplug(void)
+{
+
+    unsigned int port;
+
+    for (port = 1; port <= ports && port < 256; port++)
+    {
+
+        unsigned long portsc = op + OP_PORTSC + (port - 1) * 0x10;
+        struct device *device;
+        unsigned int slot = 0;
+
+        spinlock_acquire(&spinlock);
+
+        if (portchanges[port])
+        {
+
+            portchanges[port] = 0;
+            device = findport(port);
+
+            if (device && !(read32(portsc) & PORTSC_CCS))
+            {
+
+                slot = device->slot;
+                device->callback = 0;
+
+            }
+
+            else if (!device && (read32(portsc) & PORTSC_CCS))
+            {
+
+                device = enumerateport(port);
+
+                if (device)
+                    slot = device->slot;
+
+                device = 0;
+
+            }
+
+            else
+            {
+
+                device = 0;
+
+            }
+
+            write32(portsc, (read32(portsc) & PORTSC_NEUTRAL) | PORTSC_CHANGES);
+
+        }
+
+        else
+        {
+
+            device = 0;
+
+        }
+
+        spinlock_release(&spinlock);
+
+        if (!slot)
+            continue;
+
+        if (device)
+        {
+
+            base_detachdevice(USB_BUS, slot);
+            spinlock_acquire(&spinlock);
+            disableslot(slot);
+
+            device->slot = 0;
+
+            spinlock_release(&spinlock);
+
+        }
+
+        else
+        {
+
+            base_attachdevice(USB_BUS, slot);
+
+        }
 
     }
 
@@ -1131,32 +1292,18 @@ static void bus_setup(void)
 static unsigned int bus_next(unsigned int id)
 {
 
+    unsigned int next = 0;
     unsigned int i;
 
-    for (i = 0; i < ndevices; i++)
+    for (i = 0; i < DEVICES; i++)
     {
 
-        if (devices[i].slot > id)
-        {
-
-            unsigned int next = devices[i].slot;
-            unsigned int j;
-
-            for (j = 0; j < ndevices; j++)
-            {
-
-                if (devices[j].slot > id && devices[j].slot < next)
-                    next = devices[j].slot;
-
-            }
-
-            return next;
-
-        }
+        if (devices[i].slot > id && (!next || devices[i].slot < next))
+            next = devices[i].slot;
 
     }
 
-    return 0;
+    return next;
 
 }
 

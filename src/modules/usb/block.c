@@ -41,6 +41,7 @@ struct csw
 } __attribute__((packed));
 
 static struct base_driver driver;
+static unsigned int current;
 static struct block_interface blockinterface;
 static struct spinlock spinlock;
 static unsigned int tag;
@@ -171,7 +172,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return usb_getclass(id) == CLASS_STORAGE && usb_getsubclass(id) == SUBCLASS_SCSI && usb_getprotocol(id) == PROTOCOL_BULKONLY;
+    return (!current || current == id) && usb_getclass(id) == CLASS_STORAGE && usb_getsubclass(id) == SUBCLASS_SCSI && usb_getprotocol(id) == PROTOCOL_BULKONLY;
 
 }
 
@@ -190,8 +191,12 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    if (ready)
-        block_registerinterface(&blockinterface);
+    if (!ready)
+        return;
+
+    current = id;
+
+    block_registerinterface(&blockinterface);
 
 }
 
@@ -200,6 +205,8 @@ static void driver_detach(unsigned int id)
 
     if (ready)
         block_unregisterinterface(&blockinterface);
+
+    current = 0;
 
 }
 
