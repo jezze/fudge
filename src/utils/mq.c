@@ -27,6 +27,9 @@ struct parser
 
 };
 
+static char data[INPUT_SIZE];
+static unsigned int datacount;
+
 static void next(struct parser *ps)
 {
 
@@ -704,6 +707,16 @@ static void parse(unsigned int source, char *input, char *query)
 
 }
 
+static void ondata(struct message *message)
+{
+
+    if (datacount + message->length < INPUT_SIZE)
+        datacount += buffer_write(data, INPUT_SIZE, message->data, message->length, datacount);
+    else
+        datacount = INPUT_SIZE;
+
+}
+
 static void onpath(struct message *message)
 {
 
@@ -749,12 +762,35 @@ static void onpath(struct message *message)
 
 }
 
+static void onterm(struct message *message)
+{
+
+    if (datacount == INPUT_SIZE)
+    {
+
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Input too large\n");
+
+    }
+
+    else if (datacount)
+    {
+
+        data[datacount] = '\0';
+
+        parse(message->source, data, option_getstring("query"));
+
+    }
+
+}
+
 void init(void)
 {
 
     option_add("query", ".");
     option_add("format", "");
+    channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_PATH, onpath);
+    channel_bind(EVENT_TERM, onterm);
 
 }
 
