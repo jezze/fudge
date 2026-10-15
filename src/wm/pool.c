@@ -107,19 +107,7 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
 static struct list_item *finditem(struct widget *widget)
 {
 
-    struct list_item *current = 0;
-
-    while ((current = pool_next(current)))
-    {
-
-        struct widget *w = current->data;
-
-        if (w == widget)
-            return current;
-
-    }
-
-    return 0;
+    return &items[widget - entries];
 
 }
 
@@ -206,10 +194,7 @@ struct widget *pool_gettextat(struct widget *widget, unsigned int index, unsigne
 void pool_bump(struct widget *widget)
 {
 
-    struct list_item *item = finditem(widget);
-
-    if (item)
-        bump(item);
+    bump(finditem(widget));
 
     while (bumplist.head)
         list_move(&widgetlist, &bumplist, bumplist.head);
@@ -242,18 +227,11 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 void pool_destroy(struct widget *widget)
 {
 
-    struct list_item *item = finditem(widget);
+    if (widget->type == WIDGET_TYPE_IMAGE && widget->attributes.mimetype == ATTR_MIMETYPE_PCX && widget->resource)
+        ((struct pool_pcxresource *)widget->resource)->used = 0;
 
-    if (item)
-    {
-
-        if (widget->type == WIDGET_TYPE_IMAGE && widget->attributes.mimetype == ATTR_MIMETYPE_PCX && widget->resource)
-            ((struct pool_pcxresource *)widget->resource)->used = 0;
-
-        widget_unsetattributes(widget);
-        list_move(&freelist, &widgetlist, item);
-
-    }
+    widget_unsetattributes(widget);
+    list_move(&freelist, &widgetlist, finditem(widget));
 
 }
 
