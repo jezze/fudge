@@ -543,7 +543,10 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     widget->textrow = 0;
     widget->textoffset = 0;
 
-    calls[widget->type].place(widget);
+    widget->cplacement = widget->placement;
+
+    if (calls[widget->type].place)
+        calls[widget->type].place(widget);
 
     if (isscrollablex(widget))
         widget->cplacement.position.x -= widget->scroll.x;
@@ -668,26 +671,17 @@ static struct util_size getsizecheckbox(struct widget *widget, struct util_size 
 
 }
 
-static struct util_size getsizefill(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizechildren(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return widget->size;
+    return childrengetsize(widget, limit);
 
 }
 
-static struct util_size getsizeimage(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+static struct util_size getsizefixed(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
     return widget->size;
-
-}
-
-static struct util_size getsizelayout(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    struct util_size csize = childrengetsize(widget, limit);
-
-    return util_size(csize.w, csize.h);
 
 }
 
@@ -718,15 +712,6 @@ static struct util_size getsizebox(struct widget *widget, struct util_size *limi
 
 }
 
-static struct util_size getsizepanel(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    struct util_size csize = childrengetsize(widget, limit);
-
-    return util_size(csize.w, csize.h);
-
-}
-
 static struct util_size getsizeselect(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -746,52 +731,6 @@ static struct util_size getsizetext(struct widget *widget, struct util_size *lim
 
 }
 
-static struct util_size getsizeitem(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    return childrengetsize(widget, limit);
-
-}
-
-static struct util_size getsizewindow(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
-{
-
-    return widget->size;
-
-}
-
-static void placebutton(struct widget *widget)
-{
-
-}
-
-static void placecheckbox(struct widget *widget)
-{
-
-}
-
-static void placefill(struct widget *widget)
-{
-
-}
-
-static void placeimage(struct widget *widget)
-{
-
-}
-
-static void placelayout(struct widget *widget)
-{
-
-    widget->cplacement = widget->placement;
-
-}
-
-static void placeswatch(struct widget *widget)
-{
-
-}
-
 static void placebox(struct widget *widget)
 {
 
@@ -800,13 +739,6 @@ static void placebox(struct widget *widget)
     widget->cclip = util_region_intersection(&inner, &widget->clip);
     widget->clip = util_region_intersection(&widget->placement, &widget->clip);
     widget->cplacement = inner;
-
-}
-
-static void placepanel(struct widget *widget)
-{
-
-    widget->cplacement = widget->placement;
 
 }
 
@@ -819,18 +751,6 @@ static void placeselect(struct widget *widget)
         widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
     widget->cclip = widget->clip;
-
-}
-
-static void placetext(struct widget *widget)
-{
-
-}
-
-static void placeitem(struct widget *widget)
-{
-
-    widget->cplacement = widget->placement;
 
 }
 
@@ -1316,17 +1236,16 @@ void render_init(void)
     }
 
     setupcall(WIDGET_TYPE_BOX, getsizebox, placebox, renderbox);
-    setupcall(WIDGET_TYPE_BUTTON, getsizebutton, placebutton, renderbutton);
-    setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, placecheckbox, rendercheckbox);
-    setupcall(WIDGET_TYPE_FILL, getsizefill, placefill, renderfill);
-    setupcall(WIDGET_TYPE_IMAGE, getsizeimage, placeimage, renderimage);
-    setupcall(WIDGET_TYPE_ITEM, getsizeitem, placeitem, renderitem);
-    setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, placeswatch, renderswatch);
-    setupcall(WIDGET_TYPE_LAYOUT, getsizelayout, placelayout, renderlayout);
-    setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
+    setupcall(WIDGET_TYPE_BUTTON, getsizebutton, 0, renderbutton);
+    setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, 0, rendercheckbox);
+    setupcall(WIDGET_TYPE_FILL, getsizefixed, 0, renderfill);
+    setupcall(WIDGET_TYPE_IMAGE, getsizefixed, 0, renderimage);
+    setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
+    setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
+    setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
+    setupcall(WIDGET_TYPE_PANEL, getsizechildren, 0, renderpanel);
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
-    setupcall(WIDGET_TYPE_TEXT, getsizetext, placetext, rendertext);
-    setupcall(WIDGET_TYPE_WINDOW, getsizewindow, placewindow, renderwindow);
-
+    setupcall(WIDGET_TYPE_TEXT, getsizetext, 0, rendertext);
+    setupcall(WIDGET_TYPE_WINDOW, getsizefixed, placewindow, renderwindow);
 }
 
