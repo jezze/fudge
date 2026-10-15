@@ -41,7 +41,6 @@ static void flush(unsigned int source)
     unsigned int lines = 0;
     unsigned int offset = length;
 
-    /* a final newline ends the last line rather than starting an empty one */
     if (max && offset && getbyte(offset - 1) == '\n')
         offset--;
 

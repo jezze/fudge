@@ -142,7 +142,6 @@ static void insertleft(unsigned int count, void *data)
         unsigned int length = buffer_write(buffer, INPUTSIZE, data, count, 0);
         unsigned int rest = ring_readcopy(&input2, buffer + length, INPUTSIZE);
 
-        /* a terminal prints over what is under the cursor, so redraw the text after it and step back */
         if (rest)
         {
 

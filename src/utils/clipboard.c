@@ -7,7 +7,6 @@ static char data[CLIPBOARD_SIZE];
 static unsigned int count;
 static unsigned int started;
 
-/* the first piece written empties the clipboard, whether it comes from main or from data */
 static void writepiece(void *buffer, unsigned int length)
 {
 
