@@ -32,15 +32,6 @@ static unsigned long ioapicbase;
 static unsigned int redirections[OVERRIDES];
 static struct spinlock spinlock;
 
-static volatile unsigned int readio(unsigned long base, unsigned int offset)
-{
-
-    *(volatile unsigned int *)(base) = offset;
-
-    return *(volatile unsigned int *)(base + 0x10);
-
-}
-
 static void writeio(unsigned long base, unsigned int offset, unsigned int value)
 {
 
@@ -73,115 +64,6 @@ static void updateirq(unsigned int irq)
 
         if (redirections[pin] && overrides[pin] == irq)
             updatepin(pin);
-
-    }
-
-}
-
-void apic_debug_ioapic(void)
-{
-
-    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
-
-    if (madt)
-    {
-
-        unsigned long madttable = (unsigned long)madt + sizeof (struct acpi_madt);
-        unsigned long madtend = (unsigned long)madt + madt->base.length;
-
-        while (madttable < madtend)
-        {
-
-            struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
-
-            if (entry->type == 1)
-            {
-
-                struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-                unsigned int ioapicid = readio(ioapic->address, 0);
-                unsigned int ioapicversion = readio(ioapic->address, 1);
-                unsigned int id = ((ioapicid >> 24) & 0x0F);
-                unsigned int version = ioapicversion & 0xFF;
-                unsigned int max = ((ioapicversion >> 16) & 0xFF) + 1;
-                unsigned int j;
-
-                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic id %u version %u max %u", &id, &version, &max);
-
-                for (j = 0; j < max; j++)
-                {
-
-                    unsigned int value0 = readio(ioapic->address, 0x10 + j * 2);
-                    unsigned int value1 = readio(ioapic->address, 0x10 + j * 2 + 1);
-
-                    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic redtbl %u %H8u:%H8u", &j, &value1, &value0);
-
-                }
-
-            }
-
-            madttable += entry->length;
-
-        }
-
-    }
-
-}
-
-void apic_debug(void)
-{
-
-    struct acpi_madt *madt = (struct acpi_madt *)acpi_findheader("APIC");
-
-    if (madt)
-    {
-
-        unsigned long madttable = (unsigned long)madt + sizeof (struct acpi_madt);
-        unsigned long madtend = (unsigned long)madt + madt->base.length;
-
-        while (madttable < madtend)
-        {
-
-            struct acpi_madt_entry *entry = (struct acpi_madt_entry *)madttable;
-
-            if (entry->type == 0)
-            {
-
-                struct acpi_madt_lapic *lapic = (struct acpi_madt_lapic *)entry;
-
-                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "lapic processor %c id %c flags 0x%8Hu", &lapic->processor, &lapic->id, &lapic->flags);
-
-            }
-
-            if (entry->type == 1)
-            {
-
-                struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-
-                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic id %c address 0x%8Hu gsibase %u", &ioapic->id, &ioapic->address, &ioapic->gsibase);
-
-            }
-
-            if (entry->type == 2)
-            {
-
-                struct acpi_madt_ioapic_iso *override = (struct acpi_madt_ioapic_iso *)entry;
-
-                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "ioapic override bus %c irq %c gsi %u flags %4Hh", &override->bus, &override->irq, &override->gsi, &override->flags);
-
-            }
-
-            if (entry->type == 4)
-            {
-
-                struct acpi_madt_lapic_nmi *nmi = (struct acpi_madt_lapic_nmi *)entry;
-
-                debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "lapic nmi processor %c", &nmi->processor);
-
-            }
-
-            madttable += entry->length;
-
-        }
 
     }
 

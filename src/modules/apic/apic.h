@@ -64,8 +64,6 @@
 #define APIC_REG_CURRENTCOUNT           0x0390
 #define APIC_REG_DIVIDECONFIG           0x03E0
 
-void apic_debug_ioapic(void);
-void apic_debug(void);
 void apic_setupisrs(void);
 unsigned int apic_checklapic(unsigned int id);
 unsigned int apic_checkioapic(unsigned int id);
