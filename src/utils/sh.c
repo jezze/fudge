@@ -13,6 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
+#define NUM_EVENTS                      73
 
 static struct job job;
 static char script[SCRIPTSIZE];
@@ -231,7 +232,7 @@ static unsigned int readpath(struct job *job, struct parser *parser, char **word
 
 }
 
-static struct {char *name; unsigned int event;} events[] = {
+static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"main", EVENT_MAIN},
     {"term", EVENT_TERM},
     {"interrupt", EVENT_INTERRUPT},
@@ -313,7 +314,7 @@ static unsigned int findevent(char *word)
     unsigned int event = 0;
     unsigned int i;
 
-    for (i = 0; i < sizeof (events) / sizeof (events[0]); i++)
+    for (i = 0; i < NUM_EVENTS; i++)
     {
 
         if (cstring_match(word, events[i].name))
