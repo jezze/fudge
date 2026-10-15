@@ -1,4 +1,18 @@
 M:=\
+    $(DIR_SRC)/modules/usb/usb.ko \
+
+N:=\
+    $(DIR_SRC)/modules/usb/usb.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/usb/bus.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
+
+M:=\
     $(DIR_SRC)/modules/usb/ehci.ko \
 
 N:=\

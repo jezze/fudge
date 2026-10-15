@@ -1,0 +1,1027 @@
+#include <fudge.h>
+#include <kernel.h>
+#include <cpu.h>
+#include <arch.h>
+#include <modules/bus.h>
+#include <modules/pci/pci.h>
+#include <modules/pic/pic.h>
+#include <modules/apic/apic.h>
+#include "usb.h"
+
+#define PAGESIZE                        0x1000
+#define RINGSIZE                        (PAGESIZE / sizeof (struct trb))
+#define DEVICES                         8
+#define SCRATCHPADS                     16
+#define PAGES                           (4 + SCRATCHPADS + DEVICES * 5)
+#define LIMIT_POLL                      1000000
+#define CAP_LENGTH                      0x00
+#define CAP_HCSPARAMS1                  0x04
+#define CAP_HCSPARAMS2                  0x08
+#define CAP_HCCPARAMS1                  0x10
+#define CAP_HCCPARAMS1_CSZ              (1 << 2)
+#define CAP_DBOFF                       0x14
+#define CAP_RTSOFF                      0x18
+#define OP_USBCMD                       0x00
+#define OP_USBCMD_RS                    (1 << 0)
+#define OP_USBCMD_HCRST                 (1 << 1)
+#define OP_USBCMD_INTE                  (1 << 2)
+#define OP_USBSTS                       0x04
+#define OP_USBSTS_HCH                   (1 << 0)
+#define OP_USBSTS_EINT                  (1 << 3)
+#define OP_USBSTS_CNR                   (1 << 11)
+#define OP_CRCR                         0x18
+#define OP_DCBAAP                       0x30
+#define OP_CONFIG                       0x38
+#define OP_PORTSC                       0x400
+#define PORTSC_CCS                      (1 << 0)
+#define PORTSC_PED                      (1 << 1)
+#define PORTSC_PR                       (1 << 4)
+#define PORTSC_PRC                      (1 << 21)
+#define PORTSC_CHANGES                  (0x7F << 17)
+#define PORTSC_NEUTRAL                  ((1 << 0) | (1 << 3) | (0xF << 10) | (1 << 30) | (0xF << 5) | (1 << 9) | (0x3 << 14) | (0x7 << 25))
+#define IR_IMAN                         0x20
+#define IR_IMAN_IP                      (1 << 0)
+#define IR_IMAN_IE                      (1 << 1)
+#define IR_IMOD                         0x24
+#define IR_ERSTSZ                       0x28
+#define IR_ERSTBA                       0x30
+#define IR_ERDP                         0x38
+#define IR_ERDP_EHB                     (1 << 3)
+#define EXTCAP_LEGACY                   1
+#define EXTCAP_LEGACY_BIOS              (1 << 16)
+#define EXTCAP_LEGACY_OS                (1 << 24)
+#define TRB_CYCLE                       (1 << 0)
+#define TRB_LINK_TC                     (1 << 1)
+#define TRB_ISP                         (1 << 2)
+#define TRB_IOC                         (1 << 5)
+#define TRB_IDT                         (1 << 6)
+#define TRB_DIR_IN                      (1 << 16)
+#define TRB_TYPE(t)                     ((t) << 10)
+#define TRB_GETTYPE(c)                  (((c) >> 10) & 0x3F)
+#define TRB_NORMAL                      1
+#define TRB_SETUP                       2
+#define TRB_DATA                        3
+#define TRB_STATUS                      4
+#define TRB_LINK                        6
+#define TRB_ENABLESLOT                  9
+#define TRB_ADDRESSDEVICE               11
+#define TRB_CONFIGUREENDPOINT           12
+#define TRB_EVALUATECONTEXT             13
+#define TRB_TRANSFEREVENT               32
+#define TRB_COMMANDEVENT                33
+#define COMPLETION_SUCCESS              1
+#define COMPLETION_SHORTPACKET          13
+#define EP_CONTROL                      4
+#define EP_INTERRUPTIN                  7
+#define SPEED_FULL                      1
+#define SPEED_LOW                       2
+#define SPEED_HIGH                      3
+#define REQUEST_GETDESCRIPTOR           6
+#define REQUEST_SETCONFIGURATION        9
+#define DESCRIPTOR_DEVICE               1
+#define DESCRIPTOR_CONFIGURATION        2
+#define DESCRIPTOR_INTERFACE            4
+#define DESCRIPTOR_ENDPOINT             5
+
+struct trb
+{
+
+    unsigned int parameter0;
+    unsigned int parameter1;
+    unsigned int status;
+    unsigned int control;
+
+};
+
+struct trbring
+{
+
+    volatile struct trb *trbs;
+    unsigned int index;
+    unsigned int cycle;
+
+};
+
+struct device
+{
+
+    unsigned int slot;
+    unsigned int port;
+    unsigned int speed;
+    unsigned int maxpacket;
+    unsigned int class;
+    unsigned int subclass;
+    unsigned int protocol;
+    unsigned int interface;
+    unsigned int endpoint;
+    unsigned int endpointsize;
+    unsigned int endpointinterval;
+    unsigned char *input;
+    unsigned char *output;
+    unsigned char *buffer;
+    struct trbring control;
+    struct trbring interrupt;
+    void (*callback)(unsigned int id, void *data, unsigned int count);
+
+};
+
+struct result
+{
+
+    unsigned int done;
+    unsigned int code;
+    unsigned int slot;
+    unsigned int length;
+
+};
+
+static struct base_bus bus;
+static struct spinlock spinlock;
+static unsigned char memory[(PAGES + 1) * PAGESIZE];
+static unsigned char *pages;
+static unsigned long mmio;
+static unsigned long op;
+static unsigned long rt;
+static unsigned long db;
+static unsigned int contextsize;
+static unsigned int ports;
+static volatile unsigned int *dcbaa;
+static struct trbring command;
+static struct trbring event;
+static struct result commandresult;
+static struct result transferresult;
+static struct device devices[DEVICES];
+static unsigned int ndevices;
+static unsigned int pciid;
+static unsigned int irq;
+static unsigned int msi;
+
+static unsigned int gethigh(void *address)
+{
+
+    /* two shifts, as one shift of 32 is too wide for a 32 bit long */
+    return ((unsigned long)address >> 16) >> 16;
+
+}
+
+static unsigned int read32(unsigned long address)
+{
+
+    return *(volatile unsigned int *)address;
+
+}
+
+static void write32(unsigned long address, unsigned int value)
+{
+
+    *(volatile unsigned int *)address = value;
+
+}
+
+static void write64(unsigned long address, void *value, unsigned int flags)
+{
+
+    write32(address, (unsigned long)value | flags);
+    write32(address + 4, gethigh(value));
+
+}
+
+static void *getpage(unsigned int index)
+{
+
+    void *page = pages + index * PAGESIZE;
+
+    buffer_clear(page, PAGESIZE);
+
+    return page;
+
+}
+
+static void initring(struct trbring *ring, void *page)
+{
+
+    ring->trbs = page;
+    ring->index = 0;
+    ring->cycle = 1;
+
+}
+
+static void enqueue(struct trbring *ring, unsigned int parameter0, unsigned int parameter1, unsigned int status, unsigned int control)
+{
+
+    volatile struct trb *trb = &ring->trbs[ring->index];
+
+    trb->parameter0 = parameter0;
+    trb->parameter1 = parameter1;
+    trb->status = status;
+    trb->control = control | ring->cycle;
+
+    ring->index++;
+
+    /* the last place in the ring links back to the start and flips the cycle bit */
+    if (ring->index == RINGSIZE - 1)
+    {
+
+        volatile struct trb *link = &ring->trbs[ring->index];
+
+        link->parameter0 = (unsigned long)ring->trbs;
+        link->parameter1 = gethigh((void *)ring->trbs);
+        link->status = 0;
+        link->control = TRB_TYPE(TRB_LINK) | TRB_LINK_TC | ring->cycle;
+
+        ring->index = 0;
+        ring->cycle ^= 1;
+
+    }
+
+}
+
+static void ringdoorbell(unsigned int slot, unsigned int target)
+{
+
+    write32(db + slot * 4, target);
+
+}
+
+static struct device *finddevice(unsigned int slot)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ndevices; i++)
+    {
+
+        if (devices[i].slot == slot)
+            return &devices[i];
+
+    }
+
+    return 0;
+
+}
+
+static void queueinterrupt(struct device *device)
+{
+
+    enqueue(&device->interrupt, (unsigned long)(device->buffer + PAGESIZE / 2), gethigh(device->buffer), device->endpointsize, TRB_TYPE(TRB_NORMAL) | TRB_IOC | TRB_ISP);
+    ringdoorbell(device->slot, device->endpoint);
+
+}
+
+static void handletransfer(volatile struct trb *trb)
+{
+
+    unsigned int slot = trb->control >> 24;
+    unsigned int endpoint = (trb->control >> 16) & 0x1F;
+    unsigned int code = trb->status >> 24;
+    unsigned int remaining = trb->status & 0xFFFFFF;
+    struct device *device = finddevice(slot);
+
+    if (device && device->endpoint && endpoint == device->endpoint)
+    {
+
+        if ((code == COMPLETION_SUCCESS || code == COMPLETION_SHORTPACKET) && device->callback)
+            device->callback(slot, device->buffer + PAGESIZE / 2, device->endpointsize - remaining);
+
+        queueinterrupt(device);
+
+    }
+
+    else
+    {
+
+        transferresult.code = code;
+        transferresult.slot = slot;
+        transferresult.length = remaining;
+        transferresult.done = 1;
+
+    }
+
+}
+
+static void handlecommand(volatile struct trb *trb)
+{
+
+    commandresult.code = trb->status >> 24;
+    commandresult.slot = trb->control >> 24;
+    commandresult.done = 1;
+
+}
+
+static void process(void)
+{
+
+    unsigned int handled = 0;
+
+    while ((event.trbs[event.index].control & TRB_CYCLE) == event.cycle)
+    {
+
+        volatile struct trb *trb = &event.trbs[event.index];
+
+        switch (TRB_GETTYPE(trb->control))
+        {
+
+        case TRB_TRANSFEREVENT:
+            handletransfer(trb);
+
+            break;
+
+        case TRB_COMMANDEVENT:
+            handlecommand(trb);
+
+            break;
+
+        }
+
+        event.index++;
+
+        if (event.index == RINGSIZE)
+        {
+
+            event.index = 0;
+            event.cycle ^= 1;
+
+        }
+
+        handled = 1;
+
+    }
+
+    if (handled)
+        write64(rt + IR_ERDP, (void *)&event.trbs[event.index], IR_ERDP_EHB);
+
+}
+
+static void handleirq(unsigned int irq)
+{
+
+    spinlock_acquire(&spinlock);
+    write32(op + OP_USBSTS, OP_USBSTS_EINT);
+    write32(rt + IR_IMAN, read32(rt + IR_IMAN) | IR_IMAN_IP);
+    process();
+    spinlock_release(&spinlock);
+
+}
+
+static unsigned int waitresult(struct result *result)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < LIMIT_POLL; i++)
+    {
+
+        process();
+
+        if (result->done)
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int runcommand(void *parameter, unsigned int control)
+{
+
+    commandresult.done = 0;
+
+    enqueue(&command, (unsigned long)parameter, gethigh(parameter), 0, control);
+    ringdoorbell(0, 0);
+
+    return waitresult(&commandresult) && commandresult.code == COMPLETION_SUCCESS;
+
+}
+
+static unsigned int runcontrol(struct device *device, unsigned char type, unsigned char request, unsigned short value, unsigned short index, unsigned short length, void *data)
+{
+
+    unsigned int in = type & USB_REQUEST_IN;
+
+    if (length > PAGESIZE / 2)
+        return 0;
+
+    if (data && !in)
+        buffer_copy(device->buffer, data, length);
+
+    transferresult.done = 0;
+
+    enqueue(&device->control, type | (request << 8) | ((unsigned int)value << 16), index | ((unsigned int)length << 16), 8, TRB_TYPE(TRB_SETUP) | TRB_IDT | ((length) ? ((in) ? (3 << 16) : (2 << 16)) : 0));
+
+    if (length)
+        enqueue(&device->control, (unsigned long)device->buffer, gethigh(device->buffer), length, TRB_TYPE(TRB_DATA) | ((in) ? TRB_DIR_IN : 0));
+
+    enqueue(&device->control, 0, 0, 0, TRB_TYPE(TRB_STATUS) | TRB_IOC | ((length && in) ? 0 : TRB_DIR_IN));
+    ringdoorbell(device->slot, 1);
+
+    if (!waitresult(&transferresult) || transferresult.code != COMPLETION_SUCCESS)
+        return 0;
+
+    if (data && in)
+        buffer_copy(data, device->buffer, length);
+
+    return 1;
+
+}
+
+static volatile unsigned int *getinputcontext(struct device *device, unsigned int index)
+{
+
+    return (volatile unsigned int *)(device->input + index * contextsize);
+
+}
+
+static unsigned int getdefaultpacket(unsigned int speed)
+{
+
+    switch (speed)
+    {
+
+    case SPEED_FULL:
+    case SPEED_LOW:
+        return 8;
+
+    case SPEED_HIGH:
+        return 64;
+
+    default:
+        return 512;
+
+    }
+
+}
+
+static unsigned int addressdevice(struct device *device)
+{
+
+    volatile unsigned int *control = getinputcontext(device, 0);
+    volatile unsigned int *slot = getinputcontext(device, 1);
+    volatile unsigned int *ep0 = getinputcontext(device, 2);
+
+    control[1] = (1 << 0) | (1 << 1);
+    slot[0] = (device->speed << 20) | (1 << 27);
+    slot[1] = device->port << 16;
+    ep0[1] = (3 << 1) | (EP_CONTROL << 3) | (device->maxpacket << 16);
+    ep0[2] = (unsigned long)device->control.trbs | 1;
+    ep0[3] = gethigh((void *)device->control.trbs);
+    ep0[4] = 8;
+
+    dcbaa[device->slot * 2] = (unsigned long)device->output;
+    dcbaa[device->slot * 2 + 1] = gethigh(device->output);
+
+    return runcommand(device->input, TRB_TYPE(TRB_ADDRESSDEVICE) | (device->slot << 24));
+
+}
+
+static unsigned int updatemaxpacket(struct device *device, unsigned int maxpacket)
+{
+
+    volatile unsigned int *control = getinputcontext(device, 0);
+    volatile unsigned int *ep0 = getinputcontext(device, 2);
+
+    device->maxpacket = maxpacket;
+    control[0] = 0;
+    control[1] = (1 << 1);
+    ep0[1] = (3 << 1) | (EP_CONTROL << 3) | (maxpacket << 16);
+
+    return runcommand(device->input, TRB_TYPE(TRB_EVALUATECONTEXT) | (device->slot << 24));
+
+}
+
+static unsigned int getinterval(struct device *device, unsigned int interval)
+{
+
+    unsigned int exponent = 0;
+
+    if (device->speed == SPEED_FULL || device->speed == SPEED_LOW)
+    {
+
+        /* frames of 1 ms, as a power of two of 125 us */
+        unsigned int units = interval * 8;
+
+        while ((2u << exponent) <= units)
+            exponent++;
+
+        return (exponent < 3) ? 3 : (exponent > 10) ? 10 : exponent;
+
+    }
+
+    return (interval) ? ((interval - 1 > 15) ? 15 : interval - 1) : 0;
+
+}
+
+static void parseconfiguration(struct device *device, unsigned char *data, unsigned int length)
+{
+
+    unsigned int offset = 0;
+    unsigned int found = 0;
+
+    while (offset + 2 <= length && data[offset])
+    {
+
+        unsigned char *descriptor = data + offset;
+
+        if (descriptor[1] == DESCRIPTOR_INTERFACE && !found)
+        {
+
+            device->interface = descriptor[2];
+            device->class = descriptor[5];
+            device->subclass = descriptor[6];
+            device->protocol = descriptor[7];
+            found = 1;
+
+        }
+
+        else if (descriptor[1] == DESCRIPTOR_ENDPOINT && found == 1)
+        {
+
+            /* the first interrupt in endpoint of the first interface */
+            if ((descriptor[2] & 0x80) && (descriptor[3] & 0x03) == 3)
+            {
+
+                device->endpoint = (descriptor[2] & 0x0F) * 2 + 1;
+                device->endpointsize = (descriptor[4] | (descriptor[5] << 8)) & 0x7FF;
+                device->endpointinterval = getinterval(device, descriptor[6]);
+                found = 2;
+
+            }
+
+        }
+
+        offset += descriptor[0];
+
+    }
+
+}
+
+static unsigned int setupdevice(struct device *device)
+{
+
+    unsigned char descriptor[18];
+    unsigned char configuration[256];
+    unsigned int length;
+
+    if (!addressdevice(device))
+        return 0;
+
+    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_DEVICE << 8, 0, 8, descriptor))
+        return 0;
+
+    if (descriptor[7] && descriptor[7] != device->maxpacket && device->speed < 4)
+    {
+
+        if (!updatemaxpacket(device, descriptor[7]))
+            return 0;
+
+    }
+
+    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, 9, configuration))
+        return 0;
+
+    length = configuration[2] | (configuration[3] << 8);
+
+    if (length > sizeof (configuration))
+        length = sizeof (configuration);
+
+    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, length, configuration))
+        return 0;
+
+    parseconfiguration(device, configuration, length);
+
+    return runcontrol(device, USB_REQUEST_OUT, REQUEST_SETCONFIGURATION, configuration[5], 0, 0, 0);
+
+}
+
+static unsigned int resetport(unsigned int port)
+{
+
+    unsigned long portsc = op + OP_PORTSC + (port - 1) * 0x10;
+    unsigned int i;
+
+    if (!(read32(portsc) & PORTSC_CCS))
+        return 0;
+
+    /* usb 3 ports are enabled already, usb 2 ports need a reset to be */
+    if (!(read32(portsc) & PORTSC_PED))
+    {
+
+        write32(portsc, (read32(portsc) & PORTSC_NEUTRAL) | PORTSC_PR);
+
+        for (i = 0; i < LIMIT_POLL && !(read32(portsc) & PORTSC_PRC); i++);
+
+    }
+
+    write32(portsc, (read32(portsc) & PORTSC_NEUTRAL) | PORTSC_CHANGES);
+
+    return (read32(portsc) & PORTSC_PED) ? (read32(portsc) >> 10) & 0x0F : 0;
+
+}
+
+static void enumerate(void)
+{
+
+    unsigned int port;
+
+    for (port = 1; port <= ports && ndevices < DEVICES; port++)
+    {
+
+        struct device *device = &devices[ndevices];
+        unsigned int speed = resetport(port);
+        unsigned int page = 4 + SCRATCHPADS + ndevices * 5;
+
+        if (!speed)
+            continue;
+
+        if (!runcommand(0, TRB_TYPE(TRB_ENABLESLOT)))
+            continue;
+
+        buffer_clear(device, sizeof (struct device));
+
+        device->slot = commandresult.slot;
+        device->port = port;
+        device->speed = speed;
+        device->maxpacket = getdefaultpacket(speed);
+        device->input = getpage(page + 0);
+        device->output = getpage(page + 1);
+        device->buffer = getpage(page + 4);
+
+        initring(&device->control, getpage(page + 2));
+        initring(&device->interrupt, getpage(page + 3));
+
+        ndevices++;
+
+        if (!setupdevice(device))
+            ndevices--;
+
+    }
+
+}
+
+static void takeownership(void)
+{
+
+    unsigned int offset = (read32(mmio + CAP_HCCPARAMS1) >> 16) << 2;
+    unsigned int i;
+
+    while (offset)
+    {
+
+        unsigned long capability = mmio + offset;
+        unsigned int value = read32(capability);
+
+        if ((value & 0xFF) == EXTCAP_LEGACY)
+        {
+
+            write32(capability, value | EXTCAP_LEGACY_OS);
+
+            for (i = 0; i < LIMIT_POLL && (read32(capability) & EXTCAP_LEGACY_BIOS); i++);
+
+            return;
+
+        }
+
+        offset = ((value >> 8) & 0xFF) ? offset + (((value >> 8) & 0xFF) << 2) : 0;
+
+    }
+
+}
+
+static unsigned int start(void)
+{
+
+    unsigned int hcsparams1 = read32(mmio + CAP_HCSPARAMS1);
+    unsigned int hcsparams2 = read32(mmio + CAP_HCSPARAMS2);
+    unsigned int scratchpads = (((hcsparams2 >> 21) & 0x1F) << 5) | ((hcsparams2 >> 27) & 0x1F);
+    unsigned int slots = hcsparams1 & 0xFF;
+    volatile unsigned int *erst;
+    unsigned int i;
+
+    op = mmio + (read32(mmio + CAP_LENGTH) & 0xFF);
+    rt = mmio + (read32(mmio + CAP_RTSOFF) & ~0x1F);
+    db = mmio + (read32(mmio + CAP_DBOFF) & ~0x3);
+    ports = hcsparams1 >> 24;
+    contextsize = (read32(mmio + CAP_HCCPARAMS1) & CAP_HCCPARAMS1_CSZ) ? 64 : 32;
+
+    if (scratchpads > SCRATCHPADS)
+        return 0;
+
+    takeownership();
+
+    write32(op + OP_USBCMD, read32(op + OP_USBCMD) & ~OP_USBCMD_RS);
+
+    for (i = 0; i < LIMIT_POLL && !(read32(op + OP_USBSTS) & OP_USBSTS_HCH); i++);
+
+    write32(op + OP_USBCMD, OP_USBCMD_HCRST);
+
+    for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBCMD) & OP_USBCMD_HCRST); i++);
+    for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBSTS) & OP_USBSTS_CNR); i++);
+
+    if (i == LIMIT_POLL)
+        return 0;
+
+    if (slots > DEVICES)
+        slots = DEVICES;
+
+    dcbaa = getpage(0);
+
+    initring(&command, getpage(1));
+    initring(&event, getpage(2));
+
+    erst = getpage(3);
+    erst[0] = (unsigned long)event.trbs;
+    erst[1] = gethigh((void *)event.trbs);
+    erst[2] = RINGSIZE;
+
+    if (scratchpads)
+    {
+
+        volatile unsigned int *array = (volatile unsigned int *)((unsigned char *)erst + PAGESIZE / 2);
+
+        for (i = 0; i < scratchpads; i++)
+        {
+
+            void *page = getpage(4 + i);
+
+            array[i * 2] = (unsigned long)page;
+            array[i * 2 + 1] = gethigh(page);
+
+        }
+
+        dcbaa[0] = (unsigned long)array;
+        dcbaa[1] = gethigh((void *)array);
+
+    }
+
+    write32(op + OP_CONFIG, slots);
+    write64(op + OP_DCBAAP, (void *)dcbaa, 0);
+    write64(op + OP_CRCR, (void *)command.trbs, 1);
+    write32(rt + IR_ERSTSZ, 1);
+    write64(rt + IR_ERDP, (void *)event.trbs, 0);
+    write64(rt + IR_ERSTBA, (void *)erst, 0);
+    write32(rt + IR_IMOD, 0);
+    write32(op + OP_USBCMD, OP_USBCMD_RS);
+
+    for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBSTS) & OP_USBSTS_HCH); i++);
+
+    return i < LIMIT_POLL;
+
+}
+
+static void enableinterrupts(void)
+{
+
+    msi = apic_setmsiroutine(handleirq);
+
+    if (msi && !pci_setmsix(pciid, 0, apic_getmsiaddress(), apic_getmsidata(msi)) && !pci_setmsi(pciid, apic_getmsiaddress(), apic_getmsidata(msi)))
+    {
+
+        apic_unsetroutine(msi);
+
+        msi = 0;
+
+    }
+
+    if (!msi)
+    {
+
+        irq = pci_getirq(pciid);
+
+        pic_setroutine(irq, handleirq);
+        apic_setroutine(irq, handleirq);
+
+    }
+
+    write32(rt + IR_IMAN, IR_IMAN_IP | IR_IMAN_IE);
+    write32(op + OP_USBCMD, read32(op + OP_USBCMD) | OP_USBCMD_INTE);
+
+}
+
+static unsigned int findcontroller(void)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_foreachtype(current, RESOURCE_BUS)))
+    {
+
+        struct base_bus *pcibus = current->data;
+
+        if (pcibus->type == PCI_BUS)
+        {
+
+            unsigned int id = 0;
+
+            while ((id = pcibus->next(id)))
+            {
+
+                if (pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_SERIAL && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_SERIAL_USB && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x30)
+                    return id;
+
+            }
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+static struct device *getdevice(unsigned int id)
+{
+
+    return finddevice(id);
+
+}
+
+unsigned int usb_getclass(unsigned int id)
+{
+
+    struct device *device = getdevice(id);
+
+    return (device) ? device->class : 0;
+
+}
+
+unsigned int usb_getsubclass(unsigned int id)
+{
+
+    struct device *device = getdevice(id);
+
+    return (device) ? device->subclass : 0;
+
+}
+
+unsigned int usb_getprotocol(unsigned int id)
+{
+
+    struct device *device = getdevice(id);
+
+    return (device) ? device->protocol : 0;
+
+}
+
+unsigned int usb_getinterface(unsigned int id)
+{
+
+    struct device *device = getdevice(id);
+
+    return (device) ? device->interface : 0;
+
+}
+
+unsigned int usb_control(unsigned int id, unsigned char type, unsigned char request, unsigned short value, unsigned short index, unsigned short length, void *data)
+{
+
+    struct device *device = getdevice(id);
+    unsigned int status;
+
+    if (!device)
+        return 0;
+
+    spinlock_acquire(&spinlock);
+
+    status = runcontrol(device, type, request, value, index, length, data);
+
+    spinlock_release(&spinlock);
+
+    return status;
+
+}
+
+unsigned int usb_listen(unsigned int id, void (*callback)(unsigned int id, void *data, unsigned int count))
+{
+
+    struct device *device = getdevice(id);
+    volatile unsigned int *control;
+    volatile unsigned int *slot;
+    volatile unsigned int *endpoint;
+    unsigned int status;
+
+    if (!device || !device->endpoint)
+        return 0;
+
+    spinlock_acquire(&spinlock);
+
+    control = getinputcontext(device, 0);
+    slot = getinputcontext(device, 1);
+    endpoint = getinputcontext(device, device->endpoint + 1);
+    control[0] = 0;
+    control[1] = (1 << 0) | (1 << device->endpoint);
+    slot[0] = (slot[0] & ~(0x1F << 27)) | (device->endpoint << 27);
+    endpoint[0] = device->endpointinterval << 16;
+    endpoint[1] = (3 << 1) | (EP_INTERRUPTIN << 3) | (device->endpointsize << 16);
+    endpoint[2] = (unsigned long)device->interrupt.trbs | 1;
+    endpoint[3] = gethigh((void *)device->interrupt.trbs);
+    endpoint[4] = device->endpointsize | (device->endpointsize << 16);
+
+    status = runcommand(device->input, TRB_TYPE(TRB_CONFIGUREENDPOINT) | (device->slot << 24));
+
+    if (status)
+    {
+
+        device->callback = callback;
+
+        queueinterrupt(device);
+
+    }
+
+    spinlock_release(&spinlock);
+
+    return status;
+
+}
+
+void usb_unlisten(unsigned int id)
+{
+
+    struct device *device = getdevice(id);
+
+    if (device)
+        device->callback = 0;
+
+}
+
+static void bus_setup(void)
+{
+
+    pciid = findcontroller();
+
+    if (!pciid)
+        return;
+
+    /* a 32 bit kernel can't reach registers the firmware put above 4 GB, which ovmf does with 64 bit bars */
+    if (sizeof (unsigned long) == 4 && (pci_ind(pciid, PCI_CONFIG_BAR0) & 0x06) == 0x04 && pci_ind(pciid, PCI_CONFIG_BAR1))
+        return;
+
+    mmio = pci_getbar(pciid, 0);
+
+    if (!mmio)
+        return;
+
+    pages = (unsigned char *)(((unsigned long)memory + PAGESIZE - 1) & ~(PAGESIZE - 1UL));
+
+    arch_kmap(mmio, mmio, 0x10000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    pci_setmaster(pciid);
+
+    if (!start())
+        return;
+
+    enumerate();
+    enableinterrupts();
+
+}
+
+static unsigned int bus_next(unsigned int id)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ndevices; i++)
+    {
+
+        if (devices[i].slot > id)
+        {
+
+            unsigned int next = devices[i].slot;
+            unsigned int j;
+
+            for (j = 0; j < ndevices; j++)
+            {
+
+                if (devices[j].slot > id && devices[j].slot < next)
+                    next = devices[j].slot;
+
+            }
+
+            return next;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+void module_init(void)
+{
+
+    base_initbus(&bus, USB_BUS, "usb", bus_setup, bus_next);
+
+}
+
+void module_register(void)
+{
+
+    base_registerbus(&bus);
+
+}
+
+void module_unregister(void)
+{
+
+    base_unregisterbus(&bus);
+
+}
