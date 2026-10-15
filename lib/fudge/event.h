@@ -66,6 +66,7 @@
 #define EVENT_WMACK                     0x5F
 #define EVENT_WMREAD                    0x60
 #define EVENT_WMTEXT                    0x61
+#define EVENT_WMCONFIG                  0x62
 #define EVENT_P9P                       0x70
 #define EVENT_CLIPBOARDWRITE            0x80
 #define EVENT_CLIPBOARDREAD             0x81

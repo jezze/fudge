@@ -300,6 +300,7 @@ static struct {char *name; unsigned int event;} events[] = {
     {"wmack", EVENT_WMACK},
     {"wmread", EVENT_WMREAD},
     {"wmtext", EVENT_WMTEXT},
+    {"wmconfig", EVENT_WMCONFIG},
     {"p9p", EVENT_P9P},
     {"clipboardwrite", EVENT_CLIPBOARDWRITE},
     {"clipboardread", EVENT_CLIPBOARDREAD},

@@ -117,57 +117,101 @@ static unsigned int getnumber(char *data, unsigned int count, unsigned int index
 
 }
 
-static void loadconfig(char *config)
+static void configline(char *line, unsigned int length)
 {
 
-    static char data[0x4000];
-    unsigned int count;
-    unsigned int length;
-    char *line;
+    char *word = line;
+    unsigned int count = getword(line, length, 0, &word);
+    unsigned int start = (count < length) ? count + 1 : length;
+    char *rest = line + start;
 
-    count = system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"{width} {height} {bpp}\" %s", config);
-    state.videoconf.width = getnumber(data, count, 0, 10, state.videoconf.width);
-    state.videoconf.height = getnumber(data, count, 1, 10, state.videoconf.height);
-    state.videoconf.bpp = getnumber(data, count, 2, 10, state.videoconf.bpp);
+    length -= start;
 
-    count = system_feed(0, 0, data, 0x4000, "mq -query .general.layout %s", config);
-    state.layout = (count >= 6 && buffer_match(data, "tiling", 6)) ? LAYOUT_TILING : LAYOUT_DEFAULT;
-
-    count = system_feed(0, 0, data, 0x4000, "mq -query .keyboard.layout %s", config);
-    keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (count >= 9 && buffer_match(data, "qwerty_SE", 9)) ? KEYS_MAP_SE : KEYS_MAP_US);
-
-    count = system_feed(0, 0, data, 0x4000, "mq -query .colors -format \"{name} {value}\" %s", config);
-
-    for (line = data; line < data + count; line += length + 1)
+    if (count == 6 && buffer_match(word, "layout", 6))
     {
 
-        unsigned int space;
-        char name[64];
+        state.layout = (length >= 6 && buffer_match(rest, "tiling", 6)) ? LAYOUT_TILING : LAYOUT_DEFAULT;
 
-        length = buffer_findbyte(line, data + count - line, '\n');
-        space = buffer_findbyte(line, length, ' ');
+    }
+
+    else if (count == 8 && buffer_match(word, "keyboard", 8))
+    {
+
+        keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (length >= 9 && buffer_match(rest, "qwerty_SE", 9)) ? KEYS_MAP_SE : KEYS_MAP_US);
+
+    }
+
+    else if (count == 10 && buffer_match(word, "resolution", 10))
+    {
+
+        state.videoconf.width = getnumber(rest, length, 0, 10, state.videoconf.width);
+        state.videoconf.height = getnumber(rest, length, 1, 10, state.videoconf.height);
+        state.videoconf.bpp = getnumber(rest, length, 2, 10, state.videoconf.bpp);
+
+    }
+
+    else if (count == 5 && buffer_match(word, "color", 5))
+    {
+
+        unsigned int space = buffer_findbyte(rest, length, ' ');
+        char name[64];
 
         if (space < length && space < 64)
         {
 
-            buffer_write(name, 64, line, space, 0);
+            buffer_write(name, 64, rest, space, 0);
             name[space] = '\0';
-            cmap_set(name, cstring_read_value(line + space + 1, length - space - 1, 16));
+            cmap_set(name, cstring_read_value(rest + space + 1, length - space - 1, 16));
 
         }
 
     }
 
-    count = system_feed(0, 0, data, 0x4000, "mq -query .bindings -format \"{key} {mod} {action} {command}\" %s", config);
+    else if (count == 8 && buffer_match(word, "bindings", 8))
+    {
+
+        bind_reset();
+
+    }
+
+    else if (count == 7 && buffer_match(word, "binding", 7))
+    {
+
+        bind_add(rest, length);
+
+    }
+
+}
+
+static void configlines(char *data, unsigned int count)
+{
+
+    unsigned int length;
+    char *line;
 
     for (line = data; line < data + count; line += length + 1)
     {
 
         length = buffer_findbyte(line, data + count - line, '\n');
 
-        bind_add(line, length);
+        if (length)
+            configline(line, length);
 
     }
+
+}
+
+static void loadconfig(char *config)
+{
+
+    static char data[0x4000];
+
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {layout}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .colors -format \"color {name} {value}\" %s", config));
+    configlines("bindings", 8);
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .bindings -format \"binding {key} {mod} {action} {command}\" %s", config));
 
 }
 
@@ -2061,15 +2105,10 @@ static void onkeyrelease(struct message *message)
 
 }
 
-static void reloadconfig(void)
+static void applyconfig(struct event_videoconf *videoconf)
 {
 
-    struct event_videoconf videoconf = state.videoconf;
-
-    bind_reset();
-    loadconfig(option_getstring("config"));
-
-    if (videoconf.width != state.videoconf.width || videoconf.height != state.videoconf.height || videoconf.bpp != state.videoconf.bpp)
+    if (videoconf->width != state.videoconf.width || videoconf->height != state.videoconf.height || videoconf->bpp != state.videoconf.bpp)
     {
 
         setupvideo(state.video);
@@ -2083,6 +2122,16 @@ static void reloadconfig(void)
         redraw(1);
 
     }
+
+}
+
+static void reloadconfig(void)
+{
+
+    struct event_videoconf videoconf = state.videoconf;
+
+    loadconfig(option_getstring("config"));
+    applyconfig(&videoconf);
 
 }
 
@@ -2412,6 +2461,19 @@ static void onwmrenderdata(struct message *message)
 
 }
 
+/* applies configuration lines, the same ones loadconfig gets from mq, without a file */
+static void onwmconfig(struct message *message)
+{
+
+    struct event_videoconf videoconf = state.videoconf;
+
+    configlines(message->data, message->length);
+
+    if (state.video)
+        applyconfig(&videoconf);
+
+}
+
 /* sends the texts in a program's widget as pieces, and an empty piece at the end */
 static void onwmread(struct message *message)
 {
@@ -2549,6 +2611,7 @@ void init(void)
     channel_bind(EVENT_MOUSESCROLL, onmousescroll);
     channel_bind(EVENT_MOUSERELEASE, onmouserelease);
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
+    channel_bind(EVENT_WMCONFIG, onwmconfig);
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMMAP, onwmmap);
     channel_bind(EVENT_WMREAD, onwmread);
