@@ -395,13 +395,11 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 
 }
 
-static void placecursor(struct widget *widget)
+struct util_region render_getcursor(struct widget *widget, unsigned int index)
 {
 
     unsigned int length;
-    struct widget *text = pool_gettextat(widget, widget->attributes.cursor, &length);
-
-    widget->cursorsize = zerosize;
+    struct widget *text = pool_gettextat(widget, index, &length);
 
     if (text)
     {
@@ -423,10 +421,21 @@ static void placecursor(struct widget *widget)
 
         x = text_getrowx(&rowinfo, text->attributes.halign, text->placement.size.w - offx) + offx + (info.lastrow.x - offx);
 
-        widget->cursorposition = util_position(text->placement.position.x + x, text->placement.position.y + info.lastrow.y);
-        widget->cursorsize = util_size(2, font->lineheight);
+        return util_region(text->placement.position.x + x, text->placement.position.y + info.lastrow.y, 2, font->lineheight);
 
     }
+
+    return util_region(0, 0, 0, 0);
+
+}
+
+static void placecursor(struct widget *widget)
+{
+
+    struct util_region cursor = render_getcursor(widget, widget->attributes.cursor);
+
+    widget->cursorposition = cursor.position;
+    widget->cursorsize = cursor.size;
 
 }
 

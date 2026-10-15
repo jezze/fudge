@@ -32,7 +32,6 @@ struct state
     struct util_position mousemovement;
     struct util_position mouseremainder;
     unsigned int mousespeed;
-    struct util_position mousepressed;
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
     struct widget *rootwidget;
@@ -45,8 +44,6 @@ struct state
     struct event_videoconf videoconf;
     struct widget *draggedthumb;
     unsigned int video;
-    struct util_position markpoint;
-    struct util_position markscroll;
     int scrollgrab;
 
 };
@@ -764,35 +761,6 @@ static unsigned int gettextoffsetat(struct widget *text, int x, int y)
 
 }
 
-static void marktext(struct widget *text, struct util_position *scrolled, unsigned int clear)
-{
-
-    text->markstart = (clear) ? 0 : gettextoffsetat(text, state.mousepressed.x - scrolled->x, state.mousepressed.y - scrolled->y);
-    text->markend = (clear) ? 0 : gettextoffsetat(text, state.markpoint.x, state.markpoint.y);
-
-}
-
-static void markwidget(struct widget *widget, unsigned int clear)
-{
-
-    struct util_position scrolled = util_position(widget->scroll.x - state.markscroll.x, widget->scroll.y - state.markscroll.y);
-    struct list_item *current = 0;
-
-    if (widget->type != WIDGET_TYPE_BOX)
-        return;
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        if (child->type == WIDGET_TYPE_TEXT)
-            marktext(child, &scrolled, clear);
-
-    }
-
-}
-
 static unsigned int getmarkindex(struct widget *textbox, int x, int y)
 {
 
@@ -822,20 +790,73 @@ static unsigned int getmarkindex(struct widget *textbox, int x, int y)
 
 }
 
-static void setmarkpoint(struct widget *textbox, unsigned int index)
+static unsigned int moveindex(struct widget *widget, unsigned int index, unsigned int id)
 {
 
-    unsigned int offset;
-    struct widget *text = pool_gettextat(textbox, index, &offset);
+    struct util_region cursor = render_getcursor(widget, index);
+    int y = cursor.position.y + (int)cursor.size.h / 2;
 
-    if (text)
+    switch (id)
     {
 
-        struct text_font *font = pool_getfont(text->attributes.weight);
-        struct text_info info = text_info(font, strpool_getstring(text->attributes.label), offset, text->attributes.wrap, text->placement.size.w, text->rowstart.x);
+    case KEYS_KEY_CURSORLEFT:
+        return (index) ? index - 1 : 0;
 
-        state.markpoint.x = text->placement.position.x + info.lastrow.x;
-        state.markpoint.y = text->placement.position.y + info.lastrow.y + font->lineheight / 2;
+    case KEYS_KEY_CURSORRIGHT:
+        return util_min(index + 1, pool_gettextlength(widget));
+
+    }
+
+    if (!cursor.size.h)
+        return index;
+
+    switch (id)
+    {
+
+    case KEYS_KEY_CURSORUP:
+        return getmarkindex(widget, cursor.position.x, y - (int)cursor.size.h);
+
+    case KEYS_KEY_CURSORDOWN:
+        return getmarkindex(widget, cursor.position.x, y + (int)cursor.size.h);
+
+    case KEYS_KEY_HOME:
+        return getmarkindex(widget, -ROW_FAR, y);
+
+    case KEYS_KEY_END:
+        return getmarkindex(widget, ROW_FAR, y);
+
+    }
+
+    return index;
+
+}
+
+static void setmark(struct widget *widget, unsigned int anchor, unsigned int point)
+{
+
+    struct list_item *current = 0;
+    unsigned int start = util_min(anchor, point);
+    unsigned int end = util_max(anchor, point);
+    unsigned int base = 0;
+
+    widget->markstart = anchor;
+    widget->markend = point;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+        {
+
+            unsigned int length = gettextlength(child);
+
+            child->markstart = util_clamp((int)start - (int)base, 0, length);
+            child->markend = util_clamp((int)end - (int)base, 0, length);
+            base += length;
+
+        }
 
     }
 
@@ -851,45 +872,7 @@ static unsigned int ismarkkey(unsigned int id)
 static void extendmark(struct widget *textbox, unsigned int id)
 {
 
-    struct text_font *font = pool_getfont(textbox->attributes.weight);
-    unsigned int index = getmarkindex(textbox, state.markpoint.x, state.markpoint.y);
-
-    switch (id)
-    {
-
-    case KEYS_KEY_CURSORLEFT:
-        setmarkpoint(textbox, (index) ? index - 1 : 0);
-
-        break;
-
-    case KEYS_KEY_CURSORRIGHT:
-        setmarkpoint(textbox, index + 1);
-
-        break;
-
-    case KEYS_KEY_CURSORUP:
-        state.markpoint.y -= font->lineheight;
-
-        break;
-
-    case KEYS_KEY_CURSORDOWN:
-        state.markpoint.y += font->lineheight;
-
-        break;
-
-    case KEYS_KEY_HOME:
-        setmarkpoint(textbox, getmarkindex(textbox, -ROW_FAR, state.markpoint.y));
-
-        break;
-
-    case KEYS_KEY_END:
-        setmarkpoint(textbox, getmarkindex(textbox, ROW_FAR, state.markpoint.y));
-
-        break;
-
-    }
-
-    markwidget(textbox, 0);
+    setmark(textbox, textbox->markstart, moveindex(textbox, textbox->markend, id));
     damageall(textbox);
 
 }
@@ -900,7 +883,7 @@ static void setfocus(struct widget *widget)
     if (state.focusedwidget)
     {
 
-        markwidget(state.focusedwidget, 1);
+        setmark(state.focusedwidget, 0, 0);
         damageall(state.focusedwidget);
 
         state.focusedwidget = 0;
@@ -1188,62 +1171,12 @@ static void copytexts(struct widget *widget)
 static unsigned int getmarked(struct widget *widget, unsigned int *start, unsigned int *end)
 {
 
-    struct list_item *current = 0;
-    unsigned int base = 0;
-    unsigned int marked = 0;
+    unsigned int total = pool_gettextlength(widget);
 
-    while ((current = pool_nextin(current, widget)))
-    {
+    *start = util_min(util_min(widget->markstart, widget->markend), total);
+    *end = util_min(util_max(widget->markstart, widget->markend), total);
 
-        struct widget *child = current->data;
-
-        if (child->type == WIDGET_TYPE_TEXT)
-        {
-
-            if (child->markstart != child->markend)
-            {
-
-                if (!marked)
-                    *start = base + util_min(child->markstart, child->markend);
-
-                *end = base + util_max(child->markstart, child->markend);
-                marked = 1;
-
-            }
-
-            base += gettextlength(child);
-
-        }
-
-    }
-
-    return marked;
-
-}
-
-static void setmarked(struct widget *widget, unsigned int start, unsigned int end)
-{
-
-    struct list_item *current = 0;
-    unsigned int base = 0;
-
-    while ((current = pool_nextin(current, widget)))
-    {
-
-        struct widget *child = current->data;
-
-        if (child->type == WIDGET_TYPE_TEXT)
-        {
-
-            unsigned int length = gettextlength(child);
-
-            child->markstart = util_clamp((int)start - (int)base, 0, length);
-            child->markend = util_clamp((int)end - (int)base, 0, length);
-            base += length;
-
-        }
-
-    }
+    return *start < *end;
 
 }
 
@@ -1252,7 +1185,11 @@ static unsigned int removemarked(struct widget *widget, unsigned int cursor)
 
     struct list_item *current = 0;
     unsigned int base = 0;
-    unsigned int first = 1;
+    unsigned int start;
+    unsigned int end;
+
+    if (!getmarked(widget, &start, &end))
+        return cursor;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -1262,33 +1199,28 @@ static unsigned int removemarked(struct widget *widget, unsigned int cursor)
         if (child->type == WIDGET_TYPE_TEXT)
         {
 
-            if (child->markstart != child->markend)
+            unsigned int length = copytext(child);
+            unsigned int from = util_clamp((int)start - (int)base, 0, length);
+            unsigned int to = util_clamp((int)end - (int)base, 0, length);
+
+            if (from < to)
             {
 
-                unsigned int length = copytext(child);
-                unsigned int start = util_min(util_min(child->markstart, child->markend), length);
-                unsigned int end = util_min(util_max(child->markstart, child->markend), length);
-
-                buffer_copy(textbuffer + start, textbuffer + end, length - end + 1);
+                buffer_copy(textbuffer + from, textbuffer + to, length - to + 1);
 
                 child->attributes.label = strpool_updatestring(child->attributes.label, textbuffer);
-                child->markstart = 0;
-                child->markend = 0;
-
-                if (first)
-                    cursor = base + start;
-
-                first = 0;
 
             }
 
-            base += gettextlength(child);
+            base += length;
 
         }
 
     }
 
-    return cursor;
+    setmark(widget, 0, 0);
+
+    return start;
 
 }
 
@@ -1416,44 +1348,13 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     case KEYS_KEY_CURSORLEFT:
-        if (cursor > 0)
-            cursor--;
-
-        moved = 1;
-
-        break;
-
     case KEYS_KEY_CURSORRIGHT:
-        if (cursor < pool_gettextlength(widget))
-            cursor++;
-
-        moved = 1;
-
-        break;
-
     case KEYS_KEY_CURSORUP:
     case KEYS_KEY_CURSORDOWN:
-        {
-
-            int lineheight = pool_getfont(text->attributes.weight)->lineheight;
-
-            cursor = getmarkindex(widget, widget->cursorposition.x, widget->cursorposition.y + lineheight / 2 + ((id == KEYS_KEY_CURSORUP) ? -lineheight : lineheight));
-            moved = 1;
-
-        }
-
-        break;
-
     case KEYS_KEY_HOME:
     case KEYS_KEY_END:
-        {
-
-            int lineheight = pool_getfont(text->attributes.weight)->lineheight;
-
-            cursor = getmarkindex(widget, (id == KEYS_KEY_HOME) ? -ROW_FAR : ROW_FAR, widget->cursorposition.y + lineheight / 2);
-            moved = 1;
-
-        }
+        cursor = moveindex(widget, cursor, id);
+        moved = 1;
 
         break;
 
@@ -1473,19 +1374,14 @@ static void edittextbox(struct widget *widget, unsigned int id)
     if (moved && (state.keys.mod & KEYS_MOD_SHIFT))
     {
 
-        unsigned int anchor = previous;
-
-        if (getmarked(widget, &start, &end))
-            anchor = (previous == start) ? end : start;
-
-        setmarked(widget, util_min(anchor, cursor), util_max(anchor, cursor));
+        setmark(widget, (getmarked(widget, &start, &end)) ? widget->markstart : previous, cursor);
 
     }
 
     else if (moved || changed)
     {
 
-        markwidget(widget, 1);
+        setmark(widget, 0, 0);
 
     }
 
@@ -1504,6 +1400,7 @@ static unsigned int copymarked(struct widget *widget)
 
     unsigned int service = channel_lookup(option_getstring("clipboard-service"));
     struct list_item *current = 0;
+    unsigned int base = 0;
     unsigned int start;
     unsigned int end;
 
@@ -1517,15 +1414,18 @@ static unsigned int copymarked(struct widget *widget)
 
         struct widget *child = current->data;
 
-        if (child->type == WIDGET_TYPE_TEXT && child->markstart != child->markend)
+        if (child->type == WIDGET_TYPE_TEXT)
         {
 
             char *label = strpool_getstring(child->attributes.label);
-            unsigned int offset = util_min(util_min(child->markstart, child->markend), gettextlength(child));
-            unsigned int stop = util_min(util_max(child->markstart, child->markend), gettextlength(child));
+            unsigned int length = gettextlength(child);
+            unsigned int offset = util_clamp((int)start - (int)base, 0, length);
+            unsigned int stop = util_clamp((int)end - (int)base, 0, length);
 
             for (; offset < stop; offset += MESSAGE_SIZE)
                 channel_send(1, service, EVENT_CLIPBOARDWRITE, util_min(stop - offset, MESSAGE_SIZE), label + offset);
+
+            base += length;
 
         }
 
@@ -1924,7 +1824,7 @@ static unsigned int markall(struct widget *widget)
 
     total = pool_gettextlength(widget);
 
-    setmarked(widget, 0, total);
+    setmark(widget, 0, total);
 
     if (widget_iseditable(widget))
     {
@@ -2245,14 +2145,13 @@ static void onmousemove(struct message *message)
     if (state.mousebuttonleft)
     {
 
-        state.markpoint = state.mouseposition;
-
         if (state.draggedthumb)
             dragthumb(state.draggedthumb);
         else if (state.focusedwidget)
         {
 
-            markwidget(state.focusedwidget, 0);
+            if (state.focusedwidget->type == WIDGET_TYPE_BOX)
+                setmark(state.focusedwidget, state.focusedwidget->markstart, getmarkindex(state.focusedwidget, state.mouseposition.x, state.mouseposition.y));
 
             if (widget_iseditable(state.focusedwidget))
                 movecursor(state.focusedwidget);
@@ -2319,11 +2218,6 @@ static void onmousepress(struct message *message)
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    state.mousepressed.x = state.mouseposition.x;
-    state.mousepressed.y = state.mouseposition.y;
-    state.markpoint = state.mouseposition;
-    state.markscroll = (interactivewidget) ? interactivewidget->scroll : util_position(0, 0);
-
     switch (mousepress->button)
     {
 
@@ -2351,7 +2245,15 @@ static void onmousepress(struct message *message)
 
             if (!item || !(state.keys.mod & (KEYS_MOD_SHIFT | KEYS_MOD_CTRL)))
                 clickwidget(interactivewidget);
-            markwidget(interactivewidget, 0);
+
+            if (interactivewidget->type == WIDGET_TYPE_BOX)
+            {
+
+                unsigned int index = getmarkindex(interactivewidget, state.mouseposition.x, state.mouseposition.y);
+
+                setmark(interactivewidget, index, index);
+
+            }
 
         }
 
