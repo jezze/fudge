@@ -491,7 +491,7 @@ static void clipcontent(struct widget *widget)
             int left = widget->cplacement.position.x + widget->scroll.x - widget->placement.position.x;
             int top = widget->cplacement.position.y + widget->scroll.y - widget->placement.position.y;
 
-            content = util_region(widget->placement.position.x + left, widget->placement.position.y + top, util_max((int)widget->placement.size.w - left * 2, 0), util_max((int)widget->placement.size.h - top * 2, 0));
+            content = util_region(widget->placement.position.x + left, widget->placement.position.y + top, widget->cplacement.size.w, util_max((int)widget->placement.size.h - top * 2, 0));
 
         }
 
