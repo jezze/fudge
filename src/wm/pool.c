@@ -406,7 +406,7 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
         bitmapalign = 1 << (bitmapentry->format & PCF_FORMAT_PADMASK);
         bitmapcount = pcf_convert32(bitmapcount, bitmapentry->format);
 
-        for (i = 0; i < 128; i++)
+        for (i = 0; i < TEXT_GLYPHS; i++)
         {
 
             struct text_atlas *atlas = &font->atlas[i];

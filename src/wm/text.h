@@ -1,3 +1,5 @@
+#define TEXT_GLYPHS                     128
+
 struct text_atlas
 {
 
@@ -12,7 +14,7 @@ struct text_font
 
     unsigned int lineheight;
     unsigned int padding;
-    struct text_atlas atlas[128];
+    struct text_atlas atlas[TEXT_GLYPHS];
 
 };
 
@@ -39,6 +41,7 @@ struct text_info
 
 };
 
+struct text_atlas *text_getatlas(struct text_font *font, char c);
 unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int offset);
 struct text_info text_info(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx);
 unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int row, unsigned int offset, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx);
