@@ -48,6 +48,69 @@ static struct entry resolutions[9] = {
     {"1920x1080x32", "1920x1080x32"},
     {"2560x1440x32", "2560x1440x32"}
 };
+#define NUM_WIDGETS                     13
+#define NUM_RULES                       14
+#define NUM_SHADES                      4
+#define NUM_PARTS                       6
+#define SHADE_NORMAL                    1
+#define SHADE_HOVER                     2
+#define SHADE_FOCUS                     4
+#define SHADE_DISABLED                  8
+#define SHADE_ALL                       15
+#define PART_SHADOW                     1
+#define PART_BODY                       2
+#define PART_DARK                       4
+#define PART_LIGHT                      8
+#define PART_FRAME                      15
+#define PART_TEXT                       16
+#define PART_ICON                       32
+
+struct rule
+{
+
+    char *widget;
+    char *palette;
+    unsigned int shades;
+    unsigned int parts;
+
+};
+
+static struct entry widgets[NUM_WIDGETS] = {
+    {"box", "Box"},
+    {"button", "Button"},
+    {"checkbox", "Checkbox"},
+    {"item", "Item"},
+    {"link", "Link"},
+    {"mouse", "Mouse"},
+    {"panel", "Panel"},
+    {"select", "Select"},
+    {"swatch", "Swatch"},
+    {"text", "Text"},
+    {"window", "Window"},
+    {"scrollbar", "Scrollbar (shared with button)"},
+    {"cursor", "Cursor (shared with text)"}
+};
+
+static struct rule rules[NUM_RULES] = {
+    {"box", "box", SHADE_ALL, PART_FRAME},
+    {"button", "button", SHADE_ALL, PART_FRAME | PART_TEXT},
+    {"checkbox", "checkbox", SHADE_ALL, PART_FRAME | PART_ICON},
+    {"item", "item", SHADE_ALL, PART_FRAME},
+    {"link", "link", SHADE_NORMAL, PART_TEXT},
+    {"mouse", "mouse", SHADE_NORMAL, PART_SHADOW | PART_BODY | PART_LIGHT},
+    {"panel", "panel", SHADE_NORMAL, PART_FRAME},
+    {"select", "select", SHADE_ALL, PART_FRAME | PART_TEXT | PART_ICON},
+    {"swatch", "swatch", SHADE_NORMAL, PART_FRAME},
+    {"text", "text", SHADE_NORMAL, PART_TEXT},
+    {"window", "window", SHADE_NORMAL, PART_FRAME | PART_TEXT | PART_ICON},
+    {"window", "window", SHADE_HOVER, PART_ICON},
+    {"scrollbar", "button", SHADE_NORMAL, PART_FRAME},
+    {"cursor", "text", SHADE_NORMAL, PART_TEXT}
+};
+
+static char *shadenames[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
+static char *partnames[NUM_PARTS] = {"shadow", "body", "dark", "light", "text", "icon"};
+
 #define NUM_BINDINGS                    32
 #define NUM_COLORS                      512
 
@@ -89,6 +152,7 @@ static struct
 
 } config;
 
+static char colorwidget[32] = "box";
 static char out[MESSAGE_SIZE];
 static unsigned int outcount;
 static unsigned int wm;
@@ -207,7 +271,6 @@ static void field(char *id, char *label, char *value, char *halign)
 
 }
 
-/* there are hundreds of colors, so their rows use short ids to save strings in the wm */
 static void colorfield(unsigned int index, char *label, char *value)
 {
 
@@ -584,15 +647,56 @@ static void renderbindings(void)
 
 }
 
+static void rendercolor(char *palette, char *shade, char *part)
+{
+
+    char name[32];
+    unsigned int i;
+
+    cstring_write_fmt(name, 32, 0, "%s-%s-%s\\0", palette, shade, part);
+
+    for (i = 0; i < config.ncolors; i++)
+    {
+
+        if (cstring_match(config.colors[i].name, name))
+            colorfield(i, config.colors[i].name, config.colors[i].value);
+
+    }
+
+}
+
 static void rendercolors(void)
 {
 
     unsigned int i;
 
     beginarea("Colors");
+    choice("colors-widget", "Widget", colorwidget, widgets, NUM_WIDGETS);
 
-    for (i = 0; i < config.ncolors; i++)
-        colorfield(i, config.colors[i].name, config.colors[i].value);
+    for (i = 0; i < NUM_RULES; i++)
+    {
+
+        struct rule *rule = &rules[i];
+        unsigned int shade;
+        unsigned int part;
+
+        if (!cstring_match(rule->widget, colorwidget))
+            continue;
+
+        for (shade = 0; shade < NUM_SHADES; shade++)
+        {
+
+            for (part = 0; part < NUM_PARTS; part++)
+            {
+
+                if ((rule->shades & (1 << shade)) && (rule->parts & (1 << part)))
+                    rendercolor(rule->palette, shadenames[shade], partnames[part]);
+
+            }
+
+        }
+
+    }
 
 }
 
@@ -643,6 +747,16 @@ static void onwmevent(struct message *message)
     {
 
         renderarea(kv_getstring(event, "name="));
+
+    }
+
+    else if (kv_match(event, "q=choose") && cstring_match(kv_getstring(event, "id="), "colors-widget"))
+    {
+
+        char *value = kv_getstring(event, "value=");
+
+        copystring(colorwidget, 32, value, cstring_length(value));
+        renderarea("colors");
 
     }
 
