@@ -20,7 +20,6 @@ static unsigned char previous[REPORTSIZE];
 static unsigned char repeatkey;
 static unsigned int repeatcount;
 
-/* hid usage ids 0x00 to 0x65, as the set 1 scancodes the keyboard interface takes; 0xE0xx is an extended code */
 static unsigned short scancodes[] = {
     0x0000, 0x0000, 0x0000, 0x0000, 0x001E, 0x0030, 0x002E, 0x0020,
     0x0012, 0x0021, 0x0022, 0x0023, 0x0017, 0x0024, 0x0025, 0x0026,
@@ -37,7 +36,6 @@ static unsigned short scancodes[] = {
     0x0048, 0x0049, 0x0052, 0x0053, 0x0056, 0xE05D
 };
 
-/* the modifier bits of the report: left ctrl, shift, alt, gui, then the same on the right */
 static unsigned short modifiers[] = {
     0x001D, 0x002A, 0x0038, 0xE05B, 0xE01D, 0x0036, 0xE038, 0xE05C
 };
@@ -103,14 +101,9 @@ static void onreport(unsigned int id, void *data, unsigned int count)
     if (count < REPORTSIZE)
         return;
 
-    /* too many keys are down, so the report says nothing about which */
     if (report[2] == 0x01)
         return;
 
-    /*
-     * usb keyboards don't repeat a held key, but with an idle rate they send the same report again every IDLE * 4 ms;
-     * like a ps/2 keyboard, the last key pressed repeats after REPEATDELAY of those, 500 ms, then on each one, 10 times a second
-     */
     if (buffer_match(report, previous, REPORTSIZE))
     {
 
@@ -184,7 +177,6 @@ static void driver_reset(unsigned int id)
 
     unsigned int interface = usb_getinterface(id);
 
-    /* the boot protocol has a fixed 8 byte report, so no report descriptor is needed */
     usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETPROTOCOL, 0, interface, 0, 0);
     usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETIDLE, IDLE << 8, interface, 0, 0);
 
@@ -226,3 +218,4 @@ void module_unregister(void)
     base_unregisterdriver(&driver, USB_BUS);
 
 }
+

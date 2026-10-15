@@ -74,7 +74,6 @@ static void driver_reset(unsigned int id)
 
     unsigned int interface = usb_getinterface(id);
 
-    /* the boot protocol has a fixed report: buttons, x, y and, on most mice, the wheel */
     usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETPROTOCOL, 0, interface, 0, 0);
     usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETIDLE, 0, interface, 0, 0);
 
@@ -116,3 +115,4 @@ void module_unregister(void)
     base_unregisterdriver(&driver, USB_BUS);
 
 }
+
