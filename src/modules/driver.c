@@ -36,6 +36,8 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
 
     }
 
+    driver->type = type;
+
     resource_register(&driver->resource);
 
 }
@@ -68,6 +70,46 @@ void base_unregisterdriver(struct base_driver *driver, unsigned int type)
     }
 
     resource_unregister(&driver->resource);
+
+}
+
+void base_attachdevice(unsigned int type, unsigned int id)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_foreachtype(current, RESOURCE_DRIVER)))
+    {
+
+        struct base_driver *driver = current->data;
+
+        if (driver->type == type && driver->match(id))
+        {
+
+            driver->init(id);
+            driver->reset(id);
+            driver->attach(id);
+
+        }
+
+    }
+
+}
+
+void base_detachdevice(unsigned int type, unsigned int id)
+{
+
+    struct resource *current = 0;
+
+    while ((current = resource_foreachtype(current, RESOURCE_DRIVER)))
+    {
+
+        struct base_driver *driver = current->data;
+
+        if (driver->type == type && driver->match(id))
+            driver->detach(id);
+
+    }
 
 }
 
