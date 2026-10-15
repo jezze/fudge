@@ -27,6 +27,20 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
+    $(DIR_SRC)/modules/usb/usb-mouse.ko \
+
+N:=\
+    $(DIR_SRC)/modules/usb/usb-mouse.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/usb/mouse.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
+
+M:=\
     $(DIR_SRC)/modules/usb/ehci.ko \
 
 N:=\
