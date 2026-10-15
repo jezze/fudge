@@ -20,23 +20,6 @@
 #define STRETCH_HORIZONTAL              1
 #define STRETCH_VERTICAL                2
 #define STRETCH_BOTH                    3
-#define PALETTE_BUTTON                  0
-#define PALETTE_CHECKBOX                1
-#define PALETTE_BOX                     2
-#define PALETTE_ITEM                    3
-#define PALETTE_LINK                    4
-#define PALETTE_MOUSE                   5
-#define PALETTE_PANEL                   6
-#define PALETTE_SELECT                  7
-#define PALETTE_SWATCH                  8
-#define PALETTE_TEXT                    9
-#define PALETTE_WINDOW                  10
-#define NUM_PALETTES                    11
-#define SHADE_NORMAL                    0
-#define SHADE_HOVER                     1
-#define SHADE_FOCUS                     2
-#define SHADE_DISABLED                  3
-#define NUM_SHADES                      4
 
 static unsigned int hasdamage;
 
@@ -74,8 +57,6 @@ static unsigned int measureclipped;
 static struct util_position mouse;
 static unsigned int mousetype;
 static struct calls calls[32];
-static char *palettenames[NUM_PALETTES] = {"button", "checkbox", "box", "item", "link", "mouse", "panel", "select", "swatch", "text", "window"};
-static char *shadenames[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
 static struct palette palettes[NUM_PALETTES][NUM_SHADES];
 
 static unsigned int getshade(struct widget *widget)
@@ -1222,14 +1203,11 @@ void render_init(void)
         for (shade = 0; shade < NUM_SHADES; shade++)
         {
 
-            char name[64];
+            unsigned int *colors = cmap_get(palette, shade);
 
-            cstring_write_fmt(name, 64, 0, "%s-%s-shadow\\0", palettenames[palette], shadenames[shade]);
-            palettes[palette][shade].frame = cmap_get(name);
-            cstring_write_fmt(name, 64, 0, "%s-%s-text\\0", palettenames[palette], shadenames[shade]);
-            palettes[palette][shade].text = cmap_get(name);
-            cstring_write_fmt(name, 64, 0, "%s-%s-icon\\0", palettenames[palette], shadenames[shade]);
-            palettes[palette][shade].icon = cmap_get(name);
+            palettes[palette][shade].frame = colors + PART_SHADOW;
+            palettes[palette][shade].text = colors + PART_TEXT;
+            palettes[palette][shade].icon = colors + PART_ICON;
 
         }
 

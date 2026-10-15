@@ -2,311 +2,47 @@
 #include <abi.h>
 #include "cmap.h"
 
-#define NUM_COLORS                      264
+static char *palettes[NUM_PALETTES] = {"button", "checkbox", "box", "item", "link", "mouse", "panel", "select", "swatch", "text", "window"};
+static char *shades[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
+static char *parts[NUM_PARTS] = {"shadow", "body", "dark", "light", "text", "icon"};
+static unsigned int values[NUM_PALETTES * NUM_SHADES * NUM_PARTS];
 
-/* every widget has the same six colors in each state, and a frame reads the first four in a row */
-static char *names[NUM_COLORS] = {
-    "button-normal-shadow",
-    "button-normal-body",
-    "button-normal-dark",
-    "button-normal-light",
-    "button-normal-text",
-    "button-normal-icon",
-    "button-hover-shadow",
-    "button-hover-body",
-    "button-hover-dark",
-    "button-hover-light",
-    "button-hover-text",
-    "button-hover-icon",
-    "button-focus-shadow",
-    "button-focus-body",
-    "button-focus-dark",
-    "button-focus-light",
-    "button-focus-text",
-    "button-focus-icon",
-    "button-disabled-shadow",
-    "button-disabled-body",
-    "button-disabled-dark",
-    "button-disabled-light",
-    "button-disabled-text",
-    "button-disabled-icon",
-    "checkbox-normal-shadow",
-    "checkbox-normal-body",
-    "checkbox-normal-dark",
-    "checkbox-normal-light",
-    "checkbox-normal-text",
-    "checkbox-normal-icon",
-    "checkbox-hover-shadow",
-    "checkbox-hover-body",
-    "checkbox-hover-dark",
-    "checkbox-hover-light",
-    "checkbox-hover-text",
-    "checkbox-hover-icon",
-    "checkbox-focus-shadow",
-    "checkbox-focus-body",
-    "checkbox-focus-dark",
-    "checkbox-focus-light",
-    "checkbox-focus-text",
-    "checkbox-focus-icon",
-    "checkbox-disabled-shadow",
-    "checkbox-disabled-body",
-    "checkbox-disabled-dark",
-    "checkbox-disabled-light",
-    "checkbox-disabled-text",
-    "checkbox-disabled-icon",
-    "box-normal-shadow",
-    "box-normal-body",
-    "box-normal-dark",
-    "box-normal-light",
-    "box-normal-text",
-    "box-normal-icon",
-    "box-hover-shadow",
-    "box-hover-body",
-    "box-hover-dark",
-    "box-hover-light",
-    "box-hover-text",
-    "box-hover-icon",
-    "box-focus-shadow",
-    "box-focus-body",
-    "box-focus-dark",
-    "box-focus-light",
-    "box-focus-text",
-    "box-focus-icon",
-    "box-disabled-shadow",
-    "box-disabled-body",
-    "box-disabled-dark",
-    "box-disabled-light",
-    "box-disabled-text",
-    "box-disabled-icon",
-    "item-normal-shadow",
-    "item-normal-body",
-    "item-normal-dark",
-    "item-normal-light",
-    "item-normal-text",
-    "item-normal-icon",
-    "item-hover-shadow",
-    "item-hover-body",
-    "item-hover-dark",
-    "item-hover-light",
-    "item-hover-text",
-    "item-hover-icon",
-    "item-focus-shadow",
-    "item-focus-body",
-    "item-focus-dark",
-    "item-focus-light",
-    "item-focus-text",
-    "item-focus-icon",
-    "item-disabled-shadow",
-    "item-disabled-body",
-    "item-disabled-dark",
-    "item-disabled-light",
-    "item-disabled-text",
-    "item-disabled-icon",
-    "link-normal-shadow",
-    "link-normal-body",
-    "link-normal-dark",
-    "link-normal-light",
-    "link-normal-text",
-    "link-normal-icon",
-    "link-hover-shadow",
-    "link-hover-body",
-    "link-hover-dark",
-    "link-hover-light",
-    "link-hover-text",
-    "link-hover-icon",
-    "link-focus-shadow",
-    "link-focus-body",
-    "link-focus-dark",
-    "link-focus-light",
-    "link-focus-text",
-    "link-focus-icon",
-    "link-disabled-shadow",
-    "link-disabled-body",
-    "link-disabled-dark",
-    "link-disabled-light",
-    "link-disabled-text",
-    "link-disabled-icon",
-    "mouse-normal-shadow",
-    "mouse-normal-body",
-    "mouse-normal-dark",
-    "mouse-normal-light",
-    "mouse-normal-text",
-    "mouse-normal-icon",
-    "mouse-hover-shadow",
-    "mouse-hover-body",
-    "mouse-hover-dark",
-    "mouse-hover-light",
-    "mouse-hover-text",
-    "mouse-hover-icon",
-    "mouse-focus-shadow",
-    "mouse-focus-body",
-    "mouse-focus-dark",
-    "mouse-focus-light",
-    "mouse-focus-text",
-    "mouse-focus-icon",
-    "mouse-disabled-shadow",
-    "mouse-disabled-body",
-    "mouse-disabled-dark",
-    "mouse-disabled-light",
-    "mouse-disabled-text",
-    "mouse-disabled-icon",
-    "panel-normal-shadow",
-    "panel-normal-body",
-    "panel-normal-dark",
-    "panel-normal-light",
-    "panel-normal-text",
-    "panel-normal-icon",
-    "panel-hover-shadow",
-    "panel-hover-body",
-    "panel-hover-dark",
-    "panel-hover-light",
-    "panel-hover-text",
-    "panel-hover-icon",
-    "panel-focus-shadow",
-    "panel-focus-body",
-    "panel-focus-dark",
-    "panel-focus-light",
-    "panel-focus-text",
-    "panel-focus-icon",
-    "panel-disabled-shadow",
-    "panel-disabled-body",
-    "panel-disabled-dark",
-    "panel-disabled-light",
-    "panel-disabled-text",
-    "panel-disabled-icon",
-    "select-normal-shadow",
-    "select-normal-body",
-    "select-normal-dark",
-    "select-normal-light",
-    "select-normal-text",
-    "select-normal-icon",
-    "select-hover-shadow",
-    "select-hover-body",
-    "select-hover-dark",
-    "select-hover-light",
-    "select-hover-text",
-    "select-hover-icon",
-    "select-focus-shadow",
-    "select-focus-body",
-    "select-focus-dark",
-    "select-focus-light",
-    "select-focus-text",
-    "select-focus-icon",
-    "select-disabled-shadow",
-    "select-disabled-body",
-    "select-disabled-dark",
-    "select-disabled-light",
-    "select-disabled-text",
-    "select-disabled-icon",
-    "swatch-normal-shadow",
-    "swatch-normal-body",
-    "swatch-normal-dark",
-    "swatch-normal-light",
-    "swatch-normal-text",
-    "swatch-normal-icon",
-    "swatch-hover-shadow",
-    "swatch-hover-body",
-    "swatch-hover-dark",
-    "swatch-hover-light",
-    "swatch-hover-text",
-    "swatch-hover-icon",
-    "swatch-focus-shadow",
-    "swatch-focus-body",
-    "swatch-focus-dark",
-    "swatch-focus-light",
-    "swatch-focus-text",
-    "swatch-focus-icon",
-    "swatch-disabled-shadow",
-    "swatch-disabled-body",
-    "swatch-disabled-dark",
-    "swatch-disabled-light",
-    "swatch-disabled-text",
-    "swatch-disabled-icon",
-    "text-normal-shadow",
-    "text-normal-body",
-    "text-normal-dark",
-    "text-normal-light",
-    "text-normal-text",
-    "text-normal-icon",
-    "text-hover-shadow",
-    "text-hover-body",
-    "text-hover-dark",
-    "text-hover-light",
-    "text-hover-text",
-    "text-hover-icon",
-    "text-focus-shadow",
-    "text-focus-body",
-    "text-focus-dark",
-    "text-focus-light",
-    "text-focus-text",
-    "text-focus-icon",
-    "text-disabled-shadow",
-    "text-disabled-body",
-    "text-disabled-dark",
-    "text-disabled-light",
-    "text-disabled-text",
-    "text-disabled-icon",
-    "window-normal-shadow",
-    "window-normal-body",
-    "window-normal-dark",
-    "window-normal-light",
-    "window-normal-text",
-    "window-normal-icon",
-    "window-hover-shadow",
-    "window-hover-body",
-    "window-hover-dark",
-    "window-hover-light",
-    "window-hover-text",
-    "window-hover-icon",
-    "window-focus-shadow",
-    "window-focus-body",
-    "window-focus-dark",
-    "window-focus-light",
-    "window-focus-text",
-    "window-focus-icon",
-    "window-disabled-shadow",
-    "window-disabled-body",
-    "window-disabled-dark",
-    "window-disabled-light",
-    "window-disabled-text",
-    "window-disabled-icon"
-};
-
-static unsigned int values[NUM_COLORS];
-static unsigned int missing[4];
-
-static unsigned int find(char *name)
+static unsigned int find(char **names, unsigned int count, char *name, unsigned int length)
 {
 
     unsigned int i;
 
-    for (i = 0; i < NUM_COLORS; i++)
+    for (i = 0; i < count; i++)
     {
 
-        if (cstring_match(names[i], name))
+        if (cstring_length(names[i]) == length && buffer_match(names[i], name, length))
             return i;
 
     }
 
-    return NUM_COLORS;
+    return count;
 
 }
 
-unsigned int *cmap_get(char *name)
+unsigned int *cmap_get(unsigned int palette, unsigned int shade)
 {
 
-    unsigned int i = find(name);
-
-    return (i < NUM_COLORS) ? &values[i] : missing;
+    return &values[(palette * NUM_SHADES + shade) * NUM_PARTS];
 
 }
 
 void cmap_set(char *name, unsigned int value)
 {
 
-    unsigned int i = find(name);
+    unsigned int length = cstring_length(name);
+    unsigned int p = buffer_findbyte(name, length, '-');
+    unsigned int s = (p < length) ? p + 1 + buffer_findbyte(name + p + 1, length - p - 1, '-') : length;
+    unsigned int palette = find(palettes, NUM_PALETTES, name, p);
+    unsigned int shade = (s < length) ? find(shades, NUM_SHADES, name + p + 1, s - p - 1) : NUM_SHADES;
+    unsigned int part = (s < length) ? find(parts, NUM_PARTS, name + s + 1, length - s - 1) : NUM_PARTS;
 
-    if (i < NUM_COLORS)
-        values[i] = value;
+    if (palette < NUM_PALETTES && shade < NUM_SHADES && part < NUM_PARTS)
+        cmap_get(palette, shade)[part] = value;
 
 }
+
