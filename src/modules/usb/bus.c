@@ -12,7 +12,9 @@
 #define RINGSIZE                        (PAGESIZE / sizeof (struct trb))
 #define DEVICES                         8
 #define SCRATCHPADS                     16
-#define PAGES                           (4 + SCRATCHPADS + DEVICES * 5)
+#define DEVICEPAGES                     (7 + BULKPAGES)
+#define BULKPAGES                       4
+#define PAGES                           (4 + SCRATCHPADS + DEVICES * DEVICEPAGES)
 #define LIMIT_POLL                      1000000
 #define CAP_LENGTH                      0x00
 #define CAP_HCSPARAMS1                  0x04
@@ -53,6 +55,7 @@
 #define TRB_CYCLE                       (1 << 0)
 #define TRB_LINK_TC                     (1 << 1)
 #define TRB_ISP                         (1 << 2)
+#define TRB_CHAIN                       (1 << 4)
 #define TRB_IOC                         (1 << 5)
 #define TRB_IDT                         (1 << 6)
 #define TRB_DIR_IN                      (1 << 16)
@@ -72,6 +75,8 @@
 #define COMPLETION_SUCCESS              1
 #define COMPLETION_SHORTPACKET          13
 #define EP_CONTROL                      4
+#define EP_BULKOUT                      2
+#define EP_BULKIN                       6
 #define EP_INTERRUPTIN                  7
 #define SPEED_FULL                      1
 #define SPEED_LOW                       2
@@ -113,14 +118,22 @@ struct device
     unsigned int subclass;
     unsigned int protocol;
     unsigned int interface;
+    unsigned int configuration;
     unsigned int endpoint;
     unsigned int endpointsize;
     unsigned int endpointinterval;
+    unsigned int bulkin;
+    unsigned int bulkinsize;
+    unsigned int bulkout;
+    unsigned int bulkoutsize;
     unsigned char *input;
     unsigned char *output;
     unsigned char *buffer;
+    unsigned char *bulkbuffer;
     struct trbring control;
     struct trbring interrupt;
+    struct trbring bulkinring;
+    struct trbring bulkoutring;
     void (*callback)(unsigned int id, void *data, unsigned int count);
 
 };
@@ -533,17 +546,53 @@ static void parseconfiguration(struct device *device, unsigned char *data, unsig
 
         }
 
+        else if (descriptor[1] == DESCRIPTOR_INTERFACE)
+        {
+
+            found = 2;
+
+        }
+
         else if (descriptor[1] == DESCRIPTOR_ENDPOINT && found == 1)
         {
 
-            /* the first interrupt in endpoint of the first interface */
-            if ((descriptor[2] & 0x80) && (descriptor[3] & 0x03) == 3)
+            unsigned int in = descriptor[2] & 0x80;
+            unsigned int dci = (descriptor[2] & 0x0F) * 2 + ((in) ? 1 : 0);
+            unsigned int size = (descriptor[4] | (descriptor[5] << 8)) & 0x7FF;
+
+            switch (descriptor[3] & 0x03)
             {
 
-                device->endpoint = (descriptor[2] & 0x0F) * 2 + 1;
-                device->endpointsize = (descriptor[4] | (descriptor[5] << 8)) & 0x7FF;
-                device->endpointinterval = getinterval(device, descriptor[6]);
-                found = 2;
+            case 2:
+                if (in && !device->bulkin)
+                {
+
+                    device->bulkin = dci;
+                    device->bulkinsize = size;
+
+                }
+
+                if (!in && !device->bulkout)
+                {
+
+                    device->bulkout = dci;
+                    device->bulkoutsize = size;
+
+                }
+
+                break;
+
+            case 3:
+                if (in && !device->endpoint)
+                {
+
+                    device->endpoint = dci;
+                    device->endpointsize = size;
+                    device->endpointinterval = getinterval(device, descriptor[6]);
+
+                }
+
+                break;
 
             }
 
@@ -552,6 +601,68 @@ static void parseconfiguration(struct device *device, unsigned char *data, unsig
         offset += descriptor[0];
 
     }
+
+}
+
+static void setendpoint(struct device *device, unsigned int dci, unsigned int type, unsigned int size, unsigned int interval, struct trbring *ring)
+{
+
+    volatile unsigned int *endpoint = getinputcontext(device, dci + 1);
+
+    endpoint[0] = interval << 16;
+    endpoint[1] = (3 << 1) | (type << 3) | (size << 16);
+    endpoint[2] = (unsigned long)ring->trbs | 1;
+    endpoint[3] = gethigh((void *)ring->trbs);
+    endpoint[4] = (type == EP_INTERRUPTIN) ? size | (size << 16) : size;
+
+}
+
+static unsigned int configureendpoints(struct device *device)
+{
+
+    volatile unsigned int *control = getinputcontext(device, 0);
+    volatile unsigned int *slot = getinputcontext(device, 1);
+    unsigned int last = 1;
+
+    control[0] = 0;
+    control[1] = (1 << 0);
+
+    if (device->endpoint)
+    {
+
+        setendpoint(device, device->endpoint, EP_INTERRUPTIN, device->endpointsize, device->endpointinterval, &device->interrupt);
+
+        control[1] |= 1 << device->endpoint;
+        last = (device->endpoint > last) ? device->endpoint : last;
+
+    }
+
+    if (device->bulkin)
+    {
+
+        setendpoint(device, device->bulkin, EP_BULKIN, device->bulkinsize, 0, &device->bulkinring);
+
+        control[1] |= 1 << device->bulkin;
+        last = (device->bulkin > last) ? device->bulkin : last;
+
+    }
+
+    if (device->bulkout)
+    {
+
+        setendpoint(device, device->bulkout, EP_BULKOUT, device->bulkoutsize, 0, &device->bulkoutring);
+
+        control[1] |= 1 << device->bulkout;
+        last = (device->bulkout > last) ? device->bulkout : last;
+
+    }
+
+    if (last == 1)
+        return 1;
+
+    slot[0] = (slot[0] & ~(0x1F << 27)) | (last << 27);
+
+    return runcommand(device->input, TRB_TYPE(TRB_CONFIGUREENDPOINT) | (device->slot << 24));
 
 }
 
@@ -589,7 +700,10 @@ static unsigned int setupdevice(struct device *device)
 
     parseconfiguration(device, configuration, length);
 
-    return runcontrol(device, USB_REQUEST_OUT, REQUEST_SETCONFIGURATION, configuration[5], 0, 0, 0);
+    if (!runcontrol(device, USB_REQUEST_OUT, REQUEST_SETCONFIGURATION, configuration[5], 0, 0, 0))
+        return 0;
+
+    return configureendpoints(device);
 
 }
 
@@ -628,7 +742,8 @@ static void enumerate(void)
 
         struct device *device = &devices[ndevices];
         unsigned int speed = resetport(port);
-        unsigned int page = 4 + SCRATCHPADS + ndevices * 5;
+        unsigned int page = 4 + SCRATCHPADS + ndevices * DEVICEPAGES;
+        unsigned int i;
 
         if (!speed)
             continue;
@@ -644,10 +759,16 @@ static void enumerate(void)
         device->maxpacket = getdefaultpacket(speed);
         device->input = getpage(page + 0);
         device->output = getpage(page + 1);
-        device->buffer = getpage(page + 4);
+        device->buffer = getpage(page + 6);
+        device->bulkbuffer = getpage(page + 7);
+
+        for (i = 1; i < BULKPAGES; i++)
+            getpage(page + 7 + i);
 
         initring(&device->control, getpage(page + 2));
         initring(&device->interrupt, getpage(page + 3));
+        initring(&device->bulkinring, getpage(page + 4));
+        initring(&device->bulkoutring, getpage(page + 5));
 
         ndevices++;
 
@@ -894,36 +1015,70 @@ unsigned int usb_listen(unsigned int id, void (*callback)(unsigned int id, void 
 {
 
     struct device *device = getdevice(id);
-    volatile unsigned int *control;
-    volatile unsigned int *slot;
-    volatile unsigned int *endpoint;
-    unsigned int status;
 
     if (!device || !device->endpoint)
         return 0;
 
     spinlock_acquire(&spinlock);
 
-    control = getinputcontext(device, 0);
-    slot = getinputcontext(device, 1);
-    endpoint = getinputcontext(device, device->endpoint + 1);
-    control[0] = 0;
-    control[1] = (1 << 0) | (1 << device->endpoint);
-    slot[0] = (slot[0] & ~(0x1F << 27)) | (device->endpoint << 27);
-    endpoint[0] = device->endpointinterval << 16;
-    endpoint[1] = (3 << 1) | (EP_INTERRUPTIN << 3) | (device->endpointsize << 16);
-    endpoint[2] = (unsigned long)device->interrupt.trbs | 1;
-    endpoint[3] = gethigh((void *)device->interrupt.trbs);
-    endpoint[4] = device->endpointsize | (device->endpointsize << 16);
+    device->callback = callback;
 
-    status = runcommand(device->input, TRB_TYPE(TRB_CONFIGUREENDPOINT) | (device->slot << 24));
+    queueinterrupt(device);
+    spinlock_release(&spinlock);
 
-    if (status)
+    return 1;
+
+}
+
+unsigned int usb_bulk(unsigned int id, unsigned int in, void *data, unsigned int count)
+{
+
+    struct device *device = getdevice(id);
+    struct trbring *ring;
+    unsigned int dci;
+    unsigned int offset;
+    unsigned int status = 0;
+
+    if (!device || count > BULKPAGES * PAGESIZE)
+        return 0;
+
+    dci = (in) ? device->bulkin : device->bulkout;
+    ring = (in) ? &device->bulkinring : &device->bulkoutring;
+
+    if (!dci)
+        return 0;
+
+    spinlock_acquire(&spinlock);
+
+    if (!in)
+        buffer_copy(device->bulkbuffer, data, count);
+
+    transferresult.done = 0;
+
+    /* one trb per page, so none crosses a 64 KB boundary */
+    for (offset = 0; offset < count || !count; offset += PAGESIZE)
     {
 
-        device->callback = callback;
+        unsigned int length = (count - offset > PAGESIZE) ? PAGESIZE : count - offset;
+        unsigned int last = offset + length >= count;
+        unsigned char *buffer = device->bulkbuffer + offset;
 
-        queueinterrupt(device);
+        enqueue(ring, (unsigned long)buffer, gethigh(buffer), length, TRB_TYPE(TRB_NORMAL) | ((last) ? TRB_IOC : TRB_CHAIN));
+
+        if (last)
+            break;
+
+    }
+
+    ringdoorbell(device->slot, dci);
+
+    if (waitresult(&transferresult) && (transferresult.code == COMPLETION_SUCCESS || transferresult.code == COMPLETION_SHORTPACKET))
+    {
+
+        status = count - transferresult.length;
+
+        if (in)
+            buffer_copy(data, device->bulkbuffer, status);
 
     }
 
