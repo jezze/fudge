@@ -223,3 +223,4 @@ void module_unregister(void)
     base_unregisterdriver(&driver, USB_BUS);
 
 }
+
