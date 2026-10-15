@@ -13,7 +13,9 @@
 #define RINGSIZE                        (PAGESIZE / sizeof (struct trb))
 #define DEVICES                         8
 #define SCRATCHPADS                     16
-#define DEVICEPAGES                     (7 + BULKPAGES)
+#define INTERFACES                      3
+#define DEVICEPAGES                     (6 + BULKPAGES + INTERFACES)
+#define REPORTSIZE                      512
 #define BULKPAGES                       4
 #define PAGES                           (4 + SCRATCHPADS + DEVICES * DEVICEPAGES)
 #define LIMIT_POLL                      1000000
@@ -110,6 +112,24 @@ struct trbring
 
 };
 
+struct interface
+{
+
+    unsigned int number;
+    unsigned int class;
+    unsigned int subclass;
+    unsigned int protocol;
+    unsigned int endpoint;
+    unsigned int endpointsize;
+    unsigned int endpointinterval;
+    struct trbring interrupt;
+    void (*callback)(unsigned int id, void *data, unsigned int count);
+    unsigned char report[64];
+    unsigned int reportcount;
+    unsigned int pending;
+
+};
+
 struct device
 {
 
@@ -117,14 +137,7 @@ struct device
     unsigned int port;
     unsigned int speed;
     unsigned int maxpacket;
-    unsigned int class;
-    unsigned int subclass;
-    unsigned int protocol;
-    unsigned int interface;
     unsigned int configuration;
-    unsigned int endpoint;
-    unsigned int endpointsize;
-    unsigned int endpointinterval;
     unsigned int bulkin;
     unsigned int bulkinsize;
     unsigned int bulkout;
@@ -134,13 +147,10 @@ struct device
     unsigned char *buffer;
     unsigned char *bulkbuffer;
     struct trbring control;
-    struct trbring interrupt;
     struct trbring bulkinring;
     struct trbring bulkoutring;
-    void (*callback)(unsigned int id, void *data, unsigned int count);
-    unsigned char report[64];
-    unsigned int reportcount;
-    unsigned int pending;
+    struct interface interfaces[INTERFACES];
+    unsigned int ninterfaces;
 
 };
 
@@ -280,11 +290,21 @@ static struct device *finddevice(unsigned int slot)
 
 }
 
-static void queueinterrupt(struct device *device)
+static unsigned char *getreportbuffer(struct device *device, unsigned int index)
 {
 
-    enqueue(&device->interrupt, (unsigned long)(device->buffer + PAGESIZE / 2), gethigh(device->buffer), device->endpointsize, TRB_TYPE(TRB_NORMAL) | TRB_IOC | TRB_ISP);
-    ringdoorbell(device->slot, device->endpoint);
+    return device->buffer + PAGESIZE / 2 + index * REPORTSIZE;
+
+}
+
+static void queueinterrupt(struct device *device, unsigned int index)
+{
+
+    struct interface *interface = &device->interfaces[index];
+    unsigned char *buffer = getreportbuffer(device, index);
+
+    enqueue(&interface->interrupt, (unsigned long)buffer, gethigh(buffer), interface->endpointsize, TRB_TYPE(TRB_NORMAL) | TRB_IOC | TRB_ISP);
+    ringdoorbell(device->slot, interface->endpoint);
 
 }
 
@@ -296,27 +316,36 @@ static void handletransfer(volatile struct trb *trb)
     unsigned int code = trb->status >> 24;
     unsigned int remaining = trb->status & 0xFFFFFF;
     struct device *device = finddevice(slot);
+    unsigned int i;
 
-    if (device && device->endpoint && endpoint == device->endpoint)
+    for (i = 0; device && i < device->ninterfaces; i++)
     {
 
-        if ((code == COMPLETION_SUCCESS || code == COMPLETION_SHORTPACKET) && device->callback)
+        struct interface *interface = &device->interfaces[i];
+
+        if (interface->endpoint && endpoint == interface->endpoint)
         {
 
-            unsigned int count = device->endpointsize - remaining;
+            if ((code == COMPLETION_SUCCESS || code == COMPLETION_SHORTPACKET) && interface->callback)
+            {
 
-            device->reportcount = (count > sizeof (device->report)) ? sizeof (device->report) : count;
-            device->pending = 1;
+                unsigned int count = interface->endpointsize - remaining;
 
-            buffer_copy(device->report, device->buffer + PAGESIZE / 2, device->reportcount);
+                interface->reportcount = (count > sizeof (interface->report)) ? sizeof (interface->report) : count;
+                interface->pending = 1;
+
+                buffer_copy(interface->report, getreportbuffer(device, i), interface->reportcount);
+
+            }
+
+            queueinterrupt(device, i);
+
+            return;
 
         }
 
-        queueinterrupt(device);
-
     }
 
-    else
     {
 
         transferresult.code = code;
@@ -392,35 +421,42 @@ static void deliver(void)
 {
 
     unsigned int i;
+    unsigned int k;
 
     for (i = 0; i < DEVICES; i++)
     {
 
-        struct device *device = &devices[i];
-        void (*callback)(unsigned int id, void *data, unsigned int count) = 0;
-        unsigned char report[64];
-        unsigned int count = 0;
-        unsigned int slot = 0;
-
-        spinlock_acquire(&spinlock);
-
-        if (device->slot && device->pending && device->callback)
+        for (k = 0; k < INTERFACES; k++)
         {
 
-            callback = device->callback;
-            count = device->reportcount;
-            slot = device->slot;
+            struct device *device = &devices[i];
+            struct interface *interface = &device->interfaces[k];
+            void (*callback)(unsigned int id, void *data, unsigned int count) = 0;
+            unsigned char report[64];
+            unsigned int count = 0;
+            unsigned int id = 0;
 
-            buffer_copy(report, device->report, count);
+            spinlock_acquire(&spinlock);
+
+            if (device->slot && k < device->ninterfaces && interface->pending && interface->callback)
+            {
+
+                callback = interface->callback;
+                count = interface->reportcount;
+                id = device->slot * 4 + k;
+
+                buffer_copy(report, interface->report, count);
+
+            }
+
+            interface->pending = 0;
+
+            spinlock_release(&spinlock);
+
+            if (callback)
+                callback(id, report, count);
 
         }
-
-        device->pending = 0;
-
-        spinlock_release(&spinlock);
-
-        if (callback)
-            callback(slot, report, count);
 
     }
 
@@ -605,33 +641,33 @@ static unsigned int getinterval(struct device *device, unsigned int interval)
 static void parseconfiguration(struct device *device, unsigned char *data, unsigned int length)
 {
 
+    struct interface *interface = 0;
     unsigned int offset = 0;
-    unsigned int found = 0;
 
     while (offset + 2 <= length && data[offset])
     {
 
         unsigned char *descriptor = data + offset;
 
-        if (descriptor[1] == DESCRIPTOR_INTERFACE && !found)
+        if (descriptor[1] == DESCRIPTOR_INTERFACE)
         {
 
-            device->interface = descriptor[2];
-            device->class = descriptor[5];
-            device->subclass = descriptor[6];
-            device->protocol = descriptor[7];
-            found = 1;
+            interface = 0;
+
+            if (descriptor[3] == 0 && device->ninterfaces < INTERFACES)
+            {
+
+                interface = &device->interfaces[device->ninterfaces++];
+                interface->number = descriptor[2];
+                interface->class = descriptor[5];
+                interface->subclass = descriptor[6];
+                interface->protocol = descriptor[7];
+
+            }
 
         }
 
-        else if (descriptor[1] == DESCRIPTOR_INTERFACE)
-        {
-
-            found = 2;
-
-        }
-
-        else if (descriptor[1] == DESCRIPTOR_ENDPOINT && found == 1)
+        else if (descriptor[1] == DESCRIPTOR_ENDPOINT && interface)
         {
 
             unsigned int in = descriptor[2] & 0x80;
@@ -661,12 +697,12 @@ static void parseconfiguration(struct device *device, unsigned char *data, unsig
                 break;
 
             case 3:
-                if (in && !device->endpoint)
+                if (in && !interface->endpoint)
                 {
 
-                    device->endpoint = dci;
-                    device->endpointsize = size;
-                    device->endpointinterval = getinterval(device, descriptor[6]);
+                    interface->endpoint = dci;
+                    interface->endpointsize = (size > REPORTSIZE) ? REPORTSIZE : size;
+                    interface->endpointinterval = getinterval(device, descriptor[6]);
 
                 }
 
@@ -701,17 +737,23 @@ static unsigned int configureendpoints(struct device *device)
     volatile unsigned int *control = getinputcontext(device, 0);
     volatile unsigned int *slot = getinputcontext(device, 1);
     unsigned int last = 1;
+    unsigned int i;
 
     control[0] = 0;
     control[1] = (1 << 0);
 
-    if (device->endpoint)
+    for (i = 0; i < device->ninterfaces; i++)
     {
 
-        setendpoint(device, device->endpoint, EP_INTERRUPTIN, device->endpointsize, device->endpointinterval, &device->interrupt);
+        struct interface *interface = &device->interfaces[i];
 
-        control[1] |= 1 << device->endpoint;
-        last = (device->endpoint > last) ? device->endpoint : last;
+        if (!interface->endpoint)
+            continue;
+
+        setendpoint(device, interface->endpoint, EP_INTERRUPTIN, interface->endpointsize, interface->endpointinterval, &interface->interrupt);
+
+        control[1] |= 1 << interface->endpoint;
+        last = (interface->endpoint > last) ? interface->endpoint : last;
 
     }
 
@@ -866,16 +908,18 @@ static struct device *enumerateport(unsigned int port)
         device->maxpacket = getdefaultpacket(speed);
         device->input = getpage(page + 0);
         device->output = getpage(page + 1);
-        device->buffer = getpage(page + 6);
-        device->bulkbuffer = getpage(page + 7);
+        device->buffer = getpage(page + 3);
+        device->bulkbuffer = getpage(page + 6);
 
         for (i = 1; i < BULKPAGES; i++)
-            getpage(page + 7 + i);
+            getpage(page + 6 + i);
 
         initring(&device->control, getpage(page + 2));
-        initring(&device->interrupt, getpage(page + 3));
         initring(&device->bulkinring, getpage(page + 4));
         initring(&device->bulkoutring, getpage(page + 5));
+
+        for (i = 0; i < INTERFACES; i++)
+            initring(&device->interfaces[i].interrupt, getpage(page + 6 + BULKPAGES + i));
 
         device->slot = commandresult.slot;
 
@@ -915,6 +959,7 @@ static void hotplug(void)
         unsigned long portsc = op + OP_PORTSC + (port - 1) * 0x10;
         struct device *device;
         unsigned int slot = 0;
+        unsigned int i;
 
         spinlock_acquire(&spinlock);
 
@@ -928,7 +973,9 @@ static void hotplug(void)
             {
 
                 slot = device->slot;
-                device->callback = 0;
+
+                for (i = 0; i < device->ninterfaces; i++)
+                    device->interfaces[i].callback = 0;
 
             }
 
@@ -970,7 +1017,9 @@ static void hotplug(void)
         if (device)
         {
 
-            base_detachdevice(USB_BUS, slot);
+            for (i = 0; i < device->ninterfaces; i++)
+                base_detachdevice(USB_BUS, slot * 4 + i);
+
             spinlock_acquire(&spinlock);
             disableslot(slot);
 
@@ -983,7 +1032,10 @@ static void hotplug(void)
         else
         {
 
-            base_attachdevice(USB_BUS, slot);
+            device = finddevice(slot);
+
+            for (i = 0; device && i < device->ninterfaces; i++)
+                base_attachdevice(USB_BUS, slot * 4 + i);
 
         }
 
@@ -1164,43 +1216,52 @@ static unsigned int findcontroller(void)
 static struct device *getdevice(unsigned int id)
 {
 
-    return finddevice(id);
+    return finddevice(id / 4);
+
+}
+
+static struct interface *getinterface(unsigned int id)
+{
+
+    struct device *device = getdevice(id);
+
+    return (device && id % 4 < device->ninterfaces) ? &device->interfaces[id % 4] : 0;
 
 }
 
 unsigned int usb_getclass(unsigned int id)
 {
 
-    struct device *device = getdevice(id);
+    struct interface *interface = getinterface(id);
 
-    return (device) ? device->class : 0;
+    return (interface) ? interface->class : 0;
 
 }
 
 unsigned int usb_getsubclass(unsigned int id)
 {
 
-    struct device *device = getdevice(id);
+    struct interface *interface = getinterface(id);
 
-    return (device) ? device->subclass : 0;
+    return (interface) ? interface->subclass : 0;
 
 }
 
 unsigned int usb_getprotocol(unsigned int id)
 {
 
-    struct device *device = getdevice(id);
+    struct interface *interface = getinterface(id);
 
-    return (device) ? device->protocol : 0;
+    return (interface) ? interface->protocol : 0;
 
 }
 
 unsigned int usb_getinterface(unsigned int id)
 {
 
-    struct device *device = getdevice(id);
+    struct interface *interface = getinterface(id);
 
-    return (device) ? device->interface : 0;
+    return (interface) ? interface->number : 0;
 
 }
 
@@ -1227,15 +1288,16 @@ unsigned int usb_listen(unsigned int id, void (*callback)(unsigned int id, void 
 {
 
     struct device *device = getdevice(id);
+    struct interface *interface = getinterface(id);
 
-    if (!device || !device->endpoint)
+    if (!interface || !interface->endpoint)
         return 0;
 
     spinlock_acquire(&spinlock);
 
-    device->callback = callback;
+    interface->callback = callback;
 
-    queueinterrupt(device);
+    queueinterrupt(device, id % 4);
     spinlock_release(&spinlock);
 
     return 1;
@@ -1303,10 +1365,10 @@ unsigned int usb_bulk(unsigned int id, unsigned int in, void *data, unsigned int
 void usb_unlisten(unsigned int id)
 {
 
-    struct device *device = getdevice(id);
+    struct interface *interface = getinterface(id);
 
-    if (device)
-        device->callback = 0;
+    if (interface)
+        interface->callback = 0;
 
 }
 
@@ -1345,12 +1407,20 @@ static unsigned int bus_next(unsigned int id)
 
     unsigned int next = 0;
     unsigned int i;
+    unsigned int k;
 
     for (i = 0; i < DEVICES; i++)
     {
 
-        if (devices[i].slot > id && (!next || devices[i].slot < next))
-            next = devices[i].slot;
+        for (k = 0; devices[i].slot && k < devices[i].ninterfaces; k++)
+        {
+
+            unsigned int current = devices[i].slot * 4 + k;
+
+            if (current > id && (!next || current < next))
+                next = current;
+
+        }
 
     }
 
