@@ -58,6 +58,16 @@ static struct util_position mouse;
 static unsigned int mousetype;
 static struct calls calls[32];
 static struct palette palettes[NUM_PALETTES][NUM_SHADES];
+static struct widget *hoverwidget;
+static struct widget *focusedwidget;
+static struct widget *focusedwindow;
+
+static unsigned int isfocused(struct widget *widget)
+{
+
+    return widget == focusedwidget || widget == focusedwindow;
+
+}
 
 static unsigned int getshade(struct widget *widget)
 {
@@ -65,16 +75,11 @@ static unsigned int getshade(struct widget *widget)
     if (widget->attributes.mode == ATTR_MODE_DISABLED)
         return SHADE_DISABLED;
 
-    switch (widget->state)
-    {
-
-    case WIDGET_STATE_FOCUS:
+    if (isfocused(widget))
         return SHADE_FOCUS;
 
-    case WIDGET_STATE_HOVER:
+    if (widget == hoverwidget)
         return SHADE_HOVER;
-
-    }
 
     return SHADE_NORMAL;
 
@@ -728,7 +733,7 @@ static void placeselect(struct widget *widget)
 
     widget->cplacement = util_region(widget->placement.position.x, widget->placement.position.y + widget->placement.size.h, INFINITY, INFINITY);
 
-    if (widget->state != WIDGET_STATE_FOCUS)
+    if (!isfocused(widget))
         widget->clip = util_region_intersection(&widget->placement, &widget->clip);
 
     widget->cclip = widget->clip;
@@ -880,7 +885,7 @@ static void renderbox(struct blit_display *display, struct widget *widget, int l
 
     blit_frame(display, &widget->placement, line, x0, x2, getpalette(PALETTE_BOX, shade)->frame);
 
-    if (widget->state == WIDGET_STATE_FOCUS && (widget->attributes.mode == ATTR_MODE_EDIT || widget->appcursor))
+    if (isfocused(widget) && (widget->attributes.mode == ATTR_MODE_EDIT || widget->appcursor))
         blit_iconcursor(display, &rcursor, line, x0, x2, getpalette(PALETTE_TEXT, SHADE_NORMAL)->text);
 
 }
@@ -1077,6 +1082,15 @@ void render_setmouse(int x, int y, unsigned int type)
     mousetype = type;
 
     damagemouse();
+
+}
+
+void render_setstate(struct widget *hover, struct widget *focus, struct widget *window)
+{
+
+    hoverwidget = hover;
+    focusedwidget = focus;
+    focusedwindow = window;
 
 }
 

@@ -901,15 +901,14 @@ static void setfocus(struct widget *widget)
     {
 
         markwidget(state.focusedwidget, 1);
-        widget_setstate(state.focusedwidget, WIDGET_STATE_FOCUSOFF);
-        widget_setstate(state.focusedwidget, WIDGET_STATE_NORMAL);
         damageall(state.focusedwidget);
 
         state.focusedwidget = 0;
 
     }
 
-    if (widget && widget_setstate(widget, WIDGET_STATE_FOCUS))
+    /* a click on the window itself focuses no widget, which is what lets the window be dragged */
+    if (widget && widget != state.focusedwindow)
     {
 
         state.focusedwidget = widget;
@@ -925,55 +924,40 @@ static void setfocus(struct widget *widget)
 
     }
 
+    render_setstate(state.hoverwidget, state.focusedwidget, state.focusedwindow);
+
 }
 
 static void setfocuswindow(struct widget *widget)
 {
 
     if (state.focusedwindow)
-    {
-
-        widget_setstate(state.focusedwindow, WIDGET_STATE_FOCUSOFF);
-        widget_setstate(state.focusedwindow, WIDGET_STATE_NORMAL);
         damageall(state.focusedwindow);
 
-        state.focusedwindow = 0;
+    state.focusedwindow = widget;
 
-    }
-
-    if (widget && widget_setstate(widget, WIDGET_STATE_FOCUS))
-    {
-
-        state.focusedwindow = widget;
-
+    if (state.focusedwindow)
         bump(state.focusedwindow);
 
-    }
+    render_setstate(state.hoverwidget, state.focusedwidget, state.focusedwindow);
 
 }
 
 static void sethover(struct widget *widget)
 {
 
+    if (widget == state.hoverwidget)
+        return;
+
     if (state.hoverwidget)
-    {
-
-        widget_setstate(state.hoverwidget, WIDGET_STATE_HOVEROFF);
-        widget_setstate(state.hoverwidget, WIDGET_STATE_NORMAL);
         damageall(state.hoverwidget);
 
-        state.hoverwidget = 0;
+    state.hoverwidget = widget;
 
-    }
-
-    if (widget && widget_setstate(widget, WIDGET_STATE_HOVER))
-    {
-
-        state.hoverwidget = widget;
-
+    if (state.hoverwidget)
         damageall(state.hoverwidget);
 
-    }
+    render_setstate(state.hoverwidget, state.focusedwidget, state.focusedwindow);
 
 }
 
@@ -1041,7 +1025,7 @@ static struct widget *getolderwindow(unsigned int serial)
 
         struct widget *widget = current->data;
 
-        if (widget->type == WIDGET_TYPE_WINDOW && widget->state != WIDGET_STATE_DESTROYED && widget->serial < serial && (!older || widget->serial > older->serial))
+        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && widget->serial < serial && (!older || widget->serial > older->serial))
             older = widget;
 
     }
@@ -1061,7 +1045,7 @@ static struct widget *getnewerwindow(unsigned int serial)
 
         struct widget *widget = current->data;
 
-        if (widget->type == WIDGET_TYPE_WINDOW && widget->state != WIDGET_STATE_DESTROYED && widget->serial > serial && (!newer || widget->serial < newer->serial))
+        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && widget->serial > serial && (!newer || widget->serial < newer->serial))
             newer = widget;
 
     }
@@ -1703,7 +1687,7 @@ static void purge(unsigned int source)
 
         struct widget *widget = current->data;
 
-        if (widget->state == WIDGET_STATE_DESTROYED)
+        if (widget->destroyed)
         {
 
             if (state.hoverwidget == widget)
@@ -2589,7 +2573,7 @@ static void onwmunmap(struct message *message)
 
         struct widget *widget = current->data;
 
-        widget_setstate(widget, WIDGET_STATE_DESTROYED);
+        widget->destroyed = 1;
 
     }
 

@@ -6,6 +6,7 @@
 struct util_size render_getwindowminsize(struct widget *widget, struct util_size *limit);
 struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit);
 struct util_region render_getwindowbutton(struct widget *widget, unsigned int button);
+void render_setstate(struct widget *hover, struct widget *focus, struct widget *window);
 void render_setmouse(int x, int y, unsigned int type);
 void render_place(struct widget *widget, struct util_region *placement);
 void render_damage(int x0, int y0, int x2, int y2);

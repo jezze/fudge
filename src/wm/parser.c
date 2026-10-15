@@ -322,7 +322,7 @@ static void deletechildren(struct widget *widget)
 
         struct widget *child = current->data;
 
-        widget_setstate(child, WIDGET_STATE_DESTROYED);
+        child->destroyed = 1;
         deletechildren(child);
 
     }
@@ -342,7 +342,7 @@ static void parsedelete(struct state *state, unsigned int source)
         if (widget)
         {
 
-            widget_setstate(widget, WIDGET_STATE_DESTROYED);
+            widget->destroyed = 1;
             deletechildren(widget);
 
         }

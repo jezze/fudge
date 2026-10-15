@@ -10,12 +10,6 @@
 #define WIDGET_TYPE_WINDOW              12
 #define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_TYPE_SWATCH              16
-#define WIDGET_STATE_NORMAL             0
-#define WIDGET_STATE_HOVER              1
-#define WIDGET_STATE_HOVEROFF           2
-#define WIDGET_STATE_FOCUS              3
-#define WIDGET_STATE_FOCUSOFF           4
-#define WIDGET_STATE_DESTROYED          5
 
 struct widget_attributes
 {
@@ -51,7 +45,7 @@ struct widget
 
     unsigned int source;
     unsigned int type;
-    unsigned int state;
+    unsigned int destroyed;
     unsigned int markstart;
     unsigned int markend;
     unsigned int followcursor;
@@ -83,7 +77,6 @@ struct widget
 
 void widget_setattribute(struct widget *widget, unsigned int attribute, char *value);
 void widget_unsetattributes(struct widget *widget);
-unsigned int widget_setstate(struct widget *widget, unsigned int state);
 unsigned int widget_intersectsx(struct widget *widget, int x);
 unsigned int widget_intersectsy(struct widget *widget, int y);
 unsigned int widget_intersects(struct widget *widget, int x, int y);

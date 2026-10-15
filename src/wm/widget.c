@@ -165,59 +165,6 @@ void widget_unsetattributes(struct widget *widget)
 
 }
 
-unsigned int widget_setstate(struct widget *widget, unsigned int state)
-{
-
-    unsigned int oldstate = widget->state;
-
-    switch (state)
-    {
-
-    case WIDGET_STATE_DESTROYED:
-        widget->state = state;
-
-        break;
-
-    case WIDGET_STATE_FOCUS:
-        widget->state = state;
-
-        break;
-
-    case WIDGET_STATE_FOCUSOFF:
-        if (widget->state == WIDGET_STATE_FOCUS)
-            widget->state = state;
-
-        break;
-
-    case WIDGET_STATE_HOVER:
-        if (widget->state == WIDGET_STATE_NORMAL)
-            widget->state = state;
-
-        break;
-
-    case WIDGET_STATE_HOVEROFF:
-        if (widget->state == WIDGET_STATE_HOVER)
-            widget->state = state;
-
-        break;
-
-    case WIDGET_STATE_NORMAL:
-        if (widget->state == WIDGET_STATE_FOCUSOFF || widget->state == WIDGET_STATE_HOVEROFF)
-            widget->state = state;
-
-        break;
-
-    default:
-        widget->state = state;
-
-        break;
-
-    }
-
-    return oldstate != state;
-
-}
-
 unsigned int widget_intersectsx(struct widget *widget, int x)
 {
 
@@ -412,7 +359,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
 
     widget->source = source;
     widget->type = type;
-    widget->state = WIDGET_STATE_NORMAL;
+    widget->destroyed = 0;
     widget->markstart = 0;
     widget->markend = 0;
     widget->followcursor = 0;
