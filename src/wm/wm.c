@@ -266,7 +266,7 @@ static struct widget *getinteractivewidgetat(int x, int y)
 static struct widget *getparent(struct widget *widget)
 {
 
-    return (widget->attributes.in) ? pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in)) : 0;
+    return (widget->parent && widget->parent->source == widget->source) ? widget->parent : 0;
 
 }
 
@@ -1503,7 +1503,7 @@ static struct widget *getselect(struct widget *widget)
         if (widget->type == WIDGET_TYPE_SELECT)
             return widget;
 
-        widget = (widget->attributes.in) ? pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in)) : 0;
+        widget = getparent(widget);
 
     }
 

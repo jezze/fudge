@@ -53,7 +53,6 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
     case ATTR_IN:
         widget->attributes.in = attr_update(ATTR_IN, value, widget->attributes.in);
-        widget->inhash = djb_hash(strpool_getcstringlength(widget->attributes.in), strpool_getstring(widget->attributes.in));
 
         break;
 
@@ -360,6 +359,7 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->source = source;
     widget->type = type;
     widget->destroyed = 0;
+    widget->parent = 0;
     widget->markstart = 0;
     widget->markend = 0;
     widget->followcursor = 0;

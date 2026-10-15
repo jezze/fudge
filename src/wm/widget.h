@@ -46,6 +46,7 @@ struct widget
     unsigned int source;
     unsigned int type;
     unsigned int destroyed;
+    struct widget *parent;
     unsigned int markstart;
     unsigned int markend;
     unsigned int followcursor;
@@ -56,7 +57,6 @@ struct widget
     unsigned int textrow;
     unsigned int textoffset;
     unsigned int idhash;
-    unsigned int inhash;
     unsigned int serial;
     int scrollmax;
     struct util_region thumb;

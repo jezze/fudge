@@ -34,14 +34,11 @@ struct list_item *pool_next(struct list_item *current)
 
 }
 
-/* called for every step of layout and drawing, so the lengths (kept by the string pool) are compared before the text */
+/* only a widget with an id can be named as a parent */
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    unsigned int length = strpool_getcstringlength(parent->attributes.id);
-    char *id = strpool_getstring(parent->attributes.id);
-
-    if (!length)
+    if (!strpool_getcstringlength(parent->attributes.id))
         return 0;
 
     while ((current = pool_next(current)))
@@ -49,13 +46,7 @@ struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 
         struct widget *widget = current->data;
 
-        if (widget->inhash != parent->idhash)
-            continue;
-
-        if (parent->source && widget->source != parent->source)
-            continue;
-
-        if (strpool_getcstringlength(widget->attributes.in) == length && buffer_match(strpool_getstring(widget->attributes.in), id, length))
+        if (widget->parent == parent)
             return current;
 
     }
@@ -101,6 +92,65 @@ struct widget *pool_getwidgetbyid(unsigned int source, char *id)
     }
 
     return 0;
+
+}
+
+static struct widget *findparent(struct widget *widget, unsigned int source)
+{
+
+    struct list_item *current = 0;
+    unsigned int length = strpool_getcstringlength(widget->attributes.in);
+    char *in = strpool_getstring(widget->attributes.in);
+    unsigned int hash = djb_hash(length, in);
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *parent = current->data;
+
+        if (parent == widget || parent->destroyed || parent->idhash != hash || parent->source != source)
+            continue;
+
+        if (strpool_getcstringlength(parent->attributes.id) == length && buffer_match(strpool_getstring(parent->attributes.id), in, length))
+            return parent;
+
+    }
+
+    return 0;
+
+}
+
+/* a widget is placed in a widget of its own source first, and otherwise in one of the wm's */
+void pool_setparent(struct widget *widget)
+{
+
+    widget->parent = 0;
+
+    if (!strpool_getcstringlength(widget->attributes.in))
+        return;
+
+    widget->parent = findparent(widget, widget->source);
+
+    if (!widget->parent && widget->source)
+        widget->parent = findparent(widget, 0);
+
+}
+
+/* a widget can name a parent that comes later in the same message */
+void pool_setorphans(void)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+
+        if (!widget->parent && !widget->destroyed)
+            pool_setparent(widget);
+
+    }
 
 }
 
@@ -215,6 +265,7 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
         widget_setattribute(widget, ATTR_ID, id);
         widget_setattribute(widget, ATTR_IN, in);
         list_move(&widgetlist, &freelist, item);
+        pool_setparent(widget);
 
         return widget;
 
@@ -227,8 +278,20 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 void pool_destroy(struct widget *widget)
 {
 
+    struct list_item *current = 0;
+
     if (widget->type == WIDGET_TYPE_IMAGE && widget->attributes.mimetype == ATTR_MIMETYPE_PCX && widget->resource)
         ((struct pool_pcxresource *)widget->resource)->used = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *child = current->data;
+
+        if (child->parent == widget)
+            child->parent = 0;
+
+    }
 
     widget_unsetattributes(widget);
     list_move(&freelist, &widgetlist, finditem(widget));

@@ -252,7 +252,7 @@ static unsigned int getwidget(struct state *state)
 static void movecursortoend(struct widget *widget)
 {
 
-    struct widget *parent = pool_getwidgetbyid(widget->source, strpool_getstring(widget->attributes.in));
+    struct widget *parent = widget->parent;
 
     if (parent && widget_iseditable(parent))
     {
@@ -283,6 +283,9 @@ static void parseattributes(struct state *state, struct widget *widget)
                 widget_setattribute(widget, attribute, strbuffer);
             else
                 widget_setattribute(widget, attribute, 0);
+
+            if (attribute == ATTR_IN)
+                pool_setparent(widget);
 
             if (attribute == ATTR_LABEL)
                 labelset = 1;
@@ -475,6 +478,7 @@ void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
     state.errors = 0;
 
     parse(&state, source, in);
+    pool_setorphans();
 
 }
 
