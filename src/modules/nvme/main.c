@@ -10,7 +10,9 @@
 
 #define PAGESIZE                        0x1000
 #define QUEUESIZE                       8
-#define MEMORYSIZE                      0x7000
+#define DISKS                           4
+#define MEMORYSIZE                      ((5 + DISKS * 3) * PAGESIZE)
+#define FEATURE_QUEUES                  0x07
 #define TIMEOUT                         0x1000000
 #define FAILED                          0xFFFF
 
@@ -26,13 +28,23 @@ struct queue
 
 };
 
+struct disk
+{
+
+    struct block_interface blockinterface;
+    struct queue io;
+    volatile unsigned int *prplist;
+    unsigned int nsid;
+
+};
+
 static struct base_driver driver;
-static struct block_interface blockinterface;
 static struct spinlock spinlock;
 static unsigned char memory[MEMORYSIZE];
-static volatile unsigned int *prplist;
 static struct queue admin;
-static struct queue io;
+static struct disk disks[DISKS];
+static unsigned int ndisks;
+static unsigned int result;
 static unsigned long mmio;
 static unsigned int stride;
 static unsigned int ready;
@@ -130,6 +142,8 @@ static unsigned int consume(struct queue *queue)
 
     unsigned int status = (queue->cq[queue->cqhead * 4 + 3] >> 17) & 0x7FFF;
 
+    result = queue->cq[queue->cqhead * 4];
+
     queue->cqhead++;
 
     if (queue->cqhead == QUEUESIZE)
@@ -172,18 +186,64 @@ static unsigned int command(unsigned int opcode, unsigned int nsid, unsigned lon
 
 }
 
+static unsigned int getblocksize(volatile unsigned char *identify)
+{
+
+    unsigned int size = 1 << identify[128 + (identify[26] & 0x0F) * 4 + 2];
+
+    if (!identify[0] && !identify[1] && !identify[2] && !identify[3])
+        return 0;
+
+    return (size < 512 || size > PAGESIZE) ? 0 : size;
+
+}
+
+static void adddisk(unsigned long base, volatile unsigned char *identify, unsigned int nsid, unsigned int queues)
+{
+
+    struct disk *disk = &disks[ndisks];
+    unsigned long pages = base + (4 + ndisks * 3) * PAGESIZE;
+
+    if (ndisks >= DISKS || ndisks >= queues)
+        return;
+
+    if (!command(NVME_ADMIN_IDENTIFY, nsid, (unsigned long)identify, 0, 0))
+        return;
+
+    disk->blockinterface.blocksize = getblocksize(identify);
+
+    if (!disk->blockinterface.blocksize)
+        return;
+
+    disk->nsid = nsid;
+    disk->prplist = (volatile unsigned int *)(pages + 2 * PAGESIZE);
+
+    buffer_clear((void *)pages, 3 * PAGESIZE);
+    initqueue(&disk->io, ndisks + 1, pages, pages + PAGESIZE);
+
+    if (!command(NVME_ADMIN_CREATECQ, 0, (unsigned long)disk->io.cq, disk->io.id | ((QUEUESIZE - 1) << 16), NVME_QUEUE_CONTIGUOUS | NVME_QUEUE_INTERRUPTS))
+        return;
+
+    if (!command(NVME_ADMIN_CREATESQ, 0, (unsigned long)disk->io.sq, disk->io.id | ((QUEUESIZE - 1) << 16), NVME_QUEUE_CONTIGUOUS | (disk->io.id << 16)))
+        return;
+
+    ndisks++;
+
+}
+
 static unsigned int setup(void)
 {
 
     unsigned long base = ((unsigned long)memory + PAGESIZE - 1) & ~(PAGESIZE - 1UL);
-    volatile unsigned char *identify = (volatile unsigned char *)(base + 5 * PAGESIZE);
+    volatile unsigned char *identify = (volatile unsigned char *)(base + 2 * PAGESIZE);
+    volatile unsigned int *list = (volatile unsigned int *)(base + 3 * PAGESIZE);
+    unsigned int queues;
+    unsigned int i;
 
     stride = 4 << (readreg(NVME_CAP + 4) & 0x0F);
-    prplist = (volatile unsigned int *)(base + 4 * PAGESIZE);
 
     buffer_clear((void *)base, 4 * PAGESIZE);
     initqueue(&admin, 0, base, base + PAGESIZE);
-    initqueue(&io, 1, base + 2 * PAGESIZE, base + 3 * PAGESIZE);
     writereg(NVME_CC, readreg(NVME_CC) & ~NVME_CC_EN);
 
     if (!waitstatus(NVME_CSTS_RDY, 0))
@@ -197,29 +257,39 @@ static unsigned int setup(void)
     if (!waitstatus(NVME_CSTS_RDY, NVME_CSTS_RDY))
         return 0;
 
-    if (!command(NVME_ADMIN_IDENTIFY, 1, (unsigned long)identify, 0, 0))
+    if (!command(NVME_ADMIN_SETFEATURES, 0, 0, FEATURE_QUEUES, (DISKS - 1) | ((DISKS - 1) << 16)))
         return 0;
 
-    blockinterface.blocksize = 1 << identify[128 + (identify[26] & 0x0F) * 4 + 2];
+    queues = (result & 0xFFFF) + 1;
 
-    if (blockinterface.blocksize < 512 || blockinterface.blocksize > PAGESIZE)
-        return 0;
+    if ((result >> 16) + 1 < queues)
+        queues = (result >> 16) + 1;
 
-    if (!command(NVME_ADMIN_CREATECQ, 0, (unsigned long)io.cq, io.id | ((QUEUESIZE - 1) << 16), NVME_QUEUE_CONTIGUOUS | NVME_QUEUE_INTERRUPTS))
-        return 0;
+    if (command(NVME_ADMIN_IDENTIFY, 0, (unsigned long)list, 2, 0))
+    {
 
-    if (!command(NVME_ADMIN_CREATESQ, 0, (unsigned long)io.sq, io.id | ((QUEUESIZE - 1) << 16), NVME_QUEUE_CONTIGUOUS | (io.id << 16)))
-        return 0;
+        for (i = 0; i < PAGESIZE / 4 && list[i]; i++)
+            adddisk(base, identify, list[i], queues);
 
-    return 1;
+    }
+
+    else
+    {
+
+        adddisk(base, identify, 1, queues);
+
+    }
+
+    return ndisks;
 
 }
 
-static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
+static unsigned int issue(struct disk *disk, unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
 {
 
-    unsigned int blocks = count / blockinterface.blocksize;
-    unsigned int pages = (blocks * blockinterface.blocksize + PAGESIZE - 1) / PAGESIZE;
+    volatile unsigned int *prplist = disk->prplist;
+    unsigned int blocks = count / disk->blockinterface.blocksize;
+    unsigned int pages = (blocks * disk->blockinterface.blocksize + PAGESIZE - 1) / PAGESIZE;
     unsigned long prp2 = 0;
     unsigned int i;
 
@@ -244,50 +314,76 @@ static unsigned int issue(unsigned long buffer, unsigned int write, unsigned int
 
     }
 
-    submit(&io, (write) ? NVME_IO_WRITE : NVME_IO_READ, 1, buffer, prp2, sector, 0, blocks - 1);
+    submit(&disk->io, (write) ? NVME_IO_WRITE : NVME_IO_READ, disk->nsid, buffer, prp2, sector, 0, blocks - 1);
 
-    return blocks * blockinterface.blocksize;
+    return blocks * disk->blockinterface.blocksize;
 
 }
 
-static void finish(struct block_session *session, unsigned int status)
+static void finish(struct disk *disk, struct block_session *session, unsigned int status)
 {
 
     if (status)
         session->count = 0;
 
-    block_session_done(&blockinterface, session);
+    block_session_done(&disk->blockinterface, session);
 
 }
 
 static void handleirq(unsigned int irq)
 {
 
-    struct block_session *session = block_getsession(&blockinterface);
+    unsigned int i;
 
     spinlock_acquire(&spinlock);
 
-    if (session->source && completed(&io))
-        finish(session, consume(&io));
+    for (i = 0; i < ndisks; i++)
+    {
+
+        struct disk *disk = &disks[i];
+        struct block_session *session = block_getsession(&disk->blockinterface);
+
+        if (session->source && completed(&disk->io))
+            finish(disk, session, consume(&disk->io));
+
+    }
 
     spinlock_release(&spinlock);
+
+}
+
+static struct disk *getdisk(struct block_session *session)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < ndisks; i++)
+    {
+
+        if (session == block_getsession(&disks[i].blockinterface))
+            return &disks[i];
+
+    }
+
+    return 0;
 
 }
 
 static void blockinterface_startsession(struct block_session *session)
 {
 
+    struct disk *disk = getdisk(session);
     unsigned long buffer = kernel_getbuffer(session->source);
     unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
 
     spinlock_acquire(&spinlock);
 
-    session->count = issue(buffer, session->type == BLOCK_TYPE_WRITE, session->start / blockinterface.blocksize, count);
+    session->count = issue(disk, buffer, session->type == BLOCK_TYPE_WRITE, session->start / disk->blockinterface.blocksize, count);
 
     if (!session->count)
-        block_session_done(&blockinterface, session);
+        block_session_done(&disk->blockinterface, session);
     else if (!msi)
-        finish(session, wait(&io));
+        finish(disk, session, wait(&disk->io));
 
     spinlock_release(&spinlock);
 
@@ -296,7 +392,10 @@ static void blockinterface_startsession(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 0, blockinterface_startsession);
+    unsigned int i;
+
+    for (i = 0; i < DISKS; i++)
+        block_initinterface(&disks[i].blockinterface, id, 0, blockinterface_startsession);
 
 }
 
@@ -336,16 +435,20 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    if (ready)
-        block_registerinterface(&blockinterface);
+    unsigned int i;
+
+    for (i = 0; ready && i < ndisks; i++)
+        block_registerinterface(&disks[i].blockinterface);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    if (ready)
-        block_unregisterinterface(&blockinterface);
+    unsigned int i;
+
+    for (i = 0; ready && i < ndisks; i++)
+        block_unregisterinterface(&disks[i].blockinterface);
 
     if (msi)
     {

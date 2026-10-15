@@ -13,6 +13,7 @@
 #define NVME_ADMIN_CREATESQ             0x01
 #define NVME_ADMIN_CREATECQ             0x05
 #define NVME_ADMIN_IDENTIFY             0x06
+#define NVME_ADMIN_SETFEATURES          0x09
 #define NVME_IO_WRITE                   0x01
 #define NVME_IO_READ                    0x02
 #define NVME_QUEUE_CONTIGUOUS           0x0001
