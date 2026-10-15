@@ -692,6 +692,265 @@ static unsigned int stat(unsigned int id, struct record *record)
 
 }
 
+static unsigned int getdirsector(unsigned int first, unsigned int offset)
+{
+
+    unsigned int sector = findsector(first, offset);
+
+    if (!sector && extend(first, offset / clustersize))
+        sector = findsector(first, offset);
+
+    return sector;
+
+}
+
+static unsigned int putdirentry(unsigned int first, unsigned int offset, void *entry)
+{
+
+    unsigned int sector = getdirsector(first, offset);
+    unsigned int slot = (offset % sectorsize) / sizeof (struct fat_entry);
+
+    if (!sector)
+        return 0;
+
+    buffer_copy((unsigned char *)readsector(sector) + slot * sizeof (struct fat_entry), entry, sizeof (struct fat_entry));
+    writesector(sector);
+
+    return sector * (sectorsize / sizeof (struct fat_entry)) + slot;
+
+}
+
+static unsigned int findfree(unsigned int first, unsigned int count)
+{
+
+    unsigned int start = 0;
+    unsigned int found = 0;
+    unsigned int offset;
+
+    for (offset = 0; found < count; offset += sizeof (struct fat_entry))
+    {
+
+        unsigned int sector = getdirsector(first, offset);
+        unsigned char *data;
+
+        if (!sector)
+            return 0xFFFFFFFF;
+
+        data = (unsigned char *)readsector(sector) + ((offset % sectorsize) / sizeof (struct fat_entry)) * sizeof (struct fat_entry);
+
+        if (data[0] == FAT_ENTRY_END)
+            return (found) ? start : offset;
+
+        if (data[0] == FAT_ENTRY_DELETED)
+        {
+
+            if (!found)
+                start = offset;
+
+            found++;
+
+        }
+
+        else
+        {
+
+            found = 0;
+
+        }
+
+    }
+
+    return start;
+
+}
+
+static unsigned int hasshortname(unsigned int first, unsigned char *name)
+{
+
+    unsigned int offset;
+
+    for (offset = 0; ; offset += sizeof (struct fat_entry))
+    {
+
+        unsigned int sector = findsector(first, offset);
+        struct fat_entry *entry;
+
+        if (!sector)
+            return 0;
+
+        entry = (struct fat_entry *)((unsigned char *)readsector(sector) + ((offset % sectorsize) / sizeof (struct fat_entry)) * sizeof (struct fat_entry));
+
+        if (entry->name[0] == FAT_ENTRY_END)
+            return 0;
+
+        if (entry->name[0] != FAT_ENTRY_DELETED && entry->attributes != FAT_ATTRIBUTE_LONGNAME && buffer_match(entry->name, name, 11))
+            return 1;
+
+    }
+
+}
+
+static unsigned int islongchar(unsigned char c)
+{
+
+    if (c < 0x20 || c >= 0x80)
+        return 0;
+
+    switch (c)
+    {
+
+    case '\\':
+    case '/':
+    case ':':
+    case '*':
+    case '?':
+    case '"':
+    case '<':
+    case '>':
+    case '|':
+        return 0;
+
+    }
+
+    return 1;
+
+}
+
+static unsigned int makealias(unsigned int first, struct fat_entry *entry, char *name, unsigned int length)
+{
+
+    char base[8];
+    unsigned int baselength = 0;
+    unsigned int dot = length;
+    unsigned int tail;
+    unsigned int i;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (name[i] == '.')
+            dot = i;
+
+    }
+
+    buffer_write(entry->name, 11, "           ", 11, 0);
+
+    for (i = 0; i < dot && baselength < 8; i++)
+    {
+
+        unsigned char c = name[i];
+
+        if (c == ' ' || c == '.')
+            continue;
+
+        if (c >= 'a' && c <= 'z')
+            c -= 32;
+
+        base[baselength++] = (isshortchar(c)) ? c : '_';
+
+    }
+
+    if (!baselength)
+        base[baselength++] = '_';
+
+    for (i = dot + 1; i < length && i < dot + 4; i++)
+    {
+
+        unsigned char c = name[i];
+
+        if (c >= 'a' && c <= 'z')
+            c -= 32;
+
+        entry->name[8 + i - dot - 1] = (isshortchar(c)) ? c : '_';
+
+    }
+
+    for (tail = 1; tail < 1000000; tail++)
+    {
+
+        char number[8];
+        unsigned int digits = cstring_write_value(number, 8, tail, 10, 0, 0);
+        unsigned int keep = (baselength < 7 - digits) ? baselength : 7 - digits;
+
+        buffer_write(entry->name, 8, "        ", 8, 0);
+        buffer_write(entry->name, 8, base, keep, 0);
+        buffer_write(entry->name, 8, "~", 1, keep);
+        buffer_write(entry->name, 8, number, digits, keep + 1);
+
+        if (!hasshortname(first, entry->name))
+            return 1;
+
+    }
+
+    return 0;
+
+}
+
+static unsigned int createlongname(unsigned int first, struct fat_entry *entry, char *name, unsigned int length)
+{
+
+    unsigned int count = (length + 12) / 13;
+    unsigned char checksum;
+    unsigned int offset;
+    unsigned int i;
+
+    if (length > 255)
+        return 0;
+
+    for (i = 0; i < length; i++)
+    {
+
+        if (!islongchar(name[i]))
+            return 0;
+
+    }
+
+    if (!makealias(first, entry, name, length))
+        return 0;
+
+    offset = findfree(first, count + 1);
+
+    if (offset == 0xFFFFFFFF)
+        return 0;
+
+    checksum = getchecksum(entry);
+
+    for (i = 0; i < count; i++)
+    {
+
+        unsigned int order = count - i;
+        struct fat_longname longname;
+        unsigned short chars[13];
+        unsigned int k;
+
+        for (k = 0; k < 13; k++)
+        {
+
+            unsigned int index = (order - 1) * 13 + k;
+
+            chars[k] = (index < length) ? (unsigned char)name[index] : (index == length) ? 0x0000 : 0xFFFF;
+
+        }
+
+        buffer_clear(&longname, sizeof (struct fat_longname));
+
+        longname.order = order | ((i == 0) ? 0x40 : 0);
+        longname.attributes = FAT_ATTRIBUTE_LONGNAME;
+        longname.checksum = checksum;
+
+        buffer_copy(longname.name1, chars, 10);
+        buffer_copy(longname.name2, chars + 5, 12);
+        buffer_copy(longname.name3, chars + 11, 4);
+
+        if (!putdirentry(first, offset + i * sizeof (struct fat_entry), &longname))
+            return 0;
+
+    }
+
+    return putdirentry(first, offset + count * sizeof (struct fat_entry), entry);
+
+}
+
 static unsigned int createfile(unsigned int parent, char *name, unsigned int length)
 {
 
@@ -711,48 +970,20 @@ static unsigned int createfile(unsigned int parent, char *name, unsigned int len
 
     buffer_clear(&entry, sizeof (struct fat_entry));
 
-    if (!makeshortname(&entry, name, length))
-        return 0;
-
     entry.attributes = FAT_ATTRIBUTE_ARCHIVE;
     first = getcluster(&directory);
 
     setcreated(&entry);
 
-    for (offset = 0; ; offset += sizeof (struct fat_entry))
-    {
+    if (!makeshortname(&entry, name, length))
+        return createlongname(first, &entry, name, length);
 
-        unsigned int sector = findsector(first, offset);
-        unsigned int slot = (offset % sectorsize) / sizeof (struct fat_entry);
-        unsigned char *data;
+    offset = findfree(first, 1);
 
-        if (!sector)
-        {
+    if (offset == 0xFFFFFFFF)
+        return 0;
 
-            if (!extend(first, offset / clustersize))
-                return 0;
-
-            sector = findsector(first, offset);
-
-            if (!sector)
-                return 0;
-
-        }
-
-        data = readsector(sector);
-
-        if (data[slot * sizeof (struct fat_entry)] == FAT_ENTRY_END || data[slot * sizeof (struct fat_entry)] == FAT_ENTRY_DELETED)
-        {
-
-            id = sector * (sectorsize / sizeof (struct fat_entry)) + slot;
-
-            putnode(id, &entry);
-
-            return id;
-
-        }
-
-    }
+    return putdirentry(first, offset, &entry);
 
 }
 
