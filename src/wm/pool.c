@@ -17,6 +17,8 @@ static struct list bumplist;
 static struct list freelist;
 static struct widget entries[POOL_WIDGETS];
 static struct list_item items[POOL_WIDGETS];
+static struct list_item siblings[POOL_WIDGETS];
+static struct list children[POOL_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
 static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
 
@@ -34,24 +36,10 @@ struct list_item *pool_next(struct list_item *current)
 
 }
 
-/* only a widget with an id can be named as a parent */
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent)
 {
 
-    if (!strpool_getcstringlength(parent->attributes.id))
-        return 0;
-
-    while ((current = pool_next(current)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->parent == parent)
-            return current;
-
-    }
-
-    return 0;
+    return (current) ? current->next : children[parent - entries].head;
 
 }
 
@@ -124,6 +112,9 @@ static struct widget *findparent(struct widget *widget, unsigned int source)
 void pool_setparent(struct widget *widget)
 {
 
+    if (widget->parent)
+        list_remove(&children[widget->parent - entries], &siblings[widget - entries]);
+
     widget->parent = 0;
 
     if (!strpool_getcstringlength(widget->attributes.in))
@@ -133,6 +124,9 @@ void pool_setparent(struct widget *widget)
 
     if (!widget->parent && widget->source)
         widget->parent = findparent(widget, 0);
+
+    if (widget->parent)
+        list_add(&children[widget->parent - entries], &siblings[widget - entries]);
 
 }
 
@@ -161,24 +155,15 @@ static struct list_item *finditem(struct widget *widget)
 
 }
 
-static void bump(struct list_item *item)
+static void bump(struct widget *widget)
 {
 
-    struct widget *widget = item->data;
-    struct list_item *current = item->prev;
+    struct list_item *current = 0;
 
-    list_move(&bumplist, &widgetlist, item);
+    list_move(&bumplist, &widgetlist, finditem(widget));
 
     while ((current = pool_nextin(current, widget)))
-    {
-
-        struct list_item *prev = current->prev;
-
-        bump(current);
-
-        current = prev;
-
-    }
+        bump(current->data);
 
 }
 
@@ -244,7 +229,10 @@ struct widget *pool_gettextat(struct widget *widget, unsigned int index, unsigne
 void pool_bump(struct widget *widget)
 {
 
-    bump(finditem(widget));
+    if (widget->parent)
+        list_move(&children[widget->parent - entries], &children[widget->parent - entries], &siblings[widget - entries]);
+
+    bump(widget);
 
     while (bumplist.head)
         list_move(&widgetlist, &bumplist, bumplist.head);
@@ -278,18 +266,22 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 void pool_destroy(struct widget *widget)
 {
 
-    struct list_item *current = 0;
+    struct list *list = &children[widget - entries];
 
     if (widget->type == WIDGET_TYPE_IMAGE && widget->attributes.mimetype == ATTR_MIMETYPE_PCX && widget->resource)
         ((struct pool_pcxresource *)widget->resource)->used = 0;
 
-    while ((current = pool_next(current)))
+    if (widget->parent)
+        list_remove(&children[widget->parent - entries], &siblings[widget - entries]);
+
+    while (list->head)
     {
 
-        struct widget *child = current->data;
+        struct widget *child = list->head->data;
 
-        if (child->parent == widget)
-            child->parent = 0;
+        list_remove(list, list->head);
+
+        child->parent = 0;
 
     }
 
@@ -580,6 +572,8 @@ void pool_setup(void)
         struct list_item *item = &items[i];
 
         list_inititem(item, &entries[i]);
+        list_inititem(&siblings[i], &entries[i]);
+        list_init(&children[i]);
         list_add(&freelist, item);
 
     }
