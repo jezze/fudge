@@ -10,11 +10,15 @@
 #define REQUEST_SETIDLE                 0x0A
 #define REQUEST_SETPROTOCOL             0x0B
 #define REPORTSIZE                      8
+#define IDLE                            25
+#define REPEATDELAY                     5
 #define EXTENDED                        0xE000
 
 static struct base_driver driver;
 static struct keyboard_interface keyboardinterface;
 static unsigned char previous[REPORTSIZE];
+static unsigned char repeatkey;
+static unsigned int repeatcount;
 
 /* hid usage ids 0x00 to 0x65, as the set 1 scancodes the keyboard interface takes; 0xE0xx is an extended code */
 static unsigned short scancodes[] = {
@@ -103,6 +107,20 @@ static void onreport(unsigned int id, void *data, unsigned int count)
     if (report[2] == 0x01)
         return;
 
+    /*
+     * usb keyboards don't repeat a held key, but with an idle rate they send the same report again every IDLE * 4 ms;
+     * like a ps/2 keyboard, the last key pressed repeats after REPEATDELAY of those, 500 ms, then on each one, 10 times a second
+     */
+    if (buffer_match(report, previous, REPORTSIZE))
+    {
+
+        if (repeatkey && ++repeatcount >= REPEATDELAY)
+            notify(getscancode(repeatkey), 1);
+
+        return;
+
+    }
+
     for (i = 0; i < 8; i++)
     {
 
@@ -117,7 +135,14 @@ static void onreport(unsigned int id, void *data, unsigned int count)
     {
 
         if (previous[i] && !haskey(report, previous[i]))
+        {
+
             notify(getscancode(previous[i]), 0);
+
+            if (previous[i] == repeatkey)
+                repeatkey = 0;
+
+        }
 
     }
 
@@ -125,7 +150,14 @@ static void onreport(unsigned int id, void *data, unsigned int count)
     {
 
         if (report[i] && !haskey(previous, report[i]))
+        {
+
             notify(getscancode(report[i]), 1);
+
+            repeatkey = report[i];
+            repeatcount = 0;
+
+        }
 
     }
 
@@ -154,7 +186,7 @@ static void driver_reset(unsigned int id)
 
     /* the boot protocol has a fixed 8 byte report, so no report descriptor is needed */
     usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETPROTOCOL, 0, interface, 0, 0);
-    usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETIDLE, 0, interface, 0, 0);
+    usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETIDLE, IDLE << 8, interface, 0, 0);
 
 }
 
