@@ -30,6 +30,7 @@ static struct disk disks[DISKS];
 static unsigned int ndisks;
 static unsigned long mmio;
 static unsigned int msi;
+static unsigned short identity[256];
 
 static unsigned int readreg(unsigned int offset)
 {
@@ -196,6 +197,40 @@ static void poll(struct disk *disk)
 
 }
 
+static unsigned int identify(struct disk *disk)
+{
+
+    volatile struct ahci_header *header = disk->header;
+    volatile struct ahci_table *table = disk->table;
+    volatile struct ahci_h2d *fis = (struct ahci_h2d *)table->cfis;
+    unsigned int port = disk->port;
+
+    buffer_clear((void *)table->cfis, sizeof (struct ahci_h2d));
+
+    header->flags = sizeof (struct ahci_h2d) / 4;
+    header->prdtl = 1;
+    header->prdbc = 0;
+    table->prd.dba = (unsigned long)identity;
+    table->prd.dbau = 0;
+    table->prd.dbc = sizeof (identity) - 1;
+    fis->type = AHCI_TYPE_H2D;
+    fis->port = AHCI_FIS_COMMAND;
+    fis->command = AHCI_ATA_IDENTIFY;
+
+    if (!waitclear(port + AHCI_PTFD, AHCI_PTFD_BSY | AHCI_PTFD_DRQ))
+        return 0;
+
+    writereg(port + AHCI_PIS, 0xFFFFFFFF);
+    writereg(port + AHCI_PCI, 1);
+    poll(disk);
+
+    if (busy(disk) || failed(disk))
+        return 0;
+
+    return (identity[83] & (1 << 10)) ? (identity[100] | ((unsigned int)identity[101] << 16)) : (identity[60] | ((unsigned int)identity[61] << 16));
+
+}
+
 static void finish(struct disk *disk, struct block_session *session)
 {
 
@@ -320,7 +355,13 @@ static void driver_reset(unsigned int id)
     finddisks();
 
     for (i = 0; i < ndisks; i++)
+    {
+
         setupport(&disks[i], i);
+
+        disks[i].blockinterface.blockcount = identify(&disks[i]);
+
+    }
 
 }
 

@@ -124,6 +124,7 @@ static void driver_reset(unsigned int id)
         return;
 
     readonly = virtio_negotiate(&device, FEATURE_RO) & FEATURE_RO;
+    blockinterface.blockcount = (virtio_getconfig(&device, 4) || virtio_getconfig(&device, 5) || virtio_getconfig(&device, 6) || virtio_getconfig(&device, 7)) ? 0xFFFFFFFF : virtio_getconfig(&device, 0) | (virtio_getconfig(&device, 1) << 8) | (virtio_getconfig(&device, 2) << 16) | ((unsigned int)virtio_getconfig(&device, 3) << 24);
 
     if (!virtio_setqueue(&queue, &device, 0, memory) || queue.size < 3)
         return;

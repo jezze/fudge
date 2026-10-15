@@ -20,6 +20,7 @@ struct block_interface
     unsigned int id;
     struct block_session sessions[8];
     unsigned int blocksize;
+    unsigned int blockcount;
     void (*startsession)(struct block_session *session);
 
 };

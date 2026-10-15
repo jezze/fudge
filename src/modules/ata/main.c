@@ -144,6 +144,8 @@ static void driver_init(unsigned int id)
 
     block_initinterface(&blockinterface, id, BLOCKSIZE, blockinterface_startsession);
 
+    blockinterface.blockcount = (identity[83] & (1 << 10)) ? (identity[100] | ((unsigned int)identity[101] << 16)) : (identity[60] | ((unsigned int)identity[61] << 16));
+
 }
 
 static unsigned int driver_match(unsigned int id)

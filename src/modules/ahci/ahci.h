@@ -33,6 +33,7 @@
 #define AHCI_FIS_COMMAND                0x80
 #define AHCI_DEVICE_LBA                 0x40
 #define AHCI_ATA_READDMAEXT             0x25
+#define AHCI_ATA_IDENTIFY               0xEC
 #define AHCI_ATA_WRITEDMAEXT            0x35
 #define AHCI_TYPE_H2D                   0x27
 #define AHCI_TYPE_D2H                   0x34

@@ -219,6 +219,7 @@ struct event_blockinfo
     unsigned long buffer;
     unsigned int buffersize;
     unsigned int blocksize;
+    unsigned int blockcount;
 
 };
 

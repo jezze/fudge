@@ -15,6 +15,7 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
         blockinfo.buffer = KERNEL_VBUFFER;
         blockinfo.buffersize = TASK_BUFFERSIZE;
         blockinfo.blocksize = interface->blocksize;
+        blockinfo.blockcount = interface->blockcount;
 
         return kernel_place(interface->service.inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
 
@@ -183,6 +184,7 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 
     interface->id = id;
     interface->blocksize = blocksize;
+    interface->blockcount = 0;
     interface->startsession = startsession;
 
 }

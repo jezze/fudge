@@ -141,6 +141,8 @@ static void onmain(struct message *message)
     channel_send(1, block, EVENT_INFO, 0, 0);
     channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
 
+    channel_send_fmt(0, message->source, EVENT_DATA, "Blocks: %u of %u bytes\n", &blockinfo.blockcount, &blockinfo.blocksize);
+
     if (!readblock(block, 0))
         return;
 

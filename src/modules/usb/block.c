@@ -109,7 +109,9 @@ static unsigned int readcapacity(unsigned int id)
     if (!command(id, cb, sizeof (cb), 1, data, sizeof (data)))
         return 0;
 
-    return (data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
+    blockinterface.blockcount = (((unsigned int)data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]) + 1;
+
+    return ((unsigned int)data[4] << 24) | (data[5] << 16) | (data[6] << 8) | data[7];
 
 }
 

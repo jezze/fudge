@@ -215,6 +215,8 @@ static void adddisk(unsigned long base, volatile unsigned char *identify, unsign
     if (!disk->blockinterface.blocksize)
         return;
 
+    disk->blockinterface.blockcount = (identify[4] || identify[5] || identify[6] || identify[7]) ? 0xFFFFFFFF : identify[0] | (identify[1] << 8) | (identify[2] << 16) | ((unsigned int)identify[3] << 24);
+
     disk->nsid = nsid;
     disk->prplist = (volatile unsigned int *)(pages + 2 * PAGESIZE);
 
