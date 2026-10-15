@@ -18,6 +18,7 @@
     { path: initrd:kernel/usb.ko }
     { path: initrd:kernel/usb-keyboard.ko }
     { path: initrd:kernel/usb-mouse.ko }
+    { path: initrd:kernel/usb-storage.ko }
     { path: initrd:kernel/gop.ko }
     { path: initrd:kernel/bga.ko }
     { path: initrd:kernel/uart.ko }
