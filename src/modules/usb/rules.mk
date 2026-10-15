@@ -41,13 +41,13 @@ L:=\
 include $(DIR_MK)/kmod.mk
 
 M:=\
-    $(DIR_SRC)/modules/usb/usb-storage.ko \
+    $(DIR_SRC)/modules/usb/usb-block.ko \
 
 N:=\
-    $(DIR_SRC)/modules/usb/usb-storage.ko.map \
+    $(DIR_SRC)/modules/usb/usb-block.ko.map \
 
 O:=\
-    $(DIR_SRC)/modules/usb/storage.o \
+    $(DIR_SRC)/modules/usb/block.o \
 
 L:=\
     $(DIR_LIB)/fudge/fudge.a \

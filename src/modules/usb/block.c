@@ -206,7 +206,7 @@ static void driver_detach(unsigned int id)
 void module_init(void)
 {
 
-    base_initdriver(&driver, "usbstorage", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
+    base_initdriver(&driver, "usbblock", driver_init, driver_match, driver_reset, driver_attach, driver_detach);
 
 }
 
