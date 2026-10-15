@@ -16,9 +16,7 @@ void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
 void blit_alphaline(struct blit_display *display, unsigned int color, int x0, int x2);
 void blit_text(struct blit_display *display, struct text_font *font, char *text, unsigned int length, int rx, int ry, int line, int x0, int x2, unsigned int ms, unsigned int me, unsigned int *cmap);
 void blit_iconarrowdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
-void blit_iconarrowup(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconcursor(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
-void blit_icondropdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconhamburger(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconminimize(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);
 void blit_iconx(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap);

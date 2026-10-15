@@ -270,22 +270,6 @@ void blit_iconarrowdown(struct blit_display *display, struct util_region *region
 
 }
 
-void blit_iconarrowup(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
-{
-
-    static char *rows[6] = {
-        "     ##",
-        "    ####",
-        "   ######",
-        "  ########",
-        " ##########",
-        "############"
-    };
-
-    blitbitmap(display, rows, 6, region->position.x + (int)(region->size.w / 2) - 6, region->position.y + (int)(region->size.h / 2) - 3, line, x0, x2, cmap);
-
-}
-
 void blit_iconcursor(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
 {
 
@@ -297,30 +281,6 @@ void blit_iconcursor(struct blit_display *display, struct util_region *region, i
     };
 
     blitsegment(display, rows, 1, line, region, x0, x2, cmap);
-
-}
-
-void blit_icondropdown(struct blit_display *display, struct util_region *region, int line, int x0, int x2, unsigned int *cmap)
-{
-
-    static char *rows[14] = {
-        "    ##",
-        "   ####",
-        "  ######",
-        " ########",
-        "##########",
-        "",
-        "",
-        "",
-        "",
-        "##########",
-        " ########",
-        "  ######",
-        "   ####",
-        "    ##"
-    };
-
-    blitbitmap(display, rows, 14, region->position.x + (int)(region->size.w / 2) - 5, region->position.y + (int)(region->size.h / 2) - 7, line, x0, x2, cmap);
 
 }
 

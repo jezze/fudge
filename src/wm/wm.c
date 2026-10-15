@@ -33,7 +33,6 @@ struct state
     struct util_position mouseremainder;
     unsigned int mousespeed;
     struct util_position mousepressed;
-    struct util_position mousereleased;
     unsigned int mousebuttonleft;
     unsigned int mousebuttonright;
     struct widget *rootwidget;
@@ -2409,9 +2408,6 @@ static void onmouserelease(struct message *message)
 {
 
     struct event_mouserelease *mouserelease = message->data;
-
-    state.mousereleased.x = state.mouseposition.x;
-    state.mousereleased.y = state.mouseposition.y;
 
     switch (mouserelease->button)
     {

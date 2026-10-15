@@ -67,13 +67,6 @@ struct util_size util_size(unsigned int w, unsigned int h)
 
 }
 
-struct util_size util_size_add(struct util_size *a, unsigned int w, unsigned int h)
-{
-
-    return util_size(a->w + w, a->h + h);
-
-}
-
 struct util_size util_size_sub(struct util_size *a, unsigned int w, unsigned int h)
 {
 
@@ -91,18 +84,6 @@ struct util_size util_size_union(struct util_size *a, struct util_size *b)
 {
 
     return util_size(a->w + b->w, a->h + b->h);
-
-}
-
-struct util_size util_size_intersection(struct util_size *a, struct util_size *b)
-{
-
-    struct util_size result;
-
-    result.w = util_min(a->w, b->w);
-    result.h = util_min(a->h, b->h);
-
-    return result;
 
 }
 

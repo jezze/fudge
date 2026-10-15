@@ -56,7 +56,6 @@ struct widget
     unsigned int markend;
     unsigned int followcursor;
     void *resource;
-    unsigned int loaded;
     unsigned int appcursor;
     unsigned int selected;
     unsigned int anchor;

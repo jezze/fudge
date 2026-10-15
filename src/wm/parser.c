@@ -131,13 +131,6 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
                 break;
 
-            case '"':
-                addchar(state, result, count, i, '"');
-
-                i++;
-
-                break;
-
             default:
                 addchar(state, result, count, i, c);
 

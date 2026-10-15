@@ -417,7 +417,6 @@ void widget_init(struct widget *widget, unsigned int source, unsigned int type)
     widget->markend = 0;
     widget->followcursor = 0;
     widget->resource = 0;
-    widget->loaded = 0;
     widget->appcursor = 0;
     widget->selected = 0;
     widget->anchor = 0;

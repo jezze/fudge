@@ -50,7 +50,4 @@
 #define ATTR_WRAP_CHAR                  1
 #define ATTR_WRAP_WORD                  2
 
-unsigned int attr_isvalue(unsigned int attribute);
-unsigned int attr_isstring(unsigned int attribute);
-unsigned int attr_isenum(unsigned int attribute);
 unsigned int attr_update(unsigned int attribute, char *value, unsigned int current);
