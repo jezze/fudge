@@ -138,6 +138,9 @@ struct device
     struct trbring bulkinring;
     struct trbring bulkoutring;
     void (*callback)(unsigned int id, void *data, unsigned int count);
+    unsigned char report[64];
+    unsigned int reportcount;
+    unsigned int pending;
 
 };
 
@@ -298,7 +301,16 @@ static void handletransfer(volatile struct trb *trb)
     {
 
         if ((code == COMPLETION_SUCCESS || code == COMPLETION_SHORTPACKET) && device->callback)
-            device->callback(slot, device->buffer + PAGESIZE / 2, device->endpointsize - remaining);
+        {
+
+            unsigned int count = device->endpointsize - remaining;
+
+            device->reportcount = (count > sizeof (device->report)) ? sizeof (device->report) : count;
+            device->pending = 1;
+
+            buffer_copy(device->report, device->buffer + PAGESIZE / 2, device->reportcount);
+
+        }
 
         queueinterrupt(device);
 
@@ -376,6 +388,44 @@ static void process(void)
 
 static void hotplug(void);
 
+static void deliver(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < DEVICES; i++)
+    {
+
+        struct device *device = &devices[i];
+        void (*callback)(unsigned int id, void *data, unsigned int count) = 0;
+        unsigned char report[64];
+        unsigned int count = 0;
+        unsigned int slot = 0;
+
+        spinlock_acquire(&spinlock);
+
+        if (device->slot && device->pending && device->callback)
+        {
+
+            callback = device->callback;
+            count = device->reportcount;
+            slot = device->slot;
+
+            buffer_copy(report, device->report, count);
+
+        }
+
+        device->pending = 0;
+
+        spinlock_release(&spinlock);
+
+        if (callback)
+            callback(slot, report, count);
+
+    }
+
+}
+
 static void handleirq(unsigned int irq)
 {
 
@@ -390,6 +440,7 @@ static void handleirq(unsigned int irq)
     hotplugging = 1;
 
     spinlock_release(&spinlock);
+    deliver();
 
     if (!run)
         return;
