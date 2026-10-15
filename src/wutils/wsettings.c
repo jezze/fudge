@@ -490,7 +490,7 @@ static unsigned int writelines(char *data, unsigned int size)
     unsigned int count = 0;
     unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "layout %s\nkeyboard %s\nresolution %u %u %u\n", config.layout, config.keyboard, &config.width, &config.height, &config.bpp);
+    count += cstring_write_fmt(data, size, count, "layout %s\nkeyboard %s\nresolution %u %u %u\nmouse %s\n", config.layout, config.keyboard, &config.width, &config.height, &config.bpp, config.speed);
 
     for (i = 0; i < config.ncolors; i++)
         count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);
