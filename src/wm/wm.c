@@ -1372,7 +1372,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
     if (!text)
         return;
 
-    /* enter is sent to the program when it asks for it, otherwise it starts a new line */
+    /* enter is sent to the program when it asks for it, otherwise it starts a new line in a box that scrolls */
     if (id == KEYS_KEY_ENTER)
     {
 
@@ -1385,6 +1385,9 @@ static void edittextbox(struct widget *widget, unsigned int id)
             return;
 
         }
+
+        if (!widget_isscrollable(widget))
+            return;
 
         c = '\n';
 
@@ -1557,6 +1560,8 @@ static void pastetext(struct widget *widget)
 
     unsigned int service = channel_lookup(option_getstring("clipboard-service"));
     unsigned int cursor = util_min(widget->attributes.cursor, pool_gettextlength(widget));
+    unsigned int multiline = widget_isscrollable(widget);
+    unsigned int stopped = 0;
     struct message message;
     unsigned int offset;
 
@@ -1567,8 +1572,19 @@ static void pastetext(struct widget *widget)
 
     channel_send(1, service, EVENT_CLIPBOARDREAD, 0, 0);
 
+    /* a box that doesn't scroll holds one line, so the rest of the clipboard is read and dropped */
     while (channel_poll(1, service, EVENT_CLIPBOARDDATA, &message) && message.length)
-        cursor += inserttext(widget, cursor, message.data, message.length);
+    {
+
+        unsigned int length = (multiline) ? message.length : buffer_findbyte(message.data, message.length, '\n');
+
+        if (!stopped)
+            cursor += inserttext(widget, cursor, message.data, length);
+
+        if (length < message.length)
+            stopped = 1;
+
+    }
 
     widget->attributes.cursor = cursor;
     widget->followcursor = 1;
