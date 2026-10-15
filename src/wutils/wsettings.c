@@ -2,6 +2,25 @@
 #include <abi.h>
 #include "kv.h"
 
+#define NUM_WIDGETS                     13
+#define NUM_RULES                       14
+#define NUM_SHADES                      4
+#define NUM_PARTS                       6
+#define SHADE_NORMAL                    1
+#define SHADE_HOVER                     2
+#define SHADE_FOCUS                     4
+#define SHADE_DISABLED                  8
+#define SHADE_ALL                       15
+#define PART_SHADOW                     1
+#define PART_BODY                       2
+#define PART_DARK                       4
+#define PART_LIGHT                      8
+#define PART_FRAME                      15
+#define PART_TEXT                       16
+#define PART_ICON                       32
+#define NUM_BINDINGS                    32
+#define NUM_COLORS                      512
+
 struct entry
 {
 
@@ -48,22 +67,6 @@ static struct entry resolutions[9] = {
     {"1920x1080x32", "1920x1080x32"},
     {"2560x1440x32", "2560x1440x32"}
 };
-#define NUM_WIDGETS                     13
-#define NUM_RULES                       14
-#define NUM_SHADES                      4
-#define NUM_PARTS                       6
-#define SHADE_NORMAL                    1
-#define SHADE_HOVER                     2
-#define SHADE_FOCUS                     4
-#define SHADE_DISABLED                  8
-#define SHADE_ALL                       15
-#define PART_SHADOW                     1
-#define PART_BODY                       2
-#define PART_DARK                       4
-#define PART_LIGHT                      8
-#define PART_FRAME                      15
-#define PART_TEXT                       16
-#define PART_ICON                       32
 
 struct rule
 {
@@ -108,12 +111,6 @@ static struct rule rules[NUM_RULES] = {
     {"cursor", "text", SHADE_NORMAL, PART_TEXT}
 };
 
-static char *shadenames[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
-static char *partnames[NUM_PARTS] = {"shadow", "body", "dark", "light", "text", "icon"};
-
-#define NUM_BINDINGS                    32
-#define NUM_COLORS                      512
-
 struct binding
 {
 
@@ -132,7 +129,6 @@ struct color
 
 };
 
-/* everything in the configuration file, so changes in any area are kept until they are saved */
 static struct
 {
 
@@ -151,6 +147,8 @@ static struct
 
 } config;
 
+static char *shadenames[NUM_SHADES] = {"normal", "hover", "focus", "disabled"};
+static char *partnames[NUM_PARTS] = {"shadow", "body", "dark", "light", "text", "icon"};
 static char colorwidget[32] = "box";
 static char out[MESSAGE_SIZE];
 static unsigned int outcount;
@@ -337,7 +335,6 @@ static void loadbinding(char *line, unsigned int length)
     getword(line, length, 1, binding->mod, 32);
     getword(line, length, 2, binding->action, 32);
 
-    /* the command is the rest of the line after the third space and can hold spaces */
     for (start = 0, spaces = 0; start < length && spaces < 3; start++)
     {
 
@@ -394,9 +391,11 @@ static void loadconfig(void)
     unsigned int count;
 
     count = query(data, 256, ".general.layout", 0);
+
     getword(data, count, 0, config.layout, 32);
 
     count = query(data, 256, ".localization", "{language} {timezone}");
+
     getword(data, count, 0, config.language, 32);
     getword(data, count, 1, config.timezone, 32);
 
@@ -404,11 +403,12 @@ static void loadconfig(void)
     config.width = getnumber(data, count, 0);
     config.height = getnumber(data, count, 1);
     config.bpp = getnumber(data, count, 2);
-
     count = query(data, 256, ".keyboard.layout", 0);
+
     getword(data, count, 0, config.keyboard, 32);
 
     count = query(data, 256, ".mouse.speed", 0);
+
     getword(data, count, 0, config.speed, 16);
 
     config.nbindings = 0;
@@ -497,7 +497,6 @@ static unsigned int writelines(char *data, unsigned int size)
 
 }
 
-/* sends whole lines in each message, so the wm can apply every message by itself */
 static void sendlines(unsigned int target, unsigned int event, char *data, unsigned int count)
 {
 
@@ -769,14 +768,19 @@ static void renderarea(char *name)
 static void onmain(struct message *message)
 {
 
-    unsigned int service = channel_lookup(option_getstring("wm-service"));
+    wm = channel_lookup(option_getstring("wm-service"));
 
-    if (service)
+    if (wm)
     {
 
-        channel_send(0, service, EVENT_WMMAP, 0, 0);
+        char *alfi = "initrd:data/alfi/wsettings.alfi";
+
+        loadconfig();
+        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        renderarea("general");
+
         channel_hold(0);
-        channel_send(0, service, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
     }
 
@@ -854,19 +858,6 @@ static void onwmevent(struct message *message)
 
 }
 
-static void onwminit(struct message *message)
-{
-
-    char *alfi = "initrd:data/alfi/wsettings.alfi";
-
-    wm = message->source;
-
-    loadconfig();
-    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    renderarea("general");
-
-}
-
 void init(void)
 {
 
@@ -874,6 +865,5 @@ void init(void)
     option_add("config", "initrd:data/config/wm.mq");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
-    channel_bind(EVENT_WMINIT, onwminit);
 
 }

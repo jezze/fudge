@@ -9,20 +9,13 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMMAP, 0, 0);
+        char *alfi = "initrd:data/alfi/wabout.alfi";
+
+        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         channel_hold(0);
         channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
     }
-
-}
-
-static void onwminit(struct message *message)
-{
-
-    char *alfi = "initrd:data/alfi/wabout.alfi";
-
-    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
 }
 
@@ -31,7 +24,6 @@ void init(void)
 
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 

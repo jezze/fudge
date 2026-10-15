@@ -149,7 +149,19 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMMAP, 0, 0);
+        char *alfi = "initrd:data/alfi/wconnect.alfi";
+
+        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+
+        if (cstring_length(option_getstring("url")))
+        {
+
+            seturl(option_getstring("url"));
+            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= address label \"%s\"\n", url);
+            open(wm);
+
+        }
+
         channel_hold(0);
         channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
@@ -171,24 +183,6 @@ static void onwmevent(struct message *message)
 
 }
 
-static void onwminit(struct message *message)
-{
-
-    char *alfi = "initrd:data/alfi/wconnect.alfi";
-
-    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-
-    if (cstring_length(option_getstring("url")))
-    {
-
-        seturl(option_getstring("url"));
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= address label \"%s\"\n", url);
-        open(message->source);
-
-    }
-
-}
-
 void init(void)
 {
 
@@ -196,7 +190,6 @@ void init(void)
     option_add("url", "");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
-    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 

@@ -240,7 +240,6 @@ static void writeclipboard(unsigned int service, char *data, unsigned int count)
 
 }
 
-/* puts the selected paths in the clipboard, one per line, and remembers them to recognize a cut when pasting */
 static void clip(unsigned int cut)
 {
 
@@ -268,7 +267,6 @@ static void clip(unsigned int cut)
 
 }
 
-/* copies every path in the clipboard here, or moves them when they are what this window cut */
 static void paste(void)
 {
 
@@ -298,7 +296,6 @@ static void paste(void)
 
         pasted[i] = '\0';
 
-        /* a line with a quote can't be quoted on the command line */
         if (i > start && buffer_findbyte(pasted + start, i - start, '"') == i - start)
             system_run(0, "%s \"%s\" \"%s\"", (cut) ? "mv" : "cp", pasted + start, path);
 
@@ -341,7 +338,10 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        channel_send(0, wm, EVENT_WMMAP, 0, 0);
+        char *alfi = "initrd:data/alfi/wfile.alfi";
+
+        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        changepath(wm, "initrd:");
         channel_hold(0);
         channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
@@ -474,16 +474,6 @@ static void onwmkeypress(struct message *message)
 
 }
 
-static void onwminit(struct message *message)
-{
-
-    char *alfi = "initrd:data/alfi/wfile.alfi";
-
-    channel_send(0, message->source, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    changepath(message->source, "initrd:");
-
-}
-
 void init(void)
 {
 
@@ -493,7 +483,6 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
-    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 

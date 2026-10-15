@@ -49,7 +49,6 @@
 #define EVENT_CREATERESPONSE            0x4B
 #define EVENT_REMOVEREQUEST             0x4C
 #define EVENT_REMOVERESPONSE            0x4D
-#define EVENT_WMMAP                     0x50
 #define EVENT_WMUNMAP                   0x51
 #define EVENT_WMGRAB                    0x53
 #define EVENT_WMUNGRAB                  0x54
@@ -61,7 +60,6 @@
 #define EVENT_WMMOUSERELEASE            0x5A
 #define EVENT_WMRENDERDATA              0x5B
 #define EVENT_WMRENDERFILE              0x5C
-#define EVENT_WMINIT                    0x5D
 #define EVENT_WMEVENT                   0x5E
 #define EVENT_WMACK                     0x5F
 #define EVENT_WMREAD                    0x60

@@ -29,14 +29,17 @@ static void showimage(void)
 static void onmain(struct message *message)
 {
 
-    unsigned int target = channel_lookup(option_getstring("wm-service"));
+    wm = channel_lookup(option_getstring("wm-service"));
 
-    if (target)
+    if (wm)
     {
 
-        channel_send(0, target, EVENT_WMMAP, 0, 0);
+        char *alfi = "initrd:data/alfi/wimage.alfi";
+
+        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        showimage();
         channel_hold(0);
-        channel_send(0, target, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
     }
 
@@ -78,18 +81,6 @@ static void onwmevent(struct message *message)
 
 }
 
-static void onwminit(struct message *message)
-{
-
-    char *alfi = "initrd:data/alfi/wimage.alfi";
-
-    wm = message->source;
-
-    channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
-    showimage();
-
-}
-
 void init(void)
 {
 
@@ -97,7 +88,6 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_WMEVENT, onwmevent);
-    channel_bind(EVENT_WMINIT, onwminit);
 
 }
 

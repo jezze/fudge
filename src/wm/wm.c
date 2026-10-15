@@ -2309,13 +2309,6 @@ static void onwmgrab(struct message *message)
 
 }
 
-static void onwmmap(struct message *message)
-{
-
-    channel_send(0, message->source, EVENT_WMINIT, 0, 0);
-
-}
-
 static void onwmrenderdata(struct message *message)
 {
 
@@ -2478,7 +2471,6 @@ void init(void)
     channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMCONFIG, onwmconfig);
     channel_bind(EVENT_WMGRAB, onwmgrab);
-    channel_bind(EVENT_WMMAP, onwmmap);
     channel_bind(EVENT_WMREAD, onwmread);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
     channel_bind(EVENT_WMRENDERFILE, onwmrenderfile);
