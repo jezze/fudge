@@ -20,6 +20,7 @@ static unsigned int fsinfo;
 static unsigned int cachefirst;
 static unsigned int cacheindex;
 static unsigned int cachecluster;
+static unsigned int clock;
 
 static void sendblockrequest(unsigned int event, unsigned int reply, unsigned int sector)
 {
@@ -260,6 +261,60 @@ static void putnode(unsigned int id, struct fat_entry *entry)
 
     buffer_copy(sector + (id % perSector) * sizeof (struct fat_entry), entry, sizeof (struct fat_entry));
     writesector(id / perSector);
+
+}
+
+static unsigned int getnow(unsigned short *date, unsigned short *time)
+{
+
+    struct event_clockinfo clockinfo;
+
+    if (!clock)
+        return 0;
+
+    channel_send(1, clock, EVENT_INFO, 0, 0);
+
+    if (!channel_wait(1, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo) || clockinfo.year < 1980)
+        return 0;
+
+    *date = ((clockinfo.year - 1980) << 9) | (clockinfo.month << 5) | clockinfo.day;
+    *time = (clockinfo.hours << 11) | (clockinfo.minutes << 5) | (clockinfo.seconds / 2);
+
+    return 1;
+
+}
+
+static void setcreated(struct fat_entry *entry)
+{
+
+    unsigned short date;
+    unsigned short time;
+
+    if (!getnow(&date, &time))
+        return;
+
+    entry->createdate = date;
+    entry->createtime = time;
+    entry->modifydate = date;
+    entry->modifytime = time;
+    entry->accessdate = date;
+
+}
+
+static unsigned int setmodified(struct fat_entry *entry)
+{
+
+    unsigned short date;
+    unsigned short time;
+
+    if (!getnow(&date, &time) || (entry->modifydate == date && entry->modifytime == time))
+        return 0;
+
+    entry->modifydate = date;
+    entry->modifytime = time;
+    entry->accessdate = date;
+
+    return 1;
 
 }
 
@@ -662,6 +717,8 @@ static unsigned int createfile(unsigned int parent, char *name, unsigned int len
     entry.attributes = FAT_ATTRIBUTE_ARCHIVE;
     first = getcluster(&directory);
 
+    setcreated(&entry);
+
     for (offset = 0; ; offset += sizeof (struct fat_entry))
     {
 
@@ -749,6 +806,14 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
     {
 
         entry.size = offset + count;
+
+        setmodified(&entry);
+        putnode(id, &entry);
+
+    }
+
+    else if (setmodified(&entry))
+    {
 
         putnode(id, &entry);
 
@@ -962,6 +1027,7 @@ static void onmain(struct message *message)
 {
 
     block = channel_lookup(option_getstring("block-service"));
+    clock = channel_lookup(option_getstring("clock-service"));
     partoffset = option_getdecimal("partoffset");
 
     if (block)
@@ -1007,6 +1073,7 @@ void init(void)
 
     option_add("service", "fat");
     option_add("block-service", "block");
+    option_add("clock-service", "clock");
     option_add("partoffset", "0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_CREATEREQUEST, oncreaterequest);
