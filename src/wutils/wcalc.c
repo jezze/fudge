@@ -8,6 +8,7 @@
 #define STATE_MUL                       3
 #define STATE_DIV                       4
 
+static unsigned int keypad[10] = {KEYS_KEY_KEYPAD_0, KEYS_KEY_KEYPAD_1, KEYS_KEY_KEYPAD_2, KEYS_KEY_KEYPAD_3, KEYS_KEY_KEYPAD_4, KEYS_KEY_KEYPAD_5, KEYS_KEY_KEYPAD_6, KEYS_KEY_KEYPAD_7, KEYS_KEY_KEYPAD_8, KEYS_KEY_KEYPAD_9};
 static unsigned int prevstate;
 static int number;
 static int accumulator;
@@ -123,105 +124,58 @@ static void onwmkeypress(struct message *message)
 {
 
     struct event_wmkeypress *wmkeypress = message->data;
+    unsigned int c = (wmkeypress->length == 1) ? wmkeypress->unicode : 0;
+    unsigned int i;
 
-    switch (wmkeypress->id)
+    for (i = 0; i < 10; i++)
     {
 
-    case KEYS_KEY_0:
-    case KEYS_KEY_KEYPAD_0:
-        updatevalue(message->source, 0);
+        if (wmkeypress->id == keypad[i])
+            c = '0' + i;
 
-        break;
+    }
 
-    case KEYS_KEY_1:
-    case KEYS_KEY_KEYPAD_1:
-        updatevalue(message->source, 1);
+    if (wmkeypress->id == KEYS_KEY_KEYPAD_PLUS)
+        c = '+';
 
-        break;
+    if (wmkeypress->id == KEYS_KEY_KEYPAD_MINUS)
+        c = '-';
 
-    case KEYS_KEY_2:
-    case KEYS_KEY_KEYPAD_2:
-        updatevalue(message->source, 2);
+    if (wmkeypress->id == KEYS_KEY_KEYPAD_STAR)
+        c = '*';
 
-        break;
+    switch (c)
+    {
 
-    case KEYS_KEY_3:
-    case KEYS_KEY_KEYPAD_3:
-        updatevalue(message->source, 3);
-
-        break;
-
-    case KEYS_KEY_4:
-    case KEYS_KEY_KEYPAD_4:
-        updatevalue(message->source, 4);
-
-        break;
-
-    case KEYS_KEY_5:
-    case KEYS_KEY_KEYPAD_5:
-        updatevalue(message->source, 5);
-
-        break;
-
-    case KEYS_KEY_6:
-    case KEYS_KEY_KEYPAD_6:
-        updatevalue(message->source, 6);
-
-        break;
-
-    case KEYS_KEY_7:
-    case KEYS_KEY_KEYPAD_7:
-        updatevalue(message->source, 7);
-
-        break;
-
-    case KEYS_KEY_8:
-        if (wmkeypress->keymod & KEYS_MOD_SHIFT)
-            updatestate(message->source, STATE_MUL);
-        else
-            updatevalue(message->source, 8);
-
-        break;
-
-    case KEYS_KEY_KEYPAD_8:
-        updatevalue(message->source, 8);
-
-        break;
-
-    case KEYS_KEY_9:
-    case KEYS_KEY_KEYPAD_9:
-        updatevalue(message->source, 9);
-
-        break;
-
-    case KEYS_KEY_MINUS:
-    case KEYS_KEY_KEYPAD_MINUS:
-        updatestate(message->source, STATE_SUB);
-
-        break;
-
-    case KEYS_KEY_EQUAL:
-        if (wmkeypress->keymod & KEYS_MOD_SHIFT)
-            updatestate(message->source, STATE_ADD);
-        else
-            updatestate(message->source, STATE_SUM);
-
-        break;
-
-    case KEYS_KEY_KEYPAD_PLUS:
+    case '+':
         updatestate(message->source, STATE_ADD);
 
         break;
 
-    case KEYS_KEY_ENTER:
-    case KEYS_KEY_KEYPAD_ENTER:
+    case '-':
+        updatestate(message->source, STATE_SUB);
+
+        break;
+
+    case '*':
+        updatestate(message->source, STATE_MUL);
+
+        break;
+
+    case '/':
+        updatestate(message->source, STATE_DIV);
+
+        break;
+
+    case '=':
+    case '\n':
         updatestate(message->source, STATE_SUM);
 
         break;
 
-    case KEYS_KEY_SLASH:
-    case KEYS_KEY_KEYPAD_SLASH:
-        updatestate(message->source, STATE_DIV);
+    default:
+        if (c >= '0' && c <= '9')
+            updatevalue(message->source, c - '0');
 
         break;
 
