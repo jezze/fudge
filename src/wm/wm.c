@@ -438,63 +438,15 @@ static void damageall(struct widget *widget)
 
 }
 
-static void shiftregion(struct util_region *region, int x, int y)
+static void translatewindow(struct widget *window, int x, int y)
 {
-
-    region->position.x += x;
-    region->position.y += y;
-
-}
-
-static unsigned int shiftwindow(struct widget *window, int x, int y)
-{
-
-    struct list_item *current = 0;
-
-    while ((current = pool_nextsource(current, window->source)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->type == WIDGET_TYPE_WINDOW && widget != window)
-            return 0;
-
-    }
-
-    while ((current = pool_nextsource(current, window->source)))
-    {
-
-        struct widget *widget = current->data;
-
-        shiftregion(&widget->placement, x, y);
-        shiftregion(&widget->cplacement, x, y);
-        shiftregion(&widget->clip, x, y);
-        shiftregion(&widget->cclip, x, y);
-        shiftregion(&widget->thumb, x, y);
-
-        widget->cursorposition.x += x;
-        widget->cursorposition.y += y;
-
-    }
-
-    return 1;
-
-}
-
-static unsigned int translatewindow(struct widget *window, int x, int y)
-{
-
-    unsigned int shifted;
 
     damage(window);
 
     window->position.x += x;
     window->position.y += y;
-    shifted = window->source && shiftwindow(window, x, y);
 
     damage(window);
-
-    return shifted;
 
 }
 
@@ -2169,8 +2121,8 @@ static void onmousemove(struct message *message)
         if (!state.focusedwidget && state.focusedwindow)
         {
 
-            if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow) && translatewindow(state.focusedwindow, state.mousemovement.x, state.mousemovement.y))
-                relayout = 0;
+            if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
+                translatewindow(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
 
         }
 
