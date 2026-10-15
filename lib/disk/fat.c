@@ -16,7 +16,10 @@ unsigned int fat_validate(struct fat *fat)
     if (!fat->reserved_sector_count || !fat->table_count)
         return 0;
 
-    return !fat->root_entry_count && !fat->table_size_16 && fat32->table_size_32 && fat32->root_cluster >= 2;
+    if (fat->root_entry_count)
+        return fat->table_size_16 != 0;
+
+    return !fat->table_size_16 && fat32->table_size_32 && fat32->root_cluster >= 2;
 
 }
 

@@ -13,6 +13,9 @@ static unsigned int clustersize;
 static unsigned int fatstart;
 static unsigned int datastart;
 static unsigned int rootcluster;
+static unsigned int rootstart;
+static unsigned int rootsectors;
+static unsigned int fattype;
 static unsigned int fatcount;
 static unsigned int fatsize;
 static unsigned int clustercount;
@@ -52,16 +55,52 @@ static void writesector(unsigned int sector)
 
 }
 
+static unsigned char getfatbyte(unsigned int copy, unsigned int offset)
+{
+
+    unsigned char *data = readsector(fatstart + copy * fatsize + offset / sectorsize);
+
+    return data[offset % sectorsize];
+
+}
+
+static void setfatbyte(unsigned int copy, unsigned int offset, unsigned char value)
+{
+
+    unsigned int sector = fatstart + copy * fatsize + offset / sectorsize;
+    unsigned char *data = readsector(sector);
+
+    data[offset % sectorsize] = value;
+
+    writesector(sector);
+
+}
+
 static unsigned int nextcluster(unsigned int cluster)
 {
 
-    unsigned int offset = cluster * 4;
-    unsigned char *sector = readsector(fatstart + offset / sectorsize);
     unsigned int next;
 
-    buffer_copy(&next, sector + offset % sectorsize, 4);
+    switch (fattype)
+    {
 
-    return next & FAT_CLUSTER_MASK;
+    case 12:
+        next = getfatbyte(0, cluster + cluster / 2) | (getfatbyte(0, cluster + cluster / 2 + 1) << 8);
+        next = (cluster & 1) ? next >> 4 : next & 0xFFF;
+
+        return (next >= 0xFF8) ? FAT_CLUSTER_MASK : next;
+
+    case 16:
+        next = getfatbyte(0, cluster * 2) | (getfatbyte(0, cluster * 2 + 1) << 8);
+
+        return (next >= 0xFFF8) ? FAT_CLUSTER_MASK : next;
+
+    default:
+        buffer_copy(&next, (unsigned char *)readsector(fatstart + cluster * 4 / sectorsize) + cluster * 4 % sectorsize, 4);
+
+        return next & FAT_CLUSTER_MASK;
+
+    }
 
 }
 
@@ -71,6 +110,9 @@ static unsigned int findsector(unsigned int first, unsigned int offset)
     unsigned int index = offset / clustersize;
     unsigned int cluster = first;
     unsigned int i = 0;
+
+    if (!first)
+        return (fattype != 32 && offset < rootsectors * sectorsize) ? rootstart + offset / sectorsize : 0;
 
     if (cachefirst == first && cacheindex <= index)
     {
@@ -97,23 +139,54 @@ static unsigned int findsector(unsigned int first, unsigned int offset)
 static void setcluster(unsigned int cluster, unsigned int value)
 {
 
-    unsigned int offset = cluster * 4;
     unsigned int i;
 
     for (i = 0; i < fatcount; i++)
     {
 
-        unsigned int sector = fatstart + i * fatsize + offset / sectorsize;
-        unsigned char *data = readsector(sector);
-        unsigned int old;
-        unsigned int new;
+        switch (fattype)
+        {
 
-        buffer_copy(&old, data + offset % sectorsize, 4);
+        case 12:
+            {
 
-        new = (old & ~FAT_CLUSTER_MASK) | (value & FAT_CLUSTER_MASK);
+                unsigned int offset = cluster + cluster / 2;
+                unsigned int old = getfatbyte(i, offset) | (getfatbyte(i, offset + 1) << 8);
+                unsigned int new = (cluster & 1) ? (old & 0x000F) | ((value & 0xFFF) << 4) : (old & 0xF000) | (value & 0xFFF);
 
-        buffer_copy(data + offset % sectorsize, &new, 4);
-        writesector(sector);
+                setfatbyte(i, offset, new);
+                setfatbyte(i, offset + 1, new >> 8);
+
+            }
+
+            break;
+
+        case 16:
+            setfatbyte(i, cluster * 2, value);
+            setfatbyte(i, cluster * 2 + 1, value >> 8);
+
+            break;
+
+        default:
+            {
+
+                unsigned int sector = fatstart + i * fatsize + cluster * 4 / sectorsize;
+                unsigned char *data = readsector(sector);
+                unsigned int old;
+                unsigned int new;
+
+                buffer_copy(&old, data + cluster * 4 % sectorsize, 4);
+
+                new = (old & ~FAT_CLUSTER_MASK) | (value & FAT_CLUSTER_MASK);
+
+                buffer_copy(data + cluster * 4 % sectorsize, &new, 4);
+                writesector(sector);
+
+            }
+
+            break;
+
+        }
 
     }
 
@@ -147,15 +220,42 @@ static unsigned int allocate(void)
 
     unsigned int perSector = sectorsize / 4;
     unsigned int *table = 0;
+    unsigned short *table16 = 0;
     unsigned int cluster;
 
     for (cluster = 2; cluster < clustercount; cluster++)
     {
 
-        if (!table || cluster % perSector == 0)
-            table = readsector(fatstart + cluster / perSector);
+        unsigned int used;
 
-        if (!(table[cluster % perSector] & FAT_CLUSTER_MASK))
+        if (fattype == 32)
+        {
+
+            if (!table || cluster % perSector == 0)
+                table = readsector(fatstart + cluster / perSector);
+
+            used = table[cluster % perSector] & FAT_CLUSTER_MASK;
+
+        }
+
+        else if (fattype == 16)
+        {
+
+            if (!table16 || cluster % (sectorsize / 2) == 0)
+                table16 = readsector(fatstart + cluster / (sectorsize / 2));
+
+            used = table16[cluster % (sectorsize / 2)];
+
+        }
+
+        else
+        {
+
+            used = nextcluster(cluster);
+
+        }
+
+        if (!used)
         {
 
             unsigned int i;
@@ -186,6 +286,9 @@ static unsigned int extend(unsigned int first, unsigned int index)
 
     unsigned int cluster = first;
     unsigned int i;
+
+    if (!first)
+        return 0;
 
     for (i = 0; i < index; i++)
     {
@@ -1279,16 +1382,22 @@ static void onmain(struct message *message)
         {
 
             struct fat32 *fat32 = (struct fat32 *)fat.extended_section;
+            unsigned int total = (fat.total_sectors_16) ? fat.total_sectors_16 : fat.total_sectors_32;
+            unsigned int clusters;
 
             sectorsize = fat.bytes_per_sector;
             clustersize = sectorsize * fat.sectors_per_cluster;
             fatstart = fat.reserved_sector_count;
-            datastart = fatstart + fat.table_count * fat32->table_size_32;
-            rootcluster = fat32->root_cluster;
             fatcount = fat.table_count;
-            fatsize = fat32->table_size_32;
-            fsinfo = fat32->fat_info;
-            clustercount = (((fat.total_sectors_16) ? fat.total_sectors_16 : fat.total_sectors_32) - datastart) / fat.sectors_per_cluster + 2;
+            fatsize = (fat.table_size_16) ? fat.table_size_16 : fat32->table_size_32;
+            rootstart = fatstart + fatcount * fatsize;
+            rootsectors = (fat.root_entry_count * sizeof (struct fat_entry) + sectorsize - 1) / sectorsize;
+            datastart = rootstart + rootsectors;
+            clusters = (total - datastart) / fat.sectors_per_cluster;
+            clustercount = clusters + 2;
+            fattype = (!fat.table_size_16) ? 32 : (clusters < 4085) ? 12 : 16;
+            rootcluster = (fattype == 32) ? fat32->root_cluster : 0;
+            fsinfo = (fattype == 32) ? fat32->fat_info : 0;
 
             call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
             channel_hold(0);

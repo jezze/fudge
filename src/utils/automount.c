@@ -57,8 +57,12 @@ static void mountmbr(unsigned int source, unsigned int target, struct mbr_partit
 
         break;
 
+    case 0x01:
+    case 0x04:
+    case 0x06:
     case 0x0B:
     case 0x0C:
+    case 0x0E:
     case 0xEF:
         mountfat(source, target, offset, name, service, index);
 
