@@ -463,7 +463,7 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
         if (offset)
         {
 
-            struct keys_map *map = getmap(keys->layout);
+            struct keys_map *map = getmap(keys->map);
 
             if (map)
             {
