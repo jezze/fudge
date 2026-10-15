@@ -75,7 +75,6 @@ static struct
 
     char layout[32];
     char language[32];
-    char time[32];
     char timezone[32];
     unsigned int width;
     unsigned int height;
@@ -346,10 +345,9 @@ static void loadconfig(void)
     count = query(data, 256, ".general.layout", 0);
     getword(data, count, 0, config.layout, 32);
 
-    count = query(data, 256, ".localization", "{language} {time} {timezone}");
+    count = query(data, 256, ".localization", "{language} {timezone}");
     getword(data, count, 0, config.language, 32);
-    getword(data, count, 1, config.time, 32);
-    getword(data, count, 2, config.timezone, 32);
+    getword(data, count, 1, config.timezone, 32);
 
     count = query(data, 256, ".screen.resolution", "{width} {height} {bpp}");
     config.width = getnumber(data, count, 0);
@@ -379,7 +377,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n  }\n", config.layout);
-    count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    time: %s\n    timezone: %s\n  }\n", config.language, config.time, config.timezone);
+    count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n  }\n", &config.width, &config.height, &config.bpp);
     count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    layout: %s\n  }\n", config.keyboard);
     count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n    acceleration: %s\n  }\n", config.speed, acceleration);
@@ -460,8 +458,6 @@ static void setchoice(char *id, char *value)
         copystring(config.layout, 32, value, cstring_length(value));
     else if (cstring_match(id, "localization-language"))
         copystring(config.language, 32, value, cstring_length(value));
-    else if (cstring_match(id, "localization-time"))
-        copystring(config.time, 32, value, cstring_length(value));
     else if (cstring_match(id, "localization-timezone"))
         copystring(config.timezone, 32, value, cstring_length(value));
     else if (cstring_match(id, "keyboard-layout"))
@@ -515,7 +511,6 @@ static void renderlocalization(void)
 
     beginarea("Localization");
     choice("localization-language", "Language", config.language, languages, 3);
-    choice("localization-time", "Time format", config.time, languages, 3);
     choice("localization-timezone", "Timezone", config.timezone, timezones, 8);
 
 }
