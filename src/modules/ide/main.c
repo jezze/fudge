@@ -243,6 +243,7 @@ unsigned int ide_wait(unsigned int id)
 {
 
     unsigned char status;
+    unsigned int i = 0;
 
     do
     {
@@ -250,9 +251,9 @@ unsigned int ide_wait(unsigned int id)
         status = ide_getstatus(id);
 
     }
-    while (status & REG_STATUS_BUSY);
+    while ((status & REG_STATUS_BUSY) && ++i < LIMIT_POLL);
 
-    return (status & REG_STATUS_DRQ) && !(status & REG_STATUS_ERROR);
+    return !(status & REG_STATUS_BUSY) && (status & REG_STATUS_DRQ) && !(status & REG_STATUS_ERROR);
 
 }
 
