@@ -1520,12 +1520,14 @@ static void clickwidget(struct widget *widget)
 static void purge(unsigned int source)
 {
 
-    struct list_item *current = 0;
+    struct list_item *current = pool_nextsource(0, source);
 
-    while ((current = pool_nextsource(current, source)))
+    while (current)
     {
 
         struct widget *widget = current->data;
+
+        current = pool_nextsource(current, source);
 
         if (widget->destroyed)
         {
@@ -1544,8 +1546,6 @@ static void purge(unsigned int source)
 
             damageall(widget);
             pool_destroy(widget);
-
-            current = 0;
 
         }
 
