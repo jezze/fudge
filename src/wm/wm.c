@@ -2309,14 +2309,21 @@ static void onwmgrab(struct message *message)
 
 }
 
+static void render(unsigned int source, unsigned int count, void *data)
+{
+
+    parser_parse(source, "root", count, data);
+    pool_loadresources();
+    placewindows(source);
+    purge(source);
+    redraw(1);
+
+}
+
 static void onwmrenderdata(struct message *message)
 {
 
-    parser_parse(message->source, "root", message->length, message->data);
-    pool_loadresources();
-    placewindows(message->source);
-    purge(message->source);
-    redraw(1);
+    render(message->source, message->length, message->data);
 
 }
 
@@ -2377,19 +2384,8 @@ static void onwmrenderfile(struct message *message)
 {
 
     char data[4096];
-    unsigned int count = fs_read_path(1, message->data, data, 4096);
 
-    if (count)
-    {
-
-        parser_parse(message->source, "root", count, data);
-        pool_loadresources();
-        placewindows(message->source);
-        purge(message->source);
-
-    }
-
-    redraw(1);
+    render(message->source, fs_read_path(1, message->data, data, 4096), data);
 
 }
 
