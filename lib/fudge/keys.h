@@ -158,6 +158,8 @@ struct keys
     unsigned int skip;
     unsigned int numlock;
     unsigned int numlockdown;
+    unsigned int capslock;
+    unsigned int capslockdown;
     unsigned int mod;
     unsigned int id;
     struct keys_code code;

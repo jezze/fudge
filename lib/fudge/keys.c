@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "utf8.h"
 #include "keys.h"
 
 static unsigned int qwerty_us[128] = {
@@ -469,16 +470,30 @@ static unsigned int iskeypadnavigation(unsigned int offset)
 
 }
 
-static void updatenumlock(struct keys *keys, unsigned int release)
+static void updatelock(struct keys *keys, unsigned int id, unsigned int *lock, unsigned int *down, unsigned int release)
 {
 
-    if (keys->id != KEYS_KEY_NUMLOCK)
+    if (keys->id != id)
         return;
 
-    if (!release && !keys->numlockdown)
-        keys->numlock = !keys->numlock;
+    if (!release && !*down)
+        *lock = !*lock;
 
-    keys->numlockdown = !release;
+    *down = !release;
+
+}
+
+static unsigned int isletter(struct keys_code *code)
+{
+
+    unsigned int codepoint;
+
+    if (!code->length)
+        return 0;
+
+    utf8_read((char *)code->value, code->length, &codepoint);
+
+    return (codepoint >= 'a' && codepoint <= 'z') || (codepoint >= 0xE0 && codepoint <= 0xFE && codepoint != 0xF7);
 
 }
 
@@ -522,7 +537,8 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
             keys->extended = 1;
 
         update(keys, keys->layout, offset, release);
-        updatenumlock(keys, release);
+        updatelock(keys, KEYS_KEY_NUMLOCK, &keys->numlock, &keys->numlockdown, release);
+        updatelock(keys, KEYS_KEY_CAPSLOCK, &keys->capslock, &keys->capslockdown, release);
 
         if (offset)
         {
@@ -533,7 +549,8 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
             if (map && mapped)
             {
 
-                unsigned int level = ((keys->mod & KEYS_MOD_ALTGR) ? 2 : 0) + ((keys->mod & KEYS_MOD_SHIFT) ? 1 : 0);
+                unsigned int shift = (keys->mod & KEYS_MOD_SHIFT) ? 1 : 0;
+                unsigned int level = (keys->mod & KEYS_MOD_ALTGR) ? 2 + shift : shift ^ (keys->capslock && isletter(&map[offset].code[0]));
                 struct keys_code *code = &map[offset].code[level];
 
                 buffer_copy(&keys->code, code, sizeof (struct keys_code));
@@ -562,6 +579,8 @@ void keys_init(struct keys *keys, unsigned int layout, unsigned int map)
     keys->skip = 0;
     keys->numlock = 1;
     keys->numlockdown = 0;
+    keys->capslock = 0;
+    keys->capslockdown = 0;
     keys->mod = 0;
     keys->id = 0;
     keys->code.length = 0;
