@@ -3,6 +3,7 @@
 #define KEYS_MOD_ALT                    2
 #define KEYS_MOD_CTRL                   4
 #define KEYS_MOD_META                   8
+#define KEYS_MOD_ALTGR                  16
 #define KEYS_MAP_NONE                   0
 #define KEYS_MAP_US                     1
 #define KEYS_MAP_SE                     2
@@ -91,6 +92,7 @@
 #define KEYS_KEY_KEYPAD_3               0x1051
 #define KEYS_KEY_KEYPAD_0               0x1052
 #define KEYS_KEY_KEYPAD_PERIOD          0x1053
+#define KEYS_KEY_102ND                  0x1056
 #define KEYS_KEY_F11                    0x1057
 #define KEYS_KEY_F12                    0x1058
 #define KEYS_KEY_PREVIOUSTRACK          0x2010

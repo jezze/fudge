@@ -1914,7 +1914,7 @@ static void onkeypress(struct message *message)
                 wmkeypress.id = state.keys.id;
                 wmkeypress.scancode = keypress->scancode;
                 wmkeypress.unicode = state.keys.code.value[0];
-                wmkeypress.length = state.keys.code.length;
+                wmkeypress.length = (state.keys.code.length == 1) ? 1 : 0;
                 wmkeypress.keymod = state.keys.mod;
 
                 channel_send(0, state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
