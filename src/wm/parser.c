@@ -104,11 +104,11 @@ static unsigned int addchar(struct state *state, char *result, unsigned int coun
 
 }
 
-/* inside quotes only a quote is special, outside them a backslash escapes the next character */
 static unsigned int readword(struct state *state, char *result, unsigned int count)
 {
 
     unsigned int i = 0;
+    unsigned int quotes = 0;
 
     state->linebreak = 0;
 
@@ -139,6 +139,7 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
         {
 
             state->quoted = 1;
+            quotes = 1;
 
         }
 
@@ -157,7 +158,7 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
         else if (c == ' ')
         {
 
-            if (i)
+            if (i || quotes)
             {
 
                 addchar(state, result, count, i, '\0');
@@ -177,7 +178,11 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
     }
 
-    return 0;
+    state->linebreak = 1;
+
+    addchar(state, result, count, i, '\0');
+
+    return i;
 
 }
 
@@ -260,7 +265,6 @@ static void parseattributes(struct state *state, struct widget *widget)
 
     }
 
-    /* the user owns the cursor of an editable textbox, so new text from the program leaves it at the end */
     if (labelset && widget->type == WIDGET_TYPE_TEXT)
         movecursortoend(widget);
 
