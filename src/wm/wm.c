@@ -1958,49 +1958,6 @@ static void applyconfig(struct event_videoconf *videoconf)
 
 }
 
-static void reloadconfig(void)
-{
-
-    struct event_videoconf videoconf = state.videoconf;
-
-    loadconfig(option_getstring("config"));
-    applyconfig(&videoconf);
-
-}
-
-static void onoption(struct message *message)
-{
-
-    char *data = message->data;
-    unsigned int offset = 0;
-
-    if (!message->length || data[message->length - 1] != '\0')
-        return;
-
-    while (offset < message->length)
-    {
-
-        char *key = data + offset;
-        char *value = key + cstring_length_zero(key);
-
-        offset += cstring_length_zero(key);
-
-        if (offset >= message->length)
-            break;
-
-        offset += cstring_length_zero(value);
-
-        if (!option_getstring(key))
-            channel_send_fmt(0, message->source, EVENT_ERROR, "Unrecognized option: %s\n", key);
-        else if (!option_setstring(key, value))
-            channel_send_fmt(0, message->source, EVENT_ERROR, "Option too long: %s\n", key);
-        else if (state.video && cstring_match(key, "config"))
-            reloadconfig();
-
-    }
-
-}
-
 static void onmain(struct message *message)
 {
 
@@ -2447,7 +2404,6 @@ void init(void)
     option_add("clipboard-service", "clipboard");
     bindinput(1);
     channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_OPTION, onoption);
     channel_bind(EVENT_WMCONFIG, onwmconfig);
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMREAD, onwmread);
