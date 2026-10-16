@@ -79,7 +79,6 @@ struct state
     unsigned int line;
     unsigned int linebreak;
     unsigned int quoted;
-    unsigned int escaped;
     unsigned int errors;
 
 };
@@ -93,7 +92,7 @@ static void fail(struct state *state)
 
 }
 
-static void addchar(struct state *state, char *result, unsigned int count, unsigned int i, char c)
+static unsigned int addchar(struct state *state, char *result, unsigned int count, unsigned int i, char c)
 {
 
     if (i < count)
@@ -101,42 +100,69 @@ static void addchar(struct state *state, char *result, unsigned int count, unsig
     else
         fail(state);
 
+    return i + 1;
+
 }
 
+/* inside quotes only a quote is special, outside them a backslash escapes the next character */
 static unsigned int readword(struct state *state, char *result, unsigned int count)
 {
 
     unsigned int i = 0;
 
     state->linebreak = 0;
-    state->escaped = 0;
 
-    for (; state->offset < state->count; state->offset++)
+    while (state->offset < state->count)
     {
 
-        char c = state->data[state->offset];
+        char c = state->data[state->offset++];
 
-        if (state->escaped)
+        if (state->quoted)
         {
 
-            state->escaped = 0;
+            if (c == '"')
+                state->quoted = 0;
+            else
+                i = addchar(state, result, count, i, c);
 
-            switch (c)
+        }
+
+        else if (c == '\\' && state->offset < state->count)
+        {
+
+            c = state->data[state->offset++];
+            i = addchar(state, result, count, i, (c == 'n') ? '\n' : c);
+
+        }
+
+        else if (c == '"')
+        {
+
+            state->quoted = 1;
+
+        }
+
+        else if (c == '\n' || c == '\0')
+        {
+
+            state->line++;
+            state->linebreak = 1;
+
+            addchar(state, result, count, i, '\0');
+
+            return i;
+
+        }
+
+        else if (c == ' ')
+        {
+
+            if (i)
             {
 
-            case 'n':
-                addchar(state, result, count, i, '\n');
+                addchar(state, result, count, i, '\0');
 
-                i++;
-
-                break;
-
-            default:
-                addchar(state, result, count, i, c);
-
-                i++;
-
-                break;
+                return i;
 
             }
 
@@ -145,74 +171,7 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
         else
         {
 
-            if (state->quoted)
-            {
-
-                switch (c)
-                {
-
-                case '"':
-                    state->quoted = 0;
-
-                    break;
-
-                default:
-                    addchar(state, result, count, i, c);
-
-                    i++;
-
-                    break;
-
-                }
-
-            }
-
-            else
-            {
-
-                switch (c)
-                {
-
-                case '\\':
-                    state->escaped = 1;
-
-                    break;
-
-                case '"':
-                    state->quoted = 1;
-
-                    break;
-
-                case '\0':
-                case '\n':
-                    state->line++;
-                    state->linebreak = 1;
-                    state->offset++;
-
-                    addchar(state, result, count, i, '\0');
-
-                    return i;
-
-                case ' ':
-                    addchar(state, result, count, i, '\0');
-
-                    if (i == 0)
-                        continue;
-
-                    state->offset++;
-
-                    return i;
-
-                default:
-                    addchar(state, result, count, i, c);
-
-                    i++;
-
-                    break;
-
-                }
-
-            }
+            i = addchar(state, result, count, i, c);
 
         }
 
@@ -474,7 +433,6 @@ void parser_parse(unsigned int source, char *in, unsigned int count, void *data)
     state.line = 0;
     state.linebreak = 0;
     state.quoted = 0;
-    state.escaped = 0;
     state.errors = 0;
 
     parse(&state, source, in);
