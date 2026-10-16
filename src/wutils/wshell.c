@@ -101,11 +101,18 @@ static unsigned int fitlabel(char *data, unsigned int count, unsigned int size)
 static unsigned int writelabel(char *buffer, unsigned int size, unsigned int offset, char *id, char *data, unsigned int count, unsigned int *length)
 {
 
+    unsigned int codepoint;
+    unsigned int first;
     unsigned int start;
     unsigned int i;
 
     offset += cstring_write_fmt(buffer, size, offset, "= %s label \"", id);
     start = (size > offset + 2) ? fitlabel(data, count, size - offset - 2) : count;
+    first = utf8_fit(data, count, start);
+
+    if (first < start)
+        start = first + utf8_read(data + first, count - first, &codepoint);
+
     *length = count - start;
 
     for (i = start; i < count; i++)
@@ -182,7 +189,29 @@ static void clearresult(void)
 static void insertleft(unsigned int count, void *data)
 {
 
-    ring_write(&input1, data, count);
+    if (ring_avail(&input1) >= count)
+        ring_write(&input1, data, count);
+
+}
+
+static unsigned int leftsize(void)
+{
+
+    char buffer[INPUTSIZE];
+    unsigned int count = ring_readcopy(&input1, buffer, INPUTSIZE);
+
+    return count - utf8_prev(buffer, count);
+
+}
+
+static unsigned int rightsize(void)
+{
+
+    char buffer[4];
+    unsigned int count = ring_readcopy(&input2, buffer, 4);
+    unsigned int codepoint;
+
+    return (count) ? utf8_read(buffer, count, &codepoint) : 0;
 
 }
 
@@ -459,12 +488,12 @@ static void onwmkeypress(struct message *message)
             break;
 
         case KEYS_KEY_B:
-            moveleft(1);
+            moveleft(leftsize());
 
             break;
 
         case KEYS_KEY_D:
-            deleteright(1);
+            deleteright(rightsize());
 
             break;
 
@@ -474,12 +503,12 @@ static void onwmkeypress(struct message *message)
             break;
 
         case KEYS_KEY_F:
-            moveright(1);
+            moveright(rightsize());
 
             break;
 
         case KEYS_KEY_H:
-            deleteleft(1);
+            deleteleft(leftsize());
 
             break;
 
@@ -510,12 +539,12 @@ static void onwmkeypress(struct message *message)
     {
 
     case KEYS_KEY_BACKSPACE:
-        deleteleft(1);
+        deleteleft(leftsize());
 
         break;
 
     case KEYS_KEY_DELETE:
-        deleteright(1);
+        deleteright(rightsize());
 
         break;
 
@@ -535,12 +564,12 @@ static void onwmkeypress(struct message *message)
         break;
 
     case KEYS_KEY_CURSORLEFT:
-        moveleft(1);
+        moveleft(leftsize());
 
         break;
 
     case KEYS_KEY_CURSORRIGHT:
-        moveright(1);
+        moveright(rightsize());
 
         break;
 
