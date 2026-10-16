@@ -492,10 +492,48 @@ static void update(struct keys *keys, unsigned int type, unsigned int offset, un
 
 }
 
+static unsigned int iskeypadnavigation(unsigned int offset)
+{
+
+    return offset >= 0x47 && offset <= 0x53 && offset != 0x4A && offset != 0x4E;
+
+}
+
+static void updatenumlock(struct keys *keys, unsigned int release)
+{
+
+    if (keys->id != KEYS_KEY_NUMLOCK)
+        return;
+
+    if (!release && !keys->numlockdown)
+        keys->numlock = !keys->numlock;
+
+    keys->numlockdown = !release;
+
+}
+
 unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
 {
 
-    if (scancode == 0xE0)
+    if (keys->skip)
+    {
+
+        keys->skip--;
+        keys->id = 0;
+        keys->code.length = 0;
+
+    }
+
+    else if (scancode == 0xE1)
+    {
+
+        keys->skip = 2;
+        keys->id = 0;
+        keys->code.length = 0;
+
+    }
+
+    else if (scancode == 0xE0)
     {
 
         keys->extended = 1;
@@ -510,7 +548,11 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
         unsigned int offset = scancode & 0x7F;
         unsigned int release = scancode & 0x80;
 
+        if (!keys->extended && !keys->numlock && iskeypadnavigation(offset))
+            keys->extended = 1;
+
         update(keys, keys->layout, offset, release);
+        updatenumlock(keys, release);
 
         if (offset)
         {
@@ -546,6 +588,9 @@ void keys_init(struct keys *keys, unsigned int layout, unsigned int map)
     keys->layout = layout;
     keys->map = map;
     keys->extended = 0;
+    keys->skip = 0;
+    keys->numlock = 1;
+    keys->numlockdown = 0;
     keys->mod = 0;
     keys->id = 0;
     keys->code.length = 0;

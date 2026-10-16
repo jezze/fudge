@@ -153,6 +153,9 @@ struct keys
     unsigned int layout;
     unsigned int map;
     unsigned int extended;
+    unsigned int skip;
+    unsigned int numlock;
+    unsigned int numlockdown;
     unsigned int mod;
     unsigned int id;
     struct keys_code code;
