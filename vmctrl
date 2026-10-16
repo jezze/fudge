@@ -118,12 +118,12 @@ cmd_run() {
 
     if test "${network}" == "y"
     then
-        cmd="${cmd} -device ${netdevice},netdev=eth0,bus=pci.0,addr=0x4 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
+        cmd="${cmd} -device ${netdevice},netdev=eth0 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
     fi
 
     if test "${slirp}" == "y"
     then
-        cmd="${cmd} -device ${netdevice},netdev=eth0,bus=pci.0,addr=0x4 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1,hostfwd=tcp::8080-:80"
+        cmd="${cmd} -device ${netdevice},netdev=eth0 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1,hostfwd=tcp::8080-:80"
     fi
 
     if test "${uefi}" == "y"
