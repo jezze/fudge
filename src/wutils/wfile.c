@@ -14,6 +14,7 @@ static char clipboard[CLIPBOARD_SIZE];
 static char pasted[CLIPBOARD_SIZE];
 static unsigned int clipcount;
 static unsigned int clipcut;
+static unsigned int opener;
 
 static void updatepath(unsigned int wm)
 {
@@ -38,10 +39,14 @@ static unsigned int countselected(void)
 static void setbuttons(unsigned int wm)
 {
 
-    char *mode = (countselected()) ? "normal" : "disabled";
+    unsigned int count = countselected();
+    char *mode = (count) ? "normal" : "disabled";
     char *pastemode = (listing) ? "normal" : "disabled";
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
+    if (opener)
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
+    else
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
 
 }
 
@@ -198,7 +203,20 @@ static void updatecontent(unsigned int wm)
     else if (fs_stat(1, target, id, &record) && record.type != RECORD_TYPE_DIRECTORY)
     {
 
-        showfile(wm, &record);
+        if (opener)
+        {
+
+            channel_send_fmt(0, opener, EVENT_PATH, "%s\\0", path);
+            channel_close();
+
+        }
+
+        else
+        {
+
+            showfile(wm, &record);
+
+        }
 
     }
 
@@ -335,12 +353,19 @@ static void onmain(struct message *message)
 
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
+    if (cstring_match(option_getstring("mode"), "select"))
+        opener = message->source;
+
     if (wm)
     {
 
         char *alfi = "initrd:data/alfi/wfile.alfi";
 
         channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+
+        if (opener)
+            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"Open\"\n- copy\n- cut\n- paste\n- delete\n+ button id \"open\" in \"bottom\" mode \"disabled\" label \"Open\" onclick \"q=open\"\n");
+
         changepath(wm, "initrd:");
         channel_hold(0);
         channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
@@ -383,6 +408,18 @@ static void onwmevent(struct message *message)
 
         delete();
         updatecontent(message->source);
+
+    }
+
+    else if (kv_match(event, "q=open"))
+    {
+
+        unsigned int i;
+
+        for (i = 0; i < rows && !selected[i]; i++);
+
+        if (i < rows)
+            changepath(message->source, names[i]);
 
     }
 
@@ -441,7 +478,7 @@ static void onwmkeypress(struct message *message)
 
     struct event_wmkeypress *wmkeypress = message->data;
 
-    if (!(wmkeypress->keymod & KEYS_MOD_CTRL))
+    if (opener || !(wmkeypress->keymod & KEYS_MOD_CTRL))
         return;
 
     switch (wmkeypress->id)
@@ -480,6 +517,7 @@ void init(void)
     option_add("config", "initrd:data/config/filetypes.mq");
     option_add("wm-service", "wm");
     option_add("clipboard-service", "clipboard");
+    option_add("mode", "browse");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
