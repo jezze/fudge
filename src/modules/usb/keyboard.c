@@ -221,6 +221,10 @@ static void driver_reset(unsigned int id)
     usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETPROTOCOL, 0, interface, 0, 0);
     usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETIDLE, IDLE << 8, interface, 0, 0);
 
+    leds = LED_NUMLOCK;
+
+    usb_control(id, USB_REQUEST_OUT | USB_REQUEST_CLASS | USB_REQUEST_INTERFACE, REQUEST_SETREPORT, REPORT_OUTPUT << 8, interface, 1, &leds);
+
 }
 
 static void driver_attach(unsigned int id)
@@ -228,7 +232,6 @@ static void driver_attach(unsigned int id)
 
     current = id;
     repeatkey = 0;
-    leds = 0;
 
     buffer_clear(previous, REPORTSIZE);
     keyboard_registerinterface(&keyboardinterface);
