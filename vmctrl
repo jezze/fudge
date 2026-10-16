@@ -3,38 +3,40 @@
 set -e
 
 error() {
-    echo "Error: ${1}" 2>&1
+    echo "Error: ${1}" >&2
     exit 1
 }
 
 cmd_run() {
     name="default"
-    disk=n
-    diskname=""
+    storage=n
+    storagedevice="virtio"
+    diskname="fudge.qcow2"
     iso=n
     isoname=""
     network=n
-    slirp=n
+    networkdevice="virtio"
+    tap=n
+    audio=n
+    audiodevice="ac97"
+    audiodriver="pa"
     uefi=n
-    ahci=n
-    nvme=n
-    virtio=n
-    audio=""
 
     while test ${#} -gt 0
     do
         case "${1}" in
-            -a)
-                ahci=y
+            -A)
+                audio=y
                 ;;
-            -d)
-                disk=y
-                diskname="${2}"
-                test -f "${diskname}" || error "Disk not found: ${diskname}"
+            -a)
+                audio=y
+                audiodevice="${2}"
                 shift
                 ;;
-            -e)
-                nvme=y
+            -d)
+                storage=y
+                diskname="${2}"
+                shift
                 ;;
             -i)
                 iso=y
@@ -42,22 +44,33 @@ cmd_run() {
                 test -f "${isoname}" || error "ISO not found: ${isoname}"
                 shift
                 ;;
-            -n)
+            -N)
                 network=y
                 ;;
-            -o)
-                audio="${2}"
-                test -n "${audio}" || error "Audio driver missing (for example pa, pipewire, alsa or wav)"
+            -n)
+                network=y
+                networkdevice="${2}"
                 shift
                 ;;
+            -o)
+                audio=y
+                audiodriver="${2}"
+                shift
+                ;;
+            -S)
+                storage=y
+                ;;
             -s)
-                slirp=y
+                storage=y
+                storagedevice="${2}"
+                shift
+                ;;
+            -t)
+                network=y
+                tap=y
                 ;;
             -u)
                 uefi=y
-                ;;
-            -v)
-                virtio=y
                 ;;
             -*)
                 error "Unknown flag: ${1}"
@@ -71,59 +84,88 @@ cmd_run() {
 
     cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
 
-    if test "${disk}" == "y"
+    if test "${storage}" == "y"
     then
-        if test "${ahci}" == "y"
-        then
-            cmd="${cmd} -device ahci,id=ahci0 -drive file=${diskname},format=qcow2,if=none,id=disk0 -device ide-hd,drive=disk0,bus=ahci0.0"
-        elif test "${nvme}" == "y"
-        then
-            cmd="${cmd} -drive file=${diskname},format=qcow2,if=none,id=disk0 -device nvme,drive=disk0,serial=fudge"
-        elif test "${virtio}" == "y"
-        then
-            cmd="${cmd} -drive file=${diskname},format=qcow2,if=none,id=disk0 -device virtio-blk-pci,drive=disk0"
-        else
-            cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
-        fi
+        test -f "${diskname}" || error "Disk not found: ${diskname}"
+
+        drive="-drive file=${diskname},format=qcow2,if=none,id=disk0"
+
+        case "${storagedevice}" in
+            ahci)
+                cmd="${cmd} ${drive} -device ahci,id=ahci0 -device ide-hd,drive=disk0,bus=ahci0.0"
+                ;;
+            ide)
+                cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
+                ;;
+            nvme)
+                cmd="${cmd} ${drive} -device nvme,drive=disk0,serial=fudge"
+                ;;
+            usb)
+                cmd="${cmd} ${drive} -device qemu-xhci,id=xhci0 -device usb-storage,drive=disk0,bus=xhci0.0"
+                ;;
+            virtio)
+                cmd="${cmd} ${drive} -device virtio-blk-pci,drive=disk0"
+                ;;
+            *)
+                error "Unknown storage device: ${storagedevice} (ahci, ide, nvme, usb or virtio)"
+                ;;
+        esac
     fi
 
-    if test -n "${audio}"
+    if test "${audio}" == "y"
     then
-        if test "${audio}" == "wav"
-        then
-            cmd="${cmd} -audiodev wav,id=audio0,path=fudge.wav"
-        else
-            cmd="${cmd} -audiodev ${audio},id=audio0"
-        fi
+        case "${audiodriver}" in
+            wav)
+                cmd="${cmd} -audiodev wav,id=audio0,path=fudge.wav"
+                ;;
+            *)
+                cmd="${cmd} -audiodev ${audiodriver},id=audio0"
+                ;;
+        esac
 
-        cmd="${cmd} -device AC97,audiodev=audio0"
+        case "${audiodevice}" in
+            ac97)
+                cmd="${cmd} -device AC97,audiodev=audio0"
+                ;;
+            virtio)
+                cmd="${cmd} -device virtio-sound-pci,audiodev=audio0"
+                ;;
+            *)
+                error "Unknown audio device: ${audiodevice} (ac97 or virtio)"
+                ;;
+        esac
     fi
 
     if test "${iso}" == "y"
     then
         cmd="${cmd} -cdrom ${isoname} -boot d"
-    elif test "${disk}" != "y"
+    elif test "${storage}" != "y"
     then
         cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
         test -f fudge || error "Kernel not found. Forgot to build?"
         test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
     fi
 
-    netdevice="rtl8139"
-
-    if test "${virtio}" == "y"
-    then
-        netdevice="virtio-net-pci"
-    fi
-
     if test "${network}" == "y"
     then
-        cmd="${cmd} -device ${netdevice},netdev=eth0 -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
-    fi
+        case "${networkdevice}" in
+            rtl8139)
+                cmd="${cmd} -device rtl8139,netdev=eth0"
+                ;;
+            virtio)
+                cmd="${cmd} -device virtio-net-pci,netdev=eth0"
+                ;;
+            *)
+                error "Unknown network device: ${networkdevice} (rtl8139 or virtio)"
+                ;;
+        esac
 
-    if test "${slirp}" == "y"
-    then
-        cmd="${cmd} -device ${netdevice},netdev=eth0 -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1,hostfwd=tcp::8080-:80"
+        if test "${tap}" == "y"
+        then
+            cmd="${cmd} -netdev tap,id=eth0,ifname=node-${name}-eth0,script=no,downscript=no"
+        else
+            cmd="${cmd} -netdev user,id=eth0,net=10.0.5.0/24,host=10.0.5.80,dhcpstart=10.0.5.1,hostfwd=tcp::8080-:80"
+        fi
     fi
 
     if test "${uefi}" == "y"
@@ -326,7 +368,11 @@ cmd_disk_setup_gpt() {
 
 cmd_help() {
     echo "Commands:"
-    echo "    run [-d <disk>] [-i <iso>] [-n | -s] [-o <audio driver>] [<name>]"
+    echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-i <iso>] [-u] [<name>]"
+    echo "        -S, -N, -A enable storage, network and audio"
+    echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2)"
+    echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap)"
+    echo "        -a ac97 or virtio (default ac97), -o pa, pipewire, alsa or wav (default pa)"
     echo "    nat <interface>"
     echo "    connect"
     echo "    disconnect"

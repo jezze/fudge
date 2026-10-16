@@ -121,23 +121,24 @@ $ ./vmctrl run
 ```
 
 This will start an instance of Fudge called node1. This node will not have any
-networking abilities however. The simplest way to enable networking is the -s
-flag, which uses QEMU's user mode networking and does not need root. The node
+networking abilities however. The simplest way to enable networking is the -N
+flag, which adds a virtio network card on QEMU's user mode networking and does
+not need root (-n rtl8139 picks the other card). The node
 gets the address 10.0.5.1 and QEMU answers as the router on 10.0.5.80, which are
 the defaults the network programs in Fudge use, so it can reach the outside
 world right away. The host can not connect to the node this way and nodes can
 not talk to each other.
 
 ```sh
-$ ./vmctrl run -s
+$ ./vmctrl run -N
 ```
 
-To let nodes talk to each other, your user need to be allowed to create TAP
-interfaces on your host machine. Typically using sudo will allow you to do
+To let nodes talk to each other, use -t and a name. Your user need to be
+allowed to create TAP interfaces on your host machine. Typically using sudo will allow you to do
 this.
 
 ```sh
-$ sudo ./vmctrl run -n <name>
+$ sudo ./vmctrl run -t <name>
 ```
 
 Once you started one or more instances of Fudge, each with a different name you
@@ -174,7 +175,10 @@ Then we need to set it up. This usually requires root privileges:
 $ sudo ./vmctrl disk_setup fudge.qcow2
 ```
 
-To boot from this image in qemu, provide the -d argument to the run command.
+To boot from this image in qemu, use -S (fudge.qcow2 on a virtio disk) or
+-d <disk> for another image. -s picks the controller: ahci, ide, nvme, usb or
+virtio. -A adds an AC97 sound card, playing through PulseAudio unless -o names
+another QEMU audio driver (pipewire, alsa, or wav to record to fudge.wav).
 
 ## Community
 
