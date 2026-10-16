@@ -16,6 +16,7 @@
 #define STATE_NORMAL        0
 #define STATE_GRABBED       1
 #define TEXTBOX_SIZE        4096
+#define EVENTDATA_SIZE      512
 #define LAYOUT_DEFAULT      0
 #define LAYOUT_TILING       1
 #define NUM_FOCUSABLE       256
@@ -503,10 +504,13 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
     if (source)
     {
 
-        struct {struct event_wmevent wmevent; char data[512];} message;
+        struct {struct event_wmevent wmevent; char data[EVENTDATA_SIZE];} message;
+        unsigned int count = cstring_write_fmt(message.data, EVENTDATA_SIZE - 1, 0, "%s", strpool_getstring(action));
 
+        count += buffer_write(message.data, EVENTDATA_SIZE - 1, text, utf8_fit(text, cstring_length(text), EVENTDATA_SIZE - 1 - count), count);
+        message.data[count] = '\0';
         message.wmevent.type = type;
-        message.wmevent.length = cstring_write_fmt(message.data, 512, 0, "%s%s\\0", strpool_getstring(action), text);
+        message.wmevent.length = count + 1;
 
         channel_send(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
 
