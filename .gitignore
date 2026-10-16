@@ -68,6 +68,7 @@ src/utils/tail
 src/utils/timestamp
 src/utils/touch
 src/utils/tr
+src/utils/unzip
 src/utils/wc
 src/utils/webc
 src/utils/webs
