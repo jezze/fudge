@@ -464,8 +464,9 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
         {
 
             struct keys_map *map = getmap(keys->map);
+            unsigned int mapped = !keys->extended || keys->id == KEYS_KEY_KEYPAD_ENTER || keys->id == KEYS_KEY_KEYPAD_SLASH;
 
-            if (map)
+            if (map && mapped)
             {
 
                 struct keys_code *code = &map[offset].code[(keys->mod & KEYS_MOD_SHIFT) ? 1 : 0];
@@ -473,6 +474,9 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
                 buffer_copy(&keys->code, code, sizeof (struct keys_code));
 
             }
+
+            else
+                keys->code.length = 0;
 
         }
 
