@@ -76,18 +76,13 @@ static void clearfile(void)
 static void showfile(void)
 {
 
-    unsigned int length = cstring_length(path);
-    unsigned int start = buffer_lastbyte(path, length, '/');
     unsigned int target;
     unsigned int id;
 
-    if (!wm || !length)
+    if (!wm || !path[0])
         return;
 
-    if (!start)
-        start = buffer_firstbyte(path, length, ':');
-
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n", path + start);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
     target = fs_auth(path);
     id = (target) ? fs_walk(1, target, 0, path) : 0;
 

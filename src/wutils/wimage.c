@@ -13,16 +13,10 @@ static unsigned int mode;
 static void showimage(void)
 {
 
-    unsigned int length = cstring_length(path);
-    unsigned int start = buffer_lastbyte(path, length, '/');
-
-    if (!wm || !length)
+    if (!wm || !path[0])
         return;
 
-    if (!start)
-        start = buffer_firstbyte(path, length, ':');
-
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"%s\"\n= frame flow \"%s\"\n+ image id \"image\" in \"frame\" mimetype \"image/pcx\" source \"%s\"\n", path + start, flows[mode], path);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"Image Viewer (%s)\"\n= frame flow \"%s\"\n+ image id \"image\" in \"frame\" mimetype \"image/pcx\" source \"%s\"\n", path + fs_dirlength(path), flows[mode], path);
 
 }
 

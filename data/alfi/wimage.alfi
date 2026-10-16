@@ -1,4 +1,4 @@
-+ window id "window" label "Image"
++ window id "window" label "Image Viewer"
 + panel id "base" in "window" flow "vertical-stretch" padding "12" spacing "8" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "8"
 + select id "mode" in "top" label "Normal" onselect "q=mode&mode="

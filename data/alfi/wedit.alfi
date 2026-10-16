@@ -1,4 +1,4 @@
-+ window id "window" label "Editor"
++ window id "window" label "Text Editor"
 + panel id "base" in "window" flow "vertical-stretch" padding "12" spacing "8" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "8"
 + select id "wrap" in "top" label "None" onselect "q=wrap&wrap="
