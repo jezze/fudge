@@ -62,6 +62,17 @@ struct acpi_madt_ioapic_iso
 
 };
 
+struct acpi_madt_x2apic
+{
+
+    struct acpi_madt_entry base;
+    unsigned short reserved;
+    unsigned int id;
+    unsigned int flags;
+    unsigned int processor;
+
+};
+
 struct acpi_madt_lapic_nmi
 {
 

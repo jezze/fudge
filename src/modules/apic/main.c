@@ -20,8 +20,9 @@
 #define IOAPIC_MASK                     (1 << 16)
 #define MSIBASE                         0x10
 #define MSIS                            16
+#define LAPICS                          256
 
-static struct {unsigned int detected;} lapics[256];
+static struct {unsigned int detected;} lapics[LAPICS];
 static struct {unsigned int detected; unsigned int address; unsigned int gsibase;} ioapics[256];
 static struct gdt_pointer *gdt = (struct gdt_pointer *)ARCH_GDT_BASE;
 static struct idt_pointer *idt = (struct idt_pointer *)ARCH_IDT_BASE;
@@ -278,6 +279,16 @@ static void detect(void)
             {
 
                 /* local apic nmi */
+
+            }
+
+            if (entry->type == 9)
+            {
+
+                struct acpi_madt_x2apic *lapic = (struct acpi_madt_x2apic *)entry;
+
+                if (((lapic->flags & 0x01) || (lapic->flags & 0x02)) && lapic->id < LAPICS && (x2apic || lapic->id < 0xFF))
+                    lapics[lapic->id].detected = 1;
 
             }
 
