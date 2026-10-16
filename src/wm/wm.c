@@ -742,6 +742,35 @@ static unsigned int getmarkindex(struct widget *textbox, int x, int y)
 
 }
 
+static unsigned int stepleft(struct widget *widget, unsigned int index)
+{
+
+    unsigned int offset;
+    struct widget *text;
+
+    if (!index)
+        return 0;
+
+    text = pool_gettextat(widget, index - 1, &offset);
+
+    return (text) ? index - 1 - offset + utf8_prev(strpool_getstring(text->attributes.label), offset + 1) : index - 1;
+
+}
+
+static unsigned int stepright(struct widget *widget, unsigned int index)
+{
+
+    unsigned int offset;
+    struct widget *text = pool_gettextat(widget, index, &offset);
+    unsigned int codepoint;
+
+    if (!text || offset >= gettextlength(text))
+        return index;
+
+    return index + utf8_read(strpool_getstring(text->attributes.label) + offset, gettextlength(text) - offset, &codepoint);
+
+}
+
 static unsigned int moveindex(struct widget *widget, unsigned int index, unsigned int id)
 {
 
@@ -752,10 +781,10 @@ static unsigned int moveindex(struct widget *widget, unsigned int index, unsigne
     {
 
     case KEYS_KEY_CURSORLEFT:
-        return (index) ? index - 1 : 0;
+        return stepleft(widget, index);
 
     case KEYS_KEY_CURSORRIGHT:
-        return util_min(index + 1, pool_gettextlength(widget));
+        return stepright(widget, index);
 
     }
 
@@ -1172,7 +1201,7 @@ static unsigned int inserttext(struct widget *widget, unsigned int index, char *
     unsigned int length = copytext(text);
     unsigned int i;
 
-    count = util_min(count, TEXTBOX_SIZE - 1 - length);
+    count = utf8_fit(data, count, TEXTBOX_SIZE - 1 - length);
 
     for (i = length + 1; i > offset; i--)
         textbuffer[i - 1 + count] = textbuffer[i - 1];
@@ -1185,14 +1214,14 @@ static unsigned int inserttext(struct widget *widget, unsigned int index, char *
 
 }
 
-static void removetext(struct widget *widget, unsigned int index)
+static void removetext(struct widget *widget, unsigned int index, unsigned int count)
 {
 
     unsigned int offset;
     struct widget *text = pool_gettextat(widget, index, &offset);
     unsigned int length = copytext(text);
 
-    buffer_copy(textbuffer + offset, textbuffer + offset + 1, length - offset);
+    buffer_copy(textbuffer + offset, textbuffer + offset + count, length - offset - count + 1);
 
     text->attributes.label = strpool_updatestring(text->attributes.label, textbuffer);
 
@@ -1216,8 +1245,9 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
     unsigned int offset;
     struct widget *text = pool_gettextat(widget, widget->attributes.cursor, &offset);
-    unsigned int printable = state.keys.code.length == 1 && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] < 0x7F;
-    char c = (printable) ? state.keys.code.value[0] : 0;
+    unsigned int printable = state.keys.code.length && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] != 0x7F;
+    char *data = (char *)state.keys.code.value;
+    unsigned int count = (printable) ? state.keys.code.length : 0;
     unsigned int previous = util_min(widget->attributes.cursor, pool_gettextlength(widget));
     unsigned int cursor = previous;
     unsigned int changed = 0;
@@ -1245,11 +1275,12 @@ static void edittextbox(struct widget *widget, unsigned int id)
         if (!widget_isscrollable(widget))
             return;
 
-        c = '\n';
+        data = "\n";
+        count = 1;
 
     }
 
-    if (getmarked(widget, &start, &end) && (c || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
+    if (getmarked(widget, &start, &end) && (count || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
     {
 
         cursor = removemarked(widget, cursor);
@@ -1265,9 +1296,11 @@ static void edittextbox(struct widget *widget, unsigned int id)
         if (!removed && cursor > 0)
         {
 
-            cursor--;
+            unsigned int left = stepleft(widget, cursor);
 
-            removetext(widget, cursor);
+            removetext(widget, left, cursor - left);
+
+            cursor = left;
 
             changed = 1;
 
@@ -1279,7 +1312,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
         if (!removed && cursor < pool_gettextlength(widget))
         {
 
-            removetext(widget, cursor);
+            removetext(widget, cursor, stepright(widget, cursor) - cursor);
 
             changed = 1;
 
@@ -1299,10 +1332,10 @@ static void edittextbox(struct widget *widget, unsigned int id)
         break;
 
     default:
-        if (c && inserttext(widget, cursor, &c, 1))
+        if (count && inserttext(widget, cursor, data, count) == count)
         {
 
-            cursor++;
+            cursor += count;
             changed = 1;
 
         }
@@ -1913,8 +1946,10 @@ static void onkeypress(struct message *message)
 
                 wmkeypress.id = state.keys.id;
                 wmkeypress.scancode = keypress->scancode;
-                wmkeypress.unicode = state.keys.code.value[0];
-                wmkeypress.length = (state.keys.code.length == 1) ? 1 : 0;
+                wmkeypress.unicode = 0;
+                wmkeypress.length = state.keys.code.length;
+
+                buffer_copy(&wmkeypress.unicode, state.keys.code.value, wmkeypress.length);
                 wmkeypress.keymod = state.keys.mod;
 
                 channel_send(0, state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
