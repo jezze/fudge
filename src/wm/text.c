@@ -4,12 +4,16 @@
 #include "attr.h"
 #include "text.h"
 
-struct text_atlas *text_getatlas(struct text_font *font, char c)
+struct text_atlas *text_getatlas(struct text_font *font, unsigned int codepoint)
 {
 
-    unsigned char index = c;
+    if (codepoint < 0x80 || (codepoint >= 0xA0 && codepoint < TEXT_GLYPHS))
+        return &font->atlas[codepoint];
 
-    return &font->atlas[(index < TEXT_GLYPHS) ? index : '?'];
+    if (codepoint == 0x20AC)
+        return &font->atlas[0x80];
+
+    return &font->atlas['?'];
 
 }
 
@@ -45,7 +49,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     for (i = offset; i < length; i++)
     {
 
-        struct text_atlas *atlas = text_getatlas(font, text[i]);
+        struct text_atlas *atlas = text_getatlas(font, (unsigned char)text[i]);
 
         if (text[i] == '\n')
         {
@@ -216,7 +220,7 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
             for (i = rowinfo.istart; i < rowinfo.iend; i++)
             {
 
-                int w = text_getatlas(font, text[i])->width;
+                int w = text_getatlas(font, (unsigned char)text[i])->width;
 
                 if (x < cx + w / 2)
                     return i;

@@ -453,6 +453,9 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
             index = pcf_convert16(index, bdfentry->format);
 
+            if (index == 0xFFFF)
+                continue;
+
             if (metricsentry->format & PCF_FORMAT_COMPRESSED)
             {
 

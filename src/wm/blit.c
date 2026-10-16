@@ -230,7 +230,7 @@ void blit_text(struct blit_display *display, struct text_font *font, char *text,
     for (i = 0; i < length; i++)
     {
 
-        struct text_atlas *atlas = text_getatlas(font, text[i]);
+        struct text_atlas *atlas = text_getatlas(font, (unsigned char)text[i]);
         unsigned int lline = (line - ry) % font->lineheight - (font->lineheight - atlas->height) / 2;
 
         if (util_intersects(lline, 0, atlas->height))

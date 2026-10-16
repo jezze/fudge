@@ -1,4 +1,4 @@
-#define TEXT_GLYPHS                     128
+#define TEXT_GLYPHS                     256
 
 struct text_atlas
 {
@@ -41,7 +41,7 @@ struct text_info
 
 };
 
-struct text_atlas *text_getatlas(struct text_font *font, char c);
+struct text_atlas *text_getatlas(struct text_font *font, unsigned int codepoint);
 unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, unsigned int offset);
 struct text_info text_info(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int maxw, int firstrowx);
 unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int length, unsigned int row, unsigned int offset, unsigned int rownum, unsigned int wrap, unsigned int maxw, int firstrowx);
