@@ -2281,18 +2281,25 @@ static void onvideoinfo(struct message *message)
 
 }
 
+static void bindinput(unsigned int on)
+{
+
+    channel_bind(EVENT_KEYPRESS, (on) ? onkeypress : 0);
+    channel_bind(EVENT_KEYRELEASE, (on) ? onkeyrelease : 0);
+    channel_bind(EVENT_MOUSEMOVE, (on) ? onmousemove : 0);
+    channel_bind(EVENT_MOUSEPRESS, (on) ? onmousepress : 0);
+    channel_bind(EVENT_MOUSESCROLL, (on) ? onmousescroll : 0);
+    channel_bind(EVENT_MOUSERELEASE, (on) ? onmouserelease : 0);
+    channel_bind(EVENT_VIDEOINFO, (on) ? onvideoinfo : 0);
+
+}
+
 static void onwmgrab(struct message *message)
 {
 
     state.state = STATE_GRABBED;
 
-    channel_bind(EVENT_KEYPRESS, 0);
-    channel_bind(EVENT_KEYRELEASE, 0);
-    channel_bind(EVENT_MOUSEMOVE, 0);
-    channel_bind(EVENT_MOUSEPRESS, 0);
-    channel_bind(EVENT_MOUSESCROLL, 0);
-    channel_bind(EVENT_MOUSERELEASE, 0);
-    channel_bind(EVENT_VIDEOINFO, 0);
+    bindinput(0);
     channel_send(0, message->source, EVENT_WMACK, 0, 0);
 
 }
@@ -2382,13 +2389,7 @@ static void onwmungrab(struct message *message)
 
     state.state = STATE_NORMAL;
 
-    channel_bind(EVENT_KEYPRESS, onkeypress);
-    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
-    channel_bind(EVENT_MOUSEMOVE, onmousemove);
-    channel_bind(EVENT_MOUSEPRESS, onmousepress);
-    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
-    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
+    bindinput(1);
     channel_send(0, message->source, EVENT_WMACK, 0, 0);
     setupvideo(channel_lookup(option_getstring("video-service")));
 
@@ -2444,15 +2445,9 @@ void init(void)
     option_add("mouse-service", "mouse");
     option_add("video-service", "video");
     option_add("clipboard-service", "clipboard");
-    channel_bind(EVENT_KEYPRESS, onkeypress);
-    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
+    bindinput(1);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_OPTION, onoption);
-    channel_bind(EVENT_MOUSEMOVE, onmousemove);
-    channel_bind(EVENT_MOUSEPRESS, onmousepress);
-    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
-    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
     channel_bind(EVENT_WMCONFIG, onwmconfig);
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMREAD, onwmread);
