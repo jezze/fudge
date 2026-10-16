@@ -1,5 +1,6 @@
 include $(DIR_LIB)/abi/rules.mk
 include $(DIR_LIB)/binary/rules.mk
+include $(DIR_LIB)/compression/rules.mk
 include $(DIR_LIB)/disk/rules.mk
 include $(DIR_LIB)/font/rules.mk
 include $(DIR_LIB)/fudge/rules.mk
