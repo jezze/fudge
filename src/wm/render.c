@@ -850,6 +850,18 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
         break;
 
+    case ATTR_MIMETYPE_PNG:
+        if (widget->resource)
+        {
+
+            struct pool_pngresource *resource = widget->resource;
+
+            blit_png(display, resource, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
+
+        }
+
+        break;
+
     }
 
 }

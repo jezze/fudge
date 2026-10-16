@@ -21,5 +21,6 @@ L:=\
     $(DIR_LIB)/font/font.a \
     $(DIR_LIB)/hash/hash.a \
     $(DIR_LIB)/image/image.a \
+    $(DIR_LIB)/compression/compression.a \
 
 include $(DIR_MK)/bin.mk
