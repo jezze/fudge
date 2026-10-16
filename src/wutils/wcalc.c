@@ -7,6 +7,8 @@
 #define STATE_SUB                       2
 #define STATE_MUL                       3
 #define STATE_DIV                       4
+#define INTMAX                          ((int)(~0u >> 1))
+#define INTMIN                          (-INTMAX - 1)
 
 static unsigned int prevstate;
 static int number;
@@ -19,8 +21,49 @@ static void refresh(unsigned int wm, int value)
 
 }
 
+static void fail(unsigned int wm)
+{
+
+    prevstate = STATE_SUM;
+    number = 0;
+    accumulator = 0;
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= result label \"Error\"\n");
+
+}
+
+static unsigned int invalid(unsigned int state, int a, int b)
+{
+
+    switch (state)
+    {
+
+    case STATE_ADD:
+        return a > INTMAX - b;
+
+    case STATE_SUB:
+        return a < INTMIN + b;
+
+    case STATE_MUL:
+        return b && (a > INTMAX / b || a < INTMIN / b);
+
+    }
+
+    return 0;
+
+}
+
 static void updatestate(unsigned int wm, int state)
 {
+
+    if (invalid(prevstate, accumulator, number))
+    {
+
+        fail(wm);
+
+        return;
+
+    }
 
     switch (prevstate)
     {
@@ -77,6 +120,15 @@ static void updatestate(unsigned int wm, int state)
 
 static void updatevalue(unsigned int wm, int value)
 {
+
+    if (number > (INTMAX - value) / 10)
+    {
+
+        fail(wm);
+
+        return;
+
+    }
 
     number *= 10;
     number += value;
