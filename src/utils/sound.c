@@ -1,6 +1,8 @@
 #include <fudge.h>
 #include <abi.h>
 
+#define FRAMESIZE                       4
+
 struct riff
 {
 
@@ -31,6 +33,8 @@ struct wavformat
 };
 
 static unsigned int audio;
+static char frames[MESSAGE_SIZE + FRAMESIZE];
+static unsigned int framecount;
 
 static void senddata(unsigned int source, void *buffer, unsigned int count)
 {
@@ -146,7 +150,24 @@ static void ondata(struct message *message)
 {
 
     if (audio || lookup(message->source))
-        senddata(message->source, message->data, message->length);
+    {
+
+        unsigned int count;
+
+        framecount += buffer_write(frames, MESSAGE_SIZE + FRAMESIZE, message->data, message->length, framecount);
+        count = framecount - framecount % FRAMESIZE;
+
+        if (count > MESSAGE_SIZE)
+            count = MESSAGE_SIZE;
+
+        if (count)
+            senddata(message->source, frames, count);
+
+        buffer_copy(frames, frames + count, framecount - count);
+
+        framecount -= count;
+
+    }
 
 }
 
