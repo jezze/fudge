@@ -55,6 +55,24 @@ static void setwrap(void)
 
 }
 
+static void clearfile(void)
+{
+
+    char buffer[MESSAGE_SIZE];
+    unsigned int offset = 0;
+    unsigned int i;
+
+    for (i = 0; i < chunks; i++)
+        offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "- chunk%u\n", &i);
+
+    if (offset)
+        channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
+
+    chunks = 0;
+    loaded = 0;
+
+}
+
 static void showfile(void)
 {
 
@@ -90,7 +108,13 @@ static void showfile(void)
         }
 
         if (offset >= MAXSIZE)
-            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n");
+        {
+
+            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n", &chunks);
+
+            chunks++;
+
+        }
 
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
 
@@ -102,7 +126,9 @@ static void showfile(void)
     else
     {
 
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"content\" label \"Could not open %s\"\n", path);
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" label \"Could not open %s\"\n", &chunks, path);
+
+        chunks++;
 
     }
 
@@ -162,6 +188,22 @@ static void save(void)
 
 }
 
+static void choose(void)
+{
+
+    unsigned int target = fs_spawn(1, 0, "initrd:bin/wfile");
+
+    if (target)
+    {
+
+        channel_send_fmt(0, target, EVENT_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+        channel_send(0, target, EVENT_MAIN, 0, 0);
+        channel_send(0, target, EVENT_TERM, 0, 0);
+
+    }
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -184,9 +226,7 @@ static void onmain(struct message *message)
 static void onpath(struct message *message)
 {
 
-    if (path[0])
-        return;
-
+    clearfile();
     cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
     showfile();
 
@@ -214,6 +254,9 @@ static void onwmevent(struct message *message)
         setwrap();
 
     }
+
+    if (kv_match(event, "q=open"))
+        choose();
 
     if (kv_match(event, "q=save"))
         save();

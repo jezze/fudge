@@ -11,4 +11,5 @@
 + text in "wrap-char" label "Character"
 + box id "content" in "base" flow "vertical" padding "12" overflow "scroll" span "1" mode "edit"
 + layout id "bottom" in "base" flow "horizontal" spacing "8"
++ button in "bottom" label "Open" onclick "q=open"
 + button in "bottom" label "Save" onclick "q=save"
