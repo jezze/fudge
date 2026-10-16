@@ -8,3 +8,5 @@
 + item id "mode-stretched" in "mode-list" padding "16"
 + text in "mode-stretched" label "Stretched"
 + box id "frame" in "base" flow "vertical" span "1"
++ layout id "bottom" in "base" flow "horizontal" spacing "8"
++ button in "bottom" label "Open" onclick "q=open"

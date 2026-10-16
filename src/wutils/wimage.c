@@ -26,6 +26,22 @@ static void showimage(void)
 
 }
 
+static void choose(void)
+{
+
+    unsigned int target = fs_spawn(1, 0, "initrd:bin/wfile");
+
+    if (target)
+    {
+
+        channel_send_fmt(0, target, EVENT_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+        channel_send(0, target, EVENT_MAIN, 0, 0);
+        channel_send(0, target, EVENT_TERM, 0, 0);
+
+    }
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -49,7 +65,7 @@ static void onpath(struct message *message)
 {
 
     if (path[0])
-        return;
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- image\n");
 
     cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
     showimage();
@@ -78,6 +94,9 @@ static void onwmevent(struct message *message)
         channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
 
     }
+
+    if (kv_match(event, "q=open"))
+        choose();
 
 }
 
