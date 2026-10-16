@@ -12,3 +12,4 @@
 #include <fudge/keys.h>
 #include <fudge/mtwist.h>
 #include <fudge/url.h>
+#include <fudge/utf8.h>

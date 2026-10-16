@@ -25,6 +25,7 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     unsigned int si = 0;
     unsigned int sw = 0;
     unsigned int sh = 0;
+    unsigned int size;
     unsigned int i;
 
     if (wrap == ATTR_WRAP_WORD && offset && text[offset - 1] != '\n')
@@ -46,10 +47,24 @@ unsigned int text_getrowinfo(struct text_rowinfo *rowinfo, struct text_font *fon
     rowinfo->linebreak = 0;
     rowinfo->lineheight = font->lineheight;
 
-    for (i = offset; i < length; i++)
+    for (i = offset; i < length; i += size)
     {
 
-        struct text_atlas *atlas = text_getatlas(font, (unsigned char)text[i]);
+        unsigned int codepoint;
+        struct text_atlas *atlas;
+
+        if ((unsigned char)text[i] < 0x80)
+        {
+
+            codepoint = text[i];
+            size = 1;
+
+        }
+
+        else
+            size = utf8_read(text + i, length - i, &codepoint);
+
+        atlas = text_getatlas(font, codepoint);
 
         if (text[i] == '\n')
         {
@@ -215,12 +230,17 @@ unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int l
         {
 
             int cx = firstrowx + text_getrowx(&rowinfo, halign, maxw - firstrowx);
+            unsigned int size;
             unsigned int i;
 
-            for (i = rowinfo.istart; i < rowinfo.iend; i++)
+            for (i = rowinfo.istart; i < rowinfo.iend; i += size)
             {
 
-                int w = text_getatlas(font, (unsigned char)text[i])->width;
+                unsigned int codepoint;
+                int w;
+
+                size = utf8_read(text + i, rowinfo.iend - i, &codepoint);
+                w = text_getatlas(font, codepoint)->width;
 
                 if (x < cx + w / 2)
                     return i;

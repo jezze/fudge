@@ -1,175 +1,134 @@
 #include "utf8.h"
 
-unsigned int utf8_decode(char *s, int *u)
+static unsigned int iscontinuation(char c)
 {
 
-    unsigned char c;
-    int i;
-    int n;
-    int r = 1;
-
-    c = *s;
-
-    if (~c & 0x80)
-    {
-
-        *u = c;
-
-        return r;
-
-    }
-
-    else if ((c & 0xE0) == 0xC0)
-    {
-
-        *u = c & 0x1F;
-        n = 1;
-
-    }
-
-    else if ((c & 0xF0) == 0xE0)
-    {
-
-        *u = c & 0x0F;
-        n = 2;
-
-    }
-
-    else if ((c & 0xF8) == 0xF0)
-    {
-
-        *u = c & 0x07;
-        n = 3;
-
-    }
-
-    else
-    {
-
-        goto invalid;
-
-    }
-
-    for (i = n, ++s; i > 0; --i, ++r, ++s)
-    {
-
-        c = *s;
-
-        if ((c & 0xC0) != 0x80)
-            goto invalid;
-
-        *u <<= 6;
-        *u |= c & 0x3F;
-
-    }
-
-    if ((n == 1 && *u < 0x80) || (n == 2 && *u < 0x800) || (n == 3 && *u < 0x10000) || (*u >= 0xD800 && *u <= 0xDFFF))
-        goto invalid;
-
-    return r;
-
-invalid:
-    *u = 0xFFFD;
-
-    return r;
+    return (c & 0xC0) == 0x80;
 
 }
 
-unsigned int utf8_encode(int *u, char *s)
+unsigned int utf8_read(char *text, unsigned int length, unsigned int *codepoint)
 {
 
-    unsigned char *sp = (unsigned char *)s;
-    unsigned int uc = *u;
-    int i;
-    int n;
+    unsigned char c = text[0];
+    unsigned int count;
+    unsigned int minimum;
+    unsigned int value;
+    unsigned int i;
 
-    if (uc < 0x80)
+    if (c < 0x80)
     {
 
-        *sp = uc;
+        *codepoint = c;
 
         return 1;
 
     }
 
-    else if (*u < 0x800)
+    if (c >= 0xC2 && c < 0xE0)
     {
 
-        *sp = (uc >> 6) | 0xC0;
-        n = 1;
+        count = 2;
+        minimum = 0x80;
+        value = c & 0x1F;
 
     }
 
-    else if (uc < 0x10000)
+    else if (c >= 0xE0 && c < 0xF0)
     {
 
-        *sp = (uc >> 12) | 0xE0;
-        n = 2;
+        count = 3;
+        minimum = 0x800;
+        value = c & 0x0F;
 
     }
 
-    else if (uc <= 0x10FFFF)
+    else if (c >= 0xF0 && c < 0xF5)
     {
 
-        *sp = (uc >> 18) | 0xF0;
-        n = 3;
+        count = 4;
+        minimum = 0x10000;
+        value = c & 0x07;
 
     }
 
     else
     {
 
-        goto invalid;
+        *codepoint = 0xFFFD;
 
-    }
-
-    for (i = n, ++sp; i > 0; --i, ++sp)
-        *sp = ((uc >> 6 * (i - 1)) & 0x3F) | 0x80;
-
-    return n + 1;
-
-invalid:
-    *s++ = '\xEF';
-    *s++ = '\xBF';
-    *s = '\xBD';
-
-    return 3;
-
-}
-
-unsigned int utf8_isfull(char *s, int b)
-{
-
-    unsigned char *c1 = (unsigned char *)s;
-    unsigned char *c2 = (unsigned char *)++s;
-    unsigned char *c3 = (unsigned char *)++s;
-
-    if (b < 1)
-        return 0;
-    else if ((*c1 & 0xE0) == 0xC0 && b == 1)
-        return 0;
-    else if ((*c1 & 0xF0) == 0xE0 && ((b == 1) || ((b == 2) && (*c2 & 0xC0) == 0x80)))
-        return 0;
-    else if ((*c1 & 0xF8) == 0xF0 && ((b == 1) || ((b == 2) && (*c2 & 0xC0) == 0x80) || ((b == 3) && (*c2 & 0xC0) == 0x80 && (*c3 & 0xC0) == 0x80)))
-        return 0;
-    else
         return 1;
 
+    }
+
+    if (count > length)
+    {
+
+        *codepoint = 0xFFFD;
+
+        return 1;
+
+    }
+
+    for (i = 1; i < count; i++)
+    {
+
+        if (!iscontinuation(text[i]))
+        {
+
+            *codepoint = 0xFFFD;
+
+            return 1;
+
+        }
+
+        value = (value << 6) | (text[i] & 0x3F);
+
+    }
+
+    if (value < minimum || value > 0x10FFFF || (value >= 0xD800 && value < 0xE000))
+    {
+
+        *codepoint = 0xFFFD;
+
+        return 1;
+
+    }
+
+    *codepoint = value;
+
+    return count;
+
 }
 
-unsigned int utf8_size(char *s)
+unsigned int utf8_prev(char *text, unsigned int offset)
 {
 
-    unsigned char c = *s;
+    unsigned int start = offset - 1;
+    unsigned int codepoint;
 
-    if (~c & 0x80)
-        return 1;
-    else if ((c & 0xE0) == 0xC0)
-        return 2;
-    else if ((c & 0xF0) == 0xE0)
-        return 3;
-    else
-        return 4;
+    if (!offset)
+        return 0;
+
+    while (start > 0 && offset - start < 4 && iscontinuation(text[start]))
+        start--;
+
+    return (start + utf8_read(text + start, offset - start, &codepoint) == offset) ? start : offset - 1;
 
 }
 
+unsigned int utf8_fit(char *text, unsigned int length, unsigned int limit)
+{
+
+    unsigned int start = limit;
+    unsigned int codepoint;
+
+    if (limit >= length)
+        return length;
+
+    while (start > 0 && limit - start < 3 && iscontinuation(text[start]))
+        start--;
+
+    return (start + utf8_read(text + start, length - start, &codepoint) > limit) ? start : limit;
+
+}
