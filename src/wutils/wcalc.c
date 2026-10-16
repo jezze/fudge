@@ -8,7 +8,6 @@
 #define STATE_MUL                       3
 #define STATE_DIV                       4
 
-static unsigned int keypad[10] = {KEYS_KEY_KEYPAD_0, KEYS_KEY_KEYPAD_1, KEYS_KEY_KEYPAD_2, KEYS_KEY_KEYPAD_3, KEYS_KEY_KEYPAD_4, KEYS_KEY_KEYPAD_5, KEYS_KEY_KEYPAD_6, KEYS_KEY_KEYPAD_7, KEYS_KEY_KEYPAD_8, KEYS_KEY_KEYPAD_9};
 static unsigned int prevstate;
 static int number;
 static int accumulator;
@@ -129,24 +128,6 @@ static void onwmkeypress(struct message *message)
 
     struct event_wmkeypress *wmkeypress = message->data;
     unsigned int c = (wmkeypress->length == 1) ? wmkeypress->unicode : 0;
-    unsigned int i;
-
-    for (i = 0; i < 10; i++)
-    {
-
-        if (wmkeypress->id == keypad[i])
-            c = '0' + i;
-
-    }
-
-    if (wmkeypress->id == KEYS_KEY_KEYPAD_PLUS)
-        c = '+';
-
-    if (wmkeypress->id == KEYS_KEY_KEYPAD_MINUS)
-        c = '-';
-
-    if (wmkeypress->id == KEYS_KEY_KEYPAD_STAR)
-        c = '*';
 
     switch (c)
     {
