@@ -47,6 +47,9 @@ static unsigned int invalid(unsigned int state, int a, int b)
     case STATE_MUL:
         return b && (a > INTMAX / b || a < INTMIN / b);
 
+    case STATE_DIV:
+        return !b;
+
     }
 
     return 0;
@@ -93,11 +96,7 @@ static void updatestate(unsigned int wm, int state)
         break;
 
     case STATE_DIV:
-        if (number == -1)
-            accumulator = -accumulator;
-        else
-            accumulator = (number) ? accumulator / number : 0;
-
+        accumulator /= number;
         number = 0;
 
         break;
