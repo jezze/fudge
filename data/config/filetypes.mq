@@ -21,6 +21,11 @@
       command: "wimage"
     }
     {
+      suffix: ".png"
+      label: "View"
+      command: "wimage"
+    }
+    {
       suffix: ".ko"
       label: "Load"
       command: "elfload"
