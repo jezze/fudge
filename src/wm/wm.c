@@ -949,43 +949,31 @@ static void placewindows(unsigned int source)
 
 }
 
-static struct widget *getolderwindow(unsigned int serial)
+/* the window whose serial is nearest to serial in direction, -1 for older and 1 for newer */
+static struct widget *getadjacentwindow(unsigned int serial, int direction)
 {
 
     struct list_item *current = 0;
-    struct widget *older = 0;
+    struct widget *nearest = 0;
+    int distance = 0;
 
     while ((current = pool_next(current)))
     {
 
         struct widget *widget = current->data;
+        int d = ((int)widget->serial - (int)serial) * direction;
 
-        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && widget->serial < serial && (!older || widget->serial > older->serial))
-            older = widget;
+        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && d > 0 && (!nearest || d < distance))
+        {
 
-    }
+            nearest = widget;
+            distance = d;
 
-    return older;
-
-}
-
-static struct widget *getnewerwindow(unsigned int serial)
-{
-
-    struct list_item *current = 0;
-    struct widget *newer = 0;
-
-    while ((current = pool_next(current)))
-    {
-
-        struct widget *widget = current->data;
-
-        if (widget->type == WIDGET_TYPE_WINDOW && !widget->destroyed && widget->serial > serial && (!newer || widget->serial < newer->serial))
-            newer = widget;
+        }
 
     }
 
-    return newer;
+    return nearest;
 
 }
 
@@ -995,10 +983,10 @@ static void cyclewindow(unsigned int older)
     struct widget *window = 0;
 
     if (state.focusedwindow)
-        window = (older) ? getolderwindow(state.focusedwindow->serial) : getnewerwindow(state.focusedwindow->serial);
+        window = getadjacentwindow(state.focusedwindow->serial, (older) ? -1 : 1);
 
     if (!window)
-        window = (older) ? getolderwindow(state.windows + 1) : getnewerwindow(0);
+        window = (older) ? getadjacentwindow(state.windows + 1, -1) : getadjacentwindow(0, 1);
 
     if (window)
     {
@@ -1013,7 +1001,7 @@ static void cyclewindow(unsigned int older)
 static void swapwindow(void)
 {
 
-    struct widget *first = getolderwindow(state.windows + 1);
+    struct widget *first = getadjacentwindow(state.windows + 1, -1);
 
     if (state.focusedwindow && first && first != state.focusedwindow)
     {
@@ -1053,7 +1041,7 @@ static void tilewindows(void)
     int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : 0;
     unsigned int w = display.region.size.w / 2;
     unsigned int h = util_max((int)display.region.size.h - top, 0);
-    struct widget *first = getolderwindow(state.windows + 1);
+    struct widget *first = getadjacentwindow(state.windows + 1, -1);
     struct widget *widget;
     unsigned int count = 0;
     unsigned int i = 0;
@@ -1063,10 +1051,10 @@ static void tilewindows(void)
 
     placewindow(first, 0, top, w, h);
 
-    for (widget = getolderwindow(first->serial); widget; widget = getolderwindow(widget->serial))
+    for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1))
         count++;
 
-    for (widget = getolderwindow(first->serial); widget; widget = getolderwindow(widget->serial), i++)
+    for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1), i++)
         placewindow(widget, w, top + h * i / count, display.region.size.w - w, h * (i + 1) / count - h * i / count);
 
 }
@@ -1564,7 +1552,7 @@ static void purge(unsigned int source)
     }
 
     if (!state.focusedwindow && state.layout == LAYOUT_TILING)
-        setfocuswindow(getolderwindow(state.windows + 1));
+        setfocuswindow(getadjacentwindow(state.windows + 1, -1));
 
 }
 
