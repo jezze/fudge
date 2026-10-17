@@ -2254,8 +2254,10 @@ static void onmousepress(struct message *message)
         state.mousebuttonleft = 1;
 
         setfocuswindow(window);
-        setfocus(interactivewidget);
         grabthumb();
+
+        if (!state.draggedthumb)
+            setfocus(interactivewidget);
 
         if (interactivewidget)
         {
