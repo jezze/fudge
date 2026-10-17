@@ -37,8 +37,7 @@
 #define ATTR_HALIGN_RIGHT               2
 #define ATTR_MIMETYPE_NONE              0
 #define ATTR_MIMETYPE_PCX               2
-#define ATTR_MIMETYPE_PNG               3
-#define ATTR_MIMETYPE_RAW               4
+#define ATTR_MIMETYPE_RAW               3
 #define ATTR_MODE_NORMAL                0
 #define ATTR_MODE_EDIT                  1
 #define ATTR_MODE_LINK                  2

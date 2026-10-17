@@ -1,11 +1,7 @@
 #define POOL_PCXRESOURCES               32
 #define POOL_PCXROWSIZE                 2048
 #define POOL_PCXOFFSETS                 1024
-#define POOL_PNGRESOURCES               4
 #define POOL_RAWRESOURCES               8
-#define POOL_PNGCHECKPOINTS             8
-#define POOL_PNGSPACING                 0x00100000
-#define POOL_PNGROWSIZE                 2048
 #define POOL_WIDGETS                    1536
 
 struct pool_pcxresource
@@ -24,17 +20,6 @@ struct pool_pcxresource
     unsigned int noffsets;
     unsigned int rowoffsets[POOL_PCXOFFSETS];
     unsigned char rowdata[POOL_PCXROWSIZE];
-
-};
-
-struct pool_pngresource
-{
-
-    struct png png;
-    unsigned int used;
-    unsigned int target;
-    unsigned int id;
-    unsigned int loaded;
 
 };
 
@@ -62,8 +47,6 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 void pool_destroy(struct widget *widget);
 struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source);
 unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int row);
-struct pool_pngresource *pool_createpng(struct widget *widget, char *source);
-unsigned int *pool_pngreadrow(struct pool_pngresource *resource, unsigned int row);
 struct pool_rawresource *pool_createraw(struct widget *widget, char *source);
 struct text_font *pool_getfont(unsigned int index);
 void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding);

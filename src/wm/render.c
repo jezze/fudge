@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include <compression.h>
-#include <image.h>
+#include <image/pcx.h>
 #include "config.h"
 #include "util.h"
 #include "text.h"
@@ -846,18 +845,6 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
             struct pool_pcxresource *resource = widget->resource;
 
             blit_pcx(display, resource, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
-
-        }
-
-        break;
-
-    case ATTR_MIMETYPE_PNG:
-        if (widget->resource)
-        {
-
-            struct pool_pngresource *resource = widget->resource;
-
-            blit_png(display, resource, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
 
         }
 

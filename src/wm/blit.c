@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
-#include <compression.h>
-#include <image.h>
+#include <image/pcx.h>
 #include "util.h"
 #include "text.h"
 #include "attr.h"
@@ -563,48 +562,7 @@ void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, i
 
 }
 
-/* like blit_pcx, blended over what is there by the pixel's alpha */
-void blit_png(struct blit_display *display, struct pool_pngresource *resource, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2)
-{
-
-    unsigned int *row;
-    int start = util_max(x0, x);
-    int end = util_min(x2, x + w);
-    unsigned int source;
-    unsigned int remainder;
-    int i;
-
-    if (!resource->loaded || !w || !h || !util_intersects(line, y, y + h) || start >= end)
-        return;
-
-    row = pool_pngreadrow(resource, (line - y) * resource->png.height / h);
-
-    if (!row)
-        return;
-
-    source = (start - x) * resource->png.width / w;
-    remainder = (start - x) * resource->png.width % w;
-
-    for (i = start; i < end; i++)
-    {
-
-        blit_alphaline(display, row[source], i, i + 1);
-
-        remainder += resource->png.width;
-
-        while (remainder >= w)
-        {
-
-            remainder -= w;
-            source++;
-
-        }
-
-    }
-
-}
-
-/* like blit_png, from width times height pixels in memory */
+/* like blit_pcx from width times height pixels in memory, blended over what is there by each pixel's alpha */
 void blit_raw(struct blit_display *display, unsigned int *data, unsigned int width, unsigned int height, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2)
 {
 

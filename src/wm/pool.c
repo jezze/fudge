@@ -2,8 +2,7 @@
 #include <abi.h>
 #include <font.h>
 #include <hash.h>
-#include <compression.h>
-#include <image.h>
+#include <image/pcx.h>
 #include "util.h"
 #include "text.h"
 #include "attr.h"
@@ -22,11 +21,7 @@ static struct list_item siblings[POOL_WIDGETS];
 static struct list children[POOL_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
 static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
-static struct pool_pngresource pngresources[POOL_PNGRESOURCES];
 static struct pool_rawresource rawresources[POOL_RAWRESOURCES];
-static unsigned int pngrow[POOL_PNGROWSIZE];
-static struct png_checkpoint pngcheckpoints[POOL_PNGCHECKPOINTS];
-static struct pool_pngresource *pngcheckpointowners[POOL_PNGCHECKPOINTS];
 
 struct list_item *pool_prev(struct list_item *current)
 {
@@ -269,23 +264,6 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
 }
 
-static void destroypng(struct pool_pngresource *resource)
-{
-
-    unsigned int i;
-
-    for (i = 0; i < POOL_PNGCHECKPOINTS; i++)
-    {
-
-        if (pngcheckpointowners[i] == resource)
-            pngcheckpointowners[i] = 0;
-
-    }
-
-    resource->used = 0;
-
-}
-
 static void destroyraw(struct pool_rawresource *resource)
 {
 
@@ -309,11 +287,6 @@ void pool_destroy(struct widget *widget)
 
         case ATTR_MIMETYPE_PCX:
             ((struct pool_pcxresource *)widget->resource)->used = 0;
-
-            break;
-
-        case ATTR_MIMETYPE_PNG:
-            destroypng(widget->resource);
 
             break;
 
@@ -443,86 +416,6 @@ unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int 
     }
 
     return resource->rowdata;
-
-}
-
-/* the png comes first in the resource, so the reads find the file */
-static unsigned int readpng(struct png *png, void *buffer, unsigned int count, unsigned int offset)
-{
-
-    struct pool_pngresource *resource = (struct pool_pngresource *)png;
-
-    return fs_read_full(1, resource->target, resource->id, buffer, count, offset);
-
-}
-
-/* an image gets a checkpoint for every POOL_PNGSPACING bytes it inflates to, as far as there are free ones */
-static void givecheckpoints(struct pool_pngresource *resource)
-{
-
-    struct png_checkpoint *checkpoints[PNG_CHECKPOINTS];
-    unsigned int wanted = resource->png.height / (POOL_PNGSPACING / (resource->png.stride + 1));
-    unsigned int count = 0;
-    unsigned int i;
-
-    for (i = 0; i < POOL_PNGCHECKPOINTS && count < wanted && count < PNG_CHECKPOINTS; i++)
-    {
-
-        if (!pngcheckpointowners[i])
-        {
-
-            pngcheckpointowners[i] = resource;
-            checkpoints[count++] = &pngcheckpoints[i];
-
-        }
-
-    }
-
-    png_setcheckpoints(&resource->png, checkpoints, count);
-
-}
-
-struct pool_pngresource *pool_createpng(struct widget *widget, char *source)
-{
-
-    struct pool_pngresource *resource = 0;
-    unsigned int i;
-
-    for (i = 0; i < POOL_PNGRESOURCES && !resource; i++)
-    {
-
-        if (!pngresources[i].used)
-            resource = &pngresources[i];
-
-    }
-
-    if (!resource)
-        return 0;
-
-    buffer_clear(resource, sizeof (struct pool_pngresource));
-
-    resource->used = 1;
-    resource->target = fs_auth(source);
-    resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
-
-    if (resource->id && png_open(&resource->png, readpng) && resource->png.width <= POOL_PNGROWSIZE)
-    {
-
-        resource->loaded = 1;
-        widget->size = util_size(resource->png.width, resource->png.height);
-
-        givecheckpoints(resource);
-
-    }
-
-    return resource;
-
-}
-
-unsigned int *pool_pngreadrow(struct pool_pngresource *resource, unsigned int row)
-{
-
-    return (png_readrow(&resource->png, row, pngrow)) ? pngrow : 0;
 
 }
 
@@ -723,11 +616,6 @@ void pool_loadresources(void)
 
                 case ATTR_MIMETYPE_PCX:
                     widget->resource = pool_createpcx(widget, strpool_getstring(widget->attributes.source));
-
-                    break;
-
-                case ATTR_MIMETYPE_PNG:
-                    widget->resource = pool_createpng(widget, strpool_getstring(widget->attributes.source));
 
                     break;
 
