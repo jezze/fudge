@@ -1,8 +1,8 @@
 #include "deflate.h"
 
 #define MAXBITS                         15
-#define COUNTS                          (MAXBITS + 1)
-#define LITERALS                        288
+#define COUNTS                          DEFLATE_COUNTS
+#define LITERALS                        DEFLATE_LITERALS
 #define LENGTHS                         29
 #define DISTANCES                       30
 #define CODELENGTHS                     19
@@ -13,14 +13,9 @@
 #define HASHSIZE                        (1 << HASHBITS)
 #define CHAINMAX                        32
 #define STOREDMAX                       0xFFFF
-
-struct huffman
-{
-
-    unsigned short count[COUNTS];
-    unsigned short symbol[LITERALS];
-
-};
+#define BLOCK_NONE                      0
+#define BLOCK_STORED                    1
+#define BLOCK_CODES                     2
 
 static unsigned short lengthbase[LENGTHS] = {3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258};
 static unsigned char lengthextra[LENGTHS] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0};
@@ -33,10 +28,21 @@ static unsigned short chain[WINDOW];
 static void putbyte(struct deflate *d, unsigned char value)
 {
 
-    if (d->ooffset == d->ocount)
+    if (d->ring)
+        d->out[d->ooffset++ & (d->ocount - 1)] = value;
+    else if (d->ooffset == d->ocount)
         d->status = DEFLATE_FULL;
     else
         d->out[d->ooffset++] = value;
+
+}
+
+static unsigned char getwindow(struct deflate *d, unsigned int distance)
+{
+
+    unsigned int offset = d->ooffset - distance;
+
+    return d->out[(d->ring) ? offset & (d->ocount - 1) : offset];
 
 }
 
@@ -48,7 +54,7 @@ static unsigned int getbits(struct deflate *d, unsigned int count)
     while (d->nbits < count)
     {
 
-        if (d->ioffset == d->icount)
+        if (d->ioffset == d->icount && !(d->refill && d->refill(d)))
         {
 
             d->status = DEFLATE_INVALID;
@@ -69,7 +75,7 @@ static unsigned int getbits(struct deflate *d, unsigned int count)
 
 }
 
-static unsigned int build(struct huffman *h, unsigned short *lengths, unsigned int n)
+static unsigned int build(struct deflate_huffman *h, unsigned short *lengths, unsigned int n)
 {
 
     unsigned short offsets[COUNTS];
@@ -111,7 +117,7 @@ static unsigned int build(struct huffman *h, unsigned short *lengths, unsigned i
 
 }
 
-static unsigned int decode(struct deflate *d, struct huffman *h)
+static unsigned int decode(struct deflate *d, struct deflate_huffman *h)
 {
 
     unsigned int code = 0;
@@ -155,7 +161,7 @@ static void stored(struct deflate *d)
     if (d->status != DEFLATE_OK)
         return;
 
-    if (length != (~check & 0xFFFF) || length > d->icount - d->ioffset)
+    if (length != (~check & 0xFFFF))
     {
 
         d->status = DEFLATE_INVALID;
@@ -164,81 +170,82 @@ static void stored(struct deflate *d)
 
     }
 
-    while (length-- && d->status == DEFLATE_OK)
-        putbyte(d, d->in[d->ioffset++]);
+    d->block = BLOCK_STORED;
+    d->length = length;
 
 }
 
-static void codes(struct deflate *d, struct huffman *literals, struct huffman *distances)
+static void symbol(struct deflate *d)
 {
 
-    while (d->status == DEFLATE_OK)
+    unsigned int symbol = decode(d, &d->literals);
+    unsigned int length;
+    unsigned int distance;
+
+    if (d->status != DEFLATE_OK)
+        return;
+
+    if (symbol < 256)
     {
 
-        unsigned int symbol = decode(d, literals);
-        unsigned int length;
-        unsigned int distance;
+        putbyte(d, symbol);
 
-        if (d->status != DEFLATE_OK || symbol == 256)
-            return;
-
-        if (symbol < 256)
-        {
-
-            putbyte(d, symbol);
-
-        }
-
-        else
-        {
-
-            symbol -= 257;
-
-            if (symbol >= LENGTHS)
-            {
-
-                d->status = DEFLATE_INVALID;
-
-                return;
-
-            }
-
-            length = lengthbase[symbol] + getbits(d, lengthextra[symbol]);
-            symbol = decode(d, distances);
-
-            if (symbol >= DISTANCES)
-            {
-
-                d->status = DEFLATE_INVALID;
-
-                return;
-
-            }
-
-            distance = distancebase[symbol] + getbits(d, distanceextra[symbol]);
-
-            if (d->status != DEFLATE_OK)
-                return;
-
-            if (distance > d->ooffset)
-            {
-
-                d->status = DEFLATE_INVALID;
-
-                return;
-
-            }
-
-            while (length-- && d->status == DEFLATE_OK)
-                putbyte(d, d->out[d->ooffset - distance]);
-
-        }
+        return;
 
     }
 
+    if (symbol == 256)
+    {
+
+        d->block = BLOCK_NONE;
+
+        return;
+
+    }
+
+    symbol -= 257;
+
+    if (symbol >= LENGTHS)
+    {
+
+        d->status = DEFLATE_INVALID;
+
+        return;
+
+    }
+
+    length = lengthbase[symbol] + getbits(d, lengthextra[symbol]);
+    symbol = decode(d, &d->distances);
+
+    if (symbol >= DISTANCES)
+    {
+
+        d->status = DEFLATE_INVALID;
+
+        return;
+
+    }
+
+    distance = distancebase[symbol] + getbits(d, distanceextra[symbol]);
+
+    if (d->status != DEFLATE_OK)
+        return;
+
+    if (distance > d->ooffset || (d->ring && distance > d->ocount))
+    {
+
+        d->status = DEFLATE_INVALID;
+
+        return;
+
+    }
+
+    d->length = length;
+    d->distance = distance;
+
 }
 
-static void fixed(struct huffman *literals, struct huffman *distances)
+static void fixed(struct deflate_huffman *literals, struct deflate_huffman *distances)
 {
 
     unsigned short lengths[LITERALS];
@@ -256,7 +263,7 @@ static void fixed(struct huffman *literals, struct huffman *distances)
 
 }
 
-static void dynamic(struct deflate *d, struct huffman *literals, struct huffman *distances)
+static void dynamic(struct deflate *d, struct deflate_huffman *literals, struct deflate_huffman *distances)
 {
 
     unsigned short lengths[LITERALS + DISTANCES];
@@ -343,46 +350,95 @@ static void dynamic(struct deflate *d, struct huffman *literals, struct huffman 
 
 }
 
-unsigned int deflate_decompress(struct deflate *d)
+static void header(struct deflate *d)
 {
 
-    struct huffman literals;
-    struct huffman distances;
-    unsigned int last = 0;
+    d->last = getbits(d, 1);
 
-    while (!last && d->status == DEFLATE_OK)
+    switch (getbits(d, 2))
     {
 
-        last = getbits(d, 1);
+    case 0:
+        stored(d);
 
-        switch (getbits(d, 2))
+        break;
+
+    case 1:
+        fixed(&d->literals, &d->distances);
+
+        d->block = BLOCK_CODES;
+
+        break;
+
+    case 2:
+        dynamic(d, &d->literals, &d->distances);
+
+        d->block = BLOCK_CODES;
+
+        break;
+
+    default:
+        d->status = DEFLATE_INVALID;
+
+        break;
+
+    }
+
+}
+
+/* decompresses until count more bytes are out or the stream ends, and returns how many came out; it stops between any two bytes, inside a block or a match */
+unsigned int deflate_inflate(struct deflate *d, unsigned int count)
+{
+
+    unsigned int start = d->ooffset;
+
+    while (d->ooffset - start < count && d->status == DEFLATE_OK)
+    {
+
+        if (d->length)
         {
 
-        case 0:
-            stored(d);
+            d->length--;
+
+            putbyte(d, (d->block == BLOCK_STORED) ? getbits(d, 8) : getwindow(d, d->distance));
+
+            continue;
+
+        }
+
+        switch (d->block)
+        {
+
+        case BLOCK_NONE:
+            if (d->last)
+                return d->ooffset - start;
+
+            header(d);
 
             break;
 
-        case 1:
-            fixed(&literals, &distances);
-            codes(d, &literals, &distances);
+        case BLOCK_STORED:
+            d->block = BLOCK_NONE;
 
             break;
 
-        case 2:
-            dynamic(d, &literals, &distances);
-            codes(d, &literals, &distances);
-
-            break;
-
-        default:
-            d->status = DEFLATE_INVALID;
+        case BLOCK_CODES:
+            symbol(d);
 
             break;
 
         }
 
     }
+
+    return d->ooffset - start;
+
+}
+
+unsigned int deflate_decompress(struct deflate *d)
+{
+
+    deflate_inflate(d, 0xFFFFFFFF);
 
     return d->status;
 
@@ -643,5 +699,21 @@ void deflate_init(struct deflate *d, void *out, unsigned int ocount, void *in, u
     d->bits = 0;
     d->nbits = 0;
     d->status = DEFLATE_OK;
+    d->ring = 0;
+    d->refill = 0;
+    d->last = 0;
+    d->block = BLOCK_NONE;
+    d->length = 0;
+    d->distance = 0;
+
+}
+
+void deflate_initring(struct deflate *d, void *window, unsigned int count, unsigned int (*refill)(struct deflate *d))
+{
+
+    deflate_init(d, window, count, 0, 0);
+
+    d->ring = 1;
+    d->refill = refill;
 
 }
