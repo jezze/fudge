@@ -20,7 +20,7 @@
   }
   keyboard:
   {
-    map: ""
+    map: "initrd:data/keys/en_US.mq"
   }
   mouse:
   {
