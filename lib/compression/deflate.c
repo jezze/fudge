@@ -67,7 +67,6 @@ static unsigned int getbits(struct deflate *d, unsigned int count)
 
 }
 
-/* reads ahead up to count bits while there is input, without failing */
 static void fill(struct deflate *d, unsigned int count)
 {
 
@@ -81,7 +80,6 @@ static void fill(struct deflate *d, unsigned int count)
 
 }
 
-/* whole bytes read ahead go back to the input */
 static void giveback(struct deflate *d)
 {
 
@@ -97,7 +95,6 @@ static void giveback(struct deflate *d)
 
 }
 
-/* an entry holds the code length above the 9 bits of the symbol, at every index whose low bits are the code, reversed as the bits arrive */
 static void fast(struct deflate_huffman *h)
 {
 
@@ -179,7 +176,6 @@ static unsigned int build(struct deflate_huffman *h, unsigned short *lengths, un
 
 }
 
-/* codes up to FASTBITS long decode with one lookup, the rest a bit at a time */
 static unsigned int decode(struct deflate *d, struct deflate_huffman *h)
 {
 
@@ -464,7 +460,6 @@ static void header(struct deflate *d)
 
 }
 
-/* decompresses until count more bytes are out or the stream ends, and returns how many came out; it stops between any two bytes, inside a block or a match */
 unsigned int deflate_inflate(struct deflate *d, unsigned int count)
 {
 
@@ -558,3 +553,4 @@ void deflate_initring(struct deflate *d, void *window, unsigned int count, unsig
     d->refill = refill;
 
 }
+

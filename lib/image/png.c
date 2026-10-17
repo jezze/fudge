@@ -42,7 +42,6 @@ static unsigned int paeth(unsigned int a, unsigned int b, unsigned int c)
 
 }
 
-/* the line holds the row above until each byte is replaced, so up keeps the bytes of the row above that the pixel to the left still needs */
 static unsigned int unfilter(struct png *png, unsigned int start)
 {
 
@@ -100,7 +99,6 @@ static unsigned int unfilter(struct png *png, unsigned int start)
 
 }
 
-/* the IDAT payloads are handed to deflate one after another, skipping the CRC and the next chunk's header in between */
 static unsigned int refill(struct deflate *d)
 {
 
@@ -191,7 +189,6 @@ static unsigned int readheader(struct png *png, void *in, unsigned int icount)
 
     }
 
-    /* compression and filter method 0, no interlace */
     if (!png->channels || data[26] || data[27] || data[28])
         return 0;
 
@@ -211,7 +208,6 @@ static unsigned int readheader(struct png *png, void *in, unsigned int icount)
 
 }
 
-/* reads the chunks before the first IDAT: PLTE and tRNS are kept, the rest is skipped */
 unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, void *buffer, unsigned int count, unsigned int offset))
 {
 
@@ -358,7 +354,6 @@ static unsigned int scale(unsigned int value, unsigned int depth)
 
 }
 
-/* rows come in order; the last one stays in line, as the row above for the next */
 unsigned int png_readrow(struct png *png, unsigned int *pixels)
 {
 
@@ -418,3 +413,4 @@ unsigned int png_readrow(struct png *png, unsigned int *pixels)
     return 1;
 
 }
+
