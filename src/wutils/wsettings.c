@@ -20,6 +20,7 @@
 #define PART_ICON                       32
 #define NUM_BINDINGS                    32
 #define NUM_COLORS                      512
+#define NUM_KEYBOARDS                   21
 
 struct entry
 {
@@ -51,9 +52,28 @@ static struct entry timezones[8] = {
     {"PST", "Pacific Time (PST)"}
 };
 
-static struct entry keyboards[2] = {
+static struct entry keyboards[NUM_KEYBOARDS] = {
     {"initrd:data/keys/en_US.mq", "English (US)"},
-    {"initrd:data/keys/sv_SE.mq", "Swedish"}
+    {"initrd:data/keys/cs_CZ.mq", "Czech"},
+    {"initrd:data/keys/da_DK.mq", "Danish"},
+    {"initrd:data/keys/en_GB.mq", "English (UK)"},
+    {"initrd:data/keys/fi_FI.mq", "Finnish"},
+    {"initrd:data/keys/fr_FR.mq", "French"},
+    {"initrd:data/keys/fr_BE.mq", "French (Belgium)"},
+    {"initrd:data/keys/fr_CA.mq", "French (Canada)"},
+    {"initrd:data/keys/fr_CH.mq", "French (Switzerland)"},
+    {"initrd:data/keys/de_DE.mq", "German"},
+    {"initrd:data/keys/de_CH.mq", "German (Switzerland)"},
+    {"initrd:data/keys/hu_HU.mq", "Hungarian"},
+    {"initrd:data/keys/it_IT.mq", "Italian"},
+    {"initrd:data/keys/nb_NO.mq", "Norwegian"},
+    {"initrd:data/keys/pl_PL.mq", "Polish"},
+    {"initrd:data/keys/pt_PT.mq", "Portuguese"},
+    {"initrd:data/keys/pt_BR.mq", "Portuguese (Brazil)"},
+    {"initrd:data/keys/es_ES.mq", "Spanish"},
+    {"initrd:data/keys/es_419.mq", "Spanish (Latin America)"},
+    {"initrd:data/keys/sv_SE.mq", "Swedish"},
+    {"initrd:data/keys/tr_TR.mq", "Turkish"}
 };
 
 static struct entry resolutions[9] = {
@@ -661,7 +681,7 @@ static void renderkeyboard(void)
 {
 
     beginarea("Keyboard");
-    choice("keyboard-layout", "Keyboard layout", config.keyboard, keyboards, 2);
+    choice("keyboard-layout", "Keyboard layout", config.keyboard, keyboards, NUM_KEYBOARDS);
 
 }
 
