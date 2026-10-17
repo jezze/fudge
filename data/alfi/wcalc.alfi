@@ -18,6 +18,6 @@
 + button in "row3" label "-" span "1" onclick "q=sub"
 + layout id "row4" in "window" flow "horizontal-stretch" span "1"
 + button in "row4" label "0" span "1" onclick "q=num&value=0"
-+ button in "row4" label "." span "1" onclick "q=dot"
++ button in "row4" label "C" span "1" onclick "q=clear"
 + button in "row4" label "+" span "1" onclick "q=add"
 + button in "row4" label "=" span "1" onclick "q=sum"

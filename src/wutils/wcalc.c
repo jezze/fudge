@@ -21,13 +21,19 @@ static void refresh(unsigned int wm, int value)
 
 }
 
-static void fail(unsigned int wm)
+static void clear(void)
 {
 
     prevstate = STATE_SUM;
     number = 0;
     accumulator = 0;
 
+}
+
+static void fail(unsigned int wm)
+{
+
+    clear();
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= result label \"Error\"\n");
 
 }
@@ -117,6 +123,14 @@ static void updatestate(unsigned int wm, int state)
 
 }
 
+static void reset(unsigned int wm)
+{
+
+    clear();
+    refresh(wm, 0);
+
+}
+
 static void updatevalue(unsigned int wm, int value)
 {
 
@@ -171,6 +185,8 @@ static void onwmevent(struct message *message)
         updatestate(message->source, STATE_MUL);
     else if (kv_match(event, "q=div"))
         updatestate(message->source, STATE_DIV);
+    else if (kv_match(event, "q=clear"))
+        reset(message->source);
 
 }
 
@@ -200,6 +216,11 @@ static void onwmkeypress(struct message *message)
 
     case '/':
         updatestate(message->source, STATE_DIV);
+
+        break;
+
+    case 'c':
+        reset(message->source);
 
         break;
 
