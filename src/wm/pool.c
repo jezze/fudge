@@ -107,7 +107,6 @@ static struct widget *findparent(struct widget *widget, unsigned int source)
 
 }
 
-/* a widget is placed in a widget of its own source first, and otherwise in one of the wm's */
 void pool_setparent(struct widget *widget)
 {
 
@@ -129,7 +128,6 @@ void pool_setparent(struct widget *widget)
 
 }
 
-/* a widget can name a parent that comes later in the same message */
 void pool_setorphans(void)
 {
 
@@ -166,7 +164,6 @@ static void bump(struct widget *widget)
 
 }
 
-/* the texts in a widget count as one run of characters */
 unsigned int pool_gettextlength(struct widget *widget)
 {
 
@@ -187,7 +184,6 @@ unsigned int pool_gettextlength(struct widget *widget)
 
 }
 
-/* finds the text an index into that run falls in, and the index inside it; past the end it is the end of the last text */
 struct widget *pool_gettextat(struct widget *widget, unsigned int index, unsigned int *offset)
 {
 
@@ -311,7 +307,6 @@ void pool_destroy(struct widget *widget)
 
 }
 
-/* the pixels are another task's file, mapped as it is: width times height 32-bit pixels, which the file must hold */
 struct pool_rawresource *pool_createraw(struct widget *widget, char *source)
 {
 

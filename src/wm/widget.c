@@ -274,7 +274,6 @@ unsigned int widget_isscrollable(struct widget *widget)
 
 }
 
-/* the part of a scrolling widget's content that is shown: as wide as the content area and between the top and bottom insets */
 struct util_region widget_getview(struct widget *widget)
 {
 
@@ -286,7 +285,6 @@ struct util_region widget_getview(struct widget *widget)
 
 }
 
-/* scrolls so a region comes into view; when it doesn't fit, its left and top edges win */
 void widget_scrollto(struct widget *widget, struct util_region *region)
 {
 

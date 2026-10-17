@@ -104,7 +104,6 @@ static void blitsegment(struct blit_display *display, struct rowsegment *rows, u
 
 }
 
-/* rows of characters: '#' is the icon colour, S N D L are shadow, normal, dark and light, anything else is transparent */
 static void blitbitmap(struct blit_display *display, char **rows, unsigned int count, int bx, int by, int line, int x0, int x2, unsigned int *cmap)
 {
 
@@ -355,7 +354,6 @@ void blit_iconx(struct blit_display *display, struct util_region *region, int li
 
 }
 
-/* the arrow points with its top left corner, the text bar with its middle, the hand with its finger */
 struct util_region blit_getmouseregion(unsigned int type, int mx, int my)
 {
 
@@ -520,7 +518,6 @@ void blit_frame(struct blit_display *display, struct util_region *region, int li
 
 }
 
-/* draws width times height pixels scaled to w by h (nearest pixel), blended over what is there by each pixel's alpha */
 void blit_raw(struct blit_display *display, unsigned int *data, unsigned int width, unsigned int height, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2)
 {
 

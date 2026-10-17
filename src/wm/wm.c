@@ -119,7 +119,6 @@ static unsigned int getnumber(char *data, unsigned int count, unsigned int index
 
 }
 
-/* mapimage decodes the background into mem:background and prints its size, which the background widget then takes */
 static void loadbackground(char *path, unsigned int length)
 {
 
@@ -911,7 +910,6 @@ static void setfocus(struct widget *widget)
 
     }
 
-    /* a click on the window itself focuses no widget, which is what lets the window be dragged */
     if (widget && widget != state.focusedwindow)
     {
 
@@ -999,7 +997,6 @@ static void placewindows(unsigned int source)
 
             }
 
-            /* new content can need more room than the window was given, so it grows to fit it */
             else if (state.layout == LAYOUT_DEFAULT)
             {
 
@@ -1018,7 +1015,6 @@ static void placewindows(unsigned int source)
 
 }
 
-/* the window whose serial is nearest to serial in direction, -1 for older and 1 for newer */
 static struct widget *getadjacentwindow(unsigned int serial, int direction)
 {
 
