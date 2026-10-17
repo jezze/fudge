@@ -2,6 +2,8 @@
 #define POOL_PCXROWSIZE                 2048
 #define POOL_PCXOFFSETS                 1024
 #define POOL_PNGRESOURCES               4
+#define POOL_PNGCHECKPOINTS             8
+#define POOL_PNGSPACING                 0x00100000
 #define POOL_PNGROWSIZE                 2048
 #define POOL_WIDGETS                    1536
 

@@ -1,3 +1,4 @@
+#include <fudge.h>
 #include <compression/deflate.h>
 #include "png.h"
 
@@ -331,11 +332,67 @@ unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, voi
 
 }
 
-/* rows are decoded in order and the last one is kept, as with pcx; a row above it starts over from the first IDAT */
+static void save(struct png *png, struct png_checkpoint *checkpoint)
+{
+
+    unsigned int unread = png->deflate.icount - png->deflate.ioffset;
+
+    buffer_copy(&checkpoint->deflate, &png->deflate, sizeof (struct deflate));
+    buffer_copy(checkpoint->window, png->window, PNG_WINDOW);
+    buffer_copy(checkpoint->line, png->line, png->stride);
+
+    checkpoint->offset = png->offset - unread;
+    checkpoint->left = png->left + unread;
+    checkpoint->saved = 1;
+
+}
+
+static void restore(struct png *png, struct png_checkpoint *checkpoint)
+{
+
+    buffer_copy(&png->deflate, &checkpoint->deflate, sizeof (struct deflate));
+    buffer_copy(png->window, checkpoint->window, PNG_WINDOW);
+    buffer_copy(png->line, checkpoint->line, png->stride);
+
+    png->deflate.in = png->input;
+    png->deflate.icount = 0;
+    png->deflate.ioffset = 0;
+    png->offset = checkpoint->offset;
+    png->left = checkpoint->left;
+    png->row = checkpoint->row;
+
+}
+
+static struct png_checkpoint *findcheckpoint(struct png *png, unsigned int row)
+{
+
+    struct png_checkpoint *found = 0;
+    unsigned int i;
+
+    for (i = 0; i < png->ncheckpoints; i++)
+    {
+
+        struct png_checkpoint *checkpoint = png->checkpoints[i];
+
+        if (checkpoint->saved && checkpoint->row <= row + 1 && (!found || checkpoint->row > found->row))
+            found = checkpoint;
+
+    }
+
+    return found;
+
+}
+
+/* rows are decoded in order and the last one is kept, as with pcx; another row starts from the nearest checkpoint at or above it when that saves work, else from the first IDAT, and checkpoints are filled the first time decoding passes them */
 static unsigned int decoderow(struct png *png, unsigned int row)
 {
 
-    if (row + 1 < png->row)
+    struct png_checkpoint *checkpoint = findcheckpoint(png, row);
+    unsigned int i;
+
+    if (checkpoint && (row + 1 < png->row || checkpoint->row > png->row))
+        restore(png, checkpoint);
+    else if (row + 1 < png->row)
         rewind(png);
 
     while (png->row <= row)
@@ -346,9 +403,36 @@ static unsigned int decoderow(struct png *png, unsigned int row)
 
         png->row++;
 
+        for (i = 0; i < png->ncheckpoints; i++)
+        {
+
+            if (!png->checkpoints[i]->saved && png->checkpoints[i]->row == png->row)
+                save(png, png->checkpoints[i]);
+
+        }
+
     }
 
     return 1;
+
+}
+
+/* the checkpoints are spread evenly over the rows */
+void png_setcheckpoints(struct png *png, struct png_checkpoint **checkpoints, unsigned int count)
+{
+
+    unsigned int i;
+
+    png->ncheckpoints = (count < PNG_CHECKPOINTS) ? count : PNG_CHECKPOINTS;
+
+    for (i = 0; i < png->ncheckpoints; i++)
+    {
+
+        png->checkpoints[i] = checkpoints[i];
+        png->checkpoints[i]->row = png->height / (png->ncheckpoints + 1) * (i + 1);
+        png->checkpoints[i]->saved = 0;
+
+    }
 
 }
 

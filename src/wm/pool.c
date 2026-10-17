@@ -24,6 +24,8 @@ static struct text_font fonts[MAX_FONTS];
 static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
 static struct pool_pngresource pngresources[POOL_PNGRESOURCES];
 static unsigned int pngrow[POOL_PNGROWSIZE];
+static struct png_checkpoint pngcheckpoints[POOL_PNGCHECKPOINTS];
+static struct pool_pngresource *pngcheckpointowners[POOL_PNGCHECKPOINTS];
 
 struct list_item *pool_prev(struct list_item *current)
 {
@@ -266,6 +268,23 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
 }
 
+static void destroypng(struct pool_pngresource *resource)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < POOL_PNGCHECKPOINTS; i++)
+    {
+
+        if (pngcheckpointowners[i] == resource)
+            pngcheckpointowners[i] = 0;
+
+    }
+
+    resource->used = 0;
+
+}
+
 void pool_destroy(struct widget *widget)
 {
 
@@ -283,7 +302,7 @@ void pool_destroy(struct widget *widget)
             break;
 
         case ATTR_MIMETYPE_PNG:
-            ((struct pool_pngresource *)widget->resource)->used = 0;
+            destroypng(widget->resource);
 
             break;
 
@@ -421,6 +440,32 @@ static unsigned int readpng(struct png *png, void *buffer, unsigned int count, u
 
 }
 
+/* an image gets a checkpoint for every POOL_PNGSPACING bytes it inflates to, as far as there are free ones */
+static void givecheckpoints(struct pool_pngresource *resource)
+{
+
+    struct png_checkpoint *checkpoints[PNG_CHECKPOINTS];
+    unsigned int wanted = resource->png.height / (POOL_PNGSPACING / (resource->png.stride + 1));
+    unsigned int count = 0;
+    unsigned int i;
+
+    for (i = 0; i < POOL_PNGCHECKPOINTS && count < wanted && count < PNG_CHECKPOINTS; i++)
+    {
+
+        if (!pngcheckpointowners[i])
+        {
+
+            pngcheckpointowners[i] = resource;
+            checkpoints[count++] = &pngcheckpoints[i];
+
+        }
+
+    }
+
+    png_setcheckpoints(&resource->png, checkpoints, count);
+
+}
+
 struct pool_pngresource *pool_createpng(struct widget *widget, char *source)
 {
 
@@ -449,6 +494,8 @@ struct pool_pngresource *pool_createpng(struct widget *widget, char *source)
 
         resource->loaded = 1;
         widget->size = util_size(resource->png.width, resource->png.height);
+
+        givecheckpoints(resource);
 
     }
 
