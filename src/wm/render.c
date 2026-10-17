@@ -270,6 +270,9 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
     placement.position = util_position_add(&widget->cplacement.position, offset->x, offset->y);
     placement.size = size = calls[child->type].getsize(child, &climit, rowstart);
 
+    if (widget_isscrollable(child))
+        placement.size.w = size.w = util_min(size.w + CONFIG_SCROLL_WIDTH, climit.w);
+
     if (child->attributes.span)
     {
 
