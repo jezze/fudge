@@ -119,6 +119,15 @@ static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct
 
 }
 
+static unsigned int mapmem(unsigned long directory, unsigned long vaddress, unsigned int flags)
+{
+
+    unsigned long paddress = memsrv_getpage(vaddress);
+
+    return paddress && map(directory, KERNEL_VMMAP, vaddress & ~(unsigned long)MMU_PAGEMASK, paddress, flags);
+
+}
+
 static unsigned int copytable(unsigned long directory, unsigned long vaddress)
 {
 
@@ -529,7 +538,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
             struct mmap_entry *entry = mmap_find((struct mmap_header *)KERNEL_VMMAP, vaddress);
 
             if (entry)
-                found = mapentry(directory, KERNEL_VMMAP, entry);
+                found = (entry->type == MMAP_TYPE_MEM) ? mapmem(directory, vaddress, entry->flags) : mapentry(directory, KERNEL_VMMAP, entry);
 
         }
 

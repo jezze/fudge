@@ -3,6 +3,7 @@
 #define MMAP_TYPE_NORMAL                0
 #define MMAP_TYPE_ZERO                  1
 #define MMAP_TYPE_BINARY                2
+#define MMAP_TYPE_MEM                   3
 #define MMAP_FLAG_GLOBAL                0x01
 #define MMAP_FLAG_USERMODE              0x02
 #define MMAP_FLAG_WRITEABLE             0x04
