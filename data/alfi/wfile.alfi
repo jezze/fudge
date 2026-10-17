@@ -5,6 +5,8 @@
 + panel id "volume-list" in "volume" flow "vertical-stretch" padding "4"
 + item id "volume-initrd" in "volume-list" padding "16" onclick "q=abspath&path=initrd:"
 + text in "volume-initrd" label "initrd:"
++ item id "volume-mem" in "volume-list" padding "16" onclick "q=abspath&path=mem:"
++ text in "volume-mem" label "mem:"
 + box id "pathbox" in "top" mode "edit" padding "12" span "1" onenter "q=abspath&path="
 + text id "path" in "pathbox"
 + button in "top" label "Up" onclick "q=up"
