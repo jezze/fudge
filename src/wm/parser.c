@@ -106,6 +106,24 @@ static unsigned int addchar(struct state *state, char *result, unsigned int coun
 
 }
 
+static unsigned int endword(struct state *state, char *result, unsigned int count, unsigned int i)
+{
+
+    if (i >= count)
+    {
+
+        fail(state);
+
+        i = utf8_fit(result, count, count - 1);
+
+    }
+
+    result[i] = '\0';
+
+    return i;
+
+}
+
 static unsigned int readword(struct state *state, char *result, unsigned int count)
 {
 
@@ -151,9 +169,7 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
             state->line++;
             state->linebreak = 1;
 
-            addchar(state, result, count, i, '\0');
-
-            return i;
+            return endword(state, result, count, i);
 
         }
 
@@ -163,9 +179,7 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
             if (i || quotes)
             {
 
-                addchar(state, result, count, i, '\0');
-
-                return i;
+                return endword(state, result, count, i);
 
             }
 
@@ -182,9 +196,7 @@ static unsigned int readword(struct state *state, char *result, unsigned int cou
 
     state->linebreak = 1;
 
-    addchar(state, result, count, i, '\0');
-
-    return i;
+    return endword(state, result, count, i);
 
 }
 
