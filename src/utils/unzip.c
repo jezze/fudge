@@ -2,20 +2,21 @@
 #include <abi.h>
 #include <compression.h>
 
-#define INPUTSIZE                       0x40000
-#define OUTPUTSIZE                      0x100000
+#define NUM_NAMES                       8
 #define PATHSIZE                        1024
 #define HEADERSIZE                      (46 + PATHSIZE)
 #define CRCTABLE                        256
 #define EOCDSIZE                        22
 #define EOCDMAX                         (EOCDSIZE + 0xFFFF)
 
-static unsigned char input[INPUTSIZE];
-static unsigned char output[OUTPUTSIZE];
 static unsigned int crctable[CRCTABLE];
 static char archive[PATHSIZE];
 static char destination[PATHSIZE];
 static unsigned int paths;
+static unsigned int memtarget;
+static unsigned int memparent;
+static unsigned int memid;
+static unsigned char *data;
 
 static unsigned int read16(unsigned char *data)
 {
@@ -44,12 +45,51 @@ static unsigned int crc32(unsigned char *data, unsigned int count)
 
 }
 
-static unsigned int inflate(unsigned char *in, unsigned int icount, unsigned int ocount, unsigned int *consumed)
+/* a file of our own in mem:, named unzip and the first free number */
+static unsigned int createmem(void)
+{
+
+    char name[32];
+    unsigned int i;
+
+    memtarget = fs_auth("mem:");
+    memparent = (memtarget) ? fs_walk(1, memtarget, 0, "mem:") : 0;
+
+    for (i = 0; i < NUM_NAMES && memparent && !memid; i++)
+    {
+
+        cstring_write_fmt(name, 32, 0, "unzip%u\\0", &i);
+
+        memid = fs_create(1, memtarget, memparent, name, cstring_length(name));
+
+    }
+
+    if (memid)
+        data = fs_mmap(1, memtarget, memid);
+
+    return data != 0;
+
+}
+
+/* the mem: file refuses writes past its end, so writing the last byte tells whether count + extra bytes fit */
+static unsigned int fit(unsigned int count, unsigned int extra)
+{
+
+    unsigned char zero = 0;
+
+    if (count + extra < count)
+        return 0;
+
+    return !(count + extra) || fs_write(1, memtarget, memid, &zero, 1, count + extra - 1) == 1;
+
+}
+
+static unsigned int inflate(unsigned char *in, unsigned int icount, unsigned char *out, unsigned int ocount, unsigned int *consumed)
 {
 
     struct deflate d;
 
-    deflate_init(&d, output, ocount, in, icount);
+    deflate_init(&d, out, ocount, in, icount);
 
     if (deflate_decompress(&d) != DEFLATE_OK)
         return 0;
@@ -92,7 +132,7 @@ static unsigned int safename(char *name)
 
 }
 
-static unsigned int writefile(unsigned int source, unsigned int target, unsigned int directory, char *name, unsigned int count)
+static unsigned int writefile(unsigned int source, unsigned int target, unsigned int directory, char *name, unsigned char *output, unsigned int count)
 {
 
     char parentpath[PATHSIZE];
@@ -176,7 +216,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     unsigned int consumed;
     unsigned int usize;
 
-    if (size > INPUTSIZE)
+    if (!fit(size, 0))
     {
 
         channel_send_fmt(0, source, EVENT_ERROR, "Archive too big: %s\n", archive);
@@ -211,7 +251,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
 
     }
 
-    if (fs_read_full(1, starget, sid, input, size, 0) != size || input[2] != 8 || size < 18)
+    if (fs_read_full(1, starget, sid, data, size, 0) != size || data[2] != 8 || size < 18)
     {
 
         channel_send_fmt(0, source, EVENT_ERROR, "Archive could not be read: %s\n", archive);
@@ -220,19 +260,19 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
 
     }
 
-    flags = input[3];
+    flags = data[3];
 
     if (flags & 0x04)
-        offset += 2 + read16(input + offset);
+        offset += 2 + read16(data + offset);
 
     if (flags & 0x08)
-        for (; offset < size && input[offset]; offset++);
+        for (; offset < size && data[offset]; offset++);
 
     if (flags & 0x08)
         offset++;
 
     if (flags & 0x10)
-        for (; offset < size && input[offset]; offset++);
+        for (; offset < size && data[offset]; offset++);
 
     if (flags & 0x10)
         offset++;
@@ -240,18 +280,9 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (flags & 0x02)
         offset += 2;
 
-    usize = read32(input + size - 4);
+    usize = read32(data + size - 4);
 
-    if (offset + 8 > size || usize > OUTPUTSIZE)
-    {
-
-        channel_send_fmt(0, source, EVENT_ERROR, (usize > OUTPUTSIZE) ? "File too big: %s\n" : "Archive is damaged: %s\n", archive);
-
-        return;
-
-    }
-
-    if (!inflate(input + offset, size - offset - 8, usize, &consumed) || crc32(output, usize) != read32(input + offset + consumed))
+    if (offset + 8 > size)
     {
 
         channel_send_fmt(0, source, EVENT_ERROR, "Archive is damaged: %s\n", archive);
@@ -260,7 +291,25 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
 
     }
 
-    writefile(source, dtarget, did, name, usize);
+    if (!fit(size, usize))
+    {
+
+        channel_send_fmt(0, source, EVENT_ERROR, "File too big: %s\n", archive);
+
+        return;
+
+    }
+
+    if (!inflate(data + offset, size - offset - 8, data + size, usize, &consumed) || crc32(data + size, usize) != read32(data + offset + consumed))
+    {
+
+        channel_send_fmt(0, source, EVENT_ERROR, "Archive is damaged: %s\n", archive);
+
+        return;
+
+    }
+
+    writefile(source, dtarget, did, name, data + size, usize);
 
 }
 
@@ -275,6 +324,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     unsigned int usize = read32(header + 24);
     unsigned int length = read16(header + 28);
     unsigned int offset = read32(header + 42);
+    unsigned char *output;
     unsigned int consumed;
 
     buffer_write(name, PATHSIZE, header + 46, length, 0);
@@ -299,7 +349,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
 
     }
 
-    if (csize > INPUTSIZE || usize > OUTPUTSIZE)
+    if (!fit(csize, (method) ? usize : 0))
     {
 
         channel_send_fmt(0, source, EVENT_ERROR, "File too big: %s\n", name);
@@ -319,7 +369,9 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
 
     offset += 30 + read16(local + 26) + read16(local + 28);
 
-    if (fs_read_full(1, starget, sid, (method) ? input : output, csize, offset) != csize)
+    output = (method) ? data + csize : data;
+
+    if (fs_read_full(1, starget, sid, data, csize, offset) != csize)
     {
 
         channel_send_fmt(0, source, EVENT_ERROR, "Archive is damaged: %s\n", name);
@@ -328,7 +380,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
 
     }
 
-    if ((method && !inflate(input, csize, usize, &consumed)) || (!method && csize != usize) || crc32(output, usize) != crc)
+    if ((method && !inflate(data, csize, output, usize, &consumed)) || (!method && csize != usize) || crc32(output, usize) != crc)
     {
 
         channel_send_fmt(0, source, EVENT_ERROR, "File is damaged: %s\n", name);
@@ -337,7 +389,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
 
     }
 
-    writefile(source, dtarget, did, name, usize);
+    writefile(source, dtarget, did, name, output, usize);
 
 }
 
@@ -350,7 +402,7 @@ static void unzip(unsigned int source, unsigned int starget, unsigned int sid, u
     unsigned int offset;
     unsigned int i;
 
-    if (tail < EOCDSIZE || fs_read_full(1, starget, sid, input, tail, size - tail) != tail)
+    if (tail < EOCDSIZE || !fit(tail, 0) || fs_read_full(1, starget, sid, data, tail, size - tail) != tail)
     {
 
         channel_send_fmt(0, source, EVENT_ERROR, "Archive could not be read: %s\n", archive);
@@ -359,7 +411,7 @@ static void unzip(unsigned int source, unsigned int starget, unsigned int sid, u
 
     }
 
-    for (i = tail - EOCDSIZE + 1; i > 0 && read32(input + i - 1) != 0x06054B50; i--);
+    for (i = tail - EOCDSIZE + 1; i > 0 && read32(data + i - 1) != 0x06054B50; i--);
 
     if (!i)
     {
@@ -370,8 +422,8 @@ static void unzip(unsigned int source, unsigned int starget, unsigned int sid, u
 
     }
 
-    entries = read16(input + i - 1 + 10);
-    offset = read32(input + i - 1 + 16);
+    entries = read16(data + i - 1 + 10);
+    offset = read32(data + i - 1 + 16);
 
     if (entries == 0xFFFF || offset == 0xFFFFFFFF)
     {
@@ -459,12 +511,36 @@ static void onterm(struct message *message)
     if (fs_read_full(1, starget, sid, magic, 4, 0) != 4)
         magic[0] = 0;
 
-    if (magic[0] == 0x1F && magic[1] == 0x8B)
-        gunzip(message->source, starget, sid, record.size, dtarget, did);
-    else if (magic[0] == 'P' && magic[1] == 'K')
-        unzip(message->source, starget, sid, record.size, dtarget, did);
-    else
+    if (!(magic[0] == 0x1F && magic[1] == 0x8B) && !(magic[0] == 'P' && magic[1] == 'K'))
+    {
+
         channel_send_fmt(0, message->source, EVENT_ERROR, "Not a zip or gzip file: %s\n", archive);
+
+        return;
+
+    }
+
+    if (createmem())
+    {
+
+        if (magic[0] == 0x1F)
+            gunzip(message->source, starget, sid, record.size, dtarget, did);
+        else
+            unzip(message->source, starget, sid, record.size, dtarget, did);
+
+        fs_munmap(1, memtarget, memid);
+
+    }
+
+    else
+    {
+
+        channel_send_fmt(0, message->source, EVENT_ERROR, "No mem: file could be mapped\n");
+
+    }
+
+    if (memid)
+        fs_remove(1, memtarget, memparent, memid);
 
 }
 
