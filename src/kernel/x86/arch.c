@@ -119,12 +119,12 @@ static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct
 
 }
 
-static unsigned int mapmem(unsigned long directory, unsigned long vaddress, unsigned int flags)
+static unsigned int mapmem(unsigned long directory, unsigned long vaddress, struct mmap_entry *entry)
 {
 
-    unsigned long paddress = memsrv_getpage(vaddress);
+    unsigned long paddress = memsrv_getpage(entry->paddress, vaddress - entry->vaddress);
 
-    return paddress && map(directory, KERNEL_VMMAP, vaddress & ~(unsigned long)MMU_PAGEMASK, paddress, flags);
+    return paddress && map(directory, KERNEL_VMMAP, vaddress & ~(unsigned long)MMU_PAGEMASK, paddress, entry->flags);
 
 }
 
@@ -538,7 +538,7 @@ unsigned short arch_pagefault(struct cpu_general general, unsigned int error, st
             struct mmap_entry *entry = mmap_find((struct mmap_header *)KERNEL_VMMAP, vaddress);
 
             if (entry)
-                found = (entry->type == MMAP_TYPE_MEM) ? mapmem(directory, vaddress, entry->flags) : mapentry(directory, KERNEL_VMMAP, entry);
+                found = (entry->type == MMAP_TYPE_MEM) ? mapmem(directory, vaddress, entry) : mapentry(directory, KERNEL_VMMAP, entry);
 
         }
 

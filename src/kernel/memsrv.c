@@ -11,6 +11,7 @@
 
 #define ROOT                            1
 #define FILEPAGES                       (MEMSRV_FILESIZE / MEMSRV_PAGESIZE)
+#define MAPS                            ((KERNEL_VBUFFER - KERNEL_VMEM) / MEMSRV_FILESIZE)
 
 struct file
 {
@@ -145,10 +146,22 @@ static unsigned int writedata(struct file *file, unsigned char *buffer, unsigned
 
 }
 
-static unsigned long getvaddress(struct file *file)
+static struct mmap_entry *findmapping(struct mmap_header *header, unsigned int id, unsigned long vaddress)
 {
 
-    return KERNEL_VMEM + (file - files) * MEMSRV_FILESIZE;
+    unsigned int i;
+
+    for (i = 0; i < header->nentries; i++)
+    {
+
+        struct mmap_entry *entry = &header->entries[i];
+
+        if (entry->type == MMAP_TYPE_MEM && (entry->paddress == id || entry->vaddress == vaddress))
+            return entry;
+
+    }
+
+    return 0;
 
 }
 
@@ -357,21 +370,39 @@ static unsigned long map(unsigned int source, unsigned int id)
     struct file *file = getfile(id);
     unsigned int itask;
     struct task *task = gettask(source, &itask);
+    struct mmap_header *header;
+    struct mmap_entry *entry;
+    unsigned int i;
 
     if (!file || !task)
         return 0;
 
-    if (!(file->tasks & (1 << itask)))
+    header = (struct mmap_header *)task->mmap;
+    entry = findmapping(header, id, 0);
+
+    if (entry)
+        return entry->vaddress;
+
+    for (i = 0; i < MAPS; i++)
     {
 
-        if (!mmap_allocate((struct mmap_header *)task->mmap, MMAP_TYPE_MEM, 0, getvaddress(file), MEMSRV_FILESIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE))
-            return 0;
+        unsigned long vaddress = KERNEL_VMEM + i * MEMSRV_FILESIZE;
 
-        file->tasks |= 1 << itask;
+        if (!findmapping(header, 0, vaddress))
+        {
+
+            if (!mmap_allocate(header, MMAP_TYPE_MEM, id, vaddress, MEMSRV_FILESIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE))
+                return 0;
+
+            file->tasks |= 1 << itask;
+
+            return vaddress;
+
+        }
 
     }
 
-    return getvaddress(file);
+    return 0;
 
 }
 
@@ -391,12 +422,15 @@ static unsigned int unmap(unsigned int source, unsigned int id)
         {
 
             struct mmap_header *header = (struct mmap_header *)task->mmap;
-            struct mmap_entry *entry = mmap_find(header, getvaddress(file));
+            struct mmap_entry *entry = findmapping(header, id, 0);
 
             if (entry)
+            {
+
+                unmapcallback(entry->vaddress, MEMSRV_FILESIZE);
                 mmap_remove(header, entry);
 
-            unmapcallback(getvaddress(file), MEMSRV_FILESIZE);
+            }
 
             file->tasks &= ~(1 << itask);
 
@@ -591,20 +625,21 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-unsigned long memsrv_getpage(unsigned long vaddress)
+unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 {
 
-    unsigned long index = (vaddress - KERNEL_VMEM) / MEMSRV_FILESIZE;
-    unsigned int offset = (vaddress - KERNEL_VMEM) % MEMSRV_FILESIZE;
+    struct file *file;
     unsigned long paddress = 0;
 
-    if (vaddress < KERNEL_VMEM || index >= MEMSRV_FILES)
+    if (id <= ROOT || id - ROOT - 1 >= MEMSRV_FILES)
         return 0;
+
+    file = &files[id - ROOT - 1];
 
     spinlock_acquire(&spinlock);
 
-    if (files[index].used && offset < countpages(files[index].size) * MEMSRV_PAGESIZE)
-        paddress = (unsigned long)getpage(&files[index], offset - offset % MEMSRV_PAGESIZE);
+    if (file->used && offset < countpages(file->size) * MEMSRV_PAGESIZE)
+        paddress = (unsigned long)getpage(file, offset - offset % MEMSRV_PAGESIZE);
 
     spinlock_release(&spinlock);
 
