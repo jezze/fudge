@@ -20,6 +20,7 @@ struct widget_attributes
     unsigned int display;
     unsigned int flow;
     unsigned int halign;
+    unsigned int height;
     unsigned int id;
     unsigned int in;
     unsigned int label;
@@ -36,6 +37,7 @@ struct widget_attributes
     unsigned int span;
     unsigned int valign;
     unsigned int weight;
+    unsigned int width;
     unsigned int wrap;
 
 };

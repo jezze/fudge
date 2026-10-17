@@ -863,6 +863,18 @@ static void renderimage(struct blit_display *display, struct widget *widget, int
 
         break;
 
+    case ATTR_MIMETYPE_RAW:
+        if (widget->resource)
+        {
+
+            struct pool_rawresource *resource = widget->resource;
+
+            blit_raw(display, resource->data, widget->attributes.width, widget->attributes.height, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
+
+        }
+
+        break;
+
     }
 
 }

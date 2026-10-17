@@ -30,10 +30,11 @@ static struct util_token haligns[3] =
     {ATTR_HALIGN_RIGHT, "right"}
 };
 
-static struct util_token mimetypes[2] =
+static struct util_token mimetypes[3] =
 {
     {ATTR_MIMETYPE_PCX, "image/pcx"},
-    {ATTR_MIMETYPE_PNG, "image/png"}
+    {ATTR_MIMETYPE_PNG, "image/png"},
+    {ATTR_MIMETYPE_RAW, "image/raw"}
 };
 
 static struct util_token modes[NUM_MODES] =
@@ -98,6 +99,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
     case ATTR_FLOW:
         return util_getkey(flows, 6, value);
 
+    case ATTR_HEIGHT:
+        return getnum(value, 10);
+
     case ATTR_HALIGN:
         return util_getkey(haligns, 3, value);
 
@@ -111,7 +115,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return strpool_updatestring(current, value);
 
     case ATTR_MIMETYPE:
-        return util_getkey(mimetypes, 2, value);
+        return util_getkey(mimetypes, 3, value);
 
     case ATTR_MODE:
         return util_getkey(modes, NUM_MODES, value);
@@ -145,6 +149,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_VALIGN:
         return util_getkey(valigns, 3, value);
+
+    case ATTR_WIDTH:
+        return getnum(value, 10);
 
     case ATTR_WEIGHT:
         return util_getkey(weights, 2, value);

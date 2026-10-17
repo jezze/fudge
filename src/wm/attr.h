@@ -21,6 +21,8 @@
 #define ATTR_ONENTER                    21
 #define ATTR_ONSELECT                   22
 #define ATTR_ONCHANGE                   23
+#define ATTR_HEIGHT                     24
+#define ATTR_WIDTH                      25
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_DISPLAY_FIXED              2
@@ -36,6 +38,7 @@
 #define ATTR_MIMETYPE_NONE              0
 #define ATTR_MIMETYPE_PCX               2
 #define ATTR_MIMETYPE_PNG               3
+#define ATTR_MIMETYPE_RAW               4
 #define ATTR_MODE_NORMAL                0
 #define ATTR_MODE_EDIT                  1
 #define ATTR_MODE_LINK                  2

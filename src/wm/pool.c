@@ -23,6 +23,7 @@ static struct list children[POOL_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
 static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
 static struct pool_pngresource pngresources[POOL_PNGRESOURCES];
+static struct pool_rawresource rawresources[POOL_RAWRESOURCES];
 static unsigned int pngrow[POOL_PNGROWSIZE];
 static struct png_checkpoint pngcheckpoints[POOL_PNGCHECKPOINTS];
 static struct pool_pngresource *pngcheckpointowners[POOL_PNGCHECKPOINTS];
@@ -285,6 +286,16 @@ static void destroypng(struct pool_pngresource *resource)
 
 }
 
+static void destroyraw(struct pool_rawresource *resource)
+{
+
+    if (resource->data)
+        fs_munmap(1, resource->target, resource->id);
+
+    resource->used = 0;
+
+}
+
 void pool_destroy(struct widget *widget)
 {
 
@@ -303,6 +314,11 @@ void pool_destroy(struct widget *widget)
 
         case ATTR_MIMETYPE_PNG:
             destroypng(widget->resource);
+
+            break;
+
+        case ATTR_MIMETYPE_RAW:
+            destroyraw(widget->resource);
 
             break;
 
@@ -510,6 +526,47 @@ unsigned int *pool_pngreadrow(struct pool_pngresource *resource, unsigned int ro
 
 }
 
+/* the pixels are another task's file, mapped as it is: width times height 32-bit pixels, which the file must hold */
+struct pool_rawresource *pool_createraw(struct widget *widget, char *source)
+{
+
+    struct pool_rawresource *resource = 0;
+    unsigned int width = widget->attributes.width;
+    unsigned int height = widget->attributes.height;
+    struct record record;
+    unsigned int i;
+
+    for (i = 0; i < POOL_RAWRESOURCES && !resource; i++)
+    {
+
+        if (!rawresources[i].used)
+            resource = &rawresources[i];
+
+    }
+
+    if (!resource)
+        return 0;
+
+    buffer_clear(resource, sizeof (struct pool_rawresource));
+
+    resource->used = 1;
+    resource->target = fs_auth(source);
+    resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
+
+    if (resource->id && width && height && width <= 0x4000 && height <= 0x4000 && fs_stat(1, resource->target, resource->id, &record) && record.size / 4 / width >= height)
+    {
+
+        resource->data = fs_mmap(1, resource->target, resource->id);
+
+        if (resource->data)
+            widget->size = util_size(width, height);
+
+    }
+
+    return resource;
+
+}
+
 struct text_font *pool_getfont(unsigned int index)
 {
 
@@ -671,6 +728,11 @@ void pool_loadresources(void)
 
                 case ATTR_MIMETYPE_PNG:
                     widget->resource = pool_createpng(widget, strpool_getstring(widget->attributes.source));
+
+                    break;
+
+                case ATTR_MIMETYPE_RAW:
+                    widget->resource = pool_createraw(widget, strpool_getstring(widget->attributes.source));
 
                     break;
 

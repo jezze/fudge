@@ -18,7 +18,7 @@
 
 #define NUM_COMMANDS                    5
 #define NUM_WIDGETS                     12
-#define NUM_ATTRIBUTES                  23
+#define NUM_ATTRIBUTES                  25
 
 static struct util_token commands[NUM_COMMANDS] =
 {
@@ -53,6 +53,7 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
     {ATTR_DISPLAY, "display"},
     {ATTR_FLOW, "flow"},
     {ATTR_HALIGN, "halign"},
+    {ATTR_HEIGHT, "height"},
     {ATTR_ID, "id"},
     {ATTR_IN, "in"},
     {ATTR_LABEL, "label"},
@@ -69,6 +70,7 @@ static struct util_token attributes[NUM_ATTRIBUTES] =
     {ATTR_SPAN, "span"},
     {ATTR_VALIGN, "valign"},
     {ATTR_WEIGHT, "weight"},
+    {ATTR_WIDTH, "width"},
     {ATTR_WRAP, "wrap"}
 };
 

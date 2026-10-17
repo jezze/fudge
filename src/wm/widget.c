@@ -40,6 +40,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_HEIGHT:
+        widget->attributes.height = attr_update(ATTR_HEIGHT, value, widget->attributes.height);
+
+        break;
+
     case ATTR_HALIGN:
         widget->attributes.halign = attr_update(ATTR_HALIGN, value, widget->attributes.halign);
 
@@ -121,6 +126,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_WIDTH:
+        widget->attributes.width = attr_update(ATTR_WIDTH, value, widget->attributes.width);
+
+        break;
+
     case ATTR_WEIGHT:
         widget->attributes.weight = attr_update(ATTR_WEIGHT, value, widget->attributes.weight);
 
@@ -144,6 +154,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_DISPLAY, 0);
     widget_setattribute(widget, ATTR_FLOW, 0);
     widget_setattribute(widget, ATTR_HALIGN, 0);
+    widget_setattribute(widget, ATTR_HEIGHT, 0);
     widget_setattribute(widget, ATTR_ID, 0);
     widget_setattribute(widget, ATTR_IN, 0);
     widget_setattribute(widget, ATTR_LABEL, 0);
@@ -160,6 +171,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_SPAN, 0);
     widget_setattribute(widget, ATTR_VALIGN, 0);
     widget_setattribute(widget, ATTR_WEIGHT, 0);
+    widget_setattribute(widget, ATTR_WIDTH, 0);
     widget_setattribute(widget, ATTR_WRAP, 0);
 
 }
@@ -303,6 +315,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->display = ATTR_DISPLAY_BLOCK;
     attributes->flow = ATTR_FLOW_DEFAULT;
     attributes->halign = ATTR_HALIGN_LEFT;
+    attributes->height = 0;
     attributes->id = 0;
     attributes->in = 0;
     attributes->label = 0;
@@ -319,6 +332,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->span = 0;
     attributes->valign = ATTR_VALIGN_TOP;
     attributes->weight = ATTR_WEIGHT_NORMAL;
+    attributes->width = 0;
     attributes->wrap = ATTR_WRAP_NONE;
 
     switch (type)

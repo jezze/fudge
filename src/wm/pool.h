@@ -2,6 +2,7 @@
 #define POOL_PCXROWSIZE                 2048
 #define POOL_PCXOFFSETS                 1024
 #define POOL_PNGRESOURCES               4
+#define POOL_RAWRESOURCES               8
 #define POOL_PNGCHECKPOINTS             8
 #define POOL_PNGSPACING                 0x00100000
 #define POOL_PNGROWSIZE                 2048
@@ -37,6 +38,16 @@ struct pool_pngresource
 
 };
 
+struct pool_rawresource
+{
+
+    unsigned int used;
+    unsigned int target;
+    unsigned int id;
+    unsigned int *data;
+
+};
+
 struct list_item *pool_prev(struct list_item *current);
 struct list_item *pool_next(struct list_item *current);
 struct list_item *pool_nextin(struct list_item *current, struct widget *parent);
@@ -53,6 +64,7 @@ struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source);
 unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int row);
 struct pool_pngresource *pool_createpng(struct widget *widget, char *source);
 unsigned int *pool_pngreadrow(struct pool_pngresource *resource, unsigned int row);
+struct pool_rawresource *pool_createraw(struct widget *widget, char *source);
 struct text_font *pool_getfont(unsigned int index);
 void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding);
 void pool_loadfont(unsigned int index, char *path);
