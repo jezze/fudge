@@ -481,7 +481,7 @@ static unsigned int writelines(char *data, unsigned int size)
     unsigned int count = 0;
     unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "layout %s\nkeyboard %s\nresolution %u %u %u\nmouse %s\n", config.layout, config.keyboard, &config.width, &config.height, &config.bpp, config.speed);
+    count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\nkeyboard %s\nresolution %u %u %u\nmouse %s\n", config.layout, config.background, config.keyboard, &config.width, &config.height, &config.bpp, config.speed);
 
     for (i = 0; i < config.ncolors; i++)
         count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);
@@ -591,6 +591,14 @@ static void setfield(char *id, char *value)
 
     }
 
+    else if (cstring_match(id, "general-background"))
+    {
+
+        if (buffer_findbyte(value, length, '"') == length)
+            copystring(config.background, 256, value, length);
+
+    }
+
     else if (buffer_match(id, "binding", 7))
     {
 
@@ -632,6 +640,7 @@ static void rendergeneral(void)
 
     beginarea("General");
     choice("general-layout", "Window layout", config.layout, layouts, 2);
+    field("general-background", "Background", config.background, "left");
 
 }
 
