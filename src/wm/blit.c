@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <abi.h>
-#include <image/pcx.h>
 #include "util.h"
 #include "text.h"
 #include "attr.h"
@@ -521,48 +520,7 @@ void blit_frame(struct blit_display *display, struct util_region *region, int li
 
 }
 
-/* draws the image scaled to w by h (nearest pixel); what is around it is left as it is */
-void blit_pcx(struct blit_display *display, struct pool_pcxresource *resource, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2)
-{
-
-    unsigned char *row;
-    int start = util_max(x0, x);
-    int end = util_min(x2, x + w);
-    unsigned int source;
-    unsigned int remainder;
-    int i;
-
-    if (!w || !h || !util_intersects(line, y, y + h) || start >= end)
-        return;
-
-    row = pool_pcxreadline(resource, (line - y) * resource->height / h);
-    source = (start - x) * resource->width / w;
-    remainder = (start - x) * resource->width % w;
-
-    for (i = start; i < end; i++)
-    {
-
-        unsigned int off = row[source] * 3;
-        unsigned char r = resource->colormap[off + 0];
-        unsigned char g = resource->colormap[off + 1];
-        unsigned char b = resource->colormap[off + 2];
-
-        display->linebuffer[i] = (0xFF000000 | r << 16 | g << 8 | b);
-        remainder += resource->width;
-
-        while (remainder >= w)
-        {
-
-            remainder -= w;
-            source++;
-
-        }
-
-    }
-
-}
-
-/* like blit_pcx from width times height pixels in memory, blended over what is there by each pixel's alpha */
+/* draws width times height pixels scaled to w by h (nearest pixel), blended over what is there by each pixel's alpha */
 void blit_raw(struct blit_display *display, unsigned int *data, unsigned int width, unsigned int height, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2)
 {
 

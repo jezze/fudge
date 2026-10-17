@@ -2,7 +2,6 @@
 #include <abi.h>
 #include <font.h>
 #include <hash.h>
-#include <image/pcx.h>
 #include "util.h"
 #include "text.h"
 #include "attr.h"
@@ -20,7 +19,6 @@ static struct list_item items[POOL_WIDGETS];
 static struct list_item siblings[POOL_WIDGETS];
 static struct list children[POOL_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
-static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
 static struct pool_rawresource rawresources[POOL_RAWRESOURCES];
 
 struct list_item *pool_prev(struct list_item *current)
@@ -285,11 +283,6 @@ void pool_destroy(struct widget *widget)
         switch (widget->attributes.mimetype)
         {
 
-        case ATTR_MIMETYPE_PCX:
-            ((struct pool_pcxresource *)widget->resource)->used = 0;
-
-            break;
-
         case ATTR_MIMETYPE_RAW:
             destroyraw(widget->resource);
 
@@ -315,107 +308,6 @@ void pool_destroy(struct widget *widget)
 
     widget_unsetattributes(widget);
     list_move(&freelist, &widgetlist, finditem(widget));
-
-}
-
-struct pool_pcxresource *pool_createpcx(struct widget *widget, char *source)
-{
-
-    struct pool_pcxresource *resource = 0;
-    unsigned int i;
-
-    for (i = 0; i < POOL_PCXRESOURCES && !resource; i++)
-    {
-
-        if (!pcxresources[i].used)
-            resource = &pcxresources[i];
-
-    }
-
-    if (!resource)
-        return 0;
-
-    buffer_clear(resource, sizeof (struct pool_pcxresource));
-
-    resource->used = 1;
-    resource->target = fs_auth(source);
-
-    if (resource->target)
-    {
-
-        resource->id = fs_walk(1, resource->target, 0, source);
-
-        if (resource->id)
-        {
-
-            struct pcx_header header;
-            struct record record;
-
-            fs_stat(1, resource->target, resource->id, &record);
-
-            if (fs_read_all(1, resource->target, resource->id, &header, sizeof (struct pcx_header), 0) == sizeof (struct pcx_header) && header.identifier == PCX_IDENTIFIER && header.version == PCX_VERSION && header.encoding == PCX_ENCODING && header.bpp == 8 && header.nplanes == 1 && (unsigned short)header.bpl <= POOL_PCXROWSIZE && (unsigned short)header.xend - (unsigned short)header.xstart < (unsigned short)header.bpl)
-            {
-
-                buffer_copy(resource->colormap, header.palette, 48);
-
-                if (record.size > sizeof (struct pcx_header) + 768 + 1)
-                {
-
-                    unsigned char magic;
-
-                    fs_read_all(1, resource->target, resource->id, &magic, 1, record.size - 768 - 1);
-
-                    if (magic == PCX_COLORMAP_MAGIC)
-                        fs_read_all(1, resource->target, resource->id, resource->colormap, 768, record.size - 768);
-
-                }
-
-                resource->bpl = (unsigned short)header.bpl;
-                resource->width = (unsigned short)header.xend - (unsigned short)header.xstart + 1;
-                resource->height = (unsigned short)header.yend - (unsigned short)header.ystart + 1;
-                resource->rowstep = resource->height / POOL_PCXOFFSETS + 1;
-                widget->size = util_size(resource->width, resource->height);
-
-            }
-
-        }
-
-    }
-
-    return resource;
-
-}
-
-/* rows are decoded in order and the last one is kept, so a stretched image can draw it again; where every rowstep-th row starts is remembered, so a redraw higher up starts from the nearest one above instead of the top */
-unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int row)
-{
-
-    unsigned char data[POOL_PCXROWSIZE * 2];
-
-    if (row + 1 < resource->row)
-    {
-
-        unsigned int index = row / resource->rowstep;
-
-        resource->row = index * resource->rowstep;
-        resource->offset = resource->rowoffsets[index];
-
-    }
-
-    while (resource->row <= row)
-    {
-
-        if (resource->row % resource->rowstep == 0 && resource->row / resource->rowstep == resource->noffsets)
-            resource->rowoffsets[resource->noffsets++] = resource->offset;
-
-        fs_read_full(1, resource->target, resource->id, data, resource->bpl * 2, 128 + resource->offset);
-
-        resource->offset += pcx_readline(data, resource->bpl, resource->rowdata);
-        resource->row++;
-
-    }
-
-    return resource->rowdata;
 
 }
 
@@ -613,11 +505,6 @@ void pool_loadresources(void)
 
                 switch (widget->attributes.mimetype)
                 {
-
-                case ATTR_MIMETYPE_PCX:
-                    widget->resource = pool_createpcx(widget, strpool_getstring(widget->attributes.source));
-
-                    break;
 
                 case ATTR_MIMETYPE_RAW:
                     widget->resource = pool_createraw(widget, strpool_getstring(widget->attributes.source));

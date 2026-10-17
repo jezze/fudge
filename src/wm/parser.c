@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <abi.h>
-#include <image/pcx.h>
 #include "util.h"
 #include "text.h"
 #include "attr.h"

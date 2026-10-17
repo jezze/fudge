@@ -30,9 +30,8 @@ static struct util_token haligns[3] =
     {ATTR_HALIGN_RIGHT, "right"}
 };
 
-static struct util_token mimetypes[2] =
+static struct util_token mimetypes[1] =
 {
-    {ATTR_MIMETYPE_PCX, "image/pcx"},
     {ATTR_MIMETYPE_RAW, "image/raw"}
 };
 
@@ -114,7 +113,7 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
         return strpool_updatestring(current, value);
 
     case ATTR_MIMETYPE:
-        return util_getkey(mimetypes, 2, value);
+        return util_getkey(mimetypes, 1, value);
 
     case ATTR_MODE:
         return util_getkey(modes, NUM_MODES, value);
