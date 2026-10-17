@@ -18,7 +18,7 @@
 #define ARCH_MMU_KERNELBASE             0x00A00000
 #define ARCH_MMU_KERNELSIZE             0x200000
 #define ARCH_MMU_TASKBASE               0x00C00000
-#define ARCH_MMU_TASKSIZE               0x10000
+#define ARCH_MMU_TASKSIZE               0x20000
 #define ARCH_MMU_LIMIT                  0x100000000UL
 #define ARCH_MAILBOX_BASE               0x01000000
 #define ARCH_MAILBOX_SIZE               (MESSAGE_CAPACITY * POOL_MAILBOXES)
@@ -27,6 +27,8 @@
 #define ARCH_TASK_CODEBASE              0x04000000
 #define ARCH_TASK_CODESIZE              (TASK_CODESIZE * POOL_TASKS)
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_CODEBASE + ARCH_TASK_CODESIZE)
+#define ARCH_MEM_BASE                   0x0A000000
+#define ARCH_MEM_SIZE                   (MEMSRV_FILES * MEMSRV_FILESIZE)
 #define ARCH_KCODE                      0x01
 #define ARCH_KDATA                      0x02
 #define ARCH_UCODE                      0x03
