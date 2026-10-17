@@ -36,24 +36,12 @@ static unsigned int countselected(void)
 
 }
 
-static unsigned int hasclipboard(void)
-{
-
-    char *clippath = option_getstring("clipboard");
-    unsigned int target = fs_auth(clippath);
-    unsigned int id = (target) ? fs_walk(1, target, 0, clippath) : 0;
-    struct record record;
-
-    return id && fs_stat(1, target, id, &record) && record.size;
-
-}
-
 static void setbuttons(unsigned int wm)
 {
 
     unsigned int count = countselected();
     char *mode = (count) ? "normal" : "disabled";
-    char *pastemode = (listing && hasclipboard()) ? "normal" : "disabled";
+    char *pastemode = (listing) ? "normal" : "disabled";
 
     if (opener)
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
