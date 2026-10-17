@@ -739,7 +739,10 @@ static void placebox(struct widget *widget)
 static void placeselect(struct widget *widget)
 {
 
-    widget->cplacement = util_region(widget->placement.position.x, widget->placement.position.y + widget->placement.size.h, INFINITY, INFINITY);
+    int top = widget->placement.position.y + widget->placement.size.h;
+    int bottom = widget->clip.position.y + widget->clip.size.h;
+
+    widget->cplacement = util_region(widget->placement.position.x, top, INFINITY, util_max(bottom - top, 0));
 
     if (!isfocused(widget))
         widget->clip = util_region_intersection(&widget->placement, &widget->clip);
