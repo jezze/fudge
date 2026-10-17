@@ -12,6 +12,7 @@
 
 static unsigned int prevstate;
 static int number;
+static unsigned int typed;
 static int accumulator;
 
 static void refresh(unsigned int wm, int value)
@@ -26,6 +27,7 @@ static void clear(void)
 
     prevstate = STATE_SUM;
     number = 0;
+    typed = 0;
     accumulator = 0;
 
 }
@@ -78,7 +80,9 @@ static void updatestate(unsigned int wm, int state)
     {
 
     case STATE_SUM:
-        accumulator = number;
+        if (typed)
+            accumulator = number;
+
         number = 0;
 
         break;
@@ -110,6 +114,7 @@ static void updatestate(unsigned int wm, int state)
     }
 
     prevstate = state;
+    typed = 0;
 
     switch (state)
     {
@@ -145,6 +150,7 @@ static void updatevalue(unsigned int wm, int value)
 
     number *= 10;
     number += value;
+    typed = 1;
 
     refresh(wm, number);
 
