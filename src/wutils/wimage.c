@@ -14,7 +14,7 @@ static unsigned int memtarget;
 static unsigned int memparent;
 static unsigned int memid;
 static char memname[32];
-/* a file of our own in mem:, named wimage and the first free number */
+
 static void createmem(void)
 {
 

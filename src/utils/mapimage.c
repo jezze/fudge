@@ -135,7 +135,6 @@ static unsigned int findtarget(unsigned int target, char *path)
 
 }
 
-/* the target holds width times height 32-bit pixels; a write past what it can hold is refused */
 static unsigned int fit(unsigned int target, unsigned int id)
 {
 
@@ -236,3 +235,4 @@ void init(void)
     channel_bind(EVENT_TERM, onterm);
 
 }
+
