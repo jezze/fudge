@@ -591,14 +591,6 @@ static void setfield(char *id, char *value)
 
     }
 
-    else if (cstring_match(id, "general-background"))
-    {
-
-        if (buffer_findbyte(value, length, '"') == length)
-            copystring(config.background, 256, value, length);
-
-    }
-
     else if (buffer_match(id, "binding", 7))
     {
 
@@ -640,7 +632,10 @@ static void rendergeneral(void)
 
     beginarea("General");
     choice("general-layout", "Window layout", config.layout, layouts, 2);
-    field("general-background", "Background", config.background, "left");
+    beginrow("general-background");
+    addlabel("general-background", "Background");
+
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text id \"general-background\" in \"general-background-row\" valign \"middle\" label \"%s\"\n+ button in \"general-background-row\" label \"Open\" onclick \"q=open\"\n", config.background);
 
 }
 
@@ -800,6 +795,14 @@ static void onmain(struct message *message)
 
 }
 
+static void onpath(struct message *message)
+{
+
+    copystring(config.background, 256, message->data, cstring_length(message->data));
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= save mode \"normal\"\n= general-background label \"%s\"\n", config.background);
+
+}
+
 static void onwmevent(struct message *message)
 {
 
@@ -861,6 +864,22 @@ static void onwmevent(struct message *message)
 
     }
 
+    else if (kv_match(event, "q=open"))
+    {
+
+        unsigned int target = fs_spawn(1, 0, "initrd:bin/wfile");
+
+        if (target)
+        {
+
+            channel_send_fmt(0, target, EVENT_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+            channel_send(0, target, EVENT_MAIN, 0, 0);
+            channel_send(0, target, EVENT_TERM, 0, 0);
+
+        }
+
+    }
+
     else if (kv_match(event, "q=apply"))
     {
 
@@ -878,6 +897,7 @@ void init(void)
     option_add("wm-service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_WMEVENT, onwmevent);
 
 }
