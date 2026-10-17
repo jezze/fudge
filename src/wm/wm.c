@@ -173,7 +173,7 @@ static void configline(char *line, unsigned int length)
     else if (count == 8 && buffer_match(word, "keyboard", 8))
     {
 
-        keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (length >= 9 && buffer_match(rest, "qwerty_SE", 9)) ? KEYS_MAP_SE : KEYS_MAP_US);
+        keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (length >= 9 && buffer_match(rest, "qwerty_SE", 9)) ? keys_map_se : (void *)0);
 
     }
 
@@ -2459,7 +2459,7 @@ static void setupwidgets(void)
 void init(void)
 {
 
-    keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
+    keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     state.videoconf.width = 1920;
     state.videoconf.height = 1080;
     state.videoconf.bpp = 4;

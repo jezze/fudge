@@ -624,7 +624,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
-    keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
+    keys_init(&keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
     option_add("console-service", "console");

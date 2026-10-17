@@ -209,7 +209,7 @@ static unsigned int qwerty_us_extended[128] = {
     0
 };
 
-static struct keys_map map_us[256] = {
+static struct keys_map map_us[KEYS_MAPSIZE] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{1, {0x31, 0x00, 0x00, 0x00}}, {1, {0x21, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -296,7 +296,7 @@ static struct keys_map map_us[256] = {
     {{{1, {0x2E, 0x00, 0x00, 0x00}}, {1, {0x2E, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
 };
 
-static struct keys_map map_se[256] = {
+struct keys_map keys_map_se[KEYS_MAPSIZE] = {
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
     {{{1, {0x31, 0x00, 0x00, 0x00}}, {1, {0x21, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}, {0, {0x00, 0x00, 0x00, 0x00}}}},
@@ -401,24 +401,6 @@ static unsigned int *getlayout(unsigned int type, unsigned int extended)
 
 }
 
-static struct keys_map *getmap(unsigned int type)
-{
-
-    switch (type)
-    {
-
-    case KEYS_MAP_US:
-        return map_us;
-
-    case KEYS_MAP_SE:
-        return map_se;
-
-    }
-
-    return 0;
-
-}
-
 static unsigned int getmod(struct keys *keys)
 {
 
@@ -437,7 +419,7 @@ static unsigned int getmod(struct keys *keys)
         return KEYS_MOD_ALT;
 
     case KEYS_KEY_RALT:
-        return (keys->map == KEYS_MAP_SE) ? KEYS_MOD_ALTGR : KEYS_MOD_ALT;
+        return (keys->altgr) ? KEYS_MOD_ALTGR : KEYS_MOD_ALT;
 
     case KEYS_KEY_LMETA:
     case KEYS_KEY_RMETA:
@@ -543,10 +525,10 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
         if (offset)
         {
 
-            struct keys_map *map = getmap(keys->map);
+            struct keys_map *map = keys->map;
             unsigned int mapped = !keys->extended || keys->id == KEYS_KEY_KEYPAD_ENTER || keys->id == KEYS_KEY_KEYPAD_SLASH;
 
-            if (map && mapped)
+            if (mapped)
             {
 
                 unsigned int shift = (keys->mod & KEYS_MOD_SHIFT) ? 1 : 0;
@@ -570,11 +552,14 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
 
 }
 
-void keys_init(struct keys *keys, unsigned int layout, unsigned int map)
+void keys_init(struct keys *keys, unsigned int layout, struct keys_map *map)
 {
 
+    unsigned int i;
+
     keys->layout = layout;
-    keys->map = map;
+    keys->map = (map) ? map : map_us;
+    keys->altgr = 0;
     keys->extended = 0;
     keys->skip = 0;
     keys->numlock = 1;
@@ -584,6 +569,14 @@ void keys_init(struct keys *keys, unsigned int layout, unsigned int map)
     keys->mod = 0;
     keys->id = 0;
     keys->code.length = 0;
+
+    for (i = 0; i < KEYS_MAPSIZE; i++)
+    {
+
+        if (keys->map[i].code[2].length)
+            keys->altgr = 1;
+
+    }
 
 }
 

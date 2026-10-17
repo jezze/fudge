@@ -4,9 +4,7 @@
 #define KEYS_MOD_CTRL                   4
 #define KEYS_MOD_META                   8
 #define KEYS_MOD_ALTGR                  16
-#define KEYS_MAP_NONE                   0
-#define KEYS_MAP_US                     1
-#define KEYS_MAP_SE                     2
+#define KEYS_MAPSIZE                    128
 #define KEYS_LAYOUT_NONE                0
 #define KEYS_LAYOUT_QWERTY_US           1
 #define KEYS_KEY_ESCAPE                 0x1001
@@ -153,7 +151,8 @@ struct keys
 {
 
     unsigned int layout;
-    unsigned int map;
+    struct keys_map *map;
+    unsigned int altgr;
     unsigned int extended;
     unsigned int skip;
     unsigned int numlock;
@@ -167,4 +166,6 @@ struct keys
 };
 
 unsigned int keys_getcode(struct keys *keys, unsigned int scancode);
-void keys_init(struct keys *keys, unsigned int layout, unsigned int map);
+void keys_init(struct keys *keys, unsigned int layout, struct keys_map *map);
+
+extern struct keys_map keys_map_se[KEYS_MAPSIZE];

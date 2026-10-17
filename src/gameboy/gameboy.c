@@ -392,7 +392,7 @@ static void onvideoinfo(struct message *message)
 void init(void)
 {
 
-    keys_init(&keys, KEYS_LAYOUT_QWERTY_US, KEYS_MAP_US);
+    keys_init(&keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     option_add("width", "1024");
     option_add("height", "768");
     option_add("bpp", "4");
