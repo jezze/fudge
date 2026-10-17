@@ -825,6 +825,10 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 
         }
 
+        buffer_clear(data, count);
+
+        return count;
+
     }
 
     return 0;
