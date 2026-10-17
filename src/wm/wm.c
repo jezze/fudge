@@ -120,6 +120,34 @@ static unsigned int getnumber(char *data, unsigned int count, unsigned int index
 
 }
 
+/* mapimage decodes the background into mem:background and prints its size, which the background widget then takes */
+static void loadbackground(char *path, unsigned int length)
+{
+
+    char name[256];
+    char size[64];
+    char data[128];
+    unsigned int count;
+
+    if (!length || length >= 256)
+        return;
+
+    buffer_copy(name, path, length);
+
+    name[length] = 0;
+    count = system_feed(0, 0, size, 63, "mapimage %s mem:background", name);
+    size[count] = 0;
+
+    if (count)
+    {
+
+        parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background mimetype \"image/raw\" %s", size), data);
+        pool_loadresources();
+
+    }
+
+}
+
 static void configline(char *line, unsigned int length)
 {
 
@@ -134,6 +162,13 @@ static void configline(char *line, unsigned int length)
     {
 
         state.layout = (length >= 6 && buffer_match(rest, "tiling", 6)) ? LAYOUT_TILING : LAYOUT_DEFAULT;
+
+    }
+
+    else if (count == 10 && buffer_match(word, "background", 10))
+    {
+
+        loadbackground(rest, length);
 
     }
 
@@ -217,6 +252,7 @@ static void loadconfig(char *config)
     static char data[0x4000];
 
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {layout}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));

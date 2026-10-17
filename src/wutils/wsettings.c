@@ -133,6 +133,7 @@ static struct
 {
 
     char layout[32];
+    char background[256];
     char language[32];
     char timezone[32];
     unsigned int width;
@@ -394,6 +395,10 @@ static void loadconfig(void)
 
     getword(data, count, 0, config.layout, 32);
 
+    count = query(data, 256, ".general.background", 0);
+
+    getword(data, count, 0, config.background, 256);
+
     count = query(data, 256, ".localization", "{language} {timezone}");
 
     getword(data, count, 0, config.language, 32);
@@ -425,7 +430,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     unsigned int count = 0;
     unsigned int i;
 
-    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n  }\n", config.layout);
+    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    background: \"%s\"\n  }\n", config.layout, config.background);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n  }\n", &config.width, &config.height, &config.bpp);
     count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    layout: %s\n  }\n", config.keyboard);

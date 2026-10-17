@@ -1,4 +1,4 @@
-+ image mimetype "image/pcx" source "initrd:data/fudge.pcx"
++ image id "background" source "mem:background"
 + layout id "desktop" flow "vertical"
 + layout id "menu" in "desktop" flow "horizontal"
 + select id "fudge-select" in "menu" label "Fudge"

@@ -2,6 +2,7 @@
   general:
   {
     layout: default
+    background: "initrd:data/fudge.pcx"
   }
   localization:
   {
