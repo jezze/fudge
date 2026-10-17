@@ -47,6 +47,7 @@ src/utils/irc
 src/utils/kill
 src/utils/log
 src/utils/ls
+src/utils/mapimage
 src/utils/md5
 src/utils/motd
 src/utils/mq
