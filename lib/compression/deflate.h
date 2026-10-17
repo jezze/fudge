@@ -3,12 +3,14 @@
 #define DEFLATE_INVALID                 3
 #define DEFLATE_COUNTS                  16
 #define DEFLATE_LITERALS                288
+#define DEFLATE_FASTBITS                9
 
 struct deflate_huffman
 {
 
     unsigned short count[DEFLATE_COUNTS];
     unsigned short symbol[DEFLATE_LITERALS];
+    unsigned short fast[1 << DEFLATE_FASTBITS];
 
 };
 

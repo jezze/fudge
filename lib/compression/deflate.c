@@ -3,6 +3,7 @@
 #define MAXBITS                         15
 #define COUNTS                          DEFLATE_COUNTS
 #define LITERALS                        DEFLATE_LITERALS
+#define FASTBITS                        DEFLATE_FASTBITS
 #define LENGTHS                         29
 #define DISTANCES                       30
 #define CODELENGTHS                     19
@@ -75,6 +76,74 @@ static unsigned int getbits(struct deflate *d, unsigned int count)
 
 }
 
+/* reads ahead up to count bits while there is input, without failing */
+static void fill(struct deflate *d, unsigned int count)
+{
+
+    while (d->nbits < count && (d->ioffset < d->icount || (d->refill && d->refill(d))))
+    {
+
+        d->bits |= (unsigned int)d->in[d->ioffset++] << d->nbits;
+        d->nbits += 8;
+
+    }
+
+}
+
+/* whole bytes read ahead go back to the input */
+static void giveback(struct deflate *d)
+{
+
+    while (d->nbits >= 8 && d->ioffset)
+    {
+
+        d->ioffset--;
+        d->nbits -= 8;
+
+    }
+
+    d->bits &= (1 << d->nbits) - 1;
+
+}
+
+/* an entry holds the code length above the 9 bits of the symbol, at every index whose low bits are the code, reversed as the bits arrive */
+static void fast(struct deflate_huffman *h)
+{
+
+    unsigned int code = 0;
+    unsigned int index = 0;
+    unsigned int length;
+    unsigned int i;
+
+    for (i = 0; i < (1 << FASTBITS); i++)
+        h->fast[i] = 0;
+
+    for (length = 1; length <= FASTBITS; length++)
+    {
+
+        for (i = 0; i < h->count[length]; i++)
+        {
+
+            unsigned int reversed = 0;
+            unsigned int j;
+
+            for (j = 0; j < length; j++)
+                reversed |= ((code >> j) & 1) << (length - 1 - j);
+
+            for (j = reversed; j < (1 << FASTBITS); j += 1 << length)
+                h->fast[j] = (length << 9) | h->symbol[index + i];
+
+            code++;
+
+        }
+
+        index += h->count[length];
+        code <<= 1;
+
+    }
+
+}
+
 static unsigned int build(struct deflate_huffman *h, unsigned short *lengths, unsigned int n)
 {
 
@@ -113,17 +182,35 @@ static unsigned int build(struct deflate_huffman *h, unsigned short *lengths, un
 
     }
 
+    fast(h);
+
     return 1;
 
 }
 
+/* codes up to FASTBITS long decode with one lookup, the rest a bit at a time */
 static unsigned int decode(struct deflate *d, struct deflate_huffman *h)
 {
 
+    unsigned int entry;
     unsigned int code = 0;
     unsigned int first = 0;
     unsigned int index = 0;
     unsigned int i;
+
+    fill(d, FASTBITS);
+
+    entry = h->fast[d->bits & ((1 << FASTBITS) - 1)];
+
+    if (entry && (entry >> 9) <= d->nbits)
+    {
+
+        d->bits >>= entry >> 9;
+        d->nbits -= entry >> 9;
+
+        return entry & 0x1FF;
+
+    }
 
     for (i = 1; i < COUNTS; i++)
     {
@@ -151,8 +238,8 @@ static void stored(struct deflate *d)
     unsigned int length;
     unsigned int check;
 
-    d->bits = 0;
-    d->nbits = 0;
+    d->bits >>= d->nbits & 7;
+    d->nbits -= d->nbits & 7;
     length = getbits(d, 8);
     length |= getbits(d, 8) << 8;
     check = getbits(d, 8);
@@ -411,7 +498,13 @@ unsigned int deflate_inflate(struct deflate *d, unsigned int count)
 
         case BLOCK_NONE:
             if (d->last)
+            {
+
+                giveback(d);
+
                 return d->ooffset - start;
+
+            }
 
             header(d);
 
