@@ -52,8 +52,8 @@ static struct entry timezones[8] = {
 };
 
 static struct entry keyboards[2] = {
-    {"qwerty_US", "English (US)"},
-    {"qwerty_SE", "Swedish"}
+    {"initrd:data/keys/en_US.mq", "English (US)"},
+    {"initrd:data/keys/sv_SE.mq", "Swedish"}
 };
 
 static struct entry resolutions[9] = {
@@ -139,7 +139,7 @@ static struct
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
-    char keyboard[32];
+    char keyboard[256];
     char speed[16];
     struct binding bindings[NUM_BINDINGS];
     unsigned int nbindings;
@@ -408,9 +408,9 @@ static void loadconfig(void)
     config.width = getnumber(data, count, 0);
     config.height = getnumber(data, count, 1);
     config.bpp = getnumber(data, count, 2);
-    count = query(data, 256, ".keyboard.layout", 0);
+    count = query(data, 256, ".keyboard.map", 0);
 
-    getword(data, count, 0, config.keyboard, 32);
+    getword(data, count, 0, config.keyboard, 256);
 
     count = query(data, 256, ".mouse.speed", 0);
 
@@ -433,7 +433,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    background: \"%s\"\n  }\n", config.layout, config.background);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n  }\n", &config.width, &config.height, &config.bpp);
-    count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    layout: %s\n  }\n", config.keyboard);
+    count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    map: \"%s\"\n  }\n", config.keyboard);
     count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n  }\n", config.speed);
     count += cstring_write_fmt(data, size, count, "  bindings:\n  [\n");
 
@@ -573,7 +573,7 @@ static void setchoice(char *id, char *value)
     else if (cstring_match(id, "localization-timezone"))
         copystring(config.timezone, 32, value, cstring_length(value));
     else if (cstring_match(id, "keyboard-layout"))
-        copystring(config.keyboard, 32, value, cstring_length(value));
+        copystring(config.keyboard, 256, value, cstring_length(value));
     else if (cstring_match(id, "screen-resolution"))
         setresolution(value);
 
