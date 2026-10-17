@@ -1,0 +1,72 @@
+{
+  name: fi_FI
+  keys:
+  [
+    { scancode: 02 levels: "0031 0021 0000 00A1" }
+    { scancode: 03 levels: "0032 0022 0040 201D" }
+    { scancode: 04 levels: "0033 0023 00A3 00BB" }
+    { scancode: 05 levels: "0034 00A4 0024 00AB" }
+    { scancode: 06 levels: "0035 0025 2030 201C" }
+    { scancode: 07 levels: "0036 0026 201A 201E" }
+    { scancode: 08 levels: "0037 002F 007B" }
+    { scancode: 09 levels: "0038 0028 005B 003C" }
+    { scancode: 0A levels: "0039 0029 005D 003E" }
+    { scancode: 0B levels: "0030 003D 007D 00B0" }
+    { scancode: 0C levels: "002B 003F 005C 00BF" }
+    { scancode: 0D levels: "00B4 0060 00B8 02DB" }
+    { scancode: 0E levels: "0008 0008" }
+    { scancode: 0F levels: "0009 0009" }
+    { scancode: 10 levels: "0071 0051" }
+    { scancode: 11 levels: "0077 0057" }
+    { scancode: 12 levels: "0065 0045 20AC" }
+    { scancode: 13 levels: "0072 0052" }
+    { scancode: 14 levels: "0074 0054 00FE 00DE" }
+    { scancode: 15 levels: "0079 0059" }
+    { scancode: 16 levels: "0075 0055" }
+    { scancode: 17 levels: "0069 0049 0131 007C" }
+    { scancode: 18 levels: "006F 004F 0153 0152" }
+    { scancode: 19 levels: "0070 0050" }
+    { scancode: 1A levels: "00E5 00C5 02DD 00B0" }
+    { scancode: 1B levels: "00A8 005E 007E 00AF" }
+    { scancode: 1C levels: "000A 000A" }
+    { scancode: 1E levels: "0061 0041 0259 018F" }
+    { scancode: 1F levels: "0073 0053 00DF 1E9E" }
+    { scancode: 20 levels: "0064 0044 00F0 00D0" }
+    { scancode: 21 levels: "0066 0046" }
+    { scancode: 22 levels: "0067 0047" }
+    { scancode: 23 levels: "0068 0048" }
+    { scancode: 24 levels: "006A 004A" }
+    { scancode: 25 levels: "006B 004B 0138" }
+    { scancode: 26 levels: "006C 004C" }
+    { scancode: 27 levels: "00F6 00D6 00F8 00D8" }
+    { scancode: 28 levels: "00E4 00C4 00E6 00C6" }
+    { scancode: 29 levels: "00A7 00BD" }
+    { scancode: 2B levels: "0027 002A 02C7 02D8" }
+    { scancode: 2C levels: "007A 005A 0292 01B7" }
+    { scancode: 2D levels: "0078 0058 00D7 00B7" }
+    { scancode: 2E levels: "0063 0043" }
+    { scancode: 2F levels: "0076 0056" }
+    { scancode: 30 levels: "0062 0042" }
+    { scancode: 31 levels: "006E 004E 014B 014A" }
+    { scancode: 32 levels: "006D 004D 00B5 2014" }
+    { scancode: 33 levels: "002C 003B 2019 2018" }
+    { scancode: 34 levels: "002E 003A 0000 02D9" }
+    { scancode: 35 levels: "002D 005F 2013" }
+    { scancode: 37 levels: "002A 002A" }
+    { scancode: 39 levels: "0020 0020" }
+    { scancode: 47 levels: "0037 0037" }
+    { scancode: 48 levels: "0038 0038" }
+    { scancode: 49 levels: "0039 0039" }
+    { scancode: 4A levels: "002D 002D" }
+    { scancode: 4B levels: "0034 0034" }
+    { scancode: 4C levels: "0035 0035" }
+    { scancode: 4D levels: "0036 0036" }
+    { scancode: 4E levels: "002B 002B" }
+    { scancode: 4F levels: "0031 0031" }
+    { scancode: 50 levels: "0032 0032" }
+    { scancode: 51 levels: "0033 0033" }
+    { scancode: 52 levels: "0030 0030" }
+    { scancode: 53 levels: "002E 002E" }
+    { scancode: 56 levels: "003C 003E 007C 00A6" }
+  ]
+}
