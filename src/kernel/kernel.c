@@ -7,6 +7,7 @@
 #include "task.h"
 #include "node.h"
 #include "service.h"
+#include "memsrv.h"
 #include "core.h"
 #include "pool.h"
 #include "kernel.h"
@@ -90,6 +91,7 @@ static void destroytask(unsigned int itask)
 
         }
 
+        memsrv_untask(itask);
         task_reset(task);
         task_unregister(task);
         pool_unpicktask(itask);

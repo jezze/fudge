@@ -2,6 +2,7 @@
 #define KERNEL_STACKSIZE                0x2000
 #define KERNEL_VSTACK                   0x80000000
 #define KERNEL_VMAILBOX                 0x40000000
+#define KERNEL_VMEM                     0x50000000
 #define KERNEL_VBUFFER                  0x70000000
 #define KERNEL_VMMAP                    0xC0000000
 

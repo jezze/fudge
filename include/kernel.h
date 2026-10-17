@@ -8,5 +8,6 @@
 #include <kernel/node.h>
 #include <kernel/pool.h>
 #include <kernel/service.h>
+#include <kernel/memsrv.h>
 #include <kernel/kernel.h>
 #include <kernel/abi.h>

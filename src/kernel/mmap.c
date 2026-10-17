@@ -61,6 +61,17 @@ struct mmap_entry *mmap_allocate(struct mmap_header *header, unsigned int type, 
 
 }
 
+/* the last entry takes the removed one's place */
+void mmap_remove(struct mmap_header *header, struct mmap_entry *entry)
+{
+
+    header->nentries--;
+
+    buffer_copy(entry, &header->entries[header->nentries], sizeof (struct mmap_entry));
+    buffer_clear(&header->entries[header->nentries], sizeof (struct mmap_entry));
+
+}
+
 void mmap_initheader(struct mmap_header *header)
 {
 

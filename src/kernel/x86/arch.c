@@ -133,6 +133,25 @@ static unsigned int copytable(unsigned long directory, unsigned long vaddress)
 
 }
 
+/* clears the pages in the running task, for memsrv */
+static void unmap(unsigned long vaddress, unsigned int size)
+{
+
+    unsigned long directory = cpu_getcr3();
+    unsigned int i;
+
+    for (i = 0; i < size; i += MMU_PAGESIZE)
+    {
+
+        if (mmu_gettable(directory, vaddress + i) & MMU_TFLAG_PRESENT)
+            mmu_setpage(directory, vaddress + i, 0, 0);
+
+    }
+
+    cpu_setcr3(directory);
+
+}
+
 static void *getfpustate(unsigned int itask)
 {
 
@@ -619,6 +638,7 @@ static void setupmmap(void)
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MAILBOX_BASE, ARCH_MAILBOX_BASE, ARCH_MAILBOX_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MEM_BASE, ARCH_MEM_BASE, ARCH_MEM_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
 
 }
 
@@ -647,6 +667,7 @@ void arch_setup2(void)
     configuretss();
     pic_init();
     pool_setup(ARCH_MAILBOX_BASE);
+    memsrv_setup(ARCH_MEM_BASE, unmap);
 
 }
 

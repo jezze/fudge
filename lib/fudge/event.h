@@ -49,6 +49,10 @@
 #define EVENT_CREATERESPONSE            0x4B
 #define EVENT_REMOVEREQUEST             0x4C
 #define EVENT_REMOVERESPONSE            0x4D
+#define EVENT_MMAPREQUEST               0x4E
+#define EVENT_MMAPRESPONSE              0x4F
+#define EVENT_MUNMAPREQUEST             0x50
+#define EVENT_MUNMAPRESPONSE            0x52
 #define EVENT_WMUNMAP                   0x51
 #define EVENT_WMGRAB                    0x53
 #define EVENT_WMUNGRAB                  0x54
@@ -322,6 +326,34 @@ struct event_mapresponse
 {
 
     unsigned int address;
+
+};
+
+struct event_mmaprequest
+{
+
+    unsigned int id;
+
+};
+
+struct event_mmapresponse
+{
+
+    unsigned int address;
+
+};
+
+struct event_munmaprequest
+{
+
+    unsigned int id;
+
+};
+
+struct event_munmapresponse
+{
+
+    unsigned int status;
 
 };
 
