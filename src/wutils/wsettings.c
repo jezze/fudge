@@ -21,6 +21,10 @@
 #define NUM_BINDINGS                    32
 #define NUM_COLORS                      512
 #define NUM_KEYBOARDS                   21
+#define NUM_LAYOUTS                     2
+#define NUM_LANGUAGES                   3
+#define NUM_TIMEZONES                   8
+#define NUM_RESOLUTIONS                 9
 
 struct entry
 {
@@ -30,18 +34,18 @@ struct entry
 
 };
 
-static struct entry layouts[2] = {
+static struct entry layouts[NUM_LAYOUTS] = {
     {"default", "Default"},
     {"tiling", "Tiling"}
 };
 
-static struct entry languages[3] = {
+static struct entry languages[NUM_LANGUAGES] = {
     {"en_US", "English (US)"},
     {"en_GB", "English (UK)"},
     {"sv_SE", "Swedish"}
 };
 
-static struct entry timezones[8] = {
+static struct entry timezones[NUM_TIMEZONES] = {
     {"UTC", "Coordinated Universal Time (UTC)"},
     {"WET", "Western European Time (WET)"},
     {"CET", "Central European Time (CET)"},
@@ -76,7 +80,7 @@ static struct entry keyboards[NUM_KEYBOARDS] = {
     {"initrd:data/keys/tr_TR.mq", "Turkish"}
 };
 
-static struct entry resolutions[9] = {
+static struct entry resolutions[NUM_RESOLUTIONS] = {
     {"640x480x32", "640x480x32"},
     {"800x600x32", "800x600x32"},
     {"1024x768x32", "1024x768x32"},
@@ -648,8 +652,8 @@ static void renderlocalization(void)
 {
 
     beginarea("Localization");
-    choice("localization-language", "Language", config.language, languages, 3);
-    choice("localization-timezone", "Timezone", config.timezone, timezones, 8);
+    choice("localization-language", "Language", config.language, languages, NUM_LANGUAGES);
+    choice("localization-timezone", "Timezone", config.timezone, timezones, NUM_TIMEZONES);
 
 }
 
@@ -657,7 +661,7 @@ static void rendergeneral(void)
 {
 
     beginarea("General");
-    choice("general-layout", "Window layout", config.layout, layouts, 2);
+    choice("general-layout", "Window layout", config.layout, layouts, NUM_LAYOUTS);
     beginrow("general-background");
     addlabel("general-background", "Background");
 
@@ -673,7 +677,7 @@ static void renderscreen(void)
 
     cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &config.width, &config.height, &bits);
     beginarea("Screen");
-    choice("screen-resolution", "Resolution", resolution, resolutions, 9);
+    choice("screen-resolution", "Resolution", resolution, resolutions, NUM_RESOLUTIONS);
 
 }
 
