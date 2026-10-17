@@ -132,3 +132,52 @@ unsigned int utf8_fit(char *text, unsigned int length, unsigned int limit)
     return (start + utf8_read(text + start, length - start, &codepoint) > limit) ? start : limit;
 
 }
+
+unsigned int utf8_write(char *text, unsigned int count, unsigned int codepoint)
+{
+
+    if (codepoint && codepoint < 0x80 && count >= 1)
+    {
+
+        text[0] = codepoint;
+
+        return 1;
+
+    }
+
+    if (codepoint >= 0x80 && codepoint < 0x800 && count >= 2)
+    {
+
+        text[0] = 0xC0 | (codepoint >> 6);
+        text[1] = 0x80 | (codepoint & 0x3F);
+
+        return 2;
+
+    }
+
+    if (codepoint >= 0x800 && codepoint < 0x10000 && (codepoint < 0xD800 || codepoint > 0xDFFF) && count >= 3)
+    {
+
+        text[0] = 0xE0 | (codepoint >> 12);
+        text[1] = 0x80 | ((codepoint >> 6) & 0x3F);
+        text[2] = 0x80 | (codepoint & 0x3F);
+
+        return 3;
+
+    }
+
+    if (codepoint >= 0x10000 && codepoint < 0x110000 && count >= 4)
+    {
+
+        text[0] = 0xF0 | (codepoint >> 18);
+        text[1] = 0x80 | ((codepoint >> 12) & 0x3F);
+        text[2] = 0x80 | ((codepoint >> 6) & 0x3F);
+        text[3] = 0x80 | (codepoint & 0x3F);
+
+        return 4;
+
+    }
+
+    return 0;
+
+}

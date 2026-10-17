@@ -51,6 +51,8 @@ struct state
 
 static struct blit_display display;
 static struct state state;
+static struct keys_map keymap[KEYS_MAPSIZE];
+static unsigned int keymapcount;
 static unsigned int linebuffer[3840];
 static char *fontn[] = {
     "initrd:data/font/ter-112n.pcf",
@@ -146,6 +148,65 @@ static void loadbackground(char *path, unsigned int length)
 
 }
 
+static void setkey(char *line, unsigned int length)
+{
+
+    unsigned int scancode = getnumber(line, length, 0, 16, KEYS_MAPSIZE);
+    unsigned int i;
+
+    if (scancode >= KEYS_MAPSIZE)
+        return;
+
+    for (i = 0; i < 4; i++)
+    {
+
+        struct keys_code *code = &keymap[scancode].code[i];
+
+        code->length = utf8_write((char *)code->value, 4, getnumber(line, length, i + 1, 16, 0));
+
+    }
+
+    keymapcount++;
+
+}
+
+static void loadkeymap(char *path, unsigned int length)
+{
+
+    static char data[0x2000];
+    char name[256];
+    unsigned int count = 0;
+    unsigned int linelength;
+    char *line;
+
+    buffer_clear(keymap, KEYS_MAPSIZE * sizeof (struct keys_map));
+
+    keymapcount = 0;
+
+    if (length && length < 256)
+    {
+
+        buffer_copy(name, path, length);
+
+        name[length] = 0;
+        count = system_feed(0, 0, data, 0x2000, "mq -query .keys -format \"{scancode} {levels}\" %s", name);
+
+    }
+
+    for (line = data; line < data + count; line += linelength + 1)
+    {
+
+        linelength = buffer_findbyte(line, data + count - line, '\n');
+
+        if (linelength)
+            setkey(line, linelength);
+
+    }
+
+    keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (keymapcount) ? keymap : (void *)0);
+
+}
+
 static void configline(char *line, unsigned int length)
 {
 
@@ -173,7 +234,7 @@ static void configline(char *line, unsigned int length)
     else if (count == 8 && buffer_match(word, "keyboard", 8))
     {
 
-        keys_init(&state.keys, KEYS_LAYOUT_QWERTY_US, (length >= 9 && buffer_match(rest, "qwerty_SE", 9)) ? keys_map_se : (void *)0);
+        loadkeymap(rest, length);
 
     }
 
@@ -251,7 +312,7 @@ static void loadconfig(char *config)
 
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"layout {layout}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {layout}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {map}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .colors -format \"color {name} {value}\" %s", config));

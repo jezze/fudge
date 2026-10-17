@@ -20,7 +20,7 @@
   }
   keyboard:
   {
-    layout: qwerty_US
+    map: ""
   }
   mouse:
   {

@@ -167,5 +167,3 @@ struct keys
 
 unsigned int keys_getcode(struct keys *keys, unsigned int scancode);
 void keys_init(struct keys *keys, unsigned int layout, struct keys_map *map);
-
-extern struct keys_map keys_map_se[KEYS_MAPSIZE];
