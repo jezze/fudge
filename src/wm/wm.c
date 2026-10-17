@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <compression.h>
 #include <image.h>
 #include "config.h"
 #include "util.h"

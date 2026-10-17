@@ -3,8 +3,6 @@
 
 #define SIGNATURESIZE                   8
 #define HEADERSIZE                      (SIGNATURESIZE + 25)
-#define ADLERBASE                       65521
-#define ADLERBLOCK                      5552
 
 static unsigned char signature[SIGNATURESIZE] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
 
@@ -29,36 +27,6 @@ static unsigned int istype(unsigned char *data, char *type)
 
 }
 
-static unsigned int adler32(unsigned char *data, unsigned int count)
-{
-
-    unsigned int a = 1;
-    unsigned int b = 0;
-
-    while (count)
-    {
-
-        unsigned int n = (count < ADLERBLOCK) ? count : ADLERBLOCK;
-
-        count -= n;
-
-        while (n--)
-        {
-
-            a += *data++;
-            b += a;
-
-        }
-
-        a %= ADLERBASE;
-        b %= ADLERBASE;
-
-    }
-
-    return (b << 16) | a;
-
-}
-
 static unsigned int paeth(unsigned int a, unsigned int b, unsigned int c)
 {
 
@@ -74,59 +42,108 @@ static unsigned int paeth(unsigned int a, unsigned int b, unsigned int c)
 
 }
 
-static unsigned int unfilter(struct png *png)
+/* the line holds the row above until each byte is replaced, so up keeps the bytes of the row above that the pixel to the left still needs */
+static unsigned int unfilter(struct png *png, unsigned int start)
 {
 
-    unsigned int row;
+    unsigned char *window = png->window;
+    unsigned int mask = PNG_WINDOW - 1;
+    unsigned int filter = window[start & mask];
+    unsigned char up[8];
+    unsigned int j = 0;
+    unsigned int i;
 
-    for (row = 0; row < png->height; row++)
+    if (filter > 4)
+        return 0;
+
+    for (i = 0; i < png->stride; i++)
     {
 
-        unsigned char *line = png->data + row * (png->stride + 1);
-        unsigned char *current = line + 1;
-        unsigned char *previous = (row) ? current - (png->stride + 1) : 0;
-        unsigned int i;
+        unsigned int value = window[(start + 1 + i) & mask];
+        unsigned int a = (i >= png->pixelsize) ? png->line[i - png->pixelsize] : 0;
+        unsigned int b = png->line[i];
+        unsigned int c = (i >= png->pixelsize) ? up[j] : 0;
 
-        if (line[0] > 4)
-            return 0;
+        up[j] = b;
+        j = (j + 1 == png->pixelsize) ? 0 : j + 1;
 
-        for (i = 0; i < png->stride; i++)
+        switch (filter)
         {
 
-            unsigned int a = (i >= png->pixelsize) ? current[i - png->pixelsize] : 0;
-            unsigned int b = (previous) ? previous[i] : 0;
-            unsigned int c = (previous && i >= png->pixelsize) ? previous[i - png->pixelsize] : 0;
+        case 1:
+            value += a;
 
-            switch (line[0])
-            {
+            break;
 
-            case 1:
-                current[i] += a;
+        case 2:
+            value += b;
 
-                break;
+            break;
 
-            case 2:
-                current[i] += b;
+        case 3:
+            value += (a + b) / 2;
 
-                break;
+            break;
 
-            case 3:
-                current[i] += (a + b) / 2;
+        case 4:
+            value += paeth(a, b, c);
 
-                break;
-
-            case 4:
-                current[i] += paeth(a, b, c);
-
-                break;
-
-            }
+            break;
 
         }
+
+        png->line[i] = value;
 
     }
 
     return 1;
+
+}
+
+/* the IDAT payloads are handed to deflate one after another, skipping the CRC and the next chunk's header in between */
+static unsigned int refill(struct deflate *d)
+{
+
+    struct png *png = (struct png *)d;
+    unsigned char header[8];
+    unsigned int count;
+
+    while (!png->left)
+    {
+
+        if (png->read(png, header, 8, png->offset + 4) != 8 || !istype(header + 4, "IDAT"))
+            return 0;
+
+        png->left = read32(header);
+        png->offset += 12;
+
+    }
+
+    count = png->read(png, png->input, (png->left < PNG_INPUT) ? png->left : PNG_INPUT, png->offset);
+
+    png->offset += count;
+    png->left -= count;
+    d->in = png->input;
+    d->icount = count;
+    d->ioffset = 0;
+
+    return count;
+
+}
+
+static void rewind(struct png *png)
+{
+
+    unsigned int i;
+
+    deflate_initring(&png->deflate, png->window, PNG_WINDOW, refill);
+
+    png->offset = png->start;
+    png->left = png->startleft;
+    png->row = 0;
+
+    for (i = 0; i < png->stride; i++)
+        png->line[i] = 0;
 
 }
 
@@ -200,10 +217,6 @@ unsigned int png_readheader(struct png *png, void *in, unsigned int icount)
     png->pixelsize = (png->channels * png->depth + 7) / 8;
     png->stride = (png->width * png->channels * png->depth + 7) / 8;
 
-    if (png->height > 0xFFFFFFFF / (png->stride + 1))
-        return 0;
-
-    png->size = png->height * (png->stride + 1);
     png->npalette = 0;
     png->haskey = 0;
 
@@ -214,32 +227,56 @@ unsigned int png_readheader(struct png *png, void *in, unsigned int icount)
 
 }
 
-unsigned int png_decode(struct png *png, void *out, unsigned int ocount, void *in, unsigned int icount)
+/* reads the chunks before the first IDAT: PLTE and tRNS are kept, the rest is skipped */
+unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, void *buffer, unsigned int count, unsigned int offset))
 {
 
-    unsigned char *data = in;
+    unsigned char *data = png->input;
     unsigned int offset = SIGNATURESIZE;
-    unsigned int idat = 0;
-    struct deflate d;
     unsigned int i;
 
-    if (!png_readheader(png, in, icount) || ocount < png->size)
+    png->read = read;
+
+    if (read(png, data, HEADERSIZE, 0) != HEADERSIZE || !png_readheader(png, data, HEADERSIZE) || png->stride > PNG_LINE)
         return 0;
 
-    while (offset + 12 <= icount)
+    while (read(png, data, 8, offset) == 8)
     {
 
-        unsigned int length = read32(data + offset);
-        unsigned char *type = data + offset + 4;
-        unsigned char *chunk = data + offset + 8;
+        unsigned int length = read32(data);
+        unsigned int plte = istype(data + 4, "PLTE");
+        unsigned int trns = istype(data + 4, "tRNS");
 
-        if (length > icount - offset - 12)
+        if (istype(data + 4, "IDAT"))
+        {
+
+            if (length < 2 || read(png, data, 2, offset + 8) != 2 || (data[0] & 0x0F) != 8 || (data[0] * 256 + data[1]) % 31 || data[1] & 0x20)
+                return 0;
+
+            if (png->colortype == 3 && !png->npalette)
+                return 0;
+
+            png->start = offset + 10;
+            png->startleft = length - 2;
+
+            rewind(png);
+
+            return 1;
+
+        }
+
+        if (istype(data + 4, "IEND"))
             return 0;
 
-        if (istype(type, "IEND"))
-            break;
+        if (plte || trns)
+        {
 
-        if (istype(type, "PLTE"))
+            if (length > PNG_INPUT || read(png, data, length, offset + 8) != length)
+                return 0;
+
+        }
+
+        if (plte)
         {
 
             if (length % 3 || length / 3 > PNG_PALETTE)
@@ -248,25 +285,25 @@ unsigned int png_decode(struct png *png, void *out, unsigned int ocount, void *i
             png->npalette = length / 3;
 
             for (i = 0; i < png->npalette; i++)
-                png->palette[i] = 0xFF000000 | (chunk[i * 3] << 16) | (chunk[i * 3 + 1] << 8) | chunk[i * 3 + 2];
+                png->palette[i] = 0xFF000000 | (data[i * 3] << 16) | (data[i * 3 + 1] << 8) | data[i * 3 + 2];
 
         }
 
-        if (istype(type, "tRNS"))
+        if (trns)
         {
 
             if (png->colortype == 3)
             {
 
                 for (i = 0; i < length && i < png->npalette; i++)
-                    png->palette[i] = (png->palette[i] & 0x00FFFFFF) | ((unsigned int)chunk[i] << 24);
+                    png->palette[i] = (png->palette[i] & 0x00FFFFFF) | ((unsigned int)data[i] << 24);
 
             }
 
             if (png->colortype == 0 && length >= 2)
             {
 
-                png->key[0] = read16(chunk);
+                png->key[0] = read16(data);
                 png->haskey = 1;
 
             }
@@ -274,47 +311,44 @@ unsigned int png_decode(struct png *png, void *out, unsigned int ocount, void *i
             if (png->colortype == 2 && length >= 6)
             {
 
-                png->key[0] = read16(chunk);
-                png->key[1] = read16(chunk + 2);
-                png->key[2] = read16(chunk + 4);
+                png->key[0] = read16(data);
+                png->key[1] = read16(data + 2);
+                png->key[2] = read16(data + 4);
                 png->haskey = 1;
 
             }
 
         }
 
-        /* the IDAT payloads are moved together in place, since deflate needs the stream in one piece */
-        if (istype(type, "IDAT"))
-        {
-
-            for (i = 0; i < length; i++)
-                data[idat + i] = chunk[i];
-
-            idat += length;
-
-        }
+        if (length > 0xFFFFFFFF - offset - 12)
+            return 0;
 
         offset += length + 12;
 
     }
 
-    if (png->colortype == 3 && !png->npalette)
-        return 0;
+    return 0;
 
-    if (idat < 6 || (data[0] & 0x0F) != 8 || (data[0] * 256 + data[1]) % 31 || data[1] & 0x20)
-        return 0;
+}
 
-    deflate_init(&d, out, png->size, data + 2, idat - 2);
+/* rows are decoded in order and the last one is kept, as with pcx; a row above it starts over from the first IDAT */
+static unsigned int decoderow(struct png *png, unsigned int row)
+{
 
-    if (deflate_decompress(&d) != DEFLATE_OK || d.ooffset != png->size || 2 + d.ioffset + 4 > idat)
-        return 0;
+    if (row + 1 < png->row)
+        rewind(png);
 
-    png->data = out;
+    while (png->row <= row)
+    {
 
-    if (adler32(png->data, png->size) != read32(data + 2 + d.ioffset))
-        return 0;
+        if (deflate_inflate(&png->deflate, png->stride + 1) != png->stride + 1 || !unfilter(png, png->deflate.ooffset - png->stride - 1))
+            return 0;
 
-    return unfilter(png);
+        png->row++;
+
+    }
+
+    return 1;
 
 }
 
@@ -358,11 +392,14 @@ static unsigned int scale(unsigned int value, unsigned int depth)
 
 }
 
-void png_readrow(struct png *png, unsigned int row, unsigned int *pixels)
+unsigned int png_readrow(struct png *png, unsigned int row, unsigned int *pixels)
 {
 
-    unsigned char *line = png->data + row * (png->stride + 1) + 1;
+    unsigned char *line = png->line;
     unsigned int x;
+
+    if (row >= png->height || !decoderow(png, row))
+        return 0;
 
     for (x = 0; x < png->width; x++)
     {
@@ -410,5 +447,7 @@ void png_readrow(struct png *png, unsigned int row, unsigned int *pixels)
         }
 
     }
+
+    return 1;
 
 }

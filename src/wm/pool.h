@@ -1,8 +1,7 @@
 #define POOL_PCXRESOURCES               32
 #define POOL_PCXROWSIZE                 2048
 #define POOL_PCXOFFSETS                 1024
-#define POOL_PNGRESOURCES               8
-#define POOL_PNGSIZE                    0x000A0000
+#define POOL_PNGRESOURCES               4
 #define POOL_PNGROWSIZE                 2048
 #define POOL_WIDGETS                    1536
 
@@ -28,9 +27,11 @@ struct pool_pcxresource
 struct pool_pngresource
 {
 
-    unsigned int used;
-    unsigned int size;
     struct png png;
+    unsigned int used;
+    unsigned int target;
+    unsigned int id;
+    unsigned int loaded;
 
 };
 

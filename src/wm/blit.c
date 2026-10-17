@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include <abi.h>
+#include <compression.h>
 #include <image.h>
 #include "util.h"
 #include "text.h"
@@ -573,10 +574,14 @@ void blit_png(struct blit_display *display, struct pool_pngresource *resource, i
     unsigned int remainder;
     int i;
 
-    if (!resource->size || !w || !h || !util_intersects(line, y, y + h) || start >= end)
+    if (!resource->loaded || !w || !h || !util_intersects(line, y, y + h) || start >= end)
         return;
 
     row = pool_pngreadrow(resource, (line - y) * resource->png.height / h);
+
+    if (!row)
+        return;
+
     source = (start - x) * resource->png.width / w;
     remainder = (start - x) * resource->png.width % w;
 

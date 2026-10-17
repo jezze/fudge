@@ -2,6 +2,7 @@
 #include <abi.h>
 #include <font.h>
 #include <hash.h>
+#include <compression.h>
 #include <image.h>
 #include "util.h"
 #include "text.h"
@@ -22,8 +23,6 @@ static struct list children[POOL_WIDGETS];
 static struct text_font fonts[MAX_FONTS];
 static struct pool_pcxresource pcxresources[POOL_PCXRESOURCES];
 static struct pool_pngresource pngresources[POOL_PNGRESOURCES];
-static unsigned char pngdata[POOL_PNGSIZE];
-static unsigned int pngused;
 static unsigned int pngrow[POOL_PNGROWSIZE];
 
 struct list_item *pool_prev(struct list_item *current)
@@ -267,35 +266,6 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 
 }
 
-/* the decoded images lie packed from the start of pngdata, so the ones after a removed image move down */
-static void destroypng(struct pool_pngresource *resource)
-{
-
-    unsigned int i;
-
-    if (resource->size)
-    {
-
-        unsigned char *end = resource->png.data + resource->size;
-
-        buffer_copy(resource->png.data, end, pngdata + pngused - end);
-
-        for (i = 0; i < POOL_PNGRESOURCES; i++)
-        {
-
-            if (pngresources[i].used && pngresources[i].size && pngresources[i].png.data > resource->png.data)
-                pngresources[i].png.data -= resource->size;
-
-        }
-
-        pngused -= resource->size;
-
-    }
-
-    resource->used = 0;
-
-}
-
 void pool_destroy(struct widget *widget)
 {
 
@@ -313,7 +283,7 @@ void pool_destroy(struct widget *widget)
             break;
 
         case ATTR_MIMETYPE_PNG:
-            destroypng(widget->resource);
+            ((struct pool_pngresource *)widget->resource)->used = 0;
 
             break;
 
@@ -441,13 +411,20 @@ unsigned char *pool_pcxreadline(struct pool_pcxresource *resource, unsigned int 
 
 }
 
-/* the file is read to the end of the free space and decoded to its start, so only the decoded image stays */
+/* the png comes first in the resource, so the reads find the file */
+static unsigned int readpng(struct png *png, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct pool_pngresource *resource = (struct pool_pngresource *)png;
+
+    return fs_read_full(1, resource->target, resource->id, buffer, count, offset);
+
+}
+
 struct pool_pngresource *pool_createpng(struct widget *widget, char *source)
 {
 
     struct pool_pngresource *resource = 0;
-    unsigned int target = fs_auth(source);
-    unsigned int id = (target) ? fs_walk(1, target, 0, source) : 0;
     unsigned int i;
 
     for (i = 0; i < POOL_PNGRESOURCES && !resource; i++)
@@ -464,28 +441,14 @@ struct pool_pngresource *pool_createpng(struct widget *widget, char *source)
     buffer_clear(resource, sizeof (struct pool_pngresource));
 
     resource->used = 1;
+    resource->target = fs_auth(source);
+    resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
 
-    if (id)
+    if (resource->id && png_open(&resource->png, readpng) && resource->png.width <= POOL_PNGROWSIZE)
     {
 
-        unsigned int free = POOL_PNGSIZE - pngused;
-        struct record record;
-
-        if (fs_stat(1, target, id, &record) && record.size < free)
-        {
-
-            unsigned char *in = pngdata + POOL_PNGSIZE - record.size;
-
-            if (fs_read_all(1, target, id, in, record.size, 0) == record.size && png_decode(&resource->png, pngdata + pngused, free - record.size, in, record.size) && resource->png.width <= POOL_PNGROWSIZE)
-            {
-
-                resource->size = resource->png.size;
-                pngused += resource->size;
-                widget->size = util_size(resource->png.width, resource->png.height);
-
-            }
-
-        }
+        resource->loaded = 1;
+        widget->size = util_size(resource->png.width, resource->png.height);
 
     }
 
@@ -496,9 +459,7 @@ struct pool_pngresource *pool_createpng(struct widget *widget, char *source)
 unsigned int *pool_pngreadrow(struct pool_pngresource *resource, unsigned int row)
 {
 
-    png_readrow(&resource->png, row, pngrow);
-
-    return pngrow;
+    return (png_readrow(&resource->png, row, pngrow)) ? pngrow : 0;
 
 }
 
