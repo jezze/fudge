@@ -13,7 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
-#define NUM_EVENTS                      75
+#define NUM_EVENTS                      72
 
 static struct job job;
 static char script[SCRIPTSIZE];
@@ -304,10 +304,7 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"wmread", EVENT_WMREAD},
     {"wmtext", EVENT_WMTEXT},
     {"wmconfig", EVENT_WMCONFIG},
-    {"p9p", EVENT_P9P},
-    {"clipboardwrite", EVENT_CLIPBOARDWRITE},
-    {"clipboardread", EVENT_CLIPBOARDREAD},
-    {"clipboarddata", EVENT_CLIPBOARDDATA}
+    {"p9p", EVENT_P9P}
 };
 
 static unsigned int findevent(char *word)
