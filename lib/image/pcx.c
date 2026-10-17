@@ -1,5 +1,3 @@
-#include <fudge.h>
-#include <abi.h>
 #include "pcx.h"
 
 unsigned int pcx_readline(unsigned char *raw, unsigned int count, unsigned char *buffer)
