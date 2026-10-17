@@ -136,6 +136,41 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 
 }
 
+/* maps the file into this task and returns where; unlike fs_map, which gives the kernel a file to load */
+void *fs_mmap(unsigned int ichannel, unsigned int target, unsigned int id)
+{
+
+    struct event_mmaprequest request;
+    struct event_mmapresponse response;
+
+    request.id = id;
+
+    if (!channel_send(ichannel, target, EVENT_MMAPREQUEST, sizeof (struct event_mmaprequest), &request))
+        return 0;
+
+    channel_wait(ichannel, target, EVENT_MMAPRESPONSE, sizeof (struct event_mmapresponse), &response);
+
+    return (void *)(unsigned long)response.address;
+
+}
+
+unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int id)
+{
+
+    struct event_munmaprequest request;
+    struct event_munmapresponse response;
+
+    request.id = id;
+
+    if (!channel_send(ichannel, target, EVENT_MUNMAPREQUEST, sizeof (struct event_munmaprequest), &request))
+        return 0;
+
+    channel_wait(ichannel, target, EVENT_MUNMAPRESPONSE, sizeof (struct event_munmapresponse), &response);
+
+    return response.status;
+
+}
+
 unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 

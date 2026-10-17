@@ -13,7 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
-#define NUM_EVENTS                      71
+#define NUM_EVENTS                      75
 
 static struct job job;
 static char script[SCRIPTSIZE];
@@ -284,6 +284,10 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"createresponse", EVENT_CREATERESPONSE},
     {"removerequest", EVENT_REMOVEREQUEST},
     {"removeresponse", EVENT_REMOVERESPONSE},
+    {"mmaprequest", EVENT_MMAPREQUEST},
+    {"mmapresponse", EVENT_MMAPRESPONSE},
+    {"munmaprequest", EVENT_MUNMAPREQUEST},
+    {"munmapresponse", EVENT_MUNMAPRESPONSE},
     {"wmunmap", EVENT_WMUNMAP},
     {"wmgrab", EVENT_WMGRAB},
     {"wmungrab", EVENT_WMUNGRAB},
