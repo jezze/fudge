@@ -52,7 +52,6 @@ static unsigned char *getdata(struct file *file)
 
 }
 
-/* every task sees a file at the same address */
 static unsigned long getvaddress(struct file *file)
 {
 
@@ -162,7 +161,6 @@ static unsigned int stat(unsigned int id, struct record *record)
 
 }
 
-/* the directory reads as ".", ".." and then a record for each file; a record's offset is where the next read starts, as with cpio */
 static unsigned int readrecords(struct record *records, unsigned int count, unsigned int offset)
 {
 
