@@ -1465,19 +1465,46 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
 }
 
+static unsigned int createclipboard(char *path, unsigned int *target)
+{
+
+    char *name = path + fs_dirlength(path);
+    unsigned int parent;
+    unsigned int id;
+
+    *target = fs_auth(path);
+    parent = (*target) ? fs_walkparent(1, *target, path) : 0;
+
+    if (!parent)
+        return 0;
+
+    id = fs_walk(1, *target, 0, path);
+
+    if (id && !fs_remove(1, *target, parent, id))
+        return 0;
+
+    return fs_create(1, *target, parent, name, cstring_length(name));
+
+}
+
 static unsigned int copymarked(struct widget *widget)
 {
 
-    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
     struct list_item *current = 0;
     unsigned int base = 0;
+    unsigned int count = 0;
+    unsigned int target;
+    unsigned int id;
     unsigned int start;
     unsigned int end;
 
-    if (!service || !getmarked(widget, &start, &end))
+    if (!getmarked(widget, &start, &end))
         return 0;
 
-    channel_send(1, service, EVENT_CLIPBOARDWRITE, 0, 0);
+    id = createclipboard(option_getstring("clipboard"), &target);
+
+    if (!id)
+        return 0;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -1492,8 +1519,8 @@ static unsigned int copymarked(struct widget *widget)
             unsigned int offset = util_clamp((int)start - (int)base, 0, length);
             unsigned int stop = util_clamp((int)end - (int)base, 0, length);
 
-            for (; offset < stop; offset += MESSAGE_SIZE)
-                channel_send(1, service, EVENT_CLIPBOARDWRITE, util_min(stop - offset, MESSAGE_SIZE), label + offset);
+            if (offset < stop)
+                count += fs_write_all(1, target, id, label + offset, stop - offset, count);
 
             base += length;
 
@@ -1508,29 +1535,31 @@ static unsigned int copymarked(struct widget *widget)
 static void pastetext(struct widget *widget)
 {
 
-    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
+    char *path = option_getstring("clipboard");
     unsigned int cursor = util_min(widget->attributes.cursor, pool_gettextlength(widget));
     unsigned int multiline = widget_isscrollable(widget);
+    unsigned int target = fs_auth(path);
+    unsigned int id = (target) ? fs_walk(1, target, 0, path) : 0;
+    unsigned int position = 0;
     unsigned int stopped = 0;
-    struct message message;
+    char data[MESSAGE_SIZE];
+    unsigned int count;
     unsigned int offset;
 
-    if (!service || !pool_gettextat(widget, cursor, &offset))
+    if (!id || !pool_gettextat(widget, cursor, &offset))
         return;
 
     cursor = removemarked(widget, cursor);
 
-    channel_send(1, service, EVENT_CLIPBOARDREAD, 0, 0);
-
-    while (channel_poll(1, service, EVENT_CLIPBOARDDATA, &message) && message.length)
+    while (!stopped && (count = fs_read(1, target, id, data, MESSAGE_SIZE, position)))
     {
 
-        unsigned int length = (multiline) ? message.length : buffer_findbyte(message.data, message.length, '\n');
+        unsigned int length = (multiline) ? count : buffer_findbyte(data, count, '\n');
 
-        if (!stopped)
-            cursor += inserttext(widget, cursor, message.data, length);
+        cursor += inserttext(widget, cursor, data, length);
+        position += count;
 
-        if (length < message.length)
+        if (length < count)
             stopped = 1;
 
     }
@@ -2535,7 +2564,7 @@ void init(void)
     option_add("keyboard-service", "keyboard");
     option_add("mouse-service", "mouse");
     option_add("video-service", "video");
-    option_add("clipboard-service", "clipboard");
+    option_add("clipboard", "mem:clipboard");
     bindinput(1);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMCONFIG, onwmconfig);

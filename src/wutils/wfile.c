@@ -36,12 +36,24 @@ static unsigned int countselected(void)
 
 }
 
+static unsigned int hasclipboard(void)
+{
+
+    char *clippath = option_getstring("clipboard");
+    unsigned int target = fs_auth(clippath);
+    unsigned int id = (target) ? fs_walk(1, target, 0, clippath) : 0;
+    struct record record;
+
+    return id && fs_stat(1, target, id, &record) && record.size;
+
+}
+
 static void setbuttons(unsigned int wm)
 {
 
     unsigned int count = countselected();
     char *mode = (count) ? "normal" : "disabled";
-    char *pastemode = (listing) ? "normal" : "disabled";
+    char *pastemode = (listing && hasclipboard()) ? "normal" : "disabled";
 
     if (opener)
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
@@ -246,22 +258,33 @@ static void changepath(unsigned int wm, char *relative)
 
 }
 
-static void writeclipboard(unsigned int service, char *data, unsigned int count)
+static void writeclipboard(char *data, unsigned int count)
 {
 
-    unsigned int offset;
+    char *clippath = option_getstring("clipboard");
+    char *name = clippath + fs_dirlength(clippath);
+    unsigned int target = fs_auth(clippath);
+    unsigned int parent = (target) ? fs_walkparent(1, target, clippath) : 0;
+    unsigned int id;
 
-    channel_send(1, service, EVENT_CLIPBOARDWRITE, 0, 0);
+    if (!parent)
+        return;
 
-    for (offset = 0; offset < count; offset += MESSAGE_SIZE)
-        channel_send(1, service, EVENT_CLIPBOARDWRITE, (count - offset < MESSAGE_SIZE) ? count - offset : MESSAGE_SIZE, data + offset);
+    id = fs_walk(1, target, 0, clippath);
+
+    if (id && !fs_remove(1, target, parent, id))
+        return;
+
+    id = fs_create(1, target, parent, name, cstring_length(name));
+
+    if (id && count)
+        fs_write_all(1, target, id, data, count, 0);
 
 }
 
 static void clip(unsigned int cut)
 {
 
-    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
     unsigned int i;
 
     clipcount = 0;
@@ -280,28 +303,25 @@ static void clip(unsigned int cut)
 
     }
 
-    if (service)
-        writeclipboard(service, clipboard, clipcount);
+    writeclipboard(clipboard, clipcount);
 
 }
 
 static void paste(void)
 {
 
-    unsigned int service = channel_lookup(option_getstring("clipboard-service"));
-    unsigned int count = 0;
+    char *clippath = option_getstring("clipboard");
+    unsigned int target = fs_auth(clippath);
+    unsigned int id = (target) ? fs_walk(1, target, 0, clippath) : 0;
+    unsigned int count;
     unsigned int cut;
     unsigned int start;
     unsigned int i;
-    struct message message;
 
-    if (!service)
+    if (!id)
         return;
 
-    channel_send(1, service, EVENT_CLIPBOARDREAD, 0, 0);
-
-    while (channel_poll(1, service, EVENT_CLIPBOARDDATA, &message) && message.length)
-        count += buffer_write(pasted, CLIPBOARD_SIZE - 1, message.data, message.length, count);
+    count = fs_read_full(1, target, id, pasted, CLIPBOARD_SIZE - 1, 0);
 
     cut = clipcut && count == clipcount && buffer_match(pasted, clipboard, count);
     pasted[count] = '\0';
@@ -327,7 +347,7 @@ static void paste(void)
         clipcut = 0;
         clipcount = 0;
 
-        writeclipboard(service, 0, 0);
+        writeclipboard(0, 0);
 
     }
 
@@ -516,7 +536,7 @@ void init(void)
 
     option_add("config", "initrd:data/config/filetypes.mq");
     option_add("wm-service", "wm");
-    option_add("clipboard-service", "clipboard");
+    option_add("clipboard", "mem:clipboard");
     option_add("mode", "browse");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
