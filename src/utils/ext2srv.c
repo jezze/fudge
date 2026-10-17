@@ -875,13 +875,11 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
             sendblockwriterequest(blocksize, sector, blocksize);
 
             if (roffset + count > node->sizeLow)
-            {
-
                 node->sizeLow = roffset + count;
+            else if (!allocated)
+                return count;
 
-                simplewrite(node, rid);
-
-            }
+            simplewrite(node, rid);
 
             return count;
 
