@@ -40,6 +40,5 @@ struct deflate
 
 unsigned int deflate_inflate(struct deflate *d, unsigned int count);
 unsigned int deflate_decompress(struct deflate *d);
-unsigned int deflate_compress(struct deflate *d);
 void deflate_init(struct deflate *d, void *out, unsigned int ocount, void *in, unsigned int icount);
 void deflate_initring(struct deflate *d, void *window, unsigned int count, unsigned int (*refill)(struct deflate *d));
