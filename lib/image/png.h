@@ -20,17 +20,13 @@ struct png
     unsigned int palette[PNG_PALETTE];
     unsigned int haskey;
     unsigned int key[3];
-    unsigned int start;
-    unsigned int startleft;
     unsigned int offset;
     unsigned int left;
-    unsigned int row;
     unsigned char window[PNG_WINDOW];
     unsigned char input[PNG_INPUT];
     unsigned char line[PNG_LINE];
 
 };
 
-unsigned int png_readheader(struct png *png, void *in, unsigned int icount);
 unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, void *buffer, unsigned int count, unsigned int offset));
-unsigned int png_readrow(struct png *png, unsigned int row, unsigned int *pixels);
+unsigned int png_readrow(struct png *png, unsigned int *pixels);

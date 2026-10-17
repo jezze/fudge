@@ -45,7 +45,7 @@ static unsigned int decodepng(void)
     for (y = 0; y < height; y++)
     {
 
-        if (!png_readrow(&png, y, pixels + y * width))
+        if (!png_readrow(&png, pixels + y * width))
             return 0;
 
     }

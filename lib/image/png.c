@@ -131,23 +131,7 @@ static unsigned int refill(struct deflate *d)
 
 }
 
-static void rewind(struct png *png)
-{
-
-    unsigned int i;
-
-    deflate_initring(&png->deflate, png->window, PNG_WINDOW, refill);
-
-    png->offset = png->start;
-    png->left = png->startleft;
-    png->row = 0;
-
-    for (i = 0; i < png->stride; i++)
-        png->line[i] = 0;
-
-}
-
-unsigned int png_readheader(struct png *png, void *in, unsigned int icount)
+static unsigned int readheader(struct png *png, void *in, unsigned int icount)
 {
 
     unsigned char *data = in;
@@ -237,7 +221,7 @@ unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, voi
 
     png->read = read;
 
-    if (read(png, data, HEADERSIZE, 0) != HEADERSIZE || !png_readheader(png, data, HEADERSIZE) || png->stride > PNG_LINE)
+    if (read(png, data, HEADERSIZE, 0) != HEADERSIZE || !readheader(png, data, HEADERSIZE) || png->stride > PNG_LINE)
         return 0;
 
     while (read(png, data, 8, offset) == 8)
@@ -256,10 +240,13 @@ unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, voi
             if (png->colortype == 3 && !png->npalette)
                 return 0;
 
-            png->start = offset + 10;
-            png->startleft = length - 2;
+            deflate_initring(&png->deflate, png->window, PNG_WINDOW, refill);
 
-            rewind(png);
+            png->offset = offset + 10;
+            png->left = length - 2;
+
+            for (i = 0; i < png->stride; i++)
+                png->line[i] = 0;
 
             return 1;
 
@@ -331,27 +318,6 @@ unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, voi
 
 }
 
-/* rows are decoded in order and the last one is kept, as with pcx; a row above it starts over from the first IDAT */
-static unsigned int decoderow(struct png *png, unsigned int row)
-{
-
-    if (row + 1 < png->row)
-        rewind(png);
-
-    while (png->row <= row)
-    {
-
-        if (deflate_inflate(&png->deflate, png->stride + 1) != png->stride + 1 || !unfilter(png, png->deflate.ooffset - png->stride - 1))
-            return 0;
-
-        png->row++;
-
-    }
-
-    return 1;
-
-}
-
 static unsigned int getsample(unsigned char *line, unsigned int index, unsigned int depth)
 {
 
@@ -392,13 +358,14 @@ static unsigned int scale(unsigned int value, unsigned int depth)
 
 }
 
-unsigned int png_readrow(struct png *png, unsigned int row, unsigned int *pixels)
+/* rows come in order; the last one stays in line, as the row above for the next */
+unsigned int png_readrow(struct png *png, unsigned int *pixels)
 {
 
     unsigned char *line = png->line;
     unsigned int x;
 
-    if (row >= png->height || !decoderow(png, row))
+    if (deflate_inflate(&png->deflate, png->stride + 1) != png->stride + 1 || !unfilter(png, png->deflate.ooffset - png->stride - 1))
         return 0;
 
     for (x = 0; x < png->width; x++)
