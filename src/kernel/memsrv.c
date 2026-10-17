@@ -11,6 +11,7 @@
 
 #define ROOT                            1
 #define FILEPAGES                       (MEMSRV_FILESIZE / MEMSRV_PAGESIZE)
+#define NONE                            0xFFFF
 #define MAPS                            ((KERNEL_VBUFFER - KERNEL_VMEM) / MEMSRV_FILESIZE)
 
 struct file
@@ -20,6 +21,10 @@ struct file
     unsigned int linked;
     unsigned int tasks;
     unsigned int size;
+    unsigned int first;
+    unsigned int last;
+    unsigned int cachen;
+    unsigned int cachepage;
     unsigned int length;
     char name[MEMSRV_NAMESIZE];
 
@@ -29,8 +34,8 @@ static struct node_operands operands;
 static struct service service;
 static struct spinlock spinlock;
 static struct file files[MEMSRV_FILES];
-static unsigned short pages[MEMSRV_FILES][FILEPAGES];
-static unsigned short freepages[MEMSRV_PAGES];
+static unsigned short next[MEMSRV_PAGES];
+static unsigned int freepages;
 static unsigned int nfree;
 static unsigned long base;
 static void (*unmapcallback)(unsigned long vaddress, unsigned int size);
@@ -60,7 +65,25 @@ static unsigned int countpages(unsigned int size)
 static unsigned char *getpage(struct file *file, unsigned int offset)
 {
 
-    return (unsigned char *)(base + pages[file - files][offset / MEMSRV_PAGESIZE] * MEMSRV_PAGESIZE) + offset % MEMSRV_PAGESIZE;
+    unsigned int n = offset / MEMSRV_PAGESIZE;
+    unsigned int page = file->first;
+    unsigned int i = 0;
+
+    if (file->cachepage != NONE && file->cachen <= n)
+    {
+
+        page = file->cachepage;
+        i = file->cachen;
+
+    }
+
+    for (; i < n; i++)
+        page = next[page];
+
+    file->cachen = n;
+    file->cachepage = page;
+
+    return (unsigned char *)(base + page * MEMSRV_PAGESIZE) + offset % MEMSRV_PAGESIZE;
 
 }
 
@@ -76,9 +99,20 @@ static unsigned int grow(struct file *file, unsigned int size)
     for (; have < need; have++)
     {
 
-        pages[file - files][have] = freepages[--nfree];
+        unsigned int page = freepages;
 
-        buffer_clear(getpage(file, have * MEMSRV_PAGESIZE), MEMSRV_PAGESIZE);
+        freepages = next[page];
+        next[page] = NONE;
+        nfree--;
+
+        if (have)
+            next[file->last] = page;
+        else
+            file->first = page;
+
+        file->last = page;
+
+        buffer_clear((void *)(base + page * MEMSRV_PAGESIZE), MEMSRV_PAGESIZE);
 
     }
 
@@ -191,12 +225,17 @@ static void release(struct file *file)
     if (file->used && !file->linked && !file->tasks)
     {
 
-        unsigned int n;
+        if (file->size)
+        {
 
-        for (n = countpages(file->size); n > 0; n--)
-            freepages[nfree++] = pages[file - files][n - 1];
+            next[file->last] = freepages;
+            freepages = file->first;
+            nfree += countpages(file->size);
+
+        }
 
         file->size = 0;
+        file->cachepage = NONE;
         file->used = 0;
 
     }
@@ -334,6 +373,7 @@ static unsigned int create(unsigned int parent, char *name, unsigned int length)
             file->linked = 1;
             file->tasks = 0;
             file->size = 0;
+            file->cachepage = NONE;
             file->length = length;
 
             buffer_copy(file->name, name, length);
@@ -682,7 +722,9 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
     base = paddress;
 
     for (nfree = 0; nfree < MEMSRV_PAGES; nfree++)
-        freepages[nfree] = MEMSRV_PAGES - 1 - nfree;
+        next[nfree] = (nfree + 1 < MEMSRV_PAGES) ? nfree + 1 : NONE;
+
+    freepages = 0;
     unmapcallback = unmap;
     inode = pool_picknode(0, &operands);
 

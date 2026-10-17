@@ -1,4 +1,4 @@
-#define MEMSRV_FILES                    16
+#define MEMSRV_FILES                    1024
 #define MEMSRV_FILESIZE                 0x02000000
 #define MEMSRV_PAGES                    0x4000
 #define MEMSRV_PAGESIZE                 0x1000
