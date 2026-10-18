@@ -247,18 +247,15 @@ static unsigned int allocate(void)
         if (!used)
         {
 
+            unsigned int chunk = blockinfo.buffersize / sectorsize;
             unsigned int i;
 
             setcluster(cluster, FAT_CLUSTER_MASK);
             addfree(0, 1);
+            buffer_clear((void *)blockinfo.buffer, (clustersize < blockinfo.buffersize) ? clustersize : blockinfo.buffersize);
 
-            for (i = 0; i < clustersize / sectorsize; i++)
-            {
-
-                buffer_clear((void *)blockinfo.buffer, sectorsize);
-                writesector(clustersector(cluster) + i);
-
-            }
+            for (i = 0; i < clustersize / sectorsize; i += chunk)
+                writesectors(clustersector(cluster) + i, (clustersize / sectorsize - i < chunk) ? clustersize / sectorsize - i : chunk);
 
             return cluster;
 
@@ -1126,9 +1123,8 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 {
 
     struct fat_entry entry;
+    unsigned int total = 0;
     unsigned int first;
-    unsigned int cluster;
-    unsigned int sector;
 
     if (id == ROOT)
         return 0;
@@ -1137,9 +1133,6 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 
     if (gettype(&entry) != RECORD_TYPE_NORMAL)
         return 0;
-
-    if (count > sectorsize - offset % sectorsize)
-        count = sectorsize - offset % sectorsize;
 
     first = (entry.clusterhigh << 16) | entry.clusterlow;
 
@@ -1158,20 +1151,42 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 
     }
 
-    cluster = findcluster(first, offset / clustersize, 1);
-
-    if (!cluster)
-        return 0;
-
-    sector = clustersector(cluster) + (offset % clustersize) / sectorsize;
-
-    buffer_write(readsector(sector), sectorsize, buffer, count, offset % sectorsize);
-    writesector(sector);
-
-    if (offset + count > entry.size)
+    while (total < count)
     {
 
-        entry.size = offset + count;
+        unsigned int position = offset + total;
+        unsigned int cluster = findcluster(first, position / clustersize, 1);
+        unsigned int skip = position % sectorsize;
+        unsigned int length = count - total;
+        unsigned int sectors;
+        unsigned int sector;
+
+        if (!cluster)
+            break;
+
+        if (length > clustersize - position % clustersize)
+            length = clustersize - position % clustersize;
+
+        if (length > blockinfo.buffersize - skip)
+            length = blockinfo.buffersize - skip;
+
+        sectors = (skip + length + sectorsize - 1) / sectorsize;
+        sector = clustersector(cluster) + (position % clustersize) / sectorsize;
+
+        if (skip || (skip + length) % sectorsize)
+            readsectors(sector, sectors);
+
+        buffer_copy((char *)blockinfo.buffer + skip, (char *)buffer + total, length);
+        writesectors(sector, sectors);
+
+        total += length;
+
+    }
+
+    if (offset + total > entry.size)
+    {
+
+        entry.size = offset + total;
 
         setmodified(&entry);
         putnode(id, &entry);
@@ -1185,7 +1200,7 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 
     }
 
-    return count;
+    return total;
 
 }
 
