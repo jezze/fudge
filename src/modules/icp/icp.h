@@ -6,6 +6,7 @@
 #define ICP_KMI1                        0x0005
 #define ICP_LCD                         0x0006
 #define ICP_MMCI                        0x0007
+#define ICP_ETHERNET                    0x0008
 
 unsigned int icp_getbase(unsigned int id);
 unsigned int icp_getirq(unsigned int id);
