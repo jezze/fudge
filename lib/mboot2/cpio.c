@@ -319,6 +319,8 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     if (request->count >= MESSAGE_SIZE - sizeof (struct event_readresponse))
         request->count = MESSAGE_SIZE - sizeof (struct event_readresponse);
 
+    response->count = 0;
+
     if (header)
     {
 
@@ -384,6 +386,8 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     struct event_writerequest *request = data;
     struct event_writeresponse response;
     struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
+
+    response.count = 0;
 
     if (header)
     {
