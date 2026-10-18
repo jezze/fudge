@@ -883,6 +883,25 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 
 }
 
+static void cleartail(struct ext2_node *node, unsigned int roffset)
+{
+
+    unsigned int blockoffset = node->sizeLow % blocksize;
+    unsigned int sector = getsector(node, node->sizeLow);
+    unsigned int count = blocksize - blockoffset;
+
+    if (!blockoffset || !sector)
+        return;
+
+    if (count > roffset - node->sizeLow)
+        count = roffset - node->sizeLow;
+
+    sendblockreadrequest(blocksize, sector, blocksize);
+    buffer_clear((char *)blockinfo.buffer + blockoffset, count);
+    sendblockwriterequest(blocksize, sector, blocksize);
+
+}
+
 static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int rid, void *data)
 {
 
@@ -891,7 +910,7 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
     unsigned int total = 0;
 
     if (roffset > node->sizeLow)
-        return 0;
+        cleartail(node, roffset);
 
     while (total < rcount)
     {
