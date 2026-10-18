@@ -340,42 +340,84 @@ static unsigned int getindirect(unsigned int sector, unsigned int index)
 
 }
 
-static unsigned int getsector(struct ext2_node *node, unsigned int offset)
+static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned int max, unsigned int *count)
 {
 
     unsigned int index = offset / blocksize;
     unsigned int slots = blocksize / 4;
-    unsigned int singlestart = 12;
-    unsigned int doublestart = singlestart + slots;
-    unsigned int triplestart = doublestart + slots * slots;
+    unsigned int *entries;
+    unsigned int available;
+    unsigned int table;
 
-    if (index < singlestart)
-        return node->pointer[index];
-
-    if (index < doublestart)
-        return getindirect(node->singlyIndirectPointer, index - singlestart);
-
-    if (index < triplestart)
+    if (index < 12)
     {
 
-        unsigned int relative = index - doublestart;
-        unsigned int outer = relative / slots;
-        unsigned int inner = relative % slots;
-
-        return getindirect(getindirect(node->doublyIndirectPointer, outer), inner);
+        entries = node->pointer + index;
+        available = 12 - index;
 
     }
 
+    else
     {
 
-        unsigned int relative = index - triplestart;
-        unsigned int outer = relative / (slots * slots);
-        unsigned int mid = (relative / slots) % slots;
-        unsigned int inner = relative % slots;
+        index -= 12;
 
-        return getindirect(getindirect(getindirect(node->tripplyIndirectPointer, outer), mid), inner);
+        if (index < slots)
+        {
+
+            table = node->singlyIndirectPointer;
+
+        }
+
+        else if (index - slots < slots * slots)
+        {
+
+            index -= slots;
+            table = getindirect(node->doublyIndirectPointer, index / slots);
+
+        }
+
+        else
+        {
+
+            index -= slots + slots * slots;
+            table = getindirect(getindirect(node->tripplyIndirectPointer, index / (slots * slots)), (index / slots) % slots);
+
+        }
+
+        *count = 1;
+
+        if (!table)
+            return 0;
+
+        sendblockreadrequest(blocksize, table, blocksize);
+
+        entries = (unsigned int *)blockinfo.buffer + index % slots;
+        available = slots - index % slots;
 
     }
+
+    if (available > max)
+        available = max;
+
+    for (*count = 1; *count < available; (*count)++)
+    {
+
+        if (entries[*count] != ((entries[0]) ? entries[0] + *count : 0))
+            break;
+
+    }
+
+    return entries[0];
+
+}
+
+static unsigned int getsector(struct ext2_node *node, unsigned int offset)
+{
+
+    unsigned int count;
+
+    return getrun(node, offset, 1, &count);
 
 }
 
@@ -804,8 +846,9 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 
         unsigned int remaining = node->sizeLow - roffset;
         unsigned int blockoffset = roffset % blocksize;
-        unsigned int sector = getsector(node, roffset);
         unsigned int count = capacity;
+        unsigned int blocks;
+        unsigned int sector;
 
         if (count > rcount)
             count = rcount;
@@ -813,13 +856,18 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
         if (count > remaining)
             count = remaining;
 
-        if (count > blocksize - blockoffset)
-            count = blocksize - blockoffset;
+        if (count > blockinfo.buffersize - blockoffset)
+            count = blockinfo.buffersize - blockoffset;
+
+        sector = getrun(node, roffset, (blockoffset + count + blocksize - 1) / blocksize, &blocks);
+
+        if (count > blocks * blocksize - blockoffset)
+            count = blocks * blocksize - blockoffset;
 
         if (sector)
         {
 
-            sendblockreadrequest(blocksize, sector, blocksize);
+            sendblockreadrequest(blocks * blocksize, sector, blocksize);
 
             return buffer_write(data, capacity, (char *)blockinfo.buffer + blockoffset, count, 0);
 
