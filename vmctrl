@@ -10,7 +10,7 @@ error() {
 cmd_run() {
     name="default"
     storage=n
-    storagedevice="virtio"
+    storagedevice=""
     diskname="fudge.qcow2"
     iso=n
     isoname=""
@@ -89,10 +89,13 @@ cmd_run() {
 
     case "${arch}" in
         x86|x86_64)
+            storagedevice="${storagedevice:-virtio}"
             cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
             ;;
         arm)
-            test "${storage}${iso}${network}${audio}${uefi}" == "nnnnn" || error "No storage, ISO, network, audio or UEFI on arm"
+            test "${iso}${network}${audio}${uefi}" == "nnnn" || error "No ISO, network, audio or UEFI on arm"
+            storagedevice="${storagedevice:-sd}"
+            test "${storagedevice}" == "sd" || error "Unknown storage device on arm: ${storagedevice} (sd)"
             cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none -serial stdio -serial vc"
             ;;
         *)
@@ -113,6 +116,10 @@ cmd_run() {
             ide)
                 cmd="${cmd} -drive file=${diskname},format=qcow2,if=ide,index=0"
                 ;;
+            sd)
+                test "${arch}" == "arm" || error "Storage device sd is only on arm"
+                cmd="${cmd} -drive file=${diskname},format=qcow2,if=sd"
+                ;;
             nvme)
                 cmd="${cmd} ${drive} -device nvme,drive=disk0,serial=fudge"
                 ;;
@@ -123,7 +130,7 @@ cmd_run() {
                 cmd="${cmd} ${drive} -device virtio-blk-pci,drive=disk0"
                 ;;
             *)
-                error "Unknown storage device: ${storagedevice} (ahci, ide, nvme, usb or virtio)"
+                error "Unknown storage device: ${storagedevice} (ahci, ide, nvme, sd, usb or virtio)"
                 ;;
         esac
     fi
@@ -155,7 +162,7 @@ cmd_run() {
     if test "${iso}" == "y"
     then
         cmd="${cmd} -cdrom ${isoname} -boot d"
-    elif test "${storage}" != "y"
+    elif test "${storage}" != "y" || test "${arch}" == "arm"
     then
         test -f fudge || error "Kernel not found. Forgot to build?"
         test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
@@ -398,7 +405,7 @@ cmd_help() {
     echo "Commands:"
     echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-i <iso>] [-u] [-x <arch>] [<name>]"
     echo "        -S, -N, -A enable storage, network and audio"
-    echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2)"
+    echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2), sd on arm (the only one there)"
     echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap)"
     echo "        -a ac97 or virtio (default ac97), -o pa, pipewire, alsa or wav (default pa)"
     echo "        -x x86, x86_64 or arm (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
