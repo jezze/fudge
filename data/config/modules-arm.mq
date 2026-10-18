@@ -8,5 +8,6 @@
     { path: initrd:kernel/pl050-keyboard.ko }
     { path: initrd:kernel/pl050-mouse.ko }
     { path: initrd:kernel/pl110.ko }
+    { path: initrd:kernel/pl181.ko }
   ]
 }
