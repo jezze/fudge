@@ -8,6 +8,7 @@ void node_operands_init(struct node_operands *operands, unsigned int (*pick)(uns
 
     operands->pick = pick;
     operands->place = place;
+    operands->locate = 0;
 
 }
 

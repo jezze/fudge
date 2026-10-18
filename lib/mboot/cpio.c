@@ -175,6 +175,13 @@ static unsigned int map(unsigned int id)
 
 }
 
+static unsigned long locate(unsigned int id)
+{
+
+    return (isheader(id)) ? map(id) : 0;
+
+}
+
 static unsigned int read(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
 {
 
@@ -445,6 +452,8 @@ void cpio_setup(unsigned int addr)
 
     node_operands_init(&operands, 0, operands_place);
     service_init(&service);
+
+    operands.locate = locate;
 
     address = addr;
     inode = pool_picknode(0, &operands);

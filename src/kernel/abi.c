@@ -103,18 +103,19 @@ static unsigned int find(unsigned int itask, void *stack)
 static unsigned int load(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int address;} *args = stack;
+    struct {void *caller; unsigned int target; unsigned int id;} *args = stack;
+    unsigned long address = kernel_locate(args->target, args->id);
 
-    if (args->address)
+    if (address)
     {
 
-        struct binary_format *format = binary_findformat(args->address);
+        struct binary_format *format = binary_findformat(address);
 
         if (format)
         {
 
-            void (*module_init)(void) = (void (*)(void))(format->findsymbol(args->address, 11, "module_init"));
-            void (*module_register)(void) = (void (*)(void))(format->findsymbol(args->address, 15, "module_register"));
+            void (*module_init)(void) = (void (*)(void))(format->findsymbol(address, 11, "module_init"));
+            void (*module_register)(void) = (void (*)(void))(format->findsymbol(address, 15, "module_register"));
 
             if (module_init)
                 module_init();
@@ -122,7 +123,7 @@ static unsigned int load(unsigned int itask, void *stack)
             if (module_register)
                 module_register();
 
-            return args->address;
+            return 1;
 
         }
 
@@ -137,22 +138,23 @@ static unsigned int load(unsigned int itask, void *stack)
 static unsigned int unload(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int address;} *args = stack;
+    struct {void *caller; unsigned int target; unsigned int id;} *args = stack;
+    unsigned long address = kernel_locate(args->target, args->id);
 
-    if (args->address)
+    if (address)
     {
 
-        struct binary_format *format = binary_findformat(args->address);
+        struct binary_format *format = binary_findformat(address);
 
         if (format)
         {
 
-            void (*module_unregister)(void) = (void (*)(void))(format->findsymbol(args->address, 17, "module_unregister"));
+            void (*module_unregister)(void) = (void (*)(void))(format->findsymbol(address, 17, "module_unregister"));
 
             if (module_unregister)
                 module_unregister();
 
-            return args->address;
+            return 1;
 
         }
 

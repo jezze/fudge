@@ -136,7 +136,7 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 
 }
 
-/* maps the file into this task and returns where; unlike fs_map, which gives the kernel a file to load */
+/* maps the file into this task and returns where; unlike fs_map, which tells where the service keeps the file in kernel memory */
 void *fs_mmap(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int size)
 {
 
@@ -388,13 +388,7 @@ unsigned int fs_spawn(unsigned int ichannel, unsigned int notify, char *path)
         unsigned int id = fs_walk(ichannel, target, 0, path);
 
         if (id)
-        {
-
-            unsigned int address = fs_map(ichannel, target, id);
-
-            return (address) ? call_spawn(notify, address) : 0;
-
-        }
+            return call_spawn(notify, target, id);
 
     }
 
@@ -413,13 +407,7 @@ unsigned int fs_spawn_relative(unsigned int ichannel, unsigned int notify, char 
         unsigned int id = fs_walk(ichannel, target, fs_walk(ichannel, target, 0, parent), path);
 
         if (id)
-        {
-
-            unsigned int address = fs_map(ichannel, target, id);
-
-            return (address) ? call_spawn(notify, address) : 0;
-
-        }
+            return call_spawn(notify, target, id);
 
     }
 

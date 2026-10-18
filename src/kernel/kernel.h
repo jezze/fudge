@@ -16,6 +16,7 @@ void kernel_signal(unsigned int itask, unsigned int signal);
 unsigned int kernel_pick(unsigned int source, struct message *message);
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_announce(unsigned int inode, char *name);
+unsigned long kernel_locate(unsigned int target, unsigned int id);
 void kernel_notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data);
 void kernel_starttask(unsigned int itask);
 unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int pinode, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer);

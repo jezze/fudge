@@ -52,6 +52,7 @@ call_kill:
 call_load:
     subq $CALL_FRAME, %rsp
     movl %edi, 8(%rsp)
+    movl %esi, 12(%rsp)
     callindex CALL_INDEX_LOAD
 
 .global call_pick
@@ -76,12 +77,14 @@ call_spawn:
     subq $CALL_FRAME, %rsp
     movl %edi, 8(%rsp)
     movl %esi, 12(%rsp)
+    movl %edx, 16(%rsp)
     callindex CALL_INDEX_SPAWN
 
 .global call_unload
 call_unload:
     subq $CALL_FRAME, %rsp
     movl %edi, 8(%rsp)
+    movl %esi, 12(%rsp)
     callindex CALL_INDEX_UNLOAD
 
 .global call_announce

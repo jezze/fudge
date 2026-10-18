@@ -13,7 +13,7 @@ static void onpath(struct message *message)
         unsigned int id = fs_walk(1, target, 0, message->data);
 
         if (id)
-            call_unload(fs_map(1, target, id));
+            call_unload(target, id);
         else
             channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
 

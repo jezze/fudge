@@ -385,7 +385,7 @@ static void load(unsigned int source, char *path)
 
                                 relocate(address + textoffset);
                                 fs_write_all(1, target, fs_walk(1, target, 0, mapname), mapdata, mapcount, 0);
-                                call_load(address);
+                                call_load(target, id);
 
                             }
 

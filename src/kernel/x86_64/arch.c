@@ -224,11 +224,12 @@ static unsigned int createtask(unsigned int pinode, unsigned long address)
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int address;} *args = stack;
+    struct {void *caller; unsigned int ichannel; unsigned int target; unsigned int id;} *args = stack;
     unsigned int pinode = kernel_getchannelinode(itask, args->ichannel);
+    unsigned long address = kernel_locate(args->target, args->id);
 
-    if (args->address && pinode)
-        return createtask(pinode, args->address);
+    if (address && pinode)
+        return createtask(pinode, address);
 
     debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "spawn failed");
 
