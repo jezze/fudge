@@ -9,65 +9,30 @@
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
 
+# The kernel reads the arguments from the user stack as {return address, arguments...}, like on
+# x86: r0-r3 are pushed in front of the caller's stacked arguments, then lr. The index goes in r12.
+.macro call name, index
+.global call_\name
+.type call_\name, %function
+call_\name:
+    push {r0-r3}
+    push {lr}
+    mov r12, #\index
+    swi #0
+    pop {lr}
+    add sp, sp, #16
+    bx lr
+.endm
+
 .section .text
 
-.global call_debug
-call_debug:
-    mov r7, $CALL_INDEX_DEBUG
-    swi #0
-    bx lr
-
-.global call_despawn
-call_despawn:
-    mov r7, $CALL_INDEX_DESPAWN
-    swi #0
-    bx lr
-
-.global call_find
-call_find:
-    mov r7, $CALL_INDEX_FIND
-    swi #0
-    bx lr
-
-.global call_kill
-call_kill:
-    mov r7, $CALL_INDEX_KILL
-    swi #0
-    bx lr
-
-.global call_load
-call_load:
-    mov r7, $CALL_INDEX_LOAD
-    swi #0
-    bx lr
-
-.global call_pick
-call_pick:
-    mov r7, $CALL_INDEX_PICK
-    swi #0
-    bx lr
-
-.global call_place
-call_place:
-    mov r7, $CALL_INDEX_PLACE
-    swi #0
-    bx lr
-
-.global call_spawn
-call_spawn:
-    mov r7, $CALL_INDEX_SPAWN
-    swi #0
-    bx lr
-
-.global call_unload
-call_unload:
-    mov r7, $CALL_INDEX_UNLOAD
-    swi #0
-    bx lr
-
-.global call_announce
-call_announce:
-    mov r7, $CALL_INDEX_ANNOUNCE
-    swi #0
-    bx lr
-
+call debug, CALL_INDEX_DEBUG
+call despawn, CALL_INDEX_DESPAWN
+call find, CALL_INDEX_FIND
+call kill, CALL_INDEX_KILL
+call load, CALL_INDEX_LOAD
+call pick, CALL_INDEX_PICK
+call place, CALL_INDEX_PLACE
+call spawn, CALL_INDEX_SPAWN
+call unload, CALL_INDEX_UNLOAD
+call announce, CALL_INDEX_ANNOUNCE

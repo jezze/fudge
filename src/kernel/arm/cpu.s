@@ -1,56 +1,65 @@
 .section .text
 
-.global cpu_get_cpsr
-cpu_get_cpsr:
-    mrs r0, cpsr
+.global cpu_getcontrol
+cpu_getcontrol:
+    mrc p15, 0, r0, c1, c0, 0
     bx lr
 
-.global cpu_set_cpsr
-cpu_set_cpsr:
-    msr cpsr, r0
+.global cpu_setcontrol
+cpu_setcontrol:
+    mcr p15, 0, r0, c1, c0, 0
     bx lr
 
-.global cpu_disable_interrupts
-cpu_disable_interrupts:
-    mrs r0, cpsr
-    orr r0,r0, #0x80
-    msr cpsr_c, r0
+.global cpu_setdomains
+cpu_setdomains:
+    mcr p15, 0, r0, c3, c0, 0
     bx lr
 
-.global cpu_enable_interrupts
-cpu_enable_interrupts:
-    mrs r0, cpsr
-    bic r0, r0, #0x80
-    msr cpsr_c, r0
+.global cpu_getttbr
+cpu_getttbr:
+    mrc p15, 0, r0, c2, c0, 0
     bx lr
 
-.align 4
-.global cpu_leave
-cpu_leave:
-    mov sp, r0
-    mov lr, r1
+.global cpu_setttbr
+cpu_setttbr:
+    mcr p15, 0, r0, c2, c0, 0
+    mov r0, #0
+    mcr p15, 0, r0, c8, c7, 0
+    bx lr
+
+.global cpu_flushtlb
+cpu_flushtlb:
+    mov r0, #0
+    mcr p15, 0, r0, c8, c7, 0
+    bx lr
+
+.global cpu_getfsr
+cpu_getfsr:
+    mrc p15, 0, r0, c5, c0, 0
+    bx lr
+
+.global cpu_getfar
+cpu_getfar:
+    mrc p15, 0, r0, c6, c0, 0
+    bx lr
+
+.global cpu_setmodestack
+cpu_setmodestack:
+    mrs r2, cpsr
+    bic r3, r2, #0x1F
+    orr r3, r3, r0
+    msr cpsr_c, r3
+    mov sp, r1
+    msr cpsr_c, r2
     bx lr
 
 .global cpu_halt
 cpu_halt:
-    wfi
+    mov r0, #0
+    mcr p15, 0, r0, c7, c0, 4
     b cpu_halt
 
-.align 4
-.global call_place
-call_place:
-    push {r0-r12, lr}
-    mov r7, #0x02
-    swi #0
-    pop {r0-r12, lr}
-    bx lr
-
-.align 4
-.global call_despawn
-call_despawn:
-    push {r0-r12, lr}
-    mov r7, #0x04
-    swi #0
-    pop {r0-r12, lr}
-    bx lr
-
+.global cpu_leave
+cpu_leave:
+    mov sp, r0
+    b isr_exit

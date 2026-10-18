@@ -96,7 +96,6 @@ help:
 	@echo ""
 	@echo "  arm-integratorcp-none"
 	@echo "  arm-integratorcp-unknown"
-	@echo "  arm-integratorcp-tcc"
 	@echo "  riscv-medany-elf"
 	@echo "  riscv-medany-linux"
 	@echo "  riscv-medany-tcc"
@@ -136,7 +135,7 @@ $(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
 	@cp $(RAMDISK) $@
 	@mkdir -p $@/efi
 	@mkdir -p $@/grub
-	@cp -f grub/$(LOADER).cfg $@/grub/grub.cfg
+	$(if $(wildcard grub/$(LOADER).cfg),@cp -f grub/$(LOADER).cfg $@/grub/grub.cfg)
 
 $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@echo BUILD ROOT $@

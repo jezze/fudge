@@ -1,0 +1,8 @@
+{
+  modules: [
+    { path: initrd:kernel/icp.ko }
+    { path: initrd:kernel/icp-timer.ko }
+    { path: initrd:kernel/pl011.ko }
+    { path: initrd:kernel/pl031.ko }
+  ]
+}
