@@ -10,6 +10,14 @@ static char lines[4096];
 static unsigned int linescount;
 static unsigned int width;
 
+/* cstring_write_value is signed, which turns addresses from 0x80000000 negative */
+static void writeaddress(char *out, unsigned int address)
+{
+
+    cstring_write_fmt(out, width, 0, (width == 16) ? "%H8<u" : "%H8u", &address);
+
+}
+
 static void relocate(unsigned int address)
 {
 
@@ -20,7 +28,7 @@ static void relocate(unsigned int address)
     {
 
         if (mapdata[i + width + 1] == 'T')
-            cstring_write_value(&mapdata[i], width, cstring_read_value(&mapdata[i], width, 16) + address, 16, width, 0);
+            writeaddress(&mapdata[i], cstring_read_value(&mapdata[i], width, 16) + address);
 
     }
 
@@ -87,7 +95,7 @@ static void updateundefined(void)
 
                 mapdata[i + width + 1] = 'A';
 
-                cstring_write_value(&mapdata[i], width, address, 16, width, 0);
+                writeaddress(&mapdata[i], address);
 
             }
 
