@@ -1045,7 +1045,18 @@ static void oncreaterequest(struct message *message)
         {
 
             unsigned int igroup = (request->parent - 1) / sb.nodeCountGroup;
-            unsigned int id = allocnode(igroup);
+            unsigned int id = matchentry(&parent, (char *)(request + 1), request->count);
+
+            if (id)
+            {
+
+                response.id = id;
+
+                break;
+
+            }
+
+            id = allocnode(igroup);
 
             if (id)
             {
