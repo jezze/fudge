@@ -10,7 +10,9 @@ make
 
 ## Run in QEMU
 
-QEMU does not load an initrd for an ELF kernel, so the ramdisk is placed at the address
-the loader expects (ARCH_RAMDISK_BASE). The memory pool needs 256 MB.
+./vmctrl run -x arm
 
-qemu-system-arm -machine integratorcp -m 256 -kernel fudge -device loader,file=fudge.cpio,addr=0x01200000,force-raw=on -serial stdio -serial file:debug.txt -display none
+The shell is on the terminal, kernel debug output on the second serial port in QEMU's
+window. QEMU does not load an initrd for an ELF kernel, so vmctrl places the ramdisk at
+the address the loader expects (ARCH_RAMDISK_BASE) with the generic loader device. The
+memory pool needs 256 MB.

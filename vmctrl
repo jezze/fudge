@@ -21,6 +21,7 @@ cmd_run() {
     audiodevice="ac97"
     audiodriver="pa"
     uefi=n
+    arch="x86"
 
     while test ${#} -gt 0
     do
@@ -72,6 +73,10 @@ cmd_run() {
             -u)
                 uefi=y
                 ;;
+            -x)
+                arch="${2}"
+                shift
+                ;;
             -*)
                 error "Unknown flag: ${1}"
                 ;;
@@ -82,7 +87,18 @@ cmd_run() {
         shift
     done
 
-    cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
+    case "${arch}" in
+        x86|x86_64)
+            cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
+            ;;
+        arm)
+            test "${storage}${iso}${network}${audio}${uefi}" == "nnnnn" || error "No storage, ISO, network, audio or UEFI on arm"
+            cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none -serial stdio -serial vc"
+            ;;
+        *)
+            error "Unknown architecture: ${arch} (x86, x86_64 or arm)"
+            ;;
+    esac
 
     if test "${storage}" == "y"
     then
@@ -141,9 +157,21 @@ cmd_run() {
         cmd="${cmd} -cdrom ${isoname} -boot d"
     elif test "${storage}" != "y"
     then
-        cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
         test -f fudge || error "Kernel not found. Forgot to build?"
         test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
+
+        case "${arch}" in
+            x86)
+                cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
+                ;;
+            x86_64)
+                error "qemu can not load a 64-bit kernel, boot from a disk or an ISO (-S, -d or -i)"
+                ;;
+            arm)
+                ramdisk=$(sed -n 's/^#define ARCH_RAMDISK_BASE *//p' src/kernel/arm/arch.h)
+                cmd="${cmd} -kernel fudge -device loader,file=fudge.cpio,addr=${ramdisk},force-raw=on"
+                ;;
+        esac
     fi
 
     if test "${network}" == "y"
@@ -368,11 +396,12 @@ cmd_disk_setup_gpt() {
 
 cmd_help() {
     echo "Commands:"
-    echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-i <iso>] [-u] [<name>]"
+    echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-i <iso>] [-u] [-x <arch>] [<name>]"
     echo "        -S, -N, -A enable storage, network and audio"
     echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2)"
     echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap)"
     echo "        -a ac97 or virtio (default ac97), -o pa, pipewire, alsa or wav (default pa)"
+    echo "        -x x86, x86_64 or arm (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
     echo "    nat <interface>"
     echo "    connect"
     echo "    disconnect"
