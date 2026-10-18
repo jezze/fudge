@@ -178,7 +178,7 @@ $(KERNEL).tar: $(DIR_BUILDROOT)
 
 $(KERNEL).cpio: $(DIR_BUILDROOT)
 	@echo RAMDISK $@
-	@find $^ -depth | cpio -o > $@
+	@find $^ -depth | cpio -o -H newc > $@
 
 $(KERNEL).iso: $(DIR_ISO)
 	@echo ISO $@

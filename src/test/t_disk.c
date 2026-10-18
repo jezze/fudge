@@ -111,7 +111,7 @@ static unsigned int request_walk(struct state *state, unsigned int length, char 
         if (!cpio_validate(header))
             break;
 
-        if (header->namesize == 11)
+        if (cpio_namesize(header) == 11)
         {
 
             if (buffer_match("TRAILER!!!", header + 1, 11))
@@ -119,7 +119,7 @@ static unsigned int request_walk(struct state *state, unsigned int length, char 
 
         }
 
-        if (header->namesize == length + 1)
+        if (cpio_namesize(header) == length + 1)
         {
 
             if (buffer_match(path, header + 1, length))

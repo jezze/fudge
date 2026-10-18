@@ -57,7 +57,7 @@ static unsigned int getroot(void)
         if (!cheader)
             return id;
 
-        if ((cheader->mode & 0xF000) != 0x4000)
+        if ((cpio_mode(cheader) & 0xF000) != 0x4000)
             continue;
 
         id = current;
@@ -72,7 +72,7 @@ static unsigned int getparent(unsigned int id)
 {
 
     struct cpio_header *header = getheader(id);
-    unsigned int length = buffer_lastbyte(header + 1, header->namesize - 1, '/');
+    unsigned int length = buffer_lastbyte(header + 1, cpio_namesize(header) - 1, '/');
     unsigned int current = id;
 
     do
@@ -83,10 +83,10 @@ static unsigned int getparent(unsigned int id)
         if (!cheader)
             return 0;
 
-        if ((cheader->mode & 0xF000) != 0x4000)
+        if ((cpio_mode(cheader) & 0xF000) != 0x4000)
             continue;
 
-        if (cheader->namesize == length)
+        if (cpio_namesize(cheader) == length)
             return current;
 
     } while ((current = getnext(current)));
@@ -109,10 +109,10 @@ static unsigned int getchild(unsigned int id, char *path, unsigned int length)
         if (!cheader)
             return 0;
 
-        if (cheader->namesize != header->namesize + length + 1)
+        if (cpio_namesize(cheader) != cpio_namesize(header) + length + 1)
             continue;
 
-        if (buffer_match((char *)(cheader + 1) + header->namesize, path, length))
+        if (buffer_match((char *)(cheader + 1) + cpio_namesize(header), path, length))
             return current;
 
     } while ((current = getnext(current)));
@@ -139,16 +139,16 @@ static unsigned int getrecord(unsigned int id, struct record *record)
             if (pheader)
             {
 
-                switch (header->mode & 0xF000)
+                switch (cpio_mode(header) & 0xF000)
                 {
 
                 case 0x4000:
-                    record_init(record, id, RECORD_TYPE_DIRECTORY, cpio_filesize(header), getnext(id) - address, header->namesize - pheader->namesize - 1, (char *)(header + 1) + pheader->namesize);
+                    record_init(record, id, RECORD_TYPE_DIRECTORY, cpio_filesize(header), getnext(id) - address, cpio_namesize(header) - cpio_namesize(pheader) - 1, (char *)(header + 1) + cpio_namesize(pheader));
 
                     break;
 
                 case 0x8000:
-                    record_init(record, id, RECORD_TYPE_NORMAL, cpio_filesize(header), getnext(id) - address, header->namesize - pheader->namesize - 1, (char *)(header + 1) + pheader->namesize);
+                    record_init(record, id, RECORD_TYPE_NORMAL, cpio_filesize(header), getnext(id) - address, cpio_namesize(header) - cpio_namesize(pheader) - 1, (char *)(header + 1) + cpio_namesize(pheader));
 
                     break;
 
@@ -331,7 +331,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     if (header)
     {
 
-        switch (header->mode & 0xF000)
+        switch (cpio_mode(header) & 0xF000)
         {
 
         case 0x4000:
@@ -399,7 +399,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     if (header)
     {
 
-        switch (header->mode & 0xF000)
+        switch (cpio_mode(header) & 0xF000)
         {
 
         case 0x8000:
