@@ -5,7 +5,7 @@
 #include <modules/bus.h>
 #include "icp.h"
 
-#define DEVICES                         6
+#define DEVICES                         7
 #define ROUTINES                        32
 #define SHARED                          4
 #define REG_PIC                         0x14000000
@@ -17,11 +17,13 @@
 #define REG_UART0                       0x16000000
 #define REG_KMI0                        0x18000000
 #define REG_KMI1                        0x19000000
+#define REG_LCD                         0xC0000000
 #define IRQ_UART0                       1
 #define IRQ_KMI0                        3
 #define IRQ_KMI1                        4
 #define IRQ_TIMER1                      6
 #define IRQ_RTC                         8
+#define IRQ_LCD                         22
 
 struct device
 {
@@ -41,7 +43,8 @@ static struct device devices[DEVICES] = {
     {REG_RTC, IRQ_RTC},
     {REG_UART0, IRQ_UART0},
     {REG_KMI0, IRQ_KMI0},
-    {REG_KMI1, IRQ_KMI1}
+    {REG_KMI1, IRQ_KMI1},
+    {REG_LCD, IRQ_LCD}
 };
 
 unsigned int icp_getbase(unsigned int id)
