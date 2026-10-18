@@ -25,33 +25,47 @@ static unsigned int cacheindex;
 static unsigned int cachecluster;
 static unsigned int clock;
 
-static void sendblockrequest(unsigned int event, unsigned int reply, unsigned int sector)
+static void sendblockrequest(unsigned int event, unsigned int reply, unsigned int sector, unsigned int count)
 {
 
     struct event_blockrequest request;
     struct event_blockresponse response;
 
     request.offset = partoffset + sector * sectorsize;
-    request.count = sectorsize;
+    request.count = count * sectorsize;
 
     channel_send(1, block, event, sizeof (struct event_blockrequest), &request);
     channel_wait(1, block, reply, sizeof (struct event_blockresponse), &response);
 
 }
 
+static void *readsectors(unsigned int sector, unsigned int count)
+{
+
+    sendblockrequest(EVENT_BLOCKREADREQUEST, EVENT_BLOCKREADRESPONSE, sector, count);
+
+    return (void *)blockinfo.buffer;
+
+}
+
+static void writesectors(unsigned int sector, unsigned int count)
+{
+
+    sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, sector, count);
+
+}
+
 static void *readsector(unsigned int sector)
 {
 
-    sendblockrequest(EVENT_BLOCKREADREQUEST, EVENT_BLOCKREADRESPONSE, sector);
-
-    return (void *)blockinfo.buffer;
+    return readsectors(sector, 1);
 
 }
 
 static void writesector(unsigned int sector)
 {
 
-    sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, sector);
+    writesectors(sector, 1);
 
 }
 
@@ -756,7 +770,9 @@ static unsigned int readdirectory(unsigned int root, unsigned int first, unsigne
 static unsigned int readfile(unsigned int first, unsigned int size, unsigned int offset, unsigned int count, unsigned int capacity, void *data)
 {
 
-    unsigned int sector;
+    unsigned int skip = offset % sectorsize;
+    unsigned int cluster;
+    unsigned int length;
 
     if (offset >= size)
         return 0;
@@ -767,15 +783,29 @@ static unsigned int readfile(unsigned int first, unsigned int size, unsigned int
     if (count > size - offset)
         count = size - offset;
 
-    if (count > sectorsize - offset % sectorsize)
-        count = sectorsize - offset % sectorsize;
+    if (count > blockinfo.buffersize - skip)
+        count = blockinfo.buffersize - skip;
 
-    sector = findsector(first, offset);
+    cluster = findcluster(first, offset / clustersize, 0);
 
-    if (!sector)
+    if (!cluster)
         return 0;
 
-    return buffer_write(data, capacity, (char *)readsector(sector) + offset % sectorsize, count, 0);
+    for (length = clustersize - offset % clustersize; length < count; length += clustersize)
+    {
+
+        if (nextcluster(cachecluster) != cachecluster + 1)
+            break;
+
+        cachecluster++;
+        cacheindex++;
+
+    }
+
+    if (count > length)
+        count = length;
+
+    return buffer_write(data, capacity, (char *)readsectors(clustersector(cluster) + (offset % clustersize) / sectorsize, (skip + count + sectorsize - 1) / sectorsize) + skip, count, 0);
 
 }
 
