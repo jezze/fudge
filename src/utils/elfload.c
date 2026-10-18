@@ -141,53 +141,71 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
 
                 struct elf_relocation relocation;
                 struct elf_symbol symbol;
-                unsigned int addend = 0;
+                unsigned int address;
+                unsigned int place;
+                unsigned int offset;
                 unsigned int value;
 
                 fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
                 fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
-                if (symbol.shindex)
+                address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+                place = base + dataheader->offset + relocation.offset;
+
+                if (!address)
                 {
 
-                    addend = base + sectionheaders[symbol.shindex].offset + symbol.value;
+                    channel_send_fmt(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+
+                    unresolved++;
 
                 }
 
-                else
+                switch ((header->machine << 8) | (relocation.info & 0xFF))
                 {
 
-                    unsigned int address = findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+                case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_32:
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_ABS32:
+                    value += address;
 
-                    if (address)
+                    break;
+
+                case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_PC32:
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_REL32:
+                    value += address - place;
+
+                    break;
+
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_CALL:
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_JUMP24:
+                    offset = (value & 0x00FFFFFF) << 2;
+
+                    if (offset & 0x02000000)
+                        offset |= 0xFC000000;
+
+                    offset += address - place;
+
+                    if (offset + 0x02000000 >= 0x04000000)
                     {
 
-                        value += address;
-
-                    }
-
-                    else
-                    {
-
-                        channel_send_fmt(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+                        channel_send_fmt(0, source, EVENT_ERROR, "Branch out of range: %s\n", strings + symbol.name);
 
                         unresolved++;
 
                     }
 
-                }
-
-                switch (relocation.info & 0x0F)
-                {
-
-                case ELF_RELOC_TYPE_32:
-                    value += addend;
+                    value = (value & 0xFF000000) | ((offset >> 2) & 0x00FFFFFF);
 
                     break;
 
-                case ELF_RELOC_TYPE_PC32:
-                    value += addend - base - dataheader->offset - relocation.offset;
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_V4BX:
+                    break;
+
+                default:
+                    channel_send_fmt(0, source, EVENT_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+
+                    unresolved++;
 
                     break;
 

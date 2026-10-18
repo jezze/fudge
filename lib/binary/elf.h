@@ -29,6 +29,7 @@
 #define ELF_MACHINE_88K                 0x0005
 #define ELF_MACHINE_860                 0x0007
 #define ELF_MACHINE_MIPS                0x0008
+#define ELF_MACHINE_ARM                 0x0028
 #define ELF_MACHINE_X86_64              0x003E
 
 #define ELF_SECTION_INDEX_UNDEFINED     0x0000
@@ -74,6 +75,11 @@
 #define ELF_RELOC_TYPE_RELATIVE         0x00000008
 #define ELF_RELOC_TYPE_GOTOFF           0x00000009
 #define ELF_RELOC_TYPE_GOTPC            0x0000000A
+#define ELF_RELOC_ARM_ABS32             0x00000002
+#define ELF_RELOC_ARM_REL32             0x00000003
+#define ELF_RELOC_ARM_CALL              0x0000001C
+#define ELF_RELOC_ARM_JUMP24            0x0000001D
+#define ELF_RELOC_ARM_V4BX              0x00000028
 #define ELF_RELOC64_TYPE_64             0x00000001
 #define ELF_RELOC64_TYPE_PC32           0x00000002
 #define ELF_RELOC64_TYPE_PLT32          0x00000004
