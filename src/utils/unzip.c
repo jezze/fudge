@@ -8,6 +8,7 @@
 #define CRCTABLE                        256
 #define EOCDSIZE                        22
 #define EOCDMAX                         (EOCDSIZE + 0xFFFF)
+#define MEMSIZE                         0x02000000
 
 static unsigned int crctable[CRCTABLE];
 static char archive[PATHSIZE];
@@ -65,7 +66,7 @@ static unsigned int createmem(void)
     }
 
     if (memid)
-        data = fs_mmap(1, memtarget, memid);
+        data = fs_mmap(1, memtarget, memid, MEMSIZE);
 
     return data != 0;
 

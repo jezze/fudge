@@ -188,7 +188,7 @@ static void convert(unsigned int reply, char *path, char *to)
 
     }
 
-    pixels = fs_mmap(1, target, id);
+    pixels = fs_mmap(1, target, id, 0);
 
     if (!pixels)
     {

@@ -330,6 +330,7 @@ struct event_mmaprequest
 {
 
     unsigned int id;
+    unsigned int size;
 
 };
 

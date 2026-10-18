@@ -12,7 +12,6 @@
 #define ROOT                            1
 #define FILEPAGES                       (MEMSRV_FILESIZE / MEMSRV_PAGESIZE)
 #define NONE                            0xFFFF
-#define MAPS                            ((KERNEL_VBUFFER - KERNEL_VMEM) / MEMSRV_FILESIZE)
 
 struct file
 {
@@ -180,7 +179,7 @@ static unsigned int writedata(struct file *file, unsigned char *buffer, unsigned
 
 }
 
-static struct mmap_entry *findmapping(struct mmap_header *header, unsigned int id, unsigned long vaddress)
+static struct mmap_entry *findmapping(struct mmap_header *header, unsigned int id)
 {
 
     unsigned int i;
@@ -190,8 +189,48 @@ static struct mmap_entry *findmapping(struct mmap_header *header, unsigned int i
 
         struct mmap_entry *entry = &header->entries[i];
 
-        if (entry->type == MMAP_TYPE_MEM && (entry->paddress == id || entry->vaddress == vaddress))
+        if (entry->type == MMAP_TYPE_MEM && entry->paddress == id)
             return entry;
+
+    }
+
+    return 0;
+
+}
+
+static struct mmap_entry *findoverlap(struct mmap_header *header, unsigned long vaddress, unsigned int size)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header->nentries; i++)
+    {
+
+        struct mmap_entry *entry = &header->entries[i];
+
+        if (entry->type == MMAP_TYPE_MEM && entry->vaddress < vaddress + size && vaddress < entry->vaddress + entry->size)
+            return entry;
+
+    }
+
+    return 0;
+
+}
+
+/* the lowest free range in the task's mem: window */
+static unsigned long findgap(struct mmap_header *header, unsigned int size)
+{
+
+    unsigned long vaddress = KERNEL_VMEM;
+    struct mmap_entry *entry;
+
+    while (vaddress + size <= KERNEL_VBUFFER)
+    {
+
+        if (!(entry = findoverlap(header, vaddress, size)))
+            return vaddress;
+
+        vaddress = entry->vaddress + entry->size;
 
     }
 
@@ -404,7 +443,8 @@ static unsigned int remove(unsigned int parent, unsigned int id)
 
 }
 
-static unsigned long map(unsigned int source, unsigned int id)
+/* a size of 0 maps the file as it is now; a larger size reserves room for the file to grow */
+static unsigned long map(unsigned int source, unsigned int id, unsigned int size)
 {
 
     struct file *file = getfile(id);
@@ -412,37 +452,32 @@ static unsigned long map(unsigned int source, unsigned int id)
     struct task *task = gettask(source, &itask);
     struct mmap_header *header;
     struct mmap_entry *entry;
-    unsigned int i;
+    unsigned long vaddress;
 
     if (!file || !task)
         return 0;
 
+    if (!size)
+        size = file->size;
+
+    if (!size || size > MEMSRV_FILESIZE)
+        return 0;
+
+    size = countpages(size) * MEMSRV_PAGESIZE;
     header = (struct mmap_header *)task->mmap;
-    entry = findmapping(header, id, 0);
+    entry = findmapping(header, id);
 
     if (entry)
-        return entry->vaddress;
+        return (entry->size >= size) ? entry->vaddress : 0;
 
-    for (i = 0; i < MAPS; i++)
-    {
+    vaddress = findgap(header, size);
 
-        unsigned long vaddress = KERNEL_VMEM + i * MEMSRV_FILESIZE;
+    if (!vaddress || !mmap_allocate(header, MMAP_TYPE_MEM, id, vaddress, size, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE))
+        return 0;
 
-        if (!findmapping(header, 0, vaddress))
-        {
+    file->tasks |= 1 << itask;
 
-            if (!mmap_allocate(header, MMAP_TYPE_MEM, id, vaddress, MEMSRV_FILESIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE))
-                return 0;
-
-            file->tasks |= 1 << itask;
-
-            return vaddress;
-
-        }
-
-    }
-
-    return 0;
+    return vaddress;
 
 }
 
@@ -462,12 +497,12 @@ static unsigned int unmap(unsigned int source, unsigned int id)
         {
 
             struct mmap_header *header = (struct mmap_header *)task->mmap;
-            struct mmap_entry *entry = findmapping(header, id, 0);
+            struct mmap_entry *entry = findmapping(header, id);
 
             if (entry)
             {
 
-                unmapcallback(entry->vaddress, MEMSRV_FILESIZE);
+                unmapcallback(entry->vaddress, entry->size);
                 mmap_remove(header, entry);
 
             }
@@ -510,7 +545,7 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 
     spinlock_acquire(&spinlock);
 
-    response.address = map(source, request->id);
+    response.address = map(source, request->id, request->size);
 
     spinlock_release(&spinlock);
 

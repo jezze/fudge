@@ -4,7 +4,7 @@ unsigned int fs_absolute(char *out, unsigned int size, char *pwd, char *path);
 unsigned int fs_canonical(char *out, unsigned int size, char *path);
 unsigned int fs_dirlength(char *path);
 unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id);
-void *fs_mmap(unsigned int ichannel, unsigned int target, unsigned int id);
+void *fs_mmap(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int size);
 unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int id);
 unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 unsigned int fs_read_full(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset);
