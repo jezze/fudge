@@ -5,7 +5,7 @@
 #include <modules/bus.h>
 #include "virt.h"
 
-#define DEVICES                         4
+#define DEVICES                         (VIRT_VIRTIO + VIRT_VIRTIOS)
 #define ROUTINES                        64
 #define SHARED                          4
 #define REG_PLIC                        0x0C000000
@@ -15,8 +15,10 @@
 #define REG_PLIC_CLAIM                  0x201004
 #define REG_RTC                         0x00101000
 #define REG_UART0                       0x10000000
+#define REG_VIRTIO                      0x10001000
 #define IRQ_RTC                         11
 #define IRQ_UART0                       10
+#define IRQ_VIRTIO                      1
 
 struct device
 {
@@ -33,7 +35,15 @@ static struct device devices[DEVICES] = {
     {0},
     {0, 0},
     {REG_RTC, IRQ_RTC},
-    {REG_UART0, IRQ_UART0}
+    {REG_UART0, IRQ_UART0},
+    {REG_VIRTIO + 0x0000, IRQ_VIRTIO + 0},
+    {REG_VIRTIO + 0x1000, IRQ_VIRTIO + 1},
+    {REG_VIRTIO + 0x2000, IRQ_VIRTIO + 2},
+    {REG_VIRTIO + 0x3000, IRQ_VIRTIO + 3},
+    {REG_VIRTIO + 0x4000, IRQ_VIRTIO + 4},
+    {REG_VIRTIO + 0x5000, IRQ_VIRTIO + 5},
+    {REG_VIRTIO + 0x6000, IRQ_VIRTIO + 6},
+    {REG_VIRTIO + 0x7000, IRQ_VIRTIO + 7}
 };
 
 unsigned long virt_getbase(unsigned int id)

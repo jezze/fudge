@@ -4,5 +4,7 @@
     { path: initrd:kernel/virt-timer.ko }
     { path: initrd:kernel/ns16550.ko }
     { path: initrd:kernel/goldfish.ko }
+    { path: initrd:kernel/virtio-block.ko }
+    { path: initrd:kernel/virtio-network.ko }
   ]
 }

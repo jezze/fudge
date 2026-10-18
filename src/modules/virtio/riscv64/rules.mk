@@ -1,0 +1,31 @@
+M:=\
+    $(DIR_SRC)/modules/virtio/virtio-network.ko \
+
+N:=\
+    $(DIR_SRC)/modules/virtio/virtio-network.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/virtio/riscv64/virtio.o \
+    $(DIR_SRC)/modules/virtio/queue.o \
+    $(DIR_SRC)/modules/virtio/network.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
+
+M:=\
+    $(DIR_SRC)/modules/virtio/virtio-block.ko \
+
+N:=\
+    $(DIR_SRC)/modules/virtio/virtio-block.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/virtio/riscv64/virtio.o \
+    $(DIR_SRC)/modules/virtio/queue.o \
+    $(DIR_SRC)/modules/virtio/block.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk
