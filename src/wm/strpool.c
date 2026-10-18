@@ -14,7 +14,7 @@ struct strindex
 };
 
 static char strdata[STRINGDATA_SIZE];
-static unsigned int strdataoffset;
+static unsigned int strdataoffset = 1;
 static struct strindex strindex[MAX_STRINGS];
 
 static unsigned int findslot(void)
@@ -57,7 +57,7 @@ unsigned int strpool_getcstringlength(unsigned int index)
 static unsigned int savedata(unsigned int count, void *data)
 {
 
-    unsigned int slot = findslot();
+    unsigned int slot = (count <= STRINGDATA_SIZE - strdataoffset) ? findslot() : 0;
 
     if (slot)
     {
