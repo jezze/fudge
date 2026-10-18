@@ -195,7 +195,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 void mailbox_setup(void)
 {
 
-    node_operands_init(&operands, operands_pick, operands_place);
+    node_operands_init(&operands, operands_pick, operands_place, 0);
 
 }
 

@@ -112,7 +112,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 void module_init(void)
 {
 
-    node_operands_init(&operands, 0, operands_place);
+    node_operands_init(&operands, 0, operands_place, 0);
 
 }
 

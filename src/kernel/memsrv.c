@@ -750,7 +750,7 @@ void memsrv_untask(unsigned int itask)
 void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, unsigned int size))
 {
 
-    node_operands_init(&operands, 0, operands_place);
+    node_operands_init(&operands, 0, operands_place, 0);
     service_init(&service);
     spinlock_init(&spinlock);
 

@@ -450,10 +450,8 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void cpio_setup(unsigned int addr)
 {
 
-    node_operands_init(&operands, 0, operands_place);
+    node_operands_init(&operands, 0, operands_place, locate);
     service_init(&service);
-
-    operands.locate = locate;
 
     address = addr;
     inode = pool_picknode(0, &operands);

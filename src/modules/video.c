@@ -151,7 +151,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 void module_init(void)
 {
 
-    node_operands_init(&operands, 0, operands_place);
+    node_operands_init(&operands, 0, operands_place, 0);
 
 }
 

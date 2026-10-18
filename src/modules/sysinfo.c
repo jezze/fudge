@@ -479,7 +479,7 @@ void module_init(void)
     record_init(&rootrecords[6], 0x1005, RECORD_TYPE_NORMAL, 0, 7, 8, "buses.mq");
     record_init(&rootrecords[7], 0x1006, RECORD_TYPE_NORMAL, 0, 8, 10, "drivers.mq");
     spinlock_init(&spinlock);
-    node_operands_init(&operands, 0, operands_place);
+    node_operands_init(&operands, 0, operands_place, 0);
     service_init(&service);
 
     inode = pool_picknode(0, &operands);
