@@ -71,7 +71,7 @@ static void handlehttppacket(unsigned int ethernet, unsigned int source, struct 
         if (count > 4 && buffer_match(buffer, "GET ", 4))
         {
 
-            unsigned int end = buffer_lastbyte(buffer, 4096, ' ');
+            unsigned int end = buffer_lastbyte(buffer, count, ' ');
 
             cstring_write_zero(request, 128, buffer_write(request, 128, buffer + 4, end - 4 - 1, 0));
 
