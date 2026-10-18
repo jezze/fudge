@@ -24,6 +24,7 @@ static unsigned int fsinfo;
 static unsigned int cachefirst;
 static unsigned int cacheindex;
 static unsigned int cachecluster;
+static unsigned int nextfree;
 static unsigned int clock;
 
 static void sendblockrequest(unsigned int event, unsigned int reply, unsigned int sector, unsigned int count)
@@ -208,40 +209,41 @@ static void addfree(unsigned int count, unsigned int used)
 static unsigned int allocate(void)
 {
 
-    unsigned int perSector = sectorsize / 4;
-    unsigned int *table = 0;
-    unsigned short *table16 = 0;
-    unsigned int cluster;
+    unsigned int loaded = 0;
+    unsigned char *table = 0;
+    unsigned int n;
 
-    for (cluster = 2; cluster < clustercount; cluster++)
+    for (n = 0; n < clustercount - 2; n++)
     {
 
+        unsigned int cluster = 2 + (nextfree + n) % (clustercount - 2);
         unsigned int used;
 
-        if (fattype == 32)
+        if (fattype == 12)
         {
 
-            if (!table || cluster % perSector == 0)
-                table = readsector(fatstart + cluster / perSector);
-
-            used = table[cluster % perSector] & FAT_CLUSTER_MASK;
-
-        }
-
-        else if (fattype == 16)
-        {
-
-            if (!table16 || cluster % (sectorsize / 2) == 0)
-                table16 = readsector(fatstart + cluster / (sectorsize / 2));
-
-            used = table16[cluster % (sectorsize / 2)];
+            used = nextcluster(cluster);
 
         }
 
         else
         {
 
-            used = nextcluster(cluster);
+            unsigned int perSector = sectorsize / (fattype / 8);
+            unsigned int sector = fatstart + cluster / perSector;
+
+            if (sector != loaded)
+            {
+
+                table = readsector(sector);
+                loaded = sector;
+
+            }
+
+            if (fattype == 32)
+                used = ((unsigned int *)table)[cluster % perSector] & FAT_CLUSTER_MASK;
+            else
+                used = ((unsigned short *)table)[cluster % perSector];
 
         }
 
@@ -250,6 +252,8 @@ static unsigned int allocate(void)
 
             unsigned int chunk = blockinfo.buffersize / sectorsize;
             unsigned int i;
+
+            nextfree = cluster - 1;
 
             setcluster(cluster, FAT_CLUSTER_MASK);
             addfree(0, 1);
