@@ -570,6 +570,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 {
 
     struct task *task = pool_gettask(itask);
+    unsigned int inode = 0;
 
     if (task)
     {
@@ -598,12 +599,14 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 
         }
 
-        if (task->thread.ip)
-            return kernel_getchannelinode(itask, 0);
+        inode = (task->thread.ip) ? kernel_getchannelinode(itask, 0) : 0;
+
+        if (!inode)
+            task_unregister(task);
 
     }
 
-    return 0;
+    return inode;
 
 }
 
