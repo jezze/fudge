@@ -101,8 +101,12 @@ cmd_run() {
             test "${networkdevice}" == "smc91c111" || error "Unknown network device on arm: ${networkdevice} (smc91c111)"
             cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none -serial stdio -serial vc"
             ;;
+        riscv64)
+            test "${storage}${iso}${network}${audio}${uefi}" == "nnnnn" || error "No storage, ISO, network, audio or UEFI on riscv64"
+            cmd="qemu-system-riscv64 -nodefaults -machine virt -m 256 -audio none -display none -serial stdio"
+            ;;
         *)
-            error "Unknown architecture: ${arch} (x86, x86_64 or arm)"
+            error "Unknown architecture: ${arch} (x86, x86_64, arm or riscv64)"
             ;;
     esac
 
@@ -177,8 +181,8 @@ cmd_run() {
             x86_64)
                 error "qemu can not load a 64-bit kernel, boot from a disk or an ISO (-S, -d or -i)"
                 ;;
-            arm)
-                ramdisk=$(sed -n 's/^#define ARCH_RAMDISK_BASE *//p' src/kernel/arm/arch.h)
+            arm|riscv64)
+                ramdisk=$(sed -n 's/^#define ARCH_RAMDISK_BASE *//p' src/kernel/${arch}/arch.h)
                 cmd="${cmd} -kernel fudge -device loader,file=fudge.cpio,addr=${ramdisk},force-raw=on"
                 ;;
         esac
@@ -415,7 +419,7 @@ cmd_help() {
     echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2), sd on arm (the only one there)"
     echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap), smc91c111 on arm (the only one there)"
     echo "        -a ac97 or virtio (default ac97), -o pa, pipewire, alsa or wav (default pa)"
-    echo "        -x x86, x86_64 or arm (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
+    echo "        -x x86, x86_64, arm or riscv64 (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
     echo "    nat <interface>"
     echo "    connect"
     echo "    disconnect"
