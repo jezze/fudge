@@ -102,7 +102,11 @@ cmd_run() {
             cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none -serial stdio -serial vc"
             ;;
         riscv64)
-            test "${storage}${iso}${network}${audio}${uefi}" == "nnnnn" || error "No storage, ISO, network, audio or UEFI on riscv64"
+            test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on riscv64"
+            storagedevice="${storagedevice:-virtio}"
+            networkdevice="${networkdevice:-virtio}"
+            test "${storagedevice}" == "virtio" || error "Unknown storage device on riscv64: ${storagedevice} (virtio)"
+            test "${networkdevice}" == "virtio" || error "Unknown network device on riscv64: ${networkdevice} (virtio)"
             cmd="qemu-system-riscv64 -nodefaults -machine virt -m 256 -audio none -display none -serial stdio"
             ;;
         *)
@@ -134,7 +138,12 @@ cmd_run() {
                 cmd="${cmd} ${drive} -device qemu-xhci,id=xhci0 -device usb-storage,drive=disk0,bus=xhci0.0"
                 ;;
             virtio)
-                cmd="${cmd} ${drive} -device virtio-blk-pci,drive=disk0"
+                if test "${arch}" == "riscv64"
+                then
+                    cmd="${cmd} ${drive} -device virtio-blk-device,drive=disk0"
+                else
+                    cmd="${cmd} ${drive} -device virtio-blk-pci,drive=disk0"
+                fi
                 ;;
             *)
                 error "Unknown storage device: ${storagedevice} (ahci, ide, nvme, sd, usb or virtio)"
@@ -169,7 +178,7 @@ cmd_run() {
     if test "${iso}" == "y"
     then
         cmd="${cmd} -cdrom ${isoname} -boot d"
-    elif test "${storage}" != "y" || test "${arch}" == "arm"
+    elif test "${storage}" != "y" || test "${arch}" == "arm" || test "${arch}" == "riscv64"
     then
         test -f fudge || error "Kernel not found. Forgot to build?"
         test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
@@ -199,7 +208,12 @@ cmd_run() {
                 cmd="${cmd} -net nic,model=smc91c111,netdev=eth0"
                 ;;
             virtio)
-                cmd="${cmd} -device virtio-net-pci,netdev=eth0"
+                if test "${arch}" == "riscv64"
+                then
+                    cmd="${cmd} -device virtio-net-device,netdev=eth0"
+                else
+                    cmd="${cmd} -device virtio-net-pci,netdev=eth0"
+                fi
                 ;;
             *)
                 error "Unknown network device: ${networkdevice} (rtl8139, smc91c111 or virtio)"
