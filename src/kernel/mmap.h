@@ -1,5 +1,4 @@
-#define MMAP_SIZE                       0x00001000
-#define MMAP_SLOTS                      64
+#define MMAP_SIZE                       0x00004000
 #define MMAP_TYPE_NORMAL                0
 #define MMAP_TYPE_ZERO                  1
 #define MMAP_TYPE_BINARY                2
@@ -22,6 +21,9 @@ struct mmap_entry
     unsigned int msize;
 
 };
+
+/* the header's other fields take the place of one entry */
+#define MMAP_SLOTS                      (MMAP_SIZE / sizeof (struct mmap_entry) - 1)
 
 struct mmap_header
 {

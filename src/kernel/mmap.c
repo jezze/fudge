@@ -78,7 +78,5 @@ void mmap_initheader(struct mmap_header *header)
     header->nentries = 0;
     header->ntables = 0;
 
-    buffer_clear(header->entries, sizeof (struct mmap_entry) * MMAP_SLOTS);
-
 }
 
