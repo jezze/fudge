@@ -104,35 +104,10 @@ static unsigned int nextcluster(unsigned int cluster)
 
 }
 
-static unsigned int findsector(unsigned int first, unsigned int offset)
+static unsigned int clustersector(unsigned int cluster)
 {
 
-    unsigned int index = offset / clustersize;
-    unsigned int cluster = first;
-    unsigned int i = 0;
-
-    if (!first)
-        return (fattype != 32 && offset < rootsectors * sectorsize) ? rootstart + offset / sectorsize : 0;
-
-    if (cachefirst == first && cacheindex <= index)
-    {
-
-        cluster = cachecluster;
-        i = cacheindex;
-
-    }
-
-    for (; i < index && cluster >= 2 && cluster < FAT_CLUSTER_END; i++)
-        cluster = nextcluster(cluster);
-
-    if (cluster < 2 || cluster >= FAT_CLUSTER_END)
-        return 0;
-
-    cachefirst = first;
-    cacheindex = index;
-    cachecluster = cluster;
-
-    return datastart + (cluster - 2) * (clustersize / sectorsize) + (offset % clustersize) / sectorsize;
+    return datastart + (cluster - 2) * (clustersize / sectorsize);
 
 }
 
@@ -267,7 +242,7 @@ static unsigned int allocate(void)
             {
 
                 buffer_clear((void *)blockinfo.buffer, sectorsize);
-                writesector(datastart + (cluster - 2) * (clustersize / sectorsize) + i);
+                writesector(clustersector(cluster) + i);
 
             }
 
@@ -281,16 +256,24 @@ static unsigned int allocate(void)
 
 }
 
-static unsigned int extend(unsigned int first, unsigned int index)
+static unsigned int findcluster(unsigned int first, unsigned int index, unsigned int grow)
 {
 
     unsigned int cluster = first;
-    unsigned int i;
+    unsigned int i = 0;
 
-    if (!first)
+    if (cachefirst == first && cacheindex <= index)
+    {
+
+        cluster = cachecluster;
+        i = cacheindex;
+
+    }
+
+    if (cluster < 2 || cluster >= FAT_CLUSTER_END)
         return 0;
 
-    for (i = 0; i < index; i++)
+    for (; i < index; i++)
     {
 
         unsigned int next = nextcluster(cluster);
@@ -298,9 +281,7 @@ static unsigned int extend(unsigned int first, unsigned int index)
         if (next < 2 || next >= FAT_CLUSTER_END)
         {
 
-            next = allocate();
-
-            if (!next)
+            if (!grow || !(next = allocate()))
                 return 0;
 
             setcluster(cluster, next);
@@ -308,10 +289,31 @@ static unsigned int extend(unsigned int first, unsigned int index)
         }
 
         cluster = next;
+        cachefirst = first;
+        cacheindex = i + 1;
+        cachecluster = cluster;
 
     }
 
+    cachefirst = first;
+    cacheindex = index;
+    cachecluster = cluster;
+
     return cluster;
+
+}
+
+static unsigned int findsector(unsigned int first, unsigned int offset)
+{
+
+    unsigned int cluster;
+
+    if (!first)
+        return (fattype != 32 && offset < rootsectors * sectorsize) ? rootstart + offset / sectorsize : 0;
+
+    cluster = findcluster(first, offset / clustersize, 0);
+
+    return (cluster) ? clustersector(cluster) + (offset % clustersize) / sectorsize : 0;
 
 }
 
@@ -800,7 +802,7 @@ static unsigned int getdirsector(unsigned int first, unsigned int offset)
 
     unsigned int sector = findsector(first, offset);
 
-    if (!sector && extend(first, offset / clustersize))
+    if (!sector && findcluster(first, offset / clustersize, 1))
         sector = findsector(first, offset);
 
     return sector;
@@ -1126,12 +1128,12 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 
     }
 
-    cluster = extend(first, offset / clustersize);
+    cluster = findcluster(first, offset / clustersize, 1);
 
     if (!cluster)
         return 0;
 
-    sector = datastart + (cluster - 2) * (clustersize / sectorsize) + (offset % clustersize) / sectorsize;
+    sector = clustersector(cluster) + (offset % clustersize) / sectorsize;
 
     buffer_write(readsector(sector), sectorsize, buffer, count, offset % sectorsize);
     writesector(sector);
