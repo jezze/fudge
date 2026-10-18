@@ -2,11 +2,8 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/ethernet.h>
-#include <modules/pci/pci.h>
 #include "virtio.h"
 
-#define DEVICE                          0x1000
-#define DEVICEMODERN                    0x1041
 #define FEATURE_MAC                     (1 << 5)
 #define BUFFERSIZE                      2048
 #define RXBUFFERS                       16
@@ -117,7 +114,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && (pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE || pci_inw(id, PCI_CONFIG_DEVICE) == DEVICEMODERN);
+    return virtio_match(id, VIRTIO_TYPE_NETWORK);
 
 }
 
@@ -150,8 +147,6 @@ static void driver_reset(unsigned int id)
         virtio_push(&rxqueue, i);
 
     }
-
-    pci_setmaster(id);
 
     ready = 1;
 
@@ -195,14 +190,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, PCI_BUS);
+    virtio_registerdriver(&driver);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, PCI_BUS);
+    virtio_unregisterdriver(&driver);
 
 }
 

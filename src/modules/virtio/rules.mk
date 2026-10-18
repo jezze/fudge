@@ -6,6 +6,7 @@ N:=\
 
 O:=\
     $(DIR_SRC)/modules/virtio/virtio.o \
+    $(DIR_SRC)/modules/virtio/queue.o \
     $(DIR_SRC)/modules/virtio/network.o \
 
 L:=\
@@ -21,6 +22,7 @@ N:=\
 
 O:=\
     $(DIR_SRC)/modules/virtio/virtio.o \
+    $(DIR_SRC)/modules/virtio/queue.o \
     $(DIR_SRC)/modules/virtio/block.o \
 
 L:=\

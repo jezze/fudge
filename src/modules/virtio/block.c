@@ -2,11 +2,8 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/block.h>
-#include <modules/pci/pci.h>
 #include "virtio.h"
 
-#define DEVICE                          0x1001
-#define DEVICEMODERN                    0x1042
 #define BLOCKSIZE                       512
 #define REQUEST_READ                    0
 #define REQUEST_WRITE                   1
@@ -113,7 +110,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR && (pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE || pci_inw(id, PCI_CONFIG_DEVICE) == DEVICEMODERN);
+    return virtio_match(id, VIRTIO_TYPE_BLOCK);
 
 }
 
@@ -128,8 +125,6 @@ static void driver_reset(unsigned int id)
 
     if (!virtio_setqueue(&queue, &device, 0, memory) || queue.size < 3)
         return;
-
-    pci_setmaster(id);
 
     ready = 1;
 
@@ -172,14 +167,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, PCI_BUS);
+    virtio_registerdriver(&driver);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, PCI_BUS);
+    virtio_unregisterdriver(&driver);
 
 }
 

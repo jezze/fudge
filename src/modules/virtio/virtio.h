@@ -20,6 +20,8 @@
 #define VIRTIO_NOVECTOR                 0xFFFF
 #define VIRTIO_QUEUESIZE                256
 #define VIRTIO_QUEUEMEMORY              0x4000
+#define VIRTIO_TYPE_NETWORK             1
+#define VIRTIO_TYPE_BLOCK               2
 
 struct virtio_desc
 {
@@ -79,12 +81,16 @@ struct virtio_queue
 
 };
 
+unsigned int virtio_match(unsigned int id, unsigned int type);
+void virtio_registerdriver(struct base_driver *driver);
+void virtio_unregisterdriver(struct base_driver *driver);
 unsigned int virtio_setup(struct virtio_device *device, unsigned int id);
 void virtio_reset(struct virtio_device *device);
 unsigned int virtio_negotiate(struct virtio_device *device, unsigned int features);
 void virtio_setstatus(struct virtio_device *device, unsigned char status);
 unsigned char virtio_getisr(struct virtio_device *device);
 unsigned char virtio_getconfig(struct virtio_device *device, unsigned int offset);
+unsigned int virtio_initqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, unsigned short size, void *memory);
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory);
 void virtio_setdesc(struct virtio_queue *queue, unsigned int index, void *buffer, unsigned int length, unsigned short flags, unsigned short next);
 void virtio_push(struct virtio_queue *queue, unsigned short head);

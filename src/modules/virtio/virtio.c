@@ -2,6 +2,7 @@
 #include <kernel.h>
 #include <cpu.h>
 #include <arch.h>
+#include <modules/driver.h>
 #include <modules/io/io.h>
 #include <modules/pci/pci.h>
 #include <modules/pic/pic.h>
@@ -28,6 +29,9 @@
 #define COMMON_QUEUEDRIVER              0x28
 #define COMMON_QUEUEDEVICE              0x30
 #define FEATURE_VERSION1                (1 << 0)
+#define DEVICE_LEGACYNETWORK            0x1000
+#define DEVICE_LEGACYBLOCK              0x1001
+#define DEVICE_MODERN                   0x1040
 
 static unsigned long pagealign(unsigned long value)
 {
@@ -172,10 +176,37 @@ static unsigned int findmodern(struct virtio_device *device, unsigned int id)
 
 }
 
+unsigned int virtio_match(unsigned int id, unsigned int type)
+{
+
+    unsigned short device = pci_inw(id, PCI_CONFIG_DEVICE);
+
+    if (pci_inw(id, PCI_CONFIG_VENDOR) != VIRTIO_VENDOR)
+        return 0;
+
+    return device == DEVICE_MODERN + type || (type == VIRTIO_TYPE_NETWORK && device == DEVICE_LEGACYNETWORK) || (type == VIRTIO_TYPE_BLOCK && device == DEVICE_LEGACYBLOCK);
+
+}
+
+void virtio_registerdriver(struct base_driver *driver)
+{
+
+    base_registerdriver(driver, PCI_BUS);
+
+}
+
+void virtio_unregisterdriver(struct base_driver *driver)
+{
+
+    base_unregisterdriver(driver, PCI_BUS);
+
+}
+
 unsigned int virtio_setup(struct virtio_device *device, unsigned int id)
 {
 
     buffer_clear(device, sizeof (struct virtio_device));
+    pci_setmaster(id);
 
     device->id = id;
 
@@ -293,8 +324,6 @@ unsigned char virtio_getconfig(struct virtio_device *device, unsigned int offset
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory)
 {
 
-    unsigned long base = pagealign((unsigned long)memory);
-    unsigned long used;
     unsigned short size;
 
     if (device->failed)
@@ -327,25 +356,8 @@ unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *d
 
     }
 
-    if (!size || size > VIRTIO_QUEUESIZE)
+    if (!virtio_initqueue(queue, device, index, size, memory))
         return 0;
-
-    used = pagealign(base + 16 * size + 6 + 2 * size);
-
-    if (used + 6 + 8 * size > (unsigned long)memory + VIRTIO_QUEUEMEMORY)
-        return 0;
-
-    buffer_clear((void *)base, used + 6 + 8 * size - base);
-
-    queue->device = device;
-    queue->index = index;
-    queue->size = size;
-    queue->lastused = 0;
-    queue->descs = (struct virtio_desc *)base;
-    queue->avail = (struct virtio_ringhead *)(base + 16 * size);
-    queue->availring = (unsigned short *)(queue->avail + 1);
-    queue->used = (struct virtio_ringhead *)used;
-    queue->usedring = (struct virtio_usedelement *)(queue->used + 1);
 
     if (device->modern)
     {
@@ -362,33 +374,11 @@ unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *d
     else
     {
 
-        io_outd(device->io + VIRTIO_REG_QUEUEADDRESS, base >> 12);
+        io_outd(device->io + VIRTIO_REG_QUEUEADDRESS, (unsigned long)queue->descs >> 12);
 
     }
 
     return 1;
-
-}
-
-void virtio_setdesc(struct virtio_queue *queue, unsigned int index, void *buffer, unsigned int length, unsigned short flags, unsigned short next)
-{
-
-    volatile struct virtio_desc *desc = &queue->descs[index];
-    unsigned long address = (unsigned long)buffer;
-
-    desc->address = address;
-    desc->addresshigh = (address >> 16) >> 16;
-    desc->length = length;
-    desc->flags = flags;
-    desc->next = next;
-
-}
-
-void virtio_push(struct virtio_queue *queue, unsigned short head)
-{
-
-    queue->availring[queue->avail->index % queue->size] = head;
-    queue->avail->index++;
 
 }
 
@@ -399,25 +389,6 @@ void virtio_notify(struct virtio_queue *queue)
         write16(queue->notifyaddress, queue->index);
     else
         io_outw(queue->device->io + VIRTIO_REG_QUEUENOTIFY, queue->index);
-
-}
-
-unsigned int virtio_pending(struct virtio_queue *queue)
-{
-
-    return queue->lastused != queue->used->index;
-
-}
-
-unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length)
-{
-
-    volatile struct virtio_usedelement *element = &queue->usedring[queue->lastused % queue->size];
-
-    *length = element->length;
-    queue->lastused++;
-
-    return element->id;
 
 }
 
