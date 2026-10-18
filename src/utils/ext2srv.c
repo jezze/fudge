@@ -886,56 +886,64 @@ static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsig
 static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int rid, void *data)
 {
 
-    if (roffset <= node->sizeLow)
+    unsigned int igroup = (rid - 1) / sb.nodeCountGroup;
+    unsigned int changed = 0;
+    unsigned int total = 0;
+
+    if (roffset > node->sizeLow)
+        return 0;
+
+    while (total < rcount)
     {
 
-        unsigned int blockoffset = roffset % blocksize;
-        unsigned int sector = getsector(node, roffset);
-        unsigned int count = rcount;
-        unsigned int allocated = 0;
+        unsigned int offset = roffset + total;
+        unsigned int blockoffset = offset % blocksize;
+        unsigned int sector = getsector(node, offset);
+        unsigned int count = rcount - total;
 
         if (count > blocksize - blockoffset)
             count = blocksize - blockoffset;
 
-        if (!sector)
-        {
-
-            unsigned int igroup = (rid - 1) / sb.nodeCountGroup;
-
-            sector = allocsector(node, roffset, igroup);
-
-            if (sector)
-                allocated = 1;
-            else
-                simplewrite(node, rid);
-
-        }
-
         if (sector)
         {
 
-            if (allocated)
-                buffer_clear((void *)blockinfo.buffer, EXT2_MAXBLOCKSIZE);
-            else
+            if (count < blocksize)
                 sendblockreadrequest(blocksize, sector, blocksize);
-
-            buffer_copy((char *)blockinfo.buffer + blockoffset, data, count);
-            sendblockwriterequest(blocksize, sector, blocksize);
-
-            if (roffset + count > node->sizeLow)
-                node->sizeLow = roffset + count;
-            else if (!allocated)
-                return count;
-
-            simplewrite(node, rid);
-
-            return count;
 
         }
 
+        else
+        {
+
+            sector = allocsector(node, offset, igroup);
+            changed = 1;
+
+            if (!sector)
+                break;
+
+            buffer_clear((void *)blockinfo.buffer, blocksize);
+
+        }
+
+        buffer_copy((char *)blockinfo.buffer + blockoffset, (char *)data + total, count);
+        sendblockwriterequest(blocksize, sector, blocksize);
+
+        total += count;
+
     }
 
-    return 0;
+    if (roffset + total > node->sizeLow)
+    {
+
+        node->sizeLow = roffset + total;
+        changed = 1;
+
+    }
+
+    if (changed)
+        simplewrite(node, rid);
+
+    return total;
 
 }
 
