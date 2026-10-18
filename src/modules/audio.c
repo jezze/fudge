@@ -103,8 +103,11 @@ void audio_registerinterface(struct audio_interface *interface)
 void audio_unregisterinterface(struct audio_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

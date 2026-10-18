@@ -66,8 +66,11 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
 void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

@@ -144,6 +144,13 @@ void task_unregister(struct task *task)
 
     resource_unregister(&task->resource);
 
+    task->pinode = 0;
+    task->address = 0;
+    task->mmap = 0;
+    task->buffer = 0;
+    task->thread.ip = 0;
+    task->thread.sp = 0;
+
 }
 
 void task_reset(struct task *task)

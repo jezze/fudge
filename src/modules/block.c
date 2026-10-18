@@ -171,8 +171,11 @@ void block_registerinterface(struct block_interface *interface)
 void block_unregisterinterface(struct block_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

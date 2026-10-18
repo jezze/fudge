@@ -71,8 +71,11 @@ void clock_registerinterface(struct clock_interface *interface)
 void clock_unregisterinterface(struct clock_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

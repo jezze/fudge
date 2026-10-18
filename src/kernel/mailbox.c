@@ -178,6 +178,9 @@ void mailbox_unregister(struct mailbox *mailbox)
 
     resource_unregister(&mailbox->resource);
 
+    mailbox->itask = 0;
+    mailbox->ichannel = 0;
+
 }
 
 void mailbox_init(struct mailbox *mailbox, unsigned long data)

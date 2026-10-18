@@ -89,8 +89,11 @@ void mouse_registerinterface(struct mouse_interface *interface)
 void mouse_unregisterinterface(struct mouse_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

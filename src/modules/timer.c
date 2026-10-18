@@ -94,8 +94,11 @@ void timer_registerinterface(struct timer_interface *interface)
 void timer_unregisterinterface(struct timer_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

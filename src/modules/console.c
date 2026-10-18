@@ -123,8 +123,11 @@ void console_registerinterface(struct console_interface *interface)
 void console_unregisterinterface(struct console_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

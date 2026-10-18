@@ -92,8 +92,11 @@ void ethernet_registerinterface(struct ethernet_interface *interface)
 void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

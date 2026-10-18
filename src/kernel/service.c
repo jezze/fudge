@@ -40,6 +40,7 @@ void service_unregister(struct service *service)
 {
 
     resource_unregister(&service->resource);
+    setname(service, 0);
 
     service->inode = 0;
 

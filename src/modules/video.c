@@ -127,8 +127,11 @@ void video_registerinterface(struct video_interface *interface)
 void video_unregisterinterface(struct video_interface *interface)
 {
 
+    unsigned int inode = interface->service.inode;
+
     resource_unregister(&interface->resource);
     service_unregister(&interface->service);
+    pool_unpicknode(inode);
 
 }
 

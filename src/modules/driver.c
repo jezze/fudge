@@ -69,6 +69,8 @@ void base_unregisterdriver(struct base_driver *driver, unsigned int type)
 
     }
 
+    driver->type = 0;
+
     resource_unregister(&driver->resource);
 
 }
