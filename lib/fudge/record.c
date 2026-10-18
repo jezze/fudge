@@ -1,11 +1,11 @@
 #include "buffer.h"
 #include "record.h"
+#include "utf8.h"
 
 void record_init(struct record *record, unsigned int id, unsigned int type, unsigned int size, unsigned int offset, unsigned int length, char *name)
 {
 
-    if (length > RECORD_NAMESIZE)
-        length = RECORD_NAMESIZE;
+    length = utf8_fit(name, length, RECORD_NAMESIZE);
 
     record->id = id;
     record->type = type;
