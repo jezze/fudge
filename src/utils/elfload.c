@@ -231,6 +231,152 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
 
 }
 
+/* the PCREL_HI20 results of a section, which its PCREL_LO12 relocations point back at */
+static unsigned long hiplaces[4096];
+static unsigned int hioffsets[4096];
+static unsigned int hicount;
+
+static unsigned int readword(unsigned int target, unsigned int id, unsigned int offset)
+{
+
+    unsigned int value;
+
+    fs_read_all(1, target, id, &value, 4, offset);
+
+    return value;
+
+}
+
+static void writeword(unsigned int target, unsigned int id, unsigned int offset, unsigned int value)
+{
+
+    fs_write_all(1, target, id, &value, 4, offset);
+
+}
+
+static unsigned int findhi(unsigned long place, unsigned int *offset)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < hicount; i++)
+    {
+
+        if (hiplaces[i] == place)
+        {
+
+            *offset = hioffsets[i];
+
+            return 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+/* value is the symbol plus addend, place where the instruction or data is when loaded */
+static unsigned int relocateriscv(unsigned int target, unsigned int id, unsigned int type, unsigned long value, unsigned long place, unsigned int fileoffset)
+{
+
+    unsigned int offset = value - place;
+    unsigned int hi = (offset + 0x800) & 0xFFFFF000;
+    unsigned int lo = offset & 0xFFF;
+    unsigned long data;
+    unsigned int word;
+
+    switch (type)
+    {
+
+    case ELF_RELOC_RISCV_32:
+        writeword(target, id, fileoffset, value);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_64:
+        fs_write_all(1, target, id, &value, 8, fileoffset);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_ADD32:
+        writeword(target, id, fileoffset, readword(target, id, fileoffset) + value);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_SUB32:
+        writeword(target, id, fileoffset, readword(target, id, fileoffset) - value);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_ADD64:
+    case ELF_RELOC_RISCV_SUB64:
+        fs_read_all(1, target, id, &data, 8, fileoffset);
+
+        data = (type == ELF_RELOC_RISCV_ADD64) ? data + value : data - value;
+
+        fs_write_all(1, target, id, &data, 8, fileoffset);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_CALL:
+    case ELF_RELOC_RISCV_CALLPLT:
+        writeword(target, id, fileoffset, (readword(target, id, fileoffset) & 0xFFF) | hi);
+        writeword(target, id, fileoffset + 4, (readword(target, id, fileoffset + 4) & 0xFFFFF) | (lo << 20));
+
+        return 1;
+
+    case ELF_RELOC_RISCV_PCRELHI20:
+        if (hicount == 4096)
+            return 0;
+
+        hiplaces[hicount] = place;
+        hioffsets[hicount] = offset;
+        hicount++;
+
+        writeword(target, id, fileoffset, (readword(target, id, fileoffset) & 0xFFF) | hi);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_PCRELLO12I:
+    case ELF_RELOC_RISCV_PCRELLO12S:
+        if (!findhi(value, &offset))
+            return 0;
+
+        lo = offset & 0xFFF;
+        word = readword(target, id, fileoffset);
+        word = (type == ELF_RELOC_RISCV_PCRELLO12I) ? (word & 0xFFFFF) | (lo << 20) : (word & 0x01FFF07F) | ((lo & 0xFE0) << 20) | ((lo & 0x1F) << 7);
+
+        writeword(target, id, fileoffset, word);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_JAL:
+        word = readword(target, id, fileoffset) & 0xFFF;
+        word |= ((offset >> 20) & 1) << 31 | ((offset >> 1) & 0x3FF) << 21 | ((offset >> 11) & 1) << 20 | ((offset >> 12) & 0xFF) << 12;
+
+        writeword(target, id, fileoffset, word);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_BRANCH:
+        word = readword(target, id, fileoffset) & 0x01FFF07F;
+        word |= ((offset >> 12) & 1) << 31 | ((offset >> 5) & 0x3F) << 25 | ((offset >> 1) & 0xF) << 8 | ((offset >> 11) & 1) << 7;
+
+        writeword(target, id, fileoffset, word);
+
+        return 1;
+
+    case ELF_RELOC_RISCV_RELAX:
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 static unsigned int link64(unsigned int source, unsigned int target, unsigned int id, struct elf64_header *header, unsigned int base)
 {
 
@@ -270,6 +416,8 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
 
             fs_read_all(1, target, id, strings, stringheader->size, stringheader->offset);
 
+            hicount = 0;
+
             for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
             {
 
@@ -305,6 +453,22 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
                 }
 
                 value += relocation.addend;
+
+                if (header->machine == ELF_MACHINE_RISCV)
+                {
+
+                    if (!relocateriscv(target, id, relocation.type, value, base + dataheader->offset + relocation.offset, dataheader->offset + relocation.offset))
+                    {
+
+                        channel_send_fmt(0, source, EVENT_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+
+                        unresolved++;
+
+                    }
+
+                    continue;
+
+                }
 
                 switch (relocation.type)
                 {

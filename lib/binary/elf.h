@@ -31,6 +31,7 @@
 #define ELF_MACHINE_MIPS                0x0008
 #define ELF_MACHINE_ARM                 0x0028
 #define ELF_MACHINE_X86_64              0x003E
+#define ELF_MACHINE_RISCV               0x00F3
 
 #define ELF_SECTION_INDEX_UNDEFINED     0x0000
 #define ELF_SECTION_INDEX_LORESERVE     0xFF00
@@ -85,6 +86,20 @@
 #define ELF_RELOC64_TYPE_PLT32          0x00000004
 #define ELF_RELOC64_TYPE_32             0x0000000A
 #define ELF_RELOC64_TYPE_32S            0x0000000B
+#define ELF_RELOC_RISCV_32              0x00000001
+#define ELF_RELOC_RISCV_64              0x00000002
+#define ELF_RELOC_RISCV_BRANCH          0x00000010
+#define ELF_RELOC_RISCV_JAL             0x00000011
+#define ELF_RELOC_RISCV_CALL            0x00000012
+#define ELF_RELOC_RISCV_CALLPLT         0x00000013
+#define ELF_RELOC_RISCV_PCRELHI20       0x00000017
+#define ELF_RELOC_RISCV_PCRELLO12I      0x00000018
+#define ELF_RELOC_RISCV_PCRELLO12S      0x00000019
+#define ELF_RELOC_RISCV_ADD32           0x00000023
+#define ELF_RELOC_RISCV_ADD64           0x00000024
+#define ELF_RELOC_RISCV_SUB32           0x00000027
+#define ELF_RELOC_RISCV_SUB64           0x00000028
+#define ELF_RELOC_RISCV_RELAX           0x00000033
 
 struct elf_header
 {
