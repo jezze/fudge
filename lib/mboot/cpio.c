@@ -25,6 +25,24 @@ static unsigned int getnext(unsigned int id)
 
 }
 
+/* an id is the address of a header, so one from a request is only trusted if walking the archive reaches it */
+static unsigned int isheader(unsigned int id)
+{
+
+    unsigned int current = address;
+
+    do
+    {
+
+        if (current == id)
+            return 1;
+
+    } while ((current = getnext(current)));
+
+    return 0;
+
+}
+
 static unsigned int getroot(void)
 {
 
@@ -284,7 +302,7 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
     struct event_maprequest *request = data;
     struct event_mapresponse response;
 
-    response.address = map(request->id);
+    response.address = (isheader(request->id)) ? map(request->id) : 0;
 
     return kernel_place(inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response);
 
@@ -296,7 +314,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     unsigned char buffer[MESSAGE_SIZE];
     struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
-    struct cpio_header *header = getheader(request->id);
+    struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
 
     if (request->count >= MESSAGE_SIZE - sizeof (struct event_readresponse))
         request->count = MESSAGE_SIZE - sizeof (struct event_readresponse);
@@ -337,7 +355,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statrequest *request = data;
     struct event_statresponse *response = (struct event_statresponse *)buffer;
 
-    response->count = stat(request->id, (struct record *)(response + 1));
+    response->count = (isheader(request->id)) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
     return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
 
@@ -349,7 +367,12 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     struct event_walkrequest *request = data;
     struct event_walkresponse response;
 
-    response.id = walk((request->parent) ? request->parent : getroot(), (char *)(request + 1), request->length);
+    if (!request->parent)
+        response.id = walk(getroot(), (char *)(request + 1), request->length);
+    else if (isheader(request->parent))
+        response.id = walk(request->parent, (char *)(request + 1), request->length);
+    else
+        response.id = 0;
 
     return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
@@ -360,7 +383,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     struct event_writerequest *request = data;
     struct event_writeresponse response;
-    struct cpio_header *header = getheader(request->id);
+    struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
 
     if (header)
     {
