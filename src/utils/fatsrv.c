@@ -3,7 +3,8 @@
 #include <disk.h>
 
 #define ROOT                            1
-#define NAMESIZE                        264
+#define NAMESIZE                        768
+#define UNITSIZE                        260
 
 static struct event_blockinfo blockinfo;
 static unsigned int block;
@@ -570,31 +571,53 @@ static unsigned char getchecksum(struct fat_entry *entry)
 
 }
 
-static void addlongname(struct fat_longname *longname, char *name)
+static void addlongname(struct fat_longname *longname, unsigned short *units)
 {
 
-    unsigned short chars[13];
     unsigned int index = (longname->order & 0x1F) - 1;
-    unsigned int i;
 
-    if (index >= 20)
+    if (index >= UNITSIZE / 13)
         return;
 
-    buffer_copy(chars, longname->name1, 10);
-    buffer_copy(chars + 5, longname->name2, 12);
-    buffer_copy(chars + 11, longname->name3, 4);
+    buffer_copy(units + index * 13, longname->name1, 10);
+    buffer_copy(units + index * 13 + 5, longname->name2, 12);
+    buffer_copy(units + index * 13 + 11, longname->name3, 4);
 
-    for (i = 0; i < 13; i++)
-        name[index * 13 + i] = (chars[i] == 0x0000 || chars[i] == 0xFFFF) ? '\0' : (chars[i] < 0x80) ? chars[i] : '?';
+    if (longname->order & 0x40 && index < UNITSIZE / 13 - 1)
+        units[index * 13 + 13] = 0x0000;
 
-    if (longname->order & 0x40)
-        name[index * 13 + 13] = '\0';
+}
+
+static unsigned int getlongname(unsigned short *units, char *name)
+{
+
+    unsigned int length = 0;
+    unsigned int i;
+
+    for (i = 0; i < UNITSIZE && units[i] != 0x0000 && units[i] != 0xFFFF; i++)
+    {
+
+        unsigned int codepoint = units[i];
+
+        if (codepoint >= 0xD800 && codepoint < 0xDC00 && i + 1 < UNITSIZE && units[i + 1] >= 0xDC00 && units[i + 1] < 0xE000)
+            codepoint = 0x10000 + ((codepoint - 0xD800) << 10) + (units[++i] - 0xDC00);
+        else if (codepoint >= 0xD800 && codepoint < 0xE000)
+            codepoint = 0xFFFD;
+
+        length += utf8_write(name + length, NAMESIZE - 1 - length, codepoint);
+
+    }
+
+    name[length] = '\0';
+
+    return length;
 
 }
 
 static unsigned int nextentry(unsigned int first, unsigned int *offset, struct fat_entry *entry, char *name)
 {
 
+    unsigned short units[UNITSIZE];
     unsigned int haslongname = 0;
     unsigned char checksum = 0;
 
@@ -619,7 +642,7 @@ static unsigned int nextentry(unsigned int first, unsigned int *offset, struct f
 
             struct fat_longname *longname = (struct fat_longname *)entry;
 
-            addlongname(longname, name);
+            addlongname(longname, units);
 
             checksum = longname->checksum;
             haslongname = 1;
@@ -637,7 +660,9 @@ static unsigned int nextentry(unsigned int first, unsigned int *offset, struct f
 
         }
 
-        if (!haslongname || checksum != getchecksum(entry))
+        if (haslongname && checksum == getchecksum(entry))
+            getlongname(units, name);
+        else
             getshortname(entry, name);
 
         return sector * (sectorsize / sizeof (struct fat_entry)) + slot;
@@ -922,10 +947,10 @@ static unsigned int hasshortname(unsigned int first, unsigned char *name)
 
 }
 
-static unsigned int islongchar(unsigned char c)
+static unsigned int islongchar(unsigned int c)
 {
 
-    if (c < 0x20 || c >= 0x80)
+    if (c < 0x20)
         return 0;
 
     switch (c)
@@ -956,6 +981,7 @@ static unsigned int makealias(unsigned int first, struct fat_entry *entry, char 
     unsigned int dot = length;
     unsigned int tail;
     unsigned int i;
+    unsigned int k;
 
     for (i = 0; i < length; i++)
     {
@@ -972,7 +998,7 @@ static unsigned int makealias(unsigned int first, struct fat_entry *entry, char 
 
         unsigned char c = name[i];
 
-        if (c == ' ' || c == '.')
+        if (c == ' ' || c == '.' || (c & 0xC0) == 0x80)
             continue;
 
         if (c >= 'a' && c <= 'z')
@@ -985,15 +1011,18 @@ static unsigned int makealias(unsigned int first, struct fat_entry *entry, char 
     if (!baselength)
         base[baselength++] = '_';
 
-    for (i = dot + 1; i < length && i < dot + 4; i++)
+    for (i = dot + 1, k = 8; i < length && k < 11; i++)
     {
 
         unsigned char c = name[i];
 
+        if ((c & 0xC0) == 0x80)
+            continue;
+
         if (c >= 'a' && c <= 'z')
             c -= 32;
 
-        entry->name[8 + i - dot - 1] = (isshortchar(c)) ? c : '_';
+        entry->name[k++] = (isshortchar(c)) ? c : '_';
 
     }
 
@@ -1021,21 +1050,42 @@ static unsigned int makealias(unsigned int first, struct fat_entry *entry, char 
 static unsigned int createlongname(unsigned int first, struct fat_entry *entry, char *name, unsigned int length)
 {
 
-    unsigned int count = (length + 12) / 13;
+    unsigned short units[UNITSIZE];
+    unsigned int total = 0;
     unsigned char checksum;
     unsigned int offset;
+    unsigned int count;
     unsigned int i;
 
-    if (length > 255)
-        return 0;
-
-    for (i = 0; i < length; i++)
+    for (i = 0; i < length; )
     {
 
-        if (!islongchar(name[i]))
+        unsigned int codepoint;
+        unsigned int n = utf8_read(name + i, length - i, &codepoint);
+
+        if ((codepoint == 0xFFFD && n == 1) || !islongchar(codepoint) || total + (codepoint >= 0x10000) >= 255)
             return 0;
 
+        if (codepoint >= 0x10000)
+        {
+
+            units[total++] = 0xD800 + ((codepoint - 0x10000) >> 10);
+            units[total++] = 0xDC00 + ((codepoint - 0x10000) & 0x3FF);
+
+        }
+
+        else
+        {
+
+            units[total++] = codepoint;
+
+        }
+
+        i += n;
+
     }
+
+    count = (total + 12) / 13;
 
     if (!makealias(first, entry, name, length))
         return 0;
@@ -1060,7 +1110,7 @@ static unsigned int createlongname(unsigned int first, struct fat_entry *entry, 
 
             unsigned int index = (order - 1) * 13 + k;
 
-            chars[k] = (index < length) ? (unsigned char)name[index] : (index == length) ? 0x0000 : 0xFFFF;
+            chars[k] = (index < total) ? units[index] : (index == total) ? 0x0000 : 0xFFFF;
 
         }
 
