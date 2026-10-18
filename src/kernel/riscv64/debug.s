@@ -1,6 +1,6 @@
 .section .text
 
-.globl debug_fmt
+.global debug_fmt
 debug_fmt:
     addi sp, sp, -48
     sd ra, 8(sp)
