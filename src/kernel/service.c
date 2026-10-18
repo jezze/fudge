@@ -29,11 +29,10 @@ static void setname(struct service *service, char *name)
 void service_register(struct service *service, unsigned int inode, char *name)
 {
 
+    resource_register(&service->resource);
     setname(service, name);
 
     service->inode = inode;
-
-    resource_register(&service->resource);
 
 }
 
