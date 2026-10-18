@@ -4,5 +4,8 @@
     { path: initrd:kernel/icp-timer.ko }
     { path: initrd:kernel/pl011.ko }
     { path: initrd:kernel/pl031.ko }
+    { path: initrd:kernel/pl050.ko }
+    { path: initrd:kernel/pl050-keyboard.ko }
+    { path: initrd:kernel/pl050-mouse.ko }
   ]
 }

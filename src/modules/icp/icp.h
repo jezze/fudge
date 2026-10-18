@@ -2,6 +2,8 @@
 #define ICP_TIMER1                      0x0001
 #define ICP_RTC                         0x0002
 #define ICP_UART0                       0x0003
+#define ICP_KMI0                        0x0004
+#define ICP_KMI1                        0x0005
 
 unsigned int icp_getbase(unsigned int id);
 unsigned int icp_getirq(unsigned int id);
