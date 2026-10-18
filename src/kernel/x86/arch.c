@@ -17,6 +17,7 @@ static struct gdt_descriptor gdtdescriptors[ARCH_GDT_DESCRIPTORS];
 static struct idt_descriptor idtdescriptors[ARCH_IDT_DESCRIPTORS];
 static struct tss_descriptor tssdescriptors[ARCH_TSS_DESCRIPTORS];
 static struct cpu_general registers[POOL_TASKS];
+static unsigned int flags[POOL_TASKS];
 static unsigned char fpustates[POOL_TASKS * ARCH_FPUSTATESIZE + 16];
 
 static unsigned long createtable(unsigned long directory, unsigned long mmap)
@@ -197,6 +198,7 @@ static unsigned int createtask(unsigned int pinode, unsigned long address)
             buffer_copy((void *)(unsigned long)(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask), (void *)ARCH_MMU_KERNELBASE, MMU_PDSIZE);
             mapentry(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask, ARCH_MMAP_BASE + MMAP_SIZE * ntask, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE + MMAP_SIZE * ntask, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
             resetfpustate(ntask);
+            flags[ntask] = CPU_FLAGS_IF;
             kernel_starttask(ntask);
 
             return inode;
@@ -242,6 +244,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
         if (!(cpu_getcr0() & CPU_CR0_TS))
             cpu_fxsave(getfpustate(core->itask));
 
+        flags[core->itask] = interrupt->eflags.value;
         task->thread.ip = interrupt->eip.value;
         task->thread.sp = interrupt->esp.value;
 
@@ -259,6 +262,7 @@ static void schedule(struct cpu_general *general, struct cpu_interrupt *interrup
 
         interrupt->cs.value = gdt_getselector(gdt, ARCH_UCODE);
         interrupt->ss.value = gdt_getselector(gdt, ARCH_UDATA);
+        interrupt->eflags.value = flags[core->itask] | CPU_FLAGS_IF;
         interrupt->eip.value = task->thread.ip;
         interrupt->esp.value = task->thread.sp;
 
