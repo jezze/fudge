@@ -15,7 +15,7 @@ cmd_run() {
     iso=n
     isoname=""
     network=n
-    networkdevice="virtio"
+    networkdevice=""
     tap=n
     audio=n
     audiodevice="ac97"
@@ -90,12 +90,15 @@ cmd_run() {
     case "${arch}" in
         x86|x86_64)
             storagedevice="${storagedevice:-virtio}"
+            networkdevice="${networkdevice:-virtio}"
             cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
             ;;
         arm)
-            test "${iso}${network}${audio}${uefi}" == "nnnn" || error "No ISO, network, audio or UEFI on arm"
+            test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on arm"
             storagedevice="${storagedevice:-sd}"
             test "${storagedevice}" == "sd" || error "Unknown storage device on arm: ${storagedevice} (sd)"
+            networkdevice="${networkdevice:-smc91c111}"
+            test "${networkdevice}" == "smc91c111" || error "Unknown network device on arm: ${networkdevice} (smc91c111)"
             cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none -serial stdio -serial vc"
             ;;
         *)
@@ -187,11 +190,15 @@ cmd_run() {
             rtl8139)
                 cmd="${cmd} -device rtl8139,netdev=eth0"
                 ;;
+            smc91c111)
+                test "${arch}" == "arm" || error "Network device smc91c111 is only on arm"
+                cmd="${cmd} -net nic,model=smc91c111,netdev=eth0"
+                ;;
             virtio)
                 cmd="${cmd} -device virtio-net-pci,netdev=eth0"
                 ;;
             *)
-                error "Unknown network device: ${networkdevice} (rtl8139 or virtio)"
+                error "Unknown network device: ${networkdevice} (rtl8139, smc91c111 or virtio)"
                 ;;
         esac
 
@@ -406,7 +413,7 @@ cmd_help() {
     echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-i <iso>] [-u] [-x <arch>] [<name>]"
     echo "        -S, -N, -A enable storage, network and audio"
     echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2), sd on arm (the only one there)"
-    echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap)"
+    echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap), smc91c111 on arm (the only one there)"
     echo "        -a ac97 or virtio (default ac97), -o pa, pipewire, alsa or wav (default pa)"
     echo "        -x x86, x86_64 or arm (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
     echo "    nat <interface>"

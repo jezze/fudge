@@ -24,3 +24,10 @@ memory pool needs 256 MB.
 attaches fudge.qcow2 as an SD card (PL181), mounted like on x86 (data/config/mount.mq).
 The kernel and ramdisk still come from the build. QEMU only takes SD cards whose size
 is a power of 2, so create the disk with for example ./vmctrl disk_create -s 4G.
+
+## Network
+
+./vmctrl run -x arm -N
+
+attaches the board's SMC91C111 to qemu's user networking (or a tap with -t), set up like
+on x86 (data/config/network.mq).
