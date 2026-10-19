@@ -107,6 +107,8 @@ static unsigned int mapentry(unsigned long root, unsigned long mmap, struct mmap
             if (entry->fsize)
                 buffer_copy((void *)entry->vaddress, (void *)entry->fbase, entry->fsize);
 
+            cpu_invalidatecode();
+
             if (entry->msize > entry->fsize)
                 buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
 
@@ -456,8 +458,13 @@ unsigned int arch_syscall(struct cpu_frame *frame)
 {
 
     struct core *core = kernel_getcore();
+    unsigned int index = frame->general.d0.value;
 
-    frame->general.d0.value = abi_call(frame->general.d0.value, core->itask, frame->usp.reference);
+    frame->general.d0.value = abi_call(index, core->itask, frame->usp.reference);
+
+    /* a module's code was relocated with data writes (call 0x07 is load) */
+    if (index == 0x07)
+        cpu_invalidatecode();
 
     return schedule(frame);
 
@@ -500,6 +507,8 @@ void arch_setup2(void)
 
     cpu_setroot(ARCH_MMU_KERNELBASE);
     cpu_settc(CPU_TC_ENABLE);
+    cpu_invalidatecode();
+    cpu_setcacr(CPU_CACR_INSTRUCTION);
     cpu_setvbr(isr_vectors);
 
     isr_stack = ARCH_KERNEL_STACKBASE + ARCH_KERNEL_STACKSIZE;

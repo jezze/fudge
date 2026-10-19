@@ -32,6 +32,18 @@ cpu_flushtlb:
     pflusha
     rts
 
+.global cpu_setcacr
+cpu_setcacr:
+    move.l 4(%sp), %d0
+    movec %d0, %cacr
+    rts
+
+# the instruction cache does not see the data writes that put code in memory
+.global cpu_invalidatecode
+cpu_invalidatecode:
+    cinva %ic
+    rts
+
 .global cpu_halt
 cpu_halt:
     stop #0x2000

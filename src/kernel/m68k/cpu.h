@@ -2,6 +2,7 @@
 #define CPU_SR_IPL                      0x0700
 #define CPU_SR_CCR                      0x001F
 #define CPU_TC_ENABLE                   0x8000
+#define CPU_CACR_INSTRUCTION            0x00008000
 #define CPU_FORMAT_VECTOR               0x0FFF
 #define CPU_SSW_ATC                     0x0400
 #define CPU_WB_VALID                    0x0080
@@ -72,5 +73,7 @@ void cpu_setroot(unsigned int value);
 void cpu_settc(unsigned int value);
 void cpu_setvbr(void *value);
 void cpu_flushtlb(void);
+void cpu_setcacr(unsigned int value);
+void cpu_invalidatecode(void);
 void cpu_halt(void);
 void cpu_leave(struct cpu_frame *frame);

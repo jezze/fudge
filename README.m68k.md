@@ -34,6 +34,9 @@ little-endian, and a legacy device here would expect them big-endian.
 
 ## Real hardware
 
-Page faults rely on QEMU restarting the faulting instruction. A real 68040 also needs the
-writebacks pending in its access fault frame done in software, and the 68080 has an MMU of
-its own, so neither runs this yet.
+Not tried yet. After a page fault the kernel does the writebacks a 68040 leaves in its access fault
+frame and goes back through that frame, as the 68040 needs; qemu leaves the writebacks empty, so that
+path only runs on a real cpu. The instruction cache is on and invalidated where code is written (a
+task's code, a module's relocations). The data cache stays off: device memory would need noncachable
+mappings and the drivers would need to invalidate what devices write. The 68080 has an MMU of its own,
+so it does not run this yet.
