@@ -166,20 +166,19 @@ void blit_line(struct blit_display *display, unsigned int color, int x0, int x2)
 void blit_alphaline(struct blit_display *display, unsigned int color, int x0, int x2)
 {
 
-    unsigned char *fg = (unsigned char *)&color;
+    unsigned int alpha = (color >> 24) + 1;
+    unsigned int ialpha = 256 - (color >> 24);
+    unsigned int r = alpha * ((color >> 16) & 0xFF);
+    unsigned int g = alpha * ((color >> 8) & 0xFF);
+    unsigned int b = alpha * (color & 0xFF);
     int x;
 
     for (x = x0; x < x2; x++)
     {
 
-        unsigned char *bg = (unsigned char *)&display->linebuffer[x];
-        unsigned int alpha = fg[3] + 1;
-        unsigned int ialpha = 256 - fg[3];
+        unsigned int bg = display->linebuffer[x];
 
-        bg[0] = ((alpha * fg[0] + ialpha * bg[0]) >> 8);
-        bg[1] = ((alpha * fg[1] + ialpha * bg[1]) >> 8);
-        bg[2] = ((alpha * fg[2] + ialpha * bg[2]) >> 8);
-        bg[3] = 0xFF;
+        display->linebuffer[x] = 0xFF000000 | (((r + ialpha * ((bg >> 16) & 0xFF)) >> 8) << 16) | (((g + ialpha * ((bg >> 8) & 0xFF)) >> 8) << 8) | ((b + ialpha * (bg & 0xFF)) >> 8);
 
     }
 
