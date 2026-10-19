@@ -33,25 +33,40 @@
 #define FEATURE_VERSION1                (1 << 0)
 #define PAGESIZE                        0x1000
 
-static volatile unsigned int *getreg(struct virtio_device *device, unsigned int offset)
-{
-
-    return (volatile unsigned int *)(device->common + offset);
-
-}
-
+/* the registers are little-endian whatever the cpu is */
 static unsigned int read32(unsigned long base, unsigned int offset)
 {
 
-    return *(volatile unsigned int *)(base + offset);
+    return virtio_le32(*(volatile unsigned int *)(base + offset));
+
+}
+
+static void write32(unsigned long base, unsigned int offset, unsigned int value)
+{
+
+    *(volatile unsigned int *)(base + offset) = virtio_le32(value);
+
+}
+
+static unsigned int readreg(struct virtio_device *device, unsigned int offset)
+{
+
+    return read32(device->common, offset);
+
+}
+
+static void writereg(struct virtio_device *device, unsigned int offset, unsigned int value)
+{
+
+    write32(device->common, offset, value);
 
 }
 
 static void write64(struct virtio_device *device, unsigned int offset, unsigned long value)
 {
 
-    *getreg(device, offset) = value;
-    *getreg(device, offset + 4) = (value >> 16) >> 16;
+    writereg(device, offset, value);
+    writereg(device, offset + 4, (value >> 16) >> 16);
 
 }
 
@@ -94,24 +109,25 @@ unsigned int virtio_setup(struct virtio_device *device, unsigned int id)
     device->id = id;
     device->common = virt_getbase(id);
 
-    version = *getreg(device, REG_VERSION);
+    version = readreg(device, REG_VERSION);
     device->modern = (version == 2);
 
-    return version == 1 || version == 2;
+    /* a legacy device keeps its rings in the cpu's byte order, which only matches the little-endian rings on little-endian cpus */
+    return version == 2 || (version == 1 && virtio_le16(1) == 1);
 
 }
 
 void virtio_reset(struct virtio_device *device)
 {
 
-    *getreg(device, REG_STATUS) = 0;
+    writereg(device, REG_STATUS, 0);
 
 }
 
 void virtio_setstatus(struct virtio_device *device, unsigned char status)
 {
 
-    *getreg(device, REG_STATUS) = *getreg(device, REG_STATUS) | status;
+    writereg(device, REG_STATUS, readreg(device, REG_STATUS) | status);
 
 }
 
@@ -122,23 +138,23 @@ unsigned int virtio_negotiate(struct virtio_device *device, unsigned int feature
     virtio_setstatus(device, VIRTIO_STATUS_ACKNOWLEDGE);
     virtio_setstatus(device, VIRTIO_STATUS_DRIVER);
 
-    *getreg(device, REG_DEVICEFEATURESSELECT) = 0;
+    writereg(device, REG_DEVICEFEATURESSELECT, 0);
 
-    features &= *getreg(device, REG_DEVICEFEATURES);
+    features &= readreg(device, REG_DEVICEFEATURES);
 
-    *getreg(device, REG_DRIVERFEATURESSELECT) = 0;
-    *getreg(device, REG_DRIVERFEATURES) = features;
+    writereg(device, REG_DRIVERFEATURESSELECT, 0);
+    writereg(device, REG_DRIVERFEATURES, features);
 
     if (device->modern)
     {
 
-        *getreg(device, REG_DEVICEFEATURESSELECT) = 1;
-        *getreg(device, REG_DRIVERFEATURESSELECT) = 1;
-        *getreg(device, REG_DRIVERFEATURES) = *getreg(device, REG_DEVICEFEATURES) & FEATURE_VERSION1;
+        writereg(device, REG_DEVICEFEATURESSELECT, 1);
+        writereg(device, REG_DRIVERFEATURESSELECT, 1);
+        writereg(device, REG_DRIVERFEATURES, readreg(device, REG_DEVICEFEATURES) & FEATURE_VERSION1);
 
         virtio_setstatus(device, VIRTIO_STATUS_FEATURESOK);
 
-        if (!(*getreg(device, REG_STATUS) & VIRTIO_STATUS_FEATURESOK))
+        if (!(readreg(device, REG_STATUS) & VIRTIO_STATUS_FEATURESOK))
         {
 
             device->failed = 1;
@@ -152,7 +168,7 @@ unsigned int virtio_negotiate(struct virtio_device *device, unsigned int feature
     else
     {
 
-        *getreg(device, REG_GUESTPAGESIZE) = PAGESIZE;
+        writereg(device, REG_GUESTPAGESIZE, PAGESIZE);
 
     }
 
@@ -163,9 +179,9 @@ unsigned int virtio_negotiate(struct virtio_device *device, unsigned int feature
 unsigned char virtio_getisr(struct virtio_device *device)
 {
 
-    unsigned int status = *getreg(device, REG_INTERRUPTSTATUS);
+    unsigned int status = readreg(device, REG_INTERRUPTSTATUS);
 
-    *getreg(device, REG_INTERRUPTACK) = status;
+    writereg(device, REG_INTERRUPTACK, status);
 
     return status;
 
@@ -193,9 +209,9 @@ unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *d
     if (device->failed)
         return 0;
 
-    *getreg(device, REG_QUEUESELECT) = index;
+    writereg(device, REG_QUEUESELECT, index);
 
-    size = *getreg(device, REG_QUEUESIZEMAX);
+    size = readreg(device, REG_QUEUESIZEMAX);
 
     if (size > VIRTIO_QUEUESIZE)
         size = VIRTIO_QUEUESIZE;
@@ -203,7 +219,7 @@ unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *d
     if (!virtio_initqueue(queue, device, index, size, memory))
         return 0;
 
-    *getreg(device, REG_QUEUESIZE) = size;
+    writereg(device, REG_QUEUESIZE, size);
 
     if (device->modern)
     {
@@ -212,15 +228,15 @@ unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *d
         write64(device, REG_QUEUEDRIVER, (unsigned long)queue->avail);
         write64(device, REG_QUEUEDEVICE, (unsigned long)queue->used);
 
-        *getreg(device, REG_QUEUEREADY) = 1;
+        writereg(device, REG_QUEUEREADY, 1);
 
     }
 
     else
     {
 
-        *getreg(device, REG_QUEUEALIGN) = PAGESIZE;
-        *getreg(device, REG_QUEUEPFN) = (unsigned long)queue->descs / PAGESIZE;
+        writereg(device, REG_QUEUEALIGN, PAGESIZE);
+        writereg(device, REG_QUEUEPFN, (unsigned long)queue->descs / PAGESIZE);
 
     }
 
@@ -231,7 +247,7 @@ unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *d
 void virtio_notify(struct virtio_queue *queue)
 {
 
-    *getreg(queue->device, REG_QUEUENOTIFY) = queue->index;
+    writereg(queue->device, REG_QUEUENOTIFY, queue->index);
 
 }
 

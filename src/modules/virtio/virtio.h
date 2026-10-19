@@ -82,6 +82,8 @@ struct virtio_queue
 
 };
 
+unsigned short virtio_le16(unsigned short value);
+unsigned int virtio_le32(unsigned int value);
 unsigned int virtio_match(unsigned int id, unsigned int type);
 void virtio_registerdriver(struct base_driver *driver);
 void virtio_unregisterdriver(struct base_driver *driver);

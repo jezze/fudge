@@ -73,6 +73,10 @@ void input_poll(struct virtio_device *device, struct virtio_queue *queue, unsign
         if (id >= INPUT_EVENTS)
             continue;
 
+        events[id].type = virtio_le16(events[id].type);
+        events[id].code = virtio_le16(events[id].code);
+        events[id].value = virtio_le32(events[id].value);
+
         handle(&events[id]);
         virtio_push(queue, id);
 

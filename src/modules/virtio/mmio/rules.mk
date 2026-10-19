@@ -5,7 +5,7 @@ N:=\
     $(DIR_SRC)/modules/virtio/virtio-network.ko.map \
 
 O:=\
-    $(DIR_SRC)/modules/virtio/riscv64/virtio.o \
+    $(DIR_SRC)/modules/virtio/mmio/virtio.o \
     $(DIR_SRC)/modules/virtio/queue.o \
     $(DIR_SRC)/modules/virtio/network.o \
 
@@ -21,7 +21,7 @@ N:=\
     $(DIR_SRC)/modules/virtio/virtio-block.ko.map \
 
 O:=\
-    $(DIR_SRC)/modules/virtio/riscv64/virtio.o \
+    $(DIR_SRC)/modules/virtio/mmio/virtio.o \
     $(DIR_SRC)/modules/virtio/queue.o \
     $(DIR_SRC)/modules/virtio/block.o \
 
@@ -37,7 +37,7 @@ N:=\
     $(DIR_SRC)/modules/virtio/virtio-keyboard.ko.map \
 
 O:=\
-    $(DIR_SRC)/modules/virtio/riscv64/virtio.o \
+    $(DIR_SRC)/modules/virtio/mmio/virtio.o \
     $(DIR_SRC)/modules/virtio/queue.o \
     $(DIR_SRC)/modules/virtio/input.o \
     $(DIR_SRC)/modules/virtio/keyboard.o \
@@ -54,7 +54,7 @@ N:=\
     $(DIR_SRC)/modules/virtio/virtio-mouse.ko.map \
 
 O:=\
-    $(DIR_SRC)/modules/virtio/riscv64/virtio.o \
+    $(DIR_SRC)/modules/virtio/mmio/virtio.o \
     $(DIR_SRC)/modules/virtio/queue.o \
     $(DIR_SRC)/modules/virtio/input.o \
     $(DIR_SRC)/modules/virtio/mouse.o \

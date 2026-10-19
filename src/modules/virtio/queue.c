@@ -10,6 +10,25 @@ static unsigned long pagealign(unsigned long value)
 
 }
 
+/* rings, descriptors and requests are little-endian: these convert a value read or about to be written in one access, either way */
+unsigned short virtio_le16(unsigned short value)
+{
+
+    unsigned char *bytes = (unsigned char *)&value;
+
+    return (bytes[1] << 8) | bytes[0];
+
+}
+
+unsigned int virtio_le32(unsigned int value)
+{
+
+    unsigned char *bytes = (unsigned char *)&value;
+
+    return ((unsigned int)bytes[3] << 24) | (bytes[2] << 16) | (bytes[1] << 8) | bytes[0];
+
+}
+
 /* lays the descriptors, the available ring and the page aligned used ring out in memory */
 unsigned int virtio_initqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, unsigned short size, void *memory)
 {
@@ -47,26 +66,28 @@ void virtio_setdesc(struct virtio_queue *queue, unsigned int index, void *buffer
     volatile struct virtio_desc *desc = &queue->descs[index];
     unsigned long address = (unsigned long)buffer;
 
-    desc->address = address;
-    desc->addresshigh = (address >> 16) >> 16;
-    desc->length = length;
-    desc->flags = flags;
-    desc->next = next;
+    desc->address = virtio_le32(address);
+    desc->addresshigh = virtio_le32((address >> 16) >> 16);
+    desc->length = virtio_le32(length);
+    desc->flags = virtio_le16(flags);
+    desc->next = virtio_le16(next);
 
 }
 
 void virtio_push(struct virtio_queue *queue, unsigned short head)
 {
 
-    queue->availring[queue->avail->index % queue->size] = head;
-    queue->avail->index++;
+    unsigned short index = virtio_le16(queue->avail->index);
+
+    queue->availring[index % queue->size] = virtio_le16(head);
+    queue->avail->index = virtio_le16(index + 1);
 
 }
 
 unsigned int virtio_pending(struct virtio_queue *queue)
 {
 
-    return queue->lastused != queue->used->index;
+    return queue->lastused != virtio_le16(queue->used->index);
 
 }
 
@@ -75,10 +96,10 @@ unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length)
 
     volatile struct virtio_usedelement *element = &queue->usedring[queue->lastused % queue->size];
 
-    *length = element->length;
+    *length = virtio_le32(element->length);
     queue->lastused++;
 
-    return element->id;
+    return virtio_le32(element->id);
 
 }
 

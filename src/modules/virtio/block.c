@@ -86,8 +86,8 @@ static void blockinterface_startsession(struct block_session *session)
     spinlock_acquire(&spinlock);
 
     session->count = count;
-    request.type = (session->type == BLOCK_TYPE_WRITE) ? REQUEST_WRITE : REQUEST_READ;
-    request.sectorlow = session->start / BLOCKSIZE;
+    request.type = virtio_le32((session->type == BLOCK_TYPE_WRITE) ? REQUEST_WRITE : REQUEST_READ);
+    request.sectorlow = virtio_le32(session->start / BLOCKSIZE);
     request.sectorhigh = 0;
     status = 0xFF;
 
