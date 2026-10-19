@@ -36,6 +36,25 @@ static unsigned int audio;
 static char frames[MESSAGE_SIZE + FRAMESIZE];
 static unsigned int framecount;
 
+/* a WAV file's numbers are little-endian; these turn one read as it lies in memory into the cpu's order */
+static unsigned short le16(unsigned short value)
+{
+
+    unsigned char *bytes = (unsigned char *)&value;
+
+    return (bytes[1] << 8) | bytes[0];
+
+}
+
+static unsigned int le32(unsigned int value)
+{
+
+    unsigned char *bytes = (unsigned char *)&value;
+
+    return ((unsigned int)bytes[3] << 24) | (bytes[2] << 16) | (bytes[1] << 8) | bytes[0];
+
+}
+
 static void senddata(unsigned int source, void *buffer, unsigned int count)
 {
 
@@ -84,12 +103,18 @@ static void playwav(unsigned int source, char *path, unsigned int target, unsign
     {
 
         offset += sizeof (struct chunk);
+        chunk.size = le32(chunk.size);
 
         if (buffer_match(chunk.id, "fmt ", 4) && chunk.size >= sizeof (struct wavformat))
         {
 
             if (fs_read_full(1, target, id, &format, sizeof (struct wavformat), offset) != sizeof (struct wavformat))
                 break;
+
+            format.format = le16(format.format);
+            format.channels = le16(format.channels);
+            format.rate = le32(format.rate);
+            format.bits = le16(format.bits);
 
             found = 1;
 
