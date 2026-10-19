@@ -105,138 +105,6 @@ static void updateundefined(void)
 
 }
 
-static unsigned int link32(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, unsigned int base)
-{
-
-    struct elf_sectionheader sectionheaders[64];
-    unsigned int textoffset = 0;
-    unsigned int unresolved = 0;
-    unsigned int i;
-
-    if (header->shcount >= 64)
-        return 0;
-
-    fs_read_all(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
-
-    for (i = 0; i < header->shcount; i++)
-    {
-
-        if (!textoffset && sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
-            textoffset = sectionheaders[i].offset;
-
-    }
-
-    for (i = 0; i < header->shcount; i++)
-    {
-
-        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL || sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
-        {
-
-            struct elf_sectionheader *relocationheader = &sectionheaders[i];
-            struct elf_sectionheader *dataheader = &sectionheaders[relocationheader->info];
-            struct elf_sectionheader *symbolheader = &sectionheaders[relocationheader->link];
-            struct elf_sectionheader *stringheader = &sectionheaders[symbolheader->link];
-            char strings[4096];
-            unsigned int j;
-
-            if (stringheader->size > 4096)
-                PANIC(source);
-
-            fs_read_all(1, target, id, strings, stringheader->size, stringheader->offset);
-
-            for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
-            {
-
-                struct elf_relocationa relocation;
-                struct elf_symbol symbol;
-                unsigned int address;
-                unsigned int place;
-                unsigned int offset;
-                unsigned int value;
-
-                fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
-                fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
-
-                if (relocationheader->type == ELF_SECTION_TYPE_RELA)
-                    value = relocation.addend;
-                else
-                    fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
-
-                address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
-                place = base + dataheader->offset + relocation.offset;
-
-                if (!address)
-                {
-
-                    channel_send_fmt(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
-
-                    unresolved++;
-
-                }
-
-                switch ((header->machine << 8) | (relocation.info & 0xFF))
-                {
-
-                case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_32:
-                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_ABS32:
-                case (ELF_MACHINE_68K << 8) | ELF_RELOC_68K_32:
-                    value += address;
-
-                    break;
-
-                case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_PC32:
-                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_REL32:
-                case (ELF_MACHINE_68K << 8) | ELF_RELOC_68K_PC32:
-                    value += address - place;
-
-                    break;
-
-                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_CALL:
-                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_JUMP24:
-                    offset = (value & 0x00FFFFFF) << 2;
-
-                    if (offset & 0x02000000)
-                        offset |= 0xFC000000;
-
-                    offset += address - place;
-
-                    if (offset + 0x02000000 >= 0x04000000)
-                    {
-
-                        channel_send_fmt(0, source, EVENT_ERROR, "Branch out of range: %s\n", strings + symbol.name);
-
-                        unresolved++;
-
-                    }
-
-                    value = (value & 0xFF000000) | ((offset >> 2) & 0x00FFFFFF);
-
-                    break;
-
-                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_V4BX:
-                    break;
-
-                default:
-                    channel_send_fmt(0, source, EVENT_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
-
-                    unresolved++;
-
-                    break;
-
-                }
-
-                fs_write_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
-
-            }
-
-        }
-
-    }
-
-    return (unresolved) ? 0 : textoffset;
-
-}
-
 /* the PCREL_HI20 results of a section, which its PCREL_LO12 relocations point back at */
 static unsigned long hiplaces[4096];
 static unsigned int hioffsets[4096];
@@ -380,6 +248,156 @@ static unsigned int relocateriscv(unsigned int target, unsigned int id, unsigned
     }
 
     return 0;
+
+}
+
+static unsigned int link32(unsigned int source, unsigned int target, unsigned int id, struct elf_header *header, unsigned int base)
+{
+
+    struct elf_sectionheader sectionheaders[64];
+    unsigned int textoffset = 0;
+    unsigned int unresolved = 0;
+    unsigned int i;
+
+    if (header->shcount >= 64)
+        return 0;
+
+    fs_read_all(1, target, id, sectionheaders, header->shsize * header->shcount, header->shoffset);
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        if (!textoffset && sectionheaders[i].type == ELF_SECTION_TYPE_PROGBITS)
+            textoffset = sectionheaders[i].offset;
+
+    }
+
+    for (i = 0; i < header->shcount; i++)
+    {
+
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL || sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
+        {
+
+            struct elf_sectionheader *relocationheader = &sectionheaders[i];
+            struct elf_sectionheader *dataheader = &sectionheaders[relocationheader->info];
+            struct elf_sectionheader *symbolheader = &sectionheaders[relocationheader->link];
+            struct elf_sectionheader *stringheader = &sectionheaders[symbolheader->link];
+            char strings[4096];
+            unsigned int j;
+
+            if (stringheader->size > 4096)
+                PANIC(source);
+
+            fs_read_all(1, target, id, strings, stringheader->size, stringheader->offset);
+
+            hicount = 0;
+
+            for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
+            {
+
+                struct elf_relocationa relocation;
+                struct elf_symbol symbol;
+                unsigned int address;
+                unsigned int place;
+                unsigned int offset;
+                unsigned int value;
+
+                fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
+                fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
+
+                if (relocationheader->type == ELF_SECTION_TYPE_RELA)
+                    value = relocation.addend;
+                else
+                    fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
+
+                address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
+                place = base + dataheader->offset + relocation.offset;
+
+                if (!address)
+                {
+
+                    channel_send_fmt(0, source, EVENT_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+
+                    unresolved++;
+
+                }
+
+                if (header->machine == ELF_MACHINE_RISCV)
+                {
+
+                    if (!relocateriscv(target, id, relocation.info & 0xFF, address + relocation.addend, place, dataheader->offset + relocation.offset))
+                    {
+
+                        channel_send_fmt(0, source, EVENT_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+
+                        unresolved++;
+
+                    }
+
+                    continue;
+
+                }
+
+                switch ((header->machine << 8) | (relocation.info & 0xFF))
+                {
+
+                case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_32:
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_ABS32:
+                case (ELF_MACHINE_68K << 8) | ELF_RELOC_68K_32:
+                    value += address;
+
+                    break;
+
+                case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_PC32:
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_REL32:
+                case (ELF_MACHINE_68K << 8) | ELF_RELOC_68K_PC32:
+                    value += address - place;
+
+                    break;
+
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_CALL:
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_JUMP24:
+                    offset = (value & 0x00FFFFFF) << 2;
+
+                    if (offset & 0x02000000)
+                        offset |= 0xFC000000;
+
+                    offset += address - place;
+
+                    if (offset + 0x02000000 >= 0x04000000)
+                    {
+
+                        channel_send_fmt(0, source, EVENT_ERROR, "Branch out of range: %s\n", strings + symbol.name);
+
+                        unresolved++;
+
+                    }
+
+                    value = (value & 0xFF000000) | ((offset >> 2) & 0x00FFFFFF);
+
+                    break;
+
+                case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_V4BX:
+                    break;
+
+                default:
+                    channel_send_fmt(0, source, EVENT_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+
+                    unresolved++;
+
+                    break;
+
+                }
+
+                fs_write_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
+
+            }
+
+        }
+
+    }
+
+    return (unresolved) ? 0 : textoffset;
 
 }
 
