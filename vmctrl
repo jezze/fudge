@@ -107,7 +107,7 @@ cmd_run() {
             networkdevice="${networkdevice:-virtio}"
             test "${storagedevice}" == "virtio" || error "Unknown storage device on riscv64: ${storagedevice} (virtio)"
             test "${networkdevice}" == "virtio" || error "Unknown network device on riscv64: ${networkdevice} (virtio)"
-            cmd="qemu-system-riscv64 -nodefaults -machine virt -m 256 -audio none -display none -serial stdio"
+            cmd="qemu-system-riscv64 -nodefaults -machine virt -m 256 -audio none -device ramfb -device virtio-keyboard-device -device virtio-mouse-device -serial stdio"
             ;;
         *)
             error "Unknown architecture: ${arch} (x86, x86_64, arm or riscv64)"
