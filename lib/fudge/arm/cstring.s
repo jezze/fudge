@@ -10,3 +10,4 @@ cstring_write_fmt:
     push {r12, lr}
     bl cstring_write_fmtv
     pop {r12, pc}
+

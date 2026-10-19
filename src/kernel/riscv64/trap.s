@@ -115,3 +115,4 @@ trap_restore:
 .global trap_stack
 trap_stack:
     .dword 0
+

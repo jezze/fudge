@@ -124,3 +124,4 @@ cpu_fxrstor:
     movl 4(%esp), %eax
     fxrstor (%eax)
     ret
+

@@ -7,3 +7,4 @@ atomic_testandset:
     movl %edi, %eax
     lock xchgl %eax, (%rsi)
     ret
+

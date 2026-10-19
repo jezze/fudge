@@ -53,3 +53,4 @@ cpuid_getbrand:
     movl %edx, 44(%rdi)
     popq %rbx
     ret
+

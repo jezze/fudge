@@ -498,3 +498,4 @@ void arch_runinit(unsigned long address)
     }
 
 }
+

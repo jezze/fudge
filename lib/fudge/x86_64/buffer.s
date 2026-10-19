@@ -14,3 +14,4 @@ buffer_clear:
     xorl %eax, %eax
     rep stosb
     ret
+

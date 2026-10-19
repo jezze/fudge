@@ -181,3 +181,4 @@ unsigned int utf8_write(char *text, unsigned int count, unsigned int codepoint)
     return 0;
 
 }
+

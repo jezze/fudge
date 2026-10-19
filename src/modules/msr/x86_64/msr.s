@@ -17,3 +17,4 @@ msr_set:
     movl 4(%rsi), %edx
     wrmsr
     ret
+

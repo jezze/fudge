@@ -63,3 +63,4 @@ cpu_halt:
 cpu_leave:
     mov sp, r0
     b isr_exit
+

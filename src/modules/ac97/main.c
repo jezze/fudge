@@ -251,3 +251,4 @@ void module_unregister(void)
     base_unregisterdriver(&driver, PCI_BUS);
 
 }
+

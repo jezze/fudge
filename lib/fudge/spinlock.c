@@ -21,3 +21,4 @@ void spinlock_init(struct spinlock *spinlock)
     spinlock->lock = 0;
 
 }
+

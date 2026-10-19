@@ -13,3 +13,4 @@ channel_send_fmt:
     call channel_send_fmtv
     addl $20, %esp
     ret
+

@@ -94,3 +94,4 @@ call_announce:
     movl %esi, 12(%rsp)
     movq %rdx, 16(%rsp)
     callindex CALL_INDEX_ANNOUNCE
+

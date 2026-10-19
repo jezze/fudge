@@ -84,3 +84,4 @@ void mmu_enable(void)
     cpu_setcontrol(cpu_getcontrol() | CPU_CONTROL_MMU);
 
 }
+

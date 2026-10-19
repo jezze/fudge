@@ -105,3 +105,4 @@ cpu_fxsave:
 cpu_fxrstor:
     fxrstor64 (%rdi)
     ret
+

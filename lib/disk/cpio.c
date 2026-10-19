@@ -72,3 +72,4 @@ unsigned int cpio_next(struct cpio_header *header)
     return cpio_filedata(header) + align(cpio_filesize(header));
 
 }
+

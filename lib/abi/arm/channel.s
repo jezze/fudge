@@ -7,3 +7,4 @@ channel_send_fmt:
     push {r12, lr}
     bl channel_send_fmtv
     pop {r12, pc}
+

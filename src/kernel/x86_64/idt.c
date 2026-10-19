@@ -50,3 +50,4 @@ void idt_init(struct idt_pointer *pointer, unsigned int count, struct idt_descri
     buffer_clear(descriptors, sizeof (struct idt_descriptor) * count);
 
 }
+

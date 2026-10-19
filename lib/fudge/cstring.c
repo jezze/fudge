@@ -432,3 +432,4 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
     return offset - start;
 
 }
+

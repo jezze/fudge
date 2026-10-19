@@ -67,3 +67,4 @@ void gdt_init(struct gdt_pointer *pointer, unsigned int count, struct gdt_descri
     buffer_clear(descriptors, sizeof (struct gdt_descriptor) * count);
 
 }
+

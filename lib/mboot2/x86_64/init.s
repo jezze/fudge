@@ -120,3 +120,4 @@ boot_pd:
 .skip (BOOT_TABLES * 0x1000)
 stack:
 .skip STACK_SIZE
+

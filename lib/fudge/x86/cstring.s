@@ -15,3 +15,4 @@ cstring_write_fmt:
     call cstring_write_fmtv
     addl $20, %esp
     ret
+

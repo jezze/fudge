@@ -19,3 +19,4 @@ void tss_init(struct tss_pointer *pointer, unsigned int count, struct tss_descri
     buffer_clear(descriptors, sizeof (struct tss_descriptor) * count);
 
 }
+

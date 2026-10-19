@@ -20,3 +20,4 @@ halt:
 .balign 16
 stack:
     .space STACK_SIZE
+

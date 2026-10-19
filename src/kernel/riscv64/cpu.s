@@ -58,3 +58,4 @@ cpu_halt:
 cpu_leave:
     mv sp, a0
     j trap_exit
+

@@ -93,3 +93,4 @@ call_announce:
     sw a1, 12(sp)
     sd a2, 16(sp)
     callindex CALL_INDEX_ANNOUNCE
+

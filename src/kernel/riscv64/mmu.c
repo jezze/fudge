@@ -117,3 +117,4 @@ void mmu_setpage(unsigned long daddress, unsigned long vaddress, unsigned long p
         table->entries[getindex(vaddress, 0)] = (flags) ? toentry(paddress, flags) : 0;
 
 }
+

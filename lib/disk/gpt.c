@@ -31,3 +31,4 @@ unsigned int gpt_validate(struct gpt_header *header)
     return buffer_match(header->signature, "EFI PART", 8) && gpt_read32(header->entrysize) >= sizeof (struct gpt_entry);
 
 }
+

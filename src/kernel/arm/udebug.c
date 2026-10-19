@@ -94,3 +94,4 @@ void udebug_setup(void)
     debug_registerinterface(&debug);
 
 }
+

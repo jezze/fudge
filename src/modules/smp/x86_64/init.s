@@ -76,3 +76,4 @@ smp_begin32:
     ljmp $SMP_CODE64, $setup
 .global smp_end32
 smp_end32:
+

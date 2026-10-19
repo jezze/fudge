@@ -12,3 +12,4 @@ halt:
     b halt
 
 .comm stack, STACK_SIZE, 8
+

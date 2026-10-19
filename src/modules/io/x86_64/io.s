@@ -42,3 +42,4 @@ io_outd:
     movl %esi, %eax
     outl %eax, %dx
     ret
+

@@ -7,3 +7,4 @@ debug_fmt:
     push {r12, lr}
     bl debug_fmtv
     pop {r12, pc}
+

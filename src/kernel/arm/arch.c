@@ -476,3 +476,4 @@ void arch_runinit(unsigned int address)
     }
 
 }
+

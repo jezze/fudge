@@ -24,3 +24,4 @@ void smp_setupap(unsigned int icore)
     arch_leave();
 
 }
+

@@ -57,3 +57,4 @@ void debug_initinterface(struct debug_interface *interface, void (*write)(unsign
     interface->write = write;
 
 }
+

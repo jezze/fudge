@@ -470,3 +470,4 @@ unsigned long cpio_find(char *path)
     return (id) ? locate(id) : 0;
 
 }
+

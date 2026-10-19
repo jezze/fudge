@@ -91,3 +91,4 @@ void pl050_disable(unsigned int id)
     getregs(id)[REG_CR / 4] = 0;
 
 }
+

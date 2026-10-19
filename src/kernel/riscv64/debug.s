@@ -13,3 +13,4 @@ debug_fmt:
     ld ra, 8(sp)
     addi sp, sp, 48
     ret
+
