@@ -22,6 +22,7 @@
 #define VIRTIO_QUEUEMEMORY              0x4000
 #define VIRTIO_TYPE_NETWORK             1
 #define VIRTIO_TYPE_BLOCK               2
+#define VIRTIO_TYPE_INPUT               18
 
 struct virtio_desc
 {
@@ -90,6 +91,7 @@ unsigned int virtio_negotiate(struct virtio_device *device, unsigned int feature
 void virtio_setstatus(struct virtio_device *device, unsigned char status);
 unsigned char virtio_getisr(struct virtio_device *device);
 unsigned char virtio_getconfig(struct virtio_device *device, unsigned int offset);
+void virtio_setconfig(struct virtio_device *device, unsigned int offset, unsigned char value);
 unsigned int virtio_initqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, unsigned short size, void *memory);
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory);
 void virtio_setdesc(struct virtio_queue *queue, unsigned int index, void *buffer, unsigned int length, unsigned short flags, unsigned short next);

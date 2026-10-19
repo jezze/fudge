@@ -321,6 +321,26 @@ unsigned char virtio_getconfig(struct virtio_device *device, unsigned int offset
 
 }
 
+void virtio_setconfig(struct virtio_device *device, unsigned int offset, unsigned char value)
+{
+
+    if (device->modern)
+    {
+
+        if (device->config)
+            write8(device->config + offset, value);
+
+    }
+
+    else
+    {
+
+        io_outb(device->io + VIRTIO_REG_CONFIG + offset, value);
+
+    }
+
+}
+
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory)
 {
 

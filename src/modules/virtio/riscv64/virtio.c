@@ -178,6 +178,13 @@ unsigned char virtio_getconfig(struct virtio_device *device, unsigned int offset
 
 }
 
+void virtio_setconfig(struct virtio_device *device, unsigned int offset, unsigned char value)
+{
+
+    *(volatile unsigned char *)(device->common + REG_CONFIG + offset) = value;
+
+}
+
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory)
 {
 
