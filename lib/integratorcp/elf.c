@@ -41,7 +41,7 @@ static unsigned int format_match(unsigned long base)
 
     struct elf_header *header = (struct elf_header *)base;
 
-    return elf_validate(header);
+    return elf_validate(header) && header->machine == ELF_MACHINE_ARM;
 
 }
 
