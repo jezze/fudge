@@ -5,19 +5,18 @@ the first serial port, kernel debug output goes to the second.
 
 ## Cross compiler
 
-Build an arm-none-eabi cross compiler with crosstool-ng (see README.md) using these
+Build an arm-unknown-eabi cross compiler with crosstool-ng (see README.md) using these
 settings in ct-ng menuconfig:
 
 Target options -> Target Architecture -> arm
 Operating System -> Target OS -> bare-metal
-Toolchain options -> Tuple's vendor string -> none
 
 Then add it to $PATH:
 
-export PATH=~/x-tools/arm-none-eabi/bin:$PATH
+export PATH=~/x-tools/arm-unknown-eabi/bin:$PATH
 
-Many distributions also package an arm-none-eabi cross compiler (gcc-arm-none-eabi),
-which works too.
+A distribution's arm-none-eabi cross compiler (gcc-arm-none-eabi) works too if its
+arm-none-eabi-* tools are linked as arm-unknown-eabi-*.
 
 ## Configure and build
 
