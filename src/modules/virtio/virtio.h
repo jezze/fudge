@@ -17,6 +17,7 @@
 #define VIRTIO_STATUS_FAILED            0x80
 #define VIRTIO_DESC_NEXT                0x01
 #define VIRTIO_DESC_WRITE               0x02
+#define VIRTIO_AVAIL_NOINTERRUPT        0x01
 #define VIRTIO_NOVECTOR                 0xFFFF
 #define VIRTIO_QUEUESIZE                256
 #define VIRTIO_QUEUEMEMORY              0x4000
@@ -100,6 +101,7 @@ unsigned int virtio_initqueue(struct virtio_queue *queue, struct virtio_device *
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory);
 void virtio_setdesc(struct virtio_queue *queue, unsigned int index, void *buffer, unsigned int length, unsigned short flags, unsigned short next);
 void virtio_push(struct virtio_queue *queue, unsigned short head);
+void virtio_nointerrupt(struct virtio_queue *queue);
 void virtio_notify(struct virtio_queue *queue);
 unsigned int virtio_pending(struct virtio_queue *queue);
 unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length);

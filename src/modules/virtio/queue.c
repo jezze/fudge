@@ -84,6 +84,14 @@ void virtio_push(struct virtio_queue *queue, unsigned short head)
 
 }
 
+/* for polled queues: a device that interrupts anyway keeps a shared level-triggered line asserted, as nothing reads its ISR */
+void virtio_nointerrupt(struct virtio_queue *queue)
+{
+
+    queue->avail->flags = virtio_le16(VIRTIO_AVAIL_NOINTERRUPT);
+
+}
+
 unsigned int virtio_pending(struct virtio_queue *queue)
 {
 

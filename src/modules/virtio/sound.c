@@ -322,6 +322,9 @@ static void driver_reset(unsigned int id)
     if (!virtio_setqueue(&txqueue, &device, QUEUE_TX, txmemory) || txqueue.size < BUFFERS * 3)
         return;
 
+    virtio_nointerrupt(&controlqueue);
+    virtio_nointerrupt(&txqueue);
+
     xfer.stream = virtio_le32(STREAM);
     ready = 1;
 

@@ -333,6 +333,8 @@ static void driver_reset(unsigned int id)
     if (!virtio_setqueue(&queue, &device, 0, memory) || queue.size < 2)
         return;
 
+    virtio_nointerrupt(&queue);
+
     ready = 1;
 
 }
