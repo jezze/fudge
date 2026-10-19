@@ -13,14 +13,33 @@ static struct base_driver driver;
 static struct clock_interface clockinterface;
 static volatile unsigned int *rtc;
 
-/* nanoseconds since 1970, the low half read first latches the high half */
+/* nanoseconds since 1970, the low half read first latches the high half; divided bit by bit so that 32-bit longs do */
 static unsigned long getseconds(void)
 {
 
     unsigned long low = rtc[REG_TIMELOW / 4];
     unsigned long high = rtc[REG_TIMEHIGH / 4];
+    unsigned long remainder = 0;
+    unsigned long seconds = 0;
+    unsigned int i;
 
-    return ((high << 32) | low) / 1000000000UL;
+    for (i = 64; i > 0; i--)
+    {
+
+        remainder = (remainder << 1) | (((i > 32) ? high >> (i - 33) : low >> (i - 1)) & 1);
+        seconds <<= 1;
+
+        if (remainder >= 1000000000)
+        {
+
+            remainder -= 1000000000;
+            seconds |= 1;
+
+        }
+
+    }
+
+    return seconds;
 
 }
 
