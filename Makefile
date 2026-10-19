@@ -39,6 +39,12 @@ arm-integratorcp-none:
 	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=arm-none-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
+m68k-virt-elf:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=m68k" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=m68kvirt" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=m68k-elf" >> $(DIR_MK)/$(CONFIG).mk
+
 riscv64-virt-elf:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=riscv64" > $(DIR_MK)/$(CONFIG).mk
@@ -77,6 +83,7 @@ help:
 	@echo "Where <config> is one of the following:"
 	@echo ""
 	@echo "  arm-integratorcp-none"
+	@echo "  m68k-virt-elf"
 	@echo "  riscv64-virt-elf"
 	@echo "  x86-mboot"
 	@echo "  x86-mboot2"
@@ -92,7 +99,7 @@ help:
 -include $(DIR_MK)/$(CONFIG).mk
 
 ifeq ($(TARGET),)
-ifneq ($(filter-out arm-% riscv64-% x86-% x86_64-% help,$(or $(MAKECMDGOALS),all)),)
+ifneq ($(filter-out arm-% m68k-% riscv64-% x86-% x86_64-% help,$(or $(MAKECMDGOALS),all)),)
 $(error No configuration in $(DIR_MK)/$(CONFIG).mk, set one with make <config> (make help lists them))
 endif
 else

@@ -1,0 +1,8 @@
+{
+  modules: [
+    { path: initrd:kernel/virt.ko }
+    { path: initrd:kernel/virt-timer.ko }
+    { path: initrd:kernel/goldfish-tty.ko }
+    { path: initrd:kernel/goldfish.ko }
+  ]
+}
