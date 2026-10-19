@@ -345,15 +345,76 @@ void arch_leave(void)
 
 }
 
+/* the page has to be there and writeable before a writeback goes to it, or the kernel would fault */
+static unsigned int canwrite(unsigned long vaddress)
+{
+
+    unsigned long root = cpu_getroot();
+
+    if (!(mmu_getpage(root, vaddress) & MMU_PFLAG_PRESENT) && !pagefault(vaddress))
+        return 0;
+
+    return !(mmu_getpage(root, vaddress) & MMU_PFLAG_WRITEPROTECT);
+
+}
+
+/* a 68040 leaves writes of finished instructions in the access fault's frame; plain data writes are done here, like Linux does (the first writeback is the faulted access, which the cpu does again) */
+static unsigned int writeback(unsigned short status, unsigned int address, unsigned int data)
+{
+
+    if (!(status & CPU_WB_VALID) || (status & CPU_WB_TT))
+        return 1;
+
+    switch (status & CPU_WB_SIZE)
+    {
+
+    case CPU_WB_BYTE:
+        if (!canwrite(address))
+            return 0;
+
+        *(volatile unsigned char *)address = data;
+
+        return 1;
+
+    case CPU_WB_WORD:
+        if (!canwrite(address) || !canwrite(address + 1))
+            return 0;
+
+        *(volatile unsigned short *)address = data;
+
+        return 1;
+
+    case CPU_WB_LONG:
+        if (!canwrite(address) || !canwrite(address + 3))
+            return 0;
+
+        *(volatile unsigned int *)address = data;
+
+        return 1;
+
+    }
+
+    return 0;
+
+}
+
 unsigned int arch_accessfault(struct cpu_frame *frame)
 {
 
-    if (frame->ssw & 0x0400 && pagefault(frame->fa))
+    if (frame->ssw & CPU_SSW_ATC && pagefault(frame->fa))
     {
 
         cpu_flushtlb();
 
-        return 0;
+        if (writeback(frame->wb2s, frame->wb2a, frame->wb2d) && writeback(frame->wb3s, frame->wb3a, frame->wb3d))
+        {
+
+            frame->wb2s = 0;
+            frame->wb3s = 0;
+
+            return 0;
+
+        }
 
     }
 
