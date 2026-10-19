@@ -11,8 +11,8 @@ CC_FLAGS_FLOAT=-msoft-float
 CC_FLAGS=-Wall -Werror -Wno-overlength-strings -m68040 -msoft-float -fno-pic -fno-pie -ffreestanding -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector -std=c89 -pedantic -O2 -S
 DP_FLAGS=-I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -I$(DIR_SRC)/kernel/$(ARCH) -MM -MT
 LD_FLAGS_BIN=-z max-page-size=0x1000 -Ttext-segment=0x08048000 -s -static -nostdlib
-LD_FLAGS_KBIN=-z max-page-size=0x1000 -static -nostdlib -T$(LD_SCRIPT_KBIN)
-LD_FLAGS_KMOD=-T$(DIR_SRC)/modules/linker.ld -r
+LD_FLAGS_KBIN=-z max-page-size=0x1000 -static -nostdlib -T$(DIR_MK)/m68k-m68kvirt.ld
+LD_FLAGS_KMOD=-T$(DIR_MK)/kmod.ld -r
 NM_FLAGS=-gp
 PP_FLAGS=-Wall -Werror -nostdinc -std=c89 -pedantic -E -I$(DIR_INCLUDE) -I$(DIR_LIB) -I$(DIR_SRC) -I$(DIR_SRC)/kernel/$(ARCH)
 

@@ -86,6 +86,9 @@ help:
 	@echo "Then build and clean:"
 	@echo ""
 	@echo "  $$ make"
+	@echo ""
+	@echo "To clean:"
+	@echo ""
 	@echo "  $$ make clean"
 	@echo ""
 
