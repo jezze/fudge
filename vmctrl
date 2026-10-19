@@ -109,16 +109,16 @@ cmd_run() {
             test "${networkdevice}" == "virtio" || error "Unknown network device on m68k: ${networkdevice} (virtio)"
             cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -serial stdio -global virtio-mmio.force-legacy=false -device virtio-gpu-device -device virtio-keyboard-device -device virtio-mouse-device"
             ;;
-        riscv64)
-            test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on riscv64"
+        riscv32|riscv64)
+            test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on ${arch}"
             storagedevice="${storagedevice:-virtio}"
             networkdevice="${networkdevice:-virtio}"
-            test "${storagedevice}" == "virtio" || error "Unknown storage device on riscv64: ${storagedevice} (virtio)"
-            test "${networkdevice}" == "virtio" || error "Unknown network device on riscv64: ${networkdevice} (virtio)"
-            cmd="qemu-system-riscv64 -nodefaults -machine virt -m 256 -audio none -device ramfb -device virtio-keyboard-device -device virtio-mouse-device -serial stdio"
+            test "${storagedevice}" == "virtio" || error "Unknown storage device on ${arch}: ${storagedevice} (virtio)"
+            test "${networkdevice}" == "virtio" || error "Unknown network device on ${arch}: ${networkdevice} (virtio)"
+            cmd="qemu-system-${arch} -nodefaults -machine virt -m 256 -audio none -device ramfb -device virtio-keyboard-device -device virtio-mouse-device -serial stdio"
             ;;
         *)
-            error "Unknown architecture: ${arch} (x86, x86_64, arm, m68k or riscv64)"
+            error "Unknown architecture: ${arch} (x86, x86_64, arm, m68k, riscv32 or riscv64)"
             ;;
     esac
 
@@ -146,7 +146,7 @@ cmd_run() {
                 cmd="${cmd} ${drive} -device qemu-xhci,id=xhci0 -device usb-storage,drive=disk0,bus=xhci0.0"
                 ;;
             virtio)
-                if test "${arch}" == "m68k" || test "${arch}" == "riscv64"
+                if test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
                 then
                     cmd="${cmd} ${drive} -device virtio-blk-device,drive=disk0"
                 else
@@ -186,7 +186,7 @@ cmd_run() {
     if test "${iso}" == "y"
     then
         cmd="${cmd} -cdrom ${isoname} -boot d"
-    elif test "${storage}" != "y" || test "${arch}" == "arm" || test "${arch}" == "m68k" || test "${arch}" == "riscv64"
+    elif test "${storage}" != "y" || test "${arch}" == "arm" || test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
     then
         test -f fudge || error "Kernel not found. Forgot to build?"
         test -f fudge.cpio || error "Ramdisk not found. Forgot to build?"
@@ -198,7 +198,7 @@ cmd_run() {
             x86_64)
                 error "qemu can not load a 64-bit kernel, boot from a disk or an ISO (-S, -d or -i)"
                 ;;
-            arm|m68k|riscv64)
+            arm|m68k|riscv32|riscv64)
                 ramdisk=$(sed -n 's/^#define ARCH_RAMDISK_BASE *//p' src/kernel/${arch}/arch.h)
                 cmd="${cmd} -kernel fudge -device loader,file=fudge.cpio,addr=${ramdisk},force-raw=on"
                 ;;
@@ -216,7 +216,7 @@ cmd_run() {
                 cmd="${cmd} -net nic,model=smc91c111,netdev=eth0"
                 ;;
             virtio)
-                if test "${arch}" == "m68k" || test "${arch}" == "riscv64"
+                if test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
                 then
                     cmd="${cmd} -device virtio-net-device,netdev=eth0"
                 else
@@ -441,7 +441,7 @@ cmd_help() {
     echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2), sd on arm (the only one there)"
     echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap), smc91c111 on arm (the only one there)"
     echo "        -a ac97 or virtio (default ac97), -o pa, pipewire, alsa or wav (default pa)"
-    echo "        -x x86, x86_64, arm, m68k or riscv64 (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
+    echo "        -x x86, x86_64, arm, m68k, riscv32 or riscv64 (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
     echo "    nat <interface>"
     echo "    connect"
     echo "    disconnect"

@@ -36,6 +36,7 @@ compiler, configurations and how to run it:
 | x86          | x86-mboot, x86-mboot2  | i386-unknown-elf    | README.x86.md      |
 | x86_64       | x86_64-mboot2          | x86_64-unknown-elf  | README.x86_64.md   |
 | arm          | arm-integratorcp       | arm-unknown-eabi    | README.arm.md      |
+| riscv32      | riscv32-virt           | riscv32-unknown-elf | README.riscv32.md  |
 | riscv64      | riscv64-virt           | riscv64-unknown-elf | README.riscv64.md  |
 | m68k         | m68k-m68kvirt          | m68k-unknown-elf    | README.m68k.md     |
 

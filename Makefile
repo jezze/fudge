@@ -45,6 +45,12 @@ m68k-m68kvirt:
 	@echo "LOADER:=m68kvirt" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=m68k-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
 
+riscv32-virt:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=riscv32" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=virt" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=riscv32-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
+
 riscv64-virt:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=riscv64" > $(DIR_MK)/$(CONFIG).mk
@@ -78,6 +84,7 @@ help:
 	@echo ""
 	@echo "  arm-integratorcp"
 	@echo "  m68k-m68kvirt"
+	@echo "  riscv32-virt"
 	@echo "  riscv64-virt"
 	@echo "  x86-mboot"
 	@echo "  x86-mboot2"
@@ -95,7 +102,7 @@ help:
 -include $(DIR_MK)/$(CONFIG).mk
 
 ifeq ($(TARGET),)
-ifneq ($(filter-out arm-% m68k-% riscv64-% x86-% x86_64-% help,$(or $(MAKECMDGOALS),all)),)
+ifneq ($(filter-out arm-% m68k-% riscv32-% riscv64-% x86-% x86_64-% help,$(or $(MAKECMDGOALS),all)),)
 $(error No configuration in $(DIR_MK)/$(CONFIG).mk, set one with make <config> (make help lists them))
 endif
 else
