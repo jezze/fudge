@@ -37,7 +37,7 @@ arm-integratorcp:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=arm" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
-	@echo "TARGET:=arm-none-eabi" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=arm-unknown-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
 m68k-m68kvirt:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
