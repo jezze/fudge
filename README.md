@@ -26,11 +26,31 @@ each type of message a program can register a callback that will be run when a
 message of a certain type appears. Messages without a registered callback will
 be dropped. It is also possible to poll messages manually from the channel.
 
-## Building the cross-compiler (crosstool-ng)
+## Architectures
 
-In order to compile Fudge for x86 we need to have a cross-compiler. Building a
-cross-compiler can be a tedious task but luckily there is a tool called
-crosstool-ng that automates the entire process for us.
+Fudge runs on several architectures. Each one has a README with its cross
+compiler, configurations and how to run it:
+
+| Architecture | Configurations         | Cross compiler      | Notes              |
+|--------------|------------------------|---------------------|--------------------|
+| x86          | x86-mboot, x86-mboot2  | i386-unknown-elf    | README.x86.md      |
+| x86_64       | x86_64-mboot2          | x86_64-unknown-elf  | README.x86_64.md   |
+| arm          | arm-integratorcp       | arm-none-eabi       | README.arm.md      |
+| riscv64      | riscv64-virt           | riscv64-unknown-elf | README.riscv64.md  |
+| m68k         | m68k-m68kvirt          | m68k-unknown-elf    | README.m68k.md     |
+
+## Getting the source
+
+```sh
+$ git clone https://github.com/jezze/fudge.git
+$ cd fudge
+```
+
+## Building a cross compiler (crosstool-ng)
+
+Fudge is always built with a cross compiler for its target, also for x86 and
+x86_64 on an x86 host. Building one can be a tedious task but luckily there is
+a tool called crosstool-ng that automates the entire process.
 
 Download and install crosstool-ng. The recommended version is 1.29.0.
 
@@ -43,102 +63,89 @@ $ make
 $ sudo make install
 ```
 
-Create a temporary folder in your home directory and cd to it:
+Create a folder for the toolchain in your home directory and cd to it:
 
 ```sh
-$ mkdir ~/temp
-$ cd ~/temp
+$ mkdir -p ~/temp/<cross compiler>
+$ cd ~/temp/<cross compiler>
 ```
 
-Configure our new cross-compiler build by running:
+Configure the toolchain by running:
 
 ```sh
 $ ct-ng menuconfig
 ```
 
-This will start the configuration tool. Set the target architecture to x86:
+This starts the configuration tool. Choose the settings your architecture's
+README lists. The resulting name (the tuple) must match the cross compiler in
+the table above, since that is what the build calls. Exit the configuration
+tool by pressing exit a few times and save the settings when asked.
 
-```sh
-Target options -> Target Architecture -> x86
-```
-
-By default the cross-compiler will be installed in ~/x-tools/i386-unknown-elf/.
-You can change this if you want. Please refer to the crosstool-ng website for
-more information on how to customize your setup.
-
-Exit the configuration tool by pressing exit a few times. Before you leave the
-last screen you will be asked if you want to save the settings. Press yes.
-
-Start building the cross-compiler:
+Start building the cross compiler:
 
 ```sh
 $ ct-ng build
 ```
 
 Depending on your system this may take some time, usually around 10-15 minutes.
+By default it is installed in ~/x-tools/<cross compiler>/. Please refer to the
+crosstool-ng website for more information on how to customize your setup.
+
+Before building Fudge, add the cross compiler to your $PATH. Unless you changed
+the install path, this should work:
+
+```sh
+$ export PATH=~/x-tools/<cross compiler>/bin:$PATH
+```
+
+The change to $PATH disappears when you leave the current session, so you will
+need to set it again from time to time.
 
 ## Building Fudge
 
-This step requires that you to have the cross-compiler built.
-
-First you need to download the source code if you haven't done that already.
-
-```sh
-$ git clone git://github.com/jezze/fudge.git
-$ cd fudge
-```
-
-Now we need to make sure our system can find the new cross-compiler that we
-created previously. This is done by adding the path to the compiler to the
-$PATH environment variable on your host. Unless you changed the install path,
-this should work:
+First set the configuration, which is written to mk/config.mk, then build.
+make help lists the configurations.
 
 ```sh
-$ export PATH=/home/$(whoami)/x-tools/i386-unknown-elf/bin:$PATH
-```
-
-The changes to $PATH will disappear as soon as you leave the current session or
-start another one so you will need to set it again from time to time.
-
-Finally we can build Fudge. First set the configuration (make help lists
-them all), then build.
-
-```sh
-$ make x86-mboot
+$ make <configuration>
 $ make
 ```
 
-You should now have a binary called fudge and a ramdisk image called fudge.cpio
-in the top directory of your source tree.
+You should now have a kernel called fudge and a ramdisk image called fudge.cpio
+in the top directory of your source tree. make clean removes the build of the
+current configuration, so run it before switching to another one.
 
 ## Running Fudge in QEMU with vmctrl
 
-There is a script call vmctrl that you can use to run Fudge as a virtual
-machine in QEMU.
+There is a script called vmctrl that you can use to run Fudge as a virtual
+machine in QEMU. -x picks the architecture (x86 if left out).
 
 ```sh
-$ ./vmctrl run
+$ ./vmctrl run -x <architecture>
 ```
 
-This will start an instance of Fudge called node1. This node will not have any
-networking abilities however. The simplest way to enable networking is the -N
-flag, which adds a virtio network card on QEMU's user mode networking and does
-not need root (-n rtl8139 picks the other card). The node
-gets the address 10.0.5.1 and QEMU answers as the router on 10.0.5.80, which are
-the defaults the network programs in Fudge use, so it can reach the outside
-world right away. The host can not connect to the node this way and nodes can
-not talk to each other.
+This will start an instance of Fudge called node1. Some configurations can not
+be loaded by QEMU directly and need a disk or an ISO; their README says so.
+vmctrl help lists all options. Which storage, network and sound devices an
+architecture has is in its README.
+
+The node will not have any networking abilities by default. The simplest way to
+enable networking is the -N flag, which adds a network card on QEMU's user mode
+networking and does not need root. The node gets the address 10.0.5.1 and QEMU
+answers as the router on 10.0.5.80, which are the defaults the network programs
+in Fudge use, so it can reach the outside world right away. The host can not
+connect to the node this way and nodes can not talk to each other.
 
 ```sh
-$ ./vmctrl run -N
+$ ./vmctrl run -x <architecture> -N
 ```
 
 To let nodes talk to each other, use -t and a name. Your user need to be
-allowed to create TAP interfaces on your host machine. Typically using sudo will allow you to do
-this.
+allowed to create TAP interfaces on your host machine. Typically using sudo will
+allow you to do this.
 
 ```sh
-$ sudo ./vmctrl run -t <name>
+$ sudo ./vmctrl run -x <architecture> -t <name>
 ```
 
 Once you started one or more instances of Fudge, each with a different name you
@@ -161,24 +168,24 @@ Replace eth0 with the name of the network interface that is connected to the
 internet. You only need to run this command once unless you reboot your host
 machine.
 
-You can create a fudge.qcow2 image and install fudge on it.
+## Disk images
 
-First we create the image:
+You can create a fudge.qcow2 image and install Fudge on it. First build Fudge,
+then create the image:
 
 ```sh
 $ ./vmctrl disk_create
 ```
 
-Then we need to set it up. This usually requires root privileges:
+Then set it up. This copies the build onto the image (disk_setup_gpt makes a GPT
+instead of an MBR) and usually requires root privileges:
 
 ```sh
 $ sudo ./vmctrl disk_setup fudge.qcow2
 ```
 
-To boot from this image in qemu, use -S (fudge.qcow2 on a virtio disk) or
--d <disk> for another image. -s picks the controller: ahci, ide, nvme, usb or
-virtio. -A adds an AC97 sound card, playing through PulseAudio unless -o names
-another QEMU audio driver (pipewire, alsa, or wav to record to fudge.wav).
+-S attaches fudge.qcow2 and -d <disk> another image. The disk is mounted
+according to data/config/mount.mq.
 
 ## Community
 

@@ -4,9 +4,22 @@ The riscv64 port runs on QEMU's virt machine, entered in supervisor mode by Open
 (QEMU's default firmware). The wm runs on a ramfb framebuffer; the serial shell and the
 kernel debug output share the serial port.
 
+## Cross compiler
+
+Build a riscv64-unknown-elf cross compiler with crosstool-ng (see README.md) using these
+settings in ct-ng menuconfig:
+
+Target options -> Target Architecture -> riscv
+Target options -> Bitness -> 64-bit
+Operating System -> Target OS -> bare-metal
+
+Then add it to $PATH:
+
+export PATH=~/x-tools/riscv64-unknown-elf/bin:$PATH
+
 ## Configure and build
 
-make riscv64-virt-elf
+make riscv64-virt
 make
 
 ## Run in QEMU

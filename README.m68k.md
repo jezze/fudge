@@ -5,13 +5,25 @@ controllers, timers, tty) and virtio-mmio slots. QEMU enters the kernel in super
 with the MMU off. The serial shell and the kernel debug output share the goldfish tty.
 The wm runs on a virtio-gpu display with a virtio keyboard and mouse.
 
+## Cross compiler
+
+Build an m68k-unknown-elf cross compiler with crosstool-ng (see README.md) using these
+settings in ct-ng menuconfig:
+
+Target options -> Target Architecture -> m68k
+Operating System -> Target OS -> bare-metal
+
+Then add it to $PATH:
+
+export PATH=~/x-tools/m68k-unknown-elf/bin:$PATH
+
+A Linux m68k cross compiler works too if its m68k-linux-gnu-* tools are linked as
+m68k-unknown-elf-*.
+
 ## Configure and build
 
-make m68k-virt-elf
+make m68k-m68kvirt
 make
-
-The configuration wants m68k-elf-* tools; a Linux m68k cross compiler works if they are
-linked to its m68k-linux-gnu-* tools.
 
 ## Run in QEMU
 

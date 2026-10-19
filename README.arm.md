@@ -3,9 +3,25 @@
 The ARM port runs on the Integrator/CP board (ARM926EJ-S) in QEMU. The shell runs on
 the first serial port, kernel debug output goes to the second.
 
+## Cross compiler
+
+Build an arm-none-eabi cross compiler with crosstool-ng (see README.md) using these
+settings in ct-ng menuconfig:
+
+Target options -> Target Architecture -> arm
+Operating System -> Target OS -> bare-metal
+Toolchain options -> Tuple's vendor string -> none
+
+Then add it to $PATH:
+
+export PATH=~/x-tools/arm-none-eabi/bin:$PATH
+
+Many distributions also package an arm-none-eabi cross compiler (gcc-arm-none-eabi),
+which works too.
+
 ## Configure and build
 
-make arm-integratorcp-none
+make arm-integratorcp
 make
 
 ## Run in QEMU
