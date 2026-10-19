@@ -41,16 +41,7 @@ static void handleirq(unsigned int irq)
 
     jiffies++;
 
-    timer_notifytick1(&timerinterface, jiffies);
-
-    if (!(jiffies % 10))
-        timer_notifytick10(&timerinterface, jiffies);
-
-    if (!(jiffies % 100))
-        timer_notifytick100(&timerinterface, jiffies);
-
-    if (!(jiffies % 1000))
-        timer_notifytick1000(&timerinterface, jiffies);
+    timer_notifytick(&timerinterface, jiffies);
 
 }
 

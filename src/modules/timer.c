@@ -31,7 +31,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
+void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 {
 
     struct event_timertick timertick;
@@ -39,45 +39,6 @@ void timer_notifytick1(struct timer_interface *interface, unsigned int counter)
     timertick.counter = counter;
 
     kernel_notify(&interface->service.links, interface->service.inode, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
-
-}
-
-void timer_notifytick10(struct timer_interface *interface, unsigned int counter)
-{
-
-    /*
-    struct event_timertick timertick;
-
-    timertick.counter = counter;
-
-    kernel_notify(&interface->service.links, interface->service.inode, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
-    */
-
-}
-
-void timer_notifytick100(struct timer_interface *interface, unsigned int counter)
-{
-
-    /*
-    struct event_timertick timertick;
-
-    timertick.counter = counter;
-
-    kernel_notify(&interface->service.links, interface->service.inode, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
-    */
-
-}
-
-void timer_notifytick1000(struct timer_interface *interface, unsigned int counter)
-{
-
-    /*
-    struct event_timertick timertick;
-
-    timertick.counter = counter;
-
-    kernel_notify(&interface->service.links, interface->service.inode, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
-    */
 
 }
 

@@ -71,7 +71,7 @@ static void handleirq(unsigned int irq)
 
     jiffies++;
 
-    timer_notifytick1(&timerinterface, jiffies);
+    timer_notifytick(&timerinterface, jiffies);
 
 }
 
