@@ -112,7 +112,7 @@ static unsigned int nextcluster(unsigned int cluster)
         return (next >= 0xFFF8) ? FAT_CLUSTER_MASK : next;
 
     default:
-        buffer_copy(&next, (unsigned char *)readsector(fatstart + cluster * 4 / sectorsize) + cluster * 4 % sectorsize, 4);
+        next = fat_read32((unsigned char *)readsector(fatstart + cluster * 4 / sectorsize) + cluster * 4 % sectorsize);
 
         return next & FAT_CLUSTER_MASK;
 
@@ -163,14 +163,9 @@ static void setcluster(unsigned int cluster, unsigned int value)
 
                 unsigned int sector = fatstart + i * fatsize + cluster * 4 / sectorsize;
                 unsigned char *data = readsector(sector);
-                unsigned int old;
-                unsigned int new;
+                unsigned int old = fat_read32(data + cluster * 4 % sectorsize);
 
-                buffer_copy(&old, data + cluster * 4 % sectorsize, 4);
-
-                new = (old & ~FAT_CLUSTER_MASK) | (value & FAT_CLUSTER_MASK);
-
-                buffer_copy(data + cluster * 4 % sectorsize, &new, 4);
+                fat_write32(data + cluster * 4 % sectorsize, (old & ~FAT_CLUSTER_MASK) | (value & FAT_CLUSTER_MASK));
                 writesector(sector);
 
             }
@@ -194,14 +189,12 @@ static void addfree(unsigned int count, unsigned int used)
 
     data = readsector(fsinfo);
 
-    buffer_copy(&free, data + 488, 4);
+    free = fat_read32(data + 488);
 
     if (free == 0xFFFFFFFF)
         return;
 
-    free = free + count - used;
-
-    buffer_copy(data + 488, &free, 4);
+    fat_write32(data + 488, free + count - used);
     writesector(fsinfo);
 
 }
@@ -241,9 +234,9 @@ static unsigned int allocate(void)
             }
 
             if (fattype == 32)
-                used = ((unsigned int *)table)[cluster % perSector] & FAT_CLUSTER_MASK;
+                used = fat_read32(table + cluster % perSector * 4) & FAT_CLUSTER_MASK;
             else
-                used = ((unsigned short *)table)[cluster % perSector];
+                used = fat_read16(table + cluster % perSector * 2);
 
         }
 
@@ -336,7 +329,7 @@ static unsigned int findsector(unsigned int first, unsigned int offset)
 static unsigned int getcluster(struct fat_entry *entry)
 {
 
-    unsigned int cluster = (entry->clusterhigh << 16) | entry->clusterlow;
+    unsigned int cluster = (fat_read16(&entry->clusterhigh) << 16) | fat_read16(&entry->clusterlow);
 
     return (cluster) ? cluster : rootcluster;
 
@@ -358,8 +351,8 @@ static void getnode(unsigned int id, struct fat_entry *entry)
         buffer_clear(entry, sizeof (struct fat_entry));
 
         entry->attributes = FAT_ATTRIBUTE_DIRECTORY;
-        entry->clusterhigh = rootcluster >> 16;
-        entry->clusterlow = rootcluster & 0xFFFF;
+        fat_write16(&entry->clusterhigh, rootcluster >> 16);
+        fat_write16(&entry->clusterlow, rootcluster);
 
     }
 
@@ -414,11 +407,11 @@ static void setcreated(struct fat_entry *entry)
     if (!getnow(&date, &time))
         return;
 
-    entry->createdate = date;
-    entry->createtime = time;
-    entry->modifydate = date;
-    entry->modifytime = time;
-    entry->accessdate = date;
+    fat_write16(&entry->createdate, date);
+    fat_write16(&entry->createtime, time);
+    fat_write16(&entry->modifydate, date);
+    fat_write16(&entry->modifytime, time);
+    fat_write16(&entry->accessdate, date);
 
 }
 
@@ -428,12 +421,12 @@ static unsigned int setmodified(struct fat_entry *entry)
     unsigned short date;
     unsigned short time;
 
-    if (!getnow(&date, &time) || (entry->modifydate == date && entry->modifytime == time))
+    if (!getnow(&date, &time) || (fat_read16(&entry->modifydate) == date && fat_read16(&entry->modifytime) == time))
         return 0;
 
-    entry->modifydate = date;
-    entry->modifytime = time;
-    entry->accessdate = date;
+    fat_write16(&entry->modifydate, date);
+    fat_write16(&entry->modifytime, time);
+    fat_write16(&entry->accessdate, date);
 
     return 1;
 
@@ -579,6 +572,7 @@ static void addlongname(struct fat_longname *longname, unsigned short *units)
 {
 
     unsigned int index = (longname->order & 0x1F) - 1;
+    unsigned int i;
 
     if (index >= UNITSIZE / 13)
         return;
@@ -586,6 +580,9 @@ static void addlongname(struct fat_longname *longname, unsigned short *units)
     buffer_copy(units + index * 13, longname->name1, 10);
     buffer_copy(units + index * 13 + 5, longname->name2, 12);
     buffer_copy(units + index * 13 + 11, longname->name3, 4);
+
+    for (i = index * 13; i < index * 13 + 13; i++)
+        units[i] = fat_read16(&units[i]);
 
     if (longname->order & 0x40 && index < UNITSIZE / 13 - 1)
         units[index * 13 + 13] = 0x0000;
@@ -717,7 +714,7 @@ static unsigned int findentry(unsigned int id, char *path, unsigned int length)
     {
 
         if (matchname(name, path, length))
-            return (gettype(&entry) == RECORD_TYPE_DIRECTORY && !entry.clusterhigh && !entry.clusterlow) ? ROOT : id;
+            return (gettype(&entry) == RECORD_TYPE_DIRECTORY && !fat_read16(&entry.clusterhigh) && !fat_read16(&entry.clusterlow)) ? ROOT : id;
 
     }
 
@@ -783,7 +780,7 @@ static unsigned int readdirectory(unsigned int root, unsigned int first, unsigne
     while ((i + 1) * sizeof (struct record) <= capacity && (id = nextentry(first, &offset, &entry, name)))
     {
 
-        record_init(&records[i], id, gettype(&entry), entry.size, offset, cstring_length(name), name);
+        record_init(&records[i], id, gettype(&entry), fat_read32(&entry.size), offset, cstring_length(name), name);
 
         i++;
 
@@ -847,7 +844,7 @@ static unsigned int stat(unsigned int id, struct record *record)
     if (id != ROOT)
         length = getshortname(&entry, name);
 
-    record_init(record, id, gettype(&entry), entry.size, 0, length, name);
+    record_init(record, id, gettype(&entry), fat_read32(&entry.size), 0, length, name);
 
     return sizeof (struct record);
 
@@ -1114,7 +1111,7 @@ static unsigned int createlongname(unsigned int first, struct fat_entry *entry, 
 
             unsigned int index = (order - 1) * 13 + k;
 
-            chars[k] = (index < total) ? units[index] : (index == total) ? 0x0000 : 0xFFFF;
+            fat_write16(&chars[k], (index < total) ? units[index] : (index == total) ? 0x0000 : 0xFFFF);
 
         }
 
@@ -1188,7 +1185,7 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
     if (gettype(&entry) != RECORD_TYPE_NORMAL)
         return 0;
 
-    first = (entry.clusterhigh << 16) | entry.clusterlow;
+    first = (fat_read16(&entry.clusterhigh) << 16) | fat_read16(&entry.clusterlow);
 
     if (!first)
     {
@@ -1198,8 +1195,8 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
         if (!first)
             return 0;
 
-        entry.clusterhigh = first >> 16;
-        entry.clusterlow = first & 0xFFFF;
+        fat_write16(&entry.clusterhigh, first >> 16);
+        fat_write16(&entry.clusterlow, first);
 
         putnode(id, &entry);
 
@@ -1237,10 +1234,10 @@ static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int
 
     }
 
-    if (offset + total > entry.size)
+    if (offset + total > fat_read32(&entry.size))
     {
 
-        entry.size = offset + total;
+        fat_write32(&entry.size, offset + total);
 
         setmodified(&entry);
         putnode(id, &entry);
@@ -1351,7 +1348,7 @@ static unsigned int removenode(unsigned int parent, unsigned int id)
     if (gettype(&entry) == RECORD_TYPE_DIRECTORY && !isempty(getcluster(&entry)))
         return 0;
 
-    cluster = (entry.clusterhigh << 16) | entry.clusterlow;
+    cluster = (fat_read16(&entry.clusterhigh) << 16) | fat_read16(&entry.clusterlow);
 
     while (cluster >= 2 && cluster < FAT_CLUSTER_END)
     {
@@ -1403,7 +1400,7 @@ static void onreadrequest(struct message *message)
     if (gettype(&entry) == RECORD_TYPE_DIRECTORY)
         response->count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
     else
-        response->count = readfile(getcluster(&entry), entry.size, request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
+        response->count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
 
     channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
 
@@ -1483,22 +1480,22 @@ static void onmain(struct message *message)
         {
 
             struct fat32 *fat32 = (struct fat32 *)fat.extended_section;
-            unsigned int total = (fat.total_sectors_16) ? fat.total_sectors_16 : fat.total_sectors_32;
+            unsigned int total = (fat_read16(&fat.total_sectors_16)) ? fat_read16(&fat.total_sectors_16) : fat_read32(&fat.total_sectors_32);
             unsigned int clusters;
 
-            sectorsize = fat.bytes_per_sector;
+            sectorsize = fat_read16(&fat.bytes_per_sector);
             clustersize = sectorsize * fat.sectors_per_cluster;
-            fatstart = fat.reserved_sector_count;
+            fatstart = fat_read16(&fat.reserved_sector_count);
             fatcount = fat.table_count;
-            fatsize = (fat.table_size_16) ? fat.table_size_16 : fat32->table_size_32;
+            fatsize = (fat_read16(&fat.table_size_16)) ? fat_read16(&fat.table_size_16) : fat_read32(&fat32->table_size_32);
             rootstart = fatstart + fatcount * fatsize;
-            rootsectors = (fat.root_entry_count * sizeof (struct fat_entry) + sectorsize - 1) / sectorsize;
+            rootsectors = (fat_read16(&fat.root_entry_count) * sizeof (struct fat_entry) + sectorsize - 1) / sectorsize;
             datastart = rootstart + rootsectors;
             clusters = (total - datastart) / fat.sectors_per_cluster;
             clustercount = clusters + 2;
-            fattype = (!fat.table_size_16) ? 32 : (clusters < 4085) ? 12 : 16;
-            rootcluster = (fattype == 32) ? fat32->root_cluster : 0;
-            fsinfo = (fattype == 32) ? fat32->fat_info : 0;
+            fattype = (!fat_read16(&fat.table_size_16)) ? 32 : (clusters < 4085) ? 12 : 16;
+            rootcluster = (fattype == 32) ? fat_read32(&fat32->root_cluster) : 0;
+            fsinfo = (fattype == 32) ? fat_read16(&fat32->fat_info) : 0;
 
             call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
             channel_hold(0);

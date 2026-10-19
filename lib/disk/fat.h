@@ -90,4 +90,8 @@ struct fat_longname
 
 } __attribute__((packed));
 
+unsigned int fat_read16(void *data);
+unsigned int fat_read32(void *data);
+void fat_write16(void *data, unsigned int value);
+void fat_write32(void *data, unsigned int value);
 unsigned int fat_validate(struct fat *fat);
