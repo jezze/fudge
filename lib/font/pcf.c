@@ -3,14 +3,21 @@
 unsigned short pcf_convert16(unsigned short value, unsigned int format)
 {
 
-    return (format & PCF_FORMAT_BYTEMASK) ? BSWAP16(value) : value;
+    unsigned char *bytes = (unsigned char *)&value;
+
+    return (format & PCF_FORMAT_BYTEMASK) ? (bytes[0] << 8) | bytes[1] : (bytes[1] << 8) | bytes[0];
 
 }
 
 unsigned int pcf_convert32(unsigned int value, unsigned int format)
 {
 
-    return (format & PCF_FORMAT_BYTEMASK) ? BSWAP32(value) : value;
+    unsigned char *bytes = (unsigned char *)&value;
+
+    if (format & PCF_FORMAT_BYTEMASK)
+        return ((unsigned int)bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+    else
+        return ((unsigned int)bytes[3] << 24) | (bytes[2] << 16) | (bytes[1] << 8) | bytes[0];
 
 }
 

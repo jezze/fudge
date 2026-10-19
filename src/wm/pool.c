@@ -465,13 +465,27 @@ void pool_loadfont(unsigned int index, char *path)
 
             fs_read_full(1, target, id, &header, sizeof (struct pcf_header), 0);
 
+            header.entries = pcf_convert32(header.entries, PCF_FORMAT_DEFAULT);
+
             if (buffer_match(header.magic, PCF_MAGIC, 4) && header.entries < 24)
             {
 
                 struct text_font *font = &fonts[index];
                 struct pcf_entry entries[24];
+                unsigned int i;
 
                 fs_read_full(1, target, id, entries, sizeof (struct pcf_entry) * header.entries, sizeof (struct pcf_header));
+
+                for (i = 0; i < header.entries; i++)
+                {
+
+                    entries[i].type = pcf_convert32(entries[i].type, PCF_FORMAT_DEFAULT);
+                    entries[i].format = pcf_convert32(entries[i].format, PCF_FORMAT_DEFAULT);
+                    entries[i].size = pcf_convert32(entries[i].size, PCF_FORMAT_DEFAULT);
+                    entries[i].offset = pcf_convert32(entries[i].offset, PCF_FORMAT_DEFAULT);
+
+                }
+
                 loadatlas(font, target, id, entries, header.entries);
 
             }

@@ -17,9 +17,6 @@
 #define PCF_FORMAT_BITMASK              (1 << 3)
 #define PCF_FORMAT_UNITMASK             (3 << 4)
 
-#define BSWAP16(x)                      (((x) >> 8) | ((x) << 8))
-#define BSWAP32(x)                      (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
-
 struct pcf_header
 {
 
