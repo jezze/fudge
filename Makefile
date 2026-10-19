@@ -33,23 +33,23 @@ check-full:
 
 install: $(DIR_INSTALL)/$(KERNEL) $(DIR_INSTALL)/$(RAMDISK) $(DIR_INSTALL)/$(INIT)
 
-arm-integratorcp-none:
+arm-integratorcp:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=arm" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=arm-none-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
-m68k-virt-elf:
+m68k-m68kvirt:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=m68k" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=m68kvirt" >> $(DIR_MK)/$(CONFIG).mk
-	@echo "TARGET:=m68k-elf" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=m68k-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
 
-riscv64-virt-elf:
+riscv64-virt:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=riscv64" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=virt" >> $(DIR_MK)/$(CONFIG).mk
-	@echo "TARGET:=riscv64-elf" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=riscv64-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
 
 x86-mboot:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
@@ -62,12 +62,6 @@ x86-mboot2:
 	@echo "ARCH:=x86" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=mboot2" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=i386-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
-
-x86-mboot-tcc:
-	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
-	@echo "ARCH:=x86" > $(DIR_MK)/$(CONFIG).mk
-	@echo "LOADER:=mboot" >> $(DIR_MK)/$(CONFIG).mk
-	@echo "TARGET:=i386-tcc" >> $(DIR_MK)/$(CONFIG).mk
 
 x86_64-mboot2:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
@@ -82,12 +76,11 @@ help:
 	@echo ""
 	@echo "Where <config> is one of the following:"
 	@echo ""
-	@echo "  arm-integratorcp-none"
-	@echo "  m68k-virt-elf"
-	@echo "  riscv64-virt-elf"
+	@echo "  arm-integratorcp"
+	@echo "  m68k-m68kvirt"
+	@echo "  riscv64-virt"
 	@echo "  x86-mboot"
 	@echo "  x86-mboot2"
-	@echo "  x86-mboot-tcc"
 	@echo "  x86_64-mboot2"
 	@echo ""
 	@echo "Then build and clean:"
@@ -103,7 +96,7 @@ ifneq ($(filter-out arm-% m68k-% riscv64-% x86-% x86_64-% help,$(or $(MAKECMDGOA
 $(error No configuration in $(DIR_MK)/$(CONFIG).mk, set one with make <config> (make help lists them))
 endif
 else
-include $(DIR_MK)/$(TARGET).mk
+include $(DIR_MK)/$(ARCH)-$(LOADER).mk
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
 endif
