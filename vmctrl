@@ -102,8 +102,12 @@ cmd_run() {
             cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none -serial stdio -serial vc"
             ;;
         m68k)
-            test "${iso}${audio}${uefi}${storage}${network}" == "nnnnn" || error "No ISO, audio, UEFI, storage or network on m68k yet"
-            cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -display none -serial stdio"
+            test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on m68k"
+            storagedevice="${storagedevice:-virtio}"
+            networkdevice="${networkdevice:-virtio}"
+            test "${storagedevice}" == "virtio" || error "Unknown storage device on m68k: ${storagedevice} (virtio)"
+            test "${networkdevice}" == "virtio" || error "Unknown network device on m68k: ${networkdevice} (virtio)"
+            cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -display none -serial stdio -global virtio-mmio.force-legacy=false"
             ;;
         riscv64)
             test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on riscv64"
@@ -142,7 +146,7 @@ cmd_run() {
                 cmd="${cmd} ${drive} -device qemu-xhci,id=xhci0 -device usb-storage,drive=disk0,bus=xhci0.0"
                 ;;
             virtio)
-                if test "${arch}" == "riscv64"
+                if test "${arch}" == "m68k" || test "${arch}" == "riscv64"
                 then
                     cmd="${cmd} ${drive} -device virtio-blk-device,drive=disk0"
                 else
@@ -212,7 +216,7 @@ cmd_run() {
                 cmd="${cmd} -net nic,model=smc91c111,netdev=eth0"
                 ;;
             virtio)
-                if test "${arch}" == "riscv64"
+                if test "${arch}" == "m68k" || test "${arch}" == "riscv64"
                 then
                     cmd="${cmd} -device virtio-net-device,netdev=eth0"
                 else

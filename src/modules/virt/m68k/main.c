@@ -30,19 +30,20 @@ struct device
 
 static struct base_bus bus;
 static void (*routines[ROUTINES][SHARED])(unsigned int irq);
+/* qemu fills the 128 virtio-mmio slots from the last one, so the bus offers the last eight */
 static struct device devices[DEVICES] = {
     {0},
     {REG_RTC, IRQ_RTC},
     {REG_RTC + 0x1000, IRQ_RTC + 1},
     {0, 0},
-    {REG_VIRTIO + 0x0000, IRQ_VIRTIO + 0},
-    {REG_VIRTIO + 0x0200, IRQ_VIRTIO + 1},
-    {REG_VIRTIO + 0x0400, IRQ_VIRTIO + 2},
-    {REG_VIRTIO + 0x0600, IRQ_VIRTIO + 3},
-    {REG_VIRTIO + 0x0800, IRQ_VIRTIO + 4},
-    {REG_VIRTIO + 0x0A00, IRQ_VIRTIO + 5},
-    {REG_VIRTIO + 0x0C00, IRQ_VIRTIO + 6},
-    {REG_VIRTIO + 0x0E00, IRQ_VIRTIO + 7},
+    {REG_VIRTIO + 0xFE00, IRQ_VIRTIO + 127},
+    {REG_VIRTIO + 0xFC00, IRQ_VIRTIO + 126},
+    {REG_VIRTIO + 0xFA00, IRQ_VIRTIO + 125},
+    {REG_VIRTIO + 0xF800, IRQ_VIRTIO + 124},
+    {REG_VIRTIO + 0xF600, IRQ_VIRTIO + 123},
+    {REG_VIRTIO + 0xF400, IRQ_VIRTIO + 122},
+    {REG_VIRTIO + 0xF200, IRQ_VIRTIO + 121},
+    {REG_VIRTIO + 0xF000, IRQ_VIRTIO + 120},
     {0, 0},
     {REG_TTY, IRQ_TTY}
 };
