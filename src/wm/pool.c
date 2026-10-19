@@ -436,11 +436,11 @@ static void loadatlas(struct text_font *font, unsigned int target, unsigned int 
 
             }
 
-            fs_read_full(1, target, id, &bitmapoffset, sizeof (unsigned int), bitmapentry->offset + 8 + bitmapalign * index);
+            fs_read_full(1, target, id, &bitmapoffset, sizeof (unsigned int), bitmapentry->offset + 8 + 4 * index);
 
             bitmapoffset = pcf_convert32(bitmapoffset, bitmapentry->format);
 
-            loadatlasdata(atlas, target, id, bitmapentry->offset + 8 + bitmapalign * bitmapcount + 4 * 4 + bitmapoffset, bitmapalign);
+            loadatlasdata(atlas, target, id, bitmapentry->offset + 8 + 4 * bitmapcount + 4 * 4 + bitmapoffset, bitmapalign);
 
         }
 
