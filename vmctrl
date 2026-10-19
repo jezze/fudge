@@ -18,7 +18,7 @@ cmd_run() {
     networkdevice=""
     tap=n
     audio=n
-    audiodevice="ac97"
+    audiodevice=""
     audiodriver="pa"
     uefi=n
     arch="x86"
@@ -91,6 +91,7 @@ cmd_run() {
         x86|x86_64)
             storagedevice="${storagedevice:-virtio}"
             networkdevice="${networkdevice:-virtio}"
+            audiodevice="${audiodevice:-ac97}"
             cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
             ;;
         arm)
@@ -102,20 +103,24 @@ cmd_run() {
             cmd="qemu-system-arm -nodefaults -machine integratorcp -m 256 -audio none -serial stdio -serial vc"
             ;;
         m68k)
-            test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on m68k"
+            test "${iso}${uefi}" == "nn" || error "No ISO or UEFI on m68k"
             storagedevice="${storagedevice:-virtio}"
             networkdevice="${networkdevice:-virtio}"
+            audiodevice="${audiodevice:-virtio}"
             test "${storagedevice}" == "virtio" || error "Unknown storage device on m68k: ${storagedevice} (virtio)"
             test "${networkdevice}" == "virtio" || error "Unknown network device on m68k: ${networkdevice} (virtio)"
-            cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -serial stdio -global virtio-mmio.force-legacy=false -device virtio-gpu-device -device virtio-keyboard-device -device virtio-mouse-device"
+            test "${audiodevice}" == "virtio" || error "Unknown audio device on m68k: ${audiodevice} (virtio)"
+            cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -serial stdio -global virtio-mmio.force-legacy=false -device virtio-gpu-device -device virtio-keyboard-device -device virtio-mouse-device"
             ;;
         riscv32|riscv64)
-            test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on ${arch}"
+            test "${iso}${uefi}" == "nn" || error "No ISO or UEFI on ${arch}"
             storagedevice="${storagedevice:-virtio}"
             networkdevice="${networkdevice:-virtio}"
+            audiodevice="${audiodevice:-virtio}"
             test "${storagedevice}" == "virtio" || error "Unknown storage device on ${arch}: ${storagedevice} (virtio)"
             test "${networkdevice}" == "virtio" || error "Unknown network device on ${arch}: ${networkdevice} (virtio)"
-            cmd="qemu-system-${arch} -nodefaults -machine virt -m 256 -audio none -device ramfb -device virtio-keyboard-device -device virtio-mouse-device -serial stdio"
+            test "${audiodevice}" == "virtio" || error "Unknown audio device on ${arch}: ${audiodevice} (virtio)"
+            cmd="qemu-system-${arch} -nodefaults -machine virt -m 256 -device ramfb -device virtio-keyboard-device -device virtio-mouse-device -serial stdio"
             ;;
         *)
             error "Unknown architecture: ${arch} (x86, x86_64, arm, m68k, riscv32 or riscv64)"
@@ -175,12 +180,20 @@ cmd_run() {
                 cmd="${cmd} -device AC97,audiodev=audio0"
                 ;;
             virtio)
-                cmd="${cmd} -device virtio-sound-pci,audiodev=audio0"
+                if test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
+                then
+                    cmd="${cmd} -device virtio-sound-device,audiodev=audio0"
+                else
+                    cmd="${cmd} -device virtio-sound-pci,audiodev=audio0"
+                fi
                 ;;
             *)
                 error "Unknown audio device: ${audiodevice} (ac97 or virtio)"
                 ;;
         esac
+    elif test "${arch}" == "m68k" || test "${arch}" == "riscv32" || test "${arch}" == "riscv64"
+    then
+        cmd="${cmd} -audio none"
     fi
 
     if test "${iso}" == "y"
@@ -440,7 +453,7 @@ cmd_help() {
     echo "        -S, -N, -A enable storage, network and audio"
     echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2), sd on arm (the only one there)"
     echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap), smc91c111 on arm (the only one there)"
-    echo "        -a ac97 or virtio (default ac97), -o pa, pipewire, alsa or wav (default pa)"
+    echo "        -a ac97 or virtio (default ac97, virtio on m68k and riscv, none on arm), -o pa, pipewire, alsa or wav (default pa)"
     echo "        -x x86, x86_64, arm, m68k, riscv32 or riscv64 (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
     echo "    nat <interface>"
     echo "    connect"

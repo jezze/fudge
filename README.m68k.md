@@ -44,6 +44,9 @@ a virtio-net device, mounted and set up like on x86. qemu fills the virtio-mmio 
 last one, which is where the bus looks. vmctrl asks for modern virtio-mmio: fudge's rings are
 little-endian, and a legacy device here would expect them big-endian.
 
+-A adds a virtio-sound device, playing through PulseAudio unless -o names another QEMU audio
+driver (pipewire, alsa, or wav to record to fudge.wav); `sound` plays WAV files on it.
+
 ## Real hardware
 
 Not tried yet. After a page fault the kernel does the writebacks a 68040 leaves in its access fault

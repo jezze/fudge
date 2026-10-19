@@ -38,4 +38,4 @@ The ramdisk, the memory layout and the devices are the same as on riscv64.
 ./vmctrl run -x riscv32 -S -N
 
 attaches fudge.qcow2 as a virtio-blk device and the network as a virtio-net device, both on
-virtio-mmio, like on riscv64.
+virtio-mmio, like on riscv64, and -A a virtio-sound device.

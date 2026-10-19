@@ -38,3 +38,6 @@ The memory pool needs 256 MB.
 attaches fudge.qcow2 as a virtio-blk device and qemu's user networking (or a tap with -t) as
 a virtio-net device, both on virtio-mmio, mounted and set up like on x86. The kernel and
 ramdisk still come from the build.
+
+-A adds a virtio-sound device, playing through PulseAudio unless -o names another QEMU audio
+driver (pipewire, alsa, or wav to record to fudge.wav); `sound` plays WAV files on it.
