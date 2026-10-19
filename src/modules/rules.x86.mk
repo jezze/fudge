@@ -8,6 +8,7 @@ include $(DIR_SRC)/modules/bga/rules.mk
 include $(DIR_SRC)/modules/cpuid/$(ARCH)/rules.mk
 include $(DIR_SRC)/modules/fpu/rules.mk
 include $(DIR_SRC)/modules/gop/rules.mk
+include $(DIR_SRC)/modules/hpet/rules.mk
 include $(DIR_SRC)/modules/i915/rules.mk
 include $(DIR_SRC)/modules/ide/rules.mk
 include $(DIR_SRC)/modules/io/$(ARCH)/rules.mk

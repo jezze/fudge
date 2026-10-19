@@ -10,6 +10,7 @@
     { path: initrd:kernel/apic.ko }
     { path: initrd:kernel/platform.ko }
     { path: initrd:kernel/pci.ko }
+    { path: initrd:kernel/hpet.ko }
     { path: initrd:kernel/pit.ko }
     { path: initrd:kernel/rtc.ko }
     { path: initrd:kernel/ps2.ko }

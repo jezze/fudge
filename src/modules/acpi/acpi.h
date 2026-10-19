@@ -111,6 +111,22 @@ struct acpi_srat
 
 };
 
+struct acpi_hpet
+{
+
+    struct acpi_sdth base;
+    unsigned int id;
+    unsigned char addressspace;
+    unsigned char bitwidth;
+    unsigned char bitoffset;
+    unsigned char accesssize;
+    unsigned char address[8];
+    unsigned char number;
+    unsigned char minimumtick[2];
+    unsigned char protection;
+
+};
+
 struct acpi_rsdt
 {
 
