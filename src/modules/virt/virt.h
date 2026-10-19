@@ -4,6 +4,7 @@
 #define VIRT_UART0                      0x0003
 #define VIRT_VIRTIO                     0x0004
 #define VIRT_VIRTIOS                    8
+#define VIRT_FWCFG                      (VIRT_VIRTIO + VIRT_VIRTIOS)
 
 unsigned long virt_getbase(unsigned int id);
 unsigned int virt_getirq(unsigned int id);

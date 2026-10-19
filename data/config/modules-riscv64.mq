@@ -8,5 +8,6 @@
     { path: initrd:kernel/virtio-network.ko }
     { path: initrd:kernel/virtio-keyboard.ko }
     { path: initrd:kernel/virtio-mouse.ko }
+    { path: initrd:kernel/ramfb.ko }
   ]
 }
