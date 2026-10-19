@@ -79,3 +79,19 @@ L:=\
     $(DIR_LIB)/fudge/fudge.a \
 
 include $(DIR_MK)/kmod.mk
+
+M:=\
+    $(DIR_SRC)/modules/virtio/virtio-sound.ko \
+
+N:=\
+    $(DIR_SRC)/modules/virtio/virtio-sound.ko.map \
+
+O:=\
+    $(DIR_SRC)/modules/virtio/mmio/virtio.o \
+    $(DIR_SRC)/modules/virtio/queue.o \
+    $(DIR_SRC)/modules/virtio/sound.o \
+
+L:=\
+    $(DIR_LIB)/fudge/fudge.a \
+
+include $(DIR_MK)/kmod.mk

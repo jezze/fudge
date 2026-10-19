@@ -24,6 +24,7 @@
 #define VIRTIO_TYPE_BLOCK               2
 #define VIRTIO_TYPE_GPU                 16
 #define VIRTIO_TYPE_INPUT               18
+#define VIRTIO_TYPE_SOUND               25
 
 struct virtio_desc
 {
