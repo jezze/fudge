@@ -22,6 +22,7 @@
 #define VIRTIO_QUEUEMEMORY              0x4000
 #define VIRTIO_TYPE_NETWORK             1
 #define VIRTIO_TYPE_BLOCK               2
+#define VIRTIO_TYPE_GPU                 16
 #define VIRTIO_TYPE_INPUT               18
 
 struct virtio_desc
