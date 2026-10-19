@@ -36,6 +36,8 @@
 #define EVENT_AUDIOCONF                 0x33
 #define EVENT_AUDIOINFO                 0x34
 #define EVENT_VIDEOFLUSH                0x35
+#define EVENT_TIMERREQUEST              0x36
+#define EVENT_TIMEREXPIRE               0x37
 #define EVENT_WALKREQUEST               0x40
 #define EVENT_WALKRESPONSE              0x41
 #define EVENT_READREQUEST               0x42
@@ -167,6 +169,22 @@ struct event_timertick
 {
 
     unsigned int counter;
+
+};
+
+struct event_timerrequest
+{
+
+    unsigned int id;
+    unsigned int ms;
+    unsigned int repeat;
+
+};
+
+struct event_timerexpire
+{
+
+    unsigned int id;
 
 };
 

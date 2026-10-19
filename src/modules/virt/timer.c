@@ -27,7 +27,7 @@ static void handleirq(void)
 static void driver_init(unsigned int id)
 {
 
-    timer_initinterface(&timerinterface, id);
+    timer_initinterface(&timerinterface, id, 60);
 
 }
 

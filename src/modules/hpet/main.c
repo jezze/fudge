@@ -133,7 +133,7 @@ void module_init(void)
 {
 
     if (setup())
-        timer_initinterface(&timerinterface, 0);
+        timer_initinterface(&timerinterface, 0, HZ);
     else
         mmio = 0;
 
