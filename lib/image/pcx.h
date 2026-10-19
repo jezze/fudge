@@ -28,4 +28,5 @@ struct pcx_header
 
 };
 
+void pcx_convertheader(struct pcx_header *header);
 unsigned int pcx_readline(unsigned char *raw, unsigned int count, unsigned char *buffer);

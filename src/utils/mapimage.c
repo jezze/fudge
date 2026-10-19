@@ -62,6 +62,8 @@ static unsigned int openpcx(struct pcx_header *header)
     if (fs_read_all(1, filetarget, fileid, header, sizeof (struct pcx_header), 0) != sizeof (struct pcx_header))
         return 0;
 
+    pcx_convertheader(header);
+
     if (header->identifier != PCX_IDENTIFIER || header->version != PCX_VERSION || header->encoding != PCX_ENCODING || header->bpp != 8 || header->nplanes != 1 || (unsigned short)header->bpl > ROWSIZE || (unsigned short)header->xend - (unsigned short)header->xstart >= (unsigned short)header->bpl)
         return 0;
 
