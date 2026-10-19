@@ -5,25 +5,7 @@
 unsigned short ipv4_calculatechecksum(struct ipv4_header *header, unsigned int len)
 {
 
-    unsigned short *payload = (unsigned short *)header;
-    unsigned int sum = 0;
-
-    while (len > 1)
-    {
-
-        sum += *payload++;
-
-        if (sum & 0x80000000)
-            sum = (sum & 0xFFFF) + (sum >> 16);
-
-        len -= 2;
-
-    }
-
-    while (sum >> 16)
-        sum = (sum & 0xFFFF) + (sum >> 16);
-
-    return ~sum;
+    return net_checksum(net_sum16(header, len, 0));
 
 }
 
@@ -70,8 +52,7 @@ void ipv4_initheader(struct ipv4_header *header, unsigned char sip[IPV4_ADDRSIZE
 
     checksum = ipv4_calculatechecksum(header, sizeof (struct ipv4_header));
 
-    header->checksum[0] = checksum;
-    header->checksum[1] = checksum >> 8;
+    net_save16(header->checksum, checksum);
 
 }
 

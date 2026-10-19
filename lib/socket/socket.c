@@ -66,7 +66,7 @@ static unsigned int buildicmp(void *odata, unsigned int ocount, struct socket *l
     length += buffer_write(odata, ocount, buffer, count, length);
     checksum = icmp_calculatechecksum(icmpheader, icmp_hlen(icmpheader) + count);
 
-    buffer_copy(icmpheader->checksum, &checksum, 2);
+    net_save16(icmpheader->checksum, checksum);
 
     return length;
 
@@ -85,7 +85,7 @@ static unsigned int buildtcp(void *odata, unsigned int ocount, struct socket *lo
     length += buffer_write(odata, ocount, buffer, count, length);
     checksum = tcp_checksum(theader, local->paddress, remote->paddress, tcp_hlen(theader) + count);
 
-    buffer_copy(theader->checksum, &checksum, 2);
+    net_save16(theader->checksum, checksum);
 
     return length;
 
@@ -104,7 +104,7 @@ static unsigned int buildudp(void *odata, unsigned int ocount, struct socket *lo
     length += buffer_write(odata, ocount, buffer, count, length);
     checksum = udp_checksum(uheader, local->paddress, remote->paddress, udp_hlen(uheader) + count);
 
-    buffer_copy(uheader->checksum, &checksum, 2);
+    net_save16(uheader->checksum, checksum);
 
     return length;
 

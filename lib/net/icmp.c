@@ -6,25 +6,7 @@
 unsigned short icmp_calculatechecksum(struct icmp_header *header, unsigned int len)
 {
 
-    unsigned short *payload = (unsigned short *)header;
-    unsigned int sum = 0;
-
-    while (len > 1)
-    {
-
-        sum += *payload++;
-
-        if (sum & 0x80000000)
-            sum = (sum & 0xFFFF) + (sum >> 16);
-
-        len -= 2;
-
-    }
-
-    while (sum >> 16)
-        sum = (sum & 0xFFFF) + (sum >> 16);
-
-    return ~sum;
+    return net_checksum(net_sum16(header, len, 0));
 
 }
 
