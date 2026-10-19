@@ -6,5 +6,8 @@
     { path: initrd:kernel/goldfish.ko }
     { path: initrd:kernel/virtio-block.ko }
     { path: initrd:kernel/virtio-network.ko }
+    { path: initrd:kernel/virtio-keyboard.ko }
+    { path: initrd:kernel/virtio-mouse.ko }
+    { path: initrd:kernel/virtio-gpu.ko }
   ]
 }

@@ -107,7 +107,7 @@ cmd_run() {
             networkdevice="${networkdevice:-virtio}"
             test "${storagedevice}" == "virtio" || error "Unknown storage device on m68k: ${storagedevice} (virtio)"
             test "${networkdevice}" == "virtio" || error "Unknown network device on m68k: ${networkdevice} (virtio)"
-            cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -display none -serial stdio -global virtio-mmio.force-legacy=false"
+            cmd="qemu-system-m68k -nodefaults -machine virt -m 256 -audio none -serial stdio -global virtio-mmio.force-legacy=false -device virtio-gpu-device -device virtio-keyboard-device -device virtio-mouse-device"
             ;;
         riscv64)
             test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on riscv64"
