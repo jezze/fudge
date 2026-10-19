@@ -44,6 +44,7 @@ static void readsuperblock(void)
 
     sendblockreadrequest(1024, 1, 1024);
     buffer_copy(&sb, (void *)blockinfo.buffer, sizeof (struct ext2_superblock));
+    ext2_convertsuperblock(&sb);
 
     blocksize = (1024 << sb.blockSize);
 
@@ -54,6 +55,7 @@ static void writesuperblock(void)
 
     sendblockreadrequest(1024, 1, 1024);
     buffer_copy((void *)blockinfo.buffer, &sb, sizeof (struct ext2_superblock));
+    ext2_convertsuperblock((struct ext2_superblock *)blockinfo.buffer);
     sendblockwriterequest(1024, 1, 1024);
 
 }
@@ -67,6 +69,7 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int index)
 
     sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy(bg, (char *)blockinfo.buffer + offset, sizeof (struct ext2_blockgroup));
+    ext2_convertblockgroup(bg);
 
 }
 
@@ -79,6 +82,7 @@ static void writeblockgroup(struct ext2_blockgroup *bg, unsigned int index)
 
     sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy((char *)blockinfo.buffer + offset, bg, sizeof (struct ext2_blockgroup));
+    ext2_convertblockgroup((struct ext2_blockgroup *)((char *)blockinfo.buffer + offset));
     sendblockwriterequest(blocksize, sector, blocksize);
 
 }
@@ -92,6 +96,7 @@ static void readnode(struct ext2_node *node, unsigned int start, unsigned int in
 
     sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy(node, (char *)blockinfo.buffer + offset, sizeof (struct ext2_node));
+    ext2_convertnode(node);
 
 }
 
@@ -104,6 +109,7 @@ static void writenode(struct ext2_node *node, unsigned int start, unsigned int i
 
     sendblockreadrequest(blocksize, sector, blocksize);
     buffer_copy((char *)blockinfo.buffer + offset, node, sizeof (struct ext2_node));
+    ext2_convertnode((struct ext2_node *)((char *)blockinfo.buffer + offset));
     sendblockwriterequest(blocksize, sector, blocksize);
 
 }
@@ -332,7 +338,7 @@ static unsigned int getindirect(unsigned int sector, unsigned int index)
 
         sendblockreadrequest(blocksize, sector, blocksize);
 
-        return table[index];
+        return ext2_read32(&table[index]);
 
     }
 
@@ -345,11 +351,13 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
 
     unsigned int index = offset / blocksize;
     unsigned int slots = blocksize / 4;
+    unsigned int direct = index < 12;
     unsigned int *entries;
     unsigned int available;
     unsigned int table;
+    unsigned int first;
 
-    if (index < 12)
+    if (direct)
     {
 
         entries = node->pointer + index;
@@ -400,15 +408,19 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
     if (available > max)
         available = max;
 
+    first = (direct) ? entries[0] : ext2_read32(entries);
+
     for (*count = 1; *count < available; (*count)++)
     {
 
-        if (entries[*count] != ((entries[0]) ? entries[0] + *count : 0))
+        unsigned int next = (direct) ? entries[*count] : ext2_read32(&entries[*count]);
+
+        if (next != ((first) ? first + *count : 0))
             break;
 
     }
 
-    return entries[0];
+    return first;
 
 }
 
@@ -448,8 +460,8 @@ static unsigned int allocentry(struct ext2_node *node, unsigned int table, unsig
 
     sendblockreadrequest(blocksize, table, blocksize);
 
-    if (entries[index])
-        return entries[index];
+    if (ext2_read32(&entries[index]))
+        return ext2_read32(&entries[index]);
 
     if (istable)
     {
@@ -473,7 +485,7 @@ static unsigned int allocentry(struct ext2_node *node, unsigned int table, unsig
 
         sendblockreadrequest(blocksize, table, blocksize);
 
-        entries[index] = block;
+        ext2_write32(&entries[index], block);
 
         sendblockwriterequest(blocksize, table, blocksize);
 
@@ -569,12 +581,12 @@ static void getrecord(struct ext2_entry *entry, struct record *record, unsigned 
     {
 
     case 1:
-        record_init(record, entry->node, RECORD_TYPE_NORMAL, 0, offset + entry->size, entry->length, (char *)(entry + 1));
+        record_init(record, ext2_read32(&entry->node), RECORD_TYPE_NORMAL, 0, offset + ext2_read16(&entry->size), entry->length, (char *)(entry + 1));
 
         break;
 
     case 2:
-        record_init(record, entry->node, RECORD_TYPE_DIRECTORY, 0, offset + entry->size, entry->length, (char *)(entry + 1));
+        record_init(record, ext2_read32(&entry->node), RECORD_TYPE_DIRECTORY, 0, offset + ext2_read16(&entry->size), entry->length, (char *)(entry + 1));
 
         break;
 
@@ -594,7 +606,7 @@ static struct ext2_entry *getentry(struct ext2_node *node, unsigned int offset)
 
         sendblockreadrequest(blocksize, sector, blocksize);
 
-        if (entry->size)
+        if (ext2_read16(&entry->size))
             return entry;
 
     }
@@ -616,10 +628,10 @@ static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int 
         if (!entry)
             break;
 
-        if (entry->node && entry->length == length && buffer_match(entry + 1, name, length))
-            return entry->node;
+        if (ext2_read32(&entry->node) && entry->length == length && buffer_match(entry + 1, name, length))
+            return ext2_read32(&entry->node);
 
-        offset += entry->size;
+        offset += ext2_read16(&entry->size);
 
     }
 
@@ -630,8 +642,8 @@ static unsigned int matchentry(struct ext2_node *node, char *name, unsigned int 
 static void writeentry(struct ext2_entry *entry, unsigned int node, unsigned int size, unsigned int length, unsigned int type, char *name)
 {
 
-    entry->node = node;
-    entry->size = size;
+    ext2_write32(&entry->node, node);
+    ext2_write16(&entry->size, size);
     entry->length = length;
     entry->type = type;
 
@@ -662,8 +674,8 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
         if (!entry)
             break;
 
-        used = entry->node ? entrysize(entry->length) : 0;
-        size = entry->size - used;
+        used = ext2_read32(&entry->node) ? entrysize(entry->length) : 0;
+        size = ext2_read16(&entry->size) - used;
 
         if (size >= realsize)
         {
@@ -671,7 +683,7 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
             unsigned int sector = getsector(node, offset);
 
             if (used)
-                entry->size = used;
+                ext2_write16(&entry->size, used);
 
             writeentry((struct ext2_entry *)((char *)entry + used), id, size, length, type, name);
             sendblockwriterequest(blocksize, sector, blocksize);
@@ -680,7 +692,7 @@ static unsigned int spliceentry(struct ext2_node *node, unsigned int id, unsigne
 
         }
 
-        offset += entry->size;
+        offset += ext2_read16(&entry->size);
 
     }
 
@@ -743,16 +755,18 @@ static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
 
             struct ext2_entry *entry = (struct ext2_entry *)(block + position);
 
-            if (!entry->size)
+            if (!ext2_read16(&entry->size))
                 break;
 
-            if (entry->node == id)
+            if (ext2_read32(&entry->node) == id)
             {
 
+                struct ext2_entry *before = (struct ext2_entry *)(block + previous);
+
                 if (previous == blocksize)
-                    entry->node = 0;
+                    ext2_write32(&entry->node, 0);
                 else
-                    ((struct ext2_entry *)(block + previous))->size += entry->size;
+                    ext2_write16(&before->size, ext2_read16(&before->size) + ext2_read16(&entry->size));
 
                 sendblockwriterequest(blocksize, sector, blocksize);
 
@@ -761,7 +775,7 @@ static unsigned int removeentry(struct ext2_node *parent, unsigned int id)
             }
 
             previous = position;
-            position += entry->size;
+            position += ext2_read16(&entry->size);
 
         }
 
@@ -787,10 +801,10 @@ static unsigned int isempty(struct ext2_node *node)
 
         name = (char *)(entry + 1);
 
-        if (entry->node && !(entry->length == 1 && name[0] == '.') && !(entry->length == 2 && name[0] == '.' && name[1] == '.'))
+        if (ext2_read32(&entry->node) && !(entry->length == 1 && name[0] == '.') && !(entry->length == 2 && name[0] == '.' && name[1] == '.'))
             return 0;
 
-        offset += entry->size;
+        offset += ext2_read16(&entry->size);
 
     }
 
@@ -813,7 +827,7 @@ static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, 
         if (!entry)
             break;
 
-        if (entry->node)
+        if (ext2_read32(&entry->node))
         {
 
             getrecord(entry, &records[i], roffset);
@@ -823,7 +837,7 @@ static unsigned int readdirectory(struct ext2_node *node, unsigned int roffset, 
 
         }
 
-        roffset += entry->size;
+        roffset += ext2_read16(&entry->size);
 
     }
 
@@ -1134,13 +1148,15 @@ static void freeindirect(unsigned int block, unsigned int depth)
     for (i = 0; i < blocksize / 4; i++)
     {
 
-        if (!table[i])
+        unsigned int entry = ext2_read32(&table[i]);
+
+        if (!entry)
             continue;
 
         if (depth > 1)
-            freeindirect(table[i], depth - 1);
+            freeindirect(entry, depth - 1);
         else
-            freeblock(table[i]);
+            freeblock(entry);
 
     }
 
@@ -1317,7 +1333,7 @@ static void onmain(struct message *message)
 
         readsuperblock();
 
-        if (ext2_validate(&sb))
+        if (ext2_validate((struct ext2_superblock *)blockinfo.buffer))
         {
 
             call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));

@@ -99,4 +99,11 @@ struct ext2_entry
 
 } __attribute__((packed));
 
+unsigned int ext2_read16(void *data);
+unsigned int ext2_read32(void *data);
+void ext2_write16(void *data, unsigned int value);
+void ext2_write32(void *data, unsigned int value);
+void ext2_convertsuperblock(struct ext2_superblock *superblock);
+void ext2_convertblockgroup(struct ext2_blockgroup *blockgroup);
+void ext2_convertnode(struct ext2_node *node);
 unsigned int ext2_validate(struct ext2_superblock *superblock);
