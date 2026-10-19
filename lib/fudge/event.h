@@ -35,6 +35,7 @@
 #define EVENT_LOGINFO                   0x32
 #define EVENT_AUDIOCONF                 0x33
 #define EVENT_AUDIOINFO                 0x34
+#define EVENT_VIDEOFLUSH                0x35
 #define EVENT_WALKREQUEST               0x40
 #define EVENT_WALKRESPONSE              0x41
 #define EVENT_READREQUEST               0x42
@@ -182,6 +183,16 @@ struct event_videoconf
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
+
+};
+
+struct event_videoflush
+{
+
+    unsigned int x;
+    unsigned int y;
+    unsigned int width;
+    unsigned int height;
 
 };
 

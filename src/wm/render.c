@@ -1149,7 +1149,7 @@ void render_undamage(void)
 
 }
 
-void render_update(struct blit_display *display)
+unsigned int render_update(struct blit_display *display, struct util_region *updated)
 {
 
     static struct widget *damaged[POOL_WIDGETS];
@@ -1158,7 +1158,7 @@ void render_update(struct blit_display *display)
     int line;
 
     if (!hasdamage)
-        return;
+        return 0;
 
     area.position0.x = util_clamp(area.position0.x, 0, display->region.size.w);
     area.position0.y = util_clamp(area.position0.y, 0, display->region.size.h);
@@ -1205,6 +1205,10 @@ void render_update(struct blit_display *display)
         blit(display, line, area.position0.x, area.position2.x);
 
     }
+
+    *updated = util_region(area.position0.x, area.position0.y, area.position2.x - area.position0.x, area.position2.y - area.position0.y);
+
+    return 1;
 
 }
 

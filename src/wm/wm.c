@@ -501,6 +501,30 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 
 }
 
+/* draws the damage and tells the display what changed, which only displays showing a copy need */
+static void update(void)
+{
+
+    struct util_region updated;
+
+    if (render_update(&display, &updated))
+    {
+
+        struct event_videoflush videoflush;
+
+        videoflush.x = updated.position.x;
+        videoflush.y = updated.position.y;
+        videoflush.width = updated.size.w;
+        videoflush.height = updated.size.h;
+
+        channel_send(0, state.video, EVENT_VIDEOFLUSH, sizeof (struct event_videoflush), &videoflush);
+
+    }
+
+    render_undamage();
+
+}
+
 static void damage(struct widget *widget)
 {
 
@@ -1732,8 +1756,7 @@ static void redraw(unsigned int relayout)
 
         }
 
-        render_update(&display);
-        render_undamage();
+        update();
 
     }
 
@@ -2396,8 +2419,7 @@ static void onvideoinfo(struct message *message)
 
     render_damage(0, 0, videoinfo.width, videoinfo.height);
     render_place(state.rootwidget, &display.region);
-    render_update(&display);
-    render_undamage();
+    update();
 
 }
 

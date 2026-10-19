@@ -10,6 +10,7 @@ struct video_interface
     unsigned long framebuffer;
     unsigned int (*setcmap)(unsigned int count, void *data);
     void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp);
+    void (*flush)(unsigned int x, unsigned int y, unsigned int width, unsigned int height);
 
 
 };

@@ -59,6 +59,25 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 
 }
 
+/* only displays that show a copy of the framebuffer need to be told what changed */
+static unsigned int onvideoflush(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
+{
+
+    if (interface->flush && count == sizeof (struct event_videoflush))
+    {
+
+        struct event_videoflush *videoflush = data;
+
+        interface->flush(videoflush->x, videoflush->y, videoflush->width, videoflush->height);
+
+        return MESSAGE_OK;
+
+    }
+
+    return MESSAGE_FAILED;
+
+}
+
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -86,6 +105,9 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
         case EVENT_VIDEOCONF:
             return onvideoconf(interface, source, count, data);
+
+        case EVENT_VIDEOFLUSH:
+            return onvideoflush(interface, source, count, data);
 
         }
 
@@ -148,6 +170,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
     interface->framebuffer = framebuffer;
     interface->setcmap = setcmap;
     interface->setmode = setmode;
+    interface->flush = 0;
 
 }
 
