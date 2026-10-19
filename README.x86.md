@@ -49,6 +49,10 @@ the network card: virtio (the default) or rtl8139. -A adds an AC97 sound card (-
 virtio for a virtio one), playing through PulseAudio unless -o names another QEMU
 audio driver (pipewire, alsa, or wav to record to fudge.wav).
 
+-g virtio replaces the standard VGA card with a virtio-gpu display and the PS/2 keyboard and
+mouse with virtio ones (the wm only takes the first keyboard and mouse). The wm's framebuffer
+then lives in guest RAM at ARCH_FRAMEBUFFER_BASE and is copied to the host on every update.
+
 ## Real hardware
 
 disk_setup installs GRUB on the image for both BIOS and UEFI, so the image can be

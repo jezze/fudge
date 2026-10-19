@@ -21,6 +21,7 @@ cmd_run() {
     audiodevice=""
     audiodriver="pa"
     uefi=n
+    display=""
     arch="x86"
 
     while test ${#} -gt 0
@@ -32,6 +33,10 @@ cmd_run() {
             -a)
                 audio=y
                 audiodevice="${2}"
+                shift
+                ;;
+            -g)
+                display="${2}"
                 shift
                 ;;
             -d)
@@ -87,12 +92,26 @@ cmd_run() {
         shift
     done
 
+    test -z "${display}" || test "${arch}" == "x86" || test "${arch}" == "x86_64" || error "No display choice on ${arch}"
+
     case "${arch}" in
         x86|x86_64)
             storagedevice="${storagedevice:-virtio}"
             networkdevice="${networkdevice:-virtio}"
             audiodevice="${audiodevice:-ac97}"
-            cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -vga std -serial stdio"
+            cmd="qemu-system-x86_64 -nodefaults -enable-kvm -smp 4 -m 256 -serial stdio"
+
+            case "${display:-std}" in
+                std)
+                    cmd="${cmd} -vga std"
+                    ;;
+                virtio)
+                    cmd="${cmd} -vga none -machine i8042=off -device virtio-gpu-pci -device virtio-keyboard-pci -device virtio-mouse-pci"
+                    ;;
+                *)
+                    error "Unknown display: ${display} (std or virtio)"
+                    ;;
+            esac
             ;;
         arm)
             test "${iso}${audio}${uefi}" == "nnn" || error "No ISO, audio or UEFI on arm"
@@ -449,11 +468,12 @@ cmd_disk_setup_gpt() {
 
 cmd_help() {
     echo "Commands:"
-    echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-i <iso>] [-u] [-x <arch>] [<name>]"
+    echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-g <display>] [-i <iso>] [-u] [-x <arch>] [<name>]"
     echo "        -S, -N, -A enable storage, network and audio"
     echo "        -s ahci, ide, nvme, usb or virtio (default virtio, disk fudge.qcow2), sd on arm (the only one there)"
     echo "        -n rtl8139 or virtio (default virtio, qemu user networking, -t for tap), smc91c111 on arm (the only one there)"
     echo "        -a ac97 or virtio (default ac97, virtio on m68k and riscv, none on arm), -o pa, pipewire, alsa or wav (default pa)"
+    echo "        -g std or virtio (default std; virtio also swaps PS/2 for a virtio keyboard and mouse), x86 only"
     echo "        -x x86, x86_64, arm, m68k, riscv32 or riscv64 (default x86; arm has kernel debug output on the second serial port, in qemu's window)"
     echo "    nat <interface>"
     echo "    connect"
