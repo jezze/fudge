@@ -39,23 +39,11 @@ arm-integratorcp-none:
 	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=arm-none-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
-arm-integratorcp-unknown:
-	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
-	@echo "ARCH:=arm" > $(DIR_MK)/$(CONFIG).mk
-	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
-	@echo "TARGET:=arm-unknown-eabi" >> $(DIR_MK)/$(CONFIG).mk
-
 riscv64-virt-elf:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=riscv64" > $(DIR_MK)/$(CONFIG).mk
 	@echo "LOADER:=virt" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=riscv64-elf" >> $(DIR_MK)/$(CONFIG).mk
-
-riscv64-virt-linux:
-	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
-	@echo "ARCH:=riscv64" > $(DIR_MK)/$(CONFIG).mk
-	@echo "LOADER:=virt" >> $(DIR_MK)/$(CONFIG).mk
-	@echo "TARGET:=riscv64-linux-gnu" >> $(DIR_MK)/$(CONFIG).mk
 
 x86-mboot:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
@@ -89,9 +77,7 @@ help:
 	@echo "Where <config> is one of the following:"
 	@echo ""
 	@echo "  arm-integratorcp-none"
-	@echo "  arm-integratorcp-unknown"
 	@echo "  riscv64-virt-elf"
-	@echo "  riscv64-virt-linux"
 	@echo "  x86-mboot"
 	@echo "  x86-mboot2"
 	@echo "  x86-mboot-tcc"

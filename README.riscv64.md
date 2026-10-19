@@ -6,10 +6,8 @@ kernel debug output share the serial port.
 
 ## Configure and build
 
-make riscv64-virt-linux
+make riscv64-virt-elf
 make
-
-riscv64-virt-elf uses a riscv64-elf toolchain instead of riscv64-linux-gnu.
 
 ## Run in QEMU
 
