@@ -129,7 +129,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
     for (i = 0; i < header->shcount; i++)
     {
 
-        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL)
+        if (sectionheaders[i].type == ELF_SECTION_TYPE_REL || sectionheaders[i].type == ELF_SECTION_TYPE_RELA)
         {
 
             struct elf_sectionheader *relocationheader = &sectionheaders[i];
@@ -147,7 +147,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
             for (j = 0; j < relocationheader->size / relocationheader->esize; j++)
             {
 
-                struct elf_relocation relocation;
+                struct elf_relocationa relocation;
                 struct elf_symbol symbol;
                 unsigned int address;
                 unsigned int place;
@@ -156,7 +156,11 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
 
                 fs_read_all(1, target, id, &relocation, relocationheader->esize, relocationheader->offset + j * relocationheader->esize);
                 fs_read_all(1, target, id, &symbol, symbolheader->esize, symbolheader->offset + (relocation.info >> 8) * symbolheader->esize);
-                fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
+
+                if (relocationheader->type == ELF_SECTION_TYPE_RELA)
+                    value = relocation.addend;
+                else
+                    fs_read_all(1, target, id, &value, 4, dataheader->offset + relocation.offset);
 
                 address = (symbol.shindex) ? base + sectionheaders[symbol.shindex].offset + symbol.value : findsymbol(mapdata, mapcount, cstring_length(strings + symbol.name), strings + symbol.name);
                 place = base + dataheader->offset + relocation.offset;
@@ -175,12 +179,14 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
 
                 case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_32:
                 case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_ABS32:
+                case (ELF_MACHINE_68K << 8) | ELF_RELOC_68K_32:
                     value += address;
 
                     break;
 
                 case (ELF_MACHINE_386 << 8) | ELF_RELOC_TYPE_PC32:
                 case (ELF_MACHINE_ARM << 8) | ELF_RELOC_ARM_REL32:
+                case (ELF_MACHINE_68K << 8) | ELF_RELOC_68K_PC32:
                     value += address - place;
 
                     break;

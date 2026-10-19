@@ -81,6 +81,8 @@
 #define ELF_RELOC_ARM_CALL              0x0000001C
 #define ELF_RELOC_ARM_JUMP24            0x0000001D
 #define ELF_RELOC_ARM_V4BX              0x00000028
+#define ELF_RELOC_68K_32                0x00000001
+#define ELF_RELOC_68K_PC32              0x00000004
 #define ELF_RELOC64_TYPE_64             0x00000001
 #define ELF_RELOC64_TYPE_PC32           0x00000002
 #define ELF_RELOC64_TYPE_PLT32          0x00000004
@@ -168,6 +170,15 @@ struct elf_relocation
 
     unsigned int offset;
     unsigned int info;
+
+};
+
+struct elf_relocationa
+{
+
+    unsigned int offset;
+    unsigned int info;
+    int addend;
 
 };
 
