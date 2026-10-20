@@ -134,6 +134,7 @@ struct event_mousemove
 
     char relx;
     char rely;
+    unsigned char buttons;
 
 };
 

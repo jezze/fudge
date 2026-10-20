@@ -2206,6 +2206,27 @@ static int getquarters(int relx, int rely)
 
 }
 
+static void releasebutton(unsigned int button)
+{
+
+    switch (button)
+    {
+
+    case 1:
+        state.mousebuttonleft = 0;
+        state.draggedthumb = 0;
+
+        break;
+
+    case 2:
+        state.mousebuttonright = 0;
+
+        break;
+
+    }
+
+}
+
 static void onmousemove(struct message *message)
 {
 
@@ -2213,8 +2234,16 @@ static void onmousemove(struct message *message)
     int quarters = getquarters(mousemove->relx, mousemove->rely);
     int x = util_clamp(state.mouseposition.x + scalemove(mousemove->relx, quarters, &state.mouseremainder.x), 0, display.region.size.w);
     int y = util_clamp(state.mouseposition.y + scalemove(mousemove->rely, quarters, &state.mouseremainder.y), 0, display.region.size.h);
-    unsigned int relayout = state.mousebuttonleft || state.mousebuttonright;
+    unsigned int relayout;
 
+    /* a release dropped by a full mailbox shows up as a cleared bit */
+    if (state.mousebuttonleft && !(mousemove->buttons & 1))
+        releasebutton(1);
+
+    if (state.mousebuttonright && !(mousemove->buttons & 2))
+        releasebutton(2);
+
+    relayout = state.mousebuttonleft || state.mousebuttonright;
     state.mousemovement.x = x - state.mouseposition.x;
     state.mousemovement.y = y - state.mouseposition.y;
     state.mouseposition.x = x;
@@ -2378,22 +2407,7 @@ static void onmouserelease(struct message *message)
 
     struct event_mouserelease *mouserelease = message->data;
 
-    switch (mouserelease->button)
-    {
-
-    case 1:
-        state.mousebuttonleft = 0;
-        state.draggedthumb = 0;
-
-        break;
-
-    case 2:
-        state.mousebuttonright = 0;
-
-        break;
-
-    }
-
+    releasebutton(mouserelease->button);
     redraw(1);
 
 }

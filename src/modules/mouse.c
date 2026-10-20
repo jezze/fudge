@@ -38,6 +38,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 
     mousemove.relx = relx;
     mousemove.rely = rely;
+    mousemove.buttons = interface->buttons;
 
     kernel_notify(&interface->service.links, interface->service.inode, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
@@ -60,6 +61,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     struct event_mousepress mousepress;
 
     mousepress.button = button;
+    interface->buttons |= 1 << (button - 1);
 
     kernel_notify(&interface->service.links, interface->service.inode, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
 
@@ -71,6 +73,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     struct event_mouserelease mouserelease;
 
     mouserelease.button = button;
+    interface->buttons &= ~(1 << (button - 1));
 
     kernel_notify(&interface->service.links, interface->service.inode, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
 
