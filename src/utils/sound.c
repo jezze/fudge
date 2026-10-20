@@ -1,7 +1,7 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define FRAMESIZE                       4
+#define FRAMEMAX                        32
 #define FMTSIZE                         40
 #define CHANNELS                        8
 #define TAG_PCM                         0x0001
@@ -64,8 +64,9 @@ struct resampler
 };
 
 static unsigned int audio;
-static char frames[MESSAGE_SIZE + FRAMESIZE];
+static char frames[MESSAGE_SIZE + FRAMEMAX];
 static unsigned int framecount;
+static unsigned int framesize;
 
 /* a WAV file's numbers are little-endian */
 static unsigned int read16(void *data)
@@ -474,6 +475,26 @@ static unsigned int lookup(unsigned int source)
 
 }
 
+/* raw data plays in the device's current format, which sound only needs to know the frame size of */
+static unsigned int getframesize(void)
+{
+
+    struct event_audioinfo audioinfo;
+
+    if (channel_send(1, audio, EVENT_INFO, 0, 0) && channel_wait(1, audio, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo))
+    {
+
+        unsigned int size = audioinfo.channels * audioinfo.bits / 8;
+
+        if (size && size <= FRAMEMAX)
+            return size;
+
+    }
+
+    return 4;
+
+}
+
 static void ondata(struct message *message)
 {
 
@@ -482,18 +503,23 @@ static void ondata(struct message *message)
 
         unsigned int count;
 
-        framecount += buffer_write(frames, MESSAGE_SIZE + FRAMESIZE, message->data, message->length, framecount);
-        count = framecount - framecount % FRAMESIZE;
+        if (!framesize)
+            framesize = getframesize();
 
-        if (count > MESSAGE_SIZE)
-            count = MESSAGE_SIZE;
+        framecount += buffer_write(frames, MESSAGE_SIZE + FRAMEMAX, message->data, message->length, framecount);
 
-        if (count)
+        while ((count = framecount - framecount % framesize))
+        {
+
+            if (count > MESSAGE_SIZE)
+                count = MESSAGE_SIZE - MESSAGE_SIZE % framesize;
+
             channel_send(1, audio, EVENT_DATA, count, frames);
+            buffer_copy(frames, frames + count, framecount - count);
 
-        buffer_copy(frames, frames + count, framecount - count);
+            framecount -= count;
 
-        framecount -= count;
+        }
 
     }
 
