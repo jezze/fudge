@@ -238,23 +238,12 @@ static unsigned long findgap(struct mmap_header *header, unsigned int size)
 
 }
 
-static struct task *gettask(unsigned int source, unsigned int *itask)
+static struct mailbox *getmailbox(unsigned int source)
 {
 
     struct resource *resource = pool_getnoderesource(source);
 
-    if (resource && resource->type == RESOURCE_MAILBOX)
-    {
-
-        struct mailbox *mailbox = resource->data;
-
-        *itask = mailbox->itask;
-
-        return pool_gettask(mailbox->itask);
-
-    }
-
-    return 0;
+    return (resource && resource->type == RESOURCE_MAILBOX) ? resource->data : 0;
 
 }
 
@@ -448,8 +437,9 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
 {
 
     struct file *file = getfile(id);
-    unsigned int itask;
-    struct task *task = gettask(source, &itask);
+    struct mailbox *mailbox = getmailbox(source);
+    unsigned int itask = (mailbox) ? mailbox->itask : 0;
+    struct task *task = (mailbox) ? pool_gettask(itask) : 0;
     struct mmap_header *header;
     struct mmap_entry *entry;
     unsigned long vaddress;
@@ -484,8 +474,9 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
 static unsigned int unmap(unsigned int source, unsigned int id)
 {
 
-    unsigned int itask;
-    struct task *task = gettask(source, &itask);
+    struct mailbox *mailbox = getmailbox(source);
+    unsigned int itask = (mailbox) ? mailbox->itask : 0;
+    struct task *task = (mailbox) ? pool_gettask(itask) : 0;
     unsigned int i;
 
     for (i = 0; i < MEMSRV_FILES; i++)
