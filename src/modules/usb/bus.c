@@ -251,7 +251,7 @@ static void enqueue(struct trbring *ring, unsigned int parameter0, unsigned int 
 
     ring->index++;
 
-    /* the last place in the ring links back to the start and flips the cycle bit */
+    /* the last place in the ring links back to the start and flips the cycle bit, chained inside a td */
     if (ring->index == RINGSIZE - 1)
     {
 
@@ -260,7 +260,7 @@ static void enqueue(struct trbring *ring, unsigned int parameter0, unsigned int 
         link->parameter0 = (unsigned long)ring->trbs;
         link->parameter1 = gethigh((void *)ring->trbs);
         link->status = 0;
-        link->control = TRB_TYPE(TRB_LINK) | TRB_LINK_TC | ring->cycle;
+        link->control = TRB_TYPE(TRB_LINK) | TRB_LINK_TC | (control & TRB_CHAIN) | ring->cycle;
 
         ring->index = 0;
         ring->cycle ^= 1;
