@@ -43,8 +43,17 @@ static unsigned long getseconds(void)
 
 }
 
+struct date
+{
+
+    unsigned int year;
+    unsigned int month;
+    unsigned int day;
+
+};
+
 /* days since 1970 to year, month and day (Howard Hinnant's civil_from_days) */
-static unsigned int getdate(unsigned int *month, unsigned int *day)
+static struct date getdate(void)
 {
 
     unsigned int z = getseconds() / 86400 + 719468;
@@ -53,11 +62,13 @@ static unsigned int getdate(unsigned int *month, unsigned int *day)
     unsigned int yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
     unsigned int doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
     unsigned int mp = (5 * doy + 2) / 153;
+    struct date date;
 
-    *day = doy - (153 * mp + 2) / 5 + 1;
-    *month = (mp < 10) ? mp + 3 : mp - 9;
+    date.day = doy - (153 * mp + 2) / 5 + 1;
+    date.month = (mp < 10) ? mp + 3 : mp - 9;
+    date.year = yoe + era * 400 + (date.month <= 2);
 
-    return yoe + era * 400 + (*month <= 2);
+    return date;
 
 }
 
@@ -92,34 +103,21 @@ static unsigned int clockinterface_getweekday(void)
 static unsigned int clockinterface_getday(void)
 {
 
-    unsigned int month;
-    unsigned int day;
-
-    getdate(&month, &day);
-
-    return day;
+    return getdate().day;
 
 }
 
 static unsigned int clockinterface_getmonth(void)
 {
 
-    unsigned int month;
-    unsigned int day;
-
-    getdate(&month, &day);
-
-    return month;
+    return getdate().month;
 
 }
 
 static unsigned int clockinterface_getyear(void)
 {
 
-    unsigned int month;
-    unsigned int day;
-
-    return getdate(&month, &day);
+    return getdate().year;
 
 }
 
