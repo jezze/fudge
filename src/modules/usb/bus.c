@@ -58,6 +58,7 @@
 #define TRB_CYCLE                       (1 << 0)
 #define TRB_LINK_TC                     (1 << 1)
 #define TRB_ISP                         (1 << 2)
+#define TRB_ED                          (1 << 2)
 #define TRB_CHAIN                       (1 << 4)
 #define TRB_IOC                         (1 << 5)
 #define TRB_IDT                         (1 << 6)
@@ -69,6 +70,7 @@
 #define TRB_DATA                        3
 #define TRB_STATUS                      4
 #define TRB_LINK                        6
+#define TRB_EVENTDATA                   7
 #define TRB_ENABLESLOT                  9
 #define TRB_DISABLESLOT                 10
 #define TRB_ADDRESSDEVICE               11
@@ -161,6 +163,7 @@ struct result
     unsigned int code;
     unsigned int slot;
     unsigned int length;
+    unsigned int ed;
 
 };
 
@@ -351,6 +354,7 @@ static void handletransfer(volatile struct trb *trb)
         transferresult.code = code;
         transferresult.slot = slot;
         transferresult.length = remaining;
+        transferresult.ed = trb->control & TRB_ED;
         transferresult.done = 1;
 
     }
@@ -1334,22 +1338,24 @@ unsigned int usb_bulk(unsigned int id, unsigned int in, void *data, unsigned int
     {
 
         unsigned int length = (count - offset > PAGESIZE) ? PAGESIZE : count - offset;
-        unsigned int last = offset + length >= count;
         unsigned char *buffer = device->bulkbuffer + offset;
 
-        enqueue(ring, (unsigned long)buffer, gethigh(buffer), length, TRB_TYPE(TRB_NORMAL) | ((last) ? TRB_IOC : TRB_CHAIN));
+        enqueue(ring, (unsigned long)buffer, gethigh(buffer), length, TRB_TYPE(TRB_NORMAL) | TRB_CHAIN);
 
-        if (last)
+        if (offset + length >= count)
             break;
 
     }
 
+    /* a short packet skips to this trb, whose event holds the bytes moved by the whole td */
+    enqueue(ring, 0, 0, 0, TRB_TYPE(TRB_EVENTDATA) | TRB_IOC);
+
     ringdoorbell(device->slot, dci);
 
-    if (waitresult(&transferresult) && (transferresult.code == COMPLETION_SUCCESS || transferresult.code == COMPLETION_SHORTPACKET))
+    if (waitresult(&transferresult) && transferresult.ed && (transferresult.code == COMPLETION_SUCCESS || transferresult.code == COMPLETION_SHORTPACKET))
     {
 
-        status = count - transferresult.length;
+        status = (transferresult.length > count) ? count : transferresult.length;
 
         if (in)
             buffer_copy(data, device->bulkbuffer, status);
