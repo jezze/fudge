@@ -38,6 +38,7 @@
 #define EVENT_VIDEOFLUSH                0x35
 #define EVENT_TIMERREQUEST              0x36
 #define EVENT_TIMEREXPIRE               0x37
+#define EVENT_TIMERINFO                 0x38
 #define EVENT_WALKREQUEST               0x40
 #define EVENT_WALKRESPONSE              0x41
 #define EVENT_READREQUEST               0x42
@@ -186,6 +187,14 @@ struct event_timerexpire
 {
 
     unsigned int id;
+
+};
+
+struct event_timerinfo
+{
+
+    unsigned int counter;
+    unsigned int hz;
 
 };
 

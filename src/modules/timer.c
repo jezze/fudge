@@ -181,6 +181,18 @@ static void expire(struct timer_interface *interface, unsigned int counter)
 
 }
 
+static unsigned int oninfo(struct timer_interface *interface, unsigned int source)
+{
+
+    struct event_timerinfo timerinfo;
+
+    timerinfo.counter = interface->jiffies;
+    timerinfo.hz = interface->hz;
+
+    return kernel_place(interface->service.inode, source, EVENT_TIMERINFO, sizeof (struct event_timerinfo), &timerinfo);
+
+}
+
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -201,6 +213,9 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
             unlink(interface, source);
 
             return kernel_unlinknode(&interface->service.links, source);
+
+        case EVENT_INFO:
+            return oninfo(interface, source);
 
         case EVENT_TIMERREQUEST:
             if (count < sizeof (struct event_timerrequest))
