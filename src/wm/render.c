@@ -139,14 +139,23 @@ static unsigned int isinlinetext(struct widget *widget)
 
 }
 
-static void advance(struct widget *widget, struct widget *child, unsigned int direction, struct util_size *size, struct util_position *offset, struct util_position *rowstart, int *pending)
+struct flow
+{
+
+    struct util_position offset;
+    struct util_position rowstart;
+    int pending;
+
+};
+
+static void advance(struct widget *widget, struct widget *child, unsigned int direction, struct util_size *size, struct flow *flow)
 {
 
     switch (direction)
     {
 
     case DIRECTION_HORIZONTAL:
-        offset->x += size->w + widget->attributes.spacing;
+        flow->offset.x += size->w + widget->attributes.spacing;
 
         break;
 
@@ -154,15 +163,15 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
         if (isinlinetext(child))
         {
 
-            offset->y += child->rowstop.y;
-            *pending = size->h - child->rowstop.y;
+            flow->offset.y += child->rowstop.y;
+            flow->pending = size->h - child->rowstop.y;
 
         }
 
         else
         {
 
-            offset->y += size->h + widget->attributes.spacing;
+            flow->offset.y += size->h + widget->attributes.spacing;
 
         }
 
@@ -170,18 +179,18 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
 
     }
 
-    *rowstart = (child->attributes.display == ATTR_DISPLAY_INLINE) ? child->rowstop : zeroposition;
+    flow->rowstart = (child->attributes.display == ATTR_DISPLAY_INLINE) ? child->rowstop : zeroposition;
 
 }
 
-static void startchild(struct widget *child, struct util_position *offset, int *pending)
+static void startchild(struct widget *child, struct flow *flow)
 {
 
     if (!isinlinetext(child))
     {
 
-        offset->y += *pending;
-        *pending = 0;
+        flow->offset.y += flow->pending;
+        flow->pending = 0;
 
     }
 
@@ -193,11 +202,13 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
     unsigned int direction = getdirection(widget->attributes.flow);
     unsigned int padding = widget->attributes.padding;
     struct util_size inner = util_size_sub(limit, padding * 2, padding * 2);
-    struct util_position rowstart = zeroposition;
-    struct util_position offset = zeroposition;
+    struct flow flow;
     struct util_size total = zerosize;
     struct list_item *current = 0;
-    int pending = 0;
+
+    flow.offset = zeroposition;
+    flow.rowstart = zeroposition;
+    flow.pending = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -206,10 +217,10 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         struct util_size climit;
         struct util_size csize;
 
-        startchild(child, &offset, &pending);
+        startchild(child, &flow);
 
-        climit = util_size_sub(&inner, offset.x, offset.y);
-        csize = calls[child->type].getsize(child, &climit, &rowstart);
+        climit = util_size_sub(&inner, flow.offset.x, flow.offset.y);
+        csize = calls[child->type].getsize(child, &climit, &flow.rowstart);
 
         if (widget_isscrollable(child))
         {
@@ -241,10 +252,10 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
         }
 
-        total.w = util_clamp(util_max(total.w, csize.w + offset.x), 0, inner.w);
-        total.h = util_clamp(util_max(total.h, csize.h + offset.y), 0, inner.h);
+        total.w = util_clamp(util_max(total.w, csize.w + flow.offset.x), 0, inner.w);
+        total.h = util_clamp(util_max(total.h, csize.h + flow.offset.y), 0, inner.h);
 
-        advance(widget, child, direction, &csize, &offset, &rowstart, &pending);
+        advance(widget, child, direction, &csize, &flow);
 
     }
 
@@ -340,17 +351,18 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 {
 
     unsigned int direction = getdirection(widget->attributes.flow);
-    struct util_position rowstart = zeroposition;
-    struct util_position offset = zeroposition;
+    struct flow flow;
     struct list_item *current = 0;
     struct placeinfo info;
-    int pending = 0;
 
     info.spans = 0;
     info.width = 0;
     info.total = zerosize;
     info.freesize = zerosize;
     info.span = zerosize;
+    flow.offset = zeroposition;
+    flow.rowstart = zeroposition;
+    flow.pending = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -358,9 +370,9 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
         struct widget *child = current->data;
         struct util_region cplacement;
 
-        startchild(child, &offset, &pending);
+        startchild(child, &flow);
 
-        cplacement = getplacement(widget, child, &offset, &rowstart, span);
+        cplacement = getplacement(widget, child, &flow.offset, &flow.rowstart, span);
 
         if (measure)
         {
@@ -380,11 +392,11 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
         }
 
         info.spans += child->attributes.span;
-        info.width = util_max(info.width, cplacement.size.w + offset.x);
-        info.total.w = util_clamp(util_max(info.total.w, cplacement.size.w + offset.x), 0, widget->cplacement.size.w);
-        info.total.h = util_clamp(util_max(info.total.h, cplacement.size.h + offset.y), 0, widget->cplacement.size.h);
+        info.width = util_max(info.width, cplacement.size.w + flow.offset.x);
+        info.total.w = util_clamp(util_max(info.total.w, cplacement.size.w + flow.offset.x), 0, widget->cplacement.size.w);
+        info.total.h = util_clamp(util_max(info.total.h, cplacement.size.h + flow.offset.y), 0, widget->cplacement.size.h);
 
-        advance(widget, child, direction, &cplacement.size, &offset, &rowstart, &pending);
+        advance(widget, child, direction, &cplacement.size, &flow);
 
     }
 
@@ -400,8 +412,8 @@ static struct placeinfo placechildren(struct widget *widget, struct util_size *s
 struct util_region render_getcursor(struct widget *widget, unsigned int index)
 {
 
-    unsigned int length;
-    struct widget *text = pool_gettextat(widget, index, &length);
+    unsigned int length = pool_gettextoffset(widget, index);
+    struct widget *text = pool_gettextat(widget, index);
 
     if (text)
     {
@@ -535,8 +547,10 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     }
 
-    widget->clip = *clip;
-    widget->cclip = *clip;
+    widget->clip.position = clip->position;
+    widget->clip.size = clip->size;
+    widget->cclip.position = clip->position;
+    widget->cclip.size = clip->size;
     widget->textrow = 0;
     widget->textoffset = 0;
 
@@ -633,7 +647,8 @@ static struct util_size textsize(struct widget *widget, struct util_size *limit,
     if (widget->attributes.display == ATTR_DISPLAY_INLINE)
     {
 
-        widget->rowstart = *rowstart;
+        widget->rowstart.x = rowstart->x;
+        widget->rowstart.y = rowstart->y;
         widget->rowstop = info.lastrow;
 
     }
@@ -1149,7 +1164,7 @@ void render_undamage(void)
 
 }
 
-unsigned int render_update(struct blit_display *display, struct util_region *updated)
+struct util_region render_update(struct blit_display *display)
 {
 
     static struct widget *damaged[POOL_WIDGETS];
@@ -1158,7 +1173,7 @@ unsigned int render_update(struct blit_display *display, struct util_region *upd
     int line;
 
     if (!hasdamage)
-        return 0;
+        return util_region(0, 0, 0, 0);
 
     area.position0.x = util_clamp(area.position0.x, 0, display->region.size.w);
     area.position0.y = util_clamp(area.position0.y, 0, display->region.size.h);
@@ -1206,9 +1221,7 @@ unsigned int render_update(struct blit_display *display, struct util_region *upd
 
     }
 
-    *updated = util_region(area.position0.x, area.position0.y, area.position2.x - area.position0.x, area.position2.y - area.position0.y);
-
-    return 1;
+    return util_region(area.position0.x, area.position0.y, area.position2.x - area.position0.x, area.position2.y - area.position0.y);
 
 }
 

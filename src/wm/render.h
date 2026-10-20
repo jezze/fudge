@@ -12,5 +12,5 @@ void render_setmouse(int x, int y, unsigned int type);
 void render_place(struct widget *widget, struct util_region *placement);
 void render_damage(int x0, int y0, int x2, int y2);
 void render_undamage(void);
-unsigned int render_update(struct blit_display *display, struct util_region *updated);
+struct util_region render_update(struct blit_display *display);
 void render_init(void);

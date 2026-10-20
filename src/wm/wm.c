@@ -80,7 +80,7 @@ static void setupvideo(unsigned int video)
 
 }
 
-static unsigned int getword(char *data, unsigned int count, unsigned int index, char **word)
+static unsigned int findword(char *data, unsigned int count, unsigned int index)
 {
 
     unsigned int start = 0;
@@ -93,13 +93,7 @@ static unsigned int getword(char *data, unsigned int count, unsigned int index, 
         {
 
             if (i > start && !index--)
-            {
-
-                *word = data + start;
-
-                return i - start;
-
-            }
+                return start;
 
             start = i + 1;
 
@@ -107,17 +101,34 @@ static unsigned int getword(char *data, unsigned int count, unsigned int index, 
 
     }
 
-    return 0;
+    return count;
+
+}
+
+static unsigned int measureword(char *data, unsigned int count, unsigned int start)
+{
+
+    unsigned int i;
+
+    for (i = start; i < count; i++)
+    {
+
+        if (data[i] == ' ' || data[i] == '\n')
+            break;
+
+    }
+
+    return i - start;
 
 }
 
 static unsigned int getnumber(char *data, unsigned int count, unsigned int index, unsigned int base, unsigned int fallback)
 {
 
-    char *word;
-    unsigned int length = getword(data, count, index, &word);
+    unsigned int start = findword(data, count, index);
+    unsigned int length = measureword(data, count, start);
 
-    return (length) ? cstring_read_value(word, length, base) : fallback;
+    return (length) ? cstring_read_value(data + start, length, base) : fallback;
 
 }
 
@@ -210,9 +221,10 @@ static void loadkeymap(char *path, unsigned int length)
 static void configline(char *line, unsigned int length)
 {
 
-    char *word = line;
-    unsigned int count = getword(line, length, 0, &word);
-    unsigned int start = (count < length) ? count + 1 : length;
+    unsigned int offset = findword(line, length, 0);
+    unsigned int count = measureword(line, length, offset);
+    unsigned int start = (offset + count < length) ? offset + count + 1 : length;
+    char *word = line + offset;
     char *rest = line + start;
 
     length -= start;
@@ -505,9 +517,9 @@ static struct widget *getwidgetoftypeat(unsigned int type, int x, int y)
 static void update(void)
 {
 
-    struct util_region updated;
+    struct util_region updated = render_update(&display);
 
-    if (render_update(&display, &updated))
+    if (updated.size.w && updated.size.h)
     {
 
         struct event_videoflush videoflush;
@@ -875,7 +887,8 @@ static unsigned int stepleft(struct widget *widget, unsigned int index)
     if (!index)
         return 0;
 
-    text = pool_gettextat(widget, index - 1, &offset);
+    text = pool_gettextat(widget, index - 1);
+    offset = pool_gettextoffset(widget, index - 1);
 
     return (text) ? index - 1 - offset + utf8_prev(strpool_getstring(text->attributes.label), offset + 1) : index - 1;
 
@@ -884,8 +897,8 @@ static unsigned int stepleft(struct widget *widget, unsigned int index)
 static unsigned int stepright(struct widget *widget, unsigned int index)
 {
 
-    unsigned int offset;
-    struct widget *text = pool_gettextat(widget, index, &offset);
+    unsigned int offset = pool_gettextoffset(widget, index);
+    struct widget *text = pool_gettextat(widget, index);
     unsigned int codepoint;
 
     if (!text || offset >= gettextlength(text))
@@ -1258,15 +1271,24 @@ static void copytexts(struct widget *widget)
 
 }
 
-static unsigned int getmarked(struct widget *widget, unsigned int *start, unsigned int *end)
+static unsigned int getmarkstart(struct widget *widget)
 {
 
-    unsigned int total = pool_gettextlength(widget);
+    return util_min(util_min(widget->markstart, widget->markend), pool_gettextlength(widget));
 
-    *start = util_min(util_min(widget->markstart, widget->markend), total);
-    *end = util_min(util_max(widget->markstart, widget->markend), total);
+}
 
-    return *start < *end;
+static unsigned int getmarkend(struct widget *widget)
+{
+
+    return util_min(util_max(widget->markstart, widget->markend), pool_gettextlength(widget));
+
+}
+
+static unsigned int hasmarked(struct widget *widget)
+{
+
+    return getmarkstart(widget) < getmarkend(widget);
 
 }
 
@@ -1275,10 +1297,10 @@ static unsigned int removemarked(struct widget *widget, unsigned int cursor)
 
     struct list_item *current = 0;
     unsigned int base = 0;
-    unsigned int start;
-    unsigned int end;
+    unsigned int start = getmarkstart(widget);
+    unsigned int end = getmarkend(widget);
 
-    if (!getmarked(widget, &start, &end))
+    if (start >= end)
         return cursor;
 
     while ((current = pool_nextin(current, widget)))
@@ -1317,8 +1339,8 @@ static unsigned int removemarked(struct widget *widget, unsigned int cursor)
 static unsigned int inserttext(struct widget *widget, unsigned int index, char *data, unsigned int count)
 {
 
-    unsigned int offset;
-    struct widget *text = pool_gettextat(widget, index, &offset);
+    unsigned int offset = pool_gettextoffset(widget, index);
+    struct widget *text = pool_gettextat(widget, index);
     unsigned int length = copytext(text);
     unsigned int i;
 
@@ -1338,8 +1360,8 @@ static unsigned int inserttext(struct widget *widget, unsigned int index, char *
 static void removetext(struct widget *widget, unsigned int index, unsigned int count)
 {
 
-    unsigned int offset;
-    struct widget *text = pool_gettextat(widget, index, &offset);
+    unsigned int offset = pool_gettextoffset(widget, index);
+    struct widget *text = pool_gettextat(widget, index);
     unsigned int length = copytext(text);
 
     buffer_copy(textbuffer + offset, textbuffer + offset + count, length - offset - count + 1);
@@ -1364,8 +1386,7 @@ static void notifychange(struct widget *widget)
 static void edittextbox(struct widget *widget, unsigned int id)
 {
 
-    unsigned int offset;
-    struct widget *text = pool_gettextat(widget, widget->attributes.cursor, &offset);
+    struct widget *text = pool_gettextat(widget, widget->attributes.cursor);
     unsigned int printable = state.keys.code.length && state.keys.code.value[0] >= 0x20 && state.keys.code.value[0] != 0x7F;
     char *data = (char *)state.keys.code.value;
     unsigned int count = (printable) ? state.keys.code.length : 0;
@@ -1401,7 +1422,10 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
     }
 
-    if (getmarked(widget, &start, &end) && (count || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
+    start = getmarkstart(widget);
+    end = getmarkend(widget);
+
+    if (start < end && (count || id == KEYS_KEY_BACKSPACE || id == KEYS_KEY_DELETE))
     {
 
         cursor = removemarked(widget, cursor);
@@ -1468,7 +1492,7 @@ static void edittextbox(struct widget *widget, unsigned int id)
     if (moved && (state.keys.mod & KEYS_MOD_SHIFT))
     {
 
-        setmark(widget, (getmarked(widget, &start, &end)) ? widget->markstart : previous, cursor);
+        setmark(widget, (hasmarked(widget)) ? widget->markstart : previous, cursor);
 
     }
 
@@ -1489,25 +1513,22 @@ static void edittextbox(struct widget *widget, unsigned int id)
 
 }
 
-static unsigned int createclipboard(char *path, unsigned int *target)
+static unsigned int createclipboard(unsigned int target, char *path)
 {
 
     char *name = path + fs_dirlength(path);
-    unsigned int parent;
+    unsigned int parent = (target) ? fs_walkparent(1, target, path) : 0;
     unsigned int id;
-
-    *target = fs_auth(path);
-    parent = (*target) ? fs_walkparent(1, *target, path) : 0;
 
     if (!parent)
         return 0;
 
-    id = fs_walk(1, *target, 0, path);
+    id = fs_walk(1, target, 0, path);
 
-    if (id && !fs_remove(1, *target, parent, id))
+    if (id && !fs_remove(1, target, parent, id))
         return 0;
 
-    return fs_create(1, *target, parent, name, cstring_length(name));
+    return fs_create(1, target, parent, name, cstring_length(name));
 
 }
 
@@ -1519,13 +1540,14 @@ static unsigned int copymarked(struct widget *widget)
     unsigned int count = 0;
     unsigned int target;
     unsigned int id;
-    unsigned int start;
-    unsigned int end;
+    unsigned int start = getmarkstart(widget);
+    unsigned int end = getmarkend(widget);
 
-    if (!getmarked(widget, &start, &end))
+    if (start >= end)
         return 0;
 
-    id = createclipboard(option_getstring("clipboard"), &target);
+    target = fs_auth(option_getstring("clipboard"));
+    id = createclipboard(target, option_getstring("clipboard"));
 
     if (!id)
         return 0;
@@ -1568,9 +1590,8 @@ static void pastetext(struct widget *widget)
     unsigned int stopped = 0;
     char data[MESSAGE_SIZE];
     unsigned int count;
-    unsigned int offset;
 
-    if (!id || !pool_gettextat(widget, cursor, &offset))
+    if (!id || !pool_gettextat(widget, cursor))
         return;
 
     cursor = removemarked(widget, cursor);
@@ -1599,9 +1620,8 @@ static void pastetext(struct widget *widget)
 static void movecursor(struct widget *widget)
 {
 
-    unsigned int offset;
-    struct widget *first = pool_gettextat(widget, 0, &offset);
-    struct widget *last = pool_gettextat(widget, pool_gettextlength(widget), &offset);
+    struct widget *first = pool_gettextat(widget, 0);
+    struct widget *last = pool_gettextat(widget, pool_gettextlength(widget));
 
     if (first && last)
     {
@@ -2182,15 +2202,10 @@ static void dragthumb(struct widget *widget)
 
 }
 
-static int scalemove(int count, int quarters, int *remainder)
+static int scalemove(int total)
 {
 
-    int total = *remainder + count * quarters;
-    int pixels = (total < 0) ? -(-total / MOUSE_NORMAL) : total / MOUSE_NORMAL;
-
-    *remainder = total - pixels * MOUSE_NORMAL;
-
-    return pixels;
+    return (total < 0) ? -(-total / MOUSE_NORMAL) : total / MOUSE_NORMAL;
 
 }
 
@@ -2232,9 +2247,16 @@ static void onmousemove(struct message *message)
 
     struct event_mousemove *mousemove = message->data;
     int quarters = getquarters(mousemove->relx, mousemove->rely);
-    int x = util_clamp(state.mouseposition.x + scalemove(mousemove->relx, quarters, &state.mouseremainder.x), 0, display.region.size.w);
-    int y = util_clamp(state.mouseposition.y + scalemove(mousemove->rely, quarters, &state.mouseremainder.y), 0, display.region.size.h);
+    int totalx = state.mouseremainder.x + mousemove->relx * quarters;
+    int totaly = state.mouseremainder.y + mousemove->rely * quarters;
+    int pixelsx = scalemove(totalx);
+    int pixelsy = scalemove(totaly);
+    int x = util_clamp(state.mouseposition.x + pixelsx, 0, display.region.size.w);
+    int y = util_clamp(state.mouseposition.y + pixelsy, 0, display.region.size.h);
     unsigned int relayout;
+
+    state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
+    state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;
 
     /* a release dropped by a full mailbox shows up as a cleared bit */
     if (state.mousebuttonleft && !(mousemove->buttons & 1))
@@ -2415,10 +2437,16 @@ static void onmouserelease(struct message *message)
 static void onvideoinfo(struct message *message)
 {
 
-    struct event_videoinfo videoinfo = *(struct event_videoinfo *)message->data;
-    unsigned int factor = videoinfo.height / 320;
-    unsigned int lineheight = 12 + factor * 4;
-    unsigned int padding = 4 + factor * 2;
+    struct event_videoinfo videoinfo;
+    unsigned int factor;
+    unsigned int lineheight;
+    unsigned int padding;
+
+    buffer_copy(&videoinfo, message->data, sizeof (struct event_videoinfo));
+
+    factor = videoinfo.height / 320;
+    lineheight = 12 + factor * 4;
+    padding = 4 + factor * 2;
 
     blit_initdisplay(&display, (void *)(unsigned long)videoinfo.framebuffer, videoinfo.width, videoinfo.height, videoinfo.bpp, linebuffer);
     pool_loadfont(0, fontn[factor]);

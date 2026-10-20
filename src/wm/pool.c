@@ -184,13 +184,12 @@ unsigned int pool_gettextlength(struct widget *widget)
 
 }
 
-struct widget *pool_gettextat(struct widget *widget, unsigned int index, unsigned int *offset)
+struct widget *pool_gettextat(struct widget *widget, unsigned int index)
 {
 
     struct list_item *current = 0;
     struct widget *text = 0;
     unsigned int base = 0;
-    unsigned int start = 0;
 
     while ((current = pool_nextin(current, widget)))
     {
@@ -203,7 +202,6 @@ struct widget *pool_gettextat(struct widget *widget, unsigned int index, unsigne
             unsigned int length = strpool_getcstringlength(child->attributes.label);
 
             text = child;
-            start = base;
 
             if (index < base + length)
                 break;
@@ -214,10 +212,31 @@ struct widget *pool_gettextat(struct widget *widget, unsigned int index, unsigne
 
     }
 
-    if (text)
-        *offset = util_min(index - util_min(index, start), strpool_getcstringlength(text->attributes.label));
-
     return text;
+
+}
+
+unsigned int pool_gettextoffset(struct widget *widget, unsigned int index)
+{
+
+    struct widget *text = pool_gettextat(widget, index);
+    struct list_item *current = 0;
+    unsigned int start = 0;
+
+    if (!text)
+        return 0;
+
+    while ((current = pool_nextin(current, widget)) && current->data != text)
+    {
+
+        struct widget *child = current->data;
+
+        if (child->type == WIDGET_TYPE_TEXT)
+            start += strpool_getcstringlength(child->attributes.label);
+
+    }
+
+    return util_min(index - util_min(index, start), strpool_getcstringlength(text->attributes.label));
 
 }
 

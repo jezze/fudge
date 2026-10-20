@@ -107,19 +107,20 @@ static void blitsegment(struct blit_display *display, struct rowsegment *rows, u
 static void blitbitmap(struct blit_display *display, char **rows, unsigned int count, int bx, int by, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    char *row;
-    int x;
+    int i;
 
     if (line < by || line >= by + (int)count)
         return;
 
-    for (row = rows[line - by], x = bx; *row && x < x2; row++, x++)
+    for (i = 0; rows[line - by][i] && bx + i < x2; i++)
     {
+
+        int x = bx + i;
 
         if (x < x0)
             continue;
 
-        switch (*row)
+        switch (rows[line - by][i])
         {
 
         case '#':
