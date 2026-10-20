@@ -308,8 +308,9 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
                 if (isunsigned)
                 {
 
-                    unsigned char value = *((unsigned char *)args[cargs++]);
+                    unsigned char value;
 
+                    buffer_copy(&value, args[cargs++], sizeof (unsigned char));
                     offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
 
                 }
@@ -317,8 +318,9 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
                 else
                 {
 
-                    signed char value = *((signed char *)args[cargs++]);
+                    signed char value;
 
+                    buffer_copy(&value, args[cargs++], sizeof (signed char));
                     offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
 
                 }
@@ -333,8 +335,9 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
                 if (isunsigned)
                 {
 
-                    unsigned short value = *((unsigned short *)args[cargs++]);
+                    unsigned short value;
 
+                    buffer_copy(&value, args[cargs++], sizeof (unsigned short));
                     offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
 
                 }
@@ -342,8 +345,9 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
                 else
                 {
 
-                    signed short value = *((signed short *)args[cargs++]);
+                    signed short value;
 
+                    buffer_copy(&value, args[cargs++], sizeof (signed short));
                     offset += buffer_write(out, count, num, writevalue(num, 64, value, base, padding), offset);
 
                 }
@@ -355,7 +359,7 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
                 break;
 
             case 'u':
-                uvalue = *((unsigned int *)args[cargs++]);
+                buffer_copy(&uvalue, args[cargs++], sizeof (unsigned int));
                 offset += buffer_write(out, count, num, writedigits(num, 64, uvalue, base, padding, 0), offset);
                 interpreted = 0;
                 padding = 0;
@@ -364,7 +368,7 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
                 break;
 
             case 'i':
-                ivalue = *((int *)args[cargs++]);
+                buffer_copy(&ivalue, args[cargs++], sizeof (int));
                 offset += buffer_write(out, count, num, writevalue(num, 64, ivalue, base, padding), offset);
                 interpreted = 0;
                 padding = 0;
@@ -383,7 +387,7 @@ unsigned int cstring_write_fmtv(void *out, unsigned int count, unsigned int offs
 
             case 'w':
                 svalue = ((char *)args[cargs++]);
-                uvalue = *((unsigned int *)args[cargs++]);
+                buffer_copy(&uvalue, args[cargs++], sizeof (unsigned int));
                 offset += buffer_write(out, count, svalue, uvalue, offset);
                 interpreted = 0;
                 padding = 0;
