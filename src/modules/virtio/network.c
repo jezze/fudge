@@ -37,8 +37,8 @@ static void handleirq(unsigned int irq)
     while (virtio_pending(&rxqueue))
     {
 
-        unsigned int length;
-        unsigned int id = virtio_pop(&rxqueue, &length);
+        unsigned int length = virtio_usedlength(&rxqueue);
+        unsigned int id = virtio_pop(&rxqueue);
 
         if (id >= RXBUFFERS)
             continue;
@@ -64,8 +64,6 @@ static void ethernetinterface_getmac(unsigned char address[6])
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
-    unsigned int length;
-
     if (!ready || count > BUFFERSIZE - headersize)
         return 0;
 
@@ -74,7 +72,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
     while (virtio_pending(&txqueue))
     {
 
-        virtio_pop(&txqueue, &length);
+        virtio_pop(&txqueue);
 
         txpending--;
 

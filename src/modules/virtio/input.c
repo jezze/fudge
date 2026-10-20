@@ -67,8 +67,7 @@ void input_poll(struct virtio_device *device, struct virtio_queue *queue, unsign
     while (virtio_pending(queue))
     {
 
-        unsigned int length;
-        unsigned int id = virtio_pop(queue, &length);
+        unsigned int id = virtio_pop(queue);
 
         if (id >= INPUT_EVENTS)
             continue;

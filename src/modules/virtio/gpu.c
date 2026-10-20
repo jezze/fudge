@@ -140,7 +140,6 @@ static void setrect(struct rect *rect, unsigned int x, unsigned int y, unsigned 
 static unsigned int command(void *request, unsigned int count)
 {
 
-    unsigned int length;
     unsigned int i;
 
     response.type = 0;
@@ -155,7 +154,7 @@ static unsigned int command(void *request, unsigned int count)
     if (!virtio_pending(&queue))
         return 0;
 
-    virtio_pop(&queue, &length);
+    virtio_pop(&queue);
 
     return virtio_le32(response.type) == RESPONSE_OKNODATA;
 

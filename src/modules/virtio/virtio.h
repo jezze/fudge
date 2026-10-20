@@ -104,6 +104,7 @@ void virtio_push(struct virtio_queue *queue, unsigned short head);
 void virtio_nointerrupt(struct virtio_queue *queue);
 void virtio_notify(struct virtio_queue *queue);
 unsigned int virtio_pending(struct virtio_queue *queue);
-unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length);
+unsigned int virtio_usedlength(struct virtio_queue *queue);
+unsigned int virtio_pop(struct virtio_queue *queue);
 unsigned int virtio_setinterrupt(struct virtio_device *device, unsigned int queues, void (*routine)(unsigned int irq));
 void virtio_unsetinterrupt(struct virtio_device *device, unsigned int msi, void (*routine)(unsigned int irq));

@@ -118,7 +118,6 @@ static unsigned int txpending;
 static unsigned int command(void *request, unsigned int count, void *reply, unsigned int replycount)
 {
 
-    unsigned int length;
     unsigned int i;
 
     response.code = 0;
@@ -134,7 +133,7 @@ static unsigned int command(void *request, unsigned int count, void *reply, unsi
     if (!virtio_pending(&controlqueue))
         return 0;
 
-    virtio_pop(&controlqueue, &length);
+    virtio_pop(&controlqueue);
 
     return virtio_le32(response.code) == STATUS_OK;
 
@@ -188,12 +187,10 @@ static unsigned int setparams(unsigned int channels, unsigned int format, unsign
 static void reclaim(void)
 {
 
-    unsigned int length;
-
     while (virtio_pending(&txqueue))
     {
 
-        virtio_pop(&txqueue, &length);
+        virtio_pop(&txqueue);
 
         txpending--;
 

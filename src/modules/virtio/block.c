@@ -44,9 +44,7 @@ static void handleirq(unsigned int irq)
     while (virtio_pending(&queue))
     {
 
-        unsigned int length;
-
-        virtio_pop(&queue, &length);
+        virtio_pop(&queue);
 
         if (session->source)
         {

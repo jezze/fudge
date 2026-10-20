@@ -99,12 +99,20 @@ unsigned int virtio_pending(struct virtio_queue *queue)
 
 }
 
-unsigned int virtio_pop(struct virtio_queue *queue, unsigned int *length)
+unsigned int virtio_usedlength(struct virtio_queue *queue)
 {
 
     volatile struct virtio_usedelement *element = &queue->usedring[queue->lastused % queue->size];
 
-    *length = virtio_le32(element->length);
+    return virtio_le32(element->length);
+
+}
+
+unsigned int virtio_pop(struct virtio_queue *queue)
+{
+
+    volatile struct virtio_usedelement *element = &queue->usedring[queue->lastused % queue->size];
+
     queue->lastused++;
 
     return virtio_le32(element->id);
