@@ -362,16 +362,17 @@ static unsigned int iskeypadnavigation(unsigned int offset)
 
 }
 
-static void updatelock(struct keys *keys, unsigned int id, unsigned int *lock, unsigned int *down, unsigned int release)
+static unsigned int togglelock(struct keys *keys, unsigned int id, unsigned int lock, unsigned int down, unsigned int release)
 {
 
-    if (keys->id != id)
-        return;
+    return (keys->id == id && !release && !down) ? !lock : lock;
 
-    if (!release && !*down)
-        *lock = !*lock;
+}
 
-    *down = !release;
+static unsigned int trackdown(struct keys *keys, unsigned int id, unsigned int down, unsigned int release)
+{
+
+    return (keys->id == id) ? !release : down;
 
 }
 
@@ -429,8 +430,10 @@ unsigned int keys_getcode(struct keys *keys, unsigned int scancode)
             keys->extended = 1;
 
         update(keys, keys->layout, offset, release);
-        updatelock(keys, KEYS_KEY_NUMLOCK, &keys->numlock, &keys->numlockdown, release);
-        updatelock(keys, KEYS_KEY_CAPSLOCK, &keys->capslock, &keys->capslockdown, release);
+        keys->numlock = togglelock(keys, KEYS_KEY_NUMLOCK, keys->numlock, keys->numlockdown, release);
+        keys->numlockdown = trackdown(keys, KEYS_KEY_NUMLOCK, keys->numlockdown, release);
+        keys->capslock = togglelock(keys, KEYS_KEY_CAPSLOCK, keys->capslock, keys->capslockdown, release);
+        keys->capslockdown = trackdown(keys, KEYS_KEY_CAPSLOCK, keys->capslockdown, release);
 
         if (offset)
         {
