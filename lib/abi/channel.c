@@ -42,26 +42,13 @@ static unsigned int routetarget(struct event_route *route)
 
 }
 
-static unsigned int reroute(unsigned int target, unsigned int *event)
+static struct event_route *findreroute(unsigned int target, unsigned int event)
 {
 
     if (pipenext && (target == pipeowner || (pipeprev && target == pipeprev)))
-    {
+        return findroute(event);
 
-        struct event_route *route = findroute(*event);
-
-        if (route)
-        {
-
-            *event = route->to;
-
-            return routetarget(route);
-
-        }
-
-    }
-
-    return target;
+    return 0;
 
 }
 
@@ -130,9 +117,11 @@ static void dispatchpaths(struct message *message)
     while (offset < message->length && listeners[EVENT_PATH] && state != CHANNEL_STATE_CLOSED)
     {
 
-        struct message path = *message;
+        struct message path;
         unsigned int length = buffer_findbyte(data + offset, message->length - offset, '\0');
 
+        path.event = message->event;
+        path.source = message->source;
         path.data = data + offset;
         path.length = (offset + length < message->length) ? length + 1 : length;
 
@@ -173,8 +162,10 @@ static void dispatch(struct message *message)
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    if (!ichannel)
-        target = reroute(target, &event);
+    struct event_route *route = (ichannel) ? 0 : findreroute(target, event);
+
+    if (route)
+        return place(ichannel, routetarget(route), route->to, count, data);
 
     return place(ichannel, target, event, count, data);
 
