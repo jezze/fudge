@@ -317,6 +317,21 @@ static void configlines(char *data, unsigned int count)
 
 }
 
+static void loadreference(char *data, char *config, char *key, char *query, char *format)
+{
+
+    char path[256];
+    unsigned int length = buffer_findbyte(path, system_feed(0, 0, path, 255, "mq -query %s %s", key, config), '\n');
+
+    if (!length)
+        return;
+
+    path[length] = '\0';
+
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query %s -format \"%s\" %s", query, format, path));
+
+}
+
 static void loadconfig(char *config)
 {
 
@@ -327,9 +342,9 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {map}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .colors -format \"color {name} {value}\" %s", config));
+    loadreference(data, config, ".theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
-    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .bindings -format \"binding {key} {mod} {action} {command}\" %s", config));
+    loadreference(data, config, ".bindings", ".bindings", "binding {key} {mod} {action} {command}");
 
 }
 

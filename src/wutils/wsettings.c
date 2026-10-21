@@ -165,6 +165,8 @@ static struct
     unsigned int bpp;
     char keyboard[256];
     char speed[16];
+    char bindingspath[256];
+    char themepath[256];
     struct binding bindings[NUM_BINDINGS];
     unsigned int nbindings;
     struct color colors[NUM_COLORS];
@@ -209,10 +211,13 @@ static void reserve(void)
 
 }
 
-static unsigned int query(char *data, unsigned int size, char *path, char *format)
+static unsigned int query(char *data, unsigned int size, char *file, char *path, char *format)
 {
 
-    return (format) ? system_feed(0, 0, data, size, "mq -query %s -format \"%s\" %s", path, format, option_getstring("config")) : system_feed(0, 0, data, size, "mq -query %s %s", path, option_getstring("config"));
+    if (!cstring_length(file))
+        return 0;
+
+    return (format) ? system_feed(0, 0, data, size, "mq -query %s -format \"%s\" %s", path, format, file) : system_feed(0, 0, data, size, "mq -query %s %s", path, file);
 
 }
 
@@ -395,11 +400,11 @@ static void loadcolor(char *line, unsigned int length)
 
 }
 
-static void loadlines(char *path, char *format, void (*load)(char *line, unsigned int length))
+static void loadlines(char *file, char *path, char *format, void (*load)(char *line, unsigned int length))
 {
 
     static char data[0x4000];
-    unsigned int count = query(data, 0x4000, path, format);
+    unsigned int count = query(data, 0x4000, file, path, format);
     unsigned int length;
     char *line;
 
@@ -421,36 +426,44 @@ static void loadconfig(void)
     char data[256];
     unsigned int count;
 
-    count = query(data, 256, ".general.layout", 0);
+    count = query(data, 256, option_getstring("config"), ".general.layout", 0);
 
     getword(data, count, 0, config.layout, 32);
 
-    count = query(data, 256, ".general.background", 0);
+    count = query(data, 256, option_getstring("config"), ".general.background", 0);
 
     getword(data, count, 0, config.background, 256);
 
-    count = query(data, 256, ".localization", "{language} {timezone}");
+    count = query(data, 256, option_getstring("config"), ".localization", "{language} {timezone}");
 
     getword(data, count, 0, config.language, 32);
     getword(data, count, 1, config.timezone, 32);
 
-    count = query(data, 256, ".screen.resolution", "{width} {height} {bpp}");
+    count = query(data, 256, option_getstring("config"), ".screen.resolution", "{width} {height} {bpp}");
     config.width = getnumber(data, count, 0);
     config.height = getnumber(data, count, 1);
     config.bpp = getnumber(data, count, 2);
-    count = query(data, 256, ".keyboard.map", 0);
+    count = query(data, 256, option_getstring("config"), ".keyboard.map", 0);
 
     getword(data, count, 0, config.keyboard, 256);
 
-    count = query(data, 256, ".mouse.speed", 0);
+    count = query(data, 256, option_getstring("config"), ".mouse.speed", 0);
 
     getword(data, count, 0, config.speed, 16);
+
+    count = query(data, 256, option_getstring("config"), ".bindings", 0);
+
+    getword(data, count, 0, config.bindingspath, 256);
+
+    count = query(data, 256, option_getstring("config"), ".theme", 0);
+
+    getword(data, count, 0, config.themepath, 256);
 
     config.nbindings = 0;
     config.ncolors = 0;
 
-    loadlines(".bindings", "{key} {mod} {action} {command}", loadbinding);
-    loadlines(".colors", "{name} {value}", loadcolor);
+    loadlines(config.bindingspath, ".bindings", "{key} {mod} {action} {command}", loadbinding);
+    loadlines(config.themepath, ".colors", "{name} {value}", loadcolor);
 
 }
 
@@ -458,14 +471,25 @@ static unsigned int writeconfig(char *data, unsigned int size)
 {
 
     unsigned int count = 0;
-    unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    background: \"%s\"\n  }\n", config.layout, config.background);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n  }\n", &config.width, &config.height, &config.bpp);
     count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    map: \"%s\"\n  }\n", config.keyboard);
     count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n  }\n", config.speed);
-    count += cstring_write_fmt(data, size, count, "  bindings:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  bindings: \"%s\"\n  theme: \"%s\"\n}\n", config.bindingspath, config.themepath);
+
+    return count;
+
+}
+
+static unsigned int writebindings(char *data, unsigned int size)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    count += cstring_write_fmt(data, size, count, "{\n  bindings:\n  [\n");
 
     for (i = 0; i < config.nbindings; i++)
     {
@@ -482,7 +506,19 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     }
 
-    count += cstring_write_fmt(data, size, count, "  ]\n  colors:\n  [\n");
+    count += cstring_write_fmt(data, size, count, "  ]\n}\n");
+
+    return count;
+
+}
+
+static unsigned int writetheme(char *data, unsigned int size)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    count += cstring_write_fmt(data, size, count, "{\n  colors:\n  [\n");
 
     for (i = 0; i < config.ncolors; i++)
     {
@@ -889,7 +925,7 @@ static void onwmevent(struct message *message)
 
         static char data[0x8000];
 
-        if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)))
+        if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingspath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)))
             channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"disabled\"\n");
 
     }

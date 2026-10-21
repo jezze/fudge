@@ -1,0 +1,18 @@
+{
+  bindings:
+  [
+    { key: q mod: alt+shift action: close }
+    { key: p mod: alt+shift action: run command: "initrd:bin/wshell" }
+    { key: k mod: alt action: next }
+    { key: j mod: alt action: previous }
+    { key: enter mod: alt action: swap }
+    { key: pageup mod: none action: scrollup }
+    { key: pagedown mod: none action: scrolldown }
+    { key: tab mod: none action: focusnext }
+    { key: tab mod: shift action: focusprevious }
+    { key: a mod: ctrl action: markall }
+    { key: c mod: ctrl action: copy }
+    { key: x mod: ctrl action: cut }
+    { key: v mod: ctrl action: paste }
+  ]
+}
