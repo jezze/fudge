@@ -23,8 +23,6 @@
 + text in "apps-calculator" label "Calculator"
 + select id "games-select" in "menu" label "Games"
 + panel id "games-layout" in "games-select" flow "vertical-stretch" padding "4"
-+ item id "games-shell" in "games-layout" padding "16" onclick "run=initrd:bin/wshell"
-+ text in "games-shell" label "Shell"
 + item id "games-pop" in "games-layout" padding "16" onclick "run=initrd:bin/pop"
 + text in "games-pop" label "Prince of Persia"
 + select id "hosts-select" in "menu" label "Hosts"
