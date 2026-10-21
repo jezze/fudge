@@ -88,7 +88,7 @@ L:=\
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/hash/hash.a \
 
-DOOM_WARNINGS:=-Wno-misleading-indentation -Wno-pointer-sign -Wno-switch -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-stringop-overflow
+DOOM_WARNINGS:=-Wno-misleading-indentation -Wno-pointer-sign -Wno-switch -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-stringop-overflow -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 $(DIR_SRC)/doom/%.o: PP_FLAGS:=$(filter-out -std=c89 -pedantic, $(PP_FLAGS)) -std=c99 -DHAVE_CONFIG_H
 $(DIR_SRC)/doom/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic $(CC_FLAGS_FLOAT), $(CC_FLAGS)) -std=c99 -fcommon $(DOOM_WARNINGS)
