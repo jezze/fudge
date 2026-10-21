@@ -522,7 +522,7 @@ static void onwmkeypress(struct message *message)
 void init(void)
 {
 
-    option_add("config", "initrd:data/config/filetypes.mq");
+    option_add("config", "initrd:data/config/wm-filetypes.mq");
     option_add("wm-service", "wm");
     option_add("clipboard", "mem:clipboard");
     option_add("mode", "browse");
