@@ -15,6 +15,7 @@ src/demo/demo
 src/gameboy/gameboy
 src/kernel/fudge
 src/pcx/pcxcmap
+src/pop/pop
 src/pcx/pcxdata
 src/pcx/pcxinfo
 src/test/t_disk
