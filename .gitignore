@@ -12,6 +12,7 @@ fudge.iso
 fudge.tar
 report.xml
 src/demo/demo
+src/doom/doom
 src/gameboy/gameboy
 src/kernel/fudge
 src/pcx/pcxcmap
