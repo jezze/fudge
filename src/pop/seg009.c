@@ -1523,24 +1523,452 @@ enum userevents {
 short speaker_playing = 0;
 short digi_playing = 0;
 short midi_playing = 0;
-// fudge: no sound yet, every sound is missing and nothing is ever playing
+
+// The currently playing sound buffer for the PC speaker.
+speaker_type* current_speaker_sound;
+// Index for which note is currently playing.
+int speaker_note_index;
+// Tracks how long the last (partially played) speaker note has been playing (for the audio callback).
+int current_speaker_note_samples_already_emitted;
+
+void speaker_sound_stop(void) {
+	if (!speaker_playing) return;
+	SDL_LockAudio();
+	speaker_playing = 0;
+	current_speaker_sound = NULL;
+	speaker_note_index = 0;
+	current_speaker_note_samples_already_emitted = 0;
+	SDL_UnlockAudio();
+}
+
+// The current buffer, holds the resampled sound data.
+byte* digi_buffer = NULL;
+// The current position in digi_buffer.
+byte* digi_remaining_pos = NULL;
+// The remaining length.
+int digi_remaining_length = 0;
+
+// The properties of the audio device.
+SDL_AudioSpec* digi_audiospec = NULL;
+// The desired samplerate. Everything will be resampled to this.
+const int digi_samplerate = 44100;
+
+void stop_digi(void) {
+//	SDL_PauseAudio(1);
+	if (!digi_playing) return;
+	SDL_LockAudio();
+	digi_playing = 0;
+	/*
+//	if (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING) {
+		SDL_PauseAudio(1);
+		SDL_CloseAudio();
+//	}
+	if (digi_audiospec != NULL) {
+		free(digi_audiospec);
+		digi_audiospec = NULL;
+	}
+	*/
+	digi_buffer = NULL;
+	digi_remaining_length = 0;
+	digi_remaining_pos = NULL;
+	SDL_UnlockAudio();
+}
+
+// seg009:7214
 void stop_sounds() {
+	// stub
+	stop_digi();
+	stop_midi();
+	speaker_sound_stop();
 }
 
+short square_wave_state = 4000; // If the amplitude is too high, the speaker sounds will be really loud!
+// fudge: samples are counted in 16.16 fixed point instead of floats
+unsigned int square_wave_samples_since_last_flip;
+
+void generate_square_wave(byte* stream, int note_freq, int samples) {
+	int channels = digi_audiospec->channels;
+	unsigned int half_period_in_samples = ((unsigned int)digi_audiospec->freq << 15) / note_freq;
+
+	int samples_left = samples;
+	while (samples_left > 0) {
+		if (square_wave_samples_since_last_flip > half_period_in_samples) {
+			// Produce a square wave by flipping the signal.
+			square_wave_state = ~square_wave_state;
+			// Note(Falcury): not completely sure that this is the right way to prevent glitches in the sound...
+			// Because I can still hear some hiccups, e.g. in the music. Especially when switching between notes.
+			square_wave_samples_since_last_flip -= half_period_in_samples;
+		} else {
+			int samples_until_next_flip = (int)((half_period_in_samples - square_wave_samples_since_last_flip) >> 16);
+			++samples_until_next_flip; // round up.
+
+			int samples_to_emit = MIN(samples_until_next_flip, samples_left);
+			for (int i = 0; i < samples_to_emit * channels; ++i) {
+				*(short*)stream = square_wave_state;
+				stream += sizeof(short);
+			}
+			samples_left -= samples_to_emit;
+			square_wave_samples_since_last_flip += samples_to_emit << 16;
+		}
+	}
+}
+
+void speaker_callback(void *userdata, Uint8 *stream, int len) {
+	int output_channels = digi_audiospec->channels;
+	int bytes_per_sample = sizeof(short) * output_channels;
+	int samples_requested = len / bytes_per_sample;
+
+	if (current_speaker_sound == NULL) return;
+	word tempo = SDL_SwapLE16(current_speaker_sound->tempo);
+
+	int total_samples_left = samples_requested;
+	while (total_samples_left > 0) {
+		note_type* note = current_speaker_sound->notes + speaker_note_index;
+		if (SDL_SwapLE16(note->frequency) == 0x12 /*end*/) {
+			speaker_playing = 0;
+			current_speaker_sound = NULL;
+			speaker_note_index = 0;
+			SDL_Event event;
+			memset(&event, 0, sizeof(event));
+			event.type = SDL_USEREVENT;
+			event.user.code = userevent_SOUND;
+			SDL_PushEvent(&event);
+			return;
+		}
+
+		int note_length_in_samples = (note->length * digi_audiospec->freq) / tempo;
+		int note_samples_to_emit = MIN(note_length_in_samples - current_speaker_note_samples_already_emitted, total_samples_left);
+		total_samples_left -= note_samples_to_emit;
+		size_t copy_len = (size_t)note_samples_to_emit * bytes_per_sample;
+		if (SDL_SwapLE16(note->frequency) <= 0x01 /*rest*/) {
+			memset(stream, digi_audiospec->silence, copy_len);
+		} else {
+			generate_square_wave(stream, SDL_SwapLE16(note->frequency), note_samples_to_emit);
+		}
+		stream += copy_len;
+
+		int note_samples_emitted = current_speaker_note_samples_already_emitted + note_samples_to_emit;
+		if (note_samples_emitted < note_length_in_samples) {
+			current_speaker_note_samples_already_emitted += note_samples_to_emit;
+		} else {
+			++speaker_note_index;
+			current_speaker_note_samples_already_emitted = 0;
+		}
+	}
+}
+
+// seg009:7640
+void play_speaker_sound(sound_buffer_type* buffer) {
+	speaker_sound_stop();
+	stop_sounds();
+	current_speaker_sound = &buffer->speaker;
+	speaker_note_index = 0;
+	speaker_playing = 1;
+	SDL_PauseAudio(0);
+}
+
+void digi_callback(void *userdata, Uint8 *stream, int len) {
+	// Don't go over the end of either the input or the output buffer.
+	size_t copy_len = MIN(len, digi_remaining_length);
+	//printf("digi_callback(): copy_len = %d\n", copy_len);
+	//printf("digi_callback(): len = %d\n", len);
+	if (is_sound_on) {
+		// Copy the next part of the input of the output.
+		memcpy(stream, digi_remaining_pos, copy_len);
+		// In case the sound does not fill the buffer: fill the rest of the buffer with silence.
+		memset(stream + copy_len, digi_audiospec->silence, len - copy_len);
+	} else {
+		// If sound is off: Mute the sound but keep track of where we are.
+		memset(stream, digi_audiospec->silence, len);
+	}
+	// If the sound ended, push an event.
+	if (digi_playing && digi_remaining_length == 0) {
+		//printf("digi_callback(): sound ended\n");
+		SDL_Event event;
+		memset(&event, 0, sizeof(event));
+		event.type = SDL_USEREVENT;
+		event.user.code = userevent_SOUND;
+		digi_playing = 0;
+		SDL_PushEvent(&event);
+	}
+	// Advance the pointer.
+	digi_remaining_length -= copy_len;
+	digi_remaining_pos += copy_len;
+}
+
+void audio_callback(void* userdata, Uint8* stream_orig, int len_orig) {
+
+	Uint8* stream;
+	int len;
+#ifdef USE_FAST_FORWARD
+	if (audio_speed > 1) {
+		len = len_orig * audio_speed;
+		stream = malloc(len);
+	} else
+#endif
+	{
+		len = len_orig;
+		stream = stream_orig;
+	}
+
+	memset(stream, digi_audiospec->silence, len);
+	if (digi_playing) {
+		digi_callback(userdata, stream, len);
+	} else if (speaker_playing) {
+		speaker_callback(userdata, stream, len);
+	}
+	// Note: music sounds and digi sounds are allowed to play simultaneously (will be blended together)
+	// I.e., digi sounds and music will not cut each other short.
+	if (midi_playing) {
+		midi_callback(userdata, stream, len);
+	}
+
+#ifdef USE_FAST_FORWARD
+	if (audio_speed > 1) {
+
+#ifdef FAST_FORWARD_MUTE
+		memset(stream_orig, digi_audiospec->silence, len_orig);
+#else
+#ifdef FAST_FORWARD_RESAMPLE_SOUND
+		static SDL_AudioCVT cvt;
+		static bool cvt_initialized = false;
+		if (!cvt_initialized) {
+			SDL_BuildAudioCVT(&cvt,
+				digi_audiospec->format, digi_audiospec->channels, digi_audiospec->freq * audio_speed,
+				digi_audiospec->format, digi_audiospec->channels, digi_audiospec->freq);
+			cvt_initialized = true;
+		}
+		//realloc(stream, len * cvt.len_mult);
+		//cvt.buf = stream;
+		cvt.len = len;
+		cvt.buf = malloc(cvt.len * cvt.len_mult);
+		memcpy(cvt.buf, stream, cvt.len);
+		//printf("cvt.needed = %d\n", cvt.needed);
+		//printf("cvt.len_mult = %d\n", cvt.len_mult);
+		//printf("cvt.len_ratio = %lf\n", cvt.len_ratio);
+		SDL_ConvertAudio(&cvt);
+
+		memcpy(stream_orig, cvt.buf, len_orig);
+		free(cvt.buf);
+		cvt.buf = NULL;
+#else
+		// Hack: use the beginning of the buffer instead of resampling.
+		memcpy(stream_orig, stream, len_orig);
+#endif
+#endif
+
+		free(stream);
+	}
+#endif
+
+}
+
+int digi_unavailable = 0;
 void init_digi() {
+	if (digi_unavailable) return;
+	if (digi_audiospec != NULL) return;
+	// Open the audio device. Called once.
+	//printf("init_digi(): called\n");
+
+	SDL_AudioFormat desired_audioformat = AUDIO_S16SYS;
+
+	SDL_AudioSpec *desired;
+	desired = (SDL_AudioSpec *)malloc(sizeof(SDL_AudioSpec));
+	memset(desired, 0, sizeof(SDL_AudioSpec));
+	desired->freq = digi_samplerate; //buffer->digi.sample_rate;
+	desired->format = desired_audioformat;
+	desired->channels = 2;
+	desired->samples = 1024;
+	desired->callback = audio_callback;
+	desired->userdata = NULL;
+	if (SDL_OpenAudio(desired, NULL) != 0) {
+		sdlperror("init_digi: SDL_OpenAudio");
+		//quit(1);
+		digi_unavailable = 1;
+		return;
+	}
+	//SDL_PauseAudio(0);
+	digi_audiospec = desired;
 }
 
+const int sound_channel = 0;
+const int max_sound_id = 58;
+
+// fudge: the sound names only name OGG music, which is not supported
 void load_sound_names() {
 }
 
-sound_buffer_type* load_sound(int index) {
+char* sound_name(int index) {
 	return NULL;
 }
 
-void free_sound(sound_buffer_type* buffer) {
+sound_buffer_type* convert_digi_sound(sound_buffer_type* digi_buffer);
+
+sound_buffer_type* load_sound(int index) {
+	sound_buffer_type* result = NULL;
+	//printf("load_sound(%d)\n", index);
+	init_digi();
+	if (result == NULL) {
+		//printf("Trying to load from DAT\n");
+		result = (sound_buffer_type*) load_from_opendats_alloc(index + 10000, "bin", NULL, NULL);
+	}
+	if (result != NULL && (result->type & 7) == sound_digi) {
+		sound_buffer_type* converted = convert_digi_sound(result);
+		free(result);
+		result = converted;
+	}
+	if (result == NULL && !skip_normal_data_files) {
+		fprintf(stderr, "Failed to load sound %d '%s'\n", index, sound_name(index));
+	}
+	return result;
 }
 
+int wave_version = -1;
+
+typedef struct waveinfo_type {
+	int sample_rate, sample_size, sample_count;
+	byte* samples;
+} waveinfo_type;
+
+bool determine_wave_version(sound_buffer_type *buffer, waveinfo_type* waveinfo) {
+	int version = wave_version;
+	if (version == -1) {
+		// Determine the version of the wave data.
+		version = 0;
+		if (buffer->digi.sample_size == 8) version += 1;
+		if (buffer->digi_new.sample_size == 8) version += 2;
+		if (version == 1 || version == 2) wave_version = version;
+	}
+
+	switch (version) {
+		case 1: // 1.0 and 1.1
+			waveinfo->sample_rate = SDL_SwapLE16(buffer->digi.sample_rate);
+			waveinfo->sample_size = buffer->digi.sample_size;
+			waveinfo->sample_count = SDL_SwapLE16(buffer->digi.sample_count);
+			waveinfo->samples = buffer->digi.samples;
+			return true;
+		case 2: // 1.3 and 1.4 (and PoP2)
+			waveinfo->sample_rate = SDL_SwapLE16(buffer->digi_new.sample_rate);
+			waveinfo->sample_size = buffer->digi_new.sample_size;
+			waveinfo->sample_count = SDL_SwapLE16(buffer->digi_new.sample_count);
+			waveinfo->samples = buffer->digi_new.samples;
+			return true;
+		case 3: // ambiguous
+			printf("Warning: Ambiguous wave version.\n");
+			return false;
+		default: // case 0, unknown
+			printf("Warning: Can't determine wave version.\n");
+			return false;
+	}
+}
+
+sound_buffer_type* convert_digi_sound(sound_buffer_type* digi_buffer) {
+	init_digi();
+	if (digi_unavailable) return NULL;
+	waveinfo_type waveinfo;
+	if (false == determine_wave_version(digi_buffer, &waveinfo)) return NULL;
+
+	// fudge: the source position steps in 16.16 fixed point instead of floats
+	unsigned int step = ((unsigned int)waveinfo.sample_rate << 16) / digi_audiospec->freq;
+	unsigned int src_frame_0 = 0;
+	unsigned int fraction = 0;
+
+	unsigned int source_length = waveinfo.sample_count;
+	int expanded_frames = source_length * digi_audiospec->freq / waveinfo.sample_rate;
+	int expanded_length = expanded_frames * 2 * sizeof(short);
+	sound_buffer_type* converted_buffer = malloc(sizeof(sound_buffer_type) + expanded_length);
+
+	converted_buffer->type = sound_digi_converted;
+	converted_buffer->converted.length = expanded_length;
+
+	byte* source = waveinfo.samples;
+	//short* dest = converted_buffer->converted.samples;
+	short* dest = malloc(converted_buffer->converted.length);
+        converted_buffer->converted.samples = dest;
+
+	for (int i = 0; i < expanded_frames; ++i, fraction += step) {
+		src_frame_0 += fraction >> 16;
+		fraction &= 0xFFFF;
+
+		int sample_0 = (source[src_frame_0] | (source[src_frame_0] << 8)) - 32768;
+		short interpolated_sample;
+		if (src_frame_0 >= waveinfo.sample_count-1) {
+			interpolated_sample = (short)sample_0;
+		} else {
+			int src_frame_1 = src_frame_0 + 1;
+			int alpha = fraction >> 1;
+			int sample_1 = (source[src_frame_1] | (source[src_frame_1] << 8)) - 32768;
+			interpolated_sample = (short)((sample_0 * (32768 - alpha) + sample_1 * alpha) >> 15);
+		}
+		for (int channel = 0; channel < digi_audiospec->channels; ++channel) {
+			*dest++ = interpolated_sample;
+		}
+	}
+
+	return converted_buffer;
+}
+
+// seg009:74F0
+void play_digi_sound(sound_buffer_type* buffer) {
+	//if (!is_sound_on) return;
+	init_digi();
+	if (digi_unavailable) return;
+	stop_digi();
+//	stop_sounds();
+	//printf("play_digi_sound(): called\n");
+	if ((buffer->type & 7) != sound_digi_converted) {
+		printf("Tried to play unconverted digi sound.\n");
+		return;
+	}
+	SDL_LockAudio();
+	digi_buffer = (byte*) buffer->converted.samples;
+	digi_playing = 1;
+	digi_remaining_length = buffer->converted.length;
+	digi_remaining_pos = digi_buffer;
+	SDL_UnlockAudio();
+	SDL_PauseAudio(0);
+}
+
+void free_sound(sound_buffer_type* buffer) {
+	if (buffer == NULL) return;
+	// fudge: upstream leaks a converted sound's samples, which are allocated apart from it
+	if (buffer->type == sound_digi_converted) {
+		free(buffer->converted.samples);
+	}
+	free(buffer);
+}
+
+// seg009:7220
 void play_sound_from_buffer(sound_buffer_type* buffer) {
+
+#ifdef USE_REPLAY
+	if (replaying && skipping_replay) return;
+#endif
+
+	// stub
+	if (buffer == NULL) {
+		printf("Tried to play NULL sound.\n");
+		//quit(1);
+		return;
+	}
+	switch (buffer->type & 7) {
+		case sound_speaker:
+			play_speaker_sound(buffer);
+		break;
+		case sound_digi_converted:
+		case sound_digi:
+			play_digi_sound(buffer);
+		break;
+		case sound_midi:
+			play_midi_sound(buffer);
+		break;
+		case sound_ogg:
+		break;
+		default:
+			printf("Tried to play unimplemented sound type %d.\n", buffer->type);
+			quit(1);
+		break;
+	}
 }
 
 void turn_music_on_off(byte new_state) {
@@ -1557,7 +1985,7 @@ void turn_sound_on_off(byte new_state) {
 
 // seg009:7299
 int check_sound_playing() {
-	return 0;
+	return speaker_playing || digi_playing || midi_playing;
 }
 
 // fudge: the onscreen surface is drawn straight into the framebuffer, scaled by the glue

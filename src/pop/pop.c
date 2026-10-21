@@ -8,6 +8,8 @@
 #define SCREENHEIGHT                    200
 #define EVENTS                          64
 #define TICKRATE                        60
+#define AUDIOFRAMES                     800
+#define AUDIOCUSHION                    3
 #define COUNTSPERTICK                   20
 
 extern int g_argc;
@@ -31,6 +33,10 @@ static unsigned int fbheight;
 static unsigned int video;
 static unsigned int keyboard;
 static unsigned int timer;
+static unsigned int audio;
+static unsigned int audiopaused = 1;
+static SDL_AudioSpec *audiospec;
+static short audiobuffer[AUDIOFRAMES * 2];
 static unsigned int scaled[4096];
 static char *arguments[] = {"pop", 0};
 
@@ -229,10 +235,119 @@ static void onkeyrelease(struct message *message)
 
 }
 
+/* one tick of sound per timer tick, the game's mixer run as SDL's audio thread would, or silence while paused */
+static void sendaudio(void)
+{
+
+    unsigned int count = audiospec->freq / TICKRATE * 4;
+
+    buffer_clear(audiobuffer, count);
+
+    if (!audiopaused)
+        audiospec->callback(audiospec->userdata, (Uint8 *)audiobuffer, count);
+
+    channel_send(1, audio, EVENT_DATA, count, audiobuffer);
+
+}
+
 static void ontimertick(struct message *message)
 {
 
     ticks++;
+
+    if (audio)
+        sendaudio();
+
+}
+
+static unsigned int setaudioformat(unsigned int rate)
+{
+
+    struct event_audioconf audioconf;
+
+    audioconf.rate = rate;
+    audioconf.channels = 2;
+    audioconf.bits = 16;
+
+    return channel_send(1, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf);
+
+}
+
+/* the device plays the rate asked for, or 48000 Hz, which every driver takes; the game is told the rate in desired */
+int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
+{
+
+    unsigned int i;
+
+    audio = channel_lookup(option_getstring("audio-service"));
+
+    if (!audio || desired->channels != 2 || desired->format != AUDIO_S16SYS)
+    {
+
+        audio = 0;
+
+        return -1;
+
+    }
+
+    if (!setaudioformat(desired->freq))
+    {
+
+        if (!setaudioformat(48000))
+        {
+
+            audio = 0;
+
+            return -1;
+
+        }
+
+        desired->freq = 48000;
+
+    }
+
+    desired->silence = 0;
+    desired->samples = desired->freq / TICKRATE;
+    audiospec = desired;
+    audiopaused = 1;
+
+    for (i = 0; i < AUDIOCUSHION; i++)
+        sendaudio();
+
+    return 0;
+
+}
+
+void SDL_CloseAudio(void)
+{
+
+    audiopaused = 1;
+
+}
+
+void SDL_PauseAudio(int pause)
+{
+
+    audiopaused = pause;
+
+}
+
+/* the mixer only runs from the timer tick, between the game's own steps, so there is nothing to lock */
+void SDL_LockAudio(void)
+{
+
+}
+
+void SDL_UnlockAudio(void)
+{
+
+}
+
+/* the game only sends itself sound-ended events, which it ignores */
+int SDL_PushEvent(SDL_Event *event)
+{
+
+    return 1;
 
 }
 
@@ -484,6 +599,7 @@ void init(void)
     option_add("height", "768");
     option_add("bpp", "4");
     option_add("data", "root:data/pop/");
+    option_add("audio-service", "audio");
     option_add("keyboard-service", "keyboard");
     option_add("timer-service", "timer");
     option_add("video-service", "video");

@@ -29,6 +29,16 @@
 #define SDL_KEYDOWN                     0x300
 #define SDL_KEYUP                       0x301
 #define SDL_QUIT                        0x100
+#define SDL_USEREVENT                   0x8000
+#define AUDIO_U8                        0x0008
+#define AUDIO_S16LSB                    0x8010
+#define AUDIO_S16MSB                    0x9010
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define AUDIO_S16SYS                    AUDIO_S16MSB
+#else
+#define AUDIO_S16SYS                    AUDIO_S16LSB
+#endif
+#define SDL_memset                      memset
 #define KMOD_NONE                       0x0000
 #define KMOD_LSHIFT                     0x0001
 #define KMOD_RSHIFT                     0x0002
@@ -159,6 +169,8 @@ typedef unsigned int Uint32;
 typedef signed int Sint32;
 typedef int SDL_Scancode;
 typedef int SDL_TimerID;
+typedef Uint16 SDL_AudioFormat;
+typedef void (*SDL_AudioCallback)(void *userdata, Uint8 *stream, int len);
 typedef Uint32 (*SDL_TimerCallback)(Uint32 interval, void *param);
 typedef struct SDL_Window SDL_Window;
 typedef struct SDL_Renderer SDL_Renderer;
@@ -248,13 +260,38 @@ typedef struct SDL_KeyboardEvent
 
 } SDL_KeyboardEvent;
 
+typedef struct SDL_UserEvent
+{
+
+    Uint32 type;
+    int code;
+    void *data1;
+    void *data2;
+
+} SDL_UserEvent;
+
 typedef union SDL_Event
 {
 
     Uint32 type;
     SDL_KeyboardEvent key;
+    SDL_UserEvent user;
 
 } SDL_Event;
+
+typedef struct SDL_AudioSpec
+{
+
+    int freq;
+    SDL_AudioFormat format;
+    Uint8 channels;
+    Uint8 silence;
+    Uint16 samples;
+    Uint32 size;
+    SDL_AudioCallback callback;
+    void *userdata;
+
+} SDL_AudioSpec;
 
 SDL_Surface *SDL_CreateRGBSurface(Uint32 flags, int width, int height, int depth, Uint32 rmask, Uint32 gmask, Uint32 bmask, Uint32 amask);
 SDL_Surface *SDL_ConvertSurface(SDL_Surface *surface, const SDL_PixelFormat *format, Uint32 flags);
@@ -274,6 +311,12 @@ int SDL_FillRect(SDL_Surface *surface, const SDL_Rect *rect, Uint32 color);
 int SDL_BlitSurface(SDL_Surface *source, const SDL_Rect *sourcerect, SDL_Surface *target, SDL_Rect *targetrect);
 SDL_Surface *SDL_LoadPNG(const void *data, unsigned int count);
 int SDL_PollEvent(SDL_Event *event);
+int SDL_PushEvent(SDL_Event *event);
+int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained);
+void SDL_CloseAudio(void);
+void SDL_PauseAudio(int pause);
+void SDL_LockAudio(void);
+void SDL_UnlockAudio(void);
 void SDL_Delay(Uint32 ms);
 SDL_TimerID SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param);
 const Uint8 *SDL_GetKeyboardState(int *numkeys);

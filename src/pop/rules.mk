@@ -3,6 +3,8 @@ B:=\
 
 O:=\
     $(DIR_SRC)/pop/data.o \
+    $(DIR_SRC)/pop/midi.o \
+    $(DIR_SRC)/pop/opl3.o \
     $(DIR_SRC)/pop/options.o \
     $(DIR_SRC)/pop/pop.o \
     $(DIR_SRC)/pop/port.o \

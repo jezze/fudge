@@ -20,6 +20,7 @@ typedef void *jmp_buf[5];
 #define NULL                            ((void *)0)
 #define INT_MAX                         0x7FFFFFFF
 #define INT16_MIN                       (-32768)
+#define INT64_MAX                       0x7FFFFFFFFFFFFFFFLL
 #define SEEK_SET                        0
 #define SEEK_CUR                        1
 #define SEEK_END                        2
