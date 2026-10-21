@@ -2,11 +2,13 @@ CONFIG:=config
 KERNEL:=fudge
 RAMDISK_TYPE:=cpio
 RAMDISK:=$(KERNEL).$(RAMDISK_TYPE)
+RAMDISK_DATA:=alfi config font fudge.pcx gameboy giant.pcx help.txt html keys motd.txt sh tone.wav
 INIT=init
 ISO_TYPE:=iso
 ISO=$(KERNEL).$(ISO_TYPE)
 DIR_BUILD:=build
 DIR_BUILDBOOT:=$(DIR_BUILD)/boot
+DIR_BUILDINITRD:=$(DIR_BUILD)/initrd
 DIR_BUILDROOT:=$(DIR_BUILD)/root
 DIR_BUILDUEFI:=$(DIR_BUILD)/uefi
 DIR_INCLUDE:=include
@@ -126,6 +128,21 @@ $(DIR_BUILDBOOT): $(KERNEL) $(RAMDISK) | $(DIR_BUILD)
 	@mkdir -p $@/grub
 	$(if $(wildcard grub/$(LOADER).cfg),@cp -f grub/$(LOADER).cfg $@/grub/grub.cfg)
 
+$(DIR_BUILDINITRD): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
+	@echo BUILD INITRD $@
+	@mkdir -p $@
+	@mkdir -p $@/boot
+	@mkdir -p $@/lib
+	@cp $(LIB) $@/lib
+	@mkdir -p $@/bin
+	@cp $(BIN) $@/bin
+	@mkdir -p $@/data
+	@cp -r $(addprefix data/,$(RAMDISK_DATA)) $@/data
+	@cp data/config/modules-$(ARCH).mq $@/data/config/modules-arch.mq
+	@mkdir -p $@/kernel
+	@cp $(KMAP) $@/kernel
+	@cp $(KMOD) $@/kernel
+
 $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@echo BUILD ROOT $@
 	@mkdir -p $@
@@ -160,11 +177,11 @@ $(KERNEL): $(DIR_SRC)/kernel/$(KERNEL)
 	@echo KERNEL $@
 	@cp $^ $@
 
-$(KERNEL).tar: $(DIR_BUILDROOT)
+$(KERNEL).tar: $(DIR_BUILDINITRD)
 	@echo RAMDISK $@
 	@tar -cf $@ $^
 
-$(KERNEL).cpio: $(DIR_BUILDROOT)
+$(KERNEL).cpio: $(DIR_BUILDINITRD)
 	@echo RAMDISK $@
 	@find $^ -depth | cpio -o -H newc > $@
 

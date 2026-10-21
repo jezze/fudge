@@ -225,7 +225,7 @@ cmd_run() {
 
         case "${arch}" in
             x86)
-                cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/root/bin/init"
+                cmd="${cmd} -kernel fudge -initrd fudge.cpio,build/initrd/bin/init"
                 ;;
             x86_64)
                 error "qemu can not load a 64-bit kernel, boot from a disk or an ISO (-S, -d or -i)"
