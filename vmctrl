@@ -231,7 +231,7 @@ cmd_run() {
                 error "qemu can not load a 64-bit kernel, boot from a disk or an ISO (-S, -d or -i)"
                 ;;
             arm|m68k|riscv32|riscv64)
-                ramdisk=$(sed -n 's/^#define ARCH_RAMDISK_BASE *//p' src/kernel/${arch}/arch.h)
+                ramdisk=$(sed -n 's/^#define ARCH_RAMDISK_BASE *\(.*ARCH_RAMBASE + \)*\(0x[0-9A-F]*\).*/\2/p' src/kernel/${arch}/arch.h)
                 cmd="${cmd} -kernel fudge -device loader,file=fudge.cpio,addr=${ramdisk},force-raw=on"
                 ;;
         esac
