@@ -18,6 +18,8 @@
 #include "i_video.h"
 #include "i_joy.h"
 #include "lprintf.h"
+#include "i_main.h"
+#include "glue.h"
 
 #define EVENTS                          64
 #define RESOLUTIONS                     8
@@ -31,7 +33,7 @@ int desired_fullscreen;
 int render_vsync;
 int render_screen_multiply = 1;
 int process_priority;
-dboolean window_focused;
+dboolean window_focused = true;
 const char *sdl_video_window_pos;
 const char *screen_resolution;
 const char *screen_resolutions_list[RESOLUTIONS] = {"320x200", "640x400", NULL};
@@ -277,8 +279,14 @@ static void onmousescroll(struct message *message)
 
 }
 
+/* the messages already waiting are handled without sleeping, so a frame never has to wait on the timer for its input */
 void I_StartTic(void)
 {
+
+    if (!channel_drain(0))
+        I_SafeExit(0);
+
+    I_UpdateSound();
 
     if (mousex || mousey)
     {

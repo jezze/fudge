@@ -155,7 +155,7 @@ void I_UpdateSound(void)
     if (!audio)
         return;
 
-    now = SDL_GetTicks();
+    now = I_GetTimerMs();
 
     if (!started)
     {

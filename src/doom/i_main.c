@@ -22,6 +22,7 @@
 #define ARGUMENTS                       16
 #define ARGUMENTSIZE                    256
 #define TIMERID                         1
+#define CALIBRATETICKS                  12
 
 int realtic_clock_rate = 100;
 int endoom_mode;
@@ -33,6 +34,9 @@ static long long scale = 1 << 24;
 static unsigned int source;
 static unsigned int timer;
 static unsigned int timerhz = 60;
+static unsigned long long tscbase;
+static unsigned long long tscperms;
+static unsigned int msbase;
 static unsigned int closed;
 static char *arguments[ARGUMENTS];
 static char values[ARGUMENTSIZE];
@@ -103,8 +107,7 @@ void I_Init2(void)
 
 }
 
-/* the timer's counter is the clock, asked for whenever the game wants the time, so no ticks pile up in the mailbox */
-unsigned int SDL_GetTicks(void)
+static unsigned int getcounter(void)
 {
 
     struct event_timerinfo timerinfo;
@@ -115,7 +118,75 @@ unsigned int SDL_GetTicks(void)
     if (timerinfo.hz)
         timerhz = timerinfo.hz;
 
-    return (unsigned long long)timerinfo.counter * 1000 / timerhz;
+    return timerinfo.counter;
+
+}
+
+/* the timer's counter, asked for when needed so no ticks pile up in the mailbox; it moves in steps of the timer's hz */
+unsigned int I_GetTimerMs(void)
+{
+
+    return (unsigned long long)getcounter() * 1000 / timerhz;
+
+}
+
+static unsigned long long readtsc(void)
+{
+
+    unsigned int low;
+    unsigned int high;
+
+    __asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
+
+    return ((unsigned long long)high << 32) | low;
+
+}
+
+static unsigned int waitedge(void)
+{
+
+    unsigned int counter = getcounter();
+    unsigned int next;
+
+    while ((next = getcounter()) == counter);
+
+    return next;
+
+}
+
+/* the cpu's time stamp counter is measured against the timer over CALIBRATETICKS ticks, from one tick's edge to another's */
+static void calibrate(void)
+{
+
+    unsigned int counter0 = waitedge();
+    unsigned long long tsc0 = readtsc();
+    unsigned int counter1;
+    unsigned long long tsc1;
+
+    I_uSleep((unsigned long)CALIBRATETICKS * 1000000 / timerhz);
+
+    counter1 = waitedge();
+    tsc1 = readtsc();
+
+    if (counter1 > counter0)
+    {
+
+        tscbase = tsc0;
+        msbase = (unsigned long long)counter0 * 1000 / timerhz;
+        tscperms = (tsc1 - tsc0) * timerhz / ((unsigned long long)(counter1 - counter0) * 1000);
+
+    }
+
+}
+
+/* the game's clock: milliseconds from the time stamp counter once it is measured, so frames and interpolation are not held to the timer's steps */
+unsigned int SDL_GetTicks(void)
+{
+
+    if (!tscperms)
+        return I_GetTimerMs();
+
+    return msbase + (readtsc() - tscbase) / tscperms;
 
 }
 
@@ -292,6 +363,7 @@ static void onmain(struct message *message)
 
     }
 
+    calibrate();
     I_SetDataDir(option_getstring("data"));
 
     arguments[0] = "doom";
