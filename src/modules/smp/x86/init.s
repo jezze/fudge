@@ -5,8 +5,8 @@
 .set SMP_BASE32,                        0x8200
 .set SMP_KCODE,                         0x08
 .set SMP_KDATA,                         0x10
-.set SMP_DIRECTORY,                     0x00A00000
-.set SMP_STACKBASE,                     0x00602000
+.set SMP_DIRECTORY,                     0x00C00000
+.set SMP_STACKBASE,                     0x00802000
 
 .section .text
 
