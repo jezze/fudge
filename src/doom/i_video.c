@@ -24,6 +24,7 @@
 #define LINESIZE                        4096
 #define PALETTESIZE                     256
 #define TRANSLATIONS                    256
+#define BUTTONS                         4
 
 int use_fullscreen;
 int desired_fullscreen;
@@ -45,6 +46,11 @@ static unsigned int eventhead;
 static unsigned int eventtail;
 static unsigned int videotarget;
 static unsigned int keyboard;
+static unsigned int mouse;
+static int mousex;
+static int mousey;
+static int mousebuttons;
+static const int buttonbits[BUTTONS] = {0, 1, 4, 2};
 static unsigned int *framebuffer;
 static unsigned int fbwidth;
 static unsigned int fbheight;
@@ -52,7 +58,11 @@ static unsigned int *colours;
 static unsigned int npalettes;
 static int cachedgamma = -1;
 static int newpal;
-static unsigned int line[LINESIZE];
+static unsigned int columns[LINESIZE];
+static unsigned int outwidth;
+static unsigned int outheight;
+static unsigned int outx;
+static unsigned int outy;
 
 static unsigned short translations[TRANSLATIONS] = {
     [0x01] = KEYD_ESCAPE,
@@ -156,19 +166,27 @@ static unsigned short translations[TRANSLATIONS] = {
     [0x80 + 0x53] = KEYD_DEL
 };
 
-static void push(evtype_t type, int key)
+static void post(evtype_t type, int data1, int data2, int data3)
 {
 
     unsigned int next = (eventhead + 1) % EVENTS;
 
-    if (!key || next == eventtail)
+    if (next == eventtail)
         return;
 
     events[eventhead].type = type;
-    events[eventhead].data1 = key;
-    events[eventhead].data2 = 0;
-    events[eventhead].data3 = 0;
+    events[eventhead].data1 = data1;
+    events[eventhead].data2 = data2;
+    events[eventhead].data3 = data3;
     eventhead = next;
+
+}
+
+static void push(evtype_t type, int key)
+{
+
+    if (key)
+        post(type, key, 0, 0);
 
 }
 
@@ -202,8 +220,75 @@ static void onkeyrelease(struct message *message)
 
 }
 
+/* moves are summed and sent once a tic, as upstream's sdl events would arrive; buttons go as upstream maps sdl's: left 1, middle 2, right 4 */
+static void onmousemove(struct message *message)
+{
+
+    struct event_mousemove *mousemove = message->data;
+
+    mousex += mousemove->relx;
+    mousey += mousemove->rely;
+
+}
+
+static void onmousepress(struct message *message)
+{
+
+    struct event_mousepress *mousepress = message->data;
+
+    if (mousepress->button < BUTTONS)
+    {
+
+        mousebuttons |= buttonbits[mousepress->button];
+
+        post(ev_mouse, mousebuttons, 0, 0);
+
+    }
+
+}
+
+static void onmouserelease(struct message *message)
+{
+
+    struct event_mouserelease *mouserelease = message->data;
+
+    if (mouserelease->button < BUTTONS)
+    {
+
+        mousebuttons &= ~buttonbits[mouserelease->button];
+
+        post(ev_mouse, mousebuttons, 0, 0);
+
+    }
+
+}
+
+static void onmousescroll(struct message *message)
+{
+
+    struct event_mousescroll *mousescroll = message->data;
+    int key = (mousescroll->relz < 0) ? KEYD_MWHEELUP : KEYD_MWHEELDOWN;
+
+    if (!mousescroll->relz)
+        return;
+
+    push(ev_keydown, key);
+    push(ev_keyup, key);
+
+}
+
 void I_StartTic(void)
 {
+
+    if (mousex || mousey)
+    {
+
+        post(ev_mouse, mousebuttons, mousex << 4, -mousey << 4);
+
+        mousex = 0;
+        mousey = 0;
+
+    }
 
     while (eventtail != eventhead)
     {
@@ -268,22 +353,60 @@ void I_UpdateNoBlit(void)
 
 }
 
-/* the game draws 8-bit pixels, shown at the largest whole scale that fits, centered */
+/* the largest size of the screen's shape that fits, centered: 320x200 and 640x400 shown 4:3 as upstream's SetRatio takes them, other sizes with square pixels */
+static void setscale(void)
+{
+
+    unsigned int aspectw = SCREENWIDTH;
+    unsigned int aspecth = SCREENHEIGHT;
+    unsigned int i;
+
+    if ((SCREENWIDTH == 320 && SCREENHEIGHT == 200) || (SCREENWIDTH == 640 && SCREENHEIGHT == 400))
+    {
+
+        aspectw = 4;
+        aspecth = 3;
+
+    }
+
+    if (fbwidth * aspecth <= fbheight * aspectw)
+    {
+
+        outwidth = fbwidth;
+        outheight = fbwidth * aspecth / aspectw;
+
+    }
+
+    else
+    {
+
+        outwidth = fbheight * aspectw / aspecth;
+        outheight = fbheight;
+
+    }
+
+    if (outwidth > LINESIZE)
+        outwidth = LINESIZE;
+
+    outx = (fbwidth - outwidth) / 2;
+    outy = (fbheight - outheight) / 2;
+
+    for (i = 0; i < outwidth; i++)
+        columns[i] = i * SCREENWIDTH / outwidth;
+
+}
+
+/* each row of the screen is converted once and copied to every line it covers */
 void I_FinishUpdate(void)
 {
 
-    unsigned int scalew = fbwidth / SCREENWIDTH;
-    unsigned int scaleh = fbheight / SCREENHEIGHT;
-    unsigned int scale = (scalew < scaleh) ? scalew : scaleh;
-    unsigned int totw = SCREENWIDTH * scale;
-    unsigned int toth = SCREENHEIGHT * scale;
-    unsigned int offx = (fbwidth - totw) / 2;
-    unsigned int offy = (fbheight - toth) / 2;
     struct event_videoflush videoflush;
     unsigned int *palette;
-    int y;
+    unsigned int *previous = 0;
+    int lastrow = -1;
+    unsigned int y;
 
-    if (!framebuffer || !scale || totw > LINESIZE)
+    if (!framebuffer || !outwidth)
         return;
 
     if (cachedgamma != usegamma)
@@ -291,25 +414,39 @@ void I_FinishUpdate(void)
 
     palette = colours + PALETTESIZE * (((unsigned int)newpal < npalettes) ? newpal : 0);
 
-    for (y = 0; y < SCREENHEIGHT; y++)
+    for (y = 0; y < outheight; y++)
     {
 
-        byte *row = screens[0].data + y * screens[0].byte_pitch;
-        unsigned int x;
-        unsigned int i;
+        int row = y * SCREENHEIGHT / outheight;
+        unsigned int *line = framebuffer + (outy + y) * fbwidth + outx;
 
-        for (x = 0; x < totw; x++)
-            line[x] = palette[row[x / scale]];
+        if (row == lastrow)
+        {
 
-        for (i = 0; i < scale; i++)
-            buffer_copy(framebuffer + (offy + y * scale + i) * fbwidth + offx, line, totw * 4);
+            buffer_copy(line, previous, outwidth * 4);
+
+        }
+
+        else
+        {
+
+            byte *source = screens[0].data + row * screens[0].byte_pitch;
+            unsigned int x;
+
+            for (x = 0; x < outwidth; x++)
+                line[x] = palette[source[columns[x]]];
+
+        }
+
+        previous = line;
+        lastrow = row;
 
     }
 
-    videoflush.x = offx;
-    videoflush.y = offy;
-    videoflush.width = totw;
-    videoflush.height = toth;
+    videoflush.x = outx;
+    videoflush.y = outy;
+    videoflush.width = outwidth;
+    videoflush.height = outheight;
 
     channel_send(0, videotarget, EVENT_VIDEOFLUSH, sizeof (struct event_videoflush), &videoflush);
 
@@ -352,8 +489,8 @@ void I_InitScreenResolution(void)
 
     int i;
 
-    desired_screenwidth = option_getdecimal("renderwidth");
-    desired_screenheight = option_getdecimal("renderheight");
+    desired_screenwidth = BETWEEN(320, LINESIZE, option_getdecimal("renderwidth"));
+    desired_screenheight = BETWEEN(200, LINESIZE, option_getdecimal("renderheight"));
 
     V_InitMode(VID_MODE8);
 
@@ -401,6 +538,7 @@ void I_UpdateVideoMode(void)
     R_ExecuteSetViewSize();
     V_SetPalette(0);
     loadpalettes();
+    setscale();
     ST_SetResolution();
     AM_SetResolution();
 
@@ -411,6 +549,9 @@ static void shutdowngraphics(void)
 
     if (keyboard)
         channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+
+    if (mouse)
+        channel_send(0, mouse, EVENT_UNLINK, 0, 0);
 
 }
 
@@ -435,6 +576,19 @@ void I_InitGraphics(void)
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
+
+    mouse = channel_lookup(option_getstring("mouse-service"));
+
+    if (mouse)
+    {
+
+        channel_bind(EVENT_MOUSEMOVE, onmousemove);
+        channel_bind(EVENT_MOUSEPRESS, onmousepress);
+        channel_bind(EVENT_MOUSERELEASE, onmouserelease);
+        channel_bind(EVENT_MOUSESCROLL, onmousescroll);
+        channel_send(0, mouse, EVENT_LINK, 0, 0);
+
+    }
 
 }
 

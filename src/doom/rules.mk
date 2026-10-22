@@ -8,6 +8,7 @@ O:=\
     $(DIR_SRC)/doom/d_deh.o \
     $(DIR_SRC)/doom/d_items.o \
     $(DIR_SRC)/doom/d_main.o \
+    $(DIR_SRC)/doom/dbopl.o \
     $(DIR_SRC)/doom/doomdef.o \
     $(DIR_SRC)/doom/doomstat.o \
     $(DIR_SRC)/doom/dstrings.o \
@@ -33,7 +34,11 @@ O:=\
     $(DIR_SRC)/doom/m_random.o \
     $(DIR_SRC)/doom/md5.o \
     $(DIR_SRC)/doom/memio.o \
+    $(DIR_SRC)/doom/midifile.o \
     $(DIR_SRC)/doom/mus2mid.o \
+    $(DIR_SRC)/doom/opl.o \
+    $(DIR_SRC)/doom/opl_queue.o \
+    $(DIR_SRC)/doom/oplplayer.o \
     $(DIR_SRC)/doom/p_ceilng.o \
     $(DIR_SRC)/doom/p_checksum.o \
     $(DIR_SRC)/doom/p_doors.o \
@@ -88,7 +93,7 @@ L:=\
     $(DIR_LIB)/fudge/fudge.a \
     $(DIR_LIB)/hash/hash.a \
 
-DOOM_WARNINGS:=-Wno-misleading-indentation -Wno-pointer-sign -Wno-switch -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-stringop-overflow -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
+DOOM_WARNINGS:=-Wno-misleading-indentation -Wno-pointer-sign -Wno-switch -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-value -Wno-unused-function -Wno-stringop-overflow -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast -Wno-missing-braces -Wno-format
 
 $(DIR_SRC)/doom/%.o: PP_FLAGS:=$(filter-out -std=c89 -pedantic, $(PP_FLAGS)) -std=c99 -DHAVE_CONFIG_H
 $(DIR_SRC)/doom/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic $(CC_FLAGS_FLOAT), $(CC_FLAGS)) -std=c99 -fcommon $(DOOM_WARNINGS)

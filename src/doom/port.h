@@ -136,6 +136,7 @@ char *getenv(const char *name);
 int system(const char *command);
 int atexit(void (*function)(void));
 void exit(int status) __attribute__((noreturn));
+void abort(void) __attribute__((noreturn));
 int printf(const char *fmt, ...);
 int fprintf(FILE *file, const char *fmt, ...);
 int sprintf(char *out, const char *fmt, ...);

@@ -126,6 +126,8 @@ void I_uSleep(unsigned long usecs)
     struct event_timerrequest timerrequest;
     struct message message;
 
+    I_UpdateSound();
+
     timerrequest.id = TIMERID;
     timerrequest.ms = (usecs < 1000) ? 1 : usecs / 1000;
     timerrequest.repeat = 0;
@@ -187,6 +189,13 @@ void exit(int status)
     call_despawn((status) ? EXIT_STATUS_FAILED : EXIT_STATUS_NORMAL);
 
     for (;;);
+
+}
+
+void abort(void)
+{
+
+    exit(1);
 
 }
 
@@ -315,9 +324,11 @@ void init(void)
     option_add("skill", "");
     option_add("width", "1024");
     option_add("height", "768");
-    option_add("renderwidth", "320");
-    option_add("renderheight", "200");
+    option_add("renderwidth", "640");
+    option_add("renderheight", "400");
+    option_add("audio-service", "audio");
     option_add("keyboard-service", "keyboard");
+    option_add("mouse-service", "mouse");
     option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
