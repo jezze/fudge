@@ -193,12 +193,8 @@ static unsigned int pick(unsigned int itask, void *stack)
     {
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
-        unsigned int status = (inode) ? kernel_pick(inode, args->message) : MESSAGE_FAILED;
 
-        if (status == MESSAGE_RETRY && (args->flags & MESSAGE_FLAG_BLOCK))
-            kernel_signal(itask, TASK_SIGNAL_BLOCK);
-
-        return status;
+        return (inode) ? kernel_pick(inode, args->message, args->flags) : MESSAGE_FAILED;
 
     }
 

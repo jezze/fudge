@@ -82,7 +82,7 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
 }
 
-static unsigned int operands_pick(unsigned int source, struct message *message)
+static unsigned int operands_pick(unsigned int source, struct message *message, unsigned int flags)
 {
 
     struct resource *resource = pool_getnoderesource(source);
@@ -93,7 +93,16 @@ static unsigned int operands_pick(unsigned int source, struct message *message)
         struct mailbox *mailbox = resource->data;
 
         if (mailbox)
-            return pick(mailbox, message);
+        {
+
+            unsigned int status = pick(mailbox, message);
+
+            if (status == MESSAGE_RETRY && (flags & MESSAGE_FLAG_BLOCK))
+                kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
+
+            return status;
+
+        }
 
     }
 
