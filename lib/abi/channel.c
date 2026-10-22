@@ -205,6 +205,36 @@ unsigned int channel_process(unsigned int ichannel)
 
 }
 
+unsigned int channel_drain(unsigned int ichannel)
+{
+
+    struct message message;
+
+    while (ichannel || state != CHANNEL_STATE_CLOSED)
+    {
+
+        switch (call_pick(ichannel, &message, 0))
+        {
+
+        case MESSAGE_OK:
+            dispatch(&message);
+
+            break;
+
+        case MESSAGE_RETRY:
+            return 1;
+
+        default:
+            return 0;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
 void channel_hold(unsigned int ichannel)
 {
 
