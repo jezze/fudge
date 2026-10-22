@@ -21,6 +21,9 @@ static SDL_Event events[EVENTS];
 static unsigned int eventhead;
 static unsigned int eventtail;
 static unsigned int ticks;
+static unsigned int counterbase;
+static unsigned int counting;
+static unsigned int audioticks;
 static unsigned int modifiers;
 static unsigned int closed;
 static Uint8 keystate[SDL_NUM_SCANCODES];
@@ -250,13 +253,38 @@ static void sendaudio(void)
 
 }
 
+/* the clock is the timer's counter, so ticks dropped while the game was busy still count; sound is kept AUDIOCUSHION ticks ahead of it, and what a stall left unsent is skipped */
 static void ontimertick(struct message *message)
 {
 
-    ticks++;
+    struct event_timertick *timertick = message->data;
+
+    if (!counting)
+    {
+
+        counterbase = timertick->counter - ticks;
+        counting = 1;
+
+    }
+
+    ticks = timertick->counter - counterbase;
 
     if (audio)
-        sendaudio();
+    {
+
+        if (audioticks < ticks)
+            audioticks = ticks;
+
+        while (audioticks < ticks + AUDIOCUSHION)
+        {
+
+            sendaudio();
+
+            audioticks++;
+
+        }
+
+    }
 
 }
 
@@ -314,6 +342,8 @@ int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
     for (i = 0; i < AUDIOCUSHION; i++)
         sendaudio();
 
+    audioticks = ticks + AUDIOCUSHION;
+
     return 0;
 
 }
@@ -351,8 +381,12 @@ int SDL_PushEvent(SDL_Event *event)
 
 }
 
+/* the messages already waiting are taken first, without blocking, so input and ticks never wait in the mailbox for the next delay */
 int SDL_PollEvent(SDL_Event *event)
 {
+
+    if (!closed && !channel_drain(0))
+        closed = 1;
 
     if (closed)
     {
@@ -469,12 +503,15 @@ void glue_present(SDL_Surface *surface)
         unsigned int x;
         unsigned int i;
 
-        for (x = 0; x < totw; x++)
+        for (x = 0; x < SCREENWIDTH; x++)
         {
 
-            unsigned char *p = row + (x / scale) * 3;
+            unsigned char *p = row + x * 3;
+            unsigned int colour = (p[0] << 16) | (p[1] << 8) | p[2];
+            unsigned int *out = scaled + x * scale;
 
-            scaled[x] = (p[0] << 16) | (p[1] << 8) | p[2];
+            for (i = 0; i < scale; i++)
+                out[i] = colour;
 
         }
 
