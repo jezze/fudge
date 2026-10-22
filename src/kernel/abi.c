@@ -187,14 +187,18 @@ static unsigned int despawn(unsigned int itask, void *stack)
 static unsigned int pick(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; struct message *message;} *args = stack;
+    struct {void *caller; unsigned int ichannel; struct message *message; unsigned int flags;} *args = stack;
 
     if (args->message && checkargs(args->message, sizeof (struct message)))
     {
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
+        unsigned int status = (inode) ? kernel_pick(inode, args->message) : MESSAGE_FAILED;
 
-        return (inode) ? kernel_pick(inode, args->message) : MESSAGE_FAILED;
+        if (status == MESSAGE_RETRY && (args->flags & MESSAGE_FLAG_BLOCK))
+            kernel_signal(itask, TASK_SIGNAL_BLOCK);
+
+        return status;
 
     }
 

@@ -58,7 +58,7 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
     while (ichannel || state != CHANNEL_STATE_CLOSED)
     {
 
-        unsigned int status = call_pick(ichannel, message);
+        unsigned int status = call_pick(ichannel, message, MESSAGE_FLAG_BLOCK);
 
         switch (status)
         {

@@ -93,23 +93,7 @@ static unsigned int operands_pick(unsigned int source, struct message *message)
         struct mailbox *mailbox = resource->data;
 
         if (mailbox)
-        {
-
-            unsigned int status = pick(mailbox, message);
-
-            switch (status)
-            {
-
-            case MESSAGE_RETRY:
-                kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
-
-                break;
-
-            }
-
-            return status;
-
-        }
+            return pick(mailbox, message);
 
     }
 

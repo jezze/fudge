@@ -59,6 +59,7 @@ call_pick:
     addi sp, sp, -CALL_FRAME
     sw a0, 4(sp)
     sw a1, 8(sp)
+    sw a2, 12(sp)
     callindex CALL_INDEX_PICK
 
 .global call_place

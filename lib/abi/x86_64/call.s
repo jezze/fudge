@@ -60,6 +60,7 @@ call_pick:
     subq $CALL_FRAME, %rsp
     movl %edi, 8(%rsp)
     movq %rsi, 16(%rsp)
+    movl %edx, 24(%rsp)
     callindex CALL_INDEX_PICK
 
 .global call_place
