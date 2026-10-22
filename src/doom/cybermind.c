@@ -31,22 +31,8 @@
  *-----------------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <direct.h>
-#include <winreg.h>
-#endif
-#ifdef GL_DOOM
-#include <SDL_opengl.h>
-#endif
 #include "port.h"
-#ifdef _WIN32
-#include <SDL_syswm.h>
-#endif
 
 #include "hu_lib.h"
 
@@ -73,10 +59,6 @@
 #include "r_sky.h"
 #include "am_map.h"
 #include "hu_tracers.h"
-#ifdef GL_DOOM
-#include "gl_struct.h"
-#include "gl_intern.h"
-#endif
 #include "g_game.h"
 #include "r_demo.h"
 #include "d_deh.h"

@@ -35,9 +35,7 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include "port.h"
 
@@ -65,9 +63,6 @@
 #include "r_demo.h"
 #include "r_fps.h"
 #include "e6y.h"//e6y
-#ifdef _WIN32
-#include "e6y_launcher.h"
-#endif
 
 extern patchnum_t hu_font[HU_FONTSIZE];
 extern dboolean  message_dontfuckwithme;
@@ -2386,9 +2381,6 @@ setup_menu_t keys_settings4[] =  // Key Binding screen strings
   {"CLEAR MARKS",S_KEY       ,m_map ,KB_X,KB_Y+ 9*8,{&key_map_clear}},
   {"FULL/ZOOM"  ,S_KEY       ,m_map ,KB_X,KB_Y+10*8,{&key_map_gobig}},
   {"GRID"       ,S_KEY       ,m_map ,KB_X,KB_Y+11*8,{&key_map_grid}},
-#ifdef GL_DOOM
-  {"TEXTURED"   ,S_KEY       ,m_map ,KB_X,KB_Y+12*8,{&key_map_textured}},
-#endif
 
   {"<- PREV" ,S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings3}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings5}},
@@ -2433,9 +2425,6 @@ setup_menu_t keys_settings6[] =  // Key Binding screen strings
   {"MISC"                 ,S_SKIP|S_TITLE,m_null,KB_X,KB_Y+10*8},
   {"RESTART CURRENT MAP"  ,S_KEY     ,m_scrn,KB_X,KB_Y+ 11*8,{&key_level_restart}},
   {"NEXT LEVEL"           ,S_KEY     ,m_scrn,KB_X,KB_Y+ 12*8,{&key_nextlevel}},
-#ifdef GL_DOOM
-  {"Show Alive Monsters"  ,S_KEY     ,m_scrn,KB_X,KB_Y+13*8,{&key_showalive}},
-#endif
 
   {"<- PREV",S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+20*8, {keys_settings5}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+20*8, {keys_settings7}},
@@ -2771,14 +2760,6 @@ setup_menu_t auto_settings1[] =  // 1st AutoMap Settings screen
   {"Scroll / Zoom speed  (1..32)",            S_NUM,  m_null,AU_X,AU_Y+5*8, {"map_scroll_speed"}},
   {"Use mouse wheel for zooming",             S_YESNO,m_null,AU_X,AU_Y+6*8, {"map_wheel_zoom"}},
   {"Apply multisampling",                     S_YESNO,m_null,AU_X,AU_Y+7*8, {"map_use_multisamling"}, 0, 0, M_ChangeMapMultisamling},
-#ifdef GL_DOOM
-  {"Enable textured display",                 S_YESNO,m_null,AU_X,AU_Y+8*8, {"map_textured"}, 0, 0, M_ChangeMapTextured},
-  {"Things appearance",                       S_CHOICE,m_null,AU_X,AU_Y+9*8, {"map_things_appearance"}, 0, 0, NULL, map_things_appearance_list},
-  {"Translucency percentage",                 S_SKIP|S_TITLE,m_null,AU_X,AU_Y+10*8},
-  {"Textured automap",                        S_NUM,  m_null,AU_X,AU_Y+11*8, {"map_textured_trans"}},
-  {"Textured automap in overlay mode",        S_NUM,  m_null,AU_X,AU_Y+12*8, {"map_textured_overlay_trans"}},
-  {"Lines in overlay mode",                   S_NUM,  m_null,AU_X,AU_Y+13*8, {"map_lines_overlay_trans"}},
-#endif
 
   // Button for resetting to defaults
   {0,S_RESET,m_null,X_BUTTON,Y_BUTTON},
@@ -3162,9 +3143,6 @@ setup_menu_t gen_settings2[] = { // General Settings screen2
   {"Default compatibility level",      S_CHOICE,        m_null, G_X, G_Y+15*8, {"default_compatibility_level"}, 0, 0, NULL, &gen_compstrings[1]},
   {"Show ENDOOM screen",               S_YESNO,         m_null, G_X, G_Y+16*8, {"showendoom"}},
   {"Fullscreen menu background",       S_YESNO, m_null, G_X, G_Y + 17*8, {"menu_background"}},
-#ifdef USE_WINDOWS_LAUNCHER
-  {"Use In-Game Launcher",             S_CHOICE,        m_null, G_X, G_Y+ 18*8, {"launcher_enable"}, 0, 0, NULL, launcher_enable_states},
-#endif
   { "Alternative kills counter",       S_YESNO,         m_null, G_X, G_Y + 19 * 8,{ "alternative_kills_counter" } },
 
 
@@ -3227,20 +3205,6 @@ setup_menu_t gen_settings4[] = { // General Settings screen3
 setup_menu_t gen_settings5[] = { // General Settings screen3
   {"Software Options",               S_SKIP|S_TITLE, m_null, G_X, G_Y+1*8},
   {"Screen Multiple Factor (1-None)", S_NUM,m_null,G_X,G_Y+2*8, {"render_screen_multiply"}, 0, 0, M_ChangeScreenMultipleFactor},
-#ifdef GL_DOOM
-  {"OpenGL Options",             S_SKIP|S_TITLE,m_null,G_X,G_Y+5*8},
-  {"Multisampling (0-None)",    S_NUM|S_PRGWARN|S_CANT_GL_ARB_MULTISAMPLEFACTOR,m_null,G_X,G_Y+6*8, {"render_multisampling"}, 0, 0, M_ChangeMultiSample},
-  {"Field Of View",             S_NUM,    m_null, G_X, G_Y+ 7*8, {"render_fov"}, 0, 0, M_ChangeFOV},
-  {"Sector Light Mode",         S_CHOICE, m_null, G_X, G_Y+ 8*8, {"gl_lightmode"}, 0, 0, M_ChangeLightMode, gl_lightmodes},
-  {"Allow Fog",                 S_YESNO,  m_null, G_X, G_Y+ 9*8, {"gl_fog"}, 0, 0, M_ChangeAllowFog},
-  {"Simple Shadows",            S_YESNO,  m_null, G_X, G_Y+10*8, {"gl_shadows"}},
-
-  {"Paper Items",               S_YESNO,  m_null, G_X, G_Y+12*8, {"render_paperitems"}},
-  {"Smooth sprite edges",       S_YESNO,  m_null, G_X, G_Y+13*8, {"gl_sprite_blend"}},
-  {"Adjust Sprite Clipping",    S_CHOICE, m_null, G_X, G_Y+14*8, {"gl_spriteclip"}, 0, 0, M_ChangeSpriteClip, gl_spriteclipmodes},
-  {"Item out of Floor offset",  S_NUM,    m_null, G_X, G_Y+15*8, {"gl_sprite_offset"}, 0, 0, M_ChangeSpriteClip},
-  {"Health Bar Above Monsters", S_YESNO,  m_null, G_X, G_Y+16*8, {"health_bar"}},
-#endif
 
   {"<- PREV",S_SKIP|S_PREV, m_null,KB_PREV, KB_Y+21*8, {gen_settings4}},
   {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+21*8, {gen_settings6}},
@@ -3282,9 +3246,6 @@ setup_menu_t gen_settings7[] =
   {"ALLOW VERTICAL AIMING"             ,S_YESNO     ,m_null,G_X2,G_Y+7*8, {"comperr_freeaim"}},
 
   {"<- PREV",S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+21*8, {gen_settings6}},
-#ifdef GL_DOOM
-  {"NEXT ->",S_SKIP|S_NEXT,m_null,KB_NEXT,KB_Y+21*8, {gen_settings8}},
-#endif
   {0,S_SKIP|S_END,m_null}
 };
 
@@ -3295,27 +3256,6 @@ static const char *gltexfilters_anisotropics[] =
   {"Off", "2x", "4x", "8x", "16x", NULL};
 
 setup_menu_t gen_settings8[] = { // General Settings screen4
-#ifdef GL_DOOM
-  {"Texture Options",  S_SKIP|S_TITLE,m_null,G_X,G_Y+ 1*8},
-  {"Texture Filter Mode",        S_CHOICE, m_null, G_X, G_Y+2 *8, {"gl_texture_filter"}, 0, 0, M_ChangeTextureParams, gltexfilters},
-  {"Sprite Filter Mode",        S_CHOICE, m_null, G_X, G_Y+3 *8, {"gl_sprite_filter"}, 0, 0, M_ChangeTextureParams, gltexfilters},
-  {"Patch Filter Mode",          S_CHOICE, m_null, G_X, G_Y+4 *8, {"gl_patch_filter"}, 0, 0, M_ChangeTextureParams, gltexfilters},
-  {"Anisotropic filter",         S_CHOICE, m_null, G_X, G_Y+5 *8, {"gl_texture_filter_anisotropic"}, 0, 0, M_ChangeTextureParams, gltexfilters_anisotropics},
-  {"Texture format",             S_CHOICE, m_null, G_X, G_Y+6 *8, {"gl_tex_format_string"}, 0, 0, M_ChangeTextureParams, gltexformats},
-
-  {"Enable Colormaps",           S_YESNO, m_null, G_X,G_Y+ 8*8, {"gl_boom_colormaps"}, 0, 0, M_ChangeAllowBoomColormaps},
-  {"Enable Internal Hi-Res",     S_YESNO, m_null, G_X,G_Y+ 9*8, {"gl_texture_internal_hires"}, 0, 0, M_ChangeTextureUseHires},
-  {"Enable External Hi-Res",     S_YESNO, m_null, G_X,G_Y+10*8, {"gl_texture_external_hires"}, 0, 0, M_ChangeTextureUseHires},
-  {"Override PWAD's graphics with Hi-Res" ,S_YESNO|S_PRGWARN,m_null,G_X,G_Y+11*8, {"gl_hires_override_pwads"}, 0, 0, M_ChangeTextureUseHires},
-
-  {"Enable High Quality Resize", S_YESNO,  m_null, G_X, G_Y+13*8, {"gl_texture_hqresize"}, 0, 0, M_ChangeTextureHQResize},
-  {"Resize textures",            S_CHOICE, m_null, G_X, G_Y+14*8, {"gl_texture_hqresize_textures"}, 0, 0, M_ChangeTextureHQResize, gl_hqresizemodes},
-  {"Resize sprites",             S_CHOICE, m_null, G_X, G_Y+15*8, {"gl_texture_hqresize_sprites"}, 0, 0, M_ChangeTextureHQResize, gl_hqresizemodes},
-  {"Resize patches",             S_CHOICE, m_null, G_X, G_Y+16*8, {"gl_texture_hqresize_patches"}, 0, 0, M_ChangeTextureHQResize, gl_hqresizemodes},
-
-  {"Allow Detail Textures",      S_YESNO,  m_null, G_X, G_Y+18*8, {"gl_allow_detail_textures"}, 0, 0, M_ChangeUseDetail},
-  {"Blend Animations",           S_YESNO,  m_null, G_X, G_Y+19*8, {"gl_blend_animations"}},
-#endif //GL_DOOM
 
   {"<- PREV",S_SKIP|S_PREV,m_null,KB_PREV,KB_Y+21*8, {gen_settings7}},
   {0,S_SKIP|S_END,m_null}
@@ -3352,13 +3292,6 @@ void M_ChangeDemoSmoothTurns(void)
 
 void M_ChangeTextureParams(void)
 {
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    gld_InitTextureParams();
-    gld_FlushTextures();
-  }
-#endif
 }
 
 // Setting up for the General screen. Turn on flags, set pointers,
@@ -4660,20 +4593,6 @@ dboolean M_Responder (event_t* ev) {
     if (ch == key_gamma)       // gamma toggle
       {
 //e6y
-#ifdef GL_DOOM
-        if (V_GetMode() == VID_MODEGL && gl_hardware_gamma)
-        {
-          static char str[200];
-          useglgamma++;
-          if (useglgamma > MAX_GLGAMMA)
-            useglgamma = 0;
-          sprintf(str, "Gamma correction level %d", useglgamma); 
-          players[consoleplayer].message = str; 
-
-          gld_SetGammaRamp(useglgamma);
-        }
-        else
-#endif
         {
       usegamma++;
       if (usegamma > 4)
@@ -4791,17 +4710,6 @@ dboolean M_Responder (event_t* ev) {
       }
     }
 
-#ifdef GL_DOOM
-    if (V_GetMode() == VID_MODEGL)
-    {
-      if (ch == key_showalive)
-      {
-        show_alive = (show_alive + 1) % 3;
-        doom_printf("Show Alive Monsters %s",
-          (show_alive ? (show_alive == 1 ? "(mode 1) on" : "(mode 2) on" ) : "off"));
-      }
-    }
-#endif
 
     if (ch == key_mlook) // mouse look
     {
@@ -4905,13 +4813,6 @@ dboolean M_Responder (event_t* ev) {
         ptr1->action();
       
       //e6y
-#ifdef GL_DOOM
-      {
-        extern dboolean gl_arb_multitexture;
-        if ((ptr1->m_flags&S_CANT_GL_ARB_MULTITEXTURE) && !gl_arb_multitexture)
-          warn_about_changes(ptr1->m_flags & S_CANT_GL_ARB_MULTITEXTURE);
-      }
-#endif
     }
     M_SelectDone(ptr1);                           // phares 4/17/98
     return true;
@@ -6116,10 +6017,6 @@ void M_Init(void)
   M_ChangeMouseLook();
   M_ChangeMouseInvert();
   M_ChangeFOV();
-#ifdef GL_DOOM
-  M_ChangeSpriteClip();
-  M_ChangeAllowBoomColormaps();
-#endif
 
   M_ChangeDemoSmoothTurns();
   M_ChangeDemoExtendedFormat();

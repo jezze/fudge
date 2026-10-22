@@ -190,15 +190,6 @@ void M_ChangeMouseInvert(void);
 
 void M_ChangeFOV(void);
 
-#ifdef GL_DOOM
-void M_ChangeUseDetail(void);
-void M_ChangeMultiSample(void);
-void M_ChangeSpriteClip(void);
-void M_ChangeAllowBoomColormaps(void);
-void M_ChangeTextureUseHires(void);
-void M_ChangeAllowFog(void);
-void M_ChangeTextureHQResize(void);
-#endif
 void M_ChangeSpeed(void);
 void M_ChangeScreenMultipleFactor(void);
 void M_ChangeInterlacedScanning(void);
@@ -285,9 +276,6 @@ typedef struct timetable_s
   int stat[TT_MAX];
 } timetable_t;
 
-#ifdef _WIN32
-const char* WINError(void);
-#endif
 
 extern int stats_level;
 
@@ -326,9 +314,6 @@ extern int force_singletics_to;
 
 int HU_DrawDemoProgress(int force);
 
-#ifdef _MSC_VER
-int GetFullPath(const char* FileName, const char* ext, char *Buffer, size_t BufferLength);
-#endif
 
 void I_vWarning(const char *message, va_list argList);
 void I_Warning(const char *message, ...);
@@ -353,9 +338,5 @@ int I_MessageBox(const char* text, unsigned int type);
 
 dboolean SmoothEdges(unsigned char * buffer,int w, int h);
 
-#ifdef _WIN32
-extern int mus_extend_volume;
-void I_midiOutSetVolumes(int volume);
-#endif
 
 #endif

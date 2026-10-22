@@ -34,9 +34,6 @@
 #ifndef __R_THINGS__
 #define __R_THINGS__
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 #include "r_draw.h"
 

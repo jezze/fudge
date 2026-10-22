@@ -1248,19 +1248,6 @@ static void P_LoadZNodes(int lump, int glnodes)
   W_UnlockLumpNum(lump); // cph - release the data
 }
 
-#ifdef GL_DOOM
-static int no_overlapped_sprites;
-#define GETXY(mobj) (mobj->x + (mobj->y >> 16))
-static int C_DECL dicmp_sprite_by_pos(const void *a, const void *b)
-{
-  const mobj_t *m1 = (*((const mobj_t * const *)a));
-  const mobj_t *m2 = (*((const mobj_t * const *)b));
-  
-  int res = GETXY(m2) - GETXY(m1);
-  no_overlapped_sprites = no_overlapped_sprites && res;
-  return res;
-}
-#endif
 
 /*
  * P_LoadThings
@@ -1309,40 +1296,6 @@ static void P_LoadThings (int lump)
 
   W_UnlockLumpNum(lump); // cph - release the data
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    no_overlapped_sprites = true;
-    qsort(mobjlist, mobjcount, sizeof(mobjlist[0]), dicmp_sprite_by_pos);
-    if (!no_overlapped_sprites)
-    {
-      i = 1;
-      while (i < mobjcount)
-      {
-        mobj_t *m1 = mobjlist[i - 1];
-        mobj_t *m2 = mobjlist[i - 0];
-
-        if (GETXY(m1) == GETXY(m2))
-        {
-          mobj_t *mo = (m1->index < m2->index ? m1 : m2);
-          i++;
-          while (i < mobjcount && GETXY(mobjlist[i]) == GETXY(m1))
-          {
-            if (mobjlist[i]->index < mo->index)
-            {
-              mo = mobjlist[i];
-            }
-            i++;
-          }
-
-          // 'nearest'
-          mo->flags |= MF_FOREGROUND;
-        }
-        i++;
-      }
-    }
-  }
-#endif
 
   free(mobjlist);
 }
@@ -1380,13 +1333,6 @@ static void P_LoadLineDefs (int lump)
       v2 = ld->v2 = &vertexes[(unsigned short)LittleShort(mld->v2)];
       ld->dx = v2->x - v1->x;
       ld->dy = v2->y - v1->y;
-#ifdef GL_DOOM
-      // e6y
-      // Rounding the wall length to the nearest integer
-      // when determining length instead of always rounding down
-      // There is no more glitches on seams between identical textures.
-      ld->texel_length = GetTexelDistance(ld->dx, ld->dy);
-#endif
 
       ld->tranlump = -1;   // killough 4/11/98: no translucency by default
 
@@ -1566,14 +1512,6 @@ static void P_LoadSideDefs2(int lump)
           sd->bottomtexture = R_TextureNumForName(msd->bottomtexture);
           break;
 
-#ifdef GL_DOOM
-        case 271:
-        case 272:
-          if (R_CheckTextureNumForName(msd->toptexture) == -1)
-          {
-            sd->skybox_index = R_BoxSkyboxNumForName(msd->toptexture);
-          }
-#endif
 
         default:                        // normal cases
           sd->midtexture = R_SafeTextureNumForName(msd->midtexture, i);
@@ -2577,17 +2515,10 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
 
   if (!samelevel)
   {
-#ifdef GL_DOOM
-    // proff 11/99: clean the memory from textures etc.
-    gld_CleanMemory();
-#endif
 
     free(segs);
     free(nodes);
     free(subsectors);
-#ifdef GL_DOOM
-    free(map_subsectors);
-#endif
 
     free(blocklinks);
     free(blockmaplump);
@@ -2654,10 +2585,6 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
     P_InitSubsectorsLines();
   }
 
-#ifdef GL_DOOM
-  map_subsectors = calloc_IfSameLevel(map_subsectors,
-    numsubsectors, sizeof(map_subsectors[0]));
-#endif
 
   // reject loading and underflow padding separated out into new function
   // P_GroupLines modified to return a number the underflow padding needs
@@ -2727,20 +2654,6 @@ void P_SetupLevel(int episode, int map, int playermask, skill_t skill)
   if (precache)
     R_PrecacheLevel();
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    // e6y
-    // Do not preprocess GL data during skipping,
-    // because it potentially will not be used.
-    // But preprocessing must be called immediately after stop of skipping.
-    if (!doSkip)
-    {
-      // proff 11/99: calculate all OpenGL specific tables etc.
-      gld_PreprocessLevel();
-    }
-  }
-#endif
   //e6y
   P_SyncWalkcam(true, true);
   R_SmoothPlaying_Reset(NULL);

@@ -33,9 +33,7 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 #include "port.h"
 
 #include "doomstat.h"
@@ -941,13 +939,6 @@ void R_SetupMatrix(void)
 
   R_SetupViewport();
 
-  #ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    extern int gl_nearclip;
-    r_nearclip = gl_nearclip;
-  }
-  #endif
 
   fovy = render_fovy;
   aspect = render_ratio;
@@ -1084,16 +1075,6 @@ void R_RenderPlayerView (player_t* player)
 
   if (V_GetMode() == VID_MODEGL)
   {
-#ifdef GL_DOOM
-    // proff 11/99: clear buffers
-    gld_InitDrawScene();
-    
-    if (!automap)
-    {
-      // proff 11/99: switch to perspective mode
-      gld_StartDrawScene();
-    }
-#endif
   } else {
     if (flashing_hom)
     { // killough 2/10/98: add flashing red HOM indicators
@@ -1104,27 +1085,11 @@ void R_RenderPlayerView (player_t* player)
   }
 
   // check for new console commands.
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL) {
-    {
-      angle_t a1 = gld_FrustumAngle();
-      gld_clipper_Clear();
-      gld_clipper_SafeAddClipRangeRealAngles(viewangle + a1, viewangle - a1);
-      gld_FrustrumSetup();
-    }
-  }
-#endif
 
   // The head node is the last node output.
   R_RenderBSPNode (numnodes-1);
 
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
 
   if (V_GetMode() != VID_MODEGL)
     R_DrawPlanes();
@@ -1132,9 +1097,6 @@ void R_RenderPlayerView (player_t* player)
   R_ResetColumnBuffer();
 
   // Check for new console commands.
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
 
   if (V_GetMode() != VID_MODEGL) {
     R_DrawMasked ();
@@ -1142,16 +1104,7 @@ void R_RenderPlayerView (player_t* player)
   }
 
   // Check for new console commands.
-#ifdef HAVE_NET
-  NetUpdate ();
-#endif
 
   if (V_GetMode() == VID_MODEGL && !automap) {
-#ifdef GL_DOOM
-    // proff 11/99: draw the scene
-    gld_DrawScene(player);
-    // proff 11/99: finishing off
-    gld_EndDrawScene();
-#endif
   }
 }

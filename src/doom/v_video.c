@@ -35,9 +35,7 @@
  *-----------------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 #include "port.h"
 
 #include "doomdef.h"
@@ -879,9 +877,6 @@ void V_SetPalette(int pal)
   currentPaletteIndex = pal;
 
   if (V_GetMode() == VID_MODEGL) {
-#ifdef GL_DOOM
-    gld_SetPalette(pal);
-#endif
   } else {
     I_SetPalette(pal);
     if (V_GetMode() == VID_MODE15 || V_GetMode() == VID_MODE16 || V_GetMode() == VID_MODE32) {
@@ -958,49 +953,6 @@ static void V_PlotPixelWu15(int scrn, int x, int y, byte color, int weight);
 static void V_PlotPixelWu16(int scrn, int x, int y, byte color, int weight);
 static void V_PlotPixelWu32(int scrn, int x, int y, byte color, int weight);
 
-#ifdef GL_DOOM
-static void WRAP_gld_FillRect(int scrn, int x, int y, int width, int height, byte colour)
-{
-  gld_FillBlock(x,y,width,height,colour);
-}
-static void WRAP_gld_CopyRect(int srcscrn, int destscrn, int x, int y, int width, int height, enum patch_translation_e flags)
-{
-}
-static void WRAP_gld_DrawBackground(const char *flatname, int n)
-{
-  gld_FillFlatName(flatname, 0, 0, SCREENWIDTH, SCREENHEIGHT, VPT_NONE);
-}
-static void WRAP_gld_FillFlat(int lump, int n, int x, int y, int width, int height, enum patch_translation_e flags)
-{
-  gld_FillFlat(lump, x, y, width, height, flags);
-}
-static void WRAP_gld_FillPatch(int lump, int n, int x, int y, int width, int height, enum patch_translation_e flags)
-{
-  gld_FillPatch(lump, x, y, width, height, flags);
-}
-static void WRAP_gld_DrawNumPatch(int x, int y, int scrn, int lump, int cm, enum patch_translation_e flags)
-{
-  gld_DrawNumPatch(x,y,lump,cm,flags);
-}
-static void WRAP_gld_DrawNumPatchPrecise(float x, float y, int scrn, int lump, int cm, enum patch_translation_e flags)
-{
-  gld_DrawNumPatch_f(x,y,lump,cm,flags);
-}
-static void WRAP_gld_DrawBlock(int x, int y, int scrn, int width, int height, const byte *src, enum patch_translation_e flags)
-{
-}
-static void V_PlotPixelGL(int scrn, int x, int y, byte color) {
-  gld_DrawLine(x-1, y, x+1, y, color);
-  gld_DrawLine(x, y-1, x, y+1, color);
-}
-static void V_PlotPixelWuGL(int scrn, int x, int y, byte color, int weight) {
-  V_PlotPixelGL(scrn, x, y, color);
-}
-static void WRAP_gld_DrawLine(fline_t* fl, int color)
-{
-  gld_DrawLine_f(fl->a.fx, fl->a.fy, fl->b.fx, fl->b.fy, color);
-}
-#endif
 
 static void NULL_FillRect(int scrn, int x, int y, int width, int height, byte colour) {}
 static void NULL_CopyRect(int srcscrn, int destscrn, int x, int y, int width, int height, enum patch_translation_e flags) {}
@@ -1034,10 +986,8 @@ V_DrawLineWu_f V_DrawLineWu = NULL_DrawLineWu;
 // V_InitMode
 //
 void V_InitMode(video_mode_t mode) {
-#ifndef GL_DOOM
   if (mode == VID_MODEGL)
     mode = VID_MODE8;
-#endif
   switch (mode) {
     case VID_MODE8:
       lprintf(LO_INFO, "V_InitMode: using 8 bit video mode\n");
@@ -1099,23 +1049,6 @@ void V_InitMode(video_mode_t mode) {
       V_DrawLineWu = WRAP_V_DrawLineWu;
       current_videomode = VID_MODE32;
       break;
-#ifdef GL_DOOM
-    case VID_MODEGL:
-      lprintf(LO_INFO, "V_InitMode: using OpenGL video mode\n");
-      V_CopyRect = WRAP_gld_CopyRect;
-      V_FillRect = WRAP_gld_FillRect;
-      V_DrawNumPatch = WRAP_gld_DrawNumPatch;
-      V_DrawNumPatchPrecise = WRAP_gld_DrawNumPatchPrecise;
-      V_FillFlat = WRAP_gld_FillFlat;
-      V_FillPatch = WRAP_gld_FillPatch;
-      V_DrawBackground = WRAP_gld_DrawBackground;
-      V_PlotPixel = V_PlotPixelGL;
-      V_PlotPixelWu = V_PlotPixelWuGL;
-      V_DrawLine = WRAP_gld_DrawLine;
-      V_DrawLineWu = WRAP_gld_DrawLine;
-      current_videomode = VID_MODEGL;
-      break;
-#endif
   }
   R_FilterInit();
 }
@@ -1799,22 +1732,10 @@ void V_ToggleFullscreen(void)
 
   I_UpdateVideoMode();
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    gld_PreprocessLevel();
-  }
-#endif
 }
 
 void V_ChangeScreenResolution(void)
 {
   I_UpdateVideoMode();
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    gld_PreprocessLevel();
-  }
-#endif
 }

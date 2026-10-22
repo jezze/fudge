@@ -23,14 +23,8 @@
 #ifndef MD5_H
 #define MD5_H
 
-#ifdef _MSC_VER
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#define UWORD32 DWORD
-#else
 #include "port.h"
 #define UWORD32 uint32_t
-#endif
 #define md5byte unsigned char
 
 struct MD5Context {

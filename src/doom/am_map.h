@@ -34,9 +34,7 @@
 #ifndef __AMMAP_H__
 #define __AMMAP_H__
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include "d_event.h"
 #include "m_misc.h"
@@ -176,9 +174,6 @@ typedef enum
 {
   map_things_appearance_classic,
   map_things_appearance_scaled,
-#if defined(HAVE_LIBSDL2_IMAGE) && defined(GL_DOOM)
-  map_things_appearance_icon,
-#endif
   
   map_things_appearance_max
 } map_things_appearance_t;

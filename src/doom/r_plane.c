@@ -44,9 +44,7 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include "z_zone.h"  /* memory allocation wrappers -- killough */
 
@@ -325,9 +323,6 @@ visplane_t *R_FindPlane(fixed_t height, int picnum, int lightlevel,
   check->lightlevel = lightlevel;
   check->xoffs = xoffs;               // killough 2/28/98: Save offsets
   check->yoffs = yoffs;
-#ifdef GL_DOOM
-  if (V_GetMode() != VID_MODEGL)
-#endif
   {
     int i;
     check->minx = viewwidth; // Was SCREENWIDTH -- killough 11/98

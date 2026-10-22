@@ -34,33 +34,17 @@
 #ifndef __I_SYSTEM__
 #define __I_SYSTEM__
 
-#ifdef _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#endif
-#include <windows.h>
-#endif
 
 #include "m_fixed.h"
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
-#ifdef _MSC_VER
-#define    F_OK    0    /* Check for file existence */
-#define    W_OK    2    /* Check for write permission */
-#define    R_OK    4    /* Check for read permission */
-#endif
 
 extern int interpolation_method;
 extern int ms_to_next_tick;
 dboolean I_StartDisplay(void);
 void I_EndDisplay(void);
 int I_GetTime_RealTime(void);     /* killough */
-#ifndef PRBOOM_SERVER
 fixed_t I_GetTimeFrac (void);
-#endif
 void I_GetTime_SaveMS(void);
 
 unsigned long I_GetRandomTimeSeed(void); /* cphipps */
@@ -77,9 +61,6 @@ const char* I_GetVersionString(char* buf, size_t sz);
  */
 const char* I_SigString(char* buf, size_t sz, int signum);
 
-#ifdef _WIN32
-void I_SwitchToWindow(HWND hwnd);
-#endif
 
 // e6y
 const char* I_GetTempDir(void);

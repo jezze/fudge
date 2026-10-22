@@ -34,21 +34,13 @@
 #ifndef __I_VIDEO__
 #define __I_VIDEO__
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
-#ifdef GL_DOOM
-#include <SDL_opengl.h>
-#endif
 
 #include "doomtype.h"
 #include "v_video.h"
 #include "port.h"
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 extern int render_vsync;
 extern int render_screen_multiply;

@@ -46,9 +46,7 @@
 // Include system definitions so that prototypes become
 // active before macro replacements below are in effect.
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 #include "port.h"
 
 // ZONE MEMORY
@@ -98,7 +96,6 @@ void Z_DumpHistory(char *);
  * directly, for efficiency. Except we do need a wrapper to handle out of memory
  * errors... damn, ok, we'll leave it for now.
  */
-#ifndef HAVE_LIBDMALLOC
 // Remove all definitions before including system definitions
 
 #undef malloc
@@ -113,13 +110,6 @@ void Z_DumpHistory(char *);
 #define calloc(n1,n2)      Z_Calloc(n1,n2,PU_STATIC,0)
 #define strdup(s)          Z_Strdup(s,PU_STATIC,0)
 
-#else
-
-#ifdef HAVE_LIBDMALLOC
-#include <dmalloc.h>
-#endif
-
-#endif
 
 void Z_ZoneHistory(char *);
 

@@ -41,13 +41,6 @@
 
 #include "port.h"
 
-#define SNDSERV
-#undef SNDINTR
-
-#ifndef SNDSERV
-#include "l_soundgen.h"
-#endif
-
 extern int snd_pcspeaker;
 
 // cybermind: sound recording stuff

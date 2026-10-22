@@ -62,10 +62,6 @@ enum {
   ML_BLOCKMAP           // LUT, motion clipping, walls/grid element
 };
 
-#ifdef _MSC_VER // proff: This is the same as __attribute__ ((packed)) in GNUC
-#pragma pack(push)
-#pragma pack(1)
-#endif //_MSC_VER
 
 // A single Vertex.
 typedef struct {
@@ -245,8 +241,5 @@ typedef struct {
   short options;
 } PACKEDATTR mapthing_t;
 
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif //_MSC_VER
 
 #endif // __DOOMDATA__

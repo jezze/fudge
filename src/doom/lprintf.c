@@ -33,16 +33,8 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-#ifdef _MSC_VER
-#include <io.h>
-#endif
 #include "port.h"
-#ifdef HAVE_UNISTD_H
-#include "port.h"
-#endif
 #include "doomtype.h"
 #include "lprintf.h"
 #include "i_main.h"
@@ -71,10 +63,6 @@ int lprintf(OutputLevels pri, const char *s, ...)
 
   if (lvl&cons_output_mask)               /* mask output as specified */
   {
-#ifdef _WIN32
-    // do not crash with unicode dirs
-    if (fileno(stdout) != -1)
-#endif
     r=fprintf(stdout,"%s",msg);
   }
   if (!isatty(1) && lvl&cons_error_mask)  /* if stdout redirected     */
@@ -100,11 +88,6 @@ void I_Error(const char *error, ...)
   doom_vsnprintf(errmsg,sizeof(errmsg),error,argptr);
   va_end(argptr);
   lprintf(LO_ERROR, "%s\n", errmsg);
-#ifdef _MSC_VER
-  if (!M_CheckParm ("-nodraw")) {
-    I_MessageBox(errmsg, PRB_MB_OK);
-  }
-#endif
   I_SafeExit(-1);
 }
 

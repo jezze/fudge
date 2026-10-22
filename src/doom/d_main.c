@@ -35,18 +35,11 @@
  *-----------------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include "port.h"
 
-#ifdef _MSC_VER
-#include <io.h>
-#include <direct.h>
-#else
 #include "port.h"
-#endif
 #include "port.h"
 
 #include "doomdef.h"
@@ -86,9 +79,6 @@
 //e6y
 #include "r_demo.h"
 #include "e6y.h"
-#ifdef USE_WINDOWS_LAUNCHER
-#include "e6y_launcher.h"
-#endif
 
 // NSM
 #include "i_capture.h"
@@ -265,12 +255,6 @@ void D_Display (fixed_t frac)
     if (!gamekeydown[key_use])
       return;
 
-#ifdef GL_DOOM
-    if (V_GetMode() == VID_MODEGL)
-    {
-      gld_PreprocessLevel();
-    }
-#endif
   }
   
   if (!doSkip || !gamekeydown[key_use])
@@ -397,11 +381,7 @@ void D_Display (fixed_t frac)
 
   // menus go directly to the screen
   M_Drawer();          // menu is drawn even on top of everything
-#ifdef HAVE_NET
-  NetUpdate();         // send out any new accumulation
-#else
   D_BuildNewTiccmds();
-#endif
 
   HU_DrawDemoProgress(true); //e6y
 
@@ -1014,18 +994,6 @@ static void IdentifyVersion (void)
 
   iwad = FindIWADFile();
 
-#if (defined(GL_DOOM) && defined(PRBOOM_DEBUG))
-  // proff 11/99: used for debugging
-  {
-    FILE *f;
-    f=fopen("levelinfo.txt","w");
-    if (f)
-    {
-      fprintf(f,"%s\n",iwad);
-      fclose(f);
-    }
-  }
-#endif
 
   if (iwad && *iwad)
   {
@@ -1601,10 +1569,6 @@ static void D_DoomMainSetup(void)
   G_ReloadDefaults();    // killough 3/4/98: set defaults just loaded.
   // jff 3/24/98 this sets startskill if it was -1
 
-#ifdef GL_DOOM
-  // proff 04/05/2000: for GL-specific switches
-  gld_InitCommandLine();
-#endif
 
   //jff 9/3/98 use logical output routine
   lprintf(LO_INFO,"V_Init: allocate screens.\n");
@@ -1707,9 +1671,6 @@ static void D_DoomMainSetup(void)
     int demo_footer = CheckDemoExDemo();
     if (!demo_footer)
       demo_footer = CheckAutoDemo();
-#ifdef USE_WINDOWS_LAUNCHER
-    LauncherShow(demo_footer);
-#endif
   }
 
 
@@ -1846,10 +1807,6 @@ static void D_DoomMainSetup(void)
   lprintf(LO_INFO,"M_Init: Init miscellaneous info.\n");
   M_Init();
 
-#ifdef HAVE_NET
-  // CPhipps - now wait for netgame start
-  D_CheckNetGame();
-#endif
 
   //jff 9/3/98 use logical output routine
   lprintf(LO_INFO,"R_Init: Init DOOM refresh daemon - ");

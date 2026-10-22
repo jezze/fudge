@@ -35,18 +35,12 @@
 #ifndef __DOOMTYPE__
 #define __DOOMTYPE__
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #ifndef __BYTEBOOL__
 #define __BYTEBOOL__
 /* Fixed to use builtin bool type with C++. */
-#ifdef __cplusplus
-typedef bool dboolean;
-#else
 typedef enum {false, true} dboolean;
-#endif
 typedef unsigned char byte;
 #endif
 
@@ -65,22 +59,10 @@ typedef unsigned char byte;
 /* cph - Wrapper for the long long type, as Win32 used a different name.
  * Except I don't know what to test as it's compiler specific
  * Proff - I fixed it */
-#ifndef _MSC_VER
 typedef signed long long int_64_t;
 typedef unsigned long long uint_64_t;
 // define compiled-specific long-long contstant notation here
 #define LONGLONG(num)   (uint_64_t)num ## ll
-#else
-typedef __int64 int_64_t;
-typedef unsigned __int64 uint_64_t;
-// define compiled-specific long-long contstant notation here
-#define LONGLONG(num) (uint_64_t)num
-#undef PATH_MAX
-#define PATH_MAX 1024
-#define strcasecmp _stricmp
-#define strncasecmp _strnicmp
-#define S_ISDIR(x) (((sbuf.st_mode & S_IFDIR)==S_IFDIR)?1:0)
-#endif
 
 #ifdef __GNUC__
 #define CONSTFUNC __attribute__((const))
@@ -94,26 +76,14 @@ typedef unsigned __int64 uint_64_t;
 
 // Definition of PACKEDATTR from Chocolate Doom
 #ifdef __GNUC__
-  #if defined(_WIN32) && !defined(__clang__)
-    #define PACKEDATTR __attribute__((packed,gcc_struct))
-  #else
     #define PACKEDATTR __attribute__((packed))
-  #endif
 #else
   #define PACKEDATTR
 #endif
 
-#ifdef WIN32
-#define C_DECL __cdecl
-#else
 #define C_DECL
-#endif
 
-#ifdef _MSC_VER
-  #define INLINE __forceinline /* use __forceinline (VC++ specific) */
-#else
   #define INLINE inline        /* use standard inline */
-#endif
 
 /* CPhipps - use limits.h instead of depreciated values.h */
 #include "port.h"

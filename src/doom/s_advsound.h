@@ -36,9 +36,6 @@
 
 #include "p_mobj.h"
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 //
 //MUSINFO lump

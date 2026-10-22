@@ -95,8 +95,6 @@ static unsigned int rover;
 static char root[PATHSIZE];
 static char lasterror[ERRORSIZE];
 static char *tokenizer;
-static unsigned int seed = 1;
-static struct tm emptytime;
 
 void *memcpy(void *out, const void *in, size_t count)
 {
@@ -310,24 +308,6 @@ char *strchr(const char *in, int c)
 
 }
 
-char *strrchr(const char *in, int c)
-{
-
-    char *last = 0;
-    size_t k;
-
-    for (k = 0; in[k]; k++)
-    {
-
-        if (in[k] == (char)c)
-            last = (char *)in + k;
-
-    }
-
-    return (c) ? last : (char *)in + k;
-
-}
-
 char *strstr(const char *in, const char *needle)
 {
 
@@ -343,15 +323,6 @@ char *strstr(const char *in, const char *needle)
     }
 
     return (length) ? 0 : (char *)in;
-
-}
-
-char *strdup(const char *in)
-{
-
-    char *out = malloc(strlen(in) + 1);
-
-    return (out) ? strcpy(out, in) : 0;
 
 }
 
@@ -469,20 +440,6 @@ int isalnum(int c)
 {
 
     return isalpha(c) || isdigit(c);
-
-}
-
-int isprint(int c)
-{
-
-    return c >= ' ' && c < 0x7F;
-
-}
-
-int ispunct(int c)
-{
-
-    return isprint(c) && !isalnum(c) && c != ' ';
 
 }
 
@@ -631,20 +588,6 @@ int atoi(const char *in)
 
 }
 
-long atol(const char *in)
-{
-
-    return strtol(in, 0, 10);
-
-}
-
-double atof(const char *in)
-{
-
-    return strtod(in, 0);
-
-}
-
 int abs(int value)
 {
 
@@ -656,82 +599,6 @@ long labs(long value)
 {
 
     return (value < 0) ? -value : value;
-
-}
-
-int rand(void)
-{
-
-    seed = seed * 1103515245 + 12345;
-
-    return (seed >> 16) & RAND_MAX;
-
-}
-
-void srand(unsigned int value)
-{
-
-    seed = value;
-
-}
-
-static void swap(unsigned char *a, unsigned char *b, size_t size)
-{
-
-    size_t k;
-
-    for (k = 0; k < size; k++)
-    {
-
-        unsigned char c = a[k];
-
-        a[k] = b[k];
-        b[k] = c;
-
-    }
-
-}
-
-static void sift(unsigned char *base, size_t start, size_t count, size_t size, int (*compare)(const void *, const void *))
-{
-
-    size_t root = start;
-
-    while (root * 2 + 1 < count)
-    {
-
-        size_t child = root * 2 + 1;
-
-        if (child + 1 < count && compare(base + child * size, base + (child + 1) * size) < 0)
-            child++;
-
-        if (compare(base + root * size, base + child * size) >= 0)
-            return;
-
-        swap(base + root * size, base + child * size, size);
-
-        root = child;
-
-    }
-
-}
-
-void qsort(void *base, size_t count, size_t size, int (*compare)(const void *, const void *))
-{
-
-    unsigned char *b = base;
-    size_t k;
-
-    for (k = count / 2; k > 0; k--)
-        sift(b, k - 1, count, size, compare);
-
-    for (k = count; k > 1; k--)
-    {
-
-        swap(b, b + (k - 1) * size, size);
-        sift(b, 0, k - 1, size, compare);
-
-    }
 
 }
 
@@ -868,18 +735,6 @@ void *malloc(size_t size)
     heaptop += need;
 
     return getblock(heaptop - need) + 1;
-
-}
-
-void *calloc(size_t count, size_t size)
-{
-
-    void *pointer = malloc(count * size);
-
-    if (pointer)
-        memset(pointer, 0, count * size);
-
-    return pointer;
 
 }
 
@@ -1159,13 +1014,6 @@ int feof(FILE *file)
 
 }
 
-int fflush(FILE *file)
-{
-
-    return 0;
-
-}
-
 void setbuf(FILE *file, char *buffer)
 {
 
@@ -1179,13 +1027,6 @@ int remove(const char *path)
 }
 
 int unlink(const char *path)
-{
-
-    return -1;
-
-}
-
-int rename(const char *from, const char *to)
 {
 
     return -1;
@@ -1273,13 +1114,6 @@ int read(int fd, void *out, size_t count)
     descriptor->offset += total;
 
     return total;
-
-}
-
-int write(int fd, const void *in, size_t count)
-{
-
-    return -1;
 
 }
 
@@ -1783,24 +1617,10 @@ int printf(const char *fmt, ...)
 
 }
 
-int puts(const char *in)
-{
-
-    return 0;
-
-}
-
 int fputc(int c, FILE *file)
 {
 
     return c;
-
-}
-
-int fputs(const char *in, FILE *file)
-{
-
-    return fprintf(file, "%s", in);
 
 }
 
@@ -2035,13 +1855,6 @@ double sqrt(double x)
 
 }
 
-float sqrtf(float x)
-{
-
-    return sqrt(x);
-
-}
-
 double sin(double x)
 {
 
@@ -2116,15 +1929,6 @@ double floor(double x)
 
 }
 
-double ceil(double x)
-{
-
-    double whole = (double)(long long)x;
-
-    return (whole < x) ? whole + 1 : whole;
-
-}
-
 /* x to the power y as 2 to the power y * log2(x), only for a positive x */
 double pow(double x, double y)
 {
@@ -2176,25 +1980,6 @@ long long __moddi3(long long n, long long d)
     unsigned long long remainder = divide((n < 0) ? -(unsigned long long)n : (unsigned long long)n, (d < 0) ? -(unsigned long long)d : (unsigned long long)d).remainder;
 
     return (n < 0) ? -(long long)remainder : (long long)remainder;
-
-}
-
-time_t time(time_t *out)
-{
-
-    time_t value = SDL_GetTicks() / 1000;
-
-    if (out)
-        out[0] = value;
-
-    return value;
-
-}
-
-struct tm *localtime(const time_t *in)
-{
-
-    return &emptytime;
 
 }
 

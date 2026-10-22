@@ -36,16 +36,10 @@
  */
 
 #include "port.h"
-#ifdef _MSC_VER
-#include <io.h>
-#else
 #include "port.h"
-#endif
 #include "port.h"
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include "doomstat.h"
 #include "d_net.h"
@@ -700,9 +694,6 @@ void G_BuildTiccmd(ticcmd_t* cmd)
 
   if (!walkcamera.type || menuactive) //e6y
     mousex = mousey = 0;
-#ifdef GL_DOOM
-  motion_blur.curr_speed_pow2 = 0;
-#endif
 
   if (forward > MAXPLMOVE)
     forward = MAXPLMOVE;
@@ -800,9 +791,6 @@ static void G_DoLoadLevel (void)
 	// [RH] Set up details about sky rendering
 	R_InitSkyMap ();
 
-#ifdef GL_DOOM
-  R_SetBoxSkybox(skytexture);
-#endif
 
   levelstarttic = gametic;        // for time calculation
 
@@ -1025,9 +1013,6 @@ void G_Ticker (void)
   if (!demoplayback && mapcolor_plyr[consoleplayer] != mapcolor_me) {
     // Changed my multiplayer colour - Inform the whole game
     int net_cl = LittleLong(mapcolor_me);
-#ifdef HAVE_NET
-    D_NetSendMisc(nm_plcolour, sizeof(net_cl), &net_cl);
-#endif
     G_ChangedPlayerColour(consoleplayer, mapcolor_me);
   }
   P_MapStart();
@@ -1972,24 +1957,6 @@ unsigned int GetPackageVersion(void)
 
 void RecalculateDrawnSubsectors(void)
 {
-#ifdef GL_DOOM
-  int i, j;
-
-  for (i = 0; i < numsubsectors; i++)
-  {
-    subsector_t *sub = &subsectors[i];
-    seg_t *seg = &segs[sub->firstline];
-    for (j = 0; j < sub->numlines; j++, seg++)
-    {
-      if (seg->linedef && seg->linedef->flags & ML_MAPPED)
-      {
-        map_subsectors[i] = 1;
-      }
-    }
-  }
-
-  gld_ResetTexturedAutomap();
-#endif
 }
 
 void G_DoLoadGame(void)
@@ -2192,9 +2159,6 @@ void G_SaveGame(int slot, char *description)
   // CPhipps - store info in special_event
   special_event = BT_SPECIAL | (BTS_SAVEGAME & BT_SPECIALMASK) |
     ((slot << BTS_SAVESHIFT) & BTS_SAVEMASK);
-#ifdef HAVE_NET
-  D_NetSendMisc(nm_savegamename, strlen(savedescription)+1, savedescription);
-#endif
 }
 
 // Check for overrun and realloc if necessary -- Lee Killough 1/22/98

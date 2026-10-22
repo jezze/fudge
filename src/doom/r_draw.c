@@ -1063,13 +1063,6 @@ void R_FillBackScreen (void)
     extern int screenblocks;
     int only_stbar;
 
-#ifdef GL_DOOM
-    if (V_GetMode() == VID_MODEGL)
-    {
-      only_stbar = (automap ? screenblocks >= 10 : screenblocks == 10);
-    }
-    else
-#endif
     {
       only_stbar = screenblocks >= 10;
     }

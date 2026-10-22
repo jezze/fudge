@@ -33,9 +33,7 @@
 //
 // 4/25/98, 5/2/98 killough: reformatted, beautified
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 #include "port.h"
 
 #include "doomstat.h"
@@ -648,16 +646,6 @@ void R_StoreWallRange(const int start, const int stop)
   if(curline->miniseg == false) // figgi -- skip minisegs
     curline->linedef->flags |= ML_MAPPED;
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    // proff 11/99: the rest of the calculations is not needed for OpenGL
-    ds_p++->curline = curline;
-    gld_AddWall(curline);
-
-    return;
-  }
-#endif
 
 
 #ifdef RANGECHECK

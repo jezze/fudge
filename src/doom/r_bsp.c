@@ -367,63 +367,6 @@ static void R_AddLine (seg_t *line)
 
   curline = line;
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    angle1 = R_PointToPseudoAngle(line->v1->x, line->v1->y);
-    angle2 = R_PointToPseudoAngle(line->v2->x, line->v2->y);
-
-    // Back side, i.e. backface culling	- read: endAngle >= startAngle!
-    if (angle2 - angle1 < ANG180 || !line->linedef)  
-    {
-      return;
-    }
-    if (!gld_clipper_SafeCheckRange(angle2, angle1)) 
-    {
-      return;
-    }
-
-    map_subsectors[currentsubsectornum] = 1;
-
-    if (!line->backsector)
-    {
-      gld_clipper_SafeAddClipRange(angle2, angle1);
-    }
-    else
-    {
-      if (line->frontsector == line->backsector)
-      {
-        if (texturetranslation[line->sidedef->midtexture] == NO_TEXTURE)
-        {
-          //e6y: nothing to do here!
-          return;
-        }
-      }
-      if (CheckClip(line, line->frontsector, line->backsector))
-      {
-        gld_clipper_SafeAddClipRange(angle2, angle1);
-      }
-    }
-
-    if (ds_p == drawsegs+maxdrawsegs)   // killough 1/98 -- fix 2s line HOM
-    {
-      unsigned pos = ds_p - drawsegs; // jff 8/9/98 fix from ZDOOM1.14a
-      unsigned newmax = maxdrawsegs ? maxdrawsegs*2 : 128; // killough
-      drawsegs = realloc(drawsegs,newmax*sizeof(*drawsegs));
-      ds_p = drawsegs + pos;          // jff 8/9/98 fix from ZDOOM1.14a
-      maxdrawsegs = newmax;
-    }
-    
-    if(curline->miniseg == false) // figgi -- skip minisegs
-      curline->linedef->flags |= ML_MAPPED;
-    
-    // proff 11/99: the rest of the calculations is not needed for OpenGL
-    ds_p++->curline = curline;
-    gld_AddWall(curline);
-
-    return;
-  }
-#endif
 
   angle1 = R_PointToAngleEx(line->v1->px, line->v1->py);
   angle2 = R_PointToAngleEx(line->v2->px, line->v2->py);
@@ -535,14 +478,6 @@ static dboolean R_CheckBBox(const fixed_t *bspcoord)
 
   check = checkcoord[boxpos];
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    angle1 = R_PointToPseudoAngle(bspcoord[check[0]], bspcoord[check[1]]);
-    angle2 = R_PointToPseudoAngle(bspcoord[check[2]], bspcoord[check[3]]);
-    return gld_clipper_SafeCheckRange(angle2, angle1);
-  }
-#endif
 
   angle1 = R_PointToAngleEx (bspcoord[check[0]], bspcoord[check[1]]) - viewangle;
   angle2 = R_PointToAngleEx (bspcoord[check[2]], bspcoord[check[3]]) - viewangle;
@@ -601,14 +536,6 @@ static void R_Subsector(int num)
   sector_t    tempsec;              // killough 3/7/98: deep water hack
   int         floorlightlevel;      // killough 3/16/98: set floor lightlevel
   int         ceilinglightlevel;    // killough 4/11/98
-  #ifdef GL_DOOM
-  // dmooter 1/16/2017 Move from being declared next to its use several lines lower.
-  // Needs to remain in scope to the end of the function so its stack memory is recycled,
-  // compiler optimizations will make the floorplane pointer a dangling pointer
-  // when passed into gld_AddPlane().
-  visplane_t dummyfloorplane;
-  visplane_t dummyceilingplane;
-  #endif
 
 #ifdef RANGECHECK
   if (num>=numsubsectors)
@@ -618,9 +545,6 @@ static void R_Subsector(int num)
   sub = &subsectors[num];
   currentsubsectornum = num;
 
-#ifdef GL_DOOM
-  if (V_GetMode() != VID_MODEGL || !gl_use_stencil || sub->sector->validcount != validcount)
-#endif
   {
     frontsector = sub->sector;
 
@@ -660,45 +584,6 @@ static void R_Subsector(int num)
   // e6y
   // New algo can handle fake flats and ceilings
   // much more correctly and fastly the the original
-#ifdef GL_DOOM
-    if (V_GetMode() == VID_MODEGL)
-    {
-      // check if the sector is faked
-      if (!gl_use_stencil && frontsector == sub->sector)
-      {
-        sector_t *tmpsec;
-
-        // if the sector has bottomtextures, then the floorheight will be set to the
-        // highest surounding floorheight
-        if ((frontsector->flags & NO_BOTTOMTEXTURES) || (!floorplane))
-        {
-          tmpsec = GetBestFake(frontsector, 0, validcount);
-
-          if (tmpsec && frontsector->floorheight != tmpsec->floorheight)
-          {
-            dummyfloorplane.height = tmpsec->floorheight;
-            dummyfloorplane.lightlevel = tmpsec->lightlevel;
-            dummyfloorplane.picnum = tmpsec->floorpic;
-            floorplane = &dummyfloorplane;
-          }
-        }
-
-        // the same for ceilings. they will be set to the lowest ceilingheight
-        if ((frontsector->flags & NO_TOPTEXTURES) || (!ceilingplane))
-        {
-          tmpsec = GetBestFake(frontsector, 1, validcount);
-
-          if (tmpsec && frontsector->ceilingheight != tmpsec->ceilingheight)
-          {
-            dummyceilingplane.height = tmpsec->ceilingheight;
-            dummyceilingplane.lightlevel = tmpsec->lightlevel;
-            dummyceilingplane.picnum = tmpsec->ceilingpic;
-            ceilingplane = &dummyceilingplane;
-          }
-        }
-      }
-    }
-#endif
 
   // killough 9/18/98: Fix underwater slowdown, by passing real sector
   // instead of fake one. Improve sprite lighting by basing sprite
@@ -719,10 +604,6 @@ static void R_Subsector(int num)
 
     R_AddSprites(sub, (floorlightlevel+ceilinglightlevel)/2);
 
-#ifdef GL_DOOM
-    if (V_GetMode() == VID_MODEGL)
-      gld_AddPlane(num, floorplane, ceilingplane);
-#endif
   }
 
   count = sub->numlines;

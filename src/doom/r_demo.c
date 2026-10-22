@@ -32,16 +32,9 @@
  *---------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
-#ifdef _WIN32
-#include <io.h>
-#include <process.h>
-#else
 #include "port.h"
-#endif
 
 #include "port.h"
 
@@ -213,9 +206,6 @@ void R_ResetAfterTeleport(player_t *player)
 // DemoEx stuff
 //
 
-#ifdef HAVE_LIBPCREPOSIX
-#include "pcreposix.h"
-#endif
 
 #define PWAD_SIGNATURE "PWAD"
 #define DEMOEX_VERSION "2"
@@ -1334,12 +1324,7 @@ int ParseDemoPattern(const char *str, waddata_t* waddata, char **missed, dboolea
     {
       D_TryGetWad(pToken);
     }
-#ifdef _MSC_VER
-    token = malloc(PATH_MAX);
-    if (GetFullPath(pToken, ".wad", token, PATH_MAX))
-#else
     if ((token = I_FindFile(pToken, ".wad")))
-#endif
     {
       wadfiles = realloc(wadfiles, sizeof(*wadfiles)*(numwadfiles+1));
       wadfiles[numwadfiles].name = token;
@@ -1381,89 +1366,6 @@ int ParseDemoPattern(const char *str, waddata_t* waddata, char **missed, dboolea
   return processed;
 }
 
-#ifdef HAVE_LIBPCREPOSIX
-int DemoNameToWadData(const char * demoname, waddata_t *waddata, patterndata_t *patterndata)
-{
-  int numwadfiles_required = 0;
-  int i;
-  size_t maxlen = 0;
-  char *pattern;
-
-  char *demofilename = PathFindFileName(demoname);
-  
-  WadDataInit(waddata);
-
-  for (i = 0; i < demo_patterns_count; i++)
-  {
-    if (strlen(demo_patterns_list[i]) > maxlen)
-      maxlen = strlen(demo_patterns_list[i]);
-  }
-
-  pattern = malloc(maxlen + sizeof(char));
-  for (i = 0; i < demo_patterns_count; i++)
-  {
-    int result;
-    regex_t preg;
-    regmatch_t pmatch[4];
-    char errbuf[256];
-    char *buf = demo_patterns_list[i];
-
-    regcomp(&preg, "(.*?)\\/(.*)\\/(.+)", REG_ICASE);
-    result = regexec(&preg, buf, 4, &pmatch[0], REG_NOTBOL);
-    regerror(result, &preg, errbuf, sizeof(errbuf));
-    regfree(&preg);
-
-    if (result != 0)
-    {
-      lprintf(LO_WARN, "Incorrect format of the <%s%d = \"%s\"> config entry\n", demo_patterns_mask, i, buf);
-    }
-    else
-    {
-      regmatch_t demo_match[2];
-      int len = pmatch[2].rm_eo - pmatch[2].rm_so;
-
-      strncpy(pattern, buf + pmatch[2].rm_so, len);
-      pattern[len] = '\0';
-      result = regcomp(&preg, pattern, REG_ICASE);
-      if (result != 0)
-      {
-        regerror(result, &preg, errbuf, sizeof(errbuf));
-        lprintf(LO_WARN, "Incorrect regular expressions in the <%s%d = \"%s\"> config entry - %s\n", demo_patterns_mask, i, buf, errbuf);
-      }
-      else
-      {
-        result = regexec(&preg, demofilename, 1, &demo_match[0], 0);
-        if (result == 0 && demo_match[0].rm_so == 0 && demo_match[0].rm_eo == (int)strlen(demofilename))
-        {
-          numwadfiles_required = ParseDemoPattern(buf + pmatch[3].rm_so, waddata,
-            (patterndata ? &patterndata->missed : NULL), true);
-
-          waddata->wadfiles = realloc(waddata->wadfiles, sizeof(*wadfiles)*(waddata->numwadfiles+1));
-          waddata->wadfiles[waddata->numwadfiles].name = strdup(demoname);
-          waddata->wadfiles[waddata->numwadfiles].src = source_lmp;
-          waddata->wadfiles[waddata->numwadfiles].handle = 0;
-          waddata->numwadfiles++;
-
-          if (patterndata)
-          {
-            len = MIN(pmatch[1].rm_eo - pmatch[1].rm_so, sizeof(patterndata->pattern_name) - 1);
-            strncpy(patterndata->pattern_name, buf, len);
-            patterndata->pattern_name[len] = '\0';
-
-            patterndata->pattern_num = i;
-          }
-
-          break;
-        }
-      }
-      regfree(&preg);
-    }
-  }
-  free(pattern);
-
-  return numwadfiles_required;
-}
-#endif // HAVE_LIBPCREPOSIX
 
 void WadDataToWadFiles(waddata_t *waddata)
 {
@@ -1613,48 +1515,8 @@ int CheckAutoDemo(void)
 {
   int result = false;
   if (M_CheckParm("-auto"))
-#ifndef HAVE_LIBPCREPOSIX
     I_Error("Cannot process -auto - "
         PACKAGE_NAME " was compiled without LIBPCRE support");
-#else
-  {
-    int i;
-    waddata_t waddata;
-
-    for (i = 0; (size_t)i < numwadfiles; i++)
-    {
-      if (wadfiles[i].src == source_lmp)
-      {
-        int numwadfiles_required;
-        
-        patterndata_t patterndata;
-        memset(&patterndata, 0, sizeof(patterndata));
-
-        numwadfiles_required = DemoNameToWadData(wadfiles[i].name, &waddata, &patterndata);
-        
-        if (waddata.numwadfiles)
-        {
-          result = true;
-          if ((size_t)numwadfiles_required + 1 != waddata.numwadfiles && patterndata.missed)
-          {
-            I_Warning(
-              "DataAutoload: pattern #%i is used\n"
-              "%s not all required files are found, may not work\n",
-              patterndata.pattern_num, patterndata.missed);
-          }
-          else
-          {
-            lprintf(LO_WARN,"DataAutoload: pattern #%i is used\n", patterndata.pattern_num);
-          }
-          WadDataToWadFiles(&waddata);
-        }
-        free(patterndata.missed);
-        WadDataFree(&waddata);
-        break;
-      }
-    }
-  }
-#endif // HAVE_LIBPCREPOSIX
 
   return result;
 }

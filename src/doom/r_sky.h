@@ -36,9 +36,6 @@
 
 #include "m_fixed.h"
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 /* SKY, store the number for name. */
 #define SKYFLATNAME  "F_SKY1"

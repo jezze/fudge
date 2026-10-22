@@ -33,16 +33,7 @@
  */
 
 // use config.h if autoconf made one -- josh
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-#ifdef HAVE_UNISTD_H
-#include "port.h"
-#endif
-#ifdef _MSC_VER
-#include "port.h"
-#include <io.h>
-#endif
 #include "port.h"
 
 #include "doomstat.h"
@@ -51,9 +42,6 @@
 #include "i_system.h"
 #include "r_main.h"
 
-#ifdef __GNUG__
-#pragma implementation "w_wad.h"
-#endif
 #include "w_wad.h"
 #include "lprintf.h"
 
@@ -146,10 +134,6 @@ static void W_AddFile(wadfile_info_t *wadfile)
 
   wadfile->handle = open(wadfile->name,O_RDONLY | O_BINARY);
 
-#ifdef HAVE_NET
-  if (wadfile->handle == -1 && D_NetGetWad(wadfile->name)) // CPhipps
-    wadfile->handle = open(wadfile->name,O_RDONLY | O_BINARY);
-#endif
 
   if (wadfile->handle == -1 &&
     strlen(wadfile->name) > 4 &&

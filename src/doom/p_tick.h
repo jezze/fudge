@@ -35,9 +35,6 @@
 
 #include "d_think.h"
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 /* Called by C_Ticker, can call G_PlayerExited.
  * Carries out all thinking of monsters and players. */

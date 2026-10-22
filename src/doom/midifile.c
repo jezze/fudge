@@ -44,9 +44,7 @@ typedef unsigned char byte;
 
 
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #ifndef ntohl
 #ifdef WORDS_BIGENDIAN
@@ -67,9 +65,6 @@ typedef unsigned char byte;
 #endif // ntohl
 
 
-#ifdef _MSC_VER
-#pragma pack(push, 1)
-#endif
 
 typedef struct
 {
@@ -85,9 +80,6 @@ typedef struct
     unsigned short time_division;
 } PACKEDATTR midi_header_t;
 
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif
 
 typedef struct
 {

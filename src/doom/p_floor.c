@@ -81,12 +81,6 @@ result_e T_MovePlane
   fixed_t       destheight; //jff 02/04/98 used to keep floors/ceilings
                             // from moving thru each other
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    gld_UpdateSplitData(sector);
-  }
-#endif
 
   switch(floorOrCeiling)
   {

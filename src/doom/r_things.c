@@ -590,15 +590,6 @@ int r_near_clip_plane = MINZ;
 void R_SetClipPlanes(void)
 {
   // thing is behind view plane?
-#ifdef GL_DOOM
-  if ((V_GetMode() == VID_MODEGL) &&
-      (HaveMouseLook() || (render_fov > FOV90)) &&
-      (!render_paperitems || simple_shadows.loaded))
-  {
-    r_near_clip_plane = -(FRACUNIT * MAX(64, simple_shadows.max_radius));
-  }
-  else
-#endif
   {
     r_near_clip_plane = MINZ;
   }
@@ -632,13 +623,6 @@ static void R_ProjectSprite (mobj_t* thing, int lightlevel)
   fixed_t tz, tz2;
   int width;
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL)
-  {
-    gld_ProjectSprite(thing, lightlevel);
-    return;
-  }
-#endif
 
   if (!paused && movement_smooth)
   {
@@ -848,20 +832,6 @@ void R_AddSprites(subsector_t* subsec, int lightlevel)
 
   // Handle all things in sector.
 
-#ifdef GL_DOOM
-  if (show_alive)
-  {
-    if (show_alive == 1)
-    {
-      for (thing = sec->thinglist; thing; thing = thing->snext)
-      {
-        if (!ALIVE(thing))
-          R_ProjectSprite(thing, lightlevel);
-      }
-    }
-  }
-  else
-#endif
   {
     for (thing = sec->thinglist; thing; thing = thing->snext)
     {
@@ -1081,32 +1051,6 @@ static void R_DrawPSprite (pspdef_t *psp)
   {
     R_DrawVisSprite(vis);
   }
-#ifdef GL_DOOM
-  else
-  {
-    int lightlevel;
-    sector_t tmpsec;
-    int floorlightlevel, ceilinglightlevel;
-
-    if ((vis->colormap==fixedcolormap) || (vis->colormap==fullcolormap))
-      lightlevel=255;
-    else
-    {
-//      lightlevel = (viewplayer->mo->subsector->sector->lightlevel) + (extralight << LIGHTSEGSHIFT);
-      R_FakeFlat( viewplayer->mo->subsector->sector, &tmpsec,
-                  &floorlightlevel, &ceilinglightlevel, false);
-      lightlevel = ((floorlightlevel+ceilinglightlevel) >> 1) + (extralight << LIGHTSEGSHIFT);
-      if (!gl_hardware_gamma)
-        lightlevel += usegamma * 16;
-
-      if (lightlevel < 0)
-        lightlevel = 0;
-      else if (lightlevel >= 255)
-        lightlevel = 255;
-    }
-    gld_DrawWeapon(lump,vis,lightlevel);
-  }
-#endif
 }
 
 //
@@ -1141,17 +1085,9 @@ void R_DrawPlayerSprites(void)
 // linked lists, and to use faster sorting algorithm.
 //
 
-#ifdef DJGPP
-
-// killough 9/22/98: inlined memcpy of pointer arrays
-// CPhipps - added memory as modified
-#define bcopyp(d, s, n) asm(" cld; rep; movsl;" :: "D"(d), "S"(s), "c"(n) : "%cc", "%esi", "%edi", "%ecx", "memory")
-
-#else
 
 #define bcopyp(d, s, n) memcpy(d, s, (n) * sizeof(void *))
 
-#endif
 
 // killough 9/2/98: merge sort
 

@@ -34,9 +34,7 @@
 #ifndef __M_FIXED__
 #define __M_FIXED__
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include "port.h"
 #include "doomtype.h"

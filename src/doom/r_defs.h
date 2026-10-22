@@ -48,9 +48,6 @@
 // SECTORS do store MObjs anyway.
 #include "p_mobj.h"
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 // Silhouette, needed for clipping Segs (mainly)
 // and sprites representing things.
@@ -175,9 +172,6 @@ typedef struct
   int INTERP_SectorCeiling;
   int INTERP_FloorPanning;
   int INTERP_CeilingPanning;
-#ifdef GL_DOOM
-  int fakegroup[2];
-#endif
 } sector_t;
 
 //
@@ -200,9 +194,6 @@ typedef struct
   int special;
 
   int INTERP_WallPanning;
-#ifdef GL_DOOM
-  int skybox_index;
-#endif
 } side_t;
 
 //
@@ -221,9 +212,6 @@ typedef struct line_s
   int iLineID;           // proff 04/05/2000: needed for OpenGL
   vertex_t *v1, *v2;     // Vertices, from v1 to v2.
   fixed_t dx, dy;        // Precalculated v2 - v1 for side checking.
-#ifdef GL_DOOM
-  float texel_length;
-#endif
   unsigned short flags;           // Animation related.
   short special;
   short tag;

@@ -33,17 +33,9 @@
  *
  *-----------------------------------------------------------------------------*/
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
 
 #include "port.h"
-#ifdef HAVE_UNISTD_H
-#include "port.h"
-#endif
-#ifdef _MSC_VER
-#include <io.h>
-#endif
 #include "port.h"
 
 #include "doomstat.h"
@@ -74,15 +66,9 @@
 #include "r_sky.h"
 
 //e6y
-#ifdef GL_DOOM
-#include "gl_struct.h"
-#endif
 #include "g_overflow.h"
 #include "e6y.h"
 #include "cybermind.h"
-#ifdef USE_WINDOWS_LAUNCHER
-#include "e6y_launcher.h"
-#endif
 
 // NSM
 #include "i_capture.h"
@@ -168,47 +154,6 @@ typedef enum {
 
 extern int viewwidth;
 extern int viewheight;
-#ifdef GL_DOOM
-extern int gl_nearclip;
-extern int gl_colorbuffer_bits;
-extern int gl_depthbuffer_bits;
-extern int gl_texture_filter;
-extern int gl_sprite_filter;
-extern int gl_patch_filter;
-extern int gl_texture_filter_anisotropic;
-extern const char *gl_tex_format_string;
-extern int gl_sky_detail;
-extern int gl_use_paletted_texture;
-extern int gl_use_shared_texture_palette;
-
-//e6y: all OpenGL extentions will be disabled with TRUE
-extern int gl_compatibility;
-
-//cfg values
-extern int gl_ext_texture_filter_anisotropic_default;
-extern int gl_arb_texture_non_power_of_two_default;
-extern int gl_arb_multitexture_default;
-extern int gl_arb_texture_compression_default;
-extern int gl_ext_framebuffer_object_default;
-extern int gl_ext_packed_depth_stencil_default;
-extern int gl_ext_blend_color_default;
-extern int gl_use_stencil_default;
-extern int gl_ext_arb_vertex_buffer_object_default;
-extern int gl_arb_pixel_buffer_object_default;
-extern int gl_arb_shader_objects_default;
-
-//e6y: motion bloor
-extern int gl_motionblur;
-
-//e6y: fog
-extern int gl_fog;
-extern int gl_fog_color;
-
-extern int gl_finish;
-extern int gl_clear;
-extern int gl_ztrick;
-
-#endif
 
 extern int realtic_clock_rate;         // killough 4/13/98: adjustable timer
 extern int tran_filter_pct;            // killough 2/21/98
@@ -216,9 +161,7 @@ extern int tran_filter_pct;            // killough 2/21/98
 extern int screenblocks;
 extern int showMessages;
 
-#ifndef DJGPP
 int         mus_pause_opt; // 0 = kill music, 1 = pause, 2 = continue
-#endif
 
 extern const char* chat_macros[];
 
@@ -374,33 +317,17 @@ default_t defaults[] =
    def_int, ss_none}, // 0 = kill music when paused, 1 = pause music, 2 = let music continue
   {"snd_channels",{&default_numChannels},{32},1,32,
    def_int,ss_none}, // number of audio events simultaneously // killough
-#ifdef _WIN32
-  {"snd_midiplayer",{NULL, &snd_midiplayer},{0,"fluidsynth"},UL,UL,def_str,ss_none},
-#else
   {"snd_midiplayer",{NULL, &snd_midiplayer},{0,"sdl"},UL,UL,def_str,ss_none},
-#endif
   {"snd_soundfont",{NULL, &snd_soundfont},{0,"TimGM6mb.sf2"},UL,UL,def_str,ss_none}, // soundfont name for synths that support it
   {"snd_mididev",{NULL, &snd_mididev},{0,""},UL,UL,def_str,ss_none}, // midi device to use for portmidiplayer
 
-#ifdef _WIN32
-  {"mus_extend_volume",{&mus_extend_volume},{0},0,1,
-   def_bool,ss_none}, // e6y: apply midi volume to all midi devices
-#endif
   {"mus_fluidsynth_chorus",{&mus_fluidsynth_chorus},{1},0,1,def_bool,ss_none},
   {"mus_fluidsynth_reverb",{&mus_fluidsynth_reverb},{1},0,1,def_bool,ss_none},
   {"mus_fluidsynth_gain",{&mus_fluidsynth_gain},{50},0,1000,def_int,ss_none}, // NSM  fine tune fluidsynth output level
   {"mus_opl_gain",{&mus_opl_gain},{50},0,1000,def_int,ss_none}, // NSM  fine tune opl output level
 
   {"Video settings",{NULL},{0},UL,UL,def_none,ss_none},
-#ifdef GL_DOOM
-  #ifdef _MSC_VER
-    {"videomode",{NULL, &default_videomode},{0,"OpenGL"},UL,UL,def_str,ss_none},
-  #else
-    {"videomode",{NULL, &default_videomode},{0,"8"},UL,UL,def_str,ss_none},
-  #endif
-#else
   {"videomode",{NULL, &default_videomode},{0,"8"},UL,UL,def_str,ss_none},
-#endif
   /* 640x480 default resolution */
   {"screen_resolution",{NULL, &screen_resolution},{0,"640x480"},UL,UL,def_str,ss_none},
   {"use_fullscreen",{&use_fullscreen},{0},0,1, /* proff 21/05/2000 */
@@ -436,73 +363,6 @@ default_t defaults[] =
   {"patch_edges",{(int*)&drawvars.patch_edges},{RDRAW_MASKEDCOLUMNEDGE_SQUARE},
    RDRAW_MASKEDCOLUMNEDGE_SQUARE, RDRAW_MASKEDCOLUMNEDGE_SLOPED, def_int,ss_none},
 
-#ifdef GL_DOOM
-  {"OpenGL settings",{NULL},{0},UL,UL,def_none,ss_none},
-  {"gl_compatibility", {&gl_compatibility},  {0},0,1,
-   def_bool,ss_stat},
-
-  {"gl_arb_multitexture", {&gl_arb_multitexture_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_arb_texture_compression", {&gl_arb_texture_compression_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_arb_texture_non_power_of_two", {&gl_arb_texture_non_power_of_two_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_ext_arb_vertex_buffer_object", {&gl_ext_arb_vertex_buffer_object_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_arb_pixel_buffer_object", {&gl_arb_pixel_buffer_object_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_arb_shader_objects", {&gl_arb_shader_objects_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_ext_blend_color", {&gl_ext_blend_color_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_ext_framebuffer_object", {&gl_ext_framebuffer_object_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_ext_packed_depth_stencil", {&gl_ext_packed_depth_stencil_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_ext_texture_filter_anisotropic", {&gl_ext_texture_filter_anisotropic_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_use_stencil", {&gl_use_stencil_default}, {1},0,1,
-   def_bool,ss_stat},
-  {"gl_use_display_lists",{&gl_use_display_lists},{0},0,1,
-   def_bool,ss_none},
-
-  {"gl_finish",{&gl_finish},{1},0,1,
-   def_bool,ss_none},
-  {"gl_clear",{&gl_clear},{0},0,1,
-   def_bool,ss_none},
-  {"gl_ztrick",{&gl_ztrick},{0},0,1,
-   def_bool,ss_none},
-  {"gl_nearclip",{&gl_nearclip},{5},0,UL,
-   def_int,ss_none}, /* near clipping plane pos */
-  {"gl_colorbuffer_bits",{&gl_colorbuffer_bits},{32},16,32,
-   def_int,ss_none},
-  {"gl_depthbuffer_bits",{&gl_depthbuffer_bits},{24},16,32,
-   def_int,ss_none},
-  {"gl_texture_filter",{(int*)&gl_texture_filter},
-   {filter_nearest_mipmap_linear}, filter_nearest, filter_count - 1, def_int,ss_none},
-  {"gl_sprite_filter",{(int*)&gl_sprite_filter},
-   {filter_nearest}, filter_nearest, filter_linear_mipmap_nearest, def_int,ss_none},
-  {"gl_patch_filter",{(int*)&gl_patch_filter},
-   {filter_nearest}, filter_nearest, filter_linear, def_int,ss_none},
-  {"gl_texture_filter_anisotropic",{(int*)&gl_texture_filter_anisotropic},
-   {gl_anisotropic_8x}, gl_anisotropic_off, gl_anisotropic_16x, def_int,ss_none},
-  {"gl_tex_format_string", {NULL,&gl_tex_format_string}, {0,"GL_RGBA"},UL,UL,
-   def_str,ss_none},
-  {"gl_sprite_offset",{&gl_sprite_offset_default},{0}, 0, 5,
-   def_int,ss_none}, // amount to bring items out of floor (GL) Mead 8/13/03
-  {"gl_sprite_blend",{&gl_sprite_blend},{0},0,1,
-   def_bool,ss_none},
-  {"gl_mask_sprite_threshold",{&gl_mask_sprite_threshold},{50},0,100,
-   def_int,ss_none},
-  {"gl_skymode",{(int*)&gl_skymode},
-  {skytype_auto}, skytype_auto, skytype_count - 1, def_int,ss_none},
-  {"gl_sky_detail",{&gl_sky_detail},{16},1,32,
-   def_int,ss_none},
-  {"gl_use_paletted_texture",{&gl_use_paletted_texture},{0},0,1,
-   def_bool,ss_none},
-  {"gl_use_shared_texture_palette",{&gl_use_shared_texture_palette},{0},0,1,
-   def_bool,ss_none},
-#endif
 
   {"Mouse settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"use_mouse",{&usemouse},{1},0,1,
@@ -638,10 +498,6 @@ default_t defaults[] =
    0,MAX_KEY,def_key,ss_keys}, // key to toggle rotating the automap to match the player's orientation
   {"key_map_overlay", {&key_map_overlay},     {'o'}           ,
    0,MAX_KEY,def_key,ss_keys}, // key to toggle overlaying the automap on the rendered display
-#ifdef GL_DOOM
-  {"key_map_textured", {&key_map_textured},   {0}             ,
-   0,MAX_KEY,def_key,ss_keys}, // key to toggle textured automap
-#endif
   {"key_reverse",     {&key_reverse},         {'/'}           ,
    0,MAX_KEY,def_key,ss_keys}, // key to spin 180 instantly
   {"key_zoomin",      {&key_zoomin},          {'='}           ,
@@ -797,23 +653,8 @@ default_t defaults[] =
    def_int,ss_auto},
   {"map_wheel_zoom", {&map_wheel_zoom}, {1},0,1,
    def_bool,ss_auto},
-#ifdef GL_DOOM
-  {"map_use_multisamling", {&map_use_multisamling}, {1},0,1,
-   def_bool,ss_auto},
-#else
   {"map_use_multisamling", {&map_use_multisamling}, {0},0,1,
    def_bool,ss_auto},
-#endif
-#ifdef GL_DOOM
-  {"map_textured", {&map_textured}, {1},0,1,
-   def_bool,ss_auto},
-  {"map_textured_trans", {&map_textured_trans}, {100},0,100,
-   def_int,ss_auto},
-  {"map_textured_overlay_trans", {&map_textured_overlay_trans}, {66},0,100,
-   def_int,ss_auto},
-  {"map_lines_overlay_trans", {&map_lines_overlay_trans}, {100},0,100,
-   def_int,ss_auto},
-#endif
   {"map_overlay_pos_x", {&map_overlay_pos_x}, {0},0,319,
    def_int,ss_auto},
   {"map_overlay_pos_y", {&map_overlay_pos_y}, {0},0,199,
@@ -962,18 +803,6 @@ default_t defaults[] =
    def_bool,ss_stat},
   {"screenshot_dir", {NULL,&screenshot_dir}, {0,""},UL,UL,
    def_str,ss_none},
-#ifdef GL_DOOM
-  {"health_bar", {&health_bar}, {0},0,1,
-   def_bool,ss_stat},
-  {"health_bar_full_length", {&health_bar_full_length}, {1},0,1,
-   def_bool,ss_stat},
-  {"health_bar_red", {&health_bar_red}, {50},0,100,
-   def_int,ss_stat},
-  {"health_bar_yellow", {&health_bar_yellow}, {99},0,100,
-   def_int,ss_stat},
-  {"health_bar_green", {&health_bar_green}, {0},0,100,
-   def_int,ss_stat},
-#endif
 
   // NSM
   {"Video capture encoding settings",{NULL},{0},UL,UL,def_none,ss_none},
@@ -1027,76 +856,6 @@ default_t defaults[] =
   {"movement_mouseinvert", {&movement_mouseinvert},  {0},0,1,
    def_bool,ss_stat},
 
-#ifdef GL_DOOM
-  {"Prboom-plus OpenGL settings",{NULL},{0},UL,UL,def_none,ss_none},
-  {"gl_allow_detail_textures", {&gl_allow_detail_textures},  {1},0,1,
-   def_bool,ss_stat},
-  {"gl_detail_maxdist", {&gl_detail_maxdist},  {0},0,65535,
-   def_int,ss_stat},
-  {"render_multisampling", {&render_multisampling},  {0},0,8,
-   def_int,ss_stat},
-  {"render_fov", {&render_fov},  {90},20,160,
-   def_int,ss_stat},
-  {"gl_spriteclip",{(int*)&gl_spriteclip},{spriteclip_smart}, spriteclip_const, spriteclip_smart, def_int,ss_none},
-   {"gl_spriteclip_threshold", {&gl_spriteclip_threshold},  {10},0,100,
-   def_int,ss_stat},
-   {"gl_sprites_frustum_culling", {&gl_sprites_frustum_culling},  {1},0,1,
-   def_bool,ss_stat},
-  {"render_paperitems", {&render_paperitems},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_boom_colormaps", {&gl_boom_colormaps_default},  {1},0,1,
-   def_bool,ss_stat},
-  {"gl_hires_24bit_colormap", {&gl_hires_24bit_colormap},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_texture_internal_hires", {&gl_texture_internal_hires},  {1},0,1,
-   def_bool,ss_stat},
-  {"gl_texture_external_hires", {&gl_texture_external_hires},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_hires_override_pwads", {&gl_hires_override_pwads},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_texture_hires_dir", {NULL,&gl_texture_hires_dir}, {0,""},UL,UL,
-   def_str,ss_none},
-  {"gl_texture_hqresize", {&gl_texture_hqresize},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_texture_hqresize_textures", {&gl_texture_hqresize_textures},
-   {hq_scale_2x},hq_scale_none,hq_scale_max-1, def_int,ss_stat},
-  {"gl_texture_hqresize_sprites", {&gl_texture_hqresize_sprites},
-   {hq_scale_none},hq_scale_none,hq_scale_max-1, def_int,ss_stat},
-  {"gl_texture_hqresize_patches", {&gl_texture_hqresize_patches},
-   {hq_scale_2x},hq_scale_none,hq_scale_max-1,def_int,ss_stat},
-  {"gl_motionblur", {&gl_motionblur},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_motionblur_min_speed", {NULL,&motion_blur.str_min_speed}, {0,"21.36"},UL,UL,
-   def_str,ss_none},
-  {"gl_motionblur_min_angle", {NULL,&motion_blur.str_min_angle}, {0,"20.0"},UL,UL,
-   def_str,ss_none},
-  {"gl_motionblur_att_a", {NULL,&motion_blur.str_att_a}, {0,"55.0"},UL,UL,
-   def_str,ss_none},
-  {"gl_motionblur_att_b", {NULL,&motion_blur.str_att_b}, {0,"1.8"},UL,UL,
-   def_str,ss_none},
-  {"gl_motionblur_att_c", {NULL,&motion_blur.str_att_c}, {0,"0.9"},UL,UL,
-   def_str,ss_none},
-  {"gl_lightmode",{(int*)&gl_lightmode_default},{gl_lightmode_glboom},
-   gl_lightmode_glboom, gl_lightmode_last-1, def_int,ss_none},
-  {"gl_light_ambient", {&gl_light_ambient},  {20},1,255,
-   def_int,ss_stat},
-  {"gl_fog", {&gl_fog},  {1},0,1,
-   def_bool,ss_stat},
-  {"gl_fog_color", {&gl_fog_color},  {0},0,0xffffff,
-   def_hex,ss_stat},
-  {"useglgamma",{&useglgamma},{6},0,MAX_GLGAMMA,
-   def_int,ss_none},
-  {"gl_color_mip_levels", {&gl_color_mip_levels},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_shadows", {&simple_shadows.enable},  {0},0,1,
-   def_bool,ss_stat},
-  {"gl_shadows_maxdist",{&gl_shadows_maxdist},{1000},0,32767,
-   def_int,ss_none},
-  {"gl_shadows_factor",{&gl_shadows_factor},{128},0,255,
-   def_int,ss_none},
-  {"gl_blend_animations",{&gl_blend_animations},{0},0,1,
-   def_bool,ss_none},
-#endif
   {"Prboom-plus emulation settings",{NULL},{0},UL,UL,def_none,ss_none},
   {"overrun_spechit_warn", {&overflows[OVERFLOW_SPECHIT].warn},  {0},0,1,
    def_bool,ss_stat},
@@ -1137,21 +896,6 @@ default_t defaults[] =
   {"comperr_freeaim", {&default_comperr[comperr_freeaim]},  {0},0,1,
    def_bool,ss_stat},
 
-#ifdef USE_WINDOWS_LAUNCHER
-  {"Prboom-plus launcher settings",{NULL},{0},UL,UL,def_none,ss_none},
-  {"launcher_enable",{(int*)&launcher_enable},{launcher_enable_never},
-   launcher_enable_never, launcher_enable_count - 1, def_int,ss_none},
-  {"launcher_history0", {NULL,&launcher_history[0]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history1", {NULL,&launcher_history[1]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history2", {NULL,&launcher_history[2]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history3", {NULL,&launcher_history[3]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history4", {NULL,&launcher_history[4]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history5", {NULL,&launcher_history[5]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history6", {NULL,&launcher_history[6]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history7", {NULL,&launcher_history[7]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history8", {NULL,&launcher_history[8]}, {0,""},UL,UL,def_str,ss_none},
-  {"launcher_history9", {NULL,&launcher_history[9]}, {0,""},UL,UL,def_str,ss_none},
-#endif
   {"Prboom-plus demo patterns list. Put your patterns here",{NULL},{0},UL,UL,def_none,ss_none},
   {"demo_patterns_mask", {NULL, &demo_patterns_mask, &demo_patterns_count, &demo_patterns_list}, {0,"demo_pattern",9, &demo_patterns_list_def[0]},UL,UL,def_arr,ss_none},
   {"demo_pattern0", {NULL,&demo_patterns_list_def[0]}, 
@@ -1483,11 +1227,7 @@ void M_LoadDefaults (void)
 
   // check for a custom default file
 
-#if ((defined GL_DOOM) && (defined _MSC_VER))
-#define BOOM_CFG "glboom-plus.cfg"
-#else
 #define BOOM_CFG "prboom-plus.cfg"
-#endif
 
   i = M_CheckParm ("-config");
   if (i && i < myargc-1)
@@ -1660,11 +1400,7 @@ void M_DoScreenShot (const char* fname)
 #define SCREENSHOT_DIR "."
 #endif
 
-#ifdef HAVE_LIBSDL2_IMAGE
-#define SCREENSHOT_EXT ".png"
-#else
 #define SCREENSHOT_EXT ".bmp"
-#endif
 
 const char* M_CheckWritableDir(const char *dir)
 {
@@ -1715,11 +1451,7 @@ void M_ScreenShot(void)
   if (!shot_dir)
     shot_dir = M_CheckWritableDir(screenshot_dir);
   if (!shot_dir)
-#ifdef _WIN32
-    shot_dir = M_CheckWritableDir(I_DoomExeDir());
-#else
     shot_dir = (!access(SCREENSHOT_DIR, 2) ? SCREENSHOT_DIR : NULL);
-#endif
 
   if (shot_dir)
   {

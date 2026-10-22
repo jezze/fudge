@@ -38,9 +38,6 @@
 #include "d_player.h"
 
 
-#ifdef __GNUG__
-#pragma interface
-#endif
 
 
 //
@@ -188,11 +185,7 @@ typedef struct
 } doomcom_t;
 
 // Create any new ticcmds and broadcast to other players.
-#ifdef HAVE_NET
-void NetUpdate (void);
-#else
 void D_BuildNewTiccmds(void);
-#endif
 
 //? how many ticks to run?
 void TryRunTics (void);

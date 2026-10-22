@@ -19,12 +19,6 @@
 //#include "inttypes.h" //NSM
 #include "port.h"
 
-#ifdef _MSC_VER
-  #if _MSC_VER < 1300
-    #include <BaseTsd.h>
-    typedef INT_PTR   intptr_t;
-  #endif
-#endif
 
 //Use 8 handlers based on a small logatirmic wavetabe and an exponential table for volume
 #define WAVE_HANDLER  10
@@ -201,18 +195,10 @@ struct Handler : public Adlib::Handler {
 };
 */
 
-#ifdef __cplusplus
-extern "C" void Chip__Setup(Chip *self, Bit32u rate );
-extern "C" void DBOPL_InitTables( void );
-extern "C" void Chip__Chip(Chip *self);
-extern "C" void Chip__WriteReg(Chip *self, Bit32u reg, Bit8u val );
-extern "C" void Chip__GenerateBlock2(Chip *self, Bitu total, Bit32s* output );
-#else
 void Chip__Setup(Chip *self, Bit32u rate );
 void DBOPL_InitTables( void );
 void Chip__Chip(Chip *self);
 void Chip__WriteReg(Chip *self, Bit32u reg, Bit8u val );
 void Chip__GenerateBlock2(Chip *self, Bitu total, Bit32s* output );
 
-#endif
 

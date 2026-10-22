@@ -31,22 +31,8 @@
  *-----------------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <direct.h>
-#include <winreg.h>
-#endif
-#ifdef GL_DOOM
-#include <SDL_opengl.h>
-#endif
 #include "port.h"
-#ifdef _WIN32
-#include <SDL_syswm.h>
-#endif
 
 #include "hu_lib.h"
 
@@ -73,19 +59,12 @@
 #include "r_sky.h"
 #include "am_map.h"
 #include "hu_tracers.h"
-#ifdef GL_DOOM
-#include "gl_struct.h"
-#include "gl_intern.h"
-#endif
 #include "g_game.h"
 #include "r_demo.h"
 #include "d_deh.h"
 #include "e6y.h"
 #include "cybermind.h"
 
-#ifdef _MSC_VER
-#include <io.h>
-#endif
 
 dboolean wasWiped = false;
 
@@ -175,33 +154,6 @@ dboolean mlook_or_fov;
 int maxViewPitch;
 int minViewPitch;
 
-#ifdef _WIN32
-const char* WINError(void)
-{
-  static char *WinEBuff = NULL;
-  DWORD err = GetLastError();
-  char *ch;
-
-  if (WinEBuff)
-  {
-    LocalFree(WinEBuff);
-  }
-
-  if (FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-    NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-    (LPTSTR) &WinEBuff, 0, NULL) == 0)
-  {
-    return "Unknown error";
-  }
-
-  if ((ch = strchr(WinEBuff, '\n')) != 0)
-    *ch = 0;
-  if ((ch = strchr(WinEBuff, '\r')) != 0)
-    *ch = 0;
-
-  return WinEBuff;
-}
-#endif
 
 //--------------------------------------------------
 
@@ -356,11 +308,6 @@ void G_SkipDemoStop(void)
   S_RestartMusic();
   I_SeekRecording(totaldemotics);
 
-#ifdef GL_DOOM
-  if (V_GetMode() == VID_MODEGL) {
-    gld_PreprocessLevel();
-  }
-#endif
 }
 
 void G_SkipDemoCheck(void)
@@ -471,12 +418,6 @@ void M_ChangeMouseLook(void)
 
   R_InitSkyMap();
 
-#ifdef GL_DOOM
-  if (gl_skymode == skytype_auto)
-    gl_drawskys = (movement_mouselook ? skytype_skydome : skytype_standard);
-  else
-    gl_drawskys = gl_skymode;
-#endif // GL_DOOM
 }
 
 void M_ChangeMouseInvert(void)
@@ -601,77 +542,6 @@ void M_ChangeFOV(void)
   skyscale = 1.0f / (float)tan(DEG2RAD(render_fov / 2));
 }
 
-#ifdef GL_DOOM
-void M_ChangeMultiSample(void)
-{
-}
-
-void M_ChangeSpriteClip(void)
-{
-  gl_sprite_offset = (gl_spriteclip != spriteclip_const ? 0 : (.01f * (float)gl_sprite_offset_default));
-  gl_spriteclip_threshold_f = (float)gl_spriteclip_threshold / MAP_COEFF;
-}
-
-void ResolveColormapsHiresConflict(dboolean prefer_colormap)
-{
-  gl_boom_colormaps = !r_have_internal_hires && !gl_texture_external_hires;
-#if 0
-  if (prefer_colormap)
-  {
-    if (gl_boom_colormaps_default)
-    {
-      gl_texture_external_hires = false;
-    }
-    else if (gl_texture_external_hires)
-    {
-      gl_boom_colormaps = false;
-      gl_boom_colormaps_default = false;
-    }
-  }
-  else
-  {
-    if (gl_texture_external_hires)
-    {
-      gl_boom_colormaps = false;
-      gl_boom_colormaps_default = false;
-    }
-    else if (gl_boom_colormaps_default)
-    {
-      gl_texture_external_hires = false;
-    }
-  }
-#endif
-}
-
-void M_ChangeAllowBoomColormaps(void)
-{
-  if (gl_boom_colormaps == -1)
-  {
-    gl_boom_colormaps = gl_boom_colormaps_default;
-    ResolveColormapsHiresConflict(true);
-  }
-  else
-  {
-    gl_boom_colormaps = gl_boom_colormaps_default;
-    ResolveColormapsHiresConflict(true);
-    gld_FlushTextures();
-    gld_Precache();
-  }
-}
-
-void M_ChangeTextureUseHires(void)
-{
-  ResolveColormapsHiresConflict(false);
-
-  gld_FlushTextures();
-  gld_Precache();
-}
-
-void M_ChangeTextureHQResize(void)
-{
-  gld_FlushTextures();
-}
-#endif //GL_DOOM
 
 void M_Mouse(int choice, int *sens);
 void M_MouseMLook(int choice)
@@ -737,9 +607,6 @@ void I_vWarning(const char *message, va_list argList)
   char msg[1024];
   doom_vsnprintf(msg,sizeof(msg),message,argList);
   lprintf(LO_ERROR, "%s\n", msg);
-#ifdef _MSC_VER
-  I_MessageBox(msg, PRB_MB_OK);
-#endif
 }
 
 void I_Warning(const char *message, ...)
@@ -754,14 +621,6 @@ int I_MessageBox(const char* text, unsigned int type)
 {
   int result = PRB_IDCANCEL;
 
-#ifdef _WIN32
-  {
-    HWND current_hwnd = GetForegroundWindow();
-    result = MessageBox(GetDesktopWindow(), text, PACKAGE_NAME, type|MB_TASKMODAL|MB_TOPMOST);
-    I_SwitchToWindow(current_hwnd);
-    return result;
-  }
-#endif
 
 #if 0
   {
@@ -1247,79 +1106,7 @@ int HU_DrawDemoProgress(int force)
   return true;
 }
 
-#ifdef _MSC_VER
-int GetFullPath(const char* FileName, const char* ext, char *Buffer, size_t BufferLength)
-{
-  int i, Result;
-  char *p;
-  char dir[PATH_MAX];
-  
-  for (i=0; i<3; i++)
-  {
-    switch(i)
-    {
-    case 0:
-      getcwd(dir, sizeof(dir));
-      break;
-    case 1:
-      if (!getenv("DOOMWADDIR"))
-        continue;
-      strcpy(dir, getenv("DOOMWADDIR"));
-      break;
-    case 2:
-      strcpy(dir, I_DoomExeDir());
-      break;
-    }
 
-    Result = SearchPath(dir,FileName,ext,BufferLength,Buffer,&p);
-    if (Result)
-      return Result;
-  }
-
-  return false;
-}
-#endif
-
-#ifdef _WIN32
-#include <Mmsystem.h>
-#pragma comment( lib, "winmm.lib" )
-int mus_extend_volume;
-void I_midiOutSetVolumes(int volume)
-{
-  // NSM changed to work on the 0-15 volume scale,
-  // and to check mus_extend_volume itself.
-  
-  MMRESULT result;
-  int calcVolume;
-  MIDIOUTCAPS capabilities;
-  unsigned int i;
-
-  if (volume > 15)
-    volume = 15;
-  if (volume < 0)
-    volume = 0;
-  calcVolume = (65535 * volume / 15);
-
-  //SDL_LockAudio(); // this function doesn't touch anything the audio callback touches
-
-  //Device loop
-  for (i = 0; i < midiOutGetNumDevs(); i++)
-  {
-    //Get device capabilities
-    result = midiOutGetDevCaps(i, &capabilities, sizeof(capabilities));
-    if (result == MMSYSERR_NOERROR)
-    {
-      //Adjust volume on this candidate
-      if ((capabilities.dwSupport & MIDICAPS_VOLUME))
-      {
-        midiOutSetVolume((HMIDIOUT)i, MAKELONG(calcVolume, calcVolume));
-      }
-    }
-  }
-
-  //SDL_UnlockAudio();
-}
-#endif
 
 //Begin of GZDoom code
 /*

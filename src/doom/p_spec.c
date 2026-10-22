@@ -66,14 +66,7 @@
 //      source animation definition
 //
 //
-#ifdef _MSC_VER // proff: This is the same as __attribute__ ((packed)) in GNUC
-#pragma pack(push)
-#pragma pack(1)
-#endif //_MSC_VER
 
-#if defined(__MWERKS__)
-#pragma options align=packed
-#endif
 
 typedef struct
 {
@@ -83,13 +76,7 @@ typedef struct
   int         speed;
 } PACKEDATTR animdef_t; //jff 3/23/98 pack to read from memory
 
-#if defined(__MWERKS__)
-#pragma options align=reset
-#endif
 
-#ifdef _MSC_VER
-#pragma pack(pop)
-#endif //_MSC_VER
 
 #define MAXANIMS 32                   // no longer a strict limit -- killough
 
@@ -106,30 +93,6 @@ static void P_SpawnPushers(void);     // phares 3/20/98
 //e6y
 void MarkAnimatedTextures(void)
 {
-#ifdef GL_DOOM
-  anim_t* anim;
-
-  anim_textures = calloc(numtextures, sizeof(TAnimItemParam));
-  anim_flats = calloc(numflats, sizeof(TAnimItemParam));
-
-  for (anim = anims ; anim < lastanim ; anim++)
-  {
-    int i;
-    for (i = 0; i < anim->numpics ; i++)
-    {
-      if (anim->istexture)
-      {
-        anim_textures[anim->basepic + i].anim = anim;
-        anim_textures[anim->basepic + i].index = i + 1;
-      }
-      else
-      {
-        anim_flats[anim->basepic + i].anim = anim;
-        anim_flats[anim->basepic + i].index = i + 1;
-      }
-    }
-  }
-#endif // GL_DOOM
 }
 
 //

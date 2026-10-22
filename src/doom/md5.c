@@ -133,7 +133,6 @@ MD5Final(md5byte digest[16], struct MD5Context *ctx)
         memset(ctx, 0, sizeof(*ctx));    /* In case it's sensitive */
 }
 
-#ifndef ASM_MD5
 
 /* The four core functions - F1 is optimized somewhat */
 
@@ -236,4 +235,3 @@ MD5Transform(UWORD32 buf[4], UWORD32 const in[16])
         buf[3] += d;
 }
 
-#endif
