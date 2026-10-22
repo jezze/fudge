@@ -41,6 +41,12 @@ arm-integratorcp:
 	@echo "LOADER:=integratorcp" >> $(DIR_MK)/$(CONFIG).mk
 	@echo "TARGET:=arm-unknown-eabi" >> $(DIR_MK)/$(CONFIG).mk
 
+m68k-amiga:
+	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
+	@echo "ARCH:=m68k" > $(DIR_MK)/$(CONFIG).mk
+	@echo "LOADER:=amiga" >> $(DIR_MK)/$(CONFIG).mk
+	@echo "TARGET:=m68k-unknown-elf" >> $(DIR_MK)/$(CONFIG).mk
+
 m68k-m68kvirt:
 	@echo "Writing configuration to $(DIR_MK)/$(CONFIG).mk"
 	@echo "ARCH:=m68k" > $(DIR_MK)/$(CONFIG).mk
@@ -85,6 +91,7 @@ help:
 	@echo "Where <config> is one of the following:"
 	@echo ""
 	@echo "  arm-integratorcp"
+	@echo "  m68k-amiga"
 	@echo "  m68k-m68kvirt"
 	@echo "  riscv32-virt"
 	@echo "  riscv64-virt"
@@ -109,6 +116,7 @@ $(error No configuration in $(DIR_MK)/$(CONFIG).mk, set one with make <config> (
 endif
 else
 include $(DIR_MK)/$(ARCH)-$(LOADER).mk
+MODULES_ARCH:=$(firstword $(wildcard data/config/modules-$(ARCH)-$(LOADER).mq) data/config/modules-$(ARCH).mq)
 include $(DIR_LIB)/rules.mk
 include $(DIR_SRC)/rules.mk
 endif
@@ -138,7 +146,7 @@ $(DIR_BUILDINITRD): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@cp $(BIN) $@/bin
 	@mkdir -p $@/data
 	@cp -r $(addprefix data/,$(RAMDISK_DATA)) $@/data
-	@cp data/config/modules-$(ARCH).mq $@/data/config/modules-arch.mq
+	@cp $(MODULES_ARCH) $@/data/config/modules-arch.mq
 	@mkdir -p $@/kernel
 	@cp $(KMAP) $@/kernel
 	@cp $(KMOD) $@/kernel
@@ -153,7 +161,7 @@ $(DIR_BUILDROOT): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@cp $(BIN) $@/bin
 	@mkdir -p $@/data
 	@cp -r data/* $@/data
-	@cp data/config/modules-$(ARCH).mq $@/data/config/modules-arch.mq
+	@cp $(MODULES_ARCH) $@/data/config/modules-arch.mq
 	@mkdir -p $@/kernel
 	@cp $(KMAP) $@/kernel
 	@cp $(KMOD) $@/kernel

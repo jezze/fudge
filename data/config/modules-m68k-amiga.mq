@@ -1,0 +1,7 @@
+{
+  modules: [
+    { path: initrd:kernel/amiga.ko }
+    { path: initrd:kernel/amiga-timer.ko }
+    { path: initrd:kernel/amiga-serial.ko }
+  ]
+}

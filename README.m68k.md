@@ -47,6 +47,32 @@ little-endian, and a legacy device here would expect them big-endian.
 -A adds a virtio-sound device, playing through PulseAudio unless -o names another QEMU audio
 driver (pipewire, alsa, or wav to record to fudge.wav); `sound` plays WAV files on it.
 
+## Amiga
+
+make m68k-amiga
+make
+
+builds fudgeboot as well, an AmigaDOS executable holding the kernel and the ramdisk. Run it
+from an AmigaOS or AROS shell (or a Startup-Sequence): it takes over the machine through
+exec's Supervisor(), turns off interrupts, DMA, caches and the MMU, copies the kernel to
+its address with the ramdisk after it and enters it; the loader moves the ramdisk to
+ARCH_RAMDISK_BASE. The modules are amiga (paula's interrupts), amiga-timer (cia-a's timer
+a at 60 Hz) and amiga-serial (paula's serial port at 115200 baud, the shell's console,
+shared with kernel debug output). There is no clock, keyboard, display or storage yet.
+
+The kernel's memory starts at ARCH_RAMBASE, 0x10000000 (256 MB of Zorro III RAM where
+UAE puts it with its own mapping). So far it runs in FS-UAE as an A4000/040 with these
+options:
+
+amiga_model = A4000/040
+zorro_iii_memory = 262144
+uae_z3mapping = uae
+uae_mmu_model = 68040
+uae_cpu_compatible = true
+
+UAE only emulates the 68040's MMU with the compatible cpu core. FS-UAE's built-in AROS
+ROM is enough to reach a shell; serial_port connects paula to a host device or pty.
+
 ## Real hardware
 
 Not tried yet. After a page fault the kernel does the writebacks a 68040 leaves in its access fault

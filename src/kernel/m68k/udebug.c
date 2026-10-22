@@ -7,6 +7,25 @@
 static struct debug_interface debug;
 static unsigned int udebug_count = 0;
 
+#ifdef ARCH_AMIGA
+/* paula's serial port takes a character with its stop bit in SERDAT once SERDATR says the buffer is empty */
+static void print(unsigned int count, char *buffer)
+{
+
+    volatile unsigned short *custom = (volatile unsigned short *)ARCH_TTY_BASE;
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+    {
+
+        while (!(custom[0x18 / 2] & 0x2000));
+
+        custom[0x30 / 2] = 0x100 | (unsigned char)buffer[i];
+
+    }
+
+}
+#else
 /* the goldfish tty takes one character per write to its first register */
 static void print(unsigned int count, char *buffer)
 {
@@ -18,6 +37,7 @@ static void print(unsigned int count, char *buffer)
         tty[0] = (unsigned char)buffer[i];
 
 }
+#endif
 
 static void debug_write(unsigned int level, unsigned int count, char *buffer, char *file, unsigned int line)
 {

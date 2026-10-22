@@ -1,4 +1,10 @@
+#ifdef ARCH_AMIGA
+#define ARCH_RAMBASE                    0x10000000
+#define ARCH_TTY_BASE                   0x00DFF000
+#else
 #define ARCH_RAMBASE                    0x00000000
+#define ARCH_TTY_BASE                   0xFF008000
+#endif
 #define ARCH_KERNEL_CODEBASE            (ARCH_RAMBASE + 0x00100000)
 #define ARCH_KERNEL_CODESIZE            (KERNEL_CODESIZE)
 #define ARCH_KERNEL_STACKBASE           (ARCH_KERNEL_CODEBASE + ARCH_KERNEL_CODESIZE)
@@ -22,7 +28,6 @@
 #define ARCH_TASK_STACKBASE             (ARCH_TASK_CODEBASE + ARCH_TASK_CODESIZE)
 #define ARCH_MEM_BASE                   (ARCH_RAMBASE + 0x0A000000)
 #define ARCH_MEM_SIZE                   (MEMSRV_PAGES * MEMSRV_PAGESIZE)
-#define ARCH_TTY_BASE                   0xFF008000
 #define ARCH_INTERRUPTS                 8
 
 void arch_kmap(unsigned int paddress, unsigned int vaddress, unsigned int size, unsigned int flags);
