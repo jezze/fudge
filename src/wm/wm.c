@@ -2467,6 +2467,7 @@ static void onvideoinfo(struct message *message)
     pool_setfont(0, lineheight);
     pool_loadfont(1, fontb[factor]);
     pool_setfont(1, lineheight);
+    render_setscale(factor);
 
     state.mouseposition.x = videoinfo.width / 4;
     state.mouseposition.y = videoinfo.height / 4;

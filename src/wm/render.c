@@ -55,6 +55,7 @@ static unsigned int measureminimum;
 static unsigned int measureclipped;
 static struct util_position mouse;
 static unsigned int mousetype;
+static unsigned int scale;
 static struct calls calls[32];
 static struct palette palettes[NUM_PALETTES][NUM_SHADES];
 static struct widget *hoverwidget;
@@ -1236,11 +1237,27 @@ static void setupcall(unsigned int type, struct util_size (*getsize)(struct widg
 
 }
 
+unsigned int render_scale(unsigned int value)
+{
+
+    return (value * (scale + 1) + (CONFIG_SCALE + 1) / 2) / (CONFIG_SCALE + 1);
+
+}
+
+void render_setscale(unsigned int factor)
+{
+
+    scale = factor;
+
+}
+
 void render_init(void)
 {
 
     unsigned int palette;
     unsigned int shade;
+
+    render_setscale(CONFIG_SCALE);
 
     for (palette = 0; palette < NUM_PALETTES; palette++)
     {
