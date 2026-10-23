@@ -2,7 +2,7 @@
 + panel id "base" in "window" flow "vertical-stretch" padding "3" spacing "2" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "2"
 + select id "area" in "top" label "General"
-+ panel id "area-list" in "area" flow "vertical-stretch" padding "1"
++ panel id "area-list" in "area" flow "vertical-stretch"
 + item id "area-general" in "area-list" padding "4" onclick "q=area&name=general"
 + text in "area-general" label "General"
 + item id "area-localization" in "area-list" padding "4" onclick "q=area&name=localization"

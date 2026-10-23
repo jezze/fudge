@@ -2,7 +2,7 @@
 + panel id "base" in "window" flow "vertical-stretch" padding "3" spacing "2" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "2"
 + select id "wrap" in "top" label "None" onselect "q=wrap&wrap="
-+ panel id "wrap-list" in "wrap" flow "vertical-stretch" padding "1"
++ panel id "wrap-list" in "wrap" flow "vertical-stretch"
 + item id "wrap-none" in "wrap-list" padding "4"
 + text in "wrap-none" label "None"
 + item id "wrap-word" in "wrap-list" padding "4"

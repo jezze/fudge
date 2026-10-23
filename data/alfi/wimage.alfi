@@ -2,7 +2,7 @@
 + panel id "base" in "window" flow "vertical-stretch" padding "3" spacing "2" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "2"
 + select id "mode" in "top" label "Normal" onselect "q=mode&mode="
-+ panel id "mode-list" in "mode" flow "vertical-stretch" padding "1"
++ panel id "mode-list" in "mode" flow "vertical-stretch"
 + item id "mode-normal" in "mode-list" padding "4"
 + text in "mode-normal" label "Normal"
 + item id "mode-stretched" in "mode-list" padding "4"

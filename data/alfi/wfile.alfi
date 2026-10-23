@@ -2,7 +2,7 @@
 + panel id "base" in "window" flow "vertical-stretch" padding "3" spacing "2" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "2"
 + select id "volume" in "top" label "Volume"
-+ panel id "volume-list" in "volume" flow "vertical-stretch" padding "1"
++ panel id "volume-list" in "volume" flow "vertical-stretch"
 + item id "volume-initrd" in "volume-list" padding "4" onclick "q=abspath&path=initrd:"
 + text in "volume-initrd" label "initrd:"
 + item id "volume-mem" in "volume-list" padding "4" onclick "q=abspath&path=mem:"
