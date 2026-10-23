@@ -67,6 +67,11 @@ struct widget
     struct util_position scroll;
     struct util_position cursorposition;
     struct util_size cursorsize;
+    unsigned int changed;
+    struct util_region drawn;
+    struct util_region drawncursor;
+    struct util_position drawnscroll;
+    int drawnscrollmax;
     struct util_region placement;
     struct util_region cplacement;
     struct util_region clip;

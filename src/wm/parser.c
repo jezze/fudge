@@ -242,6 +242,17 @@ static void movecursortoend(struct widget *widget)
 
 }
 
+/* apps send their labels again with every update; one that has not changed needs no drawing */
+static unsigned int issamelabel(struct widget *widget, unsigned int attribute, char *value)
+{
+
+    if (attribute != ATTR_LABEL || !value || !widget->attributes.label)
+        return 0;
+
+    return cstring_match(strpool_getstring(widget->attributes.label), value);
+
+}
+
 static void parseattributes(struct state *state, struct widget *widget)
 {
 
@@ -256,11 +267,15 @@ static void parseattributes(struct state *state, struct widget *widget)
         {
 
             unsigned int count = readword(state, strbuffer, 4096);
+            char *value = (count) ? strbuffer : 0;
 
-            if (count)
-                widget_setattribute(widget, attribute, strbuffer);
-            else
-                widget_setattribute(widget, attribute, 0);
+            if (issamelabel(widget, attribute, value))
+                continue;
+
+            widget_setattribute(widget, attribute, value);
+
+            if (attribute != ATTR_CURSOR)
+                widget->changed = 1;
 
             if (attribute == ATTR_IN)
                 pool_setparent(widget);

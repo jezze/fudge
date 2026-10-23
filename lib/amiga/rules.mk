@@ -18,4 +18,4 @@ fs-uae/hd/$(KERNEL)boot: $(DIR_LIB)/amiga/hunk.s $(KERNEL) $(RAMDISK)
 	@$(OC) -O binary $(DIR_LIB)/amiga/hunk.o $@
 	@rm -f $(KERNEL).bin
 
-OBJ:=$(OBJ) $(KERNEL)boot $(DIR_LIB)/amiga/hunk.o
+OBJ:=$(OBJ) fs-uae/hd/$(KERNEL)boot $(DIR_LIB)/amiga/hunk.o

@@ -1116,6 +1116,7 @@ static void placewindows(unsigned int source)
 
                 setfocuswindow(widget);
                 setfocus(0);
+                damageall(widget);
 
             }
 
@@ -1128,8 +1129,6 @@ static void placewindows(unsigned int source)
                     scalewidget(widget, util_max(widget->size.w, minimum.w), util_max(widget->size.h, minimum.h));
 
             }
-
-            damageall(widget);
 
         }
 
@@ -1783,6 +1782,74 @@ static void purge(unsigned int source)
 
 }
 
+static void damageregion(struct util_region *region)
+{
+
+    if (region->size.w && region->size.h)
+        render_damage(region->position.x, region->position.y, region->position.x + region->size.w, region->position.y + region->size.h);
+
+}
+
+static void copyregion(struct util_region *to, struct util_region *from)
+{
+
+    to->position.x = from->position.x;
+    to->position.y = from->position.y;
+    to->size.w = from->size.w;
+    to->size.h = from->size.h;
+
+}
+
+static unsigned int isdifferent(struct util_region *a, struct util_region *b)
+{
+
+    return a->position.x != b->position.x || a->position.y != b->position.y || a->size.w != b->size.w || a->size.h != b->size.h;
+
+}
+
+/* after a relayout, widgets an update changed, that moved or that scrolled (their thumb) are drawn again where they were and where they are; so is a caret that moved */
+static void damagechanged(void)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_next(current)))
+    {
+
+        struct widget *widget = current->data;
+        struct util_region visible = util_region_intersection(&widget->placement, &widget->clip);
+        struct util_region cursor = util_region(widget->cursorposition.x, widget->cursorposition.y, widget->cursorsize.w, widget->cursorsize.h);
+
+        cursor = util_region_intersection(&cursor, &visible);
+
+        if (widget->changed || isdifferent(&visible, &widget->drawn) || widget->scroll.x != widget->drawnscroll.x || widget->scroll.y != widget->drawnscroll.y || widget->scrollmax != widget->drawnscrollmax)
+        {
+
+            damageregion(&widget->drawn);
+            damageregion(&visible);
+
+            copyregion(&widget->drawn, &visible);
+            widget->drawnscroll.x = widget->scroll.x;
+            widget->drawnscroll.y = widget->scroll.y;
+            widget->drawnscrollmax = widget->scrollmax;
+            widget->changed = 0;
+
+        }
+
+        if (isdifferent(&cursor, &widget->drawncursor))
+        {
+
+            damageregion(&widget->drawncursor);
+            damageregion(&cursor);
+
+            copyregion(&widget->drawncursor, &cursor);
+
+        }
+
+    }
+
+}
+
 static void redraw(unsigned int relayout)
 {
 
@@ -1796,6 +1863,7 @@ static void redraw(unsigned int relayout)
                 tilewindows();
 
             render_place(state.rootwidget, &display.region);
+            damagechanged();
             render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
 
         }
