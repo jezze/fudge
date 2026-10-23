@@ -24,6 +24,7 @@
 #define MOUSE_NORMAL        4
 #define MOUSE_FASTEST       16
 #define MOUSE_RAMP          8
+#define FONTS               4
 
 struct state
 {
@@ -54,13 +55,13 @@ static struct state state;
 static struct keys_map keymap[KEYS_MAPSIZE];
 static unsigned int keymapcount;
 static unsigned int linebuffer[3840];
-static char *fontn[] = {
+static char *fontn[FONTS] = {
     "initrd:data/font/ter-112n.pcf",
     "initrd:data/font/ter-114n.pcf",
     "initrd:data/font/ter-116n.pcf",
     "initrd:data/font/ter-118n.pcf",
 };
-static char *fontb[] = {
+static char *fontb[FONTS] = {
     "initrd:data/font/ter-112b.pcf",
     "initrd:data/font/ter-114b.pcf",
     "initrd:data/font/ter-116b.pcf",
@@ -2459,7 +2460,7 @@ static void onvideoinfo(struct message *message)
 
     buffer_copy(&videoinfo, message->data, sizeof (struct event_videoinfo));
 
-    factor = videoinfo.height / 320;
+    factor = util_min(videoinfo.height / 320, FONTS - 1);
     lineheight = 12 + factor * 4;
     padding = 4 + factor * 2;
 
