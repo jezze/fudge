@@ -262,7 +262,7 @@ static void beginarea(char *label)
 
     reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ box id \"content\" in \"base\" flow \"vertical-stretch\" padding \"8\" overflow \"scroll\" span \"1\"\n", label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "= area label \"%s\"\n- content\n+ box id \"content\" in \"base\" flow \"vertical-stretch\" padding \"2\" overflow \"scroll\" span \"1\"\n", label);
 
 }
 
@@ -271,7 +271,7 @@ static void beginrow(char *id)
 
     reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ layout id \"%s-row\" in \"content\" flow \"horizontal-stretch\" spacing \"8\" padding \"4\"\n", id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ layout id \"%s-row\" in \"content\" flow \"horizontal-stretch\" spacing \"2\" padding \"1\"\n", id);
 
 }
 
@@ -285,7 +285,7 @@ static void addlabel(char *id, char *label)
 static void addtextbox(char *row, char *id, char *value, unsigned int span, char *halign)
 {
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-row\" mode \"edit\" padding \"12\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, id, halign, value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, id, halign, value);
 
 }
 
@@ -303,8 +303,8 @@ static void colorfield(unsigned int index, char *label, char *value)
 
     reserve();
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ layout id \"c%u\" in \"content\" flow \"horizontal-stretch\" spacing \"8\" padding \"4\"\n+ text in \"c%u\" valign \"middle\" span \"1\" label \"%s\"\n", &index, &index, label);
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"s%u\" in \"c%u\" color \"%s\"\n+ box id \"t%u\" in \"c%u\" mode \"edit\" padding \"12\" onchange \"q=color&index=%u&value=\"\n+ text in \"t%u\" label \"%s\"\n", &index, &index, value, &index, &index, &index, &index, value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ layout id \"c%u\" in \"content\" flow \"horizontal-stretch\" spacing \"2\" padding \"1\"\n+ text in \"c%u\" valign \"middle\" span \"1\" label \"%s\"\n", &index, &index, label);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ swatch id \"s%u\" in \"c%u\" color \"%s\"\n+ box id \"t%u\" in \"c%u\" mode \"edit\" padding \"3\" onchange \"q=color&index=%u&value=\"\n+ text in \"t%u\" label \"%s\"\n", &index, &index, value, &index, &index, &index, &index, value);
 
 }
 
@@ -333,14 +333,14 @@ static void choice(char *id, char *label, char *value, struct entry *options, un
     beginrow(id);
     addlabel(id, label);
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ select id \"%s\" in \"%s-row\" span \"1\" label \"%s\"\n+ panel id \"%s-list\" in \"%s\" flow \"vertical-stretch\" overflow \"scroll\" padding \"4\"\n", id, id, getlabel(options, count, value), id, id);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ select id \"%s\" in \"%s-row\" span \"1\" label \"%s\"\n+ panel id \"%s-list\" in \"%s\" flow \"vertical-stretch\" overflow \"scroll\" padding \"1\"\n", id, id, getlabel(options, count, value), id, id);
 
     for (i = 0; i < count; i++)
     {
 
         reserve();
 
-        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-%u\" in \"%s-list\" padding \"16\" onclick \"q=choose&id=%s&value=%s&label=%s\"\n+ text in \"%s-%u\" label \"%s\"\n", id, &i, id, id, options[i].value, options[i].label, id, &i, options[i].label);
+        outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ item id \"%s-%u\" in \"%s-list\" padding \"4\" onclick \"q=choose&id=%s&value=%s&label=%s\"\n+ text in \"%s-%u\" label \"%s\"\n", id, &i, id, id, options[i].value, options[i].label, id, &i, options[i].label);
 
     }
 

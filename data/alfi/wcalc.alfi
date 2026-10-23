@@ -1,5 +1,5 @@
 + window id "window" label "Calculator" flow "vertical-stretch"
-+ box id "output" in "window" flow "vertical-stretch" padding "12"
++ box id "output" in "window" flow "vertical-stretch" padding "3"
 + text id "result" in "output" label "0" halign "right"
 + layout id "row1" in "window" flow "horizontal-stretch" span "1"
 + button in "row1" label "7" span "1" onclick "q=num&value=7"

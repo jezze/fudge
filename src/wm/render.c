@@ -55,7 +55,7 @@ static unsigned int measureminimum;
 static unsigned int measureclipped;
 static struct util_position mouse;
 static unsigned int mousetype;
-static unsigned int scale;
+static unsigned int unit;
 static struct calls calls[32];
 static struct palette palettes[NUM_PALETTES][NUM_SHADES];
 static struct widget *hoverwidget;
@@ -156,7 +156,7 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
     {
 
     case DIRECTION_HORIZONTAL:
-        flow->offset.x += size->w + widget->attributes.spacing;
+        flow->offset.x += size->w + render_unit(widget->attributes.spacing);
 
         break;
 
@@ -172,7 +172,7 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
         else
         {
 
-            flow->offset.y += size->h + widget->attributes.spacing;
+            flow->offset.y += size->h + render_unit(widget->attributes.spacing);
 
         }
 
@@ -201,7 +201,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 {
 
     unsigned int direction = getdirection(widget->attributes.flow);
-    unsigned int padding = widget->attributes.padding;
+    unsigned int padding = render_unit(widget->attributes.padding);
     struct util_size inner = util_size_sub(limit, padding * 2, padding * 2);
     struct flow flow;
     struct util_size total = zerosize;
@@ -229,7 +229,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
             csize.w = util_min(csize.w + CONFIG_SCROLL_WIDTH, climit.w);
 
             if (measureminimum)
-                csize.h = util_min(csize.h, (CONFIG_FRAME_HEIGHT + child->attributes.padding) * 2 + pool_getfont(child->attributes.weight)->lineheight);
+                csize.h = util_min(csize.h, (CONFIG_FRAME_HEIGHT + render_unit(child->attributes.padding)) * 2 + pool_getfont(child->attributes.weight)->lineheight);
 
         }
 
@@ -576,7 +576,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
     if (widget->attributes.padding)
     {
 
-        unsigned int padding = widget->attributes.padding;
+        unsigned int padding = render_unit(widget->attributes.padding);
 
         widget->cplacement.position = util_position_add(&widget->cplacement.position, padding, padding);
         widget->cplacement.size = util_size_sub(&widget->cplacement.size, padding * 2, padding * 2);
@@ -719,7 +719,7 @@ static struct util_size getsizebox(struct widget *widget, struct util_size *limi
     measureclipped = clipped;
 
     if (widget->attributes.mode == ATTR_MODE_EDIT)
-        csize.h = util_max(csize.h, pool_getfont(widget->attributes.weight)->lineheight + widget->attributes.padding * 2);
+        csize.h = util_max(csize.h, pool_getfont(widget->attributes.weight)->lineheight + render_unit(widget->attributes.padding) * 2);
 
     return util_size_union(&csize, &border);
 
@@ -1237,17 +1237,17 @@ static void setupcall(unsigned int type, struct util_size (*getsize)(struct widg
 
 }
 
-unsigned int render_scale(unsigned int value)
+unsigned int render_unit(unsigned int count)
 {
 
-    return (value * (scale + 1) + (CONFIG_SCALE + 1) / 2) / (CONFIG_SCALE + 1);
+    return count * unit;
 
 }
 
-void render_setscale(unsigned int factor)
+void render_setunit(unsigned int size)
 {
 
-    scale = factor;
+    unit = size;
 
 }
 
@@ -1257,7 +1257,7 @@ void render_init(void)
     unsigned int palette;
     unsigned int shade;
 
-    render_setscale(CONFIG_SCALE);
+    render_setunit(CONFIG_UNIT);
 
     for (palette = 0; palette < NUM_PALETTES; palette++)
     {

@@ -13,6 +13,6 @@ void render_place(struct widget *widget, struct util_region *placement);
 void render_damage(int x0, int y0, int x2, int y2);
 void render_undamage(void);
 struct util_region render_update(struct blit_display *display);
-unsigned int render_scale(unsigned int value);
-void render_setscale(unsigned int factor);
+unsigned int render_unit(unsigned int count);
+void render_setunit(unsigned int size);
 void render_init(void);

@@ -104,7 +104,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
 
             }
 
-            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"4\" spacing \"8\" onenter \"q=relpath&path=%s\" onselect \"q=mark&row=%u&selected=\"\n+ text in \"row%u\" valign \"middle\" mode \"link\" onclick \"q=relpath&path=%s\"", &row, name, &row, &row, name);
+            c += cstring_write_fmt(d, MESSAGE_SIZE, c, "+ item id \"row%u\" in \"content\" padding \"1\" spacing \"2\" onenter \"q=relpath&path=%s\" onselect \"q=mark&row=%u&selected=\"\n+ text in \"row%u\" valign \"middle\" mode \"link\" onclick \"q=relpath&path=%s\"", &row, name, &row, &row, name);
             c += cstring_write_fmt(d, MESSAGE_SIZE, c, " label \"%s\"\n", name);
             offset = record->offset;
             row++;
@@ -171,13 +171,13 @@ static void showfile(unsigned int wm, struct record *record)
         start = buffer_firstbyte(path, length, ':');
 
     sendcontent(wm);
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"8\" spacing \"4\"\n");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"2\" spacing \"1\"\n");
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" weight \"bold\" label \"%s\"\n", path + start);
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Path: %s\"\n", path);
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Type: File\"\n");
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Size: %u bytes\"\n", &record->size);
     channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Id: %u\"\n", &record->id);
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"actions\" in \"info\" flow \"horizontal\" spacing \"8\"\n");
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"actions\" in \"info\" flow \"horizontal\" spacing \"2\"\n");
 
     for (i = 0; getline(labels, nlabels, i, label, 64); i++)
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ button in \"actions\" label \"%s\" onclick \"q=action&index=%u\"\n", label, &i);
@@ -195,7 +195,7 @@ static void updatecontent(unsigned int wm)
     {
 
         sendcontent(wm);
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"8\" spacing \"4\"\n");
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"2\" spacing \"1\"\n");
         channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text in \"info\" label \"Path not found\"\n");
 
     }
