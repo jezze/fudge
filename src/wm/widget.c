@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include <hash.h>
-#include "config.h"
 #include "util.h"
 #include "text.h"
 #include "attr.h"

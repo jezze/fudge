@@ -373,13 +373,12 @@ struct text_font *pool_getfont(unsigned int index)
 
 }
 
-void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding)
+void pool_setfont(unsigned int index, unsigned int lineheight)
 {
 
     struct text_font *font = &fonts[index];
 
     font->lineheight = lineheight;
-    font->padding = padding;
 
 }
 

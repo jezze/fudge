@@ -26,7 +26,7 @@ struct widget *pool_create(unsigned int source, unsigned int type, char *id, cha
 void pool_destroy(struct widget *widget);
 struct pool_rawresource *pool_createraw(struct widget *widget, char *source);
 struct text_font *pool_getfont(unsigned int index);
-void pool_setfont(unsigned int index, unsigned int lineheight, unsigned int padding);
+void pool_setfont(unsigned int index, unsigned int lineheight);
 void pool_loadfont(unsigned int index, char *path);
 void pool_loadresources(void);
 void pool_setup(void);

@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include "config.h"
 #include "util.h"
 #include "strpool.h"
 #include "attr.h"

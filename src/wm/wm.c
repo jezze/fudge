@@ -2456,19 +2456,17 @@ static void onvideoinfo(struct message *message)
     struct event_videoinfo videoinfo;
     unsigned int factor;
     unsigned int lineheight;
-    unsigned int padding;
 
     buffer_copy(&videoinfo, message->data, sizeof (struct event_videoinfo));
 
     factor = util_min(videoinfo.height / 320, FONTS - 1);
     lineheight = 12 + factor * 4;
-    padding = 4 + factor * 2;
 
     blit_initdisplay(&display, (void *)(unsigned long)videoinfo.framebuffer, videoinfo.width, videoinfo.height, videoinfo.bpp, linebuffer);
     pool_loadfont(0, fontn[factor]);
-    pool_setfont(0, lineheight, padding);
+    pool_setfont(0, lineheight);
     pool_loadfont(1, fontb[factor]);
-    pool_setfont(1, lineheight, padding);
+    pool_setfont(1, lineheight);
 
     state.mouseposition.x = videoinfo.width / 4;
     state.mouseposition.y = videoinfo.height / 4;

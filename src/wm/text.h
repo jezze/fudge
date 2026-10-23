@@ -13,7 +13,6 @@ struct text_font
 {
 
     unsigned int lineheight;
-    unsigned int padding;
     struct text_atlas atlas[TEXT_GLYPHS];
 
 };
