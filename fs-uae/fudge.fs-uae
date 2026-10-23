@@ -1,0 +1,9 @@
+[fs-uae]
+amiga_model = A4000/040
+zorro_iii_memory = 262144
+uae_z3mapping = uae
+uae_mmu_model = 68040
+uae_cpu_compatible = true
+uae_cpu_speed = max
+hard_drive_0 = /home/jfu/git/fudge/fs-uae/hd
+serial_port = /tmp/amiga-uae

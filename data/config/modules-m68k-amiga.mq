@@ -3,5 +3,8 @@
     { path: initrd:kernel/amiga.ko }
     { path: initrd:kernel/amiga-timer.ko }
     { path: initrd:kernel/amiga-serial.ko }
+    { path: initrd:kernel/amiga-keyboard.ko }
+    { path: initrd:kernel/amiga-mouse.ko }
+    { path: initrd:kernel/amiga-video.ko }
   ]
 }

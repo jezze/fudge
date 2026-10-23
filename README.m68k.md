@@ -56,9 +56,17 @@ builds fudgeboot as well, an AmigaDOS executable holding the kernel and the ramd
 from an AmigaOS or AROS shell (or a Startup-Sequence): it takes over the machine through
 exec's Supervisor(), turns off interrupts, DMA, caches and the MMU, copies the kernel to
 its address with the ramdisk after it and enters it; the loader moves the ramdisk to
-ARCH_RAMDISK_BASE. The modules are amiga (paula's interrupts), amiga-timer (cia-a's timer
-a at 60 Hz) and amiga-serial (paula's serial port at 115200 baud, the shell's console,
-shared with kernel debug output). There is no clock, keyboard, display or storage yet.
+ARCH_RAMDISK_BASE. The modules are amiga (paula's interrupts, and cia-a's, which it reads
+once for every source), amiga-timer (cia-a's timer a at 60 Hz), amiga-serial (paula's
+serial port at 115200 baud, the shell's console, shared with kernel debug output),
+amiga-keyboard (the keyboard on cia-a's serial port, translated to scancode set 1),
+amiga-mouse (the mouse on port 1, read every vertical blank) and amiga-video. There is no
+clock or storage yet.
+
+amiga-video shows a pal hires screen, 640x256 in 16 colours (4 bitplanes in chip memory
+from 0x00021000, a copper list at 0x00020000), whatever mode wm asks for. wm draws into
+its usual 32-bit framebuffer and each flush converts that region to planar: nearly grey
+pixels become one of 8 greys, others one of the 8 corners of the colour cube.
 
 The kernel's memory starts at ARCH_RAMBASE, 0x10000000 (256 MB of Zorro III RAM where
 UAE puts it with its own mapping). So far it runs in FS-UAE as an A4000/040 with these

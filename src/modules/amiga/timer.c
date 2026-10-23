@@ -10,10 +10,6 @@
 #define REG_CIAA                        0x00BFE000
 #define REG_TALO                        0x401
 #define REG_TAHI                        0x501
-#define REG_ICR                         0xD01
-#define REG_ICR_SET                     0x80
-#define REG_ICR_ALL                     0x7F
-#define REG_ICR_TA                      0x01
 #define REG_CRA                         0xE01
 #define REG_CRA_START                   0x01
 #define REG_CRA_LOAD                    0x10
@@ -23,18 +19,12 @@ static struct timer_interface timerinterface;
 static volatile unsigned char *cia = (volatile unsigned char *)REG_CIAA;
 static unsigned int jiffies;
 
-/* reading the icr clears it */
 static void handleirq(unsigned int irq)
 {
 
-    if (cia[REG_ICR] & REG_ICR_TA)
-    {
+    jiffies++;
 
-        jiffies++;
-
-        timer_notifytick(&timerinterface, jiffies);
-
-    }
+    timer_notifytick(&timerinterface, jiffies);
 
 }
 
@@ -65,25 +55,22 @@ static void driver_attach(unsigned int id)
 
     timer_registerinterface(&timerinterface);
 
-    cia[REG_ICR] = REG_ICR_ALL;
     cia[REG_CRA] = 0;
     cia[REG_TALO] = INTERVAL & 0xFF;
     cia[REG_TAHI] = INTERVAL >> 8;
     cia[REG_CRA] = REG_CRA_START | REG_CRA_LOAD;
-    cia[REG_ICR] = REG_ICR_SET | REG_ICR_TA;
 
-    amiga_setroutine(AMIGA_IRQ_PORTS, handleirq);
+    amiga_setciaroutine(AMIGA_CIA_TA, handleirq);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    cia[REG_ICR] = REG_ICR_TA;
     cia[REG_CRA] = 0;
 
     timer_unregisterinterface(&timerinterface);
-    amiga_unsetroutine(AMIGA_IRQ_PORTS, handleirq);
+    amiga_unsetciaroutine(AMIGA_CIA_TA, handleirq);
 
 }
 

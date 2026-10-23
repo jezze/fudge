@@ -5,7 +5,7 @@
 #include <modules/bus.h>
 #include "amiga.h"
 
-#define DEVICES                         (AMIGA_SERIAL + 1)
+#define DEVICES                         (AMIGA_VIDEO + 1)
 #define ROUTINES                        14
 #define SHARED                          4
 #define REG_CUSTOM                      0x00DFF000
@@ -15,10 +15,17 @@
 #define REG_INTREQ                      0x9C
 #define REG_INT_SET                     0x8000
 #define REG_INT_MASTER                  0x4000
+#define CIAROUTINES                     5
+#define REG_CIAA                        0x00BFE000
+#define REG_CIAA_ICR                    0xD01
+#define REG_CIAA_ICR_SET                0x80
+#define REG_CIAA_ICR_ALL                0x7F
 
 static struct base_bus bus;
 static void (*routines[ROUTINES][SHARED])(unsigned int irq);
+static void (*ciaroutines[CIAROUTINES])(unsigned int irq);
 static volatile unsigned short *custom = (volatile unsigned short *)REG_CUSTOM;
+static volatile unsigned char *ciaa = (volatile unsigned char *)REG_CIAA;
 
 static unsigned int hasroutines(unsigned int irq)
 {
@@ -154,6 +161,59 @@ unsigned int amiga_unsetroutine(unsigned int irq, void (*routine)(unsigned int i
 
 }
 
+/* reading cia-a's icr clears all its flags, so one read serves every source on it */
+static void handleports(unsigned int irq)
+{
+
+    unsigned int icr = ciaa[REG_CIAA_ICR];
+    unsigned int i;
+
+    for (i = 0; i < CIAROUTINES; i++)
+    {
+
+        if ((icr & (1U << i)) && ciaroutines[i])
+            ciaroutines[i](i);
+
+    }
+
+}
+
+unsigned int amiga_setciaroutine(unsigned int irq, void (*routine)(unsigned int irq))
+{
+
+    if (irq >= CIAROUTINES || ciaroutines[irq])
+        return 0;
+
+    ciaroutines[irq] = routine;
+    ciaa[REG_CIAA_ICR] = REG_CIAA_ICR_SET | (1U << irq);
+
+    return amiga_setroutine(AMIGA_IRQ_PORTS, handleports);
+
+}
+
+unsigned int amiga_unsetciaroutine(unsigned int irq, void (*routine)(unsigned int irq))
+{
+
+    unsigned int i;
+
+    if (irq >= CIAROUTINES || ciaroutines[irq] != routine)
+        return 0;
+
+    ciaa[REG_CIAA_ICR] = 1U << irq;
+    ciaroutines[irq] = 0;
+
+    for (i = 0; i < CIAROUTINES; i++)
+    {
+
+        if (ciaroutines[i])
+            return 1;
+
+    }
+
+    return amiga_unsetroutine(AMIGA_IRQ_PORTS, handleports);
+
+}
+
 static void bus_setup(void)
 {
 
@@ -172,6 +232,9 @@ void module_init(void)
     unsigned int i;
 
     arch_kmap(REG_CUSTOM, REG_CUSTOM, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(REG_CIAA, REG_CIAA, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+    ciaa[REG_CIAA_ICR] = REG_CIAA_ICR_ALL;
 
     for (i = 1; i <= 6; i++)
         arch_setinterrupt(i, handleirq);
