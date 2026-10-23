@@ -9,6 +9,7 @@ struct blit_display
     struct util_region region;
     unsigned int bpp;
     unsigned int *linebuffer;
+    unsigned int opaque;
 
 };
 

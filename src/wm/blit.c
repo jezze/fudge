@@ -174,6 +174,15 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
     unsigned int b = alpha * (color & 0xFF);
     int x;
 
+    if (display->opaque)
+    {
+
+        blit_line(display, 0xFF000000 | color, x0, x2);
+
+        return;
+
+    }
+
     for (x = x0; x < x2; x++)
     {
 

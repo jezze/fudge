@@ -25,6 +25,7 @@
 #define NUM_LANGUAGES                   3
 #define NUM_TIMEZONES                   8
 #define NUM_RESOLUTIONS                 9
+#define NUM_TRANSPARENCIES              2
 
 struct entry
 {
@@ -37,6 +38,11 @@ struct entry
 static struct entry layouts[NUM_LAYOUTS] = {
     {"default", "Default"},
     {"tiling", "Tiling"}
+};
+
+static struct entry transparencies[NUM_TRANSPARENCIES] = {
+    {"on", "On"},
+    {"off", "Off"}
 };
 
 static struct entry languages[NUM_LANGUAGES] = {
@@ -163,6 +169,7 @@ static struct
     unsigned int width;
     unsigned int height;
     unsigned int bpp;
+    char transparency[8];
     char keyboard[256];
     char speed[16];
     char bindingspath[256];
@@ -443,6 +450,13 @@ static void loadconfig(void)
     config.width = getnumber(data, count, 0);
     config.height = getnumber(data, count, 1);
     config.bpp = getnumber(data, count, 2);
+    count = query(data, 256, option_getstring("config"), ".screen.transparency", 0);
+
+    getword(data, count, 0, config.transparency, 8);
+
+    if (!cstring_match(config.transparency, "off"))
+        copystring(config.transparency, 8, "on", 2);
+
     count = query(data, 256, option_getstring("config"), ".keyboard.map", 0);
 
     getword(data, count, 0, config.keyboard, 256);
@@ -474,7 +488,7 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    background: \"%s\"\n  }\n", config.layout, config.background);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
-    count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n  }\n", &config.width, &config.height, &config.bpp);
+    count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n    transparency: %s\n  }\n", &config.width, &config.height, &config.bpp, config.transparency);
     count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    map: \"%s\"\n  }\n", config.keyboard);
     count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n  }\n", config.speed);
     count += cstring_write_fmt(data, size, count, "  bindings: \"%s\"\n  theme: \"%s\"\n}\n", config.bindingspath, config.themepath);
@@ -548,6 +562,7 @@ static unsigned int writelines(char *data, unsigned int size)
     unsigned int i;
 
     count += cstring_write_fmt(data, size, count, "layout %s\nbackground %s\nkeyboard %s\nresolution %u %u %u\nmouse %s\n", config.layout, config.background, config.keyboard, &config.width, &config.height, &config.bpp, config.speed);
+    count += cstring_write_fmt(data, size, count, "transparency %s\n", config.transparency);
 
     for (i = 0; i < config.ncolors; i++)
         count += cstring_write_fmt(data, size, count, "color %s %s\n", config.colors[i].name, config.colors[i].value);
@@ -642,6 +657,8 @@ static void setchoice(char *id, char *value)
         copystring(config.keyboard, 256, value, cstring_length(value));
     else if (cstring_match(id, "screen-resolution"))
         setresolution(value);
+    else if (cstring_match(id, "screen-transparency"))
+        copystring(config.transparency, 8, value, cstring_length(value));
 
 }
 
@@ -714,6 +731,7 @@ static void renderscreen(void)
     cstring_write_fmt(resolution, 64, 0, "%ux%ux%u\\0", &config.width, &config.height, &bits);
     beginarea("Screen");
     choice("screen-resolution", "Resolution", resolution, resolutions, NUM_RESOLUTIONS);
+    choice("screen-transparency", "Transparency", config.transparency, transparencies, NUM_TRANSPARENCIES);
 
 }
 

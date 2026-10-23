@@ -260,6 +260,13 @@ static void configline(char *line, unsigned int length)
 
     }
 
+    else if (count == 12 && buffer_match(word, "transparency", 12))
+    {
+
+        display.opaque = (length >= 3 && buffer_match(rest, "off", 3));
+
+    }
+
     else if (count == 5 && buffer_match(word, "mouse", 5))
     {
 
@@ -342,6 +349,7 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .general -format \"background {background}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .keyboard -format \"keyboard {map}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
+    configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen -format \"transparency {transparency}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
     loadreference(data, config, ".theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);

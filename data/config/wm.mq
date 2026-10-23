@@ -17,6 +17,7 @@
       height: 1080
       bpp: 4
     }
+    transparency: on
   }
   keyboard:
   {
