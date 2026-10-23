@@ -9,12 +9,13 @@
 #define BPP                             4
 #define WIDTH                           640
 #define HEIGHT                          256
-#define PLANES                          4
+#define PLANES                          8
+#define COLORS                          256
 #define ROWBYTES                        (WIDTH / 8)
 #define PLANESIZE                       (ROWBYTES * HEIGHT)
 #define FRAMEBUFFER                     0xA0000000
 #define CHIP                            0x00020000
-#define CHIPSIZE                        0x00020000
+#define CHIPSIZE                        0x00030000
 #define COPPERLIST                      CHIP
 #define BITPLANES                       (CHIP + 0x1000)
 #define REG_CUSTOM                      0x00DFF000
@@ -35,14 +36,18 @@
 #define REG_BPLCON0                     0x100
 #define REG_BPLCON0_HIRES               0x8000
 #define REG_BPLCON0_COLOR               0x0200
+#define REG_BPLCON0_BPU3                0x0010
 #define REG_BPLCON1                     0x102
 #define REG_BPLCON2                     0x104
 #define REG_BPLCON3                     0x106
+#define REG_BPLCON3_DEFAULT             0x0C00
+#define REG_BPLCON3_LOCT                0x0200
 #define REG_BPL1MOD                     0x108
 #define REG_BPL2MOD                     0x10A
 #define REG_BPLCON4                     0x10C
 #define REG_COLOR00                     0x180
 #define REG_FMODE                       0x1FC
+#define REG_FMODE_BPL4X                 0x0003
 
 static struct base_driver driver;
 static struct video_interface videointerface;
@@ -50,28 +55,71 @@ static volatile unsigned short *custom = (volatile unsigned short *)REG_CUSTOM;
 static unsigned short *copperlist = (unsigned short *)COPPERLIST;
 static unsigned char *bitplanes = (unsigned char *)BITPLANES;
 static unsigned int *framebuffer = (unsigned int *)FRAMEBUFFER;
+static unsigned int palette[COLORS];
+static unsigned char nearest[0x8000];
 static unsigned int created;
 
-/* eight greys (0 to 7) and the eight corners of the colour cube at three quarters (8 to 15) */
-static unsigned short palette[16] = {
-    0x000, 0x222, 0x444, 0x666, 0x888, 0xAAA, 0xCCC, 0xFFF,
-    0x000, 0x00C, 0x0C0, 0x0CC, 0xC00, 0xC0C, 0xCC0, 0xCCC
-};
-
-/* nearly grey pixels keep their brightness, others keep which components stand out */
-static unsigned int getcolor(unsigned int pixel)
+/* indices 0 to 215 are a 6x6x6 colour cube, 216 to 255 the greys between the cube's six on a ramp of 46 */
+static void setuppalette(void)
 {
 
-    unsigned int r = (pixel >> 16) & 0xFF;
-    unsigned int g = (pixel >> 8) & 0xFF;
-    unsigned int b = pixel & 0xFF;
-    unsigned int max = (r > g) ? ((r > b) ? r : b) : ((g > b) ? g : b);
-    unsigned int min = (r < g) ? ((r < b) ? r : b) : ((g < b) ? g : b);
+    unsigned int i;
+    unsigned int k;
 
-    if (max - min < 48)
-        return (r * 2 + g * 5 + b) >> 8;
+    for (i = 0; i < 216; i++)
+    {
 
-    return 8 | ((r > max / 2) << 2) | ((g > max / 2) << 1) | (b > max / 2);
+        unsigned int r = (i / 36) * 51;
+        unsigned int g = ((i / 6) % 6) * 51;
+        unsigned int b = (i % 6) * 51;
+
+        palette[i] = (r << 16) | (g << 8) | b;
+
+    }
+
+    for (i = 216, k = 0; k < 46; k++)
+    {
+
+        unsigned int v = k * 255 / 45;
+
+        if (k % 9)
+            palette[i++] = (v << 16) | (v << 8) | v;
+
+    }
+
+}
+
+static unsigned int distance(unsigned int a, unsigned int b)
+{
+
+    int r = (int)((a >> 16) & 0xFF) - (int)((b >> 16) & 0xFF);
+    int g = (int)((a >> 8) & 0xFF) - (int)((b >> 8) & 0xFF);
+    int bl = (int)(a & 0xFF) - (int)(b & 0xFF);
+
+    return r * r * 2 + g * g * 4 + bl * bl;
+
+}
+
+/* for every 15-bit colour the closer of its nearest cube colour and its nearest grey */
+static void setupnearest(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < 0x8000; i++)
+    {
+
+        unsigned int r = ((i >> 10) & 0x1F) * 255 / 31;
+        unsigned int g = ((i >> 5) & 0x1F) * 255 / 31;
+        unsigned int b = (i & 0x1F) * 255 / 31;
+        unsigned int color = (r << 16) | (g << 8) | b;
+        unsigned int cube = ((r + 25) / 51) * 36 + ((g + 25) / 51) * 6 + (b + 25) / 51;
+        unsigned int level = ((r * 2 + g * 4 + b) / 7 * 45 + 127) / 255;
+        unsigned int grey = (level % 9) ? 216 + level - level / 9 - 1 : (level / 9) * 43;
+
+        nearest[i] = (distance(color, palette[grey]) < distance(color, palette[cube])) ? grey : cube;
+
+    }
 
 }
 
@@ -99,28 +147,49 @@ static void setupcopper(void)
 
 }
 
-/* a pal hires screen: the display window and data fetch of the usual 640 by 256 */
-static void setupdisplay(void)
+/* aga keeps 24-bit colours in eight banks of 32: the high nibbles are written first, then with loct the low ones */
+static void setupcolors(void)
 {
 
     unsigned int i;
 
+    for (i = 0; i < COLORS; i++)
+    {
+
+        unsigned int color = palette[i];
+        unsigned int bank = (i / 32) << 13;
+        unsigned int high = ((color >> 12) & 0xF00) | ((color >> 8) & 0x0F0) | ((color >> 4) & 0x00F);
+        unsigned int low = ((color >> 8) & 0xF00) | ((color >> 4) & 0x0F0) | (color & 0x00F);
+
+        custom[REG_BPLCON3 / 2] = REG_BPLCON3_DEFAULT | bank;
+        custom[REG_COLOR00 / 2 + i % 32] = high;
+        custom[REG_BPLCON3 / 2] = REG_BPLCON3_DEFAULT | bank | REG_BPLCON3_LOCT;
+        custom[REG_COLOR00 / 2 + i % 32] = low;
+
+    }
+
+    custom[REG_BPLCON3 / 2] = REG_BPLCON3_DEFAULT;
+
+}
+
+/* a pal hires screen in eight planes needs aga's 4x fetch; its data fetch window is the one aros computes for it */
+static void setupdisplay(void)
+{
+
     custom[REG_DMACON / 2] = REG_DMACON_BITPLANE | REG_DMACON_COPPER | REG_DMACON_SPRITE;
-    custom[REG_FMODE / 2] = 0;
-    custom[REG_BPLCON0 / 2] = REG_BPLCON0_HIRES | (PLANES << 12) | REG_BPLCON0_COLOR;
+    custom[REG_FMODE / 2] = REG_FMODE_BPL4X;
+    custom[REG_BPLCON0 / 2] = REG_BPLCON0_HIRES | REG_BPLCON0_BPU3 | REG_BPLCON0_COLOR;
     custom[REG_BPLCON1 / 2] = 0;
     custom[REG_BPLCON2 / 2] = 0;
-    custom[REG_BPLCON3 / 2] = 0;
     custom[REG_BPLCON4 / 2] = 0x0011;
     custom[REG_BPL1MOD / 2] = 0;
     custom[REG_BPL2MOD / 2] = 0;
     custom[REG_DIWSTRT / 2] = 0x2C81;
     custom[REG_DIWSTOP / 2] = 0x2CC1;
-    custom[REG_DDFSTRT / 2] = 0x003C;
-    custom[REG_DDFSTOP / 2] = 0x00D4;
+    custom[REG_DDFSTRT / 2] = 0x0038;
+    custom[REG_DDFSTOP / 2] = 0x00C0;
 
-    for (i = 0; i < 16; i++)
-        custom[REG_COLOR00 / 2 + i] = palette[i];
+    setupcolors();
 
     custom[REG_COP1LCH / 2] = COPPERLIST >> 16;
     custom[REG_COP1LCL / 2] = COPPERLIST & 0xFFFF;
@@ -129,7 +198,14 @@ static void setupdisplay(void)
 
 }
 
-/* chunky to planar: each group of eight pixels becomes one byte in every plane */
+static unsigned int getindex(unsigned int pixel)
+{
+
+    return nearest[((pixel >> 9) & 0x7C00) | ((pixel >> 6) & 0x03E0) | ((pixel >> 3) & 0x001F)];
+
+}
+
+/* chunky to planar: eight pixels' palette indices, as an 8x8 bit matrix, are transposed into one byte per plane */
 static void convert(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
 {
 
@@ -144,29 +220,31 @@ static void convert(unsigned int x0, unsigned int y0, unsigned int x1, unsigned 
         {
 
             unsigned int *pixels = framebuffer + y * WIDTH + column * 8;
-            unsigned int offset = y * ROWBYTES + column;
-            unsigned int p0 = 0;
-            unsigned int p1 = 0;
-            unsigned int p2 = 0;
-            unsigned int p3 = 0;
-            unsigned int i;
+            unsigned char *plane = bitplanes + y * ROWBYTES + column;
+            unsigned int x = (getindex(pixels[0]) << 24) | (getindex(pixels[1]) << 16) | (getindex(pixels[2]) << 8) | getindex(pixels[3]);
+            unsigned int z = (getindex(pixels[4]) << 24) | (getindex(pixels[5]) << 16) | (getindex(pixels[6]) << 8) | getindex(pixels[7]);
+            unsigned int t;
 
-            for (i = 0; i < 8; i++)
-            {
+            t = (x ^ (x >> 7)) & 0x00AA00AA;
+            x = x ^ t ^ (t << 7);
+            t = (z ^ (z >> 7)) & 0x00AA00AA;
+            z = z ^ t ^ (t << 7);
+            t = (x ^ (x >> 14)) & 0x0000CCCC;
+            x = x ^ t ^ (t << 14);
+            t = (z ^ (z >> 14)) & 0x0000CCCC;
+            z = z ^ t ^ (t << 14);
+            t = (x & 0xF0F0F0F0) | ((z >> 4) & 0x0F0F0F0F);
+            z = ((x << 4) & 0xF0F0F0F0) | (z & 0x0F0F0F0F);
+            x = t;
 
-                unsigned int color = getcolor(pixels[i]);
-
-                p0 = (p0 << 1) | (color & 1);
-                p1 = (p1 << 1) | ((color >> 1) & 1);
-                p2 = (p2 << 1) | ((color >> 2) & 1);
-                p3 = (p3 << 1) | ((color >> 3) & 1);
-
-            }
-
-            bitplanes[offset] = p0;
-            bitplanes[offset + PLANESIZE] = p1;
-            bitplanes[offset + PLANESIZE * 2] = p2;
-            bitplanes[offset + PLANESIZE * 3] = p3;
+            plane[PLANESIZE * 7] = x >> 24;
+            plane[PLANESIZE * 6] = x >> 16;
+            plane[PLANESIZE * 5] = x >> 8;
+            plane[PLANESIZE * 4] = x;
+            plane[PLANESIZE * 3] = z >> 24;
+            plane[PLANESIZE * 2] = z >> 16;
+            plane[PLANESIZE * 1] = z >> 8;
+            plane[0] = z;
 
         }
 
@@ -174,7 +252,7 @@ static void convert(unsigned int x0, unsigned int y0, unsigned int x1, unsigned 
 
 }
 
-/* only one mode: whatever wm asks for, it gets pal hires */
+/* only one mode: whatever wm asks for, it gets pal hires in 256 colours */
 static void videointerface_setmode(unsigned int width, unsigned int height, unsigned int bpp)
 {
 
@@ -210,6 +288,8 @@ static void videointerface_flush(unsigned int x, unsigned int y, unsigned int wi
 static void driver_init(unsigned int id)
 {
 
+    setuppalette();
+    setupnearest();
     video_initinterface(&videointerface, id, FRAMEBUFFER, 0, videointerface_setmode);
 
     videointerface.flush = videointerface_flush;

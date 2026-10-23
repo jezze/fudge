@@ -8,7 +8,9 @@
 
 #define EXTENDED                        0x100
 #define KEYS                            0x68
-#define HANDSHAKE                       64
+#define HANDSHAKE                       3
+#define REG_CUSTOM                      0x00DFF000
+#define REG_VHPOSR                      0x006
 #define REG_CIAA                        0x00BFE000
 #define REG_SDR                         0xC01
 #define REG_CRA                         0xE01
@@ -16,6 +18,7 @@
 
 static struct base_driver driver;
 static struct keyboard_interface keyboardinterface;
+static volatile unsigned short *custom = (volatile unsigned short *)REG_CUSTOM;
 static volatile unsigned char *cia = (volatile unsigned char *)REG_CIAA;
 
 /* amiga raw key codes to scancode set 1; keys a pc keyboard lacks (help, the keypad's brackets) are left out */
@@ -29,7 +32,7 @@ static unsigned short scancodes[KEYS] = {
     0x2A, 0x36, 0x3A, 0x1D, 0x38, EXTENDED | 0x38, EXTENDED | 0x5B, EXTENDED | 0x5C
 };
 
-/* the keyboard waits until the sdr line is held low for at least 85 microseconds; each cia access takes over one */
+/* the keyboard waits until the sdr line is held low for at least 85 microseconds; three changes of scanline (64 microseconds each) are enough at any cpu speed */
 static void handshake(void)
 {
 
@@ -38,7 +41,13 @@ static void handshake(void)
     cia[REG_CRA] |= REG_CRA_SPMODE;
 
     for (i = 0; i < HANDSHAKE; i++)
-        cia[REG_SDR];
+    {
+
+        unsigned int line = custom[REG_VHPOSR / 2] >> 8;
+
+        while ((custom[REG_VHPOSR / 2] >> 8) == line);
+
+    }
 
     cia[REG_CRA] &= ~REG_CRA_SPMODE;
 

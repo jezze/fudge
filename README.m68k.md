@@ -63,10 +63,11 @@ amiga-keyboard (the keyboard on cia-a's serial port, translated to scancode set 
 amiga-mouse (the mouse on port 1, read every vertical blank) and amiga-video. There is no
 clock or storage yet.
 
-amiga-video shows a pal hires screen, 640x256 in 16 colours (4 bitplanes in chip memory
-from 0x00021000, a copper list at 0x00020000), whatever mode wm asks for. wm draws into
-its usual 32-bit framebuffer and each flush converts that region to planar: nearly grey
-pixels become one of 8 greys, others one of the 8 corners of the colour cube.
+amiga-video shows a pal hires screen, 640x256 in 256 colours (8 bitplanes in chip memory
+from 0x00021000 fetched in aga's 4x mode, a copper list at 0x00020000), whatever mode wm
+asks for. The palette is a 6x6x6 colour cube with 40 more greys; a 32 KB table gives each
+15-bit colour its nearest entry. wm draws into its usual 32-bit framebuffer and each flush
+converts that region to planar, 8 pixels at a time as an 8x8 bit transpose.
 
 The kernel's memory starts at ARCH_RAMBASE, 0x10000000 (256 MB of Zorro III RAM where
 UAE puts it with its own mapping). So far it runs in FS-UAE as an A4000/040 with these
