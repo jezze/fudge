@@ -197,11 +197,20 @@ static void startchild(struct widget *child, struct flow *flow)
 
 }
 
+static unsigned int getpadding(struct widget *widget)
+{
+
+    unsigned int padding = render_unit(widget->attributes.padding);
+
+    return (widget->type == WIDGET_TYPE_PANEL) ? padding + CONFIG_PANEL_PADDING : padding;
+
+}
+
 static struct util_size childrengetsize(struct widget *widget, struct util_size *limit)
 {
 
     unsigned int direction = getdirection(widget->attributes.flow);
-    unsigned int padding = render_unit(widget->attributes.padding);
+    unsigned int padding = getpadding(widget);
     struct util_size inner = util_size_sub(limit, padding * 2, padding * 2);
     struct flow flow;
     struct util_size total = zerosize;
@@ -229,7 +238,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
             csize.w = util_min(csize.w + CONFIG_SCROLL_WIDTH, climit.w);
 
             if (measureminimum)
-                csize.h = util_min(csize.h, (CONFIG_FRAME_HEIGHT + render_unit(child->attributes.padding)) * 2 + pool_getfont(child->attributes.weight)->lineheight);
+                csize.h = util_min(csize.h, (CONFIG_FRAME_HEIGHT + getpadding(child)) * 2 + pool_getfont(child->attributes.weight)->lineheight);
 
         }
 
@@ -573,15 +582,8 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
     }
 
-    if (widget->attributes.padding)
-    {
-
-        unsigned int padding = render_unit(widget->attributes.padding);
-
-        widget->cplacement.position = util_position_add(&widget->cplacement.position, padding, padding);
-        widget->cplacement.size = util_size_sub(&widget->cplacement.size, padding * 2, padding * 2);
-
-    }
+    widget->cplacement.position = util_position_add(&widget->cplacement.position, getpadding(widget), getpadding(widget));
+    widget->cplacement.size = util_size_sub(&widget->cplacement.size, getpadding(widget) * 2, getpadding(widget) * 2);
 
     clipcontent(widget);
 
