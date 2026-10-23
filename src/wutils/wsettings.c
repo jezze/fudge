@@ -24,7 +24,7 @@
 #define NUM_LAYOUTS                     2
 #define NUM_LANGUAGES                   3
 #define NUM_TIMEZONES                   8
-#define NUM_RESOLUTIONS                 9
+#define NUM_RESOLUTIONS                 11
 #define NUM_TRANSPARENCIES              2
 
 struct entry
@@ -87,6 +87,8 @@ static struct entry keyboards[NUM_KEYBOARDS] = {
 };
 
 static struct entry resolutions[NUM_RESOLUTIONS] = {
+    {"320x200x32", "320x200x32"},
+    {"320x240x32", "320x240x32"},
     {"640x480x32", "640x480x32"},
     {"800x600x32", "800x600x32"},
     {"1024x768x32", "1024x768x32"},

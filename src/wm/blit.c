@@ -496,34 +496,34 @@ void blit_frame(struct blit_display *display, struct util_region *region, int li
         {REL0, REL2, 0, 0, CMAP_SHADOW}
     };
     static struct linesegment line1[3] = {
-        {REL0, REL0, 0, 2, CMAP_SHADOW},
-        {REL0, REL2, 2, -2, CMAP_LIGHT},
-        {REL2, REL2, -2, 0, CMAP_SHADOW}
+        {REL0, REL0, 0, 1, CMAP_SHADOW},
+        {REL0, REL2, 1, -1, CMAP_LIGHT},
+        {REL2, REL2, -1, 0, CMAP_SHADOW}
     };
     static struct linesegment line2[5] = {
-        {REL0, REL0, 0, 2, CMAP_SHADOW},
-        {REL0, REL0, 2, 3, CMAP_LIGHT},
-        {REL0, REL2, 3, -3, CMAP_DARK},
-        {REL2, REL2, -3, -2, CMAP_LIGHT},
-        {REL2, REL2, -2, 0, CMAP_SHADOW}
+        {REL0, REL0, 0, 1, CMAP_SHADOW},
+        {REL0, REL0, 1, 2, CMAP_LIGHT},
+        {REL0, REL2, 2, -2, CMAP_DARK},
+        {REL2, REL2, -2, -1, CMAP_LIGHT},
+        {REL2, REL2, -1, 0, CMAP_SHADOW}
     };
     static struct linesegment line3[7] = {
-        {REL0, REL0, 0, 2, CMAP_SHADOW},
-        {REL0, REL0, 2, 3, CMAP_LIGHT},
-        {REL0, REL0, 3, 5, CMAP_DARK},
-        {REL0, REL2, 5, -5, CMAP_NORMAL},
-        {REL2, REL2, -5, -3, CMAP_DARK},
-        {REL2, REL2, -3, -2, CMAP_LIGHT},
-        {REL2, REL2, -2, 0, CMAP_SHADOW}
+        {REL0, REL0, 0, 1, CMAP_SHADOW},
+        {REL0, REL0, 1, 2, CMAP_LIGHT},
+        {REL0, REL0, 2, 4, CMAP_DARK},
+        {REL0, REL2, 4, -4, CMAP_NORMAL},
+        {REL2, REL2, -4, -2, CMAP_DARK},
+        {REL2, REL2, -2, -1, CMAP_LIGHT},
+        {REL2, REL2, -1, 0, CMAP_SHADOW}
     };
     static struct rowsegment rows[7] = {
-        {REL0, REL0, 0, 2, line0, 1},
-        {REL0, REL0, 2, 3, line1, 3},
-        {REL0, REL0, 3, 5, line2, 5},
-        {REL0, REL2, 5, -5, line3, 7},
-        {REL2, REL2, -5, -3, line2, 5},
-        {REL2, REL2, -3, -2, line1, 3},
-        {REL2, REL2, -2, 0, line0, 1}
+        {REL0, REL0, 0, 1, line0, 1},
+        {REL0, REL0, 1, 2, line1, 3},
+        {REL0, REL0, 2, 4, line2, 5},
+        {REL0, REL2, 4, -4, line3, 7},
+        {REL2, REL2, -4, -2, line2, 5},
+        {REL2, REL2, -2, -1, line1, 3},
+        {REL2, REL2, -1, 0, line0, 1}
     };
 
     blitsegment(display, rows, 7, line, region, x0, x2, cmap);
