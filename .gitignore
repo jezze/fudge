@@ -6,7 +6,7 @@
 build/
 iso/
 /fudge
-/fudgeboot
+/fs-uae/hd/fudgeboot
 fudge.cpio
 fudge.img
 fudge.iso

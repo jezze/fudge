@@ -9,9 +9,9 @@ O:=\
 
 include $(DIR_MK)/lib.mk
 
-all: $(KERNEL)boot
+all: fs-uae/hd/$(KERNEL)boot
 
-$(KERNEL)boot: $(DIR_LIB)/amiga/hunk.s $(KERNEL) $(RAMDISK)
+fs-uae/hd/$(KERNEL)boot: $(DIR_LIB)/amiga/hunk.s $(KERNEL) $(RAMDISK)
 	@echo HUNK $@
 	@$(OC) -O binary $(KERNEL) $(KERNEL).bin
 	@$(AS) $(AS_FLAGS) --defsym KERNEL=0x$$($(NM) $(KERNEL) | sed -n 's/ T _start$$//p') -o $(DIR_LIB)/amiga/hunk.o $(DIR_LIB)/amiga/hunk.s
