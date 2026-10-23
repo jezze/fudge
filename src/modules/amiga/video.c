@@ -205,7 +205,7 @@ static unsigned int getindex(unsigned int pixel)
 
 }
 
-/* chunky to planar: eight pixels' palette indices, as an 8x8 bit matrix, are transposed into one byte per plane */
+/* chunky to planar on 32 pixels: their palette indices, four to a word with the last four in w0, become one word per plane in five rounds of swaps (each swaps a bit of the word number with a bit of the position in the word), so each plane gets one long write */
 static void convert(unsigned int x0, unsigned int y0, unsigned int x1, unsigned int y1)
 {
 
@@ -216,35 +216,103 @@ static void convert(unsigned int x0, unsigned int y0, unsigned int x1, unsigned 
 
         unsigned int column;
 
-        for (column = x0 / 8; column < (x1 + 7) / 8; column++)
+        for (column = x0 / 32; column < (x1 + 31) / 32; column++)
         {
 
-            unsigned int *pixels = framebuffer + y * WIDTH + column * 8;
-            unsigned char *plane = bitplanes + y * ROWBYTES + column;
-            unsigned int x = (getindex(pixels[0]) << 24) | (getindex(pixels[1]) << 16) | (getindex(pixels[2]) << 8) | getindex(pixels[3]);
-            unsigned int z = (getindex(pixels[4]) << 24) | (getindex(pixels[5]) << 16) | (getindex(pixels[6]) << 8) | getindex(pixels[7]);
+            unsigned int *pixels = framebuffer + y * WIDTH + column * 32;
+            unsigned int *plane = (unsigned int *)(bitplanes + y * ROWBYTES) + column;
+            unsigned int w0;
+            unsigned int w1;
+            unsigned int w2;
+            unsigned int w3;
+            unsigned int w4;
+            unsigned int w5;
+            unsigned int w6;
+            unsigned int w7;
             unsigned int t;
 
-            t = (x ^ (x >> 7)) & 0x00AA00AA;
-            x = x ^ t ^ (t << 7);
-            t = (z ^ (z >> 7)) & 0x00AA00AA;
-            z = z ^ t ^ (t << 7);
-            t = (x ^ (x >> 14)) & 0x0000CCCC;
-            x = x ^ t ^ (t << 14);
-            t = (z ^ (z >> 14)) & 0x0000CCCC;
-            z = z ^ t ^ (t << 14);
-            t = (x & 0xF0F0F0F0) | ((z >> 4) & 0x0F0F0F0F);
-            z = ((x << 4) & 0xF0F0F0F0) | (z & 0x0F0F0F0F);
-            x = t;
+            w7 = (getindex(pixels[0]) << 24) | (getindex(pixels[1]) << 16) | (getindex(pixels[2]) << 8) | getindex(pixels[3]);
+            w6 = (getindex(pixels[4]) << 24) | (getindex(pixels[5]) << 16) | (getindex(pixels[6]) << 8) | getindex(pixels[7]);
+            w5 = (getindex(pixels[8]) << 24) | (getindex(pixels[9]) << 16) | (getindex(pixels[10]) << 8) | getindex(pixels[11]);
+            w4 = (getindex(pixels[12]) << 24) | (getindex(pixels[13]) << 16) | (getindex(pixels[14]) << 8) | getindex(pixels[15]);
+            w3 = (getindex(pixels[16]) << 24) | (getindex(pixels[17]) << 16) | (getindex(pixels[18]) << 8) | getindex(pixels[19]);
+            w2 = (getindex(pixels[20]) << 24) | (getindex(pixels[21]) << 16) | (getindex(pixels[22]) << 8) | getindex(pixels[23]);
+            w1 = (getindex(pixels[24]) << 24) | (getindex(pixels[25]) << 16) | (getindex(pixels[26]) << 8) | getindex(pixels[27]);
+            w0 = (getindex(pixels[28]) << 24) | (getindex(pixels[29]) << 16) | (getindex(pixels[30]) << 8) | getindex(pixels[31]);
 
-            plane[PLANESIZE * 7] = x >> 24;
-            plane[PLANESIZE * 6] = x >> 16;
-            plane[PLANESIZE * 5] = x >> 8;
-            plane[PLANESIZE * 4] = x;
-            plane[PLANESIZE * 3] = z >> 24;
-            plane[PLANESIZE * 2] = z >> 16;
-            plane[PLANESIZE * 1] = z >> 8;
-            plane[0] = z;
+            t = ((w0 >> 16) ^ w4) & 0x0000FFFF;
+            w4 ^= t;
+            w0 ^= t << 16;
+            t = ((w1 >> 16) ^ w5) & 0x0000FFFF;
+            w5 ^= t;
+            w1 ^= t << 16;
+            t = ((w2 >> 16) ^ w6) & 0x0000FFFF;
+            w6 ^= t;
+            w2 ^= t << 16;
+            t = ((w3 >> 16) ^ w7) & 0x0000FFFF;
+            w7 ^= t;
+            w3 ^= t << 16;
+
+            t = ((w0 >> 8) ^ w2) & 0x00FF00FF;
+            w2 ^= t;
+            w0 ^= t << 8;
+            t = ((w1 >> 8) ^ w3) & 0x00FF00FF;
+            w3 ^= t;
+            w1 ^= t << 8;
+            t = ((w4 >> 8) ^ w6) & 0x00FF00FF;
+            w6 ^= t;
+            w4 ^= t << 8;
+            t = ((w5 >> 8) ^ w7) & 0x00FF00FF;
+            w7 ^= t;
+            w5 ^= t << 8;
+
+            t = ((w0 >> 4) ^ w1) & 0x0F0F0F0F;
+            w1 ^= t;
+            w0 ^= t << 4;
+            t = ((w2 >> 4) ^ w3) & 0x0F0F0F0F;
+            w3 ^= t;
+            w2 ^= t << 4;
+            t = ((w4 >> 4) ^ w5) & 0x0F0F0F0F;
+            w5 ^= t;
+            w4 ^= t << 4;
+            t = ((w6 >> 4) ^ w7) & 0x0F0F0F0F;
+            w7 ^= t;
+            w6 ^= t << 4;
+
+            t = ((w0 >> 2) ^ w4) & 0x33333333;
+            w4 ^= t;
+            w0 ^= t << 2;
+            t = ((w1 >> 2) ^ w5) & 0x33333333;
+            w5 ^= t;
+            w1 ^= t << 2;
+            t = ((w2 >> 2) ^ w6) & 0x33333333;
+            w6 ^= t;
+            w2 ^= t << 2;
+            t = ((w3 >> 2) ^ w7) & 0x33333333;
+            w7 ^= t;
+            w3 ^= t << 2;
+
+            t = ((w0 >> 1) ^ w2) & 0x55555555;
+            w2 ^= t;
+            w0 ^= t << 1;
+            t = ((w1 >> 1) ^ w3) & 0x55555555;
+            w3 ^= t;
+            w1 ^= t << 1;
+            t = ((w4 >> 1) ^ w6) & 0x55555555;
+            w6 ^= t;
+            w4 ^= t << 1;
+            t = ((w5 >> 1) ^ w7) & 0x55555555;
+            w7 ^= t;
+            w5 ^= t << 1;
+
+            plane[PLANESIZE / 4 * 0] = w0;
+            plane[PLANESIZE / 4 * 4] = w1;
+            plane[PLANESIZE / 4 * 1] = w2;
+            plane[PLANESIZE / 4 * 5] = w3;
+            plane[PLANESIZE / 4 * 2] = w4;
+            plane[PLANESIZE / 4 * 6] = w5;
+            plane[PLANESIZE / 4 * 3] = w6;
+            plane[PLANESIZE / 4 * 7] = w7;
 
         }
 
