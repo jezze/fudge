@@ -1,5 +1,5 @@
 + window id "window" label "Connect"
-+ panel id "base" in "window" flow "vertical-stretch" padding "3" spacing "2" span "1"
++ panel id "base" in "window" flow "vertical-stretch" padding "2" spacing "2" span "1"
 + layout id "top" in "base" flow "horizontal" spacing "2"
 + box id "addressbox" in "top" mode "edit" padding "3" span "1" onchange "q=address&url=" onenter "q=open&url="
 + text id "address" in "addressbox" label "http://"
