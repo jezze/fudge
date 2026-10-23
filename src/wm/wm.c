@@ -2322,7 +2322,7 @@ static void onmousemove(struct message *message)
 
         }
 
-        if (!state.focusedwidget && state.focusedwindow)
+        if (!state.draggedthumb && !state.focusedwidget && state.focusedwindow)
         {
 
             if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
