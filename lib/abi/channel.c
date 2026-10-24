@@ -11,7 +11,6 @@
 #define CHANNEL_STATE_CLOSED            3
 #define CHANNEL_ROUTES                  (PIPE_ROUTES + 2)
 
-/* a slot of MESSAGE_SLOTS or more is a copy */
 struct inbox
 {
 
@@ -26,7 +25,7 @@ struct inbox
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
-/* routes hold resolved targets; terms are what channel_exit sends */
+
 struct routing
 {
 
@@ -145,7 +144,6 @@ static void setrouting(unsigned int owner, struct event_pipe *pipe)
 
 }
 
-/* TERM closes a task only when it comes from its input: the previous stage, else the owner, else anyone */
 static unsigned int frominput(unsigned int source)
 {
 
@@ -159,7 +157,6 @@ static unsigned int frominput(unsigned int source)
 
 }
 
-/* frees slots: kernel slots go back with the next pick, copies at once */
 static void release(struct inbox *inbox, unsigned int slots)
 {
 
@@ -196,7 +193,6 @@ static unsigned int copy(struct inbox *inbox, struct message *message)
 
 }
 
-/* picks a batch onto the end of the queue, handing the kernel what was released */
 static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
@@ -219,7 +215,6 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 
 }
 
-/* takes in a channel's mail and moves what is queued into copies, so its kernel slots free up; returns whether any did */
 static unsigned int pullinbox(unsigned int ichannel, struct inbox *inbox)
 {
 
@@ -410,7 +405,6 @@ static void dispatchpaths(struct message *message)
 static void dispatch(struct message *message)
 {
 
-    /* without PIPE, whoever sent MAIN is the owner */
     if (message->event == EVENT_MAIN && !routing.owner)
     {
 
@@ -501,7 +495,6 @@ unsigned int channel_process(unsigned int ichannel)
 
 }
 
-/* dispatches what is waiting without blocking; returns 0 once the channel is closed */
 unsigned int channel_drain(unsigned int ichannel)
 {
 
