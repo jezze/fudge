@@ -9,7 +9,7 @@ static void onpath(struct message *message)
 
     if (!paths)
         buffer_write(from, 1024, message->data, cstring_length_zero(message->data), 0);
-    else if (paths == 1 && system_run(message->source, "cp \"%s\" \"%s\"", from, message->data) == EXIT_STATUS_NORMAL)
+    else if (paths == 1 && system_run(message->source, "cp \"%s\" \"%s\"", from, message->data))
         system_run(message->source, "rm \"%s\"", from);
 
     paths++;

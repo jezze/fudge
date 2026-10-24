@@ -57,7 +57,7 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
                 break;
 
             case EVENT_TERM:
-                return (errors) ? EXIT_STATUS_FAILED : EXIT_STATUS_NORMAL;
+                return !errors;
 
             }
 

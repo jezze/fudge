@@ -74,9 +74,6 @@
 #define EVENT_WMCONFIG                  0x62
 #define EVENT_P9P                       0x70
 
-#define EXIT_STATUS_NORMAL              1
-#define EXIT_STATUS_FAILED              4
-
 #define PIPE_ROUTES                     8
 
 struct event_route
