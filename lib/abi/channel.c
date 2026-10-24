@@ -99,20 +99,12 @@ static void addterm(unsigned int target, unsigned int to)
 
 }
 
-static void done(struct inbox *inbox, unsigned int slots)
+/* frees slots: kernel slots go back with the next pick, copies at once */
+static void release(struct inbox *inbox, unsigned int slots)
 {
 
     inbox->release |= slots & ((1 << MESSAGE_SLOTS) - 1);
     copiesused &= ~(slots >> MESSAGE_SLOTS);
-
-}
-
-static void append(struct inbox *inbox, struct message *message)
-{
-
-    buffer_copy(&inbox->messages[(inbox->head + inbox->count) % CHANNEL_QUEUE], message, sizeof (struct message));
-
-    inbox->count++;
 
 }
 
@@ -128,9 +120,9 @@ static unsigned int copy(struct inbox *inbox, struct message *message)
         {
 
             buffer_copy(copies[i], message->data, message->length);
+            release(inbox, 1 << message->slot);
 
             copiesused |= 1 << i;
-            inbox->release |= 1 << message->slot;
             message->data = copies[i];
             message->slot = MESSAGE_SLOTS + i;
 
@@ -144,22 +136,37 @@ static unsigned int copy(struct inbox *inbox, struct message *message)
 
 }
 
-static unsigned int pullinbox(unsigned int ichannel, struct inbox *inbox)
+/* picks a batch onto the end of the queue, handing the kernel what was released */
+static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned int flags)
 {
 
     struct message messages[MESSAGE_SLOTS];
-    unsigned int released = inbox->release;
+    unsigned int status = call_pick(ichannel, messages, MESSAGE_SLOTS, inbox->release, flags);
     unsigned int i;
 
-    if (call_pick(ichannel, messages, MESSAGE_SLOTS, inbox->release, 0) == MESSAGE_OK)
+    inbox->release = 0;
+    inbox->opened = 1;
+
+    if (status == MESSAGE_OK)
     {
 
         for (i = 0; i < MESSAGE_SLOTS && messages[i].event; i++)
-            append(inbox, &messages[i]);
+            buffer_copy(&inbox->messages[(inbox->head + inbox->count++) % CHANNEL_QUEUE], &messages[i], sizeof (struct message));
 
     }
 
-    inbox->release = 0;
+    return status;
+
+}
+
+/* takes in a channel's mail and moves what is queued into copies, so its kernel slots free up; returns whether any did */
+static unsigned int pullinbox(unsigned int ichannel, struct inbox *inbox)
+{
+
+    unsigned int freed = inbox->release;
+    unsigned int i;
+
+    fill(ichannel, inbox, 0);
 
     for (i = 0; i < inbox->count; i++)
     {
@@ -172,30 +179,35 @@ static unsigned int pullinbox(unsigned int ichannel, struct inbox *inbox)
     }
 
     if (inbox->release)
+    {
+
+        freed |= inbox->release;
+
         call_pick(ichannel, 0, 0, inbox->release, 0);
 
-    released |= inbox->release;
-    inbox->release = 0;
+        inbox->release = 0;
 
-    return released;
+    }
+
+    return freed;
 
 }
 
 static unsigned int pull(void)
 {
 
-    unsigned int released = 0;
+    unsigned int freed = 0;
     unsigned int i;
 
     for (i = 0; i < CHANNEL_MAILBOXES; i++)
     {
 
         if (inboxes[i].opened)
-            released |= pullinbox(i, &inboxes[i]);
+            freed |= pullinbox(i, &inboxes[i]);
 
     }
 
-    return released;
+    return freed;
 
 }
 
@@ -204,26 +216,17 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    inbox->opened = 1;
-
-    done(inbox, inbox->handed);
+    release(inbox, inbox->handed);
 
     inbox->handed = 0;
 
     if (!inbox->count)
     {
 
-        unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, inbox->release, flags);
-
-        inbox->release = 0;
+        unsigned int status = fill(ichannel, inbox, flags);
 
         if (status != MESSAGE_OK)
             return status;
-
-        inbox->head = 0;
-
-        while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].event)
-            inbox->count++;
 
     }
 
@@ -239,7 +242,7 @@ static unsigned int take(unsigned int ichannel, struct message *message, unsigne
 static void finish(unsigned int ichannel, struct message *message)
 {
 
-    done(&inboxes[ichannel], 1 << message->slot);
+    release(&inboxes[ichannel], 1 << message->slot);
 
 }
 
@@ -427,6 +430,7 @@ unsigned int channel_process(unsigned int ichannel)
 
 }
 
+/* dispatches what is waiting without blocking; returns 0 once the channel is closed */
 unsigned int channel_drain(unsigned int ichannel)
 {
 
