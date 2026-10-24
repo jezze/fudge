@@ -11,9 +11,11 @@ struct mailbox
     unsigned int head;
     unsigned int tail;
     unsigned int steps;
+    unsigned int waiters;
 
 };
 
+unsigned int mailbox_wait(unsigned int target, unsigned int itask);
 void mailbox_reset(struct mailbox *mailbox);
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel);
 void mailbox_unregister(struct mailbox *mailbox);

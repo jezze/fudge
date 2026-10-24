@@ -213,8 +213,13 @@ static unsigned int place(unsigned int itask, void *stack)
     {
 
         unsigned int inode = kernel_getchannelinode(itask, args->ichannel);
+        unsigned int status = (inode) ? kernel_place(inode, args->target, args->event, args->count, args->data) : MESSAGE_FAILED;
 
-        return (inode) ? kernel_place(inode, args->target, args->event, args->count, args->data) : MESSAGE_FAILED;
+        /* the caller's library tries again; until a slot frees it sleeps instead of spinning */
+        if (status == MESSAGE_RETRY)
+            mailbox_wait(args->target, itask);
+
+        return status;
 
     }
 

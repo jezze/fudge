@@ -22,12 +22,45 @@ unsigned int hasfreeslot(struct mailbox *mailbox)
 
 }
 
+/* senders that found the mailbox full go back to running and try again */
+static void wakewaiters(unsigned int inode)
+{
+
+    unsigned int i;
+
+    for (i = 1; i < POOL_TASKS; i++)
+    {
+
+        struct task *task = pool_gettask(i);
+
+        if (task && task->waitingfor == inode)
+        {
+
+            task->waitingfor = 0;
+
+            kernel_signal(i, TASK_SIGNAL_UNBLOCK);
+
+        }
+
+    }
+
+}
+
 static unsigned int pick(struct mailbox *mailbox, struct message *message)
 {
 
     unsigned int status = MESSAGE_RETRY;
+    unsigned int wake = 0;
 
     spinlock_acquire(&mailbox->spinlock);
+
+    if (mailbox->steps && mailbox->waiters)
+    {
+
+        mailbox->waiters = 0;
+        wake = 1;
+
+    }
 
     mailbox->tail += mailbox->steps;
     mailbox->steps = 0;
@@ -46,6 +79,9 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message)
     }
 
     spinlock_release(&mailbox->spinlock);
+
+    if (wake)
+        wakewaiters(mailbox->inode);
 
     return status;
 
@@ -145,8 +181,57 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
+/* a task whose place found this mailbox full sleeps until a pick frees a slot; fullness is checked and the wait recorded under the mailbox's lock, so a slot freed in between is not missed. Only tasks wait, never the mailbox's own task */
+unsigned int mailbox_wait(unsigned int target, unsigned int itask)
+{
+
+    struct resource *resource = pool_getnoderesource(target);
+    struct task *task = pool_gettask(itask);
+    unsigned int waiting = 0;
+
+    if (resource && resource->type == RESOURCE_MAILBOX && task)
+    {
+
+        struct mailbox *mailbox = resource->data;
+
+        if (mailbox && mailbox->itask && mailbox->itask != itask)
+        {
+
+            spinlock_acquire(&mailbox->spinlock);
+
+            if (!hasfreeslot(mailbox))
+            {
+
+                task->waitingfor = target;
+                mailbox->waiters++;
+                waiting = 1;
+
+            }
+
+            spinlock_release(&mailbox->spinlock);
+
+        }
+
+    }
+
+    if (waiting)
+        kernel_signal(itask, TASK_SIGNAL_BLOCK);
+
+    return waiting;
+
+}
+
 void mailbox_reset(struct mailbox *mailbox)
 {
+
+    if (mailbox->waiters)
+    {
+
+        mailbox->waiters = 0;
+
+        wakewaiters(mailbox->inode);
+
+    }
 
     mailbox->itask = 0;
     mailbox->ichannel = 0;
@@ -181,6 +266,9 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     spinlock_init(&mailbox->spinlock);
+
+    mailbox->waiters = 0;
+
     mailbox_reset(mailbox);
 
     mailbox->inode = pool_picknode(&mailbox->resource, &operands);

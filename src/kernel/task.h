@@ -42,6 +42,7 @@ struct task
     unsigned long buffer;
     unsigned int pinode;
     unsigned int status;
+    unsigned int waitingfor;
     unsigned int imailbox[TASK_MAILBOXES];
 
 };
