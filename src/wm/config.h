@@ -1,7 +1,8 @@
 #define CONFIG_UNIT                         4
 #define CONFIG_FRAME_WIDTH                  4
 #define CONFIG_FRAME_HEIGHT                 4
-#define CONFIG_PANEL_PADDING                2
+#define CONFIG_PANEL_BORDER_WIDTH           2
+#define CONFIG_PANEL_BORDER_HEIGHT          2
 #define CONFIG_SCROLL_WIDTH                 12
 #define CONFIG_SCROLL_MINIMUM               24
 #define CONFIG_BUTTON_PADDING_WIDTH         (CONFIG_FRAME_WIDTH + render_unit(5))
