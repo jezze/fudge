@@ -636,7 +636,7 @@ static void run(char *pwd)
         if (!job.ncommands)
             continue;
 
-        if (!job_spawn(&job, 1, 0, BINPATH))
+        if (!job_spawn(&job, 1, BINPATH))
         {
 
             channel_send_fmt(0, output, EVENT_ERROR, "%s\n", job.error);

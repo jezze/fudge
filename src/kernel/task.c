@@ -131,12 +131,11 @@ unsigned int task_transition(struct task *task, unsigned int state)
 
 }
 
-void task_register(struct task *task, unsigned int pinode, unsigned long address, unsigned long mmap, unsigned long buffer, unsigned long ip, unsigned long sp)
+void task_register(struct task *task, unsigned long address, unsigned long mmap, unsigned long buffer, unsigned long ip, unsigned long sp)
 {
 
     resource_register(&task->resource);
 
-    task->pinode = pinode;
     task->address = address;
     task->mmap = mmap;
     task->buffer = buffer;
@@ -150,7 +149,6 @@ void task_unregister(struct task *task)
 
     resource_unregister(&task->resource);
 
-    task->pinode = 0;
     task->address = 0;
     task->mmap = 0;
     task->buffer = 0;
@@ -167,8 +165,6 @@ void task_reset(struct task *task)
     unsigned int i;
 
     task->state = TASK_STATE_DEAD;
-    task->pinode = 0;
-    task->status = 0;
     task->waitingfor = 0;
     task->aborted = 0;
     task->address = 0;

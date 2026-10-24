@@ -167,7 +167,7 @@ static void unmap(unsigned long vaddress, unsigned int size)
 
 }
 
-static unsigned int createtask(unsigned int pinode, unsigned long address)
+static unsigned int createtask(unsigned long address)
 {
 
     unsigned int ntask = pool_picktask();
@@ -176,7 +176,7 @@ static unsigned int createtask(unsigned int pinode, unsigned long address)
     {
 
         struct mmap_header *header = (struct mmap_header *)(unsigned long)(ARCH_MMAP_BASE + MMAP_SIZE * ntask);
-        unsigned int inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, pinode, address, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + TASK_CODESIZE * ntask, ARCH_TASK_STACKBASE + TASK_STACKSIZE * ntask, ARCH_TASK_BUFFERBASE + TASK_BUFFERSIZE * ntask);
+        unsigned int inode = kernel_loadtask(ntask, 0, KERNEL_VSTACK, address, ARCH_MMAP_BASE + MMAP_SIZE * ntask, ARCH_TASK_CODEBASE + TASK_CODESIZE * ntask, ARCH_TASK_STACKBASE + TASK_STACKSIZE * ntask, ARCH_TASK_BUFFERBASE + TASK_BUFFERSIZE * ntask);
 
         if (inode)
         {
@@ -204,12 +204,11 @@ static unsigned int createtask(unsigned int pinode, unsigned long address)
 static unsigned int spawn(unsigned int itask, void *stack)
 {
 
-    struct {void *caller; unsigned int ichannel; unsigned int target; unsigned int id;} *args = stack;
-    unsigned int pinode = kernel_getchannelinode(itask, args->ichannel);
+    struct {void *caller; unsigned int target; unsigned int id;} *args = stack;
     unsigned long address = kernel_locate(args->target, args->id);
 
-    if (address && pinode)
-        return createtask(pinode, address);
+    if (address)
+        return createtask(address);
 
     debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "spawn failed");
 
@@ -522,7 +521,7 @@ void arch_runinit(unsigned int address)
 {
 
     struct core *core = kernel_getcore();
-    unsigned int target = createtask(0, address);
+    unsigned int target = createtask(address);
 
     if (core)
         core_register(core);

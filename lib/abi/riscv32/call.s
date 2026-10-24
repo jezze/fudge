@@ -30,7 +30,6 @@ call_debug:
 .global call_despawn
 call_despawn:
     addi sp, sp, -CALL_FRAME
-    sw a0, 4(sp)
     callindex CALL_INDEX_DESPAWN
 
 .global call_find
@@ -79,7 +78,6 @@ call_spawn:
     addi sp, sp, -CALL_FRAME
     sw a0, 4(sp)
     sw a1, 8(sp)
-    sw a2, 12(sp)
     callindex CALL_INDEX_SPAWN
 
 .global call_unload

@@ -304,7 +304,7 @@ static void run(void)
 
     }
 
-    sh = fs_spawn(1, 0, "initrd:bin/sh");
+    sh = fs_spawn(1, "initrd:bin/sh");
 
     if (!sh)
     {

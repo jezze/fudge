@@ -257,7 +257,7 @@ void exit(int status)
         channel_send_fmt(0, source, EVENT_ERROR, "%s", port_lasterror());
 
     channel_exit(0);
-    call_despawn((status) ? EXIT_STATUS_FAILED : EXIT_STATUS_NORMAL);
+    call_despawn();
 
     for (;;);
 

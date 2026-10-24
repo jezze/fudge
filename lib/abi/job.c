@@ -53,7 +53,7 @@ static unsigned int linearnext(struct job *job, unsigned int index)
 
 }
 
-unsigned int job_spawn(struct job *job, unsigned int ichannel, unsigned int notify, char *bindir)
+unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir)
 {
 
     unsigned int i;
@@ -63,10 +63,10 @@ unsigned int job_spawn(struct job *job, unsigned int ichannel, unsigned int noti
 
         struct job_command *command = &job->commands[i];
 
-        command->target = fs_spawn_relative(ichannel, notify, command->program, bindir);
+        command->target = fs_spawn_relative(ichannel, command->program, bindir);
 
         if (!command->target)
-            command->target = fs_spawn(ichannel, notify, command->program);
+            command->target = fs_spawn(ichannel, command->program);
 
         if (!command->target)
         {

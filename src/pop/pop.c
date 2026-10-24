@@ -556,7 +556,7 @@ void glue_exit(int status)
     ungrab();
     port_destroy();
     channel_exit(0);
-    call_despawn((status) ? EXIT_STATUS_FAILED : EXIT_STATUS_NORMAL);
+    call_despawn();
 
     for (;;);
 

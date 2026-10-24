@@ -23,7 +23,7 @@ static unsigned int isaddress(char *host)
 static void opensocket(unsigned int source, struct url *url, char address[32])
 {
 
-    unsigned int target = fs_spawn(2, 2, "initrd:bin/socket");
+    unsigned int target = fs_spawn(2, "initrd:bin/socket");
 
     if (target)
     {

@@ -377,7 +377,7 @@ unsigned int fs_write_all(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
-unsigned int fs_spawn(unsigned int ichannel, unsigned int notify, char *path)
+unsigned int fs_spawn(unsigned int ichannel, char *path)
 {
 
     unsigned int target = fs_auth(path);
@@ -388,7 +388,7 @@ unsigned int fs_spawn(unsigned int ichannel, unsigned int notify, char *path)
         unsigned int id = fs_walk(ichannel, target, 0, path);
 
         if (id)
-            return call_spawn(notify, target, id);
+            return call_spawn(target, id);
 
     }
 
@@ -396,7 +396,7 @@ unsigned int fs_spawn(unsigned int ichannel, unsigned int notify, char *path)
 
 }
 
-unsigned int fs_spawn_relative(unsigned int ichannel, unsigned int notify, char *path, char *parent)
+unsigned int fs_spawn_relative(unsigned int ichannel, char *path, char *parent)
 {
 
     unsigned int target = fs_auth(parent);
@@ -407,7 +407,7 @@ unsigned int fs_spawn_relative(unsigned int ichannel, unsigned int notify, char 
         unsigned int id = fs_walk(ichannel, target, fs_walk(ichannel, target, 0, parent), path);
 
         if (id)
-            return call_spawn(notify, target, id);
+            return call_spawn(target, id);
 
     }
 

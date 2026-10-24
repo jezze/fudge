@@ -953,7 +953,7 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=open"))
     {
 
-        unsigned int target = fs_spawn(1, 0, "initrd:bin/wfile");
+        unsigned int target = fs_spawn(1, "initrd:bin/wfile");
 
         if (target)
         {

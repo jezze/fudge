@@ -31,7 +31,6 @@ call_debug:
 .global call_despawn
 call_despawn:
     subq $CALL_FRAME, %rsp
-    movl %edi, 8(%rsp)
     callindex CALL_INDEX_DESPAWN
 
 .global call_find
@@ -80,7 +79,6 @@ call_spawn:
     subq $CALL_FRAME, %rsp
     movl %edi, 8(%rsp)
     movl %esi, 12(%rsp)
-    movl %edx, 16(%rsp)
     callindex CALL_INDEX_SPAWN
 
 .global call_unload

@@ -186,7 +186,7 @@ static void save(void)
 static void choose(void)
 {
 
-    unsigned int target = fs_spawn(1, 0, "initrd:bin/wfile");
+    unsigned int target = fs_spawn(1, "initrd:bin/wfile");
 
     if (target)
     {

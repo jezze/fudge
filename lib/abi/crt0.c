@@ -55,7 +55,7 @@ void panic(unsigned int source, char *file, unsigned int line)
 
     channel_send_fmt(0, source, EVENT_ERROR, "Process panic! File %s on line %u\n", file, &line);
     channel_exit(0);
-    call_despawn(EXIT_STATUS_FAILED);
+    call_despawn();
 
 }
 
@@ -66,7 +66,7 @@ void main(void)
     {
 
         channel_abort(0);
-        call_despawn(EXIT_STATUS_FAILED);
+        call_despawn();
 
     }
 
@@ -78,7 +78,7 @@ void main(void)
     init();
     channel_loop(0);
     channel_exit(0);
-    call_despawn(EXIT_STATUS_NORMAL);
+    call_despawn();
 
 }
 

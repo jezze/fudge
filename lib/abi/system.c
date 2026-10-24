@@ -8,7 +8,7 @@
 static unsigned int start(char *command, unsigned int length, unsigned int input)
 {
 
-    unsigned int sh = fs_spawn(1, 1, "initrd:bin/sh");
+    unsigned int sh = fs_spawn(1, "initrd:bin/sh");
 
     if (sh)
     {

@@ -42,7 +42,7 @@ struct job
 
 };
 
-unsigned int job_spawn(struct job *job, unsigned int ichannel, unsigned int notify, char *bindir);
+unsigned int job_spawn(struct job *job, unsigned int ichannel, char *bindir);
 void job_run(struct job *job, unsigned int ichannel, char *pwd);
 void job_abort(struct job *job, unsigned int ichannel);
 void job_detach(struct job *job);

@@ -426,20 +426,10 @@ void kernel_schedule(struct core *core)
 
 }
 
-void kernel_kill(unsigned int itask, unsigned int status)
+void kernel_kill(unsigned int itask)
 {
 
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        if (!task->status)
-            task->status = status;
-
-        kernel_signal(itask, TASK_SIGNAL_KILL);
-
-    }
+    kernel_signal(itask, TASK_SIGNAL_KILL);
 
 }
 
@@ -565,7 +555,7 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
 
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned int pinode, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
 {
 
     struct task *task = pool_gettask(itask);
@@ -575,7 +565,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     {
 
         task_reset(task);
-        task_register(task, pinode, address, mmap, buffer, ip, sp);
+        task_register(task, address, mmap, buffer, ip, sp);
 
         if (task->address)
         {
