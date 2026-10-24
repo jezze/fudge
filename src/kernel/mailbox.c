@@ -196,7 +196,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-/* a task whose place found this mailbox full sleeps until a pick frees a slot; fullness is checked and the wait recorded under the mailbox's lock, so a slot freed in between is not missed. Only tasks wait, never the mailbox's own task */
+/* records a task whose place found this mailbox full, so a pick that frees a slot wakes it; fullness is checked and the wait recorded under the mailbox's lock, so a slot freed in between is not missed. The task itself sleeps in pick, where mail for it wakes it too. Only tasks wait, never the mailbox's own task */
 unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 {
 
@@ -228,9 +228,6 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
         }
 
     }
-
-    if (waiting)
-        kernel_signal(itask, TASK_SIGNAL_BLOCK);
 
     return waiting;
 

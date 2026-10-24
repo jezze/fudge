@@ -4,9 +4,24 @@
 
 #define CHANNEL_EVENTS                  256
 #define CHANNEL_MAILBOXES               8
+#define CHANNEL_COPIES                  16
+#define CHANNEL_QUEUE                   32
 #define CHANNEL_STATE_OPENED            1
 #define CHANNEL_STATE_CLOSING           2
 #define CHANNEL_STATE_CLOSED            3
+
+/* messages picked from the kernel and not taken yet, oldest first; slots finished by listeners or callers go back with the next pick. A message whose slot is MESSAGE_SLOTS or more lives in a copy instead */
+struct inbox
+{
+
+    struct message messages[CHANNEL_QUEUE];
+    unsigned int head;
+    unsigned int count;
+    unsigned int release;
+    unsigned int handed;
+    unsigned int opened;
+
+};
 
 static void (*listeners[CHANNEL_EVENTS])(struct message *message);
 static unsigned int state = CHANNEL_STATE_OPENED;
@@ -15,7 +30,9 @@ static unsigned int pipeprev;
 static unsigned int pipenext;
 static struct event_route routes[PIPE_ROUTES + 2];
 static unsigned int nroutes;
-static unsigned int picked[CHANNEL_MAILBOXES];
+static struct inbox inboxes[CHANNEL_MAILBOXES];
+static char copies[CHANNEL_COPIES][MESSAGE_SIZE];
+static unsigned int copiesused;
 
 static struct event_route *findroute(unsigned int event)
 {
@@ -54,26 +71,185 @@ static struct event_route *findreroute(unsigned int target, unsigned int event)
 
 }
 
-/* picks one message and releases the one picked before it on the channel */
-static unsigned int pickone(unsigned int ichannel, struct message *message, unsigned int flags)
+/* finished slots go back to the kernel with the next pick, finished copies are free at once */
+static void done(struct inbox *inbox, unsigned int slots)
 {
 
-    unsigned int status = (ichannel < CHANNEL_MAILBOXES) ? call_pick(ichannel, message, 1, picked[ichannel], flags) : MESSAGE_FAILED;
+    inbox->release |= slots & ((1 << MESSAGE_SLOTS) - 1);
+    copiesused &= ~(slots >> MESSAGE_SLOTS);
 
-    if (ichannel < CHANNEL_MAILBOXES)
-        picked[ichannel] = (status == MESSAGE_OK) ? 1 << message->slot : 0;
+}
 
-    return status;
+static void append(struct inbox *inbox, struct message *message)
+{
+
+    buffer_copy(&inbox->messages[(inbox->head + inbox->count) % CHANNEL_QUEUE], message, sizeof (struct message));
+
+    inbox->count++;
+
+}
+
+/* moves a message out of its slot into a free copy */
+static unsigned int copy(struct inbox *inbox, struct message *message)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < CHANNEL_COPIES; i++)
+    {
+
+        if (!(copiesused & (1 << i)))
+        {
+
+            buffer_copy(copies[i], message->data, message->length);
+
+            copiesused |= 1 << i;
+            inbox->release |= 1 << message->slot;
+            message->data = copies[i];
+            message->slot = MESSAGE_SLOTS + i;
+
+            return 1;
+
+        }
+
+    }
+
+    return 0;
+
+}
+
+/* empties the kernel mailbox of a channel into copies: the messages not taken yet, then new ones, as far as the copies last */
+static unsigned int pullinbox(unsigned int ichannel, struct inbox *inbox)
+{
+
+    struct message message;
+    unsigned int released = 0;
+    unsigned int i;
+
+    for (i = 0; i < inbox->count; i++)
+    {
+
+        struct message *message = &inbox->messages[(inbox->head + i) % CHANNEL_QUEUE];
+
+        if (message->slot < MESSAGE_SLOTS && !copy(inbox, message))
+            break;
+
+    }
+
+    for (;;)
+    {
+
+        unsigned int status = call_pick(ichannel, &message, 1, inbox->release, 0);
+        unsigned int copied;
+
+        released |= inbox->release;
+        inbox->release = 0;
+
+        if (status != MESSAGE_OK)
+            break;
+
+        copied = copy(inbox, &message);
+
+        append(inbox, &message);
+
+        if (!copied)
+            break;
+
+    }
+
+    if (inbox->release)
+    {
+
+        released |= inbox->release;
+
+        call_pick(ichannel, 0, 0, inbox->release, 0);
+
+        inbox->release = 0;
+
+    }
+
+    return released;
+
+}
+
+/* takes in the mail of every channel in use, so that this task's mailboxes have room while it waits for room in another's */
+static unsigned int pull(void)
+{
+
+    unsigned int released = 0;
+    unsigned int i;
+
+    for (i = 0; i < CHANNEL_MAILBOXES; i++)
+    {
+
+        if (inboxes[i].opened)
+            released |= pullinbox(i, &inboxes[i]);
+
+    }
+
+    return released;
+
+}
+
+/* a message handed back to a caller is finished at the next take on its channel, as when slots were freed by the next pick */
+static unsigned int take(unsigned int ichannel, struct message *message, unsigned int flags)
+{
+
+    struct inbox *inbox = &inboxes[ichannel];
+
+    inbox->opened = 1;
+
+    done(inbox, inbox->handed);
+
+    inbox->handed = 0;
+
+    if (!inbox->count)
+    {
+
+        unsigned int status = call_pick(ichannel, inbox->messages, MESSAGE_SLOTS, inbox->release, flags);
+
+        inbox->release = 0;
+
+        if (status != MESSAGE_OK)
+            return status;
+
+        inbox->head = 0;
+
+        while (inbox->count < MESSAGE_SLOTS && inbox->messages[inbox->count].event)
+            inbox->count++;
+
+    }
+
+    buffer_copy(message, &inbox->messages[inbox->head], sizeof (struct message));
+
+    inbox->head = (inbox->head + 1) % CHANNEL_QUEUE;
+    inbox->count--;
+
+    return MESSAGE_OK;
+
+}
+
+static void finish(unsigned int ichannel, struct message *message)
+{
+
+    done(&inboxes[ichannel], 1 << message->slot);
+
+}
+
+static void hand(unsigned int ichannel, struct message *message)
+{
+
+    inboxes[ichannel].handed |= 1 << message->slot;
 
 }
 
 static unsigned int pick(unsigned int ichannel, struct message *message)
 {
 
-    while (ichannel || state != CHANNEL_STATE_CLOSED)
+    while (ichannel < CHANNEL_MAILBOXES && (ichannel || state != CHANNEL_STATE_CLOSED))
     {
 
-        unsigned int status = pickone(ichannel, message, MESSAGE_FLAG_BLOCK);
+        unsigned int status = take(ichannel, message, MESSAGE_FLAG_BLOCK);
 
         switch (status)
         {
@@ -107,6 +283,12 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
         {
 
         case MESSAGE_RETRY:
+            continue;
+
+        case MESSAGE_FULL:
+            if (!pull())
+                call_pick(ichannel, 0, 0, 0, MESSAGE_FLAG_BLOCK);
+
             continue;
 
         case MESSAGE_OK:
@@ -198,7 +380,12 @@ unsigned int channel_send_fmtv(unsigned int ichannel, unsigned int target, unsig
 unsigned int channel_pick(unsigned int ichannel, struct message *message)
 {
 
-    return pick(ichannel, message);
+    unsigned int event = pick(ichannel, message);
+
+    if (event)
+        hand(ichannel, message);
+
+    return event;
 
 }
 
@@ -211,6 +398,7 @@ unsigned int channel_process(unsigned int ichannel)
     {
 
         dispatch(&message);
+        finish(ichannel, &message);
 
         return message.event;
 
@@ -225,14 +413,15 @@ unsigned int channel_drain(unsigned int ichannel)
 
     struct message message;
 
-    while (ichannel || state != CHANNEL_STATE_CLOSED)
+    while (ichannel < CHANNEL_MAILBOXES && (ichannel || state != CHANNEL_STATE_CLOSED))
     {
 
-        switch (pickone(ichannel, &message, 0))
+        switch (take(ichannel, &message, 0))
         {
 
         case MESSAGE_OK:
             dispatch(&message);
+            finish(ichannel, &message);
 
             break;
 
@@ -272,16 +461,19 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         dispatch(message);
 
-        if (message->source == source)
+        if (message->source == source && message->event == event)
         {
 
-            if (message->event == event)
-                return event;
+            hand(ichannel, message);
 
-            if (message->event == EVENT_EXIT)
-                return 0;
+            return event;
 
         }
+
+        finish(ichannel, message);
+
+        if (message->source == source && message->event == EVENT_EXIT)
+            return 0;
 
     }
 
@@ -293,8 +485,20 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 {
 
     struct message message;
+    unsigned int length = 0;
 
-    return (channel_poll(ichannel, source, event, &message)) ? buffer_read(data, count, message.data, message.length, 0) : 0;
+    if (channel_poll(ichannel, source, event, &message))
+    {
+
+        length = buffer_read(data, count, message.data, message.length, 0);
+
+        done(&inboxes[ichannel], inboxes[ichannel].handed);
+
+        inboxes[ichannel].handed = 0;
+
+    }
+
+    return length;
 
 }
 

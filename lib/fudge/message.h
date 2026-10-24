@@ -4,6 +4,7 @@
 #define MESSAGE_OK                      0x01
 #define MESSAGE_RETRY                   0x02
 #define MESSAGE_FAILED                  0x03
+#define MESSAGE_FULL                    0x04
 #define MESSAGE_FLAG_BLOCK              0x01
 
 struct message
