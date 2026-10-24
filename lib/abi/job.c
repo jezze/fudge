@@ -97,7 +97,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         unsigned int count;
         unsigned int j;
 
-        pipe.prev = (command->side) ? 0 : linearprev(job, i - 1);
+        pipe.prev = (command->side) ? job->commands[command->side - 1].target : linearprev(job, i - 1);
         pipe.next = (command->side) ? 0 : linearnext(job, i - 1);
         pipe.nroutes = command->nroutes;
 

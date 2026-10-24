@@ -99,6 +99,66 @@ static void addterm(unsigned int target, unsigned int to)
 
 }
 
+static void setrouting(unsigned int owner, struct event_pipe *pipe)
+{
+
+    unsigned int nroutes = (pipe->nroutes < PIPE_ROUTES) ? pipe->nroutes : PIPE_ROUTES;
+    struct event_route *term;
+    unsigned int i;
+
+    routing.owner = owner;
+    routing.prev = pipe->prev;
+    routing.next = (pipe->next) ? pipe->next : owner;
+    routing.nroutes = 0;
+    routing.nterms = 0;
+
+    for (i = 0; i < nroutes; i++)
+        addroute(pipe->routes[i].event, pipe->routes[i].to, pipe->routes[i].target);
+
+    addroute(EVENT_DATA, EVENT_DATA, 0);
+    addroute(EVENT_ERROR, EVENT_ERROR, 0);
+
+    term = findroute(EVENT_TERM);
+
+    if (term)
+        addterm(term->target, term->to);
+    else if (routing.next)
+        addterm(routing.next, EVENT_TERM);
+
+    for (i = 0; i < nroutes; i++)
+    {
+
+        if (pipe->routes[i].target && pipe->routes[i].target != owner)
+            addterm(pipe->routes[i].target, EVENT_TERM);
+
+    }
+
+    if (routing.terms[0].target != owner || routing.terms[0].to != EVENT_TERM)
+    {
+
+        term = &routing.terms[routing.nterms++];
+        term->event = EVENT_TERM;
+        term->to = EVENT_TERM;
+        term->target = owner;
+
+    }
+
+}
+
+/* TERM closes a task only when it comes from its input: the previous stage, else the owner, else anyone */
+static unsigned int frominput(unsigned int source)
+{
+
+    if (routing.prev)
+        return source == routing.prev;
+
+    if (routing.owner)
+        return source == routing.owner;
+
+    return 1;
+
+}
+
 /* frees slots: kernel slots go back with the next pick, copies at once */
 static void release(struct inbox *inbox, unsigned int slots)
 {
@@ -350,6 +410,17 @@ static void dispatchpaths(struct message *message)
 static void dispatch(struct message *message)
 {
 
+    /* without PIPE, whoever sent MAIN is the owner */
+    if (message->event == EVENT_MAIN && !routing.owner)
+    {
+
+        struct event_pipe pipe;
+
+        buffer_clear(&pipe, sizeof (struct event_pipe));
+        setrouting(message->source, &pipe);
+
+    }
+
     if (message->event == EVENT_PATH)
         dispatchpaths(message);
     else if (message->event < CHANNEL_EVENTS && listeners[message->event])
@@ -359,7 +430,7 @@ static void dispatch(struct message *message)
     {
 
     case EVENT_TERM:
-        if (state == CHANNEL_STATE_OPENED)
+        if (state == CHANNEL_STATE_OPENED && frominput(message->source))
             state = CHANNEL_STATE_CLOSING;
 
         break;
@@ -542,46 +613,7 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 void channel_pipe(unsigned int owner, struct event_pipe *pipe)
 {
 
-    unsigned int nroutes = (pipe->nroutes < PIPE_ROUTES) ? pipe->nroutes : PIPE_ROUTES;
-    struct event_route *term;
-    unsigned int i;
-
-    routing.owner = owner;
-    routing.prev = pipe->prev;
-    routing.next = (pipe->next) ? pipe->next : owner;
-    routing.nroutes = 0;
-    routing.nterms = 0;
-
-    for (i = 0; i < nroutes; i++)
-        addroute(pipe->routes[i].event, pipe->routes[i].to, pipe->routes[i].target);
-
-    addroute(EVENT_DATA, EVENT_DATA, 0);
-    addroute(EVENT_ERROR, EVENT_ERROR, 0);
-
-    term = findroute(EVENT_TERM);
-
-    if (term)
-        addterm(term->target, term->to);
-    else if (routing.next)
-        addterm(routing.next, EVENT_TERM);
-
-    for (i = 0; i < nroutes; i++)
-    {
-
-        if (pipe->routes[i].target && pipe->routes[i].target != owner)
-            addterm(pipe->routes[i].target, EVENT_TERM);
-
-    }
-
-    if (routing.terms[0].target != owner || routing.terms[0].to != EVENT_TERM)
-    {
-
-        term = &routing.terms[routing.nterms++];
-        term->event = EVENT_TERM;
-        term->to = EVENT_TERM;
-        term->target = owner;
-
-    }
+    setrouting(owner, pipe);
 
 }
 
