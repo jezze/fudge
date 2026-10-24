@@ -78,7 +78,6 @@ static void destroytask(unsigned int itask)
                 {
 
                     unannounce(mailbox->inode);
-                    mailbox_reset(mailbox);
                     mailbox_unregister(mailbox);
 
                     mailbox->inode = pool_renewnode(mailbox->inode);
@@ -341,7 +340,6 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
                 mailbox = pool_getmailbox(task->imailbox[ichannel]);
 
-                mailbox_reset(mailbox);
                 mailbox_register(mailbox, itask, ichannel);
                 mmap_allocate((struct mmap_header *)task->mmap, MMAP_TYPE_NORMAL, mailbox->data, KERNEL_VMAILBOX + MESSAGE_CAPACITY * ichannel, MESSAGE_CAPACITY, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 

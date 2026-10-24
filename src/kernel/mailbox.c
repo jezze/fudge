@@ -140,18 +140,13 @@ static unsigned int operands_pick(unsigned int source, struct message *messages,
 
         struct mailbox *mailbox = resource->data;
 
-        if (mailbox)
-        {
+        if (pick(mailbox, messages, count, slots))
+            return MESSAGE_OK;
 
-            if (pick(mailbox, messages, count, slots))
-                return MESSAGE_OK;
+        if (flags & MESSAGE_FLAG_BLOCK)
+            kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
 
-            if (flags & MESSAGE_FLAG_BLOCK)
-                kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
-
-            return MESSAGE_RETRY;
-
-        }
+        return MESSAGE_RETRY;
 
     }
 
@@ -169,20 +164,13 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
         struct mailbox *mailbox = resource->data;
 
-        if (mailbox && mailbox->itask)
+        if (mailbox->itask)
         {
 
             unsigned int status = place(mailbox, event, source, count, data);
 
-            switch (status)
-            {
-
-            case MESSAGE_OK:
+            if (status == MESSAGE_OK)
                 kernel_signal(mailbox->itask, TASK_SIGNAL_UNBLOCK);
-
-                break;
-
-            }
 
             return status;
 
@@ -206,7 +194,7 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 
         struct mailbox *mailbox = resource->data;
 
-        if (mailbox && mailbox->itask && mailbox->itask != itask)
+        if (mailbox->itask && mailbox->itask != itask)
         {
 
             spinlock_acquire(&mailbox->spinlock);
@@ -215,7 +203,7 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
             {
 
                 task->waitingfor = target;
-                mailbox->waiters++;
+                mailbox->waiters = 1;
                 waiting = 1;
 
             }
@@ -265,9 +253,6 @@ void mailbox_unregister(struct mailbox *mailbox)
 {
 
     resource_unregister(&mailbox->resource);
-
-    mailbox->itask = 0;
-    mailbox->ichannel = 0;
 
 }
 
