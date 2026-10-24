@@ -22,8 +22,8 @@ unsigned int hasfreeslot(struct mailbox *mailbox)
 
 }
 
-/* senders that found the mailbox full go back to running and try again */
-static void wakewaiters(unsigned int inode)
+/* senders that found the mailbox full go back to running and try again; callers hold no task's lock, since this takes the waiters' */
+void mailbox_wake(unsigned int inode)
 {
 
     unsigned int i;
@@ -81,7 +81,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message)
     spinlock_release(&mailbox->spinlock);
 
     if (wake)
-        wakewaiters(mailbox->inode);
+        mailbox_wake(mailbox->inode);
 
     return status;
 
@@ -221,23 +221,20 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 
 }
 
-void mailbox_reset(struct mailbox *mailbox)
+/* says whether senders were waiting; the caller wakes them (mailbox_wake) once it holds no task's lock */
+unsigned int mailbox_reset(struct mailbox *mailbox)
 {
 
-    if (mailbox->waiters)
-    {
+    unsigned int waiters = mailbox->waiters;
 
-        mailbox->waiters = 0;
-
-        wakewaiters(mailbox->inode);
-
-    }
-
+    mailbox->waiters = 0;
     mailbox->itask = 0;
     mailbox->ichannel = 0;
     mailbox->head = 0;
     mailbox->tail = 0;
     mailbox->steps = 0;
+
+    return waiters;
 
 }
 

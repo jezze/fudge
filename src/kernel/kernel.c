@@ -137,7 +137,16 @@ static void orphan(unsigned int pinode)
 
 }
 
-static void retiretask(unsigned int itask)
+/* the mailboxes of a dying task that had senders waiting, woken once its lock is released */
+struct waking
+{
+
+    unsigned int inodes[TASK_MAILBOXES];
+    unsigned int count;
+
+};
+
+static void retiretask(unsigned int itask, struct waking *waking)
 {
 
     struct task *task = pool_gettask(itask);
@@ -155,7 +164,9 @@ static void retiretask(unsigned int itask)
             if (mailbox)
             {
 
-                mailbox_reset(mailbox);
+                if (mailbox_reset(mailbox))
+                    waking->inodes[waking->count++] = mailbox->inode;
+
                 orphan(mailbox->inode);
 
             }
@@ -179,6 +190,11 @@ static void transition(unsigned int itask, unsigned int state)
     if (task)
     {
 
+        struct waking waking;
+        unsigned int i;
+
+        waking.count = 0;
+
         spinlock_acquire(&task->spinlock);
 
         if (task_transition(task, state))
@@ -188,7 +204,7 @@ static void transition(unsigned int itask, unsigned int state)
             {
 
             case TASK_STATE_DEAD:
-                retiretask(itask);
+                retiretask(itask, &waking);
 
                 break;
 
@@ -207,6 +223,9 @@ static void transition(unsigned int itask, unsigned int state)
         }
 
         spinlock_release(&task->spinlock);
+
+        for (i = 0; i < waking.count; i++)
+            mailbox_wake(waking.inodes[i]);
 
     }
 
