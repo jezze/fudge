@@ -217,7 +217,6 @@ static struct mmap_entry *findoverlap(struct mmap_header *header, unsigned long 
 
 }
 
-/* the lowest free range in the task's mem: window */
 static unsigned long findgap(struct mmap_header *header, unsigned int size)
 {
 
@@ -432,7 +431,6 @@ static unsigned int remove(unsigned int parent, unsigned int id)
 
 }
 
-/* a size of 0 maps the file as it is now; a larger size reserves room for the file to grow */
 static unsigned long map(unsigned int source, unsigned int id, unsigned int size)
 {
 

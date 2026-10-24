@@ -8,7 +8,6 @@
 
 static struct node_operands operands;
 
-/* senders that found the mailbox full go back to running and try again; callers hold no task's lock, since this takes the waiters' */
 void mailbox_wake(unsigned int inode)
 {
 
@@ -32,7 +31,6 @@ void mailbox_wake(unsigned int inode)
 
 }
 
-/* slots move from free to queued (place), to picked (pick) and back to free when the task releases them, in any order; only picked slots can be released */
 static unsigned int release(struct mailbox *mailbox, unsigned int slots)
 {
 
@@ -196,7 +194,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-/* records a task whose place found this mailbox full, so a pick that frees a slot wakes it; fullness is checked and the wait recorded under the mailbox's lock, so a slot freed in between is not missed. The task itself sleeps in pick, where mail for it wakes it too. Only tasks wait, never the mailbox's own task */
 unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 {
 
@@ -233,7 +230,6 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 
 }
 
-/* says whether senders were waiting; the caller wakes them (mailbox_wake) once it holds no task's lock */
 unsigned int mailbox_reset(struct mailbox *mailbox)
 {
 
