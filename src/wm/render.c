@@ -224,14 +224,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         csize = calls[child->type].getsize(child, &climit, &flow.rowstart);
 
         if (widget_isscrollable(child))
-        {
-
             csize.w = util_min(csize.w + CONFIG_SCROLL_WIDTH, climit.w);
-
-            if (measureminimum)
-                csize.h = util_min(csize.h, (CONFIG_FRAME_HEIGHT + render_unit(child->attributes.padding)) * 2 + pool_getfont(child->attributes.weight)->lineheight);
-
-        }
 
         if (child->attributes.span && !measurespans)
         {
@@ -705,15 +698,20 @@ static struct util_size getsizebox(struct widget *widget, struct util_size *limi
 {
 
     struct util_size border = util_size(CONFIG_FRAME_WIDTH * 2, CONFIG_FRAME_HEIGHT * 2);
+    struct util_size inner = util_size_sub(limit, border.w, border.h);
+    unsigned int line = pool_getfont(widget->attributes.weight)->lineheight + render_unit(widget->attributes.padding) * 2;
     unsigned int clipped = measureclipped;
     struct util_size csize;
 
     measureclipped = clipped || widget_isscrollable(widget);
-    csize = childrengetsize(widget, limit);
+    csize = childrengetsize(widget, &inner);
     measureclipped = clipped;
 
     if (widget->attributes.mode == ATTR_MODE_EDIT)
-        csize.h = util_max(csize.h, pool_getfont(widget->attributes.weight)->lineheight + render_unit(widget->attributes.padding) * 2);
+        csize.h = util_max(csize.h, line);
+
+    if (measureminimum && widget_isscrollable(widget))
+        csize.h = util_min(csize.h, line);
 
     return util_size_union(&csize, &border);
 
@@ -723,7 +721,11 @@ static struct util_size getsizepanel(struct widget *widget, struct util_size *li
 {
 
     struct util_size border = util_size(CONFIG_PANEL_BORDER_WIDTH * 2, CONFIG_PANEL_BORDER_HEIGHT * 2);
-    struct util_size csize = childrengetsize(widget, limit);
+    struct util_size inner = util_size_sub(limit, border.w, border.h);
+    struct util_size csize = childrengetsize(widget, &inner);
+
+    if (measureminimum && widget_isscrollable(widget))
+        csize.h = util_min(csize.h, pool_getfont(widget->attributes.weight)->lineheight + render_unit(widget->attributes.padding) * 2);
 
     return util_size_union(&csize, &border);
 
