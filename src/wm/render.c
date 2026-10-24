@@ -734,7 +734,7 @@ static struct util_size getsizepanel(struct widget *widget, struct util_size *li
 static struct util_size getsizeselect(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH * 4, CONFIG_SELECT_PADDING_HEIGHT * 2);
+    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH * 3 + util_max(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_ARROW_WIDTH), CONFIG_SELECT_PADDING_HEIGHT * 2);
     struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size_union(&label, &padding);
@@ -945,9 +945,10 @@ static void renderselect(struct blit_display *display, struct widget *widget, in
 {
 
     struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
-    struct util_region rarrow = util_region(widget->placement.position.x + widget->placement.size.w - padding.w - widget->placement.size.h / 2, widget->placement.position.y, widget->placement.size.h, widget->placement.size.h);
+    int right = widget->placement.position.x + (int)widget->placement.size.w - (int)padding.w;
+    struct util_region rarrow = util_region(right - CONFIG_SELECT_ARROW_WIDTH, widget->placement.position.y, CONFIG_SELECT_ARROW_WIDTH, widget->placement.size.h);
     struct palette *palette = getpalette(PALETTE_SELECT, getshade(widget));
-    int textx2 = util_min(x2, widget->placement.position.x + (int)widget->placement.size.w - (int)padding.w * 2);
+    int textx2 = util_min(x2, right - (int)padding.w - util_max(padding.w, CONFIG_SELECT_ARROW_WIDTH));
 
     blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
     blit_iconarrowdown(display, &rarrow, line, x0, x2, palette->icon);
