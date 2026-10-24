@@ -280,7 +280,7 @@ static void fault(struct cpu_general *general, struct cpu_interrupt *interrupt)
     if (core->itask && !(interrupt->status.value & CPU_STATUS_SPP))
     {
 
-        kernel_abort(core->itask);
+        kernel_kill(core->itask);
         arch_resume(general, interrupt);
 
         return;

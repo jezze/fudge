@@ -11,7 +11,8 @@
 #define TASK_SIGNAL_KILL                1
 #define TASK_SIGNAL_BLOCK               2
 #define TASK_SIGNAL_UNBLOCK             3
-#define TASK_SIGNAL_ABORT               4
+#define TASK_ABORT_PENDING              1
+#define TASK_ABORT_DONE                 2
 
 struct task_signals
 {
@@ -19,7 +20,6 @@ struct task_signals
     unsigned int kill;
     unsigned int block;
     unsigned int unblock;
-    unsigned int abort;
 
 };
 

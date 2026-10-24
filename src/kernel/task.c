@@ -26,11 +26,6 @@ void task_signal(struct task *task, unsigned int signal)
 
         break;
 
-    case TASK_SIGNAL_ABORT:
-        task->signals.abort++;
-
-        break;
-
     }
 
 }
@@ -52,7 +47,6 @@ unsigned int task_transition(struct task *task, unsigned int state)
                 task->signals.kill = 0;
                 task->signals.unblock = 0;
                 task->signals.block = 0;
-                task->signals.abort = 0;
 
                 return state;
 
@@ -172,7 +166,6 @@ void task_reset(struct task *task)
     task->signals.kill = 0;
     task->signals.block = 0;
     task->signals.unblock = 0;
-    task->signals.abort = 0;
     task->thread.ip = 0;
     task->thread.sp = 0;
     task->start.ip = 0;

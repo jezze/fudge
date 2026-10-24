@@ -49,7 +49,7 @@ static unsigned int kill(unsigned int itask, void *stack)
         struct mailbox *mailbox = resource->data;
 
         if (mailbox->itask)
-            return kernel_abort(mailbox->itask);
+            return kernel_kill(mailbox->itask);
 
     }
 
@@ -176,7 +176,7 @@ static unsigned int spawn(unsigned int itask, void *stack)
 static unsigned int despawn(unsigned int itask, void *stack)
 {
 
-    kernel_kill(itask);
+    kernel_despawn(itask);
 
     return 0;
 
