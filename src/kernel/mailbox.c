@@ -8,20 +8,6 @@
 
 static struct node_operands operands;
 
-unsigned int hasusedslot(struct mailbox *mailbox)
-{
-
-    return mailbox->head - mailbox->tail;
-
-}
-
-unsigned int hasfreeslot(struct mailbox *mailbox)
-{
-
-    return MESSAGE_SLOTS - (mailbox->head - mailbox->tail);
-
-}
-
 /* senders that found the mailbox full go back to running and try again; callers hold no task's lock, since this takes the waiters' */
 void mailbox_wake(unsigned int inode)
 {
@@ -46,15 +32,45 @@ void mailbox_wake(unsigned int inode)
 
 }
 
-static unsigned int pick(struct mailbox *mailbox, struct message *message)
+/* slots move from free to queued (place), to picked (pick) and back to free when the task releases them, in any order; only picked slots can be released */
+static unsigned int release(struct mailbox *mailbox, unsigned int slots)
 {
 
-    unsigned int status = MESSAGE_RETRY;
+    struct list_item *current = mailbox->picked.head;
+    unsigned int count = 0;
+
+    while (current)
+    {
+
+        struct list_item *next = current->next;
+        struct message *message = current->data;
+
+        if (slots & (1 << message->slot))
+        {
+
+            list_move_unsafe(&mailbox->free, &mailbox->picked, current);
+
+            count++;
+
+        }
+
+        current = next;
+
+    }
+
+    return count;
+
+}
+
+static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsigned int count, unsigned int slots)
+{
+
     unsigned int wake = 0;
+    unsigned int n = 0;
 
     spinlock_acquire(&mailbox->spinlock);
 
-    if (mailbox->steps && mailbox->waiters)
+    if (release(mailbox, slots) && mailbox->waiters)
     {
 
         mailbox->waiters = 0;
@@ -62,28 +78,27 @@ static unsigned int pick(struct mailbox *mailbox, struct message *message)
 
     }
 
-    mailbox->tail += mailbox->steps;
-    mailbox->steps = 0;
-
-    if (hasusedslot(mailbox))
+    while (n < count && mailbox->queued.head)
     {
 
-        unsigned int slot = mailbox->tail % MESSAGE_SLOTS;
+        struct list_item *item = mailbox->queued.head;
 
-        buffer_copy(message, &mailbox->messages[slot], sizeof (struct message));
+        buffer_copy(&messages[n], item->data, sizeof (struct message));
+        list_move_unsafe(&mailbox->picked, &mailbox->queued, item);
 
-        mailbox->steps = 1;
-
-        status = MESSAGE_OK;
+        n++;
 
     }
+
+    if (n < count)
+        messages[n].event = 0;
 
     spinlock_release(&mailbox->spinlock);
 
     if (wake)
         mailbox_wake(mailbox->inode);
 
-    return status;
+    return n;
 
 }
 
@@ -97,16 +112,15 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
     spinlock_acquire(&mailbox->spinlock);
 
-    if (hasfreeslot(mailbox))
+    if (mailbox->free.head)
     {
 
-        unsigned int slot = mailbox->head % MESSAGE_SLOTS;
-        struct message *message = &mailbox->messages[slot];
+        struct list_item *item = mailbox->free.head;
+        struct message *message = item->data;
 
-        message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * slot + MESSAGE_CAPACITY * mailbox->ichannel));
-        buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * slot), data, count);
-
-        mailbox->head++;
+        message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * message->slot + MESSAGE_CAPACITY * mailbox->ichannel));
+        buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * message->slot), data, count);
+        list_move_unsafe(&mailbox->queued, &mailbox->free, item);
 
         status = MESSAGE_OK;
 
@@ -118,7 +132,7 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 
 }
 
-static unsigned int operands_pick(unsigned int source, struct message *message, unsigned int flags)
+static unsigned int operands_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
 {
 
     struct resource *resource = pool_getnoderesource(source);
@@ -131,12 +145,13 @@ static unsigned int operands_pick(unsigned int source, struct message *message, 
         if (mailbox)
         {
 
-            unsigned int status = pick(mailbox, message);
+            if (pick(mailbox, messages, count, slots))
+                return MESSAGE_OK;
 
-            if (status == MESSAGE_RETRY && (flags & MESSAGE_FLAG_BLOCK))
+            if (flags & MESSAGE_FLAG_BLOCK)
                 kernel_signal(mailbox->itask, TASK_SIGNAL_BLOCK);
 
-            return status;
+            return MESSAGE_RETRY;
 
         }
 
@@ -199,7 +214,7 @@ unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 
             spinlock_acquire(&mailbox->spinlock);
 
-            if (!hasfreeslot(mailbox))
+            if (!mailbox->free.head)
             {
 
                 task->waitingfor = target;
@@ -226,13 +241,18 @@ unsigned int mailbox_reset(struct mailbox *mailbox)
 {
 
     unsigned int waiters = mailbox->waiters;
+    unsigned int i;
 
     mailbox->waiters = 0;
     mailbox->itask = 0;
     mailbox->ichannel = 0;
-    mailbox->head = 0;
-    mailbox->tail = 0;
-    mailbox->steps = 0;
+
+    list_init(&mailbox->free);
+    list_init(&mailbox->queued);
+    list_init(&mailbox->picked);
+
+    for (i = 0; i < MESSAGE_SLOTS; i++)
+        list_add_unsafe(&mailbox->free, &mailbox->items[i]);
 
     return waiters;
 
@@ -261,10 +281,19 @@ void mailbox_unregister(struct mailbox *mailbox)
 void mailbox_init(struct mailbox *mailbox, unsigned long data)
 {
 
+    unsigned int i;
+
     resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
     spinlock_init(&mailbox->spinlock);
 
-    mailbox->waiters = 0;
+    for (i = 0; i < MESSAGE_SLOTS; i++)
+    {
+
+        mailbox->messages[i].slot = i;
+
+        list_inititem(&mailbox->items[i], &mailbox->messages[i]);
+
+    }
 
     mailbox_reset(mailbox);
 

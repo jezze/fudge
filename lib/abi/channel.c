@@ -3,6 +3,7 @@
 #include "channel.h"
 
 #define CHANNEL_EVENTS                  256
+#define CHANNEL_MAILBOXES               8
 #define CHANNEL_STATE_OPENED            1
 #define CHANNEL_STATE_CLOSING           2
 #define CHANNEL_STATE_CLOSED            3
@@ -14,6 +15,7 @@ static unsigned int pipeprev;
 static unsigned int pipenext;
 static struct event_route routes[PIPE_ROUTES + 2];
 static unsigned int nroutes;
+static unsigned int picked[CHANNEL_MAILBOXES];
 
 static struct event_route *findroute(unsigned int event)
 {
@@ -52,13 +54,26 @@ static struct event_route *findreroute(unsigned int target, unsigned int event)
 
 }
 
+/* picks one message and releases the one picked before it on the channel */
+static unsigned int pickone(unsigned int ichannel, struct message *message, unsigned int flags)
+{
+
+    unsigned int status = (ichannel < CHANNEL_MAILBOXES) ? call_pick(ichannel, message, 1, picked[ichannel], flags) : MESSAGE_FAILED;
+
+    if (ichannel < CHANNEL_MAILBOXES)
+        picked[ichannel] = (status == MESSAGE_OK) ? 1 << message->slot : 0;
+
+    return status;
+
+}
+
 static unsigned int pick(unsigned int ichannel, struct message *message)
 {
 
     while (ichannel || state != CHANNEL_STATE_CLOSED)
     {
 
-        unsigned int status = call_pick(ichannel, message, MESSAGE_FLAG_BLOCK);
+        unsigned int status = pickone(ichannel, message, MESSAGE_FLAG_BLOCK);
 
         switch (status)
         {
@@ -213,7 +228,7 @@ unsigned int channel_drain(unsigned int ichannel)
     while (ichannel || state != CHANNEL_STATE_CLOSED)
     {
 
-        switch (call_pick(ichannel, &message, 0))
+        switch (pickone(ichannel, &message, 0))
         {
 
         case MESSAGE_OK:

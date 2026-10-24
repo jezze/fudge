@@ -122,7 +122,7 @@ static unsigned int writemailboxes(void)
     {
 
         struct mailbox *mailbox = resource->data;
-        unsigned int nmessages = mailbox->head - mailbox->tail;
+        unsigned int nmessages = MESSAGE_SLOTS - mailbox->free.count;
 
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      itask: %u\n", &mailbox->itask);

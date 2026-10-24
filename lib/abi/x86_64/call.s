@@ -11,7 +11,7 @@
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
-.set CALL_FRAME,                        32
+.set CALL_FRAME,                        48
 
 .macro callindex index
     movq $\index, %rax
@@ -61,6 +61,8 @@ call_pick:
     movl %edi, 8(%rsp)
     movq %rsi, 16(%rsp)
     movl %edx, 24(%rsp)
+    movl %ecx, 28(%rsp)
+    movl %r8d, 32(%rsp)
     callindex CALL_INDEX_PICK
 
 .global call_place

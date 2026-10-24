@@ -13,6 +13,7 @@ struct message
     unsigned int source;
     unsigned int length;
     void *data;
+    unsigned int slot;
 
 };
 

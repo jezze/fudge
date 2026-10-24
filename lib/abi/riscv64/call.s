@@ -8,7 +8,7 @@
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
-.set CALL_FRAME,                        32
+.set CALL_FRAME,                        48
 
 # The kernel reads the arguments from the user stack in the same layout as on x86_64:
 # {return address slot, arguments...} with each argument at its natural alignment.
@@ -60,6 +60,8 @@ call_pick:
     sw a0, 8(sp)
     sd a1, 16(sp)
     sw a2, 24(sp)
+    sw a3, 28(sp)
+    sw a4, 32(sp)
     callindex CALL_INDEX_PICK
 
 .global call_place

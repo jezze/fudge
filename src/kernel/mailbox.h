@@ -7,10 +7,11 @@ struct mailbox
     unsigned int inode;
     unsigned int ichannel;
     struct message messages[MESSAGE_SLOTS];
+    struct list_item items[MESSAGE_SLOTS];
+    struct list free;
+    struct list queued;
+    struct list picked;
     unsigned long data;
-    unsigned int head;
-    unsigned int tail;
-    unsigned int steps;
     unsigned int waiters;
 
 };
