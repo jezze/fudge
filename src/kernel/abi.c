@@ -49,7 +49,7 @@ static unsigned int kill(unsigned int itask, void *stack)
         struct mailbox *mailbox = resource->data;
 
         if (mailbox->itask)
-            kernel_kill(mailbox->itask, EXIT_STATUS_KILLED);
+            return kernel_abort(mailbox->itask);
 
     }
 

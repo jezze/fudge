@@ -283,7 +283,7 @@ static unsigned int fault(struct cpu_frame *frame)
     if (core->itask && !(frame->sr & CPU_SR_SUPERVISOR))
     {
 
-        kernel_kill(core->itask, EXIT_STATUS_CRASHED);
+        kernel_abort(core->itask);
 
         return schedule(frame);
 

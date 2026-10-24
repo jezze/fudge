@@ -247,7 +247,6 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"queryrequest", EVENT_QUERYREQUEST},
     {"queryresponse", EVENT_QUERYRESPONSE},
     {"ready", EVENT_READY},
-    {"exit", EVENT_EXIT},
     {"pipe", EVENT_PIPE},
     {"keypress", EVENT_KEYPRESS},
     {"keyrelease", EVENT_KEYRELEASE},
@@ -721,15 +720,6 @@ static void onerror(struct message *message)
 
 }
 
-static void onexit(struct message *message)
-{
-
-    struct event_exit *exit = message->data;
-
-    job_exit(&job, 0, message->source, exit->status);
-
-}
-
 static void onmain(struct message *message)
 {
 
@@ -755,12 +745,20 @@ static void onpath(struct message *message)
 static void onterm(struct message *message)
 {
 
+    if (job_exit(&job, message->source))
+        return;
+
     if (running)
     {
 
-        inputopen = 0;
+        if (message->source == output)
+        {
 
-        job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
+            inputopen = 0;
+
+            job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
+
+        }
 
         return;
 
@@ -784,7 +782,6 @@ void init(void)
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_ERROR, onerror);
-    channel_bind(EVENT_EXIT, onexit);
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_PATH, onpath);
     channel_bind(EVENT_TERM, onterm);

@@ -266,7 +266,7 @@ static void fault(struct cpu_general *general, struct cpu_interrupt *interrupt)
     if (core->itask && (interrupt->cpsr.value & CPU_MODE_MASK) == CPU_MODE_USR)
     {
 
-        kernel_kill(core->itask, EXIT_STATUS_CRASHED);
+        kernel_abort(core->itask);
         arch_resume(general, interrupt);
 
         return;

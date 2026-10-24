@@ -11,6 +11,7 @@
 #define TASK_SIGNAL_KILL                1
 #define TASK_SIGNAL_BLOCK               2
 #define TASK_SIGNAL_UNBLOCK             3
+#define TASK_SIGNAL_ABORT               4
 
 struct task_signals
 {
@@ -18,6 +19,7 @@ struct task_signals
     unsigned int kill;
     unsigned int block;
     unsigned int unblock;
+    unsigned int abort;
 
 };
 
@@ -35,6 +37,7 @@ struct task
     struct resource resource;
     struct task_signals signals;
     struct task_thread thread;
+    struct task_thread start;
     struct spinlock spinlock;
     unsigned int state;
     unsigned long address;
@@ -43,6 +46,7 @@ struct task
     unsigned int pinode;
     unsigned int status;
     unsigned int waitingfor;
+    unsigned int aborted;
     unsigned int imailbox[TASK_MAILBOXES];
 
 };

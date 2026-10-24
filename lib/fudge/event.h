@@ -12,7 +12,6 @@
 #define EVENT_QUERYREQUEST              0x0C
 #define EVENT_QUERYRESPONSE             0x0D
 #define EVENT_READY                     0x0E
-#define EVENT_EXIT                      0x10
 #define EVENT_PIPE                      0x11
 #define EVENT_KEYPRESS                  0x20
 #define EVENT_KEYRELEASE                0x21
@@ -76,16 +75,7 @@
 #define EVENT_P9P                       0x70
 
 #define EXIT_STATUS_NORMAL              1
-#define EXIT_STATUS_KILLED              2
-#define EXIT_STATUS_CRASHED             3
 #define EXIT_STATUS_FAILED              4
-
-struct event_exit
-{
-
-    unsigned int status;
-
-};
 
 #define PIPE_ROUTES                     8
 

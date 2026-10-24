@@ -182,32 +182,13 @@ unsigned int job_exist(struct job *job, unsigned int target)
 
 }
 
-unsigned int job_exit(struct job *job, unsigned int ichannel, unsigned int target, unsigned int status)
+unsigned int job_exit(struct job *job, unsigned int target)
 {
 
     unsigned int index = find(job, target);
 
     if (index < job->ncommands)
     {
-
-        if (status != EXIT_STATUS_NORMAL)
-        {
-
-            unsigned int next = linearnext(job, index);
-            unsigned int i;
-
-            if (next)
-                channel_send(ichannel, next, EVENT_TERM, 0, 0);
-
-            for (i = 0; i < job->ncommands; i++)
-            {
-
-                if (job->commands[i].side == index + 1 && job->commands[i].target)
-                    channel_send(ichannel, job->commands[i].target, EVENT_TERM, 0, 0);
-
-            }
-
-        }
 
         job->commands[index].target = 0;
 
@@ -229,8 +210,8 @@ void job_kill(struct job *job)
 
         struct job_command *command = &job->commands[i];
 
-        if (command->target)
-            call_kill(command->target);
+        if (command->target && !call_kill(command->target))
+            command->target = 0;
 
     }
 

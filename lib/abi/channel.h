@@ -13,3 +13,4 @@ void channel_hold(unsigned int ichannel);
 void channel_loop(unsigned int ichannel);
 void channel_close(void);
 void channel_exit(unsigned int ichannel);
+void channel_abort(unsigned int ichannel);

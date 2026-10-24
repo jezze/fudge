@@ -365,7 +365,7 @@ static unsigned short fault(struct cpu_general *general, struct cpu_interrupt *i
     if (core->itask && interrupt->cs.value == gdt_getselector(gdt, ARCH_UCODE))
     {
 
-        kernel_kill(core->itask, EXIT_STATUS_CRASHED);
+        kernel_abort(core->itask);
 
         return arch_resume(general, interrupt);
 

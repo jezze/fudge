@@ -15,6 +15,7 @@ static unsigned int start(char *command, unsigned int length, unsigned int input
 
         unsigned int offset;
 
+        channel_send(1, sh, EVENT_PIPE, 0, 0);
         channel_send_fmt(1, sh, EVENT_OPTION, "pwd\\0%s\\0input\\0%u\\0", option_getstring("pwd"), &input);
         channel_send(1, sh, EVENT_MAIN, 0, 0);
 
@@ -55,8 +56,8 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
 
                 break;
 
-            case EVENT_EXIT:
-                return (errors) ? EXIT_STATUS_FAILED : ((struct event_exit *)message.data)->status;
+            case EVENT_TERM:
+                return (errors) ? EXIT_STATUS_FAILED : EXIT_STATUS_NORMAL;
 
             }
 
@@ -98,7 +99,7 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
 
                 break;
 
-            case EVENT_EXIT:
+            case EVENT_TERM:
                 return total;
 
             }

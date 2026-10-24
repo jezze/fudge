@@ -260,6 +260,7 @@ static void run(void)
 
     }
 
+    channel_send(0, sh, EVENT_PIPE, 0, 0);
     channel_send_fmt(0, sh, EVENT_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
     channel_send(0, sh, EVENT_MAIN, 0, 0);
     channel_send(0, sh, EVENT_DATA, linecount, line);
@@ -575,7 +576,7 @@ static void ondata(struct message *message)
 
 }
 
-static void onexit(struct message *message)
+static void onterm(struct message *message)
 {
 
     if (message->source == sh)
@@ -633,7 +634,7 @@ void init(void)
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
     channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_EXIT, onexit);
+    channel_bind(EVENT_TERM, onterm);
     channel_bind(EVENT_ERROR, onerror);
     channel_bind(EVENT_MAIN, onmain);
 

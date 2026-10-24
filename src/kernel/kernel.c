@@ -13,7 +13,6 @@
 #include "kernel.h"
 
 static struct list blockedtasks;
-static struct list deadtasks;
 static struct core *(*getcorecallback)(void);
 static void (*assigncorecallback)(unsigned int itask);
 
@@ -99,43 +98,6 @@ static void destroytask(unsigned int itask)
 
 }
 
-static unsigned int notifyparent(struct task *task)
-{
-
-    struct mailbox *mailbox = pool_getmailbox(task->imailbox[0]);
-
-    if (task->pinode && mailbox)
-    {
-
-        struct event_exit exit;
-
-        exit.status = task->status;
-
-        return kernel_place(mailbox->inode, task->pinode, EVENT_EXIT, sizeof (struct event_exit), &exit) != MESSAGE_RETRY;
-
-    }
-
-    return 1;
-
-}
-
-static void orphan(unsigned int pinode)
-{
-
-    unsigned int i;
-
-    for (i = 1; i < POOL_TASKS; i++)
-    {
-
-        struct task *child = pool_gettask(i);
-
-        if (child && child->pinode == pinode)
-            child->pinode = 0;
-
-    }
-
-}
-
 /* the mailboxes of a dying task that had senders waiting, woken once its lock is released */
 struct waking
 {
@@ -166,16 +128,11 @@ static void retiretask(unsigned int itask, struct waking *waking)
                 if (mailbox_reset(mailbox))
                     waking->inodes[waking->count++] = mailbox->inode;
 
-                orphan(mailbox->inode);
-
             }
 
         }
 
-        if (notifyparent(task))
-            destroytask(itask);
-        else
-            pool_placetask(itask, &deadtasks);
+        destroytask(itask);
 
     }
 
@@ -230,6 +187,20 @@ static void transition(unsigned int itask, unsigned int state)
 
 }
 
+static void restart(struct task *task)
+{
+
+    spinlock_acquire(&task->spinlock);
+
+    task->signals.abort = 0;
+    task->signals.block = 0;
+    task->thread.ip = task->start.ip;
+    task->thread.sp = task->start.sp;
+
+    spinlock_release(&task->spinlock);
+
+}
+
 static void unblocktasks(void)
 {
 
@@ -252,6 +223,9 @@ static void unblocktasks(void)
 
             if (task)
             {
+
+                if (task->signals.abort)
+                    restart(task);
 
                 if (task->signals.kill)
                 {
@@ -278,38 +252,6 @@ static void unblocktasks(void)
     }
 
     spinlock_release(&blockedtasks.spinlock);
-
-}
-
-static void retrydeadtasks(void)
-{
-
-    struct list_item *current;
-    struct list_item *next;
-
-    spinlock_acquire(&deadtasks.spinlock);
-
-    for (current = deadtasks.head; current; current = next)
-    {
-
-        unsigned int itask = pool_getitaskfromitem(current);
-        struct task *task = pool_gettask(itask);
-
-        next = current->next;
-
-        if (task && notifyparent(task))
-        {
-
-            list_remove_unsafe(&deadtasks, current);
-            spinlock_acquire(&task->spinlock);
-            destroytask(itask);
-            spinlock_release(&task->spinlock);
-
-        }
-
-    }
-
-    spinlock_release(&deadtasks.spinlock);
 
 }
 
@@ -425,6 +367,9 @@ void kernel_schedule(struct core *core)
         if (task)
         {
 
+            if (task->signals.abort)
+                restart(task);
+
             if (task->signals.kill)
             {
 
@@ -462,7 +407,6 @@ void kernel_schedule(struct core *core)
     }
 
     unblocktasks();
-    retrydeadtasks();
 
     core->itask = pool_picktaskfrom(&core->tasks);
 
@@ -496,6 +440,44 @@ void kernel_kill(unsigned int itask, unsigned int status)
         kernel_signal(itask, TASK_SIGNAL_KILL);
 
     }
+
+}
+
+unsigned int kernel_abort(unsigned int itask)
+{
+
+    struct task *task = pool_gettask(itask);
+    unsigned int status = 0;
+
+    if (task)
+    {
+
+        spinlock_acquire(&task->spinlock);
+
+        if (task->aborted)
+        {
+
+            task_signal(task, TASK_SIGNAL_KILL);
+
+        }
+
+        else
+        {
+
+            task->aborted = 1;
+
+            task_signal(task, TASK_SIGNAL_ABORT);
+            task_signal(task, TASK_SIGNAL_UNBLOCK);
+
+            status = 1;
+
+        }
+
+        spinlock_release(&task->spinlock);
+
+    }
+
+    return status;
 
 }
 
@@ -612,6 +594,9 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
                 if (format->map(task->address, code, TASK_CODESIZE, header))
                     task->thread.ip = format->findentry(task->address);
 
+                task->start.ip = task->thread.ip;
+                task->start.sp = task->thread.sp;
+
             }
 
         }
@@ -667,7 +652,6 @@ void kernel_setup(void)
 {
 
     list_init(&blockedtasks);
-    list_init(&deadtasks);
     kernel_setcallback(getcore0, assign0);
 
 }

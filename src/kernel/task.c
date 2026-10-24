@@ -26,6 +26,11 @@ void task_signal(struct task *task, unsigned int signal)
 
         break;
 
+    case TASK_SIGNAL_ABORT:
+        task->signals.abort++;
+
+        break;
+
     }
 
 }
@@ -47,6 +52,7 @@ unsigned int task_transition(struct task *task, unsigned int state)
                 task->signals.kill = 0;
                 task->signals.unblock = 0;
                 task->signals.block = 0;
+                task->signals.abort = 0;
 
                 return state;
 
@@ -150,6 +156,8 @@ void task_unregister(struct task *task)
     task->buffer = 0;
     task->thread.ip = 0;
     task->thread.sp = 0;
+    task->start.ip = 0;
+    task->start.sp = 0;
 
 }
 
@@ -162,13 +170,17 @@ void task_reset(struct task *task)
     task->pinode = 0;
     task->status = 0;
     task->waitingfor = 0;
+    task->aborted = 0;
     task->address = 0;
     task->mmap = 0;
     task->signals.kill = 0;
     task->signals.block = 0;
     task->signals.unblock = 0;
+    task->signals.abort = 0;
     task->thread.ip = 0;
     task->thread.sp = 0;
+    task->start.ip = 0;
+    task->start.sp = 0;
 
     for (i = 0; i < TASK_MAILBOXES; i++)
         task->imailbox[i] = 0;

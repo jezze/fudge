@@ -458,7 +458,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         finish(ichannel, message);
 
-        if (message->source == source && message->event == EVENT_EXIT)
+        if (message->source == source && message->event == EVENT_TERM)
             return 0;
 
     }
@@ -538,10 +538,11 @@ void channel_exit(unsigned int ichannel)
 
     struct event_route *route = findroute(EVENT_TERM);
     unsigned int term = (route) ? routetarget(route) : pipenext;
+    unsigned int event = (route) ? route->to : EVENT_TERM;
     unsigned int i;
 
-    if (term && term != pipeowner)
-        place(ichannel, term, (route) ? route->to : EVENT_TERM, 0, 0);
+    if (term)
+        place(ichannel, term, event, 0, 0);
 
     for (i = 0; i < nroutes; i++)
     {
@@ -564,6 +565,21 @@ void channel_exit(unsigned int ichannel)
             place(ichannel, target, EVENT_TERM, 0, 0);
 
     }
+
+    if (pipeowner && (term != pipeowner || event != EVENT_TERM))
+        place(ichannel, pipeowner, EVENT_TERM, 0, 0);
+
+}
+
+void channel_abort(unsigned int ichannel)
+{
+
+    char *error = "Process aborted\n";
+
+    if (pipeowner)
+        channel_send(ichannel, pipeowner, EVENT_ERROR, cstring_length(error), error);
+
+    channel_exit(ichannel);
 
 }
 
