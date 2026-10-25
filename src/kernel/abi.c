@@ -241,13 +241,13 @@ static unsigned int announce(unsigned int itask, void *stack)
         buffer_clear(name, SERVICE_NAMESIZE);
         buffer_copy(name, args->name, args->length);
 
-        return (inode) ? kernel_announce(inode, name) : 0;
+        return (inode) ? kernel_announce(inode, name) : MESSAGE_FAILED;
 
     }
 
     debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "announce check failed");
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 

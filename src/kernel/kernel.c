@@ -460,11 +460,17 @@ unsigned int kernel_announce(unsigned int inode, char *name)
         struct service *service = pool_getservice(iservice);
 
         if (service)
+        {
+
             service_register(service, inode, name);
+
+            return MESSAGE_OK;
+
+        }
 
     }
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
