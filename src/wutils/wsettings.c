@@ -720,7 +720,7 @@ static void rendergeneral(void)
     beginrow("general-background");
     addlabel("general-background", "Background");
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"general-background-box\" in \"general-background-row\" padding \"3\" flow \"stretch\"\n+ text id \"general-background\" in \"general-background-box\" valign \"middle\" label \"%s\"\n+ button in \"general-background-row\" label \"Open\" onclick \"q=open\"\n", config.background);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"general-background-box\" in \"general-background-row\" padding \"3\" flow \"stretch\"\n+ text id \"general-background\" in \"general-background-box\" valign \"middle\" label \"%s\"\n+ button in \"general-background-row\" label \"Select\" onclick \"q=open\"\n", config.background);
 
 }
 
