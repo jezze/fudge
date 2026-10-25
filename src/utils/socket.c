@@ -45,7 +45,7 @@ static void onqueryrequest(struct message *message)
 
     }
 
-    channel_close();
+    channel_close(0);
 
 }
 
@@ -77,7 +77,7 @@ static void onmain(struct message *message)
     else
     {
 
-        channel_close();
+        channel_close(0);
 
     }
 

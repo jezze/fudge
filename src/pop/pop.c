@@ -577,7 +577,7 @@ static void onmain(struct message *message)
     {
 
         channel_send_fmt(0, message->source, EVENT_ERROR, "Could not find the keyboard, timer or video service\n");
-        channel_close();
+        channel_close(0);
 
         return;
 
@@ -587,7 +587,7 @@ static void onmain(struct message *message)
     {
 
         channel_send_fmt(0, message->source, EVENT_ERROR, "No mem: file could be mapped\n");
-        channel_close();
+        channel_close(0);
 
         return;
 

@@ -207,7 +207,7 @@ static void updatecontent(unsigned int wm)
         {
 
             channel_send_fmt(0, opener, EVENT_PATH, "%s\\0", path);
-            channel_close();
+            channel_close(0);
 
         }
 

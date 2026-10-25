@@ -299,7 +299,7 @@ static void onmain(struct message *message)
 static void onmousepress(struct message *message)
 {
 
-    channel_close();
+    channel_close(0);
 
 }
 

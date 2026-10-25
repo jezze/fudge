@@ -6,25 +6,10 @@
 #define CHANNEL_MAILBOXES               8
 #define CHANNEL_COPIES                  16
 #define CHANNEL_QUEUE                   32
-#define CHANNEL_STATE_OPENED            1
-#define CHANNEL_STATE_CLOSING           2
-#define CHANNEL_STATE_CLOSED            3
+#define CHANNEL_STATE_OPENED            0
+#define CHANNEL_STATE_CLOSING           1
+#define CHANNEL_STATE_CLOSED            2
 #define CHANNEL_ROUTES                  (PIPE_ROUTES + 2)
-
-struct inbox
-{
-
-    struct message messages[CHANNEL_QUEUE];
-    unsigned int head;
-    unsigned int count;
-    unsigned int release;
-    unsigned int handed;
-    unsigned int opened;
-
-};
-
-static void (*listeners[CHANNEL_EVENTS])(struct message *message);
-static unsigned int state = CHANNEL_STATE_OPENED;
 
 struct routing
 {
@@ -39,21 +24,36 @@ struct routing
 
 };
 
-static struct routing routing;
+struct inbox
+{
+
+    struct message messages[CHANNEL_QUEUE];
+    unsigned int head;
+    unsigned int count;
+    unsigned int release;
+    unsigned int handed;
+    unsigned int opened;
+    unsigned int state;
+    struct routing routing;
+
+};
+
+static void (*listeners[CHANNEL_EVENTS])(struct message *message);
+
 static struct inbox inboxes[CHANNEL_MAILBOXES];
 static char copies[CHANNEL_COPIES][MESSAGE_SIZE];
 static unsigned int copiesused;
 
-static struct event_route *findroute(unsigned int event)
+static struct event_route *findroute(struct routing *routing, unsigned int event)
 {
 
     unsigned int i;
 
-    for (i = 0; i < routing.nroutes; i++)
+    for (i = 0; i < routing->nroutes; i++)
     {
 
-        if (routing.routes[i].event == event)
-            return &routing.routes[i];
+        if (routing->routes[i].event == event)
+            return &routing->routes[i];
 
     }
 
@@ -61,81 +61,81 @@ static struct event_route *findroute(unsigned int event)
 
 }
 
-static void addroute(unsigned int event, unsigned int to, unsigned int target)
+static void addroute(struct routing *routing, unsigned int event, unsigned int to, unsigned int target)
 {
 
-    if (!findroute(event))
+    if (!findroute(routing, event))
     {
 
-        struct event_route *route = &routing.routes[routing.nroutes++];
+        struct event_route *route = &routing->routes[routing->nroutes++];
 
         route->event = event;
         route->to = to;
-        route->target = (target) ? target : ((to == EVENT_ERROR) ? routing.owner : routing.next);
+        route->target = (target) ? target : ((to == EVENT_ERROR) ? routing->owner : routing->next);
 
     }
 
 }
 
-static void addterm(unsigned int target, unsigned int to)
+static void addterm(struct routing *routing, unsigned int target, unsigned int to)
 {
 
     struct event_route *term;
     unsigned int i;
 
-    for (i = 0; i < routing.nterms; i++)
+    for (i = 0; i < routing->nterms; i++)
     {
 
-        if (routing.terms[i].target == target)
+        if (routing->terms[i].target == target)
             return;
 
     }
 
-    term = &routing.terms[routing.nterms++];
+    term = &routing->terms[routing->nterms++];
     term->event = EVENT_TERM;
     term->to = to;
     term->target = target;
 
 }
 
-static void setrouting(unsigned int owner, struct event_pipe *pipe)
+static void setrouting(struct routing *routing, unsigned int owner, struct event_pipe *pipe)
 {
 
     unsigned int nroutes = (pipe->nroutes < PIPE_ROUTES) ? pipe->nroutes : PIPE_ROUTES;
     struct event_route *term;
     unsigned int i;
 
-    routing.owner = owner;
-    routing.prev = pipe->prev;
-    routing.next = (pipe->next) ? pipe->next : owner;
-    routing.nroutes = 0;
-    routing.nterms = 0;
+    routing->owner = owner;
+    routing->prev = pipe->prev;
+    routing->next = (pipe->next) ? pipe->next : owner;
+    routing->nroutes = 0;
+    routing->nterms = 0;
 
     for (i = 0; i < nroutes; i++)
-        addroute(pipe->routes[i].event, pipe->routes[i].to, pipe->routes[i].target);
+        addroute(routing, pipe->routes[i].event, pipe->routes[i].to, pipe->routes[i].target);
 
-    addroute(EVENT_DATA, EVENT_DATA, 0);
-    addroute(EVENT_ERROR, EVENT_ERROR, 0);
+    addroute(routing, EVENT_DATA, EVENT_DATA, 0);
+    addroute(routing, EVENT_ERROR, EVENT_ERROR, 0);
 
-    term = findroute(EVENT_TERM);
+    term = findroute(routing, EVENT_TERM);
 
     if (term)
-        addterm(term->target, term->to);
-    else if (routing.next)
-        addterm(routing.next, EVENT_TERM);
+        addterm(routing, term->target, term->to);
+    else if (routing->next)
+        addterm(routing, routing->next, EVENT_TERM);
 
     for (i = 0; i < nroutes; i++)
     {
 
         if (pipe->routes[i].target && pipe->routes[i].target != owner)
-            addterm(pipe->routes[i].target, EVENT_TERM);
+            addterm(routing, pipe->routes[i].target, EVENT_TERM);
 
     }
 
-    if (routing.terms[0].target != owner || routing.terms[0].to != EVENT_TERM)
+    if (routing->terms[0].target != owner || routing->terms[0].to != EVENT_TERM)
     {
 
-        term = &routing.terms[routing.nterms++];
+        term = &routing->terms[routing->nterms++];
         term->event = EVENT_TERM;
         term->to = EVENT_TERM;
         term->target = owner;
@@ -144,14 +144,14 @@ static void setrouting(unsigned int owner, struct event_pipe *pipe)
 
 }
 
-static unsigned int frominput(unsigned int source)
+static unsigned int frominput(struct routing *routing, unsigned int source)
 {
 
-    if (routing.prev)
-        return source == routing.prev;
+    if (routing->prev)
+        return source == routing->prev;
 
-    if (routing.owner)
-        return source == routing.owner;
+    if (routing->owner)
+        return source == routing->owner;
 
     return 1;
 
@@ -311,7 +311,7 @@ static void hand(unsigned int ichannel, struct message *message)
 static unsigned int canpick(unsigned int ichannel)
 {
 
-    return ichannel < CHANNEL_MAILBOXES && (ichannel || state != CHANNEL_STATE_CLOSED);
+    return ichannel < CHANNEL_MAILBOXES && inboxes[ichannel].state != CHANNEL_STATE_CLOSED;
 
 }
 
@@ -377,13 +377,13 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
-static void dispatchpaths(struct message *message)
+static void dispatchpaths(struct inbox *inbox, struct message *message)
 {
 
     char *data = message->data;
     unsigned int offset = 0;
 
-    while (offset < message->length && listeners[EVENT_PATH] && state != CHANNEL_STATE_CLOSED)
+    while (offset < message->length && listeners[EVENT_PATH] && inbox->state != CHANNEL_STATE_CLOSED)
     {
 
         struct message path;
@@ -402,8 +402,10 @@ static void dispatchpaths(struct message *message)
 
 }
 
-static void dispatch(struct message *message)
+static void dispatch(unsigned int ichannel, struct message *message)
 {
+
+    struct inbox *inbox = &inboxes[ichannel];
 
     if (message->event == EVENT_MAIN)
     {
@@ -415,12 +417,12 @@ static void dispatch(struct message *message)
         if (message->length == sizeof (struct event_pipe))
             buffer_copy(&pipe, message->data, sizeof (struct event_pipe));
 
-        setrouting(message->source, &pipe);
+        setrouting(&inbox->routing, message->source, &pipe);
 
     }
 
     if (message->event == EVENT_PATH)
-        dispatchpaths(message);
+        dispatchpaths(inbox, message);
     else if (message->event < CHANNEL_EVENTS && listeners[message->event])
         listeners[message->event](message);
 
@@ -428,13 +430,13 @@ static void dispatch(struct message *message)
     {
 
     case EVENT_TERM:
-        if (state == CHANNEL_STATE_OPENED && frominput(message->source))
-            state = CHANNEL_STATE_CLOSING;
+        if (inbox->state == CHANNEL_STATE_OPENED && frominput(&inbox->routing, message->source))
+            inbox->state = CHANNEL_STATE_CLOSING;
 
         break;
 
     case EVENT_INTERRUPT:
-        state = CHANNEL_STATE_CLOSED;
+        inbox->state = CHANNEL_STATE_CLOSED;
 
         break;
 
@@ -445,13 +447,20 @@ static void dispatch(struct message *message)
 unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    if (!ichannel && routing.next && (target == routing.owner || (routing.prev && target == routing.prev)))
+    if (ichannel < CHANNEL_MAILBOXES)
     {
 
-        struct event_route *route = findroute(event);
+        struct routing *routing = &inboxes[ichannel].routing;
 
-        if (route)
-            return place(ichannel, route->target, route->to, count, data);
+        if (routing->next && (target == routing->owner || (routing->prev && target == routing->prev)))
+        {
+
+            struct event_route *route = findroute(routing, event);
+
+            if (route)
+                return place(ichannel, route->target, route->to, count, data);
+
+        }
 
     }
 
@@ -488,7 +497,7 @@ unsigned int channel_process(unsigned int ichannel)
     if (pick(ichannel, &message))
     {
 
-        dispatch(&message);
+        dispatch(ichannel, &message);
         finish(ichannel, &message);
 
         return message.event;
@@ -511,7 +520,7 @@ unsigned int channel_drain(unsigned int ichannel)
         {
 
         case MESSAGE_OK:
-            dispatch(&message);
+            dispatch(ichannel, &message);
             finish(ichannel, &message);
 
             break;
@@ -533,14 +542,14 @@ unsigned int channel_drain(unsigned int ichannel)
 void channel_hold(unsigned int ichannel)
 {
 
-    while (state != CHANNEL_STATE_CLOSED && channel_process(ichannel));
+    while (canpick(ichannel) && channel_process(ichannel));
 
 }
 
 void channel_loop(unsigned int ichannel)
 {
 
-    while (state == CHANNEL_STATE_OPENED && channel_process(ichannel));
+    while (ichannel < CHANNEL_MAILBOXES && inboxes[ichannel].state == CHANNEL_STATE_OPENED && channel_process(ichannel));
 
 }
 
@@ -550,7 +559,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
     while (pick(ichannel, message))
     {
 
-        dispatch(message);
+        dispatch(ichannel, message);
 
         if (message->source == source && message->event == event)
         {
@@ -607,30 +616,33 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 
 }
 
-void channel_close(void)
+void channel_close(unsigned int ichannel)
 {
 
-    state = CHANNEL_STATE_CLOSED;
+    if (ichannel < CHANNEL_MAILBOXES)
+        inboxes[ichannel].state = CHANNEL_STATE_CLOSED;
 
 }
 
 void channel_exit(unsigned int ichannel)
 {
 
+    struct routing *routing = &inboxes[ichannel].routing;
     unsigned int i;
 
-    for (i = 0; i < routing.nterms; i++)
-        place(ichannel, routing.terms[i].target, routing.terms[i].to, 0, 0);
+    for (i = 0; i < routing->nterms; i++)
+        place(ichannel, routing->terms[i].target, routing->terms[i].to, 0, 0);
 
 }
 
 void channel_abort(unsigned int ichannel)
 {
 
+    struct routing *routing = &inboxes[ichannel].routing;
     char *error = "Process aborted\n";
 
-    if (routing.owner)
-        channel_send(ichannel, routing.owner, EVENT_ERROR, cstring_length(error), error);
+    if (routing->owner)
+        channel_send(ichannel, routing->owner, EVENT_ERROR, cstring_length(error), error);
 
     channel_exit(ichannel);
 

@@ -147,7 +147,7 @@ static void keypress(struct gb_s *gb, struct event_keypress *keypress)
         break;
 
     case KEYS_KEY_ESCAPE:
-        channel_close();
+        channel_close(0);
 
         break;
 
