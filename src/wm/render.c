@@ -1005,6 +1005,7 @@ static struct util_size measurewindow(struct widget *widget, struct util_size *l
 {
 
     struct util_size inner = util_size_sub(limit, 0, CONFIG_WINDOW_BUTTON_HEIGHT);
+    struct text_info title = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), ATTR_WRAP_NONE, limit->w, 0);
     struct util_size csize;
 
     measurespans = 1;
@@ -1013,34 +1014,21 @@ static struct util_size measurewindow(struct widget *widget, struct util_size *l
     measurespans = 0;
     measureminimum = 0;
 
-    return util_size(csize.w, csize.h + CONFIG_WINDOW_BUTTON_HEIGHT);
-
-}
-
-static unsigned int titlewidth(struct widget *widget, struct util_size *limit)
-{
-
-    struct text_info title = text_info(pool_getfont(ATTR_WEIGHT_NORMAL), strpool_getstring(widget->attributes.label), strpool_getcstringlength(widget->attributes.label), ATTR_WRAP_NONE, limit->w, 0);
-
-    return title.width + CONFIG_WINDOW_BUTTON_WIDTH * 4;
+    return util_size(util_clamp(util_max(csize.w, title.width + CONFIG_WINDOW_BUTTON_WIDTH * 4), 0, limit->w), util_clamp(csize.h + CONFIG_WINDOW_BUTTON_HEIGHT, 0, limit->h));
 
 }
 
 struct util_size render_getwindowsize(struct widget *widget, struct util_size *limit)
 {
 
-    struct util_size size = measurewindow(widget, limit, 0);
-
-    return util_size(util_clamp(util_max(size.w, titlewidth(widget, limit)), 0, limit->w), util_clamp(size.h, 0, limit->h));
+    return measurewindow(widget, limit, 0);
 
 }
 
 struct util_size render_getwindowminsize(struct widget *widget, struct util_size *limit)
 {
 
-    struct util_size size = measurewindow(widget, limit, 1);
-
-    return util_size(util_clamp(util_max(size.w, titlewidth(widget, limit)), 0, limit->w), util_clamp(size.h, 0, limit->h));
+    return measurewindow(widget, limit, 1);
 
 }
 
