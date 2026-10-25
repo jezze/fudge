@@ -247,7 +247,6 @@ static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
     {"queryrequest", EVENT_QUERYREQUEST},
     {"queryresponse", EVENT_QUERYRESPONSE},
     {"ready", EVENT_READY},
-    {"pipe", EVENT_PIPE},
     {"keypress", EVENT_KEYPRESS},
     {"keyrelease", EVENT_KEYRELEASE},
     {"mousemove", EVENT_MOUSEMOVE},

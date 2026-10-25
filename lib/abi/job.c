@@ -116,9 +116,8 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         for (j = 0; j < command->noptions; j++)
             count += cstring_write_fmt(options, MESSAGE_SIZE, count, "%s\\0%s\\0", command->keys[j], command->values[j]);
 
-        channel_send(ichannel, command->target, EVENT_PIPE, sizeof (struct event_pipe), &pipe);
         channel_send(ichannel, command->target, EVENT_OPTION, count, options);
-        channel_send(ichannel, command->target, EVENT_MAIN, 0, 0);
+        channel_send(ichannel, command->target, EVENT_MAIN, sizeof (struct event_pipe), &pipe);
 
         count = 0;
 

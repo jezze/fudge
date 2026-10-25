@@ -76,7 +76,6 @@ static void onmain(struct message *message)
     case EVENT_MAIN:
     case EVENT_OPTION:
     case EVENT_PATH:
-    case EVENT_PIPE:
         channel_send_fmt(0, message->source, EVENT_ERROR, "Event can not be recorded\n");
 
         break;

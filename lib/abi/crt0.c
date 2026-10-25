@@ -36,20 +36,6 @@ static void onoption(struct message *message)
 
 }
 
-static void onpipe(struct message *message)
-{
-
-    struct event_pipe pipe;
-
-    buffer_clear(&pipe, sizeof (struct event_pipe));
-
-    if (message->length == sizeof (struct event_pipe))
-        buffer_copy(&pipe, message->data, sizeof (struct event_pipe));
-
-    channel_pipe(message->source, &pipe);
-
-}
-
 void panic(unsigned int source, char *file, unsigned int line)
 {
 
@@ -74,7 +60,6 @@ void main(void)
 
     option_add("pwd", "");
     channel_bind(EVENT_OPTION, onoption);
-    channel_bind(EVENT_PIPE, onpipe);
     init();
     channel_loop(0);
     channel_exit(0);

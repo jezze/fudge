@@ -405,12 +405,16 @@ static void dispatchpaths(struct message *message)
 static void dispatch(struct message *message)
 {
 
-    if (message->event == EVENT_MAIN && !routing.owner)
+    if (message->event == EVENT_MAIN)
     {
 
         struct event_pipe pipe;
 
         buffer_clear(&pipe, sizeof (struct event_pipe));
+
+        if (message->length == sizeof (struct event_pipe))
+            buffer_copy(&pipe, message->data, sizeof (struct event_pipe));
+
         setrouting(message->source, &pipe);
 
     }
@@ -600,13 +604,6 @@ void channel_bind(unsigned int event, void (*callback)(struct message *message))
 {
 
     listeners[event] = callback;
-
-}
-
-void channel_pipe(unsigned int owner, struct event_pipe *pipe)
-{
-
-    setrouting(owner, pipe);
 
 }
 
