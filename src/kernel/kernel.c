@@ -203,7 +203,7 @@ static void unblocktasks(void)
 
                 }
 
-                if (task->signals.unblock)
+                else if (task->signals.unblock)
                 {
 
                     list_remove_unsafe(&blockedtasks, current);
@@ -338,24 +338,10 @@ void kernel_schedule(struct core *core)
                 restart(task);
 
             if (task->signals.kill)
-            {
-
                 transition(core->itask, TASK_STATE_DEAD);
-
-                core->itask = 0;
-
-            }
-
-            if (task->signals.block)
-            {
-
+            else if (task->signals.block)
                 transition(core->itask, TASK_STATE_BLOCKED);
-
-                core->itask = 0;
-
-            }
-
-            if (core->itask)
+            else
             {
 
                 spinlock_acquire(&task->spinlock);
@@ -365,11 +351,11 @@ void kernel_schedule(struct core *core)
 
                 spinlock_release(&task->spinlock);
 
-                core->itask = 0;
-
             }
 
         }
+
+        core->itask = 0;
 
     }
 
