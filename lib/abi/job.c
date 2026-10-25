@@ -119,29 +119,15 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         channel_send(ichannel, command->target, EVENT_OPTION, count, options);
         channel_send(ichannel, command->target, EVENT_MAIN, sizeof (struct event_pipe), &pipe);
 
-        count = 0;
-
         for (j = 0; j < command->npaths; j++)
         {
 
             char absolute[1024];
             unsigned int length = fs_absolute(absolute, 1024, pwd, command->paths[j]);
 
-            if (count + length + 1 > MESSAGE_SIZE)
-            {
-
-                channel_send(ichannel, command->target, EVENT_PATH, count, options);
-
-                count = 0;
-
-            }
-
-            count += buffer_write(options, MESSAGE_SIZE, absolute, length + 1, count);
+            channel_send(ichannel, command->target, EVENT_PATH, length + 1, absolute);
 
         }
-
-        if (count)
-            channel_send(ichannel, command->target, EVENT_PATH, count, options);
 
     }
 

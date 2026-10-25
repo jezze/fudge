@@ -377,31 +377,6 @@ static unsigned int place(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
-static void dispatchpaths(struct inbox *inbox, struct message *message)
-{
-
-    char *data = message->data;
-    unsigned int offset = 0;
-
-    while (offset < message->length && listeners[EVENT_PATH] && inbox->state != CHANNEL_STATE_CLOSED)
-    {
-
-        struct message path;
-        unsigned int length = buffer_findbyte(data + offset, message->length - offset, '\0');
-
-        path.event = message->event;
-        path.source = message->source;
-        path.data = data + offset;
-        path.length = (offset + length < message->length) ? length + 1 : length;
-
-        listeners[EVENT_PATH](&path);
-
-        offset += length + 1;
-
-    }
-
-}
-
 static void dispatch(unsigned int ichannel, struct message *message)
 {
 
@@ -421,9 +396,7 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
     }
 
-    if (message->event == EVENT_PATH)
-        dispatchpaths(inbox, message);
-    else if (message->event < CHANNEL_EVENTS && listeners[message->event])
+    if (message->event < CHANNEL_EVENTS && listeners[message->event])
         listeners[message->event](message);
 
     switch (message->event)
