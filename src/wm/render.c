@@ -776,9 +776,10 @@ static void placeselect(struct widget *widget)
 {
 
     int top = widget->placement.position.y + widget->placement.size.h;
+    int right = widget->clip.position.x + widget->clip.size.w;
     int bottom = widget->clip.position.y + widget->clip.size.h;
 
-    widget->cplacement = util_region(widget->placement.position.x, top, INFINITY, util_max(bottom - top, 0));
+    widget->cplacement = util_region(widget->placement.position.x, top, util_max(right - widget->placement.position.x, 0), util_max(bottom - top, 0));
 
     if (!isfocused(widget))
         widget->clip = util_region_intersection(&widget->placement, &widget->clip);
