@@ -19,10 +19,11 @@
 #define STRETCH_HORIZONTAL              1
 #define STRETCH_VERTICAL                2
 #define STRETCH_BOTH                    3
+#define NUM_CALLS                       32
 
 static unsigned int hasdamage;
 
-struct
+static struct
 {
 
     struct util_position position0;
@@ -56,7 +57,7 @@ static unsigned int measureclipped;
 static struct util_position mouse;
 static unsigned int mousetype;
 static unsigned int unit;
-static struct calls calls[32];
+static struct calls calls[NUM_CALLS];
 static struct palette palettes[NUM_PALETTES][NUM_SHADES];
 static struct widget *hoverwidget;
 static struct widget *focusedwidget;
@@ -1297,5 +1298,6 @@ void render_init(void)
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
     setupcall(WIDGET_TYPE_TEXT, getsizetext, 0, rendertext);
     setupcall(WIDGET_TYPE_WINDOW, getsizefixed, placewindow, renderwindow);
+
 }
 
