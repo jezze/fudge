@@ -55,7 +55,6 @@ static void unannounce(unsigned int inode)
 
 }
 
-/* the mailboxes of a dying task that had senders waiting, woken once its lock is released */
 struct waking
 {
 
@@ -439,7 +438,6 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 
 }
 
-/* where a service keeps a file in kernel memory, for the syscalls that run or load one; 0 when the service cannot say */
 unsigned long kernel_locate(unsigned int target, unsigned int id)
 {
 
