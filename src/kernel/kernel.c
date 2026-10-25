@@ -378,18 +378,7 @@ void kernel_schedule(struct core *core)
     core->itask = pool_picktaskfrom(&core->tasks);
 
     if (core->itask)
-    {
-
-        struct task *task = pool_gettask(core->itask);
-
-        if (task)
-        {
-
-            transition(core->itask, TASK_STATE_RUNNING);
-
-        }
-
-    }
+        transition(core->itask, TASK_STATE_RUNNING);
 
 }
 
