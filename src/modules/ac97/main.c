@@ -51,6 +51,23 @@ static unsigned char memory[ENTRIES * sizeof (struct entry) + ENTRIES * ENTRYSIZ
 static struct entry *entries;
 static unsigned char *buffers;
 
+/* stop pcm out and reset its registers; the next write starts it again */
+static void resetpcmout(void)
+{
+
+    unsigned int i;
+
+    io_outb(nabm + NABM_POCR, 0);
+    io_outb(nabm + NABM_POCR, NABM_POCR_RR);
+
+    for (i = 0; i < LIMIT_POLL && (io_inb(nabm + NABM_POCR) & NABM_POCR_RR); i++);
+
+    io_outd(nabm + NABM_POBDBAR, (unsigned long)entries);
+
+    running = 0;
+
+}
+
 static unsigned int reset(void)
 {
 
@@ -78,11 +95,7 @@ static unsigned int reset(void)
     if (vra)
         io_outw(nam + NAM_EXTCTRL, io_inw(nam + NAM_EXTCTRL) | NAM_EXTCTRL_VRA);
 
-    io_outb(nabm + NABM_POCR, NABM_POCR_RR);
-
-    for (i = 0; i < LIMIT_POLL && (io_inb(nabm + NABM_POCR) & NABM_POCR_RR); i++);
-
-    io_outd(nabm + NABM_POBDBAR, (unsigned long)entries);
+    resetpcmout();
 
     return 1;
 
@@ -101,6 +114,9 @@ static unsigned int audiointerface_setformat(unsigned int rate, unsigned int cha
         return 0;
 
     spinlock_acquire(&spinlock);
+
+    /* a new stream: drop what is left of the last one, qemu also reopens its voice on a rate change and only a fresh start revives it */
+    resetpcmout();
 
     if (vra)
     {
