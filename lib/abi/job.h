@@ -3,7 +3,7 @@
 #define JOB_OPTIONS                     16
 #define JOB_STRINGSSIZE                 512
 #define JOB_ERRORSIZE                   128
-#define JOB_ROUTES                      PIPE_ROUTES
+#define JOB_ROUTES                      (PIPE_ROUTES - 2)
 
 struct job_route
 {

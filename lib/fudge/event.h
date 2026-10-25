@@ -73,7 +73,7 @@
 #define EVENT_WMCONFIG                  0x62
 #define EVENT_P9P                       0x70
 
-#define PIPE_ROUTES                     8
+#define PIPE_ROUTES                     10
 
 struct event_route
 {
@@ -84,13 +84,15 @@ struct event_route
 
 };
 
+/* a complete routing table for one stage; target 0 means the owner */
 struct event_pipe
 {
 
     unsigned int prev;
-    unsigned int next;
     unsigned int nroutes;
     struct event_route routes[PIPE_ROUTES];
+    unsigned int nterms;
+    struct event_route terms[PIPE_ROUTES];
 
 };
 
