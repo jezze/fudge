@@ -55,49 +55,6 @@ static void unannounce(unsigned int inode)
 
 }
 
-static void destroytask(unsigned int itask)
-{
-
-    struct task *task = pool_gettask(itask);
-
-    if (task)
-    {
-
-        unsigned int i;
-
-        for (i = 0; i < TASK_MAILBOXES; i++)
-        {
-
-            if (task->imailbox[i])
-            {
-
-                struct mailbox *mailbox = pool_getmailbox(task->imailbox[i]);
-
-                if (mailbox)
-                {
-
-                    unannounce(mailbox->inode);
-                    mailbox_unregister(mailbox);
-
-                    mailbox->inode = pool_renewnode(mailbox->inode);
-
-                    pool_unpickmailbox(task->imailbox[i]);
-
-                }
-
-            }
-
-        }
-
-        memsrv_untask(itask);
-        task_reset(task);
-        task_unregister(task);
-        pool_unpicktask(itask);
-
-    }
-
-}
-
 /* the mailboxes of a dying task that had senders waiting, woken once its lock is released */
 struct waking
 {
@@ -128,11 +85,21 @@ static void retiretask(unsigned int itask, struct waking *waking)
                 if (mailbox_reset(mailbox))
                     waking->inodes[waking->count++] = mailbox->inode;
 
+                unannounce(mailbox->inode);
+                mailbox_unregister(mailbox);
+
+                mailbox->inode = pool_renewnode(mailbox->inode);
+
+                pool_unpickmailbox(task->imailbox[i]);
+
             }
 
         }
 
-        destroytask(itask);
+        memsrv_untask(itask);
+        task_reset(task);
+        task_unregister(task);
+        pool_unpicktask(itask);
 
     }
 
