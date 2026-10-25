@@ -368,13 +368,6 @@ void kernel_schedule(struct core *core)
 
 }
 
-void kernel_despawn(unsigned int itask)
-{
-
-    kernel_signal(itask, TASK_SIGNAL_KILL);
-
-}
-
 unsigned int kernel_kill(unsigned int itask)
 {
 
