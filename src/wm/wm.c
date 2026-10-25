@@ -1677,6 +1677,17 @@ static struct widget *getselect(struct widget *widget)
 
 }
 
+static void sendselect(struct widget *item)
+{
+
+    struct widget *select = getselect(item);
+    struct widget *text = gettextchild(item);
+
+    if (select && select->attributes.onselect)
+        sendevent(select->source, 1, select->attributes.onselect, (text) ? strpool_getstring(text->attributes.label) : "");
+
+}
+
 static void clickwidget(struct widget *widget)
 {
 
@@ -1700,15 +1711,7 @@ static void clickwidget(struct widget *widget)
 
     case WIDGET_TYPE_ITEM:
         if (state.mousebuttonleft)
-        {
-
-            struct widget *select = getselect(widget);
-            struct widget *text = gettextchild(widget);
-
-            if (select && select->attributes.onselect)
-                sendevent(select->source, 1, select->attributes.onselect, (text) ? strpool_getstring(text->attributes.label) : "");
-
-        }
+            sendselect(widget);
 
         break;
 
@@ -2048,6 +2051,73 @@ static unsigned int cyclefocus(unsigned int forward)
 
 }
 
+static unsigned int collectitems(struct widget *widget, struct widget **list, unsigned int count)
+{
+
+    struct list_item *current = 0;
+
+    while ((current = pool_nextin(current, widget)))
+    {
+
+        struct widget *child = current->data;
+
+        if (count < NUM_FOCUSABLE && child->type == WIDGET_TYPE_ITEM && child->attributes.mode != ATTR_MODE_DISABLED)
+            list[count++] = child;
+
+        count = collectitems(child, list, count);
+
+    }
+
+    return count;
+
+}
+
+static void stepitem(struct widget *select, unsigned int forward)
+{
+
+    static struct widget *list[NUM_FOCUSABLE];
+    unsigned int count = collectitems(select, list, 0);
+    unsigned int current;
+
+    if (!count)
+        return;
+
+    for (current = 0; current < count; current++)
+    {
+
+        if (list[current] == state.hoverwidget)
+            break;
+
+    }
+
+    if (current == count)
+        current = (forward) ? 0 : count - 1;
+    else if (forward && current + 1 < count)
+        current++;
+    else if (!forward && current > 0)
+        current--;
+
+    sethover(list[current]);
+    showwidget(list[current]);
+
+}
+
+static void chooseitem(struct widget *select)
+{
+
+    struct widget *item = (state.hoverwidget) ? getitem(state.hoverwidget) : 0;
+
+    if (!item || getselect(item) != select)
+        return;
+
+    setfocus(item);
+    sendselect(item);
+
+    if (item->attributes.onclick)
+        sendevent(item->source, 1, item->attributes.onclick, "");
+
+}
+
 static unsigned int markall(struct widget *widget)
 {
 
@@ -2162,7 +2232,21 @@ static void onkeypress(struct message *message)
     if (id && (!binding || !dobinding(binding)))
     {
 
-        if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
+        if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && (id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN))
+        {
+
+            stepitem(state.focusedwidget, id == KEYS_KEY_CURSORDOWN);
+
+        }
+
+        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && id == KEYS_KEY_ENTER)
+        {
+
+            chooseitem(state.focusedwidget);
+
+        }
+
+        else if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
         {
 
             sendevent(selecteditem->source, 1, selecteditem->attributes.onenter, "");
