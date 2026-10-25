@@ -266,10 +266,24 @@ unsigned int widget_iseditable(struct widget *widget)
 
 }
 
+static unsigned int isinselect(struct widget *widget)
+{
+
+    return widget->parent && widget->parent->source == widget->source && widget->parent->type == WIDGET_TYPE_SELECT;
+
+}
+
 unsigned int widget_isscrollable(struct widget *widget)
 {
 
-    return widget->attributes.overflow == ATTR_OVERFLOW_SCROLL;
+    return widget->attributes.overflow == ATTR_OVERFLOW_SCROLL || isinselect(widget);
+
+}
+
+unsigned int widget_hasscrollbar(struct widget *widget)
+{
+
+    return widget->attributes.overflow == ATTR_OVERFLOW_SCROLL && !isinselect(widget);
 
 }
 

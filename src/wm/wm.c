@@ -2512,7 +2512,7 @@ static void grabthumb(void)
 
     struct widget *widget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    state.draggedthumb = (widget && util_region_intersects(&widget->thumb, state.mouseposition.x, state.mouseposition.y)) ? widget : 0;
+    state.draggedthumb = (widget && widget_hasscrollbar(widget) && util_region_intersects(&widget->thumb, state.mouseposition.x, state.mouseposition.y)) ? widget : 0;
 
     if (state.draggedthumb)
         state.scrollgrab = state.mouseposition.y - widget->thumb.position.y;

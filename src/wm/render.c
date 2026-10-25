@@ -223,7 +223,7 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
         climit = util_size_sub(&inner, flow.offset.x, flow.offset.y);
         csize = calls[child->type].getsize(child, &climit, &flow.rowstart);
 
-        if (widget_isscrollable(child))
+        if (widget_hasscrollbar(child))
             csize.w = util_min(csize.w + CONFIG_SCROLL_WIDTH, climit.w);
 
         if (child->attributes.span && !measurespans)
@@ -275,7 +275,7 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
     placement.position = util_position_add(&widget->cplacement.position, offset->x, offset->y);
     placement.size = size = calls[child->type].getsize(child, &climit, rowstart);
 
-    if (widget_isscrollable(child))
+    if (widget_hasscrollbar(child))
         placement.size.w = size.w = util_min(size.w + CONFIG_SCROLL_WIDTH, climit.w);
 
     if (child->attributes.span)
@@ -562,7 +562,10 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
         widget->cplacement.position.y -= widget->scroll.y;
         widget->cplacement.size.h = INFINITY;
-        widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - CONFIG_SCROLL_WIDTH, 0);
+
+        if (widget_hasscrollbar(widget))
+            widget->cplacement.size.w = util_max((int)widget->cplacement.size.w - CONFIG_SCROLL_WIDTH, 0);
+
         widget->cclip = util_region_intersection(&widget->cclip, &widget->placement);
 
     }
@@ -617,7 +620,7 @@ static void place(struct widget *widget, struct util_region *placement, struct u
 
         }
 
-        if (widget_isscrollable(widget))
+        if (widget_hasscrollbar(widget))
             placethumb(widget, view.size.h);
 
     }
@@ -1225,7 +1228,7 @@ struct util_region render_update(struct blit_display *display)
 
                 calls[widget->type].render(display, widget, line, x0, x2);
 
-                if (widget_isscrollable(widget))
+                if (widget_hasscrollbar(widget))
                     renderthumb(display, widget, line, x0, x2);
 
             }
