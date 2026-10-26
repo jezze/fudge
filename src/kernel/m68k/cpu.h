@@ -3,8 +3,12 @@
 #define CPU_SR_CCR                      0x001F
 #define CPU_TC_ENABLE                   0x8000
 #define CPU_CACR_INSTRUCTION            0x00008000
+#define CPU_FORMAT_TYPE                 0xF000
 #define CPU_FORMAT_VECTOR               0x0FFF
+#define CPU_FORMAT_ACCESS060            0x4000
 #define CPU_SSW_ATC                     0x0400
+#define CPU_FSLW_MISALIGNED             0x08000000
+#define CPU_FSLW_DESCRIPTOR             0x00001E00
 #define CPU_WB_VALID                    0x0080
 #define CPU_WB_SIZE                     0x0060
 #define CPU_WB_LONG                     0x0000
@@ -41,15 +45,10 @@ struct cpu_general
 
 };
 
-/* the layout isr.s saves on the kernel stack: the user stack pointer and the registers, then the frame the cpu pushed; the fields after format only exist in an access fault's frame (format 7) */
-struct cpu_frame
+/* the rest of a 68040's access fault frame (format 7) */
+struct cpu_fault040
 {
 
-    union cpu_register usp;
-    struct cpu_general general;
-    unsigned short sr;
-    unsigned int pc;
-    unsigned short format;
     unsigned int ea;
     unsigned short ssw;
     unsigned short wb3s;
@@ -65,6 +64,36 @@ struct cpu_frame
     unsigned int pd1;
     unsigned int pd2;
     unsigned int pd3;
+
+};
+
+/* the rest of a 68060's access fault frame (format 4) */
+struct cpu_fault060
+{
+
+    unsigned int fa;
+    unsigned int fslw;
+
+};
+
+union cpu_fault
+{
+
+    struct cpu_fault040 m68040;
+    struct cpu_fault060 m68060;
+
+};
+
+/* the layout isr.s saves on the kernel stack: the user stack pointer and the registers, then the frame the cpu pushed; fault only exists in an access fault's frame */
+struct cpu_frame
+{
+
+    union cpu_register usp;
+    struct cpu_general general;
+    unsigned short sr;
+    unsigned int pc;
+    unsigned short format;
+    union cpu_fault fault;
 
 };
 

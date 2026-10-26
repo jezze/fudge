@@ -399,27 +399,56 @@ static unsigned int writeback(unsigned short status, unsigned int address, unsig
 
 }
 
-unsigned int arch_accessfault(struct cpu_frame *frame)
+static unsigned int accessfault040(struct cpu_frame *frame, struct cpu_fault040 *fault)
 {
 
-    if (frame->ssw & CPU_SSW_ATC && pagefault(frame->fa))
+    if (fault->ssw & CPU_SSW_ATC && pagefault(fault->fa))
     {
 
         cpu_flushtlb();
 
-        if (writeback(frame->wb2s, frame->wb2a, frame->wb2d) && writeback(frame->wb3s, frame->wb3a, frame->wb3d))
+        if (writeback(fault->wb2s, fault->wb2a, fault->wb2d) && writeback(fault->wb3s, fault->wb3a, fault->wb3d))
         {
 
-            frame->wb2s = 0;
-            frame->wb3s = 0;
+            fault->wb2s = 0;
+            fault->wb3s = 0;
 
-            return 0;
+            return 1;
 
         }
 
     }
 
-    debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "Access fault 0x%H4h at 0x%H8u (pc 0x%H8u)", &frame->ssw, &frame->fa, &frame->pc);
+    debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "Access fault 0x%H4h at 0x%H8u (pc 0x%H8u)", &fault->ssw, &fault->fa, &frame->pc);
+
+    return 0;
+
+}
+
+/* a 68060 (and a 68080) restarts the faulted instruction; a misaligned access may fault on the page after its address */
+static unsigned int accessfault060(struct cpu_frame *frame, struct cpu_fault060 *fault)
+{
+
+    if (fault->fslw & CPU_FSLW_DESCRIPTOR && (pagefault(fault->fa) || (fault->fslw & CPU_FSLW_MISALIGNED && pagefault((fault->fa & ~MMU_PAGEMASK) + MMU_PAGESIZE))))
+    {
+
+        cpu_flushtlb();
+
+        return 1;
+
+    }
+
+    debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "Access fault 0x%H8u at 0x%H8u (pc 0x%H8u)", &fault->fslw, &fault->fa, &frame->pc);
+
+    return 0;
+
+}
+
+unsigned int arch_accessfault(struct cpu_frame *frame)
+{
+
+    if ((frame->format & CPU_FORMAT_TYPE) == CPU_FORMAT_ACCESS060 ? accessfault060(frame, &frame->fault.m68060) : accessfault040(frame, &frame->fault.m68040))
+        return 0;
 
     return fault(frame);
 

@@ -101,5 +101,7 @@ Not tried yet. After a page fault the kernel does the writebacks a 68040 leaves 
 frame and goes back through that frame, as the 68040 needs; qemu leaves the writebacks empty, so that
 path only runs on a real cpu. The instruction cache is on and invalidated where code is written (a
 task's code, a module's relocations). The data cache stays off: device memory would need noncachable
-mappings and the drivers would need to invalidate what devices write. The 68080 has an MMU of its own,
-so it does not run this yet.
+mappings and the drivers would need to invalidate what devices write. The 68060's MMU, which the
+68080 shares, takes the same tables; its access faults come in a format 4 frame and the cpu restarts
+the instruction, with no writebacks. A 68060 traps on the 64-bit mulu.l and muls.l that gcc's
+-m68040 code uses, which the 68080 implements.
