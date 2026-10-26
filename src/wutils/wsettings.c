@@ -190,6 +190,7 @@ static char colorwidget[32] = "box";
 static char out[MESSAGE_SIZE];
 static unsigned int outcount;
 static unsigned int wm;
+static char selecting[32];
 
 static void copystring(char *out, unsigned int size, char *in, unsigned int length)
 {
@@ -296,6 +297,16 @@ static void addtextbox(char *row, char *id, char *value, unsigned int span, char
 {
 
     outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, id, halign, value);
+
+}
+
+static void pathfield(char *id, char *label, char *value)
+{
+
+    beginrow(id);
+    addlabel(id, label);
+
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s-box\" in \"%s-row\" padding \"3\" flow \"stretch\"\n+ text id \"%s\" in \"%s-box\" valign \"middle\" label \"%s\"\n+ button in \"%s-row\" label \"Select\" onclick \"q=open&id=%s\"\n", id, id, id, id, value, id, id);
 
 }
 
@@ -708,11 +719,9 @@ static void rendergeneral(void)
 {
 
     beginarea("General");
-    choice("general-layout", "Window layout", config.layout, layouts, NUM_LAYOUTS);
-    beginrow("general-background");
-    addlabel("general-background", "Background");
-
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"general-background-box\" in \"general-background-row\" padding \"3\" flow \"stretch\"\n+ text id \"general-background\" in \"general-background-box\" valign \"middle\" label \"%s\"\n+ button in \"general-background-row\" label \"Select\" onclick \"q=open\"\n", config.background);
+    choice("general-layout", "Layout", config.layout, layouts, NUM_LAYOUTS);
+    pathfield("general-theme", "Theme", config.themepath);
+    pathfield("general-background", "Background", config.background);
 
 }
 
@@ -896,8 +905,34 @@ static void onmain(struct message *message)
 static void onpath(struct message *message)
 {
 
-    copystring(config.background, 256, message->data, cstring_length(message->data));
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= save mode \"normal\"\n= general-background label \"%s\"\n", config.background);
+    char *path = message->data;
+
+    if (cstring_match(selecting, "general-theme"))
+    {
+
+        copystring(config.themepath, 256, path, cstring_length(path));
+
+        config.ncolors = 0;
+
+        loadlines(config.themepath, ".colors", "{name} {value}", loadcolor);
+
+    }
+
+    else if (cstring_match(selecting, "general-background"))
+    {
+
+        copystring(config.background, 256, path, cstring_length(path));
+
+    }
+
+    else
+    {
+
+        return;
+
+    }
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= save mode \"normal\"\n= %s label \"%s\"\n", selecting, path);
 
 }
 
@@ -988,6 +1023,9 @@ static void onwmevent(struct message *message)
     {
 
         unsigned int target = fs_spawn(1, "initrd:bin/wfile");
+        char *id = kv_getstring(event, "id=");
+
+        copystring(selecting, 32, id, cstring_length(id));
 
         if (target)
         {
