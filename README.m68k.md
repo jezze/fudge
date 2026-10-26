@@ -55,7 +55,7 @@ make
 builds fudgeboot as well, an AmigaDOS executable holding the kernel and the ramdisk. Run it
 from an AmigaOS or AROS shell (or a Startup-Sequence). It first prints the cpu (exec's
 AttnFlags), exec's memory list and Lisa's DENISEID, and returns to the shell with an error
-unless the cpu is a 68040 and RAM covers 0x10000000 to 0x1E000000. Otherwise, after 5 seconds,
+unless the cpu is a 68040, 68060 or 68080 and RAM covers 0x10000000 to 0x1E000000. Otherwise, after 5 seconds,
 it takes over the machine through exec's Supervisor(), turns off interrupts, DMA, caches
 and the MMU, copies the kernel to its address with the ramdisk after it and enters it; the
 loader moves the ramdisk to ARCH_RAMDISK_BASE. The modules are amiga (paula's interrupts, and cia-a's, which it reads

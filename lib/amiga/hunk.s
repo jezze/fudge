@@ -54,7 +54,7 @@ code:
     lea textstart(%pc), %a0
     bsr print
 
-# d6: bit 0 a 68040, bit 1 ram at RAMBASE, bit 2 ram up to RAMEND
+# d6: bit 0 a 68040, 68060 or 68080 (compatible MMUs), bit 1 ram at RAMBASE, bit 2 ram up to RAMEND
     lea textcpu(%pc), %a0
     bsr print
     moveq #0, %d0
@@ -63,14 +63,15 @@ code:
     bsr printhex
     lea text68080(%pc), %a0
     btst #ATTNB_68080, %d5
-    bne 2f
+    bne 1f
     lea text68060(%pc), %a0
     btst #ATTNB_68060, %d5
-    bne 2f
+    bne 1f
     lea textold(%pc), %a0
     btst #ATTNB_68040, %d5
     beq 2f
     lea text68040(%pc), %a0
+1:
     bset #0, %d6
 2:
     bsr print
@@ -291,7 +292,7 @@ textaga:
 textnoaga:
     .asciz " (not AGA: no video, serial only)\n"
 textnocpu:
-    .asciz "needs a 68040: fudge uses the 68040's MMU\n"
+    .asciz "needs a 68040, 68060 or 68080: fudge uses their MMU\n"
 textnoram:
     .asciz "needs RAM from "
 textto:
