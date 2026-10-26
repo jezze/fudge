@@ -23,13 +23,13 @@
 
 static unsigned int hasdamage;
 
-static struct
+struct area
 {
 
     struct util_position position0;
     struct util_position position2;
 
-} area;
+};
 
 struct calls
 {
@@ -49,6 +49,27 @@ struct palette
 
 };
 
+struct flow
+{
+
+    struct util_position offset;
+    struct util_position rowstart;
+    int pending;
+
+};
+
+struct placeinfo
+{
+
+    unsigned int spans;
+    unsigned int width;
+    struct util_size total;
+    struct util_size freesize;
+    struct util_size span;
+
+};
+
+static struct area area;
 static struct util_position zeroposition;
 static struct util_size zerosize;
 static unsigned int measurespans;
@@ -67,6 +88,13 @@ static unsigned int isfocused(struct widget *widget)
 {
 
     return widget == focusedwidget || widget == focusedwindow;
+
+}
+
+static unsigned int isscrollablex(struct widget *widget)
+{
+
+    return widget_isscrollable(widget) || widget_iseditable(widget);
 
 }
 
@@ -134,22 +162,6 @@ static unsigned int getstretch(unsigned int flow)
 
 }
 
-static unsigned int isinlinetext(struct widget *widget)
-{
-
-    return widget->type == WIDGET_TYPE_TEXT && widget->attributes.display == ATTR_DISPLAY_INLINE;
-
-}
-
-struct flow
-{
-
-    struct util_position offset;
-    struct util_position rowstart;
-    int pending;
-
-};
-
 static void advance(struct widget *widget, struct widget *child, unsigned int direction, struct util_size *size, struct flow *flow)
 {
 
@@ -162,7 +174,7 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
         break;
 
     case DIRECTION_VERTICAL:
-        if (isinlinetext(child))
+        if (child->attributes.display == ATTR_DISPLAY_INLINE)
         {
 
             flow->offset.y += child->rowstop.y;
@@ -188,7 +200,7 @@ static void advance(struct widget *widget, struct widget *child, unsigned int di
 static void startchild(struct widget *child, struct flow *flow)
 {
 
-    if (!isinlinetext(child))
+    if (child->attributes.display != ATTR_DISPLAY_INLINE)
     {
 
         flow->offset.y += flow->pending;
@@ -258,13 +270,6 @@ static struct util_size childrengetsize(struct widget *widget, struct util_size 
 
 }
 
-static unsigned int isscrollablex(struct widget *widget)
-{
-
-    return widget_isscrollable(widget) || widget_iseditable(widget);
-
-}
-
 static struct util_region getplacement(struct widget *widget, struct widget *child, struct util_position *offset, struct util_position *rowstart, struct util_size *span)
 {
 
@@ -330,17 +335,6 @@ static struct util_region getplacement(struct widget *widget, struct widget *chi
 }
 
 static void place(struct widget *widget, struct util_region *placement, struct util_region *clip);
-
-struct placeinfo
-{
-
-    unsigned int spans;
-    unsigned int width;
-    struct util_size total;
-    struct util_size freesize;
-    struct util_size span;
-
-};
 
 static struct placeinfo placechildren(struct widget *widget, struct util_size *span, unsigned int measure)
 {

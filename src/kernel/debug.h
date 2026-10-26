@@ -1,4 +1,4 @@
-#define DEBUG_ASSERT(l, t)                  debug_assert(l, t, __FILE__, __LINE__)
+#define DEBUG_ASSERT(l, t)              debug_assert(l, t, __FILE__, __LINE__)
 #define DEBUG_NONE                      0
 #define DEBUG_CRITICAL                  1
 #define DEBUG_ERROR                     2

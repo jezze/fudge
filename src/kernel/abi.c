@@ -31,7 +31,7 @@ static unsigned int debug(unsigned int itask, void *stack)
 
     struct {void *caller; char *message;} *args = stack;
 
-    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, args->message);
+    debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "%s", args->message);
 
     return 0;
 
