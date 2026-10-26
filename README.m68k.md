@@ -53,10 +53,12 @@ make m68k-amiga
 make
 
 builds fudgeboot as well, an AmigaDOS executable holding the kernel and the ramdisk. Run it
-from an AmigaOS or AROS shell (or a Startup-Sequence): it takes over the machine through
-exec's Supervisor(), turns off interrupts, DMA, caches and the MMU, copies the kernel to
-its address with the ramdisk after it and enters it; the loader moves the ramdisk to
-ARCH_RAMDISK_BASE. The modules are amiga (paula's interrupts, and cia-a's, which it reads
+from an AmigaOS or AROS shell (or a Startup-Sequence). It first prints the cpu (exec's
+AttnFlags), exec's memory list and Lisa's DENISEID, and returns to the shell with an error
+unless the cpu is a 68040 and RAM covers 0x10000000 to 0x1E000000. Otherwise, after 5 seconds,
+it takes over the machine through exec's Supervisor(), turns off interrupts, DMA, caches
+and the MMU, copies the kernel to its address with the ramdisk after it and enters it; the
+loader moves the ramdisk to ARCH_RAMDISK_BASE. The modules are amiga (paula's interrupts, and cia-a's, which it reads
 once for every source), amiga-timer (cia-a's timer a at 60 Hz), amiga-serial (paula's
 serial port at 115200 baud, the shell's console, shared with kernel debug output),
 amiga-keyboard (the keyboard on cia-a's serial port, translated to scancode set 1),
@@ -92,7 +94,8 @@ dd if=fudge-amiga.raw of=/dev/<card> bs=1M conv=fsync
 
 disk_setup_amiga writes a rigid disk block with one bootable FFS partition (DOS1) holding
 fs-uae/hd, so the ROM mounts it with its own filesystem and its boot shell runs fudgeboot from
-S/Startup-Sequence. The rest of a larger card stays unused.
+S/Startup-Sequence. The rest of a larger card stays unused. When fudgeboot refuses, its report
+stays on the boot shell's screen.
 
 Not tried yet. After a page fault the kernel does the writebacks a 68040 leaves in its access fault
 frame and goes back through that frame, as the 68040 needs; qemu leaves the writebacks empty, so that
