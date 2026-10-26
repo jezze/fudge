@@ -26,6 +26,7 @@
 #define NUM_TIMEZONES                   8
 #define NUM_RESOLUTIONS                 11
 #define NUM_TRANSPARENCIES              2
+#define MOUSE_FASTEST                   16
 
 struct entry
 {
@@ -295,15 +296,6 @@ static void addtextbox(char *row, char *id, char *value, unsigned int span, char
 {
 
     outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"%s\" in \"%s-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"%u\" onchange \"q=change&id=%s&value=\"\n+ text in \"%s\" halign \"%s\" label \"%s\"\n", id, row, &span, id, id, halign, value);
-
-}
-
-static void field(char *id, char *label, char *value, char *halign)
-{
-
-    beginrow(id);
-    addlabel(id, label);
-    addtextbox(id, id, value, 0, halign);
 
 }
 
@@ -669,14 +661,7 @@ static void setfield(char *id, char *value)
 
     unsigned int length = cstring_length(value);
 
-    if (cstring_match(id, "mouse-speed"))
-    {
-
-        copystring(config.speed, 16, value, length);
-
-    }
-
-    else if (buffer_match(id, "binding", 7))
+    if (buffer_match(id, "binding", 7))
     {
 
         unsigned int digits = buffer_findbyte(id + 7, cstring_length(id + 7), '-');
@@ -748,8 +733,22 @@ static void renderkeyboard(void)
 static void rendermouse(void)
 {
 
+    unsigned int speed = cstring_read_value(config.speed, cstring_length(config.speed), 10);
+    unsigned int value;
+
+    if (speed < 1)
+        speed = 1;
+
+    if (speed > MOUSE_FASTEST)
+        speed = MOUSE_FASTEST;
+
+    value = (speed - 1) * 0xFFFF / (MOUSE_FASTEST - 1);
+
     beginarea("Mouse");
-    field("mouse-speed", "Speed", config.speed, "right");
+    beginrow("mouse-speed");
+    addlabel("mouse-speed", "Speed");
+
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ slider id \"mouse-speed\" in \"mouse-speed-row\" span \"1\" value \"%u\" onchange \"q=speed&value=\"\n+ text id \"mouse-speed-label\" in \"mouse-speed-row\" valign \"middle\" label \"%s\"\n", &value, config.speed);
 
 }
 
@@ -924,6 +923,16 @@ static void onwmevent(struct message *message)
 
         setfield(kv_getstring(event, "id="), kv_getstring(event, "value="));
         channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"normal\"\n");
+
+    }
+
+    else if (kv_match(event, "q=speed"))
+    {
+
+        unsigned int speed = 1 + kv_getvalue(event, "value=", 10) * (MOUSE_FASTEST - 1) / 0xFFFF;
+
+        cstring_write_fmt(config.speed, 16, 0, "%u\\0", &speed);
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mouse-speed-label label \"%s\"\n= save mode \"normal\"\n", config.speed);
 
     }
 
