@@ -463,7 +463,7 @@ static void loadconfig(void)
 
     getword(data, count, 0, config.bindingspath, 256);
 
-    count = query(data, 256, option_getstring("config"), ".theme", 0);
+    count = query(data, 256, option_getstring("config"), ".general.theme", 0);
 
     getword(data, count, 0, config.themepath, 256);
 
@@ -480,12 +480,12 @@ static unsigned int writeconfig(char *data, unsigned int size)
 
     unsigned int count = 0;
 
-    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    background: \"%s\"\n  }\n", config.layout, config.background);
+    count += cstring_write_fmt(data, size, count, "{\n  general:\n  {\n    layout: %s\n    theme: \"%s\"\n    background: \"%s\"\n  }\n", config.layout, config.themepath, config.background);
     count += cstring_write_fmt(data, size, count, "  localization:\n  {\n    language: %s\n    timezone: %s\n  }\n", config.language, config.timezone);
     count += cstring_write_fmt(data, size, count, "  screen:\n  {\n    resolution:\n    {\n      width: %u\n      height: %u\n      bpp: %u\n    }\n    transparency: %s\n  }\n", &config.width, &config.height, &config.bpp, config.transparency);
     count += cstring_write_fmt(data, size, count, "  keyboard:\n  {\n    map: \"%s\"\n  }\n", config.keyboard);
     count += cstring_write_fmt(data, size, count, "  mouse:\n  {\n    speed: %s\n  }\n", config.speed);
-    count += cstring_write_fmt(data, size, count, "  bindings: \"%s\"\n  theme: \"%s\"\n}\n", config.bindingspath, config.themepath);
+    count += cstring_write_fmt(data, size, count, "  bindings: \"%s\"\n}\n", config.bindingspath);
 
     return count;
 

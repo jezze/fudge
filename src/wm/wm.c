@@ -353,7 +353,7 @@ static void loadconfig(char *config)
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen.resolution -format \"resolution {width} {height} {bpp}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .screen -format \"transparency {transparency}\" %s", config));
     configlines(data, system_feed(0, 0, data, 0x4000, "mq -query .mouse -format \"mouse {speed}\" %s", config));
-    loadreference(data, config, ".theme", ".colors", "color {name} {value}");
+    loadreference(data, config, ".general.theme", ".colors", "color {name} {value}");
     configlines("bindings", 8);
     loadreference(data, config, ".bindings", ".bindings", "binding {key} {mod} {action} {command}");
 

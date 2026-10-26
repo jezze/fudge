@@ -2,6 +2,7 @@
   general:
   {
     layout: default
+    theme: "initrd:data/config/wm-theme-default.mq"
     background: "initrd:data/fudge.pcx"
   }
   localization:
@@ -28,5 +29,4 @@
     speed: 4
   }
   bindings: "initrd:data/config/wm-bindings.mq"
-  theme: "initrd:data/config/wm-theme-default.mq"
 }
