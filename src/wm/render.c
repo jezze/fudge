@@ -655,7 +655,7 @@ static struct util_size textsize(struct widget *widget, struct util_size *limit,
 static struct util_size getsizebutton(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH * 2, CONFIG_BUTTON_PADDING_HEIGHT * 2);
+    struct util_size padding = util_size((CONFIG_FRAME_WIDTH + render_unit(5)) * 2, (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
     struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size_union(&label, &padding);
@@ -672,7 +672,7 @@ static struct util_size getsizecheckbox(struct widget *widget, struct util_size 
 static struct util_size getsizeslider(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    return util_size(CONFIG_SLIDER_WIDTH, pool_getfont(widget->attributes.weight)->lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
+    return util_size(CONFIG_SLIDER_WIDTH, pool_getfont(widget->attributes.weight)->lineheight + (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
 
 }
 
@@ -693,7 +693,7 @@ static struct util_size getsizefixed(struct widget *widget, struct util_size *li
 static struct util_size getsizeswatch(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    unsigned int side = pool_getfont(widget->attributes.weight)->lineheight + CONFIG_SWATCH_PADDING * 2;
+    unsigned int side = pool_getfont(widget->attributes.weight)->lineheight + (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2;
 
     return util_size(side, side);
 
@@ -739,7 +739,7 @@ static struct util_size getsizepanel(struct widget *widget, struct util_size *li
 static struct util_size getsizeselect(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
-    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH * 3 + CONFIG_SELECT_ARROW_WIDTH, CONFIG_SELECT_PADDING_HEIGHT * 2);
+    struct util_size padding = util_size((CONFIG_FRAME_WIDTH + render_unit(5)) * 3 + CONFIG_SELECT_ARROW_WIDTH, (CONFIG_FRAME_HEIGHT + render_unit(3)) * 2);
     struct util_size label = textsize(widget, limit, rowstart);
 
     return util_size_union(&label, &padding);
@@ -848,7 +848,7 @@ static void textrender(struct blit_display *display, struct widget *widget, stru
 static void renderbutton(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct util_size padding = util_size(CONFIG_BUTTON_PADDING_WIDTH, CONFIG_BUTTON_PADDING_HEIGHT);
+    struct util_size padding = util_size(CONFIG_FRAME_WIDTH + render_unit(5), CONFIG_FRAME_HEIGHT + render_unit(3));
     struct palette *palette = getpalette(PALETTE_BUTTON, getshade(widget));
 
     blit_frame(display, &widget->placement, line, x0, x2, palette->frame);
@@ -975,7 +975,7 @@ static void renderpanel(struct blit_display *display, struct widget *widget, int
 static void renderselect(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
-    struct util_size padding = util_size(CONFIG_SELECT_PADDING_WIDTH, CONFIG_SELECT_PADDING_HEIGHT);
+    struct util_size padding = util_size(CONFIG_FRAME_WIDTH + render_unit(5), CONFIG_FRAME_HEIGHT + render_unit(3));
     int right = widget->placement.position.x + (int)widget->placement.size.w - (int)padding.w;
     struct util_region rarrow = util_region(right - CONFIG_SELECT_ARROW_WIDTH, widget->placement.position.y, CONFIG_SELECT_ARROW_WIDTH, widget->placement.size.h);
     struct palette *palette = getpalette(PALETTE_SELECT, getshade(widget));
