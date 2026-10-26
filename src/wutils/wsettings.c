@@ -661,7 +661,14 @@ static void setfield(char *id, char *value)
 
     unsigned int length = cstring_length(value);
 
-    if (buffer_match(id, "binding", 7))
+    if (cstring_match(id, "mouse-speed-box"))
+    {
+
+        copystring(config.speed, 16, value, length);
+
+    }
+
+    else if (buffer_match(id, "binding", 7))
     {
 
         unsigned int digits = buffer_findbyte(id + 7, cstring_length(id + 7), '-');
@@ -730,11 +737,10 @@ static void renderkeyboard(void)
 
 }
 
-static void rendermouse(void)
+static unsigned int getspeedvalue(void)
 {
 
     unsigned int speed = cstring_read_value(config.speed, cstring_length(config.speed), 10);
-    unsigned int value;
 
     if (speed < 1)
         speed = 1;
@@ -742,13 +748,20 @@ static void rendermouse(void)
     if (speed > MOUSE_FASTEST)
         speed = MOUSE_FASTEST;
 
-    value = (speed - 1) * 0xFFFF / (MOUSE_FASTEST - 1);
+    return (speed - 1) * 0xFFFF / (MOUSE_FASTEST - 1);
+
+}
+
+static void rendermouse(void)
+{
+
+    unsigned int value = getspeedvalue();
 
     beginarea("Mouse");
     beginrow("mouse-speed");
-    addlabel("mouse-speed", "Speed");
 
-    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ slider id \"mouse-speed\" in \"mouse-speed-row\" span \"1\" value \"%u\" onchange \"q=speed&value=\"\n+ text id \"mouse-speed-label\" in \"mouse-speed-row\" valign \"middle\" label \"%s\"\n", &value, config.speed);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ text in \"mouse-speed-row\" valign \"middle\" span \"4\" label \"Speed\"\n+ slider id \"mouse-speed\" in \"mouse-speed-row\" span \"3\" value \"%u\" onchange \"q=speed&value=\"\n", &value);
+    outcount += cstring_write_fmt(out, MESSAGE_SIZE, outcount, "+ box id \"mouse-speed-box\" in \"mouse-speed-row\" mode \"edit\" padding \"3\" flow \"stretch\" span \"1\" onchange \"q=change&id=mouse-speed-box&value=\"\n+ text id \"mouse-speed-text\" in \"mouse-speed-box\" halign \"right\" label \"%s\"\n", config.speed);
 
 }
 
@@ -921,7 +934,19 @@ static void onwmevent(struct message *message)
     else if (kv_match(event, "q=change"))
     {
 
-        setfield(kv_getstring(event, "id="), kv_getstring(event, "value="));
+        char *id = kv_getstring(event, "id=");
+
+        setfield(id, kv_getstring(event, "value="));
+
+        if (cstring_match(id, "mouse-speed-box"))
+        {
+
+            unsigned int value = getspeedvalue();
+
+            channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mouse-speed value \"%u\"\n", &value);
+
+        }
+
         channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= save mode \"normal\"\n");
 
     }
@@ -932,7 +957,7 @@ static void onwmevent(struct message *message)
         unsigned int speed = 1 + kv_getvalue(event, "value=", 10) * (MOUSE_FASTEST - 1) / 0xFFFF;
 
         cstring_write_fmt(config.speed, 16, 0, "%u\\0", &speed);
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mouse-speed-label label \"%s\"\n= save mode \"normal\"\n", config.speed);
+        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", config.speed);
 
     }
 
