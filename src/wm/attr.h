@@ -23,6 +23,7 @@
 #define ATTR_ONCHANGE                   23
 #define ATTR_HEIGHT                     24
 #define ATTR_WIDTH                      25
+#define ATTR_VALUE                      26
 #define ATTR_DISPLAY_BLOCK              0
 #define ATTR_DISPLAY_INLINE             1
 #define ATTR_DISPLAY_FIXED              2

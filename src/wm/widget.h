@@ -10,6 +10,7 @@
 #define WIDGET_TYPE_WINDOW              12
 #define WIDGET_TYPE_CHECKBOX            13
 #define WIDGET_TYPE_SWATCH              16
+#define WIDGET_TYPE_SLIDER              17
 
 struct widget_attributes
 {
@@ -36,6 +37,7 @@ struct widget_attributes
     unsigned int spacing;
     unsigned int span;
     unsigned int valign;
+    unsigned int value;
     unsigned int weight;
     unsigned int width;
     unsigned int wrap;

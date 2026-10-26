@@ -25,6 +25,7 @@
 #define MOUSE_FASTEST       16
 #define MOUSE_RAMP          8
 #define FONTS               4
+#define SLIDER_STEP         0x0800
 
 struct state
 {
@@ -47,6 +48,7 @@ struct state
     struct widget *draggedthumb;
     unsigned int video;
     int scrollgrab;
+    int slidergrab;
 
 };
 
@@ -466,6 +468,7 @@ static unsigned int getmousetype(int x, int y)
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_ITEM:
     case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_SLIDER:
         return BLIT_MOUSE_HAND;
 
     case WIDGET_TYPE_TEXT:
@@ -1688,6 +1691,53 @@ static void sendselect(struct widget *item)
 
 }
 
+static void setslider(struct widget *widget, int value)
+{
+
+    unsigned int clamped = util_clamp(value, 0, 0xFFFF);
+
+    if (clamped != widget->attributes.value)
+    {
+
+        widget->attributes.value = clamped;
+
+        damage(widget);
+
+        if (widget->attributes.onchange)
+        {
+
+            char text[16];
+
+            cstring_write_fmt(text, 16, 0, "%u\\0", &clamped);
+            sendevent(widget->source, 1, widget->attributes.onchange, text);
+
+        }
+
+    }
+
+}
+
+static void dragslider(struct widget *widget)
+{
+
+    int travel = (int)widget->placement.size.w - CONFIG_SLIDER_KNOB_WIDTH;
+
+    if (travel > 0)
+        setslider(widget, util_clamp(state.mouseposition.x - state.slidergrab - widget->placement.position.x, 0, travel) * 0xFFFF / travel);
+
+}
+
+static void grabslider(struct widget *widget)
+{
+
+    struct util_region knob = render_getsliderknob(widget);
+
+    state.slidergrab = (util_region_intersects(&knob, state.mouseposition.x, state.mouseposition.y)) ? state.mouseposition.x - knob.position.x : CONFIG_SLIDER_KNOB_WIDTH / 2;
+
+    dragslider(widget);
+
+}
+
 static void clickwidget(struct widget *widget)
 {
 
@@ -1708,6 +1758,12 @@ static void clickwidget(struct widget *widget)
         }
 
         return;
+
+    case WIDGET_TYPE_SLIDER:
+        if (state.mousebuttonleft)
+            grabslider(widget);
+
+        break;
 
     case WIDGET_TYPE_ITEM:
         if (state.mousebuttonleft)
@@ -1976,6 +2032,7 @@ static unsigned int isfocusable(struct widget *widget)
     case WIDGET_TYPE_BUTTON:
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_SLIDER:
         return 1;
 
     case WIDGET_TYPE_TEXT:
@@ -2221,6 +2278,45 @@ static unsigned int dobinding(struct bind_binding *binding)
 
 }
 
+static unsigned int isslidekey(unsigned int id)
+{
+
+    return id == KEYS_KEY_CURSORLEFT || id == KEYS_KEY_CURSORRIGHT || id == KEYS_KEY_HOME || id == KEYS_KEY_END;
+
+}
+
+static void slide(struct widget *widget, unsigned int id)
+{
+
+    int value = widget->attributes.value;
+
+    switch (id)
+    {
+
+    case KEYS_KEY_CURSORLEFT:
+        setslider(widget, value - SLIDER_STEP);
+
+        break;
+
+    case KEYS_KEY_CURSORRIGHT:
+        setslider(widget, value + SLIDER_STEP);
+
+        break;
+
+    case KEYS_KEY_HOME:
+        setslider(widget, 0);
+
+        break;
+
+    case KEYS_KEY_END:
+        setslider(widget, 0xFFFF);
+
+        break;
+
+    }
+
+}
+
 static void onkeypress(struct message *message)
 {
 
@@ -2271,6 +2367,13 @@ static void onkeypress(struct message *message)
         {
 
             edittextbox(state.focusedwidget, id);
+
+        }
+
+        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SLIDER && isslidekey(id))
+        {
+
+            slide(state.focusedwidget, id);
 
         }
 
@@ -2457,6 +2560,9 @@ static void onmousemove(struct message *message)
             dragthumb(state.draggedthumb);
         else if (state.focusedwidget)
         {
+
+            if (state.focusedwidget->type == WIDGET_TYPE_SLIDER)
+                dragslider(state.focusedwidget);
 
             if (state.focusedwidget->type == WIDGET_TYPE_BOX)
                 setmark(state.focusedwidget, state.focusedwidget->markstart, getmarkindex(state.focusedwidget, state.mouseposition.x, state.mouseposition.y));

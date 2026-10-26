@@ -125,6 +125,11 @@ void widget_setattribute(struct widget *widget, unsigned int attribute, char *va
 
         break;
 
+    case ATTR_VALUE:
+        widget->attributes.value = attr_update(ATTR_VALUE, value, widget->attributes.value);
+
+        break;
+
     case ATTR_WIDTH:
         widget->attributes.width = attr_update(ATTR_WIDTH, value, widget->attributes.width);
 
@@ -169,6 +174,7 @@ void widget_unsetattributes(struct widget *widget)
     widget_setattribute(widget, ATTR_SPACING, 0);
     widget_setattribute(widget, ATTR_SPAN, 0);
     widget_setattribute(widget, ATTR_VALIGN, 0);
+    widget_setattribute(widget, ATTR_VALUE, 0);
     widget_setattribute(widget, ATTR_WEIGHT, 0);
     widget_setattribute(widget, ATTR_WIDTH, 0);
     widget_setattribute(widget, ATTR_WRAP, 0);
@@ -249,6 +255,7 @@ unsigned int widget_isinteractive(struct widget *widget)
     case WIDGET_TYPE_CHECKBOX:
     case WIDGET_TYPE_BOX:
     case WIDGET_TYPE_SELECT:
+    case WIDGET_TYPE_SLIDER:
     case WIDGET_TYPE_ITEM:
     case WIDGET_TYPE_WINDOW:
         return 1;
@@ -342,6 +349,7 @@ void widget_init_attributes(struct widget_attributes *attributes, unsigned type)
     attributes->spacing = 0;
     attributes->span = 0;
     attributes->valign = ATTR_VALIGN_TOP;
+    attributes->value = 0;
     attributes->weight = ATTR_WEIGHT_NORMAL;
     attributes->width = 0;
     attributes->wrap = ATTR_WRAP_NONE;

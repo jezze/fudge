@@ -669,6 +669,13 @@ static struct util_size getsizecheckbox(struct widget *widget, struct util_size 
 
 }
 
+static struct util_size getsizeslider(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    return util_size(CONFIG_SLIDER_WIDTH, pool_getfont(widget->attributes.weight)->lineheight + CONFIG_BUTTON_PADDING_HEIGHT * 2);
+
+}
+
 static struct util_size getsizechildren(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -859,6 +866,27 @@ static void rendercheckbox(struct blit_display *display, struct widget *widget, 
 
     if (widget->attributes.checked)
         blit_iconx(display, &box, line, x0, x2, palette->icon);
+
+}
+
+struct util_region render_getsliderknob(struct widget *widget)
+{
+
+    int travel = util_max((int)widget->placement.size.w - CONFIG_SLIDER_KNOB_WIDTH, 0);
+
+    return util_region(widget->placement.position.x + travel * (int)widget->attributes.value / 0xFFFF, widget->placement.position.y, CONFIG_SLIDER_KNOB_WIDTH, widget->placement.size.h);
+
+}
+
+static void renderslider(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+{
+
+    struct util_region track = util_region(widget->placement.position.x, widget->placement.position.y + ((int)widget->placement.size.h - CONFIG_SLIDER_TRACK_HEIGHT) / 2, widget->placement.size.w, CONFIG_SLIDER_TRACK_HEIGHT);
+    struct util_region knob = render_getsliderknob(widget);
+    unsigned int shade = getshade(widget);
+
+    blit_frame(display, &track, line, x0, x2, getpalette(PALETTE_BOX, (shade == SHADE_DISABLED) ? SHADE_DISABLED : SHADE_NORMAL)->frame);
+    blit_frame(display, &knob, line, x0, x2, getpalette(PALETTE_BUTTON, shade)->frame);
 
 }
 
@@ -1290,6 +1318,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
+    setupcall(WIDGET_TYPE_SLIDER, getsizeslider, 0, renderslider);
     setupcall(WIDGET_TYPE_TEXT, getsizetext, 0, rendertext);
     setupcall(WIDGET_TYPE_WINDOW, getsizefixed, placewindow, renderwindow);
 

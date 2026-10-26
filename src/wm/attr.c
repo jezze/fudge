@@ -75,6 +75,15 @@ static unsigned int getnum(char *value, unsigned int base)
 
 }
 
+static unsigned int getvalue(char *value)
+{
+
+    unsigned int number = getnum(value, 10);
+
+    return (number < 0xFFFF) ? number : 0xFFFF;
+
+}
+
 unsigned int attr_update(unsigned int attribute, char *value, unsigned int current)
 {
 
@@ -146,6 +155,9 @@ unsigned int attr_update(unsigned int attribute, char *value, unsigned int curre
 
     case ATTR_VALIGN:
         return util_getkey(valigns, 3, value);
+
+    case ATTR_VALUE:
+        return getvalue(value);
 
     case ATTR_WIDTH:
         return getnum(value, 10);
