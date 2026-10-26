@@ -3,6 +3,7 @@
 **.ko
 **.map
 **.qcow2
+**.raw
 build/
 iso/
 /fudge

@@ -467,6 +467,29 @@ cmd_disk_setup_gpt() {
     disk_setup "${1}" gpt
 }
 
+cmd_disk_setup_amiga() {
+    disk="${1}"
+    files=""
+
+    test -f "${disk}" || error "Disk not found: ${disk}"
+    qemu-img info "${disk}" | grep -q "^file format: raw$" || error "Disk is not raw: ${disk}"
+    test -f "fs-uae/hd/fudgeboot" || error "fudgeboot not found, build with make m68k-amiga"
+    command -v rdbtool > /dev/null || error "rdbtool not found, install amitools"
+
+    for file in fs-uae/hd/*
+    do
+        files="${files} + write ${file}"
+    done
+
+    echo -n "Creating partitions... "
+    rdbtool "${disk}" init + add size=100% dostype=DOS1 bootable=1 name=DH0 > /dev/null
+    echo "done"
+
+    echo -n "Creating filesystems... "
+    xdftool "${disk}" open part=DH0 + format Fudge ffs ${files} > /dev/null
+    echo "done"
+}
+
 cmd_help() {
     echo "Commands:"
     echo "    run [-S] [-s <storage>] [-d <disk>] [-N] [-n <network>] [-t] [-A] [-a <audio>] [-o <audio driver>] [-g <display>] [-i <iso>] [-u] [-x <arch>] [<name>]"
@@ -484,10 +507,12 @@ cmd_help() {
     echo "    disk_create [-f <format>] [-n <name>] [-s <size>]"
     echo "    disk_setup <disk>"
     echo "    disk_setup_gpt <disk>"
+    echo "    disk_setup_amiga <disk>"
+    echo "        raw disk, gets a rigid disk block and a bootable FFS partition with fs-uae/hd (needs amitools)"
 }
 
 case "$1" in
-run|nat|connect|disconnect|disk_create|disk_connect|disk_disconnect|disk_setup|disk_setup_gpt)
+run|nat|connect|disconnect|disk_create|disk_connect|disk_disconnect|disk_setup|disk_setup_gpt|disk_setup_amiga)
     "cmd_$@"
     ;;
 *)

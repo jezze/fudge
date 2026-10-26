@@ -84,6 +84,16 @@ ROM is enough to reach a shell; serial_port connects paula to a host device or p
 
 ## Real hardware
 
+A card or disk the Amiga boots from (amitools provides rdbtool and xdftool):
+
+./vmctrl disk_create -f raw -s 16M -n fudge-amiga
+./vmctrl disk_setup_amiga fudge-amiga.raw
+dd if=fudge-amiga.raw of=/dev/<card> bs=1M conv=fsync
+
+disk_setup_amiga writes a rigid disk block with one bootable FFS partition (DOS1) holding
+fs-uae/hd, so the ROM mounts it with its own filesystem and its boot shell runs fudgeboot from
+S/Startup-Sequence. The rest of a larger card stays unused.
+
 Not tried yet. After a page fault the kernel does the writebacks a 68040 leaves in its access fault
 frame and goes back through that frame, as the 68040 needs; qemu leaves the writebacks empty, so that
 path only runs on a real cpu. The instruction cache is on and invalidated where code is written (a
