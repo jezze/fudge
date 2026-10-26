@@ -361,7 +361,6 @@ cmd_disk_disconnect() {
 cmd_disk_create() {
     name="fudge"
     format="qcow2"
-    disk="${name}.${format}"
     size="5G"
 
     while test ${#} -gt 0
@@ -388,6 +387,8 @@ cmd_disk_create() {
         esac
         shift
     done
+
+    disk="${name}.${format}"
 
     echo -n "Creating disk... "
     qemu-img create -q -f "${format}" "${disk}" "${size}"
