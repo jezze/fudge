@@ -873,8 +873,9 @@ struct util_region render_getsliderknob(struct widget *widget)
 {
 
     int travel = util_max((int)widget->placement.size.w - CONFIG_SLIDER_KNOB_WIDTH, 0);
+    int height = widget->placement.size.h / 2;
 
-    return util_region(widget->placement.position.x + travel * (int)widget->attributes.value / 0xFFFF, widget->placement.position.y, CONFIG_SLIDER_KNOB_WIDTH, widget->placement.size.h);
+    return util_region(widget->placement.position.x + travel * (int)widget->attributes.value / 0xFFFF, widget->placement.position.y + ((int)widget->placement.size.h - height) / 2, CONFIG_SLIDER_KNOB_WIDTH, height);
 
 }
 
