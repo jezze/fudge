@@ -71,6 +71,13 @@ asks for. The palette is a 6x6x6 colour cube with 40 more greys; a 32 KB table g
 15-bit colour its nearest entry. wm draws into its usual 32-bit framebuffer and each flush
 converts that region to planar, 8 pixels at a time as an 8x8 bit transpose.
 
+Until amiga-video takes the display, the kernel's debug output also shows on a hires
+screen of its own (one bitplane at 0x00061000, a copper list at 0x00060000, 80x16
+characters in x86 udebug's font), and its background tells how far the boot got when
+nothing is printed: grey or white (whatever COLOR00 was) means the kernel never set up
+that screen, blue the kernel started, green the MMU and the exception vectors are on, and
+purple the init task is about to run.
+
 The kernel's memory starts at ARCH_RAMBASE, 0x10000000 (256 MB of Zorro III RAM where
 UAE puts it with its own mapping). So far it runs in FS-UAE as an A4000/040 with these
 options:

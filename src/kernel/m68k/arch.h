@@ -1,6 +1,8 @@
 #ifdef ARCH_AMIGA
 #define ARCH_RAMBASE                    0x10000000
 #define ARCH_TTY_BASE                   0x00DFF000
+#define ARCH_SCREEN_BASE                0x00060000
+#define ARCH_SCREEN_SIZE                0x00006000
 #else
 #define ARCH_RAMBASE                    0x00000000
 #define ARCH_TTY_BASE                   0xFF008000
