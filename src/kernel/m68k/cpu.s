@@ -6,6 +6,11 @@ cpu_getroot:
     movec %srp, %d0
     rts
 
+.global cpu_gettc
+cpu_gettc:
+    movec %tc, %d0
+    rts
+
 .global cpu_setroot
 cpu_setroot:
     move.l 4(%sp), %d0

@@ -538,6 +538,19 @@ void arch_setup2(void)
 
     cpu_setroot(ARCH_MMU_KERNELBASE);
     cpu_settc(CPU_TC_ENABLE);
+
+    /* a cpu without a working MMU (some 68080 cores) drops the write, and tasks would run on whatever is at their addresses */
+    if (cpu_gettc() != CPU_TC_ENABLE)
+    {
+
+        unsigned int tc = cpu_gettc();
+
+        debug_fmt(DEBUG_CRITICAL, __FILE__, __LINE__, "MMU did not turn on: TC reads 0x%H8u", &tc);
+
+        for (;;);
+
+    }
+
     cpu_invalidatecode();
     cpu_setcacr(CPU_CACR_INSTRUCTION);
     cpu_setvbr(isr_vectors);

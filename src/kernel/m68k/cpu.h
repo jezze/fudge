@@ -98,6 +98,7 @@ struct cpu_frame
 };
 
 unsigned int cpu_getroot(void);
+unsigned int cpu_gettc(void);
 void cpu_setroot(unsigned int value);
 void cpu_settc(unsigned int value);
 void cpu_setvbr(void *value);
