@@ -92,15 +92,6 @@ static unsigned int mapentry(unsigned long directory, unsigned long mmap, struct
 
             break;
 
-        case MMAP_TYPE_BINARY:
-            if (entry->fsize)
-                buffer_copy((void *)entry->vaddress, (void *)entry->fbase, entry->fsize);
-
-            if (entry->msize > entry->fsize)
-                buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
-
-            break;
-
         }
 
         return 1;
@@ -408,6 +399,7 @@ static void setupmmap(void)
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MAILBOX_BASE, ARCH_MAILBOX_BASE, ARCH_MAILBOX_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_TASK_CODEBASE, ARCH_TASK_CODEBASE, ARCH_TASK_CODESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MEM_BASE, ARCH_MEM_BASE, ARCH_MEM_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_UART1_BASE, ARCH_UART1_BASE, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
 

@@ -493,6 +493,34 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
 
 }
 
+static void loadbinary(struct mmap_header *header)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < header->nentries; i++)
+    {
+
+        struct mmap_entry *entry = &header->entries[i];
+
+        if (entry->type == MMAP_TYPE_BINARY)
+        {
+
+            unsigned char *target = (unsigned char *)(entry->paddress + (entry->vaddress & 0xFFF));
+
+            buffer_copy(target, (void *)entry->fbase, entry->fsize);
+
+            if (entry->msize > entry->fsize)
+                buffer_clear(target + entry->fsize, entry->msize - entry->fsize);
+
+            entry->type = MMAP_TYPE_NORMAL;
+
+        }
+
+    }
+
+}
+
 unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
 {
 
@@ -520,7 +548,13 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
                 mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
                 if (format->map(task->address, code, TASK_CODESIZE, header))
+                {
+
+                    loadbinary(header);
+
                     task->thread.ip = format->findentry(task->address);
+
+                }
 
                 task->start.ip = task->thread.ip;
                 task->start.sp = task->thread.sp;

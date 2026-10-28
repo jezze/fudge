@@ -103,17 +103,6 @@ static unsigned int mapentry(unsigned long root, unsigned long mmap, struct mmap
 
             break;
 
-        case MMAP_TYPE_BINARY:
-            if (entry->fsize)
-                buffer_copy((void *)entry->vaddress, (void *)entry->fbase, entry->fsize);
-
-            cpu_invalidatecode();
-
-            if (entry->msize > entry->fsize)
-                buffer_clear((void *)(entry->vaddress + entry->fsize), entry->msize - entry->fsize);
-
-            break;
-
         }
 
         return 1;
@@ -181,6 +170,7 @@ static unsigned int createtask(unsigned long address)
         if (inode)
         {
 
+            cpu_invalidatecode();
             buffer_copy((void *)(unsigned long)(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask), (void *)ARCH_MMU_KERNELBASE, MMU_ROOTSIZE);
             mapentry(ARCH_MMU_TASKBASE + ARCH_MMU_TASKSIZE * ntask, ARCH_MMAP_BASE + MMAP_SIZE * ntask, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMAP_BASE + MMAP_SIZE * ntask, KERNEL_VMMAP, MMAP_SIZE, MMAP_FLAG_WRITEABLE));
             buffer_clear(&registers[ntask], sizeof (struct cpu_general));
@@ -511,6 +501,7 @@ static void setupmmap(void)
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MMU_TASKBASE, ARCH_MMU_TASKBASE, ARCH_MMU_TASKSIZE * POOL_TASKS, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MAILBOX_BASE, ARCH_MAILBOX_BASE, ARCH_MAILBOX_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERBASE, ARCH_TASK_BUFFERSIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
+    mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_TASK_CODEBASE, ARCH_TASK_CODEBASE, ARCH_TASK_CODESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_MEM_BASE, ARCH_MEM_BASE, ARCH_MEM_SIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
     mapentry(ARCH_MMU_KERNELBASE, ARCH_MMAP_BASE, mmap_allocate(header, MMAP_TYPE_NORMAL, ARCH_TTY_BASE, ARCH_TTY_BASE, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE));
 #ifdef ARCH_SCREEN_BASE
