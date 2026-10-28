@@ -12,6 +12,7 @@ static struct keys keys;
 static char path[128];
 static struct gb_s gb;
 static unsigned int audio;
+static unsigned int video;
 static short sound[AUDIO_SAMPLES * 2];
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
@@ -213,7 +214,20 @@ static void ontimertick(struct message *message)
     gb_run_frame(&gb);
 
     if (framebuffer)
+    {
+
+        struct event_videoflush videoflush;
+
         video_render(framebuffer, w, scalew, scaleh, totw, toth, offx, offy);
+
+        videoflush.x = offx;
+        videoflush.y = offy;
+        videoflush.width = totw;
+        videoflush.height = toth;
+
+        channel_send(0, video, EVENT_VIDEOFLUSH, sizeof (struct event_videoflush), &videoflush);
+
+    }
 
     if (audio)
     {
@@ -316,11 +330,12 @@ static void onpath(struct message *message)
 
     unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
     unsigned int timer = channel_lookup(option_getstring("timer-service"));
-    unsigned int video = channel_lookup(option_getstring("video-service"));
     unsigned int wm = channel_lookup(option_getstring("wm-service"));
 
     if (path[0])
         return;
+
+    video = channel_lookup(option_getstring("video-service"));
 
     buffer_write(path, 128, message->data, message->length, 0);
 
