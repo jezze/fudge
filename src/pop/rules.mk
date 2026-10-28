@@ -33,5 +33,4 @@ $(DIR_SRC)/pop/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic, $(CC_FLAGS)) -std
 
 include $(DIR_MK)/bin.mk
 
-# root:bin only; the initrd leaves it out
 ROOTBIN:=$(ROOTBIN) $(B)

@@ -17,3 +17,5 @@ $(DIR_SRC)/gameboy/cpu.o: CC_FLAGS:=$(filter-out -pedantic, $(CC_FLAGS))
 $(DIR_SRC)/gameboy/gameboy.o: CC_FLAGS:=$(filter-out -pedantic, $(CC_FLAGS))
 
 include $(DIR_MK)/bin.mk
+
+ROOTBIN:=$(ROOTBIN) $(B)

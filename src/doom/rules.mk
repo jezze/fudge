@@ -100,5 +100,4 @@ $(DIR_SRC)/doom/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic $(CC_FLAGS_FLOAT)
 
 include $(DIR_MK)/bin.mk
 
-# root:bin only; the initrd leaves it out
 ROOTBIN:=$(ROOTBIN) $(B)
