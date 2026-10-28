@@ -17,6 +17,7 @@ src/demo/demo
 src/doom/doom
 src/gameboy/gameboy
 src/kernel/fudge
+src/nes/nes
 src/pcx/pcxcmap
 src/pop/pop
 src/pcx/pcxdata

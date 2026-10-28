@@ -33,3 +33,5 @@ $(DIR_SRC)/nes/%.o: PP_FLAGS:=$(filter-out -std=c89 -pedantic, $(PP_FLAGS)) -std
 $(DIR_SRC)/nes/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic, $(CC_FLAGS)) -std=c99 -Wno-parentheses
 
 include $(DIR_MK)/bin.mk
+
+ROOTBIN:=$(ROOTBIN) $(B)
