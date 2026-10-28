@@ -353,14 +353,7 @@ struct pool_rawresource *pool_createraw(struct widget *widget, char *source)
     resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
 
     if (resource->id && width && height && width <= 0x4000 && height <= 0x4000 && fs_stat(1, resource->target, resource->id, &record) && record.size / 4 / width >= height)
-    {
-
         resource->data = fs_mmap(1, resource->target, resource->id, 0);
-
-        if (resource->data)
-            widget->size = util_size(width, height);
-
-    }
 
     return resource;
 

@@ -690,6 +690,13 @@ static struct util_size getsizefixed(struct widget *widget, struct util_size *li
 
 }
 
+static struct util_size getsizemedia(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
+{
+
+    return util_size(widget->attributes.width, widget->attributes.height);
+
+}
+
 static struct util_size getsizeswatch(struct widget *widget, struct util_size *limit, struct util_position *rowstart)
 {
 
@@ -910,13 +917,22 @@ static void rendermedia(struct blit_display *display, struct widget *widget, int
 
             struct pool_rawresource *resource = widget->resource;
 
-            blit_raw(display, resource->data, widget->attributes.width, widget->attributes.height, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
+            if (resource->data)
+            {
+
+                blit_raw(display, resource->data, widget->attributes.width, widget->attributes.height, line, widget->placement.position.x, widget->placement.position.y, widget->placement.size.w, widget->placement.size.h, x0, x2);
+
+                return;
+
+            }
 
         }
 
         break;
 
     }
+
+    blit_line(display, CONFIG_MEDIA_MISSING, x0, x2);
 
 }
 
@@ -1316,7 +1332,7 @@ void render_init(void)
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
-    setupcall(WIDGET_TYPE_MEDIA, getsizefixed, 0, rendermedia);
+    setupcall(WIDGET_TYPE_MEDIA, getsizemedia, 0, rendermedia);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
     setupcall(WIDGET_TYPE_SLIDER, getsizeslider, 0, renderslider);
