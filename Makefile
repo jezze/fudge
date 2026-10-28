@@ -143,7 +143,7 @@ $(DIR_BUILDINITRD): $(LIB) $(BIN) $(KMAP) $(KMOD) | $(DIR_BUILD)
 	@mkdir -p $@/lib
 	@cp $(LIB) $@/lib
 	@mkdir -p $@/bin
-	@cp $(BIN) $@/bin
+	@cp $(filter-out $(ROOTBIN),$(BIN)) $@/bin
 	@mkdir -p $@/data
 	@cp -r $(addprefix data/,$(RAMDISK_DATA)) $@/data
 	@cp $(MODULES_ARCH) $@/data/config/modules-arch.mq

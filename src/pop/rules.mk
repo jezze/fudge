@@ -32,3 +32,6 @@ $(DIR_SRC)/pop/%.o: PP_FLAGS:=$(filter-out -std=c89 -pedantic, $(PP_FLAGS)) -std
 $(DIR_SRC)/pop/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic, $(CC_FLAGS)) -std=c99
 
 include $(DIR_MK)/bin.mk
+
+# root:bin only; the initrd leaves it out
+ROOTBIN:=$(ROOTBIN) $(B)

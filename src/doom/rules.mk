@@ -99,3 +99,6 @@ $(DIR_SRC)/doom/%.o: PP_FLAGS:=$(filter-out -std=c89 -pedantic, $(PP_FLAGS)) -st
 $(DIR_SRC)/doom/%.o: CC_FLAGS:=$(filter-out -std=c89 -pedantic $(CC_FLAGS_FLOAT), $(CC_FLAGS)) -std=c99 -fcommon $(DOOM_WARNINGS)
 
 include $(DIR_MK)/bin.mk
+
+# root:bin only; the initrd leaves it out
+ROOTBIN:=$(ROOTBIN) $(B)
