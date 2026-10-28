@@ -1,6 +1,6 @@
 #define WIDGET_TYPE_BUTTON              1
 #define WIDGET_TYPE_FILL                3
-#define WIDGET_TYPE_IMAGE               4
+#define WIDGET_TYPE_MEDIA               4
 #define WIDGET_TYPE_LAYOUT              5
 #define WIDGET_TYPE_BOX                 6
 #define WIDGET_TYPE_PANEL               7

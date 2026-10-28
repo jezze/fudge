@@ -898,7 +898,7 @@ static void renderfill(struct blit_display *display, struct widget *widget, int 
 
 }
 
-static void renderimage(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
+static void rendermedia(struct blit_display *display, struct widget *widget, int line, int x0, int x2)
 {
 
     switch (widget->attributes.mimetype)
@@ -1313,10 +1313,10 @@ void render_init(void)
     setupcall(WIDGET_TYPE_BUTTON, getsizebutton, 0, renderbutton);
     setupcall(WIDGET_TYPE_CHECKBOX, getsizecheckbox, 0, rendercheckbox);
     setupcall(WIDGET_TYPE_FILL, getsizefixed, 0, renderfill);
-    setupcall(WIDGET_TYPE_IMAGE, getsizefixed, 0, renderimage);
     setupcall(WIDGET_TYPE_ITEM, getsizechildren, 0, renderitem);
     setupcall(WIDGET_TYPE_SWATCH, getsizeswatch, 0, renderswatch);
     setupcall(WIDGET_TYPE_LAYOUT, getsizechildren, 0, renderlayout);
+    setupcall(WIDGET_TYPE_MEDIA, getsizefixed, 0, rendermedia);
     setupcall(WIDGET_TYPE_PANEL, getsizepanel, placepanel, renderpanel);
     setupcall(WIDGET_TYPE_SELECT, getsizeselect, placeselect, renderselect);
     setupcall(WIDGET_TYPE_SLIDER, getsizeslider, 0, renderslider);

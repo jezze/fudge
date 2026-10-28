@@ -52,7 +52,7 @@ static void showimage(void)
     size[count] = 0;
 
     if (count)
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ image id \"image\" in \"frame\" mimetype \"image/raw\" source \"mem:%s\" %s", memname, size);
+        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ media id \"image\" in \"frame\" mimetype \"image/raw\" source \"mem:%s\" %s", memname, size);
 
 }
 

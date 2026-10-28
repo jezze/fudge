@@ -292,7 +292,7 @@ void pool_destroy(struct widget *widget)
 
     struct list *list = &children[widget - entries];
 
-    if (widget->type == WIDGET_TYPE_IMAGE && widget->resource)
+    if (widget->type == WIDGET_TYPE_MEDIA && widget->resource)
     {
 
         switch (widget->attributes.mimetype)
@@ -524,7 +524,7 @@ void pool_loadresources(void)
 
         struct widget *widget = current->data;
 
-        if (widget->type == WIDGET_TYPE_IMAGE)
+        if (widget->type == WIDGET_TYPE_MEDIA)
         {
 
             if (!widget->resource && widget->attributes.source && widget->attributes.mimetype)
