@@ -2,6 +2,7 @@ ifneq ($(filter i386-unknown-elf x86_64-unknown-elf,$(TARGET)),)
 include $(DIR_SRC)/demo/rules.mk
 include $(DIR_SRC)/doom/rules.mk
 include $(DIR_SRC)/gameboy/rules.mk
+include $(DIR_SRC)/nes/rules.mk
 include $(DIR_SRC)/pop/rules.mk
 endif
 include $(DIR_SRC)/kernel/rules.mk

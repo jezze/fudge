@@ -1,0 +1,163 @@
+#pragma once
+
+#include "port.h"
+
+#include "mapper.h"
+
+#define VISIBLE_SCANLINES 240
+#define VISIBLE_DOTS 256
+#define NTSC_SCANLINES_PER_FRAME 261
+#define PAL_SCANLINES_PER_FRAME 311
+#define DOTS_PER_SCANLINE 341
+#define END_DOT 340
+
+enum{
+    BG_TABLE        = 1 << 4,
+    SPRITE_TABLE    = 1 << 3,
+    SHOW_BG_8       = 1 << 1,
+    SHOW_SPRITE_8   = 1 << 2,
+    SHOW_BG         = 1 << 3,
+    SHOW_SPRITE     = 1 << 4,
+    LONG_SPRITE     = 1 << 5,
+    SPRITE_0_HIT    = 1 << 6,
+    SPRITE_OVERFLOW = 1 << 5,
+    FLIP_HORIZONTAL = 1 << 6,
+    FLIP_VERTICAL   = 1 << 7,
+    V_BLANK         = 1 << 7,
+    GENERATE_NMI    = 1 << 7,
+    RENDER_BITS     = 0x18,
+    BASE_NAMETABLE  = 0x3,
+    FINE_Y          = 0x7000,
+    COARSE_Y        = 0x3E0,
+    COARSE_X        = 0x1F,
+    VERTICAL_BITS   = 0x7BE0,
+    HORIZONTAL_BITS = 0x41F,
+    X_SCROLL_BITS   = 0x1f,
+    Y_SCROLL_BITS   = 0x73E0
+};
+
+struct Emulator;
+
+typedef enum PPUPhase {
+    NT_ADDR = 0,
+    NT_READ,
+    AT_ADDR,
+    AT_READ,
+    BG_LSB_ADDR,
+    BG_LSB_READ,
+    BG_MSB_ADDR,
+    BG_MSB_READ,
+} PPUPhase;
+
+typedef enum SpriteEvalState {
+    READ_OAM_Y,
+    CMP_OAM_Y,
+    READ_BYTE,
+    WRITE_BYTE,
+    OAM_EOF,
+} SpriteEvalState;
+
+typedef struct SpriteEvalMachine {
+    SpriteEvalState state;
+    uint8_t buffer;
+    uint8_t remaining;
+    uint8_t has_sprite_zero;
+    uint8_t has_overflown;
+}SpriteEvalMachine;
+
+typedef struct PictureUnit {
+    // uint16_t fetch_addr;
+    uint8_t has_set_addr;
+    uint8_t NT;
+    uint8_t AT;
+    uint8_t BG_LSB;
+    uint8_t BG_MSB;
+    uint16_t pattern_LSB;
+    uint16_t pattern_MSB;
+    uint16_t attr_LSB;
+    uint16_t attr_MSB;
+} PictureUnit;
+
+typedef struct SpriteUnit {
+    uint8_t x;
+    uint8_t attr;
+    uint8_t pattern_LSB;
+    uint8_t pattern_MSB;
+    uint8_t halted;
+} SpriteUnit;
+
+typedef struct Sprite {
+    uint8_t y;
+    uint8_t tile;
+    uint8_t attr;
+    uint8_t x;
+} Sprite;
+
+typedef struct PPU{
+    size_t frames;
+    uint32_t *screen;
+    uint8_t V_RAM[0x1000];
+    uint8_t OAM[256];
+    uint8_t OAM_cache[32];
+    uint8_t palette[0x20];
+    uint8_t ctrl;
+    uint8_t mask;
+    uint8_t status;
+    uint8_t render_status;
+    uint8_t render_state_delay;
+    uint8_t supress_vblank;
+    uint8_t nmi_delay;
+    uint8_t corrupt_oam_row;
+    size_t dots;
+    size_t scanlines;
+    uint16_t pre_render;
+
+    PictureUnit p_unit;
+    SpriteEvalMachine sprite_eval_unit;
+    SpriteUnit sprite_units[8];
+    Sprite sprite_buffer;
+    uint8_t should_inc_v;
+    uint8_t should_inc_hori_v;
+    uint8_t should_inc_vert_v;
+    uint8_t shift_start_delay;
+
+    uint16_t v;
+    uint16_t t;
+    uint8_t x;
+    uint8_t w;
+    uint16_t oam_address;
+    uint8_t sec_oam_address;
+    uint16_t bus;
+    uint16_t last_addr;
+    uint8_t read_buffer;
+    uint8_t read_to_buffer;
+    uint8_t write_to_buffer;
+    uint8_t write_val;
+
+    uint8_t render;
+    uint8_t enabled;
+    uint8_t latch;
+    uint16_t latch_decay;
+
+    struct Emulator* emulator;
+    Mapper* mapper;
+} PPU;
+
+
+void execute_ppu(PPU* ppu);
+void reset_ppu(PPU* ppu);
+void init_ppu(struct Emulator* emulator);
+void set_latch(PPU* ppu, uint8_t value, uint8_t mask);
+uint8_t read_status(PPU* ppu);
+uint8_t read_ppu(PPU* ppu);
+void set_ctrl(PPU* ppu, uint8_t ctrl);
+void set_mask(PPU* ppu, uint8_t mask);
+void write_ppu(PPU* ppu, uint8_t value);
+void dma(PPU* ppu, uint8_t value);
+void set_scroll(PPU* ppu, uint8_t coord);
+void set_address(PPU* ppu, uint8_t address);
+void set_oam_address(PPU* ppu, uint8_t address);
+uint8_t read_oam(PPU* ppu);
+void write_oam(PPU* ppu, uint8_t value);
+uint8_t read_vram(PPU* ppu, uint16_t address);
+void write_vram(PPU* ppu, uint16_t address, uint8_t value);

@@ -1,0 +1,145 @@
+#pragma once
+
+#include "port.h"
+
+// the loudest sample get_sample returns
+#define SAMPLE_MAX 32000
+
+struct Emulator;
+
+enum {
+    TIMER_HIGH = 0x7,
+    PULSE_SHIFT = 0x7,
+    PULSE_PERIOD = 0b01110000,
+};
+
+typedef struct {
+    long long period;
+    long long counter;
+    uint32_t step;
+    uint32_t limit;
+    uint32_t from;
+    uint8_t loop;
+} Divider;
+
+typedef struct {
+    uint8_t counter;
+    uint8_t halt;
+    uint8_t new_halt;
+    uint8_t new_counter;
+    Divider* envelope;
+} LengthCounter;
+
+typedef struct {
+    Divider t;     // 11 bit timer
+    LengthCounter l;      // length counter
+    uint8_t id;     // pulse id whether 1 or 2
+    uint8_t neg;
+    uint8_t shift;
+    Divider sweep;
+    uint8_t enable_sweep;
+    uint8_t duty;
+    uint8_t const_volume;
+    Divider envelope;
+    uint8_t enabled;
+    uint8_t mute;
+    uint16_t target_period;
+    uint8_t sweep_reload;
+} Pulse;
+
+
+typedef struct {
+    Divider sequencer;
+    LengthCounter l;
+    uint8_t linear_reload;
+    uint8_t linear_counter;
+    uint8_t linear_reload_flag;
+    uint8_t enabled;
+} Triangle;
+
+
+typedef struct {
+    Divider timer;
+    LengthCounter l;
+    uint8_t mode;
+    uint16_t shift;
+    uint8_t const_volume;
+    Divider envelope;
+    uint8_t enabled;
+} Noise;
+
+typedef struct {
+    uint8_t enabled;
+    uint8_t IRQ_enable;
+    uint8_t loop;
+    uint8_t counter;
+    uint16_t sample_length;
+    uint16_t sample_addr;
+    uint8_t interrupt;
+    uint16_t rate;
+    uint16_t rate_index;
+    // output unit
+    uint8_t bits_remaining;
+    uint8_t silence;
+    uint8_t bits;
+    // memory reader
+    uint8_t sample;
+    uint8_t empty;
+    uint16_t bytes_remaining;
+    uint16_t current_addr;
+    // dma
+    uint8_t dma_scheduled;
+    uint8_t ready;
+    uint8_t toggle_delay;
+} DMC;
+
+
+typedef struct APU{
+    struct Emulator* emulator;
+    Pulse pulse1;
+    Pulse pulse2;
+    Triangle triangle;
+    Noise noise;
+    DMC dmc;
+    uint8_t frame_mode;
+    uint8_t status;
+    uint8_t IRQ_inhibit;
+    uint8_t frame_interrupt;
+    uint8_t reset_sequencer_delay;
+    uint8_t irq_should_set;
+    uint8_t irq_clear_delay;
+    uint8_t suppress_frame_unit;
+    uint8_t sequence_step;
+    uint32_t sequencer;
+    uint32_t *sequence;
+    uint8_t *directive;
+    size_t cycles;
+} APU;
+
+
+void init_APU(struct Emulator* emulator);
+void reset_APU(APU *apu);
+void execute_apu(APU* apu);
+void dmc_complete(APU* apu);
+void set_status(APU* apu, uint8_t value);
+uint16_t get_sample(APU* apu);
+uint8_t read_apu_status(APU* apu);
+void set_frame_counter_ctrl(APU* apu, uint8_t value);
+
+void set_pulse_ctrl(Pulse* pulse, uint8_t value);
+void set_pulse_timer(Pulse* pulse, uint8_t value);
+void set_pulse_sweep(Pulse* pulse, uint8_t value);
+void set_pulse_length_counter(Pulse* pulse, uint8_t value);
+
+void set_tri_counter(Triangle* triangle, uint8_t value);
+void set_tri_timer_low(Triangle* triangle, uint8_t value);
+void set_tri_length(Triangle* triangle, uint8_t value);
+
+void set_noise_ctrl(Noise* noise, uint8_t value);
+void set_noise_period(APU* apu, uint8_t value);
+void set_noise_length(Noise* noise, uint8_t value);
+
+void set_dmc_ctrl(APU* apu, uint8_t value);
+void set_dmc_da(DMC* dmc, uint8_t value);
+void set_dmc_addr(DMC* dmc, uint8_t value);
+void set_dmc_length(DMC* dmc, uint8_t value);

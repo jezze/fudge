@@ -1,0 +1,280 @@
+#pragma once
+
+#include "port.h"
+
+// #include "mmu.h"
+
+#define STACK_START 0x100
+#define SENTINEL_ADDR 0x5ff5
+
+#define NIL_OP {NOP, NONE}
+
+
+typedef enum{
+    NEGATIVE    = 1 << 7,
+    OVERFLW     = 1 << 6,
+    BREAK       = 1 << 4,
+    DECIMAL_    = 1 << 3,
+    INTERRUPT   = 1 << 2,
+    ZERO        = 1 << 1,
+    CARRY       = 1
+} ProcessorFlag;
+
+typedef enum {
+    ADC = 0x00, // add with carry
+    AND, // and (with accumulator)
+    BIT, // bit test
+    CMP, // compare (with accumulator)
+    CPX, // compare with X
+    CPY, // compare with Y
+    EOR, // exclusive or (with accumulator)
+    LDA, // load accumulator
+    LDX, // load X
+    LDY, // load Y
+    ORA, // or with accumulator
+    SBC, // subtract with carry (USBC)
+
+    ASL = 0x10, // arithmetic shift left
+    DEC, // decrement
+    INC, // increment
+    LSR, // logical shift right
+    ROL, // rotate left
+    ROR, // rotate right
+
+    STA = 0x18, // 4 store accumulator
+    STX, // 4 store X
+    STY, // 4 store Y
+
+    BCC = 0x20, // branch on carry clear
+    BCS, // branch on carry set
+    BEQ, // branch on equal (zero set)
+    BMI, // branch on minus (negative set)
+    BNE, // branch on not equal (zero clear)
+    BPL, // branch on plus (negative clear)
+    BVC, // branch on overflow clear
+    BVS, // branch on overflow set
+
+    CLC = 0x28, // clear carry
+    CLD, // clear decimal
+    CLI, // clear interrupt disable
+    CLV, // clear overflow
+    SEC, // set carry
+    SED, // set decimal
+    SEI, // set interrupt disable
+
+    DEX = 0x30, // decrement X
+    DEY, // decrement Y
+    INX, // increment X
+    INY, // increment Y
+
+    PHA = 0x38, // push accumulator
+    PHP, // push processor status (SR)
+    PLA, // pull accumulator
+    PLP, // pull processor status (SR)
+
+    TAX = 0x40, // transfer accumulator to X
+    TAY, // transfer accumulator to Y
+    TSX, // transfer stack pointer to X
+    TXA, // transfer X to accumulator
+    TXS, // transfer X to stack pointer
+    TYA, // transfer Y to accumulator
+
+    BRK = 0x48, // break / interrupt
+    JMP, // jump
+    JSR, // jump subroutine
+    NOP, // no operation
+    RTI, // return from interrupt
+    RTS, // return from subroutine
+
+    // unofficial
+
+    ALR = 0x80, // ASR
+    ANC,
+    ANE, // XAA
+    ARR,
+    AXS, // SBX, SAX
+    LAX, // LXA
+    LAS, // LAR
+    SAX, // AXS, AAX
+    SHA, // AHX,
+    SHS, // XAS, TAS
+    SHX, // A11, SXA, XAS
+    SHY, // A11, SYA, SAY
+
+    DCP, // DCM
+    ISB, // ISC, INS
+    RLA,
+    RRA,
+    SLO, // ASO
+    SRE, // LSE
+
+    SKB,
+    IGN,
+
+} Opcode;
+
+typedef enum{
+    NONE,
+    IMPL,
+    SPEC,
+    ACC,
+    REL,
+    IMT,
+    ZPG,
+    ZPG_X,
+    ZPG_Y,
+    ABS,
+    ABS_X,
+    ABS_Y,
+    IND,
+    IND_IDX,
+    IDX_IND,
+} AddressMode;
+
+
+typedef struct {
+    Opcode opcode;
+    AddressMode mode;
+} Instruction;
+
+
+static const Instruction instructionLookup[256] =
+{
+//  HI\LO        0x0          0x1          0x2             0x3           0x4             0x5         0x6           0x7           0x8           0x9           0xA        0xB            0xC             0xD          0xE           0xF
+// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*  0x0  */  {BRK, SPEC},{ORA, IDX_IND}, NIL_OP,     {SLO, IDX_IND}, {NOP, ZPG},   {ORA, ZPG},   {ASL, ZPG},   {SLO, ZPG},   {PHP, SPEC}, {ORA, IMT},   {ASL, ACC},  {ANC, IMT},   {NOP, ABS},   {ORA, ABS},   {ASL, ABS},   {SLO, ABS},
+/*  0x1  */  {BPL, REL}, {ORA, IND_IDX}, NIL_OP,     {SLO, IND_IDX}, {NOP, ZPG_X}, {ORA, ZPG_X}, {ASL, ZPG_X}, {SLO, ZPG_X}, {CLC, IMPL}, {ORA, ABS_Y}, {NOP, IMPL}, {SLO, ABS_Y}, {NOP, ABS_X}, {ORA, ABS_X}, {ASL, ABS_X}, {SLO, ABS_X},
+/*  0x2  */  {JSR, SPEC},{AND, IDX_IND}, NIL_OP,     {RLA, IDX_IND}, {BIT, ZPG},   {AND, ZPG},   {ROL, ZPG},   {RLA, ZPG},   {PLP, SPEC}, {AND, IMT},   {ROL, ACC},  {ANC, IMT},   {BIT, ABS},   {AND, ABS},   {ROL, ABS},   {RLA, ABS},
+/*  0x3  */  {BMI, REL}, {AND, IND_IDX}, NIL_OP,     {RLA, IND_IDX}, {NOP, ZPG_X}, {AND, ZPG_X}, {ROL, ZPG_X}, {RLA, ZPG_X}, {SEC, IMPL}, {AND, ABS_Y}, {NOP, IMPL}, {RLA, ABS_Y}, {NOP, ABS_X}, {AND, ABS_X}, {ROL, ABS_X}, {RLA, ABS_X},
+/*  0x4  */  {RTI, SPEC},{EOR, IDX_IND}, NIL_OP,     {SRE, IDX_IND}, {NOP, ZPG},   {EOR, ZPG},   {LSR, ZPG},   {SRE, ZPG},   {PHA, SPEC}, {EOR, IMT},   {LSR, ACC},  {ALR, IMT},   {JMP, ABS},   {EOR, ABS},   {LSR, ABS},   {SRE, ABS},
+/*  0x5  */  {BVC, REL}, {EOR, IND_IDX}, NIL_OP,     {SRE, IND_IDX}, {NOP, ZPG_X}, {EOR, ZPG_X}, {LSR, ZPG_X}, {SRE, ZPG_X}, {CLI, IMPL}, {EOR, ABS_Y}, {NOP, IMPL}, {SRE, ABS_Y}, {NOP, ABS_X}, {EOR, ABS_X}, {LSR, ABS_X}, {SRE, ABS_X},
+/*  0x6  */  {RTS, SPEC},{ADC, IDX_IND}, NIL_OP,     {RRA, IDX_IND}, {NOP, ZPG},   {ADC, ZPG},   {ROR, ZPG},   {RRA, ZPG},   {PLA, SPEC}, {ADC, IMT},   {ROR, ACC},  {ARR, IMT},   {JMP, IND},   {ADC, ABS},   {ROR, ABS},   {RRA, ABS},
+/*  0x7  */  {BVS, REL}, {ADC, IND_IDX}, NIL_OP,     {RRA, IND_IDX}, {NOP, ZPG_X}, {ADC, ZPG_X}, {ROR, ZPG_X}, {RRA, ZPG_X}, {SEI, IMPL}, {ADC, ABS_Y}, {NOP, IMPL}, {RRA, ABS_Y}, {NOP, ABS_X}, {ADC, ABS_X}, {ROR, ABS_X}, {RRA, ABS_X},
+/*  0x8  */  {NOP, IMT}, {STA, IDX_IND}, {NOP, IMT}, {SAX, IDX_IND}, {STY, ZPG},   {STA, ZPG},   {STX, ZPG},   {SAX, ZPG},   {DEY, IMPL}, {NOP, IMT},   {TXA, IMPL}, {ANE, IMT},   {STY, ABS},   {STA, ABS},   {STX, ABS},   {SAX, ABS},
+/*  0x9  */  {BCC, REL}, {STA, IND_IDX}, NIL_OP,     {SHA, IND_IDX}, {STY, ZPG_X}, {STA, ZPG_X}, {STX, ZPG_Y}, {SAX, ZPG_Y}, {TYA, IMPL}, {STA, ABS_Y}, {TXS, IMPL}, {SHS, ABS_Y}, {SHY, ABS_X}, {STA, ABS_X}, {SHX, ABS_Y}, {SHA, ABS_Y},
+/*  0xA  */  {LDY, IMT}, {LDA, IDX_IND}, {LDX, IMT}, {LAX, IDX_IND}, {LDY, ZPG},   {LDA, ZPG},   {LDX, ZPG},   {LAX, ZPG},   {TAY, IMPL}, {LDA, IMT},   {TAX, IMPL}, {LAX, IMT},   {LDY, ABS},   {LDA, ABS},   {LDX, ABS},   {LAX, ABS},
+/*  0xB  */  {BCS, REL}, {LDA, IND_IDX}, NIL_OP,     {LAX, IND_IDX}, {LDY, ZPG_X}, {LDA, ZPG_X}, {LDX, ZPG_Y}, {LAX, ZPG_Y}, {CLV, IMPL}, {LDA, ABS_Y}, {TSX, IMPL}, {LAS, ABS_Y}, {LDY, ABS_X}, {LDA, ABS_X}, {LDX, ABS_Y}, {LAX, ABS_Y},
+/*  0xC  */  {CPY, IMT}, {CMP, IDX_IND}, {NOP, IMT}, {DCP, IDX_IND}, {CPY, ZPG},   {CMP, ZPG},   {DEC, ZPG},   {DCP, ZPG},   {INY, IMPL}, {CMP, IMT},   {DEX, IMPL}, {AXS, IMT},   {CPY, ABS},   {CMP, ABS},   {DEC, ABS},   {DCP, ABS},
+/*  0xD  */  {BNE, REL}, {CMP, IND_IDX}, NIL_OP,     {DCP, IND_IDX}, {NOP, ZPG_X}, {CMP, ZPG_X}, {DEC, ZPG_X}, {DCP, ZPG_X}, {CLD, IMPL}, {CMP, ABS_Y}, {NOP, IMPL}, {DCP, ABS_Y}, {NOP, ABS_X}, {CMP, ABS_X}, {DEC, ABS_X}, {DCP, ABS_X},
+/*  0xE  */  {CPX, IMT}, {SBC, IDX_IND}, {NOP, IMT}, {ISB, IDX_IND}, {CPX, ZPG},   {SBC, ZPG},   {INC, ZPG},   {ISB, ZPG},   {INX, IMPL}, {SBC, IMT},   NIL_OP,      {SBC, IMT},   {CPX, ABS},   {SBC, ABS},   {INC, ABS},   {ISB, ABS},
+/*  0xF  */  {BEQ, REL}, {SBC, IND_IDX}, NIL_OP,     {ISB, IND_IDX}, {NOP, ZPG_X}, {SBC, ZPG_X}, {INC, ZPG_X}, {ISB, ZPG_X}, {SED, IMPL}, {SBC, ABS_Y}, {NOP, IMPL}, {ISB, ABS_Y}, {NOP, ABS_X}, {SBC, ABS_X}, {INC, ABS_X}, {ISB, ABS_X}
+};
+
+/*
+cycles per instruction
+HI/LO 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
+-------------------------------------------------------
+0   | 7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
+1   | 2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+2   | 6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6,
+3   | 2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+4   | 6, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6,
+5   | 2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+6   | 6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6,
+7   | 2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+8   | 2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
+9   | 2, 6, 0, 6, 4, 4, 4, 4, 2, 5, 2, 5, 5, 5, 5, 5,
+A   | 2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 2, 4, 4, 4, 4,
+B   | 2, 5, 0, 5, 4, 4, 4, 4, 2, 4, 2, 4, 4, 4, 4, 4,
+C   | 2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
+D   | 2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+E   | 2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6,
+F   | 2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
+*/
+
+struct Emulator;
+struct Memory;
+struct PPU;
+struct APU;
+
+typedef enum {
+    NOI               = 0,      // no interrupt
+    NMI               = 1 << 0, // Non maskable interrupt
+    RSI               = 1 << 1, // reset interrupt
+    BRK_I             = 1 << 2, // BRK interrupt
+    IRQ               = ~0b111, // IRQ mask
+    // IRQ sources
+    APU_FRAME_IRQ     = 1 << 3, // APU Frame IRQ
+    APU_DMC_IRQ       = 1 << 4, // APU DMC IRQ
+    MAPPER_IRQ        = 1 << 5  // General mapper IRQ
+} Interrupt;
+
+// Internal implementation states
+enum{
+    DMA_OCCURRED      = 1 << 4, // DMA occurred mid instruction
+};
+
+typedef enum {
+    CPU_WAIT          = 0,       // Busy wait and ignore IRQ
+    CPU_WAIT_IRQ      = 1,       // Execute only ISRs and busy wait otherwise
+    CPU_EXEC          = 1 << 1,  // Normal operation mode with interrupts and execution
+    CPU_SR            = 1 << 2,  // Executing subroutine at sub_address.
+    CPU_NMI_SR        = 1 << 3,  // Special subroutine execution mode initiated from NMI
+    CPU_ISR           = 1 << 4,  // Executing Interrupt service routine
+    CPU_EXEC_ANY      = 0b11110, // Flag: CPU_EXEC | CPU_SR | CPU_NMI_SR | CPU_ISR
+    CPU_SR_ANY        = 0b01100, // Flag: CPU_SR | CPU_NMI_SR
+} CPUMode;
+
+typedef enum DMA_Phase {
+    DMA_CLEAR = 0,
+    DMA_HALTING,
+    DMA_DUMMY,
+    DMA_ALIGNING,
+    DMA_READ,
+    DMA_WRITE,
+}DMA_Phase;
+
+typedef enum DMA_type {
+    DMA_OAM,
+    DMA_DMC,
+} DMA_Type;
+
+typedef struct DMA {
+    uint8_t* dst;
+    uint16_t src_address;
+    uint16_t length;
+    uint16_t index;
+    uint16_t offset;
+    uint8_t buffer;
+    uint8_t abort;
+    DMA_Phase phase;
+    DMA_Type type;
+} DMA;
+
+typedef struct c6502{
+    size_t t_cycles;
+    uint16_t pc;
+    uint16_t address;
+    uint16_t raw_address;        // address before any indexing is applied
+    uint16_t sub_address;        // subroutine address
+    uint8_t sr_started;          // subroutine started
+    uint8_t ac;
+    uint8_t x;
+    uint8_t y;
+    uint8_t sr;
+    uint8_t sp;
+    uint8_t ibus;
+    uint8_t mode;                 // Mode of execution. Use set_spu_mode to set
+    uint8_t state;                // Internal implementation state. See above
+    uint8_t interrupt;            // Current interrupt status
+    uint8_t polled_interrupt;     // Interrupt status at poll time
+    uint8_t NMI_line;
+    const Instruction* instruction;
+
+    DMA oam;
+    DMA dmc;
+    struct Emulator* emulator;
+    struct Memory* memory;
+    struct PPU* ppu;
+    struct APU* apu;
+    void (*NMI_hook)(struct c6502*, int);
+} c6502;
+
+void init_cpu(struct Emulator* emulator);
+void reset_cpu(c6502* ctx);
+void execute(c6502* ctx);
+void interrupt(c6502* ctx, Interrupt code);
+void interrupt_clear(c6502* ctx, Interrupt code);
+void schedule_dma(c6502* ctx, DMA_Type type, uint16_t src, uint8_t* dst, uint16_t len, uint16_t offset);
+uint8_t run_cpu_subroutine(c6502* ctx, uint16_t address);
+void set_cpu_mode(c6502* ctx, CPUMode mode);
