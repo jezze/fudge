@@ -711,6 +711,32 @@ unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 
 }
 
+unsigned long memsrv_getbase(unsigned int target, unsigned int id)
+{
+
+    return (target == inode && getfile(id)) ? memsrv_getpage(id, 0) : 0;
+
+}
+
+unsigned int memsrv_read(unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct file *file;
+    unsigned int done = 0;
+
+    spinlock_acquire(&spinlock);
+
+    file = getfile(id);
+
+    if (file)
+        done = readdata(file, buffer, count, offset);
+
+    spinlock_release(&spinlock);
+
+    return done;
+
+}
+
 void memsrv_untask(unsigned int itask)
 {
 

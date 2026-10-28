@@ -80,13 +80,16 @@ static unsigned long format_findentry(unsigned long base)
 
 }
 
-static unsigned int format_map(unsigned long base, unsigned long paddress, unsigned int size, struct mmap_header *mheader)
+static unsigned int format_map(unsigned long base, unsigned int count, unsigned long paddress, unsigned int size, struct mmap_header *mheader)
 {
 
     struct elf64_header *header = (struct elf64_header *)base;
     struct elf64_programheader *programheaders = (struct elf64_programheader *)(base + header->phoffset);
     unsigned int used = 0;
     unsigned int i;
+
+    if (header->phoffset > count || header->phcount > (count - header->phoffset) / sizeof (struct elf64_programheader))
+        return 0;
 
     for (i = 0; i < header->phcount; i++)
     {
@@ -98,6 +101,9 @@ static unsigned int format_map(unsigned long base, unsigned long paddress, unsig
         if (programheader->type != ELF_PROGRAM_TYPE_LOAD)
             continue;
 
+        if (programheader->fsize > programheader->msize)
+            return 0;
+
         if (span > size - used)
             return 0;
 
@@ -106,7 +112,7 @@ static unsigned int format_map(unsigned long base, unsigned long paddress, unsig
         if (!entry)
             return 0;
 
-        mmap_setbinary(entry, base + programheader->offset, programheader->fsize, programheader->msize);
+        mmap_setbinary(entry, programheader->offset, programheader->fsize, programheader->msize);
 
         used += span;
 

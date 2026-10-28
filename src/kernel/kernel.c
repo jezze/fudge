@@ -493,7 +493,8 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
 
 }
 
-static void loadbinary(struct mmap_header *header)
+/* id 0: the whole image is at base (init), otherwise it is the mem: file id and base its first page */
+static unsigned int loadbinary(struct mmap_header *header, unsigned long base, unsigned int id)
 {
 
     unsigned int i;
@@ -508,10 +509,22 @@ static void loadbinary(struct mmap_header *header)
 
             unsigned char *target = (unsigned char *)(entry->paddress + (entry->vaddress & 0xFFF));
 
-            buffer_copy(target, (void *)entry->fbase, entry->fsize);
+            if (id)
+            {
 
-            if (entry->msize > entry->fsize)
-                buffer_clear(target + entry->fsize, entry->msize - entry->fsize);
+                if (memsrv_read(id, target, entry->fsize, entry->foffset) != entry->fsize)
+                    return 0;
+
+            }
+
+            else
+            {
+
+                buffer_copy(target, (void *)(base + entry->foffset), entry->fsize);
+
+            }
+
+            buffer_clear(target + entry->fsize, entry->msize - entry->fsize);
 
             entry->type = MMAP_TYPE_NORMAL;
 
@@ -519,9 +532,11 @@ static void loadbinary(struct mmap_header *header)
 
     }
 
+    return 1;
+
 }
 
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer)
 {
 
     struct task *task = pool_gettask(itask);
@@ -531,12 +546,12 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
     {
 
         task_reset(task);
-        task_register(task, address, mmap, buffer, ip, sp);
+        task_register(task, mmap, buffer, ip, sp);
 
-        if (task->address)
+        if (base)
         {
 
-            struct binary_format *format = binary_findformat(task->address);
+            struct binary_format *format = binary_findformat(base);
 
             if (format)
             {
@@ -547,14 +562,8 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
                 mmap_allocate(header, MMAP_TYPE_NORMAL, stack, KERNEL_VSTACK - TASK_STACKSIZE, TASK_STACKSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
                 mmap_allocate(header, MMAP_TYPE_NORMAL, buffer, KERNEL_VBUFFER, TASK_BUFFERSIZE, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
-                if (format->map(task->address, code, TASK_CODESIZE, header))
-                {
-
-                    loadbinary(header);
-
-                    task->thread.ip = format->findentry(task->address);
-
-                }
+                if (format->map(base, MEMSRV_PAGESIZE, code, TASK_CODESIZE, header) && loadbinary(header, base, id))
+                    task->thread.ip = format->findentry(base);
 
                 task->start.ip = task->thread.ip;
                 task->start.sp = task->thread.sp;

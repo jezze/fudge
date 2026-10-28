@@ -3,6 +3,10 @@
 #include "channel.h"
 #include "fs.h"
 
+#define SPAWNNAMES                      64
+#define SPAWNCHUNK                      (MESSAGE_SIZE - sizeof (struct event_writerequest))
+#define SPAWNNAMESIZE                   32
+
 unsigned int fs_auth(char *path)
 {
 
@@ -377,6 +381,62 @@ unsigned int fs_write_all(unsigned int ichannel, unsigned int target, unsigned i
 
 }
 
+static unsigned int copyfile(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int memtarget, unsigned int memid)
+{
+
+    char buffer[SPAWNCHUNK];
+    unsigned int offset = 0;
+    unsigned int count;
+
+    while ((count = fs_read(ichannel, target, id, buffer, SPAWNCHUNK, offset)))
+    {
+
+        if (fs_write_all(ichannel, memtarget, memid, buffer, count, offset) != count)
+            return 0;
+
+        offset += count;
+
+    }
+
+    return offset;
+
+}
+
+/* programs run from mem: only: copy the file into a mem: file of our own, named spawn and the first free number, spawn it and remove it */
+static unsigned int spawn(unsigned int ichannel, unsigned int target, unsigned int id)
+{
+
+    unsigned int memtarget = fs_auth("mem:");
+    unsigned int memparent = (memtarget) ? fs_walk(ichannel, memtarget, 0, "mem:") : 0;
+    unsigned int memid = 0;
+    unsigned int inode = 0;
+    unsigned int i;
+
+    for (i = 0; i < SPAWNNAMES && memparent && !memid; i++)
+    {
+
+        char name[SPAWNNAMESIZE];
+
+        cstring_write_fmt(name, SPAWNNAMESIZE, 0, "spawn%u\\0", &i);
+
+        memid = fs_create(ichannel, memtarget, memparent, name, cstring_length(name));
+
+    }
+
+    if (memid)
+    {
+
+        if (copyfile(ichannel, target, id, memtarget, memid))
+            inode = call_spawn(memtarget, memid);
+
+        fs_remove(ichannel, memtarget, memparent, memid);
+
+    }
+
+    return inode;
+
+}
+
 unsigned int fs_spawn(unsigned int ichannel, char *path)
 {
 
@@ -388,7 +448,7 @@ unsigned int fs_spawn(unsigned int ichannel, char *path)
         unsigned int id = fs_walk(ichannel, target, 0, path);
 
         if (id)
-            return call_spawn(target, id);
+            return spawn(ichannel, target, id);
 
     }
 
@@ -407,7 +467,7 @@ unsigned int fs_spawn_relative(unsigned int ichannel, char *path, char *parent)
         unsigned int id = fs_walk(ichannel, target, fs_walk(ichannel, target, 0, parent), path);
 
         if (id)
-            return call_spawn(target, id);
+            return spawn(ichannel, target, id);
 
     }
 

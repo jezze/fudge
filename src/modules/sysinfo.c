@@ -87,7 +87,6 @@ static unsigned int writetasks(void)
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      id: %u\n", &i);
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      state: %s\n", states[task->state]);
-        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      address: 0x%H8u\n", &task->address);
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      signals:\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "        {\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "          kill: %u\n", &task->signals.kill);

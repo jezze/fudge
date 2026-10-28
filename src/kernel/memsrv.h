@@ -5,5 +5,7 @@
 #define MEMSRV_NAMESIZE                 32
 
 unsigned long memsrv_getpage(unsigned int id, unsigned int offset);
+unsigned long memsrv_getbase(unsigned int target, unsigned int id);
+unsigned int memsrv_read(unsigned int id, void *buffer, unsigned int count, unsigned int offset);
 void memsrv_untask(unsigned int itask);
 void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, unsigned int size));

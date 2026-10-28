@@ -20,10 +20,10 @@ struct mmap_entry *mmap_find(struct mmap_header *header, unsigned long vaddress)
 
 }
 
-void mmap_setbinary(struct mmap_entry *entry, unsigned long fbase, unsigned int fsize, unsigned int msize)
+void mmap_setbinary(struct mmap_entry *entry, unsigned int foffset, unsigned int fsize, unsigned int msize)
 {
 
-    entry->fbase = fbase;
+    entry->foffset = foffset;
     entry->fsize = fsize;
     entry->msize = msize;
 

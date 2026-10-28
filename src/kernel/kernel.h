@@ -19,7 +19,7 @@ unsigned int kernel_announce(unsigned int inode, char *name);
 unsigned long kernel_locate(unsigned int target, unsigned int id);
 void kernel_notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data);
 void kernel_starttask(unsigned int itask);
-unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long address, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer);
+unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer);
 unsigned long kernel_getbuffer(unsigned int inode);
 void kernel_setcallback(struct core *(*getcore)(void), void (*assigncore)(unsigned int itask));
 void kernel_setup(void);

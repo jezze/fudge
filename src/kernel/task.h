@@ -40,7 +40,6 @@ struct task
     struct task_thread start;
     struct spinlock spinlock;
     unsigned int state;
-    unsigned long address;
     unsigned long mmap;
     unsigned long buffer;
     unsigned int waitingfor;
@@ -51,7 +50,7 @@ struct task
 
 void task_signal(struct task *task, unsigned int signal);
 unsigned int task_transition(struct task *task, unsigned int state);
-void task_register(struct task *task, unsigned long address, unsigned long mmap, unsigned long buffer, unsigned long ip, unsigned long sp);
+void task_register(struct task *task, unsigned long mmap, unsigned long buffer, unsigned long ip, unsigned long sp);
 void task_unregister(struct task *task);
 void task_reset(struct task *task);
 void task_init(struct task *task);
