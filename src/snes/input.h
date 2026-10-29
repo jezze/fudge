@@ -1,0 +1,26 @@
+
+#ifndef INPUT_H
+#define INPUT_H
+
+#include "port.h"
+
+typedef struct Input Input;
+
+#include "snes.h"
+
+struct Input {
+  Snes* snes;
+  uint8_t type;
+  // latchline
+  bool latchLine;
+  // for controller
+  uint16_t currentState; // actual state
+  uint16_t latchedState;
+};
+
+Input* input_init(Snes* snes);
+void input_reset(Input* input);
+void input_latch(Input* input, bool value);
+uint8_t input_read(Input* input);
+
+#endif

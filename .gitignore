@@ -22,6 +22,7 @@ src/pcx/pcxcmap
 src/pop/pop
 src/pcx/pcxdata
 src/pcx/pcxinfo
+src/snes/snes
 src/test/t_disk
 src/test/t_disk2
 src/test/t_donut
