@@ -1,6 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "debug.h"
 #include "mmap.h"
 #include "binary.h"
 #include "mailbox.h"
@@ -330,27 +329,22 @@ void kernel_schedule(struct core *core)
 
         struct task *task = pool_gettask(core->itask);
 
-        if (task)
+        if (task->aborted == TASK_ABORT_PENDING)
+            restart(task);
+
+        if (task->signals.kill)
+            transition(core->itask, TASK_STATE_DEAD);
+        else if (task->signals.block)
+            transition(core->itask, TASK_STATE_BLOCKED);
+        else
         {
 
-            if (task->aborted == TASK_ABORT_PENDING)
-                restart(task);
+            spinlock_acquire(&task->spinlock);
 
-            if (task->signals.kill)
-                transition(core->itask, TASK_STATE_DEAD);
-            else if (task->signals.block)
-                transition(core->itask, TASK_STATE_BLOCKED);
-            else
-            {
+            if (task_transition(task, TASK_STATE_ASSIGNED))
+                pool_placetask(core->itask, &core->tasks);
 
-                spinlock_acquire(&task->spinlock);
-
-                if (task_transition(task, TASK_STATE_ASSIGNED))
-                    pool_placetask(core->itask, &core->tasks);
-
-                spinlock_release(&task->spinlock);
-
-            }
+            spinlock_release(&task->spinlock);
 
         }
 
@@ -455,16 +449,9 @@ unsigned int kernel_announce(unsigned int inode, char *name)
     if (iservice)
     {
 
-        struct service *service = pool_getservice(iservice);
+        service_register(pool_getservice(iservice), inode, name);
 
-        if (service)
-        {
-
-            service_register(service, inode, name);
-
-            return MESSAGE_OK;
-
-        }
+        return MESSAGE_OK;
 
     }
 

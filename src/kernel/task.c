@@ -1,8 +1,5 @@
 #include <fudge.h>
 #include "resource.h"
-#include "mmap.h"
-#include "binary.h"
-#include "debug.h"
 #include "task.h"
 
 void task_signal(struct task *task, unsigned int signal)

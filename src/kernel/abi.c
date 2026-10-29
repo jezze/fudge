@@ -6,7 +6,6 @@
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"
-#include "node.h"
 #include "service.h"
 #include "pool.h"
 #include "kernel.h"

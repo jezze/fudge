@@ -25,6 +25,5 @@ void pool_unpickservice(unsigned int iservice);
 void pool_unpicktask(unsigned int itask);
 void pool_placecore(unsigned int icore, struct list *list);
 void pool_placenode(unsigned int inode, struct list *list);
-void pool_placeservice(unsigned int iservice, struct list *list);
 void pool_placetask(unsigned int itask, struct list *list);
 void pool_setup(unsigned long mbaddress);

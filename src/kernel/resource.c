@@ -12,19 +12,6 @@ static struct resource *nextresource(struct resource *resource)
 
 }
 
-struct resource *resource_foreach(struct resource *resource)
-{
-
-    spinlock_acquire(&resources.spinlock);
-
-    resource = nextresource(resource);
-
-    spinlock_release(&resources.spinlock);
-
-    return resource;
-
-}
-
 struct resource *resource_foreachtype_unsafe(struct resource *resource, unsigned int type)
 {
 

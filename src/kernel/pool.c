@@ -3,7 +3,6 @@
 #include "mailbox.h"
 #include "core.h"
 #include "task.h"
-#include "node.h"
 #include "service.h"
 #include "pool.h"
 
@@ -346,16 +345,6 @@ void pool_placenode(unsigned int inode, struct list *list)
 {
 
     struct list_item *item = getnodeitem(inode);
-
-    if (item)
-        list_add(list, item);
-
-}
-
-void pool_placeservice(unsigned int iservice, struct list *list)
-{
-
-    struct list_item *item = getserviceitem(iservice);
 
     if (item)
         list_add(list, item);
