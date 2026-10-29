@@ -516,6 +516,9 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
     struct event_createrequest *request = data;
     struct event_createresponse response;
 
+    if (count < sizeof (struct event_createrequest) || count - sizeof (struct event_createrequest) < request->count)
+        return MESSAGE_FAILED;
+
     spinlock_acquire(&spinlock);
 
     response.id = create(request->parent, (char *)(request + 1), request->count);
@@ -531,6 +534,9 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 
     struct event_mmaprequest *request = data;
     struct event_mmapresponse response;
+
+    if (count < sizeof (struct event_mmaprequest))
+        return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
 
@@ -548,6 +554,9 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
     struct event_munmaprequest *request = data;
     struct event_munmapresponse response;
 
+    if (count < sizeof (struct event_munmaprequest))
+        return MESSAGE_FAILED;
+
     spinlock_acquire(&spinlock);
 
     response.status = unmap(source, request->id);
@@ -564,19 +573,22 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     unsigned char buffer[MESSAGE_SIZE];
     struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
+    unsigned int length;
     struct file *file;
 
-    if (request->count >= MESSAGE_SIZE - sizeof (struct event_readresponse))
-        request->count = MESSAGE_SIZE - sizeof (struct event_readresponse);
+    if (count < sizeof (struct event_readrequest))
+        return MESSAGE_FAILED;
+
+    length = (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse);
 
     spinlock_acquire(&spinlock);
 
     file = getfile(request->id);
 
     if (request->id == ROOT)
-        response->count = readrecords((struct record *)(response + 1), request->count, request->offset);
+        response->count = readrecords((struct record *)(response + 1), length, request->offset);
     else if (file)
-        response->count = readdata(file, (unsigned char *)(response + 1), request->count, request->offset);
+        response->count = readdata(file, (unsigned char *)(response + 1), length, request->offset);
     else
         response->count = 0;
 
@@ -591,6 +603,9 @@ static unsigned int onremoverequest(unsigned int source, unsigned int count, voi
 
     struct event_removerequest *request = data;
     struct event_removeresponse response;
+
+    if (count < sizeof (struct event_removerequest))
+        return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
 
@@ -609,6 +624,9 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statrequest *request = data;
     struct event_statresponse *response = (struct event_statresponse *)buffer;
 
+    if (count < sizeof (struct event_statrequest))
+        return MESSAGE_FAILED;
+
     spinlock_acquire(&spinlock);
 
     response->count = stat(request->id, (struct record *)(response + 1));
@@ -624,6 +642,9 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     struct event_walkrequest *request = data;
     struct event_walkresponse response;
+
+    if (count < sizeof (struct event_walkrequest) || count - sizeof (struct event_walkrequest) < request->length)
+        return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
 
@@ -641,6 +662,9 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
     struct event_writerequest *request = data;
     struct event_writeresponse response;
     struct file *file;
+
+    if (count < sizeof (struct event_writerequest) || count - sizeof (struct event_writerequest) < request->count)
+        return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
 
