@@ -77,7 +77,7 @@ static unsigned int find(unsigned int itask, void *stack)
 
             struct service *service = resource->data;
 
-            if (service->namehash == namehash && index++ == args->index)
+            if (service->namehash == namehash && args->length < SERVICE_NAMESIZE && !service->name[args->length] && buffer_match(service->name, args->name, args->length) && index++ == args->index)
             {
 
                 inode = service->inode;
