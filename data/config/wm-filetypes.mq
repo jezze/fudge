@@ -8,7 +8,7 @@
     {
       suffix: ".gb"
       label: "Play"
-      command: "gameboy"
+      command: "root:bin/gameboy"
     }
     {
       suffix: ".html"
@@ -39,6 +39,16 @@
       suffix: ".mq"
       label: "View"
       command: "wedit"
+    }
+    {
+      suffix: ".nes"
+      label: "Play"
+      command: "root:bin/nes"
+    }
+    {
+      suffix: ".sfc"
+      label: "Play"
+      command: "root:bin/snes"
     }
     {
       suffix: ".sh"

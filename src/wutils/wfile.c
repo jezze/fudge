@@ -206,7 +206,13 @@ static void updatecontent(unsigned int wm)
         if (opener)
         {
 
-            channel_send_fmt(0, opener, EVENT_PATH, "%s\\0", path);
+            char *command = option_getstring("command");
+
+            if (cstring_length(command))
+                system_run(0, "%s \"%s\" &", command, path);
+            else
+                channel_send_fmt(0, opener, EVENT_PATH, "%s\\0", path);
+
             channel_close(0);
 
         }
@@ -526,6 +532,7 @@ void init(void)
     option_add("wm-service", "wm");
     option_add("clipboard", "mem:clipboard");
     option_add("mode", "browse");
+    option_add("command", "");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_WMEVENT, onwmevent);
     channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
