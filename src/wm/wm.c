@@ -26,6 +26,7 @@
 #define MOUSE_RAMP          8
 #define FONTS               4
 #define SLIDER_STEP         0x0800
+#define CLOCK_TIMER         1
 
 struct state
 {
@@ -47,6 +48,8 @@ struct state
     struct event_videoconf videoconf;
     struct widget *draggedthumb;
     unsigned int video;
+    unsigned int clock;
+    unsigned int timer;
     int scrollgrab;
     int slidergrab;
 
@@ -2441,6 +2444,61 @@ static void applyconfig(struct event_videoconf *videoconf)
 
 }
 
+static void requestclock(unsigned int ms)
+{
+
+    struct event_timerrequest timerrequest;
+
+    timerrequest.id = CLOCK_TIMER;
+    timerrequest.ms = ms;
+    timerrequest.repeat = 0;
+
+    channel_send(0, state.timer, EVENT_TIMERREQUEST, sizeof (struct event_timerrequest), &timerrequest);
+
+}
+
+static void showclock(void)
+{
+
+    struct event_clockinfo clockinfo;
+    unsigned char hours;
+    char data[64];
+
+    channel_send(1, state.clock, EVENT_INFO, 0, 0);
+
+    if (!channel_wait(1, state.clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo))
+        return;
+
+    hours = (clockinfo.hours % 12) ? clockinfo.hours % 12 : 12;
+
+    parser_parse(0, "root", cstring_write_fmt(data, 64, 0, "= clock label \"%2c:%2c %s\"\n", &hours, &clockinfo.minutes, (clockinfo.hours < 12) ? "AM" : "PM"), data);
+    redraw(1);
+    requestclock((60 - util_min(clockinfo.seconds, 59)) * 1000);
+
+}
+
+static void hideclock(void)
+{
+
+    char *data = "- clock-panel\n";
+
+    parser_parse(0, "root", cstring_length(data), data);
+    purge(0);
+
+}
+
+static void ontimerexpire(struct message *message)
+{
+
+    struct event_timerexpire timerexpire;
+
+    buffer_copy(&timerexpire, message->data, sizeof (struct event_timerexpire));
+
+    if (message->source == state.timer && timerexpire.id == CLOCK_TIMER)
+        showclock();
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -2456,7 +2514,20 @@ static void onmain(struct message *message)
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, mouse, EVENT_LINK, 0, 0);
     setupvideo(video);
+
+    state.clock = channel_lookup(option_getstring("clock-service"));
+    state.timer = channel_lookup(option_getstring("timer-service"));
+
+    if (state.clock && state.timer)
+        showclock();
+    else
+        hideclock();
+
     channel_hold(0);
+
+    if (state.clock && state.timer)
+        requestclock(0);
+
     channel_send(0, mouse, EVENT_UNLINK, 0, 0);
     channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
 
@@ -2909,9 +2980,12 @@ void init(void)
     option_add("keyboard-service", "keyboard");
     option_add("mouse-service", "mouse");
     option_add("video-service", "video");
+    option_add("clock-service", "clock");
+    option_add("timer-service", "timer");
     option_add("clipboard", "mem:clipboard");
     bindinput(1);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_TIMEREXPIRE, ontimerexpire);
     channel_bind(EVENT_WMCONFIG, onwmconfig);
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMREAD, onwmread);
