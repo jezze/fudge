@@ -7,6 +7,24 @@
 #define FRAMESIZE                       4
 #define FRAMEMAX                        (MESSAGE_SIZE / FRAMESIZE)
 #define CUSHION                         3
+#define ROOT                            1
+#define ROOTRECORDS                     2
+
+struct listing
+{
+
+    struct event_readresponse response;
+    struct record records[ROOTRECORDS];
+
+};
+
+struct statresult
+{
+
+    struct event_statresponse response;
+    struct record record;
+
+};
 
 struct client
 {
@@ -324,6 +342,85 @@ static unsigned int setformat(unsigned int value)
 
 }
 
+/* only . and .. lead anywhere: back to the root */
+static unsigned int walk(unsigned int parent, unsigned int length, char *path)
+{
+
+    unsigned int offset = 0;
+
+    if (parent && parent != ROOT)
+        return 0;
+
+    while (offset < length)
+    {
+
+        char *cp = path + offset;
+        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+        if (cl > 2 || (cl && !buffer_match(cp, "..", cl)))
+            return 0;
+
+        offset += cl + 1;
+
+    }
+
+    return ROOT;
+
+}
+
+/* the root is a directory holding only . and ..: the record at offset i is named by the first i + 1 characters of "..", its offset is the next one */
+static void onreadrequest(struct message *message)
+{
+
+    struct event_readrequest *request = message->data;
+    struct listing listing;
+    unsigned int c = 0;
+    unsigned int i;
+
+    if (message->length < sizeof (struct event_readrequest))
+        return;
+
+    for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
+        record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
+
+    listing.response.count = c * sizeof (struct record);
+
+    channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
+
+}
+
+static void onstatrequest(struct message *message)
+{
+
+    struct event_statrequest *request = message->data;
+    struct statresult result;
+
+    if (message->length < sizeof (struct event_statrequest))
+        return;
+
+    record_init(&result.record, ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+
+    result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
+
+    channel_send(0, message->source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + result.response.count, &result);
+
+}
+
+static void onwalkrequest(struct message *message)
+{
+
+    struct event_walkrequest *request = message->data;
+    struct event_walkresponse response;
+
+    if (message->length < sizeof (struct event_walkrequest) || message->length - sizeof (struct event_walkrequest) < request->length)
+        return;
+
+    response.id = walk(request->parent, request->length, (char *)(request + 1));
+
+    channel_send(0, message->source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+
+}
+
 static void onmain(struct message *message)
 {
 
@@ -400,7 +497,10 @@ void init(void)
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_INFO, oninfo);
     channel_bind(EVENT_MAIN, onmain);
+    channel_bind(EVENT_READREQUEST, onreadrequest);
+    channel_bind(EVENT_STATREQUEST, onstatrequest);
     channel_bind(EVENT_TIMERTICK, ontimertick);
+    channel_bind(EVENT_WALKREQUEST, onwalkrequest);
 
 }
 
