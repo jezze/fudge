@@ -426,11 +426,6 @@ static void press(unsigned int id, unsigned int mod)
     switch (id)
     {
 
-    case KEYS_KEY_ESCAPE:
-        channel_close(0);
-
-        break;
-
     case KEYS_KEY_SPACE:
         if (!(held & HELD_SPACE))
             paused = !paused;
