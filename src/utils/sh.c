@@ -13,7 +13,7 @@
 #define TOKEN_OUTPUT                    8
 #define TOKEN_APPEND                    9
 #define TOKEN_DUP                       10
-#define NUM_EVENTS                      72
+#define NUM_EVENTS                      70
 
 static struct job job;
 static char script[SCRIPTSIZE];
