@@ -191,16 +191,25 @@ static unsigned int checkwav(struct wav *wav)
 
 }
 
-static unsigned int setformat(unsigned int rate, unsigned int channels, unsigned int bits)
+/* an empty format when the service doesn't answer */
+static struct event_audioinfo getinfo(void)
 {
 
-    struct event_audioconf audioconf;
+    struct event_audioinfo audioinfo;
 
-    audioconf.rate = rate;
-    audioconf.channels = channels;
-    audioconf.bits = bits;
+    if (!channel_send(1, audio, EVENT_INFO, 0, 0) || !channel_wait(1, audio, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo))
+        buffer_clear(&audioinfo, sizeof (struct event_audioinfo));
 
-    return channel_send(1, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf);
+    return audioinfo;
+
+}
+
+/* the mixer answers INFO once it has room for more, which keeps sound from sending faster than it plays */
+static void senddata(unsigned int count, void *buffer)
+{
+
+    channel_send(1, audio, EVENT_DATA, count, buffer);
+    getinfo();
 
 }
 
@@ -214,23 +223,19 @@ static void initoutput(struct output *output, unsigned int rate, unsigned int ch
 
 }
 
-/* what the device takes, closest first; anything but 8 or 16 bit integers is converted to 16 bits */
+/* 16-bit integers in the service's format pass through, anything else is converted to it */
 static unsigned int choose(struct wav *wav, struct output *output)
 {
 
-    if (wav->tag == TAG_PCM && wav->size <= 2 && setformat(wav->rate, wav->channels, wav->size * 8))
+    struct event_audioinfo audioinfo = getinfo();
+
+    if (!audioinfo.rate || audioinfo.bits != 16 || !audioinfo.channels || audioinfo.channels > CHANNELS)
+        return 0;
+
+    if (wav->tag == TAG_PCM && wav->size == 2 && wav->rate == audioinfo.rate && wav->channels == audioinfo.channels)
         return 1;
 
-    if (wav->channels <= CHANNELS && setformat(wav->rate, wav->channels, 16))
-        initoutput(output, wav->rate, wav->channels);
-    else if (setformat(wav->rate, 2, 16))
-        initoutput(output, wav->rate, 2);
-    else if (setformat(48000, 2, 16))
-        initoutput(output, 48000, 2);
-    else if (setformat(44100, 2, 16))
-        initoutput(output, 44100, 2);
-    else
-        return 0;
+    initoutput(output, audioinfo.rate, audioinfo.channels);
 
     return 2;
 
@@ -240,7 +245,7 @@ static void flush(struct output *output)
 {
 
     if (output->count)
-        channel_send(1, audio, EVENT_DATA, output->count, output->buffer);
+        senddata(output->count, output->buffer);
 
     output->count = 0;
 
@@ -386,7 +391,7 @@ static void play(unsigned int source, struct wav *wav, unsigned int target, unsi
     if (!passthrough)
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "Format not supported: %u Hz, %u channels, %u bits\n", &wav->rate, &wav->channels, &wav->bits);
+        channel_send_fmt(0, source, EVENT_ERROR, "No 16-bit format from audio service: %s\n", option_getstring("audio-service"));
 
         return;
 
@@ -402,7 +407,7 @@ static void play(unsigned int source, struct wav *wav, unsigned int target, unsi
     {
 
         if (passthrough == 1)
-            channel_send(1, audio, EVENT_DATA, count, buffer);
+            senddata(count, buffer);
         else
             convert(wav, &output, &resampler, buffer, count);
 
@@ -475,23 +480,14 @@ static unsigned int lookup(unsigned int source)
 
 }
 
-/* raw data plays in the device's current format, which sound only needs to know the frame size of */
+/* raw data plays in the service's format, which sound only needs to know the frame size of */
 static unsigned int getframesize(void)
 {
 
-    struct event_audioinfo audioinfo;
+    struct event_audioinfo audioinfo = getinfo();
+    unsigned int size = audioinfo.channels * audioinfo.bits / 8;
 
-    if (channel_send(1, audio, EVENT_INFO, 0, 0) && channel_wait(1, audio, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo))
-    {
-
-        unsigned int size = audioinfo.channels * audioinfo.bits / 8;
-
-        if (size && size <= FRAMEMAX)
-            return size;
-
-    }
-
-    return 4;
+    return (size && size <= FRAMEMAX) ? size : 4;
 
 }
 
@@ -514,7 +510,7 @@ static void ondata(struct message *message)
             if (count > MESSAGE_SIZE)
                 count = MESSAGE_SIZE - MESSAGE_SIZE % framesize;
 
-            channel_send(1, audio, EVENT_DATA, count, frames);
+            senddata(count, frames);
             buffer_copy(frames, frames + count, framecount - count);
 
             framecount -= count;
@@ -548,7 +544,7 @@ static void onpath(struct message *message)
 void init(void)
 {
 
-    option_add("audio-service", "audio");
+    option_add("audio-service", "mixer");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_PATH, onpath);
 
