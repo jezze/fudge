@@ -223,6 +223,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
             return request(interface, source, data);
 
+        case EVENT_READREQUEST:
+        case EVENT_STATREQUEST:
+        case EVENT_WALKREQUEST:
+            return service_place(&interface->service, source, event, count, data);
+
         }
 
     }

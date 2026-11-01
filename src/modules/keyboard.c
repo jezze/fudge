@@ -23,6 +23,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         case EVENT_UNLINK:
             return kernel_unlinknode(&interface->service.links, source);
 
+        case EVENT_READREQUEST:
+        case EVENT_STATREQUEST:
+        case EVENT_WALKREQUEST:
+            return service_place(&interface->service, source, event, count, data);
+
         }
 
     }

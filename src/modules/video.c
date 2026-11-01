@@ -112,6 +112,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         case EVENT_VIDEOFLUSH:
             return onvideoflush(interface, source, count, data);
 
+        case EVENT_READREQUEST:
+        case EVENT_STATREQUEST:
+        case EVENT_WALKREQUEST:
+            return service_place(&interface->service, source, event, count, data);
+
         }
 
     }

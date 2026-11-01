@@ -11,6 +11,7 @@ struct service
 
 };
 
+unsigned int service_place(struct service *service, unsigned int source, unsigned int event, unsigned int count, void *data);
 void service_register(struct service *service, unsigned int inode, char *name);
 void service_unregister(struct service *service);
 void service_init(struct service *service);
