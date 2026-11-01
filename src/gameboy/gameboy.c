@@ -321,8 +321,6 @@ static void press(unsigned int id, unsigned int mod)
 
     if (screen && (mod & KEYS_MOD_ALT) && (id == KEYS_KEY_F || id == KEYS_KEY_W))
         wanted = (id == KEYS_KEY_F);
-    else if (id == KEYS_KEY_ESCAPE)
-        channel_close(0);
     else
         setbutton(id, 1);
 
