@@ -31,7 +31,7 @@ static unsigned int onvideocmap(struct video_interface *interface, unsigned int 
     if (interface->setcmap)
     {
 
-        interface->setcmap(count, data);
+        interface->setcmap(count / 3, data);
 
         return MESSAGE_OK;
 
@@ -43,6 +43,9 @@ static unsigned int onvideocmap(struct video_interface *interface, unsigned int 
 
 static unsigned int onvideoconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
+
+    if (count < sizeof (struct event_videoconf))
+        return MESSAGE_FAILED;
 
     if (interface->setmode)
     {
