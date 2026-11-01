@@ -2963,6 +2963,7 @@ static void onwmungrab(struct message *message)
 {
 
     state.state = STATE_NORMAL;
+    state.keys.mod = 0;
 
     bindinput(1);
     channel_send(0, message->source, EVENT_WMACK, 0, 0);
