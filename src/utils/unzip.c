@@ -85,6 +85,13 @@ static unsigned int fit(unsigned int count, unsigned int extra)
 
 }
 
+static char *fiterror(unsigned int count, unsigned int extra)
+{
+
+    return (count + extra < count || count + extra > MEMSIZE) ? "too big" : "out of memory";
+
+}
+
 static unsigned int inflate(unsigned char *in, unsigned int icount, unsigned char *out, unsigned int ocount, unsigned int *consumed)
 {
 
@@ -220,7 +227,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (!fit(size, 0))
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "Archive too big: %s\n", archive);
+        channel_send_fmt(0, source, EVENT_ERROR, "Archive %s: %s\n", fiterror(size, 0), archive);
 
         return;
 
@@ -295,7 +302,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (!fit(size, usize))
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "File too big: %s\n", archive);
+        channel_send_fmt(0, source, EVENT_ERROR, "File %s: %s\n", fiterror(size, usize), archive);
 
         return;
 
@@ -353,7 +360,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     if (!fit(csize, (method) ? usize : 0))
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "File too big: %s\n", name);
+        channel_send_fmt(0, source, EVENT_ERROR, "File %s: %s\n", fiterror(csize, (method) ? usize : 0), name);
 
         return;
 
