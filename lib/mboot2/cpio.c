@@ -309,6 +309,9 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
     struct event_maprequest *request = data;
     struct event_mapresponse response;
 
+    if (count < sizeof (struct event_maprequest))
+        return MESSAGE_FAILED;
+
     response.address = (isheader(request->id)) ? map(request->id) : 0;
 
     return kernel_place(inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response);
@@ -321,7 +324,12 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     unsigned char buffer[MESSAGE_SIZE];
     struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
-    struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
+    struct cpio_header *header;
+
+    if (count < sizeof (struct event_readrequest))
+        return MESSAGE_FAILED;
+
+    header = (isheader(request->id)) ? getheader(request->id) : 0;
 
     if (request->count >= MESSAGE_SIZE - sizeof (struct event_readresponse))
         request->count = MESSAGE_SIZE - sizeof (struct event_readresponse);
@@ -364,6 +372,9 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statrequest *request = data;
     struct event_statresponse *response = (struct event_statresponse *)buffer;
 
+    if (count < sizeof (struct event_statrequest))
+        return MESSAGE_FAILED;
+
     response->count = (isheader(request->id)) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
     return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
@@ -375,6 +386,9 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     struct event_walkrequest *request = data;
     struct event_walkresponse response;
+
+    if (count < sizeof (struct event_walkrequest) || count - sizeof (struct event_walkrequest) < request->length)
+        return MESSAGE_FAILED;
 
     if (!request->parent)
         response.id = walk(getroot(), (char *)(request + 1), request->length);
@@ -392,7 +406,12 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     struct event_writerequest *request = data;
     struct event_writeresponse response;
-    struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
+    struct cpio_header *header;
+
+    if (count < sizeof (struct event_writerequest) || count - sizeof (struct event_writerequest) < request->count)
+        return MESSAGE_FAILED;
+
+    header = (isheader(request->id)) ? getheader(request->id) : 0;
 
     response.count = 0;
 
