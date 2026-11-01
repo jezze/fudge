@@ -43,6 +43,7 @@ static unsigned char output[MESSAGE_SIZE];
 static struct pace pace;
 static struct resampler resampler;
 static unsigned int audio;
+static unsigned int pending;
 static unsigned int rate;
 static unsigned int hz;
 
@@ -165,8 +166,8 @@ static unsigned int resample(unsigned int frames)
 
 }
 
-/* samples are 16-bit stereo, little-endian like the devices take them; a client whose ring runs dry gives up its slot, and one waiting for room hears when there is a message's worth */
-static void mix(unsigned int frames)
+/* samples are 16-bit stereo, little-endian like the devices take them; a client whose ring runs dry gives up its slot, and one waiting for room hears when there is a message's worth; the bytes of output are returned */
+static unsigned int mix(unsigned int frames)
 {
 
     unsigned int i;
@@ -220,16 +221,24 @@ static void mix(unsigned int frames)
         for (j = 0; j < frames; j++)
             putframe(j, sums[j * 2], sums[j * 2 + 1]);
 
-        channel_send(0, audio, EVENT_DATA, frames * FRAMESIZE, output);
+        return frames * FRAMESIZE;
 
     }
 
-    else
-    {
+    return resample(frames) * FRAMESIZE;
 
-        channel_send(0, audio, EVENT_DATA, resample(frames) * FRAMESIZE, output);
+}
 
-    }
+/* placed without retrying, so a full device queue never stalls the mailbox; the output stays pending until the device takes it */
+static unsigned int flush(void)
+{
+
+    if (pending && call_place(0, audio, EVENT_DATA, pending, output) == MESSAGE_RETRY)
+        return 0;
+
+    pending = 0;
+
+    return 1;
 
 }
 
@@ -263,7 +272,7 @@ static void oninfo(struct message *message)
 
 }
 
-/* everything is counted in RATE frames; the device is kept CUSHION ticks ahead of the timer while anyone plays, and after a stall of more than a second the backlog is dropped */
+/* everything is counted in RATE frames; the device is kept CUSHION ticks ahead of the timer while anyone plays, unless its queue is full, and after a stall of more than a second the backlog is dropped */
 static void ontimertick(struct message *message)
 {
 
@@ -281,6 +290,9 @@ static void ontimertick(struct message *message)
     pace.rest %= hz;
     pace.ahead = (played < pace.ahead) ? pace.ahead - played : 0;
 
+    if (!flush())
+        return;
+
     while (countclients() && pace.ahead < CUSHION * RATE / hz)
     {
 
@@ -289,9 +301,11 @@ static void ontimertick(struct message *message)
         if (frames > FRAMEMAX)
             frames = FRAMEMAX;
 
-        mix(frames);
-
+        pending = mix(frames);
         pace.ahead += frames;
+
+        if (!flush())
+            break;
 
     }
 
