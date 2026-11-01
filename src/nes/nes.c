@@ -247,31 +247,12 @@ static void ontimertick(struct message *message)
 
 }
 
-static unsigned int setaudioformat(unsigned int value)
-{
-
-    struct event_audioconf audioconf;
-
-    audioconf.rate = value;
-    audioconf.channels = 2;
-    audioconf.bits = 16;
-
-    return channel_send(1, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf);
-
-}
-
-/* 48000 Hz like upstream, else 44100 Hz; both are whole samples per tick */
+/* the mixer takes 48000 Hz 16-bit stereo */
 static void setupaudio(void)
 {
 
     audio = channel_lookup(option_getstring("audio-service"));
-
-    if (audio && setaudioformat(48000))
-        rate = 48000;
-    else if (audio && setaudioformat(44100))
-        rate = 44100;
-    else
-        audio = 0;
+    rate = 48000;
 
 }
 
@@ -690,7 +671,7 @@ void init(void)
     option_add("width", "1024");
     option_add("height", "768");
     option_add("bpp", "4");
-    option_add("audio-service", "audio");
+    option_add("audio-service", "mixer");
     option_add("keyboard-service", "keyboard");
     option_add("timer-service", "timer");
     option_add("video-service", "video");

@@ -19,7 +19,6 @@
 #define CHUNKFRAMES                     1024
 #define AHEADMS                         200
 #define LATEMS                          300
-#define RATES                           3
 
 struct channel
 {
@@ -184,19 +183,6 @@ void I_UpdateSound(void)
 
 }
 
-static unsigned int setrate(unsigned int value)
-{
-
-    struct event_audioconf audioconf;
-
-    audioconf.rate = value;
-    audioconf.channels = 2;
-    audioconf.bits = 16;
-
-    return channel_send(0, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf) ? value : 0;
-
-}
-
 static void shutdownsound(void)
 {
 
@@ -212,20 +198,14 @@ static void shutdownsound(void)
 
 }
 
-/* the configured rate, else 44100 or 48000 Hz, which the drivers take */
+/* the mixer takes 48000 Hz 16-bit stereo, whatever samplerate says */
 void I_InitSound(void)
 {
 
-    unsigned int rates[RATES];
     int i;
 
-    rates[0] = snd_samplerate;
-    rates[1] = 44100;
-    rates[2] = 48000;
     audio = channel_lookup(option_getstring("audio-service"));
-
-    for (i = 0; audio && i < RATES && !rate; i++)
-        rate = setrate(rates[i]);
+    rate = (audio) ? 48000 : 0;
 
     if (!rate)
     {

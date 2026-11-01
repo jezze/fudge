@@ -471,20 +471,7 @@ static void ontimertick(struct message *message)
 
 }
 
-static unsigned int setaudioformat(unsigned int rate)
-{
-
-    struct event_audioconf audioconf;
-
-    audioconf.rate = rate;
-    audioconf.channels = 2;
-    audioconf.bits = 16;
-
-    return channel_send(1, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf);
-
-}
-
-/* the device plays the rate asked for, or 48000 Hz, which every driver takes; the game is told the rate in desired */
+/* the mixer takes 48000 Hz; the game is told the rate in desired */
 int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
 {
 
@@ -501,22 +488,7 @@ int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
 
     }
 
-    if (!setaudioformat(desired->freq))
-    {
-
-        if (!setaudioformat(48000))
-        {
-
-            audio = 0;
-
-            return -1;
-
-        }
-
-        desired->freq = 48000;
-
-    }
-
+    desired->freq = 48000;
     desired->silence = 0;
     desired->samples = desired->freq / TICKRATE;
     audiospec = desired;
@@ -869,7 +841,7 @@ void init(void)
     option_add("height", "768");
     option_add("bpp", "4");
     option_add("data", "root:data/pop/");
-    option_add("audio-service", "audio");
+    option_add("audio-service", "mixer");
     option_add("keyboard-service", "keyboard");
     option_add("timer-service", "timer");
     option_add("video-service", "video");

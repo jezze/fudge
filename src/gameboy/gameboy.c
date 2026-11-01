@@ -394,26 +394,12 @@ static void load(unsigned int source, unsigned int target, unsigned int id)
 static void setupaudio(void)
 {
 
-    struct event_audioconf audioconf;
     unsigned int i;
 
     audio = channel_lookup(option_getstring("audio-service"));
 
     if (!audio)
         return;
-
-    audioconf.rate = AUDIO_RATE;
-    audioconf.channels = 2;
-    audioconf.bits = 16;
-
-    if (!channel_send(1, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf))
-    {
-
-        audio = 0;
-
-        return;
-
-    }
 
     /* a few ticks of silence first, so the device has something to play while the next frame is made */
     buffer_clear(sound, sizeof (sound));
@@ -535,7 +521,7 @@ void init(void)
     option_add("timer-service", "timer");
     option_add("video-service", "video");
     option_add("wm-service", "wm");
-    option_add("audio-service", "audio");
+    option_add("audio-service", "mixer");
     channel_bind(EVENT_PATH, onpath);
 
 }

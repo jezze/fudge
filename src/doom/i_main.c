@@ -372,7 +372,7 @@ void init(void)
     option_add("height", "768");
     option_add("renderwidth", "640");
     option_add("renderheight", "400");
-    option_add("audio-service", "audio");
+    option_add("audio-service", "mixer");
     option_add("keyboard-service", "keyboard");
     option_add("mouse-service", "mouse");
     option_add("timer-service", "timer");
