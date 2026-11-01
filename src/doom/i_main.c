@@ -229,28 +229,12 @@ int atexit(void (*function)(void))
 
 }
 
-static void ungrab(void)
-{
-
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
-
-    if (wm)
-    {
-
-        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
-
-    }
-
-}
-
 void exit(int status)
 {
 
     while (nexits)
         exits[--nexits]();
 
-    ungrab();
     port_destroy();
 
     if (status && source)
@@ -330,8 +314,6 @@ static void addargument(char *name, char *option)
 static void onmain(struct message *message)
 {
 
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
-
     source = message->source;
     timer = channel_lookup(option_getstring("timer-service"));
 
@@ -352,14 +334,6 @@ static void onmain(struct message *message)
         channel_close(0);
 
         return;
-
-    }
-
-    if (wm)
-    {
-
-        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
 
     }
 

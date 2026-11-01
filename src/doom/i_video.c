@@ -27,6 +27,7 @@
 #define PALETTESIZE                     256
 #define TRANSLATIONS                    256
 #define BUTTONS                         4
+#define SCREENS                         16
 
 int use_fullscreen;
 int desired_fullscreen;
@@ -65,6 +66,17 @@ static unsigned int outwidth;
 static unsigned int outheight;
 static unsigned int outx;
 static unsigned int outy;
+static unsigned int wm;
+static unsigned int fullscreen;
+static unsigned int wanted;
+static unsigned int flushing;
+static unsigned int dirty;
+static unsigned int screentarget;
+static unsigned int screenid;
+static unsigned int screenwidth;
+static unsigned int screenheight;
+static unsigned int *screen;
+static char screenname[32];
 
 static unsigned short translations[TRANSLATIONS] = {
     [0x01] = KEYD_ESCAPE,
@@ -192,10 +204,8 @@ static void push(evtype_t type, int key)
 
 }
 
-static int translate(unsigned int scancode)
+static int translate(unsigned int id)
 {
-
-    unsigned int id = keys_getcode(&keys, scancode);
 
     if (!id)
         return 0;
@@ -204,12 +214,24 @@ static int translate(unsigned int scancode)
 
 }
 
+/* Alt+F and Alt+W ask for the screen or the window, when there is a window */
+static void press(unsigned int id, unsigned int mod)
+{
+
+    if (screen && (mod & KEYS_MOD_ALT) && (id == KEYS_KEY_F || id == KEYS_KEY_W))
+        wanted = (id == KEYS_KEY_F);
+    else
+        push(ev_keydown, translate(id));
+
+}
+
 static void onkeypress(struct message *message)
 {
 
     struct event_keypress *keypress = message->data;
+    unsigned int id = keys_getcode(&keys, keypress->scancode);
 
-    push(ev_keydown, translate(keypress->scancode));
+    press(id, keys.mod);
 
 }
 
@@ -218,7 +240,27 @@ static void onkeyrelease(struct message *message)
 
     struct event_keyrelease *keyrelease = message->data;
 
-    push(ev_keyup, translate(keyrelease->scancode));
+    push(ev_keyup, translate(keys_getcode(&keys, keyrelease->scancode)));
+
+}
+
+static void onwmkeypress(struct message *message)
+{
+
+    struct event_wmkeypress *wmkeypress = message->data;
+
+    if (!fullscreen)
+        press(wmkeypress->id, wmkeypress->keymod);
+
+}
+
+static void onwmkeyrelease(struct message *message)
+{
+
+    struct event_wmkeyrelease *wmkeyrelease = message->data;
+
+    if (!fullscreen)
+        push(ev_keyup, translate(wmkeyrelease->id));
 
 }
 
@@ -279,36 +321,6 @@ static void onmousescroll(struct message *message)
 
 }
 
-/* the messages already waiting are handled without sleeping, so a frame never has to wait on the timer for its input */
-void I_StartTic(void)
-{
-
-    if (!channel_drain(0))
-        I_SafeExit(0);
-
-    I_UpdateSound();
-
-    if (mousex || mousey)
-    {
-
-        post(ev_mouse, mousebuttons, mousex << 4, -mousey << 4);
-
-        mousex = 0;
-        mousey = 0;
-
-    }
-
-    while (eventtail != eventhead)
-    {
-
-        D_PostEvent(&events[eventtail]);
-
-        eventtail = (eventtail + 1) % EVENTS;
-
-    }
-
-}
-
 void I_StartFrame(void)
 {
 
@@ -324,7 +336,7 @@ void I_PollJoystick(void)
 
 }
 
-/* every palette of PLAYPAL through the gamma table, as 0x00RRGGBB */
+/* every palette of PLAYPAL through the gamma table, as 0xFFRRGGBB (the wm needs the alpha) */
 static void loadpalettes(void)
 {
 
@@ -340,7 +352,7 @@ static void loadpalettes(void)
         colours = malloc(sizeof (unsigned int) * PALETTESIZE * npalettes);
 
     for (i = 0; i < PALETTESIZE * npalettes; i++)
-        colours[i] = (gtable[palette[i * 3]] << 16) | (gtable[palette[i * 3 + 1]] << 8) | gtable[palette[i * 3 + 2]];
+        colours[i] = 0xFF000000 | (gtable[palette[i * 3]] << 16) | (gtable[palette[i * 3 + 1]] << 8) | gtable[palette[i * 3 + 2]];
 
     W_UnlockLumpNum(pplump);
     W_UnlockLumpNum(gtlump);
@@ -404,6 +416,63 @@ static void setscale(void)
 
 }
 
+/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
+static void flush(void)
+{
+
+    char *id = "screen";
+
+    if (flushing)
+    {
+
+        dirty = 1;
+
+        return;
+
+    }
+
+    channel_send(0, wm, EVENT_WMFLUSH, cstring_length_zero(id), id);
+
+    flushing = 1;
+    dirty = 0;
+
+}
+
+static void onwmack(struct message *message)
+{
+
+    flushing = 0;
+
+    if (dirty && !fullscreen)
+        flush();
+
+}
+
+/* in a window the screen is converted as it is (the wm scales it), unless its size changed since the window was made */
+static void present(unsigned int *palette)
+{
+
+    unsigned int y;
+
+    if (!screen || (unsigned int)SCREENWIDTH != screenwidth || (unsigned int)SCREENHEIGHT != screenheight)
+        return;
+
+    for (y = 0; y < screenheight; y++)
+    {
+
+        byte *source = screens[0].data + y * screens[0].byte_pitch;
+        unsigned int *line = screen + y * screenwidth;
+        unsigned int x;
+
+        for (x = 0; x < screenwidth; x++)
+            line[x] = palette[source[x]];
+
+    }
+
+    flush();
+
+}
+
 /* each row of the screen is converted once and copied to every line it covers */
 void I_FinishUpdate(void)
 {
@@ -414,13 +483,22 @@ void I_FinishUpdate(void)
     int lastrow = -1;
     unsigned int y;
 
-    if (!framebuffer || !outwidth)
-        return;
-
     if (cachedgamma != usegamma)
         loadpalettes();
 
     palette = colours + PALETTESIZE * (((unsigned int)newpal < npalettes) ? newpal : 0);
+
+    if (!fullscreen)
+    {
+
+        present(palette);
+
+        return;
+
+    }
+
+    if (!framebuffer || !outwidth)
+        return;
 
     for (y = 0; y < outheight; y++)
     {
@@ -533,10 +611,114 @@ void I_InitScreenResolution(void)
 
 }
 
+static void enterfullscreen(void)
+{
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+    setmode();
+    setscale();
+
+    keys.mod = 0;
+    fullscreen = 1;
+    wanted = 1;
+
+    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+
+    if (mouse)
+        channel_send(0, mouse, EVENT_LINK, 0, 0);
+
+}
+
+/* buttons still held go up, since their releases go to the wm */
+static void leavefullscreen(void)
+{
+
+    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+
+    if (mouse)
+        channel_send(0, mouse, EVENT_UNLINK, 0, 0);
+
+    mousex = 0;
+    mousey = 0;
+
+    if (mousebuttons)
+    {
+
+        mousebuttons = 0;
+
+        post(ev_mouse, 0, 0, 0);
+
+    }
+
+    framebuffer = 0;
+    fullscreen = 0;
+    wanted = 0;
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+}
+
+/* the grab is answered on channel 1, so channel 0 must have room for what the wm sends before answering: I_StartTic switches right after a drain, when its slots are free (nothing ticks here) */
+static void switchscreen(unsigned int on)
+{
+
+    if (on)
+        enterfullscreen();
+    else
+        leavefullscreen();
+
+}
+
+/* the messages already waiting are handled without sleeping, so a frame never has to wait on the timer for its input; a switch waits until they are, see switchscreen */
+void I_StartTic(void)
+{
+
+    if (!channel_drain(0))
+        I_SafeExit(0);
+
+    if (wanted != fullscreen)
+        switchscreen(wanted);
+
+    I_UpdateSound();
+
+    if (mousex || mousey)
+    {
+
+        post(ev_mouse, mousebuttons, mousex << 4, -mousey << 4);
+
+        mousex = 0;
+        mousey = 0;
+
+    }
+
+    while (eventtail != eventhead)
+    {
+
+        D_PostEvent(&events[eventtail]);
+
+        eventtail = (eventtail + 1) % EVENTS;
+
+    }
+
+}
+
 void I_UpdateVideoMode(void)
 {
 
-    if (!framebuffer)
+    if (fullscreen && !framebuffer)
         setmode();
 
     screens[0].not_on_heap = false;
@@ -552,14 +734,58 @@ void I_UpdateVideoMode(void)
 
 }
 
+/* a mem: file the wm shows in a window, made as large as the screen by writing its last pixel */
+static unsigned int createscreen(void)
+{
+
+    unsigned int parent;
+    unsigned int zero = 0;
+    unsigned int i;
+
+    screenwidth = SCREENWIDTH;
+    screenheight = SCREENHEIGHT;
+    screentarget = fs_auth("mem:");
+    parent = (screentarget) ? fs_walk(1, screentarget, 0, "mem:") : 0;
+
+    for (i = 0; i < SCREENS && parent && !screenid; i++)
+    {
+
+        cstring_write_fmt(screenname, 32, 0, "doomscreen%u\\0", &i);
+
+        screenid = fs_create(1, screentarget, parent, screenname, cstring_length(screenname));
+
+    }
+
+    if (screenid && fs_write(1, screentarget, screenid, &zero, 4, screenwidth * screenheight * 4 - 4) == 4)
+        screen = fs_mmap(1, screentarget, screenid, 0);
+
+    return screen != 0;
+
+}
+
+static void showwindow(void)
+{
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ window id \"window\" label \"Doom\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
+
+}
+
 static void shutdowngraphics(void)
 {
 
-    if (keyboard)
-        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+    if (fullscreen)
+        leavefullscreen();
 
-    if (mouse)
-        channel_send(0, mouse, EVENT_UNLINK, 0, 0);
+    if (screen)
+    {
+
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        fs_munmap(1, screentarget, screenid);
+
+    }
+
+    if (screenid)
+        fs_remove(1, screentarget, fs_walk(1, screentarget, 0, "mem:"), screenid);
 
 }
 
@@ -578,25 +804,27 @@ void I_InitGraphics(void)
     if (!videotarget || !keyboard)
         I_Error("I_InitGraphics: could not find the video or keyboard service");
 
+    mouse = channel_lookup(option_getstring("mouse-service"));
+    wm = channel_lookup(option_getstring("wm-service"));
+
     atexit(shutdowngraphics);
-    I_UpdateVideoMode();
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
-    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+    channel_bind(EVENT_MOUSEMOVE, onmousemove);
+    channel_bind(EVENT_MOUSEPRESS, onmousepress);
+    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
+    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
+    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_bind(EVENT_WMKEYRELEASE, onwmkeyrelease);
+    channel_bind(EVENT_WMACK, onwmack);
 
-    mouse = channel_lookup(option_getstring("mouse-service"));
+    if (wm && createscreen())
+        showwindow();
+    else
+        enterfullscreen();
 
-    if (mouse)
-    {
-
-        channel_bind(EVENT_MOUSEMOVE, onmousemove);
-        channel_bind(EVENT_MOUSEPRESS, onmousepress);
-        channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-        channel_bind(EVENT_MOUSESCROLL, onmousescroll);
-        channel_send(0, mouse, EVENT_LINK, 0, 0);
-
-    }
+    I_UpdateVideoMode();
 
 }
 
