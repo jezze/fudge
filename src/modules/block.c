@@ -28,6 +28,9 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
 static unsigned int onblockreadrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
+    if (count < sizeof (struct event_blockrequest))
+        return MESSAGE_FAILED;
+
     if (interface->startsession)
     {
 
@@ -59,6 +62,9 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
 
 static unsigned int onblockwriterequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
+
+    if (count < sizeof (struct event_blockrequest))
+        return MESSAGE_FAILED;
 
     if (interface->startsession)
     {
