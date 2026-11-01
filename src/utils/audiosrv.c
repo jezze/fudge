@@ -1,8 +1,9 @@
 #include <fudge.h>
 #include <abi.h>
 
-#define CLIENTS                         8
-#define RINGSIZE                        0x8000
+#define CLIENTS                         4
+#define RINGSIZE                        0x10000
+#define RATE                            48000
 #define FRAMESIZE                       4
 #define FRAMEMAX                        (MESSAGE_SIZE / FRAMESIZE)
 #define CUSHION                         3
@@ -11,6 +12,7 @@ struct client
 {
 
     unsigned int source;
+    unsigned int waiting;
     struct ring ring;
 
 };
@@ -25,17 +27,26 @@ struct pace
 
 };
 
+struct resampler
+{
+
+    unsigned int phase;
+    int previous[2];
+
+};
+
 static struct client clients[CLIENTS];
 static char buffers[CLIENTS][RINGSIZE];
 static int sums[FRAMEMAX * 2];
 static unsigned char samples[MESSAGE_SIZE];
 static unsigned char output[MESSAGE_SIZE];
 static struct pace pace;
+static struct resampler resampler;
 static unsigned int audio;
 static unsigned int rate;
 static unsigned int hz;
 
-static struct client *findclient(unsigned int source)
+static struct client *getclient(unsigned int source)
 {
 
     unsigned int i;
@@ -48,6 +59,19 @@ static struct client *findclient(unsigned int source)
 
     }
 
+    return 0;
+
+}
+
+static struct client *findclient(unsigned int source)
+{
+
+    struct client *client = getclient(source);
+    unsigned int i;
+
+    if (client)
+        return client;
+
     for (i = 0; i < CLIENTS; i++)
     {
 
@@ -55,6 +79,7 @@ static struct client *findclient(unsigned int source)
         {
 
             clients[i].source = source;
+            clients[i].waiting = 0;
 
             ring_reset(&clients[i].ring);
 
@@ -86,7 +111,61 @@ static unsigned int countclients(void)
 
 }
 
-/* samples are 16-bit stereo, little-endian like the devices take them; a client whose ring runs dry gives up its slot */
+static void sendinfo(unsigned int target)
+{
+
+    struct event_audioinfo audioinfo;
+
+    audioinfo.rate = RATE;
+    audioinfo.channels = 2;
+    audioinfo.bits = 16;
+
+    channel_send(0, target, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo);
+
+}
+
+static void putframe(unsigned int frame, int left, int right)
+{
+
+    output[frame * FRAMESIZE] = left;
+    output[frame * FRAMESIZE + 1] = left >> 8;
+    output[frame * FRAMESIZE + 2] = right;
+    output[frame * FRAMESIZE + 3] = right >> 8;
+
+}
+
+/* linear interpolation down to the device's rate; phase counts in steps where one mixed frame is rate long and one device frame RATE */
+static unsigned int resample(unsigned int frames)
+{
+
+    unsigned int count = 0;
+    unsigned int i;
+
+    for (i = 0; i < frames; i++)
+    {
+
+        while (resampler.phase < rate)
+        {
+
+            int fraction = resampler.phase * 32768 / rate;
+
+            putframe(count++, resampler.previous[0] + (sums[i * 2] - resampler.previous[0]) * fraction / 32768, resampler.previous[1] + (sums[i * 2 + 1] - resampler.previous[1]) * fraction / 32768);
+
+            resampler.phase += RATE;
+
+        }
+
+        resampler.phase -= rate;
+        resampler.previous[0] = sums[i * 2];
+        resampler.previous[1] = sums[i * 2 + 1];
+
+    }
+
+    return count;
+
+}
+
+/* samples are 16-bit stereo, little-endian like the devices take them; a client whose ring runs dry gives up its slot, and one waiting for room hears when there is a message's worth */
 static void mix(unsigned int frames)
 {
 
@@ -110,6 +189,15 @@ static void mix(unsigned int frames)
         for (j = 0; j < count / 2; j++)
             sums[j] += (int)(((samples[j * 2 + 1] << 8) | samples[j * 2]) ^ 0x8000) - 0x8000;
 
+        if (client->waiting && ring_avail(&client->ring) >= MESSAGE_SIZE)
+        {
+
+            sendinfo(client->source);
+
+            client->waiting = 0;
+
+        }
+
         if (ring_isempty(&client->ring))
             client->source = 0;
 
@@ -118,20 +206,30 @@ static void mix(unsigned int frames)
     for (j = 0; j < frames * 2; j++)
     {
 
-        int sum = sums[j];
+        if (sums[j] > 32767)
+            sums[j] = 32767;
 
-        if (sum > 32767)
-            sum = 32767;
-
-        if (sum < -32768)
-            sum = -32768;
-
-        output[j * 2] = sum;
-        output[j * 2 + 1] = sum >> 8;
+        if (sums[j] < -32768)
+            sums[j] = -32768;
 
     }
 
-    channel_send(0, audio, EVENT_DATA, frames * FRAMESIZE, output);
+    if (rate == RATE)
+    {
+
+        for (j = 0; j < frames; j++)
+            putframe(j, sums[j * 2], sums[j * 2 + 1]);
+
+        channel_send(0, audio, EVENT_DATA, frames * FRAMESIZE, output);
+
+    }
+
+    else
+    {
+
+        channel_send(0, audio, EVENT_DATA, resample(frames) * FRAMESIZE, output);
+
+    }
 
 }
 
@@ -152,20 +250,20 @@ static void ondata(struct message *message)
 
 }
 
+/* the answer waits until the client's ring has room for a message, so a sender that waits for it never overflows */
 static void oninfo(struct message *message)
 {
 
-    struct event_audioinfo audioinfo;
+    struct client *client = getclient(message->source);
 
-    audioinfo.rate = rate;
-    audioinfo.channels = 2;
-    audioinfo.bits = 16;
-
-    channel_send(0, message->source, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo);
+    if (client && ring_avail(&client->ring) < MESSAGE_SIZE)
+        client->waiting = 1;
+    else
+        sendinfo(message->source);
 
 }
 
-/* the device is kept CUSHION ticks ahead of the timer while anyone plays; after a stall of more than a second the backlog is dropped */
+/* everything is counted in RATE frames; the device is kept CUSHION ticks ahead of the timer while anyone plays, and after a stall of more than a second the backlog is dropped */
 static void ontimertick(struct message *message)
 {
 
@@ -178,15 +276,15 @@ static void ontimertick(struct message *message)
 
     pace.counter = timertick->counter;
     pace.started = 1;
-    pace.rest += elapsed * rate;
+    pace.rest += elapsed * RATE;
     played = pace.rest / hz;
     pace.rest %= hz;
     pace.ahead = (played < pace.ahead) ? pace.ahead - played : 0;
 
-    while (countclients() && pace.ahead < CUSHION * rate / hz)
+    while (countclients() && pace.ahead < CUSHION * RATE / hz)
     {
 
-        unsigned int frames = rate / hz;
+        unsigned int frames = RATE / hz;
 
         if (frames > FRAMEMAX)
             frames = FRAMEMAX;
@@ -238,8 +336,8 @@ static void onmain(struct message *message)
 
     }
 
-    if (setformat(48000))
-        rate = 48000;
+    if (setformat(RATE))
+        rate = RATE;
     else if (setformat(44100))
         rate = 44100;
 
