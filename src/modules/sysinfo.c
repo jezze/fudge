@@ -404,6 +404,9 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     struct event_readresponse *readresponse = (struct event_readresponse *)response;
     unsigned int status;
 
+    if (count < sizeof (struct event_readrequest))
+        return MESSAGE_FAILED;
+
     spinlock_acquire(&spinlock);
 
     readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
@@ -422,6 +425,9 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     struct event_statresponse *statresponse = (struct event_statresponse *)response;
     unsigned int status;
 
+    if (count < sizeof (struct event_statrequest))
+        return MESSAGE_FAILED;
+
     spinlock_acquire(&spinlock);
 
     statresponse->count = stat(request->id, statresponse + 1);
@@ -438,6 +444,9 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     struct event_walkrequest *request = data;
     struct event_walkresponse response;
+
+    if (count < sizeof (struct event_walkrequest) || count - sizeof (struct event_walkrequest) < request->length)
+        return MESSAGE_FAILED;
 
     response.id = walk(request->parent ? request->parent : ROOT, request->length, (char *)(request + 1));
 
