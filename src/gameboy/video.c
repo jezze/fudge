@@ -3,9 +3,9 @@
 
 static unsigned char fb[LCD_HEIGHT][LCD_WIDTH];
 static unsigned int palette[3][4] = {
-    { 0x00FFFFFF, 0x00A0A0A0, 0x00606060, 0x00000000 },
-    { 0x00FFFFFF, 0x00A0A0A0, 0x00606060, 0x00000000 },
-    { 0x00FFFFFF, 0x00A0A0A0, 0x00606060, 0x00000000 }
+    { 0xFFFFFFFF, 0xFFA0A0A0, 0xFF606060, 0xFF000000 },
+    { 0xFFFFFFFF, 0xFFA0A0A0, 0xFF606060, 0xFF000000 },
+    { 0xFFFFFFFF, 0xFFA0A0A0, 0xFF606060, 0xFF000000 }
 };
 
 void video_drawline(const unsigned char pixels[160], const unsigned char line)

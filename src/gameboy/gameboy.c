@@ -4,6 +4,9 @@
 #include "audio.h"
 #include "video.h"
 
+#define SCREENS                         16
+#define SCREENSIZE                      (LCD_WIDTH * LCD_HEIGHT * 4)
+
 static unsigned char rom[0x80000];
 static unsigned char cart_ram[0x20000];
 static unsigned int *framebuffer;
@@ -13,6 +16,17 @@ static char path[128];
 static struct gb_s gb;
 static unsigned int audio;
 static unsigned int video;
+static unsigned int keyboard;
+static unsigned int timer;
+static unsigned int wm;
+static unsigned int fullscreen;
+static unsigned int wanted;
+static unsigned int flushing;
+static unsigned int dirty;
+static unsigned int screentarget;
+static unsigned int screenid;
+static unsigned int *screen;
+static char screenname[32];
 static short sound[AUDIO_SAMPLES * 2];
 
 static unsigned char gb_rom_read(struct gb_s *gb, const unsigned int addr)
@@ -84,123 +98,73 @@ static void gb_error(struct gb_s *gb, const enum gb_error_e gb_err, const unsign
 
 }
 
-static void ungrab(void)
+/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
+static void flush(void)
 {
 
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
+    char *id = "screen";
 
-    if (wm)
+    if (flushing)
     {
 
-        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+        dirty = 1;
+
+        return;
 
     }
 
+    channel_send(0, wm, EVENT_WMFLUSH, cstring_length_zero(id), id);
+
+    flushing = 1;
+    dirty = 0;
+
 }
 
-static void keypress(struct gb_s *gb, struct event_keypress *keypress)
+static void setbutton(unsigned int id, unsigned int pressed)
 {
 
-    unsigned int id = keys_getcode(&keys, keypress->scancode);
+    unsigned int bit = !pressed;
 
     switch (id)
     {
 
     case KEYS_KEY_CURSORUP:
-        gb->direct.joypad_bits.up = 0;
+        gb.direct.joypad_bits.up = bit;
 
         break;
 
     case KEYS_KEY_CURSORLEFT:
-        gb->direct.joypad_bits.left = 0;
+        gb.direct.joypad_bits.left = bit;
 
         break;
 
     case KEYS_KEY_CURSORRIGHT:
-        gb->direct.joypad_bits.right = 0;
+        gb.direct.joypad_bits.right = bit;
 
         break;
 
     case KEYS_KEY_CURSORDOWN:
-        gb->direct.joypad_bits.down = 0;
+        gb.direct.joypad_bits.down = bit;
 
         break;
 
     case KEYS_KEY_ENTER:
-        gb->direct.joypad_bits.start = 0;
+        gb.direct.joypad_bits.start = bit;
 
         break;
 
     case KEYS_KEY_BACKSPACE:
-        gb->direct.joypad_bits.select = 0;
+        gb.direct.joypad_bits.select = bit;
 
         break;
 
     case KEYS_KEY_Z:
-        gb->direct.joypad_bits.a = 0;
+        gb.direct.joypad_bits.a = bit;
 
         break;
 
     case KEYS_KEY_X:
-        gb->direct.joypad_bits.b = 0;
-
-        break;
-
-    case KEYS_KEY_ESCAPE:
-        channel_close(0);
-
-        break;
-
-    }
-
-}
-
-static void keyrelease(struct gb_s *gb, struct event_keyrelease *keyrelease)
-{
-
-    unsigned int id = keys_getcode(&keys, keyrelease->scancode);
-
-    switch (id)
-    {
-
-    case KEYS_KEY_CURSORUP:
-        gb->direct.joypad_bits.up = 1;
-
-        break;
-
-    case KEYS_KEY_CURSORLEFT:
-        gb->direct.joypad_bits.left = 1;
-
-        break;
-
-    case KEYS_KEY_CURSORRIGHT:
-        gb->direct.joypad_bits.right = 1;
-
-        break;
-
-    case KEYS_KEY_CURSORDOWN:
-        gb->direct.joypad_bits.down = 1;
-
-        break;
-
-    case KEYS_KEY_ENTER:
-        gb->direct.joypad_bits.start = 1;
-
-        break;
-
-    case KEYS_KEY_BACKSPACE:
-        gb->direct.joypad_bits.select = 1;
-
-        break;
-
-    case KEYS_KEY_Z:
-        gb->direct.joypad_bits.a = 1;
-
-        break;
-
-    case KEYS_KEY_X:
-        gb->direct.joypad_bits.b = 1;
+        gb.direct.joypad_bits.b = bit;
 
         break;
 
@@ -213,7 +177,7 @@ static void ontimertick(struct message *message)
 
     gb_run_frame(&gb);
 
-    if (framebuffer)
+    if (fullscreen && framebuffer)
     {
 
         struct event_videoflush videoflush;
@@ -229,6 +193,14 @@ static void ontimertick(struct message *message)
 
     }
 
+    if (!fullscreen && screen)
+    {
+
+        video_render(screen, LCD_WIDTH, 1, 1, LCD_WIDTH, LCD_HEIGHT, 0, 0);
+        flush();
+
+    }
+
     if (audio)
     {
 
@@ -239,57 +211,185 @@ static void ontimertick(struct message *message)
 
 }
 
+static void setupvideo(void)
+{
+
+    struct event_videoconf videoconf;
+    struct event_videoinfo videoinfo;
+
+    videoconf.width = option_getdecimal("width");
+    videoconf.height = option_getdecimal("height");
+    videoconf.bpp = option_getdecimal("bpp");
+
+    channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_send(1, video, EVENT_INFO, 0, 0);
+
+    if (channel_wait(1, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo) && videoinfo.bpp == 4)
+    {
+
+        framebuffer = (unsigned int *)(unsigned long)videoinfo.framebuffer;
+        w = videoinfo.width;
+        h = videoinfo.height;
+        scalew = videoinfo.width / LCD_WIDTH;
+        scaleh = videoinfo.height / LCD_HEIGHT;
+        totw = LCD_WIDTH * scalew;
+        toth = LCD_HEIGHT * scaleh;
+        offx = (w - totw) / 2;
+        offy = (h - toth) / 2;
+
+    }
+
+}
+
+static void enterfullscreen(void)
+{
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+    setupvideo();
+
+    gb.direct.joypad = 0xFF;
+    keys.mod = 0;
+    fullscreen = 1;
+    wanted = 1;
+
+    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+
+}
+
+static void leavefullscreen(void)
+{
+
+    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+
+    gb.direct.joypad = 0xFF;
+    framebuffer = 0;
+    fullscreen = 0;
+    wanted = 0;
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+}
+
+/* the grab is answered on channel 1, so channel 0 must have room for what the wm sends before answering: run switches between drains, when its slots are free, and ticks stay away meanwhile */
+static void switchscreen(unsigned int on)
+{
+
+    channel_send(0, timer, EVENT_UNLINK, 0, 0);
+
+    if (on)
+        enterfullscreen();
+    else
+        leavefullscreen();
+
+    channel_send(0, timer, EVENT_LINK, 0, 0);
+
+}
+
+/* a frame runs on each tick */
+static void run(void)
+{
+
+    while (channel_drain(0))
+    {
+
+        if (wanted != fullscreen)
+            switchscreen(wanted);
+
+        if (!channel_process(0))
+            break;
+
+    }
+
+}
+
+/* Alt+F and Alt+W ask for the screen or the window, when there is a window */
+static void press(unsigned int id, unsigned int mod)
+{
+
+    if (screen && (mod & KEYS_MOD_ALT) && (id == KEYS_KEY_F || id == KEYS_KEY_W))
+        wanted = (id == KEYS_KEY_F);
+    else if (id == KEYS_KEY_ESCAPE)
+        channel_close(0);
+    else
+        setbutton(id, 1);
+
+}
+
 static void onkeypress(struct message *message)
 {
 
-    keypress(&gb, message->data);
+    struct event_keypress *keypress = message->data;
+    unsigned int id = keys_getcode(&keys, keypress->scancode);
+
+    press(id, keys.mod);
 
 }
 
 static void onkeyrelease(struct message *message)
 {
 
-    keyrelease(&gb, message->data);
+    struct event_keyrelease *keyrelease = message->data;
+
+    setbutton(keys_getcode(&keys, keyrelease->scancode), 0);
 
 }
 
-static void run(unsigned int source, unsigned int target, unsigned int id)
+static void onwmkeypress(struct message *message)
+{
+
+    struct event_wmkeypress *wmkeypress = message->data;
+
+    if (!fullscreen)
+        press(wmkeypress->id, wmkeypress->keymod);
+
+}
+
+static void onwmkeyrelease(struct message *message)
+{
+
+    struct event_wmkeyrelease *wmkeyrelease = message->data;
+
+    if (!fullscreen)
+        setbutton(wmkeyrelease->id, 0);
+
+}
+
+static void onwmack(struct message *message)
+{
+
+    flushing = 0;
+
+    if (dirty && !fullscreen)
+        flush();
+
+}
+
+static void load(unsigned int source, unsigned int target, unsigned int id)
 {
 
     char romname[16];
-    enum gb_init_error_e gb_ret;
 
     fs_read_full(1, target, id, rom, 0x80000, 0);
-
-    gb_ret = gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
-
-    switch (gb_ret)
-    {
-
-    case GB_INIT_NO_ERROR:
-        break;
-
-    case GB_INIT_CARTRIDGE_UNSUPPORTED:
-        break;
-
-    case GB_INIT_INVALID_CHECKSUM:
-        break;
-
-    default:
-        break;
-
-    }
-
+    gb_init(&gb, &gb_rom_read, &gb_cart_ram_read, &gb_cart_ram_write, &gb_error);
     audio_init();
 
     if (getsavesize(&gb))
         fs_read_full(1, target, id, cart_ram, getsavesize(&gb), 0x80000);
 
     channel_send_fmt(0, source, EVENT_DATA, "ROM: %s\n", getromname(&gb, romname));
-
-    channel_bind(EVENT_TIMERTICK, ontimertick);
-    channel_bind(EVENT_KEYPRESS, onkeypress);
-    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
 
 }
 
@@ -325,82 +425,104 @@ static void setupaudio(void)
 
 }
 
+/* a mem: file the wm shows in a window, made as large as the screen by writing its last pixel */
+static unsigned int createscreen(void)
+{
+
+    unsigned int parent;
+    unsigned int zero = 0;
+    unsigned int i;
+
+    screentarget = fs_auth("mem:");
+    parent = (screentarget) ? fs_walk(1, screentarget, 0, "mem:") : 0;
+
+    for (i = 0; i < SCREENS && parent && !screenid; i++)
+    {
+
+        cstring_write_fmt(screenname, 32, 0, "gameboyscreen%u\\0", &i);
+
+        screenid = fs_create(1, screentarget, parent, screenname, cstring_length(screenname));
+
+    }
+
+    if (screenid && fs_write(1, screentarget, screenid, &zero, 4, SCREENSIZE - 4) == 4)
+        screen = fs_mmap(1, screentarget, screenid, 0);
+
+    return screen != 0;
+
+}
+
+static void destroyscreen(void)
+{
+
+    if (screen)
+        fs_munmap(1, screentarget, screenid);
+
+    if (screenid)
+        fs_remove(1, screentarget, fs_walk(1, screentarget, 0, "mem:"), screenid);
+
+}
+
+static void showwindow(void)
+{
+
+    unsigned int width = LCD_WIDTH;
+    unsigned int height = LCD_HEIGHT;
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ window id \"window\" label \"Gameboy (%s)\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
+
+}
+
 static void onpath(struct message *message)
 {
 
-    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
-    unsigned int timer = channel_lookup(option_getstring("timer-service"));
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
+    unsigned int target;
+    unsigned int id;
 
     if (path[0])
         return;
 
+    keyboard = channel_lookup(option_getstring("keyboard-service"));
+    timer = channel_lookup(option_getstring("timer-service"));
     video = channel_lookup(option_getstring("video-service"));
+    wm = channel_lookup(option_getstring("wm-service"));
 
     buffer_write(path, 128, message->data, message->length, 0);
 
-    if (wm)
-    {
+    if (!keyboard || !timer || !video)
+        return;
 
-        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+    target = fs_auth(path);
+    id = (target) ? fs_walk(1, target, 0, path) : 0;
 
-    }
+    if (!id)
+        return;
 
-    if (keyboard && timer && video)
-    {
+    setupaudio();
+    load(message->source, target, id);
+    channel_bind(EVENT_TIMERTICK, ontimertick);
+    channel_bind(EVENT_KEYPRESS, onkeypress);
+    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
+    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_bind(EVENT_WMKEYRELEASE, onwmkeyrelease);
+    channel_bind(EVENT_WMACK, onwmack);
 
-        unsigned int target = fs_auth(path);
+    if (wm && createscreen())
+        showwindow();
+    else
+        enterfullscreen();
 
-        if (target)
-        {
+    channel_send(0, timer, EVENT_LINK, 0, 0);
+    run();
+    channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
-            unsigned int id = fs_walk(1, target, 0, path);
-            
-            if (id)
-            {
+    if (fullscreen)
+        leavefullscreen();
 
-                struct event_videoconf videoconf;
+    if (screen)
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
-                videoconf.width = option_getdecimal("width");
-                videoconf.height = option_getdecimal("height");
-                videoconf.bpp = option_getdecimal("bpp");
-
-                channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-                channel_send(1, video, EVENT_INFO, 0, 0);
-                channel_wait(1, video, EVENT_VIDEOINFO, 0, 0);
-                channel_send(0, keyboard, EVENT_LINK, 0, 0);
-                channel_send(0, timer, EVENT_LINK, 0, 0);
-                setupaudio();
-                run(message->source, target, id);
-                channel_hold(0);
-                channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
-                channel_send(0, timer, EVENT_UNLINK, 0, 0);
-
-            }
-
-        }
-
-    }
-
-    ungrab();
-
-}
-
-static void onvideoinfo(struct message *message)
-{
-
-    struct event_videoinfo *videoinfo = message->data;
-
-    framebuffer = (unsigned int *)videoinfo->framebuffer;
-    w = videoinfo->width;
-    h = videoinfo->height;
-    scalew = videoinfo->width / LCD_WIDTH;
-    scaleh = videoinfo->height / LCD_HEIGHT;
-    totw = LCD_WIDTH * scalew;
-    toth = LCD_HEIGHT * scaleh;
-    offx = (w - totw) / 2;
-    offy = (h - toth) / 2;
+    destroyscreen();
 
 }
 
@@ -417,7 +539,6 @@ void init(void)
     option_add("wm-service", "wm");
     option_add("audio-service", "audio");
     channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
 
 }
 
