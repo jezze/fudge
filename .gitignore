@@ -29,6 +29,7 @@ src/test/t_donut
 src/test/t_loop
 src/test/t_mandelbrot
 src/test/t_timer
+src/utils/audiosrv
 src/utils/automount
 src/utils/cd
 src/utils/clipboard

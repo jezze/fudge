@@ -1,4 +1,17 @@
 B:=\
+    $(DIR_SRC)/utils/audiosrv \
+
+O:=\
+    $(DIR_SRC)/utils/audiosrv.o \
+
+L:=\
+    $(DIR_LIB)/abi/abi.a \
+    $(DIR_LIB)/fudge/fudge.a \
+    $(DIR_LIB)/hash/hash.a \
+
+include $(DIR_MK)/bin.mk
+
+B:=\
     $(DIR_SRC)/utils/automount \
 
 O:=\
