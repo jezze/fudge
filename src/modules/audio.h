@@ -2,7 +2,8 @@ struct audio_interface
 {
 
     struct resource resource;
-    struct service service;
+    unsigned int inode;
+    struct list links;
     unsigned int id;
     unsigned int rate;
     unsigned int channels;

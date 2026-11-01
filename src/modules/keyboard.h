@@ -2,7 +2,8 @@ struct keyboard_interface
 {
 
     struct resource resource;
-    struct service service;
+    unsigned int inode;
+    struct list links;
     unsigned int id;
 
 };

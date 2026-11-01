@@ -2,7 +2,8 @@ struct ethernet_interface
 {
 
     struct resource resource;
-    struct service service;
+    unsigned int inode;
+    struct list links;
     unsigned int id;
     void (*getmac)(unsigned char address[6]);
     unsigned int (*send)(void *buffer, unsigned int count);

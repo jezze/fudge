@@ -24,14 +24,6 @@ struct statresult
 
 };
 
-struct child
-{
-
-    unsigned int inode;
-    unsigned int index;
-
-};
-
 static struct node_operands operands;
 
 static void setname(struct service *service, char *name)
@@ -57,60 +49,38 @@ static void setname(struct service *service, char *name)
 
 }
 
-static struct child findchild(struct service *parent, unsigned int inode, unsigned int index)
+/* the index of the child with this inode, SERVICE_CHILDREN if none; inode 0 finds the first free index */
+static unsigned int findchild(struct service *service, unsigned int inode)
 {
 
-    struct resource *resource = 0;
-    struct child child;
+    unsigned int index;
 
-    child.inode = 0;
-    child.index = 0;
+    for (index = 0; index < SERVICE_CHILDREN && service->children[index] != inode; index++);
 
-    resource_lock();
-
-    while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)))
-    {
-
-        struct service *service = resource->data;
-
-        if (service->parent == parent && (inode ? service->inode == inode : service->index == index))
-        {
-
-            child.inode = service->inode;
-            child.index = service->index;
-
-            break;
-
-        }
-
-    }
-
-    resource_unlock();
-
-    return child;
+    return index;
 
 }
 
 /* a child is named by its index in decimal, so 01 or 1x name nothing */
-static unsigned int walkchild(struct service *parent, char *name, unsigned int length)
+static unsigned int walkchild(struct service *service, char *name, unsigned int length)
 {
 
     char current[SERVICE_NAMESIZE];
-    struct child child = findchild(parent, 0, cstring_read_value(name, length, 10));
+    unsigned int index = cstring_read_value(name, length, 10);
 
-    if (child.inode && cstring_write_value(current, SERVICE_NAMESIZE, child.index, 10, 0, 0) == length && buffer_match(current, name, length))
-        return child.inode;
+    if (index < SERVICE_CHILDREN && service->children[index] && cstring_write_value(current, SERVICE_NAMESIZE, index, 10, 0, 0) == length && buffer_match(current, name, length))
+        return service->children[index];
 
     return 0;
 
 }
 
-static void initchildrecord(struct record *record, struct child *child, unsigned int offset)
+static void initchildrecord(struct record *record, struct service *service, unsigned int index, unsigned int offset)
 {
 
     char name[SERVICE_NAMESIZE];
 
-    record_init(record, child->inode, RECORD_TYPE_DIRECTORY, 0, offset, cstring_write_value(name, SERVICE_NAMESIZE, child->index, 10, 0, 0), name);
+    record_init(record, service->children[index], RECORD_TYPE_DIRECTORY, 0, offset, cstring_write_value(name, SERVICE_NAMESIZE, index, 10, 0, 0), name);
 
 }
 
@@ -121,7 +91,7 @@ static unsigned int walk(struct service *service, unsigned int parent, unsigned 
     unsigned int id = (parent) ? parent : service->inode;
     unsigned int offset = 0;
 
-    if (id != service->inode && !findchild(service, id, 0).inode)
+    if (id != service->inode && findchild(service, id) == SERVICE_CHILDREN)
         return 0;
 
     while (offset < length)
@@ -159,7 +129,7 @@ static unsigned int onreadrequest(struct service *service, unsigned int source, 
     if (count < sizeof (struct event_readrequest))
         return MESSAGE_FAILED;
 
-    if (request->id != service->inode && !findchild(service, request->id, 0).inode)
+    if (request->id != service->inode && (!request->id || findchild(service, request->id) == SERVICE_CHILDREN))
         last = 0;
 
     for (i = request->offset; i < last && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
@@ -172,13 +142,10 @@ static unsigned int onreadrequest(struct service *service, unsigned int source, 
 
         }
 
-        else
+        else if (service->children[i - 2])
         {
 
-            struct child child = findchild(service, 0, i - 2);
-
-            if (child.inode)
-                initchildrecord(&listing.records[c++], &child, i + 1);
+            initchildrecord(&listing.records[c++], service, i - 2, i + 1);
 
         }
 
@@ -211,10 +178,10 @@ static unsigned int onstatrequest(struct service *service, unsigned int source, 
     else
     {
 
-        struct child child = findchild(service, request->id, 0);
+        unsigned int index = findchild(service, request->id);
 
-        if (child.inode)
-            initchildrecord(&result.record, &child, 0);
+        if (request->id && index < SERVICE_CHILDREN)
+            initchildrecord(&result.record, service, index, 0);
         else
             result.response.count = 0;
 
@@ -276,8 +243,6 @@ void service_register(struct service *service, unsigned int inode, char *name)
     setname(service, name);
 
     service->inode = inode;
-    service->parent = 0;
-    service->index = 0;
 
 }
 
@@ -296,39 +261,24 @@ void service_registerdirectory(struct service *service, char *name)
 
 }
 
-/* takes the lowest free index, so with nothing unregistered children are numbered in the order they come */
-void service_registerchild(struct service *service, unsigned int inode, struct service *parent)
+/* takes the lowest free index, so with nothing removed children are numbered in the order they come */
+void service_addchild(struct service *service, unsigned int inode)
 {
 
-    struct resource *resource = 0;
-    unsigned int used = 0;
-    unsigned int index;
+    unsigned int index = findchild(service, 0);
 
-    resource_lock();
+    if (index < SERVICE_CHILDREN)
+        service->children[index] = inode;
 
-    while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)))
-    {
+}
 
-        struct service *current = resource->data;
+void service_removechild(struct service *service, unsigned int inode)
+{
 
-        if (current->parent == parent && current->index < SERVICE_CHILDREN)
-            used |= 1U << current->index;
+    unsigned int index = findchild(service, inode);
 
-    }
-
-    resource_unlock();
-
-    for (index = 0; index < SERVICE_CHILDREN && (used & (1U << index)); index++);
-
-    if (index == SERVICE_CHILDREN)
-        return;
-
-    resource_register(&service->resource);
-    setname(service, 0);
-
-    service->inode = inode;
-    service->parent = parent;
-    service->index = index;
+    if (inode && index < SERVICE_CHILDREN)
+        service->children[index] = 0;
 
 }
 
@@ -339,8 +289,6 @@ void service_unregister(struct service *service)
     setname(service, 0);
 
     service->inode = 0;
-    service->parent = 0;
-    service->index = 0;
 
 }
 
@@ -348,7 +296,7 @@ void service_init(struct service *service)
 {
 
     resource_init(&service->resource, RESOURCE_SERVICE, service);
-    list_init(&service->links);
+    buffer_clear(service->children, SERVICE_CHILDREN * sizeof (unsigned int));
 
 }
 

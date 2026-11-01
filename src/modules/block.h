@@ -16,7 +16,8 @@ struct block_interface
 {
 
     struct resource resource;
-    struct service service;
+    unsigned int inode;
+    struct list links;
     unsigned int id;
     struct block_session sessions[8];
     unsigned int blocksize;

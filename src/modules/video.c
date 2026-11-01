@@ -18,7 +18,7 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
         videoinfo.height = interface->height;
         videoinfo.bpp = interface->bpp;
 
-        return kernel_place(interface->service.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+        return kernel_place(interface->inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
     }
 
@@ -96,10 +96,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->service.links, source);
+            return kernel_linknode(&interface->links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->service.links, source);
+            return kernel_unlinknode(&interface->links, source);
 
         case EVENT_INFO:
             return oninfo(interface, source);
@@ -143,21 +143,21 @@ struct video_interface *video_findinterface(unsigned int id)
 void video_registerinterface(struct video_interface *interface)
 {
 
-    unsigned int inode = pool_picknode(&interface->resource, &operands);
+    interface->inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_registerchild(&interface->service, inode, &service);
+    service_addchild(&service, interface->inode);
 
 }
 
 void video_unregisterinterface(struct video_interface *interface)
 {
 
-    unsigned int inode = interface->service.inode;
-
     resource_unregister(&interface->resource);
-    service_unregister(&interface->service);
-    pool_unpicknode(inode);
+    service_removechild(&service, interface->inode);
+    pool_unpicknode(interface->inode);
+
+    interface->inode = 0;
 
 }
 
@@ -165,7 +165,7 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    service_init(&interface->service);
+    list_init(&interface->links);
 
     interface->id = id;
     interface->width = 0;

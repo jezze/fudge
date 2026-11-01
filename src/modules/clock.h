@@ -2,7 +2,8 @@ struct clock_interface
 {
 
     struct resource resource;
-    struct service service;
+    unsigned int inode;
+    struct list links;
     unsigned int id;
     unsigned int (*getseconds)(void);
     unsigned int (*getminutes)(void);

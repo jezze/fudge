@@ -35,10 +35,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->service.links, source);
+            return kernel_linknode(&interface->links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->service.links, source);
+            return kernel_unlinknode(&interface->links, source);
 
         case EVENT_DATA:
             return ondata(interface, source, data, count);
@@ -58,7 +58,7 @@ void console_notifydata(struct console_interface *interface, unsigned char data)
 
     consoledata.data = data;
 
-    kernel_notify(&interface->service.links, interface->service.inode, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(&interface->links, interface->inode, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
 
 }
 
@@ -114,21 +114,21 @@ void console_cursorend(struct console_interface *interface)
 void console_registerinterface(struct console_interface *interface)
 {
 
-    unsigned int inode = pool_picknode(&interface->resource, &operands);
+    interface->inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_registerchild(&interface->service, inode, &service);
+    service_addchild(&service, interface->inode);
 
 }
 
 void console_unregisterinterface(struct console_interface *interface)
 {
 
-    unsigned int inode = interface->service.inode;
-
     resource_unregister(&interface->resource);
-    service_unregister(&interface->service);
-    pool_unpicknode(inode);
+    service_removechild(&service, interface->inode);
+    pool_unpicknode(interface->inode);
+
+    interface->inode = 0;
 
 }
 
@@ -136,7 +136,7 @@ void console_initinterface(struct console_interface *interface, unsigned int id,
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
-    service_init(&interface->service);
+    list_init(&interface->links);
 
     interface->id = id;
     interface->width = 0;

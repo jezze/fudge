@@ -21,7 +21,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
         clockinfo.month = interface->getmonth();
         clockinfo.year = interface->getyear();
 
-        return kernel_place(interface->service.inode, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        return kernel_place(interface->inode, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
 
     }
 
@@ -43,10 +43,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->service.links, source);
+            return kernel_linknode(&interface->links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->service.links, source);
+            return kernel_unlinknode(&interface->links, source);
 
         case EVENT_INFO:
             return oninfo(interface, source);
@@ -62,21 +62,21 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void clock_registerinterface(struct clock_interface *interface)
 {
 
-    unsigned int inode = pool_picknode(&interface->resource, &operands);
+    interface->inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_registerchild(&interface->service, inode, &service);
+    service_addchild(&service, interface->inode);
 
 }
 
 void clock_unregisterinterface(struct clock_interface *interface)
 {
 
-    unsigned int inode = interface->service.inode;
-
     resource_unregister(&interface->resource);
-    service_unregister(&interface->service);
-    pool_unpicknode(inode);
+    service_removechild(&service, interface->inode);
+    pool_unpicknode(interface->inode);
+
+    interface->inode = 0;
 
 }
 
@@ -84,7 +84,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
-    service_init(&interface->service);
+    list_init(&interface->links);
 
     interface->id = id;
     interface->getseconds = getseconds;
