@@ -2524,7 +2524,15 @@ static void onmain(struct message *message)
 
     loadconfig(option_getstring("config"));
 
-    call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
+    if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
+    {
+
+        channel_send_fmt(0, message->source, EVENT_ERROR, "Could not announce service: %s\n", option_getstring("service"));
+
+        return;
+
+    }
+
     channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, mouse, EVENT_LINK, 0, 0);
     setupvideo(video);
