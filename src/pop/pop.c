@@ -11,6 +11,8 @@
 #define AUDIOFRAMES                     800
 #define AUDIOCUSHION                    3
 #define COUNTSPERTICK                   20
+#define SCREENS                         16
+#define SCREENSIZE                      (SCREENWIDTH * SCREENHEIGHT * 4)
 
 extern int g_argc;
 extern char **g_argv;
@@ -37,6 +39,15 @@ static unsigned int video;
 static unsigned int keyboard;
 static unsigned int timer;
 static unsigned int audio;
+static unsigned int wm;
+static unsigned int fullscreen;
+static unsigned int wanted;
+static unsigned int flushing;
+static unsigned int dirty;
+static unsigned int screentarget;
+static unsigned int screenid;
+static unsigned int *screen;
+static char screenname[32];
 static unsigned int audiopaused = 1;
 static SDL_AudioSpec *audiospec;
 static short audiobuffer[AUDIOFRAMES * 2];
@@ -194,10 +205,8 @@ static unsigned int modifier(SDL_Scancode scancode)
 
 }
 
-static SDL_Scancode translate(unsigned int scancode)
+static SDL_Scancode translate(unsigned int id)
 {
-
-    unsigned int id = keys_getcode(&keys, scancode);
 
     if (!id)
         return SDL_SCANCODE_UNKNOWN;
@@ -206,11 +215,49 @@ static SDL_Scancode translate(unsigned int scancode)
 
 }
 
-static void onkeypress(struct message *message)
+static void release(SDL_Scancode scancode)
 {
 
-    struct event_keypress *keypress = message->data;
-    SDL_Scancode scancode = translate(keypress->scancode);
+    if (!scancode)
+        return;
+
+    modifiers &= ~modifier(scancode);
+    keystate[scancode] = 0;
+
+    push(SDL_KEYUP, scancode);
+
+}
+
+/* keys still held go up, since their releases go elsewhere after a switch */
+static void releaseall(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < SDL_NUM_SCANCODES; i++)
+    {
+
+        if (keystate[i])
+            release(i);
+
+    }
+
+}
+
+/* Alt+F and Alt+W ask for the screen or the window, when there is a window */
+static void press(unsigned int id, unsigned int mod)
+{
+
+    SDL_Scancode scancode = translate(id);
+
+    if (screen && (mod & KEYS_MOD_ALT) && (id == KEYS_KEY_F || id == KEYS_KEY_W))
+    {
+
+        wanted = (id == KEYS_KEY_F);
+
+        return;
+
+    }
 
     if (!scancode)
         return;
@@ -222,19 +269,155 @@ static void onkeypress(struct message *message)
 
 }
 
+static void onkeypress(struct message *message)
+{
+
+    struct event_keypress *keypress = message->data;
+    unsigned int id = keys_getcode(&keys, keypress->scancode);
+
+    press(id, keys.mod);
+
+}
+
 static void onkeyrelease(struct message *message)
 {
 
     struct event_keyrelease *keyrelease = message->data;
-    SDL_Scancode scancode = translate(keyrelease->scancode);
 
-    if (!scancode)
+    release(translate(keys_getcode(&keys, keyrelease->scancode)));
+
+}
+
+static void onwmkeypress(struct message *message)
+{
+
+    struct event_wmkeypress *wmkeypress = message->data;
+
+    if (!fullscreen)
+        press(wmkeypress->id, wmkeypress->keymod);
+
+}
+
+static void onwmkeyrelease(struct message *message)
+{
+
+    struct event_wmkeyrelease *wmkeyrelease = message->data;
+
+    if (!fullscreen)
+        release(translate(wmkeyrelease->id));
+
+}
+
+/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
+static void flush(void)
+{
+
+    char *id = "screen";
+
+    if (flushing)
+    {
+
+        dirty = 1;
+
         return;
 
-    modifiers &= ~modifier(scancode);
-    keystate[scancode] = 0;
+    }
 
-    push(SDL_KEYUP, scancode);
+    channel_send(0, wm, EVENT_WMFLUSH, cstring_length_zero(id), id);
+
+    flushing = 1;
+    dirty = 0;
+
+}
+
+static void onwmack(struct message *message)
+{
+
+    flushing = 0;
+
+    if (dirty && !fullscreen)
+        flush();
+
+}
+
+static void setupvideo(void)
+{
+
+    struct event_videoconf videoconf;
+    struct event_videoinfo videoinfo;
+
+    videoconf.width = option_getdecimal("width");
+    videoconf.height = option_getdecimal("height");
+    videoconf.bpp = option_getdecimal("bpp");
+
+    channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
+    channel_send(1, video, EVENT_INFO, 0, 0);
+
+    if (channel_wait(1, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo) && videoinfo.bpp == 4)
+    {
+
+        framebuffer = (unsigned int *)videoinfo.framebuffer;
+        fbwidth = videoinfo.width;
+        fbheight = videoinfo.height;
+
+    }
+
+}
+
+static void enterfullscreen(void)
+{
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+    setupvideo();
+    releaseall();
+
+    keys.mod = 0;
+    fullscreen = 1;
+    wanted = 1;
+
+    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+
+}
+
+static void leavefullscreen(void)
+{
+
+    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+    releaseall();
+
+    framebuffer = 0;
+    fullscreen = 0;
+    wanted = 0;
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+}
+
+/* the grab is answered on channel 1, so channel 0 must have room for what the wm sends before answering: SDL_PollEvent switches right after a drain, when its slots are free, and ticks stay away meanwhile */
+static void switchscreen(unsigned int on)
+{
+
+    channel_send(0, timer, EVENT_UNLINK, 0, 0);
+
+    if (on)
+        enterfullscreen();
+    else
+        leavefullscreen();
+
+    channel_send(0, timer, EVENT_LINK, 0, 0);
 
 }
 
@@ -388,6 +571,9 @@ int SDL_PollEvent(SDL_Event *event)
     if (!closed && !channel_drain(0))
         closed = 1;
 
+    if (!closed && wanted != fullscreen)
+        switchscreen(wanted);
+
     if (closed)
     {
 
@@ -479,6 +665,34 @@ Uint32 SDL_GetPerformanceFrequency(void)
 
 }
 
+/* in a window the 320x200 RGB24 screen is converted as it is, and the wm scales it */
+static void present(SDL_Surface *surface)
+{
+
+    unsigned int y;
+
+    for (y = 0; y < SCREENHEIGHT; y++)
+    {
+
+        unsigned char *row = (unsigned char *)surface->pixels + y * surface->pitch;
+        unsigned int *out = screen + y * SCREENWIDTH;
+        unsigned int x;
+
+        for (x = 0; x < SCREENWIDTH; x++)
+        {
+
+            unsigned char *p = row + x * 3;
+
+            out[x] = 0xFF000000 | (p[0] << 16) | (p[1] << 8) | p[2];
+
+        }
+
+    }
+
+    flush();
+
+}
+
 /* the game draws 320x200 RGB24, shown at the largest whole scale that fits, centered */
 void glue_present(SDL_Surface *surface)
 {
@@ -492,6 +706,16 @@ void glue_present(SDL_Surface *surface)
     unsigned int offy = (fbheight - toth) / 2;
     struct event_videoflush videoflush;
     unsigned int y;
+
+    if (!fullscreen)
+    {
+
+        if (screen)
+            present(surface);
+
+        return;
+
+    }
 
     if (!framebuffer || !scale || totw > 4096)
         return;
@@ -529,31 +753,63 @@ void glue_present(SDL_Surface *surface)
 
 }
 
-static void ungrab(void)
+/* a mem: file the wm shows in a window, made as large as the screen by writing its last pixel */
+static unsigned int createscreen(void)
 {
 
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
+    unsigned int parent;
+    unsigned int zero = 0;
+    unsigned int i;
 
-    if (wm)
+    screentarget = fs_auth("mem:");
+    parent = (screentarget) ? fs_walk(1, screentarget, 0, "mem:") : 0;
+
+    for (i = 0; i < SCREENS && parent && !screenid; i++)
     {
 
-        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+        cstring_write_fmt(screenname, 32, 0, "popscreen%u\\0", &i);
+
+        screenid = fs_create(1, screentarget, parent, screenname, cstring_length(screenname));
 
     }
+
+    if (screenid && fs_write(1, screentarget, screenid, &zero, 4, SCREENSIZE - 4) == 4)
+        screen = fs_mmap(1, screentarget, screenid, 0);
+
+    return screen != 0;
+
+}
+
+static void showwindow(void)
+{
+
+    unsigned int width = SCREENWIDTH;
+    unsigned int height = SCREENHEIGHT;
+
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ window id \"window\" label \"Prince of Persia\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &width, &height);
 
 }
 
 void glue_exit(int status)
 {
 
-    if (keyboard)
-        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
-
     if (timer)
         channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
-    ungrab();
+    if (fullscreen)
+        leavefullscreen();
+
+    if (screen)
+    {
+
+        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        fs_munmap(1, screentarget, screenid);
+
+    }
+
+    if (screenid)
+        fs_remove(1, screentarget, fs_walk(1, screentarget, 0, "mem:"), screenid);
+
     port_destroy();
     channel_exit(0);
     call_despawn();
@@ -565,10 +821,7 @@ void glue_exit(int status)
 static void onmain(struct message *message)
 {
 
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
-    struct event_videoconf videoconf;
-    struct event_videoinfo videoinfo;
-
+    wm = channel_lookup(option_getstring("wm-service"));
     keyboard = channel_lookup(option_getstring("keyboard-service"));
     timer = channel_lookup(option_getstring("timer-service"));
     video = channel_lookup(option_getstring("video-service"));
@@ -593,31 +846,11 @@ static void onmain(struct message *message)
 
     }
 
-    if (wm)
-    {
+    if (wm && createscreen())
+        showwindow();
+    else
+        enterfullscreen();
 
-        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
-
-    }
-
-    videoconf.width = option_getdecimal("width");
-    videoconf.height = option_getdecimal("height");
-    videoconf.bpp = option_getdecimal("bpp");
-
-    channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_send(1, video, EVENT_INFO, 0, 0);
-
-    if (channel_wait(1, video, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo) && videoinfo.bpp == 4)
-    {
-
-        framebuffer = (unsigned int *)videoinfo.framebuffer;
-        fbwidth = videoinfo.width;
-        fbheight = videoinfo.height;
-
-    }
-
-    channel_send(0, keyboard, EVENT_LINK, 0, 0);
     channel_send(0, timer, EVENT_LINK, 0, 0);
 
     g_argc = 1;
@@ -645,6 +878,9 @@ void init(void)
     channel_bind(EVENT_TIMERTICK, ontimertick);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);
+    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_bind(EVENT_WMKEYRELEASE, onwmkeyrelease);
+    channel_bind(EVENT_WMACK, onwmack);
 
 }
 
