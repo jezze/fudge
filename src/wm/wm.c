@@ -2419,8 +2419,22 @@ static void onkeyrelease(struct message *message)
 {
 
     struct event_keyrelease *keyrelease = message->data;
+    unsigned int id = keys_getcode(&state.keys, keyrelease->scancode);
 
-    keys_getcode(&state.keys, keyrelease->scancode);
+    if (id && state.focusedwindow)
+    {
+
+        struct event_wmkeyrelease wmkeyrelease;
+
+        wmkeyrelease.id = id;
+        wmkeyrelease.scancode = keyrelease->scancode;
+        wmkeyrelease.keymod = state.keys.mod;
+        wmkeyrelease.unicode = 0;
+        wmkeyrelease.length = 0;
+
+        channel_send(0, state.focusedwindow->source, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
+
+    }
 
 }
 
