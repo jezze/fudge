@@ -66,6 +66,7 @@
 #define EVENT_WMMOUSERELEASE            0x5A
 #define EVENT_WMRENDERDATA              0x5B
 #define EVENT_WMRENDERFILE              0x5C
+#define EVENT_WMFLUSH                   0x5D
 #define EVENT_WMEVENT                   0x5E
 #define EVENT_WMACK                     0x5F
 #define EVENT_WMREAD                    0x60

@@ -2934,6 +2934,31 @@ static void onwmrenderfile(struct message *message)
 
 }
 
+/* the media widget's file changed: only its visible part is drawn again, without a relayout; the answer lets the sender keep one flush on its way */
+static void onwmflush(struct message *message)
+{
+
+    char id[64];
+    struct widget *widget;
+
+    cstring_write_fmt(id, 64, 0, "%s\\0", message->data);
+
+    widget = pool_getwidgetbyid(message->source, id);
+
+    if (widget && widget->type == WIDGET_TYPE_MEDIA)
+    {
+
+        struct util_region visible = util_region_intersection(&widget->placement, &widget->clip);
+
+        damageregion(&visible);
+        redraw(0);
+
+    }
+
+    channel_send(0, message->source, EVENT_WMACK, 0, 0);
+
+}
+
 static void onwmungrab(struct message *message)
 {
 
@@ -3001,6 +3026,7 @@ void init(void)
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_TIMEREXPIRE, ontimerexpire);
     channel_bind(EVENT_WMCONFIG, onwmconfig);
+    channel_bind(EVENT_WMFLUSH, onwmflush);
     channel_bind(EVENT_WMGRAB, onwmgrab);
     channel_bind(EVENT_WMREAD, onwmread);
     channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
