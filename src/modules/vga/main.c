@@ -124,34 +124,6 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 
 }
 
-/*
-static unsigned int videointerface_getcmap(unsigned int source, unsigned int count, void *buffer)
-{
-
-    unsigned char *b = buffer;
-    unsigned int i;
-
-    if (count > VGA_COLORMAP_LIMIT)
-        count = VGA_COLORMAP_LIMIT;
-
-    if (offset > count)
-        return 0;
-
-    for (i = offset; i < count * 3; i += 3)
-    {
-
-        io_outb(VGA_REG_DACRINDEX, i / 3);
-        b[i + 0] = io_inb(VGA_REG_DACDATA);
-        b[i + 1] = io_inb(VGA_REG_DACDATA);
-        b[i + 2] = io_inb(VGA_REG_DACDATA);
-
-    }
-
-    return i - offset;
-
-}
-*/
-
 static unsigned int videointerface_setcmap(unsigned int count, void *buffer)
 {
 
