@@ -137,8 +137,8 @@ void init(void)
     socket_init(&local);
     socket_init(&remote);
     socket_init(&router);
-    option_add("clock-service", "clock");
-    option_add("ethernet-service", "ethernet");
+    option_add("clock-service", "clock:0");
+    option_add("ethernet-service", "ethernet:0");
     option_add("local-address", "");
     option_add("remote-address", "");
     option_add("remote-port", "6667");

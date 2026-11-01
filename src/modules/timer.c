@@ -3,6 +3,7 @@
 #include "timer.h"
 
 static struct node_operands operands;
+static struct service service;
 
 static unsigned int getticks(struct timer_interface *interface, unsigned int ms)
 {
@@ -223,11 +224,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
             return request(interface, source, data);
 
-        case EVENT_READREQUEST:
-        case EVENT_STATREQUEST:
-        case EVENT_WALKREQUEST:
-            return service_place(&interface->service, source, event, count, data);
-
         }
 
     }
@@ -254,7 +250,7 @@ void timer_registerinterface(struct timer_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode, "timer");
+    service_registerchild(&interface->service, inode, &service);
 
 }
 
@@ -299,6 +295,9 @@ void module_init(void)
 {
 
     node_operands_init(&operands, 0, operands_place, 0);
+
+    service_init(&service);
+    service_registerdirectory(&service, "timer");
 
 }
 

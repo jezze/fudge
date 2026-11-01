@@ -2,6 +2,8 @@
 #include <abi.h>
 #include <disk.h>
 
+#define SERVICE_PATHSIZE                64
+
 static struct event_blockinfo blockinfo;
 static unsigned char gptefi[16] = {0x28, 0x73, 0x2A, 0xC1, 0x1F, 0xF8, 0xD2, 0x11, 0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B};
 static unsigned char gptbasic[16] = {0xA2, 0xA0, 0xD0, 0xEB, 0xE5, 0xB9, 0x33, 0x44, 0x87, 0xC0, 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7};
@@ -108,13 +110,18 @@ static void mountgpt(unsigned int source, unsigned int target, unsigned int ipar
 static void mount(unsigned int source, char *service, unsigned int index, unsigned int ipartition, char *name)
 {
 
-    unsigned int target = call_find(cstring_length(service), service, index);
+    char path[SERVICE_PATHSIZE];
+    unsigned int target;
     struct mbr mbr;
+
+    cstring_write_fmt(path, SERVICE_PATHSIZE, 0, "%s:%u\\0", service, &index);
+
+    target = channel_lookup(path);
 
     if (!target)
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "Service not found: %s:%u\n", service, &index);
+        channel_send_fmt(0, source, EVENT_ERROR, "Service not found: %s\n", path);
 
         return;
 

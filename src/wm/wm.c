@@ -3122,11 +3122,11 @@ void init(void)
     render_init();
     option_add("service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
-    option_add("keyboard-service", "keyboard");
-    option_add("mouse-service", "mouse");
-    option_add("video-service", "video");
-    option_add("clock-service", "clock");
-    option_add("timer-service", "timer");
+    option_add("keyboard-service", "keyboard:0");
+    option_add("mouse-service", "mouse:0");
+    option_add("video-service", "video:0");
+    option_add("clock-service", "clock:0");
+    option_add("timer-service", "timer:0");
     option_add("clipboard", "mem:clipboard");
     bindinput(1);
     channel_bind(EVENT_MAIN, onmain);

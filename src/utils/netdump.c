@@ -172,7 +172,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
-    option_add("ethernet-service", "ethernet");
+    option_add("ethernet-service", "ethernet:0");
     channel_bind(EVENT_MAIN, onmain);
     channel_bind(EVENT_DATA, ondata);
 

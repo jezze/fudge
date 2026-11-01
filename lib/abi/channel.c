@@ -490,22 +490,27 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
 }
 
+/* the part after the colon is walked in the service, as in block:1: a kernel directory answers with the child's inode */
 unsigned int channel_lookup(char *name)
 {
 
     unsigned int length = cstring_length(name);
     unsigned int offset = buffer_eachbyte(name, length, ':', 0);
-    unsigned int index = 0;
+    unsigned int target = call_find((offset) ? offset - 1 : length, name, 0);
+    char data[MESSAGE_SIZE];
+    struct event_walkrequest *request = (struct event_walkrequest *)data;
+    struct event_walkresponse response;
 
-    if (offset > 0)
-    {
+    if (!target || !offset || offset == length)
+        return target;
 
-        index = cstring_read_value(name + offset, length - offset, 10);
-        length = offset - 1;
+    request->parent = 0;
+    request->length = buffer_write(data, MESSAGE_SIZE, name + offset, length - offset, sizeof (struct event_walkrequest));
 
-    }
+    if (!channel_send(1, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + request->length, data))
+        return 0;
 
-    return call_find(length, name, index);
+    return (channel_wait(1, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response)) ? response.id : 0;
 
 }
 

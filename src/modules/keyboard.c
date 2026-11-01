@@ -3,6 +3,7 @@
 #include "keyboard.h"
 
 static struct node_operands operands;
+static struct service service;
 
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
@@ -22,11 +23,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
         case EVENT_UNLINK:
             return kernel_unlinknode(&interface->service.links, source);
-
-        case EVENT_READREQUEST:
-        case EVENT_STATREQUEST:
-        case EVENT_WALKREQUEST:
-            return service_place(&interface->service, source, event, count, data);
 
         }
 
@@ -64,7 +60,7 @@ void keyboard_registerinterface(struct keyboard_interface *interface)
     unsigned int inode = pool_picknode(&interface->resource, &operands);
 
     resource_register(&interface->resource);
-    service_register(&interface->service, inode, "keyboard");
+    service_registerchild(&interface->service, inode, &service);
 
 }
 
@@ -93,6 +89,9 @@ void module_init(void)
 {
 
     node_operands_init(&operands, 0, operands_place, 0);
+
+    service_init(&service);
+    service_registerdirectory(&service, "keyboard");
 
 }
 

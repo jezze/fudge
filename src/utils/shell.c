@@ -627,8 +627,8 @@ void init(void)
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
     ring_init(&input1, INPUTSIZE, inputdata1);
     ring_init(&input2, INPUTSIZE, inputdata2);
-    option_add("console-service", "console");
-    option_add("keyboard-service", "keyboard");
+    option_add("console-service", "console:0");
+    option_add("keyboard-service", "keyboard:0");
     channel_bind(EVENT_CONSOLEDATA, onconsoledata);
     channel_bind(EVENT_KEYPRESS, onkeypress);
     channel_bind(EVENT_KEYRELEASE, onkeyrelease);

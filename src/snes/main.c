@@ -750,9 +750,9 @@ void init(void)
     option_add("height", "768");
     option_add("bpp", "4");
     option_add("audio-service", "mixer");
-    option_add("keyboard-service", "keyboard");
-    option_add("timer-service", "timer");
-    option_add("video-service", "video");
+    option_add("keyboard-service", "keyboard:0");
+    option_add("timer-service", "timer:0");
+    option_add("video-service", "video:0");
     option_add("wm-service", "wm");
     channel_bind(EVENT_PATH, onpath);
 

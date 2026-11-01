@@ -220,7 +220,11 @@ static unsigned int writeservices(void)
         struct service *service = resource->data;
 
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
-        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      name: %s\n", service->name);
+        if (service->parent)
+            c += cstring_write_fmt(output, OUTPUTSIZE, c, "      name: %s:%u\n", service->parent->name, &service->index);
+        else
+            c += cstring_write_fmt(output, OUTPUTSIZE, c, "      name: %s\n", service->name);
+
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      inode: %u\n", &service->inode);
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 

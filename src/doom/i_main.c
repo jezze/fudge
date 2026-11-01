@@ -373,10 +373,10 @@ void init(void)
     option_add("renderwidth", "640");
     option_add("renderheight", "400");
     option_add("audio-service", "mixer");
-    option_add("keyboard-service", "keyboard");
-    option_add("mouse-service", "mouse");
-    option_add("timer-service", "timer");
-    option_add("video-service", "video");
+    option_add("keyboard-service", "keyboard:0");
+    option_add("mouse-service", "mouse:0");
+    option_add("timer-service", "timer:0");
+    option_add("video-service", "video:0");
     option_add("wm-service", "wm");
     channel_bind(EVENT_MAIN, onmain);
 

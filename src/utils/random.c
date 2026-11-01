@@ -18,7 +18,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
-    option_add("clock-service", "clock");
+    option_add("clock-service", "clock:0");
     channel_bind(EVENT_MAIN, onmain);
 
 }

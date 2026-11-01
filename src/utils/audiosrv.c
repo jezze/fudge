@@ -492,8 +492,8 @@ void init(void)
         ring_init(&clients[i].ring, RINGSIZE, buffers[i]);
 
     option_add("service", "mixer");
-    option_add("audio-service", "audio");
-    option_add("timer-service", "timer");
+    option_add("audio-service", "audio:0");
+    option_add("timer-service", "timer:0");
     channel_bind(EVENT_DATA, ondata);
     channel_bind(EVENT_INFO, oninfo);
     channel_bind(EVENT_MAIN, onmain);
