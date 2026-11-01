@@ -13,6 +13,9 @@
 #define AUDIOSIZE                       (48000 / 50 * 2)
 #define HELD_PAUSE                      1
 #define HELD_RESET                      2
+#define BUTTONS                         12
+#define SCREENS                         16
+#define SCREENSIZE                      (WIDTH * HEIGHT * 4)
 
 static Snes *snes;
 static struct keys keys;
@@ -21,6 +24,17 @@ static unsigned int fbwidth;
 static unsigned int fbheight;
 static unsigned int video;
 static unsigned int audio;
+static unsigned int keyboard;
+static unsigned int timer;
+static unsigned int wm;
+static unsigned int fullscreen;
+static unsigned int wanted;
+static unsigned int flushing;
+static unsigned int dirty;
+static unsigned int screentarget;
+static unsigned int screenid;
+static unsigned int *screen;
+static char screenname[32];
 static unsigned int rate;
 static int audioahead;
 static unsigned int counter;
@@ -104,10 +118,9 @@ static unsigned int getscale(void)
 }
 
 /* screen columns pick from the ppu's 512 half pixels */
-static void setupcolumns(void)
+static void setupcolumns(unsigned int scale)
 {
 
-    unsigned int scale = getscale();
     unsigned int x;
 
     for (x = 0; x < WIDTH * scale && x < SCALEDWIDTH; x++)
@@ -122,26 +135,40 @@ static void scalerow(unsigned int width, unsigned int y)
     unsigned int x;
 
     for (x = 0; x < width; x++)
-        scaled[x] = row[columns[x]];
+        scaled[x] = row[columns[x]] | 0xFF000000;
 
 }
 
-/* the 240 lines as upstream shows them (224 lines 8 down unless overscanning, interlaced frames take both fields) at the largest whole scale that fits, centered */
-static void present(void)
+/* one flush at a time is on its way to the wm; a frame shown meanwhile goes out when it answers */
+static void flush(void)
 {
 
-    unsigned int scale = getscale();
+    char *id = "screen";
+
+    if (flushing)
+    {
+
+        dirty = 1;
+
+        return;
+
+    }
+
+    channel_send(0, wm, EVENT_WMFLUSH, cstring_length_zero(id), id);
+
+    flushing = 1;
+    dirty = 0;
+
+}
+
+/* the 240 lines as upstream shows them (224 lines 8 down unless overscanning, interlaced frames take both fields), each line scale times */
+static void draw(unsigned int *buffer, unsigned int stride, unsigned int scale)
+{
+
     unsigned int totw = WIDTH * scale;
-    unsigned int toth = HEIGHT * scale;
-    unsigned int offx = (fbwidth - totw) / 2;
-    unsigned int offy = (fbheight - toth) / 2;
     unsigned int lines = (snes->ppu->frameOverscan) ? 239 : 224;
     unsigned int top = (snes->ppu->frameOverscan) ? 1 : 8;
-    struct event_videoflush videoflush;
     unsigned int line;
-
-    if (!framebuffer || !scale || totw > SCALEDWIDTH)
-        return;
 
     for (line = 0; line < HEIGHT; line++)
     {
@@ -152,14 +179,17 @@ static void present(void)
         for (i = 0; i < scale; i++)
         {
 
-            unsigned int *out = framebuffer + (offy + line * scale + i) * fbwidth + offx;
+            unsigned int *out = buffer + (line * scale + i) * stride;
             unsigned int y = line - top;
             unsigned int current = (i * 2) / scale;
 
             if (line < top || y >= lines)
             {
 
-                buffer_clear(out, totw * 4);
+                unsigned int x;
+
+                for (x = 0; x < totw; x++)
+                    out[x] = 0xFF000000;
 
                 continue;
 
@@ -182,6 +212,39 @@ static void present(void)
         }
 
     }
+
+}
+
+/* at the largest whole scale that fits, centered; in a window at 1x, which the wm scales */
+static void present(void)
+{
+
+    unsigned int scale = getscale();
+    unsigned int totw = WIDTH * scale;
+    unsigned int toth = HEIGHT * scale;
+    unsigned int offx = (fbwidth - totw) / 2;
+    unsigned int offy = (fbheight - toth) / 2;
+    struct event_videoflush videoflush;
+
+    if (!fullscreen)
+    {
+
+        if (screen)
+        {
+
+            draw(screen, WIDTH, 1);
+            flush();
+
+        }
+
+        return;
+
+    }
+
+    if (!framebuffer || !scale || totw > SCALEDWIDTH)
+        return;
+
+    draw(framebuffer + offy * fbwidth + offx, fbwidth, scale);
 
     videoflush.x = offx;
     videoflush.y = offy;
@@ -254,117 +317,6 @@ static void ontimertick(struct message *message)
 
 }
 
-/* frames follow the timer, and what arrived during one (ticks, keys) is taken before the next, so the mailbox never fills and drops keys; a stall of more than CATCHUP frames is skipped */
-static void run(void)
-{
-
-    while (channel_drain(0))
-    {
-
-        unsigned int due = ticks * getframerate() / TICKRATE;
-
-        if (paused || due - frames > CATCHUP)
-            frames = (paused) ? due : due - 1;
-
-        if (audio)
-            fillaudio();
-
-        if (frames < due)
-        {
-
-            unsigned int count = rate / getframerate();
-
-            snes_runFrame(snes);
-
-            /* also without a device, so the dsp's count of new samples stays one frame's */
-            snes_setSamples(snes, audiobuffer, (audio) ? count : 1);
-
-            if (audio)
-                sendaudio(count);
-
-            frames++;
-
-            if (frames == due)
-                present();
-
-        }
-
-        else if (!channel_process(0))
-            break;
-
-    }
-
-}
-
-static void onkeypress(struct message *message)
-{
-
-    struct event_keypress *keypress = message->data;
-    unsigned int id = keys_getcode(&keys, keypress->scancode);
-
-    switch (id)
-    {
-
-    case KEYS_KEY_ESCAPE:
-        channel_close(0);
-
-        break;
-
-    case KEYS_KEY_P:
-        if (!(held & HELD_PAUSE))
-            paused = !paused;
-
-        held |= HELD_PAUSE;
-
-        break;
-
-    case KEYS_KEY_R:
-    case KEYS_KEY_E:
-        if (!(held & HELD_RESET))
-            snes_reset(snes, id == KEYS_KEY_E);
-
-        held |= HELD_RESET;
-
-        break;
-
-    default:
-        setbutton(id, 1);
-
-        break;
-
-    }
-
-}
-
-static void onkeyrelease(struct message *message)
-{
-
-    struct event_keyrelease *keyrelease = message->data;
-    unsigned int id = keys_getcode(&keys, keyrelease->scancode);
-
-    switch (id)
-    {
-
-    case KEYS_KEY_P:
-        held &= ~HELD_PAUSE;
-
-        break;
-
-    case KEYS_KEY_R:
-    case KEYS_KEY_E:
-        held &= ~HELD_RESET;
-
-        break;
-
-    default:
-        setbutton(id, 0);
-
-        break;
-
-    }
-
-}
-
 static unsigned int setaudioformat(unsigned int value)
 {
 
@@ -413,9 +365,297 @@ static void setupvideo(void)
         fbwidth = videoinfo.width;
         fbheight = videoinfo.height;
 
-        setupcolumns();
+        setupcolumns(getscale());
 
     }
+
+}
+
+static void releaseall(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < BUTTONS; i++)
+        snes_setButtonState(snes, 1, i, 0);
+
+    held = 0;
+
+}
+
+static void enterfullscreen(void)
+{
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+    setupvideo();
+    releaseall();
+
+    keys.mod = 0;
+    fullscreen = 1;
+    wanted = 1;
+
+    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+
+}
+
+static void leavefullscreen(void)
+{
+
+    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+    releaseall();
+    setupcolumns(1);
+
+    framebuffer = 0;
+    fullscreen = 0;
+    wanted = 0;
+
+    if (wm)
+    {
+
+        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+
+    }
+
+}
+
+/* the grab is answered on channel 1, so channel 0 must have room for what the wm sends before answering: run switches between drains, when its slots are free, and ticks stay away meanwhile */
+static void switchscreen(unsigned int on)
+{
+
+    channel_send(0, timer, EVENT_UNLINK, 0, 0);
+
+    if (on)
+        enterfullscreen();
+    else
+        leavefullscreen();
+
+    channel_send(0, timer, EVENT_LINK, 0, 0);
+
+}
+
+/* frames follow the timer, and what arrived during one (ticks, keys) is taken before the next, so the mailbox never fills and drops keys; a stall of more than CATCHUP frames is skipped */
+static void run(void)
+{
+
+    while (channel_drain(0))
+    {
+
+        unsigned int due;
+
+        if (wanted != fullscreen)
+            switchscreen(wanted);
+
+        due = ticks * getframerate() / TICKRATE;
+
+        if (paused || due - frames > CATCHUP)
+            frames = (paused) ? due : due - 1;
+
+        if (audio)
+            fillaudio();
+
+        if (frames < due)
+        {
+
+            unsigned int count = rate / getframerate();
+
+            snes_runFrame(snes);
+
+            /* also without a device, so the dsp's count of new samples stays one frame's */
+            snes_setSamples(snes, audiobuffer, (audio) ? count : 1);
+
+            if (audio)
+                sendaudio(count);
+
+            frames++;
+
+            if (frames == due)
+                present();
+
+        }
+
+        else if (!channel_process(0))
+            break;
+
+    }
+
+}
+
+/* Alt+F and Alt+W ask for the screen or the window, when there is a window */
+static void press(unsigned int id, unsigned int mod)
+{
+
+    if (screen && (mod & KEYS_MOD_ALT) && (id == KEYS_KEY_F || id == KEYS_KEY_W))
+    {
+
+        wanted = (id == KEYS_KEY_F);
+
+        return;
+
+    }
+
+    switch (id)
+    {
+
+    case KEYS_KEY_ESCAPE:
+        channel_close(0);
+
+        break;
+
+    case KEYS_KEY_P:
+        if (!(held & HELD_PAUSE))
+            paused = !paused;
+
+        held |= HELD_PAUSE;
+
+        break;
+
+    case KEYS_KEY_R:
+    case KEYS_KEY_E:
+        if (!(held & HELD_RESET))
+            snes_reset(snes, id == KEYS_KEY_E);
+
+        held |= HELD_RESET;
+
+        break;
+
+    default:
+        setbutton(id, 1);
+
+        break;
+
+    }
+
+}
+
+static void release(unsigned int id)
+{
+
+    switch (id)
+    {
+
+    case KEYS_KEY_P:
+        held &= ~HELD_PAUSE;
+
+        break;
+
+    case KEYS_KEY_R:
+    case KEYS_KEY_E:
+        held &= ~HELD_RESET;
+
+        break;
+
+    default:
+        setbutton(id, 0);
+
+        break;
+
+    }
+
+}
+
+static void onkeypress(struct message *message)
+{
+
+    struct event_keypress *keypress = message->data;
+    unsigned int id = keys_getcode(&keys, keypress->scancode);
+
+    press(id, keys.mod);
+
+}
+
+static void onkeyrelease(struct message *message)
+{
+
+    struct event_keyrelease *keyrelease = message->data;
+
+    release(keys_getcode(&keys, keyrelease->scancode));
+
+}
+
+static void onwmkeypress(struct message *message)
+{
+
+    struct event_wmkeypress *wmkeypress = message->data;
+
+    if (!fullscreen)
+        press(wmkeypress->id, wmkeypress->keymod);
+
+}
+
+static void onwmkeyrelease(struct message *message)
+{
+
+    struct event_wmkeyrelease *wmkeyrelease = message->data;
+
+    if (!fullscreen)
+        release(wmkeyrelease->id);
+
+}
+
+static void onwmack(struct message *message)
+{
+
+    flushing = 0;
+
+    if (dirty && !fullscreen)
+        flush();
+
+}
+
+/* a mem: file the wm shows in a window, made as large as the screen by writing its last pixel */
+static unsigned int createscreen(void)
+{
+
+    unsigned int parent;
+    unsigned int zero = 0;
+    unsigned int i;
+
+    screentarget = fs_auth("mem:");
+    parent = (screentarget) ? fs_walk(1, screentarget, 0, "mem:") : 0;
+
+    for (i = 0; i < SCREENS && parent && !screenid; i++)
+    {
+
+        cstring_write_fmt(screenname, 32, 0, "snesscreen%u\\0", &i);
+
+        screenid = fs_create(1, screentarget, parent, screenname, cstring_length(screenname));
+
+    }
+
+    if (screenid && fs_write(1, screentarget, screenid, &zero, 4, SCREENSIZE - 4) == 4)
+        screen = fs_mmap(1, screentarget, screenid, 0);
+
+    return screen != 0;
+
+}
+
+static void destroyscreen(void)
+{
+
+    if (screen)
+        fs_munmap(1, screentarget, screenid);
+
+    if (screenid)
+        fs_remove(1, screentarget, fs_walk(1, screentarget, 0, "mem:"), screenid);
+
+}
+
+static void showwindow(char *path)
+{
+
+    unsigned int width = WIDTH;
+    unsigned int height = HEIGHT;
+
+    setupcolumns(1);
+    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ window id \"window\" label \"SNES (%s)\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", path + fs_dirlength(path), screenname, &width, &height);
 
 }
 
@@ -465,15 +705,14 @@ static unsigned int load(unsigned int source, char *path)
 static void onpath(struct message *message)
 {
 
-    unsigned int keyboard = channel_lookup(option_getstring("keyboard-service"));
-    unsigned int timer = channel_lookup(option_getstring("timer-service"));
-    unsigned int wm = channel_lookup(option_getstring("wm-service"));
-
     if (started)
         return;
 
     started = 1;
+    keyboard = channel_lookup(option_getstring("keyboard-service"));
+    timer = channel_lookup(option_getstring("timer-service"));
     video = channel_lookup(option_getstring("video-service"));
+    wm = channel_lookup(option_getstring("wm-service"));
 
     if (!keyboard || !timer || !video)
     {
@@ -498,34 +737,31 @@ static void onpath(struct message *message)
     if (load(message->source, message->data))
     {
 
-        if (wm)
-        {
-
-            channel_send(1, wm, EVENT_WMGRAB, 0, 0);
-            channel_wait(1, wm, EVENT_WMACK, 0, 0);
-
-        }
-
-        setupvideo();
         channel_bind(EVENT_TIMERTICK, ontimertick);
         channel_bind(EVENT_KEYPRESS, onkeypress);
         channel_bind(EVENT_KEYRELEASE, onkeyrelease);
-        channel_send(0, keyboard, EVENT_LINK, 0, 0);
+        channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
+        channel_bind(EVENT_WMKEYRELEASE, onwmkeyrelease);
+        channel_bind(EVENT_WMACK, onwmack);
+
+        if (wm && createscreen())
+            showwindow(message->data);
+        else
+            enterfullscreen();
+
         channel_send(0, timer, EVENT_LINK, 0, 0);
         run();
-        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
         channel_send(0, timer, EVENT_UNLINK, 0, 0);
 
-        if (wm)
-        {
+        if (fullscreen)
+            leavefullscreen();
 
-            channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
-            channel_wait(1, wm, EVENT_WMACK, 0, 0);
-
-        }
+        if (screen)
+            channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
 
     }
 
+    destroyscreen();
     port_destroy();
 
 }
