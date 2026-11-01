@@ -7,6 +7,42 @@ static struct event_blockinfo blockinfo;
 static unsigned int block;
 static unsigned int partoffset;
 
+#define CACHESLOTS 4
+
+struct cacheslot
+{
+
+    unsigned int offset;
+    unsigned int count;
+    char data[EXT2_MAXBLOCKSIZE];
+
+};
+
+static struct cacheslot cache[CACHESLOTS];
+static unsigned int cachenext;
+
+static void updatecache(unsigned int offset, unsigned int count)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < CACHESLOTS; i++)
+    {
+
+        struct cacheslot *slot = &cache[i];
+
+        if (slot->offset + slot->count <= offset || slot->offset >= offset + count)
+            continue;
+
+        if (slot->offset >= offset && slot->offset + slot->count <= offset + count)
+            buffer_copy(slot->data, (char *)blockinfo.buffer + (slot->offset - offset), slot->count);
+        else
+            slot->count = 0;
+
+    }
+
+}
+
 static unsigned int sendblockrequest(unsigned int event, unsigned int reply, unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
@@ -32,12 +68,48 @@ static unsigned int sendblockreadrequest(unsigned int count, unsigned int sector
 static unsigned int sendblockwriterequest(unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
-    return sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, count, sector, blocksize);
+    unsigned int written = sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, count, sector, blocksize);
+
+    updatecache(sector * blocksize, written);
+
+    return written;
 
 }
 
 static struct ext2_superblock sb;
 static unsigned int blocksize;
+
+static char *readmeta(unsigned int sector)
+{
+
+    unsigned int offset = sector * blocksize;
+    struct cacheslot *slot;
+    unsigned int i;
+
+    for (i = 0; i < CACHESLOTS; i++)
+    {
+
+        slot = &cache[i];
+
+        if (slot->count == blocksize && slot->offset == offset)
+            return slot->data;
+
+    }
+
+    if (sendblockreadrequest(blocksize, sector, blocksize) != blocksize || blocksize > EXT2_MAXBLOCKSIZE)
+        return (char *)blockinfo.buffer;
+
+    slot = &cache[cachenext];
+    cachenext = (cachenext + 1) % CACHESLOTS;
+
+    buffer_copy(slot->data, (void *)blockinfo.buffer, blocksize);
+
+    slot->offset = offset;
+    slot->count = blocksize;
+
+    return slot->data;
+
+}
 
 static void readsuperblock(void)
 {
@@ -67,8 +139,7 @@ static void readblockgroup(struct ext2_blockgroup *bg, unsigned int index)
     unsigned int sector = sb.superblockIndex + 1 + index / slots;
     unsigned int offset = (index % slots) * sizeof (struct ext2_blockgroup);
 
-    sendblockreadrequest(blocksize, sector, blocksize);
-    buffer_copy(bg, (char *)blockinfo.buffer + offset, sizeof (struct ext2_blockgroup));
+    buffer_copy(bg, readmeta(sector) + offset, sizeof (struct ext2_blockgroup));
     ext2_convertblockgroup(bg);
 
 }
@@ -94,8 +165,7 @@ static void readnode(struct ext2_node *node, unsigned int start, unsigned int in
     unsigned int sector = start + index / slots;
     unsigned int offset = (index % slots) * sb.nodeSize;
 
-    sendblockreadrequest(blocksize, sector, blocksize);
-    buffer_copy(node, (char *)blockinfo.buffer + offset, sizeof (struct ext2_node));
+    buffer_copy(node, readmeta(sector) + offset, sizeof (struct ext2_node));
     ext2_convertnode(node);
 
 }
@@ -334,9 +404,7 @@ static unsigned int getindirect(unsigned int sector, unsigned int index)
     if (sector)
     {
 
-        unsigned int *table = (unsigned int *)blockinfo.buffer;
-
-        sendblockreadrequest(blocksize, sector, blocksize);
+        unsigned int *table = (unsigned int *)readmeta(sector);
 
         return ext2_read32(&table[index]);
 
@@ -398,9 +466,7 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
         if (!table)
             return 0;
 
-        sendblockreadrequest(blocksize, table, blocksize);
-
-        entries = (unsigned int *)blockinfo.buffer + index % slots;
+        entries = (unsigned int *)readmeta(table) + index % slots;
         available = slots - index % slots;
 
     }
