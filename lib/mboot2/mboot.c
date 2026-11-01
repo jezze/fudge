@@ -33,6 +33,15 @@ void mboot_setup(unsigned long address, unsigned long magic)
             struct elf_header *eheader = (struct elf_header *)(unsigned long)module->start;
             struct cpio_header *cheader = (struct cpio_header *)(unsigned long)module->start;
 
+            if (module->end > ARCH_KERNEL_STACKBASE)
+            {
+
+                debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "Boot module overlaps kernel stacks");
+
+                continue;
+
+            }
+
             arch_kmap(module->start, module->start, ((module->end - module->start) + 0xFFF) & ~0xFFF, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
             if (elf_validate(eheader))
