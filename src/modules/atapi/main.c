@@ -15,6 +15,9 @@
 #define COMMAND_READCAPACITY            0x25
 #define COMMAND_READ10                  0x28
 #define ATTEMPTS                        3
+#define ID_CAPABILITIES                 49
+#define ID_CAPABILITIES_DMA             (1 << 8)
+#define BOUNCESIZE                      (TASK_BUFFERSIZE + BLOCKSIZE)
 
 static struct base_driver driver;
 static struct block_interface blockinterface;
@@ -25,6 +28,8 @@ static unsigned int device;
 static void *blockbuffer;
 static unsigned int active;
 static unsigned int skip;
+static unsigned int dma;
+static unsigned int bounce[BOUNCESIZE / 4];
 
 static void receive(struct block_session *session)
 {
@@ -61,6 +66,27 @@ static void finish(struct block_session *session)
 
 }
 
+/* the whole sectors arrive in the bounce buffer: keep the requested bytes */
+static void progressdma(struct block_session *session)
+{
+
+    unsigned int result = ide_checkdma(device);
+    unsigned char status;
+
+    if (result == IDE_DMA_BUSY)
+        return;
+
+    status = ide_getstatus(device);
+
+    if (result == IDE_DMA_FAILED || (status & STATUS_ERROR))
+        session->count = 0;
+    else
+        buffer_copy(blockbuffer, (char *)bounce + skip, session->count);
+
+    finish(session);
+
+}
+
 static void progress(void)
 {
 
@@ -69,6 +95,15 @@ static void progress(void)
 
     if (!active)
         return;
+
+    if (dma)
+    {
+
+        progressdma(session);
+
+        return;
+
+    }
 
     status = ide_getstatus(device);
 
@@ -154,7 +189,28 @@ static unsigned int blockinterface_startsession(struct block_session *session)
     packet[7] = sectors >> 8;
     packet[8] = sectors;
 
-    if (!ide_packet(device, packet, BLOCKSIZE))
+    if (dma)
+    {
+
+        if (ide_setdma(device, (unsigned long)bounce, sectors * BLOCKSIZE, 1) && ide_packet(device, packet, BLOCKSIZE, 1))
+        {
+
+            ide_startdma(device);
+
+        }
+
+        else
+        {
+
+            session->count = 0;
+
+            finish(session);
+
+        }
+
+    }
+
+    else if (!ide_packet(device, packet, BLOCKSIZE, 0))
     {
 
         session->count = 0;
@@ -184,7 +240,7 @@ static unsigned int readcapacity(void)
 
         unsigned int count = 0;
 
-        if (!ide_packet(device, packet, BLOCKSIZE))
+        if (!ide_packet(device, packet, BLOCKSIZE, 0))
             continue;
 
         while (ide_wait(device))
@@ -228,6 +284,7 @@ static void driver_reset(unsigned int id)
 {
 
     device = id;
+    dma = ide_hasdma(id) && (identity[ID_CAPABILITIES] & ID_CAPABILITIES_DMA);
     blockinterface.blockcount = readcapacity();
 
 }

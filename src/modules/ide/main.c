@@ -44,6 +44,16 @@
 #define ID_LBA48MAX                     0x64
 #define LIMIT_POLL                      100000
 #define CHANNELS                        2
+#define BM_COMMAND                      0x00
+#define BM_COMMAND_START                0x01
+#define BM_COMMAND_READ                 0x08
+#define BM_STATUS                       0x02
+#define BM_STATUS_ERROR                 0x02
+#define BM_STATUS_INTERRUPT             0x04
+#define BM_PRD                          0x04
+#define PRDS                            2
+#define PRD_END                         0x80000000
+#define PRD_BOUNDARY                    0x10000
 
 static struct base_driver driver;
 static struct base_bus bus;
@@ -51,6 +61,9 @@ static unsigned short pcontrol;
 static unsigned short scontrol;
 static unsigned short pdata;
 static unsigned short sdata;
+static unsigned short pmaster;
+static unsigned short smaster;
+static unsigned int prdmemory[CHANNELS * PRDS * 2 + 4];
 static unsigned int owners[CHANNELS];
 static struct spinlock spinlock;
 
@@ -107,6 +120,36 @@ static unsigned short getdata(unsigned int id)
     }
 
     return 0;
+
+}
+
+static unsigned short getmaster(unsigned int id)
+{
+
+    switch (id)
+    {
+
+    case IDE_PM:
+    case IDE_PS:
+        return pmaster;
+
+    case IDE_SM:
+    case IDE_SS:
+        return smaster;
+
+    }
+
+    return 0;
+
+}
+
+/* each channel's table is 16-byte aligned, so it never crosses a 64 KB boundary */
+static unsigned int *getprd(unsigned int id)
+{
+
+    unsigned int *tables = (unsigned int *)(((unsigned long)prdmemory + 15) & ~15UL);
+
+    return tables + getchannel(id) * PRDS * 2;
 
 }
 
@@ -363,7 +406,7 @@ void ide_unlock(unsigned int id)
 
 }
 
-unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit)
+unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit, unsigned int dma)
 {
 
     unsigned short data = getdata(id);
@@ -388,7 +431,7 @@ unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit)
     io_inb(control);
     io_inb(control);
     io_inb(control);
-    io_outb(data + REG_FEATURE, 0);
+    io_outb(data + REG_FEATURE, (dma) ? 1 : 0);
     io_outb(data + REG_LBA1, limit);
     io_outb(data + REG_LBA2, limit >> 8);
     io_outb(data + REG_COMMAND, REG_COMMAND_ATAPI);
@@ -430,6 +473,93 @@ void ide_rdata(unsigned int id, void *buffer, unsigned int count)
 
     for (i = 0; i < count / 2; i++)
         out[i] = io_inw(data);
+
+}
+
+unsigned int ide_hasdma(unsigned int id)
+{
+
+    return getmaster(id) != 0;
+
+}
+
+/* address is physical; an entry may not cross a 64 KB boundary */
+unsigned int ide_setdma(unsigned int id, unsigned long address, unsigned int count, unsigned int read)
+{
+
+    unsigned short master = getmaster(id);
+    unsigned int *prd = getprd(id);
+    unsigned int i;
+
+    if (!master || !count)
+        return 0;
+
+    for (i = 0; i < PRDS && count; i++)
+    {
+
+        unsigned int length = PRD_BOUNDARY - (address & (PRD_BOUNDARY - 1));
+
+        if (length > count)
+            length = count;
+
+        prd[i * 2] = address;
+        prd[i * 2 + 1] = length & 0xFFFF;
+        address += length;
+        count -= length;
+
+    }
+
+    if (count)
+        return 0;
+
+    prd[i * 2 - 1] |= PRD_END;
+
+    io_outb(master + BM_COMMAND, 0);
+    io_outb(master + BM_STATUS, BM_STATUS_ERROR | BM_STATUS_INTERRUPT);
+    io_outd(master + BM_PRD, (unsigned long)prd);
+    io_outb(master + BM_COMMAND, (read) ? BM_COMMAND_READ : 0);
+
+    return 1;
+
+}
+
+void ide_startdma(unsigned int id)
+{
+
+    unsigned short master = getmaster(id);
+
+    io_outb(master + BM_COMMAND, io_inb(master + BM_COMMAND) | BM_COMMAND_START);
+
+}
+
+/* IDE_DMA_BUSY while the transfer runs, then the engine is stopped and the result returned */
+unsigned int ide_checkdma(unsigned int id)
+{
+
+    unsigned short master = getmaster(id);
+    unsigned char status = io_inb(master + BM_STATUS);
+
+    if (!(status & BM_STATUS_INTERRUPT))
+        return IDE_DMA_BUSY;
+
+    io_outb(master + BM_COMMAND, io_inb(master + BM_COMMAND) & ~BM_COMMAND_START);
+    io_outb(master + BM_STATUS, status & (BM_STATUS_ERROR | BM_STATUS_INTERRUPT));
+
+    return (status & BM_STATUS_ERROR) ? IDE_DMA_FAILED : IDE_DMA_DONE;
+
+}
+
+void ide_rdma48(unsigned int id, unsigned int count, unsigned int sector)
+{
+
+    setpio48(id, sector, count, REG_COMMAND_DMA48READ);
+
+}
+
+void ide_wdma48(unsigned int id, unsigned int count, unsigned int sector)
+{
+
+    setpio48(id, sector, count, REG_COMMAND_DMA48WRITE);
 
 }
 
@@ -506,11 +636,22 @@ static void driver_reset(unsigned int id)
     unsigned long bar1 = pci_getbar(id, 1);
     unsigned long bar2 = pci_getbar(id, 2);
     unsigned long bar3 = pci_getbar(id, 3);
+    unsigned long bar4 = pci_getbar(id, 4);
 
     pdata = bar0 + 0x1F0 * (!bar0);
     pcontrol = bar1 + 0x3F6 * (!bar1);
     sdata = bar2 + 0x170 * (!bar2);
     scontrol = bar3 + 0x376 * (!bar3);
+
+    if (bar4)
+    {
+
+        pmaster = bar4;
+        smaster = bar4 + 8;
+
+        pci_setmaster(id);
+
+    }
 
     io_outb(pcontrol, 0);
     io_outb(scontrol, 0);

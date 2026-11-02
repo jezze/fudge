@@ -10,10 +10,13 @@
 #define STATUS_ERROR                    0x01
 #define STATUS_DRQ                      0x08
 #define STATUS_BUSY                     0x80
+#define ID_CAPABILITIES                 49
+#define ID_CAPABILITIES_DMA             (1 << 8)
 
 static unsigned int device;
 static void *blockbuffer;
 static unsigned int active;
+static unsigned int dma;
 static unsigned short identity[256];
 static struct base_driver driver;
 static struct block_interface blockinterface;
@@ -29,6 +32,25 @@ static void finish(struct block_session *session)
 
 }
 
+/* one interrupt for the whole transfer: the bus master says whether it was ours */
+static void progressdma(struct block_session *session)
+{
+
+    unsigned int result = ide_checkdma(device);
+    unsigned char status;
+
+    if (result == IDE_DMA_BUSY)
+        return;
+
+    status = ide_getstatus(device);
+
+    if (result == IDE_DMA_FAILED || (status & STATUS_ERROR))
+        session->count = 0;
+
+    finish(session);
+
+}
+
 static void progress(void)
 {
 
@@ -37,6 +59,15 @@ static void progress(void)
 
     if (!active)
         return;
+
+    if (dma)
+    {
+
+        progressdma(session);
+
+        return;
+
+    }
 
     status = ide_getstatus(device);
 
@@ -132,6 +163,40 @@ static unsigned int blockinterface_startsession(struct block_session *session)
     if (session->count > TASK_BUFFERSIZE)
         session->count = TASK_BUFFERSIZE;
 
+    if (dma)
+    {
+
+        unsigned int sectors = session->count / BLOCKSIZE;
+
+        session->count = sectors * BLOCKSIZE;
+
+        if (ide_setdma(device, (unsigned long)buffer, session->count, session->type == BLOCK_TYPE_READ))
+        {
+
+            if (session->type == BLOCK_TYPE_READ)
+                ide_rdma48(device, sectors, session->start / BLOCKSIZE);
+            else
+                ide_wdma48(device, sectors, session->start / BLOCKSIZE);
+
+            ide_startdma(device);
+
+        }
+
+        else
+        {
+
+            session->count = 0;
+
+            finish(session);
+
+        }
+
+        spinlock_release(&spinlock);
+
+        return MESSAGE_OK;
+
+    }
+
     switch (session->type)
     {
 
@@ -191,6 +256,7 @@ static void driver_reset(unsigned int id)
 {
 
     device = id;
+    dma = ide_hasdma(id) && (identity[ID_CAPABILITIES] & ID_CAPABILITIES_DMA);
 
 }
 
