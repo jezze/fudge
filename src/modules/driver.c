@@ -43,10 +43,15 @@ static void detach(struct base_driver *driver)
 
 }
 
+/* a driver is registered on the first of its buses that exists, so one driver can name several and only the present one takes it */
 void base_registerdriver(struct base_driver *driver, unsigned int type)
 {
 
     struct resource *current = 0;
+    unsigned int found = 0;
+
+    if (driver->type)
+        return;
 
     while ((current = resource_foreachtype(current, RESOURCE_BUS)))
     {
@@ -57,6 +62,8 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
         {
 
             unsigned int id = 0;
+
+            found = 1;
 
             while (!driver->id && (id = bus->next(id)))
             {
@@ -70,6 +77,9 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
 
     }
 
+    if (!found)
+        return;
+
     driver->type = type;
 
     resource_register(&driver->resource);
@@ -78,6 +88,9 @@ void base_registerdriver(struct base_driver *driver, unsigned int type)
 
 void base_unregisterdriver(struct base_driver *driver, unsigned int type)
 {
+
+    if (driver->type != type)
+        return;
 
     if (driver->id)
         detach(driver);
@@ -137,6 +150,7 @@ void base_initdriver(struct base_driver *driver, char *name, void (*init)(unsign
     resource_init(&driver->resource, RESOURCE_DRIVER, driver);
 
     driver->name = name;
+    driver->type = 0;
     driver->id = 0;
     driver->init = init;
     driver->match = match;
