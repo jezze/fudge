@@ -8,6 +8,7 @@
 
 #define BLOCKSIZE                       512
 
+static unsigned int device;
 static void *blockbuffer;
 static unsigned short identity[256];
 static struct base_driver driver;
@@ -17,7 +18,7 @@ static struct spinlock spinlock;
 static void progress(void)
 {
 
-    unsigned char status = ide_getstatus(IDE_PM);
+    unsigned char status = ide_getstatus(device);
     struct block_session *session = block_getsession(&blockinterface);
 
     if (!session->source)
@@ -38,7 +39,7 @@ static void progress(void)
     {
 
     case BLOCK_TYPE_READ:
-        ide_rblock(IDE_PM, (char *)blockbuffer + session->offset);
+        ide_rblock(device, (char *)blockbuffer + session->offset);
 
         session->offset += BLOCKSIZE;
 
@@ -51,7 +52,7 @@ static void progress(void)
         if (session->offset < session->count)
         {
 
-            ide_wblock(IDE_PM, (char *)blockbuffer + session->offset);
+            ide_wblock(device, (char *)blockbuffer + session->offset);
 
             session->offset += BLOCKSIZE;
 
@@ -106,19 +107,19 @@ static void blockinterface_startsession(struct block_session *session)
     {
 
     case BLOCK_TYPE_READ:
-        ide_rpio48(IDE_PM, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
+        ide_rpio48(device, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        ide_wpio48(IDE_PM, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
+        ide_wpio48(device, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
 
-        if (ide_wait(IDE_PM))
+        if (ide_wait(device))
         {
 
             session->offset = BLOCKSIZE;
 
-            ide_wblock(IDE_PM, blockbuffer);
+            ide_wblock(device, blockbuffer);
 
         }
 
@@ -151,12 +152,14 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    return type == IDE_BUS && id == IDE_PM && ide_identify(id, identity);
+    return type == IDE_BUS && ide_identify(id, identity);
 
 }
 
 static void driver_reset(unsigned int id)
 {
+
+    device = id;
 
 }
 
