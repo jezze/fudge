@@ -4,6 +4,7 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/keyboard.h>
+#include "../platform.h"
 #include "amiga.h"
 
 #define EXTENDED                        0x100
@@ -138,14 +139,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, AMIGA_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, AMIGA_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

@@ -1,1 +1,1 @@
-include $(DIR_SRC)/modules/amiga/rules.mk
+include $(DIR_SRC)/modules/platform/amiga/rules.mk

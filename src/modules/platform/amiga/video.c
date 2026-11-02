@@ -4,6 +4,7 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/video.h>
+#include "../platform.h"
 #include "amiga.h"
 
 #define BPP                             4
@@ -404,14 +405,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, AMIGA_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, AMIGA_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

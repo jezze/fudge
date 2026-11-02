@@ -1,6 +1,6 @@
 {
   modules: [
-    { path: initrd:kernel/amiga.ko }
+    { path: initrd:kernel/platform.ko }
     { path: initrd:kernel/amiga-timer.ko }
     { path: initrd:kernel/amiga-serial.ko }
     { path: initrd:kernel/amiga-keyboard.ko }

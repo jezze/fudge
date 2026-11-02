@@ -4,6 +4,7 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/console.h>
+#include "../platform.h"
 #include "amiga.h"
 
 #define REG_CUSTOM                      0x00DFF000
@@ -73,7 +74,7 @@ static void driver_attach(unsigned int id)
     custom[REG_SERPER / 2] = REG_SERPER_115200;
 
     console_registerinterface(&consoleinterface);
-    amiga_setroutine(AMIGA_IRQ_RBF, handleirq);
+    platform_setroutine(AMIGA_IRQ_RBF, handleirq);
 
 }
 
@@ -81,7 +82,7 @@ static void driver_detach(unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);
-    amiga_unsetroutine(AMIGA_IRQ_RBF, handleirq);
+    platform_unsetroutine(AMIGA_IRQ_RBF, handleirq);
 
 }
 
@@ -95,14 +96,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, AMIGA_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, AMIGA_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

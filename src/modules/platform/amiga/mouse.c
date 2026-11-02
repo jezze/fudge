@@ -4,6 +4,7 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/mouse.h>
+#include "../platform.h"
 #include "amiga.h"
 
 #define REG_CUSTOM                      0x00DFF000
@@ -96,7 +97,7 @@ static void driver_attach(unsigned int id)
     position = custom[REG_JOY0DAT / 2];
 
     mouse_registerinterface(&mouseinterface);
-    amiga_setroutine(AMIGA_IRQ_VERTB, handleirq);
+    platform_setroutine(AMIGA_IRQ_VERTB, handleirq);
 
 }
 
@@ -104,7 +105,7 @@ static void driver_detach(unsigned int id)
 {
 
     mouse_unregisterinterface(&mouseinterface);
-    amiga_unsetroutine(AMIGA_IRQ_VERTB, handleirq);
+    platform_unsetroutine(AMIGA_IRQ_VERTB, handleirq);
 
 }
 
@@ -118,14 +119,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, AMIGA_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, AMIGA_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

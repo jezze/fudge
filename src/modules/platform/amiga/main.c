@@ -3,6 +3,7 @@
 #include <cpu.h>
 #include <arch.h>
 #include <modules/bus.h>
+#include "../platform.h"
 #include "amiga.h"
 
 #define DEVICES                         (AMIGA_VIDEO + 1)
@@ -134,7 +135,7 @@ static void handleirq(void)
 
 }
 
-unsigned int amiga_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
+unsigned int platform_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES || !addroutine(irq, routine))
@@ -146,7 +147,7 @@ unsigned int amiga_setroutine(unsigned int irq, void (*routine)(unsigned int irq
 
 }
 
-unsigned int amiga_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
+unsigned int platform_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES)
@@ -187,7 +188,7 @@ unsigned int amiga_setciaroutine(unsigned int irq, void (*routine)(unsigned int 
     ciaroutines[irq] = routine;
     ciaa[REG_CIAA_ICR] = REG_CIAA_ICR_SET | (1U << irq);
 
-    return amiga_setroutine(AMIGA_IRQ_PORTS, handleports);
+    return platform_setroutine(AMIGA_IRQ_PORTS, handleports);
 
 }
 
@@ -210,7 +211,7 @@ unsigned int amiga_unsetciaroutine(unsigned int irq, void (*routine)(unsigned in
 
     }
 
-    return amiga_unsetroutine(AMIGA_IRQ_PORTS, handleports);
+    return platform_unsetroutine(AMIGA_IRQ_PORTS, handleports);
 
 }
 
@@ -239,7 +240,7 @@ void module_init(void)
     for (i = 1; i <= 6; i++)
         arch_setinterrupt(i, handleirq);
 
-    base_initbus(&bus, AMIGA_BUS, "amiga", bus_setup, bus_next);
+    base_initbus(&bus, PLATFORM_BUS, "platform", bus_setup, bus_next);
 
 }
 
