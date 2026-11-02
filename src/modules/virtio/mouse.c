@@ -3,8 +3,15 @@
 #include <modules/driver.h>
 #include <modules/mouse.h>
 #include "virtio.h"
-#include "input.h"
 
+#define CONFIG_SELECT                   0x00
+#define CONFIG_SUBSELECT                0x01
+#define CONFIG_SIZE                     0x02
+#define CONFIG_EVBITS                   0x11
+#define EVENTS                          64
+#define EV_SYN                          0x00
+#define EV_KEY                          0x01
+#define EV_REL                          0x02
 #define REL_X                           0x00
 #define REL_Y                           0x01
 #define REL_WHEEL                       0x08
@@ -12,12 +19,21 @@
 #define BTN_RIGHT                       0x111
 #define BTN_MIDDLE                      0x112
 
+struct input_event
+{
+
+    unsigned short type;
+    unsigned short code;
+    unsigned int value;
+
+};
+
 static struct base_driver driver;
 static struct mouse_interface mouseinterface;
 static struct virtio_device device;
 static struct virtio_queue queue;
 static unsigned char memory[VIRTIO_QUEUEMEMORY];
-static struct input_event events[INPUT_EVENTS];
+static struct input_event events[EVENTS];
 static unsigned int msi;
 static int relx;
 static int rely;
@@ -60,12 +76,12 @@ static void handleevent(struct input_event *event)
     switch (event->type)
     {
 
-    case INPUT_EVSYN:
+    case EV_SYN:
         report();
 
         break;
 
-    case INPUT_EVREL:
+    case EV_REL:
         if (event->code == REL_X)
             relx += (int)event->value;
         else if (event->code == REL_Y)
@@ -75,7 +91,7 @@ static void handleevent(struct input_event *event)
 
         break;
 
-    case INPUT_EVKEY:
+    case EV_KEY:
         if (event->code >= BTN_LEFT && event->code <= BTN_MIDDLE)
         {
 
@@ -97,7 +113,37 @@ static void handleevent(struct input_event *event)
 static void handleirq(unsigned int irq)
 {
 
-    input_poll(&device, &queue, msi, events, handleevent);
+    if (!msi)
+        virtio_getisr(&device);
+
+    while (virtio_pending(&queue))
+    {
+
+        unsigned int id = virtio_pop(&queue);
+
+        if (id >= EVENTS)
+            continue;
+
+        events[id].type = virtio_le16(events[id].type);
+        events[id].code = virtio_le16(events[id].code);
+        events[id].value = virtio_le32(events[id].value);
+
+        handleevent(&events[id]);
+        virtio_push(&queue, id);
+
+    }
+
+    virtio_notify(&queue);
+
+}
+
+static unsigned int hasevents(struct virtio_device *device, unsigned int type)
+{
+
+    virtio_setconfig(device, CONFIG_SELECT, CONFIG_EVBITS);
+    virtio_setconfig(device, CONFIG_SUBSELECT, type);
+
+    return virtio_getconfig(device, CONFIG_SIZE) != 0;
 
 }
 
@@ -108,17 +154,40 @@ static void driver_init(unsigned int id)
 
 }
 
+/* keyboards and mice are both virtio input devices: a mouse is the one with relative axes */
 static unsigned int driver_match(unsigned int id)
 {
 
-    return input_match(id, INPUT_EVREL);
+    struct virtio_device probe;
+
+    if (!virtio_match(id, VIRTIO_TYPE_INPUT) || !virtio_setup(&probe, id))
+        return 0;
+
+    return hasevents(&probe, EV_REL);
 
 }
 
+/* the event queue gets one device-writable buffer per event */
 static void driver_reset(unsigned int id)
 {
 
-    input_setup(&device, &queue, id, memory, events);
+    unsigned int i;
+
+    if (!virtio_setup(&device, id))
+        return;
+
+    virtio_negotiate(&device, 0);
+
+    if (!virtio_setqueue(&queue, &device, 0, memory))
+        return;
+
+    for (i = 0; i < EVENTS && i < queue.size; i++)
+    {
+
+        virtio_setdesc(&queue, i, &events[i], sizeof (struct input_event), VIRTIO_DESC_WRITE, 0);
+        virtio_push(&queue, i);
+
+    }
 
 }
 

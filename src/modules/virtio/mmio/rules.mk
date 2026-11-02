@@ -39,7 +39,6 @@ N:=\
 O:=\
     $(DIR_SRC)/modules/virtio/mmio/virtio.o \
     $(DIR_SRC)/modules/virtio/queue.o \
-    $(DIR_SRC)/modules/virtio/input.o \
     $(DIR_SRC)/modules/virtio/keyboard.o \
 
 L:=\
@@ -56,7 +55,6 @@ N:=\
 O:=\
     $(DIR_SRC)/modules/virtio/mmio/virtio.o \
     $(DIR_SRC)/modules/virtio/queue.o \
-    $(DIR_SRC)/modules/virtio/input.o \
     $(DIR_SRC)/modules/virtio/mouse.o \
 
 L:=\
