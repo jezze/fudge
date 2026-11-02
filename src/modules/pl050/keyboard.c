@@ -2,7 +2,8 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/keyboard.h>
-#include <modules/icp/icp.h>
+#include <modules/platform/platform.h>
+#include <modules/platform/icp/icp.h>
 #include "pl050.h"
 
 #define COMMAND_SCANCODESET             0xF0
@@ -91,7 +92,7 @@ static void driver_attach(unsigned int id)
 {
 
     keyboard_registerinterface(&keyboardinterface);
-    icp_setroutine(icp_getirq(id), handleirq);
+    platform_setroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -99,7 +100,7 @@ static void driver_detach(unsigned int id)
 {
 
     keyboard_unregisterinterface(&keyboardinterface);
-    icp_unsetroutine(icp_getirq(id), handleirq);
+    platform_unsetroutine(platform_getirq(id), handleirq);
     pl050_disable(id);
 
 }
@@ -114,14 +115,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, ICP_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, ICP_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

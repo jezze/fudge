@@ -4,7 +4,8 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/ethernet.h>
-#include <modules/icp/icp.h>
+#include <modules/platform/platform.h>
+#include <modules/platform/icp/icp.h>
 
 #define PACKETSIZE                      2048
 #define REG_BANK                        0x0E
@@ -167,9 +168,9 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    regs = (volatile unsigned char *)icp_getbase(id);
+    regs = (volatile unsigned char *)platform_getbase(id);
 
-    arch_kmap(icp_getbase(id), icp_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(platform_getbase(id), platform_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
     setbank(0);
     write16(REG0_RCR, REG0_RCR_RESET);
@@ -189,7 +190,7 @@ static void driver_attach(unsigned int id)
 {
 
     ethernet_registerinterface(&ethernetinterface);
-    icp_setroutine(icp_getirq(id), handleirq);
+    platform_setroutine(platform_getirq(id), handleirq);
 
     regs[REG2_MASK] = REG2_INTERRUPT_RECEIVE;
 
@@ -201,7 +202,7 @@ static void driver_detach(unsigned int id)
     regs[REG2_MASK] = 0;
 
     ethernet_unregisterinterface(&ethernetinterface);
-    icp_unsetroutine(icp_getirq(id), handleirq);
+    platform_unsetroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -215,14 +216,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, ICP_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, ICP_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

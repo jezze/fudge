@@ -4,7 +4,8 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/block.h>
-#include <modules/icp/icp.h>
+#include <modules/platform/platform.h>
+#include <modules/platform/icp/icp.h>
 
 #define BLOCKSIZE                       512
 #define POLLS                           0x100000
@@ -276,9 +277,9 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    regs = (volatile unsigned int *)icp_getbase(id);
+    regs = (volatile unsigned int *)platform_getbase(id);
 
-    arch_kmap(icp_getbase(id), icp_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(platform_getbase(id), platform_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
     regs[REG_POWER / 4] = REG_POWER_ON;
     regs[REG_CLOCK / 4] = REG_CLOCK_ENABLE;
@@ -313,14 +314,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, ICP_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, ICP_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

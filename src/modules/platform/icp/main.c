@@ -3,7 +3,7 @@
 #include <cpu.h>
 #include <arch.h>
 #include <modules/bus.h>
-#include "icp.h"
+#include "../platform.h"
 
 #define DEVICES                         9
 #define ROUTINES                        32
@@ -53,14 +53,14 @@ static struct device devices[DEVICES] = {
     {REG_ETHERNET, IRQ_ETHERNET}
 };
 
-unsigned int icp_getbase(unsigned int id)
+unsigned long platform_getbase(unsigned int id)
 {
 
     return devices[id].base;
 
 }
 
-unsigned int icp_getirq(unsigned int id)
+unsigned int platform_getirq(unsigned int id)
 {
 
     return devices[id].irq;
@@ -161,7 +161,7 @@ static void handleirq(void)
 
 }
 
-unsigned int icp_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
+unsigned int platform_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES || !addroutine(irq, routine))
@@ -173,7 +173,7 @@ unsigned int icp_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 
 }
 
-unsigned int icp_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
+unsigned int platform_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES)
@@ -208,7 +208,7 @@ void module_init(void)
     pic[REG_PIC_ENABLECLR / 4] = 0xFFFFFFFF;
 
     arch_setirq(handleirq);
-    base_initbus(&bus, ICP_BUS, "icp", bus_setup, bus_next);
+    base_initbus(&bus, PLATFORM_BUS, "platform", bus_setup, bus_next);
 
 }
 

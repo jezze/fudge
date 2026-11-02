@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include <cpu.h>
 #include <arch.h>
-#include <modules/icp/icp.h>
+#include <modules/platform/platform.h>
 #include "pl050.h"
 
 #define POLLS                           0x100000
@@ -17,7 +17,7 @@
 static volatile unsigned int *getregs(unsigned int id)
 {
 
-    return (volatile unsigned int *)icp_getbase(id);
+    return (volatile unsigned int *)platform_getbase(id);
 
 }
 
@@ -79,7 +79,7 @@ void pl050_flush(unsigned int id)
 void pl050_enable(unsigned int id)
 {
 
-    arch_kmap(icp_getbase(id), icp_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(platform_getbase(id), platform_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
     getregs(id)[REG_CR / 4] = REG_CR_ENABLE | REG_CR_RXINTERRUPT;
 

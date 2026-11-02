@@ -4,6 +4,7 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/timer.h>
+#include "../platform.h"
 #include "icp.h"
 
 #define FREQUENCY                       1000000
@@ -48,9 +49,9 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    timer = (volatile unsigned int *)icp_getbase(id);
+    timer = (volatile unsigned int *)platform_getbase(id);
 
-    arch_kmap(icp_getbase(id), icp_getbase(id), 0x100, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(platform_getbase(id), platform_getbase(id), 0x100, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
     timer[REG_CONTROL / 4] = 0;
     timer[REG_LOAD / 4] = FREQUENCY / 60;
@@ -63,7 +64,7 @@ static void driver_attach(unsigned int id)
 {
 
     timer_registerinterface(&timerinterface);
-    icp_setroutine(icp_getirq(id), handleirq);
+    platform_setroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -71,7 +72,7 @@ static void driver_detach(unsigned int id)
 {
 
     timer_unregisterinterface(&timerinterface);
-    icp_unsetroutine(icp_getirq(id), handleirq);
+    platform_unsetroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -85,14 +86,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, ICP_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, ICP_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 
