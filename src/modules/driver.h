@@ -4,6 +4,7 @@ struct base_driver
     struct resource resource;
     char *name;
     unsigned int type;
+    unsigned int id;
     unsigned int (*match)(unsigned int id);
     void (*init)(unsigned int id);
     void (*reset)(unsigned int id);
