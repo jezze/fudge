@@ -183,6 +183,7 @@ void apic_setupisrs(void)
                     idt_setdescriptor(idt, 0x6B, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0B), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
                     idt_setdescriptor(idt, 0x6C, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0C), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
                     idt_setdescriptor(idt, 0x6E, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0E), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
+                    idt_setdescriptor(idt, 0x6F, (void (*)(void))((unsigned long)apic_isr + 8 * 0x0F), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
                     ioapicbase = ioapic->address;
                     redirections[0x01] = 0x61;
                     redirections[0x02] = 0x62;
@@ -193,6 +194,7 @@ void apic_setupisrs(void)
                     redirections[0x0B] = 0x6B | (1 << 15);
                     redirections[0x0C] = 0x6C;
                     redirections[0x0E] = 0x6E;
+                    redirections[0x0F] = 0x6F;
 
                     for (pin = 0; pin < OVERRIDES; pin++)
                     {
