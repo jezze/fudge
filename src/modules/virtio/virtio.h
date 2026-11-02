@@ -87,7 +87,7 @@ struct virtio_queue
 
 unsigned short virtio_le16(unsigned short value);
 unsigned int virtio_le32(unsigned int value);
-unsigned int virtio_match(unsigned int id, unsigned int type);
+unsigned int virtio_match(unsigned int bus, unsigned int id, unsigned int type);
 unsigned int virtio_setup(struct virtio_device *device, unsigned int id);
 void virtio_reset(struct virtio_device *device);
 unsigned int virtio_negotiate(struct virtio_device *device, unsigned int features);

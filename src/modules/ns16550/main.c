@@ -56,10 +56,10 @@ static void driver_init(unsigned int id)
 
 }
 
-static unsigned int driver_match(unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    return id == VIRT_UART0;
+    return type == PLATFORM_BUS && id == VIRT_UART0;
 
 }
 
@@ -102,14 +102,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, PLATFORM_BUS);
+    base_registerdriver(&driver);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, PLATFORM_BUS);
+    base_unregisterdriver(&driver);
 
 }
 

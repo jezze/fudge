@@ -4,8 +4,6 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/video.h>
-#include <modules/pci/pci.h>
-#include <modules/platform/platform.h>
 #include "virtio.h"
 
 #define BPP                             4
@@ -316,10 +314,10 @@ static void driver_init(unsigned int id)
 
 }
 
-static unsigned int driver_match(unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    return virtio_match(id, VIRTIO_TYPE_GPU);
+    return virtio_match(type, id, VIRTIO_TYPE_GPU);
 
 }
 
@@ -375,16 +373,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, PCI_BUS);
-    base_registerdriver(&driver, PLATFORM_BUS);
+    base_registerdriver(&driver);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, PCI_BUS);
-    base_unregisterdriver(&driver, PLATFORM_BUS);
+    base_unregisterdriver(&driver);
 
 }
 

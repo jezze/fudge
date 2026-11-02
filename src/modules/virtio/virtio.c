@@ -176,13 +176,15 @@ static unsigned int findmodern(struct virtio_device *device, unsigned int id)
 
 }
 
-unsigned int virtio_match(unsigned int id, unsigned int type)
+unsigned int virtio_match(unsigned int bus, unsigned int id, unsigned int type)
 {
 
-    unsigned short device = pci_inw(id, PCI_CONFIG_DEVICE);
+    unsigned short device;
 
-    if (pci_inw(id, PCI_CONFIG_VENDOR) != VIRTIO_VENDOR)
+    if (bus != PCI_BUS || pci_inw(id, PCI_CONFIG_VENDOR) != VIRTIO_VENDOR)
         return 0;
+
+    device = pci_inw(id, PCI_CONFIG_DEVICE);
 
     return device == DEVICE_MODERN + type || (type == VIRTIO_TYPE_NETWORK && device == DEVICE_LEGACYNETWORK) || (type == VIRTIO_TYPE_BLOCK && device == DEVICE_LEGACYBLOCK);
 

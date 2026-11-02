@@ -195,10 +195,10 @@ static void driver_init(unsigned int id)
 
 }
 
-static unsigned int driver_match(unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    return pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x00;
+    return type == PCI_BUS && pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && pci_inb(id, PCI_CONFIG_SUBCLASS) == PCI_CLASS_DISPLAY_VGA && pci_inb(id, PCI_CONFIG_INTERFACE) == 0x00;
 
 }
 
@@ -233,14 +233,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, PCI_BUS);
+    base_registerdriver(&driver);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, PCI_BUS);
+    base_unregisterdriver(&driver);
 
 }
 

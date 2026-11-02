@@ -2,8 +2,6 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/keyboard.h>
-#include <modules/pci/pci.h>
-#include <modules/platform/platform.h>
 #include "virtio.h"
 
 #define CONFIG_SELECT                   0x00
@@ -126,12 +124,12 @@ static void driver_init(unsigned int id)
 }
 
 /* keyboards and mice are both virtio input devices: a mouse is the one with relative axes */
-static unsigned int driver_match(unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
     struct virtio_device probe;
 
-    if (!virtio_match(id, VIRTIO_TYPE_INPUT) || !virtio_setup(&probe, id))
+    if (!virtio_match(type, id, VIRTIO_TYPE_INPUT) || !virtio_setup(&probe, id))
         return 0;
 
     return !hasevents(&probe, EV_REL);
@@ -193,16 +191,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, PCI_BUS);
-    base_registerdriver(&driver, PLATFORM_BUS);
+    base_registerdriver(&driver);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, PCI_BUS);
-    base_unregisterdriver(&driver, PLATFORM_BUS);
+    base_unregisterdriver(&driver);
 
 }
 

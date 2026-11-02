@@ -72,12 +72,17 @@ static void write64(struct virtio_device *device, unsigned int offset, unsigned 
 }
 
 /* only mapped slots with a device behind them match */
-unsigned int virtio_match(unsigned int id, unsigned int type)
+unsigned int virtio_match(unsigned int bus, unsigned int id, unsigned int type)
 {
 
-    unsigned long base = platform_getbase(id);
+    unsigned long base;
 
-    if (id < VIRT_VIRTIO || !base)
+    if (bus != PLATFORM_BUS || id < VIRT_VIRTIO)
+        return 0;
+
+    base = platform_getbase(id);
+
+    if (!base)
         return 0;
 
     arch_kmap(base, base, PAGESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);

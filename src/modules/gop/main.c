@@ -45,10 +45,10 @@ static void driver_init(unsigned int id)
 
 }
 
-static unsigned int driver_match(unsigned int id)
+static unsigned int driver_match(unsigned int type, unsigned int id)
 {
 
-    if (!framebuffer->address || (framebuffer->bpp != 24 && framebuffer->bpp != 32) || framebuffer->pitch != framebuffer->width * (framebuffer->bpp / 8))
+    if (type != PCI_BUS || !framebuffer->address || (framebuffer->bpp != 24 && framebuffer->bpp != 32) || framebuffer->pitch != framebuffer->width * (framebuffer->bpp / 8))
         return 0;
 
     return pci_inb(id, PCI_CONFIG_CLASS) == PCI_CLASS_DISPLAY && ownsframebuffer(id);
@@ -84,14 +84,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, PCI_BUS);
+    base_registerdriver(&driver);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, PCI_BUS);
+    base_unregisterdriver(&driver);
 
 }
 
