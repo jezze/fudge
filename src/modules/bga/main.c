@@ -53,16 +53,14 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 0xA0000000, 0, videointerface_setmode);
+    video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
 
 }
 
 static unsigned int driver_match(unsigned int id)
 {
 
-    struct video_interface *interface = video_findinterface(id);
-
-    return pci_inw(id, PCI_CONFIG_VENDOR) == VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE && (!interface || interface == &videointerface);
+    return pci_inw(id, PCI_CONFIG_VENDOR) == VENDOR && pci_inw(id, PCI_CONFIG_DEVICE) == DEVICE;
 
 }
 

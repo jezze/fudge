@@ -121,25 +121,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-struct video_interface *video_findinterface(unsigned int id)
-{
-
-    struct resource *current = 0;
-
-    while ((current = resource_foreachtype(current, RESOURCE_VIDEOINTERFACE)))
-    {
-
-        struct video_interface *interface = current->data;
-
-        if (interface->id == id)
-            return interface;
-
-    }
-
-    return 0;
-
-}
-
 void video_registerinterface(struct video_interface *interface)
 {
 
@@ -154,12 +135,11 @@ void video_unregisterinterface(struct video_interface *interface)
 
 }
 
-void video_initinterface(struct video_interface *interface, unsigned int id, unsigned long framebuffer, unsigned int (*setcmap)(unsigned int count, void *data), void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp))
+void video_initinterface(struct video_interface *interface, unsigned long framebuffer, unsigned int (*setcmap)(unsigned int count, void *data), void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp))
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
 
-    interface->id = id;
     interface->width = 0;
     interface->height = 0;
     interface->bpp = 0;

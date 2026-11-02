@@ -308,7 +308,7 @@ static void videointerface_flush(unsigned int x, unsigned int y, unsigned int wi
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, FRAMEBUFFER, 0, videointerface_setmode);
+    video_initinterface(&videointerface, FRAMEBUFFER, 0, videointerface_setmode);
 
     videointerface.flush = videointerface_flush;
 

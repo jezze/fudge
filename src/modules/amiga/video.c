@@ -358,7 +358,7 @@ static void driver_init(unsigned int id)
 
     setuppalette();
     setupnearest();
-    video_initinterface(&videointerface, id, FRAMEBUFFER, 0, videointerface_setmode);
+    video_initinterface(&videointerface, FRAMEBUFFER, 0, videointerface_setmode);
 
     videointerface.flush = videointerface_flush;
 

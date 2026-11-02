@@ -37,7 +37,7 @@ static unsigned int ownsframebuffer(unsigned int id)
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 0xA0000000, 0, videointerface_setmode);
+    video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
 
     videointerface.width = framebuffer->width;
     videointerface.height = framebuffer->height;

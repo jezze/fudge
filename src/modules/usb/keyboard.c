@@ -23,7 +23,6 @@
 #define EXTENDED                        0xE000
 
 static struct base_driver driver;
-static unsigned int current;
 static struct keyboard_interface keyboardinterface;
 static unsigned char previous[REPORTSIZE];
 static unsigned char repeatkey;
@@ -209,7 +208,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return (!current || current == id) && usb_getclass(id) == CLASS_HID && usb_getsubclass(id) == SUBCLASS_BOOT && usb_getprotocol(id) == PROTOCOL_KEYBOARD;
+    return usb_getclass(id) == CLASS_HID && usb_getsubclass(id) == SUBCLASS_BOOT && usb_getprotocol(id) == PROTOCOL_KEYBOARD;
 
 }
 
@@ -230,7 +229,6 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    current = id;
     repeatkey = 0;
 
     buffer_clear(previous, REPORTSIZE);
@@ -244,8 +242,6 @@ static void driver_detach(unsigned int id)
 
     usb_unlisten(id);
     keyboard_unregisterinterface(&keyboardinterface);
-
-    current = 0;
 
 }
 

@@ -184,7 +184,7 @@ static void driver_init(unsigned int id)
 {
 
     console_initinterface(&consoleinterface, consoleinterface_send);
-    video_initinterface(&videointerface, id, 0x000B8000, videointerface_setcmap, videointerface_setmode);
+    video_initinterface(&videointerface, 0x000B8000, videointerface_setcmap, videointerface_setmode);
 
     consoleinterface.width = 80;
     consoleinterface.height = 25;
@@ -211,9 +211,7 @@ static void driver_attach(unsigned int id)
 {
 
     console_registerinterface(&consoleinterface);
-
-    if (!video_findinterface(id))
-        video_registerinterface(&videointerface);
+    video_registerinterface(&videointerface);
 
 }
 
@@ -221,9 +219,7 @@ static void driver_detach(unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);
-
-    if (video_findinterface(id) == &videointerface)
-        video_unregisterinterface(&videointerface);
+    video_unregisterinterface(&videointerface);
 
 }
 

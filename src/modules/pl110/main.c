@@ -68,7 +68,7 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 static void driver_init(unsigned int id)
 {
 
-    video_initinterface(&videointerface, id, 0xA0000000, 0, videointerface_setmode);
+    video_initinterface(&videointerface, 0xA0000000, 0, videointerface_setmode);
 
 }
 
