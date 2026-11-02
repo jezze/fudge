@@ -24,7 +24,6 @@ static unsigned int device;
 static void *blockbuffer;
 static unsigned int skip;
 
-/* a session reads the whole sectors around start and count: skip is what is left to drop of the first one */
 static void receive(struct block_session *session)
 {
 
@@ -149,7 +148,6 @@ static void blockinterface_startsession(struct block_session *session)
 
 }
 
-/* polled, before the interrupt is routed: the first command after a media change fails once with unit attention */
 static unsigned int readcapacity(void)
 {
 
