@@ -7,7 +7,6 @@
 .set CALL_INDEX_SPAWN,                  0x03
 .set CALL_INDEX_DESPAWN,                0x04
 .set CALL_INDEX_KILL,                   0x05
-.set CALL_INDEX_FIND,                   0x06
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
@@ -23,12 +22,6 @@ call_debug:
 .global call_despawn
 call_despawn:
     movl $CALL_INDEX_DESPAWN, %eax
-    int $CALL_INTERRUPT
-    ret
-
-.global call_find
-call_find:
-    movl $CALL_INDEX_FIND, %eax
     int $CALL_INTERRUPT
     ret
 

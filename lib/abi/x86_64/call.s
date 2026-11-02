@@ -7,7 +7,6 @@
 .set CALL_INDEX_SPAWN,                  0x03
 .set CALL_INDEX_DESPAWN,                0x04
 .set CALL_INDEX_KILL,                   0x05
-.set CALL_INDEX_FIND,                   0x06
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
@@ -32,14 +31,6 @@ call_debug:
 call_despawn:
     subq $CALL_FRAME, %rsp
     callindex CALL_INDEX_DESPAWN
-
-.global call_find
-call_find:
-    subq $CALL_FRAME, %rsp
-    movl %edi, 8(%rsp)
-    movq %rsi, 16(%rsp)
-    movl %edx, 24(%rsp)
-    callindex CALL_INDEX_FIND
 
 .global call_kill
 call_kill:

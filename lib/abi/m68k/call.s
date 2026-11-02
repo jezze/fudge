@@ -4,7 +4,6 @@
 .set CALL_INDEX_SPAWN,                  0x03
 .set CALL_INDEX_DESPAWN,                0x04
 .set CALL_INDEX_KILL,                   0x05
-.set CALL_INDEX_FIND,                   0x06
 .set CALL_INDEX_LOAD,                   0x07
 .set CALL_INDEX_UNLOAD,                 0x08
 .set CALL_INDEX_ANNOUNCE,               0x09
@@ -23,7 +22,6 @@ call_\name:
 
 call debug, CALL_INDEX_DEBUG
 call despawn, CALL_INDEX_DESPAWN
-call find, CALL_INDEX_FIND
 call kill, CALL_INDEX_KILL
 call load, CALL_INDEX_LOAD
 call pick, CALL_INDEX_PICK

@@ -240,6 +240,14 @@ unsigned int pool_picknode(struct resource *resource, struct node_operands *oper
 
 }
 
+void pool_setroot(struct node_operands *operands)
+{
+
+    noderows[MESSAGE_ROOT].resource = 0;
+    noderows[MESSAGE_ROOT].operands = operands;
+
+}
+
 unsigned int pool_pickservice(void)
 {
 
@@ -381,7 +389,8 @@ void pool_setup(unsigned long mbaddress)
 
     }
 
-    for (i = 1; i < POOL_NODES; i++)
+    /* MESSAGE_ROOT is never free and never renewed, so its inode stays the same */
+    for (i = MESSAGE_ROOT + 1; i < POOL_NODES; i++)
     {
 
         struct noderow *noderow = &noderows[i];

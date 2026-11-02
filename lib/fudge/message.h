@@ -6,6 +6,7 @@
 #define MESSAGE_FAILED                  0x03
 #define MESSAGE_FULL                    0x04
 #define MESSAGE_FLAG_BLOCK              0x01
+#define MESSAGE_ROOT                    0x01
 
 struct message
 {

@@ -671,6 +671,7 @@ void arch_setup2(void)
     configuretss();
     pic_init();
     pool_setup(ARCH_MAILBOX_BASE);
+    service_setup();
     memsrv_setup(ARCH_MEM_BASE, unmap);
 
 }

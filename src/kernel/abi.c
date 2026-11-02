@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <hash.h>
 #include "resource.h"
 #include "debug.h"
 #include "mmap.h"
@@ -51,49 +50,6 @@ static unsigned int kill(unsigned int itask, void *stack)
             return kernel_kill(mailbox->itask);
 
     }
-
-    return 0;
-
-}
-
-static unsigned int find(unsigned int itask, void *stack)
-{
-
-    struct {void *caller; unsigned int length; char *name; unsigned int index;} *args = stack;
-
-    if (args->name && checkargs(args->name, args->length))
-    {
-
-        unsigned int namehash = djb_hash(args->length, args->name);
-        struct resource *resource = 0;
-        unsigned int index = 0;
-        unsigned int inode = 0;
-
-        resource_lock();
-
-        while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)))
-        {
-
-            struct service *service = resource->data;
-
-            if (service->namehash == namehash && args->length < SERVICE_NAMESIZE && !service->name[args->length] && buffer_match(service->name, args->name, args->length) && index++ == args->index)
-            {
-
-                inode = service->inode;
-
-                break;
-
-            }
-
-        }
-
-        resource_unlock();
-
-        return inode;
-
-    }
-
-    debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "find check failed");
 
     return 0;
 
@@ -277,7 +233,7 @@ void abi_setup(void)
     abi_setcallback(0x03, spawn);
     abi_setcallback(0x04, despawn);
     abi_setcallback(0x05, kill);
-    abi_setcallback(0x06, find);
+    abi_setcallback(0x06, debug);
     abi_setcallback(0x07, load);
     abi_setcallback(0x08, unload);
     abi_setcallback(0x09, announce);

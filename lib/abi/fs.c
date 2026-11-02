@@ -6,17 +6,27 @@
 #define SPAWNNAMES                      64
 #define SPAWNCHUNK                      (MESSAGE_SIZE - sizeof (struct event_writerequest))
 #define SPAWNNAMESIZE                   32
+#define FS_NAMESIZE                     32
 
+/* the service's inode: its name, the part before the colon, walked in the kernel's root */
 unsigned int fs_auth(char *path)
 {
 
+    char name[FS_NAMESIZE];
     unsigned int length = cstring_length(path);
     unsigned int offset = buffer_eachbyte(path, length, ':', 0);
 
     if (offset > 0)
         length = offset - 1;
 
-    return call_find(length, path, 0);
+    if (length >= FS_NAMESIZE)
+        return 0;
+
+    buffer_write(name, FS_NAMESIZE, path, length, 0);
+
+    name[length] = '\0';
+
+    return channel_lookup(name);
 
 }
 

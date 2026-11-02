@@ -490,27 +490,35 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
 }
 
-/* the part after the colon is walked in the service, as in block:1: a kernel directory answers with the child's inode */
-unsigned int channel_lookup(char *name)
+static unsigned int walk(unsigned int target, char *path, unsigned int length)
 {
 
-    unsigned int length = cstring_length(name);
-    unsigned int offset = buffer_eachbyte(name, length, ':', 0);
-    unsigned int target = call_find((offset) ? offset - 1 : length, name, 0);
     char data[MESSAGE_SIZE];
     struct event_walkrequest *request = (struct event_walkrequest *)data;
     struct event_walkresponse response;
 
-    if (!target || !offset || offset == length)
-        return target;
-
     request->parent = 0;
-    request->length = buffer_write(data, MESSAGE_SIZE, name + offset, length - offset, sizeof (struct event_walkrequest));
+    request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct event_walkrequest));
 
     if (!channel_send(1, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + request->length, data))
         return 0;
 
     return (channel_wait(1, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response)) ? response.id : 0;
+
+}
+
+/* the name before the colon is walked in the kernel's root, the rest in the service, as in block:1: a kernel directory answers with the child's inode */
+unsigned int channel_lookup(char *name)
+{
+
+    unsigned int length = cstring_length(name);
+    unsigned int offset = buffer_eachbyte(name, length, ':', 0);
+    unsigned int target = walk(MESSAGE_ROOT, name, (offset) ? offset - 1 : length);
+
+    if (!target || !offset || offset == length)
+        return target;
+
+    return walk(target, name + offset, length - offset);
 
 }
 
