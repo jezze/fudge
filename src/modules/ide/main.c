@@ -43,6 +43,7 @@
 #define ID_SUPPORT                      0x53
 #define ID_LBA48MAX                     0x64
 #define LIMIT_POLL                      100000
+#define CHANNELS                        2
 
 static struct base_driver driver;
 static struct base_bus bus;
@@ -50,6 +51,24 @@ static unsigned short pcontrol;
 static unsigned short scontrol;
 static unsigned short pdata;
 static unsigned short sdata;
+static unsigned int owners[CHANNELS];
+static struct spinlock spinlock;
+
+static unsigned int getchannel(unsigned int id)
+{
+
+    switch (id)
+    {
+
+    case IDE_SM:
+    case IDE_SS:
+        return 1;
+
+    }
+
+    return 0;
+
+}
 
 static unsigned short getcontrol(unsigned int id)
 {
@@ -308,6 +327,39 @@ unsigned int ide_wblock(unsigned int id, void *buffer)
         io_outw(data, out[i]);
 
     return 1;
+
+}
+
+unsigned int ide_lock(unsigned int id)
+{
+
+    unsigned int channel = getchannel(id);
+    unsigned int locked;
+
+    spinlock_acquire(&spinlock);
+
+    locked = !owners[channel] || owners[channel] == id;
+
+    if (locked)
+        owners[channel] = id;
+
+    spinlock_release(&spinlock);
+
+    return locked;
+
+}
+
+void ide_unlock(unsigned int id)
+{
+
+    unsigned int channel = getchannel(id);
+
+    spinlock_acquire(&spinlock);
+
+    if (owners[channel] == id)
+        owners[channel] = 0;
+
+    spinlock_release(&spinlock);
 
 }
 

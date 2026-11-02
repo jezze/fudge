@@ -20,3 +20,5 @@ unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit);
 unsigned char ide_getreason(unsigned int id);
 unsigned int ide_getbytecount(unsigned int id);
 void ide_rdata(unsigned int id, void *buffer, unsigned int count);
+unsigned int ide_lock(unsigned int id);
+void ide_unlock(unsigned int id);

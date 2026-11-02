@@ -10,6 +10,7 @@
 #define TYPE_CDROM                      0x05
 #define STATUS_ERROR                    0x01
 #define STATUS_DRQ                      0x08
+#define STATUS_BUSY                     0x80
 #define REASON_COMMAND                  0x01
 #define COMMAND_READCAPACITY            0x25
 #define COMMAND_READ10                  0x28
@@ -22,6 +23,7 @@ static unsigned short identity[256];
 static unsigned char sector[BLOCKSIZE];
 static unsigned int device;
 static void *blockbuffer;
+static unsigned int active;
 static unsigned int skip;
 
 static void receive(struct block_session *session)
@@ -49,23 +51,36 @@ static void receive(struct block_session *session)
 
 }
 
+static void finish(struct block_session *session)
+{
+
+    active = 0;
+
+    ide_unlock(device);
+    block_session_done(&blockinterface, session);
+
+}
+
 static void progress(void)
 {
 
     struct block_session *session = block_getsession(&blockinterface);
     unsigned char status;
 
-    if (!session->source)
+    if (!active)
         return;
 
     status = ide_getstatus(device);
+
+    if (status & STATUS_BUSY)
+        return;
 
     if (status & STATUS_ERROR)
     {
 
         session->count = session->offset;
 
-        block_session_done(&blockinterface, session);
+        finish(session);
 
     }
 
@@ -82,7 +97,7 @@ static void progress(void)
 
         session->count = session->offset;
 
-        block_session_done(&blockinterface, session);
+        finish(session);
 
     }
 
@@ -119,8 +134,12 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
     }
 
+    if (!ide_lock(device))
+        return MESSAGE_RETRY;
+
     spinlock_acquire(&spinlock);
 
+    active = 1;
     blockbuffer = buffer;
     skip = session->start % BLOCKSIZE;
     sectors = (skip + session->count + BLOCKSIZE - 1) / BLOCKSIZE;
@@ -140,7 +159,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
         session->count = 0;
 
-        block_session_done(&blockinterface, session);
+        finish(session);
 
     }
 

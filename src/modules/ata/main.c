@@ -7,29 +7,48 @@
 #include <modules/apic/apic.h>
 
 #define BLOCKSIZE                       512
+#define STATUS_ERROR                    0x01
+#define STATUS_DRQ                      0x08
+#define STATUS_BUSY                     0x80
 
 static unsigned int device;
 static void *blockbuffer;
+static unsigned int active;
 static unsigned short identity[256];
 static struct base_driver driver;
 static struct block_interface blockinterface;
 static struct spinlock spinlock;
 
+static void finish(struct block_session *session)
+{
+
+    active = 0;
+
+    ide_unlock(device);
+    block_session_done(&blockinterface, session);
+
+}
+
 static void progress(void)
 {
 
-    unsigned char status = ide_getstatus(device);
     struct block_session *session = block_getsession(&blockinterface);
+    unsigned char status;
 
-    if (!session->source)
+    if (!active)
         return;
 
-    if (status & 1)
+    status = ide_getstatus(device);
+
+    if (status & STATUS_BUSY)
+        return;
+
+    if (status & STATUS_ERROR)
     {
 
         session->count = session->offset;
 
-        block_session_done(&blockinterface, session);
+        finish(session);
 
         return;
 
@@ -39,18 +58,24 @@ static void progress(void)
     {
 
     case BLOCK_TYPE_READ:
+        if (!(status & STATUS_DRQ))
+            break;
+
         ide_rblock(device, (char *)blockbuffer + session->offset);
 
         session->offset += BLOCKSIZE;
 
         if (session->offset >= session->count)
-            block_session_done(&blockinterface, session);
+            finish(session);
 
         break;
 
     case BLOCK_TYPE_WRITE:
         if (session->offset < session->count)
         {
+
+            if (!(status & STATUS_DRQ))
+                break;
 
             ide_wblock(device, (char *)blockbuffer + session->offset);
 
@@ -61,7 +86,7 @@ static void progress(void)
         else
         {
 
-            block_session_done(&blockinterface, session);
+            finish(session);
 
         }
 
@@ -96,8 +121,12 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
     }
 
+    if (!ide_lock(device))
+        return MESSAGE_RETRY;
+
     spinlock_acquire(&spinlock);
 
+    active = 1;
     blockbuffer = buffer;
 
     if (session->count > TASK_BUFFERSIZE)
@@ -128,7 +157,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
             session->count = 0;
 
-            block_session_done(&blockinterface, session);
+            finish(session);
 
         }
 
