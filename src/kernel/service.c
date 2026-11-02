@@ -50,7 +50,6 @@ static void setname(struct service *service, char *name)
 
 }
 
-/* the index of the child with this inode, SERVICE_CHILDREN if none; inode 0 finds the first free index */
 static unsigned int findchild(struct service *service, unsigned int inode)
 {
 
@@ -62,7 +61,6 @@ static unsigned int findchild(struct service *service, unsigned int inode)
 
 }
 
-/* a child is named by its index in decimal, so 01 or 1x name nothing */
 static unsigned int walkchild(struct service *service, char *name, unsigned int length)
 {
 
@@ -85,7 +83,6 @@ static void initchildrecord(struct record *record, struct service *service, unsi
 
 }
 
-/* the root's id is the directory's own inode, a child's id is the child's inode */
 static unsigned int walk(struct service *service, unsigned int parent, unsigned int length, char *path)
 {
 
@@ -117,7 +114,6 @@ static unsigned int walk(struct service *service, unsigned int parent, unsigned 
 
 }
 
-/* the root lists . and .. at offsets 0 and 1 and the child with index i at offset i + 2; a child lists only . and .. */
 static unsigned int onreadrequest(struct service *service, unsigned int source, unsigned int count, void *data)
 {
 
@@ -237,7 +233,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-/* the inode of the named service, 0 if there is none */
 static unsigned int findservice(char *name, unsigned int length)
 {
 
@@ -269,7 +264,6 @@ static unsigned int findservice(char *name, unsigned int length)
 
 }
 
-/* the root knows only the services' names: what is inside a service is the service's own */
 static unsigned int walkroot(unsigned int parent, unsigned int length, char *path)
 {
 
@@ -298,7 +292,6 @@ static unsigned int walkroot(unsigned int parent, unsigned int length, char *pat
 
 }
 
-/* . and .. at offsets 0 and 1, then the services in the order they were registered */
 static unsigned int onrootreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
@@ -397,7 +390,6 @@ void service_register(struct service *service, unsigned int inode, char *name)
 
 }
 
-/* a directory of children found by walking their index, as in block:1; its node answers only walk, stat and read */
 void service_registerdirectory(struct service *service, char *name)
 {
 
@@ -408,7 +400,6 @@ void service_registerdirectory(struct service *service, char *name)
 
 }
 
-/* takes the lowest free index, so with nothing removed children are numbered in the order they come */
 void service_addchild(struct service *service, unsigned int inode)
 {
 
@@ -447,7 +438,6 @@ void service_init(struct service *service)
 
 }
 
-/* the root at MESSAGE_ROOT is where programs start: walking a service's name gives its inode */
 void service_setup(void)
 {
 
