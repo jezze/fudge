@@ -262,8 +262,14 @@ unsigned short ide_getirq(unsigned int id)
 unsigned int ide_wait(unsigned int id)
 {
 
+    unsigned short control = getcontrol(id);
     unsigned char status;
     unsigned int i = 0;
+
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
 
     do
     {
