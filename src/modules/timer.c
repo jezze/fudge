@@ -153,7 +153,7 @@ static void expire(struct timer_interface *interface, unsigned int counter)
 
         timerexpire.id = entry->id;
 
-        switch (kernel_place(interface->inode, entry->target, EVENT_TIMEREXPIRE, sizeof (struct event_timerexpire), &timerexpire))
+        switch (kernel_place(interface->resource.inode, entry->target, EVENT_TIMEREXPIRE, sizeof (struct event_timerexpire), &timerexpire))
         {
 
         case MESSAGE_OK:
@@ -190,7 +190,7 @@ static unsigned int oninfo(struct timer_interface *interface, unsigned int sourc
     timerinfo.counter = interface->jiffies;
     timerinfo.hz = interface->hz;
 
-    return kernel_place(interface->inode, source, EVENT_TIMERINFO, sizeof (struct event_timerinfo), &timerinfo);
+    return kernel_place(interface->resource.inode, source, EVENT_TIMERINFO, sizeof (struct event_timerinfo), &timerinfo);
 
 }
 
@@ -208,12 +208,12 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->links, source);
+            return kernel_linknode(&interface->resource.links, source);
 
         case EVENT_UNLINK:
             unlink(interface, source);
 
-            return kernel_unlinknode(&interface->links, source);
+            return kernel_unlinknode(&interface->resource.links, source);
 
         case EVENT_INFO:
             return oninfo(interface, source);
@@ -239,7 +239,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->links, interface->inode, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
     expire(interface, counter);
 
 }
@@ -247,10 +247,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 void timer_registerinterface(struct timer_interface *interface)
 {
 
-    interface->inode = pool_picknode(&interface->resource, &operands);
-
     resource_register(&interface->resource);
-    service_addchild(&service, interface->inode);
 
 }
 
@@ -258,10 +255,6 @@ void timer_unregisterinterface(struct timer_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    service_removechild(&service, interface->inode);
-    pool_unpicknode(interface->inode);
-
-    interface->inode = 0;
 
 }
 
@@ -271,7 +264,6 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id, uns
     unsigned int i;
 
     resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
-    list_init(&interface->links);
     spinlock_init(&interface->spinlock);
     list_init(&interface->free);
 
@@ -303,7 +295,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "timer");
+    service_registerdirectory(&service, "timer", RESOURCE_TIMERINTERFACE, &operands);
 
 }
 

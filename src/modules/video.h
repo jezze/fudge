@@ -2,8 +2,6 @@ struct video_interface
 {
 
     struct resource resource;
-    unsigned int inode;
-    struct list links;
     unsigned int id;
     unsigned int width;
     unsigned int height;

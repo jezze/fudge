@@ -32,7 +32,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
         interface->getmac(ethernetinfo.address);
 
-        return kernel_place(interface->inode, source, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
+        return kernel_place(interface->resource.inode, source, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
 
     }
 
@@ -54,10 +54,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->links, source);
+            return kernel_linknode(&interface->resource.links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->links, source);
+            return kernel_unlinknode(&interface->resource.links, source);
 
         case EVENT_DATA:
             return ondata(interface, source, data, count);
@@ -76,17 +76,14 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->links, interface->inode, EVENT_DATA, count, buffer);
+    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_DATA, count, buffer);
 
 }
 
 void ethernet_registerinterface(struct ethernet_interface *interface)
 {
 
-    interface->inode = pool_picknode(&interface->resource, &operands);
-
     resource_register(&interface->resource);
-    service_addchild(&service, interface->inode);
 
 }
 
@@ -94,10 +91,6 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    service_removechild(&service, interface->inode);
-    pool_unpicknode(interface->inode);
-
-    interface->inode = 0;
 
 }
 
@@ -105,7 +98,6 @@ void ethernet_initinterface(struct ethernet_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
-    list_init(&interface->links);
 
     interface->id = id;
     interface->getmac = getmac;
@@ -125,7 +117,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "ethernet");
+    service_registerdirectory(&service, "ethernet", RESOURCE_ETHERNETINTERFACE, &operands);
 
 }
 

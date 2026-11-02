@@ -18,7 +18,7 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
         blockinfo.blocksize = interface->blocksize;
         blockinfo.blockcount = interface->blockcount;
 
-        return kernel_place(interface->inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+        return kernel_place(interface->resource.inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
 
     }
 
@@ -110,10 +110,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->links, source);
+            return kernel_linknode(&interface->resource.links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->links, source);
+            return kernel_unlinknode(&interface->resource.links, source);
 
         case EVENT_INFO:
             return oninfo(interface, source);
@@ -150,12 +150,12 @@ void block_session_done(struct block_interface *interface, struct block_session 
     {
 
     case BLOCK_TYPE_READ:
-        kernel_place(interface->inode, session->source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+        kernel_place(interface->resource.inode, session->source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        kernel_place(interface->inode, session->source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
+        kernel_place(interface->resource.inode, session->source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
 
         break;
 
@@ -168,10 +168,7 @@ void block_session_done(struct block_interface *interface, struct block_session 
 void block_registerinterface(struct block_interface *interface)
 {
 
-    interface->inode = pool_picknode(&interface->resource, &operands);
-
     resource_register(&interface->resource);
-    service_addchild(&service, interface->inode);
 
 }
 
@@ -179,10 +176,6 @@ void block_unregisterinterface(struct block_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    service_removechild(&service, interface->inode);
-    pool_unpicknode(interface->inode);
-
-    interface->inode = 0;
 
 }
 
@@ -190,7 +183,6 @@ void block_initinterface(struct block_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
-    list_init(&interface->links);
 
     interface->id = id;
     interface->blocksize = blocksize;
@@ -211,7 +203,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "block");
+    service_registerdirectory(&service, "block", RESOURCE_BLOCKINTERFACE, &operands);
 
 }
 

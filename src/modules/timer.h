@@ -16,8 +16,6 @@ struct timer_interface
 {
 
     struct resource resource;
-    unsigned int inode;
-    struct list links;
     unsigned int id;
     unsigned int hz;
     unsigned int jiffies;

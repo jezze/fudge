@@ -490,14 +490,14 @@ unsigned int channel_wait(unsigned int ichannel, unsigned int source, unsigned i
 
 }
 
-static unsigned int walk(unsigned int target, char *path, unsigned int length)
+static unsigned int walk(unsigned int target, unsigned int parent, char *path, unsigned int length)
 {
 
     char data[MESSAGE_SIZE];
     struct event_walkrequest *request = (struct event_walkrequest *)data;
     struct event_walkresponse response;
 
-    request->parent = 0;
+    request->parent = parent;
     request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct event_walkrequest));
 
     if (!channel_send(1, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + request->length, data))
@@ -507,18 +507,68 @@ static unsigned int walk(unsigned int target, char *path, unsigned int length)
 
 }
 
-/* the name before the colon is walked in the kernel's root, the rest in the service, as in block:1: a kernel directory answers with the child's inode */
+static unsigned int create(unsigned int target, unsigned int parent, char *name, unsigned int length)
+{
+
+    char data[MESSAGE_SIZE];
+    struct event_createrequest *request = (struct event_createrequest *)data;
+    struct event_createresponse response;
+
+    request->parent = parent;
+    request->count = buffer_write(data, MESSAGE_SIZE, name, length, sizeof (struct event_createrequest));
+
+    if (!channel_send(1, target, EVENT_CREATEREQUEST, sizeof (struct event_createrequest) + request->count, data))
+        return 0;
+
+    return (channel_wait(1, target, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response)) ? response.id : 0;
+
+}
+
+static unsigned int readvalue(unsigned int target, unsigned int id)
+{
+
+    char data[MESSAGE_SIZE];
+    struct event_readrequest request;
+    struct event_readresponse *response = (struct event_readresponse *)data;
+
+    request.id = id;
+    request.offset = 0;
+    request.count = 16;
+
+    if (!channel_send(1, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
+        return 0;
+
+    if (!channel_wait(1, target, EVENT_READRESPONSE, MESSAGE_SIZE, data) || response->count > 16)
+        return 0;
+
+    return cstring_read_value((char *)(response + 1), response->count, 10);
+
+}
+
+/* the name before the colon is walked in the kernel's root, the rest in the service, as in block:1: the device's node is in its inode file, created on first use */
 unsigned int channel_lookup(char *name)
 {
 
     unsigned int length = cstring_length(name);
     unsigned int offset = buffer_eachbyte(name, length, ':', 0);
-    unsigned int target = walk(MESSAGE_ROOT, name, (offset) ? offset - 1 : length);
+    unsigned int target = walk(MESSAGE_ROOT, 0, name, (offset) ? offset - 1 : length);
+    unsigned int directory;
+    unsigned int file;
 
     if (!target || !offset || offset == length)
         return target;
 
-    return walk(target, name + offset, length - offset);
+    directory = walk(target, 0, name + offset, length - offset);
+
+    if (!directory)
+        return 0;
+
+    file = walk(target, directory, "inode", 5);
+
+    if (!file)
+        file = create(target, directory, "inode", 5);
+
+    return (file) ? readvalue(target, file) : 0;
 
 }
 

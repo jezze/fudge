@@ -19,10 +19,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->links, source);
+            return kernel_linknode(&interface->resource.links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->links, source);
+            return kernel_unlinknode(&interface->resource.links, source);
 
         }
 
@@ -39,7 +39,7 @@ void keyboard_notifypress(struct keyboard_interface *interface, unsigned char sc
 
     keypress.scancode = scancode;
 
-    kernel_notify(&interface->links, interface->inode, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
 
 }
 
@@ -50,17 +50,14 @@ void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char 
 
     keyrelease.scancode = scancode;
 
-    kernel_notify(&interface->links, interface->inode, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
 
 }
 
 void keyboard_registerinterface(struct keyboard_interface *interface)
 {
 
-    interface->inode = pool_picknode(&interface->resource, &operands);
-
     resource_register(&interface->resource);
-    service_addchild(&service, interface->inode);
 
 }
 
@@ -68,10 +65,6 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    service_removechild(&service, interface->inode);
-    pool_unpicknode(interface->inode);
-
-    interface->inode = 0;
 
 }
 
@@ -79,7 +72,6 @@ void keyboard_initinterface(struct keyboard_interface *interface, unsigned int i
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
-    list_init(&interface->links);
 
     interface->id = id;
 
@@ -97,7 +89,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "keyboard");
+    service_registerdirectory(&service, "keyboard", RESOURCE_KEYBOARDINTERFACE, &operands);
 
 }
 

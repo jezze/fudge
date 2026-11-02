@@ -18,7 +18,7 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
         videoinfo.height = interface->height;
         videoinfo.bpp = interface->bpp;
 
-        return kernel_place(interface->inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+        return kernel_place(interface->resource.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
 
     }
 
@@ -96,10 +96,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->links, source);
+            return kernel_linknode(&interface->resource.links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->links, source);
+            return kernel_unlinknode(&interface->resource.links, source);
 
         case EVENT_INFO:
             return oninfo(interface, source);
@@ -143,10 +143,7 @@ struct video_interface *video_findinterface(unsigned int id)
 void video_registerinterface(struct video_interface *interface)
 {
 
-    interface->inode = pool_picknode(&interface->resource, &operands);
-
     resource_register(&interface->resource);
-    service_addchild(&service, interface->inode);
 
 }
 
@@ -154,10 +151,6 @@ void video_unregisterinterface(struct video_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    service_removechild(&service, interface->inode);
-    pool_unpicknode(interface->inode);
-
-    interface->inode = 0;
 
 }
 
@@ -165,7 +158,6 @@ void video_initinterface(struct video_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
-    list_init(&interface->links);
 
     interface->id = id;
     interface->width = 0;
@@ -190,7 +182,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "video");
+    service_registerdirectory(&service, "video", RESOURCE_VIDEOINTERFACE, &operands);
 
 }
 

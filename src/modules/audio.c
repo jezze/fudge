@@ -17,7 +17,7 @@ static unsigned int oninfo(struct audio_interface *interface, unsigned int sourc
         audioinfo.channels = interface->channels;
         audioinfo.bits = interface->bits;
 
-        return kernel_place(interface->inode, source, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo);
+        return kernel_place(interface->resource.inode, source, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo);
 
     }
 
@@ -69,10 +69,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->links, source);
+            return kernel_linknode(&interface->resource.links, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->links, source);
+            return kernel_unlinknode(&interface->resource.links, source);
 
         case EVENT_INFO:
             return oninfo(interface, source);
@@ -94,10 +94,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void audio_registerinterface(struct audio_interface *interface)
 {
 
-    interface->inode = pool_picknode(&interface->resource, &operands);
-
     resource_register(&interface->resource);
-    service_addchild(&service, interface->inode);
 
 }
 
@@ -105,10 +102,6 @@ void audio_unregisterinterface(struct audio_interface *interface)
 {
 
     resource_unregister(&interface->resource);
-    service_removechild(&service, interface->inode);
-    pool_unpicknode(interface->inode);
-
-    interface->inode = 0;
 
 }
 
@@ -116,7 +109,6 @@ void audio_initinterface(struct audio_interface *interface, unsigned int id, uns
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
-    list_init(&interface->links);
 
     interface->id = id;
     interface->setformat = setformat;
@@ -136,7 +128,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "audio");
+    service_registerdirectory(&service, "audio", RESOURCE_AUDIOINTERFACE, &operands);
 
 }
 

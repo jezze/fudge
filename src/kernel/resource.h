@@ -22,6 +22,8 @@ struct resource
     struct list_item item;
     unsigned int type;
     void *data;
+    unsigned int inode;
+    struct list links;
 
 };
 

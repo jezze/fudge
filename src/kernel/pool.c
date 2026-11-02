@@ -15,6 +15,7 @@ static struct list freetasks;
 static struct list freemailboxes;
 static struct list freenodes;
 static struct list freeservices;
+static struct spinlock attachlock;
 
 static struct corerow *getcorerow(unsigned int icore)
 {
@@ -240,6 +241,45 @@ unsigned int pool_picknode(struct resource *resource, struct node_operands *oper
 
 }
 
+/* a resource's own node, picked on first use and dropped with its links */
+unsigned int pool_attachnode(struct resource *resource, struct node_operands *operands)
+{
+
+    unsigned int inode;
+
+    spinlock_acquire(&attachlock);
+
+    if (!resource->inode)
+        resource->inode = pool_picknode(resource, operands);
+
+    inode = resource->inode;
+
+    spinlock_release(&attachlock);
+
+    return inode;
+
+}
+
+void pool_detachnode(struct resource *resource)
+{
+
+    struct list_item *item;
+    unsigned int inode;
+
+    spinlock_acquire(&attachlock);
+
+    inode = resource->inode;
+    resource->inode = 0;
+
+    spinlock_release(&attachlock);
+
+    while ((item = list_pickhead(&resource->links)))
+        pool_unpicknode(pool_getinodefromitem(item));
+
+    pool_unpicknode(inode);
+
+}
+
 void pool_setroot(struct node_operands *operands)
 {
 
@@ -378,6 +418,7 @@ void pool_setup(unsigned long mbaddress)
     list_init(&freemailboxes);
     list_init(&freenodes);
     list_init(&freeservices);
+    spinlock_init(&attachlock);
 
     for (i = 0; i < POOL_CORES; i++)
     {

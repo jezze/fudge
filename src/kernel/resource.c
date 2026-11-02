@@ -1,5 +1,6 @@
 #include <fudge.h>
 #include "resource.h"
+#include "pool.h"
 
 static struct list resources;
 
@@ -65,6 +66,7 @@ void resource_unregister(struct resource *resource)
 {
 
     list_remove(&resources, &resource->item);
+    pool_detachnode(resource);
 
 }
 
@@ -72,9 +74,11 @@ void resource_init(struct resource *resource, unsigned int type, void *data)
 {
 
     list_inititem(&resource->item, resource);
+    list_init(&resource->links);
 
     resource->type = type;
     resource->data = data;
+    resource->inode = 0;
 
 }
 
