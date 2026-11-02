@@ -3,9 +3,11 @@
 #define IDE_PS                          0x02
 #define IDE_SM                          0x03
 #define IDE_SS                          0x04
+#define IDE_PACKETSIZE                  12
 
 unsigned char ide_getstatus(unsigned int id);
 unsigned int ide_identify(unsigned int id, void *buffer);
+unsigned int ide_identifypacket(unsigned int id, void *buffer);
 unsigned short ide_getirq(unsigned int id);
 unsigned int ide_wait(unsigned int id);
 unsigned int ide_rblock(unsigned int id, void *buffer);
@@ -14,3 +16,7 @@ void ide_rpio28(unsigned int id, unsigned int count, unsigned int sector);
 void ide_wpio28(unsigned int id, unsigned int count, unsigned int sector);
 void ide_rpio48(unsigned int id, unsigned int count, unsigned int sector);
 void ide_wpio48(unsigned int id, unsigned int count, unsigned int sector);
+unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit);
+unsigned char ide_getreason(unsigned int id);
+unsigned int ide_getbytecount(unsigned int id);
+void ide_rdata(unsigned int id, void *buffer, unsigned int count);

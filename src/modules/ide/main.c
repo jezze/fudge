@@ -162,7 +162,8 @@ unsigned char ide_getstatus(unsigned int id)
 
 }
 
-unsigned int ide_identify(unsigned int id, void *buffer)
+/* an ata device answers IDATA, an atapi device IDATAPI and leaves its signature in LBA1 and LBA2 */
+static unsigned int identify(unsigned int id, void *buffer, unsigned char command)
 {
 
     unsigned short data = getdata(id);
@@ -193,7 +194,7 @@ unsigned int ide_identify(unsigned int id, void *buffer)
     io_outb(data + REG_LBA0, 0);
     io_outb(data + REG_LBA1, 0);
     io_outb(data + REG_LBA2, 0);
-    io_outb(data + REG_COMMAND, REG_COMMAND_IDATA);
+    io_outb(data + REG_COMMAND, command);
 
     do
     {
@@ -206,7 +207,7 @@ unsigned int ide_identify(unsigned int id, void *buffer)
     if (!status || (status & REG_STATUS_BUSY))
         return 0;
 
-    if (io_inb(data + REG_LBA1) || io_inb(data + REG_LBA2))
+    if (command == REG_COMMAND_IDATA && (io_inb(data + REG_LBA1) || io_inb(data + REG_LBA2)))
         return 0;
 
     while (!(status & (REG_STATUS_DRQ | REG_STATUS_ERROR)) && ++i < LIMIT_POLL)
@@ -216,6 +217,20 @@ unsigned int ide_identify(unsigned int id, void *buffer)
         return 0;
 
     return ide_rblock(id, buffer);
+
+}
+
+unsigned int ide_identify(unsigned int id, void *buffer)
+{
+
+    return identify(id, buffer, REG_COMMAND_IDATA);
+
+}
+
+unsigned int ide_identifypacket(unsigned int id, void *buffer)
+{
+
+    return identify(id, buffer, REG_COMMAND_IDATAPI);
 
 }
 
@@ -282,6 +297,76 @@ unsigned int ide_wblock(unsigned int id, void *buffer)
         io_outw(data, out[i]);
 
     return 1;
+
+}
+
+/* PIO packet command: limit is the most bytes the device may hand over per DRQ */
+unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit)
+{
+
+    unsigned short data = getdata(id);
+    unsigned short control = getcontrol(id);
+    unsigned short *words = packet;
+    unsigned int select = 0xA0;
+    unsigned int i;
+
+    switch (id)
+    {
+
+    case IDE_PS:
+    case IDE_SS:
+        select |= 0x10;
+
+    }
+
+    io_outb(data + REG_SELECT, select);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_inb(control);
+    io_outb(data + REG_FEATURE, 0);
+    io_outb(data + REG_LBA1, limit);
+    io_outb(data + REG_LBA2, limit >> 8);
+    io_outb(data + REG_COMMAND, REG_COMMAND_ATAPI);
+
+    if (!ide_wait(id))
+        return 0;
+
+    for (i = 0; i < IDE_PACKETSIZE / 2; i++)
+        io_outw(data, words[i]);
+
+    return 1;
+
+}
+
+/* during a packet command: bit 0 set means the device wants a command packet, bit 1 set means data goes to the host */
+unsigned char ide_getreason(unsigned int id)
+{
+
+    unsigned short data = getdata(id);
+
+    return io_inb(data + REG_COUNT);
+
+}
+
+unsigned int ide_getbytecount(unsigned int id)
+{
+
+    unsigned short data = getdata(id);
+
+    return io_inb(data + REG_LBA1) | (io_inb(data + REG_LBA2) << 8);
+
+}
+
+void ide_rdata(unsigned int id, void *buffer, unsigned int count)
+{
+
+    unsigned short data = getdata(id);
+    unsigned short *out = buffer;
+    unsigned int i;
+
+    for (i = 0; i < count / 2; i++)
+        out[i] = io_inw(data);
 
 }
 
