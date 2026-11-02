@@ -4,7 +4,8 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/console.h>
-#include <modules/virt/virt.h>
+#include <modules/platform/platform.h>
+#include <modules/platform/virt/virt.h>
 
 #define REG_DATA                        0x00
 #define REG_IER                         0x01
@@ -65,9 +66,9 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    uart = (volatile unsigned char *)virt_getbase(id);
+    uart = (volatile unsigned char *)platform_getbase(id);
 
-    arch_kmap(virt_getbase(id), virt_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(platform_getbase(id), platform_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
     uart[REG_FCR] = REG_FCR_ENABLE;
     uart[REG_MCR] = REG_MCR_OUT2;
@@ -79,7 +80,7 @@ static void driver_attach(unsigned int id)
 {
 
     console_registerinterface(&consoleinterface);
-    virt_setroutine(virt_getirq(id), handleirq);
+    platform_setroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -87,7 +88,7 @@ static void driver_detach(unsigned int id)
 {
 
     console_unregisterinterface(&consoleinterface);
-    virt_unsetroutine(virt_getirq(id), handleirq);
+    platform_unsetroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -101,14 +102,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, VIRT_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, VIRT_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

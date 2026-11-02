@@ -4,6 +4,7 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/timer.h>
+#include <modules/platform/platform.h>
 #include "../virt.h"
 
 #define INTERVAL                        (1000000000 / 60)
@@ -62,9 +63,9 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    rtc = (volatile unsigned int *)virt_getbase(id);
+    rtc = (volatile unsigned int *)platform_getbase(id);
 
-    arch_kmap(virt_getbase(id), virt_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+    arch_kmap(platform_getbase(id), platform_getbase(id), 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
 }
 
@@ -72,7 +73,7 @@ static void driver_attach(unsigned int id)
 {
 
     timer_registerinterface(&timerinterface);
-    virt_setroutine(virt_getirq(id), handleirq);
+    platform_setroutine(platform_getirq(id), handleirq);
 
     rtc[REG_IRQENABLED / 4] = 1;
 
@@ -86,7 +87,7 @@ static void driver_detach(unsigned int id)
     rtc[REG_IRQENABLED / 4] = 0;
 
     timer_unregisterinterface(&timerinterface);
-    virt_unsetroutine(virt_getirq(id), handleirq);
+    platform_unsetroutine(platform_getirq(id), handleirq);
 
 }
 
@@ -100,14 +101,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, VIRT_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, VIRT_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

@@ -3,6 +3,7 @@
 #include <cpu.h>
 #include <arch.h>
 #include <modules/bus.h>
+#include <modules/platform/platform.h>
 #include "virt.h"
 
 #define DEVICES                         (VIRT_FWCFG + 1)
@@ -48,14 +49,14 @@ static struct device devices[DEVICES] = {
     {REG_FWCFG, 0}
 };
 
-unsigned long virt_getbase(unsigned int id)
+unsigned long platform_getbase(unsigned int id)
 {
 
     return devices[id].base;
 
 }
 
-unsigned int virt_getirq(unsigned int id)
+unsigned int platform_getirq(unsigned int id)
 {
 
     return devices[id].irq;
@@ -177,7 +178,7 @@ static void handleirq(void)
 
 }
 
-unsigned int virt_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
+unsigned int platform_setroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES || !addroutine(irq, routine))
@@ -190,7 +191,7 @@ unsigned int virt_setroutine(unsigned int irq, void (*routine)(unsigned int irq)
 
 }
 
-unsigned int virt_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
+unsigned int platform_unsetroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
     if (irq >= ROUTINES)
@@ -227,7 +228,7 @@ void module_init(void)
     *plic(REG_PLIC_THRESHOLD) = 0;
 
     arch_setinterrupt(CPU_CAUSE_EXTERNAL, handleirq);
-    base_initbus(&bus, VIRT_BUS, "virt", bus_setup, bus_next);
+    base_initbus(&bus, PLATFORM_BUS, "platform", bus_setup, bus_next);
 
 }
 

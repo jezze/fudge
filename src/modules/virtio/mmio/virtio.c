@@ -3,7 +3,8 @@
 #include <cpu.h>
 #include <arch.h>
 #include <modules/driver.h>
-#include <modules/virt/virt.h>
+#include <modules/platform/platform.h>
+#include <modules/platform/virt/virt.h>
 #include "../virtio.h"
 
 /* virtio-mmio: device->common is the register base, device->modern means version 2 */
@@ -74,7 +75,7 @@ static void write64(struct virtio_device *device, unsigned int offset, unsigned 
 unsigned int virtio_match(unsigned int id, unsigned int type)
 {
 
-    unsigned long base = virt_getbase(id);
+    unsigned long base = platform_getbase(id);
 
     if (id < VIRT_VIRTIO || !base)
         return 0;
@@ -93,7 +94,7 @@ unsigned int virtio_setup(struct virtio_device *device, unsigned int id)
     buffer_clear(device, sizeof (struct virtio_device));
 
     device->id = id;
-    device->common = virt_getbase(id);
+    device->common = platform_getbase(id);
 
     version = readreg(device, REG_VERSION);
     device->modern = (version == 2);
@@ -241,7 +242,7 @@ void virtio_notify(struct virtio_queue *queue)
 unsigned int virtio_setinterrupt(struct virtio_device *device, unsigned int queues, void (*routine)(unsigned int irq))
 {
 
-    virt_setroutine(virt_getirq(device->id), routine);
+    platform_setroutine(platform_getirq(device->id), routine);
 
     return 0;
 
@@ -250,7 +251,7 @@ unsigned int virtio_setinterrupt(struct virtio_device *device, unsigned int queu
 void virtio_unsetinterrupt(struct virtio_device *device, unsigned int msi, void (*routine)(unsigned int irq))
 {
 
-    virt_unsetroutine(virt_getirq(device->id), routine);
+    platform_unsetroutine(platform_getirq(device->id), routine);
 
 }
 

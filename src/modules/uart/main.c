@@ -3,6 +3,7 @@
 #include <modules/driver.h>
 #include <modules/console.h>
 #include <modules/platform/platform.h>
+#include <modules/platform/pc/pc.h>
 #include <modules/pic/pic.h>
 #include <modules/apic/apic.h>
 #include <modules/io/io.h>
@@ -155,7 +156,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == PLATFORM_UART1;
+    return id == PC_UART1;
 
 }
 

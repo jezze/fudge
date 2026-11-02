@@ -6,6 +6,7 @@
 #include <modules/apic/apic.h>
 #include <modules/io/io.h>
 #include <modules/platform/platform.h>
+#include <modules/platform/pc/pc.h>
 #include "pit.h"
 
 #define FREQUENCY                       1193182
@@ -75,7 +76,7 @@ static void driver_init(unsigned int id)
 static unsigned int driver_match(unsigned int id)
 {
 
-    return id == PLATFORM_PIT;
+    return id == PC_PIT;
 
 }
 

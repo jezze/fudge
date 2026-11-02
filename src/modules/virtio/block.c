@@ -3,7 +3,7 @@
 #include <modules/driver.h>
 #include <modules/block.h>
 #include <modules/pci/pci.h>
-#include <modules/virt/virt.h>
+#include <modules/platform/platform.h>
 #include "virtio.h"
 
 #define BLOCKSIZE                       512
@@ -168,7 +168,7 @@ void module_register(void)
 {
 
     base_registerdriver(&driver, PCI_BUS);
-    base_registerdriver(&driver, VIRT_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
@@ -176,7 +176,7 @@ void module_unregister(void)
 {
 
     base_unregisterdriver(&driver, PCI_BUS);
-    base_unregisterdriver(&driver, VIRT_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

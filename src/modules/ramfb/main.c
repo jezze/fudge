@@ -4,7 +4,8 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/video.h>
-#include <modules/virt/virt.h>
+#include <modules/platform/platform.h>
+#include <modules/platform/virt/virt.h>
 
 #define BPP                             4
 #define FILES                           0x19
@@ -178,7 +179,7 @@ static unsigned int driver_match(unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    fwcfg = virt_getbase(id);
+    fwcfg = platform_getbase(id);
 
     arch_kmap(fwcfg, fwcfg, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
@@ -212,14 +213,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, VIRT_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, VIRT_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

@@ -4,6 +4,7 @@
 #include <arch.h>
 #include <modules/driver.h>
 #include <modules/timer.h>
+#include <modules/platform/platform.h>
 #include "virt.h"
 
 #define FREQUENCY                       10000000
@@ -70,14 +71,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    base_registerdriver(&driver, VIRT_BUS);
+    base_registerdriver(&driver, PLATFORM_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    base_unregisterdriver(&driver, VIRT_BUS);
+    base_unregisterdriver(&driver, PLATFORM_BUS);
 
 }
 

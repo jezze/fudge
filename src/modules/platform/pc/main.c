@@ -1,7 +1,8 @@
 #include <fudge.h>
 #include <kernel.h>
 #include <modules/bus.h>
-#include "platform.h"
+#include "../platform.h"
+#include "pc.h"
 
 #define REG_PIT                         0x0040
 #define REG_RTC                         0x0070
@@ -34,14 +35,14 @@ static struct device devices[] = {
     {REG_UART4, IRQ_UART2}
 };
 
-unsigned short platform_getbase(unsigned int id)
+unsigned long platform_getbase(unsigned int id)
 {
 
     return devices[id].base;
 
 }
 
-unsigned short platform_getirq(unsigned int id)
+unsigned int platform_getirq(unsigned int id)
 {
 
     return devices[id].irq;

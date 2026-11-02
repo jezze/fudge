@@ -1,6 +1,6 @@
 {
   modules: [
-    { path: initrd:kernel/virt.ko }
+    { path: initrd:kernel/platform.ko }
     { path: initrd:kernel/virt-timer.ko }
     { path: initrd:kernel/ns16550.ko }
     { path: initrd:kernel/goldfish.ko }
