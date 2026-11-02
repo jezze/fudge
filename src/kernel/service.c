@@ -430,6 +430,21 @@ void service_unregister(struct service *service)
 
 }
 
+void service_unregisterdirectory(struct service *service)
+{
+
+    unsigned int inode = service->inode;
+
+    if (inode)
+    {
+
+        service_unregister(service);
+        pool_unpicknode(inode);
+
+    }
+
+}
+
 void service_init(struct service *service)
 {
 

@@ -490,10 +490,30 @@ void module_init(void)
     node_operands_init(&operands, 0, operands_place, 0);
     service_init(&service);
 
+}
+
+void module_register(void)
+{
+
     inode = pool_picknode(0, &operands);
 
     if (inode)
         service_register(&service, inode, "sysinfo");
+
+}
+
+void module_unregister(void)
+{
+
+    if (inode)
+    {
+
+        service_unregister(&service);
+        pool_unpicknode(inode);
+
+        inode = 0;
+
+    }
 
 }
 

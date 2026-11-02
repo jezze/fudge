@@ -117,7 +117,20 @@ void module_init(void)
     node_operands_init(&operands, 0, operands_place, 0);
 
     service_init(&service);
+
+}
+
+void module_register(void)
+{
+
     service_registerdirectory(&service, "mouse");
+
+}
+
+void module_unregister(void)
+{
+
+    service_unregisterdirectory(&service);
 
 }
 
