@@ -9,9 +9,10 @@
 
 #define REG_CONTROL                     0x0CF8
 #define REG_DATA                        0x0CFC
+#define DEVICES                         64
 
 static struct base_bus bus;
-static struct {unsigned int address[64]; unsigned int count;} devices;
+static struct {unsigned int address[DEVICES]; unsigned int count;} devices;
 
 unsigned int pci_ind(unsigned int id, unsigned short offset)
 {
@@ -241,8 +242,13 @@ static unsigned int calcaddress(unsigned int num, unsigned int slot, unsigned in
 static void add(unsigned int address)
 {
 
-    devices.address[devices.count] = address;
-    devices.count++;
+    if (devices.count < DEVICES)
+    {
+
+        devices.address[devices.count] = address;
+        devices.count++;
+
+    }
 
 }
 
@@ -311,7 +317,7 @@ static unsigned int bus_next(unsigned int id)
     {
 
         if (devices.address[i] == id)
-            return devices.address[i + 1];
+            return (i + 1 < devices.count) ? devices.address[i + 1] : 0;
 
     }
 
