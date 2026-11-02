@@ -258,7 +258,7 @@ void timer_unregisterinterface(struct timer_interface *interface)
 
 }
 
-void timer_initinterface(struct timer_interface *interface, unsigned int id, unsigned int hz)
+void timer_initinterface(struct timer_interface *interface, unsigned int hz)
 {
 
     unsigned int i;
@@ -278,7 +278,6 @@ void timer_initinterface(struct timer_interface *interface, unsigned int id, uns
 
     }
 
-    interface->id = id;
     interface->hz = hz;
 
 }

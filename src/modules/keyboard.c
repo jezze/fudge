@@ -68,12 +68,10 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 
 }
 
-void keyboard_initinterface(struct keyboard_interface *interface, unsigned int id)
+void keyboard_initinterface(struct keyboard_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
-
-    interface->id = id;
 
 }
 

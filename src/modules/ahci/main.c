@@ -330,7 +330,7 @@ static void driver_init(unsigned int id)
     unsigned int i;
 
     for (i = 0; i < DISKS; i++)
-        block_initinterface(&disks[i].blockinterface, id, BLOCKSIZE, blockinterface_startsession);
+        block_initinterface(&disks[i].blockinterface, BLOCKSIZE, blockinterface_startsession);
 
 }
 

@@ -73,12 +73,11 @@ void clock_unregisterinterface(struct clock_interface *interface)
 
 }
 
-void clock_initinterface(struct clock_interface *interface, unsigned int id, unsigned int (*getseconds)(void), unsigned int (*getminutes)(void), unsigned int (*gethours)(void), unsigned int (*getweekday)(void), unsigned int (*getday)(void), unsigned int (*getmonth)(void), unsigned int (*getyear)(void))
+void clock_initinterface(struct clock_interface *interface, unsigned int (*getseconds)(void), unsigned int (*getminutes)(void), unsigned int (*gethours)(void), unsigned int (*getweekday)(void), unsigned int (*getday)(void), unsigned int (*getmonth)(void), unsigned int (*getyear)(void))
 {
 
     resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
 
-    interface->id = id;
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;
     interface->gethours = gethours;

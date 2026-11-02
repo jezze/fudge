@@ -125,12 +125,11 @@ void console_unregisterinterface(struct console_interface *interface)
 
 }
 
-void console_initinterface(struct console_interface *interface, unsigned int id, unsigned int (*send)(void *buffer, unsigned int count))
+void console_initinterface(struct console_interface *interface, unsigned int (*send)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
 
-    interface->id = id;
     interface->width = 0;
     interface->height = 0;
     interface->color = 0;

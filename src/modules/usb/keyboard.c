@@ -202,7 +202,7 @@ static void onreport(unsigned int id, void *data, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    keyboard_initinterface(&keyboardinterface, id);
+    keyboard_initinterface(&keyboardinterface);
 
 }
 

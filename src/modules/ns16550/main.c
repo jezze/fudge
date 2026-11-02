@@ -51,7 +51,7 @@ static unsigned int consoleinterface_send(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id, consoleinterface_send);
+    console_initinterface(&consoleinterface, consoleinterface_send);
 
 }
 

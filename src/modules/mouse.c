@@ -94,12 +94,10 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 
 }
 
-void mouse_initinterface(struct mouse_interface *interface, unsigned int id)
+void mouse_initinterface(struct mouse_interface *interface)
 {
 
     resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
-
-    interface->id = id;
 
 }
 

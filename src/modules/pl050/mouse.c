@@ -117,7 +117,7 @@ static void rate(unsigned int id, unsigned char value)
 static void driver_init(unsigned int id)
 {
 
-    mouse_initinterface(&mouseinterface, id);
+    mouse_initinterface(&mouseinterface);
 
 }
 

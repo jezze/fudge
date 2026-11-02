@@ -101,7 +101,7 @@ static void blockinterface_startsession(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, BLOCKSIZE, blockinterface_startsession);
+    block_initinterface(&blockinterface, BLOCKSIZE, blockinterface_startsession);
 
 }
 

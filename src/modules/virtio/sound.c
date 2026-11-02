@@ -291,7 +291,7 @@ static unsigned int audiointerface_write(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    audio_initinterface(&audiointerface, id, audiointerface_setformat, audiointerface_write);
+    audio_initinterface(&audiointerface, audiointerface_setformat, audiointerface_write);
 
 }
 

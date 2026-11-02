@@ -16,7 +16,6 @@ struct block_interface
 {
 
     struct resource resource;
-    unsigned int id;
     struct block_session sessions[8];
     unsigned int blocksize;
     unsigned int blockcount;
@@ -28,4 +27,4 @@ struct block_session *block_getsession(struct block_interface *interface);
 void block_session_done(struct block_interface *interface, struct block_session *session);
 void block_registerinterface(struct block_interface *interface);
 void block_unregisterinterface(struct block_interface *interface);
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int blocksize, void (*startsession)(struct block_session *session));
+void block_initinterface(struct block_interface *interface, unsigned int blocksize, void (*startsession)(struct block_session *session));

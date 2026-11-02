@@ -179,12 +179,11 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int id, unsigned int blocksize, void (*startsession)(struct block_session *session))
+void block_initinterface(struct block_interface *interface, unsigned int blocksize, void (*startsession)(struct block_session *session))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
 
-    interface->id = id;
     interface->blocksize = blocksize;
     interface->blockcount = 0;
     interface->startsession = startsession;

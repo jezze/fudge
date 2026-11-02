@@ -262,7 +262,7 @@ static void setupcard(void)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, BLOCKSIZE, blockinterface_startsession);
+    block_initinterface(&blockinterface, BLOCKSIZE, blockinterface_startsession);
 
 }
 

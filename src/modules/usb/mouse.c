@@ -59,7 +59,7 @@ static void onreport(unsigned int id, void *data, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    mouse_initinterface(&mouseinterface, id);
+    mouse_initinterface(&mouseinterface);
 
 }
 

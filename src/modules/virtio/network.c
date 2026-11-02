@@ -105,7 +105,7 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 static void driver_init(unsigned int id)
 {
 
-    ethernet_initinterface(&ethernetinterface, id, ethernetinterface_getmac, ethernetinterface_send);
+    ethernet_initinterface(&ethernetinterface, ethernetinterface_getmac, ethernetinterface_send);
 
 }
 

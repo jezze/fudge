@@ -17,7 +17,7 @@ static struct spinlock spinlock;
 static void progress(void)
 {
 
-    unsigned char status = ide_getstatus(blockinterface.id);
+    unsigned char status = ide_getstatus(IDE_PM);
     struct block_session *session = block_getsession(&blockinterface);
 
     if (!session->source)
@@ -38,7 +38,7 @@ static void progress(void)
     {
 
     case BLOCK_TYPE_READ:
-        ide_rblock(blockinterface.id, (char *)blockbuffer + session->offset);
+        ide_rblock(IDE_PM, (char *)blockbuffer + session->offset);
 
         session->offset += BLOCKSIZE;
 
@@ -51,7 +51,7 @@ static void progress(void)
         if (session->offset < session->count)
         {
 
-            ide_wblock(blockinterface.id, (char *)blockbuffer + session->offset);
+            ide_wblock(IDE_PM, (char *)blockbuffer + session->offset);
 
             session->offset += BLOCKSIZE;
 
@@ -106,19 +106,19 @@ static void blockinterface_startsession(struct block_session *session)
     {
 
     case BLOCK_TYPE_READ:
-        ide_rpio48(blockinterface.id, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
+        ide_rpio48(IDE_PM, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        ide_wpio48(blockinterface.id, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
+        ide_wpio48(IDE_PM, session->count / BLOCKSIZE, session->start / BLOCKSIZE);
 
-        if (ide_wait(blockinterface.id))
+        if (ide_wait(IDE_PM))
         {
 
             session->offset = BLOCKSIZE;
 
-            ide_wblock(blockinterface.id, blockbuffer);
+            ide_wblock(IDE_PM, blockbuffer);
 
         }
 
@@ -142,7 +142,7 @@ static void blockinterface_startsession(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, BLOCKSIZE, blockinterface_startsession);
+    block_initinterface(&blockinterface, BLOCKSIZE, blockinterface_startsession);
 
     blockinterface.blockcount = (identity[83] & (1 << 10)) ? (identity[100] | ((unsigned int)identity[101] << 16)) : (identity[60] | ((unsigned int)identity[61] << 16));
 

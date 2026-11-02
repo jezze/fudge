@@ -183,7 +183,7 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
 static void driver_init(unsigned int id)
 {
 
-    console_initinterface(&consoleinterface, id, consoleinterface_send);
+    console_initinterface(&consoleinterface, consoleinterface_send);
     video_initinterface(&videointerface, id, 0x000B8000, videointerface_setcmap, videointerface_setmode);
 
     consoleinterface.width = 80;

@@ -203,7 +203,7 @@ static void driver_init(unsigned int id)
     entries = (struct entry *)(((unsigned long)memory + 7) & ~7UL);
     buffers = (unsigned char *)(entries + ENTRIES);
 
-    audio_initinterface(&audiointerface, id, audiointerface_setformat, audiointerface_write);
+    audio_initinterface(&audiointerface, audiointerface_setformat, audiointerface_write);
 
     audiointerface.rate = 48000;
     audiointerface.channels = 2;

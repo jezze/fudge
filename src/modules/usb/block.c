@@ -152,7 +152,7 @@ static void blockinterface_startsession(struct block_session *session)
 
         unsigned int length = (count - offset > TRANSFERSIZE) ? TRANSFERSIZE : count - offset;
 
-        if (!transfer(blockinterface.id, session->type == BLOCK_TYPE_WRITE, (session->start + offset) / blocksize, buffer + offset, length))
+        if (!transfer(current, session->type == BLOCK_TYPE_WRITE, (session->start + offset) / blocksize, buffer + offset, length))
             break;
 
     }
@@ -167,7 +167,7 @@ static void blockinterface_startsession(struct block_session *session)
 static void driver_init(unsigned int id)
 {
 
-    block_initinterface(&blockinterface, id, 0, blockinterface_startsession);
+    block_initinterface(&blockinterface, 0, blockinterface_startsession);
 
 }
 

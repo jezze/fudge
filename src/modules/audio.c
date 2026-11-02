@@ -105,12 +105,11 @@ void audio_unregisterinterface(struct audio_interface *interface)
 
 }
 
-void audio_initinterface(struct audio_interface *interface, unsigned int id, unsigned int (*setformat)(unsigned int rate, unsigned int channels, unsigned int bits), unsigned int (*write)(void *buffer, unsigned int count))
+void audio_initinterface(struct audio_interface *interface, unsigned int (*setformat)(unsigned int rate, unsigned int channels, unsigned int bits), unsigned int (*write)(void *buffer, unsigned int count))
 {
 
     resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
 
-    interface->id = id;
     interface->setformat = setformat;
     interface->write = write;
 
