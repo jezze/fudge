@@ -216,6 +216,10 @@ static unsigned int place(unsigned int itask, void *stack)
         if (status == MESSAGE_RETRY && mailbox_wait(args->target, itask))
             return MESSAGE_FULL;
 
+        /* a kernel service could not answer into the caller's own full mailbox: the library takes in its own mail and tries again */
+        if (status == MESSAGE_RETRY && mailbox_isfull(inode))
+            return MESSAGE_FULL;
+
         return status;
 
     }

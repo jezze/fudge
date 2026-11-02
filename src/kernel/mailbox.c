@@ -182,6 +182,29 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
+unsigned int mailbox_isfull(unsigned int inode)
+{
+
+    struct resource *resource = pool_getnoderesource(inode);
+    unsigned int full = 0;
+
+    if (resource && resource->type == RESOURCE_MAILBOX)
+    {
+
+        struct mailbox *mailbox = resource->data;
+
+        spinlock_acquire(&mailbox->spinlock);
+
+        full = !mailbox->free.head;
+
+        spinlock_release(&mailbox->spinlock);
+
+    }
+
+    return full;
+
+}
+
 unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 {
 
