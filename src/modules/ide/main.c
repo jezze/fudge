@@ -364,6 +364,9 @@ static void driver_reset(unsigned int id)
     sdata = bar2 + 0x170 * (!bar2);
     scontrol = bar3 + 0x376 * (!bar3);
 
+    io_outb(pcontrol, 0);
+    io_outb(scontrol, 0);
+
 }
 
 static void driver_attach(unsigned int id)
