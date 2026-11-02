@@ -8,8 +8,8 @@
 
 struct core *kernel_getcore(void);
 unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel);
-unsigned int kernel_linknode(struct list *links, unsigned int source);
-unsigned int kernel_unlinknode(struct list *links, unsigned int source);
+unsigned int kernel_linknode(struct resource *resource, unsigned int source);
+unsigned int kernel_unlinknode(struct resource *resource, unsigned int source);
 void kernel_schedule(struct core *core);
 unsigned int kernel_kill(unsigned int itask);
 void kernel_signal(unsigned int itask, unsigned int signal);
@@ -17,7 +17,7 @@ unsigned int kernel_pick(unsigned int source, struct message *messages, unsigned
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data);
 unsigned int kernel_announce(unsigned int inode, char *name);
 unsigned long kernel_locate(unsigned int target, unsigned int id);
-void kernel_notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data);
+void kernel_notify(struct resource *resource, unsigned int event, unsigned int count, void *data);
 void kernel_starttask(unsigned int itask);
 unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long sp, unsigned long base, unsigned int id, unsigned long mmap, unsigned long code, unsigned long stack, unsigned long buffer);
 unsigned long kernel_getbuffer(unsigned int inode);

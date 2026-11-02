@@ -19,10 +19,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->resource.links, source);
+            return kernel_linknode(&interface->resource, source);
 
         case EVENT_UNLINK:
-            return kernel_unlinknode(&interface->resource.links, source);
+            return kernel_unlinknode(&interface->resource, source);
 
         }
 
@@ -41,7 +41,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     mousemove.rely = rely;
     mousemove.buttons = interface->buttons;
 
-    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+    kernel_notify(&interface->resource, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
 
 }
 
@@ -52,7 +52,7 @@ void mouse_notifyscroll(struct mouse_interface *interface, char relz)
 
     mousescroll.relz = relz;
 
-    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
+    kernel_notify(&interface->resource, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
 
 }
 
@@ -64,7 +64,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     mousepress.button = button;
     interface->buttons |= 1 << (button - 1);
 
-    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
+    kernel_notify(&interface->resource, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
 
 }
 
@@ -76,7 +76,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     mouserelease.button = button;
     interface->buttons &= ~(1 << (button - 1));
 
-    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
+    kernel_notify(&interface->resource, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
 
 }
 

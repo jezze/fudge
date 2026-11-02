@@ -208,12 +208,12 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         {
 
         case EVENT_LINK:
-            return kernel_linknode(&interface->resource.links, source);
+            return kernel_linknode(&interface->resource, source);
 
         case EVENT_UNLINK:
             unlink(interface, source);
 
-            return kernel_unlinknode(&interface->resource.links, source);
+            return kernel_unlinknode(&interface->resource, source);
 
         case EVENT_INFO:
             return oninfo(interface, source);
@@ -239,7 +239,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->resource.links, interface->resource.inode, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(&interface->resource, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
     expire(interface, counter);
 
 }

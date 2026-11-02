@@ -262,7 +262,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
 }
 
-unsigned int kernel_linknode(struct list *links, unsigned int source)
+unsigned int kernel_linknode(struct resource *resource, unsigned int source)
 {
 
     unsigned int inode = pool_picknode(pool_getnoderesource(source), pool_getnodeoperands(source));
@@ -270,7 +270,7 @@ unsigned int kernel_linknode(struct list *links, unsigned int source)
     if (inode)
     {
 
-        pool_placenode(inode, links);
+        pool_placenode(inode, &resource->links);
 
         return MESSAGE_OK;
 
@@ -280,9 +280,10 @@ unsigned int kernel_linknode(struct list *links, unsigned int source)
 
 }
 
-unsigned int kernel_unlinknode(struct list *links, unsigned int source)
+unsigned int kernel_unlinknode(struct resource *resource, unsigned int source)
 {
 
+    struct list *links = &resource->links;
     struct resource *sresource = pool_getnoderesource(source);
 
     if (sresource)
@@ -297,11 +298,11 @@ unsigned int kernel_unlinknode(struct list *links, unsigned int source)
         {
 
             unsigned int inode = pool_getinodefromitem(current);
-            struct resource *resource = pool_getnoderesource(inode);
+            struct resource *linked = pool_getnoderesource(inode);
 
             next = current->next;
 
-            if (resource == sresource)
+            if (linked == sresource)
             {
 
                 list_remove_unsafe(links, current);
@@ -459,9 +460,10 @@ unsigned int kernel_announce(unsigned int inode, char *name)
 
 }
 
-void kernel_notify(struct list *links, unsigned int source, unsigned int event, unsigned int count, void *data)
+void kernel_notify(struct resource *resource, unsigned int event, unsigned int count, void *data)
 {
 
+    struct list *links = &resource->links;
     struct list_item *current = 0;
 
     spinlock_acquire(&links->spinlock);
@@ -472,7 +474,7 @@ void kernel_notify(struct list *links, unsigned int source, unsigned int event, 
         unsigned int target = pool_getinodefromitem(current);
 
         if (target)
-            kernel_place(source, target, event, count, data);
+            kernel_place(resource->inode, target, event, count, data);
 
     }
 
