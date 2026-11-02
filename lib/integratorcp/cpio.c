@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include <disk.h>
 
-static struct node_operands operands;
+static struct resource_operands operands;
 static struct service service;
 static unsigned int address;
 
@@ -468,7 +468,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void cpio_setup(unsigned int addr)
 {
 
-    node_operands_init(&operands, 0, operands_place, locate);
+    resource_operands_init(&operands, 0, operands_place, locate);
     service_init(&service);
 
     address = addr;

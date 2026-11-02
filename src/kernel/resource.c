@@ -70,7 +70,16 @@ void resource_unregister(struct resource *resource)
 
 }
 
-void resource_init(struct resource *resource, unsigned int type, void *data, struct node_operands *operands)
+void resource_operands_init(struct resource_operands *operands, unsigned int (*pick)(unsigned int source, struct message *messages, unsigned int count, unsigned int release, unsigned int flags), unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data), unsigned long (*locate)(unsigned int id))
+{
+
+    operands->pick = pick;
+    operands->place = place;
+    operands->locate = locate;
+
+}
+
+void resource_init(struct resource *resource, unsigned int type, void *data, struct resource_operands *operands)
 {
 
     list_inititem(&resource->item, resource);

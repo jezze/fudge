@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "keyboard.h"
 
-static struct node_operands operands;
+static struct resource_operands operands;
 static struct service service;
 
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
@@ -78,7 +78,7 @@ void keyboard_initinterface(struct keyboard_interface *interface)
 void module_init(void)
 {
 
-    node_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, 0, operands_place, 0);
 
     service_init(&service);
 

@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "clock.h"
 
-static struct node_operands operands;
+static struct resource_operands operands;
 static struct service service;
 
 static unsigned int oninfo(struct clock_interface *interface, unsigned int source)
@@ -91,7 +91,7 @@ void clock_initinterface(struct clock_interface *interface, unsigned int (*getse
 void module_init(void)
 {
 
-    node_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, 0, operands_place, 0);
 
     service_init(&service);
 

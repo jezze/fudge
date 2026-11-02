@@ -16,6 +16,15 @@
 #define RESOURCE_BLOCKINTERFACE         0x17
 #define RESOURCE_CONSOLEINTERFACE       0x18
 
+struct resource_operands
+{
+
+    unsigned int (*pick)(unsigned int source, struct message *messages, unsigned int count, unsigned int release, unsigned int flags);
+    unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data);
+    unsigned long (*locate)(unsigned int id);
+
+};
+
 struct resource
 {
 
@@ -24,7 +33,7 @@ struct resource
     void *data;
     unsigned int inode;
     struct list links;
-    struct node_operands *operands;
+    struct resource_operands *operands;
 
 };
 
@@ -34,5 +43,6 @@ void resource_lock(void);
 void resource_unlock(void);
 void resource_register(struct resource *resource);
 void resource_unregister(struct resource *resource);
-void resource_init(struct resource *resource, unsigned int type, void *data, struct node_operands *operands);
+void resource_operands_init(struct resource_operands *operands, unsigned int (*pick)(unsigned int source, struct message *messages, unsigned int count, unsigned int release, unsigned int flags), unsigned int (*place)(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data), unsigned long (*locate)(unsigned int id));
+void resource_init(struct resource *resource, unsigned int type, void *data, struct resource_operands *operands);
 void resource_setup(void);

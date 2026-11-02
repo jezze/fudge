@@ -3,7 +3,6 @@
 #include "mmap.h"
 #include "mailbox.h"
 #include "task.h"
-#include "node.h"
 #include "pool.h"
 #include "service.h"
 #include "kernel.h"
@@ -29,7 +28,7 @@ struct file
 
 };
 
-static struct node_operands operands;
+static struct resource_operands operands;
 static struct service service;
 static struct spinlock spinlock;
 static struct file files[MEMSRV_FILES];
@@ -788,7 +787,7 @@ void memsrv_untask(unsigned int itask)
 void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, unsigned int size))
 {
 
-    node_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, 0, operands_place, 0);
     service_init(&service);
     spinlock_init(&spinlock);
 

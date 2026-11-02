@@ -4,7 +4,6 @@
 #include "binary.h"
 #include "mailbox.h"
 #include "task.h"
-#include "node.h"
 #include "service.h"
 #include "memsrv.h"
 #include "core.h"
@@ -415,7 +414,7 @@ void kernel_signal(unsigned int itask, unsigned int signal)
 
 }
 
-static struct node_operands *getoperands(unsigned int inode)
+static struct resource_operands *getoperands(unsigned int inode)
 {
 
     struct resource *resource = pool_getnoderesource(inode);
@@ -427,7 +426,7 @@ static struct node_operands *getoperands(unsigned int inode)
 unsigned int kernel_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int release, unsigned int flags)
 {
 
-    struct node_operands *operands = getoperands(source);
+    struct resource_operands *operands = getoperands(source);
 
     return (operands && operands->pick) ? operands->pick(source, messages, count, release, flags) : MESSAGE_FAILED;
 
@@ -436,7 +435,7 @@ unsigned int kernel_pick(unsigned int source, struct message *messages, unsigned
 unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int event, unsigned int count, void *data)
 {
 
-    struct node_operands *operands = getoperands(target);
+    struct resource_operands *operands = getoperands(target);
 
     return (operands && operands->place) ? operands->place(target, source, event, count, data) : MESSAGE_FAILED;
 
@@ -445,7 +444,7 @@ unsigned int kernel_place(unsigned int source, unsigned int target, unsigned int
 unsigned long kernel_locate(unsigned int target, unsigned int id)
 {
 
-    struct node_operands *operands = getoperands(target);
+    struct resource_operands *operands = getoperands(target);
 
     return (operands && operands->locate) ? operands->locate(id) : 0;
 

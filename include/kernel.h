@@ -5,7 +5,6 @@
 #include <kernel/mailbox.h>
 #include <kernel/task.h>
 #include <kernel/core.h>
-#include <kernel/node.h>
 #include <kernel/pool.h>
 #include <kernel/service.h>
 #include <kernel/memsrv.h>

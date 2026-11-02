@@ -2,7 +2,7 @@
 #include <kernel.h>
 #include "timer.h"
 
-static struct node_operands operands;
+static struct resource_operands operands;
 static struct service service;
 
 static unsigned int getticks(struct timer_interface *interface, unsigned int ms)
@@ -285,7 +285,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int hz)
 void module_init(void)
 {
 
-    node_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, 0, operands_place, 0);
 
     service_init(&service);
 

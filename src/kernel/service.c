@@ -1,7 +1,6 @@
 #include <fudge.h>
 #include <hash.h>
 #include "resource.h"
-#include "node.h"
 #include "pool.h"
 #include "service.h"
 #include "kernel.h"
@@ -32,8 +31,8 @@ struct content
 
 };
 
-static struct node_operands directoryoperands;
-static struct node_operands rootoperands;
+static struct resource_operands directoryoperands;
+static struct resource_operands rootoperands;
 static struct resource rootresource;
 
 static void setname(struct service *service, char *name)
@@ -514,7 +513,7 @@ void service_register(struct service *service, unsigned int inode, char *name)
 }
 
 /* a service of the kernel's own: the node is the service's own resource's */
-void service_registernode(struct service *service, char *name, struct node_operands *operands)
+void service_registernode(struct service *service, char *name, struct resource_operands *operands)
 {
 
     unsigned int inode;
@@ -563,8 +562,8 @@ void service_init(struct service *service)
 void service_setup(void)
 {
 
-    node_operands_init(&directoryoperands, 0, operands_place, 0);
-    node_operands_init(&rootoperands, 0, rootoperands_place, 0);
+    resource_operands_init(&directoryoperands, 0, operands_place, 0);
+    resource_operands_init(&rootoperands, 0, rootoperands_place, 0);
     resource_init(&rootresource, 0, 0, &rootoperands);
     pool_setroot(&rootresource);
 

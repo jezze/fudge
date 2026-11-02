@@ -3,7 +3,7 @@
 #include <kernel.h>
 #include "ethernet.h"
 
-static struct node_operands operands;
+static struct resource_operands operands;
 static struct service service;
 
 static unsigned int ondata(struct ethernet_interface *interface, unsigned int source, void *data, unsigned int count)
@@ -107,7 +107,7 @@ void ethernet_initinterface(struct ethernet_interface *interface, void (*getmac)
 void module_init(void)
 {
 
-    node_operands_init(&operands, 0, operands_place, 0);
+    resource_operands_init(&operands, 0, operands_place, 0);
 
     service_init(&service);
 

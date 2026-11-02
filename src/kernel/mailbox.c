@@ -1,12 +1,11 @@
 #include <fudge.h>
 #include "resource.h"
-#include "node.h"
 #include "task.h"
 #include "pool.h"
 #include "mailbox.h"
 #include "kernel.h"
 
-static struct node_operands operands;
+static struct resource_operands operands;
 
 void mailbox_wake(unsigned int inode)
 {
@@ -306,7 +305,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 void mailbox_setup(void)
 {
 
-    node_operands_init(&operands, operands_pick, operands_place, 0);
+    resource_operands_init(&operands, operands_pick, operands_place, 0);
 
 }
 
