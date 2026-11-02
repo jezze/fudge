@@ -512,39 +512,37 @@ void service_register(struct service *service, unsigned int inode, char *name)
 
 }
 
-void service_registerdirectory(struct service *service, char *name, unsigned int type, struct node_operands *operands)
+/* a service of the kernel's own: the node is the service's own resource's */
+void service_registernode(struct service *service, char *name, struct node_operands *operands)
 {
 
-    unsigned int inode = pool_picknode(&service->resource, &directoryoperands);
-
-    service->type = type;
-    service->operands = operands;
+    unsigned int inode = pool_attachnode(&service->resource, operands);
 
     if (inode)
         service_register(service, inode, name);
 
 }
 
-void service_unregister(struct service *service)
+void service_registerdirectory(struct service *service, char *name, unsigned int type, struct node_operands *operands)
 {
 
-    resource_unregister(&service->resource);
-    setname(service, 0);
+    service->type = type;
+    service->operands = operands;
 
-    service->inode = 0;
+    service_registernode(service, name, &directoryoperands);
 
 }
 
-void service_unregisterdirectory(struct service *service)
+void service_unregister(struct service *service)
 {
 
-    unsigned int inode = service->inode;
-
-    if (inode)
+    if (service->inode)
     {
 
-        service_unregister(service);
-        pool_unpicknode(inode);
+        resource_unregister(&service->resource);
+        setname(service, 0);
+
+        service->inode = 0;
 
     }
 

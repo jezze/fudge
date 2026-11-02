@@ -5,7 +5,6 @@
 static struct node_operands operands;
 static struct service service;
 static unsigned int address;
-static unsigned int inode;
 
 static struct cpio_header *getheader(unsigned int id)
 {
@@ -314,7 +313,7 @@ static unsigned int onmaprequest(unsigned int source, unsigned int count, void *
 
     response.address = (isheader(request->id)) ? map(request->id) : 0;
 
-    return kernel_place(inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response);
+    return kernel_place(service.inode, source, EVENT_MAPRESPONSE, sizeof (struct event_mapresponse), &response);
 
 }
 
@@ -361,7 +360,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
     }
 
-    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+    return kernel_place(service.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
 }
 
@@ -377,7 +376,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
     response->count = (isheader(request->id)) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
-    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
+    return kernel_place(service.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
 
 }
 
@@ -397,7 +396,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
     else
         response.id = 0;
 
-    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(service.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
@@ -435,7 +434,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     }
 
-    return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
+    return kernel_place(service.inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
 }
 
@@ -473,10 +472,7 @@ void cpio_setup(unsigned int addr)
     service_init(&service);
 
     address = addr;
-    inode = pool_picknode(0, &operands);
-
-    if (inode)
-        service_register(&service, inode, "initrd");
+    service_registernode(&service, "initrd", &operands);
 
 }
 

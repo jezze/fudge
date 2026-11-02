@@ -38,7 +38,6 @@ static unsigned int freepages;
 static unsigned int nfree;
 static unsigned long base;
 static void (*unmapcallback)(unsigned long vaddress, unsigned int size);
-static unsigned int inode;
 
 static struct file *getfile(unsigned int id)
 {
@@ -525,7 +524,7 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+    return kernel_place(service.inode, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
 
 }
 
@@ -544,7 +543,7 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_MMAPRESPONSE, sizeof (struct event_mmapresponse), &response);
+    return kernel_place(service.inode, source, EVENT_MMAPRESPONSE, sizeof (struct event_mmapresponse), &response);
 
 }
 
@@ -563,7 +562,7 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_MUNMAPRESPONSE, sizeof (struct event_munmapresponse), &response);
+    return kernel_place(service.inode, source, EVENT_MUNMAPRESPONSE, sizeof (struct event_munmapresponse), &response);
 
 }
 
@@ -594,7 +593,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+    return kernel_place(service.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
 }
 
@@ -613,7 +612,7 @@ static unsigned int onremoverequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
+    return kernel_place(service.inode, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
 }
 
@@ -633,7 +632,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
+    return kernel_place(service.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
 
 }
 
@@ -652,7 +651,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(service.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
@@ -673,7 +672,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     spinlock_release(&spinlock);
 
-    return kernel_place(inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
+    return kernel_place(service.inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
 }
 
@@ -738,7 +737,7 @@ unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 unsigned long memsrv_getbase(unsigned int target, unsigned int id)
 {
 
-    return (target == inode && getfile(id)) ? memsrv_getpage(id, 0) : 0;
+    return (target == service.inode && getfile(id)) ? memsrv_getpage(id, 0) : 0;
 
 }
 
@@ -800,10 +799,7 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
 
     freepages = 0;
     unmapcallback = unmap;
-    inode = pool_picknode(0, &operands);
-
-    if (inode)
-        service_register(&service, inode, "mem");
+    service_registernode(&service, "mem", &operands);
 
 }
 

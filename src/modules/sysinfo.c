@@ -9,7 +9,6 @@
 
 static struct node_operands operands;
 static struct service service;
-static unsigned int inode;
 static struct record rootrecords[ROOTRECORDS];
 static struct spinlock spinlock;
 static char output[OUTPUTSIZE];
@@ -410,7 +409,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     spinlock_acquire(&spinlock);
 
     readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
-    status = kernel_place(inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
+    status = kernel_place(service.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
 
     spinlock_release(&spinlock);
 
@@ -431,7 +430,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     spinlock_acquire(&spinlock);
 
     statresponse->count = stat(request->id, statresponse + 1);
-    status = kernel_place(inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + statresponse->count, response);
+    status = kernel_place(service.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + statresponse->count, response);
 
     spinlock_release(&spinlock);
 
@@ -450,7 +449,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     response.id = walk(request->parent ? request->parent : ROOT, request->length, (char *)(request + 1));
 
-    return kernel_place(inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(service.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
@@ -495,25 +494,14 @@ void module_init(void)
 void module_register(void)
 {
 
-    inode = pool_picknode(0, &operands);
-
-    if (inode)
-        service_register(&service, inode, "sysinfo");
+    service_registernode(&service, "sysinfo", &operands);
 
 }
 
 void module_unregister(void)
 {
 
-    if (inode)
-    {
-
-        service_unregister(&service);
-        pool_unpicknode(inode);
-
-        inode = 0;
-
-    }
+    service_unregister(&service);
 
 }
 

@@ -189,7 +189,7 @@ void module_register(void)
 void module_unregister(void)
 {
 
-    service_unregisterdirectory(&service);
+    service_unregister(&service);
 
 }
 
