@@ -62,7 +62,7 @@ static void handleirq(unsigned int irq)
 
 }
 
-static void blockinterface_startsession(struct block_session *session)
+static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
     void *buffer = (void *)kernel_getbuffer(session->source);
@@ -77,7 +77,7 @@ static void blockinterface_startsession(struct block_session *session)
 
         block_session_done(&blockinterface, session);
 
-        return;
+        return MESSAGE_OK;
 
     }
 
@@ -95,6 +95,8 @@ static void blockinterface_startsession(struct block_session *session)
     virtio_push(&queue, 0);
     virtio_notify(&queue);
     spinlock_release(&spinlock);
+
+    return MESSAGE_OK;
 
 }
 

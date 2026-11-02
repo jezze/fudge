@@ -134,7 +134,7 @@ static unsigned int transfer(unsigned int id, unsigned int write, unsigned int b
 
 }
 
-static void blockinterface_startsession(struct block_session *session)
+static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
     unsigned char *buffer = (unsigned char *)kernel_getbuffer(session->source);
@@ -160,6 +160,8 @@ static void blockinterface_startsession(struct block_session *session)
 
     spinlock_release(&spinlock);
     block_session_done(&blockinterface, session);
+
+    return MESSAGE_OK;
 
 }
 

@@ -173,7 +173,7 @@ static unsigned int writeblock(unsigned int block, unsigned int *buffer)
 }
 
 /* the session's data is copied block by block between the card's FIFO and the task's buffer */
-static void blockinterface_startsession(struct block_session *session)
+static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
     unsigned int *buffer = (unsigned int *)kernel_getbuffer(session->source);
@@ -199,6 +199,8 @@ static void blockinterface_startsession(struct block_session *session)
     session->count = i;
 
     block_session_done(&blockinterface, session);
+
+    return MESSAGE_OK;
 
 }
 

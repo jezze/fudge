@@ -371,7 +371,7 @@ static struct disk *getdisk(struct block_session *session)
 
 }
 
-static void blockinterface_startsession(struct block_session *session)
+static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
     struct disk *disk = getdisk(session);
@@ -388,6 +388,8 @@ static void blockinterface_startsession(struct block_session *session)
         finish(disk, session, wait(&disk->io));
 
     spinlock_release(&spinlock);
+
+    return MESSAGE_OK;
 
 }
 

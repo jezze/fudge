@@ -41,15 +41,20 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
         if (!session->source)
         {
 
+            unsigned int status;
+
             session->type = BLOCK_TYPE_READ;
             session->source = source;
             session->start = request->offset;
             session->count = request->count;
             session->offset = 0;
 
-            interface->startsession(session);
+            status = interface->startsession(session);
 
-            return MESSAGE_OK;
+            if (status != MESSAGE_OK)
+                session->source = 0;
+
+            return status;
 
         }
 
@@ -76,15 +81,20 @@ static unsigned int onblockwriterequest(struct block_interface *interface, unsig
         if (!session->source)
         {
 
+            unsigned int status;
+
             session->type = BLOCK_TYPE_WRITE;
             session->source = source;
             session->start = request->offset;
             session->count = request->count;
             session->offset = 0;
 
-            interface->startsession(session);
+            status = interface->startsession(session);
 
-            return MESSAGE_OK;
+            if (status != MESSAGE_OK)
+                session->source = 0;
+
+            return status;
 
         }
 
@@ -179,7 +189,7 @@ void block_unregisterinterface(struct block_interface *interface)
 
 }
 
-void block_initinterface(struct block_interface *interface, unsigned int blocksize, void (*startsession)(struct block_session *session))
+void block_initinterface(struct block_interface *interface, unsigned int blocksize, unsigned int (*startsession)(struct block_session *session))
 {
 
     resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
