@@ -105,6 +105,8 @@ static void setpio28(unsigned int id, unsigned int sector, unsigned int count, u
     case IDE_SS:
         select |= 0x10;
 
+        break;
+
     }
 
     io_outb(data + REG_SELECT, select);
@@ -134,6 +136,8 @@ static void setpio48(unsigned int id, unsigned int sector, unsigned int count, u
     case IDE_SS:
         select |= 0x10;
 
+        break;
+
     }
 
     io_outb(data + REG_SELECT, select);
@@ -162,7 +166,6 @@ unsigned char ide_getstatus(unsigned int id)
 
 }
 
-/* an ata device answers IDATA, an atapi device IDATAPI and leaves its signature in LBA1 and LBA2 */
 static unsigned int identify(unsigned int id, void *buffer, unsigned char command)
 {
 
@@ -178,6 +181,8 @@ static unsigned int identify(unsigned int id, void *buffer, unsigned char comman
     case IDE_PS:
     case IDE_SS:
         select |= 0x10;
+
+        break;
 
     }
 
@@ -300,7 +305,6 @@ unsigned int ide_wblock(unsigned int id, void *buffer)
 
 }
 
-/* PIO packet command: limit is the most bytes the device may hand over per DRQ */
 unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit)
 {
 
@@ -316,6 +320,8 @@ unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit)
     case IDE_PS:
     case IDE_SS:
         select |= 0x10;
+
+        break;
 
     }
 
@@ -339,7 +345,6 @@ unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit)
 
 }
 
-/* during a packet command: bit 0 set means the device wants a command packet, bit 1 set means data goes to the host */
 unsigned char ide_getreason(unsigned int id)
 {
 
