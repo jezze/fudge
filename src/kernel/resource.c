@@ -70,7 +70,7 @@ void resource_unregister(struct resource *resource)
 
 }
 
-void resource_init(struct resource *resource, unsigned int type, void *data)
+void resource_init(struct resource *resource, unsigned int type, void *data, struct node_operands *operands)
 {
 
     list_inititem(&resource->item, resource);
@@ -79,6 +79,7 @@ void resource_init(struct resource *resource, unsigned int type, void *data)
     resource->type = type;
     resource->data = data;
     resource->inode = 0;
+    resource->operands = operands;
 
 }
 

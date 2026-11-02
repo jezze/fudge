@@ -284,7 +284,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     unsigned int i;
 
-    resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox);
+    resource_init(&mailbox->resource, RESOURCE_MAILBOX, mailbox, &operands);
     spinlock_init(&mailbox->spinlock);
 
     for (i = 0; i < MESSAGE_SLOTS; i++)
@@ -298,7 +298,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     mailbox_reset(mailbox);
 
-    mailbox->inode = pool_picknode(&mailbox->resource, &operands);
+    mailbox->inode = pool_picknode(&mailbox->resource);
     mailbox->data = data;
 
 }

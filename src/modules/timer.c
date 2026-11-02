@@ -263,7 +263,7 @@ void timer_initinterface(struct timer_interface *interface, unsigned int hz)
 
     unsigned int i;
 
-    resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_TIMERINTERFACE, interface, &operands);
     spinlock_init(&interface->spinlock);
     list_init(&interface->free);
 
@@ -294,7 +294,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "timer", RESOURCE_TIMERINTERFACE, &operands);
+    service_registerdirectory(&service, "timer", RESOURCE_TIMERINTERFACE);
 
 }
 

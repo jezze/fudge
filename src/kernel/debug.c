@@ -52,7 +52,7 @@ void debug_unregisterinterface(struct debug_interface *interface)
 void debug_initinterface(struct debug_interface *interface, void (*write)(unsigned int level, unsigned int count, char *string, char *file, unsigned int line))
 {
 
-    resource_init(&interface->resource, RESOURCE_DEBUGLOG, interface);
+    resource_init(&interface->resource, RESOURCE_DEBUGLOG, interface, 0);
 
     interface->write = write;
 

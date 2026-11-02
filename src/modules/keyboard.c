@@ -71,7 +71,7 @@ void keyboard_unregisterinterface(struct keyboard_interface *interface)
 void keyboard_initinterface(struct keyboard_interface *interface)
 {
 
-    resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_KEYBOARDINTERFACE, interface, &operands);
 
 }
 
@@ -87,7 +87,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "keyboard", RESOURCE_KEYBOARDINTERFACE, &operands);
+    service_registerdirectory(&service, "keyboard", RESOURCE_KEYBOARDINTERFACE);
 
 }
 

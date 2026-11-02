@@ -97,7 +97,7 @@ void ethernet_unregisterinterface(struct ethernet_interface *interface)
 void ethernet_initinterface(struct ethernet_interface *interface, void (*getmac)(unsigned char address[6]), unsigned int (*send)(void *buffer, unsigned int count))
 {
 
-    resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_ETHERNETINTERFACE, interface, &operands);
 
     interface->getmac = getmac;
     interface->send = send;
@@ -116,7 +116,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "ethernet", RESOURCE_ETHERNETINTERFACE, &operands);
+    service_registerdirectory(&service, "ethernet", RESOURCE_ETHERNETINTERFACE);
 
 }
 

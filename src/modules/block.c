@@ -192,7 +192,7 @@ void block_unregisterinterface(struct block_interface *interface)
 void block_initinterface(struct block_interface *interface, unsigned int blocksize, unsigned int (*startsession)(struct block_session *session))
 {
 
-    resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_BLOCKINTERFACE, interface, &operands);
 
     interface->blocksize = blocksize;
     interface->blockcount = 0;
@@ -212,7 +212,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "block", RESOURCE_BLOCKINTERFACE, &operands);
+    service_registerdirectory(&service, "block", RESOURCE_BLOCKINTERFACE);
 
 }
 

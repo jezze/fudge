@@ -21,7 +21,7 @@ void base_unregisterbus(struct base_bus *bus)
 void base_initbus(struct base_bus *bus, unsigned int type, char *name, void (*setup)(void), unsigned int (*next)(unsigned int id))
 {
 
-    resource_init(&bus->resource, RESOURCE_BUS, bus);
+    resource_init(&bus->resource, RESOURCE_BUS, bus, 0);
 
     bus->type = type;
     bus->name = name;

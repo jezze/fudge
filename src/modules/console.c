@@ -128,7 +128,7 @@ void console_unregisterinterface(struct console_interface *interface)
 void console_initinterface(struct console_interface *interface, unsigned int (*send)(void *buffer, unsigned int count))
 {
 
-    resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_CONSOLEINTERFACE, interface, &operands);
 
     interface->width = 0;
     interface->height = 0;
@@ -150,7 +150,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "console", RESOURCE_CONSOLEINTERFACE, &operands);
+    service_registerdirectory(&service, "console", RESOURCE_CONSOLEINTERFACE);
 
 }
 

@@ -138,7 +138,7 @@ void video_unregisterinterface(struct video_interface *interface)
 void video_initinterface(struct video_interface *interface, unsigned long framebuffer, unsigned int (*setcmap)(unsigned int count, void *data), void (*setmode)(unsigned int width, unsigned int height, unsigned int bpp))
 {
 
-    resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_VIDEOINTERFACE, interface, &operands);
 
     interface->width = 0;
     interface->height = 0;
@@ -162,7 +162,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "video", RESOURCE_VIDEOINTERFACE, &operands);
+    service_registerdirectory(&service, "video", RESOURCE_VIDEOINTERFACE);
 
 }
 

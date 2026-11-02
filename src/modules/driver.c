@@ -127,7 +127,7 @@ void base_detachdevice(unsigned int type, unsigned int id)
 void base_initdriver(struct base_driver *driver, char *name, void (*init)(unsigned int id), unsigned int (*match)(unsigned int type, unsigned int id), void (*reset)(unsigned int id), void (*attach)(unsigned int id), void (*detach)(unsigned int id))
 {
 
-    resource_init(&driver->resource, RESOURCE_DRIVER, driver);
+    resource_init(&driver->resource, RESOURCE_DRIVER, driver, 0);
 
     driver->name = name;
     driver->type = 0;

@@ -9,7 +9,7 @@
 static struct corerow {struct list_item item; struct core core;} corerows[POOL_CORES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
-static struct noderow {struct list_item item; struct resource *resource; struct node_operands *operands; unsigned int generation;} noderows[POOL_NODES];
+static struct noderow {struct list_item item; struct resource *resource; unsigned int generation;} noderows[POOL_NODES];
 static struct servicerow {struct list_item item; struct service service;} servicerows[POOL_SERVICES];
 static struct list freetasks;
 static struct list freemailboxes;
@@ -161,15 +161,6 @@ struct resource *pool_getnoderesource(unsigned int inode)
 
 }
 
-struct node_operands *pool_getnodeoperands(unsigned int inode)
-{
-
-    struct noderow *noderow = getnoderow(inode);
-
-    return noderow ? noderow->operands : 0;
-
-}
-
 struct service *pool_getservice(unsigned int iservice)
 {
 
@@ -220,7 +211,7 @@ unsigned int pool_pickmailbox(void)
 
 }
 
-unsigned int pool_picknode(struct resource *resource, struct node_operands *operands)
+unsigned int pool_picknode(struct resource *resource)
 {
 
     struct list_item *item = list_pickhead(&freenodes);
@@ -231,7 +222,6 @@ unsigned int pool_picknode(struct resource *resource, struct node_operands *oper
         struct noderow *noderow = item->data;
 
         noderow->resource = resource;
-        noderow->operands = operands;
 
         return encodenoderow(item->data);
 
@@ -242,7 +232,7 @@ unsigned int pool_picknode(struct resource *resource, struct node_operands *oper
 }
 
 /* a resource's own node, picked on first use and dropped with its links */
-unsigned int pool_attachnode(struct resource *resource, struct node_operands *operands)
+unsigned int pool_attachnode(struct resource *resource)
 {
 
     unsigned int inode;
@@ -250,7 +240,7 @@ unsigned int pool_attachnode(struct resource *resource, struct node_operands *op
     spinlock_acquire(&attachlock);
 
     if (!resource->inode)
-        resource->inode = pool_picknode(resource, operands);
+        resource->inode = pool_picknode(resource);
 
     inode = resource->inode;
 
@@ -280,11 +270,10 @@ void pool_detachnode(struct resource *resource)
 
 }
 
-void pool_setroot(struct node_operands *operands)
+void pool_setroot(struct resource *resource)
 {
 
-    noderows[MESSAGE_ROOT].resource = 0;
-    noderows[MESSAGE_ROOT].operands = operands;
+    noderows[MESSAGE_ROOT].resource = resource;
 
 }
 

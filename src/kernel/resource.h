@@ -24,6 +24,7 @@ struct resource
     void *data;
     unsigned int inode;
     struct list links;
+    struct node_operands *operands;
 
 };
 
@@ -33,5 +34,5 @@ void resource_lock(void);
 void resource_unlock(void);
 void resource_register(struct resource *resource);
 void resource_unregister(struct resource *resource);
-void resource_init(struct resource *resource, unsigned int type, void *data);
+void resource_init(struct resource *resource, unsigned int type, void *data, struct node_operands *operands);
 void resource_setup(void);

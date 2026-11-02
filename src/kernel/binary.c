@@ -25,7 +25,7 @@ struct binary_format *binary_findformat(unsigned long base)
 void binary_initformat(struct binary_format *format, unsigned int (*match)(unsigned long base), unsigned long (*findsymbol)(unsigned long base, unsigned int count, char *symbol), unsigned long (*findentry)(unsigned long base), unsigned int (*map)(unsigned long base, unsigned int count, unsigned long paddress, unsigned int size, struct mmap_header *mheader))
 {
 
-    resource_init(&format->resource, RESOURCE_BINARYFORMAT, format);
+    resource_init(&format->resource, RESOURCE_BINARYFORMAT, format, 0);
 
     format->match = match;
     format->findsymbol = findsymbol;

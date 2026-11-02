@@ -76,7 +76,7 @@ void clock_unregisterinterface(struct clock_interface *interface)
 void clock_initinterface(struct clock_interface *interface, unsigned int (*getseconds)(void), unsigned int (*getminutes)(void), unsigned int (*gethours)(void), unsigned int (*getweekday)(void), unsigned int (*getday)(void), unsigned int (*getmonth)(void), unsigned int (*getyear)(void))
 {
 
-    resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_CLOCKINTERFACE, interface, &operands);
 
     interface->getseconds = getseconds;
     interface->getminutes = getminutes;
@@ -100,7 +100,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "clock", RESOURCE_CLOCKINTERFACE, &operands);
+    service_registerdirectory(&service, "clock", RESOURCE_CLOCKINTERFACE);
 
 }
 

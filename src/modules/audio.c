@@ -108,7 +108,7 @@ void audio_unregisterinterface(struct audio_interface *interface)
 void audio_initinterface(struct audio_interface *interface, unsigned int (*setformat)(unsigned int rate, unsigned int channels, unsigned int bits), unsigned int (*write)(void *buffer, unsigned int count))
 {
 
-    resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_AUDIOINTERFACE, interface, &operands);
 
     interface->setformat = setformat;
     interface->write = write;
@@ -127,7 +127,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "audio", RESOURCE_AUDIOINTERFACE, &operands);
+    service_registerdirectory(&service, "audio", RESOURCE_AUDIOINTERFACE);
 
 }
 

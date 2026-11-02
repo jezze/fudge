@@ -97,7 +97,7 @@ void mouse_unregisterinterface(struct mouse_interface *interface)
 void mouse_initinterface(struct mouse_interface *interface)
 {
 
-    resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface);
+    resource_init(&interface->resource, RESOURCE_MOUSEINTERFACE, interface, &operands);
 
 }
 
@@ -113,7 +113,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "mouse", RESOURCE_MOUSEINTERFACE, &operands);
+    service_registerdirectory(&service, "mouse", RESOURCE_MOUSEINTERFACE);
 
 }
 

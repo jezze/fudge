@@ -23,7 +23,7 @@ void core_unregister(struct core *core)
 void core_init(struct core *core)
 {
 
-    resource_init(&core->resource, RESOURCE_CORE, core);
+    resource_init(&core->resource, RESOURCE_CORE, core, 0);
     list_init(&core->tasks);
 
     core->state = CORE_STATE_DEAD;

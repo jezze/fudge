@@ -173,7 +173,7 @@ void task_reset(struct task *task)
 void task_init(struct task *task)
 {
 
-    resource_init(&task->resource, RESOURCE_TASK, task);
+    resource_init(&task->resource, RESOURCE_TASK, task, 0);
     spinlock_init(&task->spinlock);
     task_reset(task);
 

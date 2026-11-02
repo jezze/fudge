@@ -34,6 +34,7 @@ struct content
 
 static struct node_operands directoryoperands;
 static struct node_operands rootoperands;
+static struct resource rootresource;
 
 static void setname(struct service *service, char *name)
 {
@@ -293,7 +294,7 @@ static unsigned int oncreaterequest(struct service *service, unsigned int source
         return MESSAGE_FAILED;
 
     device = getdir(service, request->parent);
-    response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device, service->operands)) ? request->parent + POOL_NODES : 0;
+    response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device)) ? request->parent + POOL_NODES : 0;
 
     return kernel_place(service->inode, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
 
@@ -516,18 +517,20 @@ void service_register(struct service *service, unsigned int inode, char *name)
 void service_registernode(struct service *service, char *name, struct node_operands *operands)
 {
 
-    unsigned int inode = pool_attachnode(&service->resource, operands);
+    unsigned int inode;
+
+    service->resource.operands = operands;
+    inode = pool_attachnode(&service->resource);
 
     if (inode)
         service_register(service, inode, name);
 
 }
 
-void service_registerdirectory(struct service *service, char *name, unsigned int type, struct node_operands *operands)
+void service_registerdirectory(struct service *service, char *name, unsigned int type)
 {
 
     service->type = type;
-    service->operands = operands;
 
     service_registernode(service, name, &directoryoperands);
 
@@ -551,10 +554,9 @@ void service_unregister(struct service *service)
 void service_init(struct service *service)
 {
 
-    resource_init(&service->resource, RESOURCE_SERVICE, service);
+    resource_init(&service->resource, RESOURCE_SERVICE, service, 0);
 
     service->type = 0;
-    service->operands = 0;
 
 }
 
@@ -563,7 +565,8 @@ void service_setup(void)
 
     node_operands_init(&directoryoperands, 0, operands_place, 0);
     node_operands_init(&rootoperands, 0, rootoperands_place, 0);
-    pool_setroot(&rootoperands);
+    resource_init(&rootresource, 0, 0, &rootoperands);
+    pool_setroot(&rootresource);
 
 }
 
