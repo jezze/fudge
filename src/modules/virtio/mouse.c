@@ -2,6 +2,8 @@
 #include <kernel.h>
 #include <modules/driver.h>
 #include <modules/mouse.h>
+#include <modules/pci/pci.h>
+#include <modules/virt/virt.h>
 #include "virtio.h"
 
 #define CONFIG_SELECT                   0x00
@@ -222,14 +224,16 @@ void module_init(void)
 void module_register(void)
 {
 
-    virtio_registerdriver(&driver);
+    base_registerdriver(&driver, PCI_BUS);
+    base_registerdriver(&driver, VIRT_BUS);
 
 }
 
 void module_unregister(void)
 {
 
-    virtio_unregisterdriver(&driver);
+    base_unregisterdriver(&driver, PCI_BUS);
+    base_unregisterdriver(&driver, VIRT_BUS);
 
 }
 

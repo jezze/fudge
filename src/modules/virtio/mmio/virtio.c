@@ -85,20 +85,6 @@ unsigned int virtio_match(unsigned int id, unsigned int type)
 
 }
 
-void virtio_registerdriver(struct base_driver *driver)
-{
-
-    base_registerdriver(driver, VIRT_BUS);
-
-}
-
-void virtio_unregisterdriver(struct base_driver *driver)
-{
-
-    base_unregisterdriver(driver, VIRT_BUS);
-
-}
-
 unsigned int virtio_setup(struct virtio_device *device, unsigned int id)
 {
 
