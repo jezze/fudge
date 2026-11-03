@@ -53,7 +53,8 @@ static unsigned int sendblockrequest(unsigned int event, unsigned int reply, uns
     request.count = count;
     request.target = 0;
 
-    channel_send(1, block, event, sizeof (struct event_blockrequest), &request);
+    if (!channel_send(1, block, event, sizeof (struct event_blockrequest), &request))
+        return 0;
 
     return (channel_wait(1, block, reply, sizeof (struct event_blockresponse), &response)) ? response.count : 0;
 

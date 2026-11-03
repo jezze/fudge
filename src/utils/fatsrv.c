@@ -37,8 +37,8 @@ static void sendblockrequest(unsigned int event, unsigned int reply, unsigned in
     request.count = count * sectorsize;
     request.target = 0;
 
-    channel_send(1, block, event, sizeof (struct event_blockrequest), &request);
-    channel_wait(1, block, reply, sizeof (struct event_blockresponse), &response);
+    if (channel_send(1, block, event, sizeof (struct event_blockrequest), &request))
+        channel_wait(1, block, reply, sizeof (struct event_blockresponse), &response);
 
 }
 
