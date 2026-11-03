@@ -499,6 +499,22 @@ void rootsrv_registerdirectory(struct service *service, char *name, unsigned int
 
 }
 
+void rootsrv_unregisternode(struct service *service)
+{
+
+    service_unregister(service);
+
+}
+
+void rootsrv_unregisterdirectory(struct service *service)
+{
+
+    rootsrv_unregisternode(service);
+
+    service->type = 0;
+
+}
+
 void rootsrv_setup(void)
 {
 

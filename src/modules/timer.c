@@ -301,7 +301,7 @@ void module_register(void)
 void module_unregister(void)
 {
 
-    service_unregister(&service);
+    rootsrv_unregisterdirectory(&service);
 
 }
 
