@@ -1,7 +1,9 @@
 #include <fudge.h>
 #include <abi.h>
 
-static char *levels[5] = {
+#define LEVELS                          5
+
+static char *levels[LEVELS] = {
     "NULL",
     "CRIT",
     "ERRO",
@@ -16,7 +18,7 @@ static void onloginfo(struct message *message)
 
     struct message_loginfo *loginfo = message_validate(MESSAGE_TYPE_LOGINFO, message->data, message->length);
 
-    if (loginfo && option_getdecimal("level") >= loginfo->level)
+    if (loginfo && loginfo->level < LEVELS && option_getdecimal("level") >= loginfo->level)
         channel_send_fmt(0, output, MESSAGE_TYPE_DATA, "[%s] %w\n", levels[loginfo->level], loginfo + 1, &loginfo->count);
 
 }
