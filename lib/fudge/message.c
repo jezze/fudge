@@ -225,7 +225,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
             struct message_loginfo *loginfo = data;
 
-            return checksize(data, count, loginfo->count);
+            return checkpayload(data, count, sizeof (struct message_loginfo), loginfo->count);
 
         }
 

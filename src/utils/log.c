@@ -17,14 +17,7 @@ static void onloginfo(struct message *message)
     struct message_loginfo *loginfo = message_validate(MESSAGE_TYPE_LOGINFO, message->data, message->length);
 
     if (loginfo && option_getdecimal("level") >= loginfo->level)
-    {
-
-        char *description = (char *)(loginfo + 1);
-        unsigned int count = loginfo->count - sizeof (struct message_loginfo);
-
-        channel_send_fmt(0, output, MESSAGE_TYPE_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
-
-    }
+        channel_send_fmt(0, output, MESSAGE_TYPE_DATA, "[%s] %w\n", levels[loginfo->level], loginfo + 1, &loginfo->count);
 
 }
 
