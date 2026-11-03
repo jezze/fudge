@@ -325,14 +325,14 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     struct event_readrequest *request = data;
     struct event_readresponse *response = (struct event_readresponse *)buffer;
     struct cpio_header *header;
+    unsigned int length;
 
     if (count < sizeof (struct event_readrequest))
         return MESSAGE_FAILED;
 
     header = (isheader(request->id)) ? getheader(request->id) : 0;
 
-    if (request->count >= MESSAGE_SIZE - sizeof (struct event_readresponse))
-        request->count = MESSAGE_SIZE - sizeof (struct event_readresponse);
+    length = (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse);
 
     response->count = 0;
 
@@ -343,12 +343,12 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
         {
 
         case 0x4000:
-            response->count = readrecords(request->id, (struct record *)(response + 1), request->count, request->offset);
+            response->count = readrecords(request->id, (struct record *)(response + 1), length, request->offset);
 
             break;
 
         case 0x8000:
-            response->count = read(request->id, response + 1, request->count, request->offset);
+            response->count = read(request->id, response + 1, length, request->offset);
 
             break;
 
