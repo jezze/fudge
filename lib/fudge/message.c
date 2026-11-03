@@ -30,9 +30,6 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     switch (type)
     {
 
-    case MESSAGE_TYPE_CONSOLEDATA:
-        return (count >= sizeof (struct message_consoledata)) ? data : 0;
-
     case MESSAGE_TYPE_MAIN:
         return (count) ? checksize(data, count, sizeof (struct message_pipe)) : data;
 

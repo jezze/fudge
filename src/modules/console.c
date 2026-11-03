@@ -55,11 +55,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void console_notifydata(struct console_interface *interface, unsigned char data)
 {
 
-    struct message_consoledata consoledata;
-
-    consoledata.data = data;
-
-    kernel_notify(&interface->resource, MESSAGE_TYPE_CONSOLEDATA, sizeof (struct message_consoledata), &consoledata);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_CONSOLEDATA, 1, &data);
 
 }
 

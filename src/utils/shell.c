@@ -316,159 +316,164 @@ static void complete(void)
 
 }
 
-static void onconsoledata(struct message *message)
+static void onconsolebyte(unsigned char c)
 {
 
-    struct message_consoledata *consoledata = message_validate(MESSAGE_TYPE_CONSOLEDATA, message->data, message->length);
-
-    if (consoledata)
+    if (sh)
     {
 
-        if (sh)
+        switch (c)
         {
 
-            switch (consoledata->data)
-            {
-
-            case 0x03:
-                interrupt();
-
-                break;
-
-            case 0x1A:
-                detach();
-
-                break;
-
-            default:
-                channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, message->length, message->data);
-
-                break;
-
-            }
-
-            return;
-
-        }
-
-        switch (escaped)
-        {
-
-        case 1:
-            escaped = (consoledata->data == '[') ? 2 : 0;
+        case 0x03:
+            interrupt();
 
             break;
 
-        case 2:
-            if (consoledata->data >= 0x40 && consoledata->data <= 0x7E)
-            {
-
-                switch (consoledata->data)
-                {
-
-                case 'C':
-                    moveright(1);
-
-                    break;
-
-                case 'D':
-                    moveleft(1);
-
-                    break;
-
-                case 'F':
-                    moveend();
-
-                    break;
-
-                case 'H':
-                    movestart();
-
-                    break;
-
-                }
-
-                escaped = 0;
-
-            }
+        case 0x1A:
+            detach();
 
             break;
 
         default:
-            switch (consoledata->data)
-            {
-
-            case 0x01:
-                movestart();
-
-                break;
-
-            case 0x02:
-                moveleft(1);
-
-                break;
-
-            case 0x05:
-                moveend();
-
-                break;
-
-            case 0x06:
-                moveright(1);
-
-                break;
-
-            case 0x08:
-            case 0x7F:
-                deleteleft(1);
-
-                break;
-
-            case 0x09:
-                complete();
-                clearline();
-
-                break;
-
-            case 0x0A:
-            case 0x0D:
-                submit();
-
-                break;
-
-            case 0x0B:
-                deleteend();
-
-                break;
-
-            case 0x0C:
-                clearscreen();
-
-                break;
-
-            case 0x15:
-                deletestart();
-
-                break;
-
-            case 0x1B:
-                escaped = 1;
-
-                break;
-
-            default:
-                if (consoledata->data >= 0x20)
-                    insertleft(1, &consoledata->data);
-
-                break;
-
-            }
+            channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, 1, &c);
 
             break;
 
         }
 
+        return;
+
     }
+
+    switch (escaped)
+    {
+
+    case 1:
+        escaped = (c == '[') ? 2 : 0;
+
+        break;
+
+    case 2:
+        if (c >= 0x40 && c <= 0x7E)
+        {
+
+            switch (c)
+            {
+
+            case 'C':
+                moveright(1);
+
+                break;
+
+            case 'D':
+                moveleft(1);
+
+                break;
+
+            case 'F':
+                moveend();
+
+                break;
+
+            case 'H':
+                movestart();
+
+                break;
+
+            }
+
+            escaped = 0;
+
+        }
+
+        break;
+
+    default:
+        switch (c)
+        {
+
+        case 0x01:
+            movestart();
+
+            break;
+
+        case 0x02:
+            moveleft(1);
+
+            break;
+
+        case 0x05:
+            moveend();
+
+            break;
+
+        case 0x06:
+            moveright(1);
+
+            break;
+
+        case 0x08:
+        case 0x7F:
+            deleteleft(1);
+
+            break;
+
+        case 0x09:
+            complete();
+            clearline();
+
+            break;
+
+        case 0x0A:
+        case 0x0D:
+            submit();
+
+            break;
+
+        case 0x0B:
+            deleteend();
+
+            break;
+
+        case 0x0C:
+            clearscreen();
+
+            break;
+
+        case 0x15:
+            deletestart();
+
+            break;
+
+        case 0x1B:
+            escaped = 1;
+
+            break;
+
+        default:
+            if (c >= 0x20)
+                insertleft(1, &c);
+
+            break;
+
+        }
+
+        break;
+
+    }
+
+}
+
+static void onconsoledata(struct message *message)
+{
+
+    unsigned char data[MESSAGE_SIZE];
+    unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
+    unsigned int i;
+
+    for (i = 0; i < count; i++)
+        onconsolebyte(data[i]);
 
 }
 

@@ -169,13 +169,6 @@ struct message_mouserelease
 
 };
 
-struct message_consoledata
-{
-
-    unsigned char data;
-
-};
-
 struct message_timertick
 {
 

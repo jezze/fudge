@@ -52,19 +52,21 @@ static void dnsresolve(struct socket *socket, char *domain)
 static void onconsoledata(struct message *message)
 {
 
-    struct message_consoledata *consoledata = message_validate(MESSAGE_TYPE_CONSOLEDATA, message->data, message->length);
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
+    unsigned char data[MESSAGE_SIZE];
+    unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
+    unsigned int i;
 
-    if (ethernet && consoledata)
+    if (!ethernet || !remote.resolved)
+        return;
+
+    for (i = 0; i < count; i++)
     {
 
         char buffer[4096];
-        unsigned int count;
+        unsigned int length;
 
-        if (!remote.resolved)
-            return;
-
-        switch (consoledata->data)
+        switch (data[i])
         {
 
         case '\0':
@@ -75,14 +77,14 @@ static void onconsoledata(struct message *message)
             break;
 
         case '\r':
-            consoledata->data = '\n';
+            data[i] = '\n';
 
         default:
-            ring_write(&input, &consoledata->data, 1);
-            channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_TYPE_DATA, 1, &consoledata->data);
+            ring_write(&input, &data[i], 1);
+            channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_TYPE_DATA, 1, &data[i]);
 
-            if (consoledata->data == '\n' && (count = ring_read(&input, buffer, 4096)))
-                interpret(ethernet, buffer, count);
+            if (data[i] == '\n' && (length = ring_read(&input, buffer, 4096)))
+                interpret(ethernet, buffer, length);
 
             break;
 

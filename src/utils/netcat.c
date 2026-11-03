@@ -10,18 +10,18 @@ static struct socket remotes[64];
 static void onconsoledata(struct message *message)
 {
 
-    struct message_consoledata *consoledata = message_validate(MESSAGE_TYPE_CONSOLEDATA, message->data, message->length);
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
+    unsigned char data[MESSAGE_SIZE];
+    unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
+    unsigned int i;
 
-    if (ethernet && consoledata)
+    if (!ethernet || !remotes[0].resolved)
+        return;
+
+    for (i = 0; i < count; i++)
     {
 
-        unsigned int count = 0;
-
-        if (!remotes[0].resolved)
-            return;
-
-        switch (consoledata->data)
+        switch (data[i])
         {
 
         case '\0':
@@ -32,17 +32,15 @@ static void onconsoledata(struct message *message)
             break;
 
         case '\r':
-            consoledata->data = '\n';
+            data[i] = '\n';
 
         default:
-            count = socket_send_tcp(0, ethernet, &local, &remotes[0], &router, 1, &consoledata->data);
+            if (socket_send_tcp(0, ethernet, &local, &remotes[0], &router, 1, &data[i]))
+                channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_TYPE_DATA, 1, &data[i]);
 
             break;
 
         }
-
-        if (count)
-            channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_TYPE_DATA, count, &consoledata->data);
 
     }
 
