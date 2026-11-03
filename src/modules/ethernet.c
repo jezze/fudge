@@ -4,7 +4,7 @@
 #include "ethernet.h"
 
 static struct resource_operands operands;
-static struct dirsrv dirsrv;
+static struct unitsrv unitsrv;
 static struct service service;
 
 static unsigned int ondata(struct ethernet_interface *interface, unsigned int source, void *data, unsigned int count)
@@ -110,7 +110,7 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
-    dirsrv_init(&dirsrv, RESOURCE_ETHERNETINTERFACE);
+    unitsrv_init(&unitsrv, RESOURCE_ETHERNETINTERFACE);
     service_init(&service, "ethernet");
 
 }
@@ -118,7 +118,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&dirsrv.resource));
+    service_register(&service, pool_attachnode(&unitsrv.resource));
 
 }
 
@@ -126,7 +126,7 @@ void module_unregister(void)
 {
 
     service_unregister(&service);
-    pool_detachnode(&dirsrv.resource);
+    pool_detachnode(&unitsrv.resource);
 
 }
 

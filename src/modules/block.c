@@ -3,7 +3,7 @@
 #include "block.h"
 
 static struct resource_operands operands;
-static struct dirsrv dirsrv;
+static struct unitsrv unitsrv;
 static struct service service;
 
 static unsigned int oninfo(struct block_interface *interface, unsigned int source)
@@ -206,7 +206,7 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
-    dirsrv_init(&dirsrv, RESOURCE_BLOCKINTERFACE);
+    unitsrv_init(&unitsrv, RESOURCE_BLOCKINTERFACE);
     service_init(&service, "block");
 
 }
@@ -214,7 +214,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&dirsrv.resource));
+    service_register(&service, pool_attachnode(&unitsrv.resource));
 
 }
 
@@ -222,7 +222,7 @@ void module_unregister(void)
 {
 
     service_unregister(&service);
-    pool_detachnode(&dirsrv.resource);
+    pool_detachnode(&unitsrv.resource);
 
 }
 

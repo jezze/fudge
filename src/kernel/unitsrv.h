@@ -1,4 +1,4 @@
-struct dirsrv
+struct unitsrv
 {
 
     struct resource resource;
@@ -7,4 +7,4 @@ struct dirsrv
 
 };
 
-void dirsrv_init(struct dirsrv *dirsrv, unsigned int type);
+void unitsrv_init(struct unitsrv *unitsrv, unsigned int type);
