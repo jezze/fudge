@@ -9,8 +9,8 @@
 
 #define LISTRECORDS                     8
 
-static struct server rootserver;
-static struct service rootservice;
+static struct server server;
+static struct service service;
 
 static unsigned int findservice(char *name, unsigned int length)
 {
@@ -24,12 +24,12 @@ static unsigned int findservice(char *name, unsigned int length)
     while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)))
     {
 
-        struct service *service = resource->data;
+        struct service *current = resource->data;
 
-        if (service->namehash == namehash && length < SERVICE_NAMESIZE && !service->name[length] && buffer_match(service->name, name, length))
+        if (current->namehash == namehash && length < SERVICE_NAMESIZE && !current->name[length] && buffer_match(current->name, name, length))
         {
 
-            inode = service->inode;
+            inode = current->inode;
 
             break;
 
@@ -43,7 +43,7 @@ static unsigned int findservice(char *name, unsigned int length)
 
 }
 
-static unsigned int walkroot(unsigned int parent, unsigned int length, char *path)
+static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 {
 
     unsigned int id = (parent) ? parent : MESSAGE_ROOT;
@@ -71,7 +71,7 @@ static unsigned int walkroot(unsigned int parent, unsigned int length, char *pat
 
 }
 
-static unsigned int onrootreadrequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
     struct event_readrequest *request = data;
@@ -93,10 +93,10 @@ static unsigned int onrootreadrequest(unsigned int source, unsigned int count, v
     for (i = 2; request->id == MESSAGE_ROOT && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count && (resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)); i++)
     {
 
-        struct service *service = resource->data;
+        struct service *current = resource->data;
 
         if (i >= request->offset)
-            record_init(&records[c++], service->inode, RECORD_TYPE_DIRECTORY, 0, i + 1, cstring_length(service->name), service->name);
+            record_init(&records[c++], current->inode, RECORD_TYPE_DIRECTORY, 0, i + 1, cstring_length(current->name), current->name);
 
     }
 
@@ -109,7 +109,7 @@ static unsigned int onrootreadrequest(unsigned int source, unsigned int count, v
 
 }
 
-static unsigned int onrootstatrequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
 {
 
     struct event_statrequest *request = data;
@@ -128,7 +128,7 @@ static unsigned int onrootstatrequest(unsigned int source, unsigned int count, v
 
 }
 
-static unsigned int onrootwalkrequest(unsigned int source, unsigned int count, void *data)
+static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
     struct event_walkrequest *request = data;
@@ -137,26 +137,26 @@ static unsigned int onrootwalkrequest(unsigned int source, unsigned int count, v
     if (count < sizeof (struct event_walkrequest) || count - sizeof (struct event_walkrequest) < request->length)
         return MESSAGE_FAILED;
 
-    response.id = walkroot(request->parent, request->length, (char *)(request + 1));
+    response.id = walk(request->parent, request->length, (char *)(request + 1));
 
     return kernel_place(MESSAGE_ROOT, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
-static unsigned int rootoperands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
+static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
     switch (event)
     {
 
     case EVENT_READREQUEST:
-        return onrootreadrequest(source, count, data);
+        return onreadrequest(source, count, data);
 
     case EVENT_STATREQUEST:
-        return onrootstatrequest(source, count, data);
+        return onstatrequest(source, count, data);
 
     case EVENT_WALKREQUEST:
-        return onrootwalkrequest(source, count, data);
+        return onwalkrequest(source, count, data);
 
     }
 
@@ -167,10 +167,10 @@ static unsigned int rootoperands_place(unsigned int target, unsigned int source,
 void namesrv_setup(void)
 {
 
-    server_init(&rootserver, 0, rootoperands_place, 0);
-    service_init(&rootservice, "namesrv");
-    service_register(&rootservice, MESSAGE_ROOT);
-    pool_setroot(&rootserver.resource);
+    server_init(&server, 0, operands_place, 0);
+    service_init(&service, "namesrv");
+    service_register(&service, MESSAGE_ROOT);
+    pool_setroot(&server.resource);
 
 }
 
