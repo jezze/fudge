@@ -6,6 +6,7 @@
 #include <kernel/task.h>
 #include <kernel/core.h>
 #include <kernel/pool.h>
+#include <kernel/server.h>
 #include <kernel/service.h>
 #include <kernel/namesrv.h>
 #include <kernel/unitsrv.h>

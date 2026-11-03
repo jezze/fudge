@@ -1,8 +1,7 @@
 struct unitsrv
 {
 
-    struct resource resource;
-    struct resource_operands operands;
+    struct server server;
     unsigned int type;
 
 };

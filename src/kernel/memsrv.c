@@ -4,6 +4,7 @@
 #include "mailbox.h"
 #include "task.h"
 #include "pool.h"
+#include "server.h"
 #include "service.h"
 #include "kernel.h"
 #include "memsrv.h"
@@ -28,8 +29,7 @@ struct file
 
 };
 
-static struct resource_operands operands;
-static struct resource server;
+static struct server server;
 static struct service service;
 static struct spinlock spinlock;
 static struct file files[MEMSRV_FILES];
@@ -524,7 +524,7 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.inode, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+    return kernel_place(server.resource.inode, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
 
 }
 
@@ -543,7 +543,7 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.inode, source, EVENT_MMAPRESPONSE, sizeof (struct event_mmapresponse), &response);
+    return kernel_place(server.resource.inode, source, EVENT_MMAPRESPONSE, sizeof (struct event_mmapresponse), &response);
 
 }
 
@@ -562,7 +562,7 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.inode, source, EVENT_MUNMAPRESPONSE, sizeof (struct event_munmapresponse), &response);
+    return kernel_place(server.resource.inode, source, EVENT_MUNMAPRESPONSE, sizeof (struct event_munmapresponse), &response);
 
 }
 
@@ -595,7 +595,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
     response->buffer = 0;
 
-    return kernel_place(server.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+    return kernel_place(server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
 }
 
@@ -614,7 +614,7 @@ static unsigned int onremoverequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.inode, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
+    return kernel_place(server.resource.inode, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
 }
 
@@ -634,7 +634,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
+    return kernel_place(server.resource.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
 
 }
 
@@ -653,7 +653,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(server.resource.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
@@ -674,7 +674,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
+    return kernel_place(server.resource.inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
 
 }
 
@@ -739,7 +739,7 @@ unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 unsigned long memsrv_getbase(unsigned int target, unsigned int id)
 {
 
-    return (target == server.inode && getfile(id)) ? memsrv_getpage(id, 0) : 0;
+    return (target == server.resource.inode && getfile(id)) ? memsrv_getpage(id, 0) : 0;
 
 }
 
@@ -790,8 +790,7 @@ void memsrv_untask(unsigned int itask)
 void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, unsigned int size))
 {
 
-    resource_operands_init(&operands, 0, operands_place, 0);
-    resource_init(&server, 0, 0, &operands);
+    server_init(&server, 0, operands_place, 0);
     service_init(&service, "mem");
     spinlock_init(&spinlock);
 
@@ -802,7 +801,7 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
 
     freepages = 0;
     unmapcallback = unmap;
-    service_register(&service, pool_attachnode(&server));
+    service_register(&service, pool_attachnode(&server.resource));
 
 }
 

@@ -129,7 +129,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&unitsrv.resource));
+    service_register(&service, pool_attachnode(&unitsrv.server.resource));
 
 }
 
@@ -137,7 +137,7 @@ void module_unregister(void)
 {
 
     service_unregister(&service);
-    pool_detachnode(&unitsrv.resource);
+    pool_detachnode(&unitsrv.server.resource);
 
 }
 

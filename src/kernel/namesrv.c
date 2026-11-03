@@ -2,6 +2,7 @@
 #include <hash.h>
 #include "resource.h"
 #include "pool.h"
+#include "server.h"
 #include "service.h"
 #include "kernel.h"
 #include "namesrv.h"
@@ -24,8 +25,7 @@ struct statresult
 
 };
 
-static struct resource_operands rootoperands;
-static struct resource rootserver;
+static struct server rootserver;
 static struct service rootservice;
 
 static unsigned int findservice(char *name, unsigned int length)
@@ -179,10 +179,9 @@ static unsigned int rootoperands_place(unsigned int target, unsigned int source,
 void namesrv_setup(void)
 {
 
-    resource_operands_init(&rootoperands, 0, rootoperands_place, 0);
-    resource_init(&rootserver, 0, 0, &rootoperands);
+    server_init(&rootserver, 0, rootoperands_place, 0);
     service_init(&rootservice, "namesrv");
-    pool_setroot(&rootserver);
+    pool_setroot(&rootserver.resource);
     service_register(&rootservice, MESSAGE_ROOT);
 
 }
