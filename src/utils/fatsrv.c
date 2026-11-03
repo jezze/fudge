@@ -1403,6 +1403,8 @@ static void onreadrequest(struct message *message)
     else
         response->count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
 
+    response->buffer = 0;
+
     channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
 
 }

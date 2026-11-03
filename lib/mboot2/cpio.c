@@ -361,6 +361,8 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
     }
 
+    response->buffer = 0;
+
     return kernel_place(server.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
 }

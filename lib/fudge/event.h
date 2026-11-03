@@ -75,6 +75,7 @@
 #define EVENT_P9P                       0x70
 
 #define PIPE_ROUTES                     10
+#define READ_FLAG_BUFFER                0x01
 
 struct event_route
 {
@@ -390,6 +391,7 @@ struct event_readrequest
     unsigned int id;
     unsigned int offset;
     unsigned int count;
+    unsigned int flags;
 
 };
 
@@ -397,6 +399,7 @@ struct event_readresponse
 {
 
     unsigned int count;
+    unsigned long buffer;
 
 };
 

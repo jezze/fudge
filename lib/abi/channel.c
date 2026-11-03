@@ -534,6 +534,7 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
     request.id = id;
     request.offset = 0;
     request.count = 16;
+    request.flags = 0;
 
     if (!channel_send(1, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
         return 0;

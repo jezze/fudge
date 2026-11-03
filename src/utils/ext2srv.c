@@ -1199,6 +1199,8 @@ static void onreadrequest(struct message *message)
 
     }
 
+    response->buffer = 0;
+
     channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
 
 }

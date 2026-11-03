@@ -410,6 +410,8 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     spinlock_acquire(&spinlock);
 
     readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
+    readresponse->buffer = 0;
+
     status = kernel_place(server.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
 
     spinlock_release(&spinlock);

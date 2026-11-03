@@ -196,6 +196,7 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
     request.id = id;
     request.offset = offset;
     request.count = count;
+    request.flags = 0;
 
     if (!channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
         return 0;

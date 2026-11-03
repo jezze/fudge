@@ -165,6 +165,7 @@ static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, u
     unsigned int length = cstring_write_value(text, TEXTSIZE, device->inode, 10, 0, 0);
 
     content.response.count = (request->offset < length) ? buffer_write(content.data, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
+    content.response.buffer = 0;
 
     return kernel_place(unitsrv->resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + content.response.count, &content);
 
@@ -207,6 +208,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
     }
 
     listing.response.count = c * sizeof (struct record);
+    listing.response.buffer = 0;
 
     return kernel_place(unitsrv->resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
 

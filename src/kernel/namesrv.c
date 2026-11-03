@@ -117,6 +117,7 @@ static unsigned int onrootreadrequest(unsigned int source, unsigned int count, v
     resource_unlock();
 
     listing.response.count = c * sizeof (struct record);
+    listing.response.buffer = 0;
 
     return kernel_place(MESSAGE_ROOT, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
 

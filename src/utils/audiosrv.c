@@ -384,6 +384,7 @@ static void onreadrequest(struct message *message)
         record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
     listing.response.count = c * sizeof (struct record);
+    listing.response.buffer = 0;
 
     channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
 
