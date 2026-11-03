@@ -53,7 +53,7 @@ static unsigned int linearnext(struct job *job, unsigned int index)
 
 }
 
-static struct event_route *findroute(struct event_pipe *pipe, unsigned int event)
+static struct message_route *findroute(struct message_pipe *pipe, unsigned int event)
 {
 
     unsigned int i;
@@ -70,13 +70,13 @@ static struct event_route *findroute(struct event_pipe *pipe, unsigned int event
 
 }
 
-static void addroute(struct event_pipe *pipe, unsigned int event, unsigned int to, unsigned int target)
+static void addroute(struct message_pipe *pipe, unsigned int event, unsigned int to, unsigned int target)
 {
 
     if (!findroute(pipe, event))
     {
 
-        struct event_route *route = &pipe->routes[pipe->nroutes++];
+        struct message_route *route = &pipe->routes[pipe->nroutes++];
 
         route->event = event;
         route->to = to;
@@ -86,10 +86,10 @@ static void addroute(struct event_pipe *pipe, unsigned int event, unsigned int t
 
 }
 
-static void addterm(struct event_pipe *pipe, unsigned int target, unsigned int to)
+static void addterm(struct message_pipe *pipe, unsigned int target, unsigned int to)
 {
 
-    struct event_route *term;
+    struct message_route *term;
     unsigned int i;
 
     for (i = 0; i < pipe->nterms; i++)
@@ -101,21 +101,21 @@ static void addterm(struct event_pipe *pipe, unsigned int target, unsigned int t
     }
 
     term = &pipe->terms[pipe->nterms++];
-    term->event = EVENT_TERM;
+    term->event = MESSAGE_TERM;
     term->to = to;
     term->target = target;
 
 }
 
-static void setpipe(struct job *job, unsigned int index, struct event_pipe *pipe)
+static void setpipe(struct job *job, unsigned int index, struct message_pipe *pipe)
 {
 
     struct job_command *command = &job->commands[index];
     unsigned int next = (command->side) ? 0 : linearnext(job, index);
-    struct event_route *term;
+    struct message_route *term;
     unsigned int i;
 
-    buffer_clear(pipe, sizeof (struct event_pipe));
+    buffer_clear(pipe, sizeof (struct message_pipe));
 
     pipe->prev = (command->side) ? job->commands[command->side - 1].target : linearprev(job, index);
 
@@ -124,34 +124,34 @@ static void setpipe(struct job *job, unsigned int index, struct event_pipe *pipe
 
         struct job_route *route = &command->routes[i];
 
-        addroute(pipe, route->event, route->to, (route->stage) ? job->commands[route->stage - 1].target : ((route->to == EVENT_ERROR) ? 0 : next));
+        addroute(pipe, route->event, route->to, (route->stage) ? job->commands[route->stage - 1].target : ((route->to == MESSAGE_ERROR) ? 0 : next));
 
     }
 
-    addroute(pipe, EVENT_DATA, EVENT_DATA, next);
-    addroute(pipe, EVENT_ERROR, EVENT_ERROR, 0);
+    addroute(pipe, MESSAGE_DATA, MESSAGE_DATA, next);
+    addroute(pipe, MESSAGE_ERROR, MESSAGE_ERROR, 0);
 
-    term = findroute(pipe, EVENT_TERM);
+    term = findroute(pipe, MESSAGE_TERM);
 
     if (term)
         addterm(pipe, term->target, term->to);
     else
-        addterm(pipe, next, EVENT_TERM);
+        addterm(pipe, next, MESSAGE_TERM);
 
     for (i = 0; i < command->nroutes; i++)
     {
 
         if (command->routes[i].stage)
-            addterm(pipe, job->commands[command->routes[i].stage - 1].target, EVENT_TERM);
+            addterm(pipe, job->commands[command->routes[i].stage - 1].target, MESSAGE_TERM);
 
     }
 
-    if (pipe->terms[0].target || pipe->terms[0].to != EVENT_TERM)
+    if (pipe->terms[0].target || pipe->terms[0].to != MESSAGE_TERM)
     {
 
         term = &pipe->terms[pipe->nterms++];
-        term->event = EVENT_TERM;
-        term->to = EVENT_TERM;
+        term->event = MESSAGE_TERM;
+        term->to = MESSAGE_TERM;
         term->target = 0;
 
     }
@@ -197,7 +197,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
     {
 
         struct job_command *command = &job->commands[i - 1];
-        struct event_pipe pipe;
+        struct message_pipe pipe;
         char options[MESSAGE_SIZE];
         unsigned int count;
         unsigned int j;
@@ -209,8 +209,8 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
         for (j = 0; j < command->noptions; j++)
             count += cstring_write_fmt(options, MESSAGE_SIZE, count, "%s\\0%s\\0", command->keys[j], command->values[j]);
 
-        channel_send(ichannel, command->target, EVENT_OPTION, count, options);
-        channel_send(ichannel, command->target, EVENT_MAIN, sizeof (struct event_pipe), &pipe);
+        channel_send(ichannel, command->target, MESSAGE_OPTION, count, options);
+        channel_send(ichannel, command->target, MESSAGE_MAIN, sizeof (struct message_pipe), &pipe);
 
         for (j = 0; j < command->npaths; j++)
         {
@@ -218,7 +218,7 @@ void job_run(struct job *job, unsigned int ichannel, char *pwd)
             char absolute[1024];
             unsigned int length = fs_absolute(absolute, 1024, pwd, command->paths[j]);
 
-            channel_send(ichannel, command->target, EVENT_PATH, length + 1, absolute);
+            channel_send(ichannel, command->target, MESSAGE_PATH, length + 1, absolute);
 
         }
 
@@ -237,7 +237,7 @@ void job_abort(struct job *job, unsigned int ichannel)
         struct job_command *command = &job->commands[i];
 
         if (command->target)
-            channel_send(ichannel, command->target, EVENT_TERM, 0, 0);
+            channel_send(ichannel, command->target, MESSAGE_TERM, 0, 0);
 
     }
 

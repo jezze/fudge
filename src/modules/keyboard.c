@@ -19,10 +19,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_LINK:
+        case MESSAGE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case EVENT_UNLINK:
+        case MESSAGE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
         }
@@ -36,22 +36,22 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void keyboard_notifypress(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    struct event_keypress keypress;
+    struct message_keypress keypress;
 
     keypress.scancode = scancode;
 
-    kernel_notify(&interface->resource, EVENT_KEYPRESS, sizeof (struct event_keypress), &keypress);
+    kernel_notify(&interface->resource, MESSAGE_KEYPRESS, sizeof (struct message_keypress), &keypress);
 
 }
 
 void keyboard_notifyrelease(struct keyboard_interface *interface, unsigned char scancode)
 {
 
-    struct event_keyrelease keyrelease;
+    struct message_keyrelease keyrelease;
 
     keyrelease.scancode = scancode;
 
-    kernel_notify(&interface->resource, EVENT_KEYRELEASE, sizeof (struct event_keyrelease), &keyrelease);
+    kernel_notify(&interface->resource, MESSAGE_KEYRELEASE, sizeof (struct message_keyrelease), &keyrelease);
 
 }
 

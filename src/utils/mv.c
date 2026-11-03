@@ -20,15 +20,15 @@ static void onterm(struct message *message)
 {
 
     if (paths != 2)
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Usage: mv <source> <destination>\n");
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Usage: mv <source> <destination>\n");
 
 }
 
 void init(void)
 {
 
-    channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_TERM, onterm);
+    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TERM, onterm);
 
 }
 

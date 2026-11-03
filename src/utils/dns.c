@@ -41,8 +41,8 @@ static void reply(unsigned int source, unsigned short type, char *name, void *rd
 
         unsigned char *addr = rddata;
 
-        channel_send_fmt(0, source, EVENT_QUERYRESPONSE, "type\\01\\0name\\0%w\\0data\\0%c.%c.%c.%c\\0", fullname, &fullnamelength, &addr[0], &addr[1], &addr[2], &addr[3]);
-        channel_send_fmt(0, source, EVENT_DATA, "%w has address %c.%c.%c.%c\n", fullname, &fullnamelength, &addr[0], &addr[1], &addr[2], &addr[3]);
+        channel_send_fmt(0, source, MESSAGE_QUERYRESPONSE, "type\\01\\0name\\0%w\\0data\\0%c.%c.%c.%c\\0", fullname, &fullnamelength, &addr[0], &addr[1], &addr[2], &addr[3]);
+        channel_send_fmt(0, source, MESSAGE_DATA, "%w has address %c.%c.%c.%c\n", fullname, &fullnamelength, &addr[0], &addr[1], &addr[2], &addr[3]);
 
     }
 
@@ -52,8 +52,8 @@ static void reply(unsigned int source, unsigned short type, char *name, void *rd
         char alias[256];
         unsigned int aliaslength = dns_writename(alias, 256, rddata, buffer);
 
-        channel_send_fmt(0, source, EVENT_QUERYRESPONSE, "type\\05\\0name\\0%w\\0data\\0%w\\0", fullname, &fullnamelength, alias, &aliaslength);
-        channel_send_fmt(0, source, EVENT_DATA, "%w is an alias for %w\n", fullname, &fullnamelength, alias, &aliaslength);
+        channel_send_fmt(0, source, MESSAGE_QUERYRESPONSE, "type\\05\\0name\\0%w\\0data\\0%w\\0", fullname, &fullnamelength, alias, &aliaslength);
+        channel_send_fmt(0, source, MESSAGE_DATA, "%w is an alias for %w\n", fullname, &fullnamelength, alias, &aliaslength);
 
     }
 
@@ -79,7 +79,7 @@ static void onmain(struct message *message)
         socket_bind_udpv(&remote, option_getdecimal("remote-port"));
         socket_bind_ipv4s(&router, system_address("router-address", "route", address, 32));
         socket_resolvelocal(0, ethernet, &local);
-        channel_send(0, ethernet, EVENT_LINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
         socket_send_udp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
@@ -123,7 +123,7 @@ static void onmain(struct message *message)
 
         }
 
-        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_UNLINK, 0, 0);
 
     }
 
@@ -142,7 +142,7 @@ void init(void)
     option_add("remote-port", "53");
     option_add("router-address", "");
     option_add("domain", "");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

@@ -110,9 +110,9 @@ void I_Init2(void)
 static unsigned int getcounter(void)
 {
 
-    struct event_timerinfo timerinfo;
+    struct message_timerinfo timerinfo;
 
-    if (!timer || !channel_send(1, timer, EVENT_INFO, 0, 0) || !channel_wait(1, timer, EVENT_TIMERINFO, sizeof (struct event_timerinfo), &timerinfo))
+    if (!timer || !channel_send(1, timer, MESSAGE_INFO, 0, 0) || !channel_wait(1, timer, MESSAGE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo))
         return 0;
 
     if (timerinfo.hz)
@@ -194,7 +194,7 @@ unsigned int SDL_GetTicks(void)
 void I_uSleep(unsigned long usecs)
 {
 
-    struct event_timerrequest timerrequest;
+    struct message_timerrequest timerrequest;
     struct message message;
 
     I_UpdateSound();
@@ -203,10 +203,10 @@ void I_uSleep(unsigned long usecs)
     timerrequest.ms = (usecs < 1000) ? 1 : usecs / 1000;
     timerrequest.repeat = 0;
 
-    if (closed || !channel_send(0, timer, EVENT_TIMERREQUEST, sizeof (struct event_timerrequest), &timerrequest))
+    if (closed || !channel_send(0, timer, MESSAGE_TIMERREQUEST, sizeof (struct message_timerrequest), &timerrequest))
         return;
 
-    if (!channel_poll(0, timer, EVENT_TIMEREXPIRE, &message))
+    if (!channel_poll(0, timer, MESSAGE_TIMEREXPIRE, &message))
     {
 
         closed = 1;
@@ -238,7 +238,7 @@ void exit(int status)
     port_destroy();
 
     if (status && source)
-        channel_send_fmt(0, source, EVENT_ERROR, "%s", port_lasterror());
+        channel_send_fmt(0, source, MESSAGE_ERROR, "%s", port_lasterror());
 
     channel_exit(0);
     call_despawn();
@@ -320,7 +320,7 @@ static void onmain(struct message *message)
     if (!timer)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Could not find the timer service\n");
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not find the timer service\n");
         channel_close(0);
 
         return;
@@ -330,7 +330,7 @@ static void onmain(struct message *message)
     if (!port_init(option_getstring("data")))
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "No mem: file could be mapped\n");
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "No mem: file could be mapped\n");
         channel_close(0);
 
         return;
@@ -378,7 +378,7 @@ void init(void)
     option_add("timer-service", "timer:0");
     option_add("video-service", "video:0");
     option_add("wm-service", "wm");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

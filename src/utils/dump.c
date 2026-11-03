@@ -57,7 +57,7 @@ static void print(unsigned int source, void *buffer, unsigned int count)
         offset += cstring_write_fmt(data, 120, offset, "|\n");
         page += 16;
 
-        channel_send(0, source, EVENT_DATA, offset, data);
+        channel_send(0, source, MESSAGE_DATA, offset, data);
 
     }
 
@@ -82,8 +82,8 @@ static void onpath(struct message *message)
 void init(void)
 {
 
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_PATH, onpath);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_PATH, onpath);
 
 }
 

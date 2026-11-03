@@ -2,7 +2,7 @@
 #include <abi.h>
 #include "kv.h"
 
-unsigned int kv_match(struct event_wmevent *event, char *key)
+unsigned int kv_match(struct message_wmevent *event, char *key)
 {
 
     char *data = (char *)(event + 1);
@@ -32,7 +32,7 @@ unsigned int kv_match(struct event_wmevent *event, char *key)
 
 }
 
-unsigned int kv_getvalue(struct event_wmevent *event, char *key, unsigned int base)
+unsigned int kv_getvalue(struct message_wmevent *event, char *key, unsigned int base)
 {
 
     unsigned int index = kv_match(event, key);
@@ -42,7 +42,7 @@ unsigned int kv_getvalue(struct event_wmevent *event, char *key, unsigned int ba
 
 }
 
-char *kv_getstring(struct event_wmevent *event, char *key)
+char *kv_getstring(struct message_wmevent *event, char *key)
 {
 
     unsigned int index = kv_match(event, key);

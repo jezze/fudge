@@ -19,10 +19,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_LINK:
+        case MESSAGE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case EVENT_UNLINK:
+        case MESSAGE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
         }
@@ -36,48 +36,48 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
 {
 
-    struct event_mousemove mousemove;
+    struct message_mousemove mousemove;
 
     mousemove.relx = relx;
     mousemove.rely = rely;
     mousemove.buttons = interface->buttons;
 
-    kernel_notify(&interface->resource, EVENT_MOUSEMOVE, sizeof (struct event_mousemove), &mousemove);
+    kernel_notify(&interface->resource, MESSAGE_MOUSEMOVE, sizeof (struct message_mousemove), &mousemove);
 
 }
 
 void mouse_notifyscroll(struct mouse_interface *interface, char relz)
 {
 
-    struct event_mousescroll mousescroll;
+    struct message_mousescroll mousescroll;
 
     mousescroll.relz = relz;
 
-    kernel_notify(&interface->resource, EVENT_MOUSESCROLL, sizeof (struct event_mousescroll), &mousescroll);
+    kernel_notify(&interface->resource, MESSAGE_MOUSESCROLL, sizeof (struct message_mousescroll), &mousescroll);
 
 }
 
 void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
 {
 
-    struct event_mousepress mousepress;
+    struct message_mousepress mousepress;
 
     mousepress.button = button;
     interface->buttons |= 1 << (button - 1);
 
-    kernel_notify(&interface->resource, EVENT_MOUSEPRESS, sizeof (struct event_mousepress), &mousepress);
+    kernel_notify(&interface->resource, MESSAGE_MOUSEPRESS, sizeof (struct message_mousepress), &mousepress);
 
 }
 
 void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
 {
 
-    struct event_mouserelease mouserelease;
+    struct message_mouserelease mouserelease;
 
     mouserelease.button = button;
     interface->buttons &= ~(1 << (button - 1));
 
-    kernel_notify(&interface->resource, EVENT_MOUSERELEASE, sizeof (struct event_mouserelease), &mouserelease);
+    kernel_notify(&interface->resource, MESSAGE_MOUSERELEASE, sizeof (struct message_mouserelease), &mouserelease);
 
 }
 

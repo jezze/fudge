@@ -228,7 +228,7 @@ static void press(unsigned int id, unsigned int mod)
 static void onkeypress(struct message *message)
 {
 
-    struct event_keypress *keypress = message->data;
+    struct message_keypress *keypress = message->data;
     unsigned int id = keys_getcode(&keys, keypress->scancode);
 
     press(id, keys.mod);
@@ -238,7 +238,7 @@ static void onkeypress(struct message *message)
 static void onkeyrelease(struct message *message)
 {
 
-    struct event_keyrelease *keyrelease = message->data;
+    struct message_keyrelease *keyrelease = message->data;
 
     push(ev_keyup, translate(keys_getcode(&keys, keyrelease->scancode)));
 
@@ -247,7 +247,7 @@ static void onkeyrelease(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct event_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message->data;
 
     if (!fullscreen)
         press(wmkeypress->id, wmkeypress->keymod);
@@ -257,7 +257,7 @@ static void onwmkeypress(struct message *message)
 static void onwmkeyrelease(struct message *message)
 {
 
-    struct event_wmkeyrelease *wmkeyrelease = message->data;
+    struct message_wmkeyrelease *wmkeyrelease = message->data;
 
     if (!fullscreen)
         push(ev_keyup, translate(wmkeyrelease->id));
@@ -268,7 +268,7 @@ static void onwmkeyrelease(struct message *message)
 static void onmousemove(struct message *message)
 {
 
-    struct event_mousemove *mousemove = message->data;
+    struct message_mousemove *mousemove = message->data;
 
     mousex += mousemove->relx;
     mousey += mousemove->rely;
@@ -278,7 +278,7 @@ static void onmousemove(struct message *message)
 static void onmousepress(struct message *message)
 {
 
-    struct event_mousepress *mousepress = message->data;
+    struct message_mousepress *mousepress = message->data;
 
     if (mousepress->button < BUTTONS)
     {
@@ -294,7 +294,7 @@ static void onmousepress(struct message *message)
 static void onmouserelease(struct message *message)
 {
 
-    struct event_mouserelease *mouserelease = message->data;
+    struct message_mouserelease *mouserelease = message->data;
 
     if (mouserelease->button < BUTTONS)
     {
@@ -310,7 +310,7 @@ static void onmouserelease(struct message *message)
 static void onmousescroll(struct message *message)
 {
 
-    struct event_mousescroll *mousescroll = message->data;
+    struct message_mousescroll *mousescroll = message->data;
     int key = (mousescroll->relz < 0) ? KEYD_MWHEELUP : KEYD_MWHEELDOWN;
 
     if (!mousescroll->relz)
@@ -431,7 +431,7 @@ static void flush(void)
 
     }
 
-    channel_send(0, wm, EVENT_WMFLUSH, cstring_length_zero(id), id);
+    channel_send(0, wm, MESSAGE_WMFLUSH, cstring_length_zero(id), id);
 
     flushing = 1;
     dirty = 0;
@@ -477,7 +477,7 @@ static void present(unsigned int *palette)
 void I_FinishUpdate(void)
 {
 
-    struct event_videoflush videoflush;
+    struct message_videoflush videoflush;
     unsigned int *palette;
     unsigned int *previous = 0;
     int lastrow = -1;
@@ -534,7 +534,7 @@ void I_FinishUpdate(void)
     videoflush.width = outwidth;
     videoflush.height = outheight;
 
-    channel_send(0, videotarget, EVENT_VIDEOFLUSH, sizeof (struct event_videoflush), &videoflush);
+    channel_send(0, videotarget, MESSAGE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
 
 }
 
@@ -548,17 +548,17 @@ int I_ScreenShot(const char *fname)
 static void setmode(void)
 {
 
-    struct event_videoconf videoconf;
-    struct event_videoinfo videoinfo;
+    struct message_videoconf videoconf;
+    struct message_videoinfo videoinfo;
 
     videoconf.width = option_getdecimal("width");
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = 4;
 
-    channel_send(0, videotarget, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-    channel_send(1, videotarget, EVENT_INFO, 0, 0);
+    channel_send(0, videotarget, MESSAGE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
+    channel_send(1, videotarget, MESSAGE_INFO, 0, 0);
 
-    if (channel_wait(1, videotarget, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo) && videoinfo.bpp == 4)
+    if (channel_wait(1, videotarget, MESSAGE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.bpp == 4)
     {
 
         framebuffer = (unsigned int *)videoinfo.framebuffer;
@@ -617,8 +617,8 @@ static void enterfullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_WMGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
 
     }
 
@@ -629,10 +629,10 @@ static void enterfullscreen(void)
     fullscreen = 1;
     wanted = 1;
 
-    channel_send(0, keyboard, EVENT_LINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
 
     if (mouse)
-        channel_send(0, mouse, EVENT_LINK, 0, 0);
+        channel_send(0, mouse, MESSAGE_LINK, 0, 0);
 
 }
 
@@ -640,10 +640,10 @@ static void enterfullscreen(void)
 static void leavefullscreen(void)
 {
 
-    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
 
     if (mouse)
-        channel_send(0, mouse, EVENT_UNLINK, 0, 0);
+        channel_send(0, mouse, MESSAGE_UNLINK, 0, 0);
 
     mousex = 0;
     mousey = 0;
@@ -664,8 +664,8 @@ static void leavefullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
 
     }
 
@@ -766,7 +766,7 @@ static unsigned int createscreen(void)
 static void showwindow(void)
 {
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ window id \"window\" label \"Doom\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ window id \"window\" label \"Doom\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
 
 }
 
@@ -779,7 +779,7 @@ static void shutdowngraphics(void)
     if (screen)
     {
 
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
         fs_munmap(1, screentarget, screenid);
 
     }
@@ -809,15 +809,15 @@ void I_InitGraphics(void)
 
     atexit(shutdowngraphics);
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
-    channel_bind(EVENT_KEYPRESS, onkeypress);
-    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
-    channel_bind(EVENT_MOUSEMOVE, onmousemove);
-    channel_bind(EVENT_MOUSEPRESS, onmousepress);
-    channel_bind(EVENT_MOUSERELEASE, onmouserelease);
-    channel_bind(EVENT_MOUSESCROLL, onmousescroll);
-    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
-    channel_bind(EVENT_WMKEYRELEASE, onwmkeyrelease);
-    channel_bind(EVENT_WMACK, onwmack);
+    channel_bind(MESSAGE_KEYPRESS, onkeypress);
+    channel_bind(MESSAGE_KEYRELEASE, onkeyrelease);
+    channel_bind(MESSAGE_MOUSEMOVE, onmousemove);
+    channel_bind(MESSAGE_MOUSEPRESS, onmousepress);
+    channel_bind(MESSAGE_MOUSERELEASE, onmouserelease);
+    channel_bind(MESSAGE_MOUSESCROLL, onmousescroll);
+    channel_bind(MESSAGE_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_WMKEYRELEASE, onwmkeyrelease);
+    channel_bind(MESSAGE_WMACK, onwmack);
 
     if (wm && createscreen())
         showwindow();

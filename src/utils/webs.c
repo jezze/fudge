@@ -66,7 +66,7 @@ static void handlehttppacket(unsigned int ethernet, unsigned int source, struct 
         char buffer[4096];
         unsigned int count = ring_read(&input, buffer, newline);
 
-        channel_send(0, source, EVENT_DATA, count, buffer);
+        channel_send(0, source, MESSAGE_DATA, count, buffer);
 
         if (count > 4 && buffer_match(buffer, "GET ", 4))
         {
@@ -101,11 +101,11 @@ static void onmain(struct message *message)
         socket_bind_ipv4s(&local, system_address("local-address", "address", address, 32));
         socket_bind_tcpv(&local, option_getdecimal("local-port"), mtwist_rand(&state), mtwist_rand(&state));
         socket_resolvelocal(0, ethernet, &local);
-        channel_send(0, ethernet, EVENT_LINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
         socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
-        while (channel_poll(0, ethernet, EVENT_DATA, &m))
+        while (channel_poll(0, ethernet, MESSAGE_DATA, &m))
         {
 
             struct socket *remote;
@@ -139,7 +139,7 @@ static void onmain(struct message *message)
 
         }
 
-        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_UNLINK, 0, 0);
 
     }
 
@@ -162,7 +162,7 @@ void init(void)
     option_add("local-address", "");
     option_add("local-port", "80");
     option_add("router-address", "");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

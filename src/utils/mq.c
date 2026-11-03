@@ -440,7 +440,7 @@ static void output(struct parser *ps, char *format)
 
         length = getvalue(ps, &start);
 
-        channel_send_fmt(0, ps->source, EVENT_DATA, "%w\n", start, &length);
+        channel_send_fmt(0, ps->source, MESSAGE_DATA, "%w\n", start, &length);
 
         return;
 
@@ -508,7 +508,7 @@ static void output(struct parser *ps, char *format)
 
     line[c] = '\n';
 
-    channel_send(0, ps->source, EVENT_DATA, c + 1, line);
+    channel_send(0, ps->source, MESSAGE_DATA, c + 1, line);
 
 }
 
@@ -703,7 +703,7 @@ static void parse(unsigned int source, char *input, char *query)
     skip_separators(&doc);
 
     if (!walk(&doc, &path))
-        channel_send_fmt(0, source, EVENT_ERROR, "Key not found: %s\n", query);
+        channel_send_fmt(0, source, MESSAGE_ERROR, "Key not found: %s\n", query);
 
 }
 
@@ -747,7 +747,7 @@ static void onpath(struct message *message)
         else
         {
 
-            channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+            channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", message->data);
 
         }
 
@@ -756,7 +756,7 @@ static void onpath(struct message *message)
     else
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Service not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Service not found: %s\n", message->data);
 
     }
 
@@ -768,7 +768,7 @@ static void onterm(struct message *message)
     if (datacount == INPUT_SIZE)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Input too large\n");
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Input too large\n");
 
     }
 
@@ -788,9 +788,9 @@ void init(void)
 
     option_add("query", ".");
     option_add("format", "");
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_TERM, onterm);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TERM, onterm);
 
 }
 

@@ -13,7 +13,7 @@
 struct listing
 {
 
-    struct event_readresponse response;
+    struct message_readresponse response;
     struct record records[ROOTRECORDS];
 
 };
@@ -21,7 +21,7 @@ struct listing
 struct statresult
 {
 
-    struct event_statresponse response;
+    struct message_statresponse response;
     struct record record;
 
 };
@@ -133,13 +133,13 @@ static unsigned int countclients(void)
 static void sendinfo(unsigned int target)
 {
 
-    struct event_audioinfo audioinfo;
+    struct message_audioinfo audioinfo;
 
     audioinfo.rate = RATE;
     audioinfo.channels = 2;
     audioinfo.bits = 16;
 
-    channel_send(0, target, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo);
+    channel_send(0, target, MESSAGE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo);
 
 }
 
@@ -251,7 +251,7 @@ static unsigned int mix(unsigned int frames)
 static unsigned int flush(void)
 {
 
-    if (pending && call_place(0, audio, EVENT_DATA, pending, output) == MESSAGE_RETRY)
+    if (pending && call_place(0, audio, MESSAGE_DATA, pending, output) == MESSAGE_RETRY)
         return 0;
 
     pending = 0;
@@ -294,7 +294,7 @@ static void oninfo(struct message *message)
 static void ontimertick(struct message *message)
 {
 
-    struct event_timertick *timertick = message->data;
+    struct message_timertick *timertick = message->data;
     unsigned int elapsed = timertick->counter - pace.counter;
     unsigned int played;
 
@@ -332,13 +332,13 @@ static void ontimertick(struct message *message)
 static unsigned int setformat(unsigned int value)
 {
 
-    struct event_audioconf audioconf;
+    struct message_audioconf audioconf;
 
     audioconf.rate = value;
     audioconf.channels = 2;
     audioconf.bits = 16;
 
-    return channel_send(0, audio, EVENT_AUDIOCONF, sizeof (struct event_audioconf), &audioconf);
+    return channel_send(0, audio, MESSAGE_AUDIOCONF, sizeof (struct message_audioconf), &audioconf);
 
 }
 
@@ -372,12 +372,12 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 static void onreadrequest(struct message *message)
 {
 
-    struct event_readrequest *request = message->data;
+    struct message_readrequest *request = message->data;
     struct listing listing;
     unsigned int c = 0;
     unsigned int i;
 
-    if (message->length < sizeof (struct event_readrequest))
+    if (message->length < sizeof (struct message_readrequest))
         return;
 
     for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
@@ -386,39 +386,39 @@ static void onreadrequest(struct message *message)
     listing.response.count = c * sizeof (struct record);
     listing.response.buffer = 0;
 
-    channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
+    channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
 
 }
 
 static void onstatrequest(struct message *message)
 {
 
-    struct event_statrequest *request = message->data;
+    struct message_statrequest *request = message->data;
     struct statresult result;
 
-    if (message->length < sizeof (struct event_statrequest))
+    if (message->length < sizeof (struct message_statrequest))
         return;
 
     record_init(&result.record, ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
 
     result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
 
-    channel_send(0, message->source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + result.response.count, &result);
+    channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
 
 }
 
 static void onwalkrequest(struct message *message)
 {
 
-    struct event_walkrequest *request = message->data;
-    struct event_walkresponse response;
+    struct message_walkrequest *request = message->data;
+    struct message_walkresponse response;
 
-    if (message->length < sizeof (struct event_walkrequest) || message->length - sizeof (struct event_walkrequest) < request->length)
+    if (message->length < sizeof (struct message_walkrequest) || message->length - sizeof (struct message_walkrequest) < request->length)
         return;
 
     response.id = walk(request->parent, request->length, (char *)(request + 1));
 
-    channel_send(0, message->source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
 }
 
@@ -426,14 +426,14 @@ static void onmain(struct message *message)
 {
 
     unsigned int timer = channel_lookup(option_getstring("timer-service"));
-    struct event_timerinfo timerinfo;
+    struct message_timerinfo timerinfo;
 
     audio = channel_lookup(option_getstring("audio-service"));
 
     if (!audio)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
 
         return;
 
@@ -442,7 +442,7 @@ static void onmain(struct message *message)
     if (!timer)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Timer service not found: %s\n", option_getstring("timer-service"));
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Timer service not found: %s\n", option_getstring("timer-service"));
 
         return;
 
@@ -456,15 +456,15 @@ static void onmain(struct message *message)
     if (!rate)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Audio device takes neither 48000 nor 44100 Hz 16-bit stereo\n");
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Audio device takes neither 48000 nor 44100 Hz 16-bit stereo\n");
 
         return;
 
     }
 
-    channel_send(1, timer, EVENT_INFO, 0, 0);
+    channel_send(1, timer, MESSAGE_INFO, 0, 0);
 
-    if (!channel_wait(1, timer, EVENT_TIMERINFO, sizeof (struct event_timerinfo), &timerinfo) || !timerinfo.hz)
+    if (!channel_wait(1, timer, MESSAGE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo) || !timerinfo.hz)
         return;
 
     hz = timerinfo.hz;
@@ -472,15 +472,15 @@ static void onmain(struct message *message)
     if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Could not announce service: %s\n", option_getstring("service"));
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not announce service: %s\n", option_getstring("service"));
 
         return;
 
     }
 
-    channel_send(0, timer, EVENT_LINK, 0, 0);
+    channel_send(0, timer, MESSAGE_LINK, 0, 0);
     channel_hold(0);
-    channel_send(0, timer, EVENT_UNLINK, 0, 0);
+    channel_send(0, timer, MESSAGE_UNLINK, 0, 0);
 
 }
 
@@ -495,13 +495,13 @@ void init(void)
     option_add("service", "mixer");
     option_add("audio-service", "audio:0");
     option_add("timer-service", "timer:0");
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_INFO, oninfo);
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_READREQUEST, onreadrequest);
-    channel_bind(EVENT_STATREQUEST, onstatrequest);
-    channel_bind(EVENT_TIMERTICK, ontimertick);
-    channel_bind(EVENT_WALKREQUEST, onwalkrequest);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_INFO, oninfo);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_READREQUEST, onreadrequest);
+    channel_bind(MESSAGE_STATREQUEST, onstatrequest);
+    channel_bind(MESSAGE_TIMERTICK, ontimertick);
+    channel_bind(MESSAGE_WALKREQUEST, onwalkrequest);
 
 }
 

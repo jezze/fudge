@@ -4,14 +4,14 @@
 static void onmain(struct message *message)
 {
 
-    channel_send_fmt(0, message->source, EVENT_DATA, "%s\n", option_getstring("pwd"));
+    channel_send_fmt(0, message->source, MESSAGE_DATA, "%s\n", option_getstring("pwd"));
 
 }
 
 void init(void)
 {
 
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

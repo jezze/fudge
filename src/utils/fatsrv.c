@@ -6,7 +6,7 @@
 #define NAMESIZE                        768
 #define UNITSIZE                        260
 
-static struct event_blockinfo blockinfo;
+static struct message_blockinfo blockinfo;
 static unsigned int block;
 static unsigned int partoffset;
 static unsigned int sectorsize;
@@ -30,22 +30,22 @@ static unsigned int clock;
 static void sendblockrequest(unsigned int event, unsigned int reply, unsigned int sector, unsigned int count)
 {
 
-    struct event_blockrequest request;
-    struct event_blockresponse response;
+    struct message_blockrequest request;
+    struct message_blockresponse response;
 
     request.offset = partoffset + sector * sectorsize;
     request.count = count * sectorsize;
     request.target = 0;
 
-    if (channel_send(1, block, event, sizeof (struct event_blockrequest), &request))
-        channel_wait(1, block, reply, sizeof (struct event_blockresponse), &response);
+    if (channel_send(1, block, event, sizeof (struct message_blockrequest), &request))
+        channel_wait(1, block, reply, sizeof (struct message_blockresponse), &response);
 
 }
 
 static void *readsectors(unsigned int sector, unsigned int count)
 {
 
-    sendblockrequest(EVENT_BLOCKREADREQUEST, EVENT_BLOCKREADRESPONSE, sector, count);
+    sendblockrequest(MESSAGE_BLOCKREADREQUEST, MESSAGE_BLOCKREADRESPONSE, sector, count);
 
     return (void *)blockinfo.buffer;
 
@@ -54,7 +54,7 @@ static void *readsectors(unsigned int sector, unsigned int count)
 static void writesectors(unsigned int sector, unsigned int count)
 {
 
-    sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, sector, count);
+    sendblockrequest(MESSAGE_BLOCKWRITEREQUEST, MESSAGE_BLOCKWRITERESPONSE, sector, count);
 
 }
 
@@ -382,14 +382,14 @@ static void putnode(unsigned int id, struct fat_entry *entry)
 static unsigned int getnow(unsigned short *date, unsigned short *time)
 {
 
-    struct event_clockinfo clockinfo;
+    struct message_clockinfo clockinfo;
 
     if (!clock)
         return 0;
 
-    channel_send(1, clock, EVENT_INFO, 0, 0);
+    channel_send(1, clock, MESSAGE_INFO, 0, 0);
 
-    if (!channel_wait(1, clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo) || clockinfo.year < 1980)
+    if (!channel_wait(1, clock, MESSAGE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo) || clockinfo.year < 1980)
         return 0;
 
     *date = ((clockinfo.year - 1980) << 9) | (clockinfo.month << 5) | clockinfo.day;
@@ -1387,12 +1387,12 @@ static unsigned int fits(struct message *message, unsigned int size, unsigned in
 static void oncreaterequest(struct message *message)
 {
 
-    struct event_createrequest *request = message->data;
-    struct event_createresponse response;
+    struct message_createrequest *request = message->data;
+    struct message_createresponse response;
 
-    response.id = (fits(message, sizeof (struct event_createrequest), request->count)) ? createfile((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->count) : 0;
+    response.id = (fits(message, sizeof (struct message_createrequest), request->count)) ? createfile((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->count) : 0;
 
-    channel_send(0, message->source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+    channel_send(0, message->source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
 }
 
@@ -1400,34 +1400,34 @@ static void onreadrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct event_readrequest *request = message->data;
-    struct event_readresponse *response = (struct event_readresponse *)data;
+    struct message_readrequest *request = message->data;
+    struct message_readresponse *response = (struct message_readresponse *)data;
     struct fat_entry entry;
 
     getnode(request->id, &entry);
 
-    if (!fits(message, sizeof (struct event_readrequest), 0))
+    if (!fits(message, sizeof (struct message_readrequest), 0))
         response->count = 0;
     else if (gettype(&entry) == RECORD_TYPE_DIRECTORY)
-        response->count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
+        response->count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
     else
-        response->count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
+        response->count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
 
     response->buffer = 0;
 
-    channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
+    channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, data);
 
 }
 
 static void onremoverequest(struct message *message)
 {
 
-    struct event_removerequest *request = message->data;
-    struct event_removeresponse response;
+    struct message_removerequest *request = message->data;
+    struct message_removeresponse response;
 
-    response.status = (fits(message, sizeof (struct event_removerequest), 0)) ? removenode(request->parent, request->id) : 0;
+    response.status = (fits(message, sizeof (struct message_removerequest), 0)) ? removenode(request->parent, request->id) : 0;
 
-    channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
+    channel_send(0, message->source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
 }
 
@@ -1435,36 +1435,36 @@ static void onstatrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct event_statrequest *request = message->data;
-    struct event_statresponse *response = (struct event_statresponse *)data;
+    struct message_statrequest *request = message->data;
+    struct message_statresponse *response = (struct message_statresponse *)data;
 
-    response->count = (fits(message, sizeof (struct event_statrequest), 0)) ? stat(request->id, (struct record *)(response + 1)) : 0;
+    response->count = (fits(message, sizeof (struct message_statrequest), 0)) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
-    channel_send(0, message->source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, data);
+    channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, data);
 
 }
 
 static void onwalkrequest(struct message *message)
 {
 
-    struct event_walkrequest *request = message->data;
-    struct event_walkresponse response;
+    struct message_walkrequest *request = message->data;
+    struct message_walkresponse response;
 
-    response.id = (fits(message, sizeof (struct event_walkrequest), request->length)) ? walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length) : 0;
+    response.id = (fits(message, sizeof (struct message_walkrequest), request->length)) ? walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length) : 0;
 
-    channel_send(0, message->source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
 }
 
 static void onwriterequest(struct message *message)
 {
 
-    struct event_writerequest *request = message->data;
-    struct event_writeresponse response;
+    struct message_writerequest *request = message->data;
+    struct message_writeresponse response;
 
-    response.count = (fits(message, sizeof (struct event_writerequest), request->count)) ? writefile(request->id, request->offset, request->count, request + 1) : 0;
+    response.count = (fits(message, sizeof (struct message_writerequest), request->count)) ? writefile(request->id, request->offset, request->count, request + 1) : 0;
 
-    channel_send(0, message->source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
+    channel_send(0, message->source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
 }
 
@@ -1480,9 +1480,9 @@ static void onmain(struct message *message)
 
         struct fat fat;
 
-        channel_send(1, block, EVENT_INFO, 0, 0);
+        channel_send(1, block, MESSAGE_INFO, 0, 0);
 
-        if (!channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo))
+        if (!channel_wait(1, block, MESSAGE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
             return;
 
         sectorsize = 512;
@@ -1513,7 +1513,7 @@ static void onmain(struct message *message)
             if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
             {
 
-                channel_send_fmt(0, message->source, EVENT_ERROR, "Could not announce service: %s\n", option_getstring("service"));
+                channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not announce service: %s\n", option_getstring("service"));
 
                 return;
 
@@ -1534,13 +1534,13 @@ void init(void)
     option_add("block-service", "block:0");
     option_add("clock-service", "clock:0");
     option_add("partoffset", "0");
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_CREATEREQUEST, oncreaterequest);
-    channel_bind(EVENT_READREQUEST, onreadrequest);
-    channel_bind(EVENT_REMOVEREQUEST, onremoverequest);
-    channel_bind(EVENT_STATREQUEST, onstatrequest);
-    channel_bind(EVENT_WALKREQUEST, onwalkrequest);
-    channel_bind(EVENT_WRITEREQUEST, onwriterequest);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_CREATEREQUEST, oncreaterequest);
+    channel_bind(MESSAGE_READREQUEST, onreadrequest);
+    channel_bind(MESSAGE_REMOVEREQUEST, onremoverequest);
+    channel_bind(MESSAGE_STATREQUEST, onstatrequest);
+    channel_bind(MESSAGE_WALKREQUEST, onwalkrequest);
+    channel_bind(MESSAGE_WRITEREQUEST, onwriterequest);
 
 }
 

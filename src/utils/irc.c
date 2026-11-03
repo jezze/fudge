@@ -57,7 +57,7 @@ static void onconsoledata(struct message *message)
     if (ethernet)
     {
 
-        struct event_consoledata *consoledata = message->data;
+        struct message_consoledata *consoledata = message->data;
         char buffer[4096];
         unsigned int count;
 
@@ -79,7 +79,7 @@ static void onconsoledata(struct message *message)
 
         default:
             ring_write(&input, &consoledata->data, 1);
-            channel_send(0, 0 /* TODO: Should not be 0 */, EVENT_DATA, 1, &consoledata->data);
+            channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_DATA, 1, &consoledata->data);
 
             if (consoledata->data == '\n' && (count = ring_read(&input, buffer, 4096)))
                 interpret(ethernet, buffer, count);
@@ -116,15 +116,15 @@ static void onmain(struct message *message)
         if (cstring_length(option_getstring("domain")))
             dnsresolve(&remote, option_getstring("domain"));
 
-        channel_send(0, ethernet, EVENT_LINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
         socket_connect_tcp(0, ethernet, &local, &remote, &router);
         socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
         while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
-            channel_send(0, message->source, EVENT_DATA, count, buffer);
+            channel_send(0, message->source, MESSAGE_DATA, count, buffer);
 
-        channel_send(0, ethernet, EVENT_UNLINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_UNLINK, 0, 0);
 
     }
 
@@ -147,8 +147,8 @@ void init(void)
     option_add("channel", "#fudge");
     option_add("nick", "");
     option_add("realname", "Anonymous User");
-    channel_bind(EVENT_CONSOLEDATA, onconsoledata);
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_CONSOLEDATA, onconsoledata);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

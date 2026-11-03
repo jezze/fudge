@@ -565,7 +565,7 @@ void arch_runinit(unsigned int address)
     if (target)
     {
 
-        kernel_place(0, target, EVENT_MAIN, 0, 0);
+        kernel_place(0, target, MESSAGE_MAIN, 0, 0);
         arch_leave();
 
     }

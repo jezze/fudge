@@ -29,9 +29,9 @@ static struct inbox inboxes[CHANNEL_MAILBOXES];
 static char copies[CHANNEL_COPIES][MESSAGE_SIZE];
 static unsigned int copiesused;
 static unsigned int owner;
-static struct event_pipe pipe;
+static struct message_pipe pipe;
 
-static struct event_route *findroute(unsigned int event)
+static struct message_route *findroute(unsigned int event)
 {
 
     unsigned int i;
@@ -60,10 +60,10 @@ static void setpipe(struct message *message)
 
     owner = message->source;
 
-    if (message->length == sizeof (struct event_pipe))
+    if (message->length == sizeof (struct message_pipe))
     {
 
-        buffer_copy(&pipe, message->data, sizeof (struct event_pipe));
+        buffer_copy(&pipe, message->data, sizeof (struct message_pipe));
 
         if (pipe.nroutes > PIPE_ROUTES)
             pipe.nroutes = PIPE_ROUTES;
@@ -76,11 +76,11 @@ static void setpipe(struct message *message)
     else
     {
 
-        buffer_clear(&pipe, sizeof (struct event_pipe));
+        buffer_clear(&pipe, sizeof (struct message_pipe));
 
         pipe.nterms = 1;
-        pipe.terms[0].event = EVENT_TERM;
-        pipe.terms[0].to = EVENT_TERM;
+        pipe.terms[0].event = MESSAGE_TERM;
+        pipe.terms[0].to = MESSAGE_TERM;
 
     }
 
@@ -327,7 +327,7 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    if (message->event == EVENT_MAIN && !ichannel)
+    if (message->event == MESSAGE_MAIN && !ichannel)
         setpipe(message);
 
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
@@ -336,13 +336,13 @@ static void dispatch(unsigned int ichannel, struct message *message)
     switch (message->event)
     {
 
-    case EVENT_TERM:
+    case MESSAGE_TERM:
         if (inbox->state == CHANNEL_STATE_OPENED && frominput(ichannel, message->source))
             inbox->state = CHANNEL_STATE_CLOSING;
 
         break;
 
-    case EVENT_INTERRUPT:
+    case MESSAGE_INTERRUPT:
         inbox->state = CHANNEL_STATE_CLOSED;
 
         break;
@@ -357,7 +357,7 @@ unsigned int channel_send(unsigned int ichannel, unsigned int target, unsigned i
     if (!ichannel && (target == owner || (pipe.prev && target == pipe.prev)))
     {
 
-        struct event_route *route = findroute(event);
+        struct message_route *route = findroute(event);
 
         if (route)
             return place(ichannel, resolve(route->target), route->to, count, data);
@@ -472,7 +472,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         finish(ichannel, message);
 
-        if (message->source == source && message->event == EVENT_TERM)
+        if (message->source == source && message->event == MESSAGE_TERM)
             return 0;
 
     }
@@ -494,16 +494,16 @@ static unsigned int walk(unsigned int target, unsigned int parent, char *path, u
 {
 
     char data[MESSAGE_SIZE];
-    struct event_walkrequest *request = (struct event_walkrequest *)data;
-    struct event_walkresponse response;
+    struct message_walkrequest *request = (struct message_walkrequest *)data;
+    struct message_walkresponse response;
 
     request->parent = parent;
-    request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct event_walkrequest));
+    request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct message_walkrequest));
 
-    if (!channel_send(1, target, EVENT_WALKREQUEST, sizeof (struct event_walkrequest) + request->length, data))
+    if (!channel_send(1, target, MESSAGE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
         return 0;
 
-    return (channel_wait(1, target, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response)) ? response.id : 0;
+    return (channel_wait(1, target, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
 
 }
 
@@ -511,16 +511,16 @@ static unsigned int create(unsigned int target, unsigned int parent, char *name,
 {
 
     char data[MESSAGE_SIZE];
-    struct event_createrequest *request = (struct event_createrequest *)data;
-    struct event_createresponse response;
+    struct message_createrequest *request = (struct message_createrequest *)data;
+    struct message_createresponse response;
 
     request->parent = parent;
-    request->count = buffer_write(data, MESSAGE_SIZE, name, length, sizeof (struct event_createrequest));
+    request->count = buffer_write(data, MESSAGE_SIZE, name, length, sizeof (struct message_createrequest));
 
-    if (!channel_send(1, target, EVENT_CREATEREQUEST, sizeof (struct event_createrequest) + request->count, data))
+    if (!channel_send(1, target, MESSAGE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
         return 0;
 
-    return (channel_wait(1, target, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response)) ? response.id : 0;
+    return (channel_wait(1, target, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response)) ? response.id : 0;
 
 }
 
@@ -528,18 +528,18 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 {
 
     char data[MESSAGE_SIZE];
-    struct event_readrequest request;
-    struct event_readresponse *response = (struct event_readresponse *)data;
+    struct message_readrequest request;
+    struct message_readresponse *response = (struct message_readresponse *)data;
 
     request.id = id;
     request.offset = 0;
     request.count = 16;
     request.flags = 0;
 
-    if (!channel_send(1, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
+    if (!channel_send(1, target, MESSAGE_READREQUEST, sizeof (struct message_readrequest), &request))
         return 0;
 
-    if (!channel_wait(1, target, EVENT_READRESPONSE, MESSAGE_SIZE, data) || response->count > 16)
+    if (!channel_wait(1, target, MESSAGE_READRESPONSE, MESSAGE_SIZE, data) || response->count > 16)
         return 0;
 
     return cstring_read_value((char *)(response + 1), response->count, 10);
@@ -604,7 +604,7 @@ void channel_abort(unsigned int ichannel)
     char *error = "Process aborted\n";
 
     if (owner)
-        channel_send(ichannel, owner, EVENT_ERROR, cstring_length(error), error);
+        channel_send(ichannel, owner, MESSAGE_ERROR, cstring_length(error), error);
 
     channel_exit(ichannel);
 

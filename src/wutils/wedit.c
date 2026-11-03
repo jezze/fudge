@@ -35,7 +35,7 @@ static void sendchunk(char *data, unsigned int count)
 
     offset += buffer_write(buffer, MESSAGE_SIZE, "\"\n", 2, offset);
 
-    channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
+    channel_send(0, wm, MESSAGE_WMRENDERDATA, offset, buffer);
 
     chunks++;
 
@@ -51,7 +51,7 @@ static void setwrap(void)
     for (i = 0; i < chunks; i++)
         offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "= chunk%u wrap \"%s\"\n", &i, wraps[wrap]);
 
-    channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
+    channel_send(0, wm, MESSAGE_WMRENDERDATA, offset, buffer);
 
 }
 
@@ -66,7 +66,7 @@ static void clearfile(void)
         offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "- chunk%u\n", &i);
 
     if (offset)
-        channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
+        channel_send(0, wm, MESSAGE_WMRENDERDATA, offset, buffer);
 
     chunks = 0;
     loaded = 0;
@@ -82,7 +82,7 @@ static void showfile(void)
     if (!wm || !path[0])
         return;
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
     target = fs_auth(path);
     id = (target) ? fs_walk(1, target, 0, path) : 0;
 
@@ -105,13 +105,13 @@ static void showfile(void)
         if (offset >= MAXSIZE)
         {
 
-            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n", &chunks);
+            channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n", &chunks);
 
             chunks++;
 
         }
 
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
+        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
 
         chunks++;
         loaded = offset < MAXSIZE;
@@ -121,7 +121,7 @@ static void showfile(void)
     else
     {
 
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" label \"Could not open %s\"\n", &chunks, path);
+        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" label \"Could not open %s\"\n", &chunks, path);
 
         chunks++;
 
@@ -140,9 +140,9 @@ static void writefile(void)
     unsigned int parent;
     unsigned int id;
 
-    channel_send(0, wm, EVENT_WMREAD, 8, "content");
+    channel_send(0, wm, MESSAGE_WMREAD, 8, "content");
 
-    while (channel_poll(0, wm, EVENT_WMTEXT, &message) && message.length)
+    while (channel_poll(0, wm, MESSAGE_WMTEXT, &message) && message.length)
     {
 
         count += buffer_write(savedata, SAVESIZE, message.data, message.length, count);
@@ -191,9 +191,9 @@ static void choose(void)
     if (target)
     {
 
-        channel_send_fmt(0, target, EVENT_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
-        channel_send(0, target, EVENT_MAIN, 0, 0);
-        channel_send(0, target, EVENT_TERM, 0, 0);
+        channel_send_fmt(0, target, MESSAGE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+        channel_send(0, target, MESSAGE_MAIN, 0, 0);
+        channel_send(0, target, MESSAGE_TERM, 0, 0);
 
     }
 
@@ -209,10 +209,10 @@ static void onmain(struct message *message)
 
         char *alfi = "initrd:data/alfi/wedit.alfi";
 
-        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         showfile();
         channel_hold(0);
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
 
     }
 
@@ -230,7 +230,7 @@ static void onpath(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct event_wmevent *event = message->data;
+    struct message_wmevent *event = message->data;
 
     if (kv_match(event, "q=wrap"))
     {
@@ -262,9 +262,9 @@ void init(void)
 {
 
     option_add("wm-service", "wm");
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_WMEVENT, onwmevent);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_WMEVENT, onwmevent);
 
 }
 

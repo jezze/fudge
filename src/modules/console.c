@@ -35,13 +35,13 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_LINK:
+        case MESSAGE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case EVENT_UNLINK:
+        case MESSAGE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case EVENT_DATA:
+        case MESSAGE_DATA:
             return ondata(interface, source, data, count);
 
         }
@@ -55,11 +55,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void console_notifydata(struct console_interface *interface, unsigned char data)
 {
 
-    struct event_consoledata consoledata;
+    struct message_consoledata consoledata;
 
     consoledata.data = data;
 
-    kernel_notify(&interface->resource, EVENT_CONSOLEDATA, sizeof (struct event_consoledata), &consoledata);
+    kernel_notify(&interface->resource, MESSAGE_CONSOLEDATA, sizeof (struct message_consoledata), &consoledata);
 
 }
 

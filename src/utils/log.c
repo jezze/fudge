@@ -14,12 +14,12 @@ static unsigned int output;
 static void onloginfo(struct message *message)
 {
 
-    struct event_loginfo *loginfo = message->data;
+    struct message_loginfo *loginfo = message->data;
     char *description = (char *)(loginfo + 1);
-    unsigned int count = loginfo->count - sizeof (struct event_loginfo);
+    unsigned int count = loginfo->count - sizeof (struct message_loginfo);
 
     if (option_getdecimal("level") >= loginfo->level)
-        channel_send_fmt(0, output, EVENT_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
+        channel_send_fmt(0, output, MESSAGE_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
 
 }
 
@@ -33,9 +33,9 @@ static void onmain(struct message *message)
 
         output = message->source;
 
-        channel_send(0, log, EVENT_LINK, 0, 0);
+        channel_send(0, log, MESSAGE_LINK, 0, 0);
         channel_hold(0);
-        channel_send(0, log, EVENT_UNLINK, 0, 0);
+        channel_send(0, log, MESSAGE_UNLINK, 0, 0);
 
     }
 
@@ -46,8 +46,8 @@ void init(void)
 
     option_add("log-service", "log");
     option_add("level", "4");
-    channel_bind(EVENT_LOGINFO, onloginfo);
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_LOGINFO, onloginfo);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

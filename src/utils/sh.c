@@ -233,77 +233,77 @@ static unsigned int readpath(struct job *job, struct parser *parser, char **word
 }
 
 static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
-    {"main", EVENT_MAIN},
-    {"term", EVENT_TERM},
-    {"interrupt", EVENT_INTERRUPT},
-    {"option", EVENT_OPTION},
-    {"path", EVENT_PATH},
-    {"data", EVENT_DATA},
-    {"error", EVENT_ERROR},
-    {"status", EVENT_STATUS},
-    {"link", EVENT_LINK},
-    {"unlink", EVENT_UNLINK},
-    {"info", EVENT_INFO},
-    {"queryrequest", EVENT_QUERYREQUEST},
-    {"queryresponse", EVENT_QUERYRESPONSE},
-    {"ready", EVENT_READY},
-    {"keypress", EVENT_KEYPRESS},
-    {"keyrelease", EVENT_KEYRELEASE},
-    {"mousemove", EVENT_MOUSEMOVE},
-    {"mousescroll", EVENT_MOUSESCROLL},
-    {"mousepress", EVENT_MOUSEPRESS},
-    {"mouserelease", EVENT_MOUSERELEASE},
-    {"consoledata", EVENT_CONSOLEDATA},
-    {"timertick", EVENT_TIMERTICK},
-    {"videocmap", EVENT_VIDEOCMAP},
-    {"videoconf", EVENT_VIDEOCONF},
-    {"videoinfo", EVENT_VIDEOINFO},
-    {"blockinfo", EVENT_BLOCKINFO},
-    {"blockreadrequest", EVENT_BLOCKREADREQUEST},
-    {"blockreadresponse", EVENT_BLOCKREADRESPONSE},
-    {"blockwriterequest", EVENT_BLOCKWRITEREQUEST},
-    {"blockwriteresponse", EVENT_BLOCKWRITERESPONSE},
-    {"clockinfo", EVENT_CLOCKINFO},
-    {"ethernetinfo", EVENT_ETHERNETINFO},
-    {"loginfo", EVENT_LOGINFO},
-    {"audioconf", EVENT_AUDIOCONF},
-    {"audioinfo", EVENT_AUDIOINFO},
-    {"walkrequest", EVENT_WALKREQUEST},
-    {"walkresponse", EVENT_WALKRESPONSE},
-    {"readrequest", EVENT_READREQUEST},
-    {"readresponse", EVENT_READRESPONSE},
-    {"writerequest", EVENT_WRITEREQUEST},
-    {"writeresponse", EVENT_WRITERESPONSE},
-    {"statrequest", EVENT_STATREQUEST},
-    {"statresponse", EVENT_STATRESPONSE},
-    {"maprequest", EVENT_MAPREQUEST},
-    {"mapresponse", EVENT_MAPRESPONSE},
-    {"createrequest", EVENT_CREATEREQUEST},
-    {"createresponse", EVENT_CREATERESPONSE},
-    {"removerequest", EVENT_REMOVEREQUEST},
-    {"removeresponse", EVENT_REMOVERESPONSE},
-    {"mmaprequest", EVENT_MMAPREQUEST},
-    {"mmapresponse", EVENT_MMAPRESPONSE},
-    {"munmaprequest", EVENT_MUNMAPREQUEST},
-    {"munmapresponse", EVENT_MUNMAPRESPONSE},
-    {"wmunmap", EVENT_WMUNMAP},
-    {"wmgrab", EVENT_WMGRAB},
-    {"wmungrab", EVENT_WMUNGRAB},
-    {"wmkeypress", EVENT_WMKEYPRESS},
-    {"wmkeyrelease", EVENT_WMKEYRELEASE},
-    {"wmmousemove", EVENT_WMMOUSEMOVE},
-    {"wmmousescroll", EVENT_WMMOUSESCROLL},
-    {"wmmousepress", EVENT_WMMOUSEPRESS},
-    {"wmmouserelease", EVENT_WMMOUSERELEASE},
-    {"wmrenderdata", EVENT_WMRENDERDATA},
-    {"wmrenderfile", EVENT_WMRENDERFILE},
-    {"wmflush", EVENT_WMFLUSH},
-    {"wmevent", EVENT_WMEVENT},
-    {"wmack", EVENT_WMACK},
-    {"wmread", EVENT_WMREAD},
-    {"wmtext", EVENT_WMTEXT},
-    {"wmconfig", EVENT_WMCONFIG},
-    {"p9p", EVENT_P9P}
+    {"main", MESSAGE_MAIN},
+    {"term", MESSAGE_TERM},
+    {"interrupt", MESSAGE_INTERRUPT},
+    {"option", MESSAGE_OPTION},
+    {"path", MESSAGE_PATH},
+    {"data", MESSAGE_DATA},
+    {"error", MESSAGE_ERROR},
+    {"status", MESSAGE_STATUS},
+    {"link", MESSAGE_LINK},
+    {"unlink", MESSAGE_UNLINK},
+    {"info", MESSAGE_INFO},
+    {"queryrequest", MESSAGE_QUERYREQUEST},
+    {"queryresponse", MESSAGE_QUERYRESPONSE},
+    {"ready", MESSAGE_READY},
+    {"keypress", MESSAGE_KEYPRESS},
+    {"keyrelease", MESSAGE_KEYRELEASE},
+    {"mousemove", MESSAGE_MOUSEMOVE},
+    {"mousescroll", MESSAGE_MOUSESCROLL},
+    {"mousepress", MESSAGE_MOUSEPRESS},
+    {"mouserelease", MESSAGE_MOUSERELEASE},
+    {"consoledata", MESSAGE_CONSOLEDATA},
+    {"timertick", MESSAGE_TIMERTICK},
+    {"videocmap", MESSAGE_VIDEOCMAP},
+    {"videoconf", MESSAGE_VIDEOCONF},
+    {"videoinfo", MESSAGE_VIDEOINFO},
+    {"blockinfo", MESSAGE_BLOCKINFO},
+    {"blockreadrequest", MESSAGE_BLOCKREADREQUEST},
+    {"blockreadresponse", MESSAGE_BLOCKREADRESPONSE},
+    {"blockwriterequest", MESSAGE_BLOCKWRITEREQUEST},
+    {"blockwriteresponse", MESSAGE_BLOCKWRITERESPONSE},
+    {"clockinfo", MESSAGE_CLOCKINFO},
+    {"ethernetinfo", MESSAGE_ETHERNETINFO},
+    {"loginfo", MESSAGE_LOGINFO},
+    {"audioconf", MESSAGE_AUDIOCONF},
+    {"audioinfo", MESSAGE_AUDIOINFO},
+    {"walkrequest", MESSAGE_WALKREQUEST},
+    {"walkresponse", MESSAGE_WALKRESPONSE},
+    {"readrequest", MESSAGE_READREQUEST},
+    {"readresponse", MESSAGE_READRESPONSE},
+    {"writerequest", MESSAGE_WRITEREQUEST},
+    {"writeresponse", MESSAGE_WRITERESPONSE},
+    {"statrequest", MESSAGE_STATREQUEST},
+    {"statresponse", MESSAGE_STATRESPONSE},
+    {"maprequest", MESSAGE_MAPREQUEST},
+    {"mapresponse", MESSAGE_MAPRESPONSE},
+    {"createrequest", MESSAGE_CREATEREQUEST},
+    {"createresponse", MESSAGE_CREATERESPONSE},
+    {"removerequest", MESSAGE_REMOVEREQUEST},
+    {"removeresponse", MESSAGE_REMOVERESPONSE},
+    {"mmaprequest", MESSAGE_MMAPREQUEST},
+    {"mmapresponse", MESSAGE_MMAPRESPONSE},
+    {"munmaprequest", MESSAGE_MUNMAPREQUEST},
+    {"munmapresponse", MESSAGE_MUNMAPRESPONSE},
+    {"wmunmap", MESSAGE_WMUNMAP},
+    {"wmgrab", MESSAGE_WMGRAB},
+    {"wmungrab", MESSAGE_WMUNGRAB},
+    {"wmkeypress", MESSAGE_WMKEYPRESS},
+    {"wmkeyrelease", MESSAGE_WMKEYRELEASE},
+    {"wmmousemove", MESSAGE_WMMOUSEMOVE},
+    {"wmmousescroll", MESSAGE_WMMOUSESCROLL},
+    {"wmmousepress", MESSAGE_WMMOUSEPRESS},
+    {"wmmouserelease", MESSAGE_WMMOUSERELEASE},
+    {"wmrenderdata", MESSAGE_WMRENDERDATA},
+    {"wmrenderfile", MESSAGE_WMRENDERFILE},
+    {"wmflush", MESSAGE_WMFLUSH},
+    {"wmevent", MESSAGE_WMEVENT},
+    {"wmack", MESSAGE_WMACK},
+    {"wmread", MESSAGE_WMREAD},
+    {"wmtext", MESSAGE_WMTEXT},
+    {"wmconfig", MESSAGE_WMCONFIG},
+    {"p9p", MESSAGE_P9P}
 };
 
 static unsigned int findevent(char *word)
@@ -439,7 +439,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
 {
 
     struct job_command *command = 0;
-    unsigned int event = EVENT_DATA;
+    unsigned int event = MESSAGE_DATA;
 
     for (;;)
     {
@@ -547,7 +547,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
                 return 0;
 
             command = addinput(job, command, word, event);
-            event = EVENT_DATA;
+            event = MESSAGE_DATA;
 
             break;
 
@@ -565,7 +565,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!addrecord(job, command, word, (token == TOKEN_APPEND) ? "append" : "create", event))
                 return 0;
 
-            event = EVENT_DATA;
+            event = MESSAGE_DATA;
 
             break;
 
@@ -582,7 +582,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!addroute(job, command, event, findevent(word), 0))
                 return 0;
 
-            event = EVENT_DATA;
+            event = MESSAGE_DATA;
 
             break;
 
@@ -627,7 +627,7 @@ static void run(char *pwd)
         if (!parseline(&job, script, scriptcount, &offset))
         {
 
-            channel_send_fmt(0, output, EVENT_ERROR, "%s\n", job.error);
+            channel_send_fmt(0, output, MESSAGE_ERROR, "%s\n", job.error);
 
             return;
 
@@ -639,7 +639,7 @@ static void run(char *pwd)
         if (!job_spawn(&job, 1, BINPATH))
         {
 
-            channel_send_fmt(0, output, EVENT_ERROR, "%s\n", job.error);
+            channel_send_fmt(0, output, MESSAGE_ERROR, "%s\n", job.error);
             job_abort(&job, 0);
 
             continue;
@@ -649,7 +649,7 @@ static void run(char *pwd)
         job_run(&job, 0, pwd);
 
         if (!inputopen || job.background)
-            job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
+            job_sendfirst(&job, 0, MESSAGE_TERM, 0, 0);
 
         if (job.background)
             job_detach(&job);
@@ -660,7 +660,7 @@ static void run(char *pwd)
             if (!channel_process(0))
             {
 
-                job_sendall(&job, 0, EVENT_INTERRUPT, 0, 0);
+                job_sendall(&job, 0, MESSAGE_INTERRUPT, 0, 0);
 
                 return;
 
@@ -690,13 +690,13 @@ static void onconsoledata(struct message *message)
         if (interrupts++)
             job_kill(&job);
         else
-            job_sendall(&job, 0, EVENT_INTERRUPT, 0, 0);
+            job_sendall(&job, 0, MESSAGE_INTERRUPT, 0, 0);
 
         return;
 
     }
 
-    job_sendfirst(&job, 0, EVENT_CONSOLEDATA, message->length, message->data);
+    job_sendfirst(&job, 0, MESSAGE_CONSOLEDATA, message->length, message->data);
 
 }
 
@@ -704,9 +704,9 @@ static void ondata(struct message *message)
 {
 
     if (job_exist(&job, message->source))
-        channel_send(0, output, EVENT_DATA, message->length, message->data);
+        channel_send(0, output, MESSAGE_DATA, message->length, message->data);
     else if (running)
-        job_sendfirst(&job, 0, EVENT_DATA, message->length, message->data);
+        job_sendfirst(&job, 0, MESSAGE_DATA, message->length, message->data);
     else
         append(message->data, message->length);
 
@@ -716,7 +716,7 @@ static void onerror(struct message *message)
 {
 
     if (job_exist(&job, message->source))
-        channel_send(0, output, EVENT_ERROR, message->length, message->data);
+        channel_send(0, output, MESSAGE_ERROR, message->length, message->data);
 
 }
 
@@ -756,7 +756,7 @@ static void onterm(struct message *message)
 
             inputopen = 0;
 
-            job_sendfirst(&job, 0, EVENT_TERM, 0, 0);
+            job_sendfirst(&job, 0, MESSAGE_TERM, 0, 0);
 
         }
 
@@ -770,7 +770,7 @@ static void onterm(struct message *message)
     run(option_getstring("pwd"));
 
     if (option_getdecimal("export"))
-        channel_send_fmt(0, output, EVENT_OPTION, "pwd\\0%s\\0", option_getstring("pwd"));
+        channel_send_fmt(0, output, MESSAGE_OPTION, "pwd\\0%s\\0", option_getstring("pwd"));
 
 }
 
@@ -779,12 +779,12 @@ void init(void)
 
     option_add("export", "0");
     option_add("input", "0");
-    channel_bind(EVENT_CONSOLEDATA, onconsoledata);
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_ERROR, onerror);
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_TERM, onterm);
+    channel_bind(MESSAGE_CONSOLEDATA, onconsoledata);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_ERROR, onerror);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TERM, onterm);
 
 }
 

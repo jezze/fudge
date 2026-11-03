@@ -61,7 +61,7 @@ static void release(struct timer_interface *interface, struct timer_entry *entry
 
 }
 
-static unsigned int request(struct timer_interface *interface, unsigned int source, struct event_timerrequest *timerrequest)
+static unsigned int request(struct timer_interface *interface, unsigned int source, struct message_timerrequest *timerrequest)
 {
 
     struct timer_entry *entry;
@@ -145,7 +145,7 @@ static void expire(struct timer_interface *interface, unsigned int counter)
     {
 
         struct timer_entry *entry = current->data;
-        struct event_timerexpire timerexpire;
+        struct message_timerexpire timerexpire;
 
         next = current->next;
 
@@ -154,7 +154,7 @@ static void expire(struct timer_interface *interface, unsigned int counter)
 
         timerexpire.id = entry->id;
 
-        switch (kernel_place(interface->resource.inode, entry->target, EVENT_TIMEREXPIRE, sizeof (struct event_timerexpire), &timerexpire))
+        switch (kernel_place(interface->resource.inode, entry->target, MESSAGE_TIMEREXPIRE, sizeof (struct message_timerexpire), &timerexpire))
         {
 
         case MESSAGE_OK:
@@ -186,12 +186,12 @@ static void expire(struct timer_interface *interface, unsigned int counter)
 static unsigned int oninfo(struct timer_interface *interface, unsigned int source)
 {
 
-    struct event_timerinfo timerinfo;
+    struct message_timerinfo timerinfo;
 
     timerinfo.counter = interface->jiffies;
     timerinfo.hz = interface->hz;
 
-    return kernel_place(interface->resource.inode, source, EVENT_TIMERINFO, sizeof (struct event_timerinfo), &timerinfo);
+    return kernel_place(interface->resource.inode, source, MESSAGE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo);
 
 }
 
@@ -208,19 +208,19 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_LINK:
+        case MESSAGE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case EVENT_UNLINK:
+        case MESSAGE_UNLINK:
             unlink(interface, source);
 
             return kernel_unlinknode(&interface->resource, source);
 
-        case EVENT_INFO:
+        case MESSAGE_INFO:
             return oninfo(interface, source);
 
-        case EVENT_TIMERREQUEST:
-            if (count < sizeof (struct event_timerrequest))
+        case MESSAGE_TIMERREQUEST:
+            if (count < sizeof (struct message_timerrequest))
                 return MESSAGE_FAILED;
 
             return request(interface, source, data);
@@ -236,11 +236,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 {
 
-    struct event_timertick timertick;
+    struct message_timertick timertick;
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->resource, EVENT_TIMERTICK, sizeof (struct event_timertick), &timertick);
+    kernel_notify(&interface->resource, MESSAGE_TIMERTICK, sizeof (struct message_timertick), &timertick);
     expire(interface, counter);
 
 }

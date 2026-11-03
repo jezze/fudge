@@ -18,7 +18,7 @@ static int accumulator;
 static void refresh(unsigned int wm, int value)
 {
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= result label \"%i\"\n", &value);
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= result label \"%i\"\n", &value);
 
 }
 
@@ -36,7 +36,7 @@ static void fail(unsigned int wm)
 {
 
     clear();
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= result label \"Error\"\n");
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= result label \"Error\"\n");
 
 }
 
@@ -166,9 +166,9 @@ static void onmain(struct message *message)
 
         char *alfi = "initrd:data/alfi/wcalc.alfi";
 
-        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         channel_hold(0);
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
 
     }
 
@@ -177,7 +177,7 @@ static void onmain(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct event_wmevent *event = message->data;
+    struct message_wmevent *event = message->data;
 
     if (kv_match(event, "q=num"))
         updatevalue(message->source, kv_getvalue(event, "value=", 10));
@@ -199,7 +199,7 @@ static void onwmevent(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct event_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message->data;
     unsigned int c = (wmkeypress->length == 1) ? wmkeypress->unicode : 0;
 
     switch (c)
@@ -250,9 +250,9 @@ void init(void)
 {
 
     option_add("wm-service", "wm");
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_WMEVENT, onwmevent);
-    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_WMEVENT, onwmevent);
+    channel_bind(MESSAGE_WMKEYPRESS, onwmkeypress);
 
 }
 

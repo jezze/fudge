@@ -192,13 +192,13 @@ static unsigned int checkwav(struct wav *wav)
 }
 
 /* an empty format when the service doesn't answer */
-static struct event_audioinfo getinfo(void)
+static struct message_audioinfo getinfo(void)
 {
 
-    struct event_audioinfo audioinfo;
+    struct message_audioinfo audioinfo;
 
-    if (!channel_send(1, audio, EVENT_INFO, 0, 0) || !channel_wait(1, audio, EVENT_AUDIOINFO, sizeof (struct event_audioinfo), &audioinfo))
-        buffer_clear(&audioinfo, sizeof (struct event_audioinfo));
+    if (!channel_send(1, audio, MESSAGE_INFO, 0, 0) || !channel_wait(1, audio, MESSAGE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo))
+        buffer_clear(&audioinfo, sizeof (struct message_audioinfo));
 
     return audioinfo;
 
@@ -208,7 +208,7 @@ static struct event_audioinfo getinfo(void)
 static void senddata(unsigned int count, void *buffer)
 {
 
-    channel_send(1, audio, EVENT_DATA, count, buffer);
+    channel_send(1, audio, MESSAGE_DATA, count, buffer);
     getinfo();
 
 }
@@ -227,7 +227,7 @@ static void initoutput(struct output *output, unsigned int rate, unsigned int ch
 static unsigned int choose(struct wav *wav, struct output *output)
 {
 
-    struct event_audioinfo audioinfo = getinfo();
+    struct message_audioinfo audioinfo = getinfo();
 
     if (!audioinfo.rate || audioinfo.bits != 16 || !audioinfo.channels || audioinfo.channels > CHANNELS)
         return 0;
@@ -391,7 +391,7 @@ static void play(unsigned int source, struct wav *wav, unsigned int target, unsi
     if (!passthrough)
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "No 16-bit format from audio service: %s\n", option_getstring("audio-service"));
+        channel_send_fmt(0, source, MESSAGE_ERROR, "No 16-bit format from audio service: %s\n", option_getstring("audio-service"));
 
         return;
 
@@ -432,7 +432,7 @@ static void playwav(unsigned int source, char *path, unsigned int target, unsign
     if (fs_read_full(1, target, id, &riff, sizeof (struct riff), 0) != sizeof (struct riff) || !buffer_match(riff.id, "RIFF", 4) || !buffer_match(riff.format, "WAVE", 4))
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "Not a WAV file: %s\n", path);
+        channel_send_fmt(0, source, MESSAGE_ERROR, "Not a WAV file: %s\n", path);
 
         return;
 
@@ -452,7 +452,7 @@ static void playwav(unsigned int source, char *path, unsigned int target, unsign
         {
 
             if (!found || !checkwav(&wav))
-                channel_send_fmt(0, source, EVENT_ERROR, "Not a supported WAV file: %s\n", path);
+                channel_send_fmt(0, source, MESSAGE_ERROR, "Not a supported WAV file: %s\n", path);
             else
                 play(source, &wav, target, id, offset, (size > 0xFFFFFFFF - offset) ? 0xFFFFFFFF : offset + size);
 
@@ -464,7 +464,7 @@ static void playwav(unsigned int source, char *path, unsigned int target, unsign
 
     }
 
-    channel_send_fmt(0, source, EVENT_ERROR, "No sound data in: %s\n", path);
+    channel_send_fmt(0, source, MESSAGE_ERROR, "No sound data in: %s\n", path);
 
 }
 
@@ -474,7 +474,7 @@ static unsigned int lookup(unsigned int source)
     audio = channel_lookup(option_getstring("audio-service"));
 
     if (!audio)
-        channel_send_fmt(0, source, EVENT_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
+        channel_send_fmt(0, source, MESSAGE_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
 
     return audio;
 
@@ -484,7 +484,7 @@ static unsigned int lookup(unsigned int source)
 static unsigned int getframesize(void)
 {
 
-    struct event_audioinfo audioinfo = getinfo();
+    struct message_audioinfo audioinfo = getinfo();
     unsigned int size = audioinfo.channels * audioinfo.bits / 8;
 
     return (size && size <= FRAMEMAX) ? size : 4;
@@ -530,7 +530,7 @@ static void onpath(struct message *message)
     if (!id)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", message->data);
 
         return;
 
@@ -545,8 +545,8 @@ void init(void)
 {
 
     option_add("audio-service", "mixer");
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_PATH, onpath);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_PATH, onpath);
 
 }
 

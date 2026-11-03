@@ -32,7 +32,7 @@ static unsigned int convert(unsigned char address[IPV4_ADDRSIZE], char *buffer)
 static void send(unsigned int ichannel, unsigned int target, void *buffer, unsigned int count)
 {
 
-    channel_send(ichannel, target, EVENT_DATA, count, buffer);
+    channel_send(ichannel, target, MESSAGE_DATA, count, buffer);
 
 }
 
@@ -680,7 +680,7 @@ unsigned int socket_receive(unsigned int ichannel, unsigned int target, struct s
 
     struct message message;
 
-    while (channel_poll(ichannel, target, EVENT_DATA, &message))
+    while (channel_poll(ichannel, target, MESSAGE_DATA, &message))
     {
 
         struct socket *remote;
@@ -761,7 +761,7 @@ void socket_connect_tcp(unsigned int ichannel, unsigned int target, struct socke
 
     send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_SYN, MESSAGE_SIZE, 0, 0));
 
-    while (channel_poll(ichannel, target, EVENT_DATA, &message))
+    while (channel_poll(ichannel, target, MESSAGE_DATA, &message))
     {
 
         char buffer[SOCKET_MTUSIZE];
@@ -788,7 +788,7 @@ void socket_resolveremote(unsigned int ichannel, unsigned int target, struct soc
     buffer_copy(multicast.haddress, haddress, ETHERNET_ADDRSIZE);
     send(ichannel, target, data, buildarp(data, SOCKET_MTUSIZE, local, remote, &multicast, ARP_REQUEST, local->haddress, local->paddress, remote->haddress, remote->paddress));
 
-    while (channel_poll(ichannel, target, EVENT_DATA, &message))
+    while (channel_poll(ichannel, target, MESSAGE_DATA, &message))
     {
 
         socket_handle_arp(ichannel, target, local, remote, message.length, message.data);
@@ -803,10 +803,10 @@ void socket_resolveremote(unsigned int ichannel, unsigned int target, struct soc
 void socket_resolvelocal(unsigned int ichannel, unsigned int target, struct socket *socket)
 {
 
-    struct event_ethernetinfo ethernetinfo;
+    struct message_ethernetinfo ethernetinfo;
 
-    channel_send(ichannel, target, EVENT_INFO, 0, 0);
-    channel_wait(ichannel, target, EVENT_ETHERNETINFO, sizeof (struct event_ethernetinfo), &ethernetinfo);
+    channel_send(ichannel, target, MESSAGE_INFO, 0, 0);
+    channel_wait(ichannel, target, MESSAGE_ETHERNETINFO, sizeof (struct message_ethernetinfo), &ethernetinfo);
     buffer_copy(socket->haddress, ethernetinfo.address, ETHERNET_ADDRSIZE);
 
     socket->resolved = 1;

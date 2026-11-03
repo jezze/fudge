@@ -66,7 +66,7 @@ static void flush(unsigned int source)
         if (count > MESSAGE_SIZE)
             count = MESSAGE_SIZE;
 
-        channel_send(0, source, EVENT_DATA, count, buffer + index);
+        channel_send(0, source, MESSAGE_DATA, count, buffer + index);
 
         offset += count;
 
@@ -103,9 +103,9 @@ void init(void)
 {
 
     option_add("n", "10");
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_TERM, onterm);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TERM, onterm);
 
 }
 

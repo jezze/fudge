@@ -28,7 +28,7 @@ static void render(unsigned int wm, char *data, unsigned int count)
 
         }
 
-        channel_send(0, wm, EVENT_WMRENDERDATA, length, data + offset);
+        channel_send(0, wm, MESSAGE_WMRENDERDATA, length, data + offset);
 
         offset += length;
 
@@ -65,7 +65,7 @@ static void seturl(char *s)
 static void showstatus(unsigned int wm, char *text)
 {
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"%s\"\n", text);
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= status label \"%s\"\n", text);
 
 }
 
@@ -97,7 +97,7 @@ static void open(unsigned int wm)
 
     }
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"Connecting to %s...\"\n", parsed.host);
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= status label \"Connecting to %s...\"\n", parsed.host);
 
     count = system_feed(0, 0, response, RESPONSESIZE, "webc -url \"%s\"", url);
 
@@ -112,7 +112,7 @@ static void open(unsigned int wm)
             if (count > 12 && buffer_match(response + 8, " 200", 4))
             {
 
-                channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- window\n");
+                channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "- window\n");
                 render(wm, response + i + 4, count - i - 4);
 
             }
@@ -120,7 +120,7 @@ static void open(unsigned int wm)
             else if (isvalid(response, length))
             {
 
-                channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"%w\"\n", response, &length);
+                channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= status label \"%w\"\n", response, &length);
 
             }
 
@@ -137,7 +137,7 @@ static void open(unsigned int wm)
 
     }
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= status label \"Could not load from %s\"\n", parsed.host);
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= status label \"Could not load from %s\"\n", parsed.host);
 
 }
 
@@ -151,19 +151,19 @@ static void onmain(struct message *message)
 
         char *alfi = "initrd:data/alfi/wconnect.alfi";
 
-        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
         if (cstring_length(option_getstring("url")))
         {
 
             seturl(option_getstring("url"));
-            channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= address label \"%s\"\n", url);
+            channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= address label \"%s\"\n", url);
             open(wm);
 
         }
 
         channel_hold(0);
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
 
     }
 
@@ -172,7 +172,7 @@ static void onmain(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct event_wmevent *event = message->data;
+    struct message_wmevent *event = message->data;
     char *data = (char *)(event + 1);
 
     /* the address is taken as is instead of through kv, since a URL can contain & */
@@ -188,8 +188,8 @@ void init(void)
 
     option_add("wm-service", "wm");
     option_add("url", "");
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_WMEVENT, onwmevent);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_WMEVENT, onwmevent);
 
 }
 

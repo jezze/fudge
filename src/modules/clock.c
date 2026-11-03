@@ -12,7 +12,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
     if (interface->getseconds && interface->getminutes && interface->gethours && interface->getweekday && interface->getday && interface->getmonth && interface->getyear)
     {
 
-        struct event_clockinfo clockinfo;
+        struct message_clockinfo clockinfo;
 
         clockinfo.seconds = interface->getseconds();
         clockinfo.minutes = interface->getminutes();
@@ -22,7 +22,7 @@ static unsigned int oninfo(struct clock_interface *interface, unsigned int sourc
         clockinfo.month = interface->getmonth();
         clockinfo.year = interface->getyear();
 
-        return kernel_place(interface->resource.inode, source, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo);
+        return kernel_place(interface->resource.inode, source, MESSAGE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo);
 
     }
 
@@ -43,13 +43,13 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_LINK:
+        case MESSAGE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case EVENT_UNLINK:
+        case MESSAGE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case EVENT_INFO:
+        case MESSAGE_INFO:
             return oninfo(interface, source);
 
         }

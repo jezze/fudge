@@ -21,10 +21,10 @@ static void onpath(struct message *message)
 
     event = option_getdecimal("event");
 
-    if (!event || event == EVENT_DATA || event == EVENT_ERROR)
+    if (!event || event == MESSAGE_DATA || event == MESSAGE_ERROR)
     {
 
-        event = (event) ? event : EVENT_DATA;
+        event = (event) ? event : MESSAGE_DATA;
 
         fs_read_each(1, message->source, message->data, senddata);
 
@@ -38,7 +38,7 @@ static void onpath(struct message *message)
     if (!id)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Path not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", message->data);
 
         return;
 
@@ -62,7 +62,7 @@ void init(void)
 {
 
     option_add("event", "0");
-    channel_bind(EVENT_PATH, onpath);
+    channel_bind(MESSAGE_PATH, onpath);
 
 }
 

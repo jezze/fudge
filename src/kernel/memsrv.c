@@ -512,10 +512,10 @@ static unsigned int unmap(unsigned int source, unsigned int id)
 static unsigned int oncreaterequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_createrequest *request = data;
-    struct event_createresponse response;
+    struct message_createrequest *request = data;
+    struct message_createresponse response;
 
-    if (count < sizeof (struct event_createrequest) || count - sizeof (struct event_createrequest) < request->count)
+    if (count < sizeof (struct message_createrequest) || count - sizeof (struct message_createrequest) < request->count)
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -524,17 +524,17 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+    return kernel_place(server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
 }
 
 static unsigned int onmmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_mmaprequest *request = data;
-    struct event_mmapresponse response;
+    struct message_mmaprequest *request = data;
+    struct message_mmapresponse response;
 
-    if (count < sizeof (struct event_mmaprequest))
+    if (count < sizeof (struct message_mmaprequest))
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -543,17 +543,17 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, EVENT_MMAPRESPONSE, sizeof (struct event_mmapresponse), &response);
+    return kernel_place(server.resource.inode, source, MESSAGE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
 
 }
 
 static unsigned int onmunmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_munmaprequest *request = data;
-    struct event_munmapresponse response;
+    struct message_munmaprequest *request = data;
+    struct message_munmapresponse response;
 
-    if (count < sizeof (struct event_munmaprequest))
+    if (count < sizeof (struct message_munmaprequest))
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -562,7 +562,7 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, EVENT_MUNMAPRESPONSE, sizeof (struct event_munmapresponse), &response);
+    return kernel_place(server.resource.inode, source, MESSAGE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
 
 }
 
@@ -570,15 +570,15 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct event_readrequest *request = data;
-    struct event_readresponse *response = (struct event_readresponse *)buffer;
+    struct message_readrequest *request = data;
+    struct message_readresponse *response = (struct message_readresponse *)buffer;
     unsigned int length;
     struct file *file;
 
-    if (count < sizeof (struct event_readrequest))
+    if (count < sizeof (struct message_readrequest))
         return MESSAGE_FAILED;
 
-    length = (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse);
+    length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
 
     spinlock_acquire(&spinlock);
 
@@ -595,17 +595,17 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
     response->buffer = 0;
 
-    return kernel_place(server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+    return kernel_place(server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
 }
 
 static unsigned int onremoverequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_removerequest *request = data;
-    struct event_removeresponse response;
+    struct message_removerequest *request = data;
+    struct message_removeresponse response;
 
-    if (count < sizeof (struct event_removerequest))
+    if (count < sizeof (struct message_removerequest))
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -614,7 +614,7 @@ static unsigned int onremoverequest(unsigned int source, unsigned int count, voi
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
+    return kernel_place(server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
 }
 
@@ -622,10 +622,10 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct event_statrequest *request = data;
-    struct event_statresponse *response = (struct event_statresponse *)buffer;
+    struct message_statrequest *request = data;
+    struct message_statresponse *response = (struct message_statresponse *)buffer;
 
-    if (count < sizeof (struct event_statrequest))
+    if (count < sizeof (struct message_statrequest))
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -634,17 +634,17 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, response);
+    return kernel_place(server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
 
 }
 
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_walkrequest *request = data;
-    struct event_walkresponse response;
+    struct message_walkrequest *request = data;
+    struct message_walkresponse response;
 
-    if (count < sizeof (struct event_walkrequest) || count - sizeof (struct event_walkrequest) < request->length)
+    if (count < sizeof (struct message_walkrequest) || count - sizeof (struct message_walkrequest) < request->length)
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -653,18 +653,18 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
 }
 
 static unsigned int onwriterequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_writerequest *request = data;
-    struct event_writeresponse response;
+    struct message_writerequest *request = data;
+    struct message_writeresponse response;
     struct file *file;
 
-    if (count < sizeof (struct event_writerequest) || count - sizeof (struct event_writerequest) < request->count)
+    if (count < sizeof (struct message_writerequest) || count - sizeof (struct message_writerequest) < request->count)
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
@@ -674,7 +674,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, EVENT_WRITERESPONSE, sizeof (struct event_writeresponse), &response);
+    return kernel_place(server.resource.inode, source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
 }
 
@@ -684,28 +684,28 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
     switch (event)
     {
 
-    case EVENT_CREATEREQUEST:
+    case MESSAGE_CREATEREQUEST:
         return oncreaterequest(source, count, data);
 
-    case EVENT_MMAPREQUEST:
+    case MESSAGE_MMAPREQUEST:
         return onmmaprequest(source, count, data);
 
-    case EVENT_MUNMAPREQUEST:
+    case MESSAGE_MUNMAPREQUEST:
         return onmunmaprequest(source, count, data);
 
-    case EVENT_READREQUEST:
+    case MESSAGE_READREQUEST:
         return onreadrequest(source, count, data);
 
-    case EVENT_REMOVEREQUEST:
+    case MESSAGE_REMOVEREQUEST:
         return onremoverequest(source, count, data);
 
-    case EVENT_STATREQUEST:
+    case MESSAGE_STATREQUEST:
         return onstatrequest(source, count, data);
 
-    case EVENT_WALKREQUEST:
+    case MESSAGE_WALKREQUEST:
         return onwalkrequest(source, count, data);
 
-    case EVENT_WRITEREQUEST:
+    case MESSAGE_WRITEREQUEST:
         return onwriterequest(source, count, data);
 
     }

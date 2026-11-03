@@ -43,7 +43,7 @@ static void showimage(void)
     if (!wm || !path[0])
         return;
 
-    channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "= window label \"Image Viewer (%s)\"\n= frame flow \"%s\"\n", path + fs_dirlength(path), flows[mode]);
+    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= window label \"Image Viewer (%s)\"\n= frame flow \"%s\"\n", path + fs_dirlength(path), flows[mode]);
 
     if (!memid)
         return;
@@ -52,7 +52,7 @@ static void showimage(void)
     size[count] = 0;
 
     if (count)
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "+ media id \"image\" in \"frame\" mimetype \"image/raw\" source \"mem:%s\" %s", memname, size);
+        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ media id \"image\" in \"frame\" mimetype \"image/raw\" source \"mem:%s\" %s", memname, size);
 
 }
 
@@ -64,9 +64,9 @@ static void choose(void)
     if (target)
     {
 
-        channel_send_fmt(0, target, EVENT_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
-        channel_send(0, target, EVENT_MAIN, 0, 0);
-        channel_send(0, target, EVENT_TERM, 0, 0);
+        channel_send_fmt(0, target, MESSAGE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+        channel_send(0, target, MESSAGE_MAIN, 0, 0);
+        channel_send(0, target, MESSAGE_TERM, 0, 0);
 
     }
 
@@ -83,10 +83,10 @@ static void onmain(struct message *message)
         char *alfi = "initrd:data/alfi/wimage.alfi";
 
         createmem();
-        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         showimage();
         channel_hold(0);
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
 
         if (memid)
             fs_remove(1, memtarget, memparent, memid);
@@ -99,7 +99,7 @@ static void onpath(struct message *message)
 {
 
     if (path[0])
-        channel_send_fmt(0, wm, EVENT_WMRENDERDATA, "- image\n");
+        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "- image\n");
 
     cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
     showimage();
@@ -109,7 +109,7 @@ static void onpath(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct event_wmevent *event = message->data;
+    struct message_wmevent *event = message->data;
 
     if (kv_match(event, "q=mode"))
     {
@@ -125,7 +125,7 @@ static void onwmevent(struct message *message)
 
         }
 
-        channel_send_fmt(0, message->source, EVENT_WMRENDERDATA, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
+        channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
 
     }
 
@@ -138,9 +138,9 @@ void init(void)
 {
 
     option_add("wm-service", "wm");
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_PATH, onpath);
-    channel_bind(EVENT_WMEVENT, onwmevent);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_WMEVENT, onwmevent);
 
 }
 

@@ -12,14 +12,14 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
     if (interface->framebuffer)
     {
 
-        struct event_videoinfo videoinfo;
+        struct message_videoinfo videoinfo;
 
         videoinfo.framebuffer = interface->framebuffer;
         videoinfo.width = interface->width;
         videoinfo.height = interface->height;
         videoinfo.bpp = interface->bpp;
 
-        return kernel_place(interface->resource.inode, source, EVENT_VIDEOINFO, sizeof (struct event_videoinfo), &videoinfo);
+        return kernel_place(interface->resource.inode, source, MESSAGE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
 
     }
 
@@ -46,13 +46,13 @@ static unsigned int onvideocmap(struct video_interface *interface, unsigned int 
 static unsigned int onvideoconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (count < sizeof (struct event_videoconf))
+    if (count < sizeof (struct message_videoconf))
         return MESSAGE_FAILED;
 
     if (interface->setmode)
     {
 
-        struct event_videoconf *videoconf = data;
+        struct message_videoconf *videoconf = data;
 
         interface->setmode(videoconf->width, videoconf->height, videoconf->bpp);
 
@@ -68,10 +68,10 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 static unsigned int onvideoflush(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (interface->flush && count == sizeof (struct event_videoflush))
+    if (interface->flush && count == sizeof (struct message_videoflush))
     {
 
-        struct event_videoflush *videoflush = data;
+        struct message_videoflush *videoflush = data;
 
         interface->flush(videoflush->x, videoflush->y, videoflush->width, videoflush->height);
 
@@ -96,22 +96,22 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_LINK:
+        case MESSAGE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case EVENT_UNLINK:
+        case MESSAGE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case EVENT_INFO:
+        case MESSAGE_INFO:
             return oninfo(interface, source);
 
-        case EVENT_VIDEOCMAP:
+        case MESSAGE_VIDEOCMAP:
             return onvideocmap(interface, source, count, data);
 
-        case EVENT_VIDEOCONF:
+        case MESSAGE_VIDEOCONF:
             return onvideoconf(interface, source, count, data);
 
-        case EVENT_VIDEOFLUSH:
+        case MESSAGE_VIDEOFLUSH:
             return onvideoflush(interface, source, count, data);
 
         }

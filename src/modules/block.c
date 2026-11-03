@@ -12,14 +12,14 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
     if (interface->blocksize)
     {
 
-        struct event_blockinfo blockinfo;
+        struct message_blockinfo blockinfo;
 
         blockinfo.buffer = KERNEL_VBUFFER;
         blockinfo.buffersize = TASK_BUFFERSIZE;
         blockinfo.blocksize = interface->blocksize;
         blockinfo.blockcount = interface->blockcount;
 
-        return kernel_place(interface->resource.inode, source, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+        return kernel_place(interface->resource.inode, source, MESSAGE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
     }
 
@@ -30,13 +30,13 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
 static unsigned int onblockreadrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (count < sizeof (struct event_blockrequest))
+    if (count < sizeof (struct message_blockrequest))
         return MESSAGE_FAILED;
 
     if (interface->startsession)
     {
 
-        struct event_blockrequest *request = data;
+        struct message_blockrequest *request = data;
         struct block_session *session = &interface->sessions[0];
 
         if (request->target && !kernel_getbuffer(request->target))
@@ -74,13 +74,13 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
 static unsigned int onblockwriterequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (count < sizeof (struct event_blockrequest))
+    if (count < sizeof (struct message_blockrequest))
         return MESSAGE_FAILED;
 
     if (interface->startsession)
     {
 
-        struct event_blockrequest *request = data;
+        struct message_blockrequest *request = data;
         struct block_session *session = &interface->sessions[0];
 
         if (!session->source)
@@ -125,19 +125,19 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_LINK:
+        case MESSAGE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case EVENT_UNLINK:
+        case MESSAGE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case EVENT_INFO:
+        case MESSAGE_INFO:
             return oninfo(interface, source);
 
-        case EVENT_BLOCKREADREQUEST:
+        case MESSAGE_BLOCKREADREQUEST:
             return onblockreadrequest(interface, source, count, data);
 
-        case EVENT_BLOCKWRITEREQUEST:
+        case MESSAGE_BLOCKWRITEREQUEST:
             return onblockwriterequest(interface, source, count, data);
 
         }
@@ -158,7 +158,7 @@ struct block_session *block_getsession(struct block_interface *interface)
 void block_session_done(struct block_interface *interface, struct block_session *session)
 {
 
-    struct event_blockresponse response;
+    struct message_blockresponse response;
 
     response.count = session->count;
 
@@ -166,12 +166,12 @@ void block_session_done(struct block_interface *interface, struct block_session 
     {
 
     case BLOCK_TYPE_READ:
-        kernel_place(interface->resource.inode, session->source, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+        kernel_place(interface->resource.inode, session->source, MESSAGE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        kernel_place(interface->resource.inode, session->source, EVENT_BLOCKWRITERESPONSE, sizeof (struct event_blockresponse), &response);
+        kernel_place(interface->resource.inode, session->source, MESSAGE_BLOCKWRITERESPONSE, sizeof (struct message_blockresponse), &response);
 
         break;
 

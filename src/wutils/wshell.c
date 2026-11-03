@@ -159,7 +159,7 @@ static void update(void)
         cursor += length;
         offset += cstring_write_fmt(buffer, MESSAGE_SIZE, offset, "= output cursor \"%u\"\n", &cursor);
 
-        channel_send(0, wm, EVENT_WMRENDERDATA, offset, buffer);
+        channel_send(0, wm, MESSAGE_WMRENDERDATA, offset, buffer);
 
     }
 
@@ -278,7 +278,7 @@ static void deleteend(void)
 static void interrupt(void)
 {
 
-    channel_send(0, sh, EVENT_CONSOLEDATA, 1, "\003");
+    channel_send(0, sh, MESSAGE_CONSOLEDATA, 1, "\003");
 
 }
 
@@ -316,10 +316,10 @@ static void run(void)
 
     }
 
-    channel_send_fmt(0, sh, EVENT_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
-    channel_send(0, sh, EVENT_MAIN, 0, 0);
-    channel_send(0, sh, EVENT_DATA, linecount, line);
-    channel_send(0, sh, EVENT_TERM, 0, 0);
+    channel_send_fmt(0, sh, MESSAGE_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
+    channel_send(0, sh, MESSAGE_MAIN, 0, 0);
+    channel_send(0, sh, MESSAGE_DATA, linecount, line);
+    channel_send(0, sh, MESSAGE_TERM, 0, 0);
     update();
 
 }
@@ -426,12 +426,12 @@ static void onmain(struct message *message)
 
         char *alfi = "initrd:data/alfi/wshell.alfi";
 
-        channel_send(0, wm, EVENT_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         update();
 
         channel_hold(0);
         interrupt();
-        channel_send(0, wm, EVENT_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
 
     }
 
@@ -440,7 +440,7 @@ static void onmain(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct event_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message->data;
 
     if (sh)
     {
@@ -468,7 +468,7 @@ static void onwmkeypress(struct message *message)
         else
         {
 
-            channel_send(0, sh, EVENT_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+            channel_send(0, sh, MESSAGE_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
 
         }
 
@@ -600,11 +600,11 @@ void init(void)
     ring_init(&input2, INPUTSIZE, inputdata2);
     ring_init(&result, RESULTSIZE, resultdata);
     option_add("wm-service", "wm");
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_TERM, onterm);
-    channel_bind(EVENT_ERROR, onerror);
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_ERROR, onerror);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_WMKEYPRESS, onwmkeypress);
 
 }
 

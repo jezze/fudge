@@ -4,7 +4,7 @@
 
 #define SERVICE_PATHSIZE                64
 
-static struct event_blockinfo blockinfo;
+static struct message_blockinfo blockinfo;
 static unsigned char gptefi[16] = {0x28, 0x73, 0x2A, 0xC1, 0x1F, 0xF8, 0xD2, 0x11, 0xBA, 0x4B, 0x00, 0xA0, 0xC9, 0x3E, 0xC9, 0x3B};
 static unsigned char gptbasic[16] = {0xA2, 0xA0, 0xD0, 0xEB, 0xE5, 0xB9, 0x33, 0x44, 0x87, 0xC0, 0x68, 0xB6, 0xB7, 0x26, 0x99, 0xC7};
 static unsigned char gptlinux[16] = {0xAF, 0x3D, 0xC6, 0x0F, 0x83, 0x84, 0x72, 0x47, 0x8E, 0x79, 0x3D, 0x69, 0xD8, 0x47, 0x7D, 0xE4};
@@ -12,15 +12,15 @@ static unsigned char gptlinux[16] = {0xAF, 0x3D, 0xC6, 0x0F, 0x83, 0x84, 0x72, 0
 static unsigned int sendblockreadrequest(unsigned int target, unsigned int offset, unsigned int count)
 {
 
-    struct event_blockrequest request;
-    struct event_blockresponse response;
+    struct message_blockrequest request;
+    struct message_blockresponse response;
 
     request.offset = offset;
     request.count = count;
     request.target = 0;
 
-    channel_send(1, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-    channel_wait(1, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+    channel_send(1, target, MESSAGE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
+    channel_wait(1, target, MESSAGE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
 
     return response.count;
 
@@ -122,14 +122,14 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
     if (!target)
     {
 
-        channel_send_fmt(0, source, EVENT_ERROR, "Service not found: %s\n", path);
+        channel_send_fmt(0, source, MESSAGE_ERROR, "Service not found: %s\n", path);
 
         return;
 
     }
 
-    channel_send(1, target, EVENT_INFO, 0, 0);
-    channel_wait(1, target, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+    channel_send(1, target, MESSAGE_INFO, 0, 0);
+    channel_wait(1, target, MESSAGE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
     if (sendblockreadrequest(target, 0, blockinfo.blocksize) != 512)
         return;
@@ -160,7 +160,7 @@ void init(void)
     option_add("index", "0");
     option_add("partition", "0");
     option_add("name", "");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

@@ -7,6 +7,83 @@
 #define MESSAGE_FULL                    0x04
 #define MESSAGE_FLAG_BLOCK              0x01
 #define MESSAGE_ROOT                    0x01
+#define MESSAGE_MAIN                    0x01
+#define MESSAGE_TERM                    0x02
+#define MESSAGE_INTERRUPT               0x03
+#define MESSAGE_OPTION                  0x04
+#define MESSAGE_PATH                    0x05
+#define MESSAGE_DATA                    0x06
+#define MESSAGE_ERROR                   0x07
+#define MESSAGE_STATUS                  0x08
+#define MESSAGE_LINK                    0x09
+#define MESSAGE_UNLINK                  0x0A
+#define MESSAGE_INFO                    0x0B
+#define MESSAGE_QUERYREQUEST            0x0C
+#define MESSAGE_QUERYRESPONSE           0x0D
+#define MESSAGE_READY                   0x0E
+#define MESSAGE_KEYPRESS                0x20
+#define MESSAGE_KEYRELEASE              0x21
+#define MESSAGE_MOUSEMOVE               0x22
+#define MESSAGE_MOUSESCROLL             0x23
+#define MESSAGE_MOUSEPRESS              0x24
+#define MESSAGE_MOUSERELEASE            0x25
+#define MESSAGE_CONSOLEDATA             0x26
+#define MESSAGE_TIMERTICK               0x27
+#define MESSAGE_VIDEOCMAP               0x28
+#define MESSAGE_VIDEOCONF               0x29
+#define MESSAGE_VIDEOINFO               0x2A
+#define MESSAGE_BLOCKINFO               0x2B
+#define MESSAGE_BLOCKREADREQUEST        0x2C
+#define MESSAGE_BLOCKREADRESPONSE       0x2D
+#define MESSAGE_BLOCKWRITEREQUEST       0x2E
+#define MESSAGE_BLOCKWRITERESPONSE      0x2F
+#define MESSAGE_CLOCKINFO               0x30
+#define MESSAGE_ETHERNETINFO            0x31
+#define MESSAGE_LOGINFO                 0x32
+#define MESSAGE_AUDIOCONF               0x33
+#define MESSAGE_AUDIOINFO               0x34
+#define MESSAGE_VIDEOFLUSH              0x35
+#define MESSAGE_TIMERREQUEST            0x36
+#define MESSAGE_TIMEREXPIRE             0x37
+#define MESSAGE_TIMERINFO               0x38
+#define MESSAGE_WALKREQUEST             0x40
+#define MESSAGE_WALKRESPONSE            0x41
+#define MESSAGE_READREQUEST             0x42
+#define MESSAGE_READRESPONSE            0x43
+#define MESSAGE_WRITEREQUEST            0x44
+#define MESSAGE_WRITERESPONSE           0x45
+#define MESSAGE_STATREQUEST             0x46
+#define MESSAGE_STATRESPONSE            0x47
+#define MESSAGE_MAPREQUEST              0x48
+#define MESSAGE_MAPRESPONSE             0x49
+#define MESSAGE_CREATEREQUEST           0x4A
+#define MESSAGE_CREATERESPONSE          0x4B
+#define MESSAGE_REMOVEREQUEST           0x4C
+#define MESSAGE_REMOVERESPONSE          0x4D
+#define MESSAGE_MMAPREQUEST             0x4E
+#define MESSAGE_MMAPRESPONSE            0x4F
+#define MESSAGE_MUNMAPREQUEST           0x50
+#define MESSAGE_MUNMAPRESPONSE          0x52
+#define MESSAGE_WMUNMAP                 0x51
+#define MESSAGE_WMGRAB                  0x53
+#define MESSAGE_WMUNGRAB                0x54
+#define MESSAGE_WMKEYPRESS              0x55
+#define MESSAGE_WMKEYRELEASE            0x56
+#define MESSAGE_WMMOUSEMOVE             0x57
+#define MESSAGE_WMMOUSESCROLL           0x58
+#define MESSAGE_WMMOUSEPRESS            0x59
+#define MESSAGE_WMMOUSERELEASE          0x5A
+#define MESSAGE_WMRENDERDATA            0x5B
+#define MESSAGE_WMRENDERFILE            0x5C
+#define MESSAGE_WMFLUSH                 0x5D
+#define MESSAGE_WMEVENT                 0x5E
+#define MESSAGE_WMACK                   0x5F
+#define MESSAGE_WMREAD                  0x60
+#define MESSAGE_WMTEXT                  0x61
+#define MESSAGE_WMCONFIG                0x62
+#define MESSAGE_P9P                     0x70
+#define PIPE_ROUTES                     10
+#define READ_FLAG_BUFFER                0x01
 
 struct message
 {
@@ -16,6 +93,433 @@ struct message
     unsigned int length;
     void *data;
     unsigned int slot;
+
+};
+
+struct message_route
+{
+
+    unsigned int event;
+    unsigned int to;
+    unsigned int target;
+
+};
+
+/* a complete routing table for one stage; target 0 means the owner */
+struct message_pipe
+{
+
+    unsigned int prev;
+    unsigned int nroutes;
+    struct message_route routes[PIPE_ROUTES];
+    unsigned int nterms;
+    struct message_route terms[PIPE_ROUTES];
+
+};
+
+struct message_loginfo
+{
+
+    unsigned int level;
+    unsigned int count;
+
+};
+
+struct message_keypress
+{
+
+    unsigned char scancode;
+
+};
+
+struct message_keyrelease
+{
+
+    unsigned char scancode;
+
+};
+
+struct message_mousemove
+{
+
+    char relx;
+    char rely;
+    unsigned char buttons;
+
+};
+
+struct message_mousescroll
+{
+
+    char relz;
+
+};
+
+struct message_mousepress
+{
+
+    unsigned int button;
+
+};
+
+struct message_mouserelease
+{
+
+    unsigned int button;
+
+};
+
+struct message_consoledata
+{
+
+    unsigned char data;
+
+};
+
+struct message_timertick
+{
+
+    unsigned int counter;
+
+};
+
+struct message_timerrequest
+{
+
+    unsigned int id;
+    unsigned int ms;
+    unsigned int repeat;
+
+};
+
+struct message_timerexpire
+{
+
+    unsigned int id;
+
+};
+
+struct message_timerinfo
+{
+
+    unsigned int counter;
+    unsigned int hz;
+
+};
+
+struct message_ethernetinfo
+{
+
+    unsigned char address[6];
+
+};
+
+struct message_videoconf
+{
+
+    unsigned int width;
+    unsigned int height;
+    unsigned int bpp;
+
+};
+
+struct message_videoflush
+{
+
+    unsigned int x;
+    unsigned int y;
+    unsigned int width;
+    unsigned int height;
+
+};
+
+struct message_videoinfo
+{
+
+    unsigned long framebuffer;
+    unsigned int width;
+    unsigned int height;
+    unsigned int bpp;
+
+};
+
+struct message_audioconf
+{
+
+    unsigned int rate;
+    unsigned int channels;
+    unsigned int bits;
+
+};
+
+struct message_audioinfo
+{
+
+    unsigned int rate;
+    unsigned int channels;
+    unsigned int bits;
+
+};
+
+struct message_blockinfo
+{
+
+    unsigned long buffer;
+    unsigned int buffersize;
+    unsigned int blocksize;
+    unsigned int blockcount;
+
+};
+
+struct message_blockrequest
+{
+
+    unsigned int count;
+    unsigned int offset;
+    unsigned int target;
+
+};
+
+struct message_blockresponse
+{
+
+    unsigned int count;
+
+};
+
+struct message_wmkeypress
+{
+
+    unsigned int id;
+    unsigned char scancode;
+    unsigned int keymod;
+    unsigned int unicode;
+    unsigned int length;
+
+};
+
+struct message_wmkeyrelease
+{
+
+    unsigned int id;
+    unsigned char scancode;
+    unsigned int keymod;
+    unsigned int unicode;
+    unsigned int length;
+
+};
+
+struct message_wmmousemove
+{
+
+    char relx;
+    char rely;
+
+};
+
+struct message_wmmousescroll
+{
+
+    char relz;
+
+};
+
+struct message_wmmousepress
+{
+
+    unsigned int button;
+
+};
+
+struct message_wmmouserelease
+{
+
+    unsigned int button;
+
+};
+
+struct message_wmevent
+{
+
+    unsigned int type;
+    unsigned int length;
+
+};
+
+struct message_createrequest
+{
+
+    unsigned int parent;
+    unsigned int count;
+
+};
+
+struct message_createresponse
+{
+
+    unsigned int id;
+
+};
+
+struct message_maprequest
+{
+
+    unsigned int id;
+
+};
+
+struct message_mapresponse
+{
+
+    unsigned int address;
+
+};
+
+struct message_mmaprequest
+{
+
+    unsigned int id;
+    unsigned int size;
+
+};
+
+struct message_mmapresponse
+{
+
+    unsigned int address;
+
+};
+
+struct message_munmaprequest
+{
+
+    unsigned int id;
+
+};
+
+struct message_munmapresponse
+{
+
+    unsigned int status;
+
+};
+
+struct message_readrequest
+{
+
+    unsigned int id;
+    unsigned int offset;
+    unsigned int count;
+    unsigned int flags;
+
+};
+
+struct message_readresponse
+{
+
+    unsigned int count;
+    unsigned long buffer;
+
+};
+
+struct message_removerequest
+{
+
+    unsigned int parent;
+    unsigned int id;
+
+};
+
+struct message_removeresponse
+{
+
+    unsigned int status;
+
+};
+
+struct message_statrequest
+{
+
+    unsigned int id;
+
+};
+
+struct message_statresponse
+{
+
+    unsigned int count;
+
+};
+
+struct message_walkrequest
+{
+
+    unsigned int parent;
+    unsigned int length;
+
+};
+
+struct message_walkresponse
+{
+
+    unsigned int id;
+
+};
+
+struct message_writerequest
+{
+
+    unsigned int id;
+    unsigned int offset;
+    unsigned int count;
+
+};
+
+struct message_writeresponse
+{
+
+    unsigned int count;
+
+};
+
+struct message_clockinfo
+{
+
+    unsigned char seconds;
+    unsigned char minutes;
+    unsigned char hours;
+    unsigned char weekday;
+    unsigned char day;
+    unsigned char month;
+    unsigned short year;
+
+};
+
+struct message_coreinfo
+{
+
+    unsigned int id;
+    unsigned int sp;
+    unsigned int task;
+
+};
+
+struct message_taskinfo
+{
+
+    unsigned int id;
+    unsigned int state;
+    unsigned int signals_kills;
+    unsigned int signals_blocks;
+    unsigned int thread_ip;
+    unsigned int thread_sp;
+
+};
+
+struct message_mailboxinfo
+{
+
+    unsigned int address;
 
 };
 

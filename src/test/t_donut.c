@@ -87,7 +87,7 @@ static void ontimertick(struct message *message)
     R(5, 7, cA, sA)
     R(5, 8, cB, sB)
 
-    channel_send(0, output, EVENT_DATA, 2, sequence);
+    channel_send(0, output, MESSAGE_DATA, 2, sequence);
 
     for (k = 0; k < 1760; k += 80)
     {
@@ -95,7 +95,7 @@ static void ontimertick(struct message *message)
         char *offset = b + k;
         unsigned int count = 80;
 
-        channel_send_fmt(0, output, EVENT_DATA, "%w\n", offset, &count);
+        channel_send_fmt(0, output, MESSAGE_DATA, "%w\n", offset, &count);
 
     }
 
@@ -111,9 +111,9 @@ static void onmain(struct message *message)
 
         output = message->source;
 
-        channel_send(0, timer, EVENT_LINK, 0, 0);
+        channel_send(0, timer, MESSAGE_LINK, 0, 0);
         channel_hold(0);
-        channel_send(0, timer, EVENT_UNLINK, 0, 0);
+        channel_send(0, timer, MESSAGE_UNLINK, 0, 0);
 
     }
 
@@ -123,8 +123,8 @@ void init(void)
 {
 
     option_add("timer-service", "timer");
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_TIMERTICK, ontimertick);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TIMERTICK, ontimertick);
 
 }
 

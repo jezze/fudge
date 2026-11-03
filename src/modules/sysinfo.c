@@ -399,19 +399,19 @@ static unsigned int walk(unsigned int id, unsigned int length, char *path)
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_readrequest *request = data;
-    struct event_readresponse *readresponse = (struct event_readresponse *)response;
+    struct message_readrequest *request = data;
+    struct message_readresponse *readresponse = (struct message_readresponse *)response;
     unsigned int status;
 
-    if (count < sizeof (struct event_readrequest))
+    if (count < sizeof (struct message_readrequest))
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
 
-    readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
+    readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse), readresponse + 1);
     readresponse->buffer = 0;
 
-    status = kernel_place(server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
+    status = kernel_place(server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + readresponse->count, response);
 
     spinlock_release(&spinlock);
 
@@ -422,17 +422,17 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_statrequest *request = data;
-    struct event_statresponse *statresponse = (struct event_statresponse *)response;
+    struct message_statrequest *request = data;
+    struct message_statresponse *statresponse = (struct message_statresponse *)response;
     unsigned int status;
 
-    if (count < sizeof (struct event_statrequest))
+    if (count < sizeof (struct message_statrequest))
         return MESSAGE_FAILED;
 
     spinlock_acquire(&spinlock);
 
     statresponse->count = stat(request->id, statresponse + 1);
-    status = kernel_place(server.resource.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + statresponse->count, response);
+    status = kernel_place(server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + statresponse->count, response);
 
     spinlock_release(&spinlock);
 
@@ -443,15 +443,15 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_walkrequest *request = data;
-    struct event_walkresponse response;
+    struct message_walkrequest *request = data;
+    struct message_walkresponse response;
 
-    if (count < sizeof (struct event_walkrequest) || count - sizeof (struct event_walkrequest) < request->length)
+    if (count < sizeof (struct message_walkrequest) || count - sizeof (struct message_walkrequest) < request->length)
         return MESSAGE_FAILED;
 
     response.id = walk(request->parent ? request->parent : ROOT, request->length, (char *)(request + 1));
 
-    return kernel_place(server.resource.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
 }
 
@@ -461,13 +461,13 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
     switch (event)
     {
 
-    case EVENT_READREQUEST:
+    case MESSAGE_READREQUEST:
         return onreadrequest(source, count, data);
 
-    case EVENT_STATREQUEST:
+    case MESSAGE_STATREQUEST:
         return onstatrequest(source, count, data);
 
-    case EVENT_WALKREQUEST:
+    case MESSAGE_WALKREQUEST:
         return onwalkrequest(source, count, data);
 
     }

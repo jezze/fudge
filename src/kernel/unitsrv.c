@@ -134,35 +134,35 @@ static void initfilerecord(struct record *record, struct resource *device, unsig
 
 }
 
-static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, unsigned int source, struct event_readrequest *request)
+static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, unsigned int source, struct message_readrequest *request)
 {
 
-    unsigned char buffer[sizeof (struct event_readresponse) + TEXTSIZE];
-    struct event_readresponse *response = (struct event_readresponse *)buffer;
+    unsigned char buffer[sizeof (struct message_readresponse) + TEXTSIZE];
+    struct message_readresponse *response = (struct message_readresponse *)buffer;
     char text[TEXTSIZE];
     unsigned int length = cstring_write_value(text, TEXTSIZE, device->inode, 10, 0, 0);
 
     response->count = (request->offset < length) ? buffer_write(response + 1, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
     response->buffer = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
 }
 
 static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_readrequest *request = data;
+    struct message_readrequest *request = data;
     struct resource *file;
     struct resource *dir;
     unsigned int root;
-    unsigned char buffer[sizeof (struct event_readresponse) + sizeof (struct record) * LISTRECORDS];
-    struct event_readresponse *response = (struct event_readresponse *)buffer;
+    unsigned char buffer[sizeof (struct message_readresponse) + sizeof (struct record) * LISTRECORDS];
+    struct message_readresponse *response = (struct message_readresponse *)buffer;
     struct record *records = (struct record *)(response + 1);
     unsigned int c = 0;
     unsigned int i;
 
-    if (count < sizeof (struct event_readrequest))
+    if (count < sizeof (struct message_readrequest))
         return MESSAGE_FAILED;
 
     file = getfile(unitsrv, request->id);
@@ -190,20 +190,20 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
     response->count = c * sizeof (struct record);
     response->buffer = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
+    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
 }
 
 static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_statrequest *request = data;
+    struct message_statrequest *request = data;
     struct resource *device;
-    unsigned char buffer[sizeof (struct event_statresponse) + sizeof (struct record)];
-    struct event_statresponse *response = (struct event_statresponse *)buffer;
+    unsigned char buffer[sizeof (struct message_statresponse) + sizeof (struct record)];
+    struct message_statresponse *response = (struct message_statresponse *)buffer;
     struct record *record = (struct record *)(response + 1);
 
-    if (count < sizeof (struct event_statrequest))
+    if (count < sizeof (struct message_statrequest))
         return MESSAGE_FAILED;
 
     response->count = sizeof (struct record);
@@ -217,50 +217,50 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
     else
         response->count = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, buffer);
+    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
 
 }
 
 static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_walkrequest *request = data;
-    struct event_walkresponse response;
+    struct message_walkrequest *request = data;
+    struct message_walkresponse response;
 
-    if (count < sizeof (struct event_walkrequest) || count - sizeof (struct event_walkrequest) < request->length)
+    if (count < sizeof (struct message_walkrequest) || count - sizeof (struct message_walkrequest) < request->length)
         return MESSAGE_FAILED;
 
     response.id = walk(unitsrv, request->parent, request->length, (char *)(request + 1));
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
 }
 
 static unsigned int oncreaterequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_createrequest *request = data;
-    struct event_createresponse response;
+    struct message_createrequest *request = data;
+    struct message_createresponse response;
     struct resource *device;
 
-    if (count < sizeof (struct event_createrequest) || count - sizeof (struct event_createrequest) < request->count)
+    if (count < sizeof (struct message_createrequest) || count - sizeof (struct message_createrequest) < request->count)
         return MESSAGE_FAILED;
 
     device = getdir(unitsrv, request->parent);
     response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device)) ? request->parent + POOL_NODES : 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_CREATERESPONSE, sizeof (struct event_createresponse), &response);
+    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
 }
 
 static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct event_removerequest *request = data;
-    struct event_removeresponse response;
+    struct message_removerequest *request = data;
+    struct message_removeresponse response;
     struct resource *device;
 
-    if (count < sizeof (struct event_removerequest))
+    if (count < sizeof (struct message_removerequest))
         return MESSAGE_FAILED;
 
     device = getfile(unitsrv, request->id);
@@ -269,7 +269,7 @@ static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source
     if (response.status)
         pool_detachnode(device);
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
+    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
 }
 
@@ -286,19 +286,19 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case EVENT_CREATEREQUEST:
+        case MESSAGE_CREATEREQUEST:
             return oncreaterequest(unitsrv, source, count, data);
 
-        case EVENT_READREQUEST:
+        case MESSAGE_READREQUEST:
             return onreadrequest(unitsrv, source, count, data);
 
-        case EVENT_REMOVEREQUEST:
+        case MESSAGE_REMOVEREQUEST:
             return onremoverequest(unitsrv, source, count, data);
 
-        case EVENT_STATREQUEST:
+        case MESSAGE_STATREQUEST:
             return onstatrequest(unitsrv, source, count, data);
 
-        case EVENT_WALKREQUEST:
+        case MESSAGE_WALKREQUEST:
             return onwalkrequest(unitsrv, source, count, data);
 
         }

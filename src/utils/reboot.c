@@ -4,7 +4,7 @@
 static void onmain(struct message *message)
 {
 
-    channel_send(0, option_getdecimal("reset-service"), EVENT_TERM, 0, 0);
+    channel_send(0, option_getdecimal("reset-service"), MESSAGE_TERM, 0, 0);
 
 }
 
@@ -12,7 +12,7 @@ void init(void)
 {
 
     option_add("reset-service", "0");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

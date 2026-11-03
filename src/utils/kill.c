@@ -15,7 +15,7 @@ void init(void)
 {
 
     option_add("target", "");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

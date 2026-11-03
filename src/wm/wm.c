@@ -33,7 +33,7 @@
 struct listing
 {
 
-    struct event_readresponse response;
+    struct message_readresponse response;
     struct record records[ROOTRECORDS];
 
 };
@@ -41,7 +41,7 @@ struct listing
 struct statresult
 {
 
-    struct event_statresponse response;
+    struct message_statresponse response;
     struct record record;
 
 };
@@ -63,7 +63,7 @@ struct state
     struct keys keys;
     unsigned int layout;
     unsigned int windows;
-    struct event_videoconf videoconf;
+    struct message_videoconf videoconf;
     struct widget *draggedthumb;
     unsigned int video;
     unsigned int clock;
@@ -97,10 +97,10 @@ static void setupvideo(unsigned int video)
     unsigned char black[768];
 
     buffer_clear(black, 768);
-    channel_send(0, video, EVENT_VIDEOCMAP, 768, &black);
-    channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &state.videoconf);
-    channel_send(1, video, EVENT_INFO, 0, 0);
-    channel_wait(1, video, EVENT_VIDEOINFO, 0, 0);
+    channel_send(0, video, MESSAGE_VIDEOCMAP, 768, &black);
+    channel_send(0, video, MESSAGE_VIDEOCONF, sizeof (struct message_videoconf), &state.videoconf);
+    channel_send(1, video, MESSAGE_INFO, 0, 0);
+    channel_wait(1, video, MESSAGE_VIDEOINFO, 0, 0);
 
 }
 
@@ -570,14 +570,14 @@ static void update(void)
     if (updated.size.w && updated.size.h)
     {
 
-        struct event_videoflush videoflush;
+        struct message_videoflush videoflush;
 
         videoflush.x = updated.position.x;
         videoflush.y = updated.position.y;
         videoflush.width = updated.size.w;
         videoflush.height = updated.size.h;
 
-        channel_send(0, state.video, EVENT_VIDEOFLUSH, sizeof (struct event_videoflush), &videoflush);
+        channel_send(0, state.video, MESSAGE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
 
     }
 
@@ -684,7 +684,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
     if (source)
     {
 
-        struct {struct event_wmevent wmevent; char data[EVENTDATA_SIZE];} message;
+        struct {struct message_wmevent wmevent; char data[EVENTDATA_SIZE];} message;
         unsigned int count = cstring_write_fmt(message.data, EVENTDATA_SIZE - 1, 0, "%s", strpool_getstring(action));
 
         count += buffer_write(message.data, EVENTDATA_SIZE - 1, text, utf8_fit(text, cstring_length(text), EVENTDATA_SIZE - 1 - count), count);
@@ -692,7 +692,7 @@ static void sendevent(unsigned int source, unsigned int type, unsigned int actio
         message.wmevent.type = type;
         message.wmevent.length = count + 1;
 
-        channel_send(0, source, EVENT_WMEVENT, sizeof (struct event_wmevent) + message.wmevent.length, &message);
+        channel_send(0, source, MESSAGE_WMEVENT, sizeof (struct message_wmevent) + message.wmevent.length, &message);
 
     }
 
@@ -1805,7 +1805,7 @@ static void clickwidget(struct widget *widget)
             struct util_region rclose = render_getwindowbutton(widget, RENDER_WINDOWBUTTON_CLOSE);
 
             if (util_region_intersects(&rclose, state.mouseposition.x, state.mouseposition.y))
-                channel_send(0, widget->source, EVENT_INTERRUPT, 0, 0);
+                channel_send(0, widget->source, MESSAGE_INTERRUPT, 0, 0);
 
         }
 
@@ -2230,7 +2230,7 @@ static unsigned int dobinding(struct bind_binding *binding)
 
     case BIND_ACTION_CLOSE:
         if (state.focusedwindow)
-            channel_send(0, state.focusedwindow->source, EVENT_INTERRUPT, 0, 0);
+            channel_send(0, state.focusedwindow->source, MESSAGE_INTERRUPT, 0, 0);
 
         break;
 
@@ -2341,7 +2341,7 @@ static void slide(struct widget *widget, unsigned int id)
 static void onkeypress(struct message *message)
 {
 
-    struct event_keypress *keypress = message->data;
+    struct message_keypress *keypress = message->data;
     unsigned int id = keys_getcode(&state.keys, keypress->scancode);
     struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
     struct bind_binding *binding = bind_find(id, state.keys.mod);
@@ -2411,7 +2411,7 @@ static void onkeypress(struct message *message)
             if (state.focusedwindow)
             {
 
-                struct event_wmkeypress wmkeypress;
+                struct message_wmkeypress wmkeypress;
 
                 wmkeypress.id = state.keys.id;
                 wmkeypress.scancode = keypress->scancode;
@@ -2421,7 +2421,7 @@ static void onkeypress(struct message *message)
                 buffer_copy(&wmkeypress.unicode, state.keys.code.value, wmkeypress.length);
                 wmkeypress.keymod = state.keys.mod;
 
-                channel_send(0, state.focusedwindow->source, EVENT_WMKEYPRESS, sizeof (struct event_wmkeypress), &wmkeypress);
+                channel_send(0, state.focusedwindow->source, MESSAGE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
 
             }
 
@@ -2436,13 +2436,13 @@ static void onkeypress(struct message *message)
 static void onkeyrelease(struct message *message)
 {
 
-    struct event_keyrelease *keyrelease = message->data;
+    struct message_keyrelease *keyrelease = message->data;
     unsigned int id = keys_getcode(&state.keys, keyrelease->scancode);
 
     if (id && state.focusedwindow)
     {
 
-        struct event_wmkeyrelease wmkeyrelease;
+        struct message_wmkeyrelease wmkeyrelease;
 
         wmkeyrelease.id = id;
         wmkeyrelease.scancode = keyrelease->scancode;
@@ -2450,13 +2450,13 @@ static void onkeyrelease(struct message *message)
         wmkeyrelease.unicode = 0;
         wmkeyrelease.length = 0;
 
-        channel_send(0, state.focusedwindow->source, EVENT_WMKEYRELEASE, sizeof (struct event_wmkeyrelease), &wmkeyrelease);
+        channel_send(0, state.focusedwindow->source, MESSAGE_WMKEYRELEASE, sizeof (struct message_wmkeyrelease), &wmkeyrelease);
 
     }
 
 }
 
-static void applyconfig(struct event_videoconf *videoconf)
+static void applyconfig(struct message_videoconf *videoconf)
 {
 
     if (videoconf->width != state.videoconf.width || videoconf->height != state.videoconf.height || videoconf->bpp != state.videoconf.bpp)
@@ -2479,26 +2479,26 @@ static void applyconfig(struct event_videoconf *videoconf)
 static void requestclock(unsigned int ms)
 {
 
-    struct event_timerrequest timerrequest;
+    struct message_timerrequest timerrequest;
 
     timerrequest.id = CLOCK_TIMER;
     timerrequest.ms = ms;
     timerrequest.repeat = 0;
 
-    channel_send(0, state.timer, EVENT_TIMERREQUEST, sizeof (struct event_timerrequest), &timerrequest);
+    channel_send(0, state.timer, MESSAGE_TIMERREQUEST, sizeof (struct message_timerrequest), &timerrequest);
 
 }
 
 static void showclock(void)
 {
 
-    struct event_clockinfo clockinfo;
+    struct message_clockinfo clockinfo;
     unsigned char hours;
     char data[64];
 
-    channel_send(1, state.clock, EVENT_INFO, 0, 0);
+    channel_send(1, state.clock, MESSAGE_INFO, 0, 0);
 
-    if (!channel_wait(1, state.clock, EVENT_CLOCKINFO, sizeof (struct event_clockinfo), &clockinfo))
+    if (!channel_wait(1, state.clock, MESSAGE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
         return;
 
     hours = (clockinfo.hours % 12) ? clockinfo.hours % 12 : 12;
@@ -2522,9 +2522,9 @@ static void hideclock(void)
 static void ontimerexpire(struct message *message)
 {
 
-    struct event_timerexpire timerexpire;
+    struct message_timerexpire timerexpire;
 
-    buffer_copy(&timerexpire, message->data, sizeof (struct event_timerexpire));
+    buffer_copy(&timerexpire, message->data, sizeof (struct message_timerexpire));
 
     if (message->source == state.timer && timerexpire.id == CLOCK_TIMER)
         showclock();
@@ -2561,12 +2561,12 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 static void onreadrequest(struct message *message)
 {
 
-    struct event_readrequest *request = message->data;
+    struct message_readrequest *request = message->data;
     struct listing listing;
     unsigned int c = 0;
     unsigned int i;
 
-    if (message->length < sizeof (struct event_readrequest))
+    if (message->length < sizeof (struct message_readrequest))
         return;
 
     for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
@@ -2575,39 +2575,39 @@ static void onreadrequest(struct message *message)
     listing.response.count = c * sizeof (struct record);
     listing.response.buffer = 0;
 
-    channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
+    channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
 
 }
 
 static void onstatrequest(struct message *message)
 {
 
-    struct event_statrequest *request = message->data;
+    struct message_statrequest *request = message->data;
     struct statresult result;
 
-    if (message->length < sizeof (struct event_statrequest))
+    if (message->length < sizeof (struct message_statrequest))
         return;
 
     record_init(&result.record, ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
 
     result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
 
-    channel_send(0, message->source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + result.response.count, &result);
+    channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
 
 }
 
 static void onwalkrequest(struct message *message)
 {
 
-    struct event_walkrequest *request = message->data;
-    struct event_walkresponse response;
+    struct message_walkrequest *request = message->data;
+    struct message_walkresponse response;
 
-    if (message->length < sizeof (struct event_walkrequest) || message->length - sizeof (struct event_walkrequest) < request->length)
+    if (message->length < sizeof (struct message_walkrequest) || message->length - sizeof (struct message_walkrequest) < request->length)
         return;
 
     response.id = walk(request->parent, request->length, (char *)(request + 1));
 
-    channel_send(0, message->source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
 }
 
@@ -2625,14 +2625,14 @@ static void onmain(struct message *message)
     if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
     {
 
-        channel_send_fmt(0, message->source, EVENT_ERROR, "Could not announce service: %s\n", option_getstring("service"));
+        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not announce service: %s\n", option_getstring("service"));
 
         return;
 
     }
 
-    channel_send(0, keyboard, EVENT_LINK, 0, 0);
-    channel_send(0, mouse, EVENT_LINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
+    channel_send(0, mouse, MESSAGE_LINK, 0, 0);
     setupvideo(video);
 
     state.clock = channel_lookup(option_getstring("clock-service"));
@@ -2648,8 +2648,8 @@ static void onmain(struct message *message)
     if (state.clock && state.timer)
         requestclock(0);
 
-    channel_send(0, mouse, EVENT_UNLINK, 0, 0);
-    channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+    channel_send(0, mouse, MESSAGE_UNLINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
 
 }
 
@@ -2715,7 +2715,7 @@ static void releasebutton(unsigned int button)
 static void onmousemove(struct message *message)
 {
 
-    struct event_mousemove *mousemove = message->data;
+    struct message_mousemove *mousemove = message->data;
     int quarters = getquarters(mousemove->relx, mousemove->rely);
     int totalx = state.mouseremainder.x + mousemove->relx * quarters;
     int totaly = state.mouseremainder.y + mousemove->rely * quarters;
@@ -2819,7 +2819,7 @@ static void grabthumb(void)
 static void onmousepress(struct message *message)
 {
 
-    struct event_mousepress *mousepress = message->data;
+    struct message_mousepress *mousepress = message->data;
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
@@ -2885,7 +2885,7 @@ static void onmousescroll(struct message *message)
     if (scrollablewidget)
     {
 
-        struct event_mousescroll *mousescroll = message->data;
+        struct message_mousescroll *mousescroll = message->data;
 
         scrollwidget(scrollablewidget, mousescroll->relz * 16);
 
@@ -2900,7 +2900,7 @@ static void onmousescroll(struct message *message)
 static void onmouserelease(struct message *message)
 {
 
-    struct event_mouserelease *mouserelease = message->data;
+    struct message_mouserelease *mouserelease = message->data;
 
     releasebutton(mouserelease->button);
     redraw(1);
@@ -2910,11 +2910,11 @@ static void onmouserelease(struct message *message)
 static void onvideoinfo(struct message *message)
 {
 
-    struct event_videoinfo videoinfo;
+    struct message_videoinfo videoinfo;
     unsigned int factor;
     unsigned int lineheight;
 
-    buffer_copy(&videoinfo, message->data, sizeof (struct event_videoinfo));
+    buffer_copy(&videoinfo, message->data, sizeof (struct message_videoinfo));
 
     factor = util_min(videoinfo.height / 320, FONTS - 1);
     lineheight = 12 + factor * 4;
@@ -2940,13 +2940,13 @@ static void onvideoinfo(struct message *message)
 static void bindinput(unsigned int on)
 {
 
-    channel_bind(EVENT_KEYPRESS, (on) ? onkeypress : 0);
-    channel_bind(EVENT_KEYRELEASE, (on) ? onkeyrelease : 0);
-    channel_bind(EVENT_MOUSEMOVE, (on) ? onmousemove : 0);
-    channel_bind(EVENT_MOUSEPRESS, (on) ? onmousepress : 0);
-    channel_bind(EVENT_MOUSESCROLL, (on) ? onmousescroll : 0);
-    channel_bind(EVENT_MOUSERELEASE, (on) ? onmouserelease : 0);
-    channel_bind(EVENT_VIDEOINFO, (on) ? onvideoinfo : 0);
+    channel_bind(MESSAGE_KEYPRESS, (on) ? onkeypress : 0);
+    channel_bind(MESSAGE_KEYRELEASE, (on) ? onkeyrelease : 0);
+    channel_bind(MESSAGE_MOUSEMOVE, (on) ? onmousemove : 0);
+    channel_bind(MESSAGE_MOUSEPRESS, (on) ? onmousepress : 0);
+    channel_bind(MESSAGE_MOUSESCROLL, (on) ? onmousescroll : 0);
+    channel_bind(MESSAGE_MOUSERELEASE, (on) ? onmouserelease : 0);
+    channel_bind(MESSAGE_VIDEOINFO, (on) ? onvideoinfo : 0);
 
 }
 
@@ -2956,7 +2956,7 @@ static void onwmgrab(struct message *message)
     state.state = STATE_GRABBED;
 
     bindinput(0);
-    channel_send(0, message->source, EVENT_WMACK, 0, 0);
+    channel_send(0, message->source, MESSAGE_WMACK, 0, 0);
 
 }
 
@@ -2981,7 +2981,7 @@ static void onwmrenderdata(struct message *message)
 static void onwmconfig(struct message *message)
 {
 
-    struct event_videoconf videoconf = state.videoconf;
+    struct message_videoconf videoconf = state.videoconf;
 
     configlines(message->data, message->length);
 
@@ -3019,7 +3019,7 @@ static void onwmread(struct message *message)
                 unsigned int offset;
 
                 for (offset = 0; offset < length; offset += MESSAGE_SIZE)
-                    channel_send(0, source, EVENT_WMTEXT, util_min(length - offset, MESSAGE_SIZE), label + offset);
+                    channel_send(0, source, MESSAGE_WMTEXT, util_min(length - offset, MESSAGE_SIZE), label + offset);
 
             }
 
@@ -3027,7 +3027,7 @@ static void onwmread(struct message *message)
 
     }
 
-    channel_send(0, source, EVENT_WMTEXT, 0, 0);
+    channel_send(0, source, MESSAGE_WMTEXT, 0, 0);
 
 }
 
@@ -3061,7 +3061,7 @@ static void onwmflush(struct message *message)
 
     }
 
-    channel_send(0, message->source, EVENT_WMACK, 0, 0);
+    channel_send(0, message->source, MESSAGE_WMACK, 0, 0);
 
 }
 
@@ -3072,7 +3072,7 @@ static void onwmungrab(struct message *message)
     state.keys.mod = 0;
 
     bindinput(1);
-    channel_send(0, message->source, EVENT_WMACK, 0, 0);
+    channel_send(0, message->source, MESSAGE_WMACK, 0, 0);
     setupvideo(channel_lookup(option_getstring("video-service")));
 
 }
@@ -3130,19 +3130,19 @@ void init(void)
     option_add("timer-service", "timer:0");
     option_add("clipboard", "mem:clipboard");
     bindinput(1);
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_READREQUEST, onreadrequest);
-    channel_bind(EVENT_STATREQUEST, onstatrequest);
-    channel_bind(EVENT_TIMEREXPIRE, ontimerexpire);
-    channel_bind(EVENT_WALKREQUEST, onwalkrequest);
-    channel_bind(EVENT_WMCONFIG, onwmconfig);
-    channel_bind(EVENT_WMFLUSH, onwmflush);
-    channel_bind(EVENT_WMGRAB, onwmgrab);
-    channel_bind(EVENT_WMREAD, onwmread);
-    channel_bind(EVENT_WMRENDERDATA, onwmrenderdata);
-    channel_bind(EVENT_WMRENDERFILE, onwmrenderfile);
-    channel_bind(EVENT_WMUNGRAB, onwmungrab);
-    channel_bind(EVENT_WMUNMAP, onwmunmap);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_READREQUEST, onreadrequest);
+    channel_bind(MESSAGE_STATREQUEST, onstatrequest);
+    channel_bind(MESSAGE_TIMEREXPIRE, ontimerexpire);
+    channel_bind(MESSAGE_WALKREQUEST, onwalkrequest);
+    channel_bind(MESSAGE_WMCONFIG, onwmconfig);
+    channel_bind(MESSAGE_WMFLUSH, onwmflush);
+    channel_bind(MESSAGE_WMGRAB, onwmgrab);
+    channel_bind(MESSAGE_WMREAD, onwmread);
+    channel_bind(MESSAGE_WMRENDERDATA, onwmrenderdata);
+    channel_bind(MESSAGE_WMRENDERFILE, onwmrenderfile);
+    channel_bind(MESSAGE_WMUNGRAB, onwmungrab);
+    channel_bind(MESSAGE_WMUNMAP, onwmunmap);
 
 }
 

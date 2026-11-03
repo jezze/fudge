@@ -19,7 +19,7 @@ static unsigned int console;
 static void print(void *buffer, unsigned int count)
 {
 
-    channel_send(0, console, EVENT_DATA, count, buffer);
+    channel_send(0, console, MESSAGE_DATA, count, buffer);
 
 }
 
@@ -222,7 +222,7 @@ static void deleteend(void)
 static void interrupt(void)
 {
 
-    channel_send(0, sh, EVENT_CONSOLEDATA, 1, "\003");
+    channel_send(0, sh, MESSAGE_CONSOLEDATA, 1, "\003");
 
 }
 
@@ -260,10 +260,10 @@ static void run(void)
 
     }
 
-    channel_send_fmt(0, sh, EVENT_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
-    channel_send(0, sh, EVENT_MAIN, 0, 0);
-    channel_send(0, sh, EVENT_DATA, linecount, line);
-    channel_send(0, sh, EVENT_TERM, 0, 0);
+    channel_send_fmt(0, sh, MESSAGE_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
+    channel_send(0, sh, MESSAGE_MAIN, 0, 0);
+    channel_send(0, sh, MESSAGE_DATA, linecount, line);
+    channel_send(0, sh, MESSAGE_TERM, 0, 0);
 
 }
 
@@ -319,7 +319,7 @@ static void complete(void)
 static void onconsoledata(struct message *message)
 {
 
-    struct event_consoledata *consoledata = message->data;
+    struct message_consoledata *consoledata = message->data;
 
     if (sh)
     {
@@ -338,7 +338,7 @@ static void onconsoledata(struct message *message)
             break;
 
         default:
-            channel_send(0, sh, EVENT_CONSOLEDATA, message->length, message->data);
+            channel_send(0, sh, MESSAGE_CONSOLEDATA, message->length, message->data);
 
             break;
 
@@ -470,7 +470,7 @@ static void onconsoledata(struct message *message)
 static void onkeypress(struct message *message)
 {
 
-    struct event_keypress *keypress = message->data;
+    struct message_keypress *keypress = message->data;
     unsigned int id = keys_getcode(&keys, keypress->scancode);
 
     if (!id)
@@ -502,7 +502,7 @@ static void onkeypress(struct message *message)
         else
         {
 
-            channel_send(0, sh, EVENT_CONSOLEDATA, keys.code.length, keys.code.value);
+            channel_send(0, sh, MESSAGE_CONSOLEDATA, keys.code.length, keys.code.value);
 
         }
 
@@ -561,7 +561,7 @@ static void onkeypress(struct message *message)
 static void onkeyrelease(struct message *message)
 {
 
-    struct event_keyrelease *keyrelease = message->data;
+    struct message_keyrelease *keyrelease = message->data;
 
     keys_getcode(&keys, keyrelease->scancode);
 
@@ -605,19 +605,19 @@ static void onmain(struct message *message)
     console = channel_lookup(option_getstring("console-service"));
 
     if (console)
-        channel_send(0, console, EVENT_LINK, 0, 0);
+        channel_send(0, console, MESSAGE_LINK, 0, 0);
 
     if (keyboard)
-        channel_send(0, keyboard, EVENT_LINK, 0, 0);
+        channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
 
     clearline();
     channel_hold(0);
 
     if (console)
-        channel_send(0, console, EVENT_UNLINK, 0, 0);
+        channel_send(0, console, MESSAGE_UNLINK, 0, 0);
 
     if (keyboard)
-        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
+        channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
 
 }
 
@@ -629,13 +629,13 @@ void init(void)
     ring_init(&input2, INPUTSIZE, inputdata2);
     option_add("console-service", "console:0");
     option_add("keyboard-service", "keyboard:0");
-    channel_bind(EVENT_CONSOLEDATA, onconsoledata);
-    channel_bind(EVENT_KEYPRESS, onkeypress);
-    channel_bind(EVENT_KEYRELEASE, onkeyrelease);
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_TERM, onterm);
-    channel_bind(EVENT_ERROR, onerror);
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_CONSOLEDATA, onconsoledata);
+    channel_bind(MESSAGE_KEYPRESS, onkeypress);
+    channel_bind(MESSAGE_KEYRELEASE, onkeyrelease);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_ERROR, onerror);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

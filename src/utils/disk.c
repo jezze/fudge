@@ -2,7 +2,7 @@
 #include <abi.h>
 #include <disk.h>
 
-static struct event_blockinfo blockinfo;
+static struct message_blockinfo blockinfo;
 
 static void printpartition(unsigned int source, struct mbr_partition *partition)
 {
@@ -17,28 +17,28 @@ static void printpartition(unsigned int source, struct mbr_partition *partition)
     unsigned int sstart = partition->sectorbase & 0x3F;
     unsigned int send = partition->sectorlimit & 0x3F;
 
-    channel_send_fmt(0, source, EVENT_DATA, "      boot: 0x%H2c\n", &partition->boot);
-    channel_send_fmt(0, source, EVENT_DATA, "      id: 0x%H2c\n", &partition->systemid);
-    channel_send_fmt(0, source, EVENT_DATA, "      start: %u\n", &start);
-    channel_send_fmt(0, source, EVENT_DATA, "      end: %u\n", &end);
-    channel_send_fmt(0, source, EVENT_DATA, "      sectors: %u\n", &sectors);
-    channel_send_fmt(0, source, EVENT_DATA, "      startchs: \"%u/%u/%u\"\n", &cstart, &hstart, &sstart);
-    channel_send_fmt(0, source, EVENT_DATA, "      endchs: \"%u/%u/%u\"\n", &cend, &hend, &send);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      boot: 0x%H2c\n", &partition->boot);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      id: 0x%H2c\n", &partition->systemid);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      start: %u\n", &start);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      end: %u\n", &end);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      sectors: %u\n", &sectors);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      startchs: \"%u/%u/%u\"\n", &cstart, &hstart, &sstart);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      endchs: \"%u/%u/%u\"\n", &cend, &hend, &send);
 
 }
 
 static unsigned int readblock(unsigned int block, unsigned int offset)
 {
 
-    struct event_blockrequest request;
-    struct event_blockresponse response;
+    struct message_blockrequest request;
+    struct message_blockresponse response;
 
     request.offset = offset;
     request.count = blockinfo.blocksize;
     request.target = 0;
 
-    channel_send(1, block, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
-    channel_wait(1, block, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
+    channel_send(1, block, MESSAGE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
+    channel_wait(1, block, MESSAGE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
 
     return response.count == request.count;
 
@@ -59,14 +59,14 @@ static void printentry(unsigned int source, unsigned int i, struct gpt_entry *en
 
     name[j] = '\0';
 
-    channel_send_fmt(0, source, EVENT_DATA, "    {\n");
-    channel_send_fmt(0, source, EVENT_DATA, "      index: %u\n", &i);
-    channel_send_fmt(0, source, EVENT_DATA, "      type: \"%H2c%H2c%H2c%H2c-%H2c%H2c-%H2c%H2c-%H2c%H2c-%H2c%H2c%H2c%H2c%H2c%H2c\"\n", &t[3], &t[2], &t[1], &t[0], &t[5], &t[4], &t[7], &t[6], &t[8], &t[9], &t[10], &t[11], &t[12], &t[13], &t[14], &t[15]);
-    channel_send_fmt(0, source, EVENT_DATA, "      name: \"%s\"\n", name);
-    channel_send_fmt(0, source, EVENT_DATA, "      start: %u\n", &start);
-    channel_send_fmt(0, source, EVENT_DATA, "      end: %u\n", &end);
-    channel_send_fmt(0, source, EVENT_DATA, "      sectors: %u\n", &sectors);
-    channel_send_fmt(0, source, EVENT_DATA, "    }\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "    {\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "      index: %u\n", &i);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      type: \"%H2c%H2c%H2c%H2c-%H2c%H2c-%H2c%H2c-%H2c%H2c-%H2c%H2c%H2c%H2c%H2c%H2c\"\n", &t[3], &t[2], &t[1], &t[0], &t[5], &t[4], &t[7], &t[6], &t[8], &t[9], &t[10], &t[11], &t[12], &t[13], &t[14], &t[15]);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      name: \"%s\"\n", name);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      start: %u\n", &start);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      end: %u\n", &end);
+    channel_send_fmt(0, source, MESSAGE_DATA, "      sectors: %u\n", &sectors);
+    channel_send_fmt(0, source, MESSAGE_DATA, "    }\n");
 
 }
 
@@ -91,8 +91,8 @@ static void printgpt(unsigned int source, unsigned int block)
     entrysize = gpt_read32(header.entrysize);
     entrycount = gpt_read32(header.entrycount);
 
-    channel_send_fmt(0, source, EVENT_DATA, "  table: \"GPT\"\n");
-    channel_send_fmt(0, source, EVENT_DATA, "  partitions: [\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "  table: \"GPT\"\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "  partitions: [\n");
 
     for (i = 0; i < entrycount; i++)
     {
@@ -110,7 +110,7 @@ static void printgpt(unsigned int source, unsigned int block)
 
     }
 
-    channel_send_fmt(0, source, EVENT_DATA, "  ]\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "  ]\n");
 
 }
 
@@ -119,8 +119,8 @@ static void printmbr(unsigned int source, struct mbr *mbr)
 
     unsigned int i;
 
-    channel_send_fmt(0, source, EVENT_DATA, "  table: \"MBR\"\n");
-    channel_send_fmt(0, source, EVENT_DATA, "  partitions: [\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "  table: \"MBR\"\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "  partitions: [\n");
 
     for (i = 0; i < 4; i++)
     {
@@ -130,16 +130,16 @@ static void printmbr(unsigned int source, struct mbr *mbr)
         if (partition->systemid)
         {
 
-            channel_send_fmt(0, source, EVENT_DATA, "    {\n");
-            channel_send_fmt(0, source, EVENT_DATA, "      index: %u\n", &i);
+            channel_send_fmt(0, source, MESSAGE_DATA, "    {\n");
+            channel_send_fmt(0, source, MESSAGE_DATA, "      index: %u\n", &i);
             printpartition(source, partition);
-            channel_send_fmt(0, source, EVENT_DATA, "    }\n");
+            channel_send_fmt(0, source, MESSAGE_DATA, "    }\n");
 
         }
 
     }
 
-    channel_send_fmt(0, source, EVENT_DATA, "  ]\n");
+    channel_send_fmt(0, source, MESSAGE_DATA, "  ]\n");
 
 }
 
@@ -152,12 +152,12 @@ static void onmain(struct message *message)
     if (!block)
         return;
 
-    channel_send(1, block, EVENT_INFO, 0, 0);
-    channel_wait(1, block, EVENT_BLOCKINFO, sizeof (struct event_blockinfo), &blockinfo);
+    channel_send(1, block, MESSAGE_INFO, 0, 0);
+    channel_wait(1, block, MESSAGE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
-    channel_send_fmt(0, message->source, EVENT_DATA, "{\n");
-    channel_send_fmt(0, message->source, EVENT_DATA, "  blocks: %u\n", &blockinfo.blockcount);
-    channel_send_fmt(0, message->source, EVENT_DATA, "  blocksize: %u\n", &blockinfo.blocksize);
+    channel_send_fmt(0, message->source, MESSAGE_DATA, "{\n");
+    channel_send_fmt(0, message->source, MESSAGE_DATA, "  blocks: %u\n", &blockinfo.blockcount);
+    channel_send_fmt(0, message->source, MESSAGE_DATA, "  blocksize: %u\n", &blockinfo.blocksize);
 
     if (readblock(block, 0))
     {
@@ -167,7 +167,7 @@ static void onmain(struct message *message)
         if (mbr_validate(&mbr))
         {
 
-            channel_send_fmt(0, message->source, EVENT_DATA, "  signature: 0x%H2c%H2c\n", &mbr.signature[0], &mbr.signature[1]);
+            channel_send_fmt(0, message->source, MESSAGE_DATA, "  signature: 0x%H2c%H2c\n", &mbr.signature[0], &mbr.signature[1]);
 
             if (mbr.partition[0].systemid == 0xEE)
                 printgpt(message->source, block);
@@ -178,7 +178,7 @@ static void onmain(struct message *message)
 
     }
 
-    channel_send_fmt(0, message->source, EVENT_DATA, "}\n");
+    channel_send_fmt(0, message->source, MESSAGE_DATA, "}\n");
 
 }
 
@@ -186,7 +186,7 @@ void init(void)
 {
 
     option_add("block-service", "block:0");
-    channel_bind(EVENT_MAIN, onmain);
+    channel_bind(MESSAGE_MAIN, onmain);
 
 }
 

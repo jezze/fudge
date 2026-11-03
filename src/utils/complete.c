@@ -183,18 +183,18 @@ static void onterm(struct message *message)
 
     count += buffer_write(output, INPUTSIZE, "\n", 1, count);
 
-    channel_send(0, message->source, EVENT_DATA, count, output);
+    channel_send(0, message->source, MESSAGE_DATA, count, output);
 
     if (nmatches > 1 && commoncount == prefixcount)
-        channel_send(0, message->source, EVENT_DATA, listcount, list);
+        channel_send(0, message->source, MESSAGE_DATA, listcount, list);
 
 }
 
 void init(void)
 {
 
-    channel_bind(EVENT_DATA, ondata);
-    channel_bind(EVENT_TERM, onterm);
+    channel_bind(MESSAGE_DATA, ondata);
+    channel_bind(MESSAGE_TERM, onterm);
 
 }
 

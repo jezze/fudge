@@ -90,8 +90,8 @@ static void ungrab(void)
     if (wm)
     {
 
-        channel_send(1, wm, EVENT_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
 
     }
 
@@ -108,28 +108,28 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        channel_send(1, wm, EVENT_WMGRAB, 0, 0);
-        channel_wait(1, wm, EVENT_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_WMGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
 
     }
 
     if (keyboard && timer && video)
     {
 
-        struct event_videoconf videoconf;
+        struct message_videoconf videoconf;
 
         videoconf.width = option_getdecimal("width");
         videoconf.height = option_getdecimal("height");
         videoconf.bpp = option_getdecimal("bpp");
 
-        channel_send(0, video, EVENT_VIDEOCONF, sizeof (struct event_videoconf), &videoconf);
-        channel_send(1, video, EVENT_INFO, 0, 0);
-        channel_wait(1, video, EVENT_VIDEOINFO, 0, 0);
-        channel_send(0, keyboard, EVENT_LINK, 0, 0);
-        channel_send(0, timer, EVENT_LINK, 0, 0);
+        channel_send(0, video, MESSAGE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
+        channel_send(1, video, MESSAGE_INFO, 0, 0);
+        channel_wait(1, video, MESSAGE_VIDEOINFO, 0, 0);
+        channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
+        channel_send(0, timer, MESSAGE_LINK, 0, 0);
         channel_hold(0);
-        channel_send(0, keyboard, EVENT_UNLINK, 0, 0);
-        channel_send(0, timer, EVENT_UNLINK, 0, 0);
+        channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, timer, MESSAGE_UNLINK, 0, 0);
 
     }
 
@@ -140,7 +140,7 @@ static void onmain(struct message *message)
 static void onvideoinfo(struct message *message)
 {
 
-    struct event_videoinfo *videoinfo = message->data;
+    struct message_videoinfo *videoinfo = message->data;
 
     framebuffer = (unsigned int *)videoinfo->framebuffer;
     wmax = videoinfo->width;
@@ -161,9 +161,9 @@ void init(void)
     option_add("timer-service", "timer:0");
     option_add("video-service", "video:0");
     option_add("wm-service", "wm");
-    channel_bind(EVENT_MAIN, onmain);
-    channel_bind(EVENT_TIMERTICK, ontimertick);
-    channel_bind(EVENT_VIDEOINFO, onvideoinfo);
+    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TIMERTICK, ontimertick);
+    channel_bind(MESSAGE_VIDEOINFO, onvideoinfo);
 
 }
 
