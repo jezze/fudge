@@ -22,7 +22,7 @@ static void store(unsigned int source, void *data, unsigned int count)
 
             id = 0;
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be written\n");
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be written\n");
 
         }
 
@@ -40,7 +40,7 @@ static void ondata(struct message *message)
 static void onrecord(struct message *message)
 {
 
-    if (message->event == MESSAGE_ERROR)
+    if (message->event == MESSAGE_TYPE_ERROR)
     {
 
         store(message->source, message->data, message->length);
@@ -67,16 +67,16 @@ static void onmain(struct message *message)
 
     event = option_getdecimal("event");
 
-    if (!event || event == MESSAGE_DATA)
+    if (!event || event == MESSAGE_TYPE_DATA)
         return;
 
     switch (event)
     {
 
-    case MESSAGE_MAIN:
-    case MESSAGE_OPTION:
-    case MESSAGE_PATH:
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Event can not be recorded\n");
+    case MESSAGE_TYPE_MAIN:
+    case MESSAGE_TYPE_OPTION:
+    case MESSAGE_TYPE_PATH:
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Event can not be recorded\n");
 
         break;
 
@@ -106,7 +106,7 @@ static void onpath(struct message *message)
     {
 
         if (!id)
-            channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", path);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -119,7 +119,7 @@ static void onpath(struct message *message)
 
         id = 0;
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -142,7 +142,7 @@ static void onpath(struct message *message)
 
         id = 0;
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "File could not be replaced: %s\n", path);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "File could not be replaced: %s\n", path);
 
         return;
 
@@ -151,7 +151,7 @@ static void onpath(struct message *message)
     id = (cstring_length(name)) ? fs_create(1, target, parent, name, cstring_length(name)) : 0;
 
     if (!id)
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "File could not be created: %s\n", path);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "File could not be created: %s\n", path);
 
 }
 
@@ -161,9 +161,9 @@ void init(void)
     option_add("create", "0");
     option_add("append", "0");
     option_add("event", "0");
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

@@ -11,7 +11,7 @@ static void onmain(struct message *message)
 void init(void)
 {
 
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

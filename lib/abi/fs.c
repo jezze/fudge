@@ -49,10 +49,10 @@ unsigned int fs_create(unsigned int ichannel, unsigned int target, unsigned int 
     request->parent = parent;
     request->count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct message_createrequest));
 
-    if (!channel_send(ichannel, target, MESSAGE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+    channel_wait(ichannel, target, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
     return response.id;
 
@@ -150,10 +150,10 @@ unsigned int fs_map(unsigned int ichannel, unsigned int target, unsigned int id)
 
     request.id = id;
 
-    if (!channel_send(ichannel, target, MESSAGE_MAPREQUEST, sizeof (struct message_maprequest), &request))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_MAPREQUEST, sizeof (struct message_maprequest), &request))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_MAPRESPONSE, sizeof (struct message_mapresponse), &response);
+    channel_wait(ichannel, target, MESSAGE_TYPE_MAPRESPONSE, sizeof (struct message_mapresponse), &response);
 
     return response.address;
 
@@ -169,10 +169,10 @@ void *fs_mmap(unsigned int ichannel, unsigned int target, unsigned int id, unsig
     request.id = id;
     request.size = size;
 
-    if (!channel_send(ichannel, target, MESSAGE_MMAPREQUEST, sizeof (struct message_mmaprequest), &request))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_MMAPREQUEST, sizeof (struct message_mmaprequest), &request))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
+    channel_wait(ichannel, target, MESSAGE_TYPE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
 
     return (void *)(unsigned long)response.address;
 
@@ -186,10 +186,10 @@ unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int 
 
     request.id = id;
 
-    if (!channel_send(ichannel, target, MESSAGE_MUNMAPREQUEST, sizeof (struct message_munmaprequest), &request))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_MUNMAPREQUEST, sizeof (struct message_munmaprequest), &request))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
+    channel_wait(ichannel, target, MESSAGE_TYPE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
 
     return response.status;
 
@@ -210,10 +210,10 @@ static struct readreply readreply(unsigned int ichannel, unsigned int target, un
     request.count = count;
     request.flags = READ_FLAG_BUFFER;
 
-    if (channel_send(ichannel, target, MESSAGE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_poll(ichannel, target, MESSAGE_READRESPONSE, &message))
+    if (channel_send(ichannel, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_poll(ichannel, target, MESSAGE_TYPE_READRESPONSE, &message))
     {
 
-        struct message_readresponse *response = message_validate(MESSAGE_READRESPONSE, message.data, message.length);
+        struct message_readresponse *response = message_validate(MESSAGE_TYPE_READRESPONSE, message.data, message.length);
 
         if (response)
         {
@@ -269,7 +269,7 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
     if (!target)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Service not found: %s\n", path);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Service not found: %s\n", path);
 
         return 0;
 
@@ -278,7 +278,7 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
     if (!id)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
 
         return 0;
 
@@ -327,10 +327,10 @@ unsigned int fs_remove(unsigned int ichannel, unsigned int target, unsigned int 
     request.parent = parent;
     request.id = id;
 
-    if (!channel_send(ichannel, target, MESSAGE_REMOVEREQUEST, sizeof (struct message_removerequest), &request))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_REMOVEREQUEST, sizeof (struct message_removerequest), &request))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+    channel_wait(ichannel, target, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
     return response.status;
 
@@ -345,10 +345,10 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 
     request.id = id;
 
-    if (!channel_send(ichannel, target, MESSAGE_STATREQUEST, sizeof (struct message_statrequest), &request))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_STATREQUEST, sizeof (struct message_statrequest), &request))
         return 0;
 
-    response = message_validate(MESSAGE_STATRESPONSE, data, channel_wait(ichannel, target, MESSAGE_STATRESPONSE, MESSAGE_SIZE, data));
+    response = message_validate(MESSAGE_TYPE_STATRESPONSE, data, channel_wait(ichannel, target, MESSAGE_TYPE_STATRESPONSE, MESSAGE_SIZE, data));
 
     if (!response || response->count > sizeof (struct record))
         return 0;
@@ -372,10 +372,10 @@ unsigned int fs_walk(unsigned int ichannel, unsigned int target, unsigned int pa
     request->parent = parent;
     request->length = buffer_write(data, MESSAGE_SIZE, path, cstring_length(path), sizeof (struct message_walkrequest));
 
-    if (!channel_send(ichannel, target, MESSAGE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+    channel_wait(ichannel, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     return response.id;
 
@@ -409,10 +409,10 @@ unsigned int fs_write(unsigned int ichannel, unsigned int target, unsigned int i
     request->offset = offset;
     request->count = buffer_write(data, MESSAGE_SIZE, buffer, count, sizeof (struct message_writerequest));
 
-    if (!channel_send(ichannel, target, MESSAGE_WRITEREQUEST, sizeof (struct message_writerequest) + request->count, data))
+    if (!channel_send(ichannel, target, MESSAGE_TYPE_WRITEREQUEST, sizeof (struct message_writerequest) + request->count, data))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+    channel_wait(ichannel, target, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
     return response.count;
 

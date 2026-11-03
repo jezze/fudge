@@ -19,7 +19,7 @@ static unsigned int opener;
 static void updatepath(unsigned int wm)
 {
 
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= path label \"%s\"\n", path);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= path label \"%s\"\n", path);
 
 }
 
@@ -44,9 +44,9 @@ static void setbuttons(unsigned int wm)
     char *pastemode = (listing) ? "normal" : "disabled";
 
     if (opener)
-        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= open mode \"%s\"\n", (count == 1) ? "normal" : "disabled");
     else
-        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= copy mode \"%s\"\n= cut mode \"%s\"\n= paste mode \"%s\"\n= delete mode \"%s\"\n", mode, mode, pastemode, mode);
 
 }
 
@@ -56,7 +56,7 @@ static void sendcontent(unsigned int wm)
     rows = 0;
     listing = 0;
 
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "- content\n+ box id \"content\" in \"main\" flow \"vertical-stretch\" overflow \"scroll\" span \"1\" onselect \"q=select&count=\"\n");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "- content\n+ box id \"content\" in \"main\" flow \"vertical-stretch\" overflow \"scroll\" span \"1\" onselect \"q=select&count=\"\n");
     setbuttons(wm);
 
 }
@@ -89,7 +89,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
             if (c + 512 > MESSAGE_SIZE)
             {
 
-                channel_send(0, wm, MESSAGE_WMRENDERDATA, c, d);
+                channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
 
                 c = 0;
 
@@ -114,7 +114,7 @@ static void listdirectory(unsigned int wm, unsigned int target, unsigned int id)
     }
 
     if (c)
-        channel_send(0, wm, MESSAGE_WMRENDERDATA, c, d);
+        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, c, d);
 
     rows = (row < ROWS) ? row : ROWS;
     listing = 1;
@@ -171,16 +171,16 @@ static void showfile(unsigned int wm, struct record *record)
         start = buffer_firstbyte(path, length, ':');
 
     sendcontent(wm);
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"2\" spacing \"1\"\n");
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text in \"info\" weight \"bold\" label \"%s\"\n", path + start);
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text in \"info\" label \"Path: %s\"\n", path);
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text in \"info\" label \"Type: File\"\n");
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text in \"info\" label \"Size: %u bytes\"\n", &record->size);
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text in \"info\" label \"Id: %u\"\n", &record->id);
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ layout id \"actions\" in \"info\" flow \"horizontal\" spacing \"2\"\n");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"2\" spacing \"1\"\n");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text in \"info\" weight \"bold\" label \"%s\"\n", path + start);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text in \"info\" label \"Path: %s\"\n", path);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text in \"info\" label \"Type: File\"\n");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text in \"info\" label \"Size: %u bytes\"\n", &record->size);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text in \"info\" label \"Id: %u\"\n", &record->id);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ layout id \"actions\" in \"info\" flow \"horizontal\" spacing \"2\"\n");
 
     for (i = 0; getline(labels, nlabels, i, label, 64); i++)
-        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ button in \"actions\" label \"%s\" onclick \"q=action&index=%u\"\n", label, &i);
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ button in \"actions\" label \"%s\" onclick \"q=action&index=%u\"\n", label, &i);
 
 }
 
@@ -195,8 +195,8 @@ static void updatecontent(unsigned int wm)
     {
 
         sendcontent(wm);
-        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"2\" spacing \"1\"\n");
-        channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ text in \"info\" label \"Path not found\"\n");
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ layout id \"info\" in \"content\" flow \"vertical\" padding \"2\" spacing \"1\"\n");
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text in \"info\" label \"Path not found\"\n");
 
     }
 
@@ -211,7 +211,7 @@ static void updatecontent(unsigned int wm)
             if (cstring_length(command))
                 system_run(0, "%s \"%s\" &", command, path);
             else
-                channel_send_fmt(0, opener, MESSAGE_PATH, "%s\\0", path);
+                channel_send_fmt(0, opener, MESSAGE_TYPE_PATH, "%s\\0", path);
 
             channel_close(0);
 
@@ -375,14 +375,14 @@ static void onmain(struct message *message)
 
         char *alfi = "initrd:data/alfi/wfile.alfi";
 
-        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
 
         if (opener)
-            channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= window label \"Open\"\n- copy\n- cut\n- paste\n- delete\n+ button id \"open\" in \"bottom\" mode \"disabled\" label \"Open\" onclick \"q=open\"\n");
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Open\"\n- copy\n- cut\n- paste\n- delete\n+ button id \"open\" in \"bottom\" mode \"disabled\" label \"Open\" onclick \"q=open\"\n");
 
         changepath(wm, "initrd:");
         channel_hold(0);
-        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
 
     }
 
@@ -391,7 +391,7 @@ static void onmain(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
+    struct message_wmevent *event = message_validate(MESSAGE_TYPE_WMEVENT, message->data, message->length);
 
     if (event)
     {
@@ -495,7 +495,7 @@ static void onwmevent(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_TYPE_WMKEYPRESS, message->data, message->length);
 
     if (wmkeypress)
     {
@@ -543,9 +543,9 @@ void init(void)
     option_add("clipboard", "mem:clipboard");
     option_add("mode", "browse");
     option_add("command", "");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_WMEVENT, onwmevent);
-    channel_bind(MESSAGE_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);
+    channel_bind(MESSAGE_TYPE_WMKEYPRESS, onwmkeypress);
 
 }
 

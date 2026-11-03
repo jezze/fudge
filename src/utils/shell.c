@@ -19,7 +19,7 @@ static unsigned int console;
 static void print(void *buffer, unsigned int count)
 {
 
-    channel_send(0, console, MESSAGE_DATA, count, buffer);
+    channel_send(0, console, MESSAGE_TYPE_DATA, count, buffer);
 
 }
 
@@ -222,7 +222,7 @@ static void deleteend(void)
 static void interrupt(void)
 {
 
-    channel_send(0, sh, MESSAGE_CONSOLEDATA, 1, "\003");
+    channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, 1, "\003");
 
 }
 
@@ -260,10 +260,10 @@ static void run(void)
 
     }
 
-    channel_send_fmt(0, sh, MESSAGE_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
-    channel_send(0, sh, MESSAGE_MAIN, 0, 0);
-    channel_send(0, sh, MESSAGE_DATA, linecount, line);
-    channel_send(0, sh, MESSAGE_TERM, 0, 0);
+    channel_send_fmt(0, sh, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
+    channel_send(0, sh, MESSAGE_TYPE_MAIN, 0, 0);
+    channel_send(0, sh, MESSAGE_TYPE_DATA, linecount, line);
+    channel_send(0, sh, MESSAGE_TYPE_TERM, 0, 0);
 
 }
 
@@ -319,7 +319,7 @@ static void complete(void)
 static void onconsoledata(struct message *message)
 {
 
-    struct message_consoledata *consoledata = message_validate(MESSAGE_CONSOLEDATA, message->data, message->length);
+    struct message_consoledata *consoledata = message_validate(MESSAGE_TYPE_CONSOLEDATA, message->data, message->length);
 
     if (consoledata)
     {
@@ -341,7 +341,7 @@ static void onconsoledata(struct message *message)
                 break;
 
             default:
-                channel_send(0, sh, MESSAGE_CONSOLEDATA, message->length, message->data);
+                channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, message->length, message->data);
 
                 break;
 
@@ -475,7 +475,7 @@ static void onconsoledata(struct message *message)
 static void onkeypress(struct message *message)
 {
 
-    struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
+    struct message_keypress *keypress = message_validate(MESSAGE_TYPE_KEYPRESS, message->data, message->length);
 
     if (keypress)
     {
@@ -511,7 +511,7 @@ static void onkeypress(struct message *message)
             else
             {
 
-                channel_send(0, sh, MESSAGE_CONSOLEDATA, keys.code.length, keys.code.value);
+                channel_send(0, sh, MESSAGE_TYPE_CONSOLEDATA, keys.code.length, keys.code.value);
 
             }
 
@@ -572,7 +572,7 @@ static void onkeypress(struct message *message)
 static void onkeyrelease(struct message *message)
 {
 
-    struct message_keyrelease *keyrelease = message_validate(MESSAGE_KEYRELEASE, message->data, message->length);
+    struct message_keyrelease *keyrelease = message_validate(MESSAGE_TYPE_KEYRELEASE, message->data, message->length);
 
     if (keyrelease)
     {
@@ -621,19 +621,19 @@ static void onmain(struct message *message)
     console = channel_lookup(option_getstring("console-service"));
 
     if (console)
-        channel_send(0, console, MESSAGE_LINK, 0, 0);
+        channel_send(0, console, MESSAGE_TYPE_LINK, 0, 0);
 
     if (keyboard)
-        channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
+        channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
 
     clearline();
     channel_hold(0);
 
     if (console)
-        channel_send(0, console, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, console, MESSAGE_TYPE_UNLINK, 0, 0);
 
     if (keyboard)
-        channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, keyboard, MESSAGE_TYPE_UNLINK, 0, 0);
 
 }
 
@@ -645,13 +645,13 @@ void init(void)
     ring_init(&input2, INPUTSIZE, inputdata2);
     option_add("console-service", "console:0");
     option_add("keyboard-service", "keyboard:0");
-    channel_bind(MESSAGE_CONSOLEDATA, onconsoledata);
-    channel_bind(MESSAGE_KEYPRESS, onkeypress);
-    channel_bind(MESSAGE_KEYRELEASE, onkeyrelease);
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_TERM, onterm);
-    channel_bind(MESSAGE_ERROR, onerror);
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_CONSOLEDATA, onconsoledata);
+    channel_bind(MESSAGE_TYPE_KEYPRESS, onkeypress);
+    channel_bind(MESSAGE_TYPE_KEYRELEASE, onkeyrelease);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_ERROR, onerror);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

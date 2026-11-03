@@ -30,136 +30,136 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     switch (type)
     {
 
-    case MESSAGE_CONSOLEDATA:
+    case MESSAGE_TYPE_CONSOLEDATA:
         return (count >= sizeof (struct message_consoledata)) ? data : 0;
 
-    case MESSAGE_MAIN:
+    case MESSAGE_TYPE_MAIN:
         return (count) ? checksize(data, count, sizeof (struct message_pipe)) : data;
 
-    case MESSAGE_KEYPRESS:
+    case MESSAGE_TYPE_KEYPRESS:
         return checksize(data, count, sizeof (struct message_keypress));
 
-    case MESSAGE_KEYRELEASE:
+    case MESSAGE_TYPE_KEYRELEASE:
         return checksize(data, count, sizeof (struct message_keyrelease));
 
-    case MESSAGE_MOUSEMOVE:
+    case MESSAGE_TYPE_MOUSEMOVE:
         return checksize(data, count, sizeof (struct message_mousemove));
 
-    case MESSAGE_MOUSESCROLL:
+    case MESSAGE_TYPE_MOUSESCROLL:
         return checksize(data, count, sizeof (struct message_mousescroll));
 
-    case MESSAGE_MOUSEPRESS:
+    case MESSAGE_TYPE_MOUSEPRESS:
         return checksize(data, count, sizeof (struct message_mousepress));
 
-    case MESSAGE_MOUSERELEASE:
+    case MESSAGE_TYPE_MOUSERELEASE:
         return checksize(data, count, sizeof (struct message_mouserelease));
 
-    case MESSAGE_TIMERTICK:
+    case MESSAGE_TYPE_TIMERTICK:
         return checksize(data, count, sizeof (struct message_timertick));
 
-    case MESSAGE_VIDEOCONF:
+    case MESSAGE_TYPE_VIDEOCONF:
         return checksize(data, count, sizeof (struct message_videoconf));
 
-    case MESSAGE_VIDEOINFO:
+    case MESSAGE_TYPE_VIDEOINFO:
         return checksize(data, count, sizeof (struct message_videoinfo));
 
-    case MESSAGE_BLOCKINFO:
+    case MESSAGE_TYPE_BLOCKINFO:
         return checksize(data, count, sizeof (struct message_blockinfo));
 
-    case MESSAGE_BLOCKREADREQUEST:
+    case MESSAGE_TYPE_BLOCKREADREQUEST:
         return checksize(data, count, sizeof (struct message_blockrequest));
 
-    case MESSAGE_BLOCKREADRESPONSE:
+    case MESSAGE_TYPE_BLOCKREADRESPONSE:
         return checksize(data, count, sizeof (struct message_blockresponse));
 
-    case MESSAGE_BLOCKWRITEREQUEST:
+    case MESSAGE_TYPE_BLOCKWRITEREQUEST:
         return checksize(data, count, sizeof (struct message_blockrequest));
 
-    case MESSAGE_BLOCKWRITERESPONSE:
+    case MESSAGE_TYPE_BLOCKWRITERESPONSE:
         return checksize(data, count, sizeof (struct message_blockresponse));
 
-    case MESSAGE_CLOCKINFO:
+    case MESSAGE_TYPE_CLOCKINFO:
         return checksize(data, count, sizeof (struct message_clockinfo));
 
-    case MESSAGE_ETHERNETINFO:
+    case MESSAGE_TYPE_ETHERNETINFO:
         return checksize(data, count, sizeof (struct message_ethernetinfo));
 
-    case MESSAGE_AUDIOCONF:
+    case MESSAGE_TYPE_AUDIOCONF:
         return checksize(data, count, sizeof (struct message_audioconf));
 
-    case MESSAGE_AUDIOINFO:
+    case MESSAGE_TYPE_AUDIOINFO:
         return checksize(data, count, sizeof (struct message_audioinfo));
 
-    case MESSAGE_VIDEOFLUSH:
+    case MESSAGE_TYPE_VIDEOFLUSH:
         return checksize(data, count, sizeof (struct message_videoflush));
 
-    case MESSAGE_TIMERREQUEST:
+    case MESSAGE_TYPE_TIMERREQUEST:
         return checksize(data, count, sizeof (struct message_timerrequest));
 
-    case MESSAGE_TIMEREXPIRE:
+    case MESSAGE_TYPE_TIMEREXPIRE:
         return checksize(data, count, sizeof (struct message_timerexpire));
 
-    case MESSAGE_TIMERINFO:
+    case MESSAGE_TYPE_TIMERINFO:
         return checksize(data, count, sizeof (struct message_timerinfo));
 
-    case MESSAGE_WALKRESPONSE:
+    case MESSAGE_TYPE_WALKRESPONSE:
         return checksize(data, count, sizeof (struct message_walkresponse));
 
-    case MESSAGE_READREQUEST:
+    case MESSAGE_TYPE_READREQUEST:
         return checksize(data, count, sizeof (struct message_readrequest));
 
-    case MESSAGE_WRITERESPONSE:
+    case MESSAGE_TYPE_WRITERESPONSE:
         return checksize(data, count, sizeof (struct message_writeresponse));
 
-    case MESSAGE_STATREQUEST:
+    case MESSAGE_TYPE_STATREQUEST:
         return checksize(data, count, sizeof (struct message_statrequest));
 
-    case MESSAGE_MAPREQUEST:
+    case MESSAGE_TYPE_MAPREQUEST:
         return checksize(data, count, sizeof (struct message_maprequest));
 
-    case MESSAGE_MAPRESPONSE:
+    case MESSAGE_TYPE_MAPRESPONSE:
         return checksize(data, count, sizeof (struct message_mapresponse));
 
-    case MESSAGE_CREATERESPONSE:
+    case MESSAGE_TYPE_CREATERESPONSE:
         return checksize(data, count, sizeof (struct message_createresponse));
 
-    case MESSAGE_REMOVEREQUEST:
+    case MESSAGE_TYPE_REMOVEREQUEST:
         return checksize(data, count, sizeof (struct message_removerequest));
 
-    case MESSAGE_REMOVERESPONSE:
+    case MESSAGE_TYPE_REMOVERESPONSE:
         return checksize(data, count, sizeof (struct message_removeresponse));
 
-    case MESSAGE_MMAPREQUEST:
+    case MESSAGE_TYPE_MMAPREQUEST:
         return checksize(data, count, sizeof (struct message_mmaprequest));
 
-    case MESSAGE_MMAPRESPONSE:
+    case MESSAGE_TYPE_MMAPRESPONSE:
         return checksize(data, count, sizeof (struct message_mmapresponse));
 
-    case MESSAGE_MUNMAPREQUEST:
+    case MESSAGE_TYPE_MUNMAPREQUEST:
         return checksize(data, count, sizeof (struct message_munmaprequest));
 
-    case MESSAGE_MUNMAPRESPONSE:
+    case MESSAGE_TYPE_MUNMAPRESPONSE:
         return checksize(data, count, sizeof (struct message_munmapresponse));
 
-    case MESSAGE_WMKEYPRESS:
+    case MESSAGE_TYPE_WMKEYPRESS:
         return checksize(data, count, sizeof (struct message_wmkeypress));
 
-    case MESSAGE_WMKEYRELEASE:
+    case MESSAGE_TYPE_WMKEYRELEASE:
         return checksize(data, count, sizeof (struct message_wmkeyrelease));
 
-    case MESSAGE_WMMOUSEMOVE:
+    case MESSAGE_TYPE_WMMOUSEMOVE:
         return checksize(data, count, sizeof (struct message_wmmousemove));
 
-    case MESSAGE_WMMOUSESCROLL:
+    case MESSAGE_TYPE_WMMOUSESCROLL:
         return checksize(data, count, sizeof (struct message_wmmousescroll));
 
-    case MESSAGE_WMMOUSEPRESS:
+    case MESSAGE_TYPE_WMMOUSEPRESS:
         return checksize(data, count, sizeof (struct message_wmmousepress));
 
-    case MESSAGE_WMMOUSERELEASE:
+    case MESSAGE_TYPE_WMMOUSERELEASE:
         return checksize(data, count, sizeof (struct message_wmmouserelease));
 
-    case MESSAGE_CREATEREQUEST:
+    case MESSAGE_TYPE_CREATEREQUEST:
         if (count >= sizeof (struct message_createrequest))
         {
 
@@ -171,7 +171,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
-    case MESSAGE_STATRESPONSE:
+    case MESSAGE_TYPE_STATRESPONSE:
         if (count >= sizeof (struct message_statresponse))
         {
 
@@ -183,7 +183,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
-    case MESSAGE_WALKREQUEST:
+    case MESSAGE_TYPE_WALKREQUEST:
         if (count >= sizeof (struct message_walkrequest))
         {
 
@@ -195,7 +195,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
-    case MESSAGE_WMEVENT:
+    case MESSAGE_TYPE_WMEVENT:
         if (count >= sizeof (struct message_wmevent))
         {
 
@@ -207,7 +207,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
-    case MESSAGE_WRITEREQUEST:
+    case MESSAGE_TYPE_WRITEREQUEST:
         if (count >= sizeof (struct message_writerequest))
         {
 
@@ -219,7 +219,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
-    case MESSAGE_LOGINFO:
+    case MESSAGE_TYPE_LOGINFO:
         if (count >= sizeof (struct message_loginfo))
         {
 
@@ -231,7 +231,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
 
         return 0;
 
-    case MESSAGE_READRESPONSE:
+    case MESSAGE_TYPE_READRESPONSE:
         if (count >= sizeof (struct message_readresponse))
         {
 

@@ -476,7 +476,7 @@ void arch_runinit(unsigned long address)
     if (target)
     {
 
-        kernel_place(0, target, MESSAGE_MAIN, 0, 0);
+        kernel_place(0, target, MESSAGE_TYPE_MAIN, 0, 0);
         arch_leave();
 
     }

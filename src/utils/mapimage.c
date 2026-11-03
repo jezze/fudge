@@ -164,7 +164,7 @@ static void convert(unsigned int reply, char *path, char *to)
     if (!fileid)
     {
 
-        channel_send_fmt(0, reply, MESSAGE_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, reply, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -173,7 +173,7 @@ static void convert(unsigned int reply, char *path, char *to)
     if (!(ispng ? openpng() : openpcx(&header)))
     {
 
-        channel_send_fmt(0, reply, MESSAGE_ERROR, "Not an image: %s\n", path);
+        channel_send_fmt(0, reply, MESSAGE_TYPE_ERROR, "Not an image: %s\n", path);
 
         return;
 
@@ -184,7 +184,7 @@ static void convert(unsigned int reply, char *path, char *to)
     if (!id || !fit(target, id))
     {
 
-        channel_send_fmt(0, reply, MESSAGE_ERROR, "Image does not fit: %s\n", to);
+        channel_send_fmt(0, reply, MESSAGE_TYPE_ERROR, "Image does not fit: %s\n", to);
 
         return;
 
@@ -195,16 +195,16 @@ static void convert(unsigned int reply, char *path, char *to)
     if (!pixels)
     {
 
-        channel_send_fmt(0, reply, MESSAGE_ERROR, "File could not be mapped: %s\n", to);
+        channel_send_fmt(0, reply, MESSAGE_TYPE_ERROR, "File could not be mapped: %s\n", to);
 
         return;
 
     }
 
     if (ispng ? decodepng() : decodepcx(&header))
-        channel_send_fmt(0, reply, MESSAGE_DATA, "width \"%u\" height \"%u\"\n", &width, &height);
+        channel_send_fmt(0, reply, MESSAGE_TYPE_DATA, "width \"%u\" height \"%u\"\n", &width, &height);
     else
-        channel_send_fmt(0, reply, MESSAGE_ERROR, "Image could not be decoded: %s\n", path);
+        channel_send_fmt(0, reply, MESSAGE_TYPE_ERROR, "Image could not be decoded: %s\n", path);
 
     fs_munmap(1, target, id);
 
@@ -226,15 +226,15 @@ static void onterm(struct message *message)
 {
 
     if (paths != 2)
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Usage: mapimage <image> <file>\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Usage: mapimage <image> <file>\n");
 
 }
 
 void init(void)
 {
 
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

@@ -431,7 +431,7 @@ static void flush(void)
 
     }
 
-    channel_send(0, wm, MESSAGE_WMFLUSH, cstring_length_zero(id), id);
+    channel_send(0, wm, MESSAGE_TYPE_WMFLUSH, cstring_length_zero(id), id);
 
     flushing = 1;
     dirty = 0;
@@ -534,7 +534,7 @@ void I_FinishUpdate(void)
     videoflush.width = outwidth;
     videoflush.height = outheight;
 
-    channel_send(0, videotarget, MESSAGE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
+    channel_send(0, videotarget, MESSAGE_TYPE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
 
 }
 
@@ -555,10 +555,10 @@ static void setmode(void)
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = 4;
 
-    channel_send(0, videotarget, MESSAGE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
-    channel_send(1, videotarget, MESSAGE_INFO, 0, 0);
+    channel_send(0, videotarget, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
+    channel_send(1, videotarget, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (channel_wait(1, videotarget, MESSAGE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.bpp == 4)
+    if (channel_wait(1, videotarget, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.bpp == 4)
     {
 
         framebuffer = (unsigned int *)videoinfo.framebuffer;
@@ -617,8 +617,8 @@ static void enterfullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -629,10 +629,10 @@ static void enterfullscreen(void)
     fullscreen = 1;
     wanted = 1;
 
-    channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
 
     if (mouse)
-        channel_send(0, mouse, MESSAGE_LINK, 0, 0);
+        channel_send(0, mouse, MESSAGE_TYPE_LINK, 0, 0);
 
 }
 
@@ -640,10 +640,10 @@ static void enterfullscreen(void)
 static void leavefullscreen(void)
 {
 
-    channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_TYPE_UNLINK, 0, 0);
 
     if (mouse)
-        channel_send(0, mouse, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, mouse, MESSAGE_TYPE_UNLINK, 0, 0);
 
     mousex = 0;
     mousey = 0;
@@ -664,8 +664,8 @@ static void leavefullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -766,7 +766,7 @@ static unsigned int createscreen(void)
 static void showwindow(void)
 {
 
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ window id \"window\" label \"Doom\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ window id \"window\" label \"Doom\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &screenwidth, &screenheight);
 
 }
 
@@ -779,7 +779,7 @@ static void shutdowngraphics(void)
     if (screen)
     {
 
-        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
         fs_munmap(1, screentarget, screenid);
 
     }
@@ -809,15 +809,15 @@ void I_InitGraphics(void)
 
     atexit(shutdowngraphics);
     keys_init(&keys, KEYS_LAYOUT_QWERTY_US, (void *)0);
-    channel_bind(MESSAGE_KEYPRESS, onkeypress);
-    channel_bind(MESSAGE_KEYRELEASE, onkeyrelease);
-    channel_bind(MESSAGE_MOUSEMOVE, onmousemove);
-    channel_bind(MESSAGE_MOUSEPRESS, onmousepress);
-    channel_bind(MESSAGE_MOUSERELEASE, onmouserelease);
-    channel_bind(MESSAGE_MOUSESCROLL, onmousescroll);
-    channel_bind(MESSAGE_WMKEYPRESS, onwmkeypress);
-    channel_bind(MESSAGE_WMKEYRELEASE, onwmkeyrelease);
-    channel_bind(MESSAGE_WMACK, onwmack);
+    channel_bind(MESSAGE_TYPE_KEYPRESS, onkeypress);
+    channel_bind(MESSAGE_TYPE_KEYRELEASE, onkeyrelease);
+    channel_bind(MESSAGE_TYPE_MOUSEMOVE, onmousemove);
+    channel_bind(MESSAGE_TYPE_MOUSEPRESS, onmousepress);
+    channel_bind(MESSAGE_TYPE_MOUSERELEASE, onmouserelease);
+    channel_bind(MESSAGE_TYPE_MOUSESCROLL, onmousescroll);
+    channel_bind(MESSAGE_TYPE_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_TYPE_WMKEYRELEASE, onwmkeyrelease);
+    channel_bind(MESSAGE_TYPE_WMACK, onwmack);
 
     if (wm && createscreen())
         showwindow();

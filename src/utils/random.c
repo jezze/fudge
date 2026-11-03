@@ -11,7 +11,7 @@ static void onmain(struct message *message)
 
     value = mtwist_rand(&state);
 
-    channel_send_fmt(0, message->source, MESSAGE_DATA, "%u\n", &value);
+    channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "%u\n", &value);
 
 }
 
@@ -19,7 +19,7 @@ void init(void)
 {
 
     option_add("clock-service", "clock:0");
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

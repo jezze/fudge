@@ -19,7 +19,7 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
         blockinfo.blocksize = interface->blocksize;
         blockinfo.blockcount = interface->blockcount;
 
-        return kernel_place(interface->resource.inode, source, MESSAGE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
+        return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
     }
 
@@ -30,7 +30,7 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
 static unsigned int onblockreadrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_blockrequest *request = message_validate(MESSAGE_BLOCKREADREQUEST, data, count);
+    struct message_blockrequest *request = message_validate(MESSAGE_TYPE_BLOCKREADREQUEST, data, count);
 
     if (interface->startsession && request)
     {
@@ -72,7 +72,7 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
 static unsigned int onblockwriterequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_blockrequest *request = message_validate(MESSAGE_BLOCKWRITEREQUEST, data, count);
+    struct message_blockrequest *request = message_validate(MESSAGE_TYPE_BLOCKWRITEREQUEST, data, count);
 
     if (interface->startsession && request)
     {
@@ -121,19 +121,19 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case MESSAGE_LINK:
+        case MESSAGE_TYPE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case MESSAGE_UNLINK:
+        case MESSAGE_TYPE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case MESSAGE_INFO:
+        case MESSAGE_TYPE_INFO:
             return oninfo(interface, source);
 
-        case MESSAGE_BLOCKREADREQUEST:
+        case MESSAGE_TYPE_BLOCKREADREQUEST:
             return onblockreadrequest(interface, source, count, data);
 
-        case MESSAGE_BLOCKWRITEREQUEST:
+        case MESSAGE_TYPE_BLOCKWRITEREQUEST:
             return onblockwriterequest(interface, source, count, data);
 
         }
@@ -162,12 +162,12 @@ void block_session_done(struct block_interface *interface, struct block_session 
     {
 
     case BLOCK_TYPE_READ:
-        kernel_place(interface->resource.inode, session->source, MESSAGE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
+        kernel_place(interface->resource.inode, session->source, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
 
         break;
 
     case BLOCK_TYPE_WRITE:
-        kernel_place(interface->resource.inode, session->source, MESSAGE_BLOCKWRITERESPONSE, sizeof (struct message_blockresponse), &response);
+        kernel_place(interface->resource.inode, session->source, MESSAGE_TYPE_BLOCKWRITERESPONSE, sizeof (struct message_blockresponse), &response);
 
         break;
 

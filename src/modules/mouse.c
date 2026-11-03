@@ -19,10 +19,10 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case MESSAGE_LINK:
+        case MESSAGE_TYPE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case MESSAGE_UNLINK:
+        case MESSAGE_TYPE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
         }
@@ -42,7 +42,7 @@ void mouse_notifymove(struct mouse_interface *interface, char relx, char rely)
     mousemove.rely = rely;
     mousemove.buttons = interface->buttons;
 
-    kernel_notify(&interface->resource, MESSAGE_MOUSEMOVE, sizeof (struct message_mousemove), &mousemove);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_MOUSEMOVE, sizeof (struct message_mousemove), &mousemove);
 
 }
 
@@ -53,7 +53,7 @@ void mouse_notifyscroll(struct mouse_interface *interface, char relz)
 
     mousescroll.relz = relz;
 
-    kernel_notify(&interface->resource, MESSAGE_MOUSESCROLL, sizeof (struct message_mousescroll), &mousescroll);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_MOUSESCROLL, sizeof (struct message_mousescroll), &mousescroll);
 
 }
 
@@ -65,7 +65,7 @@ void mouse_notifypress(struct mouse_interface *interface, unsigned int button)
     mousepress.button = button;
     interface->buttons |= 1 << (button - 1);
 
-    kernel_notify(&interface->resource, MESSAGE_MOUSEPRESS, sizeof (struct message_mousepress), &mousepress);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_MOUSEPRESS, sizeof (struct message_mousepress), &mousepress);
 
 }
 
@@ -77,7 +77,7 @@ void mouse_notifyrelease(struct mouse_interface *interface, unsigned int button)
     mouserelease.button = button;
     interface->buttons &= ~(1 << (button - 1));
 
-    kernel_notify(&interface->resource, MESSAGE_MOUSERELEASE, sizeof (struct message_mouserelease), &mouserelease);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_MOUSERELEASE, sizeof (struct message_mouserelease), &mouserelease);
 
 }
 

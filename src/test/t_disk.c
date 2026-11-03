@@ -55,7 +55,7 @@ static void request_send(unsigned int target, struct state *state)
     blockrequest.offset = state->blocksector;
     blockrequest.count = state->blockcount;
 
-    channel_send(0, target, MESSAGE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &blockrequest);
+    channel_send(0, target, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &blockrequest);
 
 }
 
@@ -64,7 +64,7 @@ static unsigned int request_poll(unsigned int target, struct state *state)
 
     struct message message;
 
-    while (channel_poll(0, target, MESSAGE_BLOCKREADRESPONSE, &message))
+    while (channel_poll(0, target, MESSAGE_TYPE_BLOCKREADRESPONSE, &message))
     {
 
         state->blockreads += buffer_write(blockdata, BLOCKSIZE * 4, message.data, message.length, state->blockreads * BLOCKSIZE) / BLOCKSIZE;
@@ -376,7 +376,7 @@ static unsigned int handle(unsigned int source, void *reply, struct p9p_header *
         return protocol_getattr(reply, p9p);
 
     default:
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Packet has unknown type\n");
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Packet has unknown type\n");
 
         return protocol_error(reply, p9p, "Packet has unknown type", -1);
 
@@ -390,7 +390,7 @@ static void onp9p(struct message *message)
     struct p9p_header *p9p = message->data;
     char buffer[MESSAGE_SIZE];
 
-    channel_send(0, message->source, MESSAGE_P9P, handle(message->source, buffer, p9p), buffer);
+    channel_send(0, message->source, MESSAGE_TYPE_P9P, handle(message->source, buffer, p9p), buffer);
 
 }
 
@@ -404,8 +404,8 @@ static void onmain(struct message *message)
 
     call_announce(0, cstring_length(option_getstring("service")), option_getstring("service"));
     socket_resolvelocal(0, ethernet, &local);
-    channel_send(0, ethernet, MESSAGE_LINK, 0, 0);
-    channel_send(0, block, MESSAGE_LINK, 0, 0);
+    channel_send(0, ethernet, MESSAGE_TYPE_LINK, 0, 0);
+    channel_send(0, block, MESSAGE_TYPE_LINK, 0, 0);
     socket_resolveremote(0, ethernet, &local, &router);
     socket_listen_tcp(ethernet, &local, &remote, 1, &router);
 
@@ -418,8 +418,8 @@ static void onmain(struct message *message)
 
     }
 
-    channel_send(0, block, MESSAGE_UNLINK, 0, 0);
-    channel_send(0, ethernet, MESSAGE_UNLINK, 0, 0);
+    channel_send(0, block, MESSAGE_TYPE_UNLINK, 0, 0);
+    channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 
 }
 
@@ -434,8 +434,8 @@ void init(void)
     socket_bind_tcps(&local, "564", 42, 42);
     socket_init(&router);
     socket_bind_ipv4s(&router, "10.0.5.80");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_P9P, onp9p);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_P9P, onp9p);
 
 }
 

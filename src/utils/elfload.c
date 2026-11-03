@@ -316,7 +316,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
                 if (!address)
                 {
 
-                    channel_send_fmt(0, source, MESSAGE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+                    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
 
                     unresolved++;
 
@@ -328,7 +328,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
                     if (!relocateriscv(target, id, relocation.info & 0xFF, address + relocation.addend, place, dataheader->offset + relocation.offset))
                     {
 
-                        channel_send_fmt(0, source, MESSAGE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+                        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
 
                         unresolved++;
 
@@ -367,7 +367,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
                     if (offset + 0x02000000 >= 0x04000000)
                     {
 
-                        channel_send_fmt(0, source, MESSAGE_ERROR, "Branch out of range: %s\n", strings + symbol.name);
+                        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Branch out of range: %s\n", strings + symbol.name);
 
                         unresolved++;
 
@@ -381,7 +381,7 @@ static unsigned int link32(unsigned int source, unsigned int target, unsigned in
                     break;
 
                 default:
-                    channel_send_fmt(0, source, MESSAGE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+                    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
 
                     unresolved++;
 
@@ -468,7 +468,7 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
                     if (!value)
                     {
 
-                        channel_send_fmt(0, source, MESSAGE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
+                        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unresolved symbol: %s\n", strings + symbol.name);
 
                         unresolved++;
 
@@ -484,7 +484,7 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
                     if (!relocateriscv(target, id, relocation.type, value, base + dataheader->offset + relocation.offset, dataheader->offset + relocation.offset))
                     {
 
-                        channel_send_fmt(0, source, MESSAGE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+                        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
 
                         unresolved++;
 
@@ -519,7 +519,7 @@ static unsigned int link64(unsigned int source, unsigned int target, unsigned in
                     break;
 
                 default:
-                    channel_send_fmt(0, source, MESSAGE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
+                    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unsupported relocation: %s\n", strings + symbol.name);
 
                     unresolved++;
 
@@ -567,7 +567,7 @@ static void load(unsigned int source, char *path)
                 if (header.identify[ELF_IDENTITY_CLASS] != class)
                 {
 
-                    channel_send_fmt(0, source, MESSAGE_ERROR, "Unsupported module format: %s\n", path);
+                    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unsupported module format: %s\n", path);
 
                 }
 
@@ -661,10 +661,10 @@ void init(void)
 
     width = sizeof (void *) * 2;
 
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

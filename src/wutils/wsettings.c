@@ -208,7 +208,7 @@ static void flush(void)
 {
 
     if (outcount)
-        channel_send(0, wm, MESSAGE_WMRENDERDATA, outcount, out);
+        channel_send(0, wm, MESSAGE_TYPE_WMRENDERDATA, outcount, out);
 
     outcount = 0;
 
@@ -892,11 +892,11 @@ static void onmain(struct message *message)
         char *alfi = "initrd:data/alfi/wsettings.alfi";
 
         loadconfig();
-        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         renderarea("general");
 
         channel_hold(0);
-        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
 
     }
 
@@ -932,14 +932,14 @@ static void onpath(struct message *message)
 
     }
 
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= save mode \"normal\"\n= %s label \"%s\"\n", selecting, path);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"normal\"\n= %s label \"%s\"\n", selecting, path);
 
 }
 
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
+    struct message_wmevent *event = message_validate(MESSAGE_TYPE_WMEVENT, message->data, message->length);
 
     if (event)
     {
@@ -965,7 +965,7 @@ static void onwmevent(struct message *message)
         {
 
             setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
-            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
 
         }
 
@@ -981,11 +981,11 @@ static void onwmevent(struct message *message)
 
                 unsigned int value = getspeedvalue();
 
-                channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mouse-speed value \"%u\"\n", &value);
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= mouse-speed value \"%u\"\n", &value);
 
             }
 
-            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= save mode \"normal\"\n");
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"normal\"\n");
 
         }
 
@@ -995,7 +995,7 @@ static void onwmevent(struct message *message)
             unsigned int speed = 1 + kv_getvalue(event, "value=", 10) * (MOUSE_FASTEST - 1) / 0xFFFF;
 
             cstring_write_fmt(config.speed, 16, 0, "%u\\0", &speed);
-            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", config.speed);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", config.speed);
 
         }
 
@@ -1008,7 +1008,7 @@ static void onwmevent(struct message *message)
             if (index < config.ncolors)
                 copystring(config.colors[index].value, 16, value, cstring_length(value));
 
-            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
 
         }
 
@@ -1018,7 +1018,7 @@ static void onwmevent(struct message *message)
             static char data[0x8000];
 
             if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingspath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)))
-                channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= save mode \"disabled\"\n");
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_WMRENDERDATA, "= save mode \"disabled\"\n");
 
         }
 
@@ -1033,9 +1033,9 @@ static void onwmevent(struct message *message)
             if (target)
             {
 
-                channel_send_fmt(0, target, MESSAGE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
-                channel_send(0, target, MESSAGE_MAIN, 0, 0);
-                channel_send(0, target, MESSAGE_TERM, 0, 0);
+                channel_send_fmt(0, target, MESSAGE_TYPE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+                channel_send(0, target, MESSAGE_TYPE_MAIN, 0, 0);
+                channel_send(0, target, MESSAGE_TYPE_TERM, 0, 0);
 
             }
 
@@ -1046,7 +1046,7 @@ static void onwmevent(struct message *message)
 
             static char data[0x8000];
 
-            sendlines(message->source, MESSAGE_WMCONFIG, data, writelines(data, 0x8000));
+            sendlines(message->source, MESSAGE_TYPE_WMCONFIG, data, writelines(data, 0x8000));
 
         }
 
@@ -1059,9 +1059,9 @@ void init(void)
 
     option_add("wm-service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_WMEVENT, onwmevent);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);
 
 }
 

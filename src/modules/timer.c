@@ -154,7 +154,7 @@ static void expire(struct timer_interface *interface, unsigned int counter)
 
         timerexpire.id = entry->id;
 
-        switch (kernel_place(interface->resource.inode, entry->target, MESSAGE_TIMEREXPIRE, sizeof (struct message_timerexpire), &timerexpire))
+        switch (kernel_place(interface->resource.inode, entry->target, MESSAGE_TYPE_TIMEREXPIRE, sizeof (struct message_timerexpire), &timerexpire))
         {
 
         case MESSAGE_OK:
@@ -191,14 +191,14 @@ static unsigned int oninfo(struct timer_interface *interface, unsigned int sourc
     timerinfo.counter = interface->jiffies;
     timerinfo.hz = interface->hz;
 
-    return kernel_place(interface->resource.inode, source, MESSAGE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo);
+    return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo);
 
 }
 
 static unsigned int ontimerrequest(struct timer_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_timerrequest *timerrequest = message_validate(MESSAGE_TIMERREQUEST, data, count);
+    struct message_timerrequest *timerrequest = message_validate(MESSAGE_TYPE_TIMERREQUEST, data, count);
 
     if (timerrequest)
         return request(interface, source, timerrequest);
@@ -220,18 +220,18 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case MESSAGE_LINK:
+        case MESSAGE_TYPE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case MESSAGE_UNLINK:
+        case MESSAGE_TYPE_UNLINK:
             unlink(interface, source);
 
             return kernel_unlinknode(&interface->resource, source);
 
-        case MESSAGE_INFO:
+        case MESSAGE_TYPE_INFO:
             return oninfo(interface, source);
 
-        case MESSAGE_TIMERREQUEST:
+        case MESSAGE_TYPE_TIMERREQUEST:
             return ontimerrequest(interface, source, count, data);
 
         }
@@ -249,7 +249,7 @@ void timer_notifytick(struct timer_interface *interface, unsigned int counter)
 
     timertick.counter = counter;
 
-    kernel_notify(&interface->resource, MESSAGE_TIMERTICK, sizeof (struct message_timertick), &timertick);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_TIMERTICK, sizeof (struct message_timertick), &timertick);
     expire(interface, counter);
 
 }

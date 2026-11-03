@@ -18,7 +18,7 @@ static void checkline(unsigned int source)
         match = buffer_match(line + i, substr, substrcount);
 
     if (match)
-        channel_send(0, source, MESSAGE_DATA, linecount, line);
+        channel_send(0, source, MESSAGE_TYPE_DATA, linecount, line);
 
     linecount = 0;
 
@@ -83,9 +83,9 @@ void init(void)
 
     option_add("prefix", "");
     option_add("substr", "");
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

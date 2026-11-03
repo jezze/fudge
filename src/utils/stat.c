@@ -15,12 +15,12 @@ static void onpath(struct message *message)
         if (fs_stat(1, target, id, &record))
         {
 
-            channel_send_fmt(0, message->source, MESSAGE_DATA, "{\n");
-            channel_send_fmt(0, message->source, MESSAGE_DATA, "  id: %u\n", &record.id);
-            channel_send_fmt(0, message->source, MESSAGE_DATA, "  name: \"%w\"\n", record.name, &record.length);
-            channel_send_fmt(0, message->source, MESSAGE_DATA, "  type: %s\n", (record.type == RECORD_TYPE_DIRECTORY) ? "directory" : "file");
-            channel_send_fmt(0, message->source, MESSAGE_DATA, "  size: %u\n", &record.size);
-            channel_send_fmt(0, message->source, MESSAGE_DATA, "}\n");
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "{\n");
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  id: %u\n", &record.id);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  name: \"%w\"\n", record.name, &record.length);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  type: %s\n", (record.type == RECORD_TYPE_DIRECTORY) ? "directory" : "file");
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  size: %u\n", &record.size);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "}\n");
 
         }
 
@@ -29,7 +29,7 @@ static void onpath(struct message *message)
     else
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", message->data);
 
     }
 
@@ -38,7 +38,7 @@ static void onpath(struct message *message)
 void init(void)
 {
 
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

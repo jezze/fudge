@@ -45,7 +45,7 @@ static void sendblockrequest(unsigned int event, unsigned int reply, unsigned in
 static void *readsectors(unsigned int sector, unsigned int count)
 {
 
-    sendblockrequest(MESSAGE_BLOCKREADREQUEST, MESSAGE_BLOCKREADRESPONSE, sector, count);
+    sendblockrequest(MESSAGE_TYPE_BLOCKREADREQUEST, MESSAGE_TYPE_BLOCKREADRESPONSE, sector, count);
 
     return (void *)blockinfo.buffer;
 
@@ -54,7 +54,7 @@ static void *readsectors(unsigned int sector, unsigned int count)
 static void writesectors(unsigned int sector, unsigned int count)
 {
 
-    sendblockrequest(MESSAGE_BLOCKWRITEREQUEST, MESSAGE_BLOCKWRITERESPONSE, sector, count);
+    sendblockrequest(MESSAGE_TYPE_BLOCKWRITEREQUEST, MESSAGE_TYPE_BLOCKWRITERESPONSE, sector, count);
 
 }
 
@@ -387,9 +387,9 @@ static unsigned int getnow(unsigned short *date, unsigned short *time)
     if (!clock)
         return 0;
 
-    channel_send(1, clock, MESSAGE_INFO, 0, 0);
+    channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (!channel_wait(1, clock, MESSAGE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo) || clockinfo.year < 1980)
+    if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo) || clockinfo.year < 1980)
         return 0;
 
     *date = ((clockinfo.year - 1980) << 9) | (clockinfo.month << 5) | clockinfo.day;
@@ -1380,12 +1380,12 @@ static unsigned int removenode(unsigned int parent, unsigned int id)
 static void oncreaterequest(struct message *message)
 {
 
-    struct message_createrequest *request = message_validate(MESSAGE_CREATEREQUEST, message->data, message->length);
+    struct message_createrequest *request = message_validate(MESSAGE_TYPE_CREATEREQUEST, message->data, message->length);
     struct message_createresponse response;
 
     response.id = (request) ? createfile((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->count) : 0;
 
-    channel_send(0, message->source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+    channel_send(0, message->source, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
 }
 
@@ -1393,7 +1393,7 @@ static void onreadrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, message->data, message->length);
+    struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
     struct message_readresponse *response = (struct message_readresponse *)data;
     struct fat_entry entry;
 
@@ -1413,19 +1413,19 @@ static void onreadrequest(struct message *message)
 
     response->buffer = 0;
 
-    channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, data);
+    channel_send(0, message->source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, data);
 
 }
 
 static void onremoverequest(struct message *message)
 {
 
-    struct message_removerequest *request = message_validate(MESSAGE_REMOVEREQUEST, message->data, message->length);
+    struct message_removerequest *request = message_validate(MESSAGE_TYPE_REMOVEREQUEST, message->data, message->length);
     struct message_removeresponse response;
 
     response.status = (request) ? removenode(request->parent, request->id) : 0;
 
-    channel_send(0, message->source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+    channel_send(0, message->source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
 }
 
@@ -1433,36 +1433,36 @@ static void onstatrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, message->data, message->length);
+    struct message_statrequest *request = message_validate(MESSAGE_TYPE_STATREQUEST, message->data, message->length);
     struct message_statresponse *response = (struct message_statresponse *)data;
 
     response->count = (request) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
-    channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, data);
+    channel_send(0, message->source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, data);
 
 }
 
 static void onwalkrequest(struct message *message)
 {
 
-    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, message->data, message->length);
+    struct message_walkrequest *request = message_validate(MESSAGE_TYPE_WALKREQUEST, message->data, message->length);
     struct message_walkresponse response;
 
     response.id = (request) ? walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length) : 0;
 
-    channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+    channel_send(0, message->source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
 }
 
 static void onwriterequest(struct message *message)
 {
 
-    struct message_writerequest *request = message_validate(MESSAGE_WRITEREQUEST, message->data, message->length);
+    struct message_writerequest *request = message_validate(MESSAGE_TYPE_WRITEREQUEST, message->data, message->length);
     struct message_writeresponse response;
 
     response.count = (request) ? writefile(request->id, request->offset, request->count, request + 1) : 0;
 
-    channel_send(0, message->source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+    channel_send(0, message->source, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
 }
 
@@ -1478,9 +1478,9 @@ static void onmain(struct message *message)
 
         struct fat fat;
 
-        channel_send(1, block, MESSAGE_INFO, 0, 0);
+        channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0);
 
-        if (!channel_wait(1, block, MESSAGE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
+        if (!channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo))
             return;
 
         sectorsize = 512;
@@ -1511,7 +1511,7 @@ static void onmain(struct message *message)
             if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
             {
 
-                channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not announce service: %s\n", option_getstring("service"));
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Could not announce service: %s\n", option_getstring("service"));
 
                 return;
 
@@ -1532,13 +1532,13 @@ void init(void)
     option_add("block-service", "block:0");
     option_add("clock-service", "clock:0");
     option_add("partoffset", "0");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_CREATEREQUEST, oncreaterequest);
-    channel_bind(MESSAGE_READREQUEST, onreadrequest);
-    channel_bind(MESSAGE_REMOVEREQUEST, onremoverequest);
-    channel_bind(MESSAGE_STATREQUEST, onstatrequest);
-    channel_bind(MESSAGE_WALKREQUEST, onwalkrequest);
-    channel_bind(MESSAGE_WRITEREQUEST, onwriterequest);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_CREATEREQUEST, oncreaterequest);
+    channel_bind(MESSAGE_TYPE_READREQUEST, onreadrequest);
+    channel_bind(MESSAGE_TYPE_REMOVEREQUEST, onremoverequest);
+    channel_bind(MESSAGE_TYPE_STATREQUEST, onstatrequest);
+    channel_bind(MESSAGE_TYPE_WALKREQUEST, onwalkrequest);
+    channel_bind(MESSAGE_TYPE_WRITEREQUEST, onwriterequest);
 
 }
 

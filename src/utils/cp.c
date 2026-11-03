@@ -30,7 +30,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
     if (!sid)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Path not found: %s\n", from);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", from);
 
         return 0;
 
@@ -39,7 +39,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
     if (isdirectory(starget, sid))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Directory can not be copied: %s\n", from);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Directory can not be copied: %s\n", from);
 
         return 0;
 
@@ -65,7 +65,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
     if (!parent)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Path not found: %s\n", to);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", to);
 
         return 0;
 
@@ -77,7 +77,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
         if (isdirectory(dtarget, did))
         {
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be replaced: %s\n", to);
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be replaced: %s\n", to);
 
             return 0;
 
@@ -86,7 +86,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
         if (dtarget == starget && did == sid)
         {
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "Same file: %s\n", from);
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Same file: %s\n", from);
 
             return 0;
 
@@ -95,7 +95,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
         if (!fs_remove(1, dtarget, parent, did))
         {
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be replaced: %s\n", to);
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be replaced: %s\n", to);
 
             return 0;
 
@@ -108,7 +108,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
     if (!id)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be created: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be created: %s\n", name);
 
         return 0;
 
@@ -120,7 +120,7 @@ static unsigned int copy(unsigned int source, char *from, char *to)
         if (fs_write_all(1, dtarget, id, buffer, count, offset) != count)
         {
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be written: %s\n", name);
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be written: %s\n", name);
 
             return 0;
 
@@ -148,15 +148,15 @@ static void onterm(struct message *message)
 {
 
     if (paths != 2)
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Usage: cp <source> <destination>\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Usage: cp <source> <destination>\n");
 
 }
 
 void init(void)
 {
 
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

@@ -197,7 +197,7 @@ static struct message_audioinfo getinfo(void)
 
     struct message_audioinfo audioinfo;
 
-    if (!channel_send(1, audio, MESSAGE_INFO, 0, 0) || !channel_wait(1, audio, MESSAGE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo))
+    if (!channel_send(1, audio, MESSAGE_TYPE_INFO, 0, 0) || !channel_wait(1, audio, MESSAGE_TYPE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo))
         buffer_clear(&audioinfo, sizeof (struct message_audioinfo));
 
     return audioinfo;
@@ -208,7 +208,7 @@ static struct message_audioinfo getinfo(void)
 static void senddata(unsigned int count, void *buffer)
 {
 
-    channel_send(1, audio, MESSAGE_DATA, count, buffer);
+    channel_send(1, audio, MESSAGE_TYPE_DATA, count, buffer);
     getinfo();
 
 }
@@ -391,7 +391,7 @@ static void play(unsigned int source, struct wav *wav, unsigned int target, unsi
     if (!passthrough)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "No 16-bit format from audio service: %s\n", option_getstring("audio-service"));
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "No 16-bit format from audio service: %s\n", option_getstring("audio-service"));
 
         return;
 
@@ -432,7 +432,7 @@ static void playwav(unsigned int source, char *path, unsigned int target, unsign
     if (fs_read_full(1, target, id, &riff, sizeof (struct riff), 0) != sizeof (struct riff) || !buffer_match(riff.id, "RIFF", 4) || !buffer_match(riff.format, "WAVE", 4))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Not a WAV file: %s\n", path);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Not a WAV file: %s\n", path);
 
         return;
 
@@ -452,7 +452,7 @@ static void playwav(unsigned int source, char *path, unsigned int target, unsign
         {
 
             if (!found || !checkwav(&wav))
-                channel_send_fmt(0, source, MESSAGE_ERROR, "Not a supported WAV file: %s\n", path);
+                channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Not a supported WAV file: %s\n", path);
             else
                 play(source, &wav, target, id, offset, (size > 0xFFFFFFFF - offset) ? 0xFFFFFFFF : offset + size);
 
@@ -464,7 +464,7 @@ static void playwav(unsigned int source, char *path, unsigned int target, unsign
 
     }
 
-    channel_send_fmt(0, source, MESSAGE_ERROR, "No sound data in: %s\n", path);
+    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "No sound data in: %s\n", path);
 
 }
 
@@ -474,7 +474,7 @@ static unsigned int lookup(unsigned int source)
     audio = channel_lookup(option_getstring("audio-service"));
 
     if (!audio)
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
 
     return audio;
 
@@ -530,7 +530,7 @@ static void onpath(struct message *message)
     if (!id)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", message->data);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", message->data);
 
         return;
 
@@ -545,8 +545,8 @@ void init(void)
 {
 
     option_add("audio-service", "mixer");
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

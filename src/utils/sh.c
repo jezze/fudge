@@ -233,77 +233,77 @@ static unsigned int readpath(struct job *job, struct parser *parser, char **word
 }
 
 static struct {char *name; unsigned int event;} events[NUM_EVENTS] = {
-    {"main", MESSAGE_MAIN},
-    {"term", MESSAGE_TERM},
-    {"interrupt", MESSAGE_INTERRUPT},
-    {"option", MESSAGE_OPTION},
-    {"path", MESSAGE_PATH},
-    {"data", MESSAGE_DATA},
-    {"error", MESSAGE_ERROR},
-    {"status", MESSAGE_STATUS},
-    {"link", MESSAGE_LINK},
-    {"unlink", MESSAGE_UNLINK},
-    {"info", MESSAGE_INFO},
-    {"queryrequest", MESSAGE_QUERYREQUEST},
-    {"queryresponse", MESSAGE_QUERYRESPONSE},
-    {"ready", MESSAGE_READY},
-    {"keypress", MESSAGE_KEYPRESS},
-    {"keyrelease", MESSAGE_KEYRELEASE},
-    {"mousemove", MESSAGE_MOUSEMOVE},
-    {"mousescroll", MESSAGE_MOUSESCROLL},
-    {"mousepress", MESSAGE_MOUSEPRESS},
-    {"mouserelease", MESSAGE_MOUSERELEASE},
-    {"consoledata", MESSAGE_CONSOLEDATA},
-    {"timertick", MESSAGE_TIMERTICK},
-    {"videocmap", MESSAGE_VIDEOCMAP},
-    {"videoconf", MESSAGE_VIDEOCONF},
-    {"videoinfo", MESSAGE_VIDEOINFO},
-    {"blockinfo", MESSAGE_BLOCKINFO},
-    {"blockreadrequest", MESSAGE_BLOCKREADREQUEST},
-    {"blockreadresponse", MESSAGE_BLOCKREADRESPONSE},
-    {"blockwriterequest", MESSAGE_BLOCKWRITEREQUEST},
-    {"blockwriteresponse", MESSAGE_BLOCKWRITERESPONSE},
-    {"clockinfo", MESSAGE_CLOCKINFO},
-    {"ethernetinfo", MESSAGE_ETHERNETINFO},
-    {"loginfo", MESSAGE_LOGINFO},
-    {"audioconf", MESSAGE_AUDIOCONF},
-    {"audioinfo", MESSAGE_AUDIOINFO},
-    {"walkrequest", MESSAGE_WALKREQUEST},
-    {"walkresponse", MESSAGE_WALKRESPONSE},
-    {"readrequest", MESSAGE_READREQUEST},
-    {"readresponse", MESSAGE_READRESPONSE},
-    {"writerequest", MESSAGE_WRITEREQUEST},
-    {"writeresponse", MESSAGE_WRITERESPONSE},
-    {"statrequest", MESSAGE_STATREQUEST},
-    {"statresponse", MESSAGE_STATRESPONSE},
-    {"maprequest", MESSAGE_MAPREQUEST},
-    {"mapresponse", MESSAGE_MAPRESPONSE},
-    {"createrequest", MESSAGE_CREATEREQUEST},
-    {"createresponse", MESSAGE_CREATERESPONSE},
-    {"removerequest", MESSAGE_REMOVEREQUEST},
-    {"removeresponse", MESSAGE_REMOVERESPONSE},
-    {"mmaprequest", MESSAGE_MMAPREQUEST},
-    {"mmapresponse", MESSAGE_MMAPRESPONSE},
-    {"munmaprequest", MESSAGE_MUNMAPREQUEST},
-    {"munmapresponse", MESSAGE_MUNMAPRESPONSE},
-    {"wmunmap", MESSAGE_WMUNMAP},
-    {"wmgrab", MESSAGE_WMGRAB},
-    {"wmungrab", MESSAGE_WMUNGRAB},
-    {"wmkeypress", MESSAGE_WMKEYPRESS},
-    {"wmkeyrelease", MESSAGE_WMKEYRELEASE},
-    {"wmmousemove", MESSAGE_WMMOUSEMOVE},
-    {"wmmousescroll", MESSAGE_WMMOUSESCROLL},
-    {"wmmousepress", MESSAGE_WMMOUSEPRESS},
-    {"wmmouserelease", MESSAGE_WMMOUSERELEASE},
-    {"wmrenderdata", MESSAGE_WMRENDERDATA},
-    {"wmrenderfile", MESSAGE_WMRENDERFILE},
-    {"wmflush", MESSAGE_WMFLUSH},
-    {"wmevent", MESSAGE_WMEVENT},
-    {"wmack", MESSAGE_WMACK},
-    {"wmread", MESSAGE_WMREAD},
-    {"wmtext", MESSAGE_WMTEXT},
-    {"wmconfig", MESSAGE_WMCONFIG},
-    {"p9p", MESSAGE_P9P}
+    {"main", MESSAGE_TYPE_MAIN},
+    {"term", MESSAGE_TYPE_TERM},
+    {"interrupt", MESSAGE_TYPE_INTERRUPT},
+    {"option", MESSAGE_TYPE_OPTION},
+    {"path", MESSAGE_TYPE_PATH},
+    {"data", MESSAGE_TYPE_DATA},
+    {"error", MESSAGE_TYPE_ERROR},
+    {"status", MESSAGE_TYPE_STATUS},
+    {"link", MESSAGE_TYPE_LINK},
+    {"unlink", MESSAGE_TYPE_UNLINK},
+    {"info", MESSAGE_TYPE_INFO},
+    {"queryrequest", MESSAGE_TYPE_QUERYREQUEST},
+    {"queryresponse", MESSAGE_TYPE_QUERYRESPONSE},
+    {"ready", MESSAGE_TYPE_READY},
+    {"keypress", MESSAGE_TYPE_KEYPRESS},
+    {"keyrelease", MESSAGE_TYPE_KEYRELEASE},
+    {"mousemove", MESSAGE_TYPE_MOUSEMOVE},
+    {"mousescroll", MESSAGE_TYPE_MOUSESCROLL},
+    {"mousepress", MESSAGE_TYPE_MOUSEPRESS},
+    {"mouserelease", MESSAGE_TYPE_MOUSERELEASE},
+    {"consoledata", MESSAGE_TYPE_CONSOLEDATA},
+    {"timertick", MESSAGE_TYPE_TIMERTICK},
+    {"videocmap", MESSAGE_TYPE_VIDEOCMAP},
+    {"videoconf", MESSAGE_TYPE_VIDEOCONF},
+    {"videoinfo", MESSAGE_TYPE_VIDEOINFO},
+    {"blockinfo", MESSAGE_TYPE_BLOCKINFO},
+    {"blockreadrequest", MESSAGE_TYPE_BLOCKREADREQUEST},
+    {"blockreadresponse", MESSAGE_TYPE_BLOCKREADRESPONSE},
+    {"blockwriterequest", MESSAGE_TYPE_BLOCKWRITEREQUEST},
+    {"blockwriteresponse", MESSAGE_TYPE_BLOCKWRITERESPONSE},
+    {"clockinfo", MESSAGE_TYPE_CLOCKINFO},
+    {"ethernetinfo", MESSAGE_TYPE_ETHERNETINFO},
+    {"loginfo", MESSAGE_TYPE_LOGINFO},
+    {"audioconf", MESSAGE_TYPE_AUDIOCONF},
+    {"audioinfo", MESSAGE_TYPE_AUDIOINFO},
+    {"walkrequest", MESSAGE_TYPE_WALKREQUEST},
+    {"walkresponse", MESSAGE_TYPE_WALKRESPONSE},
+    {"readrequest", MESSAGE_TYPE_READREQUEST},
+    {"readresponse", MESSAGE_TYPE_READRESPONSE},
+    {"writerequest", MESSAGE_TYPE_WRITEREQUEST},
+    {"writeresponse", MESSAGE_TYPE_WRITERESPONSE},
+    {"statrequest", MESSAGE_TYPE_STATREQUEST},
+    {"statresponse", MESSAGE_TYPE_STATRESPONSE},
+    {"maprequest", MESSAGE_TYPE_MAPREQUEST},
+    {"mapresponse", MESSAGE_TYPE_MAPRESPONSE},
+    {"createrequest", MESSAGE_TYPE_CREATEREQUEST},
+    {"createresponse", MESSAGE_TYPE_CREATERESPONSE},
+    {"removerequest", MESSAGE_TYPE_REMOVEREQUEST},
+    {"removeresponse", MESSAGE_TYPE_REMOVERESPONSE},
+    {"mmaprequest", MESSAGE_TYPE_MMAPREQUEST},
+    {"mmapresponse", MESSAGE_TYPE_MMAPRESPONSE},
+    {"munmaprequest", MESSAGE_TYPE_MUNMAPREQUEST},
+    {"munmapresponse", MESSAGE_TYPE_MUNMAPRESPONSE},
+    {"wmunmap", MESSAGE_TYPE_WMUNMAP},
+    {"wmgrab", MESSAGE_TYPE_WMGRAB},
+    {"wmungrab", MESSAGE_TYPE_WMUNGRAB},
+    {"wmkeypress", MESSAGE_TYPE_WMKEYPRESS},
+    {"wmkeyrelease", MESSAGE_TYPE_WMKEYRELEASE},
+    {"wmmousemove", MESSAGE_TYPE_WMMOUSEMOVE},
+    {"wmmousescroll", MESSAGE_TYPE_WMMOUSESCROLL},
+    {"wmmousepress", MESSAGE_TYPE_WMMOUSEPRESS},
+    {"wmmouserelease", MESSAGE_TYPE_WMMOUSERELEASE},
+    {"wmrenderdata", MESSAGE_TYPE_WMRENDERDATA},
+    {"wmrenderfile", MESSAGE_TYPE_WMRENDERFILE},
+    {"wmflush", MESSAGE_TYPE_WMFLUSH},
+    {"wmevent", MESSAGE_TYPE_WMEVENT},
+    {"wmack", MESSAGE_TYPE_WMACK},
+    {"wmread", MESSAGE_TYPE_WMREAD},
+    {"wmtext", MESSAGE_TYPE_WMTEXT},
+    {"wmconfig", MESSAGE_TYPE_WMCONFIG},
+    {"p9p", MESSAGE_TYPE_P9P}
 };
 
 static unsigned int findevent(char *word)
@@ -439,7 +439,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
 {
 
     struct job_command *command = 0;
-    unsigned int event = MESSAGE_DATA;
+    unsigned int event = MESSAGE_TYPE_DATA;
 
     for (;;)
     {
@@ -547,7 +547,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
                 return 0;
 
             command = addinput(job, command, word, event);
-            event = MESSAGE_DATA;
+            event = MESSAGE_TYPE_DATA;
 
             break;
 
@@ -565,7 +565,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!addrecord(job, command, word, (token == TOKEN_APPEND) ? "append" : "create", event))
                 return 0;
 
-            event = MESSAGE_DATA;
+            event = MESSAGE_TYPE_DATA;
 
             break;
 
@@ -582,7 +582,7 @@ static unsigned int parse(struct job *job, struct parser *parser)
             if (!addroute(job, command, event, findevent(word), 0))
                 return 0;
 
-            event = MESSAGE_DATA;
+            event = MESSAGE_TYPE_DATA;
 
             break;
 
@@ -627,7 +627,7 @@ static void run(char *pwd)
         if (!parseline(&job, script, scriptcount, &offset))
         {
 
-            channel_send_fmt(0, output, MESSAGE_ERROR, "%s\n", job.error);
+            channel_send_fmt(0, output, MESSAGE_TYPE_ERROR, "%s\n", job.error);
 
             return;
 
@@ -639,7 +639,7 @@ static void run(char *pwd)
         if (!job_spawn(&job, 1, BINPATH))
         {
 
-            channel_send_fmt(0, output, MESSAGE_ERROR, "%s\n", job.error);
+            channel_send_fmt(0, output, MESSAGE_TYPE_ERROR, "%s\n", job.error);
             job_abort(&job, 0);
 
             continue;
@@ -649,7 +649,7 @@ static void run(char *pwd)
         job_run(&job, 0, pwd);
 
         if (!inputopen || job.background)
-            job_sendfirst(&job, 0, MESSAGE_TERM, 0, 0);
+            job_sendfirst(&job, 0, MESSAGE_TYPE_TERM, 0, 0);
 
         if (job.background)
             job_detach(&job);
@@ -660,7 +660,7 @@ static void run(char *pwd)
             if (!channel_process(0))
             {
 
-                job_sendall(&job, 0, MESSAGE_INTERRUPT, 0, 0);
+                job_sendall(&job, 0, MESSAGE_TYPE_INTERRUPT, 0, 0);
 
                 return;
 
@@ -690,13 +690,13 @@ static void onconsoledata(struct message *message)
         if (interrupts++)
             job_kill(&job);
         else
-            job_sendall(&job, 0, MESSAGE_INTERRUPT, 0, 0);
+            job_sendall(&job, 0, MESSAGE_TYPE_INTERRUPT, 0, 0);
 
         return;
 
     }
 
-    job_sendfirst(&job, 0, MESSAGE_CONSOLEDATA, message->length, message->data);
+    job_sendfirst(&job, 0, MESSAGE_TYPE_CONSOLEDATA, message->length, message->data);
 
 }
 
@@ -704,9 +704,9 @@ static void ondata(struct message *message)
 {
 
     if (job_exist(&job, message->source))
-        channel_send(0, output, MESSAGE_DATA, message->length, message->data);
+        channel_send(0, output, MESSAGE_TYPE_DATA, message->length, message->data);
     else if (running)
-        job_sendfirst(&job, 0, MESSAGE_DATA, message->length, message->data);
+        job_sendfirst(&job, 0, MESSAGE_TYPE_DATA, message->length, message->data);
     else
         append(message->data, message->length);
 
@@ -716,7 +716,7 @@ static void onerror(struct message *message)
 {
 
     if (job_exist(&job, message->source))
-        channel_send(0, output, MESSAGE_ERROR, message->length, message->data);
+        channel_send(0, output, MESSAGE_TYPE_ERROR, message->length, message->data);
 
 }
 
@@ -756,7 +756,7 @@ static void onterm(struct message *message)
 
             inputopen = 0;
 
-            job_sendfirst(&job, 0, MESSAGE_TERM, 0, 0);
+            job_sendfirst(&job, 0, MESSAGE_TYPE_TERM, 0, 0);
 
         }
 
@@ -770,7 +770,7 @@ static void onterm(struct message *message)
     run(option_getstring("pwd"));
 
     if (option_getdecimal("export"))
-        channel_send_fmt(0, output, MESSAGE_OPTION, "pwd\\0%s\\0", option_getstring("pwd"));
+        channel_send_fmt(0, output, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0", option_getstring("pwd"));
 
 }
 
@@ -779,12 +779,12 @@ void init(void)
 
     option_add("export", "0");
     option_add("input", "0");
-    channel_bind(MESSAGE_CONSOLEDATA, onconsoledata);
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_ERROR, onerror);
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_CONSOLEDATA, onconsoledata);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_ERROR, onerror);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

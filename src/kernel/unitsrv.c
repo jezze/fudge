@@ -145,14 +145,14 @@ static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, u
     response->count = (request->offset < length) ? buffer_write(response + 1, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
     response->buffer = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
 }
 
 static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, data, count);
+    struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
     struct resource *file;
     struct resource *dir;
     unsigned int root;
@@ -190,7 +190,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
         response->count = c * sizeof (struct record);
         response->buffer = 0;
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
@@ -201,7 +201,7 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
 static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, data, count);
+    struct message_statrequest *request = message_validate(MESSAGE_TYPE_STATREQUEST, data, count);
     struct resource *device;
     unsigned char buffer[sizeof (struct message_statresponse) + sizeof (struct record)];
     struct message_statresponse *response = (struct message_statresponse *)buffer;
@@ -221,7 +221,7 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
         else
             response->count = 0;
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
 
     }
 
@@ -232,7 +232,7 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
 static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, data, count);
+    struct message_walkrequest *request = message_validate(MESSAGE_TYPE_WALKREQUEST, data, count);
     struct message_walkresponse response;
 
     if (request)
@@ -240,7 +240,7 @@ static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, 
 
         response.id = walk(unitsrv, request->parent, request->length, (char *)(request + 1));
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -251,7 +251,7 @@ static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, 
 static unsigned int oncreaterequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_createrequest *request = message_validate(MESSAGE_CREATEREQUEST, data, count);
+    struct message_createrequest *request = message_validate(MESSAGE_TYPE_CREATEREQUEST, data, count);
     struct message_createresponse response;
     struct resource *device;
 
@@ -261,7 +261,7 @@ static unsigned int oncreaterequest(struct unitsrv *unitsrv, unsigned int source
         device = getdir(unitsrv, request->parent);
         response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device)) ? request->parent + POOL_NODES : 0;
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
     }
 
@@ -272,7 +272,7 @@ static unsigned int oncreaterequest(struct unitsrv *unitsrv, unsigned int source
 static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_removerequest *request = message_validate(MESSAGE_REMOVEREQUEST, data, count);
+    struct message_removerequest *request = message_validate(MESSAGE_TYPE_REMOVEREQUEST, data, count);
     struct message_removeresponse response;
     struct resource *device;
 
@@ -285,7 +285,7 @@ static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source
         if (response.status)
             pool_detachnode(device);
 
-        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
     }
 
@@ -306,19 +306,19 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case MESSAGE_CREATEREQUEST:
+        case MESSAGE_TYPE_CREATEREQUEST:
             return oncreaterequest(unitsrv, source, count, data);
 
-        case MESSAGE_READREQUEST:
+        case MESSAGE_TYPE_READREQUEST:
             return onreadrequest(unitsrv, source, count, data);
 
-        case MESSAGE_REMOVEREQUEST:
+        case MESSAGE_TYPE_REMOVEREQUEST:
             return onremoverequest(unitsrv, source, count, data);
 
-        case MESSAGE_STATREQUEST:
+        case MESSAGE_TYPE_STATREQUEST:
             return onstatrequest(unitsrv, source, count, data);
 
-        case MESSAGE_WALKREQUEST:
+        case MESSAGE_TYPE_WALKREQUEST:
             return onwalkrequest(unitsrv, source, count, data);
 
         }

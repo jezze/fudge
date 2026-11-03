@@ -90,8 +90,8 @@ static void ungrab(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -108,8 +108,8 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -122,14 +122,14 @@ static void onmain(struct message *message)
         videoconf.height = option_getdecimal("height");
         videoconf.bpp = option_getdecimal("bpp");
 
-        channel_send(0, video, MESSAGE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
-        channel_send(1, video, MESSAGE_INFO, 0, 0);
-        channel_wait(1, video, MESSAGE_VIDEOINFO, 0, 0);
-        channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
-        channel_send(0, timer, MESSAGE_LINK, 0, 0);
+        channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
+        channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
+        channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, 0, 0);
+        channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
+        channel_send(0, timer, MESSAGE_TYPE_LINK, 0, 0);
         channel_hold(0);
-        channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
-        channel_send(0, timer, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, keyboard, MESSAGE_TYPE_UNLINK, 0, 0);
+        channel_send(0, timer, MESSAGE_TYPE_UNLINK, 0, 0);
 
     }
 
@@ -140,7 +140,7 @@ static void onmain(struct message *message)
 static void onvideoinfo(struct message *message)
 {
 
-    struct message_videoinfo *videoinfo = message_validate(MESSAGE_VIDEOINFO, message->data, message->length);
+    struct message_videoinfo *videoinfo = message_validate(MESSAGE_TYPE_VIDEOINFO, message->data, message->length);
 
     if (videoinfo)
     {
@@ -166,9 +166,9 @@ void init(void)
     option_add("timer-service", "timer:0");
     option_add("video-service", "video:0");
     option_add("wm-service", "wm");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_TIMERTICK, ontimertick);
-    channel_bind(MESSAGE_VIDEOINFO, onvideoinfo);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_TIMERTICK, ontimertick);
+    channel_bind(MESSAGE_TYPE_VIDEOINFO, onvideoinfo);
 
 }
 

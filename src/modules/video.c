@@ -19,7 +19,7 @@ static unsigned int oninfo(struct video_interface *interface, unsigned int sourc
         videoinfo.height = interface->height;
         videoinfo.bpp = interface->bpp;
 
-        return kernel_place(interface->resource.inode, source, MESSAGE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
+        return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
 
     }
 
@@ -46,7 +46,7 @@ static unsigned int onvideocmap(struct video_interface *interface, unsigned int 
 static unsigned int onvideoconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_videoconf *videoconf = message_validate(MESSAGE_VIDEOCONF, data, count);
+    struct message_videoconf *videoconf = message_validate(MESSAGE_TYPE_VIDEOCONF, data, count);
 
     if (interface->setmode && videoconf)
     {
@@ -65,7 +65,7 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 static unsigned int onvideoflush(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_videoflush *videoflush = message_validate(MESSAGE_VIDEOFLUSH, data, count);
+    struct message_videoflush *videoflush = message_validate(MESSAGE_TYPE_VIDEOFLUSH, data, count);
 
     if (interface->flush && videoflush)
     {
@@ -93,22 +93,22 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case MESSAGE_LINK:
+        case MESSAGE_TYPE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case MESSAGE_UNLINK:
+        case MESSAGE_TYPE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case MESSAGE_INFO:
+        case MESSAGE_TYPE_INFO:
             return oninfo(interface, source);
 
-        case MESSAGE_VIDEOCMAP:
+        case MESSAGE_TYPE_VIDEOCMAP:
             return onvideocmap(interface, source, count, data);
 
-        case MESSAGE_VIDEOCONF:
+        case MESSAGE_TYPE_VIDEOCONF:
             return onvideoconf(interface, source, count, data);
 
-        case MESSAGE_VIDEOFLUSH:
+        case MESSAGE_TYPE_VIDEOFLUSH:
             return onvideoflush(interface, source, count, data);
 
         }

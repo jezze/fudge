@@ -15,7 +15,7 @@ static void list(unsigned int source, char *path)
     if (!id)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Path not found: %s\n", path);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
 
         return;
 
@@ -32,9 +32,9 @@ static void list(unsigned int source, char *path)
             struct record *record = (struct record *)(data + i);
 
             if (record->type == RECORD_TYPE_DIRECTORY)
-                channel_send_fmt(0, source, MESSAGE_DATA, "%w/\n", record->name, &record->length);
+                channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "%w/\n", record->name, &record->length);
             else
-                channel_send_fmt(0, source, MESSAGE_DATA, "%w\n", record->name, &record->length);
+                channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "%w\n", record->name, &record->length);
 
             offset = record->offset;
 
@@ -64,8 +64,8 @@ static void onterm(struct message *message)
 void init(void)
 {
 
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

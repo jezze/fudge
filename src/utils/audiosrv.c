@@ -139,7 +139,7 @@ static void sendinfo(unsigned int target)
     audioinfo.channels = 2;
     audioinfo.bits = 16;
 
-    channel_send(0, target, MESSAGE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo);
+    channel_send(0, target, MESSAGE_TYPE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo);
 
 }
 
@@ -251,7 +251,7 @@ static unsigned int mix(unsigned int frames)
 static unsigned int flush(void)
 {
 
-    if (pending && call_place(0, audio, MESSAGE_DATA, pending, output) == MESSAGE_RETRY)
+    if (pending && call_place(0, audio, MESSAGE_TYPE_DATA, pending, output) == MESSAGE_RETRY)
         return 0;
 
     pending = 0;
@@ -294,7 +294,7 @@ static void oninfo(struct message *message)
 static void ontimertick(struct message *message)
 {
 
-    struct message_timertick *timertick = message_validate(MESSAGE_TIMERTICK, message->data, message->length);
+    struct message_timertick *timertick = message_validate(MESSAGE_TYPE_TIMERTICK, message->data, message->length);
     unsigned int played;
 
     if (timertick)
@@ -344,7 +344,7 @@ static unsigned int setformat(unsigned int value)
     audioconf.channels = 2;
     audioconf.bits = 16;
 
-    return channel_send(0, audio, MESSAGE_AUDIOCONF, sizeof (struct message_audioconf), &audioconf);
+    return channel_send(0, audio, MESSAGE_TYPE_AUDIOCONF, sizeof (struct message_audioconf), &audioconf);
 
 }
 
@@ -378,7 +378,7 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 static void onreadrequest(struct message *message)
 {
 
-    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, message->data, message->length);
+    struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
     struct listing listing;
     unsigned int c = 0;
     unsigned int i;
@@ -392,7 +392,7 @@ static void onreadrequest(struct message *message)
         listing.response.count = c * sizeof (struct record);
         listing.response.buffer = 0;
 
-        channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
+        channel_send(0, message->source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
 
     }
 
@@ -401,7 +401,7 @@ static void onreadrequest(struct message *message)
 static void onstatrequest(struct message *message)
 {
 
-    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, message->data, message->length);
+    struct message_statrequest *request = message_validate(MESSAGE_TYPE_STATREQUEST, message->data, message->length);
     struct statresult result;
 
     if (request)
@@ -411,7 +411,7 @@ static void onstatrequest(struct message *message)
 
         result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
 
-        channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
+        channel_send(0, message->source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
 
     }
 
@@ -420,7 +420,7 @@ static void onstatrequest(struct message *message)
 static void onwalkrequest(struct message *message)
 {
 
-    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, message->data, message->length);
+    struct message_walkrequest *request = message_validate(MESSAGE_TYPE_WALKREQUEST, message->data, message->length);
     struct message_walkresponse response;
 
     if (request)
@@ -428,7 +428,7 @@ static void onwalkrequest(struct message *message)
 
         response.id = walk(request->parent, request->length, (char *)(request + 1));
 
-        channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        channel_send(0, message->source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -445,7 +445,7 @@ static void onmain(struct message *message)
     if (!audio)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Audio service not found: %s\n", option_getstring("audio-service"));
 
         return;
 
@@ -454,7 +454,7 @@ static void onmain(struct message *message)
     if (!timer)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Timer service not found: %s\n", option_getstring("timer-service"));
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Timer service not found: %s\n", option_getstring("timer-service"));
 
         return;
 
@@ -468,15 +468,15 @@ static void onmain(struct message *message)
     if (!rate)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Audio device takes neither 48000 nor 44100 Hz 16-bit stereo\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Audio device takes neither 48000 nor 44100 Hz 16-bit stereo\n");
 
         return;
 
     }
 
-    channel_send(1, timer, MESSAGE_INFO, 0, 0);
+    channel_send(1, timer, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (!channel_wait(1, timer, MESSAGE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo) || !timerinfo.hz)
+    if (!channel_wait(1, timer, MESSAGE_TYPE_TIMERINFO, sizeof (struct message_timerinfo), &timerinfo) || !timerinfo.hz)
         return;
 
     hz = timerinfo.hz;
@@ -484,15 +484,15 @@ static void onmain(struct message *message)
     if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not announce service: %s\n", option_getstring("service"));
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Could not announce service: %s\n", option_getstring("service"));
 
         return;
 
     }
 
-    channel_send(0, timer, MESSAGE_LINK, 0, 0);
+    channel_send(0, timer, MESSAGE_TYPE_LINK, 0, 0);
     channel_hold(0);
-    channel_send(0, timer, MESSAGE_UNLINK, 0, 0);
+    channel_send(0, timer, MESSAGE_TYPE_UNLINK, 0, 0);
 
 }
 
@@ -507,13 +507,13 @@ void init(void)
     option_add("service", "mixer");
     option_add("audio-service", "audio:0");
     option_add("timer-service", "timer:0");
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_INFO, oninfo);
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_READREQUEST, onreadrequest);
-    channel_bind(MESSAGE_STATREQUEST, onstatrequest);
-    channel_bind(MESSAGE_TIMERTICK, ontimertick);
-    channel_bind(MESSAGE_WALKREQUEST, onwalkrequest);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_INFO, oninfo);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_READREQUEST, onreadrequest);
+    channel_bind(MESSAGE_TYPE_STATREQUEST, onstatrequest);
+    channel_bind(MESSAGE_TYPE_TIMERTICK, ontimertick);
+    channel_bind(MESSAGE_TYPE_WALKREQUEST, onwalkrequest);
 
 }
 

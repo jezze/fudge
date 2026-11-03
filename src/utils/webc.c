@@ -30,16 +30,16 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
 
         struct message message;
 
-        channel_send_fmt(2, target, MESSAGE_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0remote-port\\0%s\\0", address, (url->port) ? url->port : "80");
-        channel_send(2, target, MESSAGE_MAIN, 0, 0);
+        channel_send_fmt(2, target, MESSAGE_TYPE_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0remote-port\\0%s\\0", address, (url->port) ? url->port : "80");
+        channel_send(2, target, MESSAGE_TYPE_MAIN, 0, 0);
 
-        if (channel_poll(2, target, MESSAGE_READY, &message))
+        if (channel_poll(2, target, MESSAGE_TYPE_READY, &message))
         {
 
-            channel_send_fmt(2, target, MESSAGE_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
+            channel_send_fmt(2, target, MESSAGE_TYPE_QUERYREQUEST, "GET /%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", (url->path) ? url->path : "", url->host);
 
-            while (channel_poll(2, target, MESSAGE_DATA, &message))
-                channel_send(0, source, MESSAGE_DATA, message.length, message.data);
+            while (channel_poll(2, target, MESSAGE_TYPE_DATA, &message))
+                channel_send(0, source, MESSAGE_TYPE_DATA, message.length, message.data);
 
         }
 
@@ -70,7 +70,7 @@ static void onmain(struct message *message)
         else if (system_resolve(url.host, address, 32))
             opensocket(message->source, &url, address);
         else
-            channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not resolve: %s\n", url.host);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Could not resolve: %s\n", url.host);
 
     }
 
@@ -80,7 +80,7 @@ void init(void)
 {
 
     option_add("url", "");
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

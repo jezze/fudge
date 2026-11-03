@@ -33,7 +33,7 @@ static unsigned int oninfo(struct ethernet_interface *interface, unsigned int so
 
         interface->getmac(ethernetinfo.address);
 
-        return kernel_place(interface->resource.inode, source, MESSAGE_ETHERNETINFO, sizeof (struct message_ethernetinfo), &ethernetinfo);
+        return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_ETHERNETINFO, sizeof (struct message_ethernetinfo), &ethernetinfo);
 
     }
 
@@ -54,16 +54,16 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case MESSAGE_LINK:
+        case MESSAGE_TYPE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case MESSAGE_UNLINK:
+        case MESSAGE_TYPE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case MESSAGE_DATA:
+        case MESSAGE_TYPE_DATA:
             return ondata(interface, source, data, count);
 
-        case MESSAGE_INFO:
+        case MESSAGE_TYPE_INFO:
             return oninfo(interface, source);
 
         }
@@ -77,7 +77,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void ethernet_notifydata(struct ethernet_interface *interface, void *buffer, unsigned int count)
 {
 
-    kernel_notify(&interface->resource, MESSAGE_DATA, count, buffer);
+    kernel_notify(&interface->resource, MESSAGE_TYPE_DATA, count, buffer);
 
 }
 

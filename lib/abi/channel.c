@@ -79,8 +79,8 @@ static void setpipe(struct message *message)
         buffer_clear(&pipe, sizeof (struct message_pipe));
 
         pipe.nterms = 1;
-        pipe.terms[0].event = MESSAGE_TERM;
-        pipe.terms[0].to = MESSAGE_TERM;
+        pipe.terms[0].event = MESSAGE_TYPE_TERM;
+        pipe.terms[0].to = MESSAGE_TYPE_TERM;
 
     }
 
@@ -327,7 +327,7 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    if (message->event == MESSAGE_MAIN && !ichannel)
+    if (message->event == MESSAGE_TYPE_MAIN && !ichannel)
         setpipe(message);
 
     if (message->event < CHANNEL_EVENTS && listeners[message->event])
@@ -336,13 +336,13 @@ static void dispatch(unsigned int ichannel, struct message *message)
     switch (message->event)
     {
 
-    case MESSAGE_TERM:
+    case MESSAGE_TYPE_TERM:
         if (inbox->state == CHANNEL_STATE_OPENED && frominput(ichannel, message->source))
             inbox->state = CHANNEL_STATE_CLOSING;
 
         break;
 
-    case MESSAGE_INTERRUPT:
+    case MESSAGE_TYPE_INTERRUPT:
         inbox->state = CHANNEL_STATE_CLOSED;
 
         break;
@@ -472,7 +472,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         finish(ichannel, message);
 
-        if (message->source == source && message->event == MESSAGE_TERM)
+        if (message->source == source && message->event == MESSAGE_TYPE_TERM)
             return 0;
 
     }
@@ -500,10 +500,10 @@ static unsigned int walk(unsigned int target, unsigned int parent, char *path, u
     request->parent = parent;
     request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct message_walkrequest));
 
-    if (!channel_send(1, target, MESSAGE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
+    if (!channel_send(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
         return 0;
 
-    return (channel_wait(1, target, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
+    return (channel_wait(1, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
 
 }
 
@@ -517,10 +517,10 @@ static unsigned int create(unsigned int target, unsigned int parent, char *name,
     request->parent = parent;
     request->count = buffer_write(data, MESSAGE_SIZE, name, length, sizeof (struct message_createrequest));
 
-    if (!channel_send(1, target, MESSAGE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
+    if (!channel_send(1, target, MESSAGE_TYPE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
         return 0;
 
-    return (channel_wait(1, target, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response)) ? response.id : 0;
+    return (channel_wait(1, target, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response)) ? response.id : 0;
 
 }
 
@@ -536,10 +536,10 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
     request.count = 16;
     request.flags = 0;
 
-    if (!channel_send(1, target, MESSAGE_READREQUEST, sizeof (struct message_readrequest), &request))
+    if (!channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
         return 0;
 
-    response = message_validate(MESSAGE_READRESPONSE, data, channel_wait(1, target, MESSAGE_READRESPONSE, MESSAGE_SIZE, data));
+    response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_wait(1, target, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
 
     if (!response || response->buffer || response->count > 16)
         return 0;
@@ -606,7 +606,7 @@ void channel_abort(unsigned int ichannel)
     char *error = "Process aborted\n";
 
     if (owner)
-        channel_send(ichannel, owner, MESSAGE_ERROR, cstring_length(error), error);
+        channel_send(ichannel, owner, MESSAGE_TYPE_ERROR, cstring_length(error), error);
 
     channel_exit(ichannel);
 

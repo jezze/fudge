@@ -15,14 +15,14 @@ static unsigned int start(char *command, unsigned int length, unsigned int input
 
         unsigned int offset;
 
-        channel_send_fmt(1, sh, MESSAGE_OPTION, "pwd\\0%s\\0input\\0%u\\0", option_getstring("pwd"), &input);
-        channel_send(1, sh, MESSAGE_MAIN, 0, 0);
+        channel_send_fmt(1, sh, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0input\\0%u\\0", option_getstring("pwd"), &input);
+        channel_send(1, sh, MESSAGE_TYPE_MAIN, 0, 0);
 
         for (offset = 0; offset < length; offset += MESSAGE_SIZE)
-            channel_send(1, sh, MESSAGE_DATA, (length - offset < MESSAGE_SIZE) ? length - offset : MESSAGE_SIZE, command + offset);
+            channel_send(1, sh, MESSAGE_TYPE_DATA, (length - offset < MESSAGE_SIZE) ? length - offset : MESSAGE_SIZE, command + offset);
 
-        channel_send(1, sh, MESSAGE_DATA, 1, "\n");
-        channel_send(1, sh, MESSAGE_TERM, 0, 0);
+        channel_send(1, sh, MESSAGE_TYPE_DATA, 1, "\n");
+        channel_send(1, sh, MESSAGE_TYPE_TERM, 0, 0);
 
     }
 
@@ -47,15 +47,15 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
             switch (message.event)
             {
 
-            case MESSAGE_ERROR:
+            case MESSAGE_TYPE_ERROR:
                 errors++;
 
-            case MESSAGE_DATA:
+            case MESSAGE_TYPE_DATA:
                 channel_send(0, target, message.event, message.length, message.data);
 
                 break;
 
-            case MESSAGE_TERM:
+            case MESSAGE_TYPE_TERM:
                 return !errors;
 
             }
@@ -83,9 +83,9 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
         unsigned int offset;
 
         for (offset = 0; offset < inputcount; offset += MESSAGE_SIZE)
-            channel_send(1, sh, MESSAGE_DATA, (inputcount - offset < MESSAGE_SIZE) ? inputcount - offset : MESSAGE_SIZE, data + offset);
+            channel_send(1, sh, MESSAGE_TYPE_DATA, (inputcount - offset < MESSAGE_SIZE) ? inputcount - offset : MESSAGE_SIZE, data + offset);
 
-        channel_send(1, sh, MESSAGE_TERM, 0, 0);
+        channel_send(1, sh, MESSAGE_TYPE_TERM, 0, 0);
 
         while (channel_pick(1, &message))
         {
@@ -93,12 +93,12 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
             switch (message.event)
             {
 
-            case MESSAGE_DATA:
+            case MESSAGE_TYPE_DATA:
                 total += buffer_write(output, outputcount, message.data, message.length, total);
 
                 break;
 
-            case MESSAGE_TERM:
+            case MESSAGE_TYPE_TERM:
                 return total;
 
             }
@@ -140,9 +140,9 @@ unsigned int system_unixtime(char *service)
     if (!clock)
         return 0;
 
-    channel_send(1, clock, MESSAGE_INFO, 0, 0);
+    channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (!channel_wait(1, clock, MESSAGE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
+    if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
         return 0;
 
     return time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);

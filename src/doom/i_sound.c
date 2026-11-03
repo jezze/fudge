@@ -175,7 +175,7 @@ void I_UpdateSound(void)
         unsigned int frames = (due - sentframes < CHUNKFRAMES) ? due - sentframes : CHUNKFRAMES;
 
         mix(chunk, frames);
-        channel_send(0, audio, MESSAGE_DATA, frames * 4, chunk);
+        channel_send(0, audio, MESSAGE_TYPE_DATA, frames * 4, chunk);
 
         sentframes += frames;
 

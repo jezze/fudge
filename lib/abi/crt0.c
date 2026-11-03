@@ -28,9 +28,9 @@ static void onoption(struct message *message)
         offset += cstring_length_zero(value);
 
         if (!option_getstring(key))
-            channel_send_fmt(0, message->source, MESSAGE_ERROR, "Unrecognized option: %s\n", key);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Unrecognized option: %s\n", key);
         else if (!option_setstring(key, value))
-            channel_send_fmt(0, message->source, MESSAGE_ERROR, "Option too long: %s\n", key);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Option too long: %s\n", key);
 
     }
 
@@ -39,7 +39,7 @@ static void onoption(struct message *message)
 void panic(unsigned int source, char *file, unsigned int line)
 {
 
-    channel_send_fmt(0, source, MESSAGE_ERROR, "Process panic! File %s on line %u\n", file, &line);
+    channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Process panic! File %s on line %u\n", file, &line);
     channel_exit(0);
     call_despawn();
 
@@ -59,7 +59,7 @@ void main(void)
     started = 1;
 
     option_add("pwd", "");
-    channel_bind(MESSAGE_OPTION, onoption);
+    channel_bind(MESSAGE_TYPE_OPTION, onoption);
     init();
     channel_loop(0);
     channel_exit(0);

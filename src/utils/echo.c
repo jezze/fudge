@@ -4,7 +4,7 @@
 static void output(unsigned int source, void *buffer, unsigned int count)
 {
 
-    channel_send(0, source, MESSAGE_DATA, count, buffer);
+    channel_send(0, source, MESSAGE_TYPE_DATA, count, buffer);
 
 }
 
@@ -25,8 +25,8 @@ static void onpath(struct message *message)
 void init(void)
 {
 
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

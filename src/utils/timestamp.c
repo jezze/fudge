@@ -7,7 +7,7 @@ static void onmain(struct message *message)
     unsigned int timestamp = system_unixtime(option_getstring("clock-service"));
 
     if (timestamp)
-        channel_send_fmt(0, message->source, MESSAGE_DATA, "%u\n", &timestamp);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "%u\n", &timestamp);
 
 }
 
@@ -15,7 +15,7 @@ void init(void)
 {
 
     option_add("clock-service", "clock:0");
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

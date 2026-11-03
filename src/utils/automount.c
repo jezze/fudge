@@ -19,8 +19,8 @@ static unsigned int sendblockreadrequest(unsigned int target, unsigned int offse
     request.count = count;
     request.target = 0;
 
-    channel_send(1, target, MESSAGE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
-    channel_wait(1, target, MESSAGE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
+    channel_send(1, target, MESSAGE_TYPE_BLOCKREADREQUEST, sizeof (struct message_blockrequest), &request);
+    channel_wait(1, target, MESSAGE_TYPE_BLOCKREADRESPONSE, sizeof (struct message_blockresponse), &response);
 
     return response.count;
 
@@ -122,14 +122,14 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
     if (!target)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Service not found: %s\n", path);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Service not found: %s\n", path);
 
         return;
 
     }
 
-    channel_send(1, target, MESSAGE_INFO, 0, 0);
-    channel_wait(1, target, MESSAGE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
+    channel_send(1, target, MESSAGE_TYPE_INFO, 0, 0);
+    channel_wait(1, target, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
     if (sendblockreadrequest(target, 0, blockinfo.blocksize) != 512)
         return;
@@ -160,7 +160,7 @@ void init(void)
     option_add("index", "0");
     option_add("partition", "0");
     option_add("name", "");
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

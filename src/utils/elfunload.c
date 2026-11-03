@@ -15,7 +15,7 @@ static void onpath(struct message *message)
         if (id)
             call_unload(target, id);
         else
-            channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", message->data);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", message->data);
 
     }
 
@@ -24,7 +24,7 @@ static void onpath(struct message *message)
 void init(void)
 {
 
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

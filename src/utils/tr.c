@@ -43,7 +43,7 @@ static void replace(unsigned int source, void *data, unsigned int count)
 
     }
 
-    channel_send(0, source, MESSAGE_DATA, count, buffer);
+    channel_send(0, source, MESSAGE_TYPE_DATA, count, buffer);
 
 }
 
@@ -76,9 +76,9 @@ void init(void)
 
     option_add("f", "");
     option_add("t", "");
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

@@ -18,7 +18,7 @@ static unsigned int oninfo(struct audio_interface *interface, unsigned int sourc
         audioinfo.channels = interface->channels;
         audioinfo.bits = interface->bits;
 
-        return kernel_place(interface->resource.inode, source, MESSAGE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo);
+        return kernel_place(interface->resource.inode, source, MESSAGE_TYPE_AUDIOINFO, sizeof (struct message_audioinfo), &audioinfo);
 
     }
 
@@ -29,7 +29,7 @@ static unsigned int oninfo(struct audio_interface *interface, unsigned int sourc
 static unsigned int onaudioconf(struct audio_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_audioconf *audioconf = message_validate(MESSAGE_AUDIOCONF, data, count);
+    struct message_audioconf *audioconf = message_validate(MESSAGE_TYPE_AUDIOCONF, data, count);
 
     if (interface->setformat && audioconf)
     {
@@ -69,19 +69,19 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         switch (event)
         {
 
-        case MESSAGE_LINK:
+        case MESSAGE_TYPE_LINK:
             return kernel_linknode(&interface->resource, source);
 
-        case MESSAGE_UNLINK:
+        case MESSAGE_TYPE_UNLINK:
             return kernel_unlinknode(&interface->resource, source);
 
-        case MESSAGE_INFO:
+        case MESSAGE_TYPE_INFO:
             return oninfo(interface, source);
 
-        case MESSAGE_AUDIOCONF:
+        case MESSAGE_TYPE_AUDIOCONF:
             return onaudioconf(interface, source, count, data);
 
-        case MESSAGE_DATA:
+        case MESSAGE_TYPE_DATA:
             return ondata(interface, source, count, data);
 
         }

@@ -28,7 +28,7 @@ static void onqueryrequest(struct message *message)
             socket_send_tcp(0, ethernet, &local, &remote, &router, message->length, message->data);
 
             while (remote.info.tcp.state == TCP_STATE_ESTABLISHED && (count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, MESSAGE_SIZE)))
-                channel_send(0, message->source, MESSAGE_DATA, count, buffer);
+                channel_send(0, message->source, MESSAGE_TYPE_DATA, count, buffer);
 
         }
 
@@ -39,7 +39,7 @@ static void onqueryrequest(struct message *message)
 
             count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, MESSAGE_SIZE);
 
-            channel_send(0, message->source, MESSAGE_DATA, count, buffer);
+            channel_send(0, message->source, MESSAGE_TYPE_DATA, count, buffer);
 
         }
 
@@ -67,10 +67,10 @@ static void onmain(struct message *message)
         socket_bind_tcpv(&remote, option_getdecimal("remote-port"), mtwist_rand(&state), mtwist_rand(&state));
         socket_bind_ipv4s(&router, system_address("router-address", "route", address, 32));
         socket_resolvelocal(0, ethernet, &local);
-        channel_send(0, ethernet, MESSAGE_LINK, 0, 0);
-        channel_send(0, message->source, MESSAGE_READY, 0, 0);
+        channel_send(0, ethernet, MESSAGE_TYPE_LINK, 0, 0);
+        channel_send(0, message->source, MESSAGE_TYPE_READY, 0, 0);
         channel_hold(0);
-        channel_send(0, ethernet, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 
     }
 
@@ -96,8 +96,8 @@ void init(void)
     option_add("remote-port", "80");
     option_add("router-address", "");
     option_add("mode", "");
-    channel_bind(MESSAGE_QUERYREQUEST, onqueryrequest);
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_QUERYREQUEST, onqueryrequest);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

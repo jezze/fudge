@@ -223,8 +223,8 @@ static void ungrab(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -240,8 +240,8 @@ static void onmain(struct message *message)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -255,9 +255,9 @@ static void onmain(struct message *message)
         videoconf.height = option_getdecimal("height");
         videoconf.bpp = option_getdecimal("bpp");
 
-        channel_send(0, video, MESSAGE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
-        channel_send(1, video, MESSAGE_INFO, 0, 0);
-        channel_wait(1, video, MESSAGE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
+        channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
+        channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
+        channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo);
 
         if (videoinfo.bpp == 1)
         {
@@ -281,14 +281,14 @@ static void onmain(struct message *message)
 
             }
 
-            channel_send(0, video, MESSAGE_VIDEOCMAP, 768, &colormap);
+            channel_send(0, video, MESSAGE_TYPE_VIDEOCMAP, 768, &colormap);
 
         }
 
         draw(&videoinfo, tofp(-2), tofp(-1), tofp(1), tofp(1), 64);
-        channel_send(0, mouse, MESSAGE_LINK, 0, 0);
+        channel_send(0, mouse, MESSAGE_TYPE_LINK, 0, 0);
         channel_hold(0);
-        channel_send(0, mouse, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, mouse, MESSAGE_TYPE_UNLINK, 0, 0);
 
     }
 
@@ -311,8 +311,8 @@ void init(void)
     option_add("bpp", "4");
     option_add("mouse-service", "mouse");
     option_add("wm-service", "wm");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_MOUSEPRESS, onmousepress);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_MOUSEPRESS, onmousepress);
 
 }
 

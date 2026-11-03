@@ -22,14 +22,14 @@ static void onpath(struct message *message)
         {
 
             if (!fs_remove(1, target, fs_walkparent(1, target, path), id))
-                channel_send_fmt(0, message->source, MESSAGE_ERROR, "File could not be removed: %s\n", path);
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "File could not be removed: %s\n", path);
 
         }
 
         else
         {
 
-            channel_send_fmt(0, message->source, MESSAGE_ERROR, "Path not found: %s\n", path);
+            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
 
         }
 
@@ -40,7 +40,7 @@ static void onpath(struct message *message)
 void init(void)
 {
 
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

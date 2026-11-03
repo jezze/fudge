@@ -272,7 +272,7 @@ static void press(unsigned int id, unsigned int mod)
 static void onkeypress(struct message *message)
 {
 
-    struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
+    struct message_keypress *keypress = message_validate(MESSAGE_TYPE_KEYPRESS, message->data, message->length);
 
     if (keypress)
     {
@@ -288,7 +288,7 @@ static void onkeypress(struct message *message)
 static void onkeyrelease(struct message *message)
 {
 
-    struct message_keyrelease *keyrelease = message_validate(MESSAGE_KEYRELEASE, message->data, message->length);
+    struct message_keyrelease *keyrelease = message_validate(MESSAGE_TYPE_KEYRELEASE, message->data, message->length);
 
     if (keyrelease)
     {
@@ -302,7 +302,7 @@ static void onkeyrelease(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_TYPE_WMKEYPRESS, message->data, message->length);
 
     if (wmkeypress)
     {
@@ -317,7 +317,7 @@ static void onwmkeypress(struct message *message)
 static void onwmkeyrelease(struct message *message)
 {
 
-    struct message_wmkeyrelease *wmkeyrelease = message_validate(MESSAGE_WMKEYRELEASE, message->data, message->length);
+    struct message_wmkeyrelease *wmkeyrelease = message_validate(MESSAGE_TYPE_WMKEYRELEASE, message->data, message->length);
 
     if (wmkeyrelease)
     {
@@ -344,7 +344,7 @@ static void flush(void)
 
     }
 
-    channel_send(0, wm, MESSAGE_WMFLUSH, cstring_length_zero(id), id);
+    channel_send(0, wm, MESSAGE_TYPE_WMFLUSH, cstring_length_zero(id), id);
 
     flushing = 1;
     dirty = 0;
@@ -371,10 +371,10 @@ static void setupvideo(void)
     videoconf.height = option_getdecimal("height");
     videoconf.bpp = option_getdecimal("bpp");
 
-    channel_send(0, video, MESSAGE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
-    channel_send(1, video, MESSAGE_INFO, 0, 0);
+    channel_send(0, video, MESSAGE_TYPE_VIDEOCONF, sizeof (struct message_videoconf), &videoconf);
+    channel_send(1, video, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (channel_wait(1, video, MESSAGE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.bpp == 4)
+    if (channel_wait(1, video, MESSAGE_TYPE_VIDEOINFO, sizeof (struct message_videoinfo), &videoinfo) && videoinfo.bpp == 4)
     {
 
         framebuffer = (unsigned int *)videoinfo.framebuffer;
@@ -391,8 +391,8 @@ static void enterfullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -403,14 +403,14 @@ static void enterfullscreen(void)
     fullscreen = 1;
     wanted = 1;
 
-    channel_send(0, keyboard, MESSAGE_LINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_TYPE_LINK, 0, 0);
 
 }
 
 static void leavefullscreen(void)
 {
 
-    channel_send(0, keyboard, MESSAGE_UNLINK, 0, 0);
+    channel_send(0, keyboard, MESSAGE_TYPE_UNLINK, 0, 0);
     releaseall();
 
     framebuffer = 0;
@@ -420,8 +420,8 @@ static void leavefullscreen(void)
     if (wm)
     {
 
-        channel_send(1, wm, MESSAGE_WMUNGRAB, 0, 0);
-        channel_wait(1, wm, MESSAGE_WMACK, 0, 0);
+        channel_send(1, wm, MESSAGE_TYPE_WMUNGRAB, 0, 0);
+        channel_wait(1, wm, MESSAGE_TYPE_WMACK, 0, 0);
 
     }
 
@@ -431,14 +431,14 @@ static void leavefullscreen(void)
 static void switchscreen(unsigned int on)
 {
 
-    channel_send(0, timer, MESSAGE_UNLINK, 0, 0);
+    channel_send(0, timer, MESSAGE_TYPE_UNLINK, 0, 0);
 
     if (on)
         enterfullscreen();
     else
         leavefullscreen();
 
-    channel_send(0, timer, MESSAGE_LINK, 0, 0);
+    channel_send(0, timer, MESSAGE_TYPE_LINK, 0, 0);
 
 }
 
@@ -453,7 +453,7 @@ static void sendaudio(void)
     if (!audiopaused)
         audiospec->callback(audiospec->userdata, (Uint8 *)audiobuffer, count);
 
-    channel_send(1, audio, MESSAGE_DATA, count, audiobuffer);
+    channel_send(1, audio, MESSAGE_TYPE_DATA, count, audiobuffer);
 
 }
 
@@ -461,7 +461,7 @@ static void sendaudio(void)
 static void ontimertick(struct message *message)
 {
 
-    struct message_timertick *timertick = message_validate(MESSAGE_TIMERTICK, message->data, message->length);
+    struct message_timertick *timertick = message_validate(MESSAGE_TYPE_TIMERTICK, message->data, message->length);
 
     if (timertick)
     {
@@ -747,7 +747,7 @@ void glue_present(SDL_Surface *surface)
     videoflush.width = totw;
     videoflush.height = toth;
 
-    channel_send(0, video, MESSAGE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
+    channel_send(0, video, MESSAGE_TYPE_VIDEOFLUSH, sizeof (struct message_videoflush), &videoflush);
 
 }
 
@@ -784,7 +784,7 @@ static void showwindow(void)
     unsigned int width = SCREENWIDTH;
     unsigned int height = SCREENHEIGHT;
 
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "+ window id \"window\" label \"Prince of Persia\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &width, &height);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ window id \"window\" label \"Prince of Persia\" flow \"stretch\"\n+ media id \"screen\" in \"window\" mimetype \"image/raw\" source \"mem:%s\" width \"%u\" height \"%u\"\n", screenname, &width, &height);
 
 }
 
@@ -792,7 +792,7 @@ void glue_exit(int status)
 {
 
     if (timer)
-        channel_send(0, timer, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, timer, MESSAGE_TYPE_UNLINK, 0, 0);
 
     if (fullscreen)
         leavefullscreen();
@@ -800,7 +800,7 @@ void glue_exit(int status)
     if (screen)
     {
 
-        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
         fs_munmap(1, screentarget, screenid);
 
     }
@@ -827,7 +827,7 @@ static void onmain(struct message *message)
     if (!keyboard || !timer || !video)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Could not find the keyboard, timer or video service\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Could not find the keyboard, timer or video service\n");
         channel_close(0);
 
         return;
@@ -837,7 +837,7 @@ static void onmain(struct message *message)
     if (!port_init(option_getstring("data")))
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "No mem: file could be mapped\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "No mem: file could be mapped\n");
         channel_close(0);
 
         return;
@@ -849,7 +849,7 @@ static void onmain(struct message *message)
     else
         enterfullscreen();
 
-    channel_send(0, timer, MESSAGE_LINK, 0, 0);
+    channel_send(0, timer, MESSAGE_TYPE_LINK, 0, 0);
 
     g_argc = 1;
     g_argv = arguments;
@@ -872,13 +872,13 @@ void init(void)
     option_add("timer-service", "timer:0");
     option_add("video-service", "video:0");
     option_add("wm-service", "wm");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_TIMERTICK, ontimertick);
-    channel_bind(MESSAGE_KEYPRESS, onkeypress);
-    channel_bind(MESSAGE_KEYRELEASE, onkeyrelease);
-    channel_bind(MESSAGE_WMKEYPRESS, onwmkeypress);
-    channel_bind(MESSAGE_WMKEYRELEASE, onwmkeyrelease);
-    channel_bind(MESSAGE_WMACK, onwmack);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_TIMERTICK, ontimertick);
+    channel_bind(MESSAGE_TYPE_KEYPRESS, onkeypress);
+    channel_bind(MESSAGE_TYPE_KEYRELEASE, onkeyrelease);
+    channel_bind(MESSAGE_TYPE_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_TYPE_WMKEYRELEASE, onwmkeyrelease);
+    channel_bind(MESSAGE_TYPE_WMACK, onwmack);
 
 }
 

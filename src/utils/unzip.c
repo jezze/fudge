@@ -160,7 +160,7 @@ static unsigned int writefile(unsigned int source, unsigned int target, unsigned
         if (!parent)
         {
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "Directory not found: %s\n", parentpath);
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Directory not found: %s\n", parentpath);
 
             return 0;
 
@@ -179,7 +179,7 @@ static unsigned int writefile(unsigned int source, unsigned int target, unsigned
         if (isdirectory(target, id) || !fs_remove(1, target, parent, id))
         {
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be replaced: %s\n", name);
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be replaced: %s\n", name);
 
             return 0;
 
@@ -192,7 +192,7 @@ static unsigned int writefile(unsigned int source, unsigned int target, unsigned
     if (!id)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be created: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be created: %s\n", name);
 
         return 0;
 
@@ -201,13 +201,13 @@ static unsigned int writefile(unsigned int source, unsigned int target, unsigned
     if (fs_write_all(1, target, id, output, count, 0) != count)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "File could not be written: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be written: %s\n", name);
 
         return 0;
 
     }
 
-    channel_send_fmt(0, source, MESSAGE_DATA, "%s\n", name);
+    channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "%s\n", name);
 
     return 1;
 
@@ -227,7 +227,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (!fit(size, 0))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive %s: %s\n", fiterror(size, 0), archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive %s: %s\n", fiterror(size, 0), archive);
 
         return;
 
@@ -253,7 +253,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     else
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Name does not end with .gz: %s\n", archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Name does not end with .gz: %s\n", archive);
 
         return;
 
@@ -262,7 +262,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (fs_read_full(1, starget, sid, data, size, 0) != size || data[2] != 8 || size < 18)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive could not be read: %s\n", archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive could not be read: %s\n", archive);
 
         return;
 
@@ -293,7 +293,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (offset + 8 > size)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive is damaged: %s\n", archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive is damaged: %s\n", archive);
 
         return;
 
@@ -302,7 +302,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (!fit(size, usize))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "File %s: %s\n", fiterror(size, usize), archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File %s: %s\n", fiterror(size, usize), archive);
 
         return;
 
@@ -311,7 +311,7 @@ static void gunzip(unsigned int source, unsigned int starget, unsigned int sid, 
     if (!inflate(data + offset, size - offset - 8, data + size, usize, &consumed) || crc32(data + size, usize) != read32(data + offset + consumed))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive is damaged: %s\n", archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive is damaged: %s\n", archive);
 
         return;
 
@@ -342,7 +342,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     if (!safename(name))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Unsafe name skipped: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unsafe name skipped: %s\n", name);
 
         return;
 
@@ -351,7 +351,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     if (read16(header + 8) & 0x01 || (method != 0 && method != 8))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Unsupported method or encryption: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Unsupported method or encryption: %s\n", name);
 
         return;
 
@@ -360,7 +360,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     if (!fit(csize, (method) ? usize : 0))
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "File %s: %s\n", fiterror(csize, (method) ? usize : 0), name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File %s: %s\n", fiterror(csize, (method) ? usize : 0), name);
 
         return;
 
@@ -369,7 +369,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     if (fs_read_full(1, starget, sid, local, 30, offset) != 30 || read32(local) != 0x04034B50)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive is damaged: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive is damaged: %s\n", name);
 
         return;
 
@@ -382,7 +382,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     if (fs_read_full(1, starget, sid, data, csize, offset) != csize)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive is damaged: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive is damaged: %s\n", name);
 
         return;
 
@@ -391,7 +391,7 @@ static void extract(unsigned int source, unsigned int starget, unsigned int sid,
     if ((method && !inflate(data, csize, output, usize, &consumed)) || (!method && csize != usize) || crc32(output, usize) != crc)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "File is damaged: %s\n", name);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File is damaged: %s\n", name);
 
         return;
 
@@ -413,7 +413,7 @@ static void unzip(unsigned int source, unsigned int starget, unsigned int sid, u
     if (tail < EOCDSIZE || !fit(tail, 0) || fs_read_full(1, starget, sid, data, tail, size - tail) != tail)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive could not be read: %s\n", archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive could not be read: %s\n", archive);
 
         return;
 
@@ -424,7 +424,7 @@ static void unzip(unsigned int source, unsigned int starget, unsigned int sid, u
     if (!i)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Archive is damaged: %s\n", archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive is damaged: %s\n", archive);
 
         return;
 
@@ -436,7 +436,7 @@ static void unzip(unsigned int source, unsigned int starget, unsigned int sid, u
     if (entries == 0xFFFF || offset == 0xFFFFFFFF)
     {
 
-        channel_send_fmt(0, source, MESSAGE_ERROR, "Zip64 is not supported: %s\n", archive);
+        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Zip64 is not supported: %s\n", archive);
 
         return;
 
@@ -450,7 +450,7 @@ static void unzip(unsigned int source, unsigned int starget, unsigned int sid, u
         if (count < 46 || read32(header) != 0x02014B50 || 46 + read16(header + 28) > count || read16(header + 28) >= PATHSIZE)
         {
 
-            channel_send_fmt(0, source, MESSAGE_ERROR, "Archive is damaged: %s\n", archive);
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Archive is damaged: %s\n", archive);
 
             return;
 
@@ -489,7 +489,7 @@ static void onterm(struct message *message)
     if (paths < 1 || paths > 2)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Usage: unzip <archive> [<directory>]\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Usage: unzip <archive> [<directory>]\n");
 
         return;
 
@@ -498,7 +498,7 @@ static void onterm(struct message *message)
     if (!sid || !fs_stat(1, starget, sid, &record) || record.type == RECORD_TYPE_DIRECTORY)
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "File not found: %s\n", archive);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "File not found: %s\n", archive);
 
         return;
 
@@ -510,7 +510,7 @@ static void onterm(struct message *message)
     if (!did || !isdirectory(dtarget, did))
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Directory not found: %s\n", (paths == 2) ? destination : archive);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Directory not found: %s\n", (paths == 2) ? destination : archive);
 
         return;
 
@@ -522,7 +522,7 @@ static void onterm(struct message *message)
     if (!(magic[0] == 0x1F && magic[1] == 0x8B) && !(magic[0] == 'P' && magic[1] == 'K'))
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "Not a zip or gzip file: %s\n", archive);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Not a zip or gzip file: %s\n", archive);
 
         return;
 
@@ -543,7 +543,7 @@ static void onterm(struct message *message)
     else
     {
 
-        channel_send_fmt(0, message->source, MESSAGE_ERROR, "No mem: file could be mapped\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "No mem: file could be mapped\n");
 
     }
 
@@ -570,8 +570,8 @@ void init(void)
 
     }
 
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

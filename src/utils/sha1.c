@@ -38,7 +38,7 @@ static void onterm(struct message *message)
     for (i = 0; i < 20; i++)
         cstring_write_value(output, 40, digest[i], 16, 2, i * 2);
 
-    channel_send_fmt(0, message->source, MESSAGE_DATA, "%w\n", output, &l);
+    channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "%w\n", output, &l);
 
 }
 
@@ -46,9 +46,9 @@ void init(void)
 {
 
     sha1_init(&sum);
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

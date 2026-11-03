@@ -62,16 +62,16 @@ static void onpath(struct message *message)
 static void onterm(struct message *message)
 {
 
-    channel_send_fmt(0, message->source, MESSAGE_DATA, "%u\n%u\n%u\n", &lines, &words, &bytes);
+    channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "%u\n%u\n%u\n", &lines, &words, &bytes);
 
 }
 
 void init(void)
 {
 
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_PATH, onpath);
-    channel_bind(MESSAGE_TERM, onterm);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_TERM, onterm);
 
 }
 

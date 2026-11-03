@@ -18,7 +18,7 @@ static int accumulator;
 static void refresh(unsigned int wm, int value)
 {
 
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= result label \"%i\"\n", &value);
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= result label \"%i\"\n", &value);
 
 }
 
@@ -36,7 +36,7 @@ static void fail(unsigned int wm)
 {
 
     clear();
-    channel_send_fmt(0, wm, MESSAGE_WMRENDERDATA, "= result label \"Error\"\n");
+    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= result label \"Error\"\n");
 
 }
 
@@ -166,9 +166,9 @@ static void onmain(struct message *message)
 
         char *alfi = "initrd:data/alfi/wcalc.alfi";
 
-        channel_send(0, wm, MESSAGE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
+        channel_send(0, wm, MESSAGE_TYPE_WMRENDERFILE, cstring_length_zero(alfi), alfi);
         channel_hold(0);
-        channel_send(0, wm, MESSAGE_WMUNMAP, 0, 0);
+        channel_send(0, wm, MESSAGE_TYPE_WMUNMAP, 0, 0);
 
     }
 
@@ -177,7 +177,7 @@ static void onmain(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
+    struct message_wmevent *event = message_validate(MESSAGE_TYPE_WMEVENT, message->data, message->length);
 
     if (event)
     {
@@ -204,7 +204,7 @@ static void onwmevent(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_TYPE_WMKEYPRESS, message->data, message->length);
 
     if (wmkeypress)
     {
@@ -261,9 +261,9 @@ void init(void)
 {
 
     option_add("wm-service", "wm");
-    channel_bind(MESSAGE_MAIN, onmain);
-    channel_bind(MESSAGE_WMEVENT, onwmevent);
-    channel_bind(MESSAGE_WMKEYPRESS, onwmkeypress);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_WMEVENT, onwmevent);
+    channel_bind(MESSAGE_TYPE_WMKEYPRESS, onwmkeypress);
 
 }
 

@@ -19,7 +19,7 @@ static void output(unsigned int source, void *buffer, unsigned int count)
     }
 
     if (i)
-        channel_send(0, source, MESSAGE_DATA, i, data);
+        channel_send(0, source, MESSAGE_TYPE_DATA, i, data);
 
 }
 
@@ -43,8 +43,8 @@ void init(void)
 {
 
     option_add("n", "10");
-    channel_bind(MESSAGE_DATA, ondata);
-    channel_bind(MESSAGE_PATH, onpath);
+    channel_bind(MESSAGE_TYPE_DATA, ondata);
+    channel_bind(MESSAGE_TYPE_PATH, onpath);
 
 }
 

@@ -52,7 +52,7 @@ static void dnsresolve(struct socket *socket, char *domain)
 static void onconsoledata(struct message *message)
 {
 
-    struct message_consoledata *consoledata = message_validate(MESSAGE_CONSOLEDATA, message->data, message->length);
+    struct message_consoledata *consoledata = message_validate(MESSAGE_TYPE_CONSOLEDATA, message->data, message->length);
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
     if (ethernet && consoledata)
@@ -79,7 +79,7 @@ static void onconsoledata(struct message *message)
 
         default:
             ring_write(&input, &consoledata->data, 1);
-            channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_DATA, 1, &consoledata->data);
+            channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_TYPE_DATA, 1, &consoledata->data);
 
             if (consoledata->data == '\n' && (count = ring_read(&input, buffer, 4096)))
                 interpret(ethernet, buffer, count);
@@ -116,15 +116,15 @@ static void onmain(struct message *message)
         if (cstring_length(option_getstring("domain")))
             dnsresolve(&remote, option_getstring("domain"));
 
-        channel_send(0, ethernet, MESSAGE_LINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_TYPE_LINK, 0, 0);
         socket_resolveremote(0, ethernet, &local, &router);
         socket_connect_tcp(0, ethernet, &local, &remote, &router);
         socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
         while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
-            channel_send(0, message->source, MESSAGE_DATA, count, buffer);
+            channel_send(0, message->source, MESSAGE_TYPE_DATA, count, buffer);
 
-        channel_send(0, ethernet, MESSAGE_UNLINK, 0, 0);
+        channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 
     }
 
@@ -147,8 +147,8 @@ void init(void)
     option_add("channel", "#fudge");
     option_add("nick", "");
     option_add("realname", "Anonymous User");
-    channel_bind(MESSAGE_CONSOLEDATA, onconsoledata);
-    channel_bind(MESSAGE_MAIN, onmain);
+    channel_bind(MESSAGE_TYPE_CONSOLEDATA, onconsoledata);
+    channel_bind(MESSAGE_TYPE_MAIN, onmain);
 
 }
 

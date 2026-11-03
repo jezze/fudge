@@ -512,7 +512,7 @@ static unsigned int unmap(unsigned int source, unsigned int id)
 static unsigned int oncreaterequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_createrequest *request = message_validate(MESSAGE_CREATEREQUEST, data, count);
+    struct message_createrequest *request = message_validate(MESSAGE_TYPE_CREATEREQUEST, data, count);
     struct message_createresponse response;
 
     if (request)
@@ -524,7 +524,7 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
 
         spinlock_release(&spinlock);
 
-        return kernel_place(server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
     }
 
@@ -535,7 +535,7 @@ static unsigned int oncreaterequest(unsigned int source, unsigned int count, voi
 static unsigned int onmmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_mmaprequest *request = message_validate(MESSAGE_MMAPREQUEST, data, count);
+    struct message_mmaprequest *request = message_validate(MESSAGE_TYPE_MMAPREQUEST, data, count);
     struct message_mmapresponse response;
 
     if (request)
@@ -547,7 +547,7 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 
         spinlock_release(&spinlock);
 
-        return kernel_place(server.resource.inode, source, MESSAGE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
 
     }
 
@@ -558,7 +558,7 @@ static unsigned int onmmaprequest(unsigned int source, unsigned int count, void 
 static unsigned int onmunmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_munmaprequest *request = message_validate(MESSAGE_MUNMAPREQUEST, data, count);
+    struct message_munmaprequest *request = message_validate(MESSAGE_TYPE_MUNMAPREQUEST, data, count);
     struct message_munmapresponse response;
 
     if (request)
@@ -570,7 +570,7 @@ static unsigned int onmunmaprequest(unsigned int source, unsigned int count, voi
 
         spinlock_release(&spinlock);
 
-        return kernel_place(server.resource.inode, source, MESSAGE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
 
     }
 
@@ -582,7 +582,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, data, count);
+    struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
     struct message_readresponse *response = (struct message_readresponse *)buffer;
     unsigned int length;
     struct file *file;
@@ -607,7 +607,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
         response->buffer = 0;
 
-        return kernel_place(server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
@@ -618,7 +618,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 static unsigned int onremoverequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_removerequest *request = message_validate(MESSAGE_REMOVEREQUEST, data, count);
+    struct message_removerequest *request = message_validate(MESSAGE_TYPE_REMOVEREQUEST, data, count);
     struct message_removeresponse response;
 
     if (request)
@@ -630,7 +630,7 @@ static unsigned int onremoverequest(unsigned int source, unsigned int count, voi
 
         spinlock_release(&spinlock);
 
-        return kernel_place(server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
     }
 
@@ -642,7 +642,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, data, count);
+    struct message_statrequest *request = message_validate(MESSAGE_TYPE_STATREQUEST, data, count);
     struct message_statresponse *response = (struct message_statresponse *)buffer;
 
     if (request)
@@ -654,7 +654,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
         spinlock_release(&spinlock);
 
-        return kernel_place(server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
 
     }
 
@@ -665,7 +665,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, data, count);
+    struct message_walkrequest *request = message_validate(MESSAGE_TYPE_WALKREQUEST, data, count);
     struct message_walkresponse response;
 
     if (request)
@@ -677,7 +677,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
         spinlock_release(&spinlock);
 
-        return kernel_place(server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
     }
 
@@ -688,7 +688,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 static unsigned int onwriterequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_writerequest *request = message_validate(MESSAGE_WRITEREQUEST, data, count);
+    struct message_writerequest *request = message_validate(MESSAGE_TYPE_WRITEREQUEST, data, count);
     struct message_writeresponse response;
     struct file *file;
 
@@ -702,7 +702,7 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
         spinlock_release(&spinlock);
 
-        return kernel_place(server.resource.inode, source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_TYPE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 
     }
 
@@ -716,28 +716,28 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
     switch (event)
     {
 
-    case MESSAGE_CREATEREQUEST:
+    case MESSAGE_TYPE_CREATEREQUEST:
         return oncreaterequest(source, count, data);
 
-    case MESSAGE_MMAPREQUEST:
+    case MESSAGE_TYPE_MMAPREQUEST:
         return onmmaprequest(source, count, data);
 
-    case MESSAGE_MUNMAPREQUEST:
+    case MESSAGE_TYPE_MUNMAPREQUEST:
         return onmunmaprequest(source, count, data);
 
-    case MESSAGE_READREQUEST:
+    case MESSAGE_TYPE_READREQUEST:
         return onreadrequest(source, count, data);
 
-    case MESSAGE_REMOVEREQUEST:
+    case MESSAGE_TYPE_REMOVEREQUEST:
         return onremoverequest(source, count, data);
 
-    case MESSAGE_STATREQUEST:
+    case MESSAGE_TYPE_STATREQUEST:
         return onstatrequest(source, count, data);
 
-    case MESSAGE_WALKREQUEST:
+    case MESSAGE_TYPE_WALKREQUEST:
         return onwalkrequest(source, count, data);
 
-    case MESSAGE_WRITEREQUEST:
+    case MESSAGE_TYPE_WRITEREQUEST:
         return onwriterequest(source, count, data);
 
     }
