@@ -4,7 +4,7 @@
 #include "pool.h"
 #include "service.h"
 #include "kernel.h"
-#include "rootsrv.h"
+#include "namesrv.h"
 
 #define LISTRECORDS                     8
 
@@ -175,12 +175,12 @@ static unsigned int rootoperands_place(unsigned int target, unsigned int source,
 
 }
 
-void rootsrv_setup(void)
+void namesrv_setup(void)
 {
 
     resource_operands_init(&rootoperands, 0, rootoperands_place, 0);
     resource_init(&rootserver, 0, 0, &rootoperands);
-    service_init(&rootservice, "rootsrv");
+    service_init(&rootservice, "namesrv");
     pool_setroot(&rootserver);
     service_register(&rootservice, MESSAGE_ROOT);
 

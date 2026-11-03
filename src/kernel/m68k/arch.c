@@ -548,7 +548,7 @@ void arch_setup2(void)
     isr_stack = ARCH_KERNEL_STACKBASE + ARCH_KERNEL_STACKSIZE;
 
     pool_setup(ARCH_MAILBOX_BASE);
-    rootsrv_setup();
+    namesrv_setup();
     memsrv_setup(ARCH_MEM_BASE, unmap);
 
 }

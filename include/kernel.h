@@ -7,7 +7,7 @@
 #include <kernel/core.h>
 #include <kernel/pool.h>
 #include <kernel/service.h>
-#include <kernel/rootsrv.h>
+#include <kernel/namesrv.h>
 #include <kernel/dirsrv.h>
 #include <kernel/memsrv.h>
 #include <kernel/kernel.h>
