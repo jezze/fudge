@@ -191,8 +191,11 @@ static void choose(void)
     if (target)
     {
 
+        struct message_pipe pipe;
+
         channel_send_fmt(0, target, MESSAGE_TYPE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
-        channel_send(0, target, MESSAGE_TYPE_MAIN, 0, 0);
+        message_initpipe(&pipe);
+        channel_send(0, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
         channel_send(0, target, MESSAGE_TYPE_TERM, 0, 0);
 
     }

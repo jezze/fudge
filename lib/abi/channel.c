@@ -58,12 +58,14 @@ static unsigned int resolve(unsigned int target)
 static void setpipe(struct message *message)
 {
 
+    struct message_pipe *received = message_validate(MESSAGE_TYPE_MAIN, message->data, message->length);
+
     owner = message->source;
 
-    if (message->length == sizeof (struct message_pipe))
+    if (received)
     {
 
-        buffer_copy(&pipe, message->data, sizeof (struct message_pipe));
+        buffer_copy(&pipe, received, sizeof (struct message_pipe));
 
         if (pipe.nroutes > PIPE_ROUTES)
             pipe.nroutes = PIPE_ROUTES;
@@ -74,15 +76,7 @@ static void setpipe(struct message *message)
     }
 
     else
-    {
-
-        buffer_clear(&pipe, sizeof (struct message_pipe));
-
-        pipe.nterms = 1;
-        pipe.terms[0].event = MESSAGE_TYPE_TERM;
-        pipe.terms[0].to = MESSAGE_TYPE_TERM;
-
-    }
+        message_initpipe(&pipe);
 
 }
 

@@ -285,6 +285,7 @@ static void interrupt(void)
 static void run(void)
 {
 
+    struct message_pipe pipe;
     unsigned int i;
 
     for (i = 0; i < linecount; i++)
@@ -317,7 +318,8 @@ static void run(void)
     }
 
     channel_send_fmt(0, sh, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0export\\01\\0", option_getstring("pwd"));
-    channel_send(0, sh, MESSAGE_TYPE_MAIN, 0, 0);
+    message_initpipe(&pipe);
+    channel_send(0, sh, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
     channel_send(0, sh, MESSAGE_TYPE_DATA, linecount, line);
     channel_send(0, sh, MESSAGE_TYPE_TERM, 0, 0);
     update();

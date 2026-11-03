@@ -28,10 +28,12 @@ static void opensocket(unsigned int source, struct url *url, char address[32])
     if (target)
     {
 
+        struct message_pipe pipe;
         struct message message;
 
         channel_send_fmt(2, target, MESSAGE_TYPE_OPTION, "mode\\0tcp\\0remote-address\\0%s\\0remote-port\\0%s\\0", address, (url->port) ? url->port : "80");
-        channel_send(2, target, MESSAGE_TYPE_MAIN, 0, 0);
+        message_initpipe(&pipe);
+        channel_send(2, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 
         if (channel_poll(2, target, MESSAGE_TYPE_READY, &message))
         {

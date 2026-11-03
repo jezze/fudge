@@ -13,10 +13,12 @@ static unsigned int start(char *command, unsigned int length, unsigned int input
     if (sh)
     {
 
+        struct message_pipe pipe;
         unsigned int offset;
 
         channel_send_fmt(1, sh, MESSAGE_TYPE_OPTION, "pwd\\0%s\\0input\\0%u\\0", option_getstring("pwd"), &input);
-        channel_send(1, sh, MESSAGE_TYPE_MAIN, 0, 0);
+        message_initpipe(&pipe);
+        channel_send(1, sh, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
 
         for (offset = 0; offset < length; offset += MESSAGE_SIZE)
             channel_send(1, sh, MESSAGE_TYPE_DATA, (length - offset < MESSAGE_SIZE) ? length - offset : MESSAGE_SIZE, command + offset);

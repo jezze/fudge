@@ -471,7 +471,10 @@ void arch_runinit(unsigned long address)
     if (target)
     {
 
-        kernel_place(0, target, MESSAGE_TYPE_MAIN, 0, 0);
+        struct message_pipe pipe;
+
+        message_initpipe(&pipe);
+        kernel_place(0, target, MESSAGE_TYPE_MAIN, sizeof (struct message_pipe), &pipe);
         arch_leave();
 
     }

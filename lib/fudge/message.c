@@ -1,3 +1,4 @@
+#include "buffer.h"
 #include "message.h"
 
 static void *checksize(void *data, unsigned int count, unsigned int size)
@@ -24,6 +25,18 @@ void message_init(struct message *message, unsigned int event, unsigned int sour
 
 }
 
+/* the pipe of a task started outside a job: no routes, TERM goes to the owner */
+void message_initpipe(struct message_pipe *pipe)
+{
+
+    buffer_clear(pipe, sizeof (struct message_pipe));
+
+    pipe->nterms = 1;
+    pipe->terms[0].event = MESSAGE_TYPE_TERM;
+    pipe->terms[0].to = MESSAGE_TYPE_TERM;
+
+}
+
 void *message_validate(unsigned int type, void *data, unsigned int count)
 {
 
@@ -31,7 +44,7 @@ void *message_validate(unsigned int type, void *data, unsigned int count)
     {
 
     case MESSAGE_TYPE_MAIN:
-        return (count) ? checksize(data, count, sizeof (struct message_pipe)) : data;
+        return checksize(data, count, sizeof (struct message_pipe));
 
     case MESSAGE_TYPE_KEYPRESS:
         return checksize(data, count, sizeof (struct message_keypress));
