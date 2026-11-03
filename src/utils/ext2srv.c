@@ -51,6 +51,7 @@ static unsigned int sendblockrequest(unsigned int event, unsigned int reply, uns
 
     request.offset = partoffset + sector * blocksize;
     request.count = count;
+    request.target = 0;
 
     channel_send(1, block, event, sizeof (struct event_blockrequest), &request);
 

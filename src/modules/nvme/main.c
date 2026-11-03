@@ -375,7 +375,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
     struct disk *disk = getdisk(session);
-    unsigned long buffer = kernel_getbuffer(session->source);
+    unsigned long buffer = kernel_getbuffer(session->target);
     unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
 
     spinlock_acquire(&spinlock);

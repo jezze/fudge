@@ -256,6 +256,7 @@ struct event_blockrequest
 
     unsigned int count;
     unsigned int offset;
+    unsigned int target;
 
 };
 

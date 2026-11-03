@@ -139,7 +139,7 @@ static void handleirq(unsigned int irq)
 static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
-    void *buffer = (void *)kernel_getbuffer(session->source);
+    void *buffer = (void *)kernel_getbuffer(session->target);
 
     if (!buffer)
     {

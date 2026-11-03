@@ -17,6 +17,7 @@ static unsigned int sendblockreadrequest(unsigned int target, unsigned int offse
 
     request.offset = offset;
     request.count = count;
+    request.target = 0;
 
     channel_send(1, target, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
     channel_wait(1, target, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);

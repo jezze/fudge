@@ -137,7 +137,7 @@ static unsigned int transfer(unsigned int id, unsigned int write, unsigned int b
 static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
-    unsigned char *buffer = (unsigned char *)kernel_getbuffer(session->source);
+    unsigned char *buffer = (unsigned char *)kernel_getbuffer(session->target);
     unsigned int blocksize = blockinterface.blocksize;
     unsigned int count = (session->count > TASK_BUFFERSIZE) ? TASK_BUFFERSIZE : session->count;
     unsigned int offset;

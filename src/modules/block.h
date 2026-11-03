@@ -6,6 +6,7 @@ struct block_session
 
     unsigned int type;
     unsigned int source;
+    unsigned int target;
     unsigned int start;
     unsigned int count;
     unsigned int offset;

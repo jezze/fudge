@@ -35,6 +35,7 @@ static unsigned int readblock(unsigned int block, unsigned int offset)
 
     request.offset = offset;
     request.count = blockinfo.blocksize;
+    request.target = 0;
 
     channel_send(1, block, EVENT_BLOCKREADREQUEST, sizeof (struct event_blockrequest), &request);
     channel_wait(1, block, EVENT_BLOCKREADRESPONSE, sizeof (struct event_blockresponse), &response);
