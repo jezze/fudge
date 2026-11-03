@@ -196,13 +196,13 @@ unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id
     request.id = id;
     request.offset = offset;
     request.count = count;
-    request.flags = 0;
+    request.flags = READ_FLAG_BUFFER;
 
     if (!channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
         return 0;
 
     channel_wait(ichannel, target, EVENT_READRESPONSE, MESSAGE_SIZE, response);
-    buffer_copy(buffer, response + 1, response->count);
+    buffer_copy(buffer, (response->buffer) ? (void *)response->buffer : response + 1, response->count);
 
     return response->count;
 

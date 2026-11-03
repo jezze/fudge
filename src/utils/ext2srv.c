@@ -18,6 +18,15 @@ struct cacheslot
 
 };
 
+struct span
+{
+
+    unsigned int sector;
+    unsigned int blocks;
+    unsigned int count;
+
+};
+
 static struct cacheslot cache[CACHESLOTS];
 static unsigned int cachenext;
 
@@ -43,7 +52,7 @@ static void updatecache(unsigned int offset, unsigned int count)
 
 }
 
-static unsigned int sendblockrequest(unsigned int event, unsigned int reply, unsigned int count, unsigned int sector, unsigned int blocksize)
+static unsigned int sendblockrequest(unsigned int event, unsigned int reply, unsigned int count, unsigned int sector, unsigned int blocksize, unsigned int target)
 {
 
     struct event_blockrequest request;
@@ -51,7 +60,7 @@ static unsigned int sendblockrequest(unsigned int event, unsigned int reply, uns
 
     request.offset = partoffset + sector * blocksize;
     request.count = count;
-    request.target = 0;
+    request.target = target;
 
     if (!channel_send(1, block, event, sizeof (struct event_blockrequest), &request))
         return 0;
@@ -63,14 +72,14 @@ static unsigned int sendblockrequest(unsigned int event, unsigned int reply, uns
 static unsigned int sendblockreadrequest(unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
-    return sendblockrequest(EVENT_BLOCKREADREQUEST, EVENT_BLOCKREADRESPONSE, count, sector, blocksize);
+    return sendblockrequest(EVENT_BLOCKREADREQUEST, EVENT_BLOCKREADRESPONSE, count, sector, blocksize, 0);
 
 }
 
 static unsigned int sendblockwriterequest(unsigned int count, unsigned int sector, unsigned int blocksize)
 {
 
-    unsigned int written = sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, count, sector, blocksize);
+    unsigned int written = sendblockrequest(EVENT_BLOCKWRITEREQUEST, EVENT_BLOCKWRITERESPONSE, count, sector, blocksize, 0);
 
     updatecache(sector * blocksize, written);
 
@@ -920,44 +929,72 @@ static unsigned int writedirectory(struct ext2_node *node, unsigned int roffset,
 
 }
 
+static struct span getspan(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity)
+{
+
+    unsigned int remaining = node->sizeLow - roffset;
+    unsigned int blockoffset = roffset % blocksize;
+    struct span span;
+
+    span.count = capacity;
+
+    if (span.count > rcount)
+        span.count = rcount;
+
+    if (span.count > remaining)
+        span.count = remaining;
+
+    if (span.count > blockinfo.buffersize - blockoffset)
+        span.count = blockinfo.buffersize - blockoffset;
+
+    span.sector = getrun(node, roffset, (blockoffset + span.count + blocksize - 1) / blocksize, &span.blocks);
+
+    if (span.count > span.blocks * blocksize - blockoffset)
+        span.count = span.blocks * blocksize - blockoffset;
+
+    return span;
+
+}
+
 static unsigned int readfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int capacity, void *data)
 {
 
     if (roffset < node->sizeLow)
     {
 
-        unsigned int remaining = node->sizeLow - roffset;
-        unsigned int blockoffset = roffset % blocksize;
-        unsigned int count = capacity;
-        unsigned int blocks;
-        unsigned int sector;
+        struct span span = getspan(node, roffset, rcount, capacity);
 
-        if (count > rcount)
-            count = rcount;
-
-        if (count > remaining)
-            count = remaining;
-
-        if (count > blockinfo.buffersize - blockoffset)
-            count = blockinfo.buffersize - blockoffset;
-
-        sector = getrun(node, roffset, (blockoffset + count + blocksize - 1) / blocksize, &blocks);
-
-        if (count > blocks * blocksize - blockoffset)
-            count = blocks * blocksize - blockoffset;
-
-        if (sector)
+        if (span.sector)
         {
 
-            sendblockreadrequest(blocks * blocksize, sector, blocksize);
+            sendblockreadrequest(span.blocks * blocksize, span.sector, blocksize);
 
-            return buffer_write(data, capacity, (char *)blockinfo.buffer + blockoffset, count, 0);
+            return buffer_write(data, capacity, (char *)blockinfo.buffer + roffset % blocksize, span.count, 0);
 
         }
 
-        buffer_clear(data, count);
+        buffer_clear(data, span.count);
 
-        return count;
+        return span.count;
+
+    }
+
+    return 0;
+
+}
+
+/* the blocks go straight into the target's block buffer; holes and failures return 0 and are read the usual way */
+static unsigned int sendfile(struct ext2_node *node, unsigned int roffset, unsigned int rcount, unsigned int target)
+{
+
+    if (roffset < node->sizeLow)
+    {
+
+        struct span span = getspan(node, roffset, rcount, rcount);
+        unsigned int count = span.blocks * blocksize;
+
+        if (span.sector && sendblockrequest(EVENT_BLOCKREADREQUEST, EVENT_BLOCKREADRESPONSE, count, span.sector, blocksize, target) == count)
+            return span.count;
 
     }
 
@@ -1184,6 +1221,7 @@ static void onreadrequest(struct message *message)
     simpleread(&node, request->id);
 
     response->count = 0;
+    response->buffer = 0;
 
     switch (node.type & 0xF000)
     {
@@ -1194,15 +1232,19 @@ static void onreadrequest(struct message *message)
         break;
 
     case 0x8000:
-        response->count = readfile(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
+        if (request->flags & READ_FLAG_BUFFER)
+            response->count = sendfile(&node, request->offset, request->count, message->source);
+
+        if (response->count)
+            response->buffer = blockinfo.buffer + request->offset % blocksize;
+        else
+            response->count = readfile(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct event_readresponse), response + 1);
 
         break;
 
     }
 
-    response->buffer = 0;
-
-    channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, data);
+    channel_send(0, message->source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + ((response->buffer) ? 0 : response->count), data);
 
 }
 
