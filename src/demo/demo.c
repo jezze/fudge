@@ -140,13 +140,18 @@ static void onmain(struct message *message)
 static void onvideoinfo(struct message *message)
 {
 
-    struct message_videoinfo *videoinfo = message->data;
+    struct message_videoinfo *videoinfo = message_validate(MESSAGE_VIDEOINFO, message->data, message->length);
 
-    framebuffer = (unsigned int *)videoinfo->framebuffer;
-    wmax = videoinfo->width;
-    hmax = videoinfo->height;
-    wmid = wmax / 2;
-    hmid = hmax / 2;
+    if (videoinfo)
+    {
+
+        framebuffer = (unsigned int *)videoinfo->framebuffer;
+        wmax = videoinfo->width;
+        hmax = videoinfo->height;
+        wmid = wmax / 2;
+        hmid = hmax / 2;
+
+    }
 
 }
 

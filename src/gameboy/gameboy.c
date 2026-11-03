@@ -329,39 +329,59 @@ static void press(unsigned int id, unsigned int mod)
 static void onkeypress(struct message *message)
 {
 
-    struct message_keypress *keypress = message->data;
+    struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
     unsigned int id = keys_getcode(&keys, keypress->scancode);
 
-    press(id, keys.mod);
+    if (keypress)
+    {
+
+        press(id, keys.mod);
+
+    }
 
 }
 
 static void onkeyrelease(struct message *message)
 {
 
-    struct message_keyrelease *keyrelease = message->data;
+    struct message_keyrelease *keyrelease = message_validate(MESSAGE_KEYRELEASE, message->data, message->length);
 
-    setbutton(keys_getcode(&keys, keyrelease->scancode), 0);
+    if (keyrelease)
+    {
+
+        setbutton(keys_getcode(&keys, keyrelease->scancode), 0);
+
+    }
 
 }
 
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
 
-    if (!fullscreen)
-        press(wmkeypress->id, wmkeypress->keymod);
+    if (wmkeypress)
+    {
+
+        if (!fullscreen)
+            press(wmkeypress->id, wmkeypress->keymod);
+
+    }
 
 }
 
 static void onwmkeyrelease(struct message *message)
 {
 
-    struct message_wmkeyrelease *wmkeyrelease = message->data;
+    struct message_wmkeyrelease *wmkeyrelease = message_validate(MESSAGE_WMKEYRELEASE, message->data, message->length);
 
-    if (!fullscreen)
-        setbutton(wmkeyrelease->id, 0);
+    if (wmkeyrelease)
+    {
+
+        if (!fullscreen)
+            setbutton(wmkeyrelease->id, 0);
+
+    }
 
 }
 

@@ -220,28 +220,33 @@ static void fillaudio(void)
 static void ontimertick(struct message *message)
 {
 
-    struct message_timertick *timertick = message->data;
+    struct message_timertick *timertick = message_validate(MESSAGE_TIMERTICK, message->data, message->length);
     unsigned int elapsed;
 
-    if (!counting)
+    if (timertick)
     {
 
+        if (!counting)
+        {
+
+            counter = timertick->counter;
+            counting = 1;
+
+        }
+
+        elapsed = timertick->counter - counter;
         counter = timertick->counter;
-        counting = 1;
+        ticks += elapsed;
 
-    }
+        if (audio)
+        {
 
-    elapsed = timertick->counter - counter;
-    counter = timertick->counter;
-    ticks += elapsed;
+            audioahead -= elapsed * (rate / TICKRATE);
 
-    if (audio)
-    {
+            if (audioahead < 0)
+                audioahead = 0;
 
-        audioahead -= elapsed * (rate / TICKRATE);
-
-        if (audioahead < 0)
-            audioahead = 0;
+        }
 
     }
 
@@ -460,39 +465,59 @@ static void release(unsigned int id)
 static void onkeypress(struct message *message)
 {
 
-    struct message_keypress *keypress = message->data;
+    struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
     unsigned int id = keys_getcode(&keys, keypress->scancode);
 
-    press(id, keys.mod);
+    if (keypress)
+    {
+
+        press(id, keys.mod);
+
+    }
 
 }
 
 static void onkeyrelease(struct message *message)
 {
 
-    struct message_keyrelease *keyrelease = message->data;
+    struct message_keyrelease *keyrelease = message_validate(MESSAGE_KEYRELEASE, message->data, message->length);
 
-    release(keys_getcode(&keys, keyrelease->scancode));
+    if (keyrelease)
+    {
+
+        release(keys_getcode(&keys, keyrelease->scancode));
+
+    }
 
 }
 
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
 
-    if (!fullscreen)
-        press(wmkeypress->id, wmkeypress->keymod);
+    if (wmkeypress)
+    {
+
+        if (!fullscreen)
+            press(wmkeypress->id, wmkeypress->keymod);
+
+    }
 
 }
 
 static void onwmkeyrelease(struct message *message)
 {
 
-    struct message_wmkeyrelease *wmkeyrelease = message->data;
+    struct message_wmkeyrelease *wmkeyrelease = message_validate(MESSAGE_WMKEYRELEASE, message->data, message->length);
 
-    if (!fullscreen)
-        release(wmkeyrelease->id);
+    if (wmkeyrelease)
+    {
+
+        if (!fullscreen)
+            release(wmkeyrelease->id);
+
+    }
 
 }
 
