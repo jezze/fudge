@@ -939,111 +939,116 @@ static void onpath(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message->data;
+    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
 
-    if (kv_match(event, "q=area"))
+    if (event)
     {
 
-        renderarea(kv_getstring(event, "name="));
-
-    }
-
-    else if (kv_match(event, "q=choose") && cstring_match(kv_getstring(event, "id="), "colors-widget"))
-    {
-
-        char *value = kv_getstring(event, "value=");
-
-        copystring(colorwidget, 32, value, cstring_length(value));
-        renderarea("colors");
-
-    }
-
-    else if (kv_match(event, "q=choose"))
-    {
-
-        setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
-        channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
-
-    }
-
-    else if (kv_match(event, "q=change"))
-    {
-
-        char *id = kv_getstring(event, "id=");
-
-        setfield(id, kv_getstring(event, "value="));
-
-        if (cstring_match(id, "mouse-speed-box"))
+        if (kv_match(event, "q=area"))
         {
 
-            unsigned int value = getspeedvalue();
-
-            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mouse-speed value \"%u\"\n", &value);
+            renderarea(kv_getstring(event, "name="));
 
         }
 
-        channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= save mode \"normal\"\n");
-
-    }
-
-    else if (kv_match(event, "q=speed"))
-    {
-
-        unsigned int speed = 1 + kv_getvalue(event, "value=", 10) * (MOUSE_FASTEST - 1) / 0xFFFF;
-
-        cstring_write_fmt(config.speed, 16, 0, "%u\\0", &speed);
-        channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", config.speed);
-
-    }
-
-    else if (kv_match(event, "q=color"))
-    {
-
-        unsigned int index = kv_getvalue(event, "index=", 10);
-        char *value = kv_getstring(event, "value=");
-
-        if (index < config.ncolors)
-            copystring(config.colors[index].value, 16, value, cstring_length(value));
-
-        channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
-
-    }
-
-    else if (kv_match(event, "q=save"))
-    {
-
-        static char data[0x8000];
-
-        if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingspath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)))
-            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= save mode \"disabled\"\n");
-
-    }
-
-    else if (kv_match(event, "q=open"))
-    {
-
-        unsigned int target = fs_spawn(1, "initrd:bin/wfile");
-        char *id = kv_getstring(event, "id=");
-
-        copystring(selecting, 32, id, cstring_length(id));
-
-        if (target)
+        else if (kv_match(event, "q=choose") && cstring_match(kv_getstring(event, "id="), "colors-widget"))
         {
 
-            channel_send_fmt(0, target, MESSAGE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
-            channel_send(0, target, MESSAGE_MAIN, 0, 0);
-            channel_send(0, target, MESSAGE_TERM, 0, 0);
+            char *value = kv_getstring(event, "value=");
+
+            copystring(colorwidget, 32, value, cstring_length(value));
+            renderarea("colors");
 
         }
 
-    }
+        else if (kv_match(event, "q=choose"))
+        {
 
-    else if (kv_match(event, "q=apply"))
-    {
+            setchoice(kv_getstring(event, "id="), kv_getstring(event, "value="));
+            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= %s label \"%s\"\n= save mode \"normal\"\n", kv_getstring(event, "id="), kv_getstring(event, "label="));
 
-        static char data[0x8000];
+        }
 
-        sendlines(message->source, MESSAGE_WMCONFIG, data, writelines(data, 0x8000));
+        else if (kv_match(event, "q=change"))
+        {
+
+            char *id = kv_getstring(event, "id=");
+
+            setfield(id, kv_getstring(event, "value="));
+
+            if (cstring_match(id, "mouse-speed-box"))
+            {
+
+                unsigned int value = getspeedvalue();
+
+                channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mouse-speed value \"%u\"\n", &value);
+
+            }
+
+            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= save mode \"normal\"\n");
+
+        }
+
+        else if (kv_match(event, "q=speed"))
+        {
+
+            unsigned int speed = 1 + kv_getvalue(event, "value=", 10) * (MOUSE_FASTEST - 1) / 0xFFFF;
+
+            cstring_write_fmt(config.speed, 16, 0, "%u\\0", &speed);
+            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mouse-speed-text label \"%s\"\n= save mode \"normal\"\n", config.speed);
+
+        }
+
+        else if (kv_match(event, "q=color"))
+        {
+
+            unsigned int index = kv_getvalue(event, "index=", 10);
+            char *value = kv_getstring(event, "value=");
+
+            if (index < config.ncolors)
+                copystring(config.colors[index].value, 16, value, cstring_length(value));
+
+            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= s%u color \"%s\"\n= save mode \"normal\"\n", &index, value);
+
+        }
+
+        else if (kv_match(event, "q=save"))
+        {
+
+            static char data[0x8000];
+
+            if (savefile(option_getstring("config"), data, writeconfig(data, 0x8000)) && savefile(config.bindingspath, data, writebindings(data, 0x8000)) && savefile(config.themepath, data, writetheme(data, 0x8000)))
+                channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= save mode \"disabled\"\n");
+
+        }
+
+        else if (kv_match(event, "q=open"))
+        {
+
+            unsigned int target = fs_spawn(1, "initrd:bin/wfile");
+            char *id = kv_getstring(event, "id=");
+
+            copystring(selecting, 32, id, cstring_length(id));
+
+            if (target)
+            {
+
+                channel_send_fmt(0, target, MESSAGE_OPTION, "mode\\0select\\0wm-service\\0%s\\0", option_getstring("wm-service"));
+                channel_send(0, target, MESSAGE_MAIN, 0, 0);
+                channel_send(0, target, MESSAGE_TERM, 0, 0);
+
+            }
+
+        }
+
+        else if (kv_match(event, "q=apply"))
+        {
+
+            static char data[0x8000];
+
+            sendlines(message->source, MESSAGE_WMCONFIG, data, writelines(data, 0x8000));
+
+        }
 
     }
 

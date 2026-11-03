@@ -14,12 +14,17 @@ static unsigned int output;
 static void onloginfo(struct message *message)
 {
 
-    struct message_loginfo *loginfo = message->data;
-    char *description = (char *)(loginfo + 1);
-    unsigned int count = loginfo->count - sizeof (struct message_loginfo);
+    struct message_loginfo *loginfo = message_validate(MESSAGE_LOGINFO, message->data, message->length);
 
-    if (option_getdecimal("level") >= loginfo->level)
+    if (loginfo && option_getdecimal("level") >= loginfo->level)
+    {
+
+        char *description = (char *)(loginfo + 1);
+        unsigned int count = loginfo->count - sizeof (struct message_loginfo);
+
         channel_send_fmt(0, output, MESSAGE_DATA, "[%s] %w\n", levels[loginfo->level], description, &count);
+
+    }
 
 }
 

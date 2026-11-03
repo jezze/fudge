@@ -210,24 +210,16 @@ static struct readreply readreply(unsigned int ichannel, unsigned int target, un
     request.count = count;
     request.flags = READ_FLAG_BUFFER;
 
-    if (channel_send(ichannel, target, MESSAGE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_poll(ichannel, target, MESSAGE_READRESPONSE, &message) && message.length >= sizeof (struct message_readresponse))
+    if (channel_send(ichannel, target, MESSAGE_READREQUEST, sizeof (struct message_readrequest), &request) && channel_poll(ichannel, target, MESSAGE_READRESPONSE, &message))
     {
 
-        struct message_readresponse *response = message.data;
+        struct message_readresponse *response = message_validate(MESSAGE_READRESPONSE, message.data, message.length);
 
-        if (response->buffer)
+        if (response)
         {
 
             reply.count = response->count;
-            reply.data = (void *)response->buffer;
-
-        }
-
-        else if (response->count <= message.length - sizeof (struct message_readresponse))
-        {
-
-            reply.count = response->count;
-            reply.data = response + 1;
+            reply.data = (response->buffer) ? (void *)response->buffer : response + 1;
 
         }
 
@@ -349,14 +341,18 @@ unsigned int fs_stat(unsigned int ichannel, unsigned int target, unsigned int id
 
     unsigned char data[MESSAGE_SIZE];
     struct message_statrequest request;
-    struct message_statresponse *response = (struct message_statresponse *)data;
+    struct message_statresponse *response;
 
     request.id = id;
 
     if (!channel_send(ichannel, target, MESSAGE_STATREQUEST, sizeof (struct message_statrequest), &request))
         return 0;
 
-    channel_wait(ichannel, target, MESSAGE_STATRESPONSE, MESSAGE_SIZE, response);
+    response = message_validate(MESSAGE_STATRESPONSE, data, channel_wait(ichannel, target, MESSAGE_STATRESPONSE, MESSAGE_SIZE, data));
+
+    if (!response || response->count > sizeof (struct record))
+        return 0;
+
     buffer_copy(record, response + 1, response->count);
 
     return response->count;

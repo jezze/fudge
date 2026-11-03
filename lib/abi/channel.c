@@ -529,7 +529,7 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
 
     char data[MESSAGE_SIZE];
     struct message_readrequest request;
-    struct message_readresponse *response = (struct message_readresponse *)data;
+    struct message_readresponse *response;
 
     request.id = id;
     request.offset = 0;
@@ -539,7 +539,9 @@ static unsigned int readvalue(unsigned int target, unsigned int id)
     if (!channel_send(1, target, MESSAGE_READREQUEST, sizeof (struct message_readrequest), &request))
         return 0;
 
-    if (!channel_wait(1, target, MESSAGE_READRESPONSE, MESSAGE_SIZE, data) || response->count > 16)
+    response = message_validate(MESSAGE_READRESPONSE, data, channel_wait(1, target, MESSAGE_READRESPONSE, MESSAGE_SIZE, data));
+
+    if (!response || response->buffer || response->count > 16)
         return 0;
 
     return cstring_read_value((char *)(response + 1), response->count, 10);

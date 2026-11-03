@@ -230,31 +230,36 @@ static void onpath(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message->data;
+    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
 
-    if (kv_match(event, "q=wrap"))
+    if (event)
     {
 
-        char *label = kv_getstring(event, "wrap=");
-        unsigned int i;
-
-        for (i = 0; i < NUM_WRAPS; i++)
+        if (kv_match(event, "q=wrap"))
         {
 
-            if (label && cstring_match(label, labels[i]))
-                wrap = i;
+            char *label = kv_getstring(event, "wrap=");
+            unsigned int i;
+
+            for (i = 0; i < NUM_WRAPS; i++)
+            {
+
+                if (label && cstring_match(label, labels[i]))
+                    wrap = i;
+
+            }
+
+            setwrap();
 
         }
 
-        setwrap();
+        if (kv_match(event, "q=open"))
+            choose();
+
+        if (kv_match(event, "q=save"))
+            save();
 
     }
-
-    if (kv_match(event, "q=open"))
-        choose();
-
-    if (kv_match(event, "q=save"))
-        save();
 
 }
 

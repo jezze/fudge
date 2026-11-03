@@ -440,10 +440,44 @@ static void onmain(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
 
-    if (sh)
+    if (wmkeypress)
     {
+
+        if (sh)
+        {
+
+            if (wmkeypress->keymod & KEYS_MOD_CTRL)
+            {
+
+                switch (wmkeypress->id)
+                {
+
+                case KEYS_KEY_C:
+                    interrupt();
+
+                    break;
+
+                case KEYS_KEY_Z:
+                    detach();
+
+                    break;
+
+                }
+
+            }
+
+            else
+            {
+
+                channel_send(0, sh, MESSAGE_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+
+            }
+
+            return;
+
+        }
 
         if (wmkeypress->keymod & KEYS_MOD_CTRL)
         {
@@ -451,79 +485,108 @@ static void onwmkeypress(struct message *message)
             switch (wmkeypress->id)
             {
 
-            case KEYS_KEY_C:
-                interrupt();
+            case KEYS_KEY_A:
+                movestart();
 
                 break;
 
-            case KEYS_KEY_Z:
-                detach();
+            case KEYS_KEY_B:
+                moveleft(leftsize());
+
+                break;
+
+            case KEYS_KEY_D:
+                deleteright(rightsize());
+
+                break;
+
+            case KEYS_KEY_E:
+                moveend();
+
+                break;
+
+            case KEYS_KEY_F:
+                moveright(rightsize());
+
+                break;
+
+            case KEYS_KEY_H:
+                deleteleft(leftsize());
+
+                break;
+
+            case KEYS_KEY_K:
+                deleteend();
+
+                break;
+
+            case KEYS_KEY_L:
+                clearresult();
+
+                break;
+
+            case KEYS_KEY_U:
+                deletestart();
 
                 break;
 
             }
 
-        }
+            update();
 
-        else
-        {
-
-            channel_send(0, sh, MESSAGE_CONSOLEDATA, wmkeypress->length, &wmkeypress->unicode);
+            return;
 
         }
-
-        return;
-
-    }
-
-    if (wmkeypress->keymod & KEYS_MOD_CTRL)
-    {
 
         switch (wmkeypress->id)
         {
 
-        case KEYS_KEY_A:
-            movestart();
-
-            break;
-
-        case KEYS_KEY_B:
-            moveleft(leftsize());
-
-            break;
-
-        case KEYS_KEY_D:
-            deleteright(rightsize());
-
-            break;
-
-        case KEYS_KEY_E:
-            moveend();
-
-            break;
-
-        case KEYS_KEY_F:
-            moveright(rightsize());
-
-            break;
-
-        case KEYS_KEY_H:
+        case KEYS_KEY_BACKSPACE:
             deleteleft(leftsize());
 
             break;
 
-        case KEYS_KEY_K:
-            deleteend();
+        case KEYS_KEY_DELETE:
+            deleteright(rightsize());
 
             break;
 
-        case KEYS_KEY_L:
-            clearresult();
+        case KEYS_KEY_TAB:
+            complete();
 
             break;
 
-        case KEYS_KEY_U:
-            deletestart();
+        case KEYS_KEY_ENTER:
+            submit();
+
+            return;
+
+        case KEYS_KEY_HOME:
+            movestart();
+
+            break;
+
+        case KEYS_KEY_CURSORLEFT:
+            moveleft(leftsize());
+
+            break;
+
+        case KEYS_KEY_CURSORRIGHT:
+            moveright(rightsize());
+
+            break;
+
+        case KEYS_KEY_END:
+            moveend();
+
+            break;
+
+        case KEYS_KEY_CURSORUP:
+        case KEYS_KEY_CURSORDOWN:
+            break;
+
+        default:
+            insertleft(wmkeypress->length, &wmkeypress->unicode);
 
             break;
 
@@ -531,65 +594,7 @@ static void onwmkeypress(struct message *message)
 
         update();
 
-        return;
-
     }
-
-    switch (wmkeypress->id)
-    {
-
-    case KEYS_KEY_BACKSPACE:
-        deleteleft(leftsize());
-
-        break;
-
-    case KEYS_KEY_DELETE:
-        deleteright(rightsize());
-
-        break;
-
-    case KEYS_KEY_TAB:
-        complete();
-
-        break;
-
-    case KEYS_KEY_ENTER:
-        submit();
-
-        return;
-
-    case KEYS_KEY_HOME:
-        movestart();
-
-        break;
-
-    case KEYS_KEY_CURSORLEFT:
-        moveleft(leftsize());
-
-        break;
-
-    case KEYS_KEY_CURSORRIGHT:
-        moveright(rightsize());
-
-        break;
-
-    case KEYS_KEY_END:
-        moveend();
-
-        break;
-
-    case KEYS_KEY_CURSORUP:
-    case KEYS_KEY_CURSORDOWN:
-        break;
-
-    default:
-        insertleft(wmkeypress->length, &wmkeypress->unicode);
-
-        break;
-
-    }
-
-    update();
 
 }
 

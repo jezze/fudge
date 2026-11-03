@@ -52,12 +52,12 @@ static void dnsresolve(struct socket *socket, char *domain)
 static void onconsoledata(struct message *message)
 {
 
+    struct message_consoledata *consoledata = message_validate(MESSAGE_CONSOLEDATA, message->data, message->length);
     unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
 
-    if (ethernet)
+    if (ethernet && consoledata)
     {
 
-        struct message_consoledata *consoledata = message->data;
         char buffer[4096];
         unsigned int count;
 

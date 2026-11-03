@@ -177,70 +177,80 @@ static void onmain(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message->data;
+    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
 
-    if (kv_match(event, "q=num"))
-        updatevalue(message->source, kv_getvalue(event, "value=", 10));
-    else if (kv_match(event, "q=sum"))
-        updatestate(message->source, STATE_SUM);
-    else if (kv_match(event, "q=add"))
-        updatestate(message->source, STATE_ADD);
-    else if (kv_match(event, "q=sub"))
-        updatestate(message->source, STATE_SUB);
-    else if (kv_match(event, "q=mul"))
-        updatestate(message->source, STATE_MUL);
-    else if (kv_match(event, "q=div"))
-        updatestate(message->source, STATE_DIV);
-    else if (kv_match(event, "q=clear"))
-        reset(message->source);
+    if (event)
+    {
+
+        if (kv_match(event, "q=num"))
+            updatevalue(message->source, kv_getvalue(event, "value=", 10));
+        else if (kv_match(event, "q=sum"))
+            updatestate(message->source, STATE_SUM);
+        else if (kv_match(event, "q=add"))
+            updatestate(message->source, STATE_ADD);
+        else if (kv_match(event, "q=sub"))
+            updatestate(message->source, STATE_SUB);
+        else if (kv_match(event, "q=mul"))
+            updatestate(message->source, STATE_MUL);
+        else if (kv_match(event, "q=div"))
+            updatestate(message->source, STATE_DIV);
+        else if (kv_match(event, "q=clear"))
+            reset(message->source);
+
+    }
 
 }
 
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
     unsigned int c = (wmkeypress->length == 1) ? wmkeypress->unicode : 0;
 
-    switch (c)
+    if (wmkeypress)
     {
 
-    case '+':
-        updatestate(message->source, STATE_ADD);
+        switch (c)
+        {
 
-        break;
+        case '+':
+            updatestate(message->source, STATE_ADD);
 
-    case '-':
-        updatestate(message->source, STATE_SUB);
+            break;
 
-        break;
+        case '-':
+            updatestate(message->source, STATE_SUB);
 
-    case '*':
-        updatestate(message->source, STATE_MUL);
+            break;
 
-        break;
+        case '*':
+            updatestate(message->source, STATE_MUL);
 
-    case '/':
-        updatestate(message->source, STATE_DIV);
+            break;
 
-        break;
+        case '/':
+            updatestate(message->source, STATE_DIV);
 
-    case 'c':
-        reset(message->source);
+            break;
 
-        break;
+        case 'c':
+            reset(message->source);
 
-    case '=':
-    case '\n':
-        updatestate(message->source, STATE_SUM);
+            break;
 
-        break;
+        case '=':
+        case '\n':
+            updatestate(message->source, STATE_SUM);
 
-    default:
-        if (c >= '0' && c <= '9')
-            updatevalue(message->source, c - '0');
+            break;
 
-        break;
+        default:
+            if (c >= '0' && c <= '9')
+                updatevalue(message->source, c - '0');
+
+            break;
+
+        }
 
     }
 

@@ -391,97 +391,102 @@ static void onmain(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message->data;
+    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
 
-    if (kv_match(event, "q=copy"))
+    if (event)
     {
 
-        clip(0);
-        setbuttons(message->source);
+        if (kv_match(event, "q=copy"))
+        {
 
-    }
+            clip(0);
+            setbuttons(message->source);
 
-    else if (kv_match(event, "q=cut"))
-    {
+        }
 
-        clip(1);
-        setbuttons(message->source);
+        else if (kv_match(event, "q=cut"))
+        {
 
-    }
+            clip(1);
+            setbuttons(message->source);
 
-    else if (kv_match(event, "q=paste"))
-    {
+        }
 
-        paste();
-        updatecontent(message->source);
+        else if (kv_match(event, "q=paste"))
+        {
 
-    }
+            paste();
+            updatecontent(message->source);
 
-    else if (kv_match(event, "q=delete"))
-    {
+        }
 
-        delete();
-        updatecontent(message->source);
+        else if (kv_match(event, "q=delete"))
+        {
 
-    }
+            delete();
+            updatecontent(message->source);
 
-    else if (kv_match(event, "q=open"))
-    {
+        }
 
-        unsigned int i;
+        else if (kv_match(event, "q=open"))
+        {
 
-        for (i = 0; i < rows && !selected[i]; i++);
+            unsigned int i;
 
-        if (i < rows)
-            changepath(message->source, names[i]);
+            for (i = 0; i < rows && !selected[i]; i++);
 
-    }
+            if (i < rows)
+                changepath(message->source, names[i]);
 
-    else if (kv_match(event, "q=mark"))
-    {
+        }
 
-        unsigned int row = kv_getvalue(event, "row=", 10);
+        else if (kv_match(event, "q=mark"))
+        {
 
-        if (row < rows)
-            selected[row] = kv_getvalue(event, "selected=", 10);
+            unsigned int row = kv_getvalue(event, "row=", 10);
 
-    }
+            if (row < rows)
+                selected[row] = kv_getvalue(event, "selected=", 10);
 
-    else if (kv_match(event, "q=select"))
-    {
+        }
 
-        setbuttons(message->source);
+        else if (kv_match(event, "q=select"))
+        {
 
-    }
+            setbuttons(message->source);
 
-    else if (kv_match(event, "q=up"))
-    {
+        }
 
-        char parent[256];
+        else if (kv_match(event, "q=up"))
+        {
 
-        cstring_write_fmt(parent, 256, 0, "%s/../\\0", path);
-        changepath(message->source, parent);
+            char parent[256];
 
-    }
+            cstring_write_fmt(parent, 256, 0, "%s/../\\0", path);
+            changepath(message->source, parent);
 
-    else if (kv_match(event, "q=action"))
-    {
+        }
 
-        unsigned int index = kv_getvalue(event, "index=", 10);
-        char *suffix = getsuffix();
-        char commands[64];
-        char name[64];
-        unsigned int ncommands = (suffix) ? system_feed(0, 0, commands, 64, "mq -query \".filetypes[suffix:%s][%u].command\" %s", suffix, &index, option_getstring("config")) : 0;
+        else if (kv_match(event, "q=action"))
+        {
 
-        if (getline(commands, ncommands, 0, name, 64))
-            system_run(0, "%s \"%s\" &", name, path);
+            unsigned int index = kv_getvalue(event, "index=", 10);
+            char *suffix = getsuffix();
+            char commands[64];
+            char name[64];
+            unsigned int ncommands = (suffix) ? system_feed(0, 0, commands, 64, "mq -query \".filetypes[suffix:%s][%u].command\" %s", suffix, &index, option_getstring("config")) : 0;
 
-    }
+            if (getline(commands, ncommands, 0, name, 64))
+                system_run(0, "%s \"%s\" &", name, path);
 
-    else if (kv_match(event, "q=abspath") || kv_match(event, "q=relpath"))
-    {
+        }
 
-        changepath(message->source, kv_getstring(event, "path="));
+        else if (kv_match(event, "q=abspath") || kv_match(event, "q=relpath"))
+        {
+
+            changepath(message->source, kv_getstring(event, "path="));
+
+        }
 
     }
 
@@ -490,36 +495,41 @@ static void onwmevent(struct message *message)
 static void onwmkeypress(struct message *message)
 {
 
-    struct message_wmkeypress *wmkeypress = message->data;
+    struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
 
-    if (opener || !(wmkeypress->keymod & KEYS_MOD_CTRL))
-        return;
-
-    switch (wmkeypress->id)
+    if (wmkeypress)
     {
 
-    case KEYS_KEY_C:
-    case KEYS_KEY_X:
-        if (countselected())
+        if (opener || !(wmkeypress->keymod & KEYS_MOD_CTRL))
+            return;
+
+        switch (wmkeypress->id)
         {
 
-            clip(wmkeypress->id == KEYS_KEY_X);
-            setbuttons(message->source);
+        case KEYS_KEY_C:
+        case KEYS_KEY_X:
+            if (countselected())
+            {
+
+                clip(wmkeypress->id == KEYS_KEY_X);
+                setbuttons(message->source);
+
+            }
+
+            break;
+
+        case KEYS_KEY_V:
+            if (listing)
+            {
+
+                paste();
+                updatecontent(message->source);
+
+            }
+
+            break;
 
         }
-
-        break;
-
-    case KEYS_KEY_V:
-        if (listing)
-        {
-
-            paste();
-            updatecontent(message->source);
-
-        }
-
-        break;
 
     }
 

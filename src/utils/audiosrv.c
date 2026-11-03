@@ -294,36 +294,41 @@ static void oninfo(struct message *message)
 static void ontimertick(struct message *message)
 {
 
-    struct message_timertick *timertick = message->data;
+    struct message_timertick *timertick = message_validate(MESSAGE_TIMERTICK, message->data, message->length);
     unsigned int elapsed = timertick->counter - pace.counter;
     unsigned int played;
 
-    if (!pace.started || elapsed > hz)
-        elapsed = 0;
-
-    pace.counter = timertick->counter;
-    pace.started = 1;
-    pace.rest += elapsed * RATE;
-    played = pace.rest / hz;
-    pace.rest %= hz;
-    pace.ahead = (played < pace.ahead) ? pace.ahead - played : 0;
-
-    if (!flush())
-        return;
-
-    while (countclients() && pace.ahead < CUSHION * RATE / hz)
+    if (timertick)
     {
 
-        unsigned int frames = RATE / hz;
+        if (!pace.started || elapsed > hz)
+            elapsed = 0;
 
-        if (frames > FRAMEMAX)
-            frames = FRAMEMAX;
-
-        pending = mix(frames);
-        pace.ahead += frames;
+        pace.counter = timertick->counter;
+        pace.started = 1;
+        pace.rest += elapsed * RATE;
+        played = pace.rest / hz;
+        pace.rest %= hz;
+        pace.ahead = (played < pace.ahead) ? pace.ahead - played : 0;
 
         if (!flush())
-            break;
+            return;
+
+        while (countclients() && pace.ahead < CUSHION * RATE / hz)
+        {
+
+            unsigned int frames = RATE / hz;
+
+            if (frames > FRAMEMAX)
+                frames = FRAMEMAX;
+
+            pending = mix(frames);
+            pace.ahead += frames;
+
+            if (!flush())
+                break;
+
+        }
 
     }
 
@@ -372,53 +377,59 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 static void onreadrequest(struct message *message)
 {
 
-    struct message_readrequest *request = message->data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, message->data, message->length);
     struct listing listing;
     unsigned int c = 0;
     unsigned int i;
 
-    if (message->length < sizeof (struct message_readrequest))
-        return;
+    if (request)
+    {
 
-    for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
-        record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
+        for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
+            record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
-    listing.response.count = c * sizeof (struct record);
-    listing.response.buffer = 0;
+        listing.response.count = c * sizeof (struct record);
+        listing.response.buffer = 0;
 
-    channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
+        channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
+
+    }
 
 }
 
 static void onstatrequest(struct message *message)
 {
 
-    struct message_statrequest *request = message->data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, message->data, message->length);
     struct statresult result;
 
-    if (message->length < sizeof (struct message_statrequest))
-        return;
+    if (request)
+    {
 
-    record_init(&result.record, ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+        record_init(&result.record, ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
 
-    result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
+        result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
 
-    channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
+        channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
+
+    }
 
 }
 
 static void onwalkrequest(struct message *message)
 {
 
-    struct message_walkrequest *request = message->data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, message->data, message->length);
     struct message_walkresponse response;
 
-    if (message->length < sizeof (struct message_walkrequest) || message->length - sizeof (struct message_walkrequest) < request->length)
-        return;
+    if (request)
+    {
 
-    response.id = walk(request->parent, request->length, (char *)(request + 1));
+        response.id = walk(request->parent, request->length, (char *)(request + 1));
 
-    channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+
+    }
 
 }
 

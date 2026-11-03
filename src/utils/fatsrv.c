@@ -1377,20 +1377,13 @@ static unsigned int removenode(unsigned int parent, unsigned int id)
 }
 
 /* the request's header and the count bytes after it are all in the message */
-static unsigned int fits(struct message *message, unsigned int size, unsigned int count)
-{
-
-    return message->length >= size && message->length - size >= count;
-
-}
-
 static void oncreaterequest(struct message *message)
 {
 
-    struct message_createrequest *request = message->data;
+    struct message_createrequest *request = message_validate(MESSAGE_CREATEREQUEST, message->data, message->length);
     struct message_createresponse response;
 
-    response.id = (fits(message, sizeof (struct message_createrequest), request->count)) ? createfile((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->count) : 0;
+    response.id = (request) ? createfile((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->count) : 0;
 
     channel_send(0, message->source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
 
@@ -1400,18 +1393,23 @@ static void onreadrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct message_readrequest *request = message->data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, message->data, message->length);
     struct message_readresponse *response = (struct message_readresponse *)data;
     struct fat_entry entry;
 
-    getnode(request->id, &entry);
+    response->count = 0;
 
-    if (!fits(message, sizeof (struct message_readrequest), 0))
-        response->count = 0;
-    else if (gettype(&entry) == RECORD_TYPE_DIRECTORY)
-        response->count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
-    else
-        response->count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
+    if (request)
+    {
+
+        getnode(request->id, &entry);
+
+        if (gettype(&entry) == RECORD_TYPE_DIRECTORY)
+            response->count = readdirectory(request->id == ROOT, getcluster(&entry), request->offset, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
+        else
+            response->count = readfile(getcluster(&entry), fat_read32(&entry.size), request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
+
+    }
 
     response->buffer = 0;
 
@@ -1422,10 +1420,10 @@ static void onreadrequest(struct message *message)
 static void onremoverequest(struct message *message)
 {
 
-    struct message_removerequest *request = message->data;
+    struct message_removerequest *request = message_validate(MESSAGE_REMOVEREQUEST, message->data, message->length);
     struct message_removeresponse response;
 
-    response.status = (fits(message, sizeof (struct message_removerequest), 0)) ? removenode(request->parent, request->id) : 0;
+    response.status = (request) ? removenode(request->parent, request->id) : 0;
 
     channel_send(0, message->source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
@@ -1435,10 +1433,10 @@ static void onstatrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct message_statrequest *request = message->data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, message->data, message->length);
     struct message_statresponse *response = (struct message_statresponse *)data;
 
-    response->count = (fits(message, sizeof (struct message_statrequest), 0)) ? stat(request->id, (struct record *)(response + 1)) : 0;
+    response->count = (request) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
     channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, data);
 
@@ -1447,10 +1445,10 @@ static void onstatrequest(struct message *message)
 static void onwalkrequest(struct message *message)
 {
 
-    struct message_walkrequest *request = message->data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, message->data, message->length);
     struct message_walkresponse response;
 
-    response.id = (fits(message, sizeof (struct message_walkrequest), request->length)) ? walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length) : 0;
+    response.id = (request) ? walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length) : 0;
 
     channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
@@ -1459,10 +1457,10 @@ static void onwalkrequest(struct message *message)
 static void onwriterequest(struct message *message)
 {
 
-    struct message_writerequest *request = message->data;
+    struct message_writerequest *request = message_validate(MESSAGE_WRITEREQUEST, message->data, message->length);
     struct message_writeresponse response;
 
-    response.count = (fits(message, sizeof (struct message_writerequest), request->count)) ? writefile(request->id, request->offset, request->count, request + 1) : 0;
+    response.count = (request) ? writefile(request->id, request->offset, request->count, request + 1) : 0;
 
     channel_send(0, message->source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
 

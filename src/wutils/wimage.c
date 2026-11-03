@@ -109,28 +109,33 @@ static void onpath(struct message *message)
 static void onwmevent(struct message *message)
 {
 
-    struct message_wmevent *event = message->data;
+    struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
 
-    if (kv_match(event, "q=mode"))
+    if (event)
     {
 
-        char *label = kv_getstring(event, "mode=");
-        unsigned int i;
-
-        for (i = 0; i < NUM_MODES; i++)
+        if (kv_match(event, "q=mode"))
         {
 
-            if (label && cstring_match(label, labels[i]))
-                mode = i;
+            char *label = kv_getstring(event, "mode=");
+            unsigned int i;
+
+            for (i = 0; i < NUM_MODES; i++)
+            {
+
+                if (label && cstring_match(label, labels[i]))
+                    mode = i;
+
+            }
+
+            channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
 
         }
 
-        channel_send_fmt(0, message->source, MESSAGE_WMRENDERDATA, "= mode label \"%s\"\n= frame flow \"%s\"\n", labels[mode], flows[mode]);
+        if (kv_match(event, "q=open"))
+            choose();
 
     }
-
-    if (kv_match(event, "q=open"))
-        choose();
 
 }
 

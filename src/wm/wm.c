@@ -2341,116 +2341,126 @@ static void slide(struct widget *widget, unsigned int id)
 static void onkeypress(struct message *message)
 {
 
-    struct message_keypress *keypress = message->data;
+    struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
     unsigned int id = keys_getcode(&state.keys, keypress->scancode);
     struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
     struct bind_binding *binding = bind_find(id, state.keys.mod);
 
-    if (id && (!binding || !dobinding(binding)))
+    if (keypress)
     {
 
-        if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && (id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN))
+        if (id && (!binding || !dobinding(binding)))
         {
 
-            stepitem(state.focusedwidget, id == KEYS_KEY_CURSORDOWN);
-
-        }
-
-        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && id == KEYS_KEY_ENTER)
-        {
-
-            chooseitem(state.focusedwidget);
-
-        }
-
-        else if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
-        {
-
-            sendevent(selecteditem->source, 1, selecteditem->attributes.onenter, "");
-
-        }
-
-        else if (selecteditem && id == KEYS_KEY_CURSORUP)
-        {
-
-            moveselection(selecteditem, 0);
-
-        }
-
-        else if (selecteditem && id == KEYS_KEY_CURSORDOWN)
-        {
-
-            moveselection(selecteditem, 1);
-
-        }
-
-        else if (state.focusedwidget && widget_iseditable(state.focusedwidget))
-        {
-
-            edittextbox(state.focusedwidget, id);
-
-        }
-
-        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SLIDER && isslidekey(id))
-        {
-
-            slide(state.focusedwidget, id);
-
-        }
-
-        else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && (state.keys.mod & KEYS_MOD_SHIFT) && ismarkkey(id))
-        {
-
-            extendmark(state.focusedwidget, id);
-
-        }
-
-        else
-        {
-
-            if (state.focusedwindow)
+            if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && (id == KEYS_KEY_CURSORUP || id == KEYS_KEY_CURSORDOWN))
             {
 
-                struct message_wmkeypress wmkeypress;
+                stepitem(state.focusedwidget, id == KEYS_KEY_CURSORDOWN);
 
-                wmkeypress.id = state.keys.id;
-                wmkeypress.scancode = keypress->scancode;
-                wmkeypress.unicode = 0;
-                wmkeypress.length = state.keys.code.length;
+            }
 
-                buffer_copy(&wmkeypress.unicode, state.keys.code.value, wmkeypress.length);
-                wmkeypress.keymod = state.keys.mod;
+            else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SELECT && id == KEYS_KEY_ENTER)
+            {
 
-                channel_send(0, state.focusedwindow->source, MESSAGE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
+                chooseitem(state.focusedwidget);
+
+            }
+
+            else if (selecteditem && id == KEYS_KEY_ENTER && selecteditem->attributes.onenter)
+            {
+
+                sendevent(selecteditem->source, 1, selecteditem->attributes.onenter, "");
+
+            }
+
+            else if (selecteditem && id == KEYS_KEY_CURSORUP)
+            {
+
+                moveselection(selecteditem, 0);
+
+            }
+
+            else if (selecteditem && id == KEYS_KEY_CURSORDOWN)
+            {
+
+                moveselection(selecteditem, 1);
+
+            }
+
+            else if (state.focusedwidget && widget_iseditable(state.focusedwidget))
+            {
+
+                edittextbox(state.focusedwidget, id);
+
+            }
+
+            else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_SLIDER && isslidekey(id))
+            {
+
+                slide(state.focusedwidget, id);
+
+            }
+
+            else if (state.focusedwidget && state.focusedwidget->type == WIDGET_TYPE_BOX && (state.keys.mod & KEYS_MOD_SHIFT) && ismarkkey(id))
+            {
+
+                extendmark(state.focusedwidget, id);
+
+            }
+
+            else
+            {
+
+                if (state.focusedwindow)
+                {
+
+                    struct message_wmkeypress wmkeypress;
+
+                    wmkeypress.id = state.keys.id;
+                    wmkeypress.scancode = keypress->scancode;
+                    wmkeypress.unicode = 0;
+                    wmkeypress.length = state.keys.code.length;
+
+                    buffer_copy(&wmkeypress.unicode, state.keys.code.value, wmkeypress.length);
+                    wmkeypress.keymod = state.keys.mod;
+
+                    channel_send(0, state.focusedwindow->source, MESSAGE_WMKEYPRESS, sizeof (struct message_wmkeypress), &wmkeypress);
+
+                }
 
             }
 
         }
 
-    }
+        redraw(1);
 
-    redraw(1);
+    }
 
 }
 
 static void onkeyrelease(struct message *message)
 {
 
-    struct message_keyrelease *keyrelease = message->data;
+    struct message_keyrelease *keyrelease = message_validate(MESSAGE_KEYRELEASE, message->data, message->length);
     unsigned int id = keys_getcode(&state.keys, keyrelease->scancode);
 
-    if (id && state.focusedwindow)
+    if (keyrelease)
     {
 
-        struct message_wmkeyrelease wmkeyrelease;
+        if (id && state.focusedwindow)
+        {
 
-        wmkeyrelease.id = id;
-        wmkeyrelease.scancode = keyrelease->scancode;
-        wmkeyrelease.keymod = state.keys.mod;
-        wmkeyrelease.unicode = 0;
-        wmkeyrelease.length = 0;
+            struct message_wmkeyrelease wmkeyrelease;
 
-        channel_send(0, state.focusedwindow->source, MESSAGE_WMKEYRELEASE, sizeof (struct message_wmkeyrelease), &wmkeyrelease);
+            wmkeyrelease.id = id;
+            wmkeyrelease.scancode = keyrelease->scancode;
+            wmkeyrelease.keymod = state.keys.mod;
+            wmkeyrelease.unicode = 0;
+            wmkeyrelease.length = 0;
+
+            channel_send(0, state.focusedwindow->source, MESSAGE_WMKEYRELEASE, sizeof (struct message_wmkeyrelease), &wmkeyrelease);
+
+        }
 
     }
 
@@ -2561,53 +2571,59 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 static void onreadrequest(struct message *message)
 {
 
-    struct message_readrequest *request = message->data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, message->data, message->length);
     struct listing listing;
     unsigned int c = 0;
     unsigned int i;
 
-    if (message->length < sizeof (struct message_readrequest))
-        return;
+    if (request)
+    {
 
-    for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
-        record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
+        for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
+            record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
-    listing.response.count = c * sizeof (struct record);
-    listing.response.buffer = 0;
+        listing.response.count = c * sizeof (struct record);
+        listing.response.buffer = 0;
 
-    channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
+        channel_send(0, message->source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + listing.response.count, &listing);
+
+    }
 
 }
 
 static void onstatrequest(struct message *message)
 {
 
-    struct message_statrequest *request = message->data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, message->data, message->length);
     struct statresult result;
 
-    if (message->length < sizeof (struct message_statrequest))
-        return;
+    if (request)
+    {
 
-    record_init(&result.record, ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+        record_init(&result.record, ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
 
-    result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
+        result.response.count = (request->id == ROOT) ? sizeof (struct record) : 0;
 
-    channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
+        channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + result.response.count, &result);
+
+    }
 
 }
 
 static void onwalkrequest(struct message *message)
 {
 
-    struct message_walkrequest *request = message->data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, message->data, message->length);
     struct message_walkresponse response;
 
-    if (message->length < sizeof (struct message_walkrequest) || message->length - sizeof (struct message_walkrequest) < request->length)
-        return;
+    if (request)
+    {
 
-    response.id = walk(request->parent, request->length, (char *)(request + 1));
+        response.id = walk(request->parent, request->length, (char *)(request + 1));
 
-    channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+
+    }
 
 }
 
@@ -2715,7 +2731,7 @@ static void releasebutton(unsigned int button)
 static void onmousemove(struct message *message)
 {
 
-    struct message_mousemove *mousemove = message->data;
+    struct message_mousemove *mousemove = message_validate(MESSAGE_MOUSEMOVE, message->data, message->length);
     int quarters = getquarters(mousemove->relx, mousemove->rely);
     int totalx = state.mouseremainder.x + mousemove->relx * quarters;
     int totaly = state.mouseremainder.y + mousemove->rely * quarters;
@@ -2725,82 +2741,87 @@ static void onmousemove(struct message *message)
     int y = util_clamp(state.mouseposition.y + pixelsy, 0, display.region.size.h);
     unsigned int relayout;
 
-    state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
-    state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;
-
-    /* a release dropped by a full mailbox shows up as a cleared bit */
-    if (state.mousebuttonleft && !(mousemove->buttons & 1))
-        releasebutton(1);
-
-    if (state.mousebuttonright && !(mousemove->buttons & 2))
-        releasebutton(2);
-
-    relayout = state.mousebuttonleft || state.mousebuttonright;
-    state.mousemovement.x = x - state.mouseposition.x;
-    state.mousemovement.y = y - state.mouseposition.y;
-    state.mouseposition.x = x;
-    state.mouseposition.y = y;
-
-    sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
-    render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
-
-    if (state.mousebuttonleft)
+    if (mousemove)
     {
 
-        if (state.draggedthumb)
-            dragthumb(state.draggedthumb);
-        else if (state.focusedwidget)
+        state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
+        state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;
+
+        /* a release dropped by a full mailbox shows up as a cleared bit */
+        if (state.mousebuttonleft && !(mousemove->buttons & 1))
+            releasebutton(1);
+
+        if (state.mousebuttonright && !(mousemove->buttons & 2))
+            releasebutton(2);
+
+        relayout = state.mousebuttonleft || state.mousebuttonright;
+        state.mousemovement.x = x - state.mouseposition.x;
+        state.mousemovement.y = y - state.mouseposition.y;
+        state.mouseposition.x = x;
+        state.mouseposition.y = y;
+
+        sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
+        render_setmouse(state.mouseposition.x, state.mouseposition.y, getmousetype(state.mouseposition.x, state.mouseposition.y));
+
+        if (state.mousebuttonleft)
         {
 
-            if (state.focusedwidget->type == WIDGET_TYPE_SLIDER)
-                dragslider(state.focusedwidget);
-
-            if (state.focusedwidget->type == WIDGET_TYPE_BOX)
-                setmark(state.focusedwidget, state.focusedwidget->markstart, getmarkindex(state.focusedwidget, state.mouseposition.x, state.mouseposition.y));
-
-            if (widget_iseditable(state.focusedwidget))
-                movecursor(state.focusedwidget);
-            else if (widget_isscrollable(state.focusedwidget))
+            if (state.draggedthumb)
+                dragthumb(state.draggedthumb);
+            else if (state.focusedwidget)
             {
 
-                struct util_region point = util_region(state.mouseposition.x, state.mouseposition.y, 0, 0);
+                if (state.focusedwidget->type == WIDGET_TYPE_SLIDER)
+                    dragslider(state.focusedwidget);
 
-                scrollto(state.focusedwidget, &point);
+                if (state.focusedwidget->type == WIDGET_TYPE_BOX)
+                    setmark(state.focusedwidget, state.focusedwidget->markstart, getmarkindex(state.focusedwidget, state.mouseposition.x, state.mouseposition.y));
+
+                if (widget_iseditable(state.focusedwidget))
+                    movecursor(state.focusedwidget);
+                else if (widget_isscrollable(state.focusedwidget))
+                {
+
+                    struct util_region point = util_region(state.mouseposition.x, state.mouseposition.y, 0, 0);
+
+                    scrollto(state.focusedwidget, &point);
+
+                }
+
+            }
+
+            if (!state.draggedthumb && !state.focusedwidget && state.focusedwindow)
+            {
+
+                if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
+                    translatewindow(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
 
             }
 
         }
 
-        if (!state.draggedthumb && !state.focusedwidget && state.focusedwindow)
+        if (state.mousebuttonright)
         {
 
-            if (state.layout == LAYOUT_DEFAULT && widget_isdragable(state.focusedwindow))
-                translatewindow(state.focusedwindow, state.mousemovement.x, state.mousemovement.y);
-
-        }
-
-    }
-
-    if (state.mousebuttonright)
-    {
-
-        if (state.focusedwindow)
-        {
-
-            if (state.layout == LAYOUT_DEFAULT && widget_isresizable(state.focusedwindow))
+            if (state.focusedwindow)
             {
 
-                struct util_size minimum = render_getwindowminsize(state.focusedwindow, &display.region.size);
+                if (state.layout == LAYOUT_DEFAULT && widget_isresizable(state.focusedwindow))
+                {
 
-                scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, minimum.w), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, minimum.h));
+                    struct util_size minimum = render_getwindowminsize(state.focusedwindow, &display.region.size);
+
+                    scalewidget(state.focusedwindow, util_max((int)(state.focusedwindow->placement.size.w) + state.mousemovement.x, minimum.w), util_max((int)(state.focusedwindow->placement.size.h) + state.mousemovement.y, minimum.h));
+
+                }
 
             }
 
         }
 
-    }
+        redraw(relayout);
 
-    redraw(relayout);
+    }
 
 }
 
@@ -2819,77 +2840,77 @@ static void grabthumb(void)
 static void onmousepress(struct message *message)
 {
 
-    struct message_mousepress *mousepress = message->data;
+    struct message_mousepress *mousepress = message_validate(MESSAGE_MOUSEPRESS, message->data, message->length);
     struct widget *window = getwidgetoftypeat(WIDGET_TYPE_WINDOW, state.mouseposition.x, state.mouseposition.y);
     struct widget *interactivewidget = getinteractivewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    switch (mousepress->button)
+    if (mousepress)
     {
 
-    case 1:
-        state.mousebuttonleft = 1;
-
-        setfocuswindow(window);
-        grabthumb();
-
-        if (!state.draggedthumb)
-            setfocus(interactivewidget);
-
-        if (interactivewidget)
+        switch (mousepress->button)
         {
 
-            struct widget *item = getitem(interactivewidget);
+        case 1:
+            state.mousebuttonleft = 1;
 
-            if (item && getselect(item))
-                item = 0;
+            setfocuswindow(window);
+            grabthumb();
 
-            if (item && (state.keys.mod & KEYS_MOD_SHIFT))
-                selectrange(item);
-            else if (item && (state.keys.mod & KEYS_MOD_CTRL))
-                toggleitem(item);
-            else if (item)
-                selectitem(item);
+            if (!state.draggedthumb)
+                setfocus(interactivewidget);
 
-            if (!item || !(state.keys.mod & (KEYS_MOD_SHIFT | KEYS_MOD_CTRL)))
-                clickwidget(interactivewidget);
-
-            if (interactivewidget->type == WIDGET_TYPE_BOX)
+            if (interactivewidget)
             {
 
-                unsigned int index = getmarkindex(interactivewidget, state.mouseposition.x, state.mouseposition.y);
+                struct widget *item = getitem(interactivewidget);
 
-                setmark(interactivewidget, index, index);
+                if (item && getselect(item))
+                    item = 0;
+
+                if (item && (state.keys.mod & KEYS_MOD_SHIFT))
+                    selectrange(item);
+                else if (item && (state.keys.mod & KEYS_MOD_CTRL))
+                    toggleitem(item);
+                else if (item)
+                    selectitem(item);
+
+                if (!item || !(state.keys.mod & (KEYS_MOD_SHIFT | KEYS_MOD_CTRL)))
+                    clickwidget(interactivewidget);
+
+                if (interactivewidget->type == WIDGET_TYPE_BOX)
+                {
+
+                    unsigned int index = getmarkindex(interactivewidget, state.mouseposition.x, state.mouseposition.y);
+
+                    setmark(interactivewidget, index, index);
+
+                }
 
             }
 
+            break;
+
+        case 2:
+            state.mousebuttonright = 1;
+
+            break;
+
         }
 
-        break;
-
-    case 2:
-        state.mousebuttonright = 1;
-
-        break;
+        redraw(1);
 
     }
-
-    redraw(1);
 
 }
 
 static void onmousescroll(struct message *message)
 {
 
+    struct message_mousescroll *mousescroll = message_validate(MESSAGE_MOUSESCROLL, message->data, message->length);
     struct widget *scrollablewidget = getscrollablewidgetat(state.mouseposition.x, state.mouseposition.y);
 
-    if (scrollablewidget)
-    {
-
-        struct message_mousescroll *mousescroll = message->data;
-
+    if (mousescroll && scrollablewidget)
         scrollwidget(scrollablewidget, mousescroll->relz * 16);
-
-    }
 
     sethover(gethoverwidgetat(state.mouseposition.x, state.mouseposition.y));
 
@@ -2900,10 +2921,15 @@ static void onmousescroll(struct message *message)
 static void onmouserelease(struct message *message)
 {
 
-    struct message_mouserelease *mouserelease = message->data;
+    struct message_mouserelease *mouserelease = message_validate(MESSAGE_MOUSERELEASE, message->data, message->length);
 
-    releasebutton(mouserelease->button);
-    redraw(1);
+    if (mouserelease)
+    {
+
+        releasebutton(mouserelease->button);
+        redraw(1);
+
+    }
 
 }
 

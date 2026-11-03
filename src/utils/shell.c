@@ -319,149 +319,154 @@ static void complete(void)
 static void onconsoledata(struct message *message)
 {
 
-    struct message_consoledata *consoledata = message->data;
+    struct message_consoledata *consoledata = message_validate(MESSAGE_CONSOLEDATA, message->data, message->length);
 
-    if (sh)
+    if (consoledata)
     {
 
-        switch (consoledata->data)
-        {
-
-        case 0x03:
-            interrupt();
-
-            break;
-
-        case 0x1A:
-            detach();
-
-            break;
-
-        default:
-            channel_send(0, sh, MESSAGE_CONSOLEDATA, message->length, message->data);
-
-            break;
-
-        }
-
-        return;
-
-    }
-
-    switch (escaped)
-    {
-
-    case 1:
-        escaped = (consoledata->data == '[') ? 2 : 0;
-
-        break;
-
-    case 2:
-        if (consoledata->data >= 0x40 && consoledata->data <= 0x7E)
+        if (sh)
         {
 
             switch (consoledata->data)
             {
 
-            case 'C':
-                moveright(1);
+            case 0x03:
+                interrupt();
 
                 break;
 
-            case 'D':
-                moveleft(1);
+            case 0x1A:
+                detach();
 
                 break;
 
-            case 'F':
-                moveend();
-
-                break;
-
-            case 'H':
-                movestart();
+            default:
+                channel_send(0, sh, MESSAGE_CONSOLEDATA, message->length, message->data);
 
                 break;
 
             }
 
-            escaped = 0;
+            return;
 
         }
 
-        break;
-
-    default:
-        switch (consoledata->data)
+        switch (escaped)
         {
 
-        case 0x01:
-            movestart();
+        case 1:
+            escaped = (consoledata->data == '[') ? 2 : 0;
 
             break;
 
-        case 0x02:
-            moveleft(1);
+        case 2:
+            if (consoledata->data >= 0x40 && consoledata->data <= 0x7E)
+            {
 
-            break;
+                switch (consoledata->data)
+                {
 
-        case 0x05:
-            moveend();
+                case 'C':
+                    moveright(1);
 
-            break;
+                    break;
 
-        case 0x06:
-            moveright(1);
+                case 'D':
+                    moveleft(1);
 
-            break;
+                    break;
 
-        case 0x08:
-        case 0x7F:
-            deleteleft(1);
+                case 'F':
+                    moveend();
 
-            break;
+                    break;
 
-        case 0x09:
-            complete();
-            clearline();
+                case 'H':
+                    movestart();
 
-            break;
+                    break;
 
-        case 0x0A:
-        case 0x0D:
-            submit();
+                }
 
-            break;
+                escaped = 0;
 
-        case 0x0B:
-            deleteend();
-
-            break;
-
-        case 0x0C:
-            clearscreen();
-
-            break;
-
-        case 0x15:
-            deletestart();
-
-            break;
-
-        case 0x1B:
-            escaped = 1;
+            }
 
             break;
 
         default:
-            if (consoledata->data >= 0x20)
-                insertleft(1, &consoledata->data);
+            switch (consoledata->data)
+            {
+
+            case 0x01:
+                movestart();
+
+                break;
+
+            case 0x02:
+                moveleft(1);
+
+                break;
+
+            case 0x05:
+                moveend();
+
+                break;
+
+            case 0x06:
+                moveright(1);
+
+                break;
+
+            case 0x08:
+            case 0x7F:
+                deleteleft(1);
+
+                break;
+
+            case 0x09:
+                complete();
+                clearline();
+
+                break;
+
+            case 0x0A:
+            case 0x0D:
+                submit();
+
+                break;
+
+            case 0x0B:
+                deleteend();
+
+                break;
+
+            case 0x0C:
+                clearscreen();
+
+                break;
+
+            case 0x15:
+                deletestart();
+
+                break;
+
+            case 0x1B:
+                escaped = 1;
+
+                break;
+
+            default:
+                if (consoledata->data >= 0x20)
+                    insertleft(1, &consoledata->data);
+
+                break;
+
+            }
 
             break;
 
         }
-
-        break;
 
     }
 
@@ -470,89 +475,94 @@ static void onconsoledata(struct message *message)
 static void onkeypress(struct message *message)
 {
 
-    struct message_keypress *keypress = message->data;
+    struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
     unsigned int id = keys_getcode(&keys, keypress->scancode);
 
-    if (!id)
-        return;
-
-    if (sh)
+    if (keypress)
     {
 
-        if (keys.mod & KEYS_MOD_CTRL)
+        if (!id)
+            return;
+
+        if (sh)
         {
 
-            switch (id)
+            if (keys.mod & KEYS_MOD_CTRL)
             {
 
-            case KEYS_KEY_C:
-                interrupt();
+                switch (id)
+                {
 
-                break;
+                case KEYS_KEY_C:
+                    interrupt();
 
-            case KEYS_KEY_Z:
-                detach();
+                    break;
 
-                break;
+                case KEYS_KEY_Z:
+                    detach();
+
+                    break;
+
+                }
 
             }
 
+            else
+            {
+
+                channel_send(0, sh, MESSAGE_CONSOLEDATA, keys.code.length, keys.code.value);
+
+            }
+
+            return;
+
         }
 
-        else
+        switch (id)
         {
 
-            channel_send(0, sh, MESSAGE_CONSOLEDATA, keys.code.length, keys.code.value);
+        case KEYS_KEY_BACKSPACE:
+            deleteleft(1);
+
+            break;
+
+        case KEYS_KEY_TAB:
+            complete();
+            clearline();
+
+            break;
+
+        case KEYS_KEY_ENTER:
+            submit();
+
+            break;
+
+        case KEYS_KEY_HOME:
+            movestart();
+
+            break;
+
+        case KEYS_KEY_CURSORLEFT:
+            moveleft(1);
+
+            break;
+
+        case KEYS_KEY_CURSORRIGHT:
+            moveright(1);
+
+            break;
+
+        case KEYS_KEY_END:
+            moveend();
+
+            break;
+
+        default:
+            insertleft(keys.code.length, keys.code.value);
+
+            break;
 
         }
-
-        return;
-
-    }
-
-    switch (id)
-    {
-
-    case KEYS_KEY_BACKSPACE:
-        deleteleft(1);
-
-        break;
-
-    case KEYS_KEY_TAB:
-        complete();
-        clearline();
-
-        break;
-
-    case KEYS_KEY_ENTER:
-        submit();
-
-        break;
-
-    case KEYS_KEY_HOME:
-        movestart();
-
-        break;
-
-    case KEYS_KEY_CURSORLEFT:
-        moveleft(1);
-
-        break;
-
-    case KEYS_KEY_CURSORRIGHT:
-        moveright(1);
-
-        break;
-
-    case KEYS_KEY_END:
-        moveend();
-
-        break;
-
-    default:
-        insertleft(keys.code.length, keys.code.value);
-
-        break;
 
     }
 
@@ -561,9 +571,14 @@ static void onkeypress(struct message *message)
 static void onkeyrelease(struct message *message)
 {
 
-    struct message_keyrelease *keyrelease = message->data;
+    struct message_keyrelease *keyrelease = message_validate(MESSAGE_KEYRELEASE, message->data, message->length);
 
-    keys_getcode(&keys, keyrelease->scancode);
+    if (keyrelease)
+    {
+
+        keys_getcode(&keys, keyrelease->scancode);
+
+    }
 
 }
 

@@ -1147,70 +1147,68 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 }
 
 /* the request's header and the count bytes after it are all in the message */
-static unsigned int fits(struct message *message, unsigned int size, unsigned int count)
-{
-
-    return message->length >= size && message->length - size >= count;
-
-}
-
 static void oncreaterequest(struct message *message)
 {
 
-    struct message_createrequest *request = message->data;
+    struct message_createrequest *request = message_validate(MESSAGE_CREATEREQUEST, message->data, message->length);
     struct message_createresponse response;
     struct ext2_node parent;
 
-    simpleread(&parent, request->parent);
-
     response.id = 0;
 
-    switch ((fits(message, sizeof (struct message_createrequest), request->count)) ? parent.type & 0xF000 : 0)
+    if (request)
     {
 
-    case 0x4000:
+        simpleread(&parent, request->parent);
+
+        switch (parent.type & 0xF000)
         {
 
-            unsigned int igroup = (request->parent - 1) / sb.nodeCountGroup;
-            unsigned int id = matchentry(&parent, (char *)(request + 1), request->count);
-
-            if (id)
+        case 0x4000:
             {
 
-                response.id = id;
+                unsigned int igroup = (request->parent - 1) / sb.nodeCountGroup;
+                unsigned int id = matchentry(&parent, (char *)(request + 1), request->count);
 
-                break;
-
-            }
-
-            id = allocnode(igroup);
-
-            if (id)
-            {
-
-                struct ext2_node node;
-
-                buffer_clear(&node, sizeof (struct ext2_node));
-
-                node.type = 0x81A4;
-                node.hardCount = 1;
-
-                simplewrite(&node, id);
-
-                if (addentry(&parent, igroup, id, request->count, 1, (char *)(request + 1)))
+                if (id)
                 {
 
-                    simplewrite(&parent, request->parent);
-
                     response.id = id;
+
+                    break;
+
+                }
+
+                id = allocnode(igroup);
+
+                if (id)
+                {
+
+                    struct ext2_node node;
+
+                    buffer_clear(&node, sizeof (struct ext2_node));
+
+                    node.type = 0x81A4;
+                    node.hardCount = 1;
+
+                    simplewrite(&node, id);
+
+                    if (addentry(&parent, igroup, id, request->count, 1, (char *)(request + 1)))
+                    {
+
+                        simplewrite(&parent, request->parent);
+
+                        response.id = id;
+
+                    }
 
                 }
 
             }
 
-        }
+            break;
 
-        break;
+        }
 
     }
 
@@ -1222,33 +1220,38 @@ static void onreadrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct message_readrequest *request = message->data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, message->data, message->length);
     struct message_readresponse *response = (struct message_readresponse *)data;
     struct ext2_node node;
-
-    simpleread(&node, request->id);
 
     response->count = 0;
     response->buffer = 0;
 
-    switch ((fits(message, sizeof (struct message_readrequest), 0)) ? node.type & 0xF000 : 0)
+    if (request)
     {
 
-    case 0x4000:
-        response->count = readdirectory(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
+        simpleread(&node, request->id);
 
-        break;
+        switch (node.type & 0xF000)
+        {
 
-    case 0x8000:
-        if (request->flags & READ_FLAG_BUFFER)
-            response->count = sendfile(&node, request->offset, request->count, message->source);
+        case 0x4000:
+            response->count = readdirectory(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
 
-        if (response->count)
-            response->buffer = blockinfo.buffer + request->offset % blocksize;
-        else
-            response->count = readfile(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
+            break;
 
-        break;
+        case 0x8000:
+            if (request->flags & READ_FLAG_BUFFER)
+                response->count = sendfile(&node, request->offset, request->count, message->source);
+
+            if (response->count)
+                response->buffer = blockinfo.buffer + request->offset % blocksize;
+            else
+                response->count = readfile(&node, request->offset, request->count, MESSAGE_SIZE - sizeof (struct message_readresponse), response + 1);
+
+            break;
+
+        }
 
     }
 
@@ -1373,10 +1376,10 @@ static unsigned int removenode(unsigned int parentid, unsigned int id)
 static void onremoverequest(struct message *message)
 {
 
-    struct message_removerequest *request = message->data;
+    struct message_removerequest *request = message_validate(MESSAGE_REMOVEREQUEST, message->data, message->length);
     struct message_removeresponse response;
 
-    response.status = (fits(message, sizeof (struct message_removerequest), 0)) ? removenode(request->parent, request->id) : 0;
+    response.status = (request) ? removenode(request->parent, request->id) : 0;
 
     channel_send(0, message->source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
 
@@ -1386,10 +1389,10 @@ static void onstatrequest(struct message *message)
 {
 
     unsigned char data[MESSAGE_SIZE];
-    struct message_statrequest *request = message->data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, message->data, message->length);
     struct message_statresponse *response = (struct message_statresponse *)data;
 
-    response->count = (fits(message, sizeof (struct message_statrequest), 0)) ? stat(request->id, (struct record *)(response + 1)) : 0;
+    response->count = (request) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
     channel_send(0, message->source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, data);
 
@@ -1398,10 +1401,10 @@ static void onstatrequest(struct message *message)
 static void onwalkrequest(struct message *message)
 {
 
-    struct message_walkrequest *request = message->data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, message->data, message->length);
     struct message_walkresponse response;
 
-    response.id = (fits(message, sizeof (struct message_walkrequest), request->length)) ? walk((request->parent) ? request->parent : 2, (char *)(request + 1), request->length) : 0;
+    response.id = (request) ? walk((request->parent) ? request->parent : 2, (char *)(request + 1), request->length) : 0;
 
     channel_send(0, message->source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
 
@@ -1410,26 +1413,31 @@ static void onwalkrequest(struct message *message)
 static void onwriterequest(struct message *message)
 {
 
-    struct message_writerequest *request = message->data;
+    struct message_writerequest *request = message_validate(MESSAGE_WRITEREQUEST, message->data, message->length);
     struct message_writeresponse response;
     struct ext2_node node;
 
-    simpleread(&node, request->id);
-
     response.count = 0;
 
-    switch ((fits(message, sizeof (struct message_writerequest), request->count)) ? node.type & 0xF000 : 0)
+    if (request)
     {
 
-    case 0x4000:
-        response.count = writedirectory(&node, request->offset, request->count, request->id, request + 1);
+        simpleread(&node, request->id);
 
-        break;
+        switch (node.type & 0xF000)
+        {
 
-    case 0x8000:
-        response.count = writefile(&node, request->offset, request->count, request->id, request + 1);
+        case 0x4000:
+            response.count = writedirectory(&node, request->offset, request->count, request->id, request + 1);
 
-        break;
+            break;
+
+        case 0x8000:
+            response.count = writefile(&node, request->offset, request->count, request->id, request + 1);
+
+            break;
+
+        }
 
     }
 
