@@ -30,13 +30,11 @@ static unsigned int oninfo(struct block_interface *interface, unsigned int sourc
 static unsigned int onblockreadrequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (count < sizeof (struct message_blockrequest))
-        return MESSAGE_FAILED;
+    struct message_blockrequest *request = message_validate(MESSAGE_BLOCKREADREQUEST, data, count);
 
-    if (interface->startsession)
+    if (interface->startsession && request)
     {
 
-        struct message_blockrequest *request = data;
         struct block_session *session = &interface->sessions[0];
 
         if (request->target && !kernel_getbuffer(request->target))
@@ -74,13 +72,11 @@ static unsigned int onblockreadrequest(struct block_interface *interface, unsign
 static unsigned int onblockwriterequest(struct block_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (count < sizeof (struct message_blockrequest))
-        return MESSAGE_FAILED;
+    struct message_blockrequest *request = message_validate(MESSAGE_BLOCKWRITEREQUEST, data, count);
 
-    if (interface->startsession)
+    if (interface->startsession && request)
     {
 
-        struct message_blockrequest *request = data;
         struct block_session *session = &interface->sessions[0];
 
         if (!session->source)

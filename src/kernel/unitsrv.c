@@ -152,7 +152,7 @@ static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, u
 static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_readrequest *request = data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, data, count);
     struct resource *file;
     struct resource *dir;
     unsigned int root;
@@ -162,114 +162,134 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
     unsigned int c = 0;
     unsigned int i;
 
-    if (count < sizeof (struct message_readrequest))
-        return MESSAGE_FAILED;
-
-    file = getfile(unitsrv, request->id);
-
-    if (file)
-        return readfile(unitsrv, file, source, request);
-
-    dir = getdir(unitsrv, request->id);
-    root = request->id == unitsrv->server.resource.inode;
-
-    for (i = request->offset; (root || dir) && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
+    if (request)
     {
 
-        if (i < 2)
-            record_init(&records[c++], request->id, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
-        else if (root && getdevice(unitsrv, i - 2))
-            initdirrecord(&records[c++], i - 2, i + 1);
-        else if (dir && i == 2 && dir->inode)
-            initfilerecord(&records[c++], dir, request->id + POOL_NODES, i + 1);
-        else
-            break;
+        file = getfile(unitsrv, request->id);
+
+        if (file)
+            return readfile(unitsrv, file, source, request);
+
+        dir = getdir(unitsrv, request->id);
+        root = request->id == unitsrv->server.resource.inode;
+
+        for (i = request->offset; (root || dir) && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
+        {
+
+            if (i < 2)
+                record_init(&records[c++], request->id, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
+            else if (root && getdevice(unitsrv, i - 2))
+                initdirrecord(&records[c++], i - 2, i + 1);
+            else if (dir && i == 2 && dir->inode)
+                initfilerecord(&records[c++], dir, request->id + POOL_NODES, i + 1);
+            else
+                break;
+
+        }
+
+        response->count = c * sizeof (struct record);
+        response->buffer = 0;
+
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
-    response->count = c * sizeof (struct record);
-    response->buffer = 0;
-
-    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_statrequest *request = data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, data, count);
     struct resource *device;
     unsigned char buffer[sizeof (struct message_statresponse) + sizeof (struct record)];
     struct message_statresponse *response = (struct message_statresponse *)buffer;
     struct record *record = (struct record *)(response + 1);
 
-    if (count < sizeof (struct message_statrequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    response->count = sizeof (struct record);
+        response->count = sizeof (struct record);
 
-    if (request->id == unitsrv->server.resource.inode)
-        record_init(record, request->id, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
-    else if (getdir(unitsrv, request->id))
-        initdirrecord(record, request->id / POOL_NODES / 2, 0);
-    else if ((device = getfile(unitsrv, request->id)))
-        initfilerecord(record, device, request->id, 0);
-    else
-        response->count = 0;
+        if (request->id == unitsrv->server.resource.inode)
+            record_init(record, request->id, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+        else if (getdir(unitsrv, request->id))
+            initdirrecord(record, request->id / POOL_NODES / 2, 0);
+        else if ((device = getfile(unitsrv, request->id)))
+            initfilerecord(record, device, request->id, 0);
+        else
+            response->count = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onwalkrequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_walkrequest *request = data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, data, count);
     struct message_walkresponse response;
 
-    if (count < sizeof (struct message_walkrequest) || count - sizeof (struct message_walkrequest) < request->length)
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    response.id = walk(unitsrv, request->parent, request->length, (char *)(request + 1));
+        response.id = walk(unitsrv, request->parent, request->length, (char *)(request + 1));
 
-    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int oncreaterequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_createrequest *request = data;
+    struct message_createrequest *request = message_validate(MESSAGE_CREATEREQUEST, data, count);
     struct message_createresponse response;
     struct resource *device;
 
-    if (count < sizeof (struct message_createrequest) || count - sizeof (struct message_createrequest) < request->count)
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    device = getdir(unitsrv, request->parent);
-    response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device)) ? request->parent + POOL_NODES : 0;
+        device = getdir(unitsrv, request->parent);
+        response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device)) ? request->parent + POOL_NODES : 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_removerequest *request = data;
+    struct message_removerequest *request = message_validate(MESSAGE_REMOVEREQUEST, data, count);
     struct message_removeresponse response;
     struct resource *device;
 
-    if (count < sizeof (struct message_removerequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    device = getfile(unitsrv, request->id);
-    response.status = (device && request->parent == request->id - POOL_NODES);
+        device = getfile(unitsrv, request->id);
+        response.status = (device && request->parent == request->id - POOL_NODES);
 
-    if (response.status)
-        pool_detachnode(device);
+        if (response.status)
+            pool_detachnode(device);
 
-    return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+        return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 

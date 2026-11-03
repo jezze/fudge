@@ -195,6 +195,18 @@ static unsigned int oninfo(struct timer_interface *interface, unsigned int sourc
 
 }
 
+static unsigned int ontimerrequest(struct timer_interface *interface, unsigned int source, unsigned int count, void *data)
+{
+
+    struct message_timerrequest *timerrequest = message_validate(MESSAGE_TIMERREQUEST, data, count);
+
+    if (timerrequest)
+        return request(interface, source, timerrequest);
+
+    return MESSAGE_FAILED;
+
+}
+
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
@@ -220,10 +232,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
             return oninfo(interface, source);
 
         case MESSAGE_TIMERREQUEST:
-            if (count < sizeof (struct message_timerrequest))
-                return MESSAGE_FAILED;
-
-            return request(interface, source, data);
+            return ontimerrequest(interface, source, count, data);
 
         }
 

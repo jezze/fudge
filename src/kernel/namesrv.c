@@ -74,7 +74,7 @@ static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 static unsigned int onreadrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_readrequest *request = data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, data, count);
     struct resource *resource = 0;
     unsigned char buffer[sizeof (struct message_readresponse) + sizeof (struct record) * LISTRECORDS];
     struct message_readresponse *response = (struct message_readresponse *)buffer;
@@ -82,64 +82,76 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     unsigned int c = 0;
     unsigned int i;
 
-    if (count < sizeof (struct message_readrequest))
-        return MESSAGE_FAILED;
-
-    for (i = request->offset; request->id == MESSAGE_ROOT && i < 2 && (c + 1) * sizeof (struct record) <= request->count; i++)
-        record_init(&records[c++], MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
-
-    resource_lock();
-
-    for (i = 2; request->id == MESSAGE_ROOT && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count && (resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)); i++)
+    if (request)
     {
 
-        struct service *current = resource->data;
+        for (i = request->offset; request->id == MESSAGE_ROOT && i < 2 && (c + 1) * sizeof (struct record) <= request->count; i++)
+            record_init(&records[c++], MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
-        if (i >= request->offset)
-            record_init(&records[c++], current->inode, RECORD_TYPE_DIRECTORY, 0, i + 1, cstring_length(current->name), current->name);
+        resource_lock();
+
+        for (i = 2; request->id == MESSAGE_ROOT && c < LISTRECORDS && (c + 1) * sizeof (struct record) <= request->count && (resource = resource_foreachtype_unsafe(resource, RESOURCE_SERVICE)); i++)
+        {
+
+            struct service *current = resource->data;
+
+            if (i >= request->offset)
+                record_init(&records[c++], current->inode, RECORD_TYPE_DIRECTORY, 0, i + 1, cstring_length(current->name), current->name);
+
+        }
+
+        resource_unlock();
+
+        response->count = c * sizeof (struct record);
+        response->buffer = 0;
+
+        return kernel_place(MESSAGE_ROOT, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
 
     }
 
-    resource_unlock();
-
-    response->count = c * sizeof (struct record);
-    response->buffer = 0;
-
-    return kernel_place(MESSAGE_ROOT, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onstatrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_statrequest *request = data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, data, count);
     unsigned char buffer[sizeof (struct message_statresponse) + sizeof (struct record)];
     struct message_statresponse *response = (struct message_statresponse *)buffer;
     struct record *record = (struct record *)(response + 1);
 
-    if (count < sizeof (struct message_statrequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    record_init(record, MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+        record_init(record, MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
 
-    response->count = (request->id == MESSAGE_ROOT) ? sizeof (struct record) : 0;
+        response->count = (request->id == MESSAGE_ROOT) ? sizeof (struct record) : 0;
 
-    return kernel_place(MESSAGE_ROOT, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+        return kernel_place(MESSAGE_ROOT, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, buffer);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_walkrequest *request = data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, data, count);
     struct message_walkresponse response;
 
-    if (count < sizeof (struct message_walkrequest) || count - sizeof (struct message_walkrequest) < request->length)
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    response.id = walk(request->parent, request->length, (char *)(request + 1));
+        response.id = walk(request->parent, request->length, (char *)(request + 1));
 
-    return kernel_place(MESSAGE_ROOT, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(MESSAGE_ROOT, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 

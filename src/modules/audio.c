@@ -29,10 +29,10 @@ static unsigned int oninfo(struct audio_interface *interface, unsigned int sourc
 static unsigned int onaudioconf(struct audio_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (interface->setformat && count == sizeof (struct message_audioconf))
-    {
+    struct message_audioconf *audioconf = message_validate(MESSAGE_AUDIOCONF, data, count);
 
-        struct message_audioconf *audioconf = data;
+    if (interface->setformat && audioconf)
+    {
 
         return (interface->setformat(audioconf->rate, audioconf->channels, audioconf->bits)) ? MESSAGE_OK : MESSAGE_FAILED;
 

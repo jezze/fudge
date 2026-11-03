@@ -46,13 +46,10 @@ static unsigned int onvideocmap(struct video_interface *interface, unsigned int 
 static unsigned int onvideoconf(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (count < sizeof (struct message_videoconf))
-        return MESSAGE_FAILED;
+    struct message_videoconf *videoconf = message_validate(MESSAGE_VIDEOCONF, data, count);
 
-    if (interface->setmode)
+    if (interface->setmode && videoconf)
     {
-
-        struct message_videoconf *videoconf = data;
 
         interface->setmode(videoconf->width, videoconf->height, videoconf->bpp);
 
@@ -68,10 +65,10 @@ static unsigned int onvideoconf(struct video_interface *interface, unsigned int 
 static unsigned int onvideoflush(struct video_interface *interface, unsigned int source, unsigned int count, void *data)
 {
 
-    if (interface->flush && count == sizeof (struct message_videoflush))
-    {
+    struct message_videoflush *videoflush = message_validate(MESSAGE_VIDEOFLUSH, data, count);
 
-        struct message_videoflush *videoflush = data;
+    if (interface->flush && videoflush)
+    {
 
         interface->flush(videoflush->x, videoflush->y, videoflush->width, videoflush->height);
 

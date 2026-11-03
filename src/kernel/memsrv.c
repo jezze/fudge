@@ -512,57 +512,69 @@ static unsigned int unmap(unsigned int source, unsigned int id)
 static unsigned int oncreaterequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_createrequest *request = data;
+    struct message_createrequest *request = message_validate(MESSAGE_CREATEREQUEST, data, count);
     struct message_createresponse response;
 
-    if (count < sizeof (struct message_createrequest) || count - sizeof (struct message_createrequest) < request->count)
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    response.id = create(request->parent, (char *)(request + 1), request->count);
+        response.id = create(request->parent, (char *)(request + 1), request->count);
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onmmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_mmaprequest *request = data;
+    struct message_mmaprequest *request = message_validate(MESSAGE_MMAPREQUEST, data, count);
     struct message_mmapresponse response;
 
-    if (count < sizeof (struct message_mmaprequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    response.address = map(source, request->id, request->size);
+        response.address = map(source, request->id, request->size);
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, MESSAGE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_MMAPRESPONSE, sizeof (struct message_mmapresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onmunmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_munmaprequest *request = data;
+    struct message_munmaprequest *request = message_validate(MESSAGE_MUNMAPREQUEST, data, count);
     struct message_munmapresponse response;
 
-    if (count < sizeof (struct message_munmaprequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    response.status = unmap(source, request->id);
+        response.status = unmap(source, request->id);
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, MESSAGE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_MUNMAPRESPONSE, sizeof (struct message_munmapresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -570,51 +582,59 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct message_readrequest *request = data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, data, count);
     struct message_readresponse *response = (struct message_readresponse *)buffer;
     unsigned int length;
     struct file *file;
 
-    if (count < sizeof (struct message_readrequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
+        length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    file = getfile(request->id);
+        file = getfile(request->id);
 
-    if (request->id == ROOT)
-        response->count = readrecords((struct record *)(response + 1), length, request->offset);
-    else if (file)
-        response->count = readdata(file, (unsigned char *)(response + 1), length, request->offset);
-    else
-        response->count = 0;
+        if (request->id == ROOT)
+            response->count = readrecords((struct record *)(response + 1), length, request->offset);
+        else if (file)
+            response->count = readdata(file, (unsigned char *)(response + 1), length, request->offset);
+        else
+            response->count = 0;
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    response->buffer = 0;
+        response->buffer = 0;
 
-    return kernel_place(server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+        return kernel_place(server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onremoverequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_removerequest *request = data;
+    struct message_removerequest *request = message_validate(MESSAGE_REMOVEREQUEST, data, count);
     struct message_removeresponse response;
 
-    if (count < sizeof (struct message_removerequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    response.status = remove(request->parent, request->id);
+        response.status = remove(request->parent, request->id);
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_REMOVERESPONSE, sizeof (struct message_removeresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -622,59 +642,71 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct message_statrequest *request = data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, data, count);
     struct message_statresponse *response = (struct message_statresponse *)buffer;
 
-    if (count < sizeof (struct message_statrequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    response->count = stat(request->id, (struct record *)(response + 1));
+        response->count = stat(request->id, (struct record *)(response + 1));
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
+        return kernel_place(server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_walkrequest *request = data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, data, count);
     struct message_walkresponse response;
 
-    if (count < sizeof (struct message_walkrequest) || count - sizeof (struct message_walkrequest) < request->length)
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    response.id = walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length);
+        response.id = walk((request->parent) ? request->parent : ROOT, (char *)(request + 1), request->length);
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onwriterequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_writerequest *request = data;
+    struct message_writerequest *request = message_validate(MESSAGE_WRITEREQUEST, data, count);
     struct message_writeresponse response;
     struct file *file;
 
-    if (count < sizeof (struct message_writerequest) || count - sizeof (struct message_writerequest) < request->count)
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    file = getfile(request->id);
-    response.count = (file) ? writedata(file, (unsigned char *)(request + 1), request->count, request->offset) : 0;
+        file = getfile(request->id);
+        response.count = (file) ? writedata(file, (unsigned char *)(request + 1), request->count, request->offset) : 0;
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return kernel_place(server.resource.inode, source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 

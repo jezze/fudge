@@ -305,15 +305,19 @@ static unsigned int write(unsigned int id, void *buffer, unsigned int count, uns
 static unsigned int onmaprequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_maprequest *request = data;
+    struct message_maprequest *request = message_validate(MESSAGE_MAPREQUEST, data, count);
     struct message_mapresponse response;
 
-    if (count < sizeof (struct message_maprequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    response.address = (isheader(request->id)) ? map(request->id) : 0;
+        response.address = (isheader(request->id)) ? map(request->id) : 0;
 
-    return kernel_place(server.resource.inode, source, MESSAGE_MAPRESPONSE, sizeof (struct message_mapresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_MAPRESPONSE, sizeof (struct message_mapresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
@@ -321,48 +325,52 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct message_readrequest *request = data;
+    struct message_readrequest *request = message_validate(MESSAGE_READREQUEST, data, count);
     struct message_readresponse *response = (struct message_readresponse *)buffer;
     struct cpio_header *header;
     unsigned int length;
 
-    if (count < sizeof (struct message_readrequest))
-        return MESSAGE_FAILED;
-
-    header = (isheader(request->id)) ? getheader(request->id) : 0;
-
-    length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
-
-    response->count = 0;
-
-    if (header)
+    if (request)
     {
 
-        switch (cpio_mode(header) & 0xF000)
+        header = (isheader(request->id)) ? getheader(request->id) : 0;
+
+        length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
+
+        response->count = 0;
+
+        if (header)
         {
 
-        case 0x4000:
-            response->count = readrecords(request->id, (struct record *)(response + 1), length, request->offset);
+            switch (cpio_mode(header) & 0xF000)
+            {
 
-            break;
+            case 0x4000:
+                response->count = readrecords(request->id, (struct record *)(response + 1), length, request->offset);
 
-        case 0x8000:
-            response->count = read(request->id, response + 1, length, request->offset);
+                break;
 
-            break;
+            case 0x8000:
+                response->count = read(request->id, response + 1, length, request->offset);
 
-        default:
-            response->count = 0;
+                break;
 
-            break;
+            default:
+                response->count = 0;
+
+                break;
+
+            }
 
         }
 
+        response->buffer = 0;
+
+        return kernel_place(server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+
     }
 
-    response->buffer = 0;
-
-    return kernel_place(server.resource.inode, source, MESSAGE_READRESPONSE, sizeof (struct message_readresponse) + response->count, buffer);
+    return MESSAGE_FAILED;
 
 }
 
@@ -370,73 +378,85 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 {
 
     unsigned char buffer[MESSAGE_SIZE];
-    struct message_statrequest *request = data;
+    struct message_statrequest *request = message_validate(MESSAGE_STATREQUEST, data, count);
     struct message_statresponse *response = (struct message_statresponse *)buffer;
 
-    if (count < sizeof (struct message_statrequest))
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    response->count = (isheader(request->id)) ? stat(request->id, (struct record *)(response + 1)) : 0;
+        response->count = (isheader(request->id)) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
-    return kernel_place(server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
+        return kernel_place(server.resource.inode, source, MESSAGE_STATRESPONSE, sizeof (struct message_statresponse) + response->count, response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onwalkrequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_walkrequest *request = data;
+    struct message_walkrequest *request = message_validate(MESSAGE_WALKREQUEST, data, count);
     struct message_walkresponse response;
 
-    if (count < sizeof (struct message_walkrequest) || count - sizeof (struct message_walkrequest) < request->length)
-        return MESSAGE_FAILED;
+    if (request)
+    {
 
-    if (!request->parent)
-        response.id = walk(getroot(), (char *)(request + 1), request->length);
-    else if (isheader(request->parent))
-        response.id = walk(request->parent, (char *)(request + 1), request->length);
-    else
-        response.id = 0;
+        if (!request->parent)
+            response.id = walk(getroot(), (char *)(request + 1), request->length);
+        else if (isheader(request->parent))
+            response.id = walk(request->parent, (char *)(request + 1), request->length);
+        else
+            response.id = 0;
 
-    return kernel_place(server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+        return kernel_place(server.resource.inode, source, MESSAGE_WALKRESPONSE, sizeof (struct message_walkresponse), &response);
+
+    }
+
+    return MESSAGE_FAILED;
 
 }
 
 static unsigned int onwriterequest(unsigned int source, unsigned int count, void *data)
 {
 
-    struct message_writerequest *request = data;
+    struct message_writerequest *request = message_validate(MESSAGE_WRITEREQUEST, data, count);
     struct message_writeresponse response;
     struct cpio_header *header;
 
-    if (count < sizeof (struct message_writerequest) || count - sizeof (struct message_writerequest) < request->count)
-        return MESSAGE_FAILED;
-
-    header = (isheader(request->id)) ? getheader(request->id) : 0;
-
-    response.count = 0;
-
-    if (header)
+    if (request)
     {
 
-        switch (cpio_mode(header) & 0xF000)
+        header = (isheader(request->id)) ? getheader(request->id) : 0;
+
+        response.count = 0;
+
+        if (header)
         {
 
-        case 0x8000:
-            response.count = write(request->id, request + 1, request->count, request->offset);
+            switch (cpio_mode(header) & 0xF000)
+            {
 
-            break;
+            case 0x8000:
+                response.count = write(request->id, request + 1, request->count, request->offset);
 
-        default:
-            response.count = 0;
+                break;
 
-            break;
+            default:
+                response.count = 0;
+
+                break;
+
+            }
 
         }
 
+        return kernel_place(server.resource.inode, source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+
     }
 
-    return kernel_place(server.resource.inode, source, MESSAGE_WRITERESPONSE, sizeof (struct message_writeresponse), &response);
+    return MESSAGE_FAILED;
 
 }
 
