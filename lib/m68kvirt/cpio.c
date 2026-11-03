@@ -472,7 +472,7 @@ void cpio_setup(unsigned int addr)
     service_init(&service);
 
     address = addr;
-    service_registernode(&service, "initrd", &operands);
+    rootsrv_registernode(&service, "initrd", &operands);
 
 }
 

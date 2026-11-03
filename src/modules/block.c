@@ -212,7 +212,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "block", RESOURCE_BLOCKINTERFACE);
+    rootsrv_registerdirectory(&service, "block", RESOURCE_BLOCKINTERFACE);
 
 }
 

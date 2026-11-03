@@ -113,7 +113,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "mouse", RESOURCE_MOUSEINTERFACE);
+    rootsrv_registerdirectory(&service, "mouse", RESOURCE_MOUSEINTERFACE);
 
 }
 

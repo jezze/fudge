@@ -116,7 +116,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "ethernet", RESOURCE_ETHERNETINTERFACE);
+    rootsrv_registerdirectory(&service, "ethernet", RESOURCE_ETHERNETINTERFACE);
 
 }
 

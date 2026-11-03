@@ -150,7 +150,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "console", RESOURCE_CONSOLEINTERFACE);
+    rootsrv_registerdirectory(&service, "console", RESOURCE_CONSOLEINTERFACE);
 
 }
 

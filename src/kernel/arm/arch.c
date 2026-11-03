@@ -437,7 +437,7 @@ void arch_setup2(void)
     mmu_enable();
     setupvectors();
     pool_setup(ARCH_MAILBOX_BASE);
-    service_setup();
+    rootsrv_setup();
     memsrv_setup(ARCH_MEM_BASE, unmap);
 
 }

@@ -5,6 +5,7 @@
 #include "task.h"
 #include "pool.h"
 #include "service.h"
+#include "rootsrv.h"
 #include "kernel.h"
 #include "memsrv.h"
 
@@ -798,7 +799,7 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
 
     freepages = 0;
     unmapcallback = unmap;
-    service_registernode(&service, "mem", &operands);
+    rootsrv_registernode(&service, "mem", &operands);
 
 }
 

@@ -127,7 +127,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "audio", RESOURCE_AUDIOINTERFACE);
+    rootsrv_registerdirectory(&service, "audio", RESOURCE_AUDIOINTERFACE);
 
 }
 

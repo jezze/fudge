@@ -87,7 +87,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "keyboard", RESOURCE_KEYBOARDINTERFACE);
+    rootsrv_registerdirectory(&service, "keyboard", RESOURCE_KEYBOARDINTERFACE);
 
 }
 

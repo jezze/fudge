@@ -294,7 +294,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "timer", RESOURCE_TIMERINTERFACE);
+    rootsrv_registerdirectory(&service, "timer", RESOURCE_TIMERINTERFACE);
 
 }
 

@@ -494,7 +494,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registernode(&service, "sysinfo", &operands);
+    rootsrv_registernode(&service, "sysinfo", &operands);
 
 }
 

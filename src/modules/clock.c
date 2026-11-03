@@ -100,7 +100,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "clock", RESOURCE_CLOCKINTERFACE);
+    rootsrv_registerdirectory(&service, "clock", RESOURCE_CLOCKINTERFACE);
 
 }
 

@@ -454,7 +454,7 @@ void arch_setup2(void)
     cpu_setstatus(CPU_STATUS_SUM);
     setdirectory(ARCH_MMU_KERNELBASE);
     pool_setup(ARCH_MAILBOX_BASE);
-    service_setup();
+    rootsrv_setup();
     memsrv_setup(ARCH_MEM_BASE, unmap);
 
 }

@@ -162,7 +162,7 @@ void module_init(void)
 void module_register(void)
 {
 
-    service_registerdirectory(&service, "video", RESOURCE_VIDEOINTERFACE);
+    rootsrv_registerdirectory(&service, "video", RESOURCE_VIDEOINTERFACE);
 
 }
 
