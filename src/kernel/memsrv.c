@@ -29,9 +29,9 @@ struct file
 
 };
 
+static struct spinlock spinlock;
 static struct server server;
 static struct service service;
-static struct spinlock spinlock;
 static struct file files[MEMSRV_FILES];
 static unsigned short next[MEMSRV_PAGES];
 static unsigned int freepages;
@@ -790,9 +790,10 @@ void memsrv_untask(unsigned int itask)
 void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, unsigned int size))
 {
 
+    spinlock_init(&spinlock);
     server_init(&server, 0, operands_place, 0);
     service_init(&service, "mem");
-    spinlock_init(&spinlock);
+    service_register(&service, pool_attachnode(&server.resource));
 
     base = paddress;
 
@@ -801,7 +802,6 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
 
     freepages = 0;
     unmapcallback = unmap;
-    service_register(&service, pool_attachnode(&server.resource));
 
 }
 

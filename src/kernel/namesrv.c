@@ -181,8 +181,8 @@ void namesrv_setup(void)
 
     server_init(&rootserver, 0, rootoperands_place, 0);
     service_init(&rootservice, "namesrv");
-    pool_setroot(&rootserver.resource);
     service_register(&rootservice, MESSAGE_ROOT);
+    pool_setroot(&rootserver.resource);
 
 }
 
