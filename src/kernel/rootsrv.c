@@ -34,6 +34,7 @@ struct content
 
 static struct resource_operands directoryoperands;
 static struct resource_operands rootoperands;
+static struct resource rootserver;
 static struct service rootservice;
 
 static unsigned int dirid(unsigned int index)
@@ -477,39 +478,20 @@ static unsigned int rootoperands_place(unsigned int target, unsigned int source,
 
 }
 
-void rootsrv_registernode(struct service *service, char *name, struct resource_operands *operands)
-{
-
-    unsigned int inode;
-
-    service->resource.operands = operands;
-    inode = pool_attachnode(&service->resource);
-
-    if (inode)
-        service_register(service, inode, name);
-
-}
-
 void rootsrv_registerdirectory(struct service *service, char *name, unsigned int type)
 {
 
     service->type = type;
+    service->resource.operands = &directoryoperands;
 
-    rootsrv_registernode(service, name, &directoryoperands);
-
-}
-
-void rootsrv_unregisternode(struct service *service)
-{
-
-    service_unregister(service);
+    service_register(service, pool_attachnode(&service->resource), name);
 
 }
 
 void rootsrv_unregisterdirectory(struct service *service)
 {
 
-    rootsrv_unregisternode(service);
+    service_unregister(service);
 
     service->type = 0;
 
@@ -520,11 +502,9 @@ void rootsrv_setup(void)
 
     resource_operands_init(&directoryoperands, 0, operands_place, 0);
     resource_operands_init(&rootoperands, 0, rootoperands_place, 0);
+    resource_init(&rootserver, 0, 0, &rootoperands);
     service_init(&rootservice);
-
-    rootservice.resource.operands = &rootoperands;
-
-    pool_setroot(&rootservice.resource);
+    pool_setroot(&rootserver);
     service_register(&rootservice, MESSAGE_ROOT, "rootsrv");
 
 }

@@ -8,6 +8,7 @@
 #define OUTPUTSIZE                      0x4000
 
 static struct resource_operands operands;
+static struct resource server;
 static struct service service;
 static struct record rootrecords[ROOTRECORDS];
 static struct spinlock spinlock;
@@ -409,7 +410,7 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     spinlock_acquire(&spinlock);
 
     readresponse->count = read(source, request->id, request->offset, (request->count < MESSAGE_SIZE - sizeof (struct event_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct event_readresponse), readresponse + 1);
-    status = kernel_place(service.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
+    status = kernel_place(server.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + readresponse->count, response);
 
     spinlock_release(&spinlock);
 
@@ -430,7 +431,7 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
     spinlock_acquire(&spinlock);
 
     statresponse->count = stat(request->id, statresponse + 1);
-    status = kernel_place(service.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + statresponse->count, response);
+    status = kernel_place(server.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + statresponse->count, response);
 
     spinlock_release(&spinlock);
 
@@ -449,7 +450,7 @@ static unsigned int onwalkrequest(unsigned int source, unsigned int count, void 
 
     response.id = walk(request->parent ? request->parent : ROOT, request->length, (char *)(request + 1));
 
-    return kernel_place(service.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
+    return kernel_place(server.inode, source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
 }
 
@@ -487,6 +488,7 @@ void module_init(void)
     record_init(&rootrecords[7], 0x1006, RECORD_TYPE_NORMAL, 0, 8, 10, "drivers.mq");
     spinlock_init(&spinlock);
     resource_operands_init(&operands, 0, operands_place, 0);
+    resource_init(&server, 0, 0, &operands);
     service_init(&service);
 
 }
@@ -494,14 +496,15 @@ void module_init(void)
 void module_register(void)
 {
 
-    rootsrv_registernode(&service, "sysinfo", &operands);
+    service_register(&service, pool_attachnode(&server), "sysinfo");
 
 }
 
 void module_unregister(void)
 {
 
-    rootsrv_unregisternode(&service);
+    service_unregister(&service);
+    pool_detachnode(&server);
 
 }
 
