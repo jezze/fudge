@@ -145,7 +145,7 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
     if (status == MESSAGE_OK)
     {
 
-        for (i = 0; i < MESSAGE_SLOTS && messages[i].event; i++)
+        for (i = 0; i < MESSAGE_SLOTS && messages[i].type; i++)
             buffer_copy(&inbox->messages[(inbox->head + inbox->count++) % CHANNEL_QUEUE], &messages[i], sizeof (struct message));
 
     }
@@ -269,7 +269,7 @@ static unsigned int pick(unsigned int ichannel, struct message *message)
             continue;
 
         case MESSAGE_OK:
-            return message->event;
+            return message->type;
 
         case MESSAGE_FAILED:
             return 0;
@@ -321,13 +321,13 @@ static void dispatch(unsigned int ichannel, struct message *message)
 
     struct inbox *inbox = &inboxes[ichannel];
 
-    if (message->event == MESSAGE_TYPE_MAIN && !ichannel)
+    if (message->type == MESSAGE_TYPE_MAIN && !ichannel)
         setpipe(message);
 
-    if (message->event < CHANNEL_EVENTS && listeners[message->event])
-        listeners[message->event](message);
+    if (message->type < CHANNEL_EVENTS && listeners[message->type])
+        listeners[message->type](message);
 
-    switch (message->event)
+    switch (message->type)
     {
 
     case MESSAGE_TYPE_TERM:
@@ -394,7 +394,7 @@ unsigned int channel_process(unsigned int ichannel)
         dispatch(ichannel, &message);
         finish(ichannel, &message);
 
-        return message.event;
+        return message.type;
 
     }
 
@@ -455,7 +455,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         dispatch(ichannel, message);
 
-        if (message->source == source && message->event == event)
+        if (message->source == source && message->type == event)
         {
 
             hand(ichannel, message);
@@ -466,7 +466,7 @@ unsigned int channel_poll(unsigned int ichannel, unsigned int source, unsigned i
 
         finish(ichannel, message);
 
-        if (message->source == source && message->event == MESSAGE_TYPE_TERM)
+        if (message->source == source && message->type == MESSAGE_TYPE_TERM)
             return 0;
 
     }

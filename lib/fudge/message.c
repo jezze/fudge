@@ -18,7 +18,7 @@ static void *checkpayload(void *data, unsigned int count, unsigned int size, uns
 void message_init(struct message *message, unsigned int event, unsigned int source, unsigned int length, void *data)
 {
 
-    message->event = event;
+    message->type = event;
     message->source = source;
     message->length = length;
     message->data = data;

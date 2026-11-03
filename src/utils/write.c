@@ -40,7 +40,7 @@ static void ondata(struct message *message)
 static void onrecord(struct message *message)
 {
 
-    if (message->event == MESSAGE_TYPE_ERROR)
+    if (message->type == MESSAGE_TYPE_ERROR)
     {
 
         store(message->source, message->data, message->length);
@@ -53,7 +53,7 @@ static void onrecord(struct message *message)
         char data[MESSAGE_SIZE + 8];
         unsigned int *header = (unsigned int *)data;
 
-        header[0] = message->event;
+        header[0] = message->type;
         header[1] = message->length;
 
         store(message->source, data, 8 + buffer_write(data, MESSAGE_SIZE + 8, message->data, message->length, 8));

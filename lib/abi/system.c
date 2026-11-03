@@ -46,14 +46,14 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
         while (channel_pick(1, &message))
         {
 
-            switch (message.event)
+            switch (message.type)
             {
 
             case MESSAGE_TYPE_ERROR:
                 errors++;
 
             case MESSAGE_TYPE_DATA:
-                channel_send(0, target, message.event, message.length, message.data);
+                channel_send(0, target, message.type, message.length, message.data);
 
                 break;
 
@@ -92,7 +92,7 @@ unsigned int system_feedv(void *input, unsigned int inputcount, void *output, un
         while (channel_pick(1, &message))
         {
 
-            switch (message.event)
+            switch (message.type)
             {
 
             case MESSAGE_TYPE_DATA:

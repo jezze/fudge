@@ -88,7 +88,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
     }
 
     if (n < count)
-        messages[n].event = 0;
+        messages[n].type = 0;
 
     spinlock_release(&mailbox->spinlock);
 

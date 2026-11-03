@@ -88,7 +88,7 @@
 struct message
 {
 
-    unsigned int event;
+    unsigned int type;
     unsigned int source;
     unsigned int length;
     void *data;
