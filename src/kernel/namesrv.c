@@ -9,22 +9,6 @@
 
 #define LISTRECORDS                     8
 
-struct listing
-{
-
-    struct event_readresponse response;
-    struct record records[LISTRECORDS];
-
-};
-
-struct statresult
-{
-
-    struct event_statresponse response;
-    struct record record;
-
-};
-
 static struct server rootserver;
 static struct service rootservice;
 
@@ -92,7 +76,9 @@ static unsigned int onrootreadrequest(unsigned int source, unsigned int count, v
 
     struct event_readrequest *request = data;
     struct resource *resource = 0;
-    struct listing listing;
+    unsigned char buffer[sizeof (struct event_readresponse) + sizeof (struct record) * LISTRECORDS];
+    struct event_readresponse *response = (struct event_readresponse *)buffer;
+    struct record *records = (struct record *)(response + 1);
     unsigned int c = 0;
     unsigned int i;
 
@@ -100,7 +86,7 @@ static unsigned int onrootreadrequest(unsigned int source, unsigned int count, v
         return MESSAGE_FAILED;
 
     for (i = request->offset; request->id == MESSAGE_ROOT && i < 2 && (c + 1) * sizeof (struct record) <= request->count; i++)
-        record_init(&listing.records[c++], MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
+        record_init(&records[c++], MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
 
     resource_lock();
 
@@ -110,16 +96,16 @@ static unsigned int onrootreadrequest(unsigned int source, unsigned int count, v
         struct service *service = resource->data;
 
         if (i >= request->offset)
-            record_init(&listing.records[c++], service->inode, RECORD_TYPE_DIRECTORY, 0, i + 1, cstring_length(service->name), service->name);
+            record_init(&records[c++], service->inode, RECORD_TYPE_DIRECTORY, 0, i + 1, cstring_length(service->name), service->name);
 
     }
 
     resource_unlock();
 
-    listing.response.count = c * sizeof (struct record);
-    listing.response.buffer = 0;
+    response->count = c * sizeof (struct record);
+    response->buffer = 0;
 
-    return kernel_place(MESSAGE_ROOT, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
+    return kernel_place(MESSAGE_ROOT, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
 }
 
@@ -127,16 +113,18 @@ static unsigned int onrootstatrequest(unsigned int source, unsigned int count, v
 {
 
     struct event_statrequest *request = data;
-    struct statresult result;
+    unsigned char buffer[sizeof (struct event_statresponse) + sizeof (struct record)];
+    struct event_statresponse *response = (struct event_statresponse *)buffer;
+    struct record *record = (struct record *)(response + 1);
 
     if (count < sizeof (struct event_statrequest))
         return MESSAGE_FAILED;
 
-    record_init(&result.record, MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+    record_init(record, MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
 
-    result.response.count = (request->id == MESSAGE_ROOT) ? sizeof (struct record) : 0;
+    response->count = (request->id == MESSAGE_ROOT) ? sizeof (struct record) : 0;
 
-    return kernel_place(MESSAGE_ROOT, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + result.response.count, &result);
+    return kernel_place(MESSAGE_ROOT, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, buffer);
 
 }
 

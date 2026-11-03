@@ -8,30 +8,6 @@
 #define LISTRECORDS                     8
 #define TEXTSIZE                        32
 
-struct listing
-{
-
-    struct event_readresponse response;
-    struct record records[LISTRECORDS];
-
-};
-
-struct statresult
-{
-
-    struct event_statresponse response;
-    struct record record;
-
-};
-
-struct content
-{
-
-    struct event_readresponse response;
-    char data[TEXTSIZE];
-
-};
-
 static unsigned int dirid(unsigned int index)
 {
 
@@ -161,14 +137,15 @@ static void initfilerecord(struct record *record, struct resource *device, unsig
 static unsigned int readfile(struct unitsrv *unitsrv, struct resource *device, unsigned int source, struct event_readrequest *request)
 {
 
+    unsigned char buffer[sizeof (struct event_readresponse) + TEXTSIZE];
+    struct event_readresponse *response = (struct event_readresponse *)buffer;
     char text[TEXTSIZE];
-    struct content content;
     unsigned int length = cstring_write_value(text, TEXTSIZE, device->inode, 10, 0, 0);
 
-    content.response.count = (request->offset < length) ? buffer_write(content.data, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
-    content.response.buffer = 0;
+    response->count = (request->offset < length) ? buffer_write(response + 1, (request->count < TEXTSIZE) ? request->count : TEXTSIZE, text + request->offset, length - request->offset, 0) : 0;
+    response->buffer = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + content.response.count, &content);
+    return kernel_place(unitsrv->server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
 }
 
@@ -179,7 +156,9 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
     struct resource *file;
     struct resource *dir;
     unsigned int root;
-    struct listing listing;
+    unsigned char buffer[sizeof (struct event_readresponse) + sizeof (struct record) * LISTRECORDS];
+    struct event_readresponse *response = (struct event_readresponse *)buffer;
+    struct record *records = (struct record *)(response + 1);
     unsigned int c = 0;
     unsigned int i;
 
@@ -198,20 +177,20 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
     {
 
         if (i < 2)
-            record_init(&listing.records[c++], request->id, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
+            record_init(&records[c++], request->id, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");
         else if (root && getdevice(unitsrv, i - 2))
-            initdirrecord(&listing.records[c++], i - 2, i + 1);
+            initdirrecord(&records[c++], i - 2, i + 1);
         else if (dir && i == 2 && dir->inode)
-            initfilerecord(&listing.records[c++], dir, request->id + POOL_NODES, i + 1);
+            initfilerecord(&records[c++], dir, request->id + POOL_NODES, i + 1);
         else
             break;
 
     }
 
-    listing.response.count = c * sizeof (struct record);
-    listing.response.buffer = 0;
+    response->count = c * sizeof (struct record);
+    response->buffer = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + listing.response.count, &listing);
+    return kernel_place(unitsrv->server.resource.inode, source, EVENT_READRESPONSE, sizeof (struct event_readresponse) + response->count, buffer);
 
 }
 
@@ -220,23 +199,25 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
 
     struct event_statrequest *request = data;
     struct resource *device;
-    struct statresult result;
+    unsigned char buffer[sizeof (struct event_statresponse) + sizeof (struct record)];
+    struct event_statresponse *response = (struct event_statresponse *)buffer;
+    struct record *record = (struct record *)(response + 1);
 
     if (count < sizeof (struct event_statrequest))
         return MESSAGE_FAILED;
 
-    result.response.count = sizeof (struct record);
+    response->count = sizeof (struct record);
 
     if (request->id == unitsrv->server.resource.inode)
-        record_init(&result.record, request->id, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
+        record_init(record, request->id, RECORD_TYPE_DIRECTORY, 0, 1, 1, ".");
     else if (getdir(unitsrv, request->id))
-        initdirrecord(&result.record, request->id / POOL_NODES / 2, 0);
+        initdirrecord(record, request->id / POOL_NODES / 2, 0);
     else if ((device = getfile(unitsrv, request->id)))
-        initfilerecord(&result.record, device, request->id, 0);
+        initfilerecord(record, device, request->id, 0);
     else
-        result.response.count = 0;
+        response->count = 0;
 
-    return kernel_place(unitsrv->server.resource.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + result.response.count, &result);
+    return kernel_place(unitsrv->server.resource.inode, source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, buffer);
 
 }
 
