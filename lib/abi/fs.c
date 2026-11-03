@@ -7,6 +7,15 @@
 #define SPAWNCHUNK                      (MESSAGE_SIZE - sizeof (struct event_writerequest))
 #define SPAWNNAMESIZE                   32
 #define FS_NAMESIZE                     32
+#define READSIZE                        0x8000
+
+struct readreply
+{
+
+    unsigned int count;
+    void *data;
+
+};
 
 /* the service's inode: its name, the part before the colon, walked in the kernel's root */
 unsigned int fs_auth(char *path)
@@ -186,25 +195,59 @@ unsigned int fs_munmap(unsigned int ichannel, unsigned int target, unsigned int 
 
 }
 
-unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+/* the data stays in the reply's slot or in our block buffer until the next pick on ichannel or the next read */
+static struct readreply readreply(unsigned int ichannel, unsigned int target, unsigned int id, unsigned int count, unsigned int offset)
 {
 
-    unsigned char data[MESSAGE_SIZE];
+    struct readreply reply;
     struct event_readrequest request;
-    struct event_readresponse *response = (struct event_readresponse *)data;
+    struct message message;
 
+    reply.count = 0;
+    reply.data = 0;
     request.id = id;
     request.offset = offset;
     request.count = count;
     request.flags = READ_FLAG_BUFFER;
 
-    if (!channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request))
-        return 0;
+    if (channel_send(ichannel, target, EVENT_READREQUEST, sizeof (struct event_readrequest), &request) && channel_poll(ichannel, target, EVENT_READRESPONSE, &message) && message.length >= sizeof (struct event_readresponse))
+    {
 
-    channel_wait(ichannel, target, EVENT_READRESPONSE, MESSAGE_SIZE, response);
-    buffer_copy(buffer, (response->buffer) ? (void *)response->buffer : response + 1, response->count);
+        struct event_readresponse *response = message.data;
 
-    return response->count;
+        if (response->buffer)
+        {
+
+            reply.count = response->count;
+            reply.data = (void *)response->buffer;
+
+        }
+
+        else if (response->count <= message.length - sizeof (struct event_readresponse))
+        {
+
+            reply.count = response->count;
+            reply.data = response + 1;
+
+        }
+
+        if (reply.count > count)
+            reply.count = count;
+
+    }
+
+    return reply;
+
+}
+
+unsigned int fs_read(unsigned int ichannel, unsigned int target, unsigned int id, void *buffer, unsigned int count, unsigned int offset)
+{
+
+    struct readreply reply = readreply(ichannel, target, id, count, offset);
+
+    buffer_copy(buffer, reply.data, reply.count);
+
+    return reply.count;
 
 }
 
@@ -228,9 +271,8 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
 
     unsigned int target = fs_auth(path);
     unsigned int id = (target) ? fs_walk(ichannel, target, 0, path) : 0;
-    char buffer[MESSAGE_SIZE];
-    unsigned int offset;
-    unsigned int count;
+    struct readreply reply;
+    unsigned int offset = 0;
 
     if (!target)
     {
@@ -250,8 +292,18 @@ unsigned int fs_read_each(unsigned int ichannel, unsigned int source, char *path
 
     }
 
-    for (offset = 0; (count = fs_read(ichannel, target, id, buffer, MESSAGE_SIZE, offset)); offset += count)
-        each(source, buffer, count);
+    while ((reply = readreply(ichannel, target, id, READSIZE, offset)).count)
+    {
+
+        unsigned char *data = reply.data;
+        unsigned int i;
+
+        for (i = 0; i < reply.count; i += MESSAGE_SIZE)
+            each(source, data + i, (reply.count - i < MESSAGE_SIZE) ? reply.count - i : MESSAGE_SIZE);
+
+        offset += reply.count;
+
+    }
 
     return 1;
 
