@@ -3,6 +3,7 @@
 #include "timer.h"
 
 static struct resource_operands operands;
+static struct dirsrv dirsrv;
 static struct service service;
 
 static unsigned int getticks(struct timer_interface *interface, unsigned int ms)
@@ -287,6 +288,7 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
+    dirsrv_init(&dirsrv, RESOURCE_TIMERINTERFACE);
     service_init(&service);
 
 }
@@ -294,14 +296,15 @@ void module_init(void)
 void module_register(void)
 {
 
-    rootsrv_registerdirectory(&service, "timer", RESOURCE_TIMERINTERFACE);
+    service_register(&service, pool_attachnode(&dirsrv.resource), "timer");
 
 }
 
 void module_unregister(void)
 {
 
-    rootsrv_unregisterdirectory(&service);
+    service_unregister(&service);
+    pool_detachnode(&dirsrv.resource);
 
 }
 

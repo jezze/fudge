@@ -7,7 +7,6 @@ struct service
     char name[SERVICE_NAMESIZE];
     unsigned int namehash;
     unsigned int inode;
-    unsigned int type;
 
 };
 

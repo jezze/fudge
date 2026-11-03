@@ -3,6 +3,7 @@
 #include "audio.h"
 
 static struct resource_operands operands;
+static struct dirsrv dirsrv;
 static struct service service;
 
 static unsigned int oninfo(struct audio_interface *interface, unsigned int source)
@@ -120,6 +121,7 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
+    dirsrv_init(&dirsrv, RESOURCE_AUDIOINTERFACE);
     service_init(&service);
 
 }
@@ -127,14 +129,15 @@ void module_init(void)
 void module_register(void)
 {
 
-    rootsrv_registerdirectory(&service, "audio", RESOURCE_AUDIOINTERFACE);
+    service_register(&service, pool_attachnode(&dirsrv.resource), "audio");
 
 }
 
 void module_unregister(void)
 {
 
-    rootsrv_unregisterdirectory(&service);
+    service_unregister(&service);
+    pool_detachnode(&dirsrv.resource);
 
 }
 

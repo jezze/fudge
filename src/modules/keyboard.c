@@ -3,6 +3,7 @@
 #include "keyboard.h"
 
 static struct resource_operands operands;
+static struct dirsrv dirsrv;
 static struct service service;
 
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
@@ -80,6 +81,7 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
+    dirsrv_init(&dirsrv, RESOURCE_KEYBOARDINTERFACE);
     service_init(&service);
 
 }
@@ -87,14 +89,15 @@ void module_init(void)
 void module_register(void)
 {
 
-    rootsrv_registerdirectory(&service, "keyboard", RESOURCE_KEYBOARDINTERFACE);
+    service_register(&service, pool_attachnode(&dirsrv.resource), "keyboard");
 
 }
 
 void module_unregister(void)
 {
 
-    rootsrv_unregisterdirectory(&service);
+    service_unregister(&service);
+    pool_detachnode(&dirsrv.resource);
 
 }
 

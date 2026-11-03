@@ -61,7 +61,5 @@ void service_init(struct service *service)
 
     resource_init(&service->resource, RESOURCE_SERVICE, service, 0);
 
-    service->type = 0;
-
 }
 

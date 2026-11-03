@@ -3,6 +3,7 @@
 #include "console.h"
 
 static struct resource_operands operands;
+static struct dirsrv dirsrv;
 static struct service service;
 
 static unsigned int ondata(struct console_interface *interface, unsigned int source, void *data, unsigned int count)
@@ -143,6 +144,7 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
+    dirsrv_init(&dirsrv, RESOURCE_CONSOLEINTERFACE);
     service_init(&service);
 
 }
@@ -150,14 +152,15 @@ void module_init(void)
 void module_register(void)
 {
 
-    rootsrv_registerdirectory(&service, "console", RESOURCE_CONSOLEINTERFACE);
+    service_register(&service, pool_attachnode(&dirsrv.resource), "console");
 
 }
 
 void module_unregister(void)
 {
 
-    rootsrv_unregisterdirectory(&service);
+    service_unregister(&service);
+    pool_detachnode(&dirsrv.resource);
 
 }
 
