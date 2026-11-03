@@ -174,7 +174,7 @@ static unsigned int map(unsigned int id)
 
 }
 
-static unsigned long locate(unsigned int id)
+static unsigned long operands_locate(unsigned int id)
 {
 
     return (isheader(id)) ? map(id) : 0;
@@ -470,7 +470,7 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 void cpio_setup(unsigned int addr)
 {
 
-    server_init(&server, 0, operands_place, locate);
+    server_init(&server, 0, operands_place, operands_locate);
     service_init(&service, "initrd");
 
     address = addr;
