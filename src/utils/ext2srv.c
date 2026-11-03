@@ -1146,6 +1146,14 @@ static unsigned int walk(unsigned int id, char *path, unsigned int length)
 
 }
 
+/* the request's header and the count bytes after it are all in the message */
+static unsigned int fits(struct message *message, unsigned int size, unsigned int count)
+{
+
+    return message->length >= size && message->length - size >= count;
+
+}
+
 static void oncreaterequest(struct message *message)
 {
 
@@ -1157,7 +1165,7 @@ static void oncreaterequest(struct message *message)
 
     response.id = 0;
 
-    switch (parent.type & 0xF000)
+    switch ((fits(message, sizeof (struct event_createrequest), request->count)) ? parent.type & 0xF000 : 0)
     {
 
     case 0x4000:
@@ -1223,7 +1231,7 @@ static void onreadrequest(struct message *message)
     response->count = 0;
     response->buffer = 0;
 
-    switch (node.type & 0xF000)
+    switch ((fits(message, sizeof (struct event_readrequest), 0)) ? node.type & 0xF000 : 0)
     {
 
     case 0x4000:
@@ -1368,7 +1376,7 @@ static void onremoverequest(struct message *message)
     struct event_removerequest *request = message->data;
     struct event_removeresponse response;
 
-    response.status = removenode(request->parent, request->id);
+    response.status = (fits(message, sizeof (struct event_removerequest), 0)) ? removenode(request->parent, request->id) : 0;
 
     channel_send(0, message->source, EVENT_REMOVERESPONSE, sizeof (struct event_removeresponse), &response);
 
@@ -1381,7 +1389,7 @@ static void onstatrequest(struct message *message)
     struct event_statrequest *request = message->data;
     struct event_statresponse *response = (struct event_statresponse *)data;
 
-    response->count = stat(request->id, (struct record *)(response + 1));
+    response->count = (fits(message, sizeof (struct event_statrequest), 0)) ? stat(request->id, (struct record *)(response + 1)) : 0;
 
     channel_send(0, message->source, EVENT_STATRESPONSE, sizeof (struct event_statresponse) + response->count, data);
 
@@ -1393,7 +1401,7 @@ static void onwalkrequest(struct message *message)
     struct event_walkrequest *request = message->data;
     struct event_walkresponse response;
 
-    response.id = walk((request->parent) ? request->parent : 2, (char *)(request + 1), request->length);
+    response.id = (fits(message, sizeof (struct event_walkrequest), request->length)) ? walk((request->parent) ? request->parent : 2, (char *)(request + 1), request->length) : 0;
 
     channel_send(0, message->source, EVENT_WALKRESPONSE, sizeof (struct event_walkresponse), &response);
 
@@ -1410,7 +1418,7 @@ static void onwriterequest(struct message *message)
 
     response.count = 0;
 
-    switch (node.type & 0xF000)
+    switch ((fits(message, sizeof (struct event_writerequest), request->count)) ? node.type & 0xF000 : 0)
     {
 
     case 0x4000:
