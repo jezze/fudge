@@ -2342,12 +2342,13 @@ static void onkeypress(struct message *message)
 {
 
     struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
-    unsigned int id = keys_getcode(&state.keys, keypress->scancode);
-    struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
-    struct bind_binding *binding = bind_find(id, state.keys.mod);
 
     if (keypress)
     {
+
+        unsigned int id = keys_getcode(&state.keys, keypress->scancode);
+        struct widget *selecteditem = (state.focusedwidget) ? getselecteditem(state.focusedwidget) : 0;
+        struct bind_binding *binding = bind_find(id, state.keys.mod);
 
         if (id && (!binding || !dobinding(binding)))
         {
@@ -2442,10 +2443,11 @@ static void onkeyrelease(struct message *message)
 {
 
     struct message_keyrelease *keyrelease = message_validate(MESSAGE_KEYRELEASE, message->data, message->length);
-    unsigned int id = keys_getcode(&state.keys, keyrelease->scancode);
 
     if (keyrelease)
     {
+
+        unsigned int id = keys_getcode(&state.keys, keyrelease->scancode);
 
         if (id && state.focusedwindow)
         {
@@ -2732,17 +2734,18 @@ static void onmousemove(struct message *message)
 {
 
     struct message_mousemove *mousemove = message_validate(MESSAGE_MOUSEMOVE, message->data, message->length);
-    int quarters = getquarters(mousemove->relx, mousemove->rely);
-    int totalx = state.mouseremainder.x + mousemove->relx * quarters;
-    int totaly = state.mouseremainder.y + mousemove->rely * quarters;
-    int pixelsx = scalemove(totalx);
-    int pixelsy = scalemove(totaly);
-    int x = util_clamp(state.mouseposition.x + pixelsx, 0, display.region.size.w);
-    int y = util_clamp(state.mouseposition.y + pixelsy, 0, display.region.size.h);
-    unsigned int relayout;
 
     if (mousemove)
     {
+
+        int quarters = getquarters(mousemove->relx, mousemove->rely);
+        int totalx = state.mouseremainder.x + mousemove->relx * quarters;
+        int totaly = state.mouseremainder.y + mousemove->rely * quarters;
+        int pixelsx = scalemove(totalx);
+        int pixelsy = scalemove(totaly);
+        int x = util_clamp(state.mouseposition.x + pixelsx, 0, display.region.size.w);
+        int y = util_clamp(state.mouseposition.y + pixelsy, 0, display.region.size.h);
+        unsigned int relayout;
 
         state.mouseremainder.x = totalx - pixelsx * MOUSE_NORMAL;
         state.mouseremainder.y = totaly - pixelsy * MOUSE_NORMAL;

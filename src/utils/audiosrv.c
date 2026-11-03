@@ -295,11 +295,12 @@ static void ontimertick(struct message *message)
 {
 
     struct message_timertick *timertick = message_validate(MESSAGE_TIMERTICK, message->data, message->length);
-    unsigned int elapsed = timertick->counter - pace.counter;
     unsigned int played;
 
     if (timertick)
     {
+
+        unsigned int elapsed = timertick->counter - pace.counter;
 
         if (!pace.started || elapsed > hz)
             elapsed = 0;

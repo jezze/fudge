@@ -173,10 +173,11 @@ static void onwmevent(struct message *message)
 {
 
     struct message_wmevent *event = message_validate(MESSAGE_WMEVENT, message->data, message->length);
-    char *data = (char *)(event + 1);
 
     if (event)
     {
+
+        char *data = (char *)(event + 1);
 
         /* the address is taken as is instead of through kv, since a URL can contain & */
         if (event->length > 14 && buffer_match(data, "q=address&url=", 14))

@@ -476,10 +476,11 @@ static void onkeypress(struct message *message)
 {
 
     struct message_keypress *keypress = message_validate(MESSAGE_KEYPRESS, message->data, message->length);
-    unsigned int id = keys_getcode(&keys, keypress->scancode);
 
     if (keypress)
     {
+
+        unsigned int id = keys_getcode(&keys, keypress->scancode);
 
         if (!id)
             return;

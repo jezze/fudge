@@ -205,10 +205,11 @@ static void onwmkeypress(struct message *message)
 {
 
     struct message_wmkeypress *wmkeypress = message_validate(MESSAGE_WMKEYPRESS, message->data, message->length);
-    unsigned int c = (wmkeypress->length == 1) ? wmkeypress->unicode : 0;
 
     if (wmkeypress)
     {
+
+        unsigned int c = (wmkeypress->length == 1) ? wmkeypress->unicode : 0;
 
         switch (c)
         {
