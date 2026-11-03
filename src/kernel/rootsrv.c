@@ -180,9 +180,9 @@ void rootsrv_setup(void)
 
     resource_operands_init(&rootoperands, 0, rootoperands_place, 0);
     resource_init(&rootserver, 0, 0, &rootoperands);
-    service_init(&rootservice);
+    service_init(&rootservice, "rootsrv");
     pool_setroot(&rootserver);
-    service_register(&rootservice, MESSAGE_ROOT, "rootsrv");
+    service_register(&rootservice, MESSAGE_ROOT);
 
 }
 

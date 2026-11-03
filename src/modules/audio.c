@@ -122,14 +122,14 @@ void module_init(void)
     resource_operands_init(&operands, 0, operands_place, 0);
 
     dirsrv_init(&dirsrv, RESOURCE_AUDIOINTERFACE);
-    service_init(&service);
+    service_init(&service, "audio");
 
 }
 
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&dirsrv.resource), "audio");
+    service_register(&service, pool_attachnode(&dirsrv.resource));
 
 }
 

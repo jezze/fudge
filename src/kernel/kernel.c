@@ -458,7 +458,10 @@ unsigned int kernel_announce(unsigned int inode, char *name)
     if (iservice)
     {
 
-        service_register(pool_getservice(iservice), inode, name);
+        struct service *service = pool_getservice(iservice);
+
+        service_init(service, name);
+        service_register(service, inode);
 
         return MESSAGE_OK;
 

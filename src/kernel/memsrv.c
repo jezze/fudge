@@ -790,7 +790,7 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
 
     resource_operands_init(&operands, 0, operands_place, 0);
     resource_init(&server, 0, 0, &operands);
-    service_init(&service);
+    service_init(&service, "mem");
     spinlock_init(&spinlock);
 
     base = paddress;
@@ -800,7 +800,7 @@ void memsrv_setup(unsigned long paddress, void (*unmap)(unsigned long vaddress, 
 
     freepages = 0;
     unmapcallback = unmap;
-    service_register(&service, pool_attachnode(&server), "mem");
+    service_register(&service, pool_attachnode(&server));
 
 }
 

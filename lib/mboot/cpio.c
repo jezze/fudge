@@ -471,10 +471,10 @@ void cpio_setup(unsigned int addr)
 
     resource_operands_init(&operands, 0, operands_place, locate);
     resource_init(&server, 0, 0, &operands);
-    service_init(&service);
+    service_init(&service, "initrd");
 
     address = addr;
-    service_register(&service, pool_attachnode(&server), "initrd");
+    service_register(&service, pool_attachnode(&server));
 
 }
 

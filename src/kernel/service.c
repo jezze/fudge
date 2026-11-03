@@ -26,14 +26,13 @@ static void setname(struct service *service, char *name)
 
 }
 
-void service_register(struct service *service, unsigned int inode, char *name)
+void service_register(struct service *service, unsigned int inode)
 {
 
     if (inode)
     {
 
         resource_register(&service->resource);
-        setname(service, name);
 
         service->inode = inode;
 
@@ -48,7 +47,6 @@ void service_unregister(struct service *service)
     {
 
         resource_unregister(&service->resource);
-        setname(service, 0);
 
         service->inode = 0;
 
@@ -56,10 +54,11 @@ void service_unregister(struct service *service)
 
 }
 
-void service_init(struct service *service)
+void service_init(struct service *service, char *name)
 {
 
     resource_init(&service->resource, RESOURCE_SERVICE, service, 0);
+    setname(service, name);
 
 }
 

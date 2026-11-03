@@ -489,14 +489,14 @@ void module_init(void)
     spinlock_init(&spinlock);
     resource_operands_init(&operands, 0, operands_place, 0);
     resource_init(&server, 0, 0, &operands);
-    service_init(&service);
+    service_init(&service, "sysinfo");
 
 }
 
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&server), "sysinfo");
+    service_register(&service, pool_attachnode(&server));
 
 }
 
