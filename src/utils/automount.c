@@ -26,6 +26,15 @@ static unsigned int sendblockreadrequest(unsigned int target, unsigned int offse
 
 }
 
+static unsigned int reachable(unsigned int lba, unsigned int count)
+{
+
+    unsigned int limit = 0xFFFFFFFF / blockinfo.blocksize;
+
+    return lba <= limit && count <= limit - lba;
+
+}
+
 static void mountfat(unsigned int source, unsigned int target, unsigned int offset, char *name, char *service, unsigned int index)
 {
 
@@ -59,7 +68,12 @@ static unsigned int mountcdfs(unsigned int source, unsigned int target, char *na
 static void mountmbr(unsigned int source, unsigned int target, struct mbr_partition *partition, char *name, char *service, unsigned int index)
 {
 
-    unsigned int offset = ((partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0])) * blockinfo.blocksize;
+    unsigned int lba = (partition->sectorlba[3] << 24) | (partition->sectorlba[2] << 16) | (partition->sectorlba[1] << 8) | (partition->sectorlba[0]);
+    unsigned int total = (partition->sectortotal[3] << 24) | (partition->sectortotal[2] << 16) | (partition->sectortotal[1] << 8) | (partition->sectortotal[0]);
+    unsigned int offset = lba * blockinfo.blocksize;
+
+    if (!reachable(lba, total))
+        return;
 
     switch (partition->systemid)
     {
@@ -95,6 +109,8 @@ static void mountgpt(unsigned int source, unsigned int target, unsigned int ipar
         struct gpt_entry entry;
         unsigned int entryoffset;
         unsigned int offset;
+        unsigned int first;
+        unsigned int last;
 
         buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
 
@@ -108,7 +124,12 @@ static void mountgpt(unsigned int source, unsigned int target, unsigned int ipar
 
         buffer_copy(&entry, (void *)(blockinfo.buffer + entryoffset % blockinfo.blocksize), sizeof (struct gpt_entry));
 
-        offset = gpt_read32(entry.firstlba) * blockinfo.blocksize;
+        first = gpt_read32(entry.firstlba);
+        last = gpt_read32(entry.lastlba);
+        offset = first * blockinfo.blocksize;
+
+        if (gpt_read32(entry.firstlba + 4) || gpt_read32(entry.lastlba + 4) || last < first || !reachable(last, 1))
+            return;
 
         if (buffer_match(entry.type, gptlinux, 16) || buffer_match(entry.type, gptefi, 16) || buffer_match(entry.type, gptbasic, 16))
             mountfat(source, target, offset, name, service, index);
