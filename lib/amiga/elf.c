@@ -85,40 +85,45 @@ static unsigned int format_map(unsigned long base, unsigned int count, unsigned 
 
     struct elf_header *header = (struct elf_header *)base;
     struct elf_programheader *programheaders = (struct elf_programheader *)(base + header->phoffset);
-    unsigned int used = 0;
-    unsigned int i;
 
-    if (header->phoffset > count || header->phcount > (count - header->phoffset) / sizeof (struct elf_programheader))
-        return 0;
-
-    for (i = 0; i < header->phcount; i++)
+    if (header->phoffset <= count && header->phcount <= (count - header->phoffset) / sizeof (struct elf_programheader))
     {
 
-        struct elf_programheader *programheader = &programheaders[i];
-        unsigned int span = ((programheader->vaddress & 0xFFF) + programheader->msize + 0xFFF) & ~0xFFF;
-        struct mmap_entry *entry;
+        unsigned int used = 0;
+        unsigned int i;
 
-        if (programheader->type != ELF_PROGRAM_TYPE_LOAD)
-            continue;
+        for (i = 0; i < header->phcount; i++)
+        {
 
-        if (programheader->fsize > programheader->msize)
-            return 0;
+            struct elf_programheader *programheader = &programheaders[i];
+            unsigned int span = ((programheader->vaddress & 0xFFF) + programheader->msize + 0xFFF) & ~0xFFF;
+            struct mmap_entry *entry;
 
-        if (span > size - used)
-            return 0;
+            if (programheader->type != ELF_PROGRAM_TYPE_LOAD)
+                continue;
 
-        entry = mmap_allocate(mheader, MMAP_TYPE_BINARY, paddress + used, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
+            if (programheader->fsize > programheader->msize)
+                return 0;
 
-        if (!entry)
-            return 0;
+            if (span > size - used)
+                return 0;
 
-        mmap_setbinary(entry, programheader->offset, programheader->fsize, programheader->msize);
+            entry = mmap_allocate(mheader, MMAP_TYPE_BINARY, paddress + used, programheader->vaddress, programheader->msize, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE);
 
-        used += span;
+            if (!entry)
+                return 0;
+
+            mmap_setbinary(entry, programheader->offset, programheader->fsize, programheader->msize);
+
+            used += span;
+
+        }
+
+        return 1;
 
     }
 
-    return 1;
+    return 0;
 
 }
 

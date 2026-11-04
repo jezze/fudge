@@ -76,54 +76,56 @@ static void clearfile(void)
 static void showfile(void)
 {
 
-    unsigned int target;
-    unsigned int id;
-
-    if (!wm || !path[0])
-        return;
-
-    channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
-    target = fs_auth(path);
-    id = (target) ? fs_walk(1, target, 0, path) : 0;
-
-    if (id)
+    if (wm && path[0])
     {
 
-        char data[CHUNKSIZE];
-        unsigned int offset = 0;
-        unsigned int count;
+        unsigned int target;
+        unsigned int id;
 
-        while (offset < MAXSIZE && (count = fs_read(1, target, id, data, CHUNKSIZE, offset)))
+        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Text Editor (%s)\"\n", path + fs_dirlength(path));
+        target = fs_auth(path);
+        id = (target) ? fs_walk(1, target, 0, path) : 0;
+
+        if (id)
         {
 
-            sendchunk(data, count);
+            char data[CHUNKSIZE];
+            unsigned int offset = 0;
+            unsigned int count;
 
-            offset += count;
+            while (offset < MAXSIZE && (count = fs_read(1, target, id, data, CHUNKSIZE, offset)))
+            {
+
+                sendchunk(data, count);
+
+                offset += count;
+
+            }
+
+            if (offset >= MAXSIZE)
+            {
+
+                channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n", &chunks);
+
+                chunks++;
+
+            }
+
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
+
+            chunks++;
+            loaded = offset < MAXSIZE;
 
         }
 
-        if (offset >= MAXSIZE)
+        else
         {
 
-            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" weight \"bold\" label \"(only the first 16 KB are shown)\"\n", &chunks);
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" label \"Could not open %s\"\n", &chunks, path);
 
             chunks++;
 
         }
-
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" display \"inline\" wrap \"%s\"\n= content cursor \"0\"\n", &chunks, wraps[wrap]);
-
-        chunks++;
-        loaded = offset < MAXSIZE;
-
-    }
-
-    else
-    {
-
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ text id \"chunk%u\" in \"content\" label \"Could not open %s\"\n", &chunks, path);
-
-        chunks++;
 
     }
 
@@ -132,13 +134,9 @@ static void showfile(void)
 static void writefile(void)
 {
 
-    char *name = path + fs_dirlength(path);
     unsigned int count = 0;
     unsigned int total = 0;
     struct message message;
-    unsigned int target;
-    unsigned int parent;
-    unsigned int id;
 
     channel_send(0, wm, MESSAGE_TYPE_WMREAD, 8, "content");
 
@@ -150,20 +148,27 @@ static void writefile(void)
 
     }
 
-    if (total != count)
-        return;
-
-    target = fs_auth(path);
-    parent = (target) ? fs_walkparent(1, target, path) : 0;
-    id = (parent) ? fs_walk(1, target, 0, path) : 0;
-
-    if (id && fs_remove(1, target, parent, id))
+    if (total == count)
     {
 
-        id = fs_create(1, target, parent, name, cstring_length(name));
+        char *name = path + fs_dirlength(path);
+        unsigned int target;
+        unsigned int parent;
+        unsigned int id;
 
-        if (id)
-            fs_write_all(1, target, id, savedata, count, 0);
+        target = fs_auth(path);
+        parent = (target) ? fs_walkparent(1, target, path) : 0;
+        id = (parent) ? fs_walk(1, target, 0, path) : 0;
+
+        if (id && fs_remove(1, target, parent, id))
+        {
+
+            id = fs_create(1, target, parent, name, cstring_length(name));
+
+            if (id)
+                fs_write_all(1, target, id, savedata, count, 0);
+
+        }
 
     }
 

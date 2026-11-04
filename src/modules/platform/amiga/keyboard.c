@@ -60,35 +60,38 @@ static void handleirq(unsigned int irq)
 
     unsigned char data = ~cia[REG_SDR];
     unsigned char code = (data >> 1) | (data << 7);
-    unsigned short scancode;
 
     handshake();
 
-    if ((code & 0x7F) >= KEYS)
-        return;
-
-    scancode = scancodes[code & 0x7F];
-
-    if (!scancode)
-        return;
-
-    if (code & 0x80)
+    if ((code & 0x7F) < KEYS)
     {
 
-        if (scancode & EXTENDED)
-            keyboard_notifyrelease(&keyboardinterface, 0xE0);
+        unsigned short scancode;
 
-        keyboard_notifyrelease(&keyboardinterface, (scancode & 0xFF) | 0x80);
+        scancode = scancodes[code & 0x7F];
 
-    }
+        if (!scancode)
+            return;
 
-    else
-    {
+        if (code & 0x80)
+        {
 
-        if (scancode & EXTENDED)
-            keyboard_notifypress(&keyboardinterface, 0xE0);
+            if (scancode & EXTENDED)
+                keyboard_notifyrelease(&keyboardinterface, 0xE0);
 
-        keyboard_notifypress(&keyboardinterface, scancode & 0xFF);
+            keyboard_notifyrelease(&keyboardinterface, (scancode & 0xFF) | 0x80);
+
+        }
+
+        else
+        {
+
+            if (scancode & EXTENDED)
+                keyboard_notifypress(&keyboardinterface, 0xE0);
+
+            keyboard_notifypress(&keyboardinterface, scancode & 0xFF);
+
+        }
 
     }
 

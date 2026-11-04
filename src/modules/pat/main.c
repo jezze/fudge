@@ -22,20 +22,22 @@ void pat_setup(void)
 void module_init(void)
 {
 
-    struct cpuid_data data;
-
     if (!cpuid_exist())
         return;
 
-    if (!msr_exist())
-        return;
-
-    cpuid_getdata(CPUID_FEATURES0, &data);
-
-    if ((data.edx & CPUID_FEATURES01_PAT))
+    if (msr_exist())
     {
 
-        pat_setup();
+        struct cpuid_data data;
+
+        cpuid_getdata(CPUID_FEATURES0, &data);
+
+        if ((data.edx & CPUID_FEATURES01_PAT))
+        {
+
+            pat_setup();
+
+        }
 
     }
 

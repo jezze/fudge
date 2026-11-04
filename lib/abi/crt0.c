@@ -9,28 +9,31 @@ static void onoption(struct message *message)
 {
 
     char *data = message->data;
-    unsigned int offset = 0;
 
-    if (!message->length || data[message->length - 1] != '\0')
-        return;
-
-    while (offset < message->length)
+    if (message->length && data[message->length - 1] == '\0')
     {
 
-        char *key = data + offset;
-        char *value = key + cstring_length_zero(key);
+        unsigned int offset = 0;
 
-        offset += cstring_length_zero(key);
+        while (offset < message->length)
+        {
 
-        if (offset >= message->length)
-            break;
+            char *key = data + offset;
+            char *value = key + cstring_length_zero(key);
 
-        offset += cstring_length_zero(value);
+            offset += cstring_length_zero(key);
 
-        if (!option_getstring(key))
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Unrecognized option: %s\n", key);
-        else if (!option_setstring(key, value))
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Option too long: %s\n", key);
+            if (offset >= message->length)
+                break;
+
+            offset += cstring_length_zero(value);
+
+            if (!option_getstring(key))
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Unrecognized option: %s\n", key);
+            else if (!option_setstring(key, value))
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Option too long: %s\n", key);
+
+        }
 
     }
 

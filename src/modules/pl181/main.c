@@ -119,56 +119,64 @@ static void startdata(unsigned int flags)
 static unsigned int readblock(unsigned int block, unsigned int *buffer)
 {
 
-    unsigned int count = 0;
-    unsigned int i;
-
     startdata(REG_DATACTRL_READ);
 
-    if (!command(SD_READBLOCK, (highcapacity) ? block : block * BLOCKSIZE, REG_COMMAND_RESPONSE))
-        return 0;
-
-    for (i = 0; i < POLLS && count < BLOCKSIZE / 4; i++)
+    if (command(SD_READBLOCK, (highcapacity) ? block : block * BLOCKSIZE, REG_COMMAND_RESPONSE))
     {
 
-        unsigned int status = regs[REG_STATUS / 4];
+        unsigned int count = 0;
+        unsigned int i;
 
-        if (status & REG_STATUS_ERRORS)
-            return 0;
+        for (i = 0; i < POLLS && count < BLOCKSIZE / 4; i++)
+        {
 
-        if (status & REG_STATUS_RXDATAAVAILABLE)
-            buffer[count++] = regs[REG_FIFO / 4];
+            unsigned int status = regs[REG_STATUS / 4];
+
+            if (status & REG_STATUS_ERRORS)
+                return 0;
+
+            if (status & REG_STATUS_RXDATAAVAILABLE)
+                buffer[count++] = regs[REG_FIFO / 4];
+
+        }
+
+        return count == BLOCKSIZE / 4;
 
     }
 
-    return count == BLOCKSIZE / 4;
+    return 0;
 
 }
 
 static unsigned int writeblock(unsigned int block, unsigned int *buffer)
 {
 
-    unsigned int count = 0;
-    unsigned int i;
-
-    if (!command(SD_WRITEBLOCK, (highcapacity) ? block : block * BLOCKSIZE, REG_COMMAND_RESPONSE))
-        return 0;
-
-    startdata(0);
-
-    for (i = 0; i < POLLS && count < BLOCKSIZE / 4; i++)
+    if (command(SD_WRITEBLOCK, (highcapacity) ? block : block * BLOCKSIZE, REG_COMMAND_RESPONSE))
     {
 
-        unsigned int status = regs[REG_STATUS / 4];
+        unsigned int count = 0;
+        unsigned int i;
 
-        if (status & REG_STATUS_ERRORS)
-            return 0;
+        startdata(0);
 
-        if (!(status & REG_STATUS_TXFIFOFULL))
-            regs[REG_FIFO / 4] = buffer[count++];
+        for (i = 0; i < POLLS && count < BLOCKSIZE / 4; i++)
+        {
+
+            unsigned int status = regs[REG_STATUS / 4];
+
+            if (status & REG_STATUS_ERRORS)
+                return 0;
+
+            if (!(status & REG_STATUS_TXFIFOFULL))
+                regs[REG_FIFO / 4] = buffer[count++];
+
+        }
+
+        return count == BLOCKSIZE / 4 && waitstatus(REG_STATUS_DATAEND);
 
     }
 
-    return count == BLOCKSIZE / 4 && waitstatus(REG_STATUS_DATAEND);
+    return 0;
 
 }
 

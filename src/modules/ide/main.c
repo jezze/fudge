@@ -234,8 +234,6 @@ static unsigned int identify(unsigned int id, void *buffer, unsigned char comman
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
     unsigned int select = 0xA0;
-    unsigned char status;
-    unsigned int i = 0;
 
     switch (id)
     {
@@ -254,36 +252,43 @@ static unsigned int identify(unsigned int id, void *buffer, unsigned char comman
     io_inb(control);
     io_inb(control);
 
-    if (io_inb(data + REG_COMMAND) == 0xFF)
-        return 0;
-
-    io_outb(data + REG_COUNT, 0);
-    io_outb(data + REG_LBA0, 0);
-    io_outb(data + REG_LBA1, 0);
-    io_outb(data + REG_LBA2, 0);
-    io_outb(data + REG_COMMAND, command);
-
-    do
+    if (io_inb(data + REG_COMMAND) != 0xFF)
     {
 
-        status = io_inb(data + REG_COMMAND);
+        unsigned char status;
+        unsigned int i = 0;
+
+        io_outb(data + REG_COUNT, 0);
+        io_outb(data + REG_LBA0, 0);
+        io_outb(data + REG_LBA1, 0);
+        io_outb(data + REG_LBA2, 0);
+        io_outb(data + REG_COMMAND, command);
+
+        do
+        {
+
+            status = io_inb(data + REG_COMMAND);
+
+        }
+        while ((status & REG_STATUS_BUSY) && ++i < LIMIT_POLL);
+
+        if (!status || (status & REG_STATUS_BUSY))
+            return 0;
+
+        if (command == REG_COMMAND_IDATA && (io_inb(data + REG_LBA1) || io_inb(data + REG_LBA2)))
+            return 0;
+
+        while (!(status & (REG_STATUS_DRQ | REG_STATUS_ERROR)) && ++i < LIMIT_POLL)
+            status = io_inb(data + REG_COMMAND);
+
+        if (!(status & REG_STATUS_DRQ) || (status & REG_STATUS_ERROR))
+            return 0;
+
+        return ide_rblock(id, buffer);
 
     }
-    while ((status & REG_STATUS_BUSY) && ++i < LIMIT_POLL);
 
-    if (!status || (status & REG_STATUS_BUSY))
-        return 0;
-
-    if (command == REG_COMMAND_IDATA && (io_inb(data + REG_LBA1) || io_inb(data + REG_LBA2)))
-        return 0;
-
-    while (!(status & (REG_STATUS_DRQ | REG_STATUS_ERROR)) && ++i < LIMIT_POLL)
-        status = io_inb(data + REG_COMMAND);
-
-    if (!(status & REG_STATUS_DRQ) || (status & REG_STATUS_ERROR))
-        return 0;
-
-    return ide_rblock(id, buffer);
+    return 0;
 
 }
 
@@ -411,9 +416,7 @@ unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit, unsig
 
     unsigned short data = getdata(id);
     unsigned short control = getcontrol(id);
-    unsigned short *words = packet;
     unsigned int select = 0xA0;
-    unsigned int i;
 
     switch (id)
     {
@@ -436,13 +439,20 @@ unsigned int ide_packet(unsigned int id, void *packet, unsigned int limit, unsig
     io_outb(data + REG_LBA2, limit >> 8);
     io_outb(data + REG_COMMAND, REG_COMMAND_ATAPI);
 
-    if (!ide_wait(id))
-        return 0;
+    if (ide_wait(id))
+    {
 
-    for (i = 0; i < IDE_PACKETSIZE / 2; i++)
-        io_outw(data, words[i]);
+        unsigned short *words = packet;
+        unsigned int i;
 
-    return 1;
+        for (i = 0; i < IDE_PACKETSIZE / 2; i++)
+            io_outw(data, words[i]);
+
+        return 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -488,38 +498,43 @@ unsigned int ide_setdma(unsigned int id, unsigned long address, unsigned int cou
 {
 
     unsigned short master = getmaster(id);
-    unsigned int *prd = getprd(id);
-    unsigned int i;
 
-    if (!master || !count)
-        return 0;
-
-    for (i = 0; i < PRDS && count; i++)
+    if (master && count)
     {
 
-        unsigned int length = PRD_BOUNDARY - (address & (PRD_BOUNDARY - 1));
+        unsigned int *prd = getprd(id);
+        unsigned int i;
 
-        if (length > count)
-            length = count;
+        for (i = 0; i < PRDS && count; i++)
+        {
 
-        prd[i * 2] = address;
-        prd[i * 2 + 1] = length & 0xFFFF;
-        address += length;
-        count -= length;
+            unsigned int length = PRD_BOUNDARY - (address & (PRD_BOUNDARY - 1));
+
+            if (length > count)
+                length = count;
+
+            prd[i * 2] = address;
+            prd[i * 2 + 1] = length & 0xFFFF;
+            address += length;
+            count -= length;
+
+        }
+
+        if (count)
+            return 0;
+
+        prd[i * 2 - 1] |= PRD_END;
+
+        io_outb(master + BM_COMMAND, 0);
+        io_outb(master + BM_STATUS, BM_STATUS_ERROR | BM_STATUS_INTERRUPT);
+        io_outd(master + BM_PRD, (unsigned long)prd);
+        io_outb(master + BM_COMMAND, (read) ? BM_COMMAND_READ : 0);
+
+        return 1;
 
     }
 
-    if (count)
-        return 0;
-
-    prd[i * 2 - 1] |= PRD_END;
-
-    io_outb(master + BM_COMMAND, 0);
-    io_outb(master + BM_STATUS, BM_STATUS_ERROR | BM_STATUS_INTERRUPT);
-    io_outd(master + BM_PRD, (unsigned long)prd);
-    io_outb(master + BM_COMMAND, (read) ? BM_COMMAND_READ : 0);
-
-    return 1;
+    return 0;
 
 }
 

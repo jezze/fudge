@@ -119,34 +119,36 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    unsigned int i;
-
     if (!virtio_setup(&device, id))
         return;
 
     headersize = (device.modern) ? 12 : 10;
 
-    if (!(virtio_negotiate(&device, FEATURE_MAC) & FEATURE_MAC))
-        return;
-
-    for (i = 0; i < 6; i++)
-        mac[i] = virtio_getconfig(&device, i);
-
-    if (!virtio_setqueue(&rxqueue, &device, QUEUE_RX, rxmemory) || rxqueue.size < RXBUFFERS)
-        return;
-
-    if (!virtio_setqueue(&txqueue, &device, QUEUE_TX, txmemory) || txqueue.size < TXBUFFERS)
-        return;
-
-    for (i = 0; i < RXBUFFERS; i++)
+    if (virtio_negotiate(&device, FEATURE_MAC) & FEATURE_MAC)
     {
 
-        virtio_setdesc(&rxqueue, i, rxbuffers[i], BUFFERSIZE, VIRTIO_DESC_WRITE, 0);
-        virtio_push(&rxqueue, i);
+        unsigned int i;
+
+        for (i = 0; i < 6; i++)
+            mac[i] = virtio_getconfig(&device, i);
+
+        if (!virtio_setqueue(&rxqueue, &device, QUEUE_RX, rxmemory) || rxqueue.size < RXBUFFERS)
+            return;
+
+        if (!virtio_setqueue(&txqueue, &device, QUEUE_TX, txmemory) || txqueue.size < TXBUFFERS)
+            return;
+
+        for (i = 0; i < RXBUFFERS; i++)
+        {
+
+            virtio_setdesc(&rxqueue, i, rxbuffers[i], BUFFERSIZE, VIRTIO_DESC_WRITE, 0);
+            virtio_push(&rxqueue, i);
+
+        }
+
+        ready = 1;
 
     }
-
-    ready = 1;
 
 }
 

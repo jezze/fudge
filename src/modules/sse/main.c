@@ -19,16 +19,18 @@ void sse_setup(void)
 void module_init(void)
 {
 
-    struct cpuid_data data;
+    if (cpuid_exist())
+    {
 
-    if (!cpuid_exist())
-        return;
+        struct cpuid_data data;
 
-    cpuid_getdata(CPUID_FEATURES0, &data);
+        cpuid_getdata(CPUID_FEATURES0, &data);
 
-    supported = (data.edx & CPUID_FEATURES01_FXSR) && (data.edx & CPUID_FEATURES01_SSE) && (data.edx & CPUID_FEATURES01_SSE2);
+        supported = (data.edx & CPUID_FEATURES01_FXSR) && (data.edx & CPUID_FEATURES01_SSE) && (data.edx & CPUID_FEATURES01_SSE2);
 
-    sse_setup();
+        sse_setup();
+
+    }
 
 }
 

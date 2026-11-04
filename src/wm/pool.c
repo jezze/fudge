@@ -220,23 +220,28 @@ unsigned int pool_gettextoffset(struct widget *widget, unsigned int index)
 {
 
     struct widget *text = pool_gettextat(widget, index);
-    struct list_item *current = 0;
-    unsigned int start = 0;
 
-    if (!text)
-        return 0;
-
-    while ((current = pool_nextin(current, widget)) && current->data != text)
+    if (text)
     {
 
-        struct widget *child = current->data;
+        struct list_item *current = 0;
+        unsigned int start = 0;
 
-        if (child->type == WIDGET_TYPE_TEXT)
-            start += strpool_getcstringlength(child->attributes.label);
+        while ((current = pool_nextin(current, widget)) && current->data != text)
+        {
+
+            struct widget *child = current->data;
+
+            if (child->type == WIDGET_TYPE_TEXT)
+                start += strpool_getcstringlength(child->attributes.label);
+
+        }
+
+        return util_min(index - util_min(index, start), strpool_getcstringlength(text->attributes.label));
 
     }
 
-    return util_min(index - util_min(index, start), strpool_getcstringlength(text->attributes.label));
+    return 0;
 
 }
 
@@ -331,8 +336,6 @@ struct pool_rawresource *pool_createraw(struct widget *widget, char *source)
 
     struct pool_rawresource *resource = 0;
     unsigned int width = widget->attributes.width;
-    unsigned int height = widget->attributes.height;
-    struct record record;
     unsigned int i;
 
     for (i = 0; i < POOL_RAWRESOURCES && !resource; i++)
@@ -343,19 +346,26 @@ struct pool_rawresource *pool_createraw(struct widget *widget, char *source)
 
     }
 
-    if (!resource)
-        return 0;
+    if (resource)
+    {
 
-    buffer_clear(resource, sizeof (struct pool_rawresource));
+        unsigned int height = widget->attributes.height;
+        struct record record;
 
-    resource->used = 1;
-    resource->target = fs_auth(source);
-    resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
+        buffer_clear(resource, sizeof (struct pool_rawresource));
 
-    if (resource->id && width && height && width <= 0x4000 && height <= 0x4000 && fs_stat(1, resource->target, resource->id, &record) && record.size / 4 / width >= height)
-        resource->data = fs_mmap(1, resource->target, resource->id, 0);
+        resource->used = 1;
+        resource->target = fs_auth(source);
+        resource->id = (resource->target) ? fs_walk(1, resource->target, 0, source) : 0;
 
-    return resource;
+        if (resource->id && width && height && width <= 0x4000 && height <= 0x4000 && fs_stat(1, resource->target, resource->id, &record) && record.size / 4 / width >= height)
+            resource->data = fs_mmap(1, resource->target, resource->id, 0);
+
+        return resource;
+
+    }
+
+    return 0;
 
 }
 

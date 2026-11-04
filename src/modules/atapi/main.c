@@ -71,68 +71,73 @@ static void progressdma(struct block_session *session)
 {
 
     unsigned int result = ide_checkdma(device);
-    unsigned char status;
 
-    if (result == IDE_DMA_BUSY)
-        return;
+    if (result != IDE_DMA_BUSY)
+    {
 
-    status = ide_getstatus(device);
+        unsigned char status;
 
-    if (result == IDE_DMA_FAILED || (status & STATUS_ERROR))
-        session->count = 0;
-    else
-        buffer_copy(blockbuffer, (char *)bounce + skip, session->count);
+        status = ide_getstatus(device);
 
-    finish(session);
+        if (result == IDE_DMA_FAILED || (status & STATUS_ERROR))
+            session->count = 0;
+        else
+            buffer_copy(blockbuffer, (char *)bounce + skip, session->count);
+
+        finish(session);
+
+    }
 
 }
 
 static void progress(void)
 {
 
-    struct block_session *session = block_getsession(&blockinterface);
-    unsigned char status;
-
-    if (!active)
-        return;
-
-    if (dma)
+    if (active)
     {
 
-        progressdma(session);
+        struct block_session *session = block_getsession(&blockinterface);
+        unsigned char status;
 
-        return;
+        if (dma)
+        {
 
-    }
+            progressdma(session);
 
-    status = ide_getstatus(device);
+            return;
 
-    if (status & STATUS_BUSY)
-        return;
+        }
 
-    if (status & STATUS_ERROR)
-    {
+        status = ide_getstatus(device);
 
-        session->count = session->offset;
+        if (status & STATUS_BUSY)
+            return;
 
-        finish(session);
+        if (status & STATUS_ERROR)
+        {
 
-    }
+            session->count = session->offset;
 
-    else if (status & STATUS_DRQ)
-    {
+            finish(session);
 
-        if (!(ide_getreason(device) & REASON_COMMAND))
-            receive(session);
+        }
 
-    }
+        else if (status & STATUS_DRQ)
+        {
 
-    else
-    {
+            if (!(ide_getreason(device) & REASON_COMMAND))
+                receive(session);
 
-        session->count = session->offset;
+        }
 
-        finish(session);
+        else
+        {
+
+            session->count = session->offset;
+
+            finish(session);
+
+        }
 
     }
 
@@ -151,9 +156,7 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 {
 
     void *buffer = (void *)kernel_getbuffer(session->target);
-    unsigned char packet[IDE_PACKETSIZE];
     unsigned int lba = session->start / BLOCKSIZE;
-    unsigned int sectors;
 
     if (session->count > TASK_BUFFERSIZE)
         session->count = TASK_BUFFERSIZE;
@@ -169,37 +172,51 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
     }
 
-    if (!ide_lock(device))
-        return MESSAGE_RETRY;
-
-    spinlock_acquire(&spinlock);
-
-    active = 1;
-    blockbuffer = buffer;
-    skip = session->start % BLOCKSIZE;
-    sectors = (skip + session->count + BLOCKSIZE - 1) / BLOCKSIZE;
-
-    buffer_clear(packet, IDE_PACKETSIZE);
-
-    packet[0] = COMMAND_READ10;
-    packet[2] = lba >> 24;
-    packet[3] = lba >> 16;
-    packet[4] = lba >> 8;
-    packet[5] = lba;
-    packet[7] = sectors >> 8;
-    packet[8] = sectors;
-
-    if (dma)
+    if (ide_lock(device))
     {
 
-        if (ide_setdma(device, (unsigned long)bounce, sectors * BLOCKSIZE, 1) && ide_packet(device, packet, BLOCKSIZE, 1))
+        unsigned char packet[IDE_PACKETSIZE];
+        unsigned int sectors;
+
+        spinlock_acquire(&spinlock);
+
+        active = 1;
+        blockbuffer = buffer;
+        skip = session->start % BLOCKSIZE;
+        sectors = (skip + session->count + BLOCKSIZE - 1) / BLOCKSIZE;
+
+        buffer_clear(packet, IDE_PACKETSIZE);
+
+        packet[0] = COMMAND_READ10;
+        packet[2] = lba >> 24;
+        packet[3] = lba >> 16;
+        packet[4] = lba >> 8;
+        packet[5] = lba;
+        packet[7] = sectors >> 8;
+        packet[8] = sectors;
+
+        if (dma)
         {
 
-            ide_startdma(device);
+            if (ide_setdma(device, (unsigned long)bounce, sectors * BLOCKSIZE, 1) && ide_packet(device, packet, BLOCKSIZE, 1))
+            {
+
+                ide_startdma(device);
+
+            }
+
+            else
+            {
+
+                session->count = 0;
+
+                finish(session);
+
+            }
 
         }
 
-        else
+        else if (!ide_packet(device, packet, BLOCKSIZE, 0))
         {
 
             session->count = 0;
@@ -208,20 +225,13 @@ static unsigned int blockinterface_startsession(struct block_session *session)
 
         }
 
-    }
+        spinlock_release(&spinlock);
 
-    else if (!ide_packet(device, packet, BLOCKSIZE, 0))
-    {
-
-        session->count = 0;
-
-        finish(session);
+        return MESSAGE_OK;
 
     }
 
-    spinlock_release(&spinlock);
-
-    return MESSAGE_OK;
+    return MESSAGE_RETRY;
 
 }
 

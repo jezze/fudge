@@ -48,54 +48,59 @@ static unsigned int unfilter(struct png *png, unsigned int start)
     unsigned char *window = png->window;
     unsigned int mask = PNG_WINDOW - 1;
     unsigned int filter = window[start & mask];
-    unsigned char up[8];
-    unsigned int j = 0;
-    unsigned int i;
 
-    if (filter > 4)
-        return 0;
-
-    for (i = 0; i < png->stride; i++)
+    if (filter <= 4)
     {
 
-        unsigned int value = window[(start + 1 + i) & mask];
-        unsigned int a = (i >= png->pixelsize) ? png->line[i - png->pixelsize] : 0;
-        unsigned int b = png->line[i];
-        unsigned int c = (i >= png->pixelsize) ? up[j] : 0;
+        unsigned char up[8];
+        unsigned int j = 0;
+        unsigned int i;
 
-        up[j] = b;
-        j = (j + 1 == png->pixelsize) ? 0 : j + 1;
-
-        switch (filter)
+        for (i = 0; i < png->stride; i++)
         {
 
-        case 1:
-            value += a;
+            unsigned int value = window[(start + 1 + i) & mask];
+            unsigned int a = (i >= png->pixelsize) ? png->line[i - png->pixelsize] : 0;
+            unsigned int b = png->line[i];
+            unsigned int c = (i >= png->pixelsize) ? up[j] : 0;
 
-            break;
+            up[j] = b;
+            j = (j + 1 == png->pixelsize) ? 0 : j + 1;
 
-        case 2:
-            value += b;
+            switch (filter)
+            {
 
-            break;
+            case 1:
+                value += a;
 
-        case 3:
-            value += (a + b) / 2;
+                break;
 
-            break;
+            case 2:
+                value += b;
 
-        case 4:
-            value += paeth(a, b, c);
+                break;
 
-            break;
+            case 3:
+                value += (a + b) / 2;
+
+                break;
+
+            case 4:
+                value += paeth(a, b, c);
+
+                break;
+
+            }
+
+            png->line[i] = value;
 
         }
 
-        png->line[i] = value;
+        return 1;
 
     }
 
-    return 1;
+    return 0;
 
 }
 
@@ -212,101 +217,104 @@ unsigned int png_open(struct png *png, unsigned int (*read)(struct png *png, voi
 {
 
     unsigned char *data = png->input;
-    unsigned int offset = SIGNATURESIZE;
-    unsigned int i;
 
     png->read = read;
 
-    if (read(png, data, HEADERSIZE, 0) != HEADERSIZE || !readheader(png, data, HEADERSIZE) || png->stride > PNG_LINE)
-        return 0;
-
-    while (read(png, data, 8, offset) == 8)
+    if (read(png, data, HEADERSIZE, 0) == HEADERSIZE && readheader(png, data, HEADERSIZE) && png->stride <= PNG_LINE)
     {
 
-        unsigned int length = read32(data);
-        unsigned int plte = istype(data + 4, "PLTE");
-        unsigned int trns = istype(data + 4, "tRNS");
+        unsigned int offset = SIGNATURESIZE;
+        unsigned int i;
 
-        if (istype(data + 4, "IDAT"))
+        while (read(png, data, 8, offset) == 8)
         {
 
-            if (length < 2 || read(png, data, 2, offset + 8) != 2 || (data[0] & 0x0F) != 8 || (data[0] * 256 + data[1]) % 31 || data[1] & 0x20)
-                return 0;
+            unsigned int length = read32(data);
+            unsigned int plte = istype(data + 4, "PLTE");
+            unsigned int trns = istype(data + 4, "tRNS");
 
-            if (png->colortype == 3 && !png->npalette)
-                return 0;
-
-            deflate_initring(&png->deflate, png->window, PNG_WINDOW, refill);
-
-            png->offset = offset + 10;
-            png->left = length - 2;
-
-            for (i = 0; i < png->stride; i++)
-                png->line[i] = 0;
-
-            return 1;
-
-        }
-
-        if (istype(data + 4, "IEND"))
-            return 0;
-
-        if (plte || trns)
-        {
-
-            if (length > PNG_INPUT || read(png, data, length, offset + 8) != length)
-                return 0;
-
-        }
-
-        if (plte)
-        {
-
-            if (length % 3 || length / 3 > PNG_PALETTE)
-                return 0;
-
-            png->npalette = length / 3;
-
-            for (i = 0; i < png->npalette; i++)
-                png->palette[i] = 0xFF000000 | (data[i * 3] << 16) | (data[i * 3 + 1] << 8) | data[i * 3 + 2];
-
-        }
-
-        if (trns)
-        {
-
-            if (png->colortype == 3)
+            if (istype(data + 4, "IDAT"))
             {
 
-                for (i = 0; i < length && i < png->npalette; i++)
-                    png->palette[i] = (png->palette[i] & 0x00FFFFFF) | ((unsigned int)data[i] << 24);
+                if (length < 2 || read(png, data, 2, offset + 8) != 2 || (data[0] & 0x0F) != 8 || (data[0] * 256 + data[1]) % 31 || data[1] & 0x20)
+                    return 0;
+
+                if (png->colortype == 3 && !png->npalette)
+                    return 0;
+
+                deflate_initring(&png->deflate, png->window, PNG_WINDOW, refill);
+
+                png->offset = offset + 10;
+                png->left = length - 2;
+
+                for (i = 0; i < png->stride; i++)
+                    png->line[i] = 0;
+
+                return 1;
 
             }
 
-            if (png->colortype == 0 && length >= 2)
+            if (istype(data + 4, "IEND"))
+                return 0;
+
+            if (plte || trns)
             {
 
-                png->key[0] = read16(data);
-                png->haskey = 1;
+                if (length > PNG_INPUT || read(png, data, length, offset + 8) != length)
+                    return 0;
 
             }
 
-            if (png->colortype == 2 && length >= 6)
+            if (plte)
             {
 
-                png->key[0] = read16(data);
-                png->key[1] = read16(data + 2);
-                png->key[2] = read16(data + 4);
-                png->haskey = 1;
+                if (length % 3 || length / 3 > PNG_PALETTE)
+                    return 0;
+
+                png->npalette = length / 3;
+
+                for (i = 0; i < png->npalette; i++)
+                    png->palette[i] = 0xFF000000 | (data[i * 3] << 16) | (data[i * 3 + 1] << 8) | data[i * 3 + 2];
 
             }
+
+            if (trns)
+            {
+
+                if (png->colortype == 3)
+                {
+
+                    for (i = 0; i < length && i < png->npalette; i++)
+                        png->palette[i] = (png->palette[i] & 0x00FFFFFF) | ((unsigned int)data[i] << 24);
+
+                }
+
+                if (png->colortype == 0 && length >= 2)
+                {
+
+                    png->key[0] = read16(data);
+                    png->haskey = 1;
+
+                }
+
+                if (png->colortype == 2 && length >= 6)
+                {
+
+                    png->key[0] = read16(data);
+                    png->key[1] = read16(data + 2);
+                    png->key[2] = read16(data + 4);
+                    png->haskey = 1;
+
+                }
+
+            }
+
+            if (length > 0xFFFFFFFF - offset - 12)
+                return 0;
+
+            offset += length + 12;
 
         }
-
-        if (length > 0xFFFFFFFF - offset - 12)
-            return 0;
-
-        offset += length + 12;
 
     }
 
@@ -358,59 +366,64 @@ unsigned int png_readrow(struct png *png, unsigned int *pixels)
 {
 
     unsigned char *line = png->line;
-    unsigned int x;
 
-    if (deflate_inflate(&png->deflate, png->stride + 1) != png->stride + 1 || !unfilter(png, png->deflate.ooffset - png->stride - 1))
-        return 0;
-
-    for (x = 0; x < png->width; x++)
+    if (deflate_inflate(&png->deflate, png->stride + 1) == png->stride + 1 && unfilter(png, png->deflate.ooffset - png->stride - 1))
     {
 
-        unsigned int index = x * png->channels;
-        unsigned int s0 = getsample(line, index, png->depth);
-        unsigned int v0 = scale(s0, png->depth);
+        unsigned int x;
 
-        switch (png->colortype)
+        for (x = 0; x < png->width; x++)
         {
 
-        case 0:
-            pixels[x] = ((png->haskey && s0 == png->key[0]) ? 0 : 0xFF000000) | (v0 << 16) | (v0 << 8) | v0;
+            unsigned int index = x * png->channels;
+            unsigned int s0 = getsample(line, index, png->depth);
+            unsigned int v0 = scale(s0, png->depth);
 
-            break;
-
-        case 2:
+            switch (png->colortype)
             {
 
-                unsigned int s1 = getsample(line, index + 1, png->depth);
-                unsigned int s2 = getsample(line, index + 2, png->depth);
-                unsigned int transparent = png->haskey && s0 == png->key[0] && s1 == png->key[1] && s2 == png->key[2];
+            case 0:
+                pixels[x] = ((png->haskey && s0 == png->key[0]) ? 0 : 0xFF000000) | (v0 << 16) | (v0 << 8) | v0;
 
-                pixels[x] = ((transparent) ? 0 : 0xFF000000) | (v0 << 16) | (scale(s1, png->depth) << 8) | scale(s2, png->depth);
+                break;
+
+            case 2:
+                {
+
+                    unsigned int s1 = getsample(line, index + 1, png->depth);
+                    unsigned int s2 = getsample(line, index + 2, png->depth);
+                    unsigned int transparent = png->haskey && s0 == png->key[0] && s1 == png->key[1] && s2 == png->key[2];
+
+                    pixels[x] = ((transparent) ? 0 : 0xFF000000) | (v0 << 16) | (scale(s1, png->depth) << 8) | scale(s2, png->depth);
+
+                }
+
+                break;
+
+            case 3:
+                pixels[x] = png->palette[s0];
+
+                break;
+
+            case 4:
+                pixels[x] = (scale(getsample(line, index + 1, png->depth), png->depth) << 24) | (v0 << 16) | (v0 << 8) | v0;
+
+                break;
+
+            case 6:
+                pixels[x] = (scale(getsample(line, index + 3, png->depth), png->depth) << 24) | (v0 << 16) | (scale(getsample(line, index + 1, png->depth), png->depth) << 8) | scale(getsample(line, index + 2, png->depth), png->depth);
+
+                break;
 
             }
 
-            break;
-
-        case 3:
-            pixels[x] = png->palette[s0];
-
-            break;
-
-        case 4:
-            pixels[x] = (scale(getsample(line, index + 1, png->depth), png->depth) << 24) | (v0 << 16) | (v0 << 8) | v0;
-
-            break;
-
-        case 6:
-            pixels[x] = (scale(getsample(line, index + 3, png->depth), png->depth) << 24) | (v0 << 16) | (scale(getsample(line, index + 1, png->depth), png->depth) << 8) | scale(getsample(line, index + 2, png->depth), png->depth);
-
-            break;
-
         }
+
+        return 1;
 
     }
 
-    return 1;
+    return 0;
 
 }
 

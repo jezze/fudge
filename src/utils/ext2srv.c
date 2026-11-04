@@ -56,16 +56,21 @@ static unsigned int sendblockrequest(unsigned int event, unsigned int reply, uns
 {
 
     struct message_blockrequest request;
-    struct message_blockresponse response;
 
     request.offset = partoffset + sector * blocksize;
     request.count = count;
     request.target = target;
 
-    if (!channel_send(1, block, event, sizeof (struct message_blockrequest), &request))
-        return 0;
+    if (channel_send(1, block, event, sizeof (struct message_blockrequest), &request))
+    {
 
-    return (channel_wait(1, block, reply, sizeof (struct message_blockresponse), &response)) ? response.count : 0;
+        struct message_blockresponse response;
+
+        return (channel_wait(1, block, reply, sizeof (struct message_blockresponse), &response)) ? response.count : 0;
+
+    }
+
+    return 0;
 
 }
 
@@ -223,38 +228,41 @@ static unsigned int allocblockgroup(unsigned int blockgroup)
 {
 
     struct ext2_blockgroup bg;
-    unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
-    unsigned int i;
 
     readblockgroup(&bg, blockgroup);
 
-    if (!bg.blockCountUnalloc)
-        return 0;
-
-    sendblockreadrequest(blocksize, bg.blockUsageAddress, blocksize);
-
-    for (i = 0; i < sb.blockCountGroup; i++)
+    if (bg.blockCountUnalloc)
     {
 
-        unsigned int index = i / 8;
-        unsigned int bit = 1 << (i % 8);
+        unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
+        unsigned int i;
 
-        if (!(bitmap[index] & bit))
+        sendblockreadrequest(blocksize, bg.blockUsageAddress, blocksize);
+
+        for (i = 0; i < sb.blockCountGroup; i++)
         {
 
-            bitmap[index] |= bit;
+            unsigned int index = i / 8;
+            unsigned int bit = 1 << (i % 8);
 
-            sendblockwriterequest(blocksize, bg.blockUsageAddress, blocksize);
+            if (!(bitmap[index] & bit))
+            {
 
-            bg.blockCountUnalloc--;
+                bitmap[index] |= bit;
 
-            writeblockgroup(&bg, blockgroup);
+                sendblockwriterequest(blocksize, bg.blockUsageAddress, blocksize);
 
-            sb.blockCountUnalloc--;
+                bg.blockCountUnalloc--;
 
-            writesuperblock();
+                writeblockgroup(&bg, blockgroup);
 
-            return sb.superblockIndex + blockgroup * sb.blockCountGroup + i;
+                sb.blockCountUnalloc--;
+
+                writesuperblock();
+
+                return sb.superblockIndex + blockgroup * sb.blockCountGroup + i;
+
+            }
 
         }
 
@@ -268,38 +276,41 @@ static unsigned int allocnodegroup(unsigned int igroup)
 {
 
     struct ext2_blockgroup bg;
-    unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
-    unsigned int i;
 
     readblockgroup(&bg, igroup);
 
-    if (!bg.nodeCountUnalloc)
-        return 0;
-
-    sendblockreadrequest(blocksize, bg.nodeUsageAddress, blocksize);
-
-    for (i = 0; i < sb.nodeCountGroup; i++)
+    if (bg.nodeCountUnalloc)
     {
 
-        unsigned int index = i / 8;
-        unsigned int bit = 1 << (i % 8);
+        unsigned char *bitmap = (unsigned char *)blockinfo.buffer;
+        unsigned int i;
 
-        if (!(bitmap[index] & bit))
+        sendblockreadrequest(blocksize, bg.nodeUsageAddress, blocksize);
+
+        for (i = 0; i < sb.nodeCountGroup; i++)
         {
 
-            bitmap[index] |= bit;
+            unsigned int index = i / 8;
+            unsigned int bit = 1 << (i % 8);
 
-            sendblockwriterequest(blocksize, bg.nodeUsageAddress, blocksize);
+            if (!(bitmap[index] & bit))
+            {
 
-            bg.nodeCountUnalloc--;
+                bitmap[index] |= bit;
 
-            writeblockgroup(&bg, igroup);
+                sendblockwriterequest(blocksize, bg.nodeUsageAddress, blocksize);
 
-            sb.nodeCountUnalloc--;
+                bg.nodeCountUnalloc--;
 
-            writesuperblock();
+                writeblockgroup(&bg, igroup);
 
-            return igroup * sb.nodeCountGroup + i + 1;
+                sb.nodeCountUnalloc--;
+
+                writesuperblock();
+
+                return igroup * sb.nodeCountGroup + i + 1;
+
+            }
 
         }
 
@@ -534,42 +545,47 @@ static unsigned int allocentry(struct ext2_node *node, unsigned int table, unsig
 {
 
     unsigned int *entries = (unsigned int *)blockinfo.buffer;
-    unsigned int block;
 
     sendblockreadrequest(blocksize, table, blocksize);
 
-    if (ext2_read32(&entries[index]))
-        return ext2_read32(&entries[index]);
-
-    if (istable)
+    if (!ext2_read32(&entries[index]))
     {
 
-        block = alloctable(node, igroup);
+        unsigned int block;
 
-    }
+        if (istable)
+        {
 
-    else
-    {
+            block = alloctable(node, igroup);
 
-        block = allocblock(igroup);
+        }
+
+        else
+        {
+
+            block = allocblock(igroup);
+
+            if (block)
+                node->sectorCount += blocksize / 512;
+
+        }
 
         if (block)
-            node->sectorCount += blocksize / 512;
+        {
+
+            sendblockreadrequest(blocksize, table, blocksize);
+
+            ext2_write32(&entries[index], block);
+
+            sendblockwriterequest(blocksize, table, blocksize);
+
+        }
+
+        return block;
 
     }
 
-    if (block)
-    {
-
-        sendblockreadrequest(blocksize, table, blocksize);
-
-        ext2_write32(&entries[index], block);
-
-        sendblockwriterequest(blocksize, table, blocksize);
-
-    }
-
-    return block;
+    return ext2_read32(&entries[index]);
 
 }
 
@@ -1089,15 +1105,19 @@ static unsigned int writefile(struct ext2_node *node, unsigned int roffset, unsi
 static unsigned int stat(unsigned int id, struct record *record)
 {
 
-    struct ext2_node node;
+    if (id)
+    {
 
-    if (!id)
-        return 0;
+        struct ext2_node node;
 
-    simpleread(&node, id);
-    record_init(record, id, ((node.type & 0xF000) == 0x4000) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL, node.sizeLow, 0, 0, "");
+        simpleread(&node, id);
+        record_init(record, id, ((node.type & 0xF000) == 0x4000) ? RECORD_TYPE_DIRECTORY : RECORD_TYPE_NORMAL, node.sizeLow, 0, 0, "");
 
-    return sizeof (struct record);
+        return sizeof (struct record);
+
+    }
+
+    return 0;
 
 }
 

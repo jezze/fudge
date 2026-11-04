@@ -50,7 +50,6 @@ static unsigned int command(unsigned int id, unsigned char *cb, unsigned int cbl
 {
 
     struct cbw cbw;
-    struct csw csw;
 
     buffer_clear(&cbw, sizeof (struct cbw));
 
@@ -65,13 +64,19 @@ static unsigned int command(unsigned int id, unsigned char *cb, unsigned int cbl
     if (usb_bulk(id, 0, &cbw, sizeof (struct cbw)) != sizeof (struct cbw))
         return 0;
 
-    if (length && usb_bulk(id, in, data, length) != length)
-        return 0;
+    if (!length || usb_bulk(id, in, data, length) == length)
+    {
 
-    if (usb_bulk(id, 1, &csw, sizeof (struct csw)) != sizeof (struct csw))
-        return 0;
+        struct csw csw;
 
-    return csw.signature == CSW_SIGNATURE && csw.tag == cbw.tag && csw.status == 0;
+        if (usb_bulk(id, 1, &csw, sizeof (struct csw)) != sizeof (struct csw))
+            return 0;
+
+        return csw.signature == CSW_SIGNATURE && csw.tag == cbw.tag && csw.status == 0;
+
+    }
+
+    return 0;
 
 }
 

@@ -490,15 +490,20 @@ static unsigned int walk(unsigned int target, unsigned int parent, char *path, u
 
     char data[MESSAGE_SIZE];
     struct message_walkrequest *request = (struct message_walkrequest *)data;
-    struct message_walkresponse response;
 
     request->parent = parent;
     request->length = buffer_write(data, MESSAGE_SIZE, path, length, sizeof (struct message_walkrequest));
 
-    if (!channel_send(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
-        return 0;
+    if (channel_send(1, target, MESSAGE_TYPE_WALKREQUEST, sizeof (struct message_walkrequest) + request->length, data))
+    {
 
-    return (channel_wait(1, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
+        struct message_walkresponse response;
+
+        return (channel_wait(1, target, MESSAGE_TYPE_WALKRESPONSE, sizeof (struct message_walkresponse), &response)) ? response.id : 0;
+
+    }
+
+    return 0;
 
 }
 
@@ -507,39 +512,49 @@ static unsigned int create(unsigned int target, unsigned int parent, char *name,
 
     char data[MESSAGE_SIZE];
     struct message_createrequest *request = (struct message_createrequest *)data;
-    struct message_createresponse response;
 
     request->parent = parent;
     request->count = buffer_write(data, MESSAGE_SIZE, name, length, sizeof (struct message_createrequest));
 
-    if (!channel_send(1, target, MESSAGE_TYPE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
-        return 0;
+    if (channel_send(1, target, MESSAGE_TYPE_CREATEREQUEST, sizeof (struct message_createrequest) + request->count, data))
+    {
 
-    return (channel_wait(1, target, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response)) ? response.id : 0;
+        struct message_createresponse response;
+
+        return (channel_wait(1, target, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response)) ? response.id : 0;
+
+    }
+
+    return 0;
 
 }
 
 static unsigned int readvalue(unsigned int target, unsigned int id)
 {
 
-    char data[MESSAGE_SIZE];
     struct message_readrequest request;
-    struct message_readresponse *response;
 
     request.id = id;
     request.offset = 0;
     request.count = 16;
     request.flags = 0;
 
-    if (!channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
-        return 0;
+    if (channel_send(1, target, MESSAGE_TYPE_READREQUEST, sizeof (struct message_readrequest), &request))
+    {
 
-    response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_wait(1, target, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
+        char data[MESSAGE_SIZE];
+        struct message_readresponse *response;
 
-    if (!response || response->buffer || response->count > 16)
-        return 0;
+        response = message_validate(MESSAGE_TYPE_READRESPONSE, data, channel_wait(1, target, MESSAGE_TYPE_READRESPONSE, MESSAGE_SIZE, data));
 
-    return cstring_read_value((char *)(response + 1), response->count, 10);
+        if (!response || response->buffer || response->count > 16)
+            return 0;
+
+        return cstring_read_value((char *)(response + 1), response->count, 10);
+
+    }
+
+    return 0;
 
 }
 
@@ -550,23 +565,28 @@ unsigned int channel_lookup(char *name)
     unsigned int length = cstring_length(name);
     unsigned int offset = buffer_eachbyte(name, length, ':', 0);
     unsigned int target = walk(MESSAGE_ROOT, 0, name, (offset) ? offset - 1 : length);
-    unsigned int directory;
-    unsigned int file;
 
-    if (!target || !offset || offset == length)
-        return target;
+    if (target && offset && offset != length)
+    {
 
-    directory = walk(target, 0, name + offset, length - offset);
+        unsigned int directory;
+        unsigned int file;
 
-    if (!directory)
-        return 0;
+        directory = walk(target, 0, name + offset, length - offset);
 
-    file = walk(target, directory, "inode", 5);
+        if (!directory)
+            return 0;
 
-    if (!file)
-        file = create(target, directory, "inode", 5);
+        file = walk(target, directory, "inode", 5);
 
-    return (file) ? readvalue(target, file) : 0;
+        if (!file)
+            file = create(target, directory, "inode", 5);
+
+        return (file) ? readvalue(target, file) : 0;
+
+    }
+
+    return target;
 
 }
 

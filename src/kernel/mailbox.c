@@ -102,30 +102,34 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
 static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned int source, unsigned int count, void *data)
 {
 
-    unsigned int status = MESSAGE_RETRY;
-
-    if (count > MESSAGE_SIZE)
-        return MESSAGE_FAILED;
-
-    spinlock_acquire(&mailbox->spinlock);
-
-    if (mailbox->free.head)
+    if (count <= MESSAGE_SIZE)
     {
 
-        struct list_item *item = mailbox->free.head;
-        struct message *message = item->data;
+        unsigned int status = MESSAGE_RETRY;
 
-        message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * message->slot + MESSAGE_CAPACITY * mailbox->ichannel));
-        buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * message->slot), data, count);
-        list_move_unsafe(&mailbox->queued, &mailbox->free, item);
+        spinlock_acquire(&mailbox->spinlock);
 
-        status = MESSAGE_OK;
+        if (mailbox->free.head)
+        {
+
+            struct list_item *item = mailbox->free.head;
+            struct message *message = item->data;
+
+            message_init(message, event, source, count, (void *)(unsigned long)(KERNEL_VMAILBOX + MESSAGE_SIZE * message->slot + MESSAGE_CAPACITY * mailbox->ichannel));
+            buffer_copy((void *)(mailbox->data + MESSAGE_SIZE * message->slot), data, count);
+            list_move_unsafe(&mailbox->queued, &mailbox->free, item);
+
+            status = MESSAGE_OK;
+
+        }
+
+        spinlock_release(&mailbox->spinlock);
+
+        return status;
 
     }
 
-    spinlock_release(&mailbox->spinlock);
-
-    return status;
+    return MESSAGE_FAILED;
 
 }
 

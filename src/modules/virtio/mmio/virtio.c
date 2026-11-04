@@ -75,19 +75,23 @@ static void write64(struct virtio_device *device, unsigned int offset, unsigned 
 unsigned int virtio_match(unsigned int bus, unsigned int id, unsigned int type)
 {
 
-    unsigned long base;
+    if (bus == PLATFORM_BUS && id >= VIRT_VIRTIO)
+    {
 
-    if (bus != PLATFORM_BUS || id < VIRT_VIRTIO)
-        return 0;
+        unsigned long base;
 
-    base = platform_getbase(id);
+        base = platform_getbase(id);
 
-    if (!base)
-        return 0;
+        if (!base)
+            return 0;
 
-    arch_kmap(base, base, PAGESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+        arch_kmap(base, base, PAGESIZE, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
-    return read32(base, REG_MAGIC) == REG_MAGIC_VALUE && read32(base, REG_DEVICEID) == type;
+        return read32(base, REG_MAGIC) == REG_MAGIC_VALUE && read32(base, REG_DEVICEID) == type;
+
+    }
+
+    return 0;
 
 }
 
@@ -196,43 +200,47 @@ void virtio_setconfig(struct virtio_device *device, unsigned int offset, unsigne
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory)
 {
 
-    unsigned int size;
-
-    if (device->failed)
-        return 0;
-
-    writereg(device, REG_QUEUESELECT, index);
-
-    size = readreg(device, REG_QUEUESIZEMAX);
-
-    if (size > VIRTIO_QUEUESIZE)
-        size = VIRTIO_QUEUESIZE;
-
-    if (!virtio_initqueue(queue, device, index, size, memory))
-        return 0;
-
-    writereg(device, REG_QUEUESIZE, size);
-
-    if (device->modern)
+    if (!device->failed)
     {
 
-        write64(device, REG_QUEUEDESC, (unsigned long)queue->descs);
-        write64(device, REG_QUEUEDRIVER, (unsigned long)queue->avail);
-        write64(device, REG_QUEUEDEVICE, (unsigned long)queue->used);
+        unsigned int size;
 
-        writereg(device, REG_QUEUEREADY, 1);
+        writereg(device, REG_QUEUESELECT, index);
+
+        size = readreg(device, REG_QUEUESIZEMAX);
+
+        if (size > VIRTIO_QUEUESIZE)
+            size = VIRTIO_QUEUESIZE;
+
+        if (!virtio_initqueue(queue, device, index, size, memory))
+            return 0;
+
+        writereg(device, REG_QUEUESIZE, size);
+
+        if (device->modern)
+        {
+
+            write64(device, REG_QUEUEDESC, (unsigned long)queue->descs);
+            write64(device, REG_QUEUEDRIVER, (unsigned long)queue->avail);
+            write64(device, REG_QUEUEDEVICE, (unsigned long)queue->used);
+
+            writereg(device, REG_QUEUEREADY, 1);
+
+        }
+
+        else
+        {
+
+            writereg(device, REG_QUEUEALIGN, PAGESIZE);
+            writereg(device, REG_QUEUEPFN, (unsigned long)queue->descs / PAGESIZE);
+
+        }
+
+        return 1;
 
     }
 
-    else
-    {
-
-        writereg(device, REG_QUEUEALIGN, PAGESIZE);
-        writereg(device, REG_QUEUEPFN, (unsigned long)queue->descs / PAGESIZE);
-
-    }
-
-    return 1;
+    return 0;
 
 }
 

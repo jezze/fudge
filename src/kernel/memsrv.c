@@ -123,58 +123,66 @@ static unsigned int grow(struct file *file, unsigned int size)
 static unsigned int readdata(struct file *file, unsigned char *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int done = 0;
-
-    if (offset >= file->size)
-        return 0;
-
-    if (count > file->size - offset)
-        count = file->size - offset;
-
-    while (done < count)
+    if (offset < file->size)
     {
 
-        unsigned int chunk = MEMSRV_PAGESIZE - (offset + done) % MEMSRV_PAGESIZE;
+        unsigned int done = 0;
 
-        if (chunk > count - done)
-            chunk = count - done;
+        if (count > file->size - offset)
+            count = file->size - offset;
 
-        buffer_copy(buffer + done, getpage(file, offset + done), chunk);
+        while (done < count)
+        {
 
-        done += chunk;
+            unsigned int chunk = MEMSRV_PAGESIZE - (offset + done) % MEMSRV_PAGESIZE;
+
+            if (chunk > count - done)
+                chunk = count - done;
+
+            buffer_copy(buffer + done, getpage(file, offset + done), chunk);
+
+            done += chunk;
+
+        }
+
+        return count;
 
     }
 
-    return count;
+    return 0;
 
 }
 
 static unsigned int writedata(struct file *file, unsigned char *buffer, unsigned int count, unsigned int offset)
 {
 
-    unsigned int done = 0;
-
     if (!count || offset + count < offset)
         return 0;
 
-    if (offset + count > file->size && !grow(file, offset + count))
-        return 0;
-
-    while (done < count)
+    if (offset + count <= file->size || grow(file, offset + count))
     {
 
-        unsigned int chunk = MEMSRV_PAGESIZE - (offset + done) % MEMSRV_PAGESIZE;
+        unsigned int done = 0;
 
-        if (chunk > count - done)
-            chunk = count - done;
+        while (done < count)
+        {
 
-        buffer_copy(getpage(file, offset + done), buffer + done, chunk);
+            unsigned int chunk = MEMSRV_PAGESIZE - (offset + done) % MEMSRV_PAGESIZE;
 
-        done += chunk;
+            if (chunk > count - done)
+                chunk = count - done;
+
+            buffer_copy(getpage(file, offset + done), buffer + done, chunk);
+
+            done += chunk;
+
+        }
+
+        return count;
 
     }
 
-    return count;
+    return 0;
 
 }
 
@@ -382,29 +390,31 @@ static unsigned int readrecords(struct record *records, unsigned int count, unsi
 static unsigned int create(unsigned int parent, char *name, unsigned int length)
 {
 
-    unsigned int i;
-
-    if (parent != ROOT || !length || length > MEMSRV_NAMESIZE || buffer_findbyte(name, length, '/') < length || walk(ROOT, name, length))
-        return 0;
-
-    for (i = 0; i < MEMSRV_FILES; i++)
+    if (parent == ROOT && length && length <= MEMSRV_NAMESIZE && buffer_findbyte(name, length, '/') >= length && !walk(ROOT, name, length))
     {
 
-        struct file *file = &files[i];
+        unsigned int i;
 
-        if (!file->used)
+        for (i = 0; i < MEMSRV_FILES; i++)
         {
 
-            file->used = 1;
-            file->linked = 1;
-            file->tasks = 0;
-            file->size = 0;
-            file->cachepage = NONE;
-            file->length = length;
+            struct file *file = &files[i];
 
-            buffer_copy(file->name, name, length);
+            if (!file->used)
+            {
 
-            return getid(file);
+                file->used = 1;
+                file->linked = 1;
+                file->tasks = 0;
+                file->size = 0;
+                file->cachepage = NONE;
+                file->length = length;
+
+                buffer_copy(file->name, name, length);
+
+                return getid(file);
+
+            }
 
         }
 
@@ -437,9 +447,6 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
     struct mailbox *mailbox = getmailbox(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
     struct task *task = (mailbox) ? pool_gettask(itask) : 0;
-    struct mmap_header *header;
-    struct mmap_entry *entry;
-    unsigned long vaddress;
 
     if (!file || !task)
         return 0;
@@ -447,24 +454,32 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
     if (!size)
         size = file->size;
 
-    if (!size || size > MEMSRV_FILESIZE)
-        return 0;
+    if (size && size <= MEMSRV_FILESIZE)
+    {
 
-    size = countpages(size) * MEMSRV_PAGESIZE;
-    header = (struct mmap_header *)task->mmap;
-    entry = findmapping(header, id);
+        struct mmap_header *header;
+        struct mmap_entry *entry;
+        unsigned long vaddress;
 
-    if (entry)
-        return (entry->size >= size) ? entry->vaddress : 0;
+        size = countpages(size) * MEMSRV_PAGESIZE;
+        header = (struct mmap_header *)task->mmap;
+        entry = findmapping(header, id);
 
-    vaddress = findgap(header, size);
+        if (entry)
+            return (entry->size >= size) ? entry->vaddress : 0;
 
-    if (!vaddress || !mmap_allocate(header, MMAP_TYPE_MEM, id, vaddress, size, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE))
-        return 0;
+        vaddress = findgap(header, size);
 
-    file->tasks |= 1 << itask;
+        if (!vaddress || !mmap_allocate(header, MMAP_TYPE_MEM, id, vaddress, size, MMAP_FLAG_WRITEABLE | MMAP_FLAG_USERMODE))
+            return 0;
 
-    return vaddress;
+        file->tasks |= 1 << itask;
+
+        return vaddress;
+
+    }
+
+    return 0;
 
 }
 
@@ -749,22 +764,26 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 {
 
-    struct file *file;
-    unsigned long paddress = 0;
+    if (id > ROOT && id - ROOT - 1 < MEMSRV_FILES)
+    {
 
-    if (id <= ROOT || id - ROOT - 1 >= MEMSRV_FILES)
-        return 0;
+        struct file *file;
+        unsigned long paddress = 0;
 
-    file = &files[id - ROOT - 1];
+        file = &files[id - ROOT - 1];
 
-    spinlock_acquire(&spinlock);
+        spinlock_acquire(&spinlock);
 
-    if (file->used && offset < countpages(file->size) * MEMSRV_PAGESIZE)
-        paddress = (unsigned long)getpage(file, offset - offset % MEMSRV_PAGESIZE);
+        if (file->used && offset < countpages(file->size) * MEMSRV_PAGESIZE)
+            paddress = (unsigned long)getpage(file, offset - offset % MEMSRV_PAGESIZE);
 
-    spinlock_release(&spinlock);
+        spinlock_release(&spinlock);
 
-    return paddress;
+        return paddress;
+
+    }
+
+    return 0;
 
 }
 

@@ -78,33 +78,35 @@ static void mountmbr(unsigned int source, unsigned int target, struct mbr_partit
 static void mountgpt(unsigned int source, unsigned int target, unsigned int ipartition, char *name, char *service, unsigned int index)
 {
 
-    struct gpt_header header;
-    struct gpt_entry entry;
-    unsigned int entryoffset;
-    unsigned int offset;
+    if (sendblockreadrequest(target, blockinfo.blocksize, blockinfo.blocksize) == blockinfo.blocksize)
+    {
 
-    if (sendblockreadrequest(target, blockinfo.blocksize, blockinfo.blocksize) != blockinfo.blocksize)
-        return;
+        struct gpt_header header;
+        struct gpt_entry entry;
+        unsigned int entryoffset;
+        unsigned int offset;
 
-    buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
+        buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
 
-    if (!gpt_validate(&header) || ipartition >= gpt_read32(header.entrycount))
-        return;
+        if (!gpt_validate(&header) || ipartition >= gpt_read32(header.entrycount))
+            return;
 
-    entryoffset = gpt_read32(header.entrylba) * blockinfo.blocksize + ipartition * gpt_read32(header.entrysize);
+        entryoffset = gpt_read32(header.entrylba) * blockinfo.blocksize + ipartition * gpt_read32(header.entrysize);
 
-    if (sendblockreadrequest(target, entryoffset - entryoffset % blockinfo.blocksize, blockinfo.blocksize) != blockinfo.blocksize)
-        return;
+        if (sendblockreadrequest(target, entryoffset - entryoffset % blockinfo.blocksize, blockinfo.blocksize) != blockinfo.blocksize)
+            return;
 
-    buffer_copy(&entry, (void *)(blockinfo.buffer + entryoffset % blockinfo.blocksize), sizeof (struct gpt_entry));
+        buffer_copy(&entry, (void *)(blockinfo.buffer + entryoffset % blockinfo.blocksize), sizeof (struct gpt_entry));
 
-    offset = gpt_read32(entry.firstlba) * blockinfo.blocksize;
+        offset = gpt_read32(entry.firstlba) * blockinfo.blocksize;
 
-    if (buffer_match(entry.type, gptlinux, 16) || buffer_match(entry.type, gptefi, 16) || buffer_match(entry.type, gptbasic, 16))
-        mountfat(source, target, offset, name, service, index);
+        if (buffer_match(entry.type, gptlinux, 16) || buffer_match(entry.type, gptefi, 16) || buffer_match(entry.type, gptbasic, 16))
+            mountfat(source, target, offset, name, service, index);
 
-    if (buffer_match(entry.type, gptlinux, 16))
-        mountext2(source, target, offset, name, service, index);
+        if (buffer_match(entry.type, gptlinux, 16))
+            mountext2(source, target, offset, name, service, index);
+
+    }
 
 }
 
@@ -113,7 +115,6 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 
     char path[SERVICE_PATHSIZE];
     unsigned int target;
-    struct mbr mbr;
 
     cstring_write_fmt(path, SERVICE_PATHSIZE, 0, "%s:%u\\0", service, &index);
 
@@ -131,18 +132,22 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
     channel_send(1, target, MESSAGE_TYPE_INFO, 0, 0);
     channel_wait(1, target, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
 
-    if (sendblockreadrequest(target, 0, blockinfo.blocksize) != 512)
-        return;
+    if (sendblockreadrequest(target, 0, blockinfo.blocksize) == 512)
+    {
 
-    buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
+        struct mbr mbr;
 
-    if (!mbr_validate(&mbr))
-        return;
+        buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
 
-    if (mbr.partition[0].systemid == 0xEE)
-        mountgpt(source, target, ipartition, name, service, index);
-    else if (ipartition < 4 && mbr.partition[ipartition].systemid)
-        mountmbr(source, target, &mbr.partition[ipartition], name, service, index);
+        if (!mbr_validate(&mbr))
+            return;
+
+        if (mbr.partition[0].systemid == 0xEE)
+            mountgpt(source, target, ipartition, name, service, index);
+        else if (ipartition < 4 && mbr.partition[ipartition].systemid)
+            mountmbr(source, target, &mbr.partition[ipartition], name, service, index);
+
+    }
 
 }
 

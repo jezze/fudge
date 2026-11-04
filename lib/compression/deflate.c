@@ -253,69 +253,72 @@ static void symbol(struct deflate *d)
 {
 
     unsigned int symbol = decode(d, &d->literals);
-    unsigned int length;
-    unsigned int distance;
 
-    if (d->status != DEFLATE_OK)
-        return;
-
-    if (symbol < 256)
+    if (d->status == DEFLATE_OK)
     {
 
-        putbyte(d, symbol);
+        unsigned int length;
+        unsigned int distance;
 
-        return;
+        if (symbol < 256)
+        {
+
+            putbyte(d, symbol);
+
+            return;
+
+        }
+
+        if (symbol == 256)
+        {
+
+            d->block = BLOCK_NONE;
+
+            return;
+
+        }
+
+        symbol -= 257;
+
+        if (symbol >= LENGTHS)
+        {
+
+            d->status = DEFLATE_INVALID;
+
+            return;
+
+        }
+
+        length = lengthbase[symbol] + getbits(d, lengthextra[symbol]);
+        symbol = decode(d, &d->distances);
+
+        if (symbol >= DISTANCES)
+        {
+
+            d->status = DEFLATE_INVALID;
+
+            return;
+
+        }
+
+        distance = distancebase[symbol] + getbits(d, distanceextra[symbol]);
+
+        if (d->status != DEFLATE_OK)
+            return;
+
+        if (distance > d->ooffset || (d->ring && distance > d->ocount))
+        {
+
+            d->status = DEFLATE_INVALID;
+
+            return;
+
+        }
+
+        d->length = length;
+        d->distance = distance;
 
     }
-
-    if (symbol == 256)
-    {
-
-        d->block = BLOCK_NONE;
-
-        return;
-
-    }
-
-    symbol -= 257;
-
-    if (symbol >= LENGTHS)
-    {
-
-        d->status = DEFLATE_INVALID;
-
-        return;
-
-    }
-
-    length = lengthbase[symbol] + getbits(d, lengthextra[symbol]);
-    symbol = decode(d, &d->distances);
-
-    if (symbol >= DISTANCES)
-    {
-
-        d->status = DEFLATE_INVALID;
-
-        return;
-
-    }
-
-    distance = distancebase[symbol] + getbits(d, distanceextra[symbol]);
-
-    if (d->status != DEFLATE_OK)
-        return;
-
-    if (distance > d->ooffset || (d->ring && distance > d->ocount))
-    {
-
-        d->status = DEFLATE_INVALID;
-
-        return;
-
-    }
-
-    d->length = length;
-    d->distance = distance;
 
 }
 

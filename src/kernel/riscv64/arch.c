@@ -287,27 +287,32 @@ static unsigned int pagefault(unsigned long vaddress)
 {
 
     unsigned long directory = getdirectory();
-    unsigned int found = 0;
 
-    if (mmu_getpage(directory, vaddress) & MMU_PFLAG_PRESENT)
-        return 0;
-
-    if (directory != ARCH_MMU_KERNELBASE)
+    if (!(mmu_getpage(directory, vaddress) & MMU_PFLAG_PRESENT))
     {
 
-        struct mmap_entry *entry = mmap_find((struct mmap_header *)KERNEL_VMMAP, vaddress);
+        unsigned int found = 0;
 
-        if (entry)
-            found = (entry->type == MMAP_TYPE_MEM) ? mapmem(directory, vaddress, entry) : mapentry(directory, KERNEL_VMMAP, entry);
+        if (directory != ARCH_MMU_KERNELBASE)
+        {
+
+            struct mmap_entry *entry = mmap_find((struct mmap_header *)KERNEL_VMMAP, vaddress);
+
+            if (entry)
+                found = (entry->type == MMAP_TYPE_MEM) ? mapmem(directory, vaddress, entry) : mapentry(directory, KERNEL_VMMAP, entry);
+
+        }
+
+        if (!found)
+            found = copytable(directory, KERNEL_VMMAP, vaddress);
+
+        cpu_flushtlb();
+
+        return found;
 
     }
 
-    if (!found)
-        found = copytable(directory, KERNEL_VMMAP, vaddress);
-
-    cpu_flushtlb();
-
-    return found;
+    return 0;
 
 }
 

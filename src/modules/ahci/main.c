@@ -131,40 +131,45 @@ static void setupport(struct disk *disk, unsigned int index)
 static unsigned int issue(struct disk *disk, unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
 {
 
-    volatile struct ahci_header *header = disk->header;
-    volatile struct ahci_table *table = disk->table;
-    volatile struct ahci_h2d *fis = (struct ahci_h2d *)table->cfis;
-    unsigned int port = disk->port;
     unsigned int blocks = count / BLOCKSIZE;
 
-    if (!blocks || !buffer)
-        return 0;
+    if (blocks && buffer)
+    {
 
-    header->flags = (sizeof (struct ahci_h2d) / 4) | (write ? AHCI_HEADER_WRITE : 0);
-    header->prdtl = 1;
-    header->prdbc = 0;
-    table->prd.dba = buffer;
-    table->prd.dbau = 0;
-    table->prd.dbc = blocks * BLOCKSIZE - 1;
-    fis->type = AHCI_TYPE_H2D;
-    fis->port = AHCI_FIS_COMMAND;
-    fis->command = (write) ? AHCI_ATA_WRITEDMAEXT : AHCI_ATA_READDMAEXT;
-    fis->device = AHCI_DEVICE_LBA;
-    fis->lba0 = sector;
-    fis->lba1 = sector >> 8;
-    fis->lba2 = sector >> 16;
-    fis->lba3 = sector >> 24;
-    fis->countl = blocks;
-    fis->counth = blocks >> 8;
+        volatile struct ahci_header *header = disk->header;
+        volatile struct ahci_table *table = disk->table;
+        volatile struct ahci_h2d *fis = (struct ahci_h2d *)table->cfis;
+        unsigned int port = disk->port;
 
-    if (!waitclear(port + AHCI_PTFD, AHCI_PTFD_BSY | AHCI_PTFD_DRQ))
-        return 0;
+        header->flags = (sizeof (struct ahci_h2d) / 4) | (write ? AHCI_HEADER_WRITE : 0);
+        header->prdtl = 1;
+        header->prdbc = 0;
+        table->prd.dba = buffer;
+        table->prd.dbau = 0;
+        table->prd.dbc = blocks * BLOCKSIZE - 1;
+        fis->type = AHCI_TYPE_H2D;
+        fis->port = AHCI_FIS_COMMAND;
+        fis->command = (write) ? AHCI_ATA_WRITEDMAEXT : AHCI_ATA_READDMAEXT;
+        fis->device = AHCI_DEVICE_LBA;
+        fis->lba0 = sector;
+        fis->lba1 = sector >> 8;
+        fis->lba2 = sector >> 16;
+        fis->lba3 = sector >> 24;
+        fis->countl = blocks;
+        fis->counth = blocks >> 8;
 
-    writereg(port + AHCI_PIS, 0xFFFFFFFF);
-    writereg(AHCI_IS, 1 << ((port - AHCI_PORT) / AHCI_PORTSIZE));
-    writereg(port + AHCI_PCI, 1);
+        if (!waitclear(port + AHCI_PTFD, AHCI_PTFD_BSY | AHCI_PTFD_DRQ))
+            return 0;
 
-    return blocks * BLOCKSIZE;
+        writereg(port + AHCI_PIS, 0xFFFFFFFF);
+        writereg(AHCI_IS, 1 << ((port - AHCI_PORT) / AHCI_PORTSIZE));
+        writereg(port + AHCI_PCI, 1);
+
+        return blocks * BLOCKSIZE;
+
+    }
+
+    return 0;
 
 }
 
@@ -370,58 +375,62 @@ static void driver_reset(unsigned int id)
 static void driver_attach(unsigned int id)
 {
 
-    unsigned int i;
-
-    if (!ndisks)
-        return;
-
-    msi = apic_setmsiroutine(handleirq);
-
-    if (msi && !pci_setmsi(id, apic_getmsiaddress(), apic_getmsidata(msi)))
+    if (ndisks)
     {
 
-        apic_unsetroutine(msi, handleirq);
+        unsigned int i;
 
-        msi = 0;
+        msi = apic_setmsiroutine(handleirq);
 
-    }
+        if (msi && !pci_setmsi(id, apic_getmsiaddress(), apic_getmsidata(msi)))
+        {
 
-    for (i = 0; i < ndisks; i++)
-    {
+            apic_unsetroutine(msi, handleirq);
+
+            msi = 0;
+
+        }
+
+        for (i = 0; i < ndisks; i++)
+        {
+
+            if (msi)
+                writereg(disks[i].port + AHCI_PIE, AHCI_PIS_DHRS | AHCI_PIS_TFES);
+
+            block_registerinterface(&disks[i].blockinterface);
+
+        }
 
         if (msi)
-            writereg(disks[i].port + AHCI_PIE, AHCI_PIS_DHRS | AHCI_PIS_TFES);
-
-        block_registerinterface(&disks[i].blockinterface);
+            writereg(AHCI_GHC, readreg(AHCI_GHC) | AHCI_GHC_IE);
 
     }
-
-    if (msi)
-        writereg(AHCI_GHC, readreg(AHCI_GHC) | AHCI_GHC_IE);
 
 }
 
 static void driver_detach(unsigned int id)
 {
 
-    unsigned int i;
-
-    if (!ndisks)
-        return;
-
-    if (msi)
+    if (ndisks)
     {
 
-        writereg(AHCI_GHC, readreg(AHCI_GHC) & ~AHCI_GHC_IE);
-        pci_unsetmsi(id);
-        apic_unsetroutine(msi, handleirq);
+        unsigned int i;
 
-        msi = 0;
+        if (msi)
+        {
+
+            writereg(AHCI_GHC, readreg(AHCI_GHC) & ~AHCI_GHC_IE);
+            pci_unsetmsi(id);
+            apic_unsetroutine(msi, handleirq);
+
+            msi = 0;
+
+        }
+
+        for (i = 0; i < ndisks; i++)
+            block_unregisterinterface(&disks[i].blockinterface);
 
     }
-
-    for (i = 0; i < ndisks; i++)
-        block_unregisterinterface(&disks[i].blockinterface);
 
 }
 

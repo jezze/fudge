@@ -73,44 +73,46 @@ static void printentry(unsigned int source, unsigned int i, struct gpt_entry *en
 static void printgpt(unsigned int source, unsigned int block)
 {
 
-    struct gpt_header header;
-    unsigned int offset;
-    unsigned int entrysize;
-    unsigned int entrycount;
-    unsigned int i;
-
-    if (!readblock(block, blockinfo.blocksize))
-        return;
-
-    buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
-
-    if (!gpt_validate(&header))
-        return;
-
-    offset = gpt_read32(header.entrylba) * blockinfo.blocksize;
-    entrysize = gpt_read32(header.entrysize);
-    entrycount = gpt_read32(header.entrycount);
-
-    channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "  table: \"GPT\"\n");
-    channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "  partitions: [\n");
-
-    for (i = 0; i < entrycount; i++)
+    if (readblock(block, blockinfo.blocksize))
     {
 
-        unsigned int entryoffset = offset + i * entrysize;
-        struct gpt_entry *entry;
+        struct gpt_header header;
+        unsigned int offset;
+        unsigned int entrysize;
+        unsigned int entrycount;
+        unsigned int i;
 
-        if (entryoffset % blockinfo.blocksize == 0 && !readblock(block, entryoffset))
-            break;
+        buffer_copy(&header, (void *)blockinfo.buffer, sizeof (struct gpt_header));
 
-        entry = (struct gpt_entry *)(blockinfo.buffer + entryoffset % blockinfo.blocksize);
+        if (!gpt_validate(&header))
+            return;
 
-        if (gpt_isused(entry))
-            printentry(source, i, entry);
+        offset = gpt_read32(header.entrylba) * blockinfo.blocksize;
+        entrysize = gpt_read32(header.entrysize);
+        entrycount = gpt_read32(header.entrycount);
+
+        channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "  table: \"GPT\"\n");
+        channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "  partitions: [\n");
+
+        for (i = 0; i < entrycount; i++)
+        {
+
+            unsigned int entryoffset = offset + i * entrysize;
+            struct gpt_entry *entry;
+
+            if (entryoffset % blockinfo.blocksize == 0 && !readblock(block, entryoffset))
+                break;
+
+            entry = (struct gpt_entry *)(blockinfo.buffer + entryoffset % blockinfo.blocksize);
+
+            if (gpt_isused(entry))
+                printentry(source, i, entry);
+
+        }
+
+        channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "  ]\n");
 
     }
-
-    channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "  ]\n");
 
 }
 
@@ -147,38 +149,41 @@ static void onmain(struct message *message)
 {
 
     unsigned int block = channel_lookup(option_getstring("block-service"));
-    struct mbr mbr;
 
-    if (!block)
-        return;
-
-    channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0);
-    channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
-
-    channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "{\n");
-    channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  blocks: %u\n", &blockinfo.blockcount);
-    channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  blocksize: %u\n", &blockinfo.blocksize);
-
-    if (readblock(block, 0))
+    if (block)
     {
 
-        buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
+        struct mbr mbr;
 
-        if (mbr_validate(&mbr))
+        channel_send(1, block, MESSAGE_TYPE_INFO, 0, 0);
+        channel_wait(1, block, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
+
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "{\n");
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  blocks: %u\n", &blockinfo.blockcount);
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  blocksize: %u\n", &blockinfo.blocksize);
+
+        if (readblock(block, 0))
         {
 
-            channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  signature: 0x%H2c%H2c\n", &mbr.signature[0], &mbr.signature[1]);
+            buffer_copy(&mbr, (void *)blockinfo.buffer, sizeof (struct mbr));
 
-            if (mbr.partition[0].systemid == 0xEE)
-                printgpt(message->source, block);
-            else
-                printmbr(message->source, &mbr);
+            if (mbr_validate(&mbr))
+            {
+
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "  signature: 0x%H2c%H2c\n", &mbr.signature[0], &mbr.signature[1]);
+
+                if (mbr.partition[0].systemid == 0xEE)
+                    printgpt(message->source, block);
+                else
+                    printmbr(message->source, &mbr);
+
+            }
 
         }
 
-    }
+        channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "}\n");
 
-    channel_send_fmt(0, message->source, MESSAGE_TYPE_DATA, "}\n");
+    }
 
 }
 

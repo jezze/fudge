@@ -8,7 +8,6 @@ static void touch(unsigned int source, char *path)
 
     unsigned int target = fs_auth(path);
     char *name = path + fs_dirlength(path);
-    unsigned int parent;
 
     if (!target)
     {
@@ -19,22 +18,26 @@ static void touch(unsigned int source, char *path)
 
     }
 
-    if (fs_walk(1, target, 0, path))
-        return;
-
-    parent = fs_walkparent(1, target, path);
-
-    if (!parent)
+    if (!fs_walk(1, target, 0, path))
     {
 
-        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
+        unsigned int parent;
 
-        return;
+        parent = fs_walkparent(1, target, path);
+
+        if (!parent)
+        {
+
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Path not found: %s\n", path);
+
+            return;
+
+        }
+
+        if (!cstring_length(name) || !fs_create(1, target, parent, name, cstring_length(name)))
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be created: %s\n", path);
 
     }
-
-    if (!cstring_length(name) || !fs_create(1, target, parent, name, cstring_length(name)))
-        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be created: %s\n", path);
 
 }
 

@@ -37,22 +37,24 @@ static void createmem(void)
 static void showimage(void)
 {
 
-    char size[64];
-    unsigned int count;
-
     if (!wm || !path[0])
         return;
 
     channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "= window label \"Image Viewer (%s)\"\n= frame flow \"%s\"\n", path + fs_dirlength(path), flows[mode]);
 
-    if (!memid)
-        return;
+    if (memid)
+    {
 
-    count = system_feed(0, 0, size, 63, "mapimage %s mem:%s", path, memname);
-    size[count] = 0;
+        char size[64];
+        unsigned int count;
 
-    if (count)
-        channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ media id \"image\" in \"frame\" mimetype \"image/raw\" source \"mem:%s\" %s", memname, size);
+        count = system_feed(0, 0, size, 63, "mapimage %s mem:%s", path, memname);
+        size[count] = 0;
+
+        if (count)
+            channel_send_fmt(0, wm, MESSAGE_TYPE_WMRENDERDATA, "+ media id \"image\" in \"frame\" mimetype \"image/raw\" source \"mem:%s\" %s", memname, size);
+
+    }
 
 }
 

@@ -93,39 +93,43 @@ static unsigned long findmmio(void)
 static unsigned int setup(void)
 {
 
-    unsigned int femtoseconds;
-    unsigned int ticks;
-    unsigned int config;
-
     mmio = findmmio();
 
-    if (!mmio)
-        return 0;
+    if (mmio)
+    {
 
-    arch_kmap(mmio, mmio, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+        unsigned int femtoseconds;
+        unsigned int ticks;
+        unsigned int config;
 
-    femtoseconds = read(REG_PERIOD);
+        arch_kmap(mmio, mmio, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
-    if (!femtoseconds || femtoseconds > 100000000)
-        return 0;
+        femtoseconds = read(REG_PERIOD);
 
-    if (!(read(REG_CAP) & REG_CAP_LEGACY) || !(read(REG_TIMER0CONFIG) & REG_TIMER0CONFIG_PERIODICCAP))
-        return 0;
+        if (!femtoseconds || femtoseconds > 100000000)
+            return 0;
 
-    ticks = getticks(femtoseconds);
+        if (!(read(REG_CAP) & REG_CAP_LEGACY) || !(read(REG_TIMER0CONFIG) & REG_TIMER0CONFIG_PERIODICCAP))
+            return 0;
 
-    write(REG_CONFIG, read(REG_CONFIG) & ~(REG_CONFIG_ENABLE | REG_CONFIG_LEGACY));
-    write(REG_COUNTERLOW, 0);
-    write(REG_COUNTERHIGH, 0);
+        ticks = getticks(femtoseconds);
 
-    config = read(REG_TIMER0CONFIG) & ~REG_TIMER0CONFIG_LEVEL;
+        write(REG_CONFIG, read(REG_CONFIG) & ~(REG_CONFIG_ENABLE | REG_CONFIG_LEGACY));
+        write(REG_COUNTERLOW, 0);
+        write(REG_COUNTERHIGH, 0);
 
-    write(REG_TIMER0CONFIG, config | REG_TIMER0CONFIG_ENABLE | REG_TIMER0CONFIG_PERIODIC | REG_TIMER0CONFIG_SETVALUE | REG_TIMER0CONFIG_32BIT);
-    write(REG_TIMER0COMPARATOR, ticks);
-    write(REG_TIMER0COMPARATOR, ticks);
-    write(REG_CONFIG, read(REG_CONFIG) | REG_CONFIG_ENABLE | REG_CONFIG_LEGACY);
+        config = read(REG_TIMER0CONFIG) & ~REG_TIMER0CONFIG_LEVEL;
 
-    return 1;
+        write(REG_TIMER0CONFIG, config | REG_TIMER0CONFIG_ENABLE | REG_TIMER0CONFIG_PERIODIC | REG_TIMER0CONFIG_SETVALUE | REG_TIMER0CONFIG_32BIT);
+        write(REG_TIMER0COMPARATOR, ticks);
+        write(REG_TIMER0COMPARATOR, ticks);
+        write(REG_CONFIG, read(REG_CONFIG) | REG_CONFIG_ENABLE | REG_CONFIG_LEGACY);
+
+        return 1;
+
+    }
+
+    return 0;
 
 }
 

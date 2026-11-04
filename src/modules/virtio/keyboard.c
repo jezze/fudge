@@ -47,33 +47,35 @@ static unsigned short scancodes[KEYS] = {
 static void handleevent(struct input_event *event)
 {
 
-    unsigned short scancode;
-
-    if (event->type != EV_KEY || event->code >= KEYS)
-        return;
-
-    scancode = scancodes[event->code];
-
-    if (!scancode)
-        return;
-
-    if (event->value)
+    if (event->type == EV_KEY && event->code < KEYS)
     {
 
-        if (scancode & EXTENDED)
-            keyboard_notifypress(&keyboardinterface, 0xE0);
+        unsigned short scancode;
 
-        keyboard_notifypress(&keyboardinterface, scancode & 0xFF);
+        scancode = scancodes[event->code];
 
-    }
+        if (!scancode)
+            return;
 
-    else
-    {
+        if (event->value)
+        {
 
-        if (scancode & EXTENDED)
-            keyboard_notifyrelease(&keyboardinterface, 0xE0);
+            if (scancode & EXTENDED)
+                keyboard_notifypress(&keyboardinterface, 0xE0);
 
-        keyboard_notifyrelease(&keyboardinterface, (scancode & 0xFF) | 0x80);
+            keyboard_notifypress(&keyboardinterface, scancode & 0xFF);
+
+        }
+
+        else
+        {
+
+            if (scancode & EXTENDED)
+                keyboard_notifyrelease(&keyboardinterface, 0xE0);
+
+            keyboard_notifyrelease(&keyboardinterface, (scancode & 0xFF) | 0x80);
+
+        }
 
     }
 
@@ -140,21 +142,23 @@ static unsigned int driver_match(unsigned int type, unsigned int id)
 static void driver_reset(unsigned int id)
 {
 
-    unsigned int i;
-
     if (!virtio_setup(&device, id))
         return;
 
     virtio_negotiate(&device, 0);
 
-    if (!virtio_setqueue(&queue, &device, 0, memory))
-        return;
-
-    for (i = 0; i < EVENTS && i < queue.size; i++)
+    if (virtio_setqueue(&queue, &device, 0, memory))
     {
 
-        virtio_setdesc(&queue, i, &events[i], sizeof (struct input_event), VIRTIO_DESC_WRITE, 0);
-        virtio_push(&queue, i);
+        unsigned int i;
+
+        for (i = 0; i < EVENTS && i < queue.size; i++)
+        {
+
+            virtio_setdesc(&queue, i, &events[i], sizeof (struct input_event), VIRTIO_DESC_WRITE, 0);
+            virtio_push(&queue, i);
+
+        }
 
     }
 

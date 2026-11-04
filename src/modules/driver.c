@@ -84,22 +84,24 @@ void base_unregisterdriver(struct base_driver *driver)
 void base_attachdevice(unsigned int type, unsigned int id)
 {
 
-    struct resource *current = 0;
-
-    if (isowned(type, id))
-        return;
-
-    while ((current = resource_foreachtype(current, RESOURCE_DRIVER)))
+    if (!isowned(type, id))
     {
 
-        struct base_driver *driver = current->data;
+        struct resource *current = 0;
 
-        if (!driver->id && driver->match(type, id))
+        while ((current = resource_foreachtype(current, RESOURCE_DRIVER)))
         {
 
-            attach(driver, type, id);
+            struct base_driver *driver = current->data;
 
-            break;
+            if (!driver->id && driver->match(type, id))
+            {
+
+                attach(driver, type, id);
+
+                break;
+
+            }
 
         }
 

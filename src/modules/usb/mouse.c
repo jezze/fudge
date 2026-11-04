@@ -17,41 +17,43 @@ static unsigned char oldbuttons;
 static void onreport(unsigned int id, void *data, unsigned int count)
 {
 
-    unsigned char *report = data;
-    unsigned char buttons;
-    char relx;
-    char rely;
-    unsigned int i;
-
-    if (count < 3)
-        return;
-
-    buttons = report[0];
-    relx = report[1];
-    rely = report[2];
-
-    for (i = 0; i < 3; i++)
+    if (count >= 3)
     {
 
-        unsigned int bit = 1 << i;
+        unsigned char *report = data;
+        unsigned char buttons;
+        char relx;
+        char rely;
+        unsigned int i;
 
-        if (!(oldbuttons & bit) && (buttons & bit))
-            mouse_notifypress(&mouseinterface, i + 1);
+        buttons = report[0];
+        relx = report[1];
+        rely = report[2];
 
-        if ((oldbuttons & bit) && !(buttons & bit))
-            mouse_notifyrelease(&mouseinterface, i + 1);
+        for (i = 0; i < 3; i++)
+        {
+
+            unsigned int bit = 1 << i;
+
+            if (!(oldbuttons & bit) && (buttons & bit))
+                mouse_notifypress(&mouseinterface, i + 1);
+
+            if ((oldbuttons & bit) && !(buttons & bit))
+                mouse_notifyrelease(&mouseinterface, i + 1);
+
+        }
+
+        oldbuttons = buttons;
+
+        /* y grows downwards, as the mouse interface wants it */
+        if (relx || rely)
+            mouse_notifymove(&mouseinterface, relx, rely);
+
+        /* the wheel is positive away from the user, the opposite of a ps/2 mouse */
+        if (count > 3 && report[3])
+            mouse_notifyscroll(&mouseinterface, -(char)report[3]);
 
     }
-
-    oldbuttons = buttons;
-
-    /* y grows downwards, as the mouse interface wants it */
-    if (relx || rely)
-        mouse_notifymove(&mouseinterface, relx, rely);
-
-    /* the wheel is positive away from the user, the opposite of a ps/2 mouse */
-    if (count > 3 && report[3])
-        mouse_notifyscroll(&mouseinterface, -(char)report[3]);
 
 }
 

@@ -134,67 +134,69 @@ static void toggleled(unsigned int id, unsigned char usage)
 static void onreport(unsigned int id, void *data, unsigned int count)
 {
 
-    unsigned char *report = data;
-    unsigned int i;
-
-    if (count < REPORTSIZE)
-        return;
-
-    if (report[2] == 0x01)
-        return;
-
-    if (buffer_match(report, previous, REPORTSIZE))
+    if (count >= REPORTSIZE)
     {
 
-        if (repeatkey && ++repeatcount >= REPEATDELAY)
-            notify(getscancode(repeatkey), 1);
+        unsigned char *report = data;
+        unsigned int i;
 
-        return;
+        if (report[2] == 0x01)
+            return;
 
-    }
-
-    for (i = 0; i < 8; i++)
-    {
-
-        unsigned int bit = 1 << i;
-
-        if ((report[0] & bit) != (previous[0] & bit))
-            notify(modifiers[i], report[0] & bit);
-
-    }
-
-    for (i = 2; i < REPORTSIZE; i++)
-    {
-
-        if (previous[i] && !haskey(report, previous[i]))
+        if (buffer_match(report, previous, REPORTSIZE))
         {
 
-            notify(getscancode(previous[i]), 0);
+            if (repeatkey && ++repeatcount >= REPEATDELAY)
+                notify(getscancode(repeatkey), 1);
 
-            if (previous[i] == repeatkey)
-                repeatkey = 0;
+            return;
 
         }
 
-    }
-
-    for (i = 2; i < REPORTSIZE; i++)
-    {
-
-        if (report[i] && !haskey(previous, report[i]))
+        for (i = 0; i < 8; i++)
         {
 
-            notify(getscancode(report[i]), 1);
-            toggleled(id, report[i]);
+            unsigned int bit = 1 << i;
 
-            repeatkey = report[i];
-            repeatcount = 0;
+            if ((report[0] & bit) != (previous[0] & bit))
+                notify(modifiers[i], report[0] & bit);
 
         }
 
-    }
+        for (i = 2; i < REPORTSIZE; i++)
+        {
 
-    buffer_copy(previous, report, REPORTSIZE);
+            if (previous[i] && !haskey(report, previous[i]))
+            {
+
+                notify(getscancode(previous[i]), 0);
+
+                if (previous[i] == repeatkey)
+                    repeatkey = 0;
+
+            }
+
+        }
+
+        for (i = 2; i < REPORTSIZE; i++)
+        {
+
+            if (report[i] && !haskey(previous, report[i]))
+            {
+
+                notify(getscancode(report[i]), 1);
+                toggleled(id, report[i]);
+
+                repeatkey = report[i];
+                repeatcount = 0;
+
+            }
+
+        }
+
+        buffer_copy(previous, report, REPORTSIZE);
+
+    }
 
 }
 

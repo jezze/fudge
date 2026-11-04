@@ -70,11 +70,8 @@ unsigned int base64_decode(unsigned char *src, unsigned int len, unsigned char *
 {
 
     unsigned char dtable[256];
-    unsigned char *pos = 0;
-    unsigned char block[4];
     unsigned int count;
     unsigned int i;
-    int pad = 0;
 
     for (i = 0; i < 256; i++)
         dtable[i] = 0x80;
@@ -93,52 +90,60 @@ unsigned int base64_decode(unsigned char *src, unsigned int len, unsigned char *
 
     }
 
-    if (count == 0 || count % 4)
-        return 0;
-
-    count = 0;
-
-    for (i = 0; i < len; i++)
+    if (count != 0 && !(count % 4))
     {
 
-        unsigned char tmp = dtable[src[i]];
+        unsigned char *pos = 0;
+        unsigned char block[4];
+        int pad = 0;
 
-        if (tmp == 0x80)
-            continue;
+        count = 0;
 
-        if (src[i] == '=')
-            pad++;
-
-        block[count] = tmp;
-        count++;
-
-        if (count == 4)
+        for (i = 0; i < len; i++)
         {
 
-            *pos++ = (block[0] << 2) | (block[1] >> 4);
-            *pos++ = (block[1] << 4) | (block[2] >> 2);
-            *pos++ = (block[2] << 6) | block[3];
-            count = 0;
+            unsigned char tmp = dtable[src[i]];
 
-            if (pad)
+            if (tmp == 0x80)
+                continue;
+
+            if (src[i] == '=')
+                pad++;
+
+            block[count] = tmp;
+            count++;
+
+            if (count == 4)
             {
 
-                if (pad == 1)
-                    pos--;
-                else if (pad == 2)
-                    pos -= 2;
-                else
-                    return 0;
+                *pos++ = (block[0] << 2) | (block[1] >> 4);
+                *pos++ = (block[1] << 4) | (block[2] >> 2);
+                *pos++ = (block[2] << 6) | block[3];
+                count = 0;
 
-                break;
+                if (pad)
+                {
+
+                    if (pad == 1)
+                        pos--;
+                    else if (pad == 2)
+                        pos -= 2;
+                    else
+                        return 0;
+
+                    break;
+
+                }
 
             }
 
         }
 
+        return pos - out;
+
     }
 
-    return pos - out;
+    return 0;
 
 }
 

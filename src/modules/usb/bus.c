@@ -528,31 +528,35 @@ static unsigned int runcommand(void *parameter, unsigned int control)
 static unsigned int runcontrol(struct device *device, unsigned char type, unsigned char request, unsigned short value, unsigned short index, unsigned short length, void *data)
 {
 
-    unsigned int in = type & USB_REQUEST_IN;
+    if (length <= PAGESIZE / 2)
+    {
 
-    if (length > PAGESIZE / 2)
-        return 0;
+        unsigned int in = type & USB_REQUEST_IN;
 
-    if (data && !in)
-        buffer_copy(device->buffer, data, length);
+        if (data && !in)
+            buffer_copy(device->buffer, data, length);
 
-    transferresult.done = 0;
+        transferresult.done = 0;
 
-    enqueue(&device->control, type | (request << 8) | ((unsigned int)value << 16), index | ((unsigned int)length << 16), 8, TRB_TYPE(TRB_SETUP) | TRB_IDT | ((length) ? ((in) ? (3 << 16) : (2 << 16)) : 0));
+        enqueue(&device->control, type | (request << 8) | ((unsigned int)value << 16), index | ((unsigned int)length << 16), 8, TRB_TYPE(TRB_SETUP) | TRB_IDT | ((length) ? ((in) ? (3 << 16) : (2 << 16)) : 0));
 
-    if (length)
-        enqueue(&device->control, (unsigned long)device->buffer, gethigh(device->buffer), length, TRB_TYPE(TRB_DATA) | ((in) ? TRB_DIR_IN : 0));
+        if (length)
+            enqueue(&device->control, (unsigned long)device->buffer, gethigh(device->buffer), length, TRB_TYPE(TRB_DATA) | ((in) ? TRB_DIR_IN : 0));
 
-    enqueue(&device->control, 0, 0, 0, TRB_TYPE(TRB_STATUS) | TRB_IOC | ((length && in) ? 0 : TRB_DIR_IN));
-    ringdoorbell(device->slot, 1);
+        enqueue(&device->control, 0, 0, 0, TRB_TYPE(TRB_STATUS) | TRB_IOC | ((length && in) ? 0 : TRB_DIR_IN));
+        ringdoorbell(device->slot, 1);
 
-    if (!waitresult(&transferresult) || transferresult.code != COMPLETION_SUCCESS)
-        return 0;
+        if (!waitresult(&transferresult) || transferresult.code != COMPLETION_SUCCESS)
+            return 0;
 
-    if (data && in)
-        buffer_copy(data, device->buffer, length);
+        if (data && in)
+            buffer_copy(data, device->buffer, length);
 
-    return 1;
+        return 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -792,41 +796,45 @@ static unsigned int configureendpoints(struct device *device)
 static unsigned int setupdevice(struct device *device)
 {
 
-    unsigned char descriptor[18];
-    unsigned char configuration[256];
-    unsigned int length;
-
-    if (!addressdevice(device))
-        return 0;
-
-    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_DEVICE << 8, 0, 8, descriptor))
-        return 0;
-
-    if (descriptor[7] && descriptor[7] != device->maxpacket && device->speed < 4)
+    if (addressdevice(device))
     {
 
-        if (!updatemaxpacket(device, descriptor[7]))
+        unsigned char descriptor[18];
+        unsigned char configuration[256];
+        unsigned int length;
+
+        if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_DEVICE << 8, 0, 8, descriptor))
             return 0;
+
+        if (descriptor[7] && descriptor[7] != device->maxpacket && device->speed < 4)
+        {
+
+            if (!updatemaxpacket(device, descriptor[7]))
+                return 0;
+
+        }
+
+        if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, 9, configuration))
+            return 0;
+
+        length = configuration[2] | (configuration[3] << 8);
+
+        if (length > sizeof (configuration))
+            length = sizeof (configuration);
+
+        if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, length, configuration))
+            return 0;
+
+        parseconfiguration(device, configuration, length);
+
+        if (!runcontrol(device, USB_REQUEST_OUT, REQUEST_SETCONFIGURATION, configuration[5], 0, 0, 0))
+            return 0;
+
+        return configureendpoints(device);
 
     }
 
-    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, 9, configuration))
-        return 0;
-
-    length = configuration[2] | (configuration[3] << 8);
-
-    if (length > sizeof (configuration))
-        length = sizeof (configuration);
-
-    if (!runcontrol(device, USB_REQUEST_IN, REQUEST_GETDESCRIPTOR, DESCRIPTOR_CONFIGURATION << 8, 0, length, configuration))
-        return 0;
-
-    parseconfiguration(device, configuration, length);
-
-    if (!runcontrol(device, USB_REQUEST_OUT, REQUEST_SETCONFIGURATION, configuration[5], 0, 0, 0))
-        return 0;
-
-    return configureendpoints(device);
+    return 0;
 
 }
 
@@ -887,54 +895,57 @@ static struct device *enumerateport(unsigned int port)
 {
 
     unsigned int speed = resetport(port);
-    unsigned int index;
-    unsigned int i;
 
-    if (!speed)
-        return 0;
-
-    for (index = 0; index < DEVICES; index++)
+    if (speed)
     {
 
-        struct device *device = &devices[index];
-        unsigned int page = 4 + SCRATCHPADS + index * DEVICEPAGES;
+        unsigned int index;
+        unsigned int i;
 
-        if (device->slot)
-            continue;
+        for (index = 0; index < DEVICES; index++)
+        {
 
-        if (!runcommand(0, TRB_TYPE(TRB_ENABLESLOT)))
+            struct device *device = &devices[index];
+            unsigned int page = 4 + SCRATCHPADS + index * DEVICEPAGES;
+
+            if (device->slot)
+                continue;
+
+            if (!runcommand(0, TRB_TYPE(TRB_ENABLESLOT)))
+                return 0;
+
+            buffer_clear(device, sizeof (struct device));
+
+            device->port = port;
+            device->speed = speed;
+            device->maxpacket = getdefaultpacket(speed);
+            device->input = getpage(page + 0);
+            device->output = getpage(page + 1);
+            device->buffer = getpage(page + 3);
+            device->bulkbuffer = getpage(page + 6);
+
+            for (i = 1; i < BULKPAGES; i++)
+                getpage(page + 6 + i);
+
+            initring(&device->control, getpage(page + 2));
+            initring(&device->bulkinring, getpage(page + 4));
+            initring(&device->bulkoutring, getpage(page + 5));
+
+            for (i = 0; i < INTERFACES; i++)
+                initring(&device->interfaces[i].interrupt, getpage(page + 6 + BULKPAGES + i));
+
+            device->slot = commandresult.slot;
+
+            if (setupdevice(device))
+                return device;
+
+            disableslot(device->slot);
+
+            device->slot = 0;
+
             return 0;
 
-        buffer_clear(device, sizeof (struct device));
-
-        device->port = port;
-        device->speed = speed;
-        device->maxpacket = getdefaultpacket(speed);
-        device->input = getpage(page + 0);
-        device->output = getpage(page + 1);
-        device->buffer = getpage(page + 3);
-        device->bulkbuffer = getpage(page + 6);
-
-        for (i = 1; i < BULKPAGES; i++)
-            getpage(page + 6 + i);
-
-        initring(&device->control, getpage(page + 2));
-        initring(&device->bulkinring, getpage(page + 4));
-        initring(&device->bulkoutring, getpage(page + 5));
-
-        for (i = 0; i < INTERFACES; i++)
-            initring(&device->interfaces[i].interrupt, getpage(page + 6 + BULKPAGES + i));
-
-        device->slot = commandresult.slot;
-
-        if (setupdevice(device))
-            return device;
-
-        disableslot(device->slot);
-
-        device->slot = 0;
-
-        return 0;
+        }
 
     }
 
@@ -1083,8 +1094,6 @@ static unsigned int start(void)
     unsigned int hcsparams2 = read32(mmio + CAP_HCSPARAMS2);
     unsigned int scratchpads = (((hcsparams2 >> 21) & 0x1F) << 5) | ((hcsparams2 >> 27) & 0x1F);
     unsigned int slots = hcsparams1 & 0xFF;
-    volatile unsigned int *erst;
-    unsigned int i;
 
     op = mmio + (read32(mmio + CAP_LENGTH) & 0xFF);
     rt = mmio + (read32(mmio + CAP_RTSOFF) & ~0x1F);
@@ -1092,68 +1101,75 @@ static unsigned int start(void)
     ports = hcsparams1 >> 24;
     contextsize = (read32(mmio + CAP_HCCPARAMS1) & CAP_HCCPARAMS1_CSZ) ? 64 : 32;
 
-    if (scratchpads > SCRATCHPADS)
-        return 0;
-
-    takeownership();
-
-    write32(op + OP_USBCMD, read32(op + OP_USBCMD) & ~OP_USBCMD_RS);
-
-    for (i = 0; i < LIMIT_POLL && !(read32(op + OP_USBSTS) & OP_USBSTS_HCH); i++);
-
-    write32(op + OP_USBCMD, OP_USBCMD_HCRST);
-
-    for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBCMD) & OP_USBCMD_HCRST); i++);
-    for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBSTS) & OP_USBSTS_CNR); i++);
-
-    if (i == LIMIT_POLL)
-        return 0;
-
-    if (slots > DEVICES)
-        slots = DEVICES;
-
-    dcbaa = getpage(0);
-
-    initring(&command, getpage(1));
-    initring(&event, getpage(2));
-
-    erst = getpage(3);
-    erst[0] = (unsigned long)event.trbs;
-    erst[1] = gethigh((void *)event.trbs);
-    erst[2] = RINGSIZE;
-
-    if (scratchpads)
+    if (scratchpads <= SCRATCHPADS)
     {
 
-        volatile unsigned int *array = (volatile unsigned int *)((unsigned char *)erst + PAGESIZE / 2);
+        volatile unsigned int *erst;
+        unsigned int i;
 
-        for (i = 0; i < scratchpads; i++)
+        takeownership();
+
+        write32(op + OP_USBCMD, read32(op + OP_USBCMD) & ~OP_USBCMD_RS);
+
+        for (i = 0; i < LIMIT_POLL && !(read32(op + OP_USBSTS) & OP_USBSTS_HCH); i++);
+
+        write32(op + OP_USBCMD, OP_USBCMD_HCRST);
+
+        for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBCMD) & OP_USBCMD_HCRST); i++);
+        for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBSTS) & OP_USBSTS_CNR); i++);
+
+        if (i == LIMIT_POLL)
+            return 0;
+
+        if (slots > DEVICES)
+            slots = DEVICES;
+
+        dcbaa = getpage(0);
+
+        initring(&command, getpage(1));
+        initring(&event, getpage(2));
+
+        erst = getpage(3);
+        erst[0] = (unsigned long)event.trbs;
+        erst[1] = gethigh((void *)event.trbs);
+        erst[2] = RINGSIZE;
+
+        if (scratchpads)
         {
 
-            void *page = getpage(4 + i);
+            volatile unsigned int *array = (volatile unsigned int *)((unsigned char *)erst + PAGESIZE / 2);
 
-            array[i * 2] = (unsigned long)page;
-            array[i * 2 + 1] = gethigh(page);
+            for (i = 0; i < scratchpads; i++)
+            {
+
+                void *page = getpage(4 + i);
+
+                array[i * 2] = (unsigned long)page;
+                array[i * 2 + 1] = gethigh(page);
+
+            }
+
+            dcbaa[0] = (unsigned long)array;
+            dcbaa[1] = gethigh((void *)array);
 
         }
 
-        dcbaa[0] = (unsigned long)array;
-        dcbaa[1] = gethigh((void *)array);
+        write32(op + OP_CONFIG, slots);
+        write64(op + OP_DCBAAP, (void *)dcbaa, 0);
+        write64(op + OP_CRCR, (void *)command.trbs, 1);
+        write32(rt + IR_ERSTSZ, 1);
+        write64(rt + IR_ERDP, (void *)event.trbs, 0);
+        write64(rt + IR_ERSTBA, (void *)erst, 0);
+        write32(rt + IR_IMOD, 0);
+        write32(op + OP_USBCMD, OP_USBCMD_RS);
+
+        for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBSTS) & OP_USBSTS_HCH); i++);
+
+        return i < LIMIT_POLL;
 
     }
 
-    write32(op + OP_CONFIG, slots);
-    write64(op + OP_DCBAAP, (void *)dcbaa, 0);
-    write64(op + OP_CRCR, (void *)command.trbs, 1);
-    write32(rt + IR_ERSTSZ, 1);
-    write64(rt + IR_ERDP, (void *)event.trbs, 0);
-    write64(rt + IR_ERSTBA, (void *)erst, 0);
-    write32(rt + IR_IMOD, 0);
-    write32(op + OP_USBCMD, OP_USBCMD_RS);
-
-    for (i = 0; i < LIMIT_POLL && (read32(op + OP_USBSTS) & OP_USBSTS_HCH); i++);
-
-    return i < LIMIT_POLL;
+    return 0;
 
 }
 
@@ -1273,18 +1289,23 @@ unsigned int usb_control(unsigned int id, unsigned char type, unsigned char requ
 {
 
     struct device *device = getdevice(id);
-    unsigned int status;
 
-    if (!device)
-        return 0;
+    if (device)
+    {
 
-    spinlock_acquire(&spinlock);
+        unsigned int status;
 
-    status = runcontrol(device, type, request, value, index, length, data);
+        spinlock_acquire(&spinlock);
 
-    spinlock_release(&spinlock);
+        status = runcontrol(device, type, request, value, index, length, data);
 
-    return status;
+        spinlock_release(&spinlock);
+
+        return status;
+
+    }
+
+    return 0;
 
 }
 
@@ -1312,59 +1333,64 @@ unsigned int usb_bulk(unsigned int id, unsigned int in, void *data, unsigned int
 {
 
     struct device *device = getdevice(id);
-    struct trbring *ring;
-    unsigned int dci;
-    unsigned int offset;
-    unsigned int status = 0;
 
-    if (!device || count > BULKPAGES * PAGESIZE)
-        return 0;
-
-    dci = (in) ? device->bulkin : device->bulkout;
-    ring = (in) ? &device->bulkinring : &device->bulkoutring;
-
-    if (!dci)
-        return 0;
-
-    spinlock_acquire(&spinlock);
-
-    if (!in)
-        buffer_copy(device->bulkbuffer, data, count);
-
-    transferresult.done = 0;
-
-    /* one trb per page, so none crosses a 64 KB boundary */
-    for (offset = 0; offset < count || !count; offset += PAGESIZE)
+    if (device && count <= BULKPAGES * PAGESIZE)
     {
 
-        unsigned int length = (count - offset > PAGESIZE) ? PAGESIZE : count - offset;
-        unsigned char *buffer = device->bulkbuffer + offset;
+        struct trbring *ring;
+        unsigned int dci;
+        unsigned int offset;
+        unsigned int status = 0;
 
-        enqueue(ring, (unsigned long)buffer, gethigh(buffer), length, TRB_TYPE(TRB_NORMAL) | TRB_CHAIN);
+        dci = (in) ? device->bulkin : device->bulkout;
+        ring = (in) ? &device->bulkinring : &device->bulkoutring;
 
-        if (offset + length >= count)
-            break;
+        if (!dci)
+            return 0;
+
+        spinlock_acquire(&spinlock);
+
+        if (!in)
+            buffer_copy(device->bulkbuffer, data, count);
+
+        transferresult.done = 0;
+
+        /* one trb per page, so none crosses a 64 KB boundary */
+        for (offset = 0; offset < count || !count; offset += PAGESIZE)
+        {
+
+            unsigned int length = (count - offset > PAGESIZE) ? PAGESIZE : count - offset;
+            unsigned char *buffer = device->bulkbuffer + offset;
+
+            enqueue(ring, (unsigned long)buffer, gethigh(buffer), length, TRB_TYPE(TRB_NORMAL) | TRB_CHAIN);
+
+            if (offset + length >= count)
+                break;
+
+        }
+
+        /* a short packet skips to this trb, whose event holds the bytes moved by the whole td */
+        enqueue(ring, 0, 0, 0, TRB_TYPE(TRB_EVENTDATA) | TRB_IOC);
+
+        ringdoorbell(device->slot, dci);
+
+        if (waitresult(&transferresult) && transferresult.ed && (transferresult.code == COMPLETION_SUCCESS || transferresult.code == COMPLETION_SHORTPACKET))
+        {
+
+            status = (transferresult.length > count) ? count : transferresult.length;
+
+            if (in)
+                buffer_copy(data, device->bulkbuffer, status);
+
+        }
+
+        spinlock_release(&spinlock);
+
+        return status;
 
     }
 
-    /* a short packet skips to this trb, whose event holds the bytes moved by the whole td */
-    enqueue(ring, 0, 0, 0, TRB_TYPE(TRB_EVENTDATA) | TRB_IOC);
-
-    ringdoorbell(device->slot, dci);
-
-    if (waitresult(&transferresult) && transferresult.ed && (transferresult.code == COMPLETION_SUCCESS || transferresult.code == COMPLETION_SHORTPACKET))
-    {
-
-        status = (transferresult.length > count) ? count : transferresult.length;
-
-        if (in)
-            buffer_copy(data, device->bulkbuffer, status);
-
-    }
-
-    spinlock_release(&spinlock);
-
-    return status;
+    return 0;
 
 }
 

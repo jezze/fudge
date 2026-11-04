@@ -13,60 +13,63 @@ static unsigned int extended;
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char data;
     unsigned char status;
 
     status = ps2_getstatus();
 
-    if ((status & 0x20))
-        return;
-
-    data = ps2_getdata();
-
-    if (data == 0x00)
-        return;
-
-    if (data == 0xFF)
-        return;
-
-    if (data == 0xE0)
+    if (!(status & 0x20))
     {
 
-        extended = 1;
+        unsigned char data;
 
-        return;
+        data = ps2_getdata();
 
-    }
+        if (data == 0x00)
+            return;
 
-    if (data & 0x80)
-    {
+        if (data == 0xFF)
+            return;
 
-        if (extended)
+        if (data == 0xE0)
         {
 
-            keyboard_notifyrelease(&keyboardinterface, 0xE0);
+            extended = 1;
 
-            extended = 0;
+            return;
 
         }
 
-        keyboard_notifyrelease(&keyboardinterface, data);
-
-    }
-
-    else
-    {
-
-        if (extended)
+        if (data & 0x80)
         {
 
-            keyboard_notifypress(&keyboardinterface, 0xE0);
+            if (extended)
+            {
 
-            extended = 0;
+                keyboard_notifyrelease(&keyboardinterface, 0xE0);
+
+                extended = 0;
+
+            }
+
+            keyboard_notifyrelease(&keyboardinterface, data);
 
         }
 
-        keyboard_notifypress(&keyboardinterface, data);
+        else
+        {
+
+            if (extended)
+            {
+
+                keyboard_notifypress(&keyboardinterface, 0xE0);
+
+                extended = 0;
+
+            }
+
+            keyboard_notifypress(&keyboardinterface, data);
+
+        }
 
     }
 

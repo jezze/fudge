@@ -19,99 +19,102 @@ static char relz;
 static void handleirq(unsigned int irq)
 {
 
-    unsigned char data;
     unsigned char status;
 
     status = ps2_getstatus();
 
-    if (!(status & 0x20))
-        return;
-
-    data = ps2_getdata();
-
-    switch (sequence)
+    if (status & 0x20)
     {
 
-    case 0:
-        oldstate = state;
+        unsigned char data;
 
-        /* Temp fix for unsync issue */
-        if (!(data & 0x08))
-            return;
+        data = ps2_getdata();
 
-        state = data;
-        sequence = 1;
-
-        break;
-
-    case 1:
-        if (state & (1 << 6))
-            relx = 0;
-        else
-            relx = data;
-
-        sequence = 2;
-
-        break;
-
-    case 2:
-        if (state & (1 << 7))
-            rely = 0;
-        else
-            rely = data;
-
-        sequence = (type) ? 3 : 0;
-
-        break;
-
-    case 3:
-        switch (type)
+        switch (sequence)
         {
 
+        case 0:
+            oldstate = state;
+
+            /* Temp fix for unsync issue */
+            if (!(data & 0x08))
+                return;
+
+            state = data;
+            sequence = 1;
+
+            break;
+
         case 1:
-            relz = data;
+            if (state & (1 << 6))
+                relx = 0;
+            else
+                relx = data;
+
+            sequence = 2;
 
             break;
 
         case 2:
-            relz = (data & 0x08) ? (char)(data | 0xF0) : (char)(data & 0x0F);
+            if (state & (1 << 7))
+                rely = 0;
+            else
+                rely = data;
+
+            sequence = (type) ? 3 : 0;
+
+            break;
+
+        case 3:
+            switch (type)
+            {
+
+            case 1:
+                relz = data;
+
+                break;
+
+            case 2:
+                relz = (data & 0x08) ? (char)(data | 0xF0) : (char)(data & 0x0F);
+
+                break;
+
+            }
+
+            sequence = 0;
 
             break;
 
         }
 
-        sequence = 0;
+        if (sequence)
+            return;
 
-        break;
+        if (!(oldstate & 1) && (state & 1))
+           mouse_notifypress(&mouseinterface, 1);
+
+        if (!(oldstate & 2) && (state & 2))
+           mouse_notifypress(&mouseinterface, 2);
+
+        if (!(oldstate & 4) && (state & 4))
+           mouse_notifypress(&mouseinterface, 3);
+
+        if ((oldstate & 1) && !(state & 1))
+           mouse_notifyrelease(&mouseinterface, 1);
+
+        if ((oldstate & 2) && !(state & 2))
+           mouse_notifyrelease(&mouseinterface, 2);
+
+        if ((oldstate & 4) && !(state & 4))
+           mouse_notifyrelease(&mouseinterface, 3);
+
+        if (relx || rely)
+           mouse_notifymove(&mouseinterface, relx, -rely);
+
+        if (relz)
+            mouse_notifyscroll(&mouseinterface, relz);
 
     }
-
-    if (sequence)
-        return;
-
-    if (!(oldstate & 1) && (state & 1))
-       mouse_notifypress(&mouseinterface, 1);
-
-    if (!(oldstate & 2) && (state & 2))
-       mouse_notifypress(&mouseinterface, 2);
-
-    if (!(oldstate & 4) && (state & 4))
-       mouse_notifypress(&mouseinterface, 3);
-
-    if ((oldstate & 1) && !(state & 1))
-       mouse_notifyrelease(&mouseinterface, 1);
-
-    if ((oldstate & 2) && !(state & 2))
-       mouse_notifyrelease(&mouseinterface, 2);
-
-    if ((oldstate & 4) && !(state & 4))
-       mouse_notifyrelease(&mouseinterface, 3);
-
-    if (relx || rely)
-       mouse_notifymove(&mouseinterface, relx, -rely);
-
-    if (relz)
-        mouse_notifyscroll(&mouseinterface, relz);
 
 }
 

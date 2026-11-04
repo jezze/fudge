@@ -239,7 +239,6 @@ static unsigned int setup(void)
     unsigned long base = ((unsigned long)memory + PAGESIZE - 1) & ~(PAGESIZE - 1UL);
     volatile unsigned char *identify = (volatile unsigned char *)(base + 2 * PAGESIZE);
     volatile unsigned int *list = (volatile unsigned int *)(base + 3 * PAGESIZE);
-    unsigned int queues;
 
     stride = 4 << (readreg(NVME_CAP + 4) & 0x0F);
 
@@ -258,32 +257,38 @@ static unsigned int setup(void)
     if (!waitstatus(NVME_CSTS_RDY, NVME_CSTS_RDY))
         return 0;
 
-    if (!command(NVME_ADMIN_SETFEATURES, 0, 0, FEATURE_QUEUES, (DISKS - 1) | ((DISKS - 1) << 16)))
-        return 0;
-
-    queues = (result & 0xFFFF) + 1;
-
-    if ((result >> 16) + 1 < queues)
-        queues = (result >> 16) + 1;
-
-    if (command(NVME_ADMIN_IDENTIFY, 0, (unsigned long)list, 2, 0))
+    if (command(NVME_ADMIN_SETFEATURES, 0, 0, FEATURE_QUEUES, (DISKS - 1) | ((DISKS - 1) << 16)))
     {
 
-        unsigned int i;
+        unsigned int queues;
 
-        for (i = 0; i < PAGESIZE / 4 && list[i]; i++)
-            adddisk(base, identify, list[i], queues);
+        queues = (result & 0xFFFF) + 1;
+
+        if ((result >> 16) + 1 < queues)
+            queues = (result >> 16) + 1;
+
+        if (command(NVME_ADMIN_IDENTIFY, 0, (unsigned long)list, 2, 0))
+        {
+
+            unsigned int i;
+
+            for (i = 0; i < PAGESIZE / 4 && list[i]; i++)
+                adddisk(base, identify, list[i], queues);
+
+        }
+
+        else
+        {
+
+            adddisk(base, identify, 1, queues);
+
+        }
+
+        return ndisks;
 
     }
 
-    else
-    {
-
-        adddisk(base, identify, 1, queues);
-
-    }
-
-    return ndisks;
+    return 0;
 
 }
 
@@ -292,35 +297,40 @@ static unsigned int issue(struct disk *disk, unsigned long buffer, unsigned int 
 
     unsigned int blocks = count / disk->blockinterface.blocksize;
     unsigned int pages = (blocks * disk->blockinterface.blocksize + PAGESIZE - 1) / PAGESIZE;
-    unsigned long prp2 = 0;
 
-    if (!blocks || !buffer)
-        return 0;
-
-    if (pages == 2)
-        prp2 = buffer + PAGESIZE;
-
-    if (pages > 2)
+    if (blocks && buffer)
     {
 
-        volatile unsigned int *prplist = disk->prplist;
-        unsigned int i;
+        unsigned long prp2 = 0;
 
-        for (i = 1; i < pages; i++)
+        if (pages == 2)
+            prp2 = buffer + PAGESIZE;
+
+        if (pages > 2)
         {
 
-            prplist[(i - 1) * 2] = buffer + i * PAGESIZE;
-            prplist[(i - 1) * 2 + 1] = 0;
+            volatile unsigned int *prplist = disk->prplist;
+            unsigned int i;
+
+            for (i = 1; i < pages; i++)
+            {
+
+                prplist[(i - 1) * 2] = buffer + i * PAGESIZE;
+                prplist[(i - 1) * 2 + 1] = 0;
+
+            }
+
+            prp2 = (unsigned long)prplist;
 
         }
 
-        prp2 = (unsigned long)prplist;
+        submit(&disk->io, (write) ? NVME_IO_WRITE : NVME_IO_READ, disk->nsid, buffer, prp2, sector, 0, blocks - 1);
+
+        return blocks * disk->blockinterface.blocksize;
 
     }
 
-    submit(&disk->io, (write) ? NVME_IO_WRITE : NVME_IO_READ, disk->nsid, buffer, prp2, sector, 0, blocks - 1);
-
-    return blocks * disk->blockinterface.blocksize;
+    return 0;
 
 }
 

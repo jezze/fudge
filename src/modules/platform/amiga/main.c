@@ -195,23 +195,27 @@ unsigned int amiga_setciaroutine(unsigned int irq, void (*routine)(unsigned int 
 unsigned int amiga_unsetciaroutine(unsigned int irq, void (*routine)(unsigned int irq))
 {
 
-    unsigned int i;
-
-    if (irq >= CIAROUTINES || ciaroutines[irq] != routine)
-        return 0;
-
-    ciaa[REG_CIAA_ICR] = 1U << irq;
-    ciaroutines[irq] = 0;
-
-    for (i = 0; i < CIAROUTINES; i++)
+    if (irq < CIAROUTINES && ciaroutines[irq] == routine)
     {
 
-        if (ciaroutines[i])
-            return 1;
+        unsigned int i;
+
+        ciaa[REG_CIAA_ICR] = 1U << irq;
+        ciaroutines[irq] = 0;
+
+        for (i = 0; i < CIAROUTINES; i++)
+        {
+
+            if (ciaroutines[i])
+                return 1;
+
+        }
+
+        return platform_unsetroutine(AMIGA_IRQ_PORTS, handleports);
 
     }
 
-    return platform_unsetroutine(AMIGA_IRQ_PORTS, handleports);
+    return 0;
 
 }
 

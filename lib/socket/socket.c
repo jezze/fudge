@@ -486,25 +486,29 @@ unsigned int socket_handle_udp(unsigned int ichannel, unsigned int target, struc
 unsigned int socket_send_tcp(unsigned int ichannel, unsigned int target, struct socket *local, struct socket *remote, struct socket *router, unsigned int psize, void *pdata)
 {
 
-    char data[SOCKET_MTUSIZE];
-    char *payload = pdata;
-    unsigned int offset;
-
-    if (remote->info.tcp.state != TCP_STATE_ESTABLISHED)
-        return 0;
-
-    for (offset = 0; offset < psize; offset += SOCKET_TCPSEGMENTSIZE)
+    if (remote->info.tcp.state == TCP_STATE_ESTABLISHED)
     {
 
-        unsigned int count = (psize - offset < SOCKET_TCPSEGMENTSIZE) ? psize - offset : SOCKET_TCPSEGMENTSIZE;
+        char data[SOCKET_MTUSIZE];
+        char *payload = pdata;
+        unsigned int offset;
 
-        send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, 4096, count, payload + offset));
+        for (offset = 0; offset < psize; offset += SOCKET_TCPSEGMENTSIZE)
+        {
 
-        remote->info.tcp.seq += count;
+            unsigned int count = (psize - offset < SOCKET_TCPSEGMENTSIZE) ? psize - offset : SOCKET_TCPSEGMENTSIZE;
+
+            send(ichannel, target, data, buildtcp(data, SOCKET_MTUSIZE, local, remote, router, TCP_FLAGS1_PSH | TCP_FLAGS1_ACK, 4096, count, payload + offset));
+
+            remote->info.tcp.seq += count;
+
+        }
+
+        return psize;
 
     }
 
-    return psize;
+    return 0;
 
 }
 

@@ -86,29 +86,34 @@ static struct client *findclient(unsigned int source)
 {
 
     struct client *client = getclient(source);
-    unsigned int i;
 
-    if (client)
-        return client;
-
-    for (i = 0; i < CLIENTS; i++)
+    if (!client)
     {
 
-        if (!clients[i].source)
+        unsigned int i;
+
+        for (i = 0; i < CLIENTS; i++)
         {
 
-            clients[i].source = source;
-            clients[i].waiting = 0;
+            if (!clients[i].source)
+            {
 
-            ring_reset(&clients[i].ring);
+                clients[i].source = source;
+                clients[i].waiting = 0;
 
-            return &clients[i];
+                ring_reset(&clients[i].ring);
+
+                return &clients[i];
+
+            }
 
         }
 
+        return 0;
+
     }
 
-    return 0;
+    return client;
 
 }
 
@@ -352,25 +357,29 @@ static unsigned int setformat(unsigned int value)
 static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 {
 
-    unsigned int offset = 0;
-
-    if (parent && parent != ROOT)
-        return 0;
-
-    while (offset < length)
+    if (!parent || parent == ROOT)
     {
 
-        char *cp = path + offset;
-        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+        unsigned int offset = 0;
 
-        if (cl > 2 || (cl && !buffer_match(cp, "..", cl)))
-            return 0;
+        while (offset < length)
+        {
 
-        offset += cl + 1;
+            char *cp = path + offset;
+            unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+            if (cl > 2 || (cl && !buffer_match(cp, "..", cl)))
+                return 0;
+
+            offset += cl + 1;
+
+        }
+
+        return ROOT;
 
     }
 
-    return ROOT;
+    return 0;
 
 }
 

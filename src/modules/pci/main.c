@@ -84,21 +84,23 @@ unsigned short pci_getirq(unsigned int id)
 unsigned char pci_findcapability(unsigned int id, unsigned char capability)
 {
 
-    unsigned char offset;
-    unsigned int i;
-
-    if (!(pci_inw(id, PCI_CONFIG_STATUS) & PCI_STATUS_CAPABILITIES))
-        return 0;
-
-    offset = pci_inb(id, PCI_CONFIG_CAPABILITIES) & 0xFC;
-
-    for (i = 0; offset && i < 48; i++)
+    if (pci_inw(id, PCI_CONFIG_STATUS) & PCI_STATUS_CAPABILITIES)
     {
 
-        if (pci_inb(id, offset) == capability)
-            return offset;
+        unsigned char offset;
+        unsigned int i;
 
-        offset = pci_inb(id, offset + 1) & 0xFC;
+        offset = pci_inb(id, PCI_CONFIG_CAPABILITIES) & 0xFC;
+
+        for (i = 0; offset && i < 48; i++)
+        {
+
+            if (pci_inb(id, offset) == capability)
+                return offset;
+
+            offset = pci_inb(id, offset + 1) & 0xFC;
+
+        }
 
     }
 
@@ -110,34 +112,39 @@ unsigned int pci_setmsi(unsigned int id, unsigned int address, unsigned int data
 {
 
     unsigned char offset = pci_findcapability(id, PCI_CAPABILITY_MSI);
-    unsigned short control;
 
-    if (!offset)
-        return 0;
-
-    control = pci_inw(id, offset + 2);
-
-    pci_outd(id, offset + 4, address);
-
-    if (control & PCI_MSI_64BIT)
+    if (offset)
     {
 
-        pci_outd(id, offset + 8, 0);
-        pci_outw(id, offset + 12, data);
+        unsigned short control;
+
+        control = pci_inw(id, offset + 2);
+
+        pci_outd(id, offset + 4, address);
+
+        if (control & PCI_MSI_64BIT)
+        {
+
+            pci_outd(id, offset + 8, 0);
+            pci_outw(id, offset + 12, data);
+
+        }
+
+        else
+        {
+
+            pci_outw(id, offset + 8, data);
+
+        }
+
+        pci_outw(id, offset + 2, (control & ~PCI_MSI_MULTIPLE) | PCI_MSI_ENABLE);
+        pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) | PCI_COMMAND_INTXDISABLE);
+
+        return 1;
 
     }
 
-    else
-    {
-
-        pci_outw(id, offset + 8, data);
-
-    }
-
-    pci_outw(id, offset + 2, (control & ~PCI_MSI_MULTIPLE) | PCI_MSI_ENABLE);
-    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) | PCI_COMMAND_INTXDISABLE);
-
-    return 1;
+    return 0;
 
 }
 
@@ -183,39 +190,44 @@ unsigned int pci_setmsix(unsigned int id, unsigned int entry, unsigned int addre
 {
 
     unsigned char offset = pci_findcapability(id, PCI_CAPABILITY_MSIX);
-    unsigned short control;
-    unsigned int table;
-    unsigned long base;
-    volatile unsigned int *vector;
 
-    if (!offset)
-        return 0;
+    if (offset)
+    {
 
-    control = pci_inw(id, offset + 2);
+        unsigned short control;
+        unsigned int table;
+        unsigned long base;
+        volatile unsigned int *vector;
 
-    if (entry > (control & PCI_MSIX_SIZE))
-        return 0;
+        control = pci_inw(id, offset + 2);
 
-    table = pci_ind(id, offset + 4);
-    base = pci_getbar(id, table & 7);
+        if (entry > (control & PCI_MSIX_SIZE))
+            return 0;
 
-    if (!base)
-        return 0;
+        table = pci_ind(id, offset + 4);
+        base = pci_getbar(id, table & 7);
 
-    base += (table & ~7) + entry * 16;
-    vector = (volatile unsigned int *)base;
+        if (!base)
+            return 0;
 
-    arch_kmap(base & ~0xFFFUL, base & ~0xFFFUL, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+        base += (table & ~7) + entry * 16;
+        vector = (volatile unsigned int *)base;
 
-    vector[0] = address;
-    vector[1] = 0;
-    vector[2] = data;
-    vector[3] = 0;
+        arch_kmap(base & ~0xFFFUL, base & ~0xFFFUL, 0x1000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
 
-    pci_outw(id, offset + 2, (control & ~PCI_MSIX_MASK) | PCI_MSIX_ENABLE);
-    pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) | PCI_COMMAND_INTXDISABLE);
+        vector[0] = address;
+        vector[1] = 0;
+        vector[2] = data;
+        vector[3] = 0;
 
-    return 1;
+        pci_outw(id, offset + 2, (control & ~PCI_MSIX_MASK) | PCI_MSIX_ENABLE);
+        pci_outw(id, PCI_CONFIG_COMMAND, pci_inw(id, PCI_CONFIG_COMMAND) | PCI_COMMAND_INTXDISABLE);
+
+        return 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -308,20 +320,24 @@ static void bus_setup(void)
 static unsigned int bus_next(unsigned int id)
 {
 
-    unsigned int i;
-
-    if (!id)
-        return devices.address[0];
-
-    for (i = 0; i < devices.count; i++)
+    if (id)
     {
 
-        if (devices.address[i] == id)
-            return (i + 1 < devices.count) ? devices.address[i + 1] : 0;
+        unsigned int i;
+
+        for (i = 0; i < devices.count; i++)
+        {
+
+            if (devices.address[i] == id)
+                return (i + 1 < devices.count) ? devices.address[i + 1] : 0;
+
+        }
+
+        return 0;
 
     }
 
-    return 0;
+    return devices.address[0];
 
 }
 

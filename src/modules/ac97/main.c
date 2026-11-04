@@ -138,59 +138,61 @@ static unsigned int audiointerface_setformat(unsigned int rate, unsigned int cha
 static unsigned int audiointerface_write(void *buffer, unsigned int count)
 {
 
-    unsigned int next;
-
     /* whole frames only: two channels of 16 bits */
     count &= ~3;
 
-    if (!count)
-        return 1;
-
-    spinlock_acquire(&spinlock);
-
-    if (!running)
+    if (count)
     {
 
-        next = 0;
+        unsigned int next;
 
-    }
+        spinlock_acquire(&spinlock);
 
-    else
-    {
-
-        next = (io_inb(nabm + NABM_POLVI) + 1) % ENTRIES;
-
-        /* the buffer after the last valid one is still being played, so every buffer is full */
-        if (!(io_inw(nabm + NABM_POSR) & NABM_POSR_DCH) && next == io_inb(nabm + NABM_POCIV))
+        if (!running)
         {
 
-            spinlock_release(&spinlock);
-
-            return 0;
+            next = 0;
 
         }
 
+        else
+        {
+
+            next = (io_inb(nabm + NABM_POLVI) + 1) % ENTRIES;
+
+            /* the buffer after the last valid one is still being played, so every buffer is full */
+            if (!(io_inw(nabm + NABM_POSR) & NABM_POSR_DCH) && next == io_inb(nabm + NABM_POCIV))
+            {
+
+                spinlock_release(&spinlock);
+
+                return 0;
+
+            }
+
+        }
+
+        buffer_copy(buffers + next * ENTRYSIZE, buffer, count);
+
+        entries[next].address = (unsigned long)(buffers + next * ENTRYSIZE);
+        entries[next].samples = count / 2;
+        entries[next].flags = 0;
+
+        io_outw(nabm + NABM_POSR, NABM_POSR_CLEAR);
+        io_outb(nabm + NABM_POLVI, next);
+
+        if (!running)
+        {
+
+            io_outb(nabm + NABM_POCR, NABM_POCR_RPBM);
+
+            running = 1;
+
+        }
+
+        spinlock_release(&spinlock);
+
     }
-
-    buffer_copy(buffers + next * ENTRYSIZE, buffer, count);
-
-    entries[next].address = (unsigned long)(buffers + next * ENTRYSIZE);
-    entries[next].samples = count / 2;
-    entries[next].flags = 0;
-
-    io_outw(nabm + NABM_POSR, NABM_POSR_CLEAR);
-    io_outb(nabm + NABM_POLVI, next);
-
-    if (!running)
-    {
-
-        io_outb(nabm + NABM_POCR, NABM_POCR_RPBM);
-
-        running = 1;
-
-    }
-
-    spinlock_release(&spinlock);
 
     return 1;
 

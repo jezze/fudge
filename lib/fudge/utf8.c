@@ -105,31 +105,40 @@ unsigned int utf8_prev(char *text, unsigned int offset)
 {
 
     unsigned int start = offset - 1;
-    unsigned int codepoint;
 
-    if (!offset)
-        return 0;
+    if (offset)
+    {
 
-    while (start > 0 && offset - start < 4 && iscontinuation(text[start]))
-        start--;
+        unsigned int codepoint;
 
-    return (start + utf8_read(text + start, offset - start, &codepoint) == offset) ? start : offset - 1;
+        while (start > 0 && offset - start < 4 && iscontinuation(text[start]))
+            start--;
+
+        return (start + utf8_read(text + start, offset - start, &codepoint) == offset) ? start : offset - 1;
+
+    }
+
+    return 0;
 
 }
 
 unsigned int utf8_fit(char *text, unsigned int length, unsigned int limit)
 {
 
-    unsigned int start = limit;
-    unsigned int codepoint;
+    if (limit < length)
+    {
 
-    if (limit >= length)
-        return length;
+        unsigned int start = limit;
+        unsigned int codepoint;
 
-    while (start > 0 && limit - start < 3 && iscontinuation(text[start]))
-        start--;
+        while (start > 0 && limit - start < 3 && iscontinuation(text[start]))
+            start--;
 
-    return (start + utf8_read(text + start, length - start, &codepoint) > limit) ? start : limit;
+        return (start + utf8_read(text + start, length - start, &codepoint) > limit) ? start : limit;
+
+    }
+
+    return length;
 
 }
 

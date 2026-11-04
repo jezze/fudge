@@ -89,30 +89,35 @@ static unsigned int walk(struct unitsrv *unitsrv, unsigned int parent, unsigned 
 {
 
     unsigned int id = (parent) ? parent : unitsrv->server.resource.inode;
-    unsigned int offset = 0;
 
-    if (id != unitsrv->server.resource.inode && !getdir(unitsrv, id) && !getfile(unitsrv, id))
-        return 0;
-
-    while (offset < length)
+    if (id == unitsrv->server.resource.inode || getdir(unitsrv, id) || getfile(unitsrv, id))
     {
 
-        char *cp = path + offset;
-        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+        unsigned int offset = 0;
 
-        if (cl == 2 && buffer_match(cp, "..", 2))
-            id = (getfile(unitsrv, id)) ? id - POOL_NODES : unitsrv->server.resource.inode;
-        else if (cl && (cl != 1 || !buffer_match(cp, ".", 1)))
-            id = walkchild(unitsrv, id, cp, cl);
+        while (offset < length)
+        {
 
-        if (!id)
-            return 0;
+            char *cp = path + offset;
+            unsigned int cl = buffer_findbyte(cp, length - offset, '/');
 
-        offset += cl + 1;
+            if (cl == 2 && buffer_match(cp, "..", 2))
+                id = (getfile(unitsrv, id)) ? id - POOL_NODES : unitsrv->server.resource.inode;
+            else if (cl && (cl != 1 || !buffer_match(cp, ".", 1)))
+                id = walkchild(unitsrv, id, cp, cl);
+
+            if (!id)
+                return 0;
+
+            offset += cl + 1;
+
+        }
+
+        return id;
 
     }
 
-    return id;
+    return 0;
 
 }
 

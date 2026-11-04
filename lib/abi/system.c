@@ -117,19 +117,24 @@ char *system_address(char *option, char *key, char *out, unsigned int size)
 {
 
     char *value = option_getstring(option);
-    unsigned int count;
 
-    if (value && cstring_length(value))
-        return value;
+    if (!value || !cstring_length(value))
+    {
 
-    count = system_feed(0, 0, out, size - 1, "mq -query .networks[0].%s initrd:data/config/network.mq", key);
+        unsigned int count;
 
-    while (count && out[count - 1] == '\n')
-        count--;
+        count = system_feed(0, 0, out, size - 1, "mq -query .networks[0].%s initrd:data/config/network.mq", key);
 
-    out[count] = '\0';
+        while (count && out[count - 1] == '\n')
+            count--;
 
-    return out;
+        out[count] = '\0';
+
+        return out;
+
+    }
+
+    return value;
 
 }
 
@@ -137,17 +142,22 @@ unsigned int system_unixtime(char *service)
 {
 
     unsigned int clock = channel_lookup(service);
-    struct message_clockinfo clockinfo;
 
-    if (!clock)
-        return 0;
+    if (clock)
+    {
 
-    channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
+        struct message_clockinfo clockinfo;
 
-    if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
-        return 0;
+        channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
 
-    return time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);
+        if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
+            return 0;
+
+        return time_unixtime(clockinfo.year, clockinfo.month, clockinfo.day, clockinfo.hours, clockinfo.minutes, clockinfo.seconds);
+
+    }
+
+    return 0;
 
 }
 

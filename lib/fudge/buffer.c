@@ -91,36 +91,44 @@ unsigned int buffer_match(void *in1, void *in2, unsigned int count)
 unsigned int buffer_read(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
-    unsigned char *op = out;
-    unsigned char *ip = in;
+    if (offset < icount)
+    {
 
-    if (offset >= icount)
-        return 0;
+        unsigned char *op = out;
+        unsigned char *ip = in;
 
-    if (ocount > icount - offset)
-        ocount = icount - offset;
+        if (ocount > icount - offset)
+            ocount = icount - offset;
 
-    buffer_copy(op, ip + offset, ocount);
+        buffer_copy(op, ip + offset, ocount);
 
-    return ocount;
+        return ocount;
+
+    }
+
+    return 0;
 
 }
 
 unsigned int buffer_write(void *out, unsigned int ocount, void *in, unsigned int icount, unsigned int offset)
 {
 
-    unsigned char *op = out;
-    unsigned char *ip = in;
+    if (offset < ocount)
+    {
 
-    if (offset >= ocount)
-        return 0;
+        unsigned char *op = out;
+        unsigned char *ip = in;
 
-    if (icount > ocount - offset)
-        icount = ocount - offset;
+        if (icount > ocount - offset)
+            icount = ocount - offset;
 
-    buffer_copy(op + offset, ip, icount);
+        buffer_copy(op + offset, ip, icount);
 
-    return icount;
+        return icount;
+
+    }
+
+    return 0;
 
 }
 

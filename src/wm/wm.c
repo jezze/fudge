@@ -159,26 +159,28 @@ static unsigned int getnumber(char *data, unsigned int count, unsigned int index
 static void loadbackground(char *path, unsigned int length)
 {
 
-    char name[256];
-    char size[64];
-    unsigned int count;
-
-    if (!length || length >= 256)
-        return;
-
-    buffer_copy(name, path, length);
-
-    name[length] = 0;
-    count = system_feed(0, 0, size, 63, "mapimage %s mem:background", name);
-    size[count] = 0;
-
-    if (count)
+    if (length && length < 256)
     {
 
-        char data[128];
+        char name[256];
+        char size[64];
+        unsigned int count;
 
-        parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background mimetype \"image/raw\" %s", size), data);
-        pool_loadresources();
+        buffer_copy(name, path, length);
+
+        name[length] = 0;
+        count = system_feed(0, 0, size, 63, "mapimage %s mem:background", name);
+        size[count] = 0;
+
+        if (count)
+        {
+
+            char data[128];
+
+            parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background mimetype \"image/raw\" %s", size), data);
+            pool_loadresources();
+
+        }
 
     }
 
@@ -188,21 +190,24 @@ static void setkey(char *line, unsigned int length)
 {
 
     unsigned int scancode = getnumber(line, length, 0, 16, KEYS_MAPSIZE);
-    unsigned int i;
 
-    if (scancode >= KEYS_MAPSIZE)
-        return;
-
-    for (i = 0; i < 4; i++)
+    if (scancode < KEYS_MAPSIZE)
     {
 
-        struct keys_code *code = &keymap[scancode].code[i];
+        unsigned int i;
 
-        code->length = utf8_write((char *)code->value, 4, getnumber(line, length, i + 1, 16, 0));
+        for (i = 0; i < 4; i++)
+        {
+
+            struct keys_code *code = &keymap[scancode].code[i];
+
+            code->length = utf8_write((char *)code->value, 4, getnumber(line, length, i + 1, 16, 0));
+
+        }
+
+        keymapcount++;
 
     }
-
-    keymapcount++;
 
 }
 
@@ -432,37 +437,46 @@ static struct widget *getparent(struct widget *widget)
 static struct widget *getitem(struct widget *widget)
 {
 
-    struct widget *parent;
+    if (widget->type != WIDGET_TYPE_ITEM)
+    {
 
-    if (widget->type == WIDGET_TYPE_ITEM)
-        return widget;
+        struct widget *parent;
 
-    parent = getparent(widget);
+        parent = getparent(widget);
 
-    return (parent && parent->type == WIDGET_TYPE_ITEM) ? parent : 0;
+        return (parent && parent->type == WIDGET_TYPE_ITEM) ? parent : 0;
+
+    }
+
+    return widget;
 
 }
 
 static struct widget *getselecteditem(struct widget *widget)
 {
 
-    struct list_item *current = 0;
     struct widget *item = getitem(widget);
 
-    if (item)
-        return item;
-
-    while ((current = pool_nextin(current, widget)))
+    if (!item)
     {
 
-        struct widget *child = current->data;
+        struct list_item *current = 0;
 
-        if (child->type == WIDGET_TYPE_ITEM && child->anchor)
-            return child;
+        while ((current = pool_nextin(current, widget)))
+        {
+
+            struct widget *child = current->data;
+
+            if (child->type == WIDGET_TYPE_ITEM && child->anchor)
+                return child;
+
+        }
+
+        return 0;
 
     }
 
-    return 0;
+    return item;
 
 }
 
@@ -480,45 +494,48 @@ static unsigned int getmousetype(int x, int y)
 {
 
     struct widget *widget = getinteractivewidgetat(x, y);
-    unsigned int button;
 
-    if (!widget)
-        return BLIT_MOUSE_ARROW;
-
-    switch (widget->type)
+    if (widget)
     {
 
-    case WIDGET_TYPE_BUTTON:
-    case WIDGET_TYPE_CHECKBOX:
-    case WIDGET_TYPE_ITEM:
-    case WIDGET_TYPE_SELECT:
-    case WIDGET_TYPE_SLIDER:
-        return BLIT_MOUSE_HAND;
+        unsigned int button;
 
-    case WIDGET_TYPE_TEXT:
-        if (widget_islink(widget))
-            return BLIT_MOUSE_HAND;
-
-        break;
-
-    case WIDGET_TYPE_BOX:
-        if (widget->attributes.mode == ATTR_MODE_EDIT)
-            return BLIT_MOUSE_TEXT;
-
-        break;
-
-    case WIDGET_TYPE_WINDOW:
-        for (button = RENDER_WINDOWBUTTON_MENU; button <= RENDER_WINDOWBUTTON_CLOSE; button++)
+        switch (widget->type)
         {
 
-            struct util_region region = render_getwindowbutton(widget, button);
+        case WIDGET_TYPE_BUTTON:
+        case WIDGET_TYPE_CHECKBOX:
+        case WIDGET_TYPE_ITEM:
+        case WIDGET_TYPE_SELECT:
+        case WIDGET_TYPE_SLIDER:
+            return BLIT_MOUSE_HAND;
 
-            if (util_region_intersects(&region, x, y))
+        case WIDGET_TYPE_TEXT:
+            if (widget_islink(widget))
                 return BLIT_MOUSE_HAND;
 
-        }
+            break;
 
-        break;
+        case WIDGET_TYPE_BOX:
+            if (widget->attributes.mode == ATTR_MODE_EDIT)
+                return BLIT_MOUSE_TEXT;
+
+            break;
+
+        case WIDGET_TYPE_WINDOW:
+            for (button = RENDER_WINDOWBUTTON_MENU; button <= RENDER_WINDOWBUTTON_CLOSE; button++)
+            {
+
+                struct util_region region = render_getwindowbutton(widget, button);
+
+                if (util_region_intersects(&region, x, y))
+                    return BLIT_MOUSE_HAND;
+
+            }
+
+            break;
+
+        }
 
     }
 
@@ -610,15 +627,17 @@ static void damage(struct widget *widget)
 static void damageall(struct widget *widget)
 {
 
-    struct list_item *current = 0;
-
     damage(widget);
 
-    if (widget->type == WIDGET_TYPE_WINDOW)
-        return;
+    if (widget->type != WIDGET_TYPE_WINDOW)
+    {
 
-    while ((current = pool_nextin(current, widget)))
-        damageall(current->data);
+        struct list_item *current = 0;
+
+        while ((current = pool_nextin(current, widget)))
+            damageall(current->data);
+
+    }
 
 }
 
@@ -731,25 +750,27 @@ static void setselected(struct widget *item, unsigned int selected)
 static void notifyselection(struct widget *parent)
 {
 
-    struct list_item *current = 0;
-    unsigned int count = 0;
-    char text[16];
-
-    if (!parent || !parent->attributes.onselect)
-        return;
-
-    while ((current = pool_nextin(current, parent)))
+    if (parent && parent->attributes.onselect)
     {
 
-        struct widget *child = current->data;
+        struct list_item *current = 0;
+        unsigned int count = 0;
+        char text[16];
 
-        if (child->type == WIDGET_TYPE_ITEM && child->selected)
-            count++;
+        while ((current = pool_nextin(current, parent)))
+        {
+
+            struct widget *child = current->data;
+
+            if (child->type == WIDGET_TYPE_ITEM && child->selected)
+                count++;
+
+        }
+
+        cstring_write_fmt(text, 16, 0, "%u\\0", &count);
+        sendevent(parent->source, 1, parent->attributes.onselect, text);
 
     }
-
-    cstring_write_fmt(text, 16, 0, "%u\\0", &count);
-    sendevent(parent->source, 1, parent->attributes.onselect, text);
 
 }
 
@@ -932,16 +953,20 @@ static unsigned int getmarkindex(struct widget *textbox, int x, int y)
 static unsigned int stepleft(struct widget *widget, unsigned int index)
 {
 
-    unsigned int offset;
-    struct widget *text;
+    if (index)
+    {
 
-    if (!index)
-        return 0;
+        unsigned int offset;
+        struct widget *text;
 
-    text = pool_gettextat(widget, index - 1);
-    offset = pool_gettextoffset(widget, index - 1);
+        text = pool_gettextat(widget, index - 1);
+        offset = pool_gettextoffset(widget, index - 1);
 
-    return (text) ? index - 1 - offset + utf8_prev(strpool_getstring(text->attributes.label), offset + 1) : index - 1;
+        return (text) ? index - 1 - offset + utf8_prev(strpool_getstring(text->attributes.label), offset + 1) : index - 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -950,12 +975,17 @@ static unsigned int stepright(struct widget *widget, unsigned int index)
 
     unsigned int offset = pool_gettextoffset(widget, index);
     struct widget *text = pool_gettextat(widget, index);
-    unsigned int codepoint;
 
-    if (!text || offset >= gettextlength(text))
-        return index;
+    if (text && offset < gettextlength(text))
+    {
 
-    return index + utf8_read(strpool_getstring(text->attributes.label) + offset, gettextlength(text) - offset, &codepoint);
+        unsigned int codepoint;
+
+        return index + utf8_read(strpool_getstring(text->attributes.label) + offset, gettextlength(text) - offset, &codepoint);
+
+    }
+
+    return index;
 
 }
 
@@ -1253,22 +1283,25 @@ static void tilewindows(void)
     struct widget *menu = pool_getwidgetbyid(0, "menu");
     int top = (menu) ? menu->placement.position.y + (int)menu->placement.size.h : 0;
     unsigned int w = display.region.size.w / 2;
-    unsigned int h = util_max((int)display.region.size.h - top, 0);
     struct widget *first = getadjacentwindow(state.windows + 1, -1);
-    struct widget *widget;
-    unsigned int count = 0;
-    unsigned int i = 0;
 
-    if (!first)
-        return;
+    if (first)
+    {
 
-    placewindow(first, 0, top, w, h);
+        unsigned int h = util_max((int)display.region.size.h - top, 0);
+        struct widget *widget;
+        unsigned int count = 0;
+        unsigned int i = 0;
 
-    for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1))
-        count++;
+        placewindow(first, 0, top, w, h);
 
-    for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1), i++)
-        placewindow(widget, w, top + h * i / count, display.region.size.w - w, h * (i + 1) / count - h * i / count);
+        for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1))
+            count++;
+
+        for (widget = getadjacentwindow(first->serial, -1); widget; widget = getadjacentwindow(widget->serial, -1), i++)
+            placewindow(widget, w, top + h * i / count, display.region.size.w - w, h * (i + 1) / count - h * i / count);
+
+    }
 
 }
 
@@ -1345,44 +1378,49 @@ static unsigned int hasmarked(struct widget *widget)
 static unsigned int removemarked(struct widget *widget, unsigned int cursor)
 {
 
-    struct list_item *current = 0;
-    unsigned int base = 0;
     unsigned int start = getmarkstart(widget);
     unsigned int end = getmarkend(widget);
 
-    if (start >= end)
-        return cursor;
-
-    while ((current = pool_nextin(current, widget)))
+    if (start < end)
     {
 
-        struct widget *child = current->data;
+        struct list_item *current = 0;
+        unsigned int base = 0;
 
-        if (child->type == WIDGET_TYPE_TEXT)
+        while ((current = pool_nextin(current, widget)))
         {
 
-            unsigned int length = copytext(child);
-            unsigned int from = util_clamp((int)start - (int)base, 0, length);
-            unsigned int to = util_clamp((int)end - (int)base, 0, length);
+            struct widget *child = current->data;
 
-            if (from < to)
+            if (child->type == WIDGET_TYPE_TEXT)
             {
 
-                buffer_copy(textbuffer + from, textbuffer + to, length - to + 1);
+                unsigned int length = copytext(child);
+                unsigned int from = util_clamp((int)start - (int)base, 0, length);
+                unsigned int to = util_clamp((int)end - (int)base, 0, length);
 
-                child->attributes.label = strpool_updatestring(child->attributes.label, textbuffer);
+                if (from < to)
+                {
+
+                    buffer_copy(textbuffer + from, textbuffer + to, length - to + 1);
+
+                    child->attributes.label = strpool_updatestring(child->attributes.label, textbuffer);
+
+                }
+
+                base += length;
 
             }
 
-            base += length;
-
         }
+
+        setmark(widget, 0, 0);
+
+        return start;
 
     }
 
-    setmark(widget, 0, 0);
-
-    return start;
+    return cursor;
 
 }
 
@@ -1568,63 +1606,73 @@ static unsigned int createclipboard(unsigned int target, char *path)
 
     char *name = path + fs_dirlength(path);
     unsigned int parent = (target) ? fs_walkparent(1, target, path) : 0;
-    unsigned int id;
 
-    if (!parent)
-        return 0;
+    if (parent)
+    {
 
-    id = fs_walk(1, target, 0, path);
+        unsigned int id;
 
-    if (id && !fs_remove(1, target, parent, id))
-        return 0;
+        id = fs_walk(1, target, 0, path);
 
-    return fs_create(1, target, parent, name, cstring_length(name));
+        if (id && !fs_remove(1, target, parent, id))
+            return 0;
+
+        return fs_create(1, target, parent, name, cstring_length(name));
+
+    }
+
+    return 0;
 
 }
 
 static unsigned int copymarked(struct widget *widget)
 {
 
-    struct list_item *current = 0;
-    unsigned int base = 0;
-    unsigned int count = 0;
-    unsigned int target;
-    unsigned int id;
     unsigned int start = getmarkstart(widget);
     unsigned int end = getmarkend(widget);
 
-    if (start >= end)
-        return 0;
-
-    target = fs_auth(option_getstring("clipboard"));
-    id = createclipboard(target, option_getstring("clipboard"));
-
-    if (!id)
-        return 0;
-
-    while ((current = pool_nextin(current, widget)))
+    if (start < end)
     {
 
-        struct widget *child = current->data;
+        struct list_item *current = 0;
+        unsigned int base = 0;
+        unsigned int count = 0;
+        unsigned int target;
+        unsigned int id;
 
-        if (child->type == WIDGET_TYPE_TEXT)
+        target = fs_auth(option_getstring("clipboard"));
+        id = createclipboard(target, option_getstring("clipboard"));
+
+        if (!id)
+            return 0;
+
+        while ((current = pool_nextin(current, widget)))
         {
 
-            char *label = strpool_getstring(child->attributes.label);
-            unsigned int length = gettextlength(child);
-            unsigned int offset = util_clamp((int)start - (int)base, 0, length);
-            unsigned int stop = util_clamp((int)end - (int)base, 0, length);
+            struct widget *child = current->data;
 
-            if (offset < stop)
-                count += fs_write_all(1, target, id, label + offset, stop - offset, count);
+            if (child->type == WIDGET_TYPE_TEXT)
+            {
 
-            base += length;
+                char *label = strpool_getstring(child->attributes.label);
+                unsigned int length = gettextlength(child);
+                unsigned int offset = util_clamp((int)start - (int)base, 0, length);
+                unsigned int stop = util_clamp((int)end - (int)base, 0, length);
+
+                if (offset < stop)
+                    count += fs_write_all(1, target, id, label + offset, stop - offset, count);
+
+                base += length;
+
+            }
 
         }
 
+        return 1;
+
     }
 
-    return 1;
+    return 0;
 
 }
 
@@ -1636,34 +1684,37 @@ static void pastetext(struct widget *widget)
     unsigned int multiline = widget_isscrollable(widget);
     unsigned int target = fs_auth(path);
     unsigned int id = (target) ? fs_walk(1, target, 0, path) : 0;
-    unsigned int position = 0;
-    unsigned int stopped = 0;
-    char data[MESSAGE_SIZE];
-    unsigned int count;
 
-    if (!id || !pool_gettextat(widget, cursor))
-        return;
-
-    cursor = removemarked(widget, cursor);
-
-    while (!stopped && (count = fs_read(1, target, id, data, MESSAGE_SIZE, position)))
+    if (id && pool_gettextat(widget, cursor))
     {
 
-        unsigned int length = (multiline) ? count : buffer_findbyte(data, count, '\n');
+        unsigned int position = 0;
+        unsigned int stopped = 0;
+        char data[MESSAGE_SIZE];
+        unsigned int count;
 
-        cursor += inserttext(widget, cursor, data, length);
-        position += count;
+        cursor = removemarked(widget, cursor);
 
-        if (length < count)
-            stopped = 1;
+        while (!stopped && (count = fs_read(1, target, id, data, MESSAGE_SIZE, position)))
+        {
+
+            unsigned int length = (multiline) ? count : buffer_findbyte(data, count, '\n');
+
+            cursor += inserttext(widget, cursor, data, length);
+            position += count;
+
+            if (length < count)
+                stopped = 1;
+
+        }
+
+        widget->attributes.cursor = cursor;
+        widget->followcursor = 1;
+
+        notifychange(widget);
+        damageall(widget);
 
     }
-
-    widget->attributes.cursor = cursor;
-    widget->followcursor = 1;
-
-    notifychange(widget);
-    damageall(widget);
 
 }
 
@@ -2202,26 +2253,30 @@ static void chooseitem(struct widget *select)
 static unsigned int markall(struct widget *widget)
 {
 
-    unsigned int total;
-
-    if (!widget || widget->type != WIDGET_TYPE_BOX)
-        return 0;
-
-    total = pool_gettextlength(widget);
-
-    setmark(widget, 0, total);
-
-    if (widget_iseditable(widget))
+    if (widget && widget->type == WIDGET_TYPE_BOX)
     {
 
-        widget->attributes.cursor = total;
-        widget->followcursor = 1;
+        unsigned int total;
+
+        total = pool_gettextlength(widget);
+
+        setmark(widget, 0, total);
+
+        if (widget_iseditable(widget))
+        {
+
+            widget->attributes.cursor = total;
+            widget->followcursor = 1;
+
+        }
+
+        damageall(widget);
+
+        return 1;
 
     }
 
-    damageall(widget);
-
-    return 1;
+    return 0;
 
 }
 
@@ -2508,19 +2563,22 @@ static void showclock(void)
 {
 
     struct message_clockinfo clockinfo;
-    unsigned char hours;
-    char data[64];
 
     channel_send(1, state.clock, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (!channel_wait(1, state.clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
-        return;
+    if (channel_wait(1, state.clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo))
+    {
 
-    hours = (clockinfo.hours % 12) ? clockinfo.hours % 12 : 12;
+        unsigned char hours;
+        char data[64];
 
-    parser_parse(0, "root", cstring_write_fmt(data, 64, 0, "= clock label \"%2c:%2c %s\"\n", &hours, &clockinfo.minutes, (clockinfo.hours < 12) ? "AM" : "PM"), data);
-    redraw(1);
-    requestclock((60 - util_min(clockinfo.seconds, 59)) * 1000);
+        hours = (clockinfo.hours % 12) ? clockinfo.hours % 12 : 12;
+
+        parser_parse(0, "root", cstring_write_fmt(data, 64, 0, "= clock label \"%2c:%2c %s\"\n", &hours, &clockinfo.minutes, (clockinfo.hours < 12) ? "AM" : "PM"), data);
+        redraw(1);
+        requestclock((60 - util_min(clockinfo.seconds, 59)) * 1000);
+
+    }
 
 }
 
@@ -2550,25 +2608,29 @@ static void ontimerexpire(struct message *message)
 static unsigned int walk(unsigned int parent, unsigned int length, char *path)
 {
 
-    unsigned int offset = 0;
-
-    if (parent && parent != ROOT)
-        return 0;
-
-    while (offset < length)
+    if (!parent || parent == ROOT)
     {
 
-        char *cp = path + offset;
-        unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+        unsigned int offset = 0;
 
-        if (cl > 2 || (cl && !buffer_match(cp, "..", cl)))
-            return 0;
+        while (offset < length)
+        {
 
-        offset += cl + 1;
+            char *cp = path + offset;
+            unsigned int cl = buffer_findbyte(cp, length - offset, '/');
+
+            if (cl > 2 || (cl && !buffer_match(cp, "..", cl)))
+                return 0;
+
+            offset += cl + 1;
+
+        }
+
+        return ROOT;
 
     }
 
-    return ROOT;
+    return 0;
 
 }
 
@@ -2704,12 +2766,16 @@ static int scalemove(int total)
 static int getquarters(int relx, int rely)
 {
 
-    int size = util_max((relx < 0) ? -relx : relx, (rely < 0) ? -rely : rely);
+    if (state.mousespeed > MOUSE_NORMAL)
+    {
 
-    if (state.mousespeed <= MOUSE_NORMAL)
-        return state.mousespeed;
+        int size = util_max((relx < 0) ? -relx : relx, (rely < 0) ? -rely : rely);
 
-    return MOUSE_NORMAL + (int)(state.mousespeed - MOUSE_NORMAL) * util_min(size - 1, MOUSE_RAMP) / MOUSE_RAMP;
+        return MOUSE_NORMAL + (int)(state.mousespeed - MOUSE_NORMAL) * util_min(size - 1, MOUSE_RAMP) / MOUSE_RAMP;
+
+    }
+
+    return state.mousespeed;
 
 }
 

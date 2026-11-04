@@ -33,30 +33,34 @@ unsigned int virtio_le32(unsigned int value)
 unsigned int virtio_initqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, unsigned short size, void *memory)
 {
 
-    unsigned long base = pagealign((unsigned long)memory);
-    unsigned long used;
+    if (size && size <= VIRTIO_QUEUESIZE)
+    {
 
-    if (!size || size > VIRTIO_QUEUESIZE)
-        return 0;
+        unsigned long base = pagealign((unsigned long)memory);
+        unsigned long used;
 
-    used = pagealign(base + 16 * size + 6 + 2 * size);
+        used = pagealign(base + 16 * size + 6 + 2 * size);
 
-    if (used + 6 + 8 * size > (unsigned long)memory + VIRTIO_QUEUEMEMORY)
-        return 0;
+        if (used + 6 + 8 * size > (unsigned long)memory + VIRTIO_QUEUEMEMORY)
+            return 0;
 
-    buffer_clear((void *)base, used + 6 + 8 * size - base);
+        buffer_clear((void *)base, used + 6 + 8 * size - base);
 
-    queue->device = device;
-    queue->index = index;
-    queue->size = size;
-    queue->lastused = 0;
-    queue->descs = (struct virtio_desc *)base;
-    queue->avail = (struct virtio_ringhead *)(base + 16 * size);
-    queue->availring = (unsigned short *)(queue->avail + 1);
-    queue->used = (struct virtio_ringhead *)used;
-    queue->usedring = (struct virtio_usedelement *)(queue->used + 1);
+        queue->device = device;
+        queue->index = index;
+        queue->size = size;
+        queue->lastused = 0;
+        queue->descs = (struct virtio_desc *)base;
+        queue->avail = (struct virtio_ringhead *)(base + 16 * size);
+        queue->availring = (unsigned short *)(queue->avail + 1);
+        queue->used = (struct virtio_ringhead *)used;
+        queue->usedring = (struct virtio_usedelement *)(queue->used + 1);
 
-    return 1;
+        return 1;
+
+    }
+
+    return 0;
 
 }
 

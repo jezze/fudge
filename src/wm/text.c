@@ -215,51 +215,55 @@ unsigned int text_getrowstart(struct text_font *font, char *text, unsigned int l
 unsigned int text_getoffsetat(struct text_font *font, char *text, unsigned int length, unsigned int wrap, unsigned int halign, unsigned int maxw, int firstrowx, int x, int y)
 {
 
-    struct text_rowinfo rowinfo;
-    unsigned int offset = 0;
-    unsigned int next;
-    int cy = 0;
-
-    if (y < 0)
-        return 0;
-
-    while ((next = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
+    if (y >= 0)
     {
 
-        if (y < cy + (int)rowinfo.lineheight)
+        struct text_rowinfo rowinfo;
+        unsigned int offset = 0;
+        unsigned int next;
+        int cy = 0;
+
+        while ((next = text_getrowinfo(&rowinfo, font, text, length, wrap, maxw - firstrowx, offset)))
         {
 
-            int cx = firstrowx + text_getrowx(&rowinfo, halign, maxw - firstrowx);
-            unsigned int size;
-            unsigned int i;
-
-            for (i = rowinfo.istart; i < rowinfo.iend; i += size)
+            if (y < cy + (int)rowinfo.lineheight)
             {
 
-                unsigned int codepoint;
-                int w;
+                int cx = firstrowx + text_getrowx(&rowinfo, halign, maxw - firstrowx);
+                unsigned int size;
+                unsigned int i;
 
-                size = utf8_read(text + i, rowinfo.iend - i, &codepoint);
-                w = text_getatlas(font, codepoint)->width;
+                for (i = rowinfo.istart; i < rowinfo.iend; i += size)
+                {
 
-                if (x < cx + w / 2)
-                    return i;
+                    unsigned int codepoint;
+                    int w;
 
-                cx += w;
+                    size = utf8_read(text + i, rowinfo.iend - i, &codepoint);
+                    w = text_getatlas(font, codepoint)->width;
+
+                    if (x < cx + w / 2)
+                        return i;
+
+                    cx += w;
+
+                }
+
+                return rowinfo.iend;
 
             }
 
-            return rowinfo.iend;
+            cy += rowinfo.lineheight;
+            firstrowx = 0;
+            offset = next;
 
         }
 
-        cy += rowinfo.lineheight;
-        firstrowx = 0;
-        offset = next;
+        return length;
 
     }
 
-    return length;
+    return 0;
 
 }
 

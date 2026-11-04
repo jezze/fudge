@@ -332,8 +332,6 @@ void ps2_rate(unsigned int id, unsigned char rate)
 static void bus_setup(void)
 {
 
-    unsigned char config;
-
     if (!flushdata())
         return;
 
@@ -341,21 +339,25 @@ static void bus_setup(void)
     setcommand(REG_COMMAND_DEV2DISABLE);
     flushdata();
 
-    if (!testbus())
-        return;
-
-    devices[PS2_KEYBOARD].present = testdevice(PS2_KEYBOARD);
-    config = rconfig();
-
-    if (config & REG_COMMAND_CONFIGR_DEV2CLOCK)
+    if (testbus())
     {
 
-        setcommand(REG_COMMAND_DEV2ENABLE);
+        unsigned char config;
 
-        if (!(rconfig() & REG_COMMAND_CONFIGR_DEV2CLOCK))
-            devices[PS2_MOUSE].present = testdevice(PS2_MOUSE);
+        devices[PS2_KEYBOARD].present = testdevice(PS2_KEYBOARD);
+        config = rconfig();
 
-        setcommand(REG_COMMAND_DEV2DISABLE);
+        if (config & REG_COMMAND_CONFIGR_DEV2CLOCK)
+        {
+
+            setcommand(REG_COMMAND_DEV2ENABLE);
+
+            if (!(rconfig() & REG_COMMAND_CONFIGR_DEV2CLOCK))
+                devices[PS2_MOUSE].present = testdevice(PS2_MOUSE);
+
+            setcommand(REG_COMMAND_DEV2DISABLE);
+
+        }
 
     }
 

@@ -39,67 +39,79 @@ unsigned int ring_isfull(struct ring *ring)
 unsigned int ring_skip(struct ring *ring, unsigned int count)
 {
 
-    unsigned int c;
-
-    if (!count)
-        return 0;
-
-    for (c = 0; count--; c++)
+    if (count)
     {
 
-        if (ring_isempty(ring))
-            break;
+        unsigned int c;
 
-        ring->tail++;
+        for (c = 0; count--; c++)
+        {
+
+            if (ring_isempty(ring))
+                break;
+
+            ring->tail++;
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    return 0;
 
 }
 
 unsigned int ring_skip_reverse(struct ring *ring, unsigned int count)
 {
 
-    unsigned int c;
-
-    if (!count)
-        return 0;
-
-    for (c = 0; count--; c++)
+    if (count)
     {
 
-        if (ring_isempty(ring))
-            break;
+        unsigned int c;
 
-        --ring->head;
+        for (c = 0; count--; c++)
+        {
+
+            if (ring_isempty(ring))
+                break;
+
+            --ring->head;
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    return 0;
 
 }
 
 unsigned int ring_read(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *b = buffer;
-    unsigned int c;
-
-    if (!count)
-        return 0;
-
-    for (c = 0; count--; c++)
+    if (count)
     {
 
-        if (ring_isempty(ring))
-            break;
+        char *b = buffer;
+        unsigned int c;
 
-        b[c] = ring->buffer[mask(ring, ring->tail++)];
+        for (c = 0; count--; c++)
+        {
+
+            if (ring_isempty(ring))
+                break;
+
+            b[c] = ring->buffer[mask(ring, ring->tail++)];
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    return 0;
 
 }
 
@@ -116,23 +128,27 @@ unsigned int ring_read_all(struct ring *ring, void *buffer, unsigned int count)
 unsigned int ring_read_reverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *b = buffer;
-    unsigned int c;
-
-    if (!count)
-        return 0;
-
-    for (c = 0; count--; c++)
+    if (count)
     {
 
-        if (ring_isempty(ring))
-            break;
+        char *b = buffer;
+        unsigned int c;
 
-        b[c] = ring->buffer[mask(ring, --ring->head)];
+        for (c = 0; count--; c++)
+        {
+
+            if (ring_isempty(ring))
+                break;
+
+            b[c] = ring->buffer[mask(ring, --ring->head)];
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    return 0;
 
 }
 
@@ -173,23 +189,27 @@ unsigned int ring_readcopy_all(struct ring *ring, void *buffer, unsigned int cou
 unsigned int ring_write(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *b = buffer;
-    unsigned int c;
-
-    if (!count)
-        return 0;
-
-    for (c = 0; count--; c++)
+    if (count)
     {
 
-        if (ring_isfull(ring))
-            break;
+        char *b = buffer;
+        unsigned int c;
 
-        ring->buffer[mask(ring, ring->head++)] = b[c];
+        for (c = 0; count--; c++)
+        {
+
+            if (ring_isfull(ring))
+                break;
+
+            ring->buffer[mask(ring, ring->head++)] = b[c];
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    return 0;
 
 }
 
@@ -206,23 +226,27 @@ unsigned int ring_write_all(struct ring *ring, void *buffer, unsigned int count)
 unsigned int ring_write_reverse(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *b = buffer;
-    unsigned int c;
-
-    if (!count)
-        return 0;
-
-    for (c = 0; count--; c++)
+    if (count)
     {
 
-        if (ring_isfull(ring))
-            break;
+        char *b = buffer;
+        unsigned int c;
 
-        ring->buffer[mask(ring, --ring->tail)] = b[c];
+        for (c = 0; count--; c++)
+        {
+
+            if (ring_isfull(ring))
+                break;
+
+            ring->buffer[mask(ring, --ring->tail)] = b[c];
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    return 0;
 
 }
 
@@ -239,23 +263,27 @@ unsigned int ring_write_allreverse(struct ring *ring, void *buffer, unsigned int
 unsigned int ring_overwrite(struct ring *ring, void *buffer, unsigned int count)
 {
 
-    char *b = buffer;
-    unsigned int c;
-
-    if (!count)
-        return 0;
-
-    for (c = 0; count--; c++)
+    if (count)
     {
 
-        ring->buffer[mask(ring, ring->head++)] = b[c];
+        char *b = buffer;
+        unsigned int c;
 
-        if (ring_isfull(ring))
-            ring->tail++;
+        for (c = 0; count--; c++)
+        {
+
+            ring->buffer[mask(ring, ring->head++)] = b[c];
+
+            if (ring_isfull(ring))
+                ring->tail++;
+
+        }
+
+        return c;
 
     }
 
-    return c;
+    return 0;
 
 }
 

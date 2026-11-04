@@ -107,46 +107,48 @@ static void blitsegment(struct blit_display *display, struct rowsegment *rows, u
 static void blitbitmap(struct blit_display *display, char **rows, unsigned int count, int bx, int by, int line, int x0, int x2, unsigned int *cmap)
 {
 
-    int i;
-
-    if (line < by || line >= by + (int)count)
-        return;
-
-    for (i = 0; rows[line - by][i] && bx + i < x2; i++)
+    if (line >= by && line < by + (int)count)
     {
 
-        int x = bx + i;
+        int i;
 
-        if (x < x0)
-            continue;
-
-        switch (rows[line - by][i])
+        for (i = 0; rows[line - by][i] && bx + i < x2; i++)
         {
 
-        case '#':
-            blit_alphaline(display, cmap[CMAP_ICON_COLOR], x, x + 1);
+            int x = bx + i;
 
-            break;
+            if (x < x0)
+                continue;
 
-        case 'S':
-            blit_alphaline(display, cmap[CMAP_SHADOW], x, x + 1);
+            switch (rows[line - by][i])
+            {
 
-            break;
+            case '#':
+                blit_alphaline(display, cmap[CMAP_ICON_COLOR], x, x + 1);
 
-        case 'N':
-            blit_alphaline(display, cmap[CMAP_NORMAL], x, x + 1);
+                break;
 
-            break;
+            case 'S':
+                blit_alphaline(display, cmap[CMAP_SHADOW], x, x + 1);
 
-        case 'D':
-            blit_alphaline(display, cmap[CMAP_DARK], x, x + 1);
+                break;
 
-            break;
+            case 'N':
+                blit_alphaline(display, cmap[CMAP_NORMAL], x, x + 1);
 
-        case 'L':
-            blit_alphaline(display, cmap[CMAP_LIGHT], x, x + 1);
+                break;
 
-            break;
+            case 'D':
+                blit_alphaline(display, cmap[CMAP_DARK], x, x + 1);
+
+                break;
+
+            case 'L':
+                blit_alphaline(display, cmap[CMAP_LIGHT], x, x + 1);
+
+                break;
+
+            }
 
         }
 
@@ -172,26 +174,29 @@ void blit_alphaline(struct blit_display *display, unsigned int color, int x0, in
     unsigned int r = alpha * ((color >> 16) & 0xFF);
     unsigned int g = alpha * ((color >> 8) & 0xFF);
     unsigned int b = alpha * (color & 0xFF);
-    int x;
 
-    if (!(color >> 24))
-        return;
-
-    if (display->opaque || (color >> 24) == 0xFF)
+    if (color >> 24)
     {
 
-        blit_line(display, 0xFF000000 | color, x0, x2);
+        int x;
 
-        return;
+        if (display->opaque || (color >> 24) == 0xFF)
+        {
 
-    }
+            blit_line(display, 0xFF000000 | color, x0, x2);
 
-    for (x = x0; x < x2; x++)
-    {
+            return;
 
-        unsigned int bg = display->linebuffer[x];
+        }
 
-        display->linebuffer[x] = 0xFF000000 | (((r + ialpha * ((bg >> 16) & 0xFF)) >> 8) << 16) | (((g + ialpha * ((bg >> 8) & 0xFF)) >> 8) << 8) | ((b + ialpha * (bg & 0xFF)) >> 8);
+        for (x = x0; x < x2; x++)
+        {
+
+            unsigned int bg = display->linebuffer[x];
+
+            display->linebuffer[x] = 0xFF000000 | (((r + ialpha * ((bg >> 16) & 0xFF)) >> 8) << 16) | (((g + ialpha * ((bg >> 8) & 0xFF)) >> 8) << 8) | ((b + ialpha * (bg & 0xFF)) >> 8);
+
+        }
 
     }
 
@@ -533,32 +538,35 @@ void blit_frame(struct blit_display *display, struct util_region *region, int li
 void blit_raw(struct blit_display *display, unsigned int *data, unsigned int width, unsigned int height, int line, int x, int y, unsigned int w, unsigned int h, int x0, int x2)
 {
 
-    unsigned int *row;
     int start = util_max(x0, x);
     int end = util_min(x2, x + w);
-    unsigned int source;
-    unsigned int remainder;
-    int i;
 
-    if (!data || !w || !h || !util_intersects(line, y, y + h) || start >= end)
-        return;
-
-    row = data + (line - y) * height / h * width;
-    source = (start - x) * width / w;
-    remainder = (start - x) * width % w;
-
-    for (i = start; i < end; i++)
+    if (data && w && h && util_intersects(line, y, y + h) && start < end)
     {
 
-        blit_alphaline(display, row[source], i, i + 1);
+        unsigned int *row;
+        unsigned int source;
+        unsigned int remainder;
+        int i;
 
-        remainder += width;
+        row = data + (line - y) * height / h * width;
+        source = (start - x) * width / w;
+        remainder = (start - x) * width % w;
 
-        while (remainder >= w)
+        for (i = start; i < end; i++)
         {
 
-            remainder -= w;
-            source++;
+            blit_alphaline(display, row[source], i, i + 1);
+
+            remainder += width;
+
+            while (remainder >= w)
+            {
+
+                remainder -= w;
+                source++;
+
+            }
 
         }
 

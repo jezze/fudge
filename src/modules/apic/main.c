@@ -471,22 +471,24 @@ unsigned int apic_setroutine(unsigned int irq, void (*routine)(unsigned int irq)
 unsigned int apic_setmsiroutine(void (*routine)(unsigned int irq))
 {
 
-    unsigned int irq;
-
-    if (!mmio)
-        return 0;
-
-    for (irq = MSIBASE; irq < MSIBASE + MSIS; irq++)
+    if (mmio)
     {
 
-        if (!hasroutines(irq))
+        unsigned int irq;
+
+        for (irq = MSIBASE; irq < MSIBASE + MSIS; irq++)
         {
 
-            idt_setdescriptor(idt, 0x60 + irq, (void (*)(void))((unsigned long)apic_isr + 8 * irq), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
+            if (!hasroutines(irq))
+            {
 
-            addroutine(irq, routine);
+                idt_setdescriptor(idt, 0x60 + irq, (void (*)(void))((unsigned long)apic_isr + 8 * irq), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
 
-            return irq;
+                addroutine(irq, routine);
+
+                return irq;
+
+            }
 
         }
 
@@ -567,34 +569,36 @@ void apic_sendint(unsigned int id, unsigned int value)
 void module_init(void)
 {
 
-    struct cpuid_data data;
-    struct msr_data msrdata;
-    unsigned int i;
-
     if (!cpuid_exist())
         return;
 
-    if (!msr_exist())
-        return;
-
-    cpuid_getdata(CPUID_FEATURES0, &data);
-
-    for (i = 0; i < OVERRIDES; i++)
-        overrides[i] = i;
-
-    if ((data.edx & CPUID_FEATURES01_APIC))
+    if (msr_exist())
     {
 
-        msr_get(MSR_APIC, &msrdata);
+        struct cpuid_data data;
+        struct msr_data msrdata;
+        unsigned int i;
 
-        mmio = (msrdata.eax & 0xFFFFF000);
-        x2apic = (data.ecx & CPUID_FEATURES00_2XAPIC) || (msrdata.eax & MSR_APIC_X2APIC);
+        cpuid_getdata(CPUID_FEATURES0, &data);
 
-        if (x2apic)
-            enablex2apic();
+        for (i = 0; i < OVERRIDES; i++)
+            overrides[i] = i;
 
-        arch_kmap(0xFEC00000, 0xFEC00000, 0x400000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-        detect();
+        if ((data.edx & CPUID_FEATURES01_APIC))
+        {
+
+            msr_get(MSR_APIC, &msrdata);
+
+            mmio = (msrdata.eax & 0xFFFFF000);
+            x2apic = (data.ecx & CPUID_FEATURES00_2XAPIC) || (msrdata.eax & MSR_APIC_X2APIC);
+
+            if (x2apic)
+                enablex2apic();
+
+            arch_kmap(0xFEC00000, 0xFEC00000, 0x400000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+            detect();
+
+        }
 
     }
 

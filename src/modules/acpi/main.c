@@ -26,24 +26,29 @@ static struct acpi_rsdp *findrsdp(void)
 
     struct acpi_rsdp *firmware = (struct acpi_rsdp *)ARCH_FIRMWARE_ACPI;
     char *signature = "RSD PTR ";
-    unsigned long address;
 
-    if (buffer_match(firmware->signature, signature, 8))
-        return firmware;
-
-    arch_kmap(0x000E0000, 0x000E0000, 0x00020000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-
-    for (address = 0x000E0000; address < 0x00100000; address += 0x10)
+    if (!buffer_match(firmware->signature, signature, 8))
     {
 
-        struct acpi_rsdp *rsdp = (struct acpi_rsdp *)address;
+        unsigned long address;
 
-        if (buffer_match(rsdp->signature, signature, 8))
-            return rsdp;
+        arch_kmap(0x000E0000, 0x000E0000, 0x00020000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+        for (address = 0x000E0000; address < 0x00100000; address += 0x10)
+        {
+
+            struct acpi_rsdp *rsdp = (struct acpi_rsdp *)address;
+
+            if (buffer_match(rsdp->signature, signature, 8))
+                return rsdp;
+
+        }
+
+        return 0;
 
     }
 
-    return 0;
+    return firmware;
 
 }
 

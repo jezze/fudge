@@ -373,27 +373,30 @@ static void loadbinding(char *line, unsigned int length)
 {
 
     struct binding *binding = &config.bindings[config.nbindings];
-    unsigned int start;
-    unsigned int spaces;
 
-    if (config.nbindings >= NUM_BINDINGS)
-        return;
-
-    getword(line, length, 0, binding->key, 32);
-    getword(line, length, 1, binding->mod, 32);
-    getword(line, length, 2, binding->action, 32);
-
-    for (start = 0, spaces = 0; start < length && spaces < 3; start++)
+    if (config.nbindings < NUM_BINDINGS)
     {
 
-        if (line[start] == ' ')
-            spaces++;
+        unsigned int start;
+        unsigned int spaces;
+
+        getword(line, length, 0, binding->key, 32);
+        getword(line, length, 1, binding->mod, 32);
+        getword(line, length, 2, binding->action, 32);
+
+        for (start = 0, spaces = 0; start < length && spaces < 3; start++)
+        {
+
+            if (line[start] == ' ')
+                spaces++;
+
+        }
+
+        copystring(binding->command, 128, line + start, (spaces == 3) ? length - start : 0);
+
+        config.nbindings++;
 
     }
-
-    copystring(binding->command, 128, line + start, (spaces == 3) ? length - start : 0);
-
-    config.nbindings++;
 
 }
 
@@ -625,14 +628,19 @@ static unsigned int savefile(char *path, char *data, unsigned int count)
     unsigned int target = fs_auth(path);
     unsigned int parent = (target) ? fs_walkparent(1, target, path) : 0;
     unsigned int id = (parent) ? fs_walk(1, target, 0, path) : 0;
-    char *name = path + fs_dirlength(path);
 
-    if (!parent || (id && !fs_remove(1, target, parent, id)))
-        return 0;
+    if (parent && (!id || fs_remove(1, target, parent, id)))
+    {
 
-    id = fs_create(1, target, parent, name, cstring_length(name));
+        char *name = path + fs_dirlength(path);
 
-    return id && fs_write_all(1, target, id, data, count, 0) == count;
+        id = fs_create(1, target, parent, name, cstring_length(name));
+
+        return id && fs_write_all(1, target, id, data, count, 0) == count;
+
+    }
+
+    return 0;
 
 }
 

@@ -379,14 +379,18 @@ static unsigned int trackdown(struct keys *keys, unsigned int id, unsigned int d
 static unsigned int isletter(struct keys_code *code)
 {
 
-    unsigned int codepoint;
+    if (code->length)
+    {
 
-    if (!code->length)
-        return 0;
+        unsigned int codepoint;
 
-    utf8_read((char *)code->value, code->length, &codepoint);
+        utf8_read((char *)code->value, code->length, &codepoint);
 
-    return (codepoint >= 'a' && codepoint <= 'z') || (codepoint >= 0xE0 && codepoint <= 0xFE && codepoint != 0xF7);
+        return (codepoint >= 'a' && codepoint <= 'z') || (codepoint >= 0xE0 && codepoint <= 0xFE && codepoint != 0xF7);
+
+    }
+
+    return 0;
 
 }
 

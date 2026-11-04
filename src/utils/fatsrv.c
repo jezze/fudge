@@ -182,21 +182,23 @@ static void setcluster(unsigned int cluster, unsigned int value)
 static void addfree(unsigned int count, unsigned int used)
 {
 
-    unsigned char *data;
-    unsigned int free;
+    if (fsinfo)
+    {
 
-    if (!fsinfo)
-        return;
+        unsigned char *data;
+        unsigned int free;
 
-    data = readsector(fsinfo);
+        data = readsector(fsinfo);
 
-    free = fat_read32(data + 488);
+        free = fat_read32(data + 488);
 
-    if (free == 0xFFFFFFFF)
-        return;
+        if (free == 0xFFFFFFFF)
+            return;
 
-    fat_write32(data + 488, free + count - used);
-    writesector(fsinfo);
+        fat_write32(data + 488, free + count - used);
+        writesector(fsinfo);
+
+    }
 
 }
 
@@ -316,14 +318,18 @@ static unsigned int findcluster(unsigned int first, unsigned int index, unsigned
 static unsigned int findsector(unsigned int first, unsigned int offset)
 {
 
-    unsigned int cluster;
+    if (first)
+    {
 
-    if (!first)
-        return (fattype != 32 && offset < rootsectors * sectorsize) ? rootstart + offset / sectorsize : 0;
+        unsigned int cluster;
 
-    cluster = findcluster(first, offset / clustersize, 0);
+        cluster = findcluster(first, offset / clustersize, 0);
 
-    return (cluster) ? clustersector(cluster) + (offset % clustersize) / sectorsize : 0;
+        return (cluster) ? clustersector(cluster) + (offset % clustersize) / sectorsize : 0;
+
+    }
+
+    return (fattype != 32 && offset < rootsectors * sectorsize) ? rootstart + offset / sectorsize : 0;
 
 }
 
@@ -382,20 +388,24 @@ static void putnode(unsigned int id, struct fat_entry *entry)
 static unsigned int getnow(unsigned short *date, unsigned short *time)
 {
 
-    struct message_clockinfo clockinfo;
+    if (clock)
+    {
 
-    if (!clock)
-        return 0;
+        struct message_clockinfo clockinfo;
 
-    channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
+        channel_send(1, clock, MESSAGE_TYPE_INFO, 0, 0);
 
-    if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo) || clockinfo.year < 1980)
-        return 0;
+        if (!channel_wait(1, clock, MESSAGE_TYPE_CLOCKINFO, sizeof (struct message_clockinfo), &clockinfo) || clockinfo.year < 1980)
+            return 0;
 
-    *date = ((clockinfo.year - 1980) << 9) | (clockinfo.month << 5) | clockinfo.day;
-    *time = (clockinfo.hours << 11) | (clockinfo.minutes << 5) | (clockinfo.seconds / 2);
+        *date = ((clockinfo.year - 1980) << 9) | (clockinfo.month << 5) | clockinfo.day;
+        *time = (clockinfo.hours << 11) | (clockinfo.minutes << 5) | (clockinfo.seconds / 2);
 
-    return 1;
+        return 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -464,7 +474,6 @@ static unsigned int isshortchar(unsigned char c)
 static unsigned int makeshortname(struct fat_entry *entry, char *name, unsigned int length)
 {
 
-    unsigned int cases[2];
     unsigned int dot = length;
     unsigned int i;
 
@@ -476,51 +485,57 @@ static unsigned int makeshortname(struct fat_entry *entry, char *name, unsigned 
 
     }
 
-    if (!dot || dot > 8 || dot == length - 1 || length - dot > 4)
-        return 0;
-
-    cases[0] = 0;
-    cases[1] = 0;
-
-    buffer_write(entry->name, 11, "           ", 11, 0);
-
-    for (i = 0; i < length; i++)
+    if (dot && dot <= 8 && dot != length - 1 && length - dot <= 4)
     {
 
-        unsigned int part = (i > dot);
-        unsigned char c = name[i];
+        unsigned int cases[2];
 
-        if (i == dot)
-            continue;
+        cases[0] = 0;
+        cases[1] = 0;
 
-        if (c >= 'a' && c <= 'z')
+        buffer_write(entry->name, 11, "           ", 11, 0);
+
+        for (i = 0; i < length; i++)
         {
 
-            cases[part] |= 1;
-            c -= 32;
+            unsigned int part = (i > dot);
+            unsigned char c = name[i];
+
+            if (i == dot)
+                continue;
+
+            if (c >= 'a' && c <= 'z')
+            {
+
+                cases[part] |= 1;
+                c -= 32;
+
+            }
+
+            else if (c >= 'A' && c <= 'Z')
+            {
+
+                cases[part] |= 2;
+
+            }
+
+            if (!isshortchar(c))
+                return 0;
+
+            entry->name[(part) ? 8 + i - dot - 1 : i] = c;
 
         }
 
-        else if (c >= 'A' && c <= 'Z')
-        {
-
-            cases[part] |= 2;
-
-        }
-
-        if (!isshortchar(c))
+        if (cases[0] == 3 || cases[1] == 3)
             return 0;
 
-        entry->name[(part) ? 8 + i - dot - 1 : i] = c;
+        entry->lowercase = ((cases[0] == 1) ? FAT_LOWERCASE_NAME : 0) | ((cases[1] == 1) ? FAT_LOWERCASE_EXTENSION : 0);
+
+        return 1;
 
     }
 
-    if (cases[0] == 3 || cases[1] == 3)
-        return 0;
-
-    entry->lowercase = ((cases[0] == 1) ? FAT_LOWERCASE_NAME : 0) | ((cases[1] == 1) ? FAT_LOWERCASE_EXTENSION : 0);
-
-    return 1;
+    return 0;
 
 }
 
@@ -573,20 +588,23 @@ static void addlongname(struct fat_longname *longname, unsigned short *units)
 {
 
     unsigned int index = (longname->order & 0x1F) - 1;
-    unsigned int i;
 
-    if (index >= UNITSIZE / 13)
-        return;
+    if (index < UNITSIZE / 13)
+    {
 
-    buffer_copy(units + index * 13, longname->name1, 10);
-    buffer_copy(units + index * 13 + 5, longname->name2, 12);
-    buffer_copy(units + index * 13 + 11, longname->name3, 4);
+        unsigned int i;
 
-    for (i = index * 13; i < index * 13 + 13; i++)
-        units[i] = fat_read16(&units[i]);
+        buffer_copy(units + index * 13, longname->name1, 10);
+        buffer_copy(units + index * 13 + 5, longname->name2, 12);
+        buffer_copy(units + index * 13 + 11, longname->name3, 4);
 
-    if (longname->order & 0x40 && index < UNITSIZE / 13 - 1)
-        units[index * 13 + 13] = 0x0000;
+        for (i = index * 13; i < index * 13 + 13; i++)
+            units[i] = fat_read16(&units[i]);
+
+        if (longname->order & 0x40 && index < UNITSIZE / 13 - 1)
+            units[index * 13 + 13] = 0x0000;
+
+    }
 
 }
 
@@ -676,50 +694,58 @@ static unsigned int nextentry(unsigned int first, unsigned int *offset, struct f
 static unsigned int matchname(char *name, char *path, unsigned int length)
 {
 
-    unsigned int i;
-
-    if (cstring_length(name) != length)
-        return 0;
-
-    for (i = 0; i < length; i++)
+    if (cstring_length(name) == length)
     {
 
-        if (lower(name[i], 1) != lower(path[i], 1))
-            return 0;
+        unsigned int i;
+
+        for (i = 0; i < length; i++)
+        {
+
+            if (lower(name[i], 1) != lower(path[i], 1))
+                return 0;
+
+        }
+
+        return 1;
 
     }
 
-    return 1;
+    return 0;
 
 }
 
 static unsigned int findentry(unsigned int id, char *path, unsigned int length)
 {
 
-    struct fat_entry entry;
-    char name[NAMESIZE];
-    unsigned int offset = 0;
-    unsigned int first;
-
-    if (id == ROOT && length <= 2 && buffer_match("..", path, length))
-        return ROOT;
-
-    getnode(id, &entry);
-
-    if (gettype(&entry) != RECORD_TYPE_DIRECTORY)
-        return 0;
-
-    first = getcluster(&entry);
-
-    while ((id = nextentry(first, &offset, &entry, name)))
+    if (id != ROOT || length > 2 || !buffer_match("..", path, length))
     {
 
-        if (matchname(name, path, length))
-            return (gettype(&entry) == RECORD_TYPE_DIRECTORY && !fat_read16(&entry.clusterhigh) && !fat_read16(&entry.clusterlow)) ? ROOT : id;
+        struct fat_entry entry;
+        char name[NAMESIZE];
+        unsigned int offset = 0;
+        unsigned int first;
+
+        getnode(id, &entry);
+
+        if (gettype(&entry) != RECORD_TYPE_DIRECTORY)
+            return 0;
+
+        first = getcluster(&entry);
+
+        while ((id = nextentry(first, &offset, &entry, name)))
+        {
+
+            if (matchname(name, path, length))
+                return (gettype(&entry) == RECORD_TYPE_DIRECTORY && !fat_read16(&entry.clusterhigh) && !fat_read16(&entry.clusterlow)) ? ROOT : id;
+
+        }
+
+        return 0;
 
     }
 
-    return 0;
+    return ROOT;
 
 }
 
@@ -795,41 +821,46 @@ static unsigned int readfile(unsigned int first, unsigned int size, unsigned int
 {
 
     unsigned int skip = offset % sectorsize;
-    unsigned int cluster;
-    unsigned int length;
 
-    if (offset >= size)
-        return 0;
-
-    if (count > capacity)
-        count = capacity;
-
-    if (count > size - offset)
-        count = size - offset;
-
-    if (count > blockinfo.buffersize - skip)
-        count = blockinfo.buffersize - skip;
-
-    cluster = findcluster(first, offset / clustersize, 0);
-
-    if (!cluster)
-        return 0;
-
-    for (length = clustersize - offset % clustersize; length < count; length += clustersize)
+    if (offset < size)
     {
 
-        if (nextcluster(cachecluster) != cachecluster + 1)
-            break;
+        unsigned int cluster;
+        unsigned int length;
 
-        cachecluster++;
-        cacheindex++;
+        if (count > capacity)
+            count = capacity;
+
+        if (count > size - offset)
+            count = size - offset;
+
+        if (count > blockinfo.buffersize - skip)
+            count = blockinfo.buffersize - skip;
+
+        cluster = findcluster(first, offset / clustersize, 0);
+
+        if (!cluster)
+            return 0;
+
+        for (length = clustersize - offset % clustersize; length < count; length += clustersize)
+        {
+
+            if (nextcluster(cachecluster) != cachecluster + 1)
+                break;
+
+            cachecluster++;
+            cacheindex++;
+
+        }
+
+        if (count > length)
+            count = length;
+
+        return buffer_write(data, capacity, (char *)readsectors(clustersector(cluster) + (offset % clustersize) / sectorsize, (skip + count + sectorsize - 1) / sectorsize) + skip, count, 0);
 
     }
 
-    if (count > length)
-        count = length;
-
-    return buffer_write(data, capacity, (char *)readsectors(clustersector(cluster) + (offset % clustersize) / sectorsize, (skip + count + sectorsize - 1) / sectorsize) + skip, count, 0);
+    return 0;
 
 }
 
@@ -867,15 +898,20 @@ static unsigned int putdirentry(unsigned int first, unsigned int offset, void *e
 {
 
     unsigned int sector = getdirsector(first, offset);
-    unsigned int slot = (offset % sectorsize) / sizeof (struct fat_entry);
 
-    if (!sector)
-        return 0;
+    if (sector)
+    {
 
-    buffer_copy((unsigned char *)readsector(sector) + slot * sizeof (struct fat_entry), entry, sizeof (struct fat_entry));
-    writesector(sector);
+        unsigned int slot = (offset % sectorsize) / sizeof (struct fat_entry);
 
-    return sector * (sectorsize / sizeof (struct fat_entry)) + slot;
+        buffer_copy((unsigned char *)readsector(sector) + slot * sizeof (struct fat_entry), entry, sizeof (struct fat_entry));
+        writesector(sector);
+
+        return sector * (sectorsize / sizeof (struct fat_entry)) + slot;
+
+    }
+
+    return 0;
 
 }
 
@@ -1054,8 +1090,6 @@ static unsigned int createlongname(unsigned int first, struct fat_entry *entry, 
 
     unsigned short units[UNITSIZE];
     unsigned int total = 0;
-    unsigned char checksum;
-    unsigned int offset;
     unsigned int count;
     unsigned int i;
 
@@ -1089,49 +1123,56 @@ static unsigned int createlongname(unsigned int first, struct fat_entry *entry, 
 
     count = (total + 12) / 13;
 
-    if (!makealias(first, entry, name, length))
-        return 0;
-
-    offset = findfree(first, count + 1);
-
-    if (offset == 0xFFFFFFFF)
-        return 0;
-
-    checksum = getchecksum(entry);
-
-    for (i = 0; i < count; i++)
+    if (makealias(first, entry, name, length))
     {
 
-        unsigned int order = count - i;
-        struct fat_longname longname;
-        unsigned short chars[13];
-        unsigned int k;
+        unsigned char checksum;
+        unsigned int offset;
 
-        for (k = 0; k < 13; k++)
+        offset = findfree(first, count + 1);
+
+        if (offset == 0xFFFFFFFF)
+            return 0;
+
+        checksum = getchecksum(entry);
+
+        for (i = 0; i < count; i++)
         {
 
-            unsigned int index = (order - 1) * 13 + k;
+            unsigned int order = count - i;
+            struct fat_longname longname;
+            unsigned short chars[13];
+            unsigned int k;
 
-            fat_write16(&chars[k], (index < total) ? units[index] : (index == total) ? 0x0000 : 0xFFFF);
+            for (k = 0; k < 13; k++)
+            {
+
+                unsigned int index = (order - 1) * 13 + k;
+
+                fat_write16(&chars[k], (index < total) ? units[index] : (index == total) ? 0x0000 : 0xFFFF);
+
+            }
+
+            buffer_clear(&longname, sizeof (struct fat_longname));
+
+            longname.order = order | ((i == 0) ? 0x40 : 0);
+            longname.attributes = FAT_ATTRIBUTE_LONGNAME;
+            longname.checksum = checksum;
+
+            buffer_copy(longname.name1, chars, 10);
+            buffer_copy(longname.name2, chars + 5, 12);
+            buffer_copy(longname.name3, chars + 11, 4);
+
+            if (!putdirentry(first, offset + i * sizeof (struct fat_entry), &longname))
+                return 0;
 
         }
 
-        buffer_clear(&longname, sizeof (struct fat_longname));
-
-        longname.order = order | ((i == 0) ? 0x40 : 0);
-        longname.attributes = FAT_ATTRIBUTE_LONGNAME;
-        longname.checksum = checksum;
-
-        buffer_copy(longname.name1, chars, 10);
-        buffer_copy(longname.name2, chars + 5, 12);
-        buffer_copy(longname.name3, chars + 11, 4);
-
-        if (!putdirentry(first, offset + i * sizeof (struct fat_entry), &longname))
-            return 0;
+        return putdirentry(first, offset + count * sizeof (struct fat_entry), entry);
 
     }
 
-    return putdirentry(first, offset + count * sizeof (struct fat_entry), entry);
+    return 0;
 
 }
 
@@ -1139,120 +1180,129 @@ static unsigned int createfile(unsigned int parent, char *name, unsigned int len
 {
 
     unsigned int id = findentry(parent, name, length);
-    struct fat_entry directory;
-    struct fat_entry entry;
-    unsigned int first;
-    unsigned int offset;
 
-    if (id)
-        return id;
+    if (!id)
+    {
 
-    getnode(parent, &directory);
+        struct fat_entry directory;
+        struct fat_entry entry;
+        unsigned int first;
+        unsigned int offset;
 
-    if (gettype(&directory) != RECORD_TYPE_DIRECTORY)
-        return 0;
+        getnode(parent, &directory);
 
-    buffer_clear(&entry, sizeof (struct fat_entry));
+        if (gettype(&directory) != RECORD_TYPE_DIRECTORY)
+            return 0;
 
-    entry.attributes = FAT_ATTRIBUTE_ARCHIVE;
-    first = getcluster(&directory);
+        buffer_clear(&entry, sizeof (struct fat_entry));
 
-    setcreated(&entry);
+        entry.attributes = FAT_ATTRIBUTE_ARCHIVE;
+        first = getcluster(&directory);
 
-    if (!makeshortname(&entry, name, length))
-        return createlongname(first, &entry, name, length);
+        setcreated(&entry);
 
-    offset = findfree(first, 1);
+        if (!makeshortname(&entry, name, length))
+            return createlongname(first, &entry, name, length);
 
-    if (offset == 0xFFFFFFFF)
-        return 0;
+        offset = findfree(first, 1);
 
-    return putdirentry(first, offset, &entry);
+        if (offset == 0xFFFFFFFF)
+            return 0;
+
+        return putdirentry(first, offset, &entry);
+
+    }
+
+    return id;
 
 }
 
 static unsigned int writefile(unsigned int id, unsigned int offset, unsigned int count, void *buffer)
 {
 
-    struct fat_entry entry;
-    unsigned int total = 0;
-    unsigned int first;
-
-    if (id == ROOT)
-        return 0;
-
-    getnode(id, &entry);
-
-    if (gettype(&entry) != RECORD_TYPE_NORMAL)
-        return 0;
-
-    first = (fat_read16(&entry.clusterhigh) << 16) | fat_read16(&entry.clusterlow);
-
-    if (!first)
+    if (id != ROOT)
     {
 
-        first = allocate();
+        struct fat_entry entry;
+        unsigned int total = 0;
+        unsigned int first;
 
-        if (!first)
+        getnode(id, &entry);
+
+        if (gettype(&entry) != RECORD_TYPE_NORMAL)
             return 0;
 
-        fat_write16(&entry.clusterhigh, first >> 16);
-        fat_write16(&entry.clusterlow, first);
+        first = (fat_read16(&entry.clusterhigh) << 16) | fat_read16(&entry.clusterlow);
 
-        putnode(id, &entry);
+        if (!first)
+        {
+
+            first = allocate();
+
+            if (!first)
+                return 0;
+
+            fat_write16(&entry.clusterhigh, first >> 16);
+            fat_write16(&entry.clusterlow, first);
+
+            putnode(id, &entry);
+
+        }
+
+        while (total < count)
+        {
+
+            unsigned int position = offset + total;
+            unsigned int cluster = findcluster(first, position / clustersize, 1);
+            unsigned int skip = position % sectorsize;
+            unsigned int length = count - total;
+            unsigned int sectors;
+            unsigned int sector;
+
+            if (!cluster)
+                break;
+
+            if (length > clustersize - position % clustersize)
+                length = clustersize - position % clustersize;
+
+            if (length > blockinfo.buffersize - skip)
+                length = blockinfo.buffersize - skip;
+
+            sectors = (skip + length + sectorsize - 1) / sectorsize;
+            sector = clustersector(cluster) + (position % clustersize) / sectorsize;
+
+            if (skip || (skip + length) % sectorsize)
+                readsectors(sector, sectors);
+
+            buffer_copy((char *)blockinfo.buffer + skip, (char *)buffer + total, length);
+            writesectors(sector, sectors);
+
+            total += length;
+
+        }
+
+        if (offset + total > fat_read32(&entry.size))
+        {
+
+            fat_write32(&entry.size, offset + total);
+
+            setmodified(&entry);
+            putnode(id, &entry);
+
+        }
+
+        else if (setmodified(&entry))
+        {
+
+            putnode(id, &entry);
+
+        }
+
+        return total;
 
     }
 
-    while (total < count)
-    {
-
-        unsigned int position = offset + total;
-        unsigned int cluster = findcluster(first, position / clustersize, 1);
-        unsigned int skip = position % sectorsize;
-        unsigned int length = count - total;
-        unsigned int sectors;
-        unsigned int sector;
-
-        if (!cluster)
-            break;
-
-        if (length > clustersize - position % clustersize)
-            length = clustersize - position % clustersize;
-
-        if (length > blockinfo.buffersize - skip)
-            length = blockinfo.buffersize - skip;
-
-        sectors = (skip + length + sectorsize - 1) / sectorsize;
-        sector = clustersector(cluster) + (position % clustersize) / sectorsize;
-
-        if (skip || (skip + length) % sectorsize)
-            readsectors(sector, sectors);
-
-        buffer_copy((char *)blockinfo.buffer + skip, (char *)buffer + total, length);
-        writesectors(sector, sectors);
-
-        total += length;
-
-    }
-
-    if (offset + total > fat_read32(&entry.size))
-    {
-
-        fat_write32(&entry.size, offset + total);
-
-        setmodified(&entry);
-        putnode(id, &entry);
-
-    }
-
-    else if (setmodified(&entry))
-    {
-
-        putnode(id, &entry);
-
-    }
-
-    return total;
+    return 0;
 
 }
 
@@ -1337,42 +1387,46 @@ static void removelongname(unsigned int parent, unsigned int id)
 static unsigned int removenode(unsigned int parent, unsigned int id)
 {
 
-    struct fat_entry entry;
-    unsigned int freed = 0;
-    unsigned int cluster;
-
-    if (id == ROOT)
-        return 0;
-
-    getnode(id, &entry);
-
-    if (gettype(&entry) == RECORD_TYPE_DIRECTORY && !isempty(getcluster(&entry)))
-        return 0;
-
-    cluster = (fat_read16(&entry.clusterhigh) << 16) | fat_read16(&entry.clusterlow);
-
-    while (cluster >= 2 && cluster < FAT_CLUSTER_END)
+    if (id != ROOT)
     {
 
-        unsigned int next = nextcluster(cluster);
+        struct fat_entry entry;
+        unsigned int freed = 0;
+        unsigned int cluster;
 
-        setcluster(cluster, 0);
+        getnode(id, &entry);
 
-        cluster = next;
-        freed++;
+        if (gettype(&entry) == RECORD_TYPE_DIRECTORY && !isempty(getcluster(&entry)))
+            return 0;
+
+        cluster = (fat_read16(&entry.clusterhigh) << 16) | fat_read16(&entry.clusterlow);
+
+        while (cluster >= 2 && cluster < FAT_CLUSTER_END)
+        {
+
+            unsigned int next = nextcluster(cluster);
+
+            setcluster(cluster, 0);
+
+            cluster = next;
+            freed++;
+
+        }
+
+        addfree(freed, 0);
+        removelongname(parent, id);
+
+        entry.name[0] = FAT_ENTRY_DELETED;
+
+        putnode(id, &entry);
+
+        cachefirst = 0;
+
+        return 1;
 
     }
 
-    addfree(freed, 0);
-    removelongname(parent, id);
-
-    entry.name[0] = FAT_ENTRY_DELETED;
-
-    putnode(id, &entry);
-
-    cachefirst = 0;
-
-    return 1;
+    return 0;
 
 }
 

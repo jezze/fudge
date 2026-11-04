@@ -57,35 +57,39 @@ static unsigned int decodepng(void)
 static unsigned int openpcx(struct pcx_header *header)
 {
 
-    struct record record;
-
     if (fs_read_all(1, filetarget, fileid, header, sizeof (struct pcx_header), 0) != sizeof (struct pcx_header))
         return 0;
 
     pcx_convertheader(header);
 
-    if (header->identifier != PCX_IDENTIFIER || header->version != PCX_VERSION || header->encoding != PCX_ENCODING || header->bpp != 8 || header->nplanes != 1 || (unsigned short)header->bpl > ROWSIZE || (unsigned short)header->xend - (unsigned short)header->xstart >= (unsigned short)header->bpl)
-        return 0;
-
-    buffer_clear(colormap, 768);
-    buffer_copy(colormap, header->palette, 48);
-
-    if (fs_stat(1, filetarget, fileid, &record) && record.size > sizeof (struct pcx_header) + 768 + 1)
+    if (header->identifier == PCX_IDENTIFIER && header->version == PCX_VERSION && header->encoding == PCX_ENCODING && header->bpp == 8 && header->nplanes == 1 && (unsigned short)header->bpl <= ROWSIZE && (unsigned short)header->xend - (unsigned short)header->xstart < (unsigned short)header->bpl)
     {
 
-        unsigned char magic;
+        struct record record;
 
-        fs_read_all(1, filetarget, fileid, &magic, 1, record.size - 768 - 1);
+        buffer_clear(colormap, 768);
+        buffer_copy(colormap, header->palette, 48);
 
-        if (magic == PCX_COLORMAP_MAGIC)
-            fs_read_all(1, filetarget, fileid, colormap, 768, record.size - 768);
+        if (fs_stat(1, filetarget, fileid, &record) && record.size > sizeof (struct pcx_header) + 768 + 1)
+        {
+
+            unsigned char magic;
+
+            fs_read_all(1, filetarget, fileid, &magic, 1, record.size - 768 - 1);
+
+            if (magic == PCX_COLORMAP_MAGIC)
+                fs_read_all(1, filetarget, fileid, colormap, 768, record.size - 768);
+
+        }
+
+        width = (unsigned short)header->xend - (unsigned short)header->xstart + 1;
+        height = (unsigned short)header->yend - (unsigned short)header->ystart + 1;
+
+        return 1;
 
     }
 
-    width = (unsigned short)header->xend - (unsigned short)header->xstart + 1;
-    height = (unsigned short)header->yend - (unsigned short)header->ystart + 1;
-
-    return 1;
+    return 0;
 
 }
 
@@ -125,27 +129,36 @@ static unsigned int findtarget(unsigned int target, char *path)
 {
 
     unsigned int id = fs_walk(1, target, 0, path);
-    char *name = path + fs_dirlength(path);
-    unsigned int parent;
 
-    if (id)
-        return id;
+    if (!id)
+    {
 
-    parent = fs_walkparent(1, target, path);
+        char *name = path + fs_dirlength(path);
+        unsigned int parent;
 
-    return (parent && cstring_length(name)) ? fs_create(1, target, parent, name, cstring_length(name)) : 0;
+        parent = fs_walkparent(1, target, path);
+
+        return (parent && cstring_length(name)) ? fs_create(1, target, parent, name, cstring_length(name)) : 0;
+
+    }
+
+    return id;
 
 }
 
 static unsigned int fit(unsigned int target, unsigned int id)
 {
 
-    unsigned char zero = 0;
+    if (width && height && width <= 0x4000 && height <= 0x4000)
+    {
 
-    if (!width || !height || width > 0x4000 || height > 0x4000)
-        return 0;
+        unsigned char zero = 0;
 
-    return fs_write(1, target, id, &zero, 1, width * height * 4 - 1) == 1;
+        return fs_write(1, target, id, &zero, 1, width * height * 4 - 1) == 1;
+
+    }
+
+    return 0;
 
 }
 

@@ -121,9 +121,7 @@ static void ethernetinterface_getmac(unsigned char address[6])
 static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 {
 
-    unsigned char *data = buffer;
     unsigned int even = count & ~1;
-    unsigned int i;
 
     if (count > PACKETSIZE - 6)
         return 0;
@@ -132,23 +130,30 @@ static unsigned int ethernetinterface_send(void *buffer, unsigned int count)
 
     regs[REG2_MMU] = REG2_MMU_ALLOCATE;
 
-    if (regs[REG2_ALLOCATION] & REG2_ALLOCATION_FAILED)
-        return 0;
+    if (!(regs[REG2_ALLOCATION] & REG2_ALLOCATION_FAILED))
+    {
 
-    regs[REG2_PACKET] = regs[REG2_ALLOCATION];
+        unsigned char *data = buffer;
+        unsigned int i;
 
-    write16(REG2_POINTER, REG2_POINTER_AUTOINCREMENT);
-    write16(REG2_DATA, 0);
-    write16(REG2_DATA, even + 6);
+        regs[REG2_PACKET] = regs[REG2_ALLOCATION];
 
-    for (i = 0; i < even; i += 2)
-        write16(REG2_DATA, data[i] | (data[i + 1] << 8));
+        write16(REG2_POINTER, REG2_POINTER_AUTOINCREMENT);
+        write16(REG2_DATA, 0);
+        write16(REG2_DATA, even + 6);
 
-    write16(REG2_DATA, (count & 1) ? data[count - 1] | (CONTROL_ODD << 8) : 0);
+        for (i = 0; i < even; i += 2)
+            write16(REG2_DATA, data[i] | (data[i + 1] << 8));
 
-    regs[REG2_MMU] = REG2_MMU_ENQUEUE;
+        write16(REG2_DATA, (count & 1) ? data[count - 1] | (CONTROL_ODD << 8) : 0);
 
-    return count;
+        regs[REG2_MMU] = REG2_MMU_ENQUEUE;
+
+        return count;
+
+    }
+
+    return 0;
 
 }
 

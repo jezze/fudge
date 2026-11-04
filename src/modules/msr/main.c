@@ -5,14 +5,18 @@
 unsigned int msr_exist(void)
 {
 
-    struct cpuid_data data;
+    if (cpuid_exist())
+    {
 
-    if (!cpuid_exist())
-        return 0;
+        struct cpuid_data data;
 
-    cpuid_getdata(CPUID_FEATURES0, &data);
+        cpuid_getdata(CPUID_FEATURES0, &data);
 
-    return data.edx & CPUID_FEATURES01_MSR;
+        return data.edx & CPUID_FEATURES01_MSR;
+
+    }
+
+    return 0;
 
 }
 

@@ -1011,7 +1011,6 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
     struct text_font *font = pool_getfont(widget->attributes.weight);
     unsigned int *cmaptext = getpalette((widget_islink(widget)) ? PALETTE_LINK : PALETTE_TEXT, SHADE_NORMAL)->text;
     int top = 0;
-    unsigned int rownum;
 
     if (widget->attributes.valign != ATTR_VALIGN_TOP)
     {
@@ -1023,12 +1022,16 @@ static void rendertext(struct blit_display *display, struct widget *widget, int 
 
     }
 
-    if (line < widget->placement.position.y + top)
-        return;
+    if (line >= widget->placement.position.y + top)
+    {
 
-    rownum = (line - widget->placement.position.y - top) / font->lineheight;
+        unsigned int rownum;
 
-    textrender(display, widget, &widget->placement, cmaptext, x0, x2, widget->rowstart.x, &zerosize, rownum, line);
+        rownum = (line - widget->placement.position.y - top) / font->lineheight;
+
+        textrender(display, widget, &widget->placement, cmaptext, x0, x2, widget->rowstart.x, &zerosize, rownum, line);
+
+    }
 
 }
 
@@ -1129,39 +1132,41 @@ static void damagemouse(void)
 void render_setmouse(int x, int y, unsigned int type)
 {
 
-    struct list_item *current = 0;
-
-    if (x == mouse.x && y == mouse.y && type == mousetype)
-        return;
-
-    while ((current = pool_next(current)))
+    if (x != mouse.x || y != mouse.y || type != mousetype)
     {
 
-        struct widget *widget = current->data;
-        unsigned int button;
+        struct list_item *current = 0;
 
-        if (widget->type != WIDGET_TYPE_WINDOW)
-            continue;
-
-        for (button = RENDER_WINDOWBUTTON_MENU; button <= RENDER_WINDOWBUTTON_CLOSE; button++)
+        while ((current = pool_next(current)))
         {
 
-            struct util_region region = render_getwindowbutton(widget, button);
+            struct widget *widget = current->data;
+            unsigned int button;
 
-            if (util_region_intersects(&region, mouse.x, mouse.y) != util_region_intersects(&region, x, y))
-                render_damage(region.position.x, region.position.y, region.position.x + region.size.w, region.position.y + region.size.h);
+            if (widget->type != WIDGET_TYPE_WINDOW)
+                continue;
+
+            for (button = RENDER_WINDOWBUTTON_MENU; button <= RENDER_WINDOWBUTTON_CLOSE; button++)
+            {
+
+                struct util_region region = render_getwindowbutton(widget, button);
+
+                if (util_region_intersects(&region, mouse.x, mouse.y) != util_region_intersects(&region, x, y))
+                    render_damage(region.position.x, region.position.y, region.position.x + region.size.w, region.position.y + region.size.h);
+
+            }
 
         }
 
+        damagemouse();
+
+        mouse.x = x;
+        mouse.y = y;
+        mousetype = type;
+
+        damagemouse();
+
     }
-
-    damagemouse();
-
-    mouse.x = x;
-    mouse.y = y;
-    mousetype = type;
-
-    damagemouse();
 
 }
 

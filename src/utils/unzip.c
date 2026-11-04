@@ -76,12 +76,16 @@ static unsigned int createmem(void)
 static unsigned int fit(unsigned int count, unsigned int extra)
 {
 
-    unsigned char zero = 0;
+    if (count + extra >= count)
+    {
 
-    if (count + extra < count)
-        return 0;
+        unsigned char zero = 0;
 
-    return !(count + extra) || fs_write(1, memtarget, memid, &zero, 1, count + extra - 1) == 1;
+        return !(count + extra) || fs_write(1, memtarget, memid, &zero, 1, count + extra - 1) == 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -120,23 +124,27 @@ static unsigned int isdirectory(unsigned int target, unsigned int id)
 static unsigned int safename(char *name)
 {
 
-    unsigned int i;
-
-    if (!name[0] || name[0] == '/' || cstring_match(name, ".."))
-        return 0;
-
-    for (i = 0; name[i]; i++)
+    if (name[0] && name[0] != '/' && !cstring_match(name, ".."))
     {
 
-        if (name[i] == ':' || name[i] == '\\')
-            return 0;
+        unsigned int i;
 
-        if (name[i] == '.' && name[i + 1] == '.' && (!i || name[i - 1] == '/') && (!name[i + 2] || name[i + 2] == '/'))
-            return 0;
+        for (i = 0; name[i]; i++)
+        {
+
+            if (name[i] == ':' || name[i] == '\\')
+                return 0;
+
+            if (name[i] == '.' && name[i + 1] == '.' && (!i || name[i - 1] == '/') && (!name[i + 2] || name[i + 2] == '/'))
+                return 0;
+
+        }
+
+        return 1;
 
     }
 
-    return 1;
+    return 0;
 
 }
 
@@ -146,7 +154,6 @@ static unsigned int writefile(unsigned int source, unsigned int target, unsigned
     unsigned int length = fs_dirlength(name);
     char *base = name + length;
     unsigned int parent = directory;
-    unsigned int id;
 
     if (length)
     {
@@ -169,46 +176,50 @@ static unsigned int writefile(unsigned int source, unsigned int target, unsigned
 
     }
 
-    if (!base[0])
-        return 1;
-
-    id = fs_walk(1, target, parent, base);
-
-    if (id)
+    if (base[0])
     {
 
-        if (isdirectory(target, id) || !fs_remove(1, target, parent, id))
+        unsigned int id;
+
+        id = fs_walk(1, target, parent, base);
+
+        if (id)
         {
 
-            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be replaced: %s\n", name);
+            if (isdirectory(target, id) || !fs_remove(1, target, parent, id))
+            {
+
+                channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be replaced: %s\n", name);
+
+                return 0;
+
+            }
+
+        }
+
+        id = fs_create(1, target, parent, base, cstring_length(base));
+
+        if (!id)
+        {
+
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be created: %s\n", name);
 
             return 0;
 
         }
 
-    }
+        if (fs_write_all(1, target, id, output, count, 0) != count)
+        {
 
-    id = fs_create(1, target, parent, base, cstring_length(base));
+            channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be written: %s\n", name);
 
-    if (!id)
-    {
+            return 0;
 
-        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be created: %s\n", name);
+        }
 
-        return 0;
-
-    }
-
-    if (fs_write_all(1, target, id, output, count, 0) != count)
-    {
-
-        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "File could not be written: %s\n", name);
-
-        return 0;
+        channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "%s\n", name);
 
     }
-
-    channel_send_fmt(0, source, MESSAGE_TYPE_DATA, "%s\n", name);
 
     return 1;
 

@@ -95,29 +95,34 @@ static unsigned long mapcapability(unsigned int id, unsigned char offset)
 
     unsigned int bar = pci_inb(id, offset + 4);
     unsigned int start = pci_ind(id, offset + 8);
-    unsigned int length = pci_ind(id, offset + 12);
-    unsigned long base;
-    unsigned long address;
-    unsigned long page;
 
-    if (bar > 5)
-        return 0;
+    if (bar <= 5)
+    {
 
-    /* a 32 bit kernel can't reach a bar the firmware put above 4 GB */
-    if (sizeof (unsigned long) == 4 && bar < 5 && (pci_ind(id, PCI_CONFIG_BAR0 + bar * 4) & 0x06) == 0x04 && pci_ind(id, PCI_CONFIG_BAR0 + bar * 4 + 4))
-        return 0;
+        unsigned int length = pci_ind(id, offset + 12);
+        unsigned long base;
+        unsigned long address;
+        unsigned long page;
 
-    base = pci_getbar(id, bar);
+        /* a 32 bit kernel can't reach a bar the firmware put above 4 GB */
+        if (sizeof (unsigned long) == 4 && bar < 5 && (pci_ind(id, PCI_CONFIG_BAR0 + bar * 4) & 0x06) == 0x04 && pci_ind(id, PCI_CONFIG_BAR0 + bar * 4 + 4))
+            return 0;
 
-    if (!base)
-        return 0;
+        base = pci_getbar(id, bar);
 
-    address = base + start;
-    page = address & ~0xFFFUL;
+        if (!base)
+            return 0;
 
-    arch_kmap(page, page, pagealign(address + length) - page, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+        address = base + start;
+        page = address & ~0xFFFUL;
 
-    return address;
+        arch_kmap(page, page, pagealign(address + length) - page, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+
+        return address;
+
+    }
+
+    return 0;
 
 }
 
@@ -179,14 +184,18 @@ static unsigned int findmodern(struct virtio_device *device, unsigned int id)
 unsigned int virtio_match(unsigned int bus, unsigned int id, unsigned int type)
 {
 
-    unsigned short device;
+    if (bus == PCI_BUS && pci_inw(id, PCI_CONFIG_VENDOR) == VIRTIO_VENDOR)
+    {
 
-    if (bus != PCI_BUS || pci_inw(id, PCI_CONFIG_VENDOR) != VIRTIO_VENDOR)
-        return 0;
+        unsigned short device;
 
-    device = pci_inw(id, PCI_CONFIG_DEVICE);
+        device = pci_inw(id, PCI_CONFIG_DEVICE);
 
-    return device == DEVICE_MODERN + type || (type == VIRTIO_TYPE_NETWORK && device == DEVICE_LEGACYNETWORK) || (type == VIRTIO_TYPE_BLOCK && device == DEVICE_LEGACYBLOCK);
+        return device == DEVICE_MODERN + type || (type == VIRTIO_TYPE_NETWORK && device == DEVICE_LEGACYNETWORK) || (type == VIRTIO_TYPE_BLOCK && device == DEVICE_LEGACYBLOCK);
+
+    }
+
+    return 0;
 
 }
 
@@ -332,61 +341,65 @@ void virtio_setconfig(struct virtio_device *device, unsigned int offset, unsigne
 unsigned int virtio_setqueue(struct virtio_queue *queue, struct virtio_device *device, unsigned short index, void *memory)
 {
 
-    unsigned short size;
-
-    if (device->failed)
-        return 0;
-
-    if (device->modern)
+    if (!device->failed)
     {
 
-        write16(device->common + COMMON_QUEUESELECT, index);
+        unsigned short size;
 
-        size = read16(device->common + COMMON_QUEUESIZE);
-
-        if (size > VIRTIO_QUEUESIZE)
+        if (device->modern)
         {
 
-            size = VIRTIO_QUEUESIZE;
+            write16(device->common + COMMON_QUEUESELECT, index);
 
-            write16(device->common + COMMON_QUEUESIZE, size);
+            size = read16(device->common + COMMON_QUEUESIZE);
+
+            if (size > VIRTIO_QUEUESIZE)
+            {
+
+                size = VIRTIO_QUEUESIZE;
+
+                write16(device->common + COMMON_QUEUESIZE, size);
+
+            }
 
         }
 
+        else
+        {
+
+            io_outw(device->io + VIRTIO_REG_QUEUESELECT, index);
+
+            size = io_inw(device->io + VIRTIO_REG_QUEUESIZE);
+
+        }
+
+        if (!virtio_initqueue(queue, device, index, size, memory))
+            return 0;
+
+        if (device->modern)
+        {
+
+            queue->notifyaddress = device->notify + read16(device->common + COMMON_QUEUENOTIFYOFF) * device->multiplier;
+
+            write64(device->common + COMMON_QUEUEDESC, (unsigned long)queue->descs);
+            write64(device->common + COMMON_QUEUEDRIVER, (unsigned long)queue->avail);
+            write64(device->common + COMMON_QUEUEDEVICE, (unsigned long)queue->used);
+            write16(device->common + COMMON_QUEUEENABLE, 1);
+
+        }
+
+        else
+        {
+
+            io_outd(device->io + VIRTIO_REG_QUEUEADDRESS, (unsigned long)queue->descs >> 12);
+
+        }
+
+        return 1;
+
     }
 
-    else
-    {
-
-        io_outw(device->io + VIRTIO_REG_QUEUESELECT, index);
-
-        size = io_inw(device->io + VIRTIO_REG_QUEUESIZE);
-
-    }
-
-    if (!virtio_initqueue(queue, device, index, size, memory))
-        return 0;
-
-    if (device->modern)
-    {
-
-        queue->notifyaddress = device->notify + read16(device->common + COMMON_QUEUENOTIFYOFF) * device->multiplier;
-
-        write64(device->common + COMMON_QUEUEDESC, (unsigned long)queue->descs);
-        write64(device->common + COMMON_QUEUEDRIVER, (unsigned long)queue->avail);
-        write64(device->common + COMMON_QUEUEDEVICE, (unsigned long)queue->used);
-        write16(device->common + COMMON_QUEUEENABLE, 1);
-
-    }
-
-    else
-    {
-
-        io_outd(device->io + VIRTIO_REG_QUEUEADDRESS, (unsigned long)queue->descs >> 12);
-
-    }
-
-    return 1;
+    return 0;
 
 }
 

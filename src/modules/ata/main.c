@@ -37,91 +37,96 @@ static void progressdma(struct block_session *session)
 {
 
     unsigned int result = ide_checkdma(device);
-    unsigned char status;
 
-    if (result == IDE_DMA_BUSY)
-        return;
+    if (result != IDE_DMA_BUSY)
+    {
 
-    status = ide_getstatus(device);
+        unsigned char status;
 
-    if (result == IDE_DMA_FAILED || (status & STATUS_ERROR))
-        session->count = 0;
+        status = ide_getstatus(device);
 
-    finish(session);
+        if (result == IDE_DMA_FAILED || (status & STATUS_ERROR))
+            session->count = 0;
+
+        finish(session);
+
+    }
 
 }
 
 static void progress(void)
 {
 
-    struct block_session *session = block_getsession(&blockinterface);
-    unsigned char status;
-
-    if (!active)
-        return;
-
-    if (dma)
+    if (active)
     {
 
-        progressdma(session);
+        struct block_session *session = block_getsession(&blockinterface);
+        unsigned char status;
 
-        return;
-
-    }
-
-    status = ide_getstatus(device);
-
-    if (status & STATUS_BUSY)
-        return;
-
-    if (status & STATUS_ERROR)
-    {
-
-        session->count = session->offset;
-
-        finish(session);
-
-        return;
-
-    }
-
-    switch (session->type)
-    {
-
-    case BLOCK_TYPE_READ:
-        if (!(status & STATUS_DRQ))
-            break;
-
-        ide_rblock(device, (char *)blockbuffer + session->offset);
-
-        session->offset += BLOCKSIZE;
-
-        if (session->offset >= session->count)
-            finish(session);
-
-        break;
-
-    case BLOCK_TYPE_WRITE:
-        if (session->offset < session->count)
+        if (dma)
         {
 
+            progressdma(session);
+
+            return;
+
+        }
+
+        status = ide_getstatus(device);
+
+        if (status & STATUS_BUSY)
+            return;
+
+        if (status & STATUS_ERROR)
+        {
+
+            session->count = session->offset;
+
+            finish(session);
+
+            return;
+
+        }
+
+        switch (session->type)
+        {
+
+        case BLOCK_TYPE_READ:
             if (!(status & STATUS_DRQ))
                 break;
 
-            ide_wblock(device, (char *)blockbuffer + session->offset);
+            ide_rblock(device, (char *)blockbuffer + session->offset);
 
             session->offset += BLOCKSIZE;
 
+            if (session->offset >= session->count)
+                finish(session);
+
+            break;
+
+        case BLOCK_TYPE_WRITE:
+            if (session->offset < session->count)
+            {
+
+                if (!(status & STATUS_DRQ))
+                    break;
+
+                ide_wblock(device, (char *)blockbuffer + session->offset);
+
+                session->offset += BLOCKSIZE;
+
+            }
+
+            else
+            {
+
+                finish(session);
+
+            }
+
+            break;
+
         }
-
-        else
-        {
-
-            finish(session);
-
-        }
-
-        break;
 
     }
 

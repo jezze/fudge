@@ -412,15 +412,20 @@ static unsigned int matchfilter(struct parser *ps, struct piece *piece)
 {
 
     struct parser element = *ps;
-    char *start;
-    unsigned int length;
 
-    if (!is_object_start(&element) || !find_key(&element, piece))
-        return 0;
+    if (is_object_start(&element) && find_key(&element, piece))
+    {
 
-    length = getvalue(&element, &start);
+        char *start;
+        unsigned int length;
 
-    return length == piece->vlen && buffer_match(start, piece->value, length);
+        length = getvalue(&element, &start);
+
+        return length == piece->vlen && buffer_match(start, piece->value, length);
+
+    }
+
+    return 0;
 
 }
 
@@ -575,52 +580,57 @@ static unsigned int walk_filter(struct parser *ps, struct parser *path)
 {
 
     struct parser rest = *path;
-    struct parser after = *path;
-    struct piece piece;
-    unsigned int matches = 0;
-    unsigned int count = 0;
 
-    if (!is_array_start(ps))
-        return 0;
-
-    piece.type = PIECE_FILTER;
-
-    while (is_path_index_start(&after) && piece.type == PIECE_FILTER)
+    if (is_array_start(ps))
     {
 
-        rest = after;
+        struct parser after = *path;
+        struct piece piece;
+        unsigned int matches = 0;
+        unsigned int count = 0;
 
-        parse_piece(&after, &piece);
+        piece.type = PIECE_FILTER;
 
-    }
-
-    if (piece.type == PIECE_FILTER)
-        rest = after;
-
-    next(ps);
-    skip_separators(ps);
-
-    while (!is_array_end(ps))
-    {
-
-        if (matchfilters(ps, path))
+        while (is_path_index_start(&after) && piece.type == PIECE_FILTER)
         {
 
-            struct parser element = *ps;
+            rest = after;
 
-            if (piece.type != PIECE_INDEX)
-                count += walk(&element, &rest);
-            else if (matches++ == piece.index)
-                return walk(&element, &after);
+            parse_piece(&after, &piece);
 
         }
 
-        skip_value(ps);
+        if (piece.type == PIECE_FILTER)
+            rest = after;
+
+        next(ps);
         skip_separators(ps);
+
+        while (!is_array_end(ps))
+        {
+
+            if (matchfilters(ps, path))
+            {
+
+                struct parser element = *ps;
+
+                if (piece.type != PIECE_INDEX)
+                    count += walk(&element, &rest);
+                else if (matches++ == piece.index)
+                    return walk(&element, &after);
+
+            }
+
+            skip_value(ps);
+            skip_separators(ps);
+
+        }
+
+        return count;
 
     }
 
-    return count;
+    return 0;
 
 }
 

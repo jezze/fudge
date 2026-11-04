@@ -203,7 +203,6 @@ static unsigned int audiointerface_setformat(unsigned int rate, unsigned int cha
 {
 
     unsigned int format = (bits == 8) ? FORMAT_U8 : FORMAT_S16;
-    unsigned int index;
 
     if (bits != 8 && bits != 16)
         return 0;
@@ -211,78 +210,86 @@ static unsigned int audiointerface_setformat(unsigned int rate, unsigned int cha
     if (!(virtio_le32(info.formatslow) & (1 << format)))
         return 0;
 
-    if (channels < info.channelsmin || channels > info.channelsmax)
-        return 0;
-
-    for (index = 0; index < RATES && rates[index] != rate; index++);
-
-    if (index == RATES || !(virtio_le32(info.rateslow) & (1 << index)))
-        return 0;
-
-    spinlock_acquire(&spinlock);
-
-    if (running)
+    if (channels >= info.channelsmin && channels <= info.channelsmax)
     {
 
-        pcmcommand(CMD_PCMSTOP);
-        pcmcommand(CMD_PCMRELEASE);
+        unsigned int index;
+
+        for (index = 0; index < RATES && rates[index] != rate; index++);
+
+        if (index == RATES || !(virtio_le32(info.rateslow) & (1 << index)))
+            return 0;
+
+        spinlock_acquire(&spinlock);
+
+        if (running)
+        {
+
+            pcmcommand(CMD_PCMSTOP);
+            pcmcommand(CMD_PCMRELEASE);
+
+        }
+
+        running = setparams(channels, format, index) && pcmcommand(CMD_PCMPREPARE) && pcmcommand(CMD_PCMSTART);
+
+        if (running)
+        {
+
+            audiointerface.rate = rate;
+            audiointerface.channels = channels;
+            audiointerface.bits = bits;
+            framesize = channels * bits / 8;
+
+        }
+
+        spinlock_release(&spinlock);
+
+        return running;
 
     }
 
-    running = setparams(channels, format, index) && pcmcommand(CMD_PCMPREPARE) && pcmcommand(CMD_PCMSTART);
-
-    if (running)
-    {
-
-        audiointerface.rate = rate;
-        audiointerface.channels = channels;
-        audiointerface.bits = bits;
-        framesize = channels * bits / 8;
-
-    }
-
-    spinlock_release(&spinlock);
-
-    return running;
+    return 0;
 
 }
 
 static unsigned int audiointerface_write(void *buffer, unsigned int count)
 {
 
-    unsigned int head;
-
     /* whole frames only */
     count -= count % framesize;
 
-    if (!count)
-        return 1;
-
-    spinlock_acquire(&spinlock);
-    reclaim();
-
-    if (!running || txpending == BUFFERS)
+    if (count)
     {
+
+        unsigned int head;
+
+        spinlock_acquire(&spinlock);
+        reclaim();
+
+        if (!running || txpending == BUFFERS)
+        {
+
+            spinlock_release(&spinlock);
+
+            return !running;
+
+        }
+
+        head = txnext * 3;
+
+        buffer_copy(buffers[txnext], buffer, count);
+        virtio_setdesc(&txqueue, head, &xfer, sizeof (struct xfer), VIRTIO_DESC_NEXT, head + 1);
+        virtio_setdesc(&txqueue, head + 1, buffers[txnext], count, VIRTIO_DESC_NEXT, head + 2);
+        virtio_setdesc(&txqueue, head + 2, &statuses[txnext], sizeof (struct status), VIRTIO_DESC_WRITE, 0);
+        virtio_push(&txqueue, head);
+        virtio_notify(&txqueue);
+
+        txnext = (txnext + 1) % BUFFERS;
+        txpending++;
 
         spinlock_release(&spinlock);
 
-        return !running;
-
     }
-
-    head = txnext * 3;
-
-    buffer_copy(buffers[txnext], buffer, count);
-    virtio_setdesc(&txqueue, head, &xfer, sizeof (struct xfer), VIRTIO_DESC_NEXT, head + 1);
-    virtio_setdesc(&txqueue, head + 1, buffers[txnext], count, VIRTIO_DESC_NEXT, head + 2);
-    virtio_setdesc(&txqueue, head + 2, &statuses[txnext], sizeof (struct status), VIRTIO_DESC_WRITE, 0);
-    virtio_push(&txqueue, head);
-    virtio_notify(&txqueue);
-
-    txnext = (txnext + 1) % BUFFERS;
-    txpending++;
-
-    spinlock_release(&spinlock);
 
     return 1;
 

@@ -83,134 +83,138 @@ static void addchar(struct job *job, char c)
 static unsigned int readtoken(struct job *job, struct parser *parser, char **word)
 {
 
-    unsigned int type = TOKEN_WORD;
-
     while (parser->offset < parser->count && isblankchar(parser->data[parser->offset]))
         parser->offset++;
 
-    if (parser->offset >= parser->count)
-        return TOKEN_END;
-
-    switch (parser->data[parser->offset])
+    if (parser->offset < parser->count)
     {
 
-    case '|':
-        parser->offset++;
+        unsigned int type = TOKEN_WORD;
 
-        return TOKEN_PIPE;
-
-    case ';':
-    case '\n':
-        parser->offset++;
-
-        return TOKEN_END;
-
-    case '&':
-        parser->offset++;
-
-        return TOKEN_BACKGROUND;
-
-    case '<':
-        parser->offset++;
-
-        return TOKEN_INPUT;
-
-    case '>':
-        parser->offset++;
-
-        if (parser->offset < parser->count && parser->data[parser->offset] == '>')
+        switch (parser->data[parser->offset])
         {
 
+        case '|':
             parser->offset++;
 
-            return TOKEN_APPEND;
+            return TOKEN_PIPE;
 
-        }
-
-        if (parser->offset < parser->count && parser->data[parser->offset] == '&')
-        {
-
+        case ';':
+        case '\n':
             parser->offset++;
 
-            return TOKEN_DUP;
+            return TOKEN_END;
 
-        }
-
-        return TOKEN_OUTPUT;
-
-    case '#':
-        while (parser->offset < parser->count && parser->data[parser->offset] != '\n')
+        case '&':
             parser->offset++;
 
-        parser->offset++;
+            return TOKEN_BACKGROUND;
 
-        return TOKEN_END;
+        case '<':
+            parser->offset++;
 
-    case '-':
-        parser->offset++;
+            return TOKEN_INPUT;
 
-        type = TOKEN_OPTION;
+        case '>':
+            parser->offset++;
 
-        break;
-
-    }
-
-    *word = job->strings + job->nstrings;
-
-    while (parser->offset < parser->count && !isspecialchar(parser->data[parser->offset]))
-    {
-
-        char c = parser->data[parser->offset++];
-
-        if (c == '"' || c == '\'')
-        {
-
-            while (parser->offset < parser->count && parser->data[parser->offset] != c)
-                addchar(job, parser->data[parser->offset++]);
-
-            if (parser->offset >= parser->count)
+            if (parser->offset < parser->count && parser->data[parser->offset] == '>')
             {
 
-                seterror(job, "Syntax error: Unterminated quote", 0);
+                parser->offset++;
 
-                return TOKEN_ERROR;
+                return TOKEN_APPEND;
 
             }
 
+            if (parser->offset < parser->count && parser->data[parser->offset] == '&')
+            {
+
+                parser->offset++;
+
+                return TOKEN_DUP;
+
+            }
+
+            return TOKEN_OUTPUT;
+
+        case '#':
+            while (parser->offset < parser->count && parser->data[parser->offset] != '\n')
+                parser->offset++;
+
             parser->offset++;
 
+            return TOKEN_END;
+
+        case '-':
+            parser->offset++;
+
+            type = TOKEN_OPTION;
+
+            break;
+
         }
 
-        else
+        *word = job->strings + job->nstrings;
+
+        while (parser->offset < parser->count && !isspecialchar(parser->data[parser->offset]))
         {
 
-            addchar(job, c);
+            char c = parser->data[parser->offset++];
+
+            if (c == '"' || c == '\'')
+            {
+
+                while (parser->offset < parser->count && parser->data[parser->offset] != c)
+                    addchar(job, parser->data[parser->offset++]);
+
+                if (parser->offset >= parser->count)
+                {
+
+                    seterror(job, "Syntax error: Unterminated quote", 0);
+
+                    return TOKEN_ERROR;
+
+                }
+
+                parser->offset++;
+
+            }
+
+            else
+            {
+
+                addchar(job, c);
+
+            }
 
         }
 
+        if (job->nstrings >= JOB_STRINGSSIZE)
+        {
+
+            seterror(job, "Syntax error: Line too long", 0);
+
+            return TOKEN_ERROR;
+
+        }
+
+        addchar(job, '\0');
+
+        if (type == TOKEN_OPTION && !cstring_length(*word))
+        {
+
+            seterror(job, "Syntax error: Expected option name after -", 0);
+
+            return TOKEN_ERROR;
+
+        }
+
+        return type;
+
     }
 
-    if (job->nstrings >= JOB_STRINGSSIZE)
-    {
-
-        seterror(job, "Syntax error: Line too long", 0);
-
-        return TOKEN_ERROR;
-
-    }
-
-    addchar(job, '\0');
-
-    if (type == TOKEN_OPTION && !cstring_length(*word))
-    {
-
-        seterror(job, "Syntax error: Expected option name after -", 0);
-
-        return TOKEN_ERROR;
-
-    }
-
-    return type;
+    return TOKEN_END;
 
 }
 
@@ -348,26 +352,30 @@ static char *addnumber(struct job *job, unsigned int value)
 static unsigned int addroute(struct job *job, struct job_command *command, unsigned int event, unsigned int to, unsigned int stage)
 {
 
-    struct job_route *route;
-    unsigned int i;
-
-    if (command->nroutes >= JOB_ROUTES)
-        return seterror(job, "Syntax error: Too many redirects", 0);
-
-    for (i = 0; i < command->nroutes; i++)
+    if (command->nroutes < JOB_ROUTES)
     {
 
-        if (command->routes[i].event == event)
-            return seterror(job, "Syntax error: Event redirected twice", 0);
+        struct job_route *route;
+        unsigned int i;
+
+        for (i = 0; i < command->nroutes; i++)
+        {
+
+            if (command->routes[i].event == event)
+                return seterror(job, "Syntax error: Event redirected twice", 0);
+
+        }
+
+        route = &command->routes[command->nroutes++];
+        route->event = event;
+        route->to = to;
+        route->stage = stage;
+
+        return 1;
 
     }
 
-    route = &command->routes[command->nroutes++];
-    route->event = event;
-    route->to = to;
-    route->stage = stage;
-
-    return 1;
+    return seterror(job, "Syntax error: Too many redirects", 0);
 
 }
 

@@ -14,26 +14,29 @@ static char *createstring(struct pos *pos, const char *s, const char *e, unsigne
 {
 
     unsigned int len = e - s;
-    unsigned int avail;
 
-    if (!zero && !len)
-        return 0;
-
-    avail = pos->buffersize - pos->bufferused;
-
-    if (len < avail)
+    if (zero || len)
     {
 
-        char *out = pos->buffer + pos->bufferused;
-        unsigned int i;
+        unsigned int avail;
 
-        for (i = 0; i < len; i++)
-            out[i] = s[i];
+        avail = pos->buffersize - pos->bufferused;
 
-        out[len] = '\0';
-        pos->bufferused += len + 1;
+        if (len < avail)
+        {
 
-        return out;
+            char *out = pos->buffer + pos->bufferused;
+            unsigned int i;
+
+            for (i = 0; i < len; i++)
+                out[i] = s[i];
+
+            out[len] = '\0';
+            pos->bufferused += len + 1;
+
+            return out;
+
+        }
 
     }
 

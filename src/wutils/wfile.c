@@ -127,21 +127,26 @@ static unsigned int getline(char *data, unsigned int count, unsigned int index, 
 {
 
     char *line = buffer_tindex(data, count, '\n', index);
-    unsigned int length;
 
-    if (!line || line >= data + count)
-        return 0;
+    if (line && line < data + count)
+    {
 
-    length = buffer_findbyte(line, data + count - line, '\n');
+        unsigned int length;
 
-    if (length >= size)
-        length = size - 1;
+        length = buffer_findbyte(line, data + count - line, '\n');
 
-    buffer_write(out, size, line, length, 0);
+        if (length >= size)
+            length = size - 1;
 
-    out[length] = '\0';
+        buffer_write(out, size, line, length, 0);
 
-    return 1;
+        out[length] = '\0';
+
+        return 1;
+
+    }
+
+    return 0;
 
 }
 
@@ -259,20 +264,23 @@ static void writeclipboard(char *data, unsigned int count)
     char *name = clippath + fs_dirlength(clippath);
     unsigned int target = fs_auth(clippath);
     unsigned int parent = (target) ? fs_walkparent(1, target, clippath) : 0;
-    unsigned int id;
 
-    if (!parent)
-        return;
+    if (parent)
+    {
 
-    id = fs_walk(1, target, 0, clippath);
+        unsigned int id;
 
-    if (id && !fs_remove(1, target, parent, id))
-        return;
+        id = fs_walk(1, target, 0, clippath);
 
-    id = fs_create(1, target, parent, name, cstring_length(name));
+        if (id && !fs_remove(1, target, parent, id))
+            return;
 
-    if (id && count)
-        fs_write_all(1, target, id, data, count, 0);
+        id = fs_create(1, target, parent, name, cstring_length(name));
+
+        if (id && count)
+            fs_write_all(1, target, id, data, count, 0);
+
+    }
 
 }
 
@@ -307,41 +315,44 @@ static void paste(void)
     char *clippath = option_getstring("clipboard");
     unsigned int target = fs_auth(clippath);
     unsigned int id = (target) ? fs_walk(1, target, 0, clippath) : 0;
-    unsigned int count;
-    unsigned int cut;
-    unsigned int start;
-    unsigned int i;
 
-    if (!id)
-        return;
-
-    count = fs_read_full(1, target, id, pasted, CLIPBOARD_SIZE - 1, 0);
-
-    cut = clipcut && count == clipcount && buffer_match(pasted, clipboard, count);
-    pasted[count] = '\0';
-
-    for (start = 0, i = 0; i <= count; i++)
+    if (id)
     {
 
-        if (i < count && pasted[i] != '\n')
-            continue;
+        unsigned int count;
+        unsigned int cut;
+        unsigned int start;
+        unsigned int i;
 
-        pasted[i] = '\0';
+        count = fs_read_full(1, target, id, pasted, CLIPBOARD_SIZE - 1, 0);
 
-        if (i > start && buffer_findbyte(pasted + start, i - start, '"') == i - start)
-            system_run(0, "%s \"%s\" \"%s\"", (cut) ? "mv" : "cp", pasted + start, path);
+        cut = clipcut && count == clipcount && buffer_match(pasted, clipboard, count);
+        pasted[count] = '\0';
 
-        start = i + 1;
+        for (start = 0, i = 0; i <= count; i++)
+        {
 
-    }
+            if (i < count && pasted[i] != '\n')
+                continue;
 
-    if (cut)
-    {
+            pasted[i] = '\0';
 
-        clipcut = 0;
-        clipcount = 0;
+            if (i > start && buffer_findbyte(pasted + start, i - start, '"') == i - start)
+                system_run(0, "%s \"%s\" \"%s\"", (cut) ? "mv" : "cp", pasted + start, path);
 
-        writeclipboard(0, 0);
+            start = i + 1;
+
+        }
+
+        if (cut)
+        {
+
+            clipcut = 0;
+            clipcount = 0;
+
+            writeclipboard(0, 0);
+
+        }
 
     }
 

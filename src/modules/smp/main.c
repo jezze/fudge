@@ -57,39 +57,41 @@ static void coreassign(unsigned int itask)
 void module_init(void)
 {
 
-    unsigned int icore;
-    unsigned int i;
-
-    if (!acpi_findheader("APIC"))
-        return;
-
-    icore = apic_getid();
-
-    list_init(&usedcores);
-    apic_setup_bp();
-    kernel_setcallback(coreget, coreassign);
-    arch_kmap(SMP_BASE16, SMP_BASE16, 0x00001000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
-    buffer_copy((void *)SMP_BASE16, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
-    buffer_copy((void *)SMP_BASE32, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
-    pic_disable();
-    apic_setupisrs();
-    pool_placecore(icore, &usedcores);
-
-    for (i = 0; i < POOL_CORES; i++)
+    if (acpi_findheader("APIC"))
     {
 
-        if (apic_checklapic(i))
+        unsigned int icore;
+        unsigned int i;
+
+        icore = apic_getid();
+
+        list_init(&usedcores);
+        apic_setup_bp();
+        kernel_setcallback(coreget, coreassign);
+        arch_kmap(SMP_BASE16, SMP_BASE16, 0x00001000, MMAP_FLAG_GLOBAL | MMAP_FLAG_WRITEABLE);
+        buffer_copy((void *)SMP_BASE16, (void *)(unsigned long)smp_begin16, (unsigned long)smp_end16 - (unsigned long)smp_begin16);
+        buffer_copy((void *)SMP_BASE32, (void *)(unsigned long)smp_begin32, (unsigned long)smp_end32 - (unsigned long)smp_begin32);
+        pic_disable();
+        apic_setupisrs();
+        pool_placecore(icore, &usedcores);
+
+        for (i = 0; i < POOL_CORES; i++)
         {
 
-            if (i != icore)
+            if (apic_checklapic(i))
             {
 
-                pool_placecore(i, &usedcores);
-                apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT);
-                pit_wait(10);
-                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (SMP_BASE16 >> 12));
-                pit_wait(1);
-                apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (SMP_BASE16 >> 12));
+                if (i != icore)
+                {
+
+                    pool_placecore(i, &usedcores);
+                    apic_sendint(i, APIC_REG_ICR_TYPE_INIT | APIC_REG_ICR_LEVEL_ASSERT);
+                    pit_wait(10);
+                    apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (SMP_BASE16 >> 12));
+                    pit_wait(1);
+                    apic_sendint(i, APIC_REG_ICR_TYPE_SIPI | APIC_REG_ICR_LEVEL_ASSERT | (SMP_BASE16 >> 12));
+
+                }
 
             }
 
