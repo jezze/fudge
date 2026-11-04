@@ -654,6 +654,9 @@ static void run(char *pwd)
 
         }
 
+        if (job.background)
+            job.output = channel_lookup("log");
+
         job_run(&job, 0, pwd);
 
         if (!inputopen || job.background)

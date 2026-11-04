@@ -107,6 +107,14 @@ static void addterm(struct message_pipe *pipe, unsigned int target, unsigned int
 
 }
 
+/* data that leaves the last stage goes to job->output (0: the owner) */
+static unsigned int sink(struct job *job, unsigned int to, unsigned int next)
+{
+
+    return (!next && to == MESSAGE_TYPE_DATA) ? job->output : next;
+
+}
+
 static void setpipe(struct job *job, unsigned int index, struct message_pipe *pipe)
 {
 
@@ -124,12 +132,12 @@ static void setpipe(struct job *job, unsigned int index, struct message_pipe *pi
 
         struct job_route *route = &command->routes[i];
 
-        addroute(pipe, route->event, route->to, (route->stage) ? job->commands[route->stage - 1].target : ((route->to == MESSAGE_TYPE_ERROR) ? 0 : next));
+        addroute(pipe, route->event, route->to, (route->stage) ? job->commands[route->stage - 1].target : ((route->to == MESSAGE_TYPE_ERROR) ? job->output : sink(job, route->to, next)));
 
     }
 
-    addroute(pipe, MESSAGE_TYPE_DATA, MESSAGE_TYPE_DATA, next);
-    addroute(pipe, MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR, 0);
+    addroute(pipe, MESSAGE_TYPE_DATA, MESSAGE_TYPE_DATA, sink(job, MESSAGE_TYPE_DATA, next));
+    addroute(pipe, MESSAGE_TYPE_ERROR, MESSAGE_TYPE_ERROR, job->output);
 
     term = findroute(pipe, MESSAGE_TYPE_TERM);
 
