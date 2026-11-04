@@ -1,11 +1,11 @@
 #include <fudge.h>
 #include "resource.h"
 #include "mmap.h"
+#include "service.h"
 #include "mailbox.h"
 #include "task.h"
 #include "pool.h"
 #include "server.h"
-#include "service.h"
 #include "kernel.h"
 #include "memsrv.h"
 

@@ -2,9 +2,9 @@
 #include "resource.h"
 #include "mmap.h"
 #include "binary.h"
+#include "service.h"
 #include "mailbox.h"
 #include "task.h"
-#include "service.h"
 #include "memsrv.h"
 #include "core.h"
 #include "pool.h"
@@ -28,28 +28,6 @@ static void assign0(unsigned int itask)
 
     if (core)
         pool_placetask(itask, &core->tasks);
-
-}
-
-static void unannounce(unsigned int inode)
-{
-
-    unsigned int iservice;
-
-    for (iservice = 1; iservice < POOL_SERVICES; iservice++)
-    {
-
-        struct service *service = pool_getservice(iservice);
-
-        if (service && service->inode == inode)
-        {
-
-            service_unregister(service);
-            pool_unpickservice(iservice);
-
-        }
-
-    }
 
 }
 
@@ -82,7 +60,7 @@ static void retiretask(unsigned int itask, struct waking *waking)
                 if (mailbox_reset(mailbox))
                     waking->inodes[waking->count++] = mailbox->inode;
 
-                unannounce(mailbox->inode);
+                service_unregister(&mailbox->service);
                 mailbox_unregister(mailbox);
 
                 mailbox->inode = pool_renewnode(mailbox->inode);
@@ -453,15 +431,16 @@ unsigned long kernel_locate(unsigned int target, unsigned int id)
 unsigned int kernel_announce(unsigned int inode, char *name)
 {
 
-    unsigned int iservice = pool_pickservice();
+    struct resource *resource = pool_getnoderesource(inode);
 
-    if (iservice)
+    if (resource && resource->type == RESOURCE_MAILBOX)
     {
 
-        struct service *service = pool_getservice(iservice);
+        struct mailbox *mailbox = resource->data;
 
-        service_init(service, name);
-        service_register(service, inode);
+        service_unregister(&mailbox->service);
+        service_init(&mailbox->service, name);
+        service_register(&mailbox->service, inode);
 
         return MESSAGE_OK;
 

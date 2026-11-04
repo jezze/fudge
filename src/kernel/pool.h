@@ -2,25 +2,21 @@
 #define POOL_TASKS                      32
 #define POOL_NODES                      512
 #define POOL_MAILBOXES                  64
-#define POOL_SERVICES                   64
 
 struct core *pool_getcore(unsigned int icore);
 struct mailbox *pool_getmailbox(unsigned int imailbox);
 struct resource *pool_getnoderesource(unsigned int inode);
-struct service *pool_getservice(unsigned int iservice);
 struct task *pool_gettask(unsigned int itask);
 unsigned int pool_getinodefromitem(struct list_item *item);
 unsigned int pool_getitaskfromitem(struct list_item *item);
 unsigned int pool_pickcorefrom(struct list *list);
 unsigned int pool_pickmailbox(void);
 unsigned int pool_picknode(struct resource *resource);
-unsigned int pool_pickservice(void);
 unsigned int pool_picktask(void);
 unsigned int pool_picktaskfrom(struct list *list);
 void pool_unpickmailbox(unsigned int imailbox);
 void pool_unpicknode(unsigned int inode);
 unsigned int pool_renewnode(unsigned int inode);
-void pool_unpickservice(unsigned int iservice);
 void pool_unpicktask(unsigned int itask);
 void pool_placecore(unsigned int icore, struct list *list);
 void pool_placenode(unsigned int inode, struct list *list);

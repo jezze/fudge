@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "task.h"
 #include "pool.h"
+#include "service.h"
 #include "mailbox.h"
 #include "kernel.h"
 

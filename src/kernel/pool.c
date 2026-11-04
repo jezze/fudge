@@ -1,20 +1,18 @@
 #include <fudge.h>
 #include "resource.h"
+#include "service.h"
 #include "mailbox.h"
 #include "core.h"
 #include "task.h"
-#include "service.h"
 #include "pool.h"
 
 static struct corerow {struct list_item item; struct core core;} corerows[POOL_CORES];
 static struct taskrow {struct list_item item; struct task task;} taskrows[POOL_TASKS];
 static struct mailboxrow {struct list_item item; struct mailbox mailbox;} mailboxrows[POOL_MAILBOXES];
 static struct noderow {struct list_item item; struct resource *resource; unsigned int generation;} noderows[POOL_NODES];
-static struct servicerow {struct list_item item; struct service service;} servicerows[POOL_SERVICES];
 static struct list freetasks;
 static struct list freemailboxes;
 static struct list freenodes;
-static struct list freeservices;
 static struct spinlock attachlock;
 
 static struct corerow *getcorerow(unsigned int icore)
@@ -58,28 +56,12 @@ static struct noderow *getnoderow(unsigned int inode)
 
 }
 
-static struct servicerow *getservicerow(unsigned int iservice)
-{
-
-    return (iservice && iservice < POOL_SERVICES) ? &servicerows[iservice] : 0;
-
-}
-
 static struct list_item *getnodeitem(unsigned int inode)
 {
 
     struct noderow *noderow = getnoderow(inode);
 
     return noderow ? &noderow->item : 0;
-
-}
-
-static struct list_item *getserviceitem(unsigned int iservice)
-{
-
-    struct servicerow *servicerow = getservicerow(iservice);
-
-    return servicerow ? &servicerow->item : 0;
 
 }
 
@@ -120,13 +102,6 @@ static unsigned int encodenoderow(struct noderow *noderow)
 
 }
 
-static unsigned int encodeservicerow(struct servicerow *servicerow)
-{
-
-    return ((unsigned long)servicerow - (unsigned long)servicerows) / sizeof (struct servicerow);
-
-}
-
 static unsigned int encodetaskrow(struct taskrow *taskrow)
 {
 
@@ -158,15 +133,6 @@ struct resource *pool_getnoderesource(unsigned int inode)
     struct noderow *noderow = getnoderow(inode);
 
     return noderow ? noderow->resource : 0;
-
-}
-
-struct service *pool_getservice(unsigned int iservice)
-{
-
-    struct servicerow *servicerow = getservicerow(iservice);
-
-    return servicerow ? &servicerow->service : 0;
 
 }
 
@@ -277,15 +243,6 @@ void pool_setroot(struct resource *resource)
 
 }
 
-unsigned int pool_pickservice(void)
-{
-
-    struct list_item *item = list_pickhead(&freeservices);
-
-    return (item) ? encodeservicerow(item->data) : 0;
-
-}
-
 unsigned int pool_picktask(void)
 {
 
@@ -348,16 +305,6 @@ unsigned int pool_renewnode(unsigned int inode)
 
 }
 
-void pool_unpickservice(unsigned int iservice)
-{
-
-    struct list_item *item = getserviceitem(iservice);
-
-    if (item)
-        list_add(&freeservices, item);
-
-}
-
 void pool_unpicktask(unsigned int itask)
 {
 
@@ -406,7 +353,6 @@ void pool_setup(unsigned long mbaddress)
     list_init(&freetasks);
     list_init(&freemailboxes);
     list_init(&freenodes);
-    list_init(&freeservices);
     spinlock_init(&attachlock);
 
     for (i = 0; i < POOL_CORES; i++)
@@ -438,16 +384,6 @@ void pool_setup(unsigned long mbaddress)
         mailbox_init(&mailboxrow->mailbox, mbaddress + i * MESSAGE_CAPACITY);
         list_inititem(&mailboxrow->item, mailboxrow);
         list_add(&freemailboxes, &mailboxrow->item);
-
-    }
-
-    for (i = 1; i < POOL_SERVICES; i++)
-    {
-
-        struct servicerow *servicerow = &servicerows[i];
-
-        list_inititem(&servicerow->item, servicerow);
-        list_add(&freeservices, &servicerow->item);
 
     }
 

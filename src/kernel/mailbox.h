@@ -2,6 +2,7 @@ struct mailbox
 {
 
     struct resource resource;
+    struct service service;
     struct spinlock spinlock;
     unsigned int itask;
     unsigned int inode;

@@ -2,12 +2,12 @@
 #include <kernel/debug.h>
 #include <kernel/mmap.h>
 #include <kernel/binary.h>
+#include <kernel/service.h>
 #include <kernel/mailbox.h>
 #include <kernel/task.h>
 #include <kernel/core.h>
 #include <kernel/pool.h>
 #include <kernel/server.h>
-#include <kernel/service.h>
 #include <kernel/namesrv.h>
 #include <kernel/unitsrv.h>
 #include <kernel/memsrv.h>

@@ -3,9 +3,9 @@
 #include "debug.h"
 #include "mmap.h"
 #include "binary.h"
+#include "service.h"
 #include "mailbox.h"
 #include "task.h"
-#include "service.h"
 #include "pool.h"
 #include "kernel.h"
 
