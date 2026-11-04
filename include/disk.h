@@ -1,3 +1,4 @@
+#include <disk/cdfs.h>
 #include <disk/cpio.h>
 #include <disk/ext2.h>
 #include <disk/fat.h>

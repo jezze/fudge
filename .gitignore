@@ -32,6 +32,7 @@ src/test/t_timer
 src/utils/audiosrv
 src/utils/automount
 src/utils/cd
+src/utils/cdfssrv
 src/utils/clipboard
 src/utils/complete
 src/utils/cp

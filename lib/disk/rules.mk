@@ -2,6 +2,7 @@ L:=\
     $(DIR_LIB)/disk/disk.a \
 
 O:=\
+    $(DIR_LIB)/disk/cdfs.o \
     $(DIR_LIB)/disk/cpio.o \
     $(DIR_LIB)/disk/ext2.o \
     $(DIR_LIB)/disk/fat.o \
