@@ -288,7 +288,7 @@ void job_kill(struct job *job)
 
         struct job_command *command = &job->commands[i];
 
-        if (command->target && !call_kill(command->target))
+        if (command->target && call_kill(command->target) != MESSAGE_OK)
             command->target = 0;
 
     }

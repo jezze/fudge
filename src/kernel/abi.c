@@ -31,7 +31,7 @@ static unsigned int debug(unsigned int itask, void *stack)
 
     debug_fmt(DEBUG_INFO, __FILE__, __LINE__, "%s", args->message);
 
-    return 0;
+    return MESSAGE_OK;
 
 }
 
@@ -46,12 +46,12 @@ static unsigned int kill(unsigned int itask, void *stack)
 
         struct mailbox *mailbox = resource->data;
 
-        if (mailbox->itask)
-            return kernel_kill(mailbox->itask);
+        if (mailbox->itask && kernel_kill(mailbox->itask))
+            return MESSAGE_OK;
 
     }
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
@@ -78,7 +78,7 @@ static unsigned int load(unsigned int itask, void *stack)
             if (module_register)
                 module_register();
 
-            return 1;
+            return MESSAGE_OK;
 
         }
 
@@ -86,7 +86,7 @@ static unsigned int load(unsigned int itask, void *stack)
 
     debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "load failed");
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
@@ -109,7 +109,7 @@ static unsigned int unload(unsigned int itask, void *stack)
             if (module_unregister)
                 module_unregister();
 
-            return 1;
+            return MESSAGE_OK;
 
         }
 
@@ -117,7 +117,7 @@ static unsigned int unload(unsigned int itask, void *stack)
 
     debug_fmt(DEBUG_ERROR, __FILE__, __LINE__, "unload failed");
 
-    return 0;
+    return MESSAGE_FAILED;
 
 }
 
@@ -133,7 +133,7 @@ static unsigned int despawn(unsigned int itask, void *stack)
 
     kernel_signal(itask, TASK_SIGNAL_KILL);
 
-    return 0;
+    return MESSAGE_OK;
 
 }
 
@@ -213,7 +213,7 @@ static unsigned int announce(unsigned int itask, void *stack)
 unsigned int abi_call(unsigned int index, unsigned int itask, void *stack)
 {
 
-    return index < CALLS ? calls[index](itask, stack) : 0;
+    return index < CALLS ? calls[index](itask, stack) : MESSAGE_FAILED;
 
 }
 
