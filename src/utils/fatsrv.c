@@ -1583,6 +1583,15 @@ static void onmain(struct message *message)
             rootcluster = (fattype == 32) ? fat_read32(&fat32->root_cluster) : 0;
             fsinfo = (fattype == 32) ? fat_read16(&fat32->fat_info) : 0;
 
+            if (total > (0xFFFFFFFF - partoffset) / sectorsize)
+            {
+
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume reaches beyond 4 GB: %s\n", option_getstring("service"));
+
+                return;
+
+            }
+
             if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
             {
 

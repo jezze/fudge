@@ -1485,6 +1485,15 @@ static void onmain(struct message *message)
         if (ext2_validate((struct ext2_superblock *)blockinfo.buffer))
         {
 
+            if (sb.blockCount > (0xFFFFFFFF - partoffset) / blocksize)
+            {
+
+                channel_send_fmt(0, message->source, MESSAGE_TYPE_ERROR, "Volume reaches beyond 4 GB: %s\n", option_getstring("service"));
+
+                return;
+
+            }
+
             if (call_announce(0, cstring_length(option_getstring("service")), option_getstring("service")) != MESSAGE_OK)
             {
 
