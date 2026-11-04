@@ -14,6 +14,7 @@ static char *wraps[NUM_WRAPS] = {"none", "word", "char"};
 static unsigned int wrap = 0;
 static unsigned int chunks;
 static unsigned int loaded;
+static unsigned int saving;
 static char savedata[SAVESIZE];
 
 static void sendchunk(char *data, unsigned int count)
@@ -160,7 +161,7 @@ static void writefile(void)
         parent = (target) ? fs_walkparent(1, target, path) : 0;
         id = (parent) ? fs_walk(1, target, 0, path) : 0;
 
-        if (id && fs_remove(1, target, parent, id))
+        if (parent && (!id || fs_remove(1, target, parent, id)))
         {
 
             id = fs_create(1, target, parent, name, cstring_length(name));
@@ -176,8 +177,6 @@ static void writefile(void)
 
 static void save(void)
 {
-
-    static unsigned int saving;
 
     if (!loaded || saving)
         return;
@@ -228,6 +227,9 @@ static void onmain(struct message *message)
 
 static void onpath(struct message *message)
 {
+
+    if (saving)
+        return;
 
     clearfile();
     cstring_write_fmt(path, 256, 0, "%s\\0", message->data);
