@@ -131,18 +131,6 @@ void task_register(struct task *task, unsigned long mmap, unsigned long buffer, 
 
 }
 
-void task_unregister(struct task *task)
-{
-
-    task->mmap = 0;
-    task->buffer = 0;
-    task->thread.ip = 0;
-    task->thread.sp = 0;
-    task->start.ip = 0;
-    task->start.sp = 0;
-
-}
-
 void task_reset(struct task *task)
 {
 
@@ -152,6 +140,7 @@ void task_reset(struct task *task)
     task->waitingfor = 0;
     task->aborted = 0;
     task->mmap = 0;
+    task->buffer = 0;
     task->signals.kill = 0;
     task->signals.block = 0;
     task->signals.unblock = 0;

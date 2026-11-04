@@ -72,7 +72,6 @@ static void retiretask(unsigned int itask, struct waking *waking)
 
         memsrv_untask(itask);
         task_reset(task);
-        task_unregister(task);
         pool_unpicktask(itask);
 
     }
@@ -551,7 +550,7 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
         inode = (task->thread.ip) ? kernel_getchannelinode(itask, 0) : 0;
 
         if (!inode)
-            task_unregister(task);
+            task_reset(task);
 
     }
 
