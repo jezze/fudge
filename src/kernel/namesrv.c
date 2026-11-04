@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include <hash.h>
 #include "resource.h"
 #include "pool.h"
 #include "server.h"
@@ -15,7 +14,6 @@ static struct service service;
 static unsigned int findservice(char *name, unsigned int length)
 {
 
-    unsigned int namehash = djb_hash(length, name);
     struct resource *resource = 0;
     unsigned int inode = 0;
 
@@ -26,7 +24,7 @@ static unsigned int findservice(char *name, unsigned int length)
 
         struct service *current = resource->data;
 
-        if (current->namehash == namehash && length < SERVICE_NAMESIZE && !current->name[length] && buffer_match(current->name, name, length))
+        if (length < SERVICE_NAMESIZE && !current->name[length] && buffer_match(current->name, name, length))
         {
 
             inode = current->inode;

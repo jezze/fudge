@@ -1,30 +1,6 @@
 #include <fudge.h>
-#include <hash.h>
 #include "resource.h"
 #include "service.h"
-
-static void setname(struct service *service, char *name)
-{
-
-    buffer_clear(service->name, SERVICE_NAMESIZE);
-
-    if (name)
-    {
-
-        buffer_copy(service->name, name, cstring_length_zero(name));
-
-        service->namehash = djb_hash(cstring_length(name), name);
-
-    }
-
-    else
-    {
-
-        service->namehash = 0;
-
-    }
-
-}
 
 void service_register(struct service *service, unsigned int inode)
 {
@@ -58,7 +34,8 @@ void service_init(struct service *service, char *name)
 {
 
     resource_init(&service->resource, RESOURCE_SERVICE, service, 0);
-    setname(service, name);
+    buffer_clear(service->name, SERVICE_NAMESIZE);
+    buffer_copy(service->name, name, cstring_length_zero(name));
 
 }
 

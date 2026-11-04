@@ -5,7 +5,6 @@ struct service
 
     struct resource resource;
     char name[SERVICE_NAMESIZE];
-    unsigned int namehash;
     unsigned int inode;
 
 };
