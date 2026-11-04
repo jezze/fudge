@@ -153,37 +153,31 @@ static void unblocktasks(void)
     {
 
         unsigned int itask = pool_getitaskfromitem(current);
+        struct task *task = pool_gettask(itask);
 
         next = current->next;
 
-        if (itask)
+        if (task)
         {
 
-            struct task *task = pool_gettask(itask);
+            if (task->aborted == TASK_ABORT_PENDING)
+                restart(task);
 
-            if (task)
+            if (task->signals.kill)
             {
 
-                if (task->aborted == TASK_ABORT_PENDING)
-                    restart(task);
+                list_remove_unsafe(&blockedtasks, current);
+                transition(itask, TASK_STATE_UNBLOCKED);
+                transition(itask, TASK_STATE_DEAD);
 
-                if (task->signals.kill)
-                {
+            }
 
-                    list_remove_unsafe(&blockedtasks, current);
-                    transition(itask, TASK_STATE_UNBLOCKED);
-                    transition(itask, TASK_STATE_DEAD);
+            else if (task->signals.unblock)
+            {
 
-                }
-
-                else if (task->signals.unblock)
-                {
-
-                    list_remove_unsafe(&blockedtasks, current);
-                    transition(itask, TASK_STATE_UNBLOCKED);
-                    transition(itask, TASK_STATE_ASSIGNED);
-
-                }
+                list_remove_unsafe(&blockedtasks, current);
+                transition(itask, TASK_STATE_UNBLOCKED);
+                transition(itask, TASK_STATE_ASSIGNED);
 
             }
 
