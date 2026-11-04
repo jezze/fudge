@@ -5,15 +5,52 @@ static struct debug_interface debuginterface;
 static struct server server;
 static struct service service;
 
+/* text from a reader is dropped: a reader whose output is routed here would otherwise feed itself or another reader forever */
+static void notify(unsigned int source, unsigned int level, unsigned int count, void *data)
+{
+
+    struct {struct message_loginfo loginfo; char data[MESSAGE_SIZE - sizeof (struct message_loginfo)];} message;
+    struct list *links = &server.resource.links;
+    struct resource *sresource = (source) ? pool_getnoderesource(source) : 0;
+    struct list_item *current = 0;
+
+    message.loginfo.level = level;
+    message.loginfo.count = buffer_write(message.data, sizeof (message.data), data, count, 0);
+
+    spinlock_acquire(&links->spinlock);
+
+    while (sresource && (current = list_next_unsafe(links, current)))
+    {
+
+        if (pool_getnoderesource(pool_getinodefromitem(current)) == sresource)
+        {
+
+            spinlock_release(&links->spinlock);
+
+            return;
+
+        }
+
+    }
+
+    while ((current = list_next_unsafe(links, current)))
+    {
+
+        unsigned int target = pool_getinodefromitem(current);
+
+        if (target)
+            kernel_place(server.resource.inode, target, MESSAGE_TYPE_LOGINFO, sizeof (struct message_loginfo) + message.loginfo.count, &message);
+
+    }
+
+    spinlock_release(&links->spinlock);
+
+}
+
 static void debuginterface_write(unsigned int level, unsigned int count, char *string, char *file, unsigned int line)
 {
 
-    struct {struct message_loginfo loginfo; char data[DEBUG_MESSAGESIZE];} message;
-
-    message.loginfo.level = level;
-    message.loginfo.count = buffer_write(message.data, DEBUG_MESSAGESIZE, string, count, 0);
-
-    kernel_notify(&server.resource, MESSAGE_TYPE_LOGINFO, sizeof (struct message_loginfo) + message.loginfo.count, &message);
+    notify(0, level, count, string);
 
 }
 
@@ -28,6 +65,16 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
     case MESSAGE_TYPE_UNLINK:
         return kernel_unlinknode(&server.resource, source);
+
+    case MESSAGE_TYPE_DATA:
+        notify(source, DEBUG_INFO, count, data);
+
+        return MESSAGE_OK;
+
+    case MESSAGE_TYPE_ERROR:
+        notify(source, DEBUG_ERROR, count, data);
+
+        return MESSAGE_OK;
 
     }
 
