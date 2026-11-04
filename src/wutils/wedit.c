@@ -132,6 +132,20 @@ static void showfile(void)
 
 }
 
+static unsigned int replacefile(unsigned int target, unsigned int parent, char *name, unsigned int count)
+{
+
+    unsigned int id = fs_walk(1, target, parent, name);
+
+    if (id && !fs_remove(1, target, parent, id))
+        return 0;
+
+    id = fs_create(1, target, parent, name, cstring_length(name));
+
+    return id && fs_write_all(1, target, id, savedata, count, 0) == count;
+
+}
+
 static void writefile(void)
 {
 
@@ -153,21 +167,22 @@ static void writefile(void)
     {
 
         char *name = path + fs_dirlength(path);
+        char backup[256];
         unsigned int target;
         unsigned int parent;
-        unsigned int id;
+
+        cstring_write_fmt(backup, 256, 0, "%s~\\0", name);
 
         target = fs_auth(path);
         parent = (target) ? fs_walkparent(1, target, path) : 0;
-        id = (parent) ? fs_walk(1, target, 0, path) : 0;
 
-        if (parent && (!id || fs_remove(1, target, parent, id)))
+        if (parent && replacefile(target, parent, backup, count) && replacefile(target, parent, name, count))
         {
 
-            id = fs_create(1, target, parent, name, cstring_length(name));
+            unsigned int id = fs_walk(1, target, parent, backup);
 
             if (id)
-                fs_write_all(1, target, id, savedata, count, 0);
+                fs_remove(1, target, parent, id);
 
         }
 
