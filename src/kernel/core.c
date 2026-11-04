@@ -1,29 +1,16 @@
 #include <fudge.h>
-#include "resource.h"
 #include "core.h"
 
 void core_register(struct core *core)
 {
 
-    resource_register(&core->resource);
-
     core->state = CORE_STATE_ACTIVE;
-
-}
-
-void core_unregister(struct core *core)
-{
-
-    resource_unregister(&core->resource);
-
-    core->state = CORE_STATE_DEAD;
 
 }
 
 void core_init(struct core *core)
 {
 
-    resource_init(&core->resource, RESOURCE_CORE, core, 0);
     list_init(&core->tasks);
 
     core->state = CORE_STATE_DEAD;

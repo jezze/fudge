@@ -34,7 +34,6 @@ struct task_thread
 struct task
 {
 
-    struct resource resource;
     struct task_signals signals;
     struct task_thread thread;
     struct task_thread start;

@@ -61,7 +61,6 @@ static void retiretask(unsigned int itask, struct waking *waking)
                     waking->inodes[waking->count++] = mailbox->inode;
 
                 service_unregister(&mailbox->service);
-                mailbox_unregister(mailbox);
 
                 mailbox->inode = pool_renewnode(mailbox->inode);
 

@@ -1,5 +1,3 @@
-#define RESOURCE_TASK                   0x01
-#define RESOURCE_CORE                   0x02
 #define RESOURCE_MAILBOX                0x03
 #define RESOURCE_BINARYFORMAT           0x04
 #define RESOURCE_BUS                    0x05

@@ -20,7 +20,6 @@ static unsigned int outputsource;
 static unsigned int writecores(void)
 {
 
-    struct resource *resource = 0;
     unsigned int c = 0;
     unsigned int i;
     char *states[3] = {
@@ -32,12 +31,13 @@ static unsigned int writecores(void)
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  cores: [\n");
 
-    resource_lock();
-
-    for (i = 0; (resource = resource_foreachtype_unsafe(resource, RESOURCE_CORE)); i++)
+    for (i = 0; i < POOL_CORES; i++)
     {
 
-        struct core *core = resource->data;
+        struct core *core = pool_getcore(i);
+
+        if (core->state != CORE_STATE_ACTIVE)
+            continue;
 
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      id: %u\n", &i);
@@ -47,8 +47,6 @@ static unsigned int writecores(void)
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
-
-    resource_unlock();
 
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
@@ -60,7 +58,6 @@ static unsigned int writecores(void)
 static unsigned int writetasks(void)
 {
 
-    struct resource *resource = 0;
     unsigned int c = 0;
     unsigned int i;
     char *states[7] = {
@@ -76,12 +73,13 @@ static unsigned int writetasks(void)
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  tasks: [\n");
 
-    resource_lock();
-
-    for (i = 0; (resource = resource_foreachtype_unsafe(resource, RESOURCE_TASK)); i++)
+    for (i = 1; i < POOL_TASKS; i++)
     {
 
-        struct task *task = resource->data;
+        struct task *task = pool_gettask(i);
+
+        if (task->state == TASK_STATE_DEAD)
+            continue;
 
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      id: %u\n", &i);
@@ -96,8 +94,6 @@ static unsigned int writetasks(void)
 
     }
 
-    resource_unlock();
-
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");
 
@@ -108,19 +104,20 @@ static unsigned int writetasks(void)
 static unsigned int writemailboxes(void)
 {
 
-    struct resource *resource = 0;
     unsigned int c = 0;
+    unsigned int i;
 
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "{\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  mailboxes: [\n");
 
-    resource_lock();
-
-    while ((resource = resource_foreachtype_unsafe(resource, RESOURCE_MAILBOX)))
+    for (i = 1; i < POOL_MAILBOXES; i++)
     {
 
-        struct mailbox *mailbox = resource->data;
+        struct mailbox *mailbox = pool_getmailbox(i);
         unsigned int nmessages = MESSAGE_SLOTS - mailbox->free.count;
+
+        if (!mailbox->itask)
+            continue;
 
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      itask: %u\n", &mailbox->itask);
@@ -130,8 +127,6 @@ static unsigned int writemailboxes(void)
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
     }
-
-    resource_unlock();
 
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "  ]\n");
     c += cstring_write_fmt(output, OUTPUTSIZE, c, "}\n");

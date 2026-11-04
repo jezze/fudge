@@ -1,5 +1,4 @@
 #include <fudge.h>
-#include "resource.h"
 #include "task.h"
 
 void task_signal(struct task *task, unsigned int signal)
@@ -125,8 +124,6 @@ unsigned int task_transition(struct task *task, unsigned int state)
 void task_register(struct task *task, unsigned long mmap, unsigned long buffer, unsigned long ip, unsigned long sp)
 {
 
-    resource_register(&task->resource);
-
     task->mmap = mmap;
     task->buffer = buffer;
     task->thread.ip = ip;
@@ -136,8 +133,6 @@ void task_register(struct task *task, unsigned long mmap, unsigned long buffer, 
 
 void task_unregister(struct task *task)
 {
-
-    resource_unregister(&task->resource);
 
     task->mmap = 0;
     task->buffer = 0;
@@ -173,7 +168,6 @@ void task_reset(struct task *task)
 void task_init(struct task *task)
 {
 
-    resource_init(&task->resource, RESOURCE_TASK, task, 0);
     spinlock_init(&task->spinlock);
     task_reset(task);
 

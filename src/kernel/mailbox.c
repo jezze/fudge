@@ -269,17 +269,8 @@ unsigned int mailbox_reset(struct mailbox *mailbox)
 void mailbox_register(struct mailbox *mailbox, unsigned int itask, unsigned int ichannel)
 {
 
-    resource_register(&mailbox->resource);
-
     mailbox->itask = itask;
     mailbox->ichannel = ichannel;
-
-}
-
-void mailbox_unregister(struct mailbox *mailbox)
-{
-
-    resource_unregister(&mailbox->resource);
 
 }
 
