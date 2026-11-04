@@ -39,10 +39,20 @@ static unsigned int nfree;
 static unsigned long base;
 static void (*unmapcallback)(unsigned long vaddress, unsigned int size);
 
+/* a removed file stays used until its last mapping goes */
+static struct file *getused(unsigned int id)
+{
+
+    return (id > ROOT && id - ROOT - 1 < MEMSRV_FILES && files[id - ROOT - 1].used) ? &files[id - ROOT - 1] : 0;
+
+}
+
 static struct file *getfile(unsigned int id)
 {
 
-    return (id > ROOT && id - ROOT - 1 < MEMSRV_FILES && files[id - ROOT - 1].linked) ? &files[id - ROOT - 1] : 0;
+    struct file *file = getused(id);
+
+    return (file && file->linked) ? file : 0;
 
 }
 
@@ -437,7 +447,7 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
     struct file *file = getfile(id);
     struct mailbox *mailbox = mailbox_get(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
-    struct task *task = (mailbox) ? pool_gettask(itask) : 0;
+    struct task *task = pool_gettask(itask);
 
     if (!file || !task)
         return 0;
@@ -477,37 +487,30 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
 static unsigned int unmap(unsigned int source, unsigned int id)
 {
 
+    struct file *file = getused(id);
     struct mailbox *mailbox = mailbox_get(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
-    struct task *task = (mailbox) ? pool_gettask(itask) : 0;
-    unsigned int i;
+    struct task *task = pool_gettask(itask);
 
-    for (i = 0; i < MEMSRV_FILES; i++)
+    if (file && task && (file->tasks & (1 << itask)))
     {
 
-        struct file *file = &files[i];
+        struct mmap_header *header = (struct mmap_header *)task->mmap;
+        struct mmap_entry *entry = findmapping(header, id);
 
-        if (file->used && getid(file) == id && task && (file->tasks & (1 << itask)))
+        if (entry)
         {
 
-            struct mmap_header *header = (struct mmap_header *)task->mmap;
-            struct mmap_entry *entry = findmapping(header, id);
-
-            if (entry)
-            {
-
-                unmapcallback(entry->vaddress, entry->size);
-                mmap_remove(header, entry);
-
-            }
-
-            file->tasks &= ~(1 << itask);
-
-            release(file);
-
-            return 1;
+            unmapcallback(entry->vaddress, entry->size);
+            mmap_remove(header, entry);
 
         }
+
+        file->tasks &= ~(1 << itask);
+
+        release(file);
+
+        return 1;
 
     }
 
@@ -755,26 +758,19 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 unsigned long memsrv_getpage(unsigned int id, unsigned int offset)
 {
 
-    if (id > ROOT && id - ROOT - 1 < MEMSRV_FILES)
-    {
+    struct file *file;
+    unsigned long paddress = 0;
 
-        struct file *file;
-        unsigned long paddress = 0;
+    spinlock_acquire(&spinlock);
 
-        file = &files[id - ROOT - 1];
+    file = getused(id);
 
-        spinlock_acquire(&spinlock);
+    if (file && offset < countpages(file->size) * MEMSRV_PAGESIZE)
+        paddress = (unsigned long)getpage(file, offset - offset % MEMSRV_PAGESIZE);
 
-        if (file->used && offset < countpages(file->size) * MEMSRV_PAGESIZE)
-            paddress = (unsigned long)getpage(file, offset - offset % MEMSRV_PAGESIZE);
+    spinlock_release(&spinlock);
 
-        spinlock_release(&spinlock);
-
-        return paddress;
-
-    }
-
-    return 0;
+    return paddress;
 
 }
 
