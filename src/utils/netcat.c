@@ -6,11 +6,12 @@
 static struct socket router;
 static struct socket local;
 static struct socket remotes[64];
+static unsigned int ethernet;
+static unsigned int output;
 
 static void onconsoledata(struct message *message)
 {
 
-    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
     unsigned char data[MESSAGE_SIZE];
     unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
     unsigned int i;
@@ -36,7 +37,7 @@ static void onconsoledata(struct message *message)
 
         default:
             if (socket_send_tcp(0, ethernet, &local, &remotes[0], &router, 1, &data[i]))
-                channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_TYPE_DATA, 1, &data[i]);
+                channel_send(0, output, MESSAGE_TYPE_DATA, 1, &data[i]);
 
             break;
 
@@ -49,7 +50,8 @@ static void onconsoledata(struct message *message)
 static void onmain(struct message *message)
 {
 
-    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
+    ethernet = channel_lookup(option_getstring("ethernet-service"));
+    output = message->source;
 
     if (ethernet)
     {
@@ -69,7 +71,7 @@ static void onmain(struct message *message)
         socket_listen_tcp(ethernet, &local, remotes, 64, &router);
 
         while ((count = socket_receive(0, ethernet, &local, remotes, 64, &router, buffer, MESSAGE_SIZE)))
-            channel_send(0, message->source, MESSAGE_TYPE_DATA, count, buffer);
+            channel_send(0, output, MESSAGE_TYPE_DATA, count, buffer);
 
         channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 

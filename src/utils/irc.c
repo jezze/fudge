@@ -8,6 +8,8 @@ static struct socket remote;
 static struct socket router;
 static char inputbuffer[4096];
 static struct ring input;
+static unsigned int ethernet;
+static unsigned int output;
 
 static unsigned int buildrequest(unsigned int count, void *buffer)
 {
@@ -16,7 +18,7 @@ static unsigned int buildrequest(unsigned int count, void *buffer)
 
 }
 
-static void interpret(unsigned int ethernet, void *buffer, unsigned int count)
+static void interpret(void *buffer, unsigned int count)
 {
 
     char *data = buffer;
@@ -52,7 +54,6 @@ static void dnsresolve(struct socket *socket, char *domain)
 static void onconsoledata(struct message *message)
 {
 
-    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
     unsigned char data[MESSAGE_SIZE];
     unsigned int count = buffer_read(data, MESSAGE_SIZE, message->data, message->length, 0);
     unsigned int i;
@@ -81,10 +82,10 @@ static void onconsoledata(struct message *message)
 
         default:
             ring_write(&input, &data[i], 1);
-            channel_send(0, 0 /* TODO: Should not be 0 */, MESSAGE_TYPE_DATA, 1, &data[i]);
+            channel_send(0, output, MESSAGE_TYPE_DATA, 1, &data[i]);
 
             if (data[i] == '\n' && (length = ring_read(&input, buffer, 4096)))
-                interpret(ethernet, buffer, length);
+                interpret(buffer, length);
 
             break;
 
@@ -97,7 +98,8 @@ static void onconsoledata(struct message *message)
 static void onmain(struct message *message)
 {
 
-    unsigned int ethernet = channel_lookup(option_getstring("ethernet-service"));
+    ethernet = channel_lookup(option_getstring("ethernet-service"));
+    output = message->source;
 
     if (ethernet)
     {
@@ -124,7 +126,7 @@ static void onmain(struct message *message)
         socket_send_tcp(0, ethernet, &local, &remote, &router, buildrequest(4096, buffer), buffer);
 
         while ((count = socket_receive(0, ethernet, &local, &remote, 1, &router, buffer, 4096)))
-            channel_send(0, message->source, MESSAGE_TYPE_DATA, count, buffer);
+            channel_send(0, output, MESSAGE_TYPE_DATA, count, buffer);
 
         channel_send(0, ethernet, MESSAGE_TYPE_UNLINK, 0, 0);
 
