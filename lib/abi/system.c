@@ -32,10 +32,14 @@ static unsigned int start(char *command, unsigned int length, unsigned int input
 
 }
 
+/* target 0: nobody reads the output, so it goes to log (dropped if log isn't there) */
 unsigned int system_runv(unsigned int target, char *fmt, void **args)
 {
 
     char command[MESSAGE_SIZE];
+
+    if (!target)
+        target = channel_lookup("log");
 
     if (start(command, cstring_write_fmtv(command, MESSAGE_SIZE, 0, fmt, args), 0))
     {

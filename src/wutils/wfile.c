@@ -214,7 +214,7 @@ static void updatecontent(unsigned int wm)
             char *command = option_getstring("command");
 
             if (cstring_length(command))
-                system_run(channel_lookup(option_getstring("console-service")), "%s \"%s\" &", command, path);
+                system_run(0, "%s \"%s\" &", command, path);
             else
                 channel_send_fmt(0, opener, MESSAGE_TYPE_PATH, "%s\\0", path);
 
@@ -338,7 +338,7 @@ static void paste(void)
             pasted[i] = '\0';
 
             if (i > start && buffer_findbyte(pasted + start, i - start, '"') == i - start)
-                system_run(channel_lookup(option_getstring("console-service")), "%s \"%s\" \"%s\"", (cut) ? "mv" : "cp", pasted + start, path);
+                system_run(0, "%s \"%s\" \"%s\"", (cut) ? "mv" : "cp", pasted + start, path);
 
             start = i + 1;
 
@@ -367,7 +367,7 @@ static void delete(void)
     {
 
         if (selected[i])
-            system_run(channel_lookup(option_getstring("console-service")), "rm \"%s%s\"", path, names[i]);
+            system_run(0, "rm \"%s%s\"", path, names[i]);
 
     }
 
@@ -488,7 +488,7 @@ static void onwmevent(struct message *message)
             unsigned int ncommands = (suffix) ? system_feed(0, 0, commands, 64, "mq -query \".filetypes[suffix:%s][%u].command\" %s", suffix, &index, option_getstring("config")) : 0;
 
             if (getline(commands, ncommands, 0, name, 64))
-                system_run(channel_lookup(option_getstring("console-service")), "%s \"%s\" &", name, path);
+                system_run(0, "%s \"%s\" &", name, path);
 
         }
 
@@ -550,7 +550,6 @@ void init(void)
 {
 
     option_add("config", "initrd:data/config/wm-filetypes.mq");
-    option_add("console-service", "console:0");
     option_add("wm-service", "wm");
     option_add("clipboard", "mem:clipboard");
     option_add("mode", "browse");
