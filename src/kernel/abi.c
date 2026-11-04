@@ -39,19 +39,9 @@ static unsigned int kill(unsigned int itask, void *stack)
 {
 
     struct {void *caller; unsigned int target;} *args = stack;
-    struct resource *resource = pool_getnoderesource(args->target);
+    struct mailbox *mailbox = mailbox_get(args->target);
 
-    if (resource && resource->type == RESOURCE_MAILBOX)
-    {
-
-        struct mailbox *mailbox = resource->data;
-
-        if (mailbox->itask && kernel_kill(mailbox->itask))
-            return MESSAGE_OK;
-
-    }
-
-    return MESSAGE_FAILED;
+    return (mailbox && mailbox->itask && kernel_kill(mailbox->itask)) ? MESSAGE_OK : MESSAGE_FAILED;
 
 }
 

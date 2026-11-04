@@ -8,6 +8,15 @@
 
 static struct resource_operands operands;
 
+struct mailbox *mailbox_get(unsigned int inode)
+{
+
+    struct resource *resource = pool_getnoderesource(inode);
+
+    return (resource && resource->type == RESOURCE_MAILBOX) ? resource->data : 0;
+
+}
+
 void mailbox_wake(unsigned int inode)
 {
 
@@ -137,12 +146,10 @@ static unsigned int place(struct mailbox *mailbox, unsigned int event, unsigned 
 static unsigned int operands_pick(unsigned int source, struct message *messages, unsigned int count, unsigned int slots, unsigned int flags)
 {
 
-    struct resource *resource = pool_getnoderesource(source);
+    struct mailbox *mailbox = mailbox_get(source);
 
-    if (resource)
+    if (mailbox)
     {
-
-        struct mailbox *mailbox = resource->data;
 
         if (pick(mailbox, messages, count, slots))
             return MESSAGE_OK;
@@ -161,12 +168,10 @@ static unsigned int operands_pick(unsigned int source, struct message *messages,
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
 
-    struct resource *resource = pool_getnoderesource(target);
+    struct mailbox *mailbox = mailbox_get(target);
 
-    if (resource)
+    if (mailbox)
     {
-
-        struct mailbox *mailbox = resource->data;
 
         if (mailbox->itask)
         {
@@ -189,13 +194,11 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 unsigned int mailbox_isfull(unsigned int inode)
 {
 
-    struct resource *resource = pool_getnoderesource(inode);
+    struct mailbox *mailbox = mailbox_get(inode);
     unsigned int full = 0;
 
-    if (resource && resource->type == RESOURCE_MAILBOX)
+    if (mailbox)
     {
-
-        struct mailbox *mailbox = resource->data;
 
         spinlock_acquire(&mailbox->spinlock);
 
@@ -212,14 +215,12 @@ unsigned int mailbox_isfull(unsigned int inode)
 unsigned int mailbox_wait(unsigned int target, unsigned int itask)
 {
 
-    struct resource *resource = pool_getnoderesource(target);
+    struct mailbox *mailbox = mailbox_get(target);
     struct task *task = pool_gettask(itask);
     unsigned int waiting = 0;
 
-    if (resource && resource->type == RESOURCE_MAILBOX && task)
+    if (mailbox && task)
     {
-
-        struct mailbox *mailbox = resource->data;
 
         if (mailbox->itask && mailbox->itask != itask)
         {

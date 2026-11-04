@@ -244,15 +244,6 @@ static unsigned long findgap(struct mmap_header *header, unsigned int size)
 
 }
 
-static struct mailbox *getmailbox(unsigned int source)
-{
-
-    struct resource *resource = pool_getnoderesource(source);
-
-    return (resource && resource->type == RESOURCE_MAILBOX) ? resource->data : 0;
-
-}
-
 static void release(struct file *file)
 {
 
@@ -444,7 +435,7 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
 {
 
     struct file *file = getfile(id);
-    struct mailbox *mailbox = getmailbox(source);
+    struct mailbox *mailbox = mailbox_get(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
     struct task *task = (mailbox) ? pool_gettask(itask) : 0;
 
@@ -486,7 +477,7 @@ static unsigned long map(unsigned int source, unsigned int id, unsigned int size
 static unsigned int unmap(unsigned int source, unsigned int id)
 {
 
-    struct mailbox *mailbox = getmailbox(source);
+    struct mailbox *mailbox = mailbox_get(source);
     unsigned int itask = (mailbox) ? mailbox->itask : 0;
     struct task *task = (mailbox) ? pool_gettask(itask) : 0;
     unsigned int i;

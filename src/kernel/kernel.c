@@ -430,12 +430,10 @@ unsigned long kernel_locate(unsigned int target, unsigned int id)
 unsigned int kernel_announce(unsigned int inode, char *name)
 {
 
-    struct resource *resource = pool_getnoderesource(inode);
+    struct mailbox *mailbox = mailbox_get(inode);
 
-    if (resource && resource->type == RESOURCE_MAILBOX)
+    if (mailbox)
     {
-
-        struct mailbox *mailbox = resource->data;
 
         service_unregister(&mailbox->service);
         service_init(&mailbox->service, name);
@@ -564,12 +562,11 @@ unsigned int kernel_loadtask(unsigned int itask, unsigned long ip, unsigned long
 unsigned long kernel_getbuffer(unsigned int inode)
 {
 
-    struct resource *resource = pool_getnoderesource(inode);
+    struct mailbox *mailbox = mailbox_get(inode);
 
-    if (resource && resource->type == RESOURCE_MAILBOX)
+    if (mailbox)
     {
 
-        struct mailbox *mailbox = resource->data;
         struct task *task = pool_gettask(mailbox->itask);
 
         if (task)
