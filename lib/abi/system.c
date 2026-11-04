@@ -36,12 +36,12 @@ unsigned int system_runv(unsigned int target, char *fmt, void **args)
 {
 
     char command[MESSAGE_SIZE];
-    unsigned int errors = 0;
 
     if (start(command, cstring_write_fmtv(command, MESSAGE_SIZE, 0, fmt, args), 0))
     {
 
         struct message message;
+        unsigned int errors = 0;
 
         while (channel_pick(1, &message))
         {

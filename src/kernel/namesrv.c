@@ -75,15 +75,16 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 {
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
-    struct resource *resource = 0;
     unsigned char buffer[sizeof (struct message_readresponse) + sizeof (struct record) * LISTRECORDS];
     struct message_readresponse *response = (struct message_readresponse *)buffer;
     struct record *records = (struct record *)(response + 1);
-    unsigned int c = 0;
-    unsigned int i;
 
     if (request)
     {
+
+        struct resource *resource = 0;
+        unsigned int c = 0;
+        unsigned int i;
 
         for (i = request->offset; request->id == MESSAGE_ROOT && i < 2 && (c + 1) * sizeof (struct record) <= request->count; i++)
             record_init(&records[c++], MESSAGE_ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");

@@ -153,19 +153,18 @@ static unsigned int onreadrequest(struct unitsrv *unitsrv, unsigned int source, 
 {
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
-    struct resource *file;
-    struct resource *dir;
-    unsigned int root;
     unsigned char buffer[sizeof (struct message_readresponse) + sizeof (struct record) * LISTRECORDS];
     struct message_readresponse *response = (struct message_readresponse *)buffer;
     struct record *records = (struct record *)(response + 1);
-    unsigned int c = 0;
-    unsigned int i;
 
     if (request)
     {
 
-        file = getfile(unitsrv, request->id);
+        struct resource *file = getfile(unitsrv, request->id);
+        struct resource *dir;
+        unsigned int root;
+        unsigned int c = 0;
+        unsigned int i;
 
         if (file)
             return readfile(unitsrv, file, source, request);
@@ -202,13 +201,14 @@ static unsigned int onstatrequest(struct unitsrv *unitsrv, unsigned int source, 
 {
 
     struct message_statrequest *request = message_validate(MESSAGE_TYPE_STATREQUEST, data, count);
-    struct resource *device;
     unsigned char buffer[sizeof (struct message_statresponse) + sizeof (struct record)];
     struct message_statresponse *response = (struct message_statresponse *)buffer;
     struct record *record = (struct record *)(response + 1);
 
     if (request)
     {
+
+        struct resource *device;
 
         response->count = sizeof (struct record);
 
@@ -253,12 +253,12 @@ static unsigned int oncreaterequest(struct unitsrv *unitsrv, unsigned int source
 
     struct message_createrequest *request = message_validate(MESSAGE_TYPE_CREATEREQUEST, data, count);
     struct message_createresponse response;
-    struct resource *device;
 
     if (request)
     {
 
-        device = getdir(unitsrv, request->parent);
+        struct resource *device = getdir(unitsrv, request->parent);
+
         response.id = (device && request->count == 5 && buffer_match(request + 1, "inode", 5) && pool_attachnode(device)) ? request->parent + POOL_NODES : 0;
 
         return kernel_place(unitsrv->server.resource.inode, source, MESSAGE_TYPE_CREATERESPONSE, sizeof (struct message_createresponse), &response);
@@ -274,12 +274,12 @@ static unsigned int onremoverequest(struct unitsrv *unitsrv, unsigned int source
 
     struct message_removerequest *request = message_validate(MESSAGE_TYPE_REMOVEREQUEST, data, count);
     struct message_removeresponse response;
-    struct resource *device;
 
     if (request)
     {
 
-        device = getfile(unitsrv, request->id);
+        struct resource *device = getfile(unitsrv, request->id);
+
         response.status = (device && request->parent == request->id - POOL_NODES);
 
         if (response.status)

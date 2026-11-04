@@ -137,13 +137,14 @@ static unsigned int fill(unsigned int ichannel, struct inbox *inbox, unsigned in
 
     struct message messages[MESSAGE_SLOTS];
     unsigned int status = call_pick(ichannel, messages, MESSAGE_SLOTS, inbox->release, flags);
-    unsigned int i;
 
     inbox->release = 0;
     inbox->opened = 1;
 
     if (status == MESSAGE_OK)
     {
+
+        unsigned int i;
 
         for (i = 0; i < MESSAGE_SLOTS && messages[i].type; i++)
             buffer_copy(&inbox->messages[(inbox->head + inbox->count++) % CHANNEL_QUEUE], &messages[i], sizeof (struct message));
@@ -597,10 +598,14 @@ void channel_exit(unsigned int ichannel)
 void channel_abort(unsigned int ichannel)
 {
 
-    char *error = "Process aborted\n";
-
     if (owner)
+    {
+
+        char *error = "Process aborted\n";
+
         channel_send(ichannel, owner, MESSAGE_TYPE_ERROR, cstring_length(error), error);
+
+    }
 
     channel_exit(ichannel);
 

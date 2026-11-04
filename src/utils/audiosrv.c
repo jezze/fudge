@@ -295,12 +295,12 @@ static void ontimertick(struct message *message)
 {
 
     struct message_timertick *timertick = message_validate(MESSAGE_TYPE_TIMERTICK, message->data, message->length);
-    unsigned int played;
 
     if (timertick)
     {
 
         unsigned int elapsed = timertick->counter - pace.counter;
+        unsigned int played;
 
         if (!pace.started || elapsed > hz)
             elapsed = 0;
@@ -380,11 +380,12 @@ static void onreadrequest(struct message *message)
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
     struct listing listing;
-    unsigned int c = 0;
-    unsigned int i;
 
     if (request)
     {
+
+        unsigned int c = 0;
+        unsigned int i;
 
         for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
             record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");

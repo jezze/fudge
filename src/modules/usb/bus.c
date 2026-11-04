@@ -623,13 +623,12 @@ static unsigned int updatemaxpacket(struct device *device, unsigned int maxpacke
 static unsigned int getinterval(struct device *device, unsigned int interval)
 {
 
-    unsigned int exponent = 0;
-
     if (device->speed == SPEED_FULL || device->speed == SPEED_LOW)
     {
 
         /* frames of 1 ms, as a power of two of 125 us */
         unsigned int units = interval * 8;
+        unsigned int exponent = 0;
 
         while ((2u << exponent) <= units)
             exponent++;
@@ -835,7 +834,6 @@ static unsigned int resetport(unsigned int port)
 {
 
     unsigned long portsc = op + OP_PORTSC + (port - 1) * 0x10;
-    unsigned int i;
 
     if (!(read32(portsc) & PORTSC_CCS))
         return 0;
@@ -843,6 +841,8 @@ static unsigned int resetport(unsigned int port)
     /* usb 3 ports are enabled already, usb 2 ports need a reset to be */
     if (!(read32(portsc) & PORTSC_PED))
     {
+
+        unsigned int i;
 
         write32(portsc, (read32(portsc) & PORTSC_NEUTRAL) | PORTSC_PR);
 

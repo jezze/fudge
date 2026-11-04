@@ -247,17 +247,14 @@ static void skip_value(struct parser *ps)
 static int find_key(struct parser *ps, struct piece *piece)
 {
 
-    char *name;
-    unsigned int len;
-
     next(ps);
     skip_separators(ps);
 
     while (!is_object_end(ps))
     {
 
-        name = ps->pos;
-        len = 0;
+        char *name = ps->pos;
+        unsigned int len = 0;
 
         while (!is_key_end(ps))
         {

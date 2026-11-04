@@ -433,7 +433,6 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
     unsigned int direct = index < 12;
     unsigned int *entries;
     unsigned int available;
-    unsigned int table;
     unsigned int first;
 
     if (direct)
@@ -446,6 +445,8 @@ static unsigned int getrun(struct ext2_node *node, unsigned int offset, unsigned
 
     else
     {
+
+        unsigned int table;
 
         index -= 12;
 

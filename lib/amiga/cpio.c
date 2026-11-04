@@ -327,15 +327,12 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     unsigned char buffer[MESSAGE_SIZE];
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
     struct message_readresponse *response = (struct message_readresponse *)buffer;
-    struct cpio_header *header;
-    unsigned int length;
 
     if (request)
     {
 
-        header = (isheader(request->id)) ? getheader(request->id) : 0;
-
-        length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
+        struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
+        unsigned int length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
 
         response->count = 0;
 
@@ -423,12 +420,11 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     struct message_writerequest *request = message_validate(MESSAGE_TYPE_WRITEREQUEST, data, count);
     struct message_writeresponse response;
-    struct cpio_header *header;
 
     if (request)
     {
 
-        header = (isheader(request->id)) ? getheader(request->id) : 0;
+        struct cpio_header *header = (isheader(request->id)) ? getheader(request->id) : 0;
 
         response.count = 0;
 

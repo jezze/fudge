@@ -161,7 +161,6 @@ static void loadbackground(char *path, unsigned int length)
 
     char name[256];
     char size[64];
-    char data[128];
     unsigned int count;
 
     if (!length || length >= 256)
@@ -175,6 +174,8 @@ static void loadbackground(char *path, unsigned int length)
 
     if (count)
     {
+
+        char data[128];
 
         parser_parse(0, "root", cstring_write_fmt(data, 128, 0, "= background mimetype \"image/raw\" %s", size), data);
         pool_loadresources();
@@ -209,7 +210,6 @@ static void loadkeymap(char *path, unsigned int length)
 {
 
     static char data[0x2000];
-    char name[256];
     unsigned int count = 0;
     unsigned int linelength;
     char *line;
@@ -220,6 +220,8 @@ static void loadkeymap(char *path, unsigned int length)
 
     if (length && length < 256)
     {
+
+        char name[256];
 
         buffer_copy(name, path, length);
 
@@ -301,10 +303,11 @@ static void configline(char *line, unsigned int length)
     {
 
         unsigned int space = buffer_findbyte(rest, length, ' ');
-        char name[64];
 
         if (space < length && space < 64)
         {
+
+            char name[64];
 
             buffer_write(name, 64, rest, space, 0);
             name[space] = '\0';
@@ -2575,11 +2578,12 @@ static void onreadrequest(struct message *message)
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, message->data, message->length);
     struct listing listing;
-    unsigned int c = 0;
-    unsigned int i;
 
     if (request)
     {
+
+        unsigned int c = 0;
+        unsigned int i;
 
         for (i = request->offset; request->id == ROOT && i < ROOTRECORDS && (c + 1) * sizeof (struct record) <= request->count; i++)
             record_init(&listing.records[c++], ROOT, RECORD_TYPE_DIRECTORY, 0, i + 1, i + 1, "..");

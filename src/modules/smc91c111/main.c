@@ -76,7 +76,6 @@ static void handleirq(unsigned int irq)
 
         unsigned short status;
         unsigned int count;
-        unsigned int i;
 
         write16(REG2_POINTER, REG2_POINTER_RECEIVE | REG2_POINTER_AUTOINCREMENT | REG2_POINTER_READ);
 
@@ -88,6 +87,8 @@ static void handleirq(unsigned int irq)
 
         if (count <= PACKETSIZE)
         {
+
+            unsigned int i;
 
             for (i = 0; i < (count + 1) / 2; i++)
                 rx[i] = read16(REG2_DATA);

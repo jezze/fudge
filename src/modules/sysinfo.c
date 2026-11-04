@@ -401,10 +401,11 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
 
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
     struct message_readresponse *readresponse = (struct message_readresponse *)response;
-    unsigned int status;
 
     if (request)
     {
+
+        unsigned int status;
 
         spinlock_acquire(&spinlock);
 
@@ -428,10 +429,11 @@ static unsigned int onstatrequest(unsigned int source, unsigned int count, void 
 
     struct message_statrequest *request = message_validate(MESSAGE_TYPE_STATREQUEST, data, count);
     struct message_statresponse *statresponse = (struct message_statresponse *)response;
-    unsigned int status;
 
     if (request)
     {
+
+        unsigned int status;
 
         spinlock_acquire(&spinlock);
 

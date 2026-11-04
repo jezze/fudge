@@ -367,8 +367,6 @@ static void dynamic(struct deflate *d, struct deflate_huffman *literals, struct 
     {
 
         unsigned int symbol = decode(d, literals);
-        unsigned int value = 0;
-        unsigned int repeat;
 
         if (symbol < 16)
         {
@@ -379,6 +377,9 @@ static void dynamic(struct deflate *d, struct deflate_huffman *literals, struct 
 
         else
         {
+
+            unsigned int value = 0;
+            unsigned int repeat;
 
             if (symbol == 16)
             {

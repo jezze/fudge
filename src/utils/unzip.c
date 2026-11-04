@@ -143,7 +143,6 @@ static unsigned int safename(char *name)
 static unsigned int writefile(unsigned int source, unsigned int target, unsigned int directory, char *name, unsigned char *output, unsigned int count)
 {
 
-    char parentpath[PATHSIZE];
     unsigned int length = fs_dirlength(name);
     char *base = name + length;
     unsigned int parent = directory;
@@ -151,6 +150,8 @@ static unsigned int writefile(unsigned int source, unsigned int target, unsigned
 
     if (length)
     {
+
+        char parentpath[PATHSIZE];
 
         buffer_write(parentpath, PATHSIZE, name, length, 0);
 

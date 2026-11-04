@@ -584,13 +584,12 @@ static unsigned int onreadrequest(unsigned int source, unsigned int count, void 
     unsigned char buffer[MESSAGE_SIZE];
     struct message_readrequest *request = message_validate(MESSAGE_TYPE_READREQUEST, data, count);
     struct message_readresponse *response = (struct message_readresponse *)buffer;
-    unsigned int length;
-    struct file *file;
 
     if (request)
     {
 
-        length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
+        unsigned int length = (request->count < MESSAGE_SIZE - sizeof (struct message_readresponse)) ? request->count : MESSAGE_SIZE - sizeof (struct message_readresponse);
+        struct file *file;
 
         spinlock_acquire(&spinlock);
 
@@ -690,10 +689,11 @@ static unsigned int onwriterequest(unsigned int source, unsigned int count, void
 
     struct message_writerequest *request = message_validate(MESSAGE_TYPE_WRITEREQUEST, data, count);
     struct message_writeresponse response;
-    struct file *file;
 
     if (request)
     {
+
+        struct file *file;
 
         spinlock_acquire(&spinlock);
 

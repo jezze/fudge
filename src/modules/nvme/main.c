@@ -240,7 +240,6 @@ static unsigned int setup(void)
     volatile unsigned char *identify = (volatile unsigned char *)(base + 2 * PAGESIZE);
     volatile unsigned int *list = (volatile unsigned int *)(base + 3 * PAGESIZE);
     unsigned int queues;
-    unsigned int i;
 
     stride = 4 << (readreg(NVME_CAP + 4) & 0x0F);
 
@@ -270,6 +269,8 @@ static unsigned int setup(void)
     if (command(NVME_ADMIN_IDENTIFY, 0, (unsigned long)list, 2, 0))
     {
 
+        unsigned int i;
+
         for (i = 0; i < PAGESIZE / 4 && list[i]; i++)
             adddisk(base, identify, list[i], queues);
 
@@ -289,11 +290,9 @@ static unsigned int setup(void)
 static unsigned int issue(struct disk *disk, unsigned long buffer, unsigned int write, unsigned int sector, unsigned int count)
 {
 
-    volatile unsigned int *prplist = disk->prplist;
     unsigned int blocks = count / disk->blockinterface.blocksize;
     unsigned int pages = (blocks * disk->blockinterface.blocksize + PAGESIZE - 1) / PAGESIZE;
     unsigned long prp2 = 0;
-    unsigned int i;
 
     if (!blocks || !buffer)
         return 0;
@@ -303,6 +302,9 @@ static unsigned int issue(struct disk *disk, unsigned long buffer, unsigned int 
 
     if (pages > 2)
     {
+
+        volatile unsigned int *prplist = disk->prplist;
+        unsigned int i;
 
         for (i = 1; i < pages; i++)
         {

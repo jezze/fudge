@@ -169,10 +169,11 @@ void apic_setupisrs(void)
             {
 
                 struct acpi_madt_ioapic *ioapic = (struct acpi_madt_ioapic *)entry;
-                unsigned int pin;
 
                 if (ioapic->gsibase == 0)
                 {
+
+                    unsigned int pin;
 
                     idt_setdescriptor(idt, 0x61, (void (*)(void))((unsigned long)apic_isr + 8 * 0x01), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
                     idt_setdescriptor(idt, 0x62, (void (*)(void))((unsigned long)apic_isr + 8 * 0x02), gdt_getselector(gdt, ARCH_KCODE), IDT_FLAG_PRESENT | IDT_FLAG_TYPEINT);
