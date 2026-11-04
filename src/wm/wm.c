@@ -696,7 +696,7 @@ static void bumpchildren(struct widget *widget)
 static void launch(char *command)
 {
 
-    system_run(0, "%s &", command);
+    system_run(channel_lookup(option_getstring("console-service")), "%s &", command);
 
 }
 
@@ -3222,6 +3222,7 @@ void init(void)
     render_init();
     option_add("service", "wm");
     option_add("config", "initrd:data/config/wm.mq");
+    option_add("console-service", "console:0");
     option_add("keyboard-service", "keyboard:0");
     option_add("mouse-service", "mouse:0");
     option_add("video-service", "video:0");
