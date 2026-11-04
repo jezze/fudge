@@ -44,11 +44,6 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
         case MESSAGE_TYPE_DATA:
             return ondata(interface, source, data, count);
 
-        case MESSAGE_TYPE_ERROR:
-            ondata(interface, source, "[ERROR] ", 8);
-
-            return ondata(interface, source, data, count);
-
         }
 
     }
