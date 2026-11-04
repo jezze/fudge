@@ -24,5 +24,11 @@
       partition: 3
       name: "home"
     }
+    {
+      service: "block"
+      index: 1
+      partition: 0
+      name: "cd"
+    }
   ]
 }

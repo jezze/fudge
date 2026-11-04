@@ -46,6 +46,16 @@ static void mountext2(unsigned int source, unsigned int target, unsigned int off
 
 }
 
+static unsigned int mountcdfs(unsigned int source, unsigned int target, char *name, char *service, unsigned int index)
+{
+
+    if (sendblockreadrequest(target, CDFS_DESCRIPTORSECTOR * CDFS_SECTORSIZE, CDFS_SECTORSIZE) == CDFS_SECTORSIZE && cdfs_validate((struct cdfs_descriptor *)blockinfo.buffer))
+        return system_run(source, "initrd:bin/cdfssrv -service %s -block-service %s:%u &", name, service, &index);
+
+    return 0;
+
+}
+
 static void mountmbr(unsigned int source, unsigned int target, struct mbr_partition *partition, char *name, char *service, unsigned int index)
 {
 
@@ -131,6 +141,10 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 
     channel_send(1, target, MESSAGE_TYPE_INFO, 0, 0);
     channel_wait(1, target, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
+
+    /* a disc (also a hybrid one with an MBR) is one filesystem, mounted as partition 0 */
+    if (!ipartition && mountcdfs(source, target, name, service, index))
+        return;
 
     if (sendblockreadrequest(target, 0, blockinfo.blocksize) == 512)
     {
