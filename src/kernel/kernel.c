@@ -58,11 +58,11 @@ static void retiretask(unsigned int itask, struct waking *waking)
             {
 
                 if (mailbox_reset(mailbox))
-                    waking->inodes[waking->count++] = mailbox->inode;
+                    waking->inodes[waking->count++] = mailbox->resource.inode;
 
                 service_unregister(&mailbox->service);
 
-                mailbox->inode = pool_renewnode(mailbox->inode);
+                mailbox->resource.inode = pool_renewnode(mailbox->resource.inode);
 
                 pool_unpickmailbox(task->imailbox[i]);
 
@@ -230,7 +230,7 @@ unsigned int kernel_getchannelinode(unsigned int itask, unsigned int ichannel)
 
         }
 
-        return (mailbox) ? mailbox->inode : 0;
+        return (mailbox) ? mailbox->resource.inode : 0;
 
     }
 

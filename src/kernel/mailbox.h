@@ -5,7 +5,6 @@ struct mailbox
     struct service service;
     struct spinlock spinlock;
     unsigned int itask;
-    unsigned int inode;
     unsigned int ichannel;
     struct message messages[MESSAGE_SLOTS];
     struct list_item items[MESSAGE_SLOTS];

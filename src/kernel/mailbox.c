@@ -103,7 +103,7 @@ static unsigned int pick(struct mailbox *mailbox, struct message *messages, unsi
     spinlock_release(&mailbox->spinlock);
 
     if (wake)
-        mailbox_wake(mailbox->inode);
+        mailbox_wake(mailbox->resource.inode);
 
     return n;
 
@@ -294,7 +294,7 @@ void mailbox_init(struct mailbox *mailbox, unsigned long data)
 
     mailbox_reset(mailbox);
 
-    mailbox->inode = pool_picknode(&mailbox->resource);
+    mailbox->resource.inode = pool_picknode(&mailbox->resource);
     mailbox->data = data;
 
 }

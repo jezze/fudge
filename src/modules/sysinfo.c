@@ -122,7 +122,7 @@ static unsigned int writemailboxes(void)
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    {\n");
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      itask: %u\n", &mailbox->itask);
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      ichannel: %u\n", &mailbox->ichannel);
-        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      inode: %u\n", &mailbox->inode);
+        c += cstring_write_fmt(output, OUTPUTSIZE, c, "      inode: %u\n", &mailbox->resource.inode);
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "      nmessages: %u\n", &nmessages);
         c += cstring_write_fmt(output, OUTPUTSIZE, c, "    }\n");
 
