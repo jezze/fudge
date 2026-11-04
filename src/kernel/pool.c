@@ -22,28 +22,10 @@ static struct corerow *getcorerow(unsigned int icore)
 
 }
 
-static struct list_item *getcoreitem(unsigned int icore)
-{
-
-    struct corerow *corerow = getcorerow(icore);
-
-    return corerow ? &corerow->item : 0;
-
-}
-
 static struct mailboxrow *getmailboxrow(unsigned int imailbox)
 {
 
     return (imailbox && imailbox < POOL_MAILBOXES) ? &mailboxrows[imailbox] : 0;
-
-}
-
-static struct list_item *getmailboxitem(unsigned int imailbox)
-{
-
-    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
-
-    return mailboxrow ? &mailboxrow->item : 0;
 
 }
 
@@ -56,28 +38,10 @@ static struct noderow *getnoderow(unsigned int inode)
 
 }
 
-static struct list_item *getnodeitem(unsigned int inode)
-{
-
-    struct noderow *noderow = getnoderow(inode);
-
-    return noderow ? &noderow->item : 0;
-
-}
-
 static struct taskrow *gettaskrow(unsigned int itask)
 {
 
     return (itask && itask < POOL_TASKS) ? &taskrows[itask] : 0;
-
-}
-
-static struct list_item *gettaskitem(unsigned int itask)
-{
-
-    struct taskrow *taskrow = gettaskrow(itask);
-
-    return taskrow ? &taskrow->item : 0;
 
 }
 
@@ -264,10 +228,10 @@ unsigned int pool_picktaskfrom(struct list *list)
 void pool_unpickmailbox(unsigned int imailbox)
 {
 
-    struct list_item *item = getmailboxitem(imailbox);
+    struct mailboxrow *mailboxrow = getmailboxrow(imailbox);
 
-    if (item)
-        list_add(&freemailboxes, item);
+    if (mailboxrow)
+        list_add(&freemailboxes, &mailboxrow->item);
 
 }
 
@@ -308,40 +272,40 @@ unsigned int pool_renewnode(unsigned int inode)
 void pool_unpicktask(unsigned int itask)
 {
 
-    struct list_item *item = gettaskitem(itask);
+    struct taskrow *taskrow = gettaskrow(itask);
 
-    if (item)
-        list_add(&freetasks, item);
+    if (taskrow)
+        list_add(&freetasks, &taskrow->item);
 
 }
 
 void pool_placecore(unsigned int icore, struct list *list)
 {
 
-    struct list_item *item = getcoreitem(icore);
+    struct corerow *corerow = getcorerow(icore);
 
-    if (item)
-        list_add(list, item);
+    if (corerow)
+        list_add(list, &corerow->item);
 
 }
 
 void pool_placenode(unsigned int inode, struct list *list)
 {
 
-    struct list_item *item = getnodeitem(inode);
+    struct noderow *noderow = getnoderow(inode);
 
-    if (item)
-        list_add(list, item);
+    if (noderow)
+        list_add(list, &noderow->item);
 
 }
 
 void pool_placetask(unsigned int itask, struct list *list)
 {
 
-    struct list_item *item = gettaskitem(itask);
+    struct taskrow *taskrow = gettaskrow(itask);
 
-    if (item)
-        list_add(list, item);
+    if (taskrow)
+        list_add(list, &taskrow->item);
 
 }
 
