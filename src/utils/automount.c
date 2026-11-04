@@ -130,14 +130,9 @@ static void mount(unsigned int source, char *service, unsigned int index, unsign
 
     target = channel_lookup(path);
 
+    /* mount.mq lists devices that may not be there, so a missing one is not an error */
     if (!target)
-    {
-
-        channel_send_fmt(0, source, MESSAGE_TYPE_ERROR, "Service not found: %s\n", path);
-
         return;
-
-    }
 
     channel_send(1, target, MESSAGE_TYPE_INFO, 0, 0);
     channel_wait(1, target, MESSAGE_TYPE_BLOCKINFO, sizeof (struct message_blockinfo), &blockinfo);
