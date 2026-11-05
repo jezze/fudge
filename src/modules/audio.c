@@ -4,7 +4,6 @@
 
 static struct resource_operands operands;
 static struct unitsrv unitsrv;
-static struct service service;
 
 static unsigned int oninfo(struct audio_interface *interface, unsigned int source)
 {
@@ -121,23 +120,21 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
-    unitsrv_init(&unitsrv, RESOURCE_AUDIOINTERFACE);
-    service_init(&service, "audio");
+    unitsrv_init(&unitsrv, RESOURCE_AUDIOINTERFACE, "audio");
 
 }
 
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&unitsrv.server.resource));
+    unitsrv_register(&unitsrv);
 
 }
 
 void module_unregister(void)
 {
 
-    service_unregister(&service);
-    pool_detachnode(&unitsrv.server.resource);
+    unitsrv_unregister(&unitsrv);
 
 }
 

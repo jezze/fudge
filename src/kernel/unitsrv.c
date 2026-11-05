@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "pool.h"
 #include "server.h"
+#include "service.h"
 #include "kernel.h"
 #include "unitsrv.h"
 
@@ -334,10 +335,26 @@ static unsigned int operands_place(unsigned int target, unsigned int source, uns
 
 }
 
-void unitsrv_init(struct unitsrv *unitsrv, unsigned int type)
+void unitsrv_register(struct unitsrv *unitsrv)
+{
+
+    service_register(&unitsrv->service, pool_attachnode(&unitsrv->server.resource));
+
+}
+
+void unitsrv_unregister(struct unitsrv *unitsrv)
+{
+
+    service_unregister(&unitsrv->service);
+    pool_detachnode(&unitsrv->server.resource);
+
+}
+
+void unitsrv_init(struct unitsrv *unitsrv, unsigned int type, char *name)
 {
 
     server_init(&unitsrv->server, unitsrv, operands_place, 0);
+    service_init(&unitsrv->service, name);
 
     unitsrv->type = type;
 

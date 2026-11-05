@@ -4,7 +4,6 @@
 
 static struct resource_operands operands;
 static struct unitsrv unitsrv;
-static struct service service;
 
 static unsigned int operands_place(unsigned int target, unsigned int source, unsigned int event, unsigned int count, void *data)
 {
@@ -81,23 +80,21 @@ void module_init(void)
 
     resource_operands_init(&operands, 0, operands_place, 0);
 
-    unitsrv_init(&unitsrv, RESOURCE_KEYBOARDINTERFACE);
-    service_init(&service, "keyboard");
+    unitsrv_init(&unitsrv, RESOURCE_KEYBOARDINTERFACE, "keyboard");
 
 }
 
 void module_register(void)
 {
 
-    service_register(&service, pool_attachnode(&unitsrv.server.resource));
+    unitsrv_register(&unitsrv);
 
 }
 
 void module_unregister(void)
 {
 
-    service_unregister(&service);
-    pool_detachnode(&unitsrv.server.resource);
+    unitsrv_unregister(&unitsrv);
 
 }
 
