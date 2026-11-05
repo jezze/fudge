@@ -83,6 +83,24 @@ static unsigned int checkfirmware(void)
 
 }
 
+/* double-buffered registers latch at the start of vblank: don't start writing them in the lines just before it */
+static void evadevblank(void)
+{
+
+    unsigned int i;
+
+    for (i = 0; i < I915_TIMEOUT; i++)
+    {
+
+        unsigned int line = readreg(I915_PIPEDSL_A) & I915_PIPEDSL_LINE;
+
+        if (line + I915_EVASION < activeheight || line >= activeheight)
+            return;
+
+    }
+
+}
+
 /* the pipe scaler stretches the source to the largest centered window with its aspect ratio; the rest shows the pipe's black background */
 static void setscaler(unsigned int width, unsigned int height)
 {
@@ -125,11 +143,14 @@ static void videointerface_setmode(unsigned int width, unsigned int height, unsi
     if (mmio && bpp == 4 && width >= I915_MINSIZE && height >= I915_MINSIZE && width <= activewidth && height <= activeheight && !(width % 16))
     {
 
+        unsigned int surface = readreg(I915_PLANE_SURF_1_A);
+
+        evadevblank();
         writereg(I915_PIPESRC_A, ((width - 1) << 16) | (height - 1));
         setscaler(width, height);
         writereg(I915_PLANE_STRIDE_1_A, width * 4 / 64);
         writereg(I915_PLANE_SIZE_1_A, ((height - 1) << 16) | (width - 1));
-        writereg(I915_PLANE_SURF_1_A, readreg(I915_PLANE_SURF_1_A));
+        writereg(I915_PLANE_SURF_1_A, surface);
 
         videointerface.width = width;
         videointerface.height = height;
